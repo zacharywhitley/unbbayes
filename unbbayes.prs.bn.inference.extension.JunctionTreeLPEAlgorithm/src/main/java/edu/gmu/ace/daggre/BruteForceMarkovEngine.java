@@ -354,7 +354,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.RebuildNetworkAction#isToExecuteAction(edu.gmu.ace.daggre.NetworkAction)
 		 */
 		protected boolean isToExecuteAction(NetworkAction action) {
-			return !action.isStructureChangeAction();
+			return !action.isStructureConstructionAction();
 		}
 		
 	}

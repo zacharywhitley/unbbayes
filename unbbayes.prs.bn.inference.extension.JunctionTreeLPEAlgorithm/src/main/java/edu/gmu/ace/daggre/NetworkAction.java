@@ -34,11 +34,11 @@ public interface NetworkAction extends QuestionEvent {
 	
 	
 	/**
-	 * Actions which changes the structure of a network
+	 * Actions which builds the structure of a network
 	 * may require the network and/or the assets to be rebuilt.
-	 * @return true if this action causes changes in network structure.
+	 * @return true if this action constructs network structure.
 	 */
-	boolean isStructureChangeAction();
+	boolean isStructureConstructionAction();
 	
 
 	/**

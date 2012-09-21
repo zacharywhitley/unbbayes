@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import junit.framework.TestCase;
 import unbbayes.io.NetIO;
+import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
@@ -30,9 +31,9 @@ import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import unbbayes.prs.exception.InvalidParentException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.BalanceTradeNetworkAction;
+import edu.gmu.ace.daggre.MarkovEngineImpl.DummyTradeAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.InexistingQuestionException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.ResolveQuestionNetworkAction;
-import edu.gmu.ace.daggre.MarkovEngineImpl.VirtualTradeAction;
 import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
 
 /**
@@ -8730,7 +8731,7 @@ public class MarkovEngineTest extends TestCase {
 		List<AddTradeNetworkAction> ret = new ArrayList<MarkovEngineImpl.AddTradeNetworkAction>();
 		for (QuestionEvent questionEvent : questionHistory) {
 			if (questionEvent instanceof AddTradeNetworkAction
-					&& !(questionEvent instanceof VirtualTradeAction)) {
+					&& !(questionEvent instanceof DummyTradeAction)) {
 				// consider only direct trades
 				ret.add((AddTradeNetworkAction) questionEvent);
 			}
@@ -11143,7 +11144,7 @@ public class MarkovEngineTest extends TestCase {
 		
 		List<QuestionEvent> marginalHistoryAfterResolution = engine.getQuestionHistory(0x0EL, null, null);
 		assertEquals(marginalHistoryBeforeResolution.size() + 2, marginalHistoryAfterResolution.size());	// +2 because of the last addTrade and resolveQuestion
-		assertTrue(((VirtualTradeAction)marginalHistoryAfterResolution.get(marginalHistoryAfterResolution.size() - 1)).getParentAction() instanceof ResolveQuestionNetworkAction);
+		assertTrue(((DummyTradeAction)marginalHistoryAfterResolution.get(marginalHistoryAfterResolution.size() - 1)).getParentAction() instanceof ResolveQuestionNetworkAction);
 		assertEquals(0x0BL, marginalHistoryAfterResolution.get(marginalHistoryAfterResolution.size() - 1).getQuestionId().longValue());
 		assertEquals(settledState, marginalHistoryAfterResolution.get(marginalHistoryAfterResolution.size() - 1).getSettledState().intValue());
 		
@@ -11262,7 +11263,7 @@ public class MarkovEngineTest extends TestCase {
 		for (int i = 0; i < probList.size(); i++) {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
-		assertTrue(((VirtualTradeAction)history.get(history.size()-1)).getParentAction() instanceof ResolveQuestionNetworkAction);
+		assertTrue(((DummyTradeAction)history.get(history.size()-1)).getParentAction() instanceof ResolveQuestionNetworkAction);
 		assertEquals(0x0BL, history.get(history.size() - 1).getQuestionId().longValue());
 		assertEquals(settledState, history.get(history.size() - 1).getSettledState().intValue());
 		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(1));
@@ -11272,7 +11273,7 @@ public class MarkovEngineTest extends TestCase {
 		for (int i = 0; i < probList.size(); i++) {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
-		assertTrue(((VirtualTradeAction)history.get(history.size()-1)).getParentAction() instanceof ResolveQuestionNetworkAction);
+		assertTrue(((DummyTradeAction)history.get(history.size()-1)).getParentAction() instanceof ResolveQuestionNetworkAction);
 		assertEquals(0x0BL, history.get(history.size() - 1).getQuestionId().longValue());
 		assertEquals(settledState, history.get(history.size() - 1).getSettledState().intValue());
 		
@@ -11291,7 +11292,7 @@ public class MarkovEngineTest extends TestCase {
 		for (int i = 0; i < probList.size(); i++) {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
-		assertTrue(((VirtualTradeAction)history.get(history.size()-1)).getParentAction() instanceof ResolveQuestionNetworkAction);
+		assertTrue(((DummyTradeAction)history.get(history.size()-1)).getParentAction() instanceof ResolveQuestionNetworkAction);
 		
 		// resolve all questions and test again
 		settledState = (Math.random() < .5)?0:1;
@@ -14799,56 +14800,6 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(engine.revertTrade(null, new Date(), new Date(0), (Math.random()<.5)?null:((Math.random()<.5)?0x0DL:((Math.random()<.5)?0x0EL:0X0F))));
 	}
 	
-	/** Test method for {@link MarkovEngineImpl#exportNetwork(java.io.File)} */
-	public final void exportNetwork() {
-		
-		this.createDEFNetIn1Transaction(new HashMap<String, Long>());
-		
-		// make sure the export works with resolved questions
-		engine.resolveQuestion(null, new Date(), 0X0DL, (Math.random()<.5)?0:1);
-		
-		try {
-			engine.setIO(new NetIO());
-			engine.exportNetwork(new File("ExportedNetwork.net"));
-		} catch (IOException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		
-		// assert that the exported file exists
-		File fileToLoad = new File("ExportedNetwork.net");
-		assertNotNull(fileToLoad);
-		assertTrue(fileToLoad.exists());
-		assertTrue(fileToLoad.isFile());
-		
-		// assert that the exported file is a net file 
-		ProbabilisticNetwork loadedNet = null;
-		try {
-			loadedNet = (ProbabilisticNetwork) new NetIO().load(fileToLoad);
-		} catch (IOException e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
-		assertNotNull(loadedNet);
-		
-		// assert that the exported file contains D (resolved), E, and F 
-		assertEquals(3, loadedNet.getNodeCount());
-		assertNotNull(loadedNet.getNode(engine.getExportedNodePrefix()+"13"));
-		assertNotNull(loadedNet.getNode(engine.getExportedNodePrefix()+"14"));
-		assertNotNull(loadedNet.getNode(engine.getExportedNodePrefix()+"15"));
-		
-		// assert that all cpts have uniform distributions
-		for (Node node : loadedNet.getNodes()) {
-			PotentialTable table = ((ProbabilisticNode)node).getProbabilityFunction();
-			float expectedValue = (float) (1.0/node.getStatesSize());
-			for (int i = 0; i < table.tableSize(); i++) {
-				assertEquals(node.toString() + ", position " + i, expectedValue, table.getValue(i), PROB_ERROR_MARGIN);
-			}
-		}
-		
-		fileToLoad.delete();
-	}
-	
 	/** Yet another test case for regression test */
 	public final void test5678Net() {
 		engine.setDefaultInitialAssetTableValue(100f);
@@ -14916,6 +14867,283 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(100.1254412613f, engine.scoreUserEv(6L, null, null), PROB_ERROR_MARGIN);
 	
 	}
+	
+	
+	/** 
+	 * Test method for {@link MarkovEngineImpl#exportNetwork(java.io.File)}
+	 * and {@link MarkovEngineImpl#importNetwork(File)} 
+	 */
+	public final void testImportExportNetwork()  {
+		
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		this.createDEFNetIn1Transaction(userNameToIDMap);
+		
+		// make sure the export works with resolved questions
+		engine.resolveQuestion(null, new Date(), 0X0DL, 1);
+		
+		try {
+			engine.setIO(new NetIO());
+			engine.exportNetwork(new File("ExportedNetwork.net"));
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// assert that the exported file exists
+		File fileToLoad = new File("ExportedNetwork.net");
+		assertNotNull(fileToLoad);
+		assertTrue(fileToLoad.exists());
+		assertTrue(fileToLoad.isFile());
+		
+		// assert that the exported file is a net file 
+		ProbabilisticNetwork loadedNet = null;
+		try {
+			loadedNet = (ProbabilisticNetwork) new NetIO().load(fileToLoad);
+		} catch (IOException e) {
+			e.printStackTrace();
+			fileToLoad.delete();
+			fail(e.getMessage());
+		}
+		assertNotNull(loadedNet);
+		
+		// assert that the exported file contains D (resolved), E, and F 
+		assertEquals(3, loadedNet.getNodeCount());
+		assertNotNull(loadedNet.getNode(engine.getExportedNodePrefix()+"13"));
+		assertNotNull(loadedNet.getNode(engine.getExportedNodePrefix()+"14"));
+		assertNotNull(loadedNet.getNode(engine.getExportedNodePrefix()+"15"));
+		
+		// assert that all cpts have uniform distributions
+		for (Node node : loadedNet.getNodes()) {
+			PotentialTable table = ((ProbabilisticNode)node).getProbabilityFunction();
+			float expectedValue = (float) (1.0/node.getStatesSize());
+			for (int i = 0; i < table.tableSize(); i++) {
+				assertEquals(node.toString() + ", position " + i, expectedValue, table.getValue(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// edit the network and save again
+		
+		// add new node 10 (0x0A) with 3 states
+		ProbabilisticNode nodeA = new ProbabilisticNode();
+		nodeA.appendState("0");
+		nodeA.appendState("1");
+		nodeA.appendState("2");
+		nodeA.setName(engine.getExportedNodePrefix()+"10");
+		if (nodeA.getProbabilityFunction().getVariableIndex(nodeA) < 0) {
+			nodeA.getProbabilityFunction().addVariable(nodeA);
+		}
+		loadedNet.addNode(nodeA);
+		
+		// add edge A -> E
+		try {
+			loadedNet.addEdge(new Edge(nodeA, loadedNet.getNode(engine.getExportedNodePrefix()+"14")));
+		} catch (InvalidParentException e1) {
+			e1.printStackTrace();
+			fail(e1.getMessage());
+		}
+		
+		// change prior probability of A
+		PotentialTable tableOfA = nodeA.getProbabilityFunction();
+		tableOfA.setValue(0, .1f);
+		tableOfA.setValue(1, .2f);
+		tableOfA.setValue(2, .7f);
+		
+		// change the conditional probability of E given D and A
+		PotentialTable tableOfE = ((ProbabilisticNode)loadedNet.getNode(engine.getExportedNodePrefix()+"14")).getProbabilityFunction();
+		tableOfE.setValue(0, .1f); tableOfE.setValue(1, .9f);	// d1 a1
+		tableOfE.setValue(2, .2f); tableOfE.setValue(3, .8f);	// d2 a1
+		tableOfE.setValue(4, .3f); tableOfE.setValue(5, .7f);	// d1 a2
+		tableOfE.setValue(6, .4f); tableOfE.setValue(7, .6f);	// d2 a2
+		tableOfE.setValue(8, .5f); tableOfE.setValue(9, .5f);	// d1 a3
+		tableOfE.setValue(10, .6f); tableOfE.setValue(11, .4f);	// d2 a3
+		
+		
+		// save again
+		try {
+			new NetIO().save(fileToLoad, loadedNet);
+		} catch (IOException e) {
+			e.printStackTrace();
+			fileToLoad.delete();
+			fail(e.getMessage());
+		}
+		
+		// store marginals before the import for comparison
+		Map<Long, List<Float>> probBeforeImport = engine.getProbLists(null, null, null);
+		
+		// store cash before the import for comparison
+		Map<Long, Float> cashBeforeImport = new HashMap<Long, Float>();
+		// fill cash
+		for (Long userId : userNameToIDMap.values()) {
+			cashBeforeImport.put(userId, engine.getCash(userId, null, null));
+		}
+		
+		
+		// now, test the import feature starting from a DEF net
+		try {
+			engine.importNetwork(fileToLoad);
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		Map<Long, List<Float>> probAfterImport = engine.getProbLists(null, null, null);
+		
+		// make sure engine contains A
+		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0AL));
+		
+		// make sure history is retrieving some important changes in history
+		List<QuestionEvent> history = engine.getQuestionHistory(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(2));
+		assertFalse(history.isEmpty());
+		// last probability in the history should match the current in history
+		List<Float> probList = engine.getProbList(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(2));
+		assertEquals(2, probList.size());
+		assertEquals(2, history.get(history.size()-1).getNewValues().size());
+		assertEquals(probList.toString(), probList.get(0), history.get(history.size()-1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), probList.get(1), history.get(history.size()-1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		
+		// make sure history is retrieving changes in history
+		history = engine.getQuestionHistory(0x0AL, null, null);
+		assertFalse(history.isEmpty());
+		// last probability in the history should match the current in history
+		probList = probAfterImport.get(0x0AL);
+		assertEquals(3, probList.size());
+		assertEquals(3, history.get(history.size()-1).getNewValues().size());
+		assertEquals(probList.toString(), probList.get(0), history.get(history.size()-1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), probList.get(1), history.get(history.size()-1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), probList.get(2), history.get(history.size()-1).getNewValues().get(2), PROB_ERROR_MARGIN);
+		// prob of A should also be equals to the specified in external edit
+		assertEquals(probList.toString(), .1f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), .2f, probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), .7f, probList.get(2), PROB_ERROR_MARGIN);
+		
+		
+		// compare probability of E given A, assuming that D resolved at d2
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(0));
+		assertEquals(probList.toString(), .2f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), .8f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(1));
+		assertEquals(probList.toString(), .4f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), .6f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(2));
+		assertEquals(probList.toString(), .6f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), .4f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// probability of F should be equal
+		assertEquals(probBeforeImport.toString() + "!=" + probAfterImport.toString(), probBeforeImport.get(0x0FL).size(), probAfterImport.get(0x0FL).size());
+		for (int i = 0; i <  probBeforeImport.get(0x0FL).size(); i++) {
+			assertEquals(
+					probBeforeImport.toString() + "!=" + probAfterImport.toString(), 
+					probBeforeImport.get(0x0FL).get(i), 
+					probAfterImport.get(0x0FL).get(i),
+					PROB_ERROR_MARGIN
+				);
+		}
+		
+		// cash should not have changed
+		Map<Long, Float> cashAfterImport = new HashMap<Long, Float>();
+		for (Long userId : userNameToIDMap.values()) {
+			cashAfterImport.put(userId, engine.getCash(userId, null, null));
+		}
+		assertEquals(cashBeforeImport.toString() + " != " + cashAfterImport.toString(), cashBeforeImport.size(), cashAfterImport.size());
+		for (Long userId : cashAfterImport.keySet()) {
+			assertEquals(
+					"User = " + userId + ", " + cashBeforeImport.toString() + " != " + cashAfterImport.toString(), 
+					cashBeforeImport.get(userId), 
+					cashAfterImport.get(userId), 
+					ASSET_ERROR_MARGIN
+				);
+		}
+		
+		
+		// add disconnected node 7 and trade and see if it's still OK
+		assertTrue(engine.addQuestion(null, new Date(), 7L, 3, null));
+		assertTrue(engine.addCash(null, new Date(), -7L, 1000, "Added cash to user -7"));
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(.6f); newValues.add(.2f); newValues.add(.2f);
+		assertFalse(engine.addTrade(null, new Date(), "User -7 trades on P(7)=[.6,.2,.2]", -7L, 7L, newValues, null, null, false).isEmpty());
+		
+		Map<Long, List<Float>> probAfterImport2 = engine.getProbLists(null, null, null);
+		
+		// new net have 1 additional node compared to previous
+		assertEquals(probAfterImport.toString() + "->" + probAfterImport2.toString(), probAfterImport.size()+1, probAfterImport2.size());
+		
+		// the marginals for nodes in previous network should match with new network
+		for (Long questionId : probAfterImport.keySet()) {
+			assertEquals(probAfterImport.toString() + "->" + probAfterImport2.toString(), probAfterImport.get(questionId).size(), probAfterImport2.get(questionId).size());
+			for (int i = 0; i < probAfterImport.get(questionId).size(); i++) {
+				assertEquals(
+						probAfterImport.toString() + "->" + probAfterImport2.toString(), 
+						probAfterImport.get(questionId).get(i), 
+						probAfterImport2.get(questionId).get(i), 
+						PROB_ERROR_MARGIN
+				);
+			}
+		}
+		
+		// marginal of node 7 should be [.6,.2,.2]
+		assertEquals(probAfterImport2.toString(), 3, probAfterImport2.get(7L).size());
+		assertEquals(probAfterImport2.toString(), .6f, probAfterImport2.get(7L).get(0), PROB_ERROR_MARGIN);
+		assertEquals(probAfterImport2.toString(), .2f, probAfterImport2.get(7L).get(1), PROB_ERROR_MARGIN);
+		assertEquals(probAfterImport2.toString(), .2f, probAfterImport2.get(7L).get(2), PROB_ERROR_MARGIN);
+		
+		
+		// make sure engine still contains A
+		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0AL));
+		
+		// make sure history is still retrieving some important changes in history
+		history = engine.getQuestionHistory(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(2));
+		assertFalse(history.isEmpty());
+		// last probability in the history should match the current in history
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(2));
+		assertEquals(2, probList.size());
+		assertEquals(2, history.get(history.size()-1).getNewValues().size());
+		assertEquals(probList.toString(), probList.get(0), history.get(history.size()-1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), probList.get(1), history.get(history.size()-1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		
+		// make sure history is still retrieving previous changes in history
+		history = engine.getQuestionHistory(0x0AL, null, null);
+		assertFalse(history.isEmpty());
+		// last probability in the history should match the current in history
+		probList = probAfterImport.get(0x0AL);
+		assertEquals(3, probList.size());
+		assertEquals(3, history.get(history.size()-1).getNewValues().size());
+		assertEquals(probList.toString(), probList.get(0), history.get(history.size()-1).getNewValues().get(0), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), probList.get(1), history.get(history.size()-1).getNewValues().get(1), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), probList.get(2), history.get(history.size()-1).getNewValues().get(2), PROB_ERROR_MARGIN);
+		
+		
+		// compare probability of E given A, assuming that D resolved at d2
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(0));
+		assertEquals(probList.toString(), .2f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), .8f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(1));
+		assertEquals(probList.toString(), .4f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), .6f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(2));
+		assertEquals(probList.toString(), .6f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(probList.toString(), .4f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		
+		// cash should not have changed
+		cashAfterImport = new HashMap<Long, Float>();
+		for (Long userId : userNameToIDMap.values()) {
+			cashAfterImport.put(userId, engine.getCash(userId, null, null));
+		}
+		assertEquals(cashBeforeImport.toString() + " != " + cashAfterImport.toString(), cashBeforeImport.size(), cashAfterImport.size());
+		for (Long userId : cashAfterImport.keySet()) {
+			assertEquals(
+					"User = " + userId + ", " + cashBeforeImport.toString() + " != " + cashAfterImport.toString(), 
+					cashBeforeImport.get(userId), 
+					cashAfterImport.get(userId), 
+					ASSET_ERROR_MARGIN
+			);
+		}
+		
+		
+		// deleted tested file
+		fileToLoad.delete();
+	}
+	
 	
 
 	// not needed for the 1st release

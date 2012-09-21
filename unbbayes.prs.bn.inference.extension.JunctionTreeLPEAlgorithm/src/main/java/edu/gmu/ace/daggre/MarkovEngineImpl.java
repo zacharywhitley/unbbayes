@@ -183,6 +183,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	private String exportedNodePrefix = DEFAULT_EXPORTED_NODE_PREFIX;
 
+
+
+	private Map<DummyTradeAction, Set<Long>> virtualTradeToAffectedQuestionsMap = new HashMap<DummyTradeAction, Set<Long>>();
+
 	
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -373,6 +377,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// initialize the history of last N clique potentials, with N = getMaxConditionalProbHistorySize()
 		setLastNCliquePotentialMap(new HashMap<Clique, List<ParentActionPotentialTablePair>>());
 		
+		// list of all instances of virtual trades created by this markov engine in order to trace the marginal probabilities
+		setVirtualTradeToAffectedQuestionsMap(new HashMap<DummyTradeAction, Set<Long>>());
+		
 		return true;
 	}
 
@@ -407,6 +414,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public synchronized boolean commitNetworkActions(long transactionKey)
 			throws IllegalArgumentException, ZeroAssetsException {
+		return this.commitNetworkActions(transactionKey, true);
+	}
+	
+	/**
+	 * @param isToRebuildNetOnStructureChange : if false, it does not rebuild network when a change in structure is detected.
+	 * If true, it will rebuild (re-generate network structure and call {@link IInferenceAlgorithm#run()}).
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#commitNetworkActions(long)
+	 */
+	public synchronized boolean commitNetworkActions(long transactionKey, boolean isToRebuildNetOnStructureChange) throws IllegalArgumentException, ZeroAssetsException {
 		
 		// TODO revert actions on error.
 		
@@ -436,7 +452,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			List<NetworkAction> otherActions = new ArrayList<NetworkAction>();	// will store actions which does not change network structure
 			// collect all network change actions and other actions, regarding their original order
 			for (NetworkAction action : actions) {
-				if (action.isStructureChangeAction()) {
+				if (action.isStructureConstructionAction()) {
 					netChangeActions.add(action);
 				} else {
 					otherActions.add(action);
@@ -447,7 +463,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			RebuildNetworkAction rebuildNetworkAction = null;
 			
 			// change the content of actions. Since we are using the same list object, this should also change the values stored in getNetworkActionsMap.
-			if (!netChangeActions.isEmpty()) {
+			if (!netChangeActions.isEmpty() && isToRebuildNetOnStructureChange) {
 				// only make changes (reorder actions and recompile network) if there is any action changing the structure of network.
 				actions.clear();	// reset actions first
 				
@@ -463,7 +479,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						synchronized (getExecutedActions()) {
 							// this is partially ordered by NetworkAction#getWhenCreated(), because actions is ordered by NetworkAction#getWhenCreated()
 							getExecutedActions().add(action);	
-							// TODO do we need to store RebuildNetworkAction in the history?
 						}
 					}
 				}
@@ -513,10 +528,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				
 				// mark action as executed
 				action.setWhenExecutedFirstTime(new Date());	// normal execution of action -> update attribute "whenExecutedFirst"
-				if (!(action.equals(rebuildNetworkAction))) {
+				if (!action.equals(rebuildNetworkAction)) {
 					synchronized (getExecutedActions()) {
 						// this is partially ordered by NetworkAction#getWhenCreated(), because actions is ordered by NetworkAction#getWhenCreated()
-						getExecutedActions().add(action);	
+						if (!getExecutedActions().contains(action)) {
+							getExecutedActions().add(action);	
+						}
 						// TODO do we need to store RebuildNetworkAction in the history?
 					}
 				}
@@ -563,18 +580,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		/** Rebuild the BN */
 		public void execute() {
 			List<NetworkAction> actions = getExecutedActions();
-			// reset network
+			// network to be reset
 			ProbabilisticNetwork net = getProbabilisticNetwork();
 			// the list "actions" without network change actions
 			List<NetworkAction> actionsToExecute = new ArrayList<NetworkAction>();	
 			synchronized (actions) {
 				synchronized (getDefaultInferenceAlgorithm()) {
-					// clear content of net
 					synchronized (net) {
-						ArrayList<Node> nodesToRemove = new ArrayList(net.getNodes());
-						for (Node node : nodesToRemove) {
-							net.removeNode(node);
-						}
+						// clear content of net in a fast way
+						net.clear();
+						
+						// create a new junction tree
 						try {
 							net.setJunctionTree(net.getJunctionTreeBuilder().buildJunctionTree(net));
 						} catch (InstantiationException e) {
@@ -584,33 +600,31 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						}
 					}
 				}
-				// separate the content of actions into those changing network structure and those not changing structure
-				List<NetworkAction> networkChangeActions = new ArrayList<NetworkAction>(); 
+				// separate the content of actions into those building network structure and those not changing structure
+				List<NetworkAction> networkConstructionActions = new ArrayList<NetworkAction>(); 
 				for (NetworkAction action : actions) {
-					if (action.isStructureChangeAction()) {
-						networkChangeActions.add(action);
+					if (action.isStructureConstructionAction()) {
+						networkConstructionActions.add(action);
 					} else {
 						actionsToExecute.add(action);
 					}
 				}
 				// execute the trades related to network construction before actionsToExecute
-				for (NetworkAction changeAction : networkChangeActions) {
-					if (this.isToExecuteAction(changeAction)) {
-						changeAction.execute();
-						/*
-						 * Caution: do not change this behavior (recreate network structure
-						 * using the actions from the history), because
-						 * #commitNetworkAction is relying in this behavior
-						 * in order to add edges before resolution of nodes
-						 */
-					}
+				for (NetworkAction changeAction : networkConstructionActions) {
+					changeAction.execute();
+					/*
+					 * Caution: do not change this behavior (recreate network structure
+					 * using the actions from the history), because
+					 * #commitNetworkAction is relying in this behavior
+					 * in order to add edges before resolution of nodes
+					 */
 				}
 			}
 			// recompile network and execute actions which does not change network structure
 			this.execute(actionsToExecute); 
 		}
 		/** Rebuild the BN */
-		protected void execute(List<NetworkAction> actions) {
+		public void execute(List<NetworkAction> actions) {
 			// BN to rebuild
 			ProbabilisticNetwork net = getProbabilisticNetwork();
 			// Supposedly, only 1 transaction can commit, so we only need to block net to block threads reading net
@@ -622,6 +636,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					getLastNCliquePotentialMap().clear();
 				}
 			}
+			
+			// clean record of virtual trades created before
+			synchronized (getVirtualTradeToAffectedQuestionsMap()) {
+				synchronized (getNetworkActionsIndexedByQuestions()) {
+					// getVirtualTradeToAffectedQuestionsMap() is a mapping from virtual trade to questions
+					for (DummyTradeAction virtualTrade : getVirtualTradeToAffectedQuestionsMap().keySet()) {
+						// getNetworkActionsIndexedByQuestions() is a mapping from questions to actions (including virtual trades)
+						for (Long relatedQuestion : getVirtualTradeToAffectedQuestionsMap().get(virtualTrade)) {
+							// delete from the "normal" mapping
+							getNetworkActionsIndexedByQuestions().get(relatedQuestion).remove(virtualTrade);
+						}
+					}
+					// clean the "inverse" mapping
+					getVirtualTradeToAffectedQuestionsMap().clear();
+				}
+			}
+			
+			
 			// rebuild all user asset nets
 			synchronized (getUserToAssetAwareAlgorithmMap()) { // do not allow getUserToAssetAwareAlgorithmMap() to be changed here. I.e. do not allow new users to be added now
 				if (!getUserToAssetAwareAlgorithmMap().isEmpty()) {	// we only need to rebuild user's assets if there were some users
@@ -661,11 +693,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 								}
 							}
 							// redo all trades using the history
-							if (this.isToExecuteAction(action)) {
-								// actions with action.isStructureChangeAction() == false are supposedly the ones changing probabilities/assets and not changing structure
-								action.execute();
-								// this is not an ordinal execution of the action, so do not update attribute whenExecutedFirst.
-							}
+							// actions with action.isStructureChangeAction() == false are supposedly the ones changing probabilities/assets and not changing structure
+							action.execute();
+							// this is not an ordinal execution of the action, so do not update attribute whenExecutedFirst.
 						}
 						
 						// from this point, play back actions without updating assets in trades
@@ -675,7 +705,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 								// do not execute actions which comes after myself
 								break;
 							}
-							if (!action.isStructureChangeAction()) {
+							if (!action.isStructureConstructionAction()) {
 								// actions with action.isStructureChangeAction() == false are supposedly the ones changing probabilities/assets and not changing structure
 								if (action instanceof AddTradeNetworkAction) {
 									AddTradeNetworkAction tradeAction = (AddTradeNetworkAction) action;
@@ -693,11 +723,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void revert() throws UnsupportedOperationException {
 			throw new UnsupportedOperationException("Cannot revert a network rebuild action.");
 		}
-		/** By overwriting this method, you can control which actions are executed with assets changes */
-		protected boolean isToExecuteAction(NetworkAction action) { return true /*!action.isStructureChangeAction()*/; }
+//		/** By overwriting this method, you can control which actions are executed in {@link #execute(List)} */
+//		protected boolean isToExecuteAction(NetworkAction action) { return true; /*!action.isStructureChangeAction();*/ }
 		public Date getWhenCreated() { return whenCreated; }
 		/** This action reboots the network, but does not change the structure by itself */
-		public boolean isStructureChangeAction() { return false; }
+		public boolean isStructureConstructionAction() { return false; }
 		public Long getTransactionKey() { return transactionKey; }
 		public Long getUserId() { return null; }
 		public List<Float> getOldValues() { return null; }
@@ -792,7 +822,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	/** Class of network actions which changes network structure */
 	public abstract class StructureChangeNetworkAction implements NetworkAction {
-		public boolean isStructureChangeAction() { return true; }
+		public boolean isStructureConstructionAction() { return true; }
 		/**
 		 * Changes the structure of the current network
 		 * @see MarkovEngineImpl#getProbabilisticNetwork()
@@ -880,6 +910,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			for (int i = 0; i < potTable.tableSize(); i++) {
 				potTable.setValue(i, this.initProbs.get(i));
 			}
+			
+			// make sure marginal list is never null
+			node.initMarginalList();
+			
 			// add node into the network
 			synchronized (net) {
 				net.addNode(node);
@@ -1223,21 +1257,250 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.occurredWhen = occurredWhen;
 		}
 		
-//		/**
-//		 * Substitutes the current network and re-run trades
-//		 */
-//		@Override
-//		public void execute() {
-//			throw new UnsupportedOperationException("Not implemented yet");
-//		}
+		/**
+		 * Substitutes the current network and re-run trades
+		 */
+		@Override
+		public void execute(ProbabilisticNetwork net) {
+			if (net != getProbabilisticNetwork()) {
+				throw new UnsupportedOperationException("Not implemented for arbitrary network yet. Must be called for MarkovEngineImpl#getProbabilisticNetwork()");
+			}
+			this.execute();
+		}
 		
 		/** Substitutes the current network and re-run trades */
-		public void execute(ProbabilisticNetwork net) {
-//			if (net == getProbabilisticNetwork()) {
-//				this.execute();
-//				return;
-//			}
-			throw new UnsupportedOperationException("Use execute() instead.");
+		public void execute() {
+			// this is the network prior to import. Need to keep it, so that we can revert to it in case of exception
+			ProbabilisticNetwork previousNet = null;
+			
+			synchronized (getProbabilisticNetwork()) {
+				// this is the net to be overwritten (the current net)
+				ProbabilisticNetwork currentNet = getProbabilisticNetwork();
+				
+				// backup previous net in case of exceptions
+				synchronized (getDefaultInferenceAlgorithm()) {
+					previousNet = getDefaultInferenceAlgorithm().cloneProbabilisticNetwork(currentNet);
+				}
+				
+				try {
+					// clean current net, so that we can re-add all nodes again
+					currentNet.clear();
+					
+					// read the imported net and replicate structure
+					
+					// replicate nodes. Use clones, because we don't want the importedNet to be changed
+					for (Node node : importedNet.getNodes()) {
+						ProbabilisticNode newNode = ((ProbabilisticNode)node).basicClone();
+						if (newNode.getProbabilityFunction().getVariablesSize() <= 0) {
+							newNode.getProbabilityFunction().addVariable(newNode);
+						}
+						currentNet.addNode(newNode);
+					}
+					// replicate edges
+					for (Edge oldEdge : importedNet.getEdges()) {
+						Node node1 = currentNet.getNode(oldEdge.getOriginNode().getName());
+						Node node2 = currentNet.getNode(oldEdge.getDestinationNode().getName());
+						Edge newEdge = new Edge(node1, node2);
+						try {
+							currentNet.addEdge(newEdge);
+						} catch (InvalidParentException e) {
+							throw new RuntimeException("Could not clone edge " + oldEdge +" of network " + importedNet , e);
+						}
+					}
+					// 2.3. If the CPTs of the imported BN are not uniform, then they will be initially converted to uniform.
+					// So, make them uniform regardless of imported net.
+					for (Node node : currentNet.getNodes()) {
+						// force CPT to become uniform
+						float value = (float) (1.0/node.getStatesSize());	// calculate the uniform prob value
+						PotentialTable newCPT = ((ProbabilisticNode)node).getProbabilityFunction();
+						for (int i = 0; i < newCPT.tableSize(); i++) {
+							newCPT.setValue(i, value);
+						}
+					}
+					
+					// the following actions (re-run trades and add virtual trades) must only be executed if this is the 1st time we run this import action
+					if (this.getWhenExecutedFirstTime() == null) {
+						// and re-run all trades from the history (i.e. handle the import feature as if it is an ordinal request for changing the network structure). 
+						List<NetworkAction> actionsToExecute = new ArrayList<NetworkAction>();
+						synchronized (getExecutedActions()) {
+							for (NetworkAction action : getExecutedActions()) {
+								// only consider non-structure change actions (i.e. trades, resolutions, balance, add cash...)
+								if (!action.isStructureConstructionAction()) {
+									actionsToExecute.add(action);
+								}
+							}
+						}
+						
+						// re-use RebuildNetworkAction to re-run trades. It will rebuild junction tree (and all user's asset tables).
+						if (getExecutedActions().contains(this)) {
+							// make sure the current action is not in the history which will be executed by the RebuildNetworkAction (or else it will loop)
+							getExecutedActions().remove(this);
+							new RebuildNetworkAction(null, null, null, null).execute(actionsToExecute);
+							getExecutedActions().add(this);
+						} else {
+							new RebuildNetworkAction(null, null, null, null).execute(actionsToExecute);
+						}
+						
+						// "virtual" trades will be performed in order to set the current conditional probabilities equal to the non-uniform CPTs
+						for (Node importedNode : importedNet.getNodes()) {
+							long questionId = Long.parseLong(importedNode.getName());
+							if (getResolvedQuestions().containsKey(questionId)) {
+								continue;	// ignore trades in resolved nodes
+							}
+							
+							// CPT of the imported node
+							PotentialTable cpt = ((ProbabilisticNode)importedNode).getProbabilityFunction();
+							
+							// check if cpt is non-uniform distribution
+							boolean isUniformDistribution = true;
+							// this value is expected in a uniform distribution
+							float uniformValue = (float) (1.0/importedNode.getStatesSize());
+							for (int i = 0; i < cpt.tableSize(); i++) {
+								// it is not a uniform distribution if some value in cpt has value other than the uniformValue (with some error margin)
+								if (Math.abs(cpt.getValue(i) - uniformValue) > getProbabilityErrorMargin()) {
+									isUniformDistribution = false;
+									break;
+								}
+							}
+							if (!isUniformDistribution) {
+								// add a "virtual" trade which will make the conditional probability to match the cpt
+								
+								// use a clone, so that we can delete variables which were already resolved
+								cpt = (PotentialTable) cpt.clone();
+								
+								// set of nodes in the cpt which were already resolved
+								Set<INode> resolvedNodesInCPT = new HashSet<INode>();
+								
+								// set impossible states (i.e. complement of resolved states of resolved nodes) to zero, 
+								// so that we can sum out (remove nodes from cpt) later.
+								for (int i = 0; i < cpt.tableSize(); i++) {	// iterate over cells in cpt
+									// convert i into a vector which indicates what node is in what state at current cell of cpt
+									int[] coord = cpt.getMultidimensionalCoord(i);
+									// for each node in the cpt, check if its state matches the resolutions
+									// we are only interested in parents in the cpt, so start from index 1 (index 0 is the imported node itself)
+									for (int nodeIndex = 1; nodeIndex < cpt.variableCount(); nodeIndex++) {
+										INode nodeInCPT = cpt.getVariableAt(nodeIndex);	// this is one of the nodes pointed by the cell of this cpt
+										StatePair resolution = getResolvedQuestions().get(Long.parseLong(nodeInCPT.getName()));
+										if (resolution != null) {
+											// this node in the cpt was resolved previously 
+											resolvedNodesInCPT.add(nodeInCPT);
+											if (coord[nodeIndex] != resolution.getResolvedState().intValue()) {
+												// resolved to a state other than this, so set this cell to zero
+												cpt.setValue(i, 0f);
+											}
+										}
+									}
+								}
+								
+								// sum out the resolved node from cpt
+								for (INode node : resolvedNodesInCPT) {
+									// we do not need to normalize, because incompatible states were supposedly set to zero
+									cpt.removeVariable(node, false);	
+								}
+								
+								// at this point, cpt contains only non-resolved nodes
+								
+								// prepare list of parents according to cpt
+								List<Long> assumptionIds = new ArrayList<Long>(cpt.getVariablesSize());
+								
+								// index 0 has importedNode. We are only interested on parents of importedNode, so start from index 1
+								for (int i = 1; i < cpt.getVariablesSize(); i++) {
+									long parentId = Long.parseLong(cpt.getVariableAt(i).getName());
+									// assumptionIds will contain parents of importedNode in the same order of in cpt.
+									assumptionIds.add(parentId);
+								}
+								
+								// prepare list of states of the parents
+								List<Integer> assumedStates = new ArrayList<Integer>(assumptionIds.size());
+								for (int i = 0; i< assumptionIds.size(); i++) {
+									// initialize with invalid state
+									assumedStates.add(Integer.MAX_VALUE);
+								}
+								
+								// prepare trade value
+								List<Float> newValues = new ArrayList<Float>();
+								
+								// Do virtual trades. Extract trade value from cpt
+								for (int i = 0; i < cpt.tableSize(); i++) {
+									
+									// convert the cell index of cpt to a vector indicating states of the node and states of the parents
+									int[] coord = cpt.getMultidimensionalCoord(i);
+									
+									// values to be used as a trade
+									newValues.add(cpt.getValue(i));	
+									
+									// check whether this cell represents the last state of importedNode. 
+									// If so, the next iteration has another combination of parents' states (so run trade now).
+									// Currently, we are adding 1 trade per combination of parent's states.
+									// TODO all these trades can actually be performed in 1 propagation. Do them in 1 propagation instead of doing 1 propagation per states of parents.
+									if (coord[cpt.indexOfVariable(importedNode)] == importedNode.getStatesSize() - 1) {
+										
+										// extract from coord the current states of the parents associated with the current cell of cpt
+										for (int nodeIndex = 0; nodeIndex < assumedStates.size(); nodeIndex++) {
+											// coord has 1 additional node in index 0 (the importedNode itself),
+											// but assumedStates should only have states of its parents, so index in coord will be nodeIndex+1
+											assumedStates.set(nodeIndex, coord[nodeIndex+1]);
+										}
+										
+										// execute the "virtual" trade
+										VirtualTradeAction virtualTrade = new VirtualTradeAction(this, questionId, newValues, assumptionIds, assumedStates);
+										addNetworkActionIntoQuestionMap(virtualTrade, questionId);
+										virtualTrade.execute();
+										virtualTrade.setWhenExecutedFirstTime(new Date());
+										
+										// note virtual trades should be added to history, so that future rebuild actions can execute them again when re-running history
+										synchronized (getExecutedActions()) {
+											getExecutedActions().add(virtualTrade);
+										}
+										
+										// reset newValues, because the next iteration will fill it with different values
+										newValues = new ArrayList<Float>();
+									}
+								}
+								
+							}
+							
+							
+						} // end of iteration on each imported nodes
+					}	// end of block executed only on 1st execution of this import action
+					
+				} catch (Throwable e) {
+					// 2.2. If any trade in the history cannot be performed in the imported BN (e.g. nodes/arcs are missing), it will throw an exception.
+					
+					// revert to the previous network
+					setProbabilisticNetwork(previousNet);
+					synchronized (getDefaultInferenceAlgorithm()) {
+						try {
+							getDefaultInferenceAlgorithm().setRelatedProbabilisticNetwork(previousNet);
+						} catch (Exception e1) {
+							e.printStackTrace();
+							// Exception translation is not a good practice, but we need to convert it to runtime exception so that we can
+							// throw it to the caller without changing method signature of execute().
+							throw new RuntimeException("Fatal: could not revert bayes net of the default algorithm to the previous state after an exception.",e1);
+						}
+					}
+					
+					// make sure this action is not included in the list of executed actions
+					// or else the RebuildNetworkAction will loop
+					synchronized (getExecutedActions()) {
+						getExecutedActions().remove(this);
+					}
+					
+					// rebuild structure and re-run trades, because we don't know when the exception was thrown
+					new RebuildNetworkAction(null, null, null, null).execute();
+					
+					// Exception translation is not a good practice, but we need to convert it to runtime exception so that we can
+					// throw it to the caller without changing method signature of execute().
+					throw new RuntimeException(e);
+				}
+			}
+			
+			// we don't need the previous net (because the execution went OK). Dispose
+			try {
+				previousNet.clear();
+			} catch (Throwable t) {
+				Debug.println(getClass(), "Ignored exception " + t.getMessage(), t);
+			}
 		}
 		
 		/** Not defined */
@@ -1311,7 +1574,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		public Date getWhenCreated() { return occurredWhen; }
 		/**this operation does not change network structure*/
-		public boolean isStructureChangeAction() { return false;	 }
+		public boolean isStructureConstructionAction() { return false;	 }
 		public Long getTransactionKey() { return transactionKey; }
 		public float getAssets() { return delta; }
 		public void setAssets(float assets) { this.delta = assets; }
@@ -1394,7 +1657,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		private List<Float> oldValues = null;
 		private Date whenExecutedFirst;
 //		/** link from this original trade to all virtual trades (representation of changes in marginals caused by this original trade) */
-//		private List<VirtualTradeAction> affectedQuestions = new ArrayList<MarkovEngineImpl.VirtualTradeAction>();
+//		private List<DummyTradeAction> affectedQuestions = new ArrayList<MarkovEngineImpl.DummyTradeAction>();
 //		private final List<Integer> originalAssumedStates;
 //		private final List<Long> originalAssumptionIds;
 		/** Default constructor initializing fields */
@@ -1453,9 +1716,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 			}
 			
-			// this is the marginals before this trade
-			Map<Long, List<Float>> marginalsBefore = null;
-			
 			synchronized (getProbabilisticNetwork()) {
 				if (getWhenExecutedFirstTime() == null) {
 					// for optimization, only update history if this is first execution.
@@ -1463,12 +1723,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					Node node = getProbabilisticNetwork().getNode(Long.toString(questionId));
 					if (node == null) {
 						throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
-					}
-					// in most of cases, questions are disconnected
-					if (!(node.getParents() == null || node.getParents().isEmpty()) 
-							|| !(node.getChildren() == null || node.getChildren().isEmpty()) ) {
-						// question connected to another question
-						marginalsBefore = getProbLists(null, null, null);
 					}
 				}
 				synchronized (algorithm.getAssetNetwork()) {
@@ -1485,7 +1739,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					algorithm.setToUpdateAssets(isToUpdateAssets);
 					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
 					// 2nd boolean == true := overwrite assumptionIds and assumedStates when necessary
-					// Note: affectedQuestions will be filled with questions whose marginals were affected by this trade
 					oldValues = executeTrade(questionId, newValues, assumptionIds, assumedStates, allowNegative, algorithm, true, false, this);
 					algorithm.setToUpdateAssets(backup);	// revert config of assets
 					// backup the previous delta so that we can revert this trade
@@ -1501,12 +1754,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 				}
 			}
-			// compare prior and posterior marginal, and fill affectedQuestions
-			if (marginalsBefore != null) {	
-				// note: if getWhenExecutedFirstTime() == null, then marginalsBefore == null
-//				this.affectedQuestions = addVirtualTrade(this, marginalsBefore); // link from original trade to virtual trades
-				addVirtualTrade(this, marginalsBefore); // link from original trade to virtual trades
-			}
+			
 		}
 		
 		/** 
@@ -1546,7 +1794,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //			}
 		}
 		public Date getWhenCreated() { return whenCreated; }
-		public boolean isStructureChangeAction() { return false; }
+		public boolean isStructureConstructionAction() { return false; }
 		public Long getTransactionKey() { return transactionKey; }
 		public Long getUserId() { return userId; }
 		public Long getQuestionId() { return questionId; }
@@ -1576,12 +1824,34 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * In another word, this is a link from this original trade to all virtual trades 
 		 * (representation of changes in marginals caused by this original trade)
 		 */
-//		public List<VirtualTradeAction> getAffectedQuestions() { return affectedQuestions; }
+//		public List<DummyTradeAction> getAffectedQuestions() { return affectedQuestions; }
 		public boolean isHardEvidenceAction() {return false; }
 		public Integer getSettledState() {return null;}
 	}
 	
 	
+	public class VirtualTradeAction extends AddTradeNetworkAction {
+		private final NetworkAction parentAction;
+
+		public VirtualTradeAction(NetworkAction parentAction, Long questionId, List<Float> newValues, 
+				List<Long> assumptionIds, List<Integer> assumedStates) {
+			// initialize fields using values of parentAction mostly.
+			super(parentAction.getTransactionKey(), parentAction.getWhenCreated(), parentAction.getTradeId(), parentAction.getUserId(), 
+					questionId, newValues, assumptionIds, assumedStates, true);
+			this.setWhenExecutedFirstTime(parentAction.getWhenExecutedFirstTime());
+			this.parentAction = parentAction;
+		}
+
+		/* (non-Javadoc)
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction#execute(boolean)
+		 */
+		public void execute(boolean isToUpdateAssets) {
+			setOldValues(executeTrade(getQuestionId(), getNewValues(), getAssumptionIds() , getAssumedStates() , true, getDefaultInferenceAlgorithm(), false, false, getParentAction()));
+		}
+
+		public NetworkAction getParentAction() { return parentAction; }
+		
+	}
 	
 	/**
 	 * Objects of this class represent marginals of questions which were changed due to another trade of
@@ -1593,8 +1863,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * (trade which made the marginals of {@link #getQuestionId()} to change).<br/>
 	 * @author Shou Matsumoto
 	 */
-	public class VirtualTradeAction extends AddTradeNetworkAction {
-		private final NetworkAction parentAction;
+	public class DummyTradeAction extends VirtualTradeAction {
 		private final Integer settledState;
 		/**
 		 * Default constructor initializing fields.
@@ -1603,32 +1872,32 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * @param oldMarginal : the old marginal (before the trade)
 		 * @param newMarginal :  the new marginal (after the trade)
 		 */
-		public VirtualTradeAction(NetworkAction parentAction, long questionId, List<Float> oldMarginal, List<Float> newMarginal, Integer settledState) {
+		public DummyTradeAction(NetworkAction parentAction, long questionId, List<Float> oldMarginal, List<Float> newMarginal) {
 			// initialize fields using values of parentAction mostly.
-			super(parentAction.getTransactionKey(), parentAction.getWhenCreated(), parentAction.getTradeId(), parentAction.getUserId(), 
-					questionId, newMarginal, parentAction.getAssumptionIds(), parentAction.getAssumedStates(), true);
-			this.settledState = settledState;
+			super(parentAction, questionId, newMarginal, parentAction.getAssumptionIds(), parentAction.getAssumedStates());
+			this.settledState = null;
 			this.setWhenExecutedFirstTime(parentAction.getWhenExecutedFirstTime());
 			this.setOldValues(oldMarginal);
-			this.parentAction = parentAction;
 		}
 		/**
-		 * This is the same of {@link VirtualTradeAction#VirtualTradeAction(NetworkAction, long, List, List, Integer)},
-		 * burt it ignores the parameter questionId and uses the {@link ResolveQuestionNetworkAction#getQuestionId()}
+		 * This is equivalent to {@link DummyTradeAction#DummyTradeAction(NetworkAction, long, List, List, Integer)},
+		 * but the question id will be set to {@link NetworkAction#getQuestionId()} of the parent action
+		 * @param parentAction : original resolution. {@link NetworkAction#getQuestionId()} of this parameter
+		 * will be used for {@link #getQuestionId()}.
+		 * @param settledState : settled state of a resolved question
 		 */
-		public VirtualTradeAction(ResolveQuestionNetworkAction parentAction, long questionId, List<Float> oldMarginal, List<Float> newMarginal, Integer settledState) {
+		public DummyTradeAction(ResolveQuestionNetworkAction parentAction, List<Float> oldMarginal, List<Float> newMarginal, Integer settledState) {
 			// initialize fields using values of parentAction mostly.
-			super(parentAction.getTransactionKey(), parentAction.getWhenCreated(), parentAction.getTradeId(), parentAction.getUserId(), 
-					parentAction.getQuestionId(), newMarginal, parentAction.getAssumptionIds(), parentAction.getAssumedStates(), true);
+			super(parentAction, parentAction.getQuestionId(), newMarginal, parentAction.getAssumptionIds(), parentAction.getAssumedStates());
 			this.settledState = settledState;
 			this.setWhenExecutedFirstTime(parentAction.getWhenExecutedFirstTime());
 			this.setOldValues(oldMarginal);
-			this.parentAction = parentAction;
 		}
+		
 		/** What trade caused the marginal of {@link #getQuestionId()} to change */
-		public NetworkAction getParentAction() { return parentAction; }
-		public Date getWhenExecutedFirstTime() { return (parentAction != null)?parentAction.getWhenExecutedFirstTime():null; }
+		public Date getWhenExecutedFirstTime() { return (getParentAction() != null)?getParentAction().getWhenExecutedFirstTime():null; }
 		public Integer getSettledState() { return settledState; }
+		
 	}
 	
 	/**
@@ -1642,8 +1911,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @param marginalsBefore : marginal probabilities before the execution of parentAction.
 	 * @return the list of virtual trades created and inserted to {@link MarkovEngineImpl#getNetworkActionsIndexedByQuestions()}
 	 */
-	protected List<VirtualTradeAction> addVirtualTrade( NetworkAction parentAction, Map<Long, List<Float>> marginalsBefore) {
-		List<VirtualTradeAction> ret = new ArrayList<MarkovEngineImpl.VirtualTradeAction>();
+	protected List<DummyTradeAction> addVirtualTradeIntoMarginalHistory( NetworkAction parentAction, Map<Long, List<Float>> marginalsBefore) {
+		List<DummyTradeAction> ret = new ArrayList<MarkovEngineImpl.DummyTradeAction>();
 		// get the marginals after trade
 		Map<Long, List<Float>> marginalsAfter = getProbLists(null, null, null);
 		// for each question, compare the marginals and if changed, add to affectedQuestions
@@ -1665,9 +1934,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 				if (hasChanged) {
 					// generate a virtual trade representing a change of marginal probability of another node caused by this trade.
-					VirtualTradeAction virtualTrade = new VirtualTradeAction(parentAction, question, oldMarginal, newMarginal, parentAction.getSettledState());
+					DummyTradeAction virtualTrade = new DummyTradeAction(parentAction, question, oldMarginal, newMarginal);
 					// indicate that this trade is related to question (although indirectly).
 					addNetworkActionIntoQuestionMap(virtualTrade, question);
+					
+					// add virtual trade to the inverse mapping (from virtual trade, find related questions)
+					synchronized (getNetworkActionsIndexedByQuestions()) {
+						Set<Long> relatedQuestions = getVirtualTradeToAffectedQuestionsMap().get(virtualTrade);
+						if (relatedQuestions == null) {
+							relatedQuestions = new HashSet<Long>();
+							getVirtualTradeToAffectedQuestionsMap().put(virtualTrade, relatedQuestions);
+						}
+						relatedQuestions.add(question);
+					}
+					
 					ret.add(virtualTrade);
 				}
 			}
@@ -1676,10 +1956,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	}
 	
 	/**
-	 * This is the same of {@link #addVirtualTrade(NetworkAction, Map)}, but specialized for {@link ResolveQuestionNetworkAction}
+	 * This is the same of {@link #addVirtualTradeIntoMarginalHistory(NetworkAction, Map)}, but specialized for {@link ResolveQuestionNetworkAction}
 	 */
-	protected List<VirtualTradeAction> addVirtualTrade( ResolveQuestionNetworkAction parentAction, Map<Long, List<Float>> marginalsBefore) {
-		List<VirtualTradeAction> ret = new ArrayList<MarkovEngineImpl.VirtualTradeAction>();
+	protected List<DummyTradeAction> addVirtualTradeIntoMarginalHistory( ResolveQuestionNetworkAction parentAction, Map<Long, List<Float>> marginalsBefore) {
+		List<DummyTradeAction> ret = new ArrayList<MarkovEngineImpl.DummyTradeAction>();
 		// get the marginals after trade
 		Map<Long, List<Float>> marginalsAfter = getProbLists(null, null, null);
 		// for each question, compare the marginals and if changed, add to affectedQuestions
@@ -1700,11 +1980,22 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 				}
 				if (hasChanged) {
-					// generate a virtual trade representing a change of marginal probability of another node caused by this trade.
-					VirtualTradeAction virtualTrade = new VirtualTradeAction(parentAction, parentAction.getQuestionId(), oldMarginal, newMarginal, parentAction.getSettledState());
+					// generate a dummy trade representing a change of marginal probability of another node caused by this trade.
+					DummyTradeAction dummyTrade = new DummyTradeAction(parentAction, oldMarginal, newMarginal, parentAction.getSettledState());
 					// indicate that this trade is related to question (although indirectly).
-					addNetworkActionIntoQuestionMap(virtualTrade, question);
-					ret.add(virtualTrade);
+					addNetworkActionIntoQuestionMap(dummyTrade, question);
+					
+					// add virtual trade to the inverse mapping (from virtual trade, find related questions)
+					synchronized (getNetworkActionsIndexedByQuestions()) {
+						Set<Long> relatedQuestions = getVirtualTradeToAffectedQuestionsMap().get(dummyTrade);
+						if (relatedQuestions == null) {
+							relatedQuestions = new HashSet<Long>();
+							getVirtualTradeToAffectedQuestionsMap().put(dummyTrade, relatedQuestions);
+						}
+						relatedQuestions.add(question);
+					}
+					
+					ret.add(dummyTrade);
 				}
 			}
 		}
@@ -1957,7 +2248,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							getDefaultInferenceAlgorithm().setAsPermanentEvidence(node, settledState, isToDeleteResolvedNode());
 							
 							// store marginals in history
-							addVirtualTrade(this, marginalsBeforeResolution);	
+							addVirtualTradeIntoMarginalHistory(this, marginalsBeforeResolution);	
 							// store cliques in history of conditional probability (w/ limited size)
 							addToLastNCliquePotentialMap(this, previousCliquePotentials);	
 						} else {
@@ -2008,7 +2299,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		public Date getWhenCreated() { return occurredWhen; }
 		/** Although this method changes the structure, we do not want to call {@link RebuildNetworkAction} after this action, so return false */
-		public boolean isStructureChangeAction() { return false; }
+		public boolean isStructureConstructionAction() { return false; }
 		public Long getTransactionKey() { return transactionKey; }
 		/** this is not an operation performed by a particular user */ 
 		public Long getUserId() { return null;}
@@ -3448,7 +3739,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	protected List<Float> executeTrade(long questionId,List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates, 
 			boolean isToAllowNegative, AssetAwareInferenceAlgorithm algorithm, boolean isToUpdateAssumptionIds, boolean isPreview, 
-			AddTradeNetworkAction parentTrade) {
+			NetworkAction parentTrade) {
 		// basic assertions
 		if (algorithm == null) {
 			throw new NullPointerException("AssetAwareInferenceAlgorithm was not specified.");
@@ -3614,6 +3905,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			return oldValues;
 		}
 		
+		// this map will hold marginal probabilities before the trade, so that we can store the history of changes in marginal probabilities of other nodes
+		Map<Long, List<Float>> marginalsBefore = null;
+		
 		// fill array of likelihood with values in CPT
 		float [] likelihood = new float[potential.tableSize()];
 		for (int i = 0; i < likelihood.length; i++) {
@@ -3635,9 +3929,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					IAssetNetAlgorithmMemento memento = null;
 					if (algorithm.getRelatedProbabilisticNetwork() == getProbabilisticNetwork()) {
 						// we are making changes in the global shared bayes net, not its clone
-						if ( !isToAllowNegative || (getMaxConditionalProbHistorySize() > 0 && (!child.getParents().isEmpty() || !child.getChildren().isEmpty()) ) ) {
+						if ( !isToAllowNegative ) {
 							// if this trade does not allow negative, or if we need to store the history of conditional probabilities, then create snapshot now
 							memento = algorithm.getMemento();
+						}
+						if (!child.getParents().isEmpty() || !child.getChildren().isEmpty()) {
+							// question connected to another question. So, we need to store changes in probabilities
+							// Store marginals
+							marginalsBefore = getProbLists(null, null, null);
+							
+							if (memento == null && getMaxConditionalProbHistorySize() > 0 ) {
+								// store cliques for conditional probabilities
+								memento = algorithm.getMemento();
+							}
 						}
 					}
 					// Note: this memento is also used in order to store clique tables, so that we can retrieve history of any conditional probabilities
@@ -3683,6 +3987,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					
 				}
 			}
+		}
+		
+		// compare prior and posterior marginal, and fill affectedQuestions
+		if (marginalsBefore != null) {	
+			// note: if getWhenExecutedFirstTime() == null, then marginalsBefore == null
+			addVirtualTradeIntoMarginalHistory(parentTrade, marginalsBefore); // link from original trade to virtual trades
 		}
 		
 		return oldValues;
@@ -4281,9 +4591,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							// fill ret with a proper instance of QuestionEvent
 							if (tradeAndCliqueTable.getParentAction() instanceof ResolveQuestionNetworkAction) {
 								// for some reason, this type detection is not working automatically sometimes... So, I added this explicit if-then-else
-								ret.add(new VirtualTradeAction(((ResolveQuestionNetworkAction)tradeAndCliqueTable.getParentAction()), questionId, oldMarginal, newMarginal, tradeAndCliqueTable.getParentAction().getSettledState()));
+								ret.add(new DummyTradeAction(((ResolveQuestionNetworkAction)tradeAndCliqueTable.getParentAction()), oldMarginal, newMarginal, tradeAndCliqueTable.getParentAction().getSettledState()));
 							} else {
-								ret.add(new VirtualTradeAction(tradeAndCliqueTable.getParentAction(), questionId, oldMarginal, newMarginal, tradeAndCliqueTable.getParentAction().getSettledState()));
+								ret.add(new DummyTradeAction(tradeAndCliqueTable.getParentAction(), questionId, oldMarginal, newMarginal));
 							}
 							// oldMarginal of the next iteration is the current newMarginal
 							oldMarginal = newMarginal;
@@ -5085,8 +5395,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * This method adds networkAction into {@link #getNetworkActionsIndexedByQuestions()}
 	 * so that the values (lists) in {@link #getNetworkActionsIndexedByQuestions()} are ordered by
 	 * {@link NetworkAction#getWhenCreated()}.
-	 * @param questionId : the question id to be considered as the key
-	 * Null is allowed as the key.
+	 * @param questionId : the question id to be considered as the key.
+	 * Null is allowed as the key (in this case, {@link NetworkAction#getQuestionId()} will be used as the key).
 	 * @param networkAction : the object to be inserted.
 	 * {@link NetworkAction#getQuestionId()} will be used as the key of {@link #getNetworkActionsIndexedByQuestions()},
 	 * if questionId is null. 
@@ -5835,15 +6145,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			for (NetworkAction action : actions) {
 				
 				// only execute actions related to structure changes
-				if (action.isStructureChangeAction()) {
+				if (action.isStructureConstructionAction()) {
 					
 					if (action instanceof AddQuestionNetworkAction) {
 						((AddQuestionNetworkAction)action).execute(netToSave);
 						//		1.4. The position (x and y coordinates) of the nodes will be random.
 						Node node = netToSave.getNode(action.getQuestionId().toString());
 						node.setPosition(50 + Math.random()*getNodePositionRandomRange() , 50 + Math.random()*getNodePositionRandomRange());
-						// for compatibility with hugin and netica, names of nodes should not start with numbers.
-						node.setName(getExportedNodePrefix() + node.getName());
 					} else if (action instanceof AddQuestionAssumptionNetworkAction) {
 						((AddQuestionAssumptionNetworkAction)action).execute(netToSave);
 					} else if (action instanceof ImportNetworkAction) {
@@ -5855,6 +6163,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 				}
 			}
+		}
+		
+		// for compatibility with hugin and netica, names of nodes should not start with numbers.
+		for (Node node : netToSave.getNodes()) {
+			node.setName(getExportedNodePrefix() + node.getName());
 		}
 		
 		//		1. Export the BN in a ".net" format (which can supposedly be opened in Hugin, UnBBayes and Netica). 
@@ -5881,19 +6194,29 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#importNetwork(java.io.File)
 	 */
 	public synchronized void importNetwork(File file) throws IOException, IllegalStateException {
-		throw new UnsupportedOperationException("Not implemented yet");
 		
-//		2. Import the BN from a ".net" format, and re-run all trades from the history (i.e. handle the import feature as if it is an ordinal request for changing the network structure). 
-
-//		2.1. It will be imported to a file in this iteration
-
-//		2.2. If any trade in the history cannot be performed in the imported BN (e.g. nodes/arcs are missing), it will throw an exception.
-
-//		2.3. If the CPTs of the imported BN are not uniform, then they will be initially converted to uniform, 
-//		all trades will be re-run from the history, 
-//		and then "virtual" trades will be performed in order to set the current conditional probabilities equal to the non-uniform CPTs 
+		ProbabilisticNetwork net = null;	// this will be the imported network
 		
-		// do not forget to update history of executed actions, so that future rebuilds can execute this action again
+		// 2. Import the BN from a ".net" format, 
+		// 2.1. It will be imported to a file in this iteration
+		BaseIO io = this.getIO();
+		synchronized (io) {
+			net = (ProbabilisticNetwork) io.load(file);
+		}
+		
+		// make sure the prefixes of names of nodes are removed
+		for (Node node : net.getNodes()) {
+			node.setName(node.getName().replace(getExportedNodePrefix(), ""));
+		}
+		
+		// instantiate an action event for the "import" action and execute immediately
+		long transactionKey = this.startNetworkActions();
+		// this will be the action representing (and will be stored in the history)
+		ImportNetworkAction importAction = new ImportNetworkAction(transactionKey, new Date(), net);
+		// do not forget to update history of actions, so that future rebuilds can execute this action again
+		this.addNetworkAction(transactionKey, importAction);
+		// execute action. This shall update the history as well
+		this.commitNetworkActions(transactionKey, false);	
 		
 	}
 
@@ -5959,6 +6282,32 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public void setExportedNodePrefix(String exportedNodePrefix) {
 		this.exportedNodePrefix = exportedNodePrefix;
+	}
+
+	/**
+	 * Stores all instances of virtual trades created by this markov engine in order to trace the marginal probabilities,
+	 * and maps to what question IDs the virtual trades are linked to.
+	 * This can be thought as a submapping of the inverse of {@link #getNetworkActionsIndexedByQuestions()}
+	 * (from virtual trades, find related questions)
+	 * @param virtualTradeToAffectedQuestionsMap the virtualTradeToAffectedQuestionsMap to set
+	 * @see #addVirtualTradeIntoMarginalHistory(ResolveQuestionNetworkAction, Map)
+	 * @see #addVirtualTradeIntoMarginalHistory(NetworkAction, Map)
+	 */
+	public void setVirtualTradeToAffectedQuestionsMap(Map<DummyTradeAction, Set<Long>> virtualTradeToAffectedQuestionsMap) {
+		this.virtualTradeToAffectedQuestionsMap = virtualTradeToAffectedQuestionsMap;
+	}
+
+	/**
+	 * Stores all instances of virtual trades created by this markov engine in order to trace the marginal probabilities,
+	 * and maps to what question IDs the virtual trades are linked to.
+	 * This can be thought as a submapping of the inverse of {@link #getNetworkActionsIndexedByQuestions()}
+	 * (from virtual trades, find related questions)
+	 * @return the virtualTradeToAffectedQuestionsMap
+	 * @see #addVirtualTradeIntoMarginalHistory(ResolveQuestionNetworkAction, Map)
+	 * @see #addVirtualTradeIntoMarginalHistory(NetworkAction, Map)
+	 */
+	public Map<DummyTradeAction, Set<Long>> getVirtualTradeToAffectedQuestionsMap() {
+		return virtualTradeToAffectedQuestionsMap;
 	}
 
 }
