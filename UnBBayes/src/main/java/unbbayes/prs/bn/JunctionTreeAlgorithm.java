@@ -1943,7 +1943,9 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 			}
 			
 			// instantiate junction tree and copy content
-			this.setJunctionTree(new JunctionTree());
+			if (originalNet.getJunctionTree() != null) {
+				this.setJunctionTree(new JunctionTree());
+			}
 			
 			// mapping between original cliques/separator to copied clique/separator 
 			// (cliques are needed posteriorly in order to copy separators, and seps are needed in order to copy relation from node to clique/separators)
