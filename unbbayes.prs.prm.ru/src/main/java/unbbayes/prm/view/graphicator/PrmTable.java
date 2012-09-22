@@ -39,6 +39,14 @@ public class PrmTable extends JPanel {
 		table = new GUIPotentialTable(getPotentialTable(child)).makeTable();
 
 		add(new JScrollPane(table));
+		initianize();
+	}
+
+	private void initianize() {
+		int columnCount = table.getColumnCount();
+		for (int i = 1; i < columnCount; i++) {
+			table.setValueAt(1, 0, i);
+		}
 	}
 
 	/**

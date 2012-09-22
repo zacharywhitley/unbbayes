@@ -334,7 +334,6 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 		// Ask user to introduce CPD.
 		showCPDTableDialog(attribute);
-
 	}
 
 	private void showCPDTableDialog(final Attribute attribute) {

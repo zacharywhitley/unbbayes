@@ -57,6 +57,13 @@ public class Attribute {
 		boolean sameAttName = this.getAttribute().getName()
 				.equals(ext.getAttribute().getName());
 
-		return sameAttName && sameAttName;
+		return sameTableName && sameAttName;
+	}
+
+	@Override
+	public String toString() {
+		String tableName = table.getName();
+		String columnName = attribute.getName();
+		return tableName + "." + columnName;
 	}
 }

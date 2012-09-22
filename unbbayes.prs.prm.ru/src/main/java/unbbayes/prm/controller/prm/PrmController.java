@@ -32,11 +32,11 @@ public class PrmController implements IPrmController {
 	 * PotentialTable[] is stored initially every parent and then the child. Eg.
 	 * {parent1CPD, parent2CPD, parent3CPD, childCPD}.
 	 */
-	HashMap<Attribute, PotentialTable[]> cpds;
+	HashMap<String, PotentialTable[]> cpds;
 
 	public PrmController() {
 		parents = new ArrayList<ParentRel>();
-		cpds = new HashMap<Attribute, PotentialTable[]>();
+		cpds = new HashMap<String, PotentialTable[]>();
 	}
 
 	/**
@@ -102,7 +102,8 @@ public class PrmController implements IPrmController {
 	 */
 	@Override
 	public void setCPD(Attribute attribute, PotentialTable[] table) {
-		cpds.put(attribute, table);
+		cpds.put(attribute.toString(), table);
+		log.debug("set CPD");
 	}
 
 	/**
@@ -113,7 +114,7 @@ public class PrmController implements IPrmController {
 		PotentialTable[] potentialTables = cpds.get(attribute);
 
 		if (potentialTables != null) {
-			return cpds.get(attribute)[0];
+			return cpds.get(attribute.toString())[0];
 		}
 		return null;
 	}
@@ -123,7 +124,7 @@ public class PrmController implements IPrmController {
 	 */
 	@Override
 	public PotentialTable[] getCPDs(Attribute attribute) {
-		return cpds.get(attribute);
+		return cpds.get(attribute.toString());
 	}
 
 	

@@ -1,7 +1,7 @@
 package unbbayes.prm.controller.prm;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
@@ -28,7 +28,7 @@ public class PrmCompiler {
 	/**
 	 * Node names to do not repeat.
 	 */
-	private List<String> nodeNames;
+	private Set<String> nodeNames;
 
 	public PrmCompiler(IPrmController prmController, IDBController dbController) {
 		this.prmController = prmController;
@@ -38,7 +38,7 @@ public class PrmCompiler {
 
 	public Graph compile(Table t, Column uniqueIndexColumn, Object indexValue,
 			Column column, Object value) {
-		nodeNames = new ArrayList<String>();
+		nodeNames = new HashSet<String>();
 		// Resultant network
 		ProbabilisticNetwork resultNet = networkBuilder
 				.buildNetwork("RESULTANT BN");
@@ -56,17 +56,7 @@ public class PrmCompiler {
 		fillNetworkWithParents(resultNet, queryAtt, queryNode,
 				uniqueIndexColumn, indexValue, value);
 
-		// Agregate function.
-		// Create nodes for the children.
-
-		// / CPT
-		// CPT for query node.
-		// PotentialTable[] cpd = prmController.getCPDs(queryAtt);
-		// if (cpd == null) {
-		// // TODO throw error.
-		// }
-		// assignCPDToNode(queryNode, cpd);
-		// TODO CPD table
+		// TODO Aggregate function.
 
 		return resultNet;
 	}
@@ -86,6 +76,10 @@ public class PrmCompiler {
 		// Get the parents
 		ParentRel[] parents = prmController.parentsOf(queryAtt);
 
+		// when the
+		PotentialTable[] cpDs = prmController.getCPDs(queryAtt);
+		int cpdIndex = 0;
+
 		// Find parent instances
 		for (ParentRel parentRel : parents) {
 			Attribute fkAttribute = parentRel.getPath()[1];
@@ -100,17 +94,12 @@ public class PrmCompiler {
 			String[] instanceValues = dbController.getRelatedInstances(
 					parentRel, fkInstanceValue);
 
-			// PotentialTable[] cpDs =
-			// prmController.getCPDs(parentRel.getChild());
-			// int cpdIndex = 0;
-
 			// A node for each Instance.
 			for (int i = 0; i < instanceValues.length; i++) {
 				String[] possibleValues = dbController
 						.getPossibleValues(parentRel.getParent());
 				ProbabilisticNode parentNode = createProbNode(parentRel
-						.getParent().getAttribute().getName()
-						+ "_" + i, possibleValues);
+						.getParent().getAttribute().getName(), possibleValues);
 				resultNet.addNode(parentNode);
 
 				// Edge to the child
@@ -121,15 +110,24 @@ public class PrmCompiler {
 				}
 
 				// // CPT ////
-
+				// If the node parent is the same child.
 				if (parentRel.getParent().equals(parentRel.getChild())) {
-
+					assignCPDToNode(parentNode, cpDs[cpdIndex]);
+				} else {
+					PotentialTable pt = prmController.getCPD(parentRel
+							.getParent());
+					assignCPDToNode(parentNode, pt);
 				}
 
-				// TODO parents of parents
-
+				// TODO Evidence.
 			}
+
+			cpdIndex++;
+
+			// TODO parents of parents
 		}
+		// CPD for child
+		assignCPDToNode(queryNode, cpDs[cpdIndex++]);
 	}
 
 	/**
@@ -150,12 +148,13 @@ public class PrmCompiler {
 			String[] possibleValues) {
 		ProbabilisticNode node = new ProbabilisticNode();
 
-		// Node name
-		while (nodeNames.contains(nodeName)) {
-			String substring = nodeName.substring(nodeName.length() - 2);
+		// Node name must be unique.
+		while (!nodeNames.add(nodeName)) {
+			String substring = nodeName.substring(nodeName.length() - 1);
 			try {
-				int cont = Integer.getInteger(substring) + 1;
-				nodeName = nodeName.substring(0, nodeName.length() - 2) + cont;
+				int cont = Integer.parseInt(substring) + 1;
+				nodeName = nodeName.substring(0, nodeName.length() - 2) + "_"
+						+ cont;
 			} catch (Exception e) {
 				nodeName = nodeName + "_1";
 			}
