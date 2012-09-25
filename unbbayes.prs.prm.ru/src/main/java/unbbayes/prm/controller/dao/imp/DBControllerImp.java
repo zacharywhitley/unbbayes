@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import unbbayes.prm.controller.dao.IDBController;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
+import unbbayes.prm.util.helper.DBSchemaHelper;
 
 /**
  * Get a relational schema from a DB.
@@ -111,9 +112,11 @@ public class DBControllerImp implements IDBController {
 
 	/**
 	 * 
+	 * @return String[][] with two columns. The first column is the id and the
+	 *         second is the value.
 	 */
 	@Override
-	public String[] getRelatedInstances(ParentRel relationship,
+	public String[][] getRelatedInstances(ParentRel relationship,
 			String queryIndex) {
 		Attribute[] path = relationship.getPath();
 		// To create a list of non duplicated table names.
@@ -162,9 +165,16 @@ public class DBControllerImp implements IDBController {
 		String parentAttName = relationship.getParent().getAttribute()
 				.getName();
 
+		// Column Index.
+		Column columnIndex = DBSchemaHelper.getUniqueIndex(relationship
+				.getParent().getTable());
+
+		String tableId = columnIndex == null ? "" : relationship.getParent()
+				.getTable() + "." + columnIndex.getName();
+
 		// SQL query.
 		String sqlQuery = "SELECT " + parentTableName + "." + parentAttName
-				+ " FROM " + queryTables + where;
+				+ " " + tableId + " FROM " + queryTables + where;
 
 		log.debug("SQL query = " + sqlQuery);
 
@@ -172,15 +182,20 @@ public class DBControllerImp implements IDBController {
 		Iterator<DynaBean> it1 = platform.query(getRelSchema(), sqlQuery);
 
 		// Convert to string[]
-		List<String> instances = new ArrayList<String>();
+		List<String[]> instances = new ArrayList<String[]>();
 		while (it1.hasNext()) {
 			DynaBean dynaBean = (DynaBean) it1.next();
 			String inst = String.valueOf(dynaBean.get(parentAttName));
-			instances.add(inst);
+			String id = null;
+			if (tableId.length() > 0) {
+				id = String.valueOf(dynaBean.get(columnIndex.getName()));
+			}
+
+			instances.add(new String[] { id, inst });
 
 		}
 
-		return instances.toArray(new String[0]);
+		return instances.toArray(new String[0][0]);
 	}
 
 	@Override

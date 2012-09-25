@@ -24,6 +24,12 @@ public class ParentRel {
 	 * connected to the child.
 	 */
 	private Attribute[] path;
+	
+	
+	/**
+	 * Aggregate function.
+	 */
+	private AggregateFunctionName aggregateFunction;
 
 	public ParentRel(Attribute parent, Attribute children) {
 		this.parent = parent;
@@ -71,6 +77,14 @@ public class ParentRel {
 		return new EqualsBuilder().appendSuper(super.equals(obj))
 				.append(child, rhs.child).append(parent, rhs.parent)
 				.append(path, rhs.path).isEquals();
+	}
+
+	public AggregateFunctionName getAggregateFunction() {
+		return aggregateFunction;
+	}
+
+	public void setAggregateFunction(AggregateFunctionName aggregateFunction) {
+		this.aggregateFunction = aggregateFunction;
 	}
 
 }

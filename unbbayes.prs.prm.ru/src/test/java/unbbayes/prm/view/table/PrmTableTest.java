@@ -44,11 +44,12 @@ public class PrmTableTest {
 		AttributeStates attChild = new AttributeStates(attribute, new String[] {
 				"childState1", "childState2" });
 
-		PrmTable prmTable = new PrmTable(new AttributeStates[] { paretStates1,
-				paretStates2 }, attChild);
-
 		// Show table
 		JFrame frame = new JFrame();
+
+		PrmTable prmTable = new PrmTable(new AttributeStates[] { paretStates1,
+				paretStates2 }, attChild, frame);
+
 		frame.getContentPane().add(prmTable);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(870, 640);

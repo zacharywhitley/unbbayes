@@ -127,6 +127,9 @@ public class MainInternalFrame extends UnBBayesModule {
 			
 			bnWindow.changeToPNCompilationPane();
 			bnWindow.setVisible(true);
+			
+			updateUI();
+			repaint();
 		}
 	}
 }

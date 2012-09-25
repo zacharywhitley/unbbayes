@@ -84,7 +84,7 @@ public interface IDBController {
 	 * @param queryIndex FK value to search.
 	 * @return value of the instances.
 	 */
-	String[] getRelatedInstances(ParentRel path,
+	String[][] getRelatedInstances(ParentRel path,
 			String queryIndex);
 	
 	/**

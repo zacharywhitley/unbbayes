@@ -10,7 +10,6 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JDesktopPane;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -38,7 +37,6 @@ import unbbayes.prm.view.graphicator.RelationalGraphicator;
 import unbbayes.prm.view.graphicator.editor.TableRenderer;
 import unbbayes.prm.view.instances.IInstanceTableListener;
 import unbbayes.prm.view.instances.InstancesTableViewer;
-import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
 import unbbayes.prs.bn.PotentialTable;
 
@@ -284,14 +282,16 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 				childPM = null;
 
 				return;
-			} else if (possiblePaths.size() == 1) {
-				newRel.setPath(possiblePaths.get(0));
+				// } else if (possiblePaths.size() == 1) {
+				// newRel.setPath(possiblePaths.get(0));
 			} else {
 				ParentPathDialog parentPathDialog = new ParentPathDialog(
 						possiblePaths);
 				parentPathDialog.setModal(true);
 				parentPathDialog.setVisible(true);
 				newRel.setPath(parentPathDialog.getSelectedPath());
+				newRel.setAggregateFunction(parentPathDialog
+						.getSelectedAggregateFunction());
 			}
 
 			// FIXME validate ID or FK, because it works only for descriptive
@@ -358,12 +358,9 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 				AttributeStates childStates = new AttributeStates(attribute,
 						childValues);
 
-				// Graphic table
-				PrmTable table = new PrmTable(new AttributeStates[] {},
+				// Show
+				PrmTable table = showPrmTable(new AttributeStates[] {},
 						childStates);
-
-				// show
-				showPrmTable(table);
 				potentialTables.add(table.getCPD());
 			}
 		}
@@ -373,23 +370,27 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		AttributeStates childStates = new AttributeStates(attribute,
 				childValues);
 
-		// Graphic table
-		PrmTable table = new PrmTable(parentStates, childStates);
-
-		// show
-		showPrmTable(table);
+		// show CPT table
+		PrmTable table = showPrmTable(parentStates, childStates);
 
 		potentialTables.add(table.getCPD());
 		prmController.setCPD(attribute,
 				potentialTables.toArray(new PotentialTable[0]));
 	}
 
-	private void showPrmTable(PrmTable table) {
+	private PrmTable showPrmTable(AttributeStates[] as,
+			AttributeStates childStates) {
 		JDialog dialog = new JDialog();
+
+		// Graphic table
+		PrmTable table = new PrmTable(as, childStates, dialog);
+
 		dialog.setModal(true);
 		dialog.add(table);
 		dialog.pack();
 		dialog.setVisible(true);
+
+		return table;
 	}
 
 	@Override
@@ -397,16 +398,23 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 			Object indexValue, Column column, Object value) {
 		log.debug("An attribute without evidence is selected");
 
-		// // Create a compiler.
-		PrmCompiler compiler = new PrmCompiler(prmController, dbController);
-		Network bn = (Network) compiler.compile(table, uniqueIndexColumn,
-				indexValue, column, value);
-		NetworkWindow netWindow = new NetworkWindow(bn);
-		netWindow.setVisible(true);
-		//
-		//
-		//
-		unbbayesDesktop.delegateToGraphRenderer(bn);
+		try {
+			// Create a compiler.
+			PrmCompiler compiler = new PrmCompiler(prmController, dbController);
+
+			// Compile
+			Network bn = (Network) compiler.compile(table, uniqueIndexColumn,
+					indexValue, column, value);
+			
+			// Show the SSBN.
+			NetworkWindow netWindow = new NetworkWindow(bn);
+			netWindow.setVisible(true);
+			unbbayesDesktop.delegateToGraphRenderer(bn);
+
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
+			log.error(e);
+		}
 	}
 
 }

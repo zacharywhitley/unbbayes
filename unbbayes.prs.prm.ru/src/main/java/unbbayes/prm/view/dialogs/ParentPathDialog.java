@@ -2,30 +2,38 @@ package unbbayes.prm.view.dialogs;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.List;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.JLabel;
-import javax.swing.JComboBox;
 
+import unbbayes.prm.model.AggregateFunctionName;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.util.PathFinderAlgorithm;
 
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import java.util.List;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-
 public class ParentPathDialog extends JDialog {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	
 	private final JPanel contentPanel = new JPanel();
 	private List<Attribute[]> possiblePaths;
 	private Attribute[] selectedPath;
 	private JComboBox comboBox;
+	private JComboBox comboAggregateFunction;
 
 	/**
 	 * Create the dialog.
@@ -35,24 +43,44 @@ public class ParentPathDialog extends JDialog {
 	public ParentPathDialog(List<Attribute[]> possiblePaths) {
 		this.possiblePaths = possiblePaths;
 		setTitle("Select a parent path");
-		setBounds(100, 100, 450, 102);
+		setBounds(100, 100, 451, 122);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
 		gbl_contentPanel.columnWidths = new int[] { 99, 32, 0 };
-		gbl_contentPanel.rowHeights = new int[] { 24, 0 };
+		gbl_contentPanel.rowHeights = new int[] { 0, 24, 0 };
 		gbl_contentPanel.columnWeights = new double[] { 0.0, 1.0,
 				Double.MIN_VALUE };
-		gbl_contentPanel.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+		gbl_contentPanel.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
 		contentPanel.setLayout(gbl_contentPanel);
+		{
+			JLabel lblAggregateFunction = new JLabel("Aggregate function:");
+			GridBagConstraints gbc_lblAggregateFunction = new GridBagConstraints();
+			gbc_lblAggregateFunction.anchor = GridBagConstraints.EAST;
+			gbc_lblAggregateFunction.insets = new Insets(0, 0, 5, 5);
+			gbc_lblAggregateFunction.gridx = 0;
+			gbc_lblAggregateFunction.gridy = 0;
+			contentPanel.add(lblAggregateFunction, gbc_lblAggregateFunction);
+		}
+		{
+			comboAggregateFunction = new JComboBox();
+			comboAggregateFunction.setModel(new DefaultComboBoxModel(
+					AggregateFunctionName.values()));
+			GridBagConstraints gbc_comboBox_1 = new GridBagConstraints();
+			gbc_comboBox_1.insets = new Insets(0, 0, 5, 0);
+			gbc_comboBox_1.fill = GridBagConstraints.HORIZONTAL;
+			gbc_comboBox_1.gridx = 1;
+			gbc_comboBox_1.gridy = 0;
+			contentPanel.add(comboAggregateFunction, gbc_comboBox_1);
+		}
 		{
 			JLabel lblSelectAPath = new JLabel("Parent path:");
 			GridBagConstraints gbc_lblSelectAPath = new GridBagConstraints();
 			gbc_lblSelectAPath.anchor = GridBagConstraints.WEST;
 			gbc_lblSelectAPath.insets = new Insets(0, 0, 0, 5);
 			gbc_lblSelectAPath.gridx = 0;
-			gbc_lblSelectAPath.gridy = 0;
+			gbc_lblSelectAPath.gridy = 1;
 			contentPanel.add(lblSelectAPath, gbc_lblSelectAPath);
 		}
 		{
@@ -66,7 +94,7 @@ public class ParentPathDialog extends JDialog {
 			GridBagConstraints gbc_comboBox = new GridBagConstraints();
 			gbc_comboBox.anchor = GridBagConstraints.NORTHWEST;
 			gbc_comboBox.gridx = 1;
-			gbc_comboBox.gridy = 0;
+			gbc_comboBox.gridy = 1;
 			contentPanel.add(comboBox, gbc_comboBox);
 		}
 		{
@@ -102,6 +130,11 @@ public class ParentPathDialog extends JDialog {
 
 	public Attribute[] getSelectedPath() {
 		return selectedPath;
+	}
+
+	public AggregateFunctionName getSelectedAggregateFunction() {
+		return AggregateFunctionName.valueOf(comboAggregateFunction
+				.getSelectedItem().toString());
 	}
 
 }
