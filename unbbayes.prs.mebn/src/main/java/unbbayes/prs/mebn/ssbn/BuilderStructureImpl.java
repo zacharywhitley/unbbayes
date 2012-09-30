@@ -28,7 +28,7 @@ import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.util.Debug;
 
 /**
- * Build the Grand BN. 
+ * Build the Grand BN using the query nodes and the finding nodes. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
@@ -240,7 +240,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		if(mFragInstance.isEvaluated()){
 			return; //Be careful here if you change the algorithm for search for
 			        //mFragInstances equal to the that are evaluated... In this case
-			        //maybe a new evaluation of the mfrag will be necessary 
+			        //maybe a new evaluation of the MFrag will be necessary 
 			        //because the enter node should be other. 
 		}
 		
@@ -317,12 +317,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				node.getResidentNode(), argumentList);
 		
 		/*
-		 * Nota: como o algoritmo apenas sobe, Ã© necessÃ¡rio continuar a avaliaÃ§Ã£o
-		 * acima mesmo quando o nÃ³ for setado como um finding, pois acima dele pode
-		 * ter uma query ou nÃ³ que influÃªncia a query. (Caso fosse feita a avaliaÃ§Ã£o
-		 * acima e abaixo, nÃ£o seria necessÃ¡ria esta subida, mas o algoritmo seria 
-		 * mais complexo). Isto gerarÃ¡ um monte de nÃ³s candidados a serem excluidos
-		 * no prÃ³ximo passo.  
+		 * Nota: como o algoritmo apenas sobe, é necessário continuar a avaliação
+		 * acima mesmo quando o nó for setado como um finding, pois acima dele pode
+		 * ter uma query ou nó que influência a query. (Caso fosse feita a avaliação
+		 * acima e abaixo, não seria necessária esta subida, mas o algoritmo seria 
+		 * mais complexo). Isto geraria um monte de nós candidados a serem excluidos
+		 * no próximo passo.  
 		 */
 		if(exactValue!= null){
 			//The node is a finding... 
@@ -343,7 +343,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		if(mFragInstance.isUseDefaultDistribution()){
 			
 			if (logManager != null) {
-				logManager.printText(level4, false, " -> Node can't be evaluated: mfrag using default distribution");
+				logManager.printText(level4, false, 
+						" -> Node can't be evaluated: mfrag using default distribution");
 			}
 			return; 
 		
@@ -362,7 +363,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 					ovFilledArray, entityFilledArray, residentNodeParent);
 			
 			if (logManager != null) {
-				logManager.printText(level4, false, "Resident parents generates from the resident node " + 
+				logManager.printText(level4, false, 
+						"Resident parents generates from the resident node " + 
 					residentNodeParent);
 			}
 			
