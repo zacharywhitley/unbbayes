@@ -121,7 +121,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private List<Long> getRandomAssumptions(Long questionId, Map<MarkovEngineImpl, Long> uncommittedTransactionKeyMap, boolean isToCompareAssumptionGroups) {
 		List<List<Long>> questionAssumptionGroups = engines.get(0).getQuestionAssumptionGroups();
 		for (List<Long> list : questionAssumptionGroups) {
-			//Å@make sure empty cliques are not counted
+			//ÔøΩ@make sure empty cliques are not counted
 			assertFalse(questionAssumptionGroups.toString(), list.isEmpty());
 		}
 		if ( isToCompareAssumptionGroups ) {
@@ -237,8 +237,22 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			}
 			
 			// guarantee that the produced values are consistent
-			if (!(sum > 1d || (Math.abs(sum - 1d) > PROB_ERROR_MARGIN))) {
+			if (!(Math.abs(sum - 1d) > PROB_ERROR_MARGIN/5)) {
 				break;	
+			} else {
+				// distribute the difference proportionally.
+				double delta = 1d - sum;
+				for (int i = 0; i < ret.size(); i++) {
+					ret.set(i, (float) (ret.get(i) + ret.get(i)*delta));
+				}
+				// check consistency again
+				sum = 0d;
+				for (Float prob : ret) {
+					sum += prob;
+				}
+				if (!(Math.abs(sum - 1d) > PROB_ERROR_MARGIN)) {
+					break;
+				}
 			}
 		} 
 		
@@ -557,7 +571,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
 				);
 			
-			// g.) An userÅfs asset table is not changed when other user makes edit.
+			// g.) An userÔøΩfs asset table is not changed when other user makes edit.
 			ProbabilityAndAssetTablesMemento posteriorMemento = engine.getMemento();	// get current status of the engine
 			for (AssetAwareInferenceAlgorithm algorithm : mementos.get(engine).getAssetTableMap().keySet()) {
 				if (algorithm.getAssetNetwork().getName().equals(Long.toString(userId))) {
@@ -897,7 +911,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 *	Variables    D             E              F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.5 0.5]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	Trade-1: Tom would like to make a bet on E=e1, that has current probability as 0.5. First of all, we need to calculate TomÅfs edit limit (in this case, there is no assumption):	<br/> 
+	 *	Trade-1: Tom would like to make a bet on E=e1, that has current probability as 0.5. First of all, we need to calculate TomÔøΩfs edit limit (in this case, there is no assumption):	<br/> 
 	 *	Given E=e1, min-q1 = 100	<br/>
 	 *	Given E~=e1, min-q2 = 100	<br/>
 	 *	From Equation (1), edit interval is [0.005, 0.995].	<br/> 
@@ -909,7 +923,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.55 0.45]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	TomÅfs min-q is 90, at the following 4 min-states (found by min-asset-propagation):	<br/> 
+	 *	TomÔøΩfs min-q is 90, at the following 4 min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     1     2     1	<br/>
 	 *	     1     2     2	<br/>
@@ -917,7 +931,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 *	     2     2     2	<br/>
 	 *	<br/>	
 	 *	<br/>	
-	 *	Trade-2: Now Tom would like to make another conditional bet on E=e1 given D=d1 (current P(E=e1|D=d1) = 0.55). Again, let us calculate his edit limits first (in this case, we have assumed variable D=d1). And note that TomÅfs asset tables are not the initial ones any more, but updated from last trade he did, now:	<br/> 
+	 *	Trade-2: Now Tom would like to make another conditional bet on E=e1 given D=d1 (current P(E=e1|D=d1) = 0.55). Again, let us calculate his edit limits first (in this case, we have assumed variable D=d1). And note that TomÔøΩfs asset tables are not the initial ones any more, but updated from last trade he did, now:	<br/> 
 	 *	Given E=e1, and D=d1, min-q1 = 110	<br/>
 	 *	Given E~=e1, and D=d1, min-q2 = 90	<br/>
 	 *	From Equation (1), edit interval is [0.005, 0.995]	<br/>
@@ -929,7 +943,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.725 0.275]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	TomÅfs min-q is 20, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	TomÔøΩfs min-q is 20, at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     1     2    1	<br/>
 	 *	     1     2    2	<br/>
@@ -950,7 +964,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	JoeÅfs min-q is 72.72727272727..., at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	JoeÔøΩfs min-q is 72.72727272727..., at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     1    1	<br/>
 	 *	     2     1    2	<br/>
@@ -972,7 +986,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.4 0.6]	<br/>
 	 *	<br/>	
-	 *	AmyÅfs min-q is 60, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	AmyÔøΩfs min-q is 60, at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     1     1    1	<br/>
 	 *	     1     2    1	<br/>
@@ -995,7 +1009,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.2 0.8]	<br/>
 	 *	<br/>	
-	 *	JoeÅfs min-q is 14.54545454546, at the following unique min-states (found by min-asset-propagation):	<br/> 
+	 *	JoeÔøΩfs min-q is 14.54545454546, at the following unique min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     1    1	<br/>
 	 *	<br/>	
@@ -1004,7 +1018,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 *	From now on, we run test cases described in the paper.	<br/> 
 	 *	<br/>	
 	 *	Trade-6: Eric would like to trade on P(E=e1), which is currently 0.65.	<br/> 
-	 *	To decide long or short, S(E=e1) = 10, S(E~=e1)=10, no difference because this will be EricÅfs first trade.	<br/>
+	 *	To decide long or short, S(E=e1) = 10, S(E~=e1)=10, no difference because this will be EricÔøΩfs first trade.	<br/>
 	 *	Edit limit:	<br/>
 	 *	Given F=f1, and D=d2, min-q1 = 100	<br/>
 	 *	Given F~=f1, and D=d2, min-q2 = 100	<br/>
@@ -1022,8 +1036,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5824, 0.4176]   [0.8, 0.2]   [0.2165, 0.7835]	<br/>
 	 *	<br/>	
-	 *	EricÅfs expected score is S=10.1177.	<br/>
-	 *	EricÅfs min-q is 57.142857, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	EricÔøΩfs expected score is S=10.1177.	<br/>
+	 *	EricÔøΩfs min-q is 57.142857, at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     2    1	<br/>
 	 *	     2     2    2	<br/>
@@ -1049,8 +1063,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 *	Variables   D                            E                             F	<br/> 
 	 *	Marginals   [0.7232, 0.2768]   [0.8509, 0.1491]   [0.2165, 0.7835]	<br/>
 	 *	<br/>	
-	 *	EricÅfs expected score is now 10.31615.	<br/> 
-	 *	EricÅfs min-q is 35.7393, at the following unique min-states (found by min-asset-propagation):	<br/> 
+	 *	EricÔøΩfs expected score is now 10.31615.	<br/> 
+	 *	EricÔøΩfs min-q is 35.7393, at the following unique min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     2    2	<br/>
 	 *	<br/> 
@@ -4113,7 +4127,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 * f. ) conditional min-q and expected score on randomly given states. 
 	 * How many random given states depends on network size. 
 	 * We choose floor(0.3*numberOfVariablesInTheNet).<br/>
-	 * g.) An userÅfs asset table is not changed when other user makes edit.<br/>
+	 * g.) An userÔøΩfs asset table is not changed when other user makes edit.<br/>
 	 * <br/>
 	 * Methodology (using total of 3 users):<br/>
 	 * (1) Randomly choose one user; <br/>
@@ -4196,7 +4210,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 * f. ) conditional min-q and expected score on randomly given states. 
 	 * How many random given states depends on network size. 
 	 * We choose floor(0.3*numberOfVariablesInTheNet).<br/>
-	 * g.) An userÅfs asset table is not changed when other user makes edit.<br/>
+	 * g.) An userÔøΩfs asset table is not changed when other user makes edit.<br/>
 	 * <br/>
 	 * Methodology (using total of 3 users):<br/>
 	 * (1) Randomly choose one user; <br/>

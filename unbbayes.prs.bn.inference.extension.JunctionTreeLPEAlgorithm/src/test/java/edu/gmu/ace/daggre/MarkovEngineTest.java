@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import junit.framework.TestCase;
 import unbbayes.io.NetIO;
 import unbbayes.prs.Edge;
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
@@ -49,7 +50,7 @@ public class MarkovEngineTest extends TestCase {
 	public static final int MIN_STATES = 2;
 	
 	/** Error margin used when comparing 2 probability values */
-	public static final float PROB_ERROR_MARGIN = 0.005f;
+	public static final float PROB_ERROR_MARGIN = 0.0005f;
 
 	/** Error margin used when comparing 2 asset (score) values */
 	public static final float ASSET_ERROR_MARGIN = .5f;
@@ -15144,24 +15145,2685 @@ public class MarkovEngineTest extends TestCase {
 		fileToLoad.delete();
 	}
 	
+	/**
+	 * This is just another regression test for verifying
+	 * a discrepancy between {@link MarkovEngineImpl}
+	 * and the matlab implementation. 
+	 * The following steps will be performed, and the expected score of the user 9 is expected to be around 102.35:
+	 * <br/><br/>
+	 * addQuestion(questionId=8,numberStates=2)<br/>
+	 * addQuestion(questionId=5,numberStates=3)<br/>
+	 * addQuestion(questionId=7,numberStates=2)<br/>
+	 * addQuestionAssumption(childQuestionId=7,parentQuestionIds=[8, 5])<br/>
+	 * addQuestion(questionId=6,numberStates=2)<br/>
+	 * addQuestionAssumption(childQuestionId=5,parentQuestionIds=[6])<br/>
+	 * addQuestionAssumption(childQuestionId=8,parentQuestionIds=[6])<br/>
+	 * getEditLimits(userId=6,questionId=8,questionState=1,assumptionIds=[5, 6],assumedStates=[1, 0])=[0.25, 0.75]<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.5, 0.5], 4=[0.5, 0.5], 5=[0.3333333, 0.3333333, 0.3333333], 6=[0.49999997, 0.49999997], 7=[0.49999997, 0.49999997], 8=[0.49999997, 0.49999997], 9=[0.5, 0.5]}<br/>
+	 * getCash(userId=6,assumptionIds=null,assumedStates=null)=100.0<br/>
+	 * getCash(userId=6,assumptionIds=[5, 6],assumedStates=[1, 0])=100.0<br/>
+	 * addTrade(occurredWhen=Wed Sep 05 07:16:47 BOT 2012,userId=6,questionId=8,newValues=[0.5510288, 0.4489712],assumptionIds=[5, 6],assumedStates=[1, 0])<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.4999979, 0.4999979], 1=[0.4999979, 0.4999979], 2=[0.4999979, 0.4999979], 3=[0.4999979, 0.4999979], 4=[0.4999979, 0.4999979], 5=[0.3333328, 0.33333367, 0.3333328], 6=[0.4999989, 0.49999693], 7=[0.4999979, 0.4999979], 8=[0.5085031, 0.49149314], 9=[0.49999782, 0.49999782]}<br/>
+	 * getCash(userId=6,assumptionIds=null,assumedStates=null)=84.4695<br/>
+	 * getCash(userId=6,assumptionIds=[5, 6],assumedStates=[1, 0])=84.4695<br/>
+	 * scoreUserEv(userId=6,assumptionIds=null,assumedStates=null)=100.12542<br/>
+	 * getCash(userId=4,assumptionIds=null,assumedStates=null)=100.0<br/>
+	 * getCash(userId=4,assumptionIds=[6, 8],assumedStates=[1, 1])=100.0<br/>
+	 * addCash(userId=4,assets=55.029358)<br/>
+	 * getEditLimits(userId=4,questionId=5,questionState=2,assumptionIds=[6, 8],assumedStates=[1, 1])=[0.113813534, 0.77237296]<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.5, 0.5], 4=[0.5, 0.5], 5=[0.33333334, 0.33333334, 0.33333334], 6=[0.5, 0.5], 7=[0.5, 0.5], 8=[0.5085048, 0.49149522], 9=[0.5, 0.5]}<br/>
+	 * getCash(userId=4,assumptionIds=null,assumedStates=null)=155.02936<br/>
+	 * getCash(userId=4,assumptionIds=[6, 8],assumedStates=[1, 1])=155.02936<br/>
+	 * addQuestion(occurredWhen=Wed Sep 05 07:16:48 BOT 2012,userId=4,questionId=5,newValues=[0.1977148, 0.1977148, 0.60457015],assumptionIds=[6, 8],assumedStates=[1, 1])<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999744, 0.49999744], 1=[0.49999744, 0.49999744], 2=[0.49999744, 0.49999744], 3=[0.49999744, 0.49999744], 4=[0.49999744, 0.49999744], 5=[0.2994283, 0.29942888, 0.40114138], 6=[0.4999989, 0.499996], 7=[0.49999744, 0.49999744], 8=[0.5085031, 0.4914929], 9=[0.49999782, 0.49999782]}<br/>
+	 * getCash(userId=4,assumptionIds=null,assumedStates=null)=79.67487<br/>
+	 * getCash(userId=4,assumptionIds=[6, 8],assumedStates=[1, 1])=79.67487<br/>
+	 * scoreUserEV(userId=4,assumptionIds=null,assumedStates=null)=160.56232<br/>
+	 * addQuestion(questionId=4,numberStates=2)<br/>
+	 * addQuestion(questionId=3,numberStates=2)<br/>
+	 * addQuestionAssumption(childQuestionId=3,parentQuestionIds=[4])<br/>
+	 * getEditLimits(userId=0,questionId=4,questionState=0,assumptionIds=[3],assumedStates=[0])=[0.25, 0.75]<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.5, 0.5], 4=[0.5, 0.5], 5=[0.2994287, 0.2994287, 0.40114254], 6=[0.5, 0.49999994], 7=[0.5, 0.5], 8=[0.5085048, 0.49149516], 9=[0.5, 0.5]}<br/>
+	 * getCash(userId=0,assumptionIds=null,assumedStates=null)=100.0<br/>
+	 * getCash(userId=0,assumptionIds=[3],assumedStates=[0])=100.0<br/>
+	 * addQuestion(occurredWhen=Wed Sep 05 07:18:00 BOT 2012,userId=0,questionId=4,newValues=[0.7248325, 0.2751689],assumptionIds=[3],assumedStates=[0])<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.4999977, 0.4999977], 1=[0.4999977, 0.4999977], 2=[0.4999977, 0.4999977], 3=[0.49999797, 0.49999744], 4=[0.6124153, 0.3875832], 5=[0.29942897, 0.29942918, 0.4011416], 6=[0.49999803, 0.49999732], 7=[0.49999765, 0.49999765], 8=[0.50850254, 0.4914935], 9=[0.4999984, 0.4999984]}<br/>
+	 * getCash(userId=0,assumptionIds=null,assumedStates=null)=13.838821<br/>
+	 * getCash(userId=0,assumptionIds=[3],assumedStates=[0])=13.838821<br/>
+	 * scoreUserEV(userId=0,assumptionIds=null,assumedStates=null)=107.56082<br/>
+	 * getCash(userId=2,assumptionIds=null,assumedStates=null)=100.0<br/>
+	 * getCash(userId=2,assumptionIds=[4],assumedStates=[0])=100.0<br/>
+	 * addCash(userId=2,assets=53.335693)<br/>
+	 * getEditLimits(userId=2,questionId=3,questionState=0,assumptionIds=[4],assumedStates=[0])=[0.20444407, 0.8589715]<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.50000036, 0.4999997], 4=[0.61241585, 0.3875842], 5=[0.2994287, 0.2994287, 0.40114254], 6=[0.5, 0.49999994], 7=[0.5, 0.5], 8=[0.5085048, 0.49149516], 9=[0.5, 0.5]}<br/>
+	 * getCash(userId=2,assumptionIds=null,assumedStates=null)=153.3357<br/>
+	 * getCash(userId=2,assumptionIds=[4],assumedStates=[0])=153.3357<br/>
+	 * addQuestion(occurredWhen=Wed Sep 05 07:18:02 BOT 2012,userId=2,questionId=3,newValues=[0.78871393, 0.21128666],assumptionIds=[4],assumedStates=[0])<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999982, 0.49999982], 1=[0.49999982, 0.49999982], 2=[0.49999982, 0.49999982], 3=[0.6206021, 0.3793949], 4=[0.61241585, 0.38758308], 5=[0.29942888, 0.2994291, 0.40114206], 6=[0.49999994, 0.49999967], 7=[0.4999998, 0.4999998], 8=[0.5085046, 0.491495], 9=[0.49999958, 0.49999958]}<br/>
+	 * getCash(userId=2,assumptionIds=null,assumedStates=null)=58.321434<br/>
+	 * getCash(userId=2,assumptionIds=[4],assumedStates=[0])=58.321434<br/>
+	 * scoreUserEV(userId=2,assumptionIds=null,assumedStates=null)=161.05951<br/>
+	 * getEditLimits(userId=9,questionId=6,questionState=0,assumptionIds=[5, 8],assumedStates=[0, 0])=[0.25, 0.75]<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.2994287, 0.2994287, 0.40114254], 6=[0.5, 0.49999994], 7=[0.5, 0.5], 8=[0.5085048, 0.49149516], 9=[0.5, 0.5]}<br/>
+	 * getCash(userId=9,assumptionIds=null,assumedStates=null)=100.0<br/>
+	 * getCash(userId=9,assumptionIds=[5, 8],assumedStates=[0, 0])=100.0<br/>
+	 * addQuestion(occurredWhen=Wed Sep 05 07:18:03 BOT 2012,userId=9,questionId=6,newValues=[0.2824612, 0.71753895],assumptionIds=[5, 8],assumedStates=[0, 0])<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5000001, 0.5000001], 1=[0.5000001, 0.5000001], 2=[0.5000001, 0.5000001], 3=[0.62060255, 0.379395], 4=[0.61241543, 0.38758317], 5=[0.29942867, 0.2994291, 0.40114206], 6=[0.46374366, 0.53625685], 7=[0.5000001, 0.5000001], 8=[0.50850505, 0.491495], 9=[0.49999952, 0.49999952]}<br/>
+	 * getCash(userId=9,assumptionIds=null,assumedStates=null)=17.612444<br/>
+	 * getCash(userId=9,assumptionIds=[5, 8],assumedStates=[0, 0])=17.612444<br/>
+	 * scoreUserEV(userId=9,assumptionIds=null,assumedStates=null)=102.353615<br/>
+	 * addQuestion(questionId=9,numberStates=2)<br/>
+	 * getEditLimits(userId=0,questionId=9,questionState=0,assumptionIds=[],assumedStates=[])=[0.45426682, 0.5457332]<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.29942876, 0.2994287, 0.40114254], 6=[0.46374357, 0.53625643], 7=[0.5, 0.5], 8=[0.50850487, 0.49149516], 9=[0.5, 0.5]}<br/>
+	 * getCash(userId=0,assumptionIds=null,assumedStates=null)=13.838821<br/>
+	 * getCash(userId=0,assumptionIds=[],assumedStates=[])=13.838821<br/>
+	 * addQuestion(occurredWhen=Wed Sep 05 07:19:49 BOT 2012,userId=0,questionId=9,newValues=[0.5312497, 0.4687494],assumptionIds=[],assumedStates=[])<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999994, 0.49999994], 1=[0.49999994, 0.49999994], 2=[0.49999994, 0.49999994], 3=[0.6206053, 0.37939516], 4=[0.6124166, 0.38758484], 5=[0.29942834, 0.2994288, 0.40114295], 6=[0.4637435, 0.5362562], 7=[0.4999998, 0.4999998], 8=[0.5085042, 0.49149504], 9=[0.531251, 0.4687496]}<br/>
+	 * getCash(userId=0,assumptionIds=null,assumedStates=null)=4.5278234<br/>
+	 * getCash(userId=0,assumptionIds=[],assumedStates=[])=4.5278234<br/>
+	 * scoreUserEV(userId=0,assumptionIds=null,assumedStates=null)=114.30382<br/>
+	 * addQuestion(questionId=1,numberStates=2)<br/>
+	 * addQuestion(questionId=0,numberStates=2)<br/>
+	 * addQuestionAssumption(childQuestionId=1,parentQuestionIds=[0])<br/>
+	 * getEditLimits(userId=0,questionId=1,questionState=0,assumptionIds=[0],assumedStates=[1])=[0.48455146, 0.5154486]<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.29942873, 0.2994287, 0.40114254], 6=[0.4637435, 0.53625643], 7=[0.5, 0.5], 8=[0.50850487, 0.49149516], 9=[0.5312502, 0.46874982]}<br/>
+	 * getCash(userId=0,assumptionIds=null,assumedStates=null)=4.5278234<br/>
+	 * getCash(userId=0,assumptionIds=[0],assumedStates=[1])=4.5278234<br/>
+	 * addQuestion(occurredWhen=Wed Sep 05 07:20:03 BOT 2012,userId=0,questionId=1,newValues=[0.48541012, 0.51459014],assumptionIds=[0],assumedStates=[1])<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999985, 0.5000003], 1=[0.49270466, 0.5072953], 2=[0.50000006, 0.50000006], 3=[0.6206056, 0.37939495], 4=[0.6124163, 0.38758457], 5=[0.29942837, 0.29942843, 0.40114293], 6=[0.46374363, 0.5362562], 7=[0.5, 0.5], 8=[0.5085049, 0.4914949], 9=[0.53125113, 0.46874946]}<br/>
+	 * getCash(userId=0,assumptionIds=null,assumedStates=null)=0.2554088<br/>
+	 * getCash(userId=0,assumptionIds=[0],assumedStates=[1])=0.2554088<br/>
+	 * scoreUserEV(userId=0,assumptionIds=null,assumedStates=null)=114.33453<br/>
+	 * getEditLimits(userId=5,questionId=5,questionState=2,assumptionIds=[6, 8],assumedStates=[0, 1])=[0.1725362, 0.6725362]<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999994, 0.50000006], 1=[0.492705, 0.507295], 2=[0.5, 0.5], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.29942873, 0.2994287, 0.40114254], 6=[0.4637435, 0.53625643], 7=[0.5, 0.5], 8=[0.50850487, 0.49149516], 9=[0.5312502, 0.46874982]}<br/>
+	 * getCash(userId=5,assumptionIds=null,assumedStates=null)=100.0<br/>
+	 * getCash(userId=5,assumptionIds=[6, 8],assumedStates=[0, 1])=100.0<br/>
+	 * addQuestion(occurredWhen=Wed Sep 05 07:20:04 BOT 2012,userId=5,questionId=5,newValues=[0.313011, 0.28106615, 0.40592253],assumptionIds=[6, 8],assumedStates=[0, 1])<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999973, 0.5], 1=[0.49270454, 0.507295], 2=[0.49999982, 0.49999982], 3=[0.62060565, 0.37939453], 4=[0.6124168, 0.38758388], 5=[0.29168558, 0.29247606, 0.4158375], 6=[0.46374315, 0.5362562], 7=[0.4999998, 0.4999998], 8=[0.5085049, 0.49149442], 9=[0.53125095, 0.46874893]}<br/>
+	 * getCash(userId=5,assumptionIds=null,assumedStates=null)=85.93142<br/>
+	 * getCash(userId=5,assumptionIds=[6, 8],assumedStates=[0, 1])=85.93142<br/>
+	 * scoreUserEV(userId=5,assumptionIds=null,assumedStates=null)=100.2785<br/>
+	 * getEditLimits(userId=2,questionId=8,questionState=0,assumptionIds=[5, 6],assumedStates=[0, 1])=[0.47227493, 0.8048]<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999994, 0.50000006], 1=[0.492705, 0.507295], 2=[0.5, 0.5], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.29168606, 0.2924763, 0.4158376], 6=[0.4637435, 0.53625643], 7=[0.5, 0.5], 8=[0.50850487, 0.4914951], 9=[0.5312502, 0.46874982]}<br/>
+	 * getCash(userId=2,assumptionIds=null,assumedStates=null)=58.321434<br/>
+	 * getCash(userId=2,assumptionIds=[5, 6],assumedStates=[0, 1])=58.321434<br/>
+	 * addQuestion(occurredWhen=Wed Sep 05 07:20:06 BOT 2012,userId=2,questionId=8,newValues=[0.6097233, 0.390277],assumptionIds=[5, 6],assumedStates=[0, 1])<br/>
+	 * getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5000002, 0.49999994], 1=[0.49270457, 0.5072953], 2=[0.50000006, 0.50000006], 3=[0.6206052, 0.37939462], 4=[0.6124164, 0.3875839], 5=[0.29168588, 0.29247606, 0.4158375], 6=[0.46374315, 0.53625655], 7=[0.5, 0.5], 8=[0.49196953, 0.50803006], 9=[0.5312506, 0.46874934]}<br/>
+	 * getCash(userId=2,assumptionIds=null,assumedStates=null)=36.85278<br/>
+	 * getCash(userId=2,assumptionIds=[5, 6],assumedStates=[0, 1])=36.85278<br/>
+	 * scoreUserEV(userId=2,assumptionIds=null,assumedStates=null)=161.59337<br/>
+	 * addQuestion(questionId=2,numberStates=2)<br/>
+	 * addQuestionAssumption(childQuestionId=3,parentQuestionIds=[2])<br/>
+	 * addQuestionAssumption(childQuestionId=3,parentQuestionIds=[4, 2])<br/>
+	 * getEditLimits(userId=9,questionId=2,questionState=0,assumptionIds=[4],assumedStates=[1])=[0.4425387, 0.55746126]<br/>
+	 * resolveQuestion(questionId=2,settledState=0)<br/>
+	 * getProbLists(questionIds=null,assumptionIds=null,assumedStates=null)={0=[0.49999994, 0.50000006], 1=[0.492705, 0.507295], 2=[1.0, 0.0], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.2916861, 0.2924763, 0.4158376], 6=[0.4637435, 0.53625643], 7=[0.5, 0.5], 8=[0.49196956, 0.5080304], 9=[0.5312502, 0.46874982]}<br/>
+	 * [CAUTION]!!! scoreUserEV(userId=9,assumptionIds=null,assumedStates=null)=101.49192 (expected 102.35)<br/>
+	 * [CAUTION]!!! scoreUserEV(userId=9,assumptionIds=[4],assumedStates=[1])=101.49193 (expected 102.35)<br/>
+	 * scoreUserQuestionEvStates(userId=9,questionId=2,assumptionIds=[4],assumedStates=[1])=[101.49193, 0.0]<br/>
+	 * getCashPerStates(userId=9,questionId=2,assumptionIds+[4],assumedStates=[1])=[17.612444, -Infinity]<br/>
+	 * getCash(userId=9,assumptionIds=null,assumedStates=null)=17.612444<br/>
+	 * getCash(userId=9,assumptionIds=[4],assumedStates=[1])=17.612444<br/>
+	 * <br/>
+	 * <br/>
+	 * <br/>
+	 * Users starts with 100 assets. The currency constant b is 100, and the base of log is 2
+	 * 
+	 */
+	public final void testCompareWithExpectedFromMatlab()  {
+		engine.setToUseQValues(false);					// use asset space instead of q-values
+		engine.setCurrentCurrencyConstant(100f);		// b = 100
+		engine.setCurrentLogBase(2f);					// base of log is 2
+		engine.setDefaultInitialAssetTableValue(100f);	// users starts with 100 assets
+		
+		// reset engine
+		assertTrue(engine.initialize());
+		
+//		 addQuestion(questionId=8,numberStates=2)
+		assertTrue(engine.addQuestion(null, new Date(), 8L, 2, null));
+		
+//		 addQuestion(questionId=5,numberStates=3)
+		assertTrue(engine.addQuestion(null, new Date(), 5L, 3, null));
+		
+//		 addQuestion(questionId=7,numberStates=2)
+		assertTrue(engine.addQuestion(null, new Date(), 7L, 2, null));
+		
+//		 addQuestionAssumption(childQuestionId=7,parentQuestionIds=[8, 5])
+		List<Long> questionIds = new ArrayList<Long>();
+		questionIds.add(8L); questionIds.add(5L);
+		assertTrue(engine.addQuestionAssumption(null, new Date(), 7L, questionIds , null));
+		
+//		 addQuestion(questionId=6,numberStates=2)
+		assertTrue(engine.addQuestion(null, new Date(), 6L, 2, null));
+		
+//		 addQuestionAssumption(childQuestionId=5,parentQuestionIds=[6])
+		questionIds = new ArrayList<Long>();
+		questionIds.add(6L);
+		assertTrue(engine.addQuestionAssumption(null, new Date(), 5L, questionIds , null));
+
+//		 addQuestionAssumption(childQuestionId=8,parentQuestionIds=[6])
+		assertTrue(engine.addQuestionAssumption(null, new Date(), 8L, questionIds , null));
+		
+//		 getEditLimits(userId=6,questionId=8,questionState=1,assumptionIds=[5, 6],assumedStates=[1, 0])=[0.25, 0.75]
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.5, 0.5], 4=[0.5, 0.5], 5=[0.3333333, 0.3333333, 0.3333333], 6=[0.49999997, 0.49999997], 7=[0.49999997, 0.49999997], 8=[0.49999997, 0.49999997], 9=[0.5, 0.5]}
+//		 getCash(userId=6,assumptionIds=null,assumedStates=null)=100.0
+//		 getCash(userId=6,assumptionIds=[5, 6],assumedStates=[1, 0])=100.0
+		
+		
+		
+		
+//		 addTrade(occurredWhen=Wed Sep 05 07:16:47 BOT 2012,userId=6,questionId=8,newValues=[0.5510288, 0.4489712],assumptionIds=[5, 6],assumedStates=[1, 0])
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(0.5510288f);
+		newValues.add(0.4489712f);
+		questionIds = new ArrayList<Long>();
+		questionIds.add(5L); questionIds.add(6L);
+		List<Integer> assumedStates = new ArrayList<Integer>();
+		assumedStates.add(1); assumedStates.add(0);
+		assertFalse(engine.addTrade(null, new Date(), "", 6, 8, newValues, questionIds, assumedStates , false).isEmpty());
+		
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.4999979, 0.4999979], 1=[0.4999979, 0.4999979], 2=[0.4999979, 0.4999979], 3=[0.4999979, 0.4999979], 4=[0.4999979, 0.4999979], 5=[0.3333328, 0.33333367, 0.3333328], 6=[0.4999989, 0.49999693], 7=[0.4999979, 0.4999979], 8=[0.5085031, 0.49149314], 9=[0.49999782, 0.49999782]}
+//		 getCash(userId=6,assumptionIds=null,assumedStates=null)=84.4695
+//		 getCash(userId=6,assumptionIds=[5, 6],assumedStates=[1, 0])=84.4695
+//		 scoreUserEv(userId=6,assumptionIds=null,assumedStates=null)=100.12542
+//		 getCash(userId=4,assumptionIds=null,assumedStates=null)=100.0
+//		 getCash(userId=4,assumptionIds=[6, 8],assumedStates=[1, 1])=100.0
+		
+		
+//		 addCash(userId=4,assets=55.029358)
+		assertTrue(engine.addCash(null, new Date(), 4, 55.029358f, ""));
+		
+//		 getEditLimits(userId=4,questionId=5,questionState=2,assumptionIds=[6, 8],assumedStates=[1, 1])=[0.113813534, 0.77237296]
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.5, 0.5], 4=[0.5, 0.5], 5=[0.33333334, 0.33333334, 0.33333334], 6=[0.5, 0.5], 7=[0.5, 0.5], 8=[0.5085048, 0.49149522], 9=[0.5, 0.5]}
+//		 getCash(userId=4,assumptionIds=null,assumedStates=null)=155.02936
+//		 getCash(userId=4,assumptionIds=[6, 8],assumedStates=[1, 1])=155.02936
+		
+		
+//		 addTrade(occurredWhen=Wed Sep 05 07:16:48 BOT 2012,userId=4,questionId=5,newValues=[0.1977148, 0.1977148, 0.60457015],assumptionIds=[6, 8],assumedStates=[1, 1])
+		newValues = new ArrayList<Float>();
+		newValues.add(0.1977148f);
+		newValues.add(0.1977148f);
+		newValues.add(0.60457015f);
+		questionIds = new ArrayList<Long>();
+		questionIds.add(6L); questionIds.add(8L);
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(1); assumedStates.add(1);
+		assertFalse(engine.addTrade(null, new Date(), "", 4,5, newValues, questionIds, assumedStates , false).isEmpty());
+		
+		
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999744, 0.49999744], 1=[0.49999744, 0.49999744], 2=[0.49999744, 0.49999744], 3=[0.49999744, 0.49999744], 4=[0.49999744, 0.49999744], 5=[0.2994283, 0.29942888, 0.40114138], 6=[0.4999989, 0.499996], 7=[0.49999744, 0.49999744], 8=[0.5085031, 0.4914929], 9=[0.49999782, 0.49999782]}
+//		 getCash(userId=4,assumptionIds=null,assumedStates=null)=79.67487
+//		 getCash(userId=4,assumptionIds=[6, 8],assumedStates=[1, 1])=79.67487
+//		 scoreUserEv(userId=4,assumptionIds=null,assumedStates=null)=160.56232
+		
+		
+//		 addQuestion(questionId=4,numberStates=2)
+		assertTrue(engine.addQuestion(null, new Date(), 4L, 2, null));
+		
+		
+//		 addQuestion(questionId=3,numberStates=2)
+		assertTrue(engine.addQuestion(null, new Date(), 3L, 2, null));
+		
+		
+//		 addQuestionAssumption(childQuestionId=3,parentQuestionIds=[4])
+		questionIds = new ArrayList<Long>();
+		questionIds.add(4L);
+		assertTrue(engine.addQuestionAssumption(null, new Date(), 3L, questionIds , null));
+		
+		
+//		 getEditLimits(userId=0,questionId=4,questionState=0,assumptionIds=[3],assumedStates=[0])=[0.25, 0.75]
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.5, 0.5], 4=[0.5, 0.5], 5=[0.2994287, 0.2994287, 0.40114254], 6=[0.5, 0.49999994], 7=[0.5, 0.5], 8=[0.5085048, 0.49149516], 9=[0.5, 0.5]}
+//		 getCash(userId=0,assumptionIds=null,assumedStates=null)=100.0
+//		 getCash(userId=0,assumptionIds=[3],assumedStates=[0])=100.0
+		
+		
+//		 addTrade(occurredWhen=Wed Sep 05 07:18:00 BOT 2012,userId=0,questionId=4,newValues=[0.7248325, 0.2751689],assumptionIds=[3],assumedStates=[0])
+		newValues = new ArrayList<Float>();
+		newValues.add(0.7248325f);
+		newValues.add(0.2751689f);
+		questionIds = new ArrayList<Long>();
+		questionIds.add(3L); 
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0); 
+		assertFalse(engine.addTrade(null, new Date(), "",0,4, newValues, questionIds, assumedStates , false).isEmpty());
+		
+		
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.4999977, 0.4999977], 1=[0.4999977, 0.4999977], 2=[0.4999977, 0.4999977], 3=[0.49999797, 0.49999744], 4=[0.6124153, 0.3875832], 5=[0.29942897, 0.29942918, 0.4011416], 6=[0.49999803, 0.49999732], 7=[0.49999765, 0.49999765], 8=[0.50850254, 0.4914935], 9=[0.4999984, 0.4999984]}
+//		 getCash(userId=0,assumptionIds=null,assumedStates=null)=13.838821
+//		 getCash(userId=0,assumptionIds=[3],assumedStates=[0])=13.838821
+//		 scoreUserEv(userId=0,assumptionIds=null,assumedStates=null)=107.56082
+//		 getCash(userId=2,assumptionIds=null,assumedStates=null)=100.0
+//		 getCash(userId=2,assumptionIds=[4],assumedStates=[0])=100.0
+		
+		
+//		 addCash(userId=2,assets=53.335693)
+		assertTrue(engine.addCash(null, new Date(), 2, 53.335693f, ""));
+		
+		
+//		 getEditLimits(userId=2,questionId=3,questionState=0,assumptionIds=[4],assumedStates=[0])=[0.20444407, 0.8589715]
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.50000036, 0.4999997], 4=[0.61241585, 0.3875842], 5=[0.2994287, 0.2994287, 0.40114254], 6=[0.5, 0.49999994], 7=[0.5, 0.5], 8=[0.5085048, 0.49149516], 9=[0.5, 0.5]}
+//		 getCash(userId=2,assumptionIds=null,assumedStates=null)=153.3357
+//		 getCash(userId=2,assumptionIds=[4],assumedStates=[0])=153.3357
+		
+		
+//		 addTrade(occurredWhen=Wed Sep 05 07:18:02 BOT 2012,userId=2,questionId=3,newValues=[0.78871393, 0.21128666],assumptionIds=[4],assumedStates=[0])
+		newValues = new ArrayList<Float>();
+		newValues.add(0.78871393f);
+		newValues.add(0.21128666f);
+		questionIds = new ArrayList<Long>();
+		questionIds.add(4L); 
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0); 
+		assertFalse(engine.addTrade(null, new Date(), "",2,3, newValues, questionIds, assumedStates , false).isEmpty());
+		
+		
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999982, 0.49999982], 1=[0.49999982, 0.49999982], 2=[0.49999982, 0.49999982], 3=[0.6206021, 0.3793949], 4=[0.61241585, 0.38758308], 5=[0.29942888, 0.2994291, 0.40114206], 6=[0.49999994, 0.49999967], 7=[0.4999998, 0.4999998], 8=[0.5085046, 0.491495], 9=[0.49999958, 0.49999958]}
+//		 getCash(userId=2,assumptionIds=null,assumedStates=null)=58.321434
+//		 getCash(userId=2,assumptionIds=[4],assumedStates=[0])=58.321434
+//		 scoreUserEv(userId=2,assumptionIds=null,assumedStates=null)=161.05951
+//		 getEditLimits(userId=9,questionId=6,questionState=0,assumptionIds=[5, 8],assumedStates=[0, 0])=[0.25, 0.75]
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.2994287, 0.2994287, 0.40114254], 6=[0.5, 0.49999994], 7=[0.5, 0.5], 8=[0.5085048, 0.49149516], 9=[0.5, 0.5]}
+//		 getCash(userId=9,assumptionIds=null,assumedStates=null)=100.0
+//		 getCash(userId=9,assumptionIds=[5, 8],assumedStates=[0, 0])=100.0
+		
+		// trade of iteration number 5
+		{
+			// Before Iteration#5, the joint probabilities should be
+//		    node_names: {'6'  '5'  '8'  '7'  '3'  '4'}
+//		         sizes: [2 3 2 2 2 2]
+//		joint probabilities:
+			float[] jointIteration5 = {
+		        0.0201258844722234f,	// 6=0,5=0,8=0,7=0,3=0,4=0
+		        0.0201258844722234f,	// 6=1,5=0,8=0,7=0,3=0,4=0
+		        0.0221798839393358f,	// 6=0,5=1,8=0,7=0,3=0,4=0
+		        0.0201258844722234f,	// 6=1,5=1,8=0,7=0,3=0,4=0
+		        0.0201258844722234f,
+		        0.0201258844722234f,
+		        0.0201258844722234f,
+		        0.0119375556697463f,
+		         0.018071885005111f,
+		        0.0119375556697463f,
+		        0.0201258844722234f,
+		        0.0365025269827644f,
+		        0.0201258844722234f,
+		        0.0201258844722234f,
+		        0.0221798839393358f,
+		        0.0201258844722234f,
+		        0.0201258844722234f,
+		        0.0201258844722234f,
+		        0.0201258844722234f,
+		        0.0119375556697463f,
+		         0.018071885005111f,
+		        0.0119375556697463f,
+		        0.0201258844722234f,
+		        0.0365025269827644f,
+		       0.00539147433300938f,
+		       0.00539147433300938f,
+		       0.00594171526389791f,
+		       0.00539147433300938f,
+		       0.00539147433300938f,
+		       0.00539147433300938f,
+		       0.00539147433300938f,
+		       0.00319792280836825f,
+		       0.00484123340212084f,
+		       0.00319792280836825f,
+		       0.00539147433300938f,
+		       0.00977857333868589f,
+		       0.00539147433300938f,
+		       0.00539147433300938f,
+		       0.00594171526389791f,
+		       0.00539147433300938f,
+		       0.00539147433300938f,
+		       0.00539147433300938f,
+		       0.00539147433300938f,
+		       0.00319792280836825f,
+		       0.00484123340212084f,
+		       0.00319792280836825f,
+		       0.00539147433300938f,
+		       0.00977857333868589f,
+		       0.00573268541666667f,
+		       0.00573268541666667f,
+		       0.00631774953184667f,
+		       0.00573268541666667f,
+		       0.00573268541666667f,
+		       0.00573268541666667f,
+		       0.00573268541666667f,
+		        0.0034003102518575f,
+		       0.00514762130148667f,
+		        0.0034003102518575f,
+		       0.00573268541666667f,
+		        0.0103974314467709f,
+		       0.00573268541666667f,
+		       0.00573268541666667f,
+		       0.00631774953184667f,
+		       0.00573268541666667f,
+		       0.00573268541666667f,
+		       0.00573268541666667f,
+		       0.00573268541666667f,
+		        0.0034003102518575f,
+		       0.00514762130148667f,
+		        0.0034003102518575f,
+		       0.00573268541666667f,
+		        0.0103974314467709f,
+		        0.0104166666666667f,
+		        0.0104166666666667f,
+		        0.0114797666666667f,
+		        0.0104166666666667f,
+		        0.0104166666666667f,
+		        0.0104166666666667f,
+		        0.0104166666666667f,
+		              0.0061785875f,
+		       0.00935356666666667f,
+		              0.0061785875f,
+		        0.0104166666666667f,
+		           0.0188928171875f,
+		        0.0104166666666667f,
+		        0.0104166666666667f,
+		        0.0114797666666667f,
+		        0.0104166666666667f,
+		        0.0104166666666667f,
+		        0.0104166666666667f,
+		        0.0104166666666667f,
+		              0.0061785875f,
+		       0.00935356666666667f,
+		              0.0061785875f,
+		        0.0104166666666667f,
+		           0.0188928171875f,
+			};
+			
+			// check that the matlab is summing up to 1
+			float sum = 0f;
+			for (int i = 0; i < jointIteration5.length; i++) {
+				sum += jointIteration5[i];
+			}
+			assertEquals(1f, sum, PROB_ERROR_MARGIN);
+			
+			// check joint probabilities
+//		    node_names: {'6'  '5'  '8'  '7'  '3'  '4'}
+			questionIds = new ArrayList<Long>();
+			questionIds.add(6L); questionIds.add(5L); questionIds.add(8L);
+			questionIds.add(7L); questionIds.add(3L); questionIds.add(4L);
+			// start from all questions in state 0
+			List<Integer> states = new ArrayList<Integer>();
+			states.add(0); states.add(0); states.add(0);
+			states.add(0); states.add(0); states.add(0);
+			// index to be used to access joint probability
+			int indexForJointProbability = 0;	
+			sum = 0;	// check that joint prob of ME is summing up to 1
+			// compare joint probability returned by the engine and expected
+			for (int stateNode4 = 0; stateNode4 < 2; stateNode4++) {	// iterate on states of node 4
+				for (int stateNode3 = 0; stateNode3 < 2; stateNode3++) {	// iterate on states of node 3
+					for (int stateNode7 = 0; stateNode7 < 2; stateNode7++) {	// iterate on states of node 7
+						for (int stateNode8 = 0; stateNode8 < 2; stateNode8++) {	// iterate on states of node 8
+							for (int stateNode5 = 0; stateNode5 < 3; stateNode5++) {	// iterate on states of node 5
+								for (int stateNode6 = 0; stateNode6 < 2; stateNode6++) {	// iterate on states of node 6
+									// set states accourdingly to current iteration
+									states.set(0, stateNode6); states.set(1, stateNode5); states.set(2, stateNode8);
+									states.set(3, stateNode7); states.set(4, stateNode3); states.set(5, stateNode4);
+									// obtain the joint probability from engine
+									float jointProbability = engine.getJointProbability(questionIds, states);
+									// compare results
+//									System.out.format(
+//											"%d,%d,%d,%d,%d,%d,%1.20f,%1.20f%n",
+//											stateNode6,stateNode5,stateNode8,stateNode7,stateNode3,stateNode4 ,
+//											jointIteration5[indexForJointProbability],jointProbability);
+									assertEquals(
+											"joint index = " + indexForJointProbability + "; "
+											+ "[6,5,8,7,3,4]=["
+											+ stateNode6+"," + stateNode5+","+ stateNode8+","+ stateNode7+","+ stateNode3+","+ stateNode4 + "]", 
+											jointIteration5[indexForJointProbability], 
+											jointProbability, 
+											0.00005
+										);
+									sum += jointProbability;
+									indexForJointProbability++;	// point to next item in jointBeforeIteration5
+								}
+							}
+						}
+					}
+				}
+			}
+			assertEquals(1f, sum, PROB_ERROR_MARGIN);
+		}
+		
+		
+		
+//		 addTrade(occurredWhen=Wed Sep 05 07:18:03 BOT 2012,userId=9,questionId=6,newValues=[0.2824612, 0.71753895],assumptionIds=[5, 8],assumedStates=[0, 0])
+		newValues = new ArrayList<Float>();
+		newValues.add(0.2824612f);
+		newValues.add(0.71753895f);
+		questionIds = new ArrayList<Long>();
+		questionIds.add(5L); 
+		questionIds.add(8L); 
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0); 
+		assumedStates.add(0); 
+		assertFalse(engine.addTrade(null, new Date(), "",9,6, newValues, questionIds, assumedStates , false).isEmpty());
+		
+		assertEquals(102.35, engine.scoreUserEv(9L, null, null), ASSET_ERROR_MARGIN);
+		
+//		After Iteration #5, joint probabilities should be:
+		float[] jointIteration5 = {
+				0.0113695629581712f,	// 6=0,5=0,8=0,7=0,3=0,4=0
+				0.028882212024041f,		// 6=1,5=0,8=0,7=0,3=0,4=0
+				0.0221798839393358f,	// 6=0,5=1,8=0,7=0,3=0,4=0
+				0.0201258844722234f,	// 6=1,5=1,8=0,7=0,3=0,4=0
+				0.0201258844722234f,
+				0.0201258844722234f,
+				0.0201258844722234f,
+				0.0119375556697463f,
+				0.018071885005111f,
+				0.0119375556697463f,
+				0.0201258844722234f,
+				0.0365025269827644f,
+				0.0113695629581712f,
+				0.028882212024041f,
+				0.0221798839393358f,
+				0.0201258844722234f,
+				0.0201258844722234f,
+				0.0201258844722234f,
+				0.0201258844722234f,
+				0.0119375556697463f,
+				0.018071885005111f,
+				0.0119375556697463f,
+				0.0201258844722234f,
+				0.0365025269827644f,
+				0.00304576461974206f,
+				0.007737185663719f,
+				0.00594171526389791f,
+				0.00539147433300938f,
+				0.00539147433300938f,
+				0.00539147433300938f,
+				0.00539147433300938f,
+				0.00319792280836825f,
+				0.00484123340212084f,
+				0.00319792280836825f,
+				0.00539147433300938f,
+				0.00977857333868589f,
+				0.00304576461974206f,
+				0.007737185663719f,
+				0.00594171526389791f,
+				0.00539147433300938f,
+				0.00539147433300938f,
+				0.00539147433300938f,
+				0.00539147433300938f,
+				0.00319792280836825f,
+				0.00484123340212084f,
+				0.00319792280836825f,
+				0.00539147433300938f,
+				0.00977857333868589f,
+				0.00323852240402833f,
+				0.00822685014911062f,
+				0.00631774953184667f,
+				0.00573268541666667f,
+				0.00573268541666667f,
+				0.00573268541666667f,
+				0.00573268541666667f,
+				0.0034003102518575f,
+				0.00514762130148667f,
+				0.0034003102518575f,
+				0.00573268541666667f,
+				0.0103974314467709f,
+				0.00323852240402833f,
+				0.00822685014911062f,
+				0.00631774953184667f,
+				0.00573268541666667f,
+				0.00573268541666667f,
+				0.00573268541666667f,
+				0.00573268541666667f,
+				0.0034003102518575f,
+				0.00514762130148667f,
+				0.0034003102518575f,
+				0.00573268541666667f,
+				0.0103974314467709f,
+				0.00588460833333333f,
+				0.014948728125f,
+				0.0114797666666667f,
+				0.0104166666666667f,
+				0.0104166666666667f,
+				0.0104166666666667f,
+				0.0104166666666667f,
+				0.0061785875f,
+				0.00935356666666667f,
+				0.0061785875f,
+				0.0104166666666667f,
+				0.0188928171875f,
+				0.00588460833333333f,
+				0.014948728125f,
+				0.0114797666666667f,
+				0.0104166666666667f,
+				0.0104166666666667f,
+				0.0104166666666667f,
+				0.0104166666666667f,
+				0.0061785875f,
+				0.00935356666666667f,
+				0.0061785875f,
+				0.0104166666666667f,
+				0.0188928171875f,
+		};
+		// check that the matlab is summing up to 1
+		float sum = 0f;
+		for (int i = 0; i < jointIteration5.length; i++) {
+			sum += jointIteration5[i];
+		}
+		assertEquals(1f, sum, PROB_ERROR_MARGIN);
+		
+		// check joint probabilities
+//		    node_names: {'6'  '5'  '8'  '7'  '3'  '4'}
+		questionIds = new ArrayList<Long>();
+		questionIds.add(6L); questionIds.add(5L); questionIds.add(8L);
+		questionIds.add(7L); questionIds.add(3L); questionIds.add(4L);
+		// start from all questions in state 0
+		List<Integer> states = new ArrayList<Integer>();
+		states.add(0); states.add(0); states.add(0);
+		states.add(0); states.add(0); states.add(0);
+		// index to be used to access joint probability
+		int indexForJointProbability = 0;	
+		sum = 0;	// check that joint prob of ME is summing up to 1
+		// compare joint probability returned by the engine and expected
+		for (int stateNode4 = 0; stateNode4 < 2; stateNode4++) {	// iterate on states of node 4
+			for (int stateNode3 = 0; stateNode3 < 2; stateNode3++) {	// iterate on states of node 3
+				for (int stateNode7 = 0; stateNode7 < 2; stateNode7++) {	// iterate on states of node 7
+					for (int stateNode8 = 0; stateNode8 < 2; stateNode8++) {	// iterate on states of node 8
+						for (int stateNode5 = 0; stateNode5 < 3; stateNode5++) {	// iterate on states of node 5
+							for (int stateNode6 = 0; stateNode6 < 2; stateNode6++) {	// iterate on states of node 6
+								// set states accourdingly to current iteration
+								states.set(0, stateNode6); states.set(1, stateNode5); states.set(2, stateNode8);
+								states.set(3, stateNode7); states.set(4, stateNode3); states.set(5, stateNode4);
+								// obtain the joint probability from engine
+								float jointProbability = engine.getJointProbability(questionIds, states);
+								// compare results
+//								System.out.format(
+//										"%d,%d,%d,%d,%d,%d,%1.20f,%1.20f%n",
+//										stateNode6,stateNode5,stateNode8,stateNode7,stateNode3,stateNode4 ,
+//										jointIteration5[indexForJointProbability],jointProbability);
+								assertEquals(
+										"joint index = " + indexForJointProbability + "; "
+										+ "[6,5,8,7,3,4]=["
+										+ stateNode6+"," + stateNode5+","+ stateNode8+","+ stateNode7+","+ stateNode3+","+ stateNode4 + "]", 
+										jointIteration5[indexForJointProbability], 
+										jointProbability, 
+										0.00005
+								);
+								sum += jointProbability;
+								indexForJointProbability++;	// point to next item in jointBeforeIteration5
+							}
+						}
+					}
+				}
+			}
+		}
+		assertEquals(1f, sum, PROB_ERROR_MARGIN);
+		
+		
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5000001, 0.5000001], 1=[0.5000001, 0.5000001], 2=[0.5000001, 0.5000001], 3=[0.62060255, 0.379395], 4=[0.61241543, 0.38758317], 5=[0.29942867, 0.2994291, 0.40114206], 6=[0.46374366, 0.53625685], 7=[0.5000001, 0.5000001], 8=[0.50850505, 0.491495], 9=[0.49999952, 0.49999952]}
+//		 getCash(userId=9,assumptionIds=null,assumedStates=null)=17.612444
+//		 getCash(userId=9,assumptionIds=[5, 8],assumedStates=[0, 0])=17.612444
+//		 scoreUserEv(userId=9,assumptionIds=null,assumedStates=null)=102.353615
+		
+		
+//		 addQuestion(questionId=9,numberStates=2)
+		assertTrue(engine.addQuestion(null, new Date(), 9L, 2, null));
+		
+		
+//		 getEditLimits(userId=0,questionId=9,questionState=0,assumptionIds=[],assumedStates=[])=[0.45426682, 0.5457332]
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.29942876, 0.2994287, 0.40114254], 6=[0.46374357, 0.53625643], 7=[0.5, 0.5], 8=[0.50850487, 0.49149516], 9=[0.5, 0.5]}
+//		 getCash(userId=0,assumptionIds=null,assumedStates=null)=13.838821
+//		 getCash(userId=0,assumptionIds=[],assumedStates=[])=13.838821
+		
+		// check that addding a question did not change joint probability of other nodes
+		
+		questionIds = new ArrayList<Long>();
+		questionIds.add(6L); questionIds.add(5L); questionIds.add(8L);
+		questionIds.add(7L); questionIds.add(3L); questionIds.add(4L);
+		// start from all questions in state 0
+		states = new ArrayList<Integer>();
+		states.add(0); states.add(0); states.add(0);
+		states.add(0); states.add(0); states.add(0);
+		// index to be used to access joint probability
+		indexForJointProbability = 0;	
+		sum = 0;	// check that joint prob of ME is summing up to 1
+		// compare joint probability returned by the engine and expected
+		for (int stateNode4 = 0; stateNode4 < 2; stateNode4++) {	// iterate on states of node 4
+			for (int stateNode3 = 0; stateNode3 < 2; stateNode3++) {	// iterate on states of node 3
+				for (int stateNode7 = 0; stateNode7 < 2; stateNode7++) {	// iterate on states of node 7
+					for (int stateNode8 = 0; stateNode8 < 2; stateNode8++) {	// iterate on states of node 8
+						for (int stateNode5 = 0; stateNode5 < 3; stateNode5++) {	// iterate on states of node 5
+							for (int stateNode6 = 0; stateNode6 < 2; stateNode6++) {	// iterate on states of node 6
+								// set states accourdingly to current iteration
+								states.set(0, stateNode6); states.set(1, stateNode5); states.set(2, stateNode8);
+								states.set(3, stateNode7); states.set(4, stateNode3); states.set(5, stateNode4);
+								// obtain the joint probability from engine
+								float jointProbability = engine.getJointProbability(questionIds, states);
+								// compare results
+//								System.out.format(
+//										"%d,%d,%d,%d,%d,%d,%1.20f,%1.20f%n",
+//										stateNode6,stateNode5,stateNode8,stateNode7,stateNode3,stateNode4 ,
+//										jointIteration5[indexForJointProbability],jointProbability);
+								assertEquals(
+										"joint index = " + indexForJointProbability + "; "
+										+ "[6,5,8,7,3,4]=["
+										+ stateNode6+"," + stateNode5+","+ stateNode8+","+ stateNode7+","+ stateNode3+","+ stateNode4 + "]", 
+										jointIteration5[indexForJointProbability], 
+										jointProbability, 
+										0.00005
+								);
+								sum += jointProbability;
+								indexForJointProbability++;	// point to next item in jointBeforeIteration5
+							}
+						}
+					}
+				}
+			}
+		}
+		assertEquals(1f, sum, PROB_ERROR_MARGIN);
+		
+//		 addTrade(occurredWhen=Wed Sep 05 07:19:49 BOT 2012,userId=0,questionId=9,newValues=[0.5312497, 0.4687494],assumptionIds=[],assumedStates=[])
+		newValues = new ArrayList<Float>();
+		newValues.add(0.5312497f);
+		newValues.add(0.4687494f);
+		questionIds = new ArrayList<Long>();
+		assumedStates = new ArrayList<Integer>();
+		assertFalse(engine.addTrade(null, new Date(), "",0,9, newValues, questionIds, assumedStates , false).isEmpty());
+		
+		
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999994, 0.49999994], 1=[0.49999994, 0.49999994], 2=[0.49999994, 0.49999994], 3=[0.6206053, 0.37939516], 4=[0.6124166, 0.38758484], 5=[0.29942834, 0.2994288, 0.40114295], 6=[0.4637435, 0.5362562], 7=[0.4999998, 0.4999998], 8=[0.5085042, 0.49149504], 9=[0.531251, 0.4687496]}
+//		 getCash(userId=0,assumptionIds=null,assumedStates=null)=4.5278234
+//		 getCash(userId=0,assumptionIds=[],assumedStates=[])=4.5278234
+//		 scoreUserEv(userId=0,assumptionIds=null,assumedStates=null)=114.30382
+		
+		
+//		 addQuestion(questionId=1,numberStates=2)
+		assertTrue(engine.addQuestion(null, new Date(), 1L, 2, null));
+		
+		
+//		 addQuestion(questionId=0,numberStates=2)
+		assertTrue(engine.addQuestion(null, new Date(), 0L, 2, null));
+		
+		
+//		 addQuestionAssumption(childQuestionId=1,parentQuestionIds=[0])
+		questionIds = new ArrayList<Long>();
+		questionIds.add(0L);
+		assertTrue(engine.addQuestionAssumption(null, new Date(), 1L, questionIds , null));
+		
+		
+//		 getEditLimits(userId=0,questionId=1,questionState=0,assumptionIds=[0],assumedStates=[1])=[0.48455146, 0.5154486]
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.5, 0.5], 2=[0.5, 0.5], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.29942873, 0.2994287, 0.40114254], 6=[0.4637435, 0.53625643], 7=[0.5, 0.5], 8=[0.50850487, 0.49149516], 9=[0.5312502, 0.46874982]}
+//		 getCash(userId=0,assumptionIds=null,assumedStates=null)=4.5278234
+//		 getCash(userId=0,assumptionIds=[0],assumedStates=[1])=4.5278234
+		
+		
+//		 addTrade(occurredWhen=Wed Sep 05 07:20:03 BOT 2012,userId=0,questionId=1,newValues=[0.48541012, 0.51459014],assumptionIds=[0],assumedStates=[1])
+		newValues = new ArrayList<Float>();
+		newValues.add(0.48541012f);
+		newValues.add(0.51459014f);
+		questionIds = new ArrayList<Long>();
+		questionIds.add(0L); 
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(1); 
+		assertFalse(engine.addTrade(null, new Date(), "",0,1, newValues, questionIds, assumedStates , false).isEmpty());
+		
+		
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999985, 0.5000003], 1=[0.49270466, 0.5072953], 2=[0.50000006, 0.50000006], 3=[0.6206056, 0.37939495], 4=[0.6124163, 0.38758457], 5=[0.29942837, 0.29942843, 0.40114293], 6=[0.46374363, 0.5362562], 7=[0.5, 0.5], 8=[0.5085049, 0.4914949], 9=[0.53125113, 0.46874946]}
+//		 getCash(userId=0,assumptionIds=null,assumedStates=null)=0.2554088
+//		 getCash(userId=0,assumptionIds=[0],assumedStates=[1])=0.2554088
+//		 scoreUserEv(userId=0,assumptionIds=null,assumedStates=null)=114.33453
+//		 getEditLimits(userId=5,questionId=5,questionState=2,assumptionIds=[6, 8],assumedStates=[0, 1])=[0.1725362, 0.6725362]
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999994, 0.50000006], 1=[0.492705, 0.507295], 2=[0.5, 0.5], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.29942873, 0.2994287, 0.40114254], 6=[0.4637435, 0.53625643], 7=[0.5, 0.5], 8=[0.50850487, 0.49149516], 9=[0.5312502, 0.46874982]}
+//		 getCash(userId=5,assumptionIds=null,assumedStates=null)=100.0
+//		 getCash(userId=5,assumptionIds=[6, 8],assumedStates=[0, 1])=100.0
+		
+		// obtain conditional prob 5|6,8 and 8|5,6 before trade for posterior comparison
+		List<INode> parentNodes = new ArrayList<INode>();
+		parentNodes.add(engine.getProbabilisticNetwork().getNode("6"));
+		parentNodes.add(engine.getProbabilisticNetwork().getNode("8"));
+		PotentialTable cpt5Given68 = (PotentialTable) engine.getConditionalProbabilityExtractor().buildCondicionalProbability(engine.getProbabilisticNetwork().getNode("5"), parentNodes, engine.getProbabilisticNetwork(), null);
+		
+		
+//		 addTrade(occurredWhen=Wed Sep 05 07:20:04 BOT 2012,userId=5,questionId=5,newValues=[0.313011, 0.28106615, 0.40592253],assumptionIds=[6, 8],assumedStates=[0, 1])
+		newValues = new ArrayList<Float>();
+		newValues.add(0.313011f);
+		newValues.add(0.28106615f);
+		newValues.add(0.40592253f);
+		questionIds = new ArrayList<Long>();
+		questionIds.add(6L); 
+		questionIds.add(8L); 
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0); 
+		assumedStates.add(1); 
+		assertFalse(engine.addTrade(null, new Date(), "",5,5, newValues, questionIds, assumedStates , false).isEmpty());
+		
+		
+		// check that P(5|6=0,8=1) = [0.313011, 0.28106615, 0.40592253] and other conditions remains the same
+		parentNodes = new ArrayList<INode>();
+		parentNodes.add(engine.getProbabilisticNetwork().getNode("6"));
+		parentNodes.add(engine.getProbabilisticNetwork().getNode("8"));
+		PotentialTable cpt5Given68Posteriori = (PotentialTable) engine.getConditionalProbabilityExtractor().buildCondicionalProbability(engine.getProbabilisticNetwork().getNode("5"), parentNodes, engine.getProbabilisticNetwork(), null);
+		assertEquals(cpt5Given68.tableSize(), cpt5Given68Posteriori.tableSize());
+		for (int i = 0; i < cpt5Given68Posteriori.tableSize(); i++) {
+			int[] coord = cpt5Given68Posteriori.getMultidimensionalCoord(i);
+			if (coord[1] == 0 && coord[2] == 1) {
+				// 6=0,8=1
+				switch (coord[0]) {
+				case 0:
+					assertEquals("index="+i,0.313011f, cpt5Given68Posteriori.getValue(i), 0.00001);
+					break;
+				case 1:
+					assertEquals("index="+i,0.28106615f, cpt5Given68Posteriori.getValue(i), 0.00001);
+					break;
+				case 2:
+					assertEquals("index="+i,0.40592253f, cpt5Given68Posteriori.getValue(i), 0.00001);
+					break;
+				default:
+					fail("Unkown state for node 5: " + coord[0]);
+				}
+			} else {
+				assertEquals("index="+i,cpt5Given68.getValue(i), cpt5Given68Posteriori.getValue(i), 0.00001);
+			}
+		}
+		
+		
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999973, 0.5], 1=[0.49270454, 0.507295], 2=[0.49999982, 0.49999982], 3=[0.62060565, 0.37939453], 4=[0.6124168, 0.38758388], 5=[0.29168558, 0.29247606, 0.4158375], 6=[0.46374315, 0.5362562], 7=[0.4999998, 0.4999998], 8=[0.5085049, 0.49149442], 9=[0.53125095, 0.46874893]}
+//		 getCash(userId=5,assumptionIds=null,assumedStates=null)=85.93142
+//		 getCash(userId=5,assumptionIds=[6, 8],assumedStates=[0, 1])=85.93142
+//		 scoreUserEv(userId=5,assumptionIds=null,assumedStates=null)=100.2785
+//		 getEditLimits(userId=2,questionId=8,questionState=0,assumptionIds=[5, 6],assumedStates=[0, 1])=[0.47227493, 0.8048]
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999994, 0.50000006], 1=[0.492705, 0.507295], 2=[0.5, 0.5], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.29168606, 0.2924763, 0.4158376], 6=[0.4637435, 0.53625643], 7=[0.5, 0.5], 8=[0.50850487, 0.4914951], 9=[0.5312502, 0.46874982]}
+//		 getCash(userId=2,assumptionIds=null,assumedStates=null)=58.321434
+//		 getCash(userId=2,assumptionIds=[5, 6],assumedStates=[0, 1])=58.321434
+		
+		// store conditional prob P(8|5,6) for posterior comparison
+		parentNodes = new ArrayList<INode>();
+		parentNodes.add(engine.getProbabilisticNetwork().getNode("5"));
+		parentNodes.add(engine.getProbabilisticNetwork().getNode("6"));
+		PotentialTable cpt8Given56 = (PotentialTable) engine.getConditionalProbabilityExtractor().buildCondicionalProbability(engine.getProbabilisticNetwork().getNode("8"), parentNodes, engine.getProbabilisticNetwork(), null);
+		
+		
+
+//		Before Iteration#9, the joint probabilities should be
+//		node_names: {'N6'  'N5'  'N8'  'N7'  'N3'  'N4'  'N9'  'N0' 'N1'}
+//	sizes: [2 3 2 2 2 2 2 2 2]
+//	        joint probabilities are:
+		float[] jointIteration9 = {
+	        	0.00151001922766489f,
+	        	0.00383591661827705f,
+	        	0.00294576417220174f,
+	        	0.00267296752202584f,
+	        	0.00267296752202584f,
+	        	0.00267296752202584f,
+	        	0.00242461635884228f,
+	        	0.0015854557170715f,
+	        	0.00217716816727469f,
+	        	0.0015854557170715f,
+	        	0.00314431891103075f,
+	        	0.00484798912720887f,
+	        	0.00151001922766489f,
+	        	0.00383591661827705f,
+	        	0.00294576417220174f,
+	        	0.00267296752202584f,
+	        	0.00267296752202584f,
+	        	0.00267296752202584f,
+	        	0.00242461635884228f,
+	        	0.0015854557170715f,
+	        	0.00217716816727469f,
+	        	0.0015854557170715f,
+	        	0.00314431891103075f,
+	        	0.00484798912720887f,
+	        	0.000404515385127145f,
+	        	0.00102759439067375f,
+	        	0.000789133612857797f,
+	        	0.000716054780492233f,
+	        	0.000716054780492233f,
+	        	0.000716054780492233f,
+	        	0.000649524590292385f,
+	        	0.000424723883142197f,
+	        	0.000583236294966657f,
+	        	0.000424723883142197f,
+	        	0.00084232395982473f,
+	        	0.00129871603815122f,
+	        	0.000404515385127145f,
+	        	0.00102759439067375f,
+	        	0.000789133612857797f,
+	        	0.000716054780492233f,
+	        	0.000716054780492233f,
+	        	0.000716054780492233f,
+	        	0.000649524590292385f,
+	        	0.000424723883142197f,
+	        	0.000583236294966657f,
+	        	0.000424723883142197f,
+	        	0.00084232395982473f,
+	        	0.00129871603815122f,
+	        	0.000430116013895833f,
+	        	0.00109262791841499f,
+	        	0.00083907563586717f,
+	        	0.000761371851949635f,
+	        	0.000761371851949635f,
+	        	0.000761371851949635f,
+	        	0.00069063115514401f,
+	        	0.000451603450301555f,
+	        	0.000620147662051429f,
+	        	0.000451603450301555f,
+	        	0.000895632248684165f,
+	        	0.00138090808421691f,
+	        	0.000430116013895833f,
+	        	0.00109262791841499f,
+	        	0.00083907563586717f,
+	        	0.000761371851949635f,
+	        	0.000761371851949635f,
+	        	0.000761371851949635f,
+	        	0.00069063115514401f,
+	        	0.000451603450301555f,
+	        	0.000620147662051429f,
+	        	0.000451603450301555f,
+	        	0.000895632248684165f,
+	        	0.00138090808421691f,
+	        	0.000781549102925208f,
+	        	0.00198537683294695f,
+	        	0.00152465564943417f,
+	        	0.00138346276041667f,
+	        	0.00138346276041667f,
+	        	0.00138346276041667f,
+	        	0.00125492225891809f,
+	        	0.000820593188949688f,
+	        	0.00112684911349253f,
+	        	0.000820593188949688f,
+	        	0.00162742273687936f,
+	        	0.00250920086575355f,
+	        	0.000781549102925208f,
+	        	0.00198537683294695f,
+	        	0.00152465564943417f,
+	        	0.00138346276041667f,
+	        	0.00138346276041667f,
+	        	0.00138346276041667f,
+	        	0.00125492225891809f,
+	        	0.000820593188949688f,
+	        	0.00112684911349253f,
+	        	0.000820593188949688f,
+	        	0.00162742273687936f,
+	        	0.00250920086575355f,
+	        	0.00133236895372624f,
+	        	0.0033846298892355f,
+	        	0.00259920182215833f,
+	        	0.00235849906770601f,
+	        	0.00235849906770601f,
+	        	0.00235849906770601f,
+	        	0.00213936584517131f,
+	        	0.00139893051441504f,
+	        	0.00192102936172785f,
+	        	0.00139893051441504f,
+	        	0.00277439705463235f,
+	        	0.00427763440541365f,
+	        	0.00133236895372624f,
+	        	0.0033846298892355f,
+	        	0.00259920182215833f,
+	        	0.00235849906770601f,
+	        	0.00235849906770601f,
+	        	0.00235849906770601f,
+	        	0.00213936584517131f,
+	        	0.00139893051441504f,
+	        	0.00192102936172785f,
+	        	0.00139893051441504f,
+	        	0.00277439705463235f,
+	        	0.00427763440541365f,
+	        	0.000356925084511329f,
+	        	0.00090670028438922f,
+	        	0.000696293866230747f,
+	        	0.000631812589678386f,
+	        	0.000631812589678386f,
+	        	0.000631812589678386f,
+	        	0.000573109522668533f,
+	        	0.000374756099417233f,
+	        	0.000514619892159644f,
+	        	0.000374756099417233f,
+	        	0.000743226491748543f,
+	        	0.00114592509634125f,
+	        	0.000356925084511329f,
+	        	0.00090670028438922f,
+	        	0.000696293866230747f,
+	        	0.000631812589678386f,
+	        	0.000631812589678386f,
+	        	0.000631812589678386f,
+	        	0.000573109522668533f,
+	        	0.000374756099417233f,
+	        	0.000514619892159644f,
+	        	0.000374756099417233f,
+	        	0.000743226491748543f,
+	        	0.00114592509634125f,
+	        	0.00037951385844371f,
+	        	0.000964082767821379f,
+	        	0.000740360325600851f,
+	        	0.000671798212362812f,
+	        	0.000671798212362812f,
+	        	0.000671798212362812f,
+	        	0.000609379995122937f,
+	        	0.000398473347593013f,
+	        	0.000547188722173415f,
+	        	0.000398473347593013f,
+	        	0.000790263183567639f,
+	        	0.00121844743805375f,
+	        	0.00037951385844371f,
+	        	0.000964082767821379f,
+	        	0.000740360325600851f,
+	        	0.000671798212362812f,
+	        	0.000671798212362812f,
+	        	0.000671798212362812f,
+	        	0.000609379995122937f,
+	        	0.000398473347593013f,
+	        	0.000547188722173415f,
+	        	0.000398473347593013f,
+	        	0.000790263183567639f,
+	        	0.00121844743805375f,
+	        	0.00068960165637125f,
+	        	0.00175180183483922f,
+	        	0.001345283434285f,
+	        	0.0012207015625f,
+	        	0.0012207015625f,
+	        	0.0012207015625f,
+	        	0.00110728355406977f,
+	        	0.000724052295868125f,
+	        	0.000994277918350175f,
+	        	0.000724052295868125f,
+	        	0.00143596021128776f,
+	        	0.00221399918023758f,
+	        	0.00068960165637125f,
+	        	0.00175180183483922f,
+	        	0.001345283434285f,
+	        	0.0012207015625f,
+	        	0.0012207015625f,
+	        	0.0012207015625f,
+	        	0.00110728355406977f,
+	        	0.000724052295868125f,
+	        	0.000994277918350175f,
+	        	0.000724052295868125f,
+	        	0.00143596021128776f,
+	        	0.00221399918023758f,
+	        	0.00146595722900624f,
+	        	0.00372398549197571f,
+	        	0.0028598074806403f,
+	        	0.00259497097124533f,
+	        	0.00259497097124533f,
+	        	0.00259497097124533f,
+	        	0.00235386663539919f,
+	        	0.00153919249975673f,
+	        	0.00211363892267398f,
+	        	0.00153919249975673f,
+	        	0.00305256843984341f,
+	        	0.00470652596799431f,
+	        	0.00146595722900624f,
+	        	0.00372398549197571f,
+	        	0.0028598074806403f,
+	        	0.00259497097124533f,
+	        	0.00259497097124533f,
+	        	0.00259497097124533f,
+	        	0.00235386663539919f,
+	        	0.00153919249975673f,
+	        	0.00211363892267398f,
+	        	0.00153919249975673f,
+	        	0.00305256843984341f,
+	        	0.00470652596799431f,
+	        	0.000392711723272828f,
+	        	0.000997609432976548f,
+	        	0.000766106883426673f,
+	        	0.000695160473850617f,
+	        	0.000695160473850617f,
+	        	0.000695160473850617f,
+	        	0.000630571618633555f,
+	        	0.00041233054216584f,
+	        	0.00056621759985624f,
+	        	0.00041233054216584f,
+	        	0.000817745148834794f,
+	        	0.00126081981584982f,
+	        	0.000392711723272828f,
+	        	0.000997609432976548f,
+	        	0.000766106883426673f,
+	        	0.000695160473850617f,
+	        	0.000695160473850617f,
+	        	0.000695160473850617f,
+	        	0.000630571618633555f,
+	        	0.00041233054216584f,
+	        	0.00056621759985624f,
+	        	0.00041233054216584f,
+	        	0.000817745148834794f,
+	        	0.00126081981584982f,
+	        	0.000417565331838196f,
+	        	0.00106074529798634f,
+	        	0.000814591610190719f,
+	        	0.00073915520403899f,
+	        	0.00073915520403899f,
+	        	0.00073915520403899f,
+	        	0.000670478703788385f,
+	        	0.000438425770006584f,
+	        	0.000602051902108207f,
+	        	0.000438425770006584f,
+	        	0.000869497914619301f,
+	        	0.0013406135177374f,
+	        	0.000417565331838196f,
+	        	0.00106074529798634f,
+	        	0.000814591610190719f,
+	        	0.00073915520403899f,
+	        	0.00073915520403899f,
+	        	0.00073915520403899f,
+	        	0.000670478703788385f,
+	        	0.000438425770006584f,
+	        	0.000602051902108207f,
+	        	0.000438425770006584f,
+	        	0.000869497914619301f,
+	        	0.0013406135177374f,
+	        	0.000758743687673635f,
+	        	0.001927444013452f,
+	        	0.00148016656350103f,
+	        	0.00134309364909877f,
+	        	0.00134309364909877f,
+	        	0.00134309364909877f,
+	        	0.0012183039285842f,
+	        	0.000796648476638501f,
+	        	0.0010939679268046f,
+	        	0.000796648476638501f,
+	        	0.00157993493199868f,
+	        	0.00243598298669907f,
+	        	0.000758743687673635f,
+	        	0.001927444013452f,
+	        	0.00148016656350103f,
+	        	0.00134309364909877f,
+	        	0.00134309364909877f,
+	        	0.00134309364909877f,
+	        	0.0012183039285842f,
+	        	0.000796648476638501f,
+	        	0.0010939679268046f,
+	        	0.000796648476638501f,
+	        	0.00157993493199868f,
+	        	0.00243598298669907f,
+	        	0.00129349074742506f,
+	        	0.00328586720137878f,
+	        	0.00252335773679618f,
+	        	0.00228967863095013f,
+	        	0.00228967863095013f,
+	        	0.00228967863095013f,
+	        	0.00207693966325701f,
+	        	0.00135811005774774f,
+	        	0.00186497418599968f,
+	        	0.00135811005774774f,
+	        	0.00269344081443347f,
+	        	0.00415281406009594f,
+	        	0.00129349074742506f,
+	        	0.00328586720137878f,
+	        	0.00252335773679618f,
+	        	0.00228967863095013f,
+	        	0.00228967863095013f,
+	        	0.00228967863095013f,
+	        	0.00207693966325701f,
+	        	0.00135811005774774f,
+	        	0.00186497418599968f,
+	        	0.00135811005774774f,
+	        	0.00269344081443347f,
+	        	0.00415281406009594f,
+	        	0.000346510096207309f,
+	        	0.000880242987698811f,
+	        	0.000675976178324662f,
+	        	0.000613376449946592f,
+	        	0.000613376449946592f,
+	        	0.000613376449946592f,
+	        	0.000556386324343351f,
+	        	0.000363820806377702f,
+	        	0.0004996034072152f,
+	        	0.000363820806377702f,
+	        	0.000721539321093679f,
+	        	0.00111248727705204f,
+	        	0.000346510096207309f,
+	        	0.000880242987698811f,
+	        	0.000675976178324662f,
+	        	0.000613376449946592f,
+	        	0.000613376449946592f,
+	        	0.000613376449946592f,
+	        	0.000556386324343351f,
+	        	0.000363820806377702f,
+	        	0.0004996034072152f,
+	        	0.000363820806377702f,
+	        	0.000721539321093679f,
+	        	0.00111248727705204f,
+	        	0.000368439735137648f,
+	        	0.000935951064036215f,
+	        	0.000718756788986297f,
+	        	0.000652195301757637f,
+	        	0.000652195301757637f,
+	        	0.000652195301757637f,
+	        	0.000591598433116448f,
+	        	0.000386845990943852f,
+	        	0.000531221886585688f,
+	        	0.000386845990943852f,
+	        	0.000767203493534299f,
+	        	0.00118289343423873f,
+	        	0.000368439735137648f,
+	        	0.000935951064036215f,
+	        	0.000718756788986297f,
+	        	0.000652195301757637f,
+	        	0.000652195301757637f,
+	        	0.000652195301757637f,
+	        	0.000591598433116448f,
+	        	0.000386845990943852f,
+	        	0.000531221886585688f,
+	        	0.000386845990943852f,
+	        	0.000767203493534299f,
+	        	0.00118289343423873f,
+	        	0.000669479245542734f,
+	        	0.00170068467773105f,
+	        	0.00130602838654059f,
+	        	0.00118508178387462f,
+	        	0.00118508178387462f,
+	        	0.00118508178387462f,
+	        	0.00107497328571006f,
+	        	0.000702924623647244f,
+	        	0.000965265127319417f,
+	        	0.000702924623647244f,
+	        	0.00139405923695283f,
+	        	0.00214939521551805f,
+	        	0.000669479245542734f,
+	        	0.00170068467773105f,
+	        	0.00130602838654059f,
+	        	0.00118508178387462f,
+	        	0.00118508178387462f,
+	        	0.00118508178387462f,
+	        	0.00107497328571006f,
+	        	0.000702924623647244f,
+	        	0.000965265127319417f,
+	        	0.000702924623647244f,
+	        	0.00139405923695283f,
+	        	0.00214939521551805f,
+	        	0.00151001922766489f,
+	        	0.00383591661827705f,
+	        	0.00294576417220174f,
+	        	0.00267296752202584f,
+	        	0.00267296752202584f,
+	        	0.00267296752202584f,
+	        	0.00242461635884228f,
+	        	0.0015854557170715f,
+	        	0.00217716816727469f,
+	        	0.0015854557170715f,
+	        	0.00314431891103075f,
+	        	0.00484798912720887f,
+	        	0.00151001922766489f,
+	        	0.00383591661827705f,
+	        	0.00294576417220174f,
+	        	0.00267296752202584f,
+	        	0.00267296752202584f,
+	        	0.00267296752202584f,
+	        	0.00242461635884228f,
+	        	0.0015854557170715f,
+	        	0.00217716816727469f,
+	        	0.0015854557170715f,
+	        	0.00314431891103075f,
+	        	0.00484798912720887f,
+	        	0.000404515385127145f,
+	        	0.00102759439067375f,
+	        	0.000789133612857797f,
+	        	0.000716054780492233f,
+	        	0.000716054780492233f,
+	        	0.000716054780492233f,
+	        	0.000649524590292385f,
+	        	0.000424723883142197f,
+	        	0.000583236294966657f,
+	        	0.000424723883142197f,
+	        	0.00084232395982473f,
+	        	0.00129871603815122f,
+	        	0.000404515385127145f,
+	        	0.00102759439067375f,
+	        	0.000789133612857797f,
+	        	0.000716054780492233f,
+	        	0.000716054780492233f,
+	        	0.000716054780492233f,
+	        	0.000649524590292385f,
+	        	0.000424723883142197f,
+	        	0.000583236294966657f,
+	        	0.000424723883142197f,
+	        	0.00084232395982473f,
+	        	0.00129871603815122f,
+	        	0.000430116013895833f,
+	        	0.00109262791841499f,
+	        	0.00083907563586717f,
+	        	0.000761371851949635f,
+	        	0.000761371851949635f,
+	        	0.000761371851949635f,
+	        	0.00069063115514401f,
+	        	0.000451603450301555f,
+	        	0.000620147662051429f,
+	        	0.000451603450301555f,
+	        	0.000895632248684165f,
+	        	0.00138090808421691f,
+	        	0.000430116013895833f,
+	        	0.00109262791841499f,
+	        	0.00083907563586717f,
+	        	0.000761371851949635f,
+	        	0.000761371851949635f,
+	        	0.000761371851949635f,
+	        	0.00069063115514401f,
+	        	0.000451603450301555f,
+	        	0.000620147662051429f,
+	        	0.000451603450301555f,
+	        	0.000895632248684165f,
+	        	0.00138090808421691f,
+	        	0.000781549102925208f,
+	        	0.00198537683294695f,
+	        	0.00152465564943417f,
+	        	0.00138346276041667f,
+	        	0.00138346276041667f,
+	        	0.00138346276041667f,
+	        	0.00125492225891809f,
+	        	0.000820593188949688f,
+	        	0.00112684911349253f,
+	        	0.000820593188949688f,
+	        	0.00162742273687936f,
+	        	0.00250920086575355f,
+	        	0.000781549102925208f,
+	        	0.00198537683294695f,
+	        	0.00152465564943417f,
+	        	0.00138346276041667f,
+	        	0.00138346276041667f,
+	        	0.00138346276041667f,
+	        	0.00125492225891809f,
+	        	0.000820593188949688f,
+	        	0.00112684911349253f,
+	        	0.000820593188949688f,
+	        	0.00162742273687936f,
+	        	0.00250920086575355f,
+	        	0.00133236895372624f,
+	        	0.0033846298892355f,
+	        	0.00259920182215833f,
+	        	0.00235849906770601f,
+	        	0.00235849906770601f,
+	        	0.00235849906770601f,
+	        	0.00213936584517131f,
+	        	0.00139893051441504f,
+	        	0.00192102936172785f,
+	        	0.00139893051441504f,
+	        	0.00277439705463235f,
+	        	0.00427763440541365f,
+	        	0.00133236895372624f,
+	        	0.0033846298892355f,
+	        	0.00259920182215833f,
+	        	0.00235849906770601f,
+	        	0.00235849906770601f,
+	        	0.00235849906770601f,
+	        	0.00213936584517131f,
+	        	0.00139893051441504f,
+	        	0.00192102936172785f,
+	        	0.00139893051441504f,
+	        	0.00277439705463235f,
+	        	0.00427763440541365f,
+	        	0.000356925084511329f,
+	        	0.00090670028438922f,
+	        	0.000696293866230747f,
+	        	0.000631812589678386f,
+	        	0.000631812589678386f,
+	        	0.000631812589678386f,
+	        	0.000573109522668533f,
+	        	0.000374756099417233f,
+	        	0.000514619892159644f,
+	        	0.000374756099417233f,
+	        	0.000743226491748543f,
+	        	0.00114592509634125f,
+	        	0.000356925084511329f,
+	        	0.00090670028438922f,
+	        	0.000696293866230747f,
+	        	0.000631812589678386f,
+	        	0.000631812589678386f,
+	        	0.000631812589678386f,
+	        	0.000573109522668533f,
+	        	0.000374756099417233f,
+	        	0.000514619892159644f,
+	        	0.000374756099417233f,
+	        	0.000743226491748543f,
+	        	0.00114592509634125f,
+	        	0.00037951385844371f,
+	        	0.000964082767821379f,
+	        	0.000740360325600851f,
+	        	0.000671798212362812f,
+	        	0.000671798212362812f,
+	        	0.000671798212362812f,
+	        	0.000609379995122937f,
+	        	0.000398473347593013f,
+	        	0.000547188722173415f,
+	        	0.000398473347593013f,
+	        	0.000790263183567639f,
+	        	0.00121844743805375f,
+	        	0.00037951385844371f,
+	        	0.000964082767821379f,
+	        	0.000740360325600851f,
+	        	0.000671798212362812f,
+	        	0.000671798212362812f,
+	        	0.000671798212362812f,
+	        	0.000609379995122937f,
+	        	0.000398473347593013f,
+	        	0.000547188722173415f,
+	        	0.000398473347593013f,
+	        	0.000790263183567639f,
+	        	0.00121844743805375f,
+	        	0.00068960165637125f,
+	        	0.00175180183483922f,
+	        	0.001345283434285f,
+	        	0.0012207015625f,
+	        	0.0012207015625f,
+	        	0.0012207015625f,
+	        	0.00110728355406977f,
+	        	0.000724052295868125f,
+	        	0.000994277918350175f,
+	        	0.000724052295868125f,
+	        	0.00143596021128776f,
+	        	0.00221399918023758f,
+	        	0.00068960165637125f,
+	        	0.00175180183483922f,
+	        	0.001345283434285f,
+	        	0.0012207015625f,
+	        	0.0012207015625f,
+	        	0.0012207015625f,
+	        	0.00110728355406977f,
+	        	0.000724052295868125f,
+	        	0.000994277918350175f,
+	        	0.000724052295868125f,
+	        	0.00143596021128776f,
+	        	0.00221399918023758f,
+	        	0.00155408201153354f,
+	        	0.00394784973925502f,
+	        	0.00303172239556056f,
+	        	0.00275096546274946f,
+	        	0.00275096546274946f,
+	        	0.00275096546274946f,
+	        	0.00249536734308588f,
+	        	0.00163171975882325f,
+	        	0.00224069854400285f,
+	        	0.00163171975882325f,
+	        	0.00323607101726392f,
+	        	0.00498945480737778f,
+	        	0.00155408201153354f,
+	        	0.00394784973925502f,
+	        	0.00303172239556056f,
+	        	0.00275096546274946f,
+	        	0.00275096546274946f,
+	        	0.00275096546274946f,
+	        	0.00249536734308588f,
+	        	0.00163171975882325f,
+	        	0.00224069854400285f,
+	        	0.00163171975882325f,
+	        	0.00323607101726392f,
+	        	0.00498945480737778f,
+	        	0.000416319257329463f,
+	        	0.00105757988272004f,
+	        	0.000812160752638399f,
+	        	0.000736949459482335f,
+	        	0.000736949459482335f,
+	        	0.000736949459482335f,
+	        	0.000668477899704002f,
+	        	0.000437117444974974f,
+	        	0.000600255293359946f,
+	        	0.000437117444974974f,
+	        	0.000866903208823124f,
+	        	0.00133661293578496f,
+	        	0.000416319257329463f,
+	        	0.00105757988272004f,
+	        	0.000812160752638399f,
+	        	0.000736949459482335f,
+	        	0.000736949459482335f,
+	        	0.000736949459482335f,
+	        	0.000668477899704002f,
+	        	0.000437117444974974f,
+	        	0.000600255293359946f,
+	        	0.000437117444974974f,
+	        	0.000866903208823124f,
+	        	0.00133661293578496f,
+	        	0.000442666919613797f,
+	        	0.00112451110701016f,
+	        	0.000863560097862953f,
+	        	0.000783588895773644f,
+	        	0.000783588895773644f,
+	        	0.000783588895773644f,
+	        	0.000710783965627836f,
+	        	0.000464781365430321f,
+	        	0.000638243744471435f,
+	        	0.000464781365430321f,
+	        	0.000921767048477799f,
+	        	0.00142120336876862f,
+	        	0.000442666919613797f,
+	        	0.00112451110701016f,
+	        	0.000863560097862953f,
+	        	0.000783588895773644f,
+	        	0.000783588895773644f,
+	        	0.000783588895773644f,
+	        	0.000710783965627836f,
+	        	0.000464781365430321f,
+	        	0.000638243744471435f,
+	        	0.000464781365430321f,
+	        	0.000921767048477799f,
+	        	0.00142120336876862f,
+	        	0.000804354924582315f,
+	        	0.00204331068483786f,
+	        	0.00156914552818824f,
+	        	0.0014238325911352f,
+	        	0.0014238325911352f,
+	        	0.0014238325911352f,
+	        	0.00129154124181155f,
+	        	0.000844538327969332f,
+	        	0.00115973088614199f,
+	        	0.000844538327969332f,
+	        	0.00167491138801987f,
+	        	0.00258242004959249f,
+	        	0.000804354924582315f,
+	        	0.00204331068483786f,
+	        	0.00156914552818824f,
+	        	0.0014238325911352f,
+	        	0.0014238325911352f,
+	        	0.0014238325911352f,
+	        	0.00129154124181155f,
+	        	0.000844538327969332f,
+	        	0.00115973088614199f,
+	        	0.000844538327969332f,
+	        	0.00167491138801987f,
+	        	0.00258242004959249f,
+	        	0.00137124785285928f,
+	        	0.00348339433709976f,
+	        	0.00267504725910542f,
+	        	0.00242732073088141f,
+	        	0.00242732073088141f,
+	        	0.00242732073088141f,
+	        	0.00220179313955584f,
+	        	0.00143975169852622f,
+	        	0.00197708553639129f,
+	        	0.00143975169852622f,
+	        	0.00285535473751769f,
+	        	0.00440245697510126f,
+	        	0.00137124785285928f,
+	        	0.00348339433709976f,
+	        	0.00267504725910542f,
+	        	0.00242732073088141f,
+	        	0.00242732073088141f,
+	        	0.00242732073088141f,
+	        	0.00220179313955584f,
+	        	0.00143975169852622f,
+	        	0.00197708553639129f,
+	        	0.00143975169852622f,
+	        	0.00285535473751769f,
+	        	0.00440245697510126f,
+	        	0.000367340258416393f,
+	        	0.000933158052563777f,
+	        	0.000716611916209643f,
+	        	0.000650249057952727f,
+	        	0.000650249057952727f,
+	        	0.000650249057952727f,
+	        	0.000589833019010667f,
+	        	0.000385691587329935f,
+	        	0.000529636644706432f,
+	        	0.000385691587329935f,
+	        	0.000764914048881184f,
+	        	0.00117936351151152f,
+	        	0.000367340258416393f,
+	        	0.000933158052563777f,
+	        	0.000716611916209643f,
+	        	0.000650249057952727f,
+	        	0.000650249057952727f,
+	        	0.000650249057952727f,
+	        	0.000589833019010667f,
+	        	0.000385691587329935f,
+	        	0.000529636644706432f,
+	        	0.000385691587329935f,
+	        	0.000764914048881184f,
+	        	0.00117936351151152f,
+	        	0.000390588179096978f,
+	        	0.000992214972929582f,
+	        	0.000761964247202775f,
+	        	0.000691401472303059f,
+	        	0.000691401472303059f,
+	        	0.000691401472303059f,
+	        	0.000627161874007023f,
+	        	0.000410100911448314f,
+	        	0.000563155842299277f,
+	        	0.000410100911448314f,
+	        	0.000813323284537834f,
+	        	0.00125400207546144f,
+	        	0.000390588179096978f,
+	        	0.000992214972929582f,
+	        	0.000761964247202775f,
+	        	0.000691401472303059f,
+	        	0.000691401472303059f,
+	        	0.000691401472303059f,
+	        	0.000627161874007023f,
+	        	0.000410100911448314f,
+	        	0.000563155842299277f,
+	        	0.000410100911448314f,
+	        	0.000813323284537834f,
+	        	0.00125400207546144f,
+	        	0.000709724425792627f,
+	        	0.00180291990288434f,
+	        	0.0013845391815768f,
+	        	0.00125632197589019f,
+	        	0.00125632197589019f,
+	        	0.00125632197589019f,
+	        	0.00113959439821692f,
+	        	0.0007451803445962f,
+	        	0.00102329122640545f,
+	        	0.0007451803445962f,
+	        	0.00147786193232199f,
+	        	0.00227860429623668f,
+	        	0.000709724425792627f,
+	        	0.00180291990288434f,
+	        	0.0013845391815768f,
+	        	0.00125632197589019f,
+	        	0.00125632197589019f,
+	        	0.00125632197589019f,
+	        	0.00113959439821692f,
+	        	0.0007451803445962f,
+	        	0.00102329122640545f,
+	        	0.0007451803445962f,
+	        	0.00147786193232199f,
+	        	0.00227860429623668f,
+		};
+		
+		// check that the matlab is summing up to 1
+		sum = 0f;
+		float min = Float.POSITIVE_INFINITY;
+		float max = Float.NEGATIVE_INFINITY;
+		for (int i = 0; i < jointIteration9.length; i++) {
+			sum += jointIteration9[i];
+			if (jointIteration9[i] < min) {
+				min = jointIteration9[i];
+			}
+			if (jointIteration9[i] > max) {
+				max = jointIteration9[i];
+			}
+		}
+		assertEquals(1f, sum, PROB_ERROR_MARGIN);
+		assertFalse(Float.isInfinite(min));
+		
+		// check joint probabilities
+//		node_names: {'N6'  'N5'  'N8'  'N7'  'N3'  'N4'  'N9'  'N0' 'N1'}
+//		sizes: [2 3 2 2 2 2 2 2 2]
+		questionIds = new ArrayList<Long>();
+		questionIds.add(6L); questionIds.add(5L); questionIds.add(8L); 
+		questionIds.add(7L); questionIds.add(3L); questionIds.add(4L);  
+		questionIds.add(9L); questionIds.add(0L); questionIds.add(1L);
+		// start from all questions in state 0
+		states = new ArrayList<Integer>();
+		states.add(0); states.add(0); states.add(0);
+		states.add(0); states.add(0); states.add(0);
+		states.add(0); states.add(0); states.add(0);
+		// index to be used to access joint probability
+		indexForJointProbability = 0;	
+		sum = 0;	// check that joint prob of ME is summing up to 1
+		// compare joint probability returned by the engine and expected
+		for (int stateNode1 = 0; stateNode1 < 2; stateNode1++) {	// iterate on states of node 1
+			for (int stateNode0 = 0; stateNode0 < 2; stateNode0++) {	// iterate on states of node 0
+				for (int stateNode9 = 0; stateNode9 < 2; stateNode9++) {	// iterate on states of node 9
+					for (int stateNode4 = 0; stateNode4 < 2; stateNode4++) {	// iterate on states of node 4
+						for (int stateNode3 = 0; stateNode3 < 2; stateNode3++) {	// iterate on states of node 3
+							for (int stateNode7 = 0; stateNode7 < 2; stateNode7++) {	// iterate on states of node 7
+								for (int stateNode8 = 0; stateNode8 < 2; stateNode8++) {	// iterate on states of node 8
+									for (int stateNode5 = 0; stateNode5 < 3; stateNode5++) {	// iterate on states of node 5
+										for (int stateNode6 = 0; stateNode6 < 2; stateNode6++) {	// iterate on states of node 6
+											// set states accourdingly to current iteration
+											states.set(0, stateNode6); states.set(1, stateNode5); states.set(2, stateNode8);
+											states.set(3, stateNode7); states.set(4, stateNode3); states.set(5, stateNode4);
+											states.set(6, stateNode9); states.set(7, stateNode0); states.set(8, stateNode1);
+											// obtain the joint probability from engine
+											float jointProbability = engine.getJointProbability(questionIds, states);
+											// compare results
+//											System.out.format(
+//													"%d,%d,%d,%d,%d,%d,%d,%d,%d,%1.20f,%1.20f%n",
+//													stateNode6,stateNode5,stateNode8,stateNode7,stateNode3,stateNode4,stateNode9,stateNode0,stateNode1,
+//													jointIteration9[indexForJointProbability],jointProbability
+//												);
+											assertEquals(
+													"joint index = " + indexForJointProbability + "; "
+													+ "[6,5,8,7,3,4,9,0,1]=["
+													+ stateNode6+"," + stateNode5+","+ stateNode8+","+ stateNode7+","+ stateNode3+","+ stateNode4+","+ stateNode9+","+ stateNode0+","+ stateNode1 + "]", 
+													jointIteration9[indexForJointProbability], 
+													jointProbability, 
+													min/2	// use the half of the smallest joint prob as the error margin
+											);
+											sum += jointProbability;
+											indexForJointProbability++;	// point to next item in jointBeforeIteration5
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		assertEquals(1f, sum, PROB_ERROR_MARGIN);
+		
+//		 addTrade(occurredWhen=Wed Sep 05 07:20:06 BOT 2012,userId=2,questionId=8,newValues=[0.6097233, 0.390277],assumptionIds=[5, 6],assumedStates=[0, 1])
+		newValues = new ArrayList<Float>();
+		newValues.add(0.6097233f);
+		newValues.add(0.390277f);
+		questionIds = new ArrayList<Long>();
+		questionIds.add(5L); 
+		questionIds.add(6L); 
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0); 
+		assumedStates.add(1); 
+		assertFalse(engine.addTrade(null, new Date(), "",2,8, newValues, questionIds, assumedStates , false).isEmpty());
+		
+		// check that P(8|5=0,6=1) = [0.6097233, 0.390277] and other conditions remains the same
+		PotentialTable cpt8Given56Posteriori = (PotentialTable) engine.getConditionalProbabilityExtractor().buildCondicionalProbability(engine.getProbabilisticNetwork().getNode("8"), parentNodes, engine.getProbabilisticNetwork(), null);
+		assertEquals(cpt8Given56.tableSize(), cpt8Given56Posteriori.tableSize());
+		for (int i = 0; i < cpt8Given56Posteriori.tableSize(); i++) {
+			int[] coord = cpt8Given56Posteriori.getMultidimensionalCoord(i);
+			if (coord[1] == 0 && coord[2] == 1) {
+				// 5=0,6=1
+				switch (coord[0]) {
+				case 0:
+					assertEquals("index="+i,0.6097233f, cpt8Given56Posteriori.getValue(i), 0.00001);
+					break;
+				case 1:
+					assertEquals("index="+i,0.390277f, cpt8Given56Posteriori.getValue(i), 0.00001);
+					break;
+				default:
+					fail("Unkown state for node 8: " + coord[0]);
+				}
+			} else {
+				assertEquals("index="+i,cpt8Given56.getValue(i), cpt8Given56Posteriori.getValue(i), 0.00001);
+			}
+		}
+		
+//		 getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5000002, 0.49999994], 1=[0.49270457, 0.5072953], 2=[0.50000006, 0.50000006], 3=[0.6206052, 0.37939462], 4=[0.6124164, 0.3875839], 5=[0.29168588, 0.29247606, 0.4158375], 6=[0.46374315, 0.53625655], 7=[0.5, 0.5], 8=[0.49196953, 0.50803006], 9=[0.5312506, 0.46874934]}
+//		 getCash(userId=2,assumptionIds=null,assumedStates=null)=36.85278
+//		 getCash(userId=2,assumptionIds=[5, 6],assumedStates=[0, 1])=36.85278
+//		 scoreUserEv(userId=2,assumptionIds=null,assumedStates=null)=161.59337
+		
+
+//		After Iteration #9, JP are,
+		float[] jointAfter9 = {
+				0.00151001922766489f,
+				0.00330553703083742f,
+				0.00294576417220174f,
+				0.00267296752202584f,
+				0.00267296752202584f,
+				0.00267296752202584f,
+				0.00242461635884228f,
+				0.00211583693092283f,
+				0.00217716816727469f,
+				0.0015854557170715f,
+				0.00314431891103075f,
+				0.00484798912720887f,
+				0.00151001922766489f,
+				0.00330553703083742f,
+				0.00294576417220174f,
+				0.00267296752202584f,
+				0.00267296752202584f,
+				0.00267296752202584f,
+				0.00242461635884228f,
+				0.00211583693092283f,
+				0.00217716816727469f,
+				0.0015854557170715f,
+				0.00314431891103075f,
+				0.00484798912720887f,
+				0.000404515385127145f,
+				0.000885512290561366f,
+				0.000789133612857797f,
+				0.000716054780492233f,
+				0.000716054780492233f,
+				0.000716054780492233f,
+				0.000649524590292385f,
+				0.000566806418950068f,
+				0.000583236294966657f,
+				0.000424723883142197f,
+				0.00084232395982473f,
+				0.00129871603815122f,
+				0.000404515385127145f,
+				0.000885512290561366f,
+				0.000789133612857797f,
+				0.000716054780492233f,
+				0.000716054780492233f,
+				0.000716054780492233f,
+				0.000649524590292385f,
+				0.000566806418950068f,
+				0.000583236294966657f,
+				0.000424723883142197f,
+				0.00084232395982473f,
+				0.00129871603815122f,
+				0.000430116013895833f,
+				0.000941553846097371f,
+				0.00083907563586717f,
+				0.000761371851949635f,
+				0.000761371851949635f,
+				0.000761371851949635f,
+				0.00069063115514401f,
+				0.000602677985888588f,
+				0.000620147662051429f,
+				0.000451603450301555f,
+				0.000895632248684165f,
+				0.00138090808421691f,
+				0.000430116013895833f,
+				0.000941553846097371f,
+				0.00083907563586717f,
+				0.000761371851949635f,
+				0.000761371851949635f,
+				0.000761371851949635f,
+				0.00069063115514401f,
+				0.000602677985888588f,
+				0.000620147662051429f,
+				0.000451603450301555f,
+				0.000895632248684165f,
+				0.00138090808421691f,
+				0.000781549102925208f,
+				0.00171086530145189f,
+				0.00152465564943417f,
+				0.00138346276041667f,
+				0.00138346276041667f,
+				0.00138346276041667f,
+				0.00125492225891809f,
+				0.00109510556223576f,
+				0.00112684911349253f,
+				0.000820593188949688f,
+				0.00162742273687936f,
+				0.00250920086575355f,
+				0.000781549102925208f,
+				0.00171086530145189f,
+				0.00152465564943417f,
+				0.00138346276041667f,
+				0.00138346276041667f,
+				0.00138346276041667f,
+				0.00125492225891809f,
+				0.00109510556223576f,
+				0.00112684911349253f,
+				0.000820593188949688f,
+				0.00162742273687936f,
+				0.00250920086575355f,
+				0.00133236895372624f,
+				0.00291664823506314f,
+				0.00259920182215833f,
+				0.00235849906770601f,
+				0.00235849906770601f,
+				0.00235849906770601f,
+				0.00213936584517131f,
+				0.00186691360365552f,
+				0.00192102936172785f,
+				0.00139893051441504f,
+				0.00277439705463235f,
+				0.00427763440541365f,
+				0.00133236895372624f,
+				0.00291664823506314f,
+				0.00259920182215833f,
+				0.00235849906770601f,
+				0.00235849906770601f,
+				0.00235849906770601f,
+				0.00213936584517131f,
+				0.00186691360365552f,
+				0.00192102936172785f,
+				0.00139893051441504f,
+				0.00277439705463235f,
+				0.00427763440541365f,
+				0.000356925084511329f,
+				0.000781333815140537f,
+				0.000696293866230747f,
+				0.000631812589678386f,
+				0.000631812589678386f,
+				0.000631812589678386f,
+				0.000573109522668533f,
+				0.000500122953102831f,
+				0.000514619892159644f,
+				0.000374756099417233f,
+				0.000743226491748543f,
+				0.00114592509634125f,
+				0.000356925084511329f,
+				0.000781333815140537f,
+				0.000696293866230747f,
+				0.000631812589678386f,
+				0.000631812589678386f,
+				0.000631812589678386f,
+				0.000573109522668533f,
+				0.000500122953102831f,
+				0.000514619892159644f,
+				0.000374756099417233f,
+				0.000743226491748543f,
+				0.00114592509634125f,
+				0.00037951385844371f,
+				0.000830782211125644f,
+				0.000740360325600851f,
+				0.000671798212362812f,
+				0.000671798212362812f,
+				0.000671798212362812f,
+				0.000609379995122937f,
+				0.000531774313055582f,
+				0.000547188722173415f,
+				0.000398473347593013f,
+				0.000790263183567639f,
+				0.00121844743805375f,
+				0.00037951385844371f,
+				0.000830782211125644f,
+				0.000740360325600851f,
+				0.000671798212362812f,
+				0.000671798212362812f,
+				0.000671798212362812f,
+				0.000609379995122937f,
+				0.000531774313055582f,
+				0.000547188722173415f,
+				0.000398473347593013f,
+				0.000790263183567639f,
+				0.00121844743805375f,
+				0.00068960165637125f,
+				0.00150958595089351f,
+				0.001345283434285f,
+				0.0012207015625f,
+				0.0012207015625f,
+				0.0012207015625f,
+				0.00110728355406977f,
+				0.00096626892257007f,
+				0.000994277918350175f,
+				0.000724052295868125f,
+				0.00143596021128776f,
+				0.00221399918023758f,
+				0.00068960165637125f,
+				0.00150958595089351f,
+				0.001345283434285f,
+				0.0012207015625f,
+				0.0012207015625f,
+				0.0012207015625f,
+				0.00110728355406977f,
+				0.00096626892257007f,
+				0.000994277918350175f,
+				0.000724052295868125f,
+				0.00143596021128776f,
+				0.00221399918023758f,
+				0.00146595722900624f,
+				0.00320908225360648f,
+				0.0028598074806403f,
+				0.00259497097124533f,
+				0.00259497097124533f,
+				0.00259497097124533f,
+				0.00235386663539919f,
+				0.00205409731707936f,
+				0.00211363892267398f,
+				0.00153919249975673f,
+				0.00305256843984341f,
+				0.00470652596799431f,
+				0.00146595722900624f,
+				0.00320908225360648f,
+				0.0028598074806403f,
+				0.00259497097124533f,
+				0.00259497097124533f,
+				0.00259497097124533f,
+				0.00235386663539919f,
+				0.00205409731707936f,
+				0.00211363892267398f,
+				0.00153919249975673f,
+				0.00305256843984341f,
+				0.00470652596799431f,
+				0.000392711723272828f,
+				0.000859673254445735f,
+				0.000766106883426673f,
+				0.000695160473850617f,
+				0.000695160473850617f,
+				0.000695160473850617f,
+				0.000630571618633555f,
+				0.000550267143678645f,
+				0.00056621759985624f,
+				0.00041233054216584f,
+				0.000817745148834794f,
+				0.00126081981584982f,
+				0.000392711723272828f,
+				0.000859673254445735f,
+				0.000766106883426673f,
+				0.000695160473850617f,
+				0.000695160473850617f,
+				0.000695160473850617f,
+				0.000630571618633555f,
+				0.000550267143678645f,
+				0.00056621759985624f,
+				0.00041233054216584f,
+				0.000817745148834794f,
+				0.00126081981584982f,
+				0.000417565331838196f,
+				0.000914079530841173f,
+				0.000814591610190719f,
+				0.00073915520403899f,
+				0.00073915520403899f,
+				0.00073915520403899f,
+				0.000670478703788385f,
+				0.000585091986903076f,
+				0.000602051902108207f,
+				0.000438425770006584f,
+				0.000869497914619301f,
+				0.0013406135177374f,
+				0.000417565331838196f,
+				0.000914079530841173f,
+				0.000814591610190719f,
+				0.00073915520403899f,
+				0.00073915520403899f,
+				0.00073915520403899f,
+				0.000670478703788385f,
+				0.000585091986903076f,
+				0.000602051902108207f,
+				0.000438425770006584f,
+				0.000869497914619301f,
+				0.0013406135177374f,
+				0.000758743687673635f,
+				0.0016609426625632f,
+				0.00148016656350103f,
+				0.00134309364909877f,
+				0.00134309364909877f,
+				0.00134309364909877f,
+				0.0012183039285842f,
+				0.00106315064475505f,
+				0.0010939679268046f,
+				0.000796648476638501f,
+				0.00157993493199868f,
+				0.00243598298669907f,
+				0.000758743687673635f,
+				0.0016609426625632f,
+				0.00148016656350103f,
+				0.00134309364909877f,
+				0.00134309364909877f,
+				0.00134309364909877f,
+				0.0012183039285842f,
+				0.00106315064475505f,
+				0.0010939679268046f,
+				0.000796648476638501f,
+				0.00157993493199868f,
+				0.00243598298669907f,
+				0.00129349074742506f,
+				0.00283154113955958f,
+				0.00252335773679618f,
+				0.00228967863095013f,
+				0.00228967863095013f,
+				0.00228967863095013f,
+				0.00207693966325701f,
+				0.00181243751276012f,
+				0.00186497418599968f,
+				0.00135811005774774f,
+				0.00269344081443347f,
+				0.00415281406009594f,
+				0.00129349074742506f,
+				0.00283154113955958f,
+				0.00252335773679618f,
+				0.00228967863095013f,
+				0.00228967863095013f,
+				0.00228967863095013f,
+				0.00207693966325701f,
+				0.00181243751276012f,
+				0.00186497418599968f,
+				0.00135811005774774f,
+				0.00269344081443347f,
+				0.00415281406009594f,
+				0.000346510096207309f,
+				0.000758534681934852f,
+				0.000675976178324662f,
+				0.000613376449946592f,
+				0.000613376449946592f,
+				0.000613376449946592f,
+				0.000556386324343351f,
+				0.000485529485360799f,
+				0.0004996034072152f,
+				0.000363820806377702f,
+				0.000721539321093679f,
+				0.00111248727705204f,
+				0.000346510096207309f,
+				0.000758534681934852f,
+				0.000675976178324662f,
+				0.000613376449946592f,
+				0.000613376449946592f,
+				0.000613376449946592f,
+				0.000556386324343351f,
+				0.000485529485360799f,
+				0.0004996034072152f,
+				0.000363820806377702f,
+				0.000721539321093679f,
+				0.00111248727705204f,
+				0.000368439735137648f,
+				0.000806540185592728f,
+				0.000718756788986297f,
+				0.000652195301757637f,
+				0.000652195301757637f,
+				0.000652195301757637f,
+				0.000591598433116448f,
+				0.000516257266226456f,
+				0.000531221886585688f,
+				0.000386845990943852f,
+				0.000767203493534299f,
+				0.00118289343423873f,
+				0.000368439735137648f,
+				0.000806540185592728f,
+				0.000718756788986297f,
+				0.000652195301757637f,
+				0.000652195301757637f,
+				0.000652195301757637f,
+				0.000591598433116448f,
+				0.000516257266226456f,
+				0.000531221886585688f,
+				0.000386845990943852f,
+				0.000767203493534299f,
+				0.00118289343423873f,
+				0.000669479245542734f,
+				0.00146553659514707f,
+				0.00130602838654059f,
+				0.00118508178387462f,
+				0.00118508178387462f,
+				0.00118508178387462f,
+				0.00107497328571006f,
+				0.000938073427314016f,
+				0.000965265127319417f,
+				0.000702924623647244f,
+				0.00139405923695283f,
+				0.00214939521551805f,
+				0.000669479245542734f,
+				0.00146553659514707f,
+				0.00130602838654059f,
+				0.00118508178387462f,
+				0.00118508178387462f,
+				0.00118508178387462f,
+				0.00107497328571006f,
+				0.000938073427314016f,
+				0.000965265127319417f,
+				0.000702924623647244f,
+				0.00139405923695283f,
+				0.00214939521551805f,
+				0.00151001922766489f,
+				0.00330553703083742f,
+				0.00294576417220174f,
+				0.00267296752202584f,
+				0.00267296752202584f,
+				0.00267296752202584f,
+				0.00242461635884228f,
+				0.00211583693092283f,
+				0.00217716816727469f,
+				0.0015854557170715f,
+				0.00314431891103075f,
+				0.00484798912720887f,
+				0.00151001922766489f,
+				0.00330553703083742f,
+				0.00294576417220174f,
+				0.00267296752202584f,
+				0.00267296752202584f,
+				0.00267296752202584f,
+				0.00242461635884228f,
+				0.00211583693092283f,
+				0.00217716816727469f,
+				0.0015854557170715f,
+				0.00314431891103075f,
+				0.00484798912720887f,
+				0.000404515385127145f,
+				0.000885512290561366f,
+				0.000789133612857797f,
+				0.000716054780492233f,
+				0.000716054780492233f,
+				0.000716054780492233f,
+				0.000649524590292385f,
+				0.000566806418950068f,
+				0.000583236294966657f,
+				0.000424723883142197f,
+				0.00084232395982473f,
+				0.00129871603815122f,
+				0.000404515385127145f,
+				0.000885512290561366f,
+				0.000789133612857797f,
+				0.000716054780492233f,
+				0.000716054780492233f,
+				0.000716054780492233f,
+				0.000649524590292385f,
+				0.000566806418950068f,
+				0.000583236294966657f,
+				0.000424723883142197f,
+				0.00084232395982473f,
+				0.00129871603815122f,
+				0.000430116013895833f,
+				0.000941553846097371f,
+				0.00083907563586717f,
+				0.000761371851949635f,
+				0.000761371851949635f,
+				0.000761371851949635f,
+				0.00069063115514401f,
+				0.000602677985888588f,
+				0.000620147662051429f,
+				0.000451603450301555f,
+				0.000895632248684165f,
+				0.00138090808421691f,
+				0.000430116013895833f,
+				0.000941553846097371f,
+				0.00083907563586717f,
+				0.000761371851949635f,
+				0.000761371851949635f,
+				0.000761371851949635f,
+				0.00069063115514401f,
+				0.000602677985888588f,
+				0.000620147662051429f,
+				0.000451603450301555f,
+				0.000895632248684165f,
+				0.00138090808421691f,
+				0.000781549102925208f,
+				0.00171086530145189f,
+				0.00152465564943417f,
+				0.00138346276041667f,
+				0.00138346276041667f,
+				0.00138346276041667f,
+				0.00125492225891809f,
+				0.00109510556223576f,
+				0.00112684911349253f,
+				0.000820593188949688f,
+				0.00162742273687936f,
+				0.00250920086575355f,
+				0.000781549102925208f,
+				0.00171086530145189f,
+				0.00152465564943417f,
+				0.00138346276041667f,
+				0.00138346276041667f,
+				0.00138346276041667f,
+				0.00125492225891809f,
+				0.00109510556223576f,
+				0.00112684911349253f,
+				0.000820593188949688f,
+				0.00162742273687936f,
+				0.00250920086575355f,
+				0.00133236895372624f,
+				0.00291664823506314f,
+				0.00259920182215833f,
+				0.00235849906770601f,
+				0.00235849906770601f,
+				0.00235849906770601f,
+				0.00213936584517131f,
+				0.00186691360365552f,
+				0.00192102936172785f,
+				0.00139893051441504f,
+				0.00277439705463235f,
+				0.00427763440541365f,
+				0.00133236895372624f,
+				0.00291664823506314f,
+				0.00259920182215833f,
+				0.00235849906770601f,
+				0.00235849906770601f,
+				0.00235849906770601f,
+				0.00213936584517131f,
+				0.00186691360365552f,
+				0.00192102936172785f,
+				0.00139893051441504f,
+				0.00277439705463235f,
+				0.00427763440541365f,
+				0.000356925084511329f,
+				0.000781333815140537f,
+				0.000696293866230747f,
+				0.000631812589678386f,
+				0.000631812589678386f,
+				0.000631812589678386f,
+				0.000573109522668533f,
+				0.000500122953102831f,
+				0.000514619892159644f,
+				0.000374756099417233f,
+				0.000743226491748543f,
+				0.00114592509634125f,
+				0.000356925084511329f,
+				0.000781333815140537f,
+				0.000696293866230747f,
+				0.000631812589678386f,
+				0.000631812589678386f,
+				0.000631812589678386f,
+				0.000573109522668533f,
+				0.000500122953102831f,
+				0.000514619892159644f,
+				0.000374756099417233f,
+				0.000743226491748543f,
+				0.00114592509634125f,
+				0.00037951385844371f,
+				0.000830782211125644f,
+				0.000740360325600851f,
+				0.000671798212362812f,
+				0.000671798212362812f,
+				0.000671798212362812f,
+				0.000609379995122937f,
+				0.000531774313055582f,
+				0.000547188722173415f,
+				0.000398473347593013f,
+				0.000790263183567639f,
+				0.00121844743805375f,
+				0.00037951385844371f,
+				0.000830782211125644f,
+				0.000740360325600851f,
+				0.000671798212362812f,
+				0.000671798212362812f,
+				0.000671798212362812f,
+				0.000609379995122937f,
+				0.000531774313055582f,
+				0.000547188722173415f,
+				0.000398473347593013f,
+				0.000790263183567639f,
+				0.00121844743805375f,
+				0.00068960165637125f,
+				0.00150958595089351f,
+				0.001345283434285f,
+				0.0012207015625f,
+				0.0012207015625f,
+				0.0012207015625f,
+				0.00110728355406977f,
+				0.00096626892257007f,
+				0.000994277918350175f,
+				0.000724052295868125f,
+				0.00143596021128776f,
+				0.00221399918023758f,
+				0.00068960165637125f,
+				0.00150958595089351f,
+				0.001345283434285f,
+				0.0012207015625f,
+				0.0012207015625f,
+				0.0012207015625f,
+				0.00110728355406977f,
+				0.00096626892257007f,
+				0.000994277918350175f,
+				0.000724052295868125f,
+				0.00143596021128776f,
+				0.00221399918023758f,
+				0.00155408201153354f,
+				0.00340199352694763f,
+				0.00303172239556056f,
+				0.00275096546274946f,
+				0.00275096546274946f,
+				0.00275096546274946f,
+				0.00249536734308588f,
+				0.00217757764500149f,
+				0.00224069854400285f,
+				0.00163171975882325f,
+				0.00323607101726392f,
+				0.00498945480737778f,
+				0.00155408201153354f,
+				0.00340199352694763f,
+				0.00303172239556056f,
+				0.00275096546274946f,
+				0.00275096546274946f,
+				0.00275096546274946f,
+				0.00249536734308588f,
+				0.00217757764500149f,
+				0.00224069854400285f,
+				0.00163171975882325f,
+				0.00323607101726392f,
+				0.00498945480737778f,
+				0.000416319257329463f,
+				0.000911351787143388f,
+				0.000812160752638399f,
+				0.000736949459482335f,
+				0.000736949459482335f,
+				0.000736949459482335f,
+				0.000668477899704002f,
+				0.000583345988960828f,
+				0.000600255293359946f,
+				0.000437117444974974f,
+				0.000866903208823124f,
+				0.00133661293578496f,
+				0.000416319257329463f,
+				0.000911351787143388f,
+				0.000812160752638399f,
+				0.000736949459482335f,
+				0.000736949459482335f,
+				0.000736949459482335f,
+				0.000668477899704002f,
+				0.000583345988960828f,
+				0.000600255293359946f,
+				0.000437117444974974f,
+				0.000866903208823124f,
+				0.00133661293578496f,
+				0.000442666919613797f,
+				0.000969028650961569f,
+				0.000863560097862953f,
+				0.000783588895773644f,
+				0.000783588895773644f,
+				0.000783588895773644f,
+				0.000710783965627836f,
+				0.000620264298266653f,
+				0.000638243744471435f,
+				0.000464781365430321f,
+				0.000921767048477799f,
+				0.00142120336876862f,
+				0.000442666919613797f,
+				0.000969028650961569f,
+				0.000863560097862953f,
+				0.000783588895773644f,
+				0.000783588895773644f,
+				0.000783588895773644f,
+				0.000710783965627836f,
+				0.000620264298266653f,
+				0.000638243744471435f,
+				0.000464781365430321f,
+				0.000921767048477799f,
+				0.00142120336876862f,
+				0.000804354924582315f,
+				0.00176078882999054f,
+				0.00156914552818824f,
+				0.0014238325911352f,
+				0.0014238325911352f,
+				0.0014238325911352f,
+				0.00129154124181155f,
+				0.00112706104917135f,
+				0.00115973088614199f,
+				0.000844538327969332f,
+				0.00167491138801987f,
+				0.00258242004959249f,
+				0.000804354924582315f,
+				0.00176078882999054f,
+				0.00156914552818824f,
+				0.0014238325911352f,
+				0.0014238325911352f,
+				0.0014238325911352f,
+				0.00129154124181155f,
+				0.00112706104917135f,
+				0.00115973088614199f,
+				0.000844538327969332f,
+				0.00167491138801987f,
+				0.00258242004959249f,
+				0.00137124785285928f,
+				0.00300175684722379f,
+				0.00267504725910542f,
+				0.00242732073088141f,
+				0.00242732073088141f,
+				0.00242732073088141f,
+				0.00220179313955584f,
+				0.001921390665346f,
+				0.00197708553639129f,
+				0.00143975169852622f,
+				0.00285535473751769f,
+				0.00440245697510126f,
+				0.00137124785285928f,
+				0.00300175684722379f,
+				0.00267504725910542f,
+				0.00242732073088141f,
+				0.00242732073088141f,
+				0.00242732073088141f,
+				0.00220179313955584f,
+				0.001921390665346f,
+				0.00197708553639129f,
+				0.00143975169852622f,
+				0.00285535473751769f,
+				0.00440245697510126f,
+				0.000367340258416393f,
+				0.000804133354639806f,
+				0.000716611916209643f,
+				0.000650249057952727f,
+				0.000650249057952727f,
+				0.000650249057952727f,
+				0.000589833019010667f,
+				0.000514716680908798f,
+				0.000529636644706432f,
+				0.000385691587329935f,
+				0.000764914048881184f,
+				0.00117936351151152f,
+				0.000367340258416393f,
+				0.000804133354639806f,
+				0.000716611916209643f,
+				0.000650249057952727f,
+				0.000650249057952727f,
+				0.000650249057952727f,
+				0.000589833019010667f,
+				0.000514716680908798f,
+				0.000529636644706432f,
+				0.000385691587329935f,
+				0.000764914048881184f,
+				0.00117936351151152f,
+				0.000390588179096978f,
+				0.000855024668665309f,
+				0.000761964247202775f,
+				0.000691401472303059f,
+				0.000691401472303059f,
+				0.000691401472303059f,
+				0.000627161874007023f,
+				0.000547291636407352f,
+				0.000563155842299277f,
+				0.000410100911448314f,
+				0.000813323284537834f,
+				0.00125400207546144f,
+				0.000390588179096978f,
+				0.000855024668665309f,
+				0.000761964247202775f,
+				0.000691401472303059f,
+				0.000691401472303059f,
+				0.000691401472303059f,
+				0.000627161874007023f,
+				0.000547291636407352f,
+				0.000563155842299277f,
+				0.000410100911448314f,
+				0.000813323284537834f,
+				0.00125400207546144f,
+				0.000709724425792627f,
+				0.00155363609162465f,
+				0.0013845391815768f,
+				0.00125632197589019f,
+				0.00125632197589019f,
+				0.00125632197589019f,
+				0.00113959439821692f,
+				0.000994464920285962f,
+				0.00102329122640545f,
+				0.0007451803445962f,
+				0.00147786193232199f,
+				0.00227860429623668f,
+				0.000709724425792627f,
+				0.00155363609162465f,
+				0.0013845391815768f,
+				0.00125632197589019f,
+				0.00125632197589019f,
+				0.00125632197589019f,
+				0.00113959439821692f,
+				0.000994464920285962f,
+				0.00102329122640545f,
+				0.0007451803445962f,
+				0.00147786193232199f,
+				0.00227860429623668f
+		};
+		
+		// check joint probabilities
+//		node_names: {'N6'  'N5'  'N8'  'N7'  'N3'  'N4'  'N9'  'N0' 'N1'}
+//		sizes: [2 3 2 2 2 2 2 2 2]
+		questionIds = new ArrayList<Long>();
+		questionIds.add(6L); questionIds.add(5L); questionIds.add(8L); 
+		questionIds.add(7L); questionIds.add(3L); questionIds.add(4L);  
+		questionIds.add(9L); questionIds.add(0L); questionIds.add(1L);
+		// start from all questions in state 0
+		states = new ArrayList<Integer>();
+		states.add(0); states.add(0); states.add(0);
+		states.add(0); states.add(0); states.add(0);
+		states.add(0); states.add(0); states.add(0);
+		// index to be used to access joint probability
+		indexForJointProbability = 0;	
+		sum = 0;	// check that joint prob of ME is summing up to 1
+		// compare joint probability returned by the engine and expected
+		for (int stateNode1 = 0; stateNode1 < 2; stateNode1++) {	// iterate on states of node 1
+			for (int stateNode0 = 0; stateNode0 < 2; stateNode0++) {	// iterate on states of node 0
+				for (int stateNode9 = 0; stateNode9 < 2; stateNode9++) {	// iterate on states of node 9
+					for (int stateNode4 = 0; stateNode4 < 2; stateNode4++) {	// iterate on states of node 4
+						for (int stateNode3 = 0; stateNode3 < 2; stateNode3++) {	// iterate on states of node 3
+							for (int stateNode7 = 0; stateNode7 < 2; stateNode7++) {	// iterate on states of node 7
+								for (int stateNode8 = 0; stateNode8 < 2; stateNode8++) {	// iterate on states of node 8
+									for (int stateNode5 = 0; stateNode5 < 3; stateNode5++) {	// iterate on states of node 5
+										for (int stateNode6 = 0; stateNode6 < 2; stateNode6++) {	// iterate on states of node 6
+											// set states accourdingly to current iteration
+											states.set(0, stateNode6); states.set(1, stateNode5); states.set(2, stateNode8);
+											states.set(3, stateNode7); states.set(4, stateNode3); states.set(5, stateNode4);
+											states.set(6, stateNode9); states.set(7, stateNode0); states.set(8, stateNode1);
+											// obtain the joint probability from engine
+											float jointProbability = engine.getJointProbability(questionIds, states);
+											// compare results
+//											System.out.format(
+//													"%d,%d,%d,%d,%d,%d,%d,%d,%d,%1.20f,%1.20f%n",
+//													stateNode6,stateNode5,stateNode8,stateNode7,stateNode3,stateNode4,stateNode9,stateNode0,stateNode1,
+//													jointAfter9[indexForJointProbability],jointProbability
+//												);
+											assertEquals(
+													"joint index = " + indexForJointProbability + "; "
+													+ "[6,5,8,7,3,4,9,0,1]=["
+													+ stateNode6+"," + stateNode5+","+ stateNode8+","+ stateNode7+","+ stateNode3+","+ stateNode4+","+ stateNode9+","+ stateNode0+","+ stateNode1 + "]", 
+													jointAfter9[indexForJointProbability], 
+													jointProbability, 
+													PROB_ERROR_MARGIN	// use the half of the smallest joint prob as the error margin
+											);
+											sum += jointProbability;
+											indexForJointProbability++;	// point to next item in jointBeforeIteration5
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		assertEquals(1f, sum, PROB_ERROR_MARGIN);
+		
+		
+//		System.out.println("Cumulative error = " + cumulativeError + ", max error = " + maximumError + " at " + indexOfMaxError 
+//				+ ", min prob matlab = " + min + ", min prob ME = " + minJointProbME
+//				+ ", max prob matlab = " + max + ", max prob ME = " + maxJointProbME);
+		
+		assertEquals(101.49, engine.scoreUserEv(9, null, null), ASSET_ERROR_MARGIN);
+		
+//		 addQuestion(questionId=2,numberStates=2)
+		assertTrue(engine.addQuestion(null, new Date(), 2L, 2, null));
+		
+//		List<Long> ids = new ArrayList<Long>();
+//		List<Integer> states = new ArrayList<Integer>();
+//		ids.add(6l); states.add(0);
+//		ids.add(5l); states.add(0);
+//		ids.add(8l); states.add(0);
+//		System.out.println("P("+ids +"=" + states + ") = " + engine.getJointProbability(ids, states));
+		
+//		 addQuestionAssumption(childQuestionId=3,parentQuestionIds=[2])
+		questionIds = new ArrayList<Long>();
+		questionIds.add(2L);
+		assertTrue(engine.addQuestionAssumption(null, new Date(), 3L, questionIds , null));
+		
+		
+//		 addQuestionAssumption(childQuestionId=3,parentQuestionIds=[4, 2])
+		questionIds = new ArrayList<Long>();
+		questionIds.add(4L);
+		questionIds.add(2L);
+		assertTrue(engine.addQuestionAssumption(null, new Date(), 3L, questionIds , null));
+		
+		
+//		 getEditLimits(userId=9,questionId=2,questionState=0,assumptionIds=[4],assumedStates=[1])=[0.4425387, 0.55746126]
+		
+		
+		assertEquals(101.49, engine.scoreUserEv(9, null, null), ASSET_ERROR_MARGIN);
+	        	
+		// iteration 10
+//		 resolveQuestion(questionId=2,settledState=0)
+		engine.resolveQuestion(null, new Date(), 2L, 0);
+		
+		
+		
+		
+//		 getProbLists(questionIds=null,assumptionIds=null,assumedStates=null)={0=[0.49999994, 0.50000006], 1=[0.492705, 0.507295], 2=[1.0, 0.0], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.2916861, 0.2924763, 0.4158376], 6=[0.4637435, 0.53625643], 7=[0.5, 0.5], 8=[0.49196956, 0.5080304], 9=[0.5312502, 0.46874982]}
+//		 !!! scoreUserEv(userId=9,assumptionIds=null,assumedStates=null)=101.49192 (expected 101.49)
+//		 !!! scoreUserEv(userId=9,assumptionIds=[4],assumedStates=[1])=101.49193 (expected 101.49)
+//		 scoreUserQuestionEvStates(userId=9,questionId=2,assumptionIds=[4],assumedStates=[1])=[101.49193, 0.0]
+//		 getCashPerStates(userId=9,questionId=2,assumptionIds+[4],assumedStates=[1])=[17.612444, -Infinity]
+//		 getCash(userId=9,assumptionIds=null,assumedStates=null)=17.612444
+//		 getCash(userId=9,assumptionIds=[4],assumedStates=[1])=17.612444
+
+		assertEquals(101.49, engine.scoreUserEv(9, null, null), ASSET_ERROR_MARGIN);
+		
+//		===============Iteration#11, user8, (8|7)
+//		getEditLimits(userId=8,questionId=8,questionState=0,assumptionIds=[7],assumedStates=[0])=[0.2459848, 0.7459848]
+//		getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999994, 0.50000006], 1=[0.492705, 0.507295], 2=[1.0, 0.0], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.2916861, 0.2924763, 0.4158376], 6=[0.4637435, 0.53625643], 7=[0.5, 0.5], 8=[0.49196956, 0.5080304], 9=[0.5312502, 0.46874982]}
+//		getCash(userId=8,assumptionIds=null,assumedStates=null)=100.0
+//		getCash(userId=8,assumptionIds=[7],assumedStates=[0])=100.0
+		
+		
+//		addTrade(occurredWhen=Wed Sep 05 07:20:15 BOT 2012,userId=8,questionId=8,newValues=[0.4979575, 0.50204265],assumptionIds=[7],assumedStates=[0])
+		newValues = new ArrayList<Float>();
+		newValues.add(0.4979575f);
+		newValues.add(0.50204265f);
+		questionIds = new ArrayList<Long>();
+		questionIds.add(7L); 
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0); 
+		assertFalse(engine.addTrade(null, new Date(), "",8,8, newValues, questionIds, assumedStates , false).isEmpty());
+
+		
+//		getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999958, 0.5], 1=[0.4927048, 0.50729483], 2=[1.0, 0.0], 3=[0.620605, 0.37939486], 4=[0.6124158, 0.3875838], 5=[0.2917655, 0.29285103, 0.41538346], 6=[0.4636725, 0.5363272], 7=[0.49999955, 0.49999985], 8=[0.49496323, 0.50503665], 9=[0.5312505, 0.46874982]}
+//		getCash(userId=8,assumptionIds=null,assumedStates=null)=98.28947
+//		getCash(userId=8,assumptionIds=[7],assumedStates=[0])=98.28947
+//		scoreUserEv(userId=8,assumptionIds=null,assumedStates=null)=100.00515
+
+//		=============== Iteration#12, user6, (N1|N0)
+//		getEditLimits(userId=6,questionId=1,questionState=1,assumptionIds=[0],assumedStates=[0])=[0.27841428, 0.72158575]
+//		getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999994, 0.50000006], 1=[0.492705, 0.507295], 2=[1.0, 0.0], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.29176554, 0.29285103, 0.41538346], 6=[0.46367282, 0.53632724], 7=[0.5, 0.5], 8=[0.4949635, 0.5050365], 9=[0.5312502, 0.46874982]}
+//		getCash(userId=6,assumptionIds=null,assumedStates=null)=84.4695
+//		getCash(userId=6,assumptionIds=[0],assumedStates=[0])=84.4695
+		
+		
+//		addTrade(occurredWhen=Wed Sep 05 07:20:17 BOT 2012,userId=6,questionId=1,newValues=[0.34704185, 0.65295815],assumptionIds=[0],assumedStates=[0])
+		newValues = new ArrayList<Float>();
+		newValues.add(0.34704185f);
+		newValues.add(0.65295815f);
+		questionIds = new ArrayList<Long>();
+		questionIds.add(0L); 
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0); 
+		assertFalse(engine.addTrade(null, new Date(), "",6,1, newValues, questionIds, assumedStates , false).isEmpty());
+		
+		
+//		getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5, 0.5], 1=[0.41622612, 0.58377403], 2=[0.9999998, 0.0], 3=[0.6206048, 0.37939483], 4=[0.61241597, 0.38758415], 5=[0.29176563, 0.292851, 0.41538358], 6=[0.46367282, 0.53632736], 7=[0.49999985, 0.5000002], 8=[0.4949635, 0.5050367], 9=[0.5312503, 0.4687498]}
+//		getCash(userId=6,assumptionIds=null,assumedStates=null)=31.787628
+//		getCash(userId=6,assumptionIds=[0],assumedStates=[0])=31.787628
+//		scoreUserEv(userId=6,assumptionIds=null,assumedStates=null)=103.67753
+		
+		
+//		=============== Iteration#13, user3, (N6|N5,N8)
+//		getEditLimits(userId=3,questionId=6,questionState=0,assumptionIds=[5, 8],assumedStates=[2, 1])=[0.19670908, 0.6967091]
+		
+		
+//		resolveQuestion(questionId=6,settledState=0)
+		engine.resolveQuestion(null, new Date(), 6L, 0);
+		
+		
+//		getProbLists(questionIds=null,assumptionIds=null,assumedStates=null)={0=[0.49999994, 0.50000006], 1=[0.41622594, 0.5837741], 2=[1.0, 0.0], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.26421338, 0.34479752, 0.39098936], 6=[1.0000002, 0.0], 7=[0.49992394, 0.5000763], 8=[0.48223865, 0.5177616], 9=[0.5312502, 0.46874982]}
+//		scoreUserEv(userId=3,assumptionIds=null,assumedStates=null)=100.00003
+//		scoreUserEv(userId=3,assumptionIds=[5, 8],assumedStates=[2, 1])=100.0
+//		scoreUserQuestionEvStates(userId=3,questionId=6,assumptionIds=[5, 8],assumedStates=[2, 1])=[100.0, 0.0]
+//		getCashPerStates(userId=3,questionId=6,assumptionIds+[5, 8],assumedStates=[2, 1])=[100.0, -Infinity]
+//		getCash(userId=3,assumptionIds=null,assumedStates=null)=100.0
+//		getCash(userId=3,assumptionIds=[5, 8],assumedStates=[2, 1])=100.0
+		
+		
+//		=============== Iteration#14, user10, (N4|N3)
+//		getEditLimits(userId=0,questionId=4,questionState=1,assumptionIds=[3],assumedStates=[1])=[0.36199987, 0.8126356]
+//		getProbLists(assumptionIds=null,assumedStates=null)={0=[0.49999994, 0.50000006], 1=[0.41622594, 0.5837741], 2=[1.0, 0.0], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.26421338, 0.34479752, 0.39098936], 6=[1.0000002, 0.0], 7=[0.49992394, 0.5000763], 8=[0.48223865, 0.5177616], 9=[0.5312502, 0.46874982]}
+//		getCash(userId=0,assumptionIds=null,assumedStates=null)=0.2554088
+//		getCash(userId=0,assumptionIds=[3],assumedStates=[1])=86.41649
+		
+		
+//		addTrade(occurredWhen=Wed Sep 05 07:20:18 BOT 2012,userId=0,questionId=4,newValues=[0.3710119, 0.6289884],assumptionIds=[3],assumedStates=[1])
+		newValues = new ArrayList<Float>();
+		newValues.add(0.3710119f);
+		newValues.add(0.6289884f);
+		questionIds = new ArrayList<Long>();
+		questionIds.add(3L); 
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(1); 
+		assertFalse(engine.addTrade(null, new Date(), "",0,4, newValues, questionIds, assumedStates , false).isEmpty());
+		
+		
+//		getProbLists(assumptionIds=null,assumedStates=null)={0=[0.5000001, 0.50000054], 1=[0.41622627, 0.5837745], 2=[1.000001, 0.0], 3=[0.62060535, 0.37939534], 4=[0.623781, 0.3762196], 5=[0.26421347, 0.3447977, 0.39098936], 6=[1.000001, 0.0], 7=[0.499924, 0.5000766], 8=[0.48223886, 0.5177619], 9=[0.53125066, 0.4687501]}
+//		getCash(userId=0,assumptionIds=null,assumedStates=null)=0.25542596
+//		getCash(userId=0,assumptionIds=[3],assumedStates=[1])=79.70443
+//		scoreUserEv(userId=0,assumptionIds=null,assumedStates=null)=114.44239
+		
+		
+//		=============== Iteration#15, user1, (N0|N1)
+//		getCash(userId=1,assumptionIds=null,assumedStates=null)=100.0
+//		getCash(userId=1,assumptionIds=[1],assumedStates=[0])=100.0
+		
+//		addCash(userId=1,assets=77.755005)
+		assertTrue(engine.addCash(null, new Date(), 1,77.755005f , ""));
+		
+//		getEditLimits(userId=1,questionId=0,questionState=1,assumptionIds=[1],assumedStates=[0])=[0.1700802, 0.8784019]
+		
+		
+//		resolveQuestion(questionId=0,settledState=1)
+		engine.resolveQuestion(null, new Date(), 0L, 1);
+		
+		
+//		getProbLists(questionIds=null,assumptionIds=null,assumedStates=null)={0=[0.0, 1.0], 1=[0.48541, 0.51459], 2=[1.0, 0.0], 3=[0.620605, 0.3793951], 4=[0.6237807, 0.37621933], 5=[0.26427856, 0.34488264, 0.39108586], 6=[1.0002471, 0.0], 7=[0.5000473, 0.50019974], 8=[0.4823577, 0.5178894], 9=[0.5312502, 0.46874982]}
+//		!!! scoreUserEv(userId=1,assumptionIds=null,assumedStates=null)=177.79893 (expected 177.755)
+//		!!! scoreUserEv(userId=1,assumptionIds=[1],assumedStates=[0])=177.84286 (expected 177.755)
+//		scoreUserQuestionEvStates(userId=1,questionId=0,assumptionIds=[1],assumedStates=[0])=[0.0, 177.84286]
+//		getCashPerStates(userId=1,questionId=0,assumptionIds+[1],assumedStates=[0])=[-Infinity, 177.755]
+		
+		
+		assertEquals(177.755, engine.scoreUserEv(1, null, null), ASSET_ERROR_MARGIN);
+	}
 	
 
-	// not needed for the 1st release
-//	/**
-//	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getScoreDetails(long, java.util.List, java.util.List)}.
-//	 */
-//	public final void testGetScoreDetails() {
-//		fail("Not yet implemented"); // TODO
-//	}
-	
-
-
-//	/**
-//	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#scoreUserQuestionEv(long, java.lang.Long, java.util.List, java.util.List)}.
-//	 */
-//	public final void testScoreUserQuestionEv() {
-//		fail("Not yet implemented"); // TODO
-//	}
 
 
 }

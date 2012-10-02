@@ -347,7 +347,15 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 		 */
 		@Override
 		public void execute() {
-			this.execute(getExecutedActions());
+			// execute only the actions which does not change network structure
+			List<NetworkAction> executedActions = getExecutedActions();
+			List<NetworkAction> actionsToExecuteAgain = new ArrayList<NetworkAction>();
+			for (NetworkAction action : executedActions) {
+				if (!action.isStructureConstructionAction()) {
+					actionsToExecuteAgain.add(action);
+				}
+			}
+			this.execute(actionsToExecuteAgain);
 		}
 
 		/* (non-Javadoc)
