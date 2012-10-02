@@ -159,23 +159,72 @@ public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 	protected void createSamplingOrderQueue() {
 		// Keeps track of the nodes that have already been added to the queue (nodeAddedList[nodeIndex]=true). 
 		boolean[] nodeAddedList = new boolean[pn.getNodeCount()];
-		initSamplingOrderQueue(nodeAddedList);											
-		for(int i = 0; i < samplingNodeOrderQueue.size(); i++){
-			Node node = samplingNodeOrderQueue.get(i);
-			addToSamplingOrderQueue(node.getChildren(), nodeAddedList);			
-		}		
+		boolean allNodesInQueue = false; 
+		
+		initSamplingOrderQueue(nodeAddedList);		
+		
+//		//Note that when the nodes are evaluateds, the size of 
+//		//samplingNodeOrderQueue grows. 
+//		for(int i = 0; i < samplingNodeOrderQueue.size(); i++){
+//			Node node = samplingNodeOrderQueue.get(i);
+//			addToSamplingOrderQueue(node.getChildren(), nodeAddedList);			
+//		}	
+		
+		while (!allNodesInQueue) {
+			
+			allNodesInQueue = true; 
+			
+			for(int i = 0 ; i < pn.getNodeCount(); i++){
+				if(!nodeAddedList[i]) {
+					Node node = pn.getNodeAt(i); 
+					
+					boolean allParentsInQueue = true; 
+					
+					for(Node parent: node.getParents()){
+						
+						for(int j = 0 ; j < pn.getNodeCount(); j++){
+							Node testNode = pn.getNodeAt(j);
+							if(parent.getName().equals(testNode.getName())){
+								if(!nodeAddedList[j]){
+									allParentsInQueue = false;
+									break;
+								}										
+							}				
+						}
+						
+						if (!allParentsInQueue) break; 
+						
+					}
+					
+					if (allParentsInQueue) {
+						for(int j = 0 ; j < pn.getNodeCount(); j++){
+							Node testNode = pn.getNodeAt(j);
+							if(node.getName().equals(testNode.getName())){
+								nodeAddedList[i]= true;					
+								samplingNodeOrderQueue.add(node);									
+							}				
+						}
+					} else {
+						allNodesInQueue = false;
+					}
+				}
+			} //for
+		}
+		
 	}
 
 	/**
 	 * Initializes the queue with the nodes that are root. In other words. 
 	 * It will put in the queue the nodes that do not have parents.
-	 * @param nodeAddedList Keeps track of the nodes that have already been added to the queue (nodeAddedList[nodeIndex]=true).
+	 * @param nodeAddedList Keeps track of the nodes that have already been 
+	 * added to the queue (nodeAddedList[nodeIndex]=true).
 	 */
 	protected void initSamplingOrderQueue(boolean[] nodeAddedList) {
 		for(int i = 0 ; i < pn.getNodeCount(); i++){
 			if(pn.getNodeAt(i).getParents().size() == 0 ){
 				nodeAddedList[i]= true;					
 				samplingNodeOrderQueue.add(pn.getNodeAt(i));
+				System.out.println(pn.getNodeAt(i));
 			}
 		}			
 	}
@@ -187,13 +236,15 @@ public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 	 * @param nodeAddedList Nodes that have already been added to the queue.
 	 */
 	protected void addToSamplingOrderQueue(ArrayList<Node> children, boolean[] nodeAddedList) {
+	
 		for(int i = 0 ; i < children.size(); i++){
 			Node n1 = children.get(i);
 			for(int j = 0 ; j < pn.getNodeCount(); j++){
 				Node n2 = pn.getNodeAt(j);
 				if(n1.getName().equals(n2.getName())){
 					if(!nodeAddedList[j]){
-						samplingNodeOrderQueue.add(n1);						
+						samplingNodeOrderQueue.add(n1);	
+						System.out.println(n1);
 						nodeAddedList[j] = true;						
 						break;						
 					}										
