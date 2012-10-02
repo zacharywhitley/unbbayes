@@ -1,10 +1,8 @@
 package unbbayes.prm.controller.prm;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.swing.JOptionPane;
 
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
@@ -13,10 +11,8 @@ import org.apache.log4j.Logger;
 import unbbayes.prm.controller.dao.IDBController;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
-import unbbayes.prm.util.helper.DBSchemaHelper;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
-import unbbayes.prs.Node;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -37,6 +33,8 @@ public class PrmCompiler {
 	 * Node names to do not repeat.
 	 */
 	private Set<String> nodeNames;
+
+	private HashMap<ProbabilisticNode, String> evidence;
 
 	public PrmCompiler(IPrmController prmController, IDBController dbController) {
 		this.prmController = prmController;
@@ -60,29 +58,44 @@ public class PrmCompiler {
 				.getName(), possibleValues);
 		resultNet.addNode(queryNode);
 
-		// ///// Create nodes for the parents //////
+		// Clear evidence
+		evidence = new HashMap<ProbabilisticNode, String>();
 
+		// ///// Create nodes for the parents //////
 		fillNetworkWithParents(resultNet, queryAtt, queryNode,
 				uniqueIndexColumn, indexValue, value);
 
-		// Update evidences.
-		// try {
-		// resultNet.updateEvidences();
-		// } catch (Exception e) {
-		// log.error(e);
-		// }
-
-		// prepare the algorithm to compile network
+		// Run algorithm with evidence.
 		runAlgorithm(resultNet);
 
+		// Update evidences.
+		addEvidences(resultNet);
+
 		return resultNet;
+	}
+
+	private void addEvidences(ProbabilisticNetwork resultNet) {
+		// Nodes with evidence.
+		Set<ProbabilisticNode> nodes = evidence.keySet();
+
+		// Adding evidence for each node.
+		for (ProbabilisticNode node : nodes) {
+			node.addFinding(0);
+			int statesSize = node.getStatesSize();
+
+			for (int i = 0; i < statesSize; i++) {
+				if (node.getStateAt(i).equals(evidence.get(node))) {
+					node.addFinding(i);
+					break;
+				}
+			}
+		}
 	}
 
 	private void runAlgorithm(Graph resultNet) {
 		IInferenceAlgorithm algorithm = new JunctionTreeAlgorithm();
 		algorithm.setNetwork(resultNet);
 		algorithm.run();
-
 	}
 
 	/**
@@ -102,22 +115,24 @@ public class PrmCompiler {
 			Attribute queryAtt, ProbabilisticNode queryNode, Column indexCol,
 			Object indexValue, Object value) throws Exception {
 
-		// Get the parents
+		// Get the parent relationships of the probabilistic model.
 		ParentRel[] parents = prmController.parentsOf(queryAtt);
 
-		// when the
+		// CPTs for the query attribute. 
 		PotentialTable[] cpDs = prmController.getCPDs(queryAtt);
 		if (cpDs == null) {
 			throw new Exception("Attribute " + queryAtt.getTable().getName()
 					+ "." + queryAtt.getAttribute().getName()
 					+ " does not have an associated CPT");
 		}
-
+		// This index is used when the parent is the same child.
 		int cpdIndex = 0;
 
-		// Find parent instances
+		// Find parent instances for each parent relationship.
 		for (ParentRel parentRel : parents) {
+			// Get the foreign key with the second element of the path.
 			Attribute fkAttribute = parentRel.getPath()[1];
+			// Get the local table with the fist element of the path.
 			Table localTable = parentRel.getPath()[0].getTable();
 
 			// Get FK value.
@@ -135,12 +150,20 @@ public class PrmCompiler {
 					.getParent());
 
 			// FIXME revisar que está con el primer valor de instanceValues.
-			ProbabilisticNode parentNode = createProbNode(instanceValues[0][0]
-					+ "-" + parentRel.getParent().getAttribute().getName(),
+			// Aggregate function is required.
+			String indexNameValue = instanceValues[0][0] != null ? instanceValues[0][0]
+					+ "-"
+					: "";
+			ProbabilisticNode parentNode = createProbNode(indexNameValue
+					+ parentRel.getParent().getAttribute().getName(),
 					possibleValues);
 			resultNet.addNode(parentNode);
 
-			// Edge to the child
+			// Store evidence.
+			// FIXME Aggregate function is required.
+			evidence.put(parentNode, instanceValues[0][1]);
+
+			// Edge to the child.
 			try {
 				resultNet.addEdge(new Edge(parentNode, queryNode));
 			} catch (InvalidParentException e) {
@@ -150,8 +173,7 @@ public class PrmCompiler {
 			// // CPT ////
 			// If the node parent is the same child.
 			if (parentRel.getParent().equals(parentRel.getChild())) {
-				assignCPDToNode(parentNode, cpDs[cpdIndex]);
-				cpdIndex++;
+				assignCPDToNode(parentNode, cpDs[cpdIndex++]);
 			} else {
 				PotentialTable pt = prmController.getCPD(parentRel.getParent());
 				if (pt == null) {
@@ -163,31 +185,6 @@ public class PrmCompiler {
 
 				assignCPDToNode(parentNode, pt);
 			}
-
-			// ///////////////////////////// REVISAR COMO AGREGAR EVIDENCIA
-			// PORQUE ESTA SALIENDO NULL.
-			// TODO evidence and aggregate functions.
-			 runAlgorithm(resultNet);
-			//
-			// parentNode.addFinding(0);
-			//
-			// // Insert likelihood
-			// float likelihood[] = new float[parentNode.getStatesSize()];
-			//
-			// for (int i = 0; i < likelihood.length; i++) {
-			// // FIXME Only the fist evidence. instanceValues[0][1]
-			// if (instanceValues[0][1] != null) {
-			// likelihood[i] = possibleValues[i]
-			// .equals(instanceValues[0][1]) ? 1 : 0;
-			// }
-			// }
-			// parentNode.addLikeliHood(likelihood);
-
-			// Parents
-			// Actually this is searching the fist instance value.
-			// fillNetworkWithParents(resultNet, parentRel.getParent(),
-			// parentNode, indexCol, indexValue, instanceValues[0]);
-			// }
 
 		}
 		// CPD for child

@@ -414,6 +414,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
 			log.error(e);
+			e.printStackTrace();
 		}
 	}
 

@@ -123,11 +123,12 @@ public class DBControllerImp implements IDBController {
 		Set<String> tableNames = new HashSet<String>();
 
 		// Path example: PERSON.BLOODTYPE -> PERSON.MOTHER -> PERSON.ID ->
-		// PERSON.BLOODTYPE. Child to -> parent
+		// PERSON.BLOODTYPE. Child to -> parent.
+		// Then we have path[0]=PERSON.BLOODTYPE, path[1]=PERSON.MOTHER, etc.
 
 		// The fist FK is the query.
 		String where = " WHERE " + path[1].getTable().getName() + "."
-				+ path[1].getAttribute().getName() + "=" + queryIndex;
+				+ path[2].getAttribute().getName() + "=" + queryIndex;
 
 		// Slot chain.
 		for (int i = 2; i < path.length - 1; i += 2) {
@@ -166,15 +167,12 @@ public class DBControllerImp implements IDBController {
 				.getName();
 
 		// Column Index.
-		Column columnIndex = DBSchemaHelper.getUniqueIndex(relationship
-				.getParent().getTable());
-
-		String tableId = columnIndex == null ? "" : relationship.getParent()
-				.getTable() + "." + columnIndex.getName();
+		Attribute attributeId = path[path.length -2];
+		String tableId = path[path.length -2].toString();
 
 		// SQL query.
 		String sqlQuery = "SELECT " + parentTableName + "." + parentAttName
-				+ " " + tableId + " FROM " + queryTables + where;
+				+ ", " + tableId + " FROM " + queryTables + where;
 
 		log.debug("SQL query = " + sqlQuery);
 
@@ -186,10 +184,7 @@ public class DBControllerImp implements IDBController {
 		while (it1.hasNext()) {
 			DynaBean dynaBean = (DynaBean) it1.next();
 			String inst = String.valueOf(dynaBean.get(parentAttName));
-			String id = null;
-			if (tableId.length() > 0) {
-				id = String.valueOf(dynaBean.get(columnIndex.getName()));
-			}
+			String id =  String.valueOf(dynaBean.get(attributeId.getAttribute().getName()));
 
 			instances.add(new String[] { id, inst });
 
