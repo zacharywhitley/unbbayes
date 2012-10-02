@@ -9,6 +9,7 @@ import org.apache.ddlutils.model.Table;
 import org.apache.log4j.Logger;
 
 import unbbayes.prm.controller.dao.IDBController;
+import unbbayes.prm.model.AggregateFunctionName;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
 import unbbayes.prs.Edge;
@@ -118,7 +119,7 @@ public class PrmCompiler {
 		// Get the parent relationships of the probabilistic model.
 		ParentRel[] parents = prmController.parentsOf(queryAtt);
 
-		// CPTs for the query attribute. 
+		// CPTs for the query attribute.
 		PotentialTable[] cpDs = prmController.getCPDs(queryAtt);
 		if (cpDs == null) {
 			throw new Exception("Attribute " + queryAtt.getTable().getName()
@@ -140,55 +141,86 @@ public class PrmCompiler {
 					.getAttribute(), new Attribute(localTable, indexCol),
 					String.valueOf(indexValue));
 
-			// Get instances.
-			String[][] instanceValues = dbController.getRelatedInstances(
-					parentRel, fkInstanceValue);
+			// If it has parents
+			if (fkInstanceValue != null
+					&& !fkInstanceValue.equalsIgnoreCase("null")) {
 
-			// A node for each Instance.
-			// for (int i = 0; i < instanceValues.length; i++) {
-			String[] possibleValues = dbController.getPossibleValues(parentRel
-					.getParent());
+				// Get instances.
+				String[][] instanceValues = dbController.getRelatedInstances(
+						parentRel, fkInstanceValue);
 
-			// FIXME revisar que está con el primer valor de instanceValues.
-			// Aggregate function is required.
-			String indexNameValue = instanceValues[0][0] != null ? instanceValues[0][0]
-					+ "-"
-					: "";
-			ProbabilisticNode parentNode = createProbNode(indexNameValue
-					+ parentRel.getParent().getAttribute().getName(),
-					possibleValues);
-			resultNet.addNode(parentNode);
+				// Result of applying the aggregate function;
+				String[] afResult = applyAggregateFunction(instanceValues,
+						parentRel.getAggregateFunction());
 
-			// Store evidence.
-			// FIXME Aggregate function is required.
-			evidence.put(parentNode, instanceValues[0][1]);
+				String afIndex = afResult[0];
+				String afValue = afResult[1];
 
-			// Edge to the child.
-			try {
-				resultNet.addEdge(new Edge(parentNode, queryNode));
-			} catch (InvalidParentException e) {
-				log.error(e);
-			}
+				// A node for each Instance.
+				// for (int i = 0; i < instanceValues.length; i++) {
+				String[] possibleValues = dbController
+						.getPossibleValues(parentRel.getParent());
 
-			// // CPT ////
-			// If the node parent is the same child.
-			if (parentRel.getParent().equals(parentRel.getChild())) {
-				assignCPDToNode(parentNode, cpDs[cpdIndex++]);
-			} else {
-				PotentialTable pt = prmController.getCPD(parentRel.getParent());
-				if (pt == null) {
-					throw new Exception("Attribute "
-							+ parentRel.getParent().getTable().getName() + "."
-							+ parentRel.getParent().getAttribute().getName()
-							+ " does not have an associated CPT");
+				// Node name based on the index value.
+				String indexNameValue = afIndex != null ? afIndex + "-" : "";
+				ProbabilisticNode parentNode = createProbNode(indexNameValue
+						+ parentRel.getParent().getAttribute().getName(),
+						possibleValues);
+				resultNet.addNode(parentNode);
+
+				// Store evidence.
+				// FIXME Aggregate function is required.
+				evidence.put(parentNode, afValue);
+
+				// Edge to the child.
+				try {
+					resultNet.addEdge(new Edge(parentNode, queryNode));
+				} catch (InvalidParentException e) {
+					log.error(e);
 				}
 
-				assignCPDToNode(parentNode, pt);
-			}
+				// // CPT ////
+				// If the node parent is the same child.
+				if (parentRel.getParent().equals(parentRel.getChild())) {
+					assignCPDToNode(parentNode, cpDs[cpdIndex++]);
+				} else {
+					PotentialTable pt = prmController.getCPD(parentRel
+							.getParent());
+					if (pt == null) {
+						throw new Exception("Attribute "
+								+ parentRel.getParent().getTable().getName()
+								+ "."
+								+ parentRel.getParent().getAttribute()
+										.getName()
+								+ " does not have an associated CPT");
+					}
 
+					assignCPDToNode(parentNode, pt);
+				}
+
+				Column parentIndex = parentRel.getPath()[parentRel.getPath().length - 2]
+						.getAttribute();
+
+				// Fill with parents recursively.
+				fillNetworkWithParents(resultNet, parentRel.getParent(),
+						parentNode, parentIndex, afIndex, afValue);
+			}
 		}
 		// CPD for child
 		assignCPDToNode(queryNode, cpDs[cpdIndex++]);
+	}
+
+	/**
+	 * Apply aggregate function
+	 * 
+	 * @param instanceValues
+	 * @param aggregateFuction
+	 * @return an array with length=2. The fist element is the id and the second
+	 *         is the value.
+	 */
+	private String[] applyAggregateFunction(String[][] instanceValues,
+			AggregateFunctionName aggregateFuction) {
+		return instanceValues[0];
 	}
 
 	/**

@@ -167,8 +167,8 @@ public class DBControllerImp implements IDBController {
 				.getName();
 
 		// Column Index.
-		Attribute attributeId = path[path.length -2];
-		String tableId = path[path.length -2].toString();
+		Attribute attributeId = path[path.length - 2];
+		String tableId = path[path.length - 2].toString();
 
 		// SQL query.
 		String sqlQuery = "SELECT " + parentTableName + "." + parentAttName
@@ -184,7 +184,8 @@ public class DBControllerImp implements IDBController {
 		while (it1.hasNext()) {
 			DynaBean dynaBean = (DynaBean) it1.next();
 			String inst = String.valueOf(dynaBean.get(parentAttName));
-			String id =  String.valueOf(dynaBean.get(attributeId.getAttribute().getName()));
+			String id = String.valueOf(dynaBean.get(attributeId.getAttribute()
+					.getName()));
 
 			instances.add(new String[] { id, inst });
 
@@ -199,15 +200,19 @@ public class DBControllerImp implements IDBController {
 		// SQL query.
 		String sqlQuery = "SELECT " + queryColumn.getName() + " FROM "
 				+ attribute.getTable().getName() + " WHERE "
-				+ attribute.getAttribute().getName() + "=" + instanceId;
+				+ attribute.toString() + "=" + instanceId;
 
 		log.debug("SQL for specific value=" + sqlQuery);
 
 		// Query to DB.
 		Iterator<DynaBean> it1 = platform.query(getRelSchema(), sqlQuery);
 
-		DynaBean bean = it1.next();
+		if (it1.hasNext()) {
+			DynaBean bean = it1.next();
 
-		return bean.get(queryColumn.getName()).toString();
+			return String.valueOf(bean.get(queryColumn.getName()));
+		} else {
+			return null;
+		}
 	}
 }
