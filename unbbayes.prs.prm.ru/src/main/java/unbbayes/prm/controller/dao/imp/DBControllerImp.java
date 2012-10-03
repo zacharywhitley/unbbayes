@@ -79,7 +79,13 @@ public class DBControllerImp implements IDBController {
 			// Get results
 			while (it.hasNext()) {
 				DynaBean bean = (DynaBean) it.next();
-				possibleValues.add(String.valueOf(bean.get(colName)));
+				String val = String.valueOf(bean.get(colName));
+
+				if (val.equalsIgnoreCase("null")) {
+					continue;
+				}
+
+				possibleValues.add(val);
 			}
 
 		}
@@ -121,6 +127,10 @@ public class DBControllerImp implements IDBController {
 		Attribute[] path = relationship.getPath();
 		// To create a list of non duplicated table names.
 		Set<String> tableNames = new HashSet<String>();
+
+		// If it is varchar
+		queryIndex = path[path.length - 1].getAttribute().getType()
+				.contains("CHAR") ? "'" + queryIndex + "'" : queryIndex;
 
 		// Path example: PERSON.BLOODTYPE -> PERSON.MOTHER -> PERSON.ID ->
 		// PERSON.BLOODTYPE. Child to -> parent.
@@ -197,6 +207,10 @@ public class DBControllerImp implements IDBController {
 	@Override
 	public String getSpecificValue(Column queryColumn, Attribute attribute,
 			String instanceId) {
+		// id string
+		instanceId = attribute.getAttribute().getType().contains("CHAR") ? "'"
+				+ instanceId + "'" : instanceId;
+
 		// SQL query.
 		String sqlQuery = "SELECT " + queryColumn.getName() + " FROM "
 				+ attribute.getTable().getName() + " WHERE "

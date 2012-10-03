@@ -1,12 +1,20 @@
 package unbbayes.prm.model;
 
+import java.io.Serializable;
+
 /**
  * Possible states of an attribute.
  * 
  * @author David Saldaña.
  * 
  */
-public class AttributeStates {
+public class AttributeStates implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6167755106543461918L;
+	
+	
 	private Attribute attribute;
 	private String[] states;
 

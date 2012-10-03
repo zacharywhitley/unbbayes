@@ -65,7 +65,7 @@ public class MainInternalFrame extends UnBBayesModule {
 
 			// PRM controller
 			IPrmController prmController = new PrmController();
-
+			
 			// Graphic
 			// RelationalGraphicator relGraphicator = new RelationalGraphicator(
 			// dbSchema);

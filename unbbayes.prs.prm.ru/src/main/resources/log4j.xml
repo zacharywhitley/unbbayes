@@ -3,7 +3,9 @@
 	<appender name="ConsoleAppender" class="org.apache.log4j.ConsoleAppender">
 		<layout class="org.apache.log4j.PatternLayout">
 			<!-- The default pattern: Date Priority [Category] Message\n -->
-			<param name="ConversionPattern" value="%d %-5p [%c] %m%n" />
+			<!-- <param name="ConversionPattern" value="%d %-5p [%c] %m%n" /> -->
+			<param name="ConversionPattern" value="%n%d{HH:mm:ss} [%-5p] [%l] %n%m%n" />
+
 		</layout>
 	</appender>
 

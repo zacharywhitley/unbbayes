@@ -1,20 +1,35 @@
 package unbbayes.prm.view;
 
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
-import javax.swing.JToggleButton;
+import javax.swing.JToolBar;
 
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Database;
@@ -23,7 +38,6 @@ import org.apache.log4j.Logger;
 
 import unbbayes.gui.NetworkWindow;
 import unbbayes.prm.controller.dao.IDBController;
-import unbbayes.prm.controller.dao.PrmProcessState;
 import unbbayes.prm.controller.prm.IPrmController;
 import unbbayes.prm.controller.prm.PrmCompiler;
 import unbbayes.prm.model.Attribute;
@@ -39,6 +53,7 @@ import unbbayes.prm.view.instances.IInstanceTableListener;
 import unbbayes.prm.view.instances.InstancesTableViewer;
 import unbbayes.prs.Network;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.util.FloatCollection;
 
 public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		IInstanceTableListener {
@@ -64,14 +79,6 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	 */
 	Column selectorAttribute;
 
-	/**
-	 * Buttons
-	 */
-	JToggleButton buttonSelectorAtt;
-	JToggleButton buttonProbModel;
-	JToggleButton buttonCompile;
-	JToggleButton buttomPartitioning;
-
 	// Parent to Probabilistic model
 	private Attribute parentPM;
 	// Children for probabilistic model
@@ -80,6 +87,9 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	private MainInternalFrame unbbayesDesktop;
 
 	private JSplitPane outerSplit;
+	private JToolBar toolBar;
+	private JButton btnLoadPM;
+	private JButton btnSavePM;
 
 	/**
 	 * Create the panel.
@@ -100,51 +110,76 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[] { 0, 0 };
-		gridBagLayout.rowHeights = new int[] { 10, 30, 10, 10, 0 };
+		gridBagLayout.rowHeights = new int[] { 10, 10, 0 };
 		gridBagLayout.columnWeights = new double[] { 1.0, Double.MIN_VALUE };
-		gridBagLayout.rowWeights = new double[] { 0.0, 0.0, 0.0, 20000.0,
+		gridBagLayout.rowWeights = new double[] { 0.0, 20000.0,
 				Double.MIN_VALUE };
 		panelGraph.setLayout(gridBagLayout);
 
-		JPanel panelProcess = new JPanel();
-		GridBagConstraints gbc_panel = new GridBagConstraints();
-		gbc_panel.insets = new Insets(0, 0, 5, 0);
-		gbc_panel.fill = GridBagConstraints.HORIZONTAL;
-		gbc_panel.gridx = 0;
-		gbc_panel.gridy = 1;
-		panelGraph.add(panelProcess, gbc_panel);
-		panelProcess.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-
-		buttonProbModel = new JToggleButton("> Prob. Model");
-		panelProcess.add(buttonProbModel);
-
-		buttonSelectorAtt = new JToggleButton("> Selector attribute");
-		buttonSelectorAtt.setEnabled(false);
-		panelProcess.add(buttonSelectorAtt);
-
-		buttomPartitioning = new JToggleButton("> Partitioning");
-		buttomPartitioning.setEnabled(false);
-		buttomPartitioning.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				JOptionPane.showMessageDialog(null,
-						"Select a table and then choose an attribute.");
-				rg.setPrmState(PrmProcessState.Partitioning);
-			}
-		});
-		panelProcess.add(buttomPartitioning);
-
-		buttonCompile = new JToggleButton("> Compile");
-		buttonCompile.setEnabled(false);
-		panelProcess.add(buttonCompile);
-
 		// Get relational schema
 		relSchema = dbController.getRelSchema();
+
+		toolBar = new JToolBar();
+		GridBagConstraints gbc_toolBar = new GridBagConstraints();
+		gbc_toolBar.anchor = GridBagConstraints.WEST;
+		gbc_toolBar.fill = GridBagConstraints.VERTICAL;
+		gbc_toolBar.insets = new Insets(0, 0, 5, 0);
+		gbc_toolBar.gridx = 0;
+		gbc_toolBar.gridy = 0;
+		panelGraph.add(toolBar, gbc_toolBar);
+
+		btnLoadPM = new JButton("");
+		btnLoadPM.setEnabled(false);
+		btnLoadPM.setToolTipText("Load Probabilistic Model");
+		btnLoadPM
+				.setIcon(new ImageIcon(
+						PRMProcessPanel.class
+								.getResource("/com/sun/java/swing/plaf/windows/icons/UpFolder.gif")));
+		btnLoadPM.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String wd = System.getProperty("user.dir");
+				JFileChooser fc = new JFileChooser(wd);
+				int rc = fc.showDialog(null, "Select Data File");
+
+				// File selected.
+				if (rc == JFileChooser.APPROVE_OPTION) {
+					File file = fc.getSelectedFile();
+					loadProbabilisticModel(file);
+					// call your function here
+				}
+			}
+		});
+		toolBar.add(btnLoadPM);
+
+		btnSavePM = new JButton("");
+		btnSavePM.setEnabled(false);
+		btnSavePM.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String wd = System.getProperty("user.dir");
+				JFileChooser fc = new JFileChooser(wd);
+				int rc = fc.showSaveDialog(PRMProcessPanel.this);
+
+				// File selected.
+				if (rc == JFileChooser.APPROVE_OPTION) {
+					File file = fc.getSelectedFile();
+					saveProbabilisticModel(file);
+					// call your function here
+				}
+			}
+
+		});
+		btnSavePM.setToolTipText("Save probabilistic model");
+		btnSavePM
+				.setIcon(new ImageIcon(
+						PRMProcessPanel.class
+								.getResource("/com/sun/java/swing/plaf/windows/icons/FloppyDrive.gif")));
+		toolBar.add(btnSavePM);
 		rg = new RelationalGraphicator(relSchema, this);
 
 		GridBagConstraints gbc_chckbxNewCheckBox = new GridBagConstraints();
 		gbc_chckbxNewCheckBox.fill = GridBagConstraints.BOTH;
 		gbc_chckbxNewCheckBox.gridx = 0;
-		gbc_chckbxNewCheckBox.gridy = 3;
+		gbc_chckbxNewCheckBox.gridy = 1;
 		panelGraph.add(rg, gbc_chckbxNewCheckBox);
 
 		// add(panelGraph);
@@ -159,6 +194,51 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		add(outerSplit);
 	}
 
+	private void saveProbabilisticModel(File file) {
+
+//		// Save CPDs.
+//		HashMap<String, FloatCollection[]> cpds = prmController.getCpds();
+//
+//		// Save Parents
+//		List<ParentRel> parents = prmController.getParents();
+//
+//		try {
+//			// use buffering
+//			OutputStream fos = new FileOutputStream(file);
+//			OutputStream buffer = new BufferedOutputStream(fos);
+//			ObjectOutput output = new ObjectOutputStream(buffer);
+//			try {
+//				output.writeObject(cpds);
+//				output.writeObject(parents);
+//			} finally {
+//				output.close();
+//			}
+//		} catch (IOException ex) {
+//			log.error("Cannot perform output.", ex);
+//		}
+	}
+
+	private void loadProbabilisticModel(File file) {
+		// try {
+		// // use buffering
+		// InputStream is = new FileInputStream(file);
+		// InputStream buffer = new BufferedInputStream(is);
+		// ObjectInput input = new ObjectInputStream(buffer);
+		// try {
+		// HashMap<String, PotentialTable[]> cpds = (HashMap<String,
+		// PotentialTable[]>) input
+		// .readObject();
+		//
+		// } finally {
+		// input.close();
+		// }
+		// } catch (ClassNotFoundException ex) {
+		// log.error(ex);
+		// } catch (IOException ex) {
+		// log.error(ex);
+		// }
+	}
+
 	public void selectedTable(Table t) {
 		log.debug("Selected table");
 		InstancesTableViewer dt = new InstancesTableViewer(t,
@@ -168,83 +248,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	}
 
 	public void selectedAttributes(Attribute[] attributes) {
-		// log.debug("Selected column" + collumns[0].getName());
-		switch (rg.getPrmState()) {
-		case Partitioning:
-			partitioning(attributes);
-			break;
-		case SelectorAttribute:
-			selectorAttribute(attributes);
-			break;
-		case ProbModel:
-			break;
-		case Compile:
-			break;
-		}
 
-	}
-
-	private void selectorAttribute(Attribute[] attribute) {
-		selectorTable = attribute[0].getTable();
-		selectorAttribute = attribute[0].getAttribute();
-
-		int answer = JOptionPane.showConfirmDialog(
-				this,
-				"Do you agree with selector attribute = "
-						+ selectorTable.getName() + "."
-						+ selectorAttribute.getName());
-
-		if (answer == 0) {
-			buttonProbModel.setEnabled(true);
-			buttonSelectorAtt.setSelected(true);
-
-			// Show toolbar
-			// rg.showPalette();
-		}
-
-	}
-
-	/**
-	 * Create N partitions based on the data of the specified columns.
-	 * 
-	 * @param t
-	 * @param columns
-	 * @deprecated
-	 */
-	private void partitioning(Attribute[] attributes) {
-		log.debug("Partitioning");
-
-		Column[] cols = new Column[attributes.length];
-		for (int i = 0; i < cols.length; i++) {
-			cols[i] = attributes[i].getAttribute();
-		}
-
-		String[] partitionNames = dbController.getPossibleValues(
-				attributes[0].getTable(), cols);
-
-		String pvs = "";
-		int i = 0;
-		for (String val : partitionNames) {
-			log.debug("Possible value=" + val);
-			pvs += "\n" + ++i + ". " + val;
-		}
-
-		if (partitionNames.length > 0) {
-			int answer = JOptionPane.showConfirmDialog(this,
-					"The partitions are:" + pvs);
-			log.debug("" + answer);
-			if (answer == 0) {
-				buttomPartitioning.setSelected(true);
-				buttonSelectorAtt.setEnabled(true);
-
-				// Change state
-				rg.setPrmState(PrmProcessState.SelectorAttribute);
-
-				// Message
-				JOptionPane.showMessageDialog(this,
-						"Choose a selector attribute.");
-			}
-		}
 	}
 
 	/**
@@ -297,11 +301,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 			// FIXME validate ID or FK, because it works only for descriptive
 			// attributes.
 
-			prmController.addParent(newRel);
-			rg.drawRelationShip(newRel);
-
-			// Show CPT buttons.
-			showCPTButtons(newRel);
+			addNewRelationShip(newRel);
 
 			parentPM = null;
 			childPM = null;
@@ -310,6 +310,14 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 			log.warn("Error, neither parent nor children are not null");
 		}
 
+	}
+
+	private void addNewRelationShip(ParentRel newRel) {
+		prmController.addParent(newRel);
+		rg.drawRelationShip(newRel);
+
+		// Show CPT buttons.
+		showCPTButtons(newRel);
 	}
 
 	private void showCPTButtons(ParentRel newRel) {
@@ -358,8 +366,11 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 				AttributeStates childStates = new AttributeStates(attribute,
 						childValues);
 
+				// Table title
+				String title = parentRels[i].getPath()[1].toString();
+
 				// Show
-				PrmTable table = showPrmTable(new AttributeStates[] {},
+				PrmTable table = showPrmTable(title, new AttributeStates[] {},
 						childStates);
 				potentialTables.add(table.getCPD());
 			}
@@ -371,28 +382,33 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 				childValues);
 
 		// show CPT table
-		PrmTable table = showPrmTable(parentStates, childStates);
+		PrmTable table = showPrmTable(attribute.toString(), parentStates,
+				childStates);
 
 		potentialTables.add(table.getCPD());
 		prmController.setCPD(attribute,
 				potentialTables.toArray(new PotentialTable[0]));
 	}
 
-	private PrmTable showPrmTable(AttributeStates[] as,
+	private PrmTable showPrmTable(String title, AttributeStates[] as,
 			AttributeStates childStates) {
 		JDialog dialog = new JDialog();
+		dialog.setTitle(title);
 
 		// Graphic table
 		PrmTable table = new PrmTable(as, childStates, dialog);
 
 		dialog.setModal(true);
-		dialog.add(table);
+		dialog.getContentPane().add(table);
 		dialog.pack();
 		dialog.setVisible(true);
 
 		return table;
 	}
 
+	/**
+	 * Select an attribute without evidence to create a BN.
+	 */
 	@Override
 	public void attributeSelected(Table table, Column uniqueIndexColumn,
 			Object indexValue, Column column, Object value) {
@@ -405,7 +421,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 			// Compile
 			Network bn = (Network) compiler.compile(table, uniqueIndexColumn,
 					indexValue, column, value);
-			
+
 			// Show the SSBN.
 			NetworkWindow netWindow = new NetworkWindow(bn);
 			netWindow.setVisible(true);

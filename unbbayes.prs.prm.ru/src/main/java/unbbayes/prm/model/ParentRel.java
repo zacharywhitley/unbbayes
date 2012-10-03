@@ -1,5 +1,7 @@
 package unbbayes.prm.model;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 
 /**
@@ -8,8 +10,13 @@ import org.apache.commons.lang.builder.EqualsBuilder;
  * @author David Saldaña.
  * 
  */
-public class ParentRel {
+public class ParentRel implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6521692027180658334L;
+	
 	/**
 	 * Child of the relationship.
 	 */

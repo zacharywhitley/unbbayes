@@ -24,6 +24,14 @@ import unbbayes.prs.builder.impl.DefaultProbabilisticNetworkBuilder;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
+/**
+ * This is the the main class related to compile a bayesian network based on
+ * data base instances. It is the implemantation of Probabilistic Relational
+ * Models Algorithm [Geetor, 2001].
+ * 
+ * @author David Saldaña.
+ * 
+ */
 public class PrmCompiler {
 	Logger log = Logger.getLogger(PrmCompiler.class);
 	private IProbabilisticNetworkBuilder networkBuilder;
@@ -55,8 +63,8 @@ public class PrmCompiler {
 		String[] possibleValues = dbController.getPossibleValues(queryAtt);
 
 		// Probabilistic node
-		ProbabilisticNode queryNode = createProbNode(queryAtt.getAttribute()
-				.getName(), possibleValues);
+		ProbabilisticNode queryNode = createProbNode(indexValue + "-"
+				+ queryAtt.getAttribute().getName(), possibleValues);
 		resultNet.addNode(queryNode);
 
 		// Clear evidence
@@ -81,7 +89,6 @@ public class PrmCompiler {
 
 		// Adding evidence for each node.
 		for (ProbabilisticNode node : nodes) {
-			node.addFinding(0);
 			int statesSize = node.getStatesSize();
 
 			for (int i = 0; i < statesSize; i++) {
@@ -97,6 +104,7 @@ public class PrmCompiler {
 		IInferenceAlgorithm algorithm = new JunctionTreeAlgorithm();
 		algorithm.setNetwork(resultNet);
 		algorithm.run();
+		algorithm.reset();
 	}
 
 	/**
@@ -262,6 +270,11 @@ public class PrmCompiler {
 
 		// Add node states
 		for (String state : possibleValues) {
+			// Null value is not added as a new state.
+			if (state.equalsIgnoreCase("null")) {
+				continue;
+			}
+			// add state
 			node.appendState(state);
 		}
 

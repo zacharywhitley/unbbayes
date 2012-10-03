@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.util.FloatCollection;
 
 /**
  * PRM algorithm implementation.
@@ -143,5 +144,41 @@ public class PrmController implements IPrmController {
 		}
 		return parentsOf.toArray(new ParentRel[0]);
 	}
+	
+	/**
+	 * @see IPrmController
+	 */
+	public List<ParentRel> getParents() {
+		return parents;
+	}
+	
+	/**
+	 * @see IPrmController
+	 */
+	public void setParents(List<ParentRel> parents) {
+		this.parents = parents;
+	}
+	
+//	public HashMap<String, FloatCollection[]> getCpds() {
+//		Set<String> attributes = cpds.keySet();
+//		HashMap<String, FloatCollection[]> resp = new HashMap<String, FloatCollection[]>();
+//		
+//		for (String att : attributes) {
+//			PotentialTable[] potentialTables = cpds.get(att);
+//			FloatCollection[] fs = new FloatCollection[potentialTables.length];
+//			
+//			for (int i = 0; i < fs.length; i++) {
+//				fs[i] = potentialTables[i].getDataPT();
+//			}
+//			resp.put(att, fs);
+//		}
+//		
+//		
+//		return resp;
+//	}
+//	
+//	public void setCpds(HashMap<String, PotentialTable[]> cpds) {
+//		this.cpds = cpds;
+//	}
 
 }

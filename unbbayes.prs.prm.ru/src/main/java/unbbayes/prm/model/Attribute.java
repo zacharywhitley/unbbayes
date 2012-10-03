@@ -1,5 +1,7 @@
 package unbbayes.prm.model;
 
+import java.io.Serializable;
+
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 
@@ -11,7 +13,12 @@ import org.apache.ddlutils.model.Table;
  * @author David Saldaña
  * 
  */
-public class Attribute {
+public class Attribute implements Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -4989167000937289968L;
 
 	/**
 	 * Table that has the attribute.

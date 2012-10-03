@@ -1,8 +1,12 @@
 package unbbayes.prm.controller.prm;
 
+import java.util.HashMap;
+import java.util.List;
+
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.util.FloatCollection;
 
 /**
  * Methods to manage a PRM schema.
@@ -71,4 +75,28 @@ public interface IPrmController {
 	PotentialTable getCPD(Attribute attribute);
 
 	PotentialTable[] getCPDs(Attribute attribute);
+
+	/**
+	 * Get the parents of the probabilistic model.
+	 * 
+	 * @return the parents
+	 */
+	List<ParentRel> getParents();
+
+	/**
+	 * Set the parents of the probabilistic model.
+	 * 
+	 * @param parents
+	 *            the parents.
+	 */
+	void setParents(List<ParentRel> parents);
+
+	/**
+	 * CPD
+	 * 
+	 * @return
+	 */
+//	HashMap<String, FloatCollection[]> getCpds();
+//
+//	void setCpds(HashMap<String, PotentialTable[]> cpds);
 }
