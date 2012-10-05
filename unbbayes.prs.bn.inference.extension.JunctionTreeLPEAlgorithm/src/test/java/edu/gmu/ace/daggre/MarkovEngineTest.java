@@ -17823,7 +17823,329 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(177.755, engine.scoreUserEv(1, null, null), ASSET_ERROR_MARGIN);
 	}
 	
+	/**
+	 * Test method for {@link MarkovEngineImpl#doBalanceTrade(Long, Date, String, long, long, List, List)}
+	 * with incomplete set of assumptions
+	 */
+	public final void testBalanceTradeIncompleteAssumptions()  {
+		engine.setCurrentCurrencyConstant(100);
+		engine.setCurrentLogBase(2);
+		engine.setDefaultInitialAssetTableValue(1000f);
+		engine.initialize();
+		/*
+		 * Generate the following net
+		 * 
+		 * 0 -> 1 <- 2
+		 *      |
+		 *      V
+		 *      3
+		 *      
+		 *  All nodes have 3 states
+		 */
+		long transactionKey = engine.startNetworkActions();
+		// the nodes
+		engine.addQuestion(transactionKey, new Date(), 0, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 1, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 2, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 3, 3, null);
+		// edges 0 -> 1 <- 2
+		List<Long> questionIds = new ArrayList<Long>();
+		questionIds.add(0L);
+		questionIds.add(2L);
+		engine.addQuestionAssumption(transactionKey, new Date(), 1, questionIds , null);
+		// edge 1 -> 3
+		engine.addQuestionAssumption(transactionKey, new Date(), 3, Collections.singletonList(1L) , null);
+		engine.commitNetworkActions(transactionKey);
+		
+		// user 1 makes trades in question 3 (clique has 2 nodes and question is not in separator), 
+		// so that the assets are completely different given different assumptions.
+		List<Float> newValues = new ArrayList<Float>(3);
+		newValues.add(.6f);
+		newValues.add(.2f);
+		newValues.add(.2f);
+		engine.addTrade(null, new Date(), "User 1, P(3|1=0)=[.6,.2,.2]", 1, 3, newValues , Collections.singletonList(1L), Collections.singletonList(0), false);
+		newValues.set(0, .2f);
+		newValues.set(1, .2f);
+		newValues.set(2, .6f);
+		engine.addTrade(null, new Date(), "User 1, P(3|1=2)=[.2,.2,.6]", 1, 3, newValues , Collections.singletonList(1L), Collections.singletonList(2), false);
+		
+		// user 2 makes trades in question 0 (clique has 3 nodes and question is not in separator)
+		questionIds = new ArrayList<Long>();
+		questionIds.add(1L);
+		questionIds.add(2L);
+		List<Integer> assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);
+		assumedStates.add(0);
+		newValues.set(0, .2f);
+		newValues.set(1, .2f);
+		newValues.set(2, .6f);
+		engine.addTrade(null, new Date(), "User 2, P(0|1,=0,2=0)=[.2,.2,.6]", 2, 0, newValues , questionIds, assumedStates, false);
+		assumedStates.set(0,0);
+		assumedStates.set(1,2);
+		newValues.set(0, .6f);
+		newValues.set(1, .2f);
+		newValues.set(2, .2f);
+		engine.addTrade(null, new Date(), "User 2, P(0|1,=0,2=2)=[.6,.2,.2]", 2, 0, newValues , questionIds, assumedStates, false);
+		assumedStates.set(0,2);
+		assumedStates.set(1,0);
+		newValues.set(0, .1f);
+		newValues.set(1, .8f);
+		newValues.set(2, .1f);
+		engine.addTrade(null, new Date(), "User 2, P(0|1=2,2=2)=[.1,.8,.1]", 2, 0, newValues , questionIds, assumedStates, false);
+		assumedStates.set(0,1);
+		assumedStates.set(1,1);
+		newValues.set(0, .4f);
+		newValues.set(1, .2f);
+		newValues.set(2, .4f);
+		engine.addTrade(null, new Date(), "User 2, P(0|1,=1,2=1)=[.4,.2,.4]", 2, 0, newValues , questionIds, assumedStates, false);
+		
+		
+		// user 3 makes trades in question 1 given question 3 (question is in separator and trade is in one of the cliques)
+		newValues.set(0, .2f);
+		newValues.set(1, .1f);
+		newValues.set(2, .7f);
+		engine.addTrade(null, new Date(), "User 3, P(1|3=0)=[.2,.1,.7]", 3, 1, newValues , Collections.singletonList(3L), Collections.singletonList(0), false);
+		newValues.set(0, .7f);
+		newValues.set(1, .2f);
+		newValues.set(2, .1f);
+		engine.addTrade(null, new Date(), "User 3, P(1|3=2)=[.7,.2,.1]", 3, 1, newValues , Collections.singletonList(3L), Collections.singletonList(2), false);
+		
+		// user 3 makes trades in question 1 given question 0 (question is in separator and trade is in the another clique)
+		newValues.set(0, .6f);
+		newValues.set(1, .2f);
+		newValues.set(2, .2f);
+		engine.addTrade(null, new Date(), "User 3, P(1|0=0)=[.6,.2,.2]", 3, 1, newValues , Collections.singletonList(0L), Collections.singletonList(0), false);
+		newValues.set(0, .2f);
+		newValues.set(1, .2f);
+		newValues.set(2, .6f);
+		engine.addTrade(null, new Date(), "User 3, P(1|0=2)=[.2,.2,.6]", 3, 1, newValues , Collections.singletonList(0L), Collections.singletonList(2), false);
 
+		
+		// case 1: clique has 2 nodes and we are balancing a node not in separator
+		
+		// user 1 balances question 3
+		engine.doBalanceTrade(null, new Date(), "Case 1 - balance 3", 1, 3, null, null);
+		
+		List<QuestionEvent> questionHistory = engine.getQuestionHistory(3L, null, null);
+		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
+		assertFalse(((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades().isEmpty());
+		for (TradeSpecification trade : ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades()) {
+			assertEquals(3L, trade.getQuestionId().longValue());
+			assertEquals(1L, trade.getUserId().longValue());
+		}
+		
+		// check that the assets given states of a balanced question are the same
+		List<Float> assetsIf = engine.getAssetsIfStates(1, 3L, null, null);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assetsIf = engine.getAssetsIfStates(1, 3L, Collections.singletonList(1L), Collections.singletonList(0));
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assetsIf = engine.getAssetsIfStates(1, 3L, Collections.singletonList(1L), Collections.singletonList(1));
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assetsIf = engine.getAssetsIfStates(1, 3L, Collections.singletonList(1L), Collections.singletonList(2));
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		// check that the cash given states of a balanced question are the same
+		List<Float> cashPerState = engine.getCashPerStates(1, 3L, null, null);
+		assertEquals(3, cashPerState.size()); // all nodes have 3 states
+		for (int i = 1; i < cashPerState.size(); i++) {
+			assertEquals("["+i+"]"+cashPerState.toString(), cashPerState.get(i-1), cashPerState.get(i), ASSET_ERROR_MARGIN);
+		}
+		
+		// case 2: clique has 3 nodes and we are balancing a node not in separator, given only 1 assumption
+		
+		// user 2 balances question 0 given 2=2
+		engine.doBalanceTrade(null, new Date(), "Case 2 - balance 0|2=2", 2, 0, Collections.singletonList(2L), Collections.singletonList(2));
+		questionHistory = engine.getQuestionHistory(0L, null, null);
+		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
+		assertFalse(((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades().isEmpty());
+		for (TradeSpecification trade : ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades()) {
+			assertEquals(2L, trade.getUserId().longValue());
+			assertEquals(0L, trade.getQuestionId().longValue());
+			assertTrue(trade.getAssumptionIds().contains(2L));
+			assertTrue(trade.getAssumedStates().contains(2));
+		}
+		
+		// check that the assets given states of a balanced question are the same
+		assetsIf = engine.getAssetsIfStates(2, 0, Collections.singletonList(2L), Collections.singletonList(2));
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		questionIds = new ArrayList<Long>();
+		questionIds.add(1L);
+		questionIds.add(2L);
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);
+		assumedStates.add(2);
+		assetsIf = engine.getAssetsIfStates(2, 0, questionIds, assumedStates);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assumedStates.set(0,1);
+		assetsIf = engine.getAssetsIfStates(2, 0, questionIds, assumedStates);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assumedStates.set(0,2);
+		assetsIf = engine.getAssetsIfStates(2, 0, questionIds, assumedStates);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		// check that the cash given states of a balanced question are the same
+		cashPerState = engine.getCashPerStates(2, 0, Collections.singletonList(2L), Collections.singletonList(2));
+		assertEquals(3, cashPerState.size()); // all nodes have 3 states
+		for (int i = 1; i < cashPerState.size(); i++) {
+			assertEquals("["+i+"]"+cashPerState.toString(), cashPerState.get(i-1), cashPerState.get(i), ASSET_ERROR_MARGIN);
+		}
+		
+		
+		// case 3 balance a node in separator
+		
+		// User 3 balances question 1
+		engine.doBalanceTrade(null, new Date(), "User 3 balances question 1", 3, 1, null, null);
+		questionHistory = engine.getQuestionHistory(1L, null, null);
+		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
+		assertFalse(((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades().isEmpty());
+		for (TradeSpecification trade : ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades()) {
+			assertEquals(3L, trade.getUserId().longValue());
+			assertEquals(1L, trade.getQuestionId().longValue());
+		}
+		
+		// check that the assets given states of a balanced question are the same
+		questionIds = new ArrayList<Long>();
+		questionIds.add(0L);
+		questionIds.add(2L);
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);
+		assumedStates.add(0);
+		assetsIf = engine.getAssetsIfStates(3, 1, questionIds, assumedStates);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assumedStates.set(0,0);
+		assumedStates.set(0,1);
+		assetsIf = engine.getAssetsIfStates(3, 1, questionIds, assumedStates);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assumedStates.set(0,0);
+		assumedStates.set(0,2);
+		assetsIf = engine.getAssetsIfStates(3, 1, questionIds, assumedStates);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assumedStates.set(0,1);
+		assumedStates.set(0,0);
+		assetsIf = engine.getAssetsIfStates(3, 1, questionIds, assumedStates);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assumedStates.set(0,1);
+		assumedStates.set(0,1);
+		assetsIf = engine.getAssetsIfStates(3, 1, questionIds, assumedStates);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assumedStates.set(0,1);
+		assumedStates.set(0,2);
+		assetsIf = engine.getAssetsIfStates(3, 1, questionIds, assumedStates);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assumedStates.set(0,2);
+		assumedStates.set(0,0);
+		assetsIf = engine.getAssetsIfStates(3, 1, questionIds, assumedStates);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assumedStates.set(0,2);
+		assumedStates.set(0,1);
+		assetsIf = engine.getAssetsIfStates(3, 1, questionIds, assumedStates);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assumedStates.set(0,2);
+		assumedStates.set(0,2);
+		assetsIf = engine.getAssetsIfStates(3, 1, questionIds, assumedStates);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		
+		assetsIf = engine.getAssetsIfStates(3, 1, Collections.singletonList(3L), Collections.singletonList(0));
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assetsIf = engine.getAssetsIfStates(3, 1, Collections.singletonList(3L), Collections.singletonList(1));
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		assetsIf = engine.getAssetsIfStates(3, 1, Collections.singletonList(3L), Collections.singletonList(2));
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		
+		assetsIf = engine.getAssetsIfStates(3, 1, null, null);
+		assertEquals(3, assetsIf.size()); // all nodes have 3 states
+		for (int i = 1; i < assetsIf.size(); i++) {
+			assertEquals("["+i+"]"+assetsIf.toString(), 
+					assetsIf.get(i-1), assetsIf.get(i), ASSET_ERROR_MARGIN);
+		}
+		// check that the cash given states of a balanced question are the same
+		cashPerState = engine.getCashPerStates(3, 1, null, null);
+		assertEquals(3, cashPerState.size()); // all nodes have 3 states
+		for (int i = 1; i < cashPerState.size(); i++) {
+			assertEquals("["+i+"]"+cashPerState.toString(), cashPerState.get(i-1), cashPerState.get(i), ASSET_ERROR_MARGIN);
+		}
+		
+	}
+	
 
+	
 
 }

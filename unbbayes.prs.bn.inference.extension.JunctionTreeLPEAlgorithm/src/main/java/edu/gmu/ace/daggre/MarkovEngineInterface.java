@@ -2,8 +2,6 @@ package edu.gmu.ace.daggre;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -261,8 +259,48 @@ public interface MarkovEngineInterface {
 	 * If user doesn't have sufficient assets, or if the result of the trade cannot be previewed now (e.g. it is adding a trade
 	 * to a question which is still going to be created in the same transaction), it will return null.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 * @deprecated use {@link #addTrade(Long, Date, String, TradeSpecification, boolean)} instead
 	 */
 	public List<Float> addTrade(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException;
+
+	/**
+	 * This method will add a specific trade to the system. 
+	 * Implementations shall be synchronized.
+	 * This feature is also described in
+	 * <a href="https://docs.google.com/document/d/1p1TY-paqEmJNshQYThr6H3SyR2-e6xmoXrI9HleqiPM/edit">https://docs.google.com/document/d/1p1TY-paqEmJNshQYThr6H3SyR2-e6xmoXrI9HleqiPM/edit</a>
+	 * as follows:
+	 * <br/><br/>
+	 * We use a Bayesian network (BN) to represent the prediction market of our interest. 
+	 * And we use the BN inference algorithm (Junction tree) to incorporate whatever edit P*(T=t|A=a), which is viewed as conditional soft evidence for the BN. 
+	 * Our particular procedure is the following:
+	 * <br/><br/>
+	 * First, add a binary dummy node called Dummy to the network, with {T, A} as its parents. 
+	 * The CPT for Dummy can be calculated by the equation: P*(T=t|A=a)/P(T=t|A=a). For P*(T=state other than t|A=a), we change it proportionally based on the original probabilities.
+	 * <br/><br/>
+	 * Note that Dummy is always observed at state 1. Call inference engine on this new network to update consensus probabilities for all cliques and separators, and save them into engine. 
+	 * Note that implementations may also update all CPDs for the original network with the ones from the new network with dummy node to be observed at state 1
+	 * (i.e. implementations are free to keep the dummy node or remove it, making sure that its remotion will not revert the changes). 
+	 * <br/><br/>
+	 * Identify the cliques containing A and/or T, update the q-table for the clique by Equation (4). 
+	 * <br/><br/>
+	 * Calculate the overall expected score after the edit. 
+	 * <br/><br/>
+	 * Calculate the global min-q value after the edit by min-q-propagation.
+	 * 
+	 * @param transactionKey : key returned by {@link #startNetworkActions()}
+	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
+	 * @param tradeKey : revert and history functions can refer to specific trade actions easier, by referring to this key (identifier).
+	 * @param tradeSpecification : instance of {@link TradeSpecification} which specifies the user ID, question ID, 
+	 * the probability values, the IDs of assumed questions and the assumed states.
+	 * @param allowNegative : If true (default is False), then checks for sufficient assets should be bypassed and we allow 
+	 * the user to go into the hole
+	 * @return the assets per state changed, if the user has sufficient assets 
+	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
+	 * If user doesn't have sufficient assets, or if the result of the trade cannot be previewed now (e.g. it is adding a trade
+	 * to a question which is still going to be created in the same transaction), it will return null.
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 */
+	public List<Float> addTrade(Long transactionKey, Date occurredWhen, String tradeKey, TradeSpecification tradeSpecification,  boolean allowNegative) throws IllegalArgumentException;
 
 	/**
 	 * This function will settle a specific question.
@@ -549,8 +587,21 @@ public interface MarkovEngineInterface {
 	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
+	 * @deprecated use {@link #previewTrade(TradeSpecification)} instead.
 	 */
 	public List<Float> previewTrade(long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	
+	/**
+	 * This function will return the affect (assets per state) of this trade similar to the addTrade function,
+	 * but is a proposed what-if (non-binding) calculation only that does not impact the network.
+	 * @param tradeSpecification : instance of {@link TradeSpecification} which specifies the user ID, question ID, 
+	 * the probability values, the IDs of assumed questions and the assumed states.
+	 * @return the assets per state changed, if the user has sufficient assets 
+	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
+	 */
+	public List<Float> previewTrade(TradeSpecification tradeSpecification) throws IllegalArgumentException;
 	
 	/**
 	 * This method will determine the states of a balancing trade which would minimize impact once the question is resolved
@@ -590,9 +641,12 @@ public interface MarkovEngineInterface {
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 * @see #doBalanceTrade(long, Date, String, long, long, List, List)
+	 * @deprecated use {@link #doBalanceTrade(Long, Date, String, long, long, List, List)} instead.
 	 */
+	@Deprecated
 	public List<Float> previewBalancingTrade(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
+
 	/**
 	 * This is similar to doing {@link #previewBalancingTrade(long, long, List, List)} and then
 	 * {@link #addTrade(long, Date, String, long, long, List, List, List, boolean)}.
