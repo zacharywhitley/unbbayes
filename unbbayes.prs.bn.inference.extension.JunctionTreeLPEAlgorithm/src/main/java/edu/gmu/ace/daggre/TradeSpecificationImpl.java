@@ -99,6 +99,9 @@ public class TradeSpecificationImpl implements TradeSpecification {
 	 * @param probabilities the probabilities to set
 	 */
 	public void setProbabilities(List<Float> probabilities) {
+		if (probabilities == null || probabilities.isEmpty()) {
+			throw new IllegalStateException("Cannot set probabilities to empty/null");
+		}
 		this.probabilities = probabilities;
 	}
 

@@ -4161,9 +4161,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// node identified by questionId
-		Node mainNode = null;	
+		AssetNode mainNode = null;	
 		synchronized (userAssetAlgorithm) {
-			mainNode = userAssetAlgorithm.getAssetNetwork().getNode(Long.toString(questionId));
+			mainNode = (AssetNode) userAssetAlgorithm.getAssetNetwork().getNode(Long.toString(questionId));
 		}
 		if (mainNode == null) {
 			throw new IllegalArgumentException("Could not find clique containing nodes: " + questionId + " and assumptions " + originalAssumptionIds);
@@ -4188,6 +4188,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		InCliqueConditionalProbabilityExtractor cliqueExtractor = (InCliqueConditionalProbabilityExtractor) this.getConditionalProbabilityExtractor();
 		
 		
+		if (fullParentNodes.isEmpty()) { // we are not calculating the conditional asset. We are calculating asset of 1 node only (i.e. "marginal" asset)
+			boolean backup = mainNode.isToCalculateMarginal();	// backup old config
+			mainNode.setToCalculateMarginal(true);		// force marginalization to calculate something.
+			mainNode.updateMarginal(); 					// make sure values of mainNode.getMarginalAt(index) is up to date
+			mainNode.setToCalculateMarginal(backup);	// revert to previous config
+		}
 		// generate a table with mainNode as the 1st variable, so that we can easily iterate over all states of parents
 		// TODO use another way to iterate over parents
 		PotentialTable table = (PotentialTable) cliqueExtractor.buildCondicionalProbability(mainNode, fullParentNodes , userAssetAlgorithm.getAssetNetwork(), userAssetAlgorithm, ASSET_CLIQUE_EVIDENCE_UPDATER);
@@ -4533,7 +4539,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 				}
 				// by default, set the probabilities of this action to the marginal after trade
-//				backup.setProbabilities(getProbList(getQuestionId(), null, null));
+				backup.setProbabilities(getProbList(getQuestionId(), null, null));
 				// restore original trade specification
 				this.setTradeSpecification(backup);
 			}
