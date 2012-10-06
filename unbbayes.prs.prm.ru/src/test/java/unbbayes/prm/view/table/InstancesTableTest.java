@@ -11,7 +11,7 @@ import unbbayes.prm.view.instances.InstancesTableViewer;
 public class InstancesTableTest {
 	private static String DB_URL = "jdbc:derby:examples/movies/MovieTest.db";
 
-	public InstancesTableTest() {
+	public InstancesTableTest() throws Exception {
 		// Get schema
 		DBControllerImp ds = new DBControllerImp();
 		ds.init(DB_URL);
@@ -33,8 +33,9 @@ public class InstancesTableTest {
 
 	/**
 	 * @param args
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		new InstancesTableTest();
 
 	}

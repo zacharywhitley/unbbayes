@@ -6,6 +6,8 @@ package unbbayes.prm.view;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.JOptionPane;
+
 import org.apache.log4j.Logger;
 
 import unbbayes.gui.NetworkWindow;
@@ -61,11 +63,16 @@ public class MainInternalFrame extends UnBBayesModule {
 
 			// Database controller
 			IDBController sl = new DBControllerImp();
-			sl.init(urlDB);
+			try {
+				sl.init(urlDB);
+			} catch (Exception e) {
+				JOptionPane.showMessageDialog(this, "Error connecting to DB: "
+						+ e.getMessage());
+			}
 
 			// PRM controller
 			IPrmController prmController = new PrmController();
-			
+
 			// Graphic
 			// RelationalGraphicator relGraphicator = new RelationalGraphicator(
 			// dbSchema);
@@ -124,10 +131,10 @@ public class MainInternalFrame extends UnBBayesModule {
 			NetworkWindow bnWindow = new NetworkWindow(
 					(ProbabilisticNetwork) graph);
 			this.getUnbbayesFrame().addWindow(bnWindow);
-			
+
 			bnWindow.changeToPNCompilationPane();
 			bnWindow.setVisible(true);
-			
+
 			updateUI();
 			repaint();
 		}

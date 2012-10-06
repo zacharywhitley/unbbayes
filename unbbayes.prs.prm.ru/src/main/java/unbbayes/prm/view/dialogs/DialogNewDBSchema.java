@@ -16,7 +16,7 @@ import java.awt.event.ActionEvent;
 
 public class DialogNewDBSchema extends JDialog {
 
-	private static final String DEFAULT_DB_URL = "jdbc:derby:examples/bloodType/BloodType.db";
+	private static final String DEFAULT_DB_URL = "jdbc:derby:examples/maritimeDomainAwareness/mda.db";
 //	 private static final String DEFAULT_DB_URL =
 //	 "examples/movies/MovieTest.db";
 	private final JPanel contentPanel = new JPanel();

@@ -75,10 +75,15 @@ public class PrmCompiler {
 				uniqueIndexColumn, indexValue, value);
 
 		// Run algorithm with evidence.
-		runAlgorithm(resultNet);
+		IInferenceAlgorithm algorithm = new JunctionTreeAlgorithm();
+		algorithm.setNetwork(resultNet);
+		algorithm.run();
+//		algorithm.reset();
+		
 
 		// Update evidences.
 		addEvidences(resultNet);
+		algorithm.propagate();
 
 		return resultNet;
 	}
@@ -100,12 +105,7 @@ public class PrmCompiler {
 		}
 	}
 
-	private void runAlgorithm(Graph resultNet) {
-		IInferenceAlgorithm algorithm = new JunctionTreeAlgorithm();
-		algorithm.setNetwork(resultNet);
-		algorithm.run();
-		algorithm.reset();
-	}
+
 
 	/**
 	 * 

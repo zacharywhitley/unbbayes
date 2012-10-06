@@ -16,7 +16,7 @@ import unbbayes.prm.view.graphicator.PrmTable;
 public class PrmTableTest {
 	private static String DB_URL = "jdbc:derby:examples/movies/MovieTest.db";
 
-	public PrmTableTest() {
+	public PrmTableTest() throws Exception {
 		// Get schema
 		DBControllerImp ds = new DBControllerImp();
 		ds.init(DB_URL);
@@ -58,8 +58,9 @@ public class PrmTableTest {
 
 	/**
 	 * @param args
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		new PrmTableTest();
 
 	}

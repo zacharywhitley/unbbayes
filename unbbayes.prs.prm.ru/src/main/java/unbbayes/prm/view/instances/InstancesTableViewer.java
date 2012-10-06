@@ -124,7 +124,6 @@ public class InstancesTableViewer extends JPanel implements MouseListener {
 		return tableModel;
 	}
 
-	@Override
 	public void mouseClicked(MouseEvent e) {
 		int row = graphicTable.getSelectedRow();
 		int column = graphicTable.getSelectedColumn();
@@ -145,19 +144,15 @@ public class InstancesTableViewer extends JPanel implements MouseListener {
 		}
 	}
 
-	@Override
 	public void mousePressed(MouseEvent e) {
 	}
 
-	@Override
 	public void mouseReleased(MouseEvent e) {
 	}
 
-	@Override
 	public void mouseEntered(MouseEvent e) {
 	}
 
-	@Override
 	public void mouseExited(MouseEvent e) {
 	}
 

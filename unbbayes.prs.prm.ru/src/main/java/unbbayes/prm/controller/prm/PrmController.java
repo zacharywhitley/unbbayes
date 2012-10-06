@@ -43,7 +43,6 @@ public class PrmController implements IPrmController {
 	/**
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
-	@Override
 	public void addParent(ParentRel parent) {
 		log.debug("New parent added "
 				+ parent.getParent().getAttribute().getName() + " -> "
@@ -56,7 +55,6 @@ public class PrmController implements IPrmController {
 	/**
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
-	@Override
 	public void removeParent(ParentRel parent) {
 		parents.remove(parents.indexOf(parent));
 	}
@@ -64,7 +62,6 @@ public class PrmController implements IPrmController {
 	/**
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
-	@Override
 	public Attribute[] getProbElements() {
 
 		Set<Attribute> elements = getElements();
@@ -85,7 +82,6 @@ public class PrmController implements IPrmController {
 	/**
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
-	@Override
 	public boolean isProbElement(Attribute attribute) {
 		return getElements().contains(attribute);
 	}
@@ -93,7 +89,6 @@ public class PrmController implements IPrmController {
 	/**
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
-	@Override
 	public void setCPD(Attribute attribute, PotentialTable table) {
 		setCPD(attribute, new PotentialTable[] { table });
 	}
@@ -101,7 +96,6 @@ public class PrmController implements IPrmController {
 	/**
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
-	@Override
 	public void setCPD(Attribute attribute, PotentialTable[] table) {
 		cpds.put(attribute.toString(), table);
 		log.debug("set CPD");
@@ -110,7 +104,6 @@ public class PrmController implements IPrmController {
 	/**
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
-	@Override
 	public PotentialTable getCPD(Attribute attribute) {
 		PotentialTable[] potentialTables = cpds.get(attribute);
 
@@ -123,7 +116,6 @@ public class PrmController implements IPrmController {
 	/**
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
-	@Override
 	public PotentialTable[] getCPDs(Attribute attribute) {
 		return cpds.get(attribute.toString());
 	}
@@ -133,7 +125,6 @@ public class PrmController implements IPrmController {
 	/**
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
-	@Override
 	public ParentRel[] parentsOf(Attribute attribute) {
 
 		List<ParentRel> parentsOf = new ArrayList<ParentRel>();

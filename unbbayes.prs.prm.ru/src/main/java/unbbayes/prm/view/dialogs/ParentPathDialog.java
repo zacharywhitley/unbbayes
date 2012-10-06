@@ -34,7 +34,7 @@ public class ParentPathDialog extends JDialog {
 	private Attribute[] selectedPath;
 	private JComboBox comboBox;
 	private JComboBox comboAggregateFunction;
-
+	boolean cancelled;
 	/**
 	 * Create the dialog.
 	 * 
@@ -108,6 +108,7 @@ public class ParentPathDialog extends JDialog {
 						int index = comboBox.getSelectedIndex();
 						selectedPath = ParentPathDialog.this.possiblePaths
 								.get(index);
+						cancelled=false;
 						dispose();
 					}
 				});
@@ -119,6 +120,7 @@ public class ParentPathDialog extends JDialog {
 				JButton cancelButton = new JButton("Cancel");
 				cancelButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
+						cancelled=true;
 						dispose();
 					}
 				});
@@ -135,6 +137,10 @@ public class ParentPathDialog extends JDialog {
 	public AggregateFunctionName getSelectedAggregateFunction() {
 		return AggregateFunctionName.valueOf(comboAggregateFunction
 				.getSelectedItem().toString());
+	}
+	
+	public boolean isCancelled() {
+		return cancelled;
 	}
 
 }

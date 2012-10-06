@@ -21,7 +21,7 @@ public class ReadDBSchema {
 	/**
 	 * URL to connect. include ";create=true" if the db does not exist.
 	 */
-	private static String DB_URL = "jdbc:derby:/home/dav/workspace-unb/unbbayes.prs.prm2/examples/bloodType/BloodType.db";
+	private static String DB_URL = "jdbc:mysql://localhost:3306/MDA?user=root&password=unb";
 	private static String[] tableNames = { "PERSON" };
 
 	IDBController relSchemaLoader;

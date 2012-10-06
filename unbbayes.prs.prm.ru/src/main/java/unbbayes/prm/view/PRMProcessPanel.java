@@ -254,7 +254,6 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	/**
 	 * This method is called when an attribute is selected.
 	 */
-	@Override
 	public void selectedAttribute(Attribute selectedAttribute) {
 		log.debug("Selected attribute"
 				+ selectedAttribute.getAttribute().getName());
@@ -293,6 +292,12 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 						possiblePaths);
 				parentPathDialog.setModal(true);
 				parentPathDialog.setVisible(true);
+				
+				// Cancel button
+				if(parentPathDialog.isCancelled()){
+					return;
+				}
+				
 				newRel.setPath(parentPathDialog.getSelectedPath());
 				newRel.setAggregateFunction(parentPathDialog
 						.getSelectedAggregateFunction());
@@ -336,7 +341,6 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	/**
 	 * This method is called when the user selects a CPD table button.
 	 */
-	@Override
 	public void selectedCPD(Attribute attribute) {
 		log.debug("Show CPD for " + attribute.getAttribute().getName());
 
@@ -382,12 +386,18 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 				childValues);
 
 		// show CPT table
+		try{
 		PrmTable table = showPrmTable(attribute.toString(), parentStates,
 				childStates);
 
 		potentialTables.add(table.getCPD());
 		prmController.setCPD(attribute,
 				potentialTables.toArray(new PotentialTable[0]));
+		}catch(Exception e){
+			JOptionPane.showMessageDialog(this, "Error: "+e.getMessage());
+			log.error(e);
+			e.printStackTrace();
+		}
 	}
 
 	private PrmTable showPrmTable(String title, AttributeStates[] as,
@@ -409,7 +419,6 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 	/**
 	 * Select an attribute without evidence to create a BN.
 	 */
-	@Override
 	public void attributeSelected(Table table, Column uniqueIndexColumn,
 			Object indexValue, Column column, Object value) {
 		log.debug("An attribute without evidence is selected");

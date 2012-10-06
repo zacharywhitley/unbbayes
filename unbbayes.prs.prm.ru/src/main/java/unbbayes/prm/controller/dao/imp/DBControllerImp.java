@@ -15,6 +15,8 @@ import org.apache.ddlutils.model.Table;
 import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.apache.log4j.Logger;
 
+import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
+
 import unbbayes.prm.controller.dao.IDBController;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
@@ -45,16 +47,44 @@ public class DBControllerImp implements IDBController {
 	/**
 	 * @see unbbayes.prm.controller.dao.IDBController
 	 */
-	public void init(String URL) {
+	public void init(String URL) throws Exception {
 		// FIXME this must not be mandatory.
-		String dbname = URL.substring(URL.lastIndexOf(":") + 1);
+		int dbEnd = URL.indexOf("?") > 0 ? URL.indexOf("?") : URL.length() - 1;
 
 		// FIXME it must be a general DataSource for any type of DB.
-		EmbeddedDataSource ds;
-		ds = new EmbeddedDataSource();
-		ds.setDatabaseName(dbname);
+		if (URL.contains("derby")) {
+			String dbname = URL.substring(URL.lastIndexOf(":") + 1, dbEnd);
+			EmbeddedDataSource ds;
+			ds = new EmbeddedDataSource();
+			ds.setDatabaseName(dbname);
 
-		platform = PlatformFactory.createNewPlatformInstance(ds);
+			platform = PlatformFactory.createNewPlatformInstance(ds);
+		} else if (URL.contains("mysql")) {
+
+			// Eg. jdbc:mysql://localhost:3306/MDA?user=root&password=unb
+			int tmpEnd = URL.lastIndexOf(":");
+			String host = URL.substring(URL.indexOf("//")+2,tmpEnd);
+			String tmp= URL.substring(tmpEnd);
+			tmpEnd= tmp.indexOf("/");
+			String port = tmp.substring(1,tmpEnd);
+			tmp= tmp.substring(tmpEnd);
+			tmpEnd= tmp.indexOf("?");
+			String dbname = tmp.substring(1,tmpEnd);
+			tmp= tmp.substring(tmpEnd);
+			tmpEnd=tmp.indexOf("&");
+			String user = tmp.substring(tmp.indexOf("=")+1,tmpEnd);
+			tmp= tmp.substring(tmpEnd);
+			String pass = tmp.substring(tmp.indexOf("=")+1);
+
+			MysqlDataSource ds2 = new MysqlDataSource();
+//			ds2.setUser(user);
+//			ds2.setPassword(pass);
+//			ds2.setDatabaseName(dbname);
+			ds2.setURL(URL);
+			platform = PlatformFactory.createNewPlatformInstance(ds2);
+		} else {
+			throw new Exception("Database is not supported");
+		}
 
 	}
 
@@ -93,7 +123,6 @@ public class DBControllerImp implements IDBController {
 		return possibleValues.toArray(new String[0]);
 	}
 
-	@Override
 	public String[] getPossibleValues(Attribute attribute) {
 		return getPossibleValues(attribute.getTable(),
 				new Column[] { attribute.getAttribute() });
@@ -121,7 +150,6 @@ public class DBControllerImp implements IDBController {
 	 * @return String[][] with two columns. The first column is the id and the
 	 *         second is the value.
 	 */
-	@Override
 	public String[][] getRelatedInstances(ParentRel relationship,
 			String queryIndex) {
 		Attribute[] path = relationship.getPath();
@@ -204,7 +232,6 @@ public class DBControllerImp implements IDBController {
 		return instances.toArray(new String[0][0]);
 	}
 
-	@Override
 	public String getSpecificValue(Column queryColumn, Attribute attribute,
 			String instanceId) {
 		// id string

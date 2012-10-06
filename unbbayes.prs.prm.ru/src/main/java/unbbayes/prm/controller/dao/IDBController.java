@@ -23,8 +23,9 @@ public interface IDBController {
 
 	/**
 	 * Initialize the controller.
+	 * @throws Exception 
 	 */
-	void init(String URL);
+	void init(String URL) throws Exception;
 
 	/**
 	 * End the controller.

@@ -19,7 +19,7 @@ import unbbayes.prm.view.graphicator.RelationalGraphicator;
 public class RelGraphicatorTest {
 	private static String DB_URL = "jdbc:derby:examples/movies/MovieTest.db";
 
-	public RelGraphicatorTest() {
+	public RelGraphicatorTest() throws Exception {
 		// Get schema
 		DBControllerImp ds = new DBControllerImp();
 		ds.init(DB_URL);
@@ -27,25 +27,20 @@ public class RelGraphicatorTest {
 		// Graphics
 		RelationalGraphicator rl = new RelationalGraphicator(ds.getRelSchema(),
 				new IGraphicTableListener() {
-
-					@Override
 					public void selectedAttributes(Attribute[] attributes) {
 						System.out.println("selected attributes");
 
 					}
 
-					@Override
 					public void selectedAttribute(Attribute attribute) {
 						System.out.println("Selected atribute");
 					}
 
-					@Override
 					public void selectedTable(Table t) {
 						
 						
 					}
 
-					@Override
 					public void selectedCPD(Attribute attribute) {
 						// TODO Auto-generated method stub
 						
@@ -64,8 +59,9 @@ public class RelGraphicatorTest {
 
 	/**
 	 * @param args
+	 * @throws Exception 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		new RelGraphicatorTest();
 	}
 
