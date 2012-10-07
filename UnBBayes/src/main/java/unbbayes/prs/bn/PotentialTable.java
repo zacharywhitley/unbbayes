@@ -971,27 +971,19 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
         for (int c = 0; c < dataSize; c++) {
             n += this.getValue(c);
         }
-        if (n > 0.00005) {// if precision is 4 digits, error margin is half of precision (i.e. 0.00005)
-        	if (Math.abs(n - 1.0) > 0.00005) {	// if precision is 4 digits, error margin is half of precision (i.e. 0.00005)
-        		for (int c = 0; c < dataSize; c++) {
-        			valor = this.getValue(c);
-        			if (valor == 0.0) {
-        				// zeros will remain always zero.
-        				continue;
-        			}
-        			if (n == 0.0) {
-        				throw new IllegalStateException(resource.getString("InconsistencyUnderflowException"));
-        			}
-        			valor /= n;
-        			this.setValue(c, valor);
+        if (Math.abs(n - 1.0) > 0.00005) {	// if precision is 4 digits, error margin is half of precision (i.e. 0.00005)
+        	for (int c = 0; c < dataSize; c++) {
+        		valor = this.getValue(c);
+        		if (valor == 0.0) {
+        			// zeros will remain always zero.
+        			continue;
         		}
-    		}
-        } else {
-        	// this is an impossible state (e.g. all clique potentials are zero).
-        	// by default, if all clique potentials have the same value (zero, though), they will be normalized to uniform distribution.
-        	 for (int c = 0; c < dataSize; c++) {
-        		 this.setValue(c, 1f/dataSize);
-        	 }
+        		if (n == 0.0) {
+        			throw new IllegalStateException(resource.getString("InconsistencyUnderflowException"));
+        		}
+        		valor /= n;
+        		this.setValue(c, valor);
+        	}
         }
         return n;
     }
