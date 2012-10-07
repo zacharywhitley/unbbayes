@@ -33,10 +33,10 @@ import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
  */
 public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	
-	/** If two probability values are within an interval of + or - this value, then it is considered to be equalÅ@*/
+	/** If two probability values are within an interval of + or - this value, then it is considered to be equalÔøΩ@*/
 	private static final float PROB_PRECISION_ERROR = 0.0005f;
 
-	/** If two asset q values are within an interval of + or - this value, then it is considered to be equalÅ@*/
+	/** If two asset q values are within an interval of + or - this value, then it is considered to be equalÔøΩ@*/
 	private static final float ASSET_PRECISION_ERROR = 0.05f;
 
 	private AssetAwareInferenceAlgorithm assetQAlgorithm;
@@ -141,7 +141,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 *	Variables    D             E              F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.5 0.5]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	Trade-1: Tom would like to make a bet on E=e1, that has current probability as 0.5. First of all, we need to calculate TomÅfs edit limit (in this case, there is no assumption):	<br/> 
+	 *	Trade-1: Tom would like to make a bet on E=e1, that has current probability as 0.5. First of all, we need to calculate TomÔøΩfs edit limit (in this case, there is no assumption):	<br/> 
 	 *	Given E=e1, min-q1 = 100	<br/>
 	 *	Given E~=e1, min-q2 = 100	<br/>
 	 *	From Equation (1), edit interval is [0.005, 0.995].	<br/> 
@@ -153,7 +153,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.55 0.45]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	TomÅfs min-q is 90, at the following 4 min-states (found by min-asset-propagation):	<br/> 
+	 *	TomÔøΩfs min-q is 90, at the following 4 min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     1     2     1	<br/>
 	 *	     1     2     2	<br/>
@@ -161,7 +161,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 *	     2     2     2	<br/>
 	 *	<br/>	
 	 *	<br/>	
-	 *	Trade-2: Now Tom would like to make another conditional bet on E=e1 given D=d1 (current P(E=e1|D=d1) = 0.55). Again, let us calculate his edit limits first (in this case, we have assumed variable D=d1). And note that TomÅfs asset tables are not the initial ones any more, but updated from last trade he did, now:	<br/> 
+	 *	Trade-2: Now Tom would like to make another conditional bet on E=e1 given D=d1 (current P(E=e1|D=d1) = 0.55). Again, let us calculate his edit limits first (in this case, we have assumed variable D=d1). And note that TomÔøΩfs asset tables are not the initial ones any more, but updated from last trade he did, now:	<br/> 
 	 *	Given E=e1, and D=d1, min-q1 = 110	<br/>
 	 *	Given E~=e1, and D=d1, min-q2 = 90	<br/>
 	 *	From Equation (1), edit interval is [0.005, 0.995]	<br/>
@@ -173,7 +173,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.725 0.275]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	TomÅfs min-q is 20, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	TomÔøΩfs min-q is 20, at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     1     2    1	<br/>
 	 *	     1     2    2	<br/>
@@ -194,7 +194,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	JoeÅfs min-q is 72.72727272727..., at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	JoeÔøΩfs min-q is 72.72727272727..., at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     1    1	<br/>
 	 *	     2     1    2	<br/>
@@ -216,7 +216,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.4 0.6]	<br/>
 	 *	<br/>	
-	 *	AmyÅfs min-q is 60, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	AmyÔøΩfs min-q is 60, at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     1     1    1	<br/>
 	 *	     1     2    1	<br/>
@@ -239,7 +239,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.2 0.8]	<br/>
 	 *	<br/>	
-	 *	JoeÅfs min-q is 14.54545454546, at the following unique min-states (found by min-asset-propagation):	<br/> 
+	 *	JoeÔøΩfs min-q is 14.54545454546, at the following unique min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     1    1	<br/>
 	 *	<br/>	
@@ -248,7 +248,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 *	From now on, we run test cases described in the paper.	<br/> 
 	 *	<br/>	
 	 *	Trade-6: Eric would like to trade on P(E=e1), which is currently 0.65.	<br/> 
-	 *	To decide long or short, S(E=e1) = 10, S(E~=e1)=10, no difference because this will be EricÅfs first trade.	<br/>
+	 *	To decide long or short, S(E=e1) = 10, S(E~=e1)=10, no difference because this will be EricÔøΩfs first trade.	<br/>
 	 *	Edit limit:	<br/>
 	 *	Given F=f1, and D=d2, min-q1 = 100	<br/>
 	 *	Given F~=f1, and D=d2, min-q2 = 100	<br/>
@@ -266,8 +266,8 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5824, 0.4176]   [0.8, 0.2]   [0.2165, 0.7835]	<br/>
 	 *	<br/>	
-	 *	EricÅfs expected score is S=10.1177.	<br/>
-	 *	EricÅfs min-q is 57.142857, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	EricÔøΩfs expected score is S=10.1177.	<br/>
+	 *	EricÔøΩfs min-q is 57.142857, at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     2    1	<br/>
 	 *	     2     2    2	<br/>
@@ -293,8 +293,8 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	 *	Variables   D                            E                             F	<br/> 
 	 *	Marginals   [0.7232, 0.2768]   [0.8509, 0.1491]   [0.2165, 0.7835]	<br/>
 	 *	<br/>	
-	 *	EricÅfs expected score is now 10.31615.	<br/> 
-	 *	EricÅfs min-q is 35.7393, at the following unique min-states (found by min-asset-propagation):	<br/> 
+	 *	EricÔøΩfs expected score is now 10.31615.	<br/> 
+	 *	EricÔøΩfs min-q is 35.7393, at the following unique min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     2    2	<br/>
 	 *	<br/> 
@@ -976,7 +976,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 			fail(e.getMessage());
 		}
 		
-		// EricÅfs expected score is S=10.1177
+		// EricÔøΩfs expected score is S=10.1177
 		assertEquals(10.1177, assetQAlgorithm.calculateExpectedAssets(), 0.0001);
 		
 		// check expected score given e2,d1,f1 == b*log(57.142857)
@@ -1097,7 +1097,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 			fail(e.getMessage());
 		}
 		
-		// EricÅfs expected score is now 10.31615.
+		// EricÔøΩfs expected score is now 10.31615.
 		assertEquals(10.31615, assetQAlgorithm.calculateExpectedAssets(), 0.0001);
 		
 		// check expected score given d2, e2, f2 == b*log(35.7393f)
@@ -2024,6 +2024,21 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertTrue(((0.2165f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.2165f + PROB_PRECISION_ERROR)) );
 		assertTrue(((0.7835f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.7835f + PROB_PRECISION_ERROR)) );
 		
+		// propagate hard evidence on f1
+		nodeToTest = (TreeVariable) network.getNode("F");
+		nodeToTest.addFinding(0);
+		junctionTreeAlgorithm.propagate();
+		
+		// check that new marginal of E is [0.8812, 0.1188], F is  [1, 0], and D is [0.8071, 0.1929]
+		nodeToTest = (TreeVariable) network.getNode("E");
+		assertEquals(0.8812f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+		assertEquals(0.1188f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+		nodeToTest = (TreeVariable) network.getNode("D");
+		assertEquals(0.8071f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+		assertEquals(0.1929f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+		nodeToTest = (TreeVariable) network.getNode("F");
+		assertEquals(1f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+		assertEquals(0f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
 		
 		// check if updateCPTBasedOnCliques is working
 		junctionTreeAlgorithm.updateCPTBasedOnCliques();
@@ -2035,7 +2050,8 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 			io.save(file, junctionTreeAlgorithm.getNetwork());
 			junctionTreeAlgorithm.setNet((ProbabilisticNetwork) io.load(file));
 			junctionTreeAlgorithm.run();
-			assertTrue(file.delete());
+			network = junctionTreeAlgorithm.getNet();
+//			assertTrue(file.delete());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -2043,17 +2059,62 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		
 		// check that the marginal remains as before the save
 		nodeToTest = (TreeVariable) network.getNode("E");
-		assertTrue(((0.8509f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.8509f + PROB_PRECISION_ERROR)) );
-		assertTrue(((0.1491f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.1491f + PROB_PRECISION_ERROR)) );
+		assertEquals(0.8812f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+		assertEquals(0.1188f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
 		nodeToTest = (TreeVariable) network.getNode("D");
-		assertTrue(((0.7232f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.7232f + PROB_PRECISION_ERROR)) );
-		assertTrue(((0.2768f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.2768f + PROB_PRECISION_ERROR)) );
+		assertEquals(0.8071f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+		assertEquals(0.1929f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
 		nodeToTest = (TreeVariable) network.getNode("F");
-		assertTrue(((0.2165f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(0)) && (nodeToTest.getMarginalAt(0) < (0.2165f + PROB_PRECISION_ERROR)) );
-		assertTrue(((0.7835f - PROB_PRECISION_ERROR) < nodeToTest.getMarginalAt(1)) && (nodeToTest.getMarginalAt(1) < (0.7835f + PROB_PRECISION_ERROR)) );
+		assertEquals(1f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+		assertEquals(0f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+		
+		
+		
+		// propagate hard evidence on d2
+		nodeToTest = (TreeVariable) network.getNode("D");
+		nodeToTest.addFinding(1);
+		junctionTreeAlgorithm.propagate();
+		
+		// check that new marginal of E is [0.5895, 0.4105], F is  [1, 0], and D is [0, 1]
+		nodeToTest = (TreeVariable) network.getNode("E");
+		assertEquals(0.5895f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+		assertEquals(0.4105f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+		nodeToTest = (TreeVariable) network.getNode("D");
+		assertEquals(0f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+		assertEquals(1f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+		nodeToTest = (TreeVariable) network.getNode("F");
+		assertEquals(1f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+		assertEquals(0f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+		
+		// check if updateCPTBasedOnCliques is working
+		junctionTreeAlgorithm.updateCPTBasedOnCliques();
+		
+		try {
+			// save and reload file again
+			NetIO io = new NetIO();
+			File file = new File("DEF_newCPTs.net");
+			io.save(file, junctionTreeAlgorithm.getNetwork());
+			junctionTreeAlgorithm.setNet((ProbabilisticNetwork) io.load(file));
+			junctionTreeAlgorithm.run();
+			network = junctionTreeAlgorithm.getNet();
+//			assertTrue(file.delete());
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// check that the marginal remains as before the save
+		nodeToTest = (TreeVariable) network.getNode("E");
+		assertEquals(0.5895f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+		assertEquals(0.4105f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+		nodeToTest = (TreeVariable) network.getNode("D");
+		assertEquals(0f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+		assertEquals(1f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+		nodeToTest = (TreeVariable) network.getNode("F");
+		assertEquals(1f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+		assertEquals(0f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+		
 		
 	}
-
-
 	
 }
