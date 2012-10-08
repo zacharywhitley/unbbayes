@@ -63,23 +63,23 @@ public class DBControllerImp implements IDBController {
 
 			// Eg. jdbc:mysql://localhost:3306/MDA?user=root&password=unb
 			int tmpEnd = URL.lastIndexOf(":");
-			String host = URL.substring(URL.indexOf("//")+2,tmpEnd);
-			String tmp= URL.substring(tmpEnd);
-			tmpEnd= tmp.indexOf("/");
-			String port = tmp.substring(1,tmpEnd);
-			tmp= tmp.substring(tmpEnd);
-			tmpEnd= tmp.indexOf("?");
-			String dbname = tmp.substring(1,tmpEnd);
-			tmp= tmp.substring(tmpEnd);
-			tmpEnd=tmp.indexOf("&");
-			String user = tmp.substring(tmp.indexOf("=")+1,tmpEnd);
-			tmp= tmp.substring(tmpEnd);
-			String pass = tmp.substring(tmp.indexOf("=")+1);
+			String host = URL.substring(URL.indexOf("//") + 2, tmpEnd);
+			String tmp = URL.substring(tmpEnd);
+			tmpEnd = tmp.indexOf("/");
+			String port = tmp.substring(1, tmpEnd);
+			tmp = tmp.substring(tmpEnd);
+			tmpEnd = tmp.indexOf("?");
+			String dbname = tmp.substring(1, tmpEnd);
+			tmp = tmp.substring(tmpEnd);
+			tmpEnd = tmp.indexOf("&");
+			String user = tmp.substring(tmp.indexOf("=") + 1, tmpEnd);
+			tmp = tmp.substring(tmpEnd);
+			String pass = tmp.substring(tmp.indexOf("=") + 1);
 
 			MysqlDataSource ds2 = new MysqlDataSource();
-//			ds2.setUser(user);
-//			ds2.setPassword(pass);
-//			ds2.setDatabaseName(dbname);
+			// ds2.setUser(user);
+			// ds2.setPassword(pass);
+			// ds2.setDatabaseName(dbname);
 			ds2.setURL(URL);
 			platform = PlatformFactory.createNewPlatformInstance(ds2);
 		} else {
@@ -151,22 +151,21 @@ public class DBControllerImp implements IDBController {
 	 *         second is the value.
 	 */
 	public String[][] getRelatedInstances(ParentRel relationship,
-			String queryIndex) {
+			final String queryIndex2) {
 		Attribute[] path = relationship.getPath();
 		// To create a list of non duplicated table names.
 		Set<String> tableNames = new HashSet<String>();
 
-		// If it is varchar
-		queryIndex = path[path.length - 1].getAttribute().getType()
-				.contains("CHAR") ? "'" + queryIndex + "'" : queryIndex;
+		// If it is a char type
+		String queryIndex = path[path.length - 1].getAttribute().getType()
+				.contains("CHAR") ? "'" + queryIndex2 + "'" : queryIndex2;
 
 		// Path example: PERSON.BLOODTYPE -> PERSON.MOTHER -> PERSON.ID ->
 		// PERSON.BLOODTYPE. Child to -> parent.
 		// Then we have path[0]=PERSON.BLOODTYPE, path[1]=PERSON.MOTHER, etc.
 
 		// The fist FK is the query.
-		String where = " WHERE " + path[1].getTable().getName() + "."
-				+ path[2].getAttribute().getName() + "=" + queryIndex;
+		String where = " WHERE " + path[2] + "=" + queryIndex;
 
 		// Slot chain.
 		for (int i = 2; i < path.length - 1; i += 2) {
@@ -181,10 +180,8 @@ public class DBControllerImp implements IDBController {
 
 			// If the table names are different, then add the cross.
 			if (!remoteIdName.equals(localFkName)) {
-				where = where + " " + remoteIdName + "."
-						+ attributeRemoteId.getAttribute().getName() + "="
-						+ localFkName + "."
-						+ attributeLocalFk.getAttribute().getName();
+				where = where + " " + attributeRemoteId + "="
+						+ attributeLocalFk;
 			}
 
 			// add if it is not duplicated.
@@ -211,7 +208,6 @@ public class DBControllerImp implements IDBController {
 		// SQL query.
 		String sqlQuery = "SELECT " + parentTableName + "." + parentAttName
 				+ ", " + tableId + " FROM " + queryTables + where;
-
 		log.debug("SQL query = " + sqlQuery);
 
 		// Query to DB.

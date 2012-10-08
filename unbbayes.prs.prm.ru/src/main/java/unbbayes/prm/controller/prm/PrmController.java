@@ -105,22 +105,21 @@ public class PrmController implements IPrmController {
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
 	public PotentialTable getCPD(Attribute attribute) {
-		PotentialTable[] potentialTables = cpds.get(attribute);
+		PotentialTable[] potentialTables = cpds.get(attribute.toString());
 
 		if (potentialTables != null) {
 			return cpds.get(attribute.toString())[0];
+		} else {
+			return null;
 		}
-		return null;
 	}
-	
+
 	/**
 	 * @see unbbayes.prm.controller.prm.IPrmController
 	 */
 	public PotentialTable[] getCPDs(Attribute attribute) {
 		return cpds.get(attribute.toString());
 	}
-
-	
 
 	/**
 	 * @see unbbayes.prm.controller.prm.IPrmController
@@ -135,41 +134,42 @@ public class PrmController implements IPrmController {
 		}
 		return parentsOf.toArray(new ParentRel[0]);
 	}
-	
+
 	/**
 	 * @see IPrmController
 	 */
 	public List<ParentRel> getParents() {
 		return parents;
 	}
-	
+
 	/**
 	 * @see IPrmController
 	 */
 	public void setParents(List<ParentRel> parents) {
 		this.parents = parents;
 	}
-	
-//	public HashMap<String, FloatCollection[]> getCpds() {
-//		Set<String> attributes = cpds.keySet();
-//		HashMap<String, FloatCollection[]> resp = new HashMap<String, FloatCollection[]>();
-//		
-//		for (String att : attributes) {
-//			PotentialTable[] potentialTables = cpds.get(att);
-//			FloatCollection[] fs = new FloatCollection[potentialTables.length];
-//			
-//			for (int i = 0; i < fs.length; i++) {
-//				fs[i] = potentialTables[i].getDataPT();
-//			}
-//			resp.put(att, fs);
-//		}
-//		
-//		
-//		return resp;
-//	}
-//	
-//	public void setCpds(HashMap<String, PotentialTable[]> cpds) {
-//		this.cpds = cpds;
-//	}
+
+	// public HashMap<String, FloatCollection[]> getCpds() {
+	// Set<String> attributes = cpds.keySet();
+	// HashMap<String, FloatCollection[]> resp = new HashMap<String,
+	// FloatCollection[]>();
+	//
+	// for (String att : attributes) {
+	// PotentialTable[] potentialTables = cpds.get(att);
+	// FloatCollection[] fs = new FloatCollection[potentialTables.length];
+	//
+	// for (int i = 0; i < fs.length; i++) {
+	// fs[i] = potentialTables[i].getDataPT();
+	// }
+	// resp.put(att, fs);
+	// }
+	//
+	//
+	// return resp;
+	// }
+	//
+	// public void setCpds(HashMap<String, PotentialTable[]> cpds) {
+	// this.cpds = cpds;
+	// }
 
 }
