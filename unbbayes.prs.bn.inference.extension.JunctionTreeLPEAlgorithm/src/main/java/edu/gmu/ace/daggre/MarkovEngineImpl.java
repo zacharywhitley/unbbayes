@@ -4505,7 +4505,25 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			super(transactionKey, occurredWhen, tradeKey, userId, questionId, null, assumptionIds, assumedStates, false);
 		}
 		/** Virtually does {@link MarkovEngineImpl#previewBalancingTrade(long, long, List, List)} and then {@link AddTradeNetworkAction#execute()} */
-		public void execute() {
+		public void execute(boolean isToUpdateAssets) {
+			// if this action was executed previously, we are re-running the history, and getExecutedTrades() will contain something
+			if (getExecutedTrades() != null && !getExecutedTrades().isEmpty()) {
+				// backup original trade specification, because we will change it several times
+				TradeSpecification backup = this.getTradeSpecification();
+				try {
+					// re-execute old trades
+					for (TradeSpecification tradeSpecification : getExecutedTrades() ) {
+						// execute the trade without releasing lock
+						this.setTradeSpecification(tradeSpecification);
+						super.execute(isToUpdateAssets);
+					}
+				} catch (Exception e) {
+					// restore original trade specification
+					this.setTradeSpecification(backup);
+					throw new RuntimeException(e);
+				}
+				return;
+			}
 			// prepare the list of trades actually executed by this balance operation
 			setExecutedTrades(new ArrayList<TradeSpecification>());
 			synchronized (getProbabilisticNetwork()) {
@@ -4528,7 +4546,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						for (TradeSpecification tradeSpecification : balancingTrades ) {
 							// execute the trade without releasing lock
 							this.setTradeSpecification(tradeSpecification);
-							super.execute();
+							super.execute(isToUpdateAssets);
 							// mark this trade as executed
 							getExecutedTrades().add(tradeSpecification);
 						}

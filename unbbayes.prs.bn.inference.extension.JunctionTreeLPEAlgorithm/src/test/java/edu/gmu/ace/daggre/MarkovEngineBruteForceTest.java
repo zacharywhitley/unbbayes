@@ -715,7 +715,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		List<Float> ret = null;
 		double probOfStateToConsider = Double.NaN;
 		double sum = 0;
-		for (int iteration = 0; iteration < 50; iteration++) {
+		for (int iteration = 0; iteration < Integer.MAX_VALUE; iteration++) {
 			sum = 0;
 			switch (type) {
 			case BELOW_LIMIT:
@@ -777,7 +777,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			}
 			
 			// guarantee that the produced values are consistent
-			if (!(Math.abs(sum - 1d) > PROB_ERROR_MARGIN/5)) {
+			if (!(Math.abs(sum - 1d) > 0.00005)) {
 				if (type == FivePointTestType.BETWEEN_LIMITS
 						&& (ret.get(stateToConsider) <= editLimits.get(0)|| ret.get(stateToConsider) >= editLimits.get(1)) ) {
 					// make sure the change did not make the new values to be come out of the limit
@@ -802,11 +802,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					// make sure the change did not make the new values to be come out of the limit
 					continue;
 				}
-				if ((Math.abs(sum - 1d) <= PROB_ERROR_MARGIN)) {
+				if ((Math.abs(sum - 1d) <= 0.00005)) {
 					break;
 				}
 			}
-		} 
+		}
 		
 		return ret;
 	}
@@ -4298,6 +4298,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 									tradeSpecification, false));
 						}
 					} else {
+						float cashBeforeBalance = engine.getCash(userId, null, null);
 						// actually balance
 						assertTrue(engine.doBalanceTrade(null, occurredWhen, 
 								"User "+userId + " exits question " + questionId + ", assumptions: " + assumptionIds+"="+assumedStates, 
@@ -4327,6 +4328,10 @@ public class MarkovEngineBruteForceTest extends TestCase {
 							// check that conditional min assets per state are close each other
 							List<Float> cashes = engine.getCashPerStates(userId, questionId, assumptionIds, assumedStates);
 							for (int i = 1; i < cashes.size(); i++) {
+								if (cashBeforeBalance >= 0) {
+									// if cash before balance was non negative, balance will keep cash non-negative
+									assertTrue(cashBeforeBalance + "->" + cashes.get(i), cashes.get(i) >= 0);
+								} 
 								if (Math.abs(cashes.get(0) - cashes.get(i)) > ASSET_ERROR_MARGIN) {
 									equals = false;
 									break;
@@ -4368,12 +4373,6 @@ public class MarkovEngineBruteForceTest extends TestCase {
 								assertTrue(engine.toString() + ", user=" + userId + ", question="+questionId 
 										+ ", assumptions:"+assumptionIds +"=" +assumedStates + ", p="+p, 
 										p <= 1 && p >= 0);
-								if (stateOfEditLimit == state) {
-									// the trade should be between the edit limit of same question + assumption
-									assertTrue(engine.toString() + ", user=" + userId + ", question="+questionId 
-											+ ", assumptions:"+assumptionIds +"=" +assumedStates + ", p="+p + ", limit="+editLimits, 
-											p > editLimits.get(0) && p < editLimits.get(1));
-								}
 								sum +=p;
 							}
 							// check that sum of balancing trade is 1
@@ -4448,7 +4447,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			
 			// resolve a question eventually
 			boolean hasResolved = false;
-			if (Math.random() <= .2) {
+			if (Math.random() <= 0.03) {
 				hasResolved = true;
 				int settledState = (int)(Math.random()*probabilities.get(questionId).size());
 				if (isToTrace()) {
@@ -4620,7 +4619,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			}
 			
 			// revert trades occasionally
-			if (Math.random() <= .1 && (!hasResolved || !isToTrace())) {
+			if (Math.random() < .1 && (!hasResolved || !isToTrace())) {// TODO return back to .1 after we get response from Dr. Robin about the expected behavior of revert trade + add cash
 				
 				if (isToTrace()) {
 					tracer.setToRevertTrade(true);
