@@ -135,6 +135,10 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	private boolean isToResetEvidenceBeforeRun = true;
 
 	private Map<TreeVariable, Integer> permanentEvidenceMap = null;
+
+	private String name = null;
+
+	private boolean isToChangeGUI = true;
 	
 
 
@@ -238,7 +242,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		}
 		
 		// TODO migrate these GUI code to the plugin infrastructure
-		if (this.getMediator() != null) {
+		if (this.getMediator() != null && isToChangeGUI() ) {
 			AssetCompilationPanelBuilder builder = new AssetCompilationPanelBuilder();
 			JComponent component = builder.buildCompilationPanel(this, this.getMediator());
 			this.getMediator().getScreen().getContentPane().add(component, this.getMediator().getScreen().PN_PANE_PN_COMPILATION_PANE);
@@ -253,7 +257,10 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getName()
 	 */
 	public String getName() {
-		return this.getProbabilityPropagationDelegator().getName() + " + assets";
+		if (this.name  == null) {
+			this.name = this.getProbabilityPropagationDelegator().getName() + " + assets";
+		}
+		return this.name;
 	}
 
 	/* (non-Javadoc)
@@ -1668,6 +1675,29 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
         }
 		
 		return ret;
+	}
+
+	/**
+	 * @param name the name to set
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * If true, {@link #run()} will attempt to change the GUI (e.g. add extra panel).
+	 * @param isToChangeGUI the isToChangeGUI to set
+	 */
+	public void setToChangeGUI(boolean isToChangeGUI) {
+		this.isToChangeGUI = isToChangeGUI;
+	}
+
+	/**
+	 * If true, {@link #run()} will attempt to change the GUI (e.g. add extra panel).
+	 * @return the isToChangeGUI
+	 */
+	public boolean isToChangeGUI() {
+		return isToChangeGUI;
 	}
 
 
