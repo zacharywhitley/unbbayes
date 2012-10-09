@@ -100,6 +100,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 * @deprecated use {@link #getJunctionTree()} or {@link #setJunctionTree(JunctionTree)} instead.
 	 */
 	protected IJunctionTree junctionTree;	
+	
+//	/**This is the name of the property in {@link Network#getProperty(String)} for evidences not to be reset in {@link #resetEvidences()}. Use comma separated {@link Node#getName()} for values*/
+//	public static final String EVIDENCES_NOT_TO_RESET = SingleEntityNetwork.class.getName() + ".STORED_EVIDENCE";
     
     /**
      * Creates a new graph with no nodes or edges.
@@ -436,10 +439,22 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			t.setPriority(Thread.MIN_PRIORITY);
 			t.start();
 		}
+		
+		// we need to call "propagate" in order to reflect the evidences which was set before compilation
+//		if (this.getProperty(EVIDENCES_NOT_TO_RESET) != null) {
+//			// clear the flags of the evidences added before compilation
+//			this.addProperty(EVIDENCES_NOT_TO_RESET, null);
+//			// propagate evidences
+//			this.updateEvidences();
+//		}
 	}
 
 	public void resetEvidences() {
 		for (Node node : this.getNodesCopy()) {
+//			if (this.getProperty(EVIDENCES_NOT_TO_RESET) != null && this.getProperty(EVIDENCES_NOT_TO_RESET).toString().contains(node.getName())) {
+//				// ignore nodes in EVIDENCES_NOT_TO_RESET
+//				continue;
+//			}
 			if (node instanceof TreeVariable) {
 				((TreeVariable)node).resetEvidence();
 				// OBS utility nodes are not tree variables
@@ -694,9 +709,11 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 				auxClique = (Clique) junctionTree.getCliques().get(c);
 	
 				if (auxClique.getProbabilityFunction().tableSize() < min
-					&& auxClique.getNodes().containsAll(auxNo.getParents())) {
+//					&& auxClique.getNodes().containsAll(auxNo.getParents())) {
+					&& SetToolkit.containsAllExact(auxClique.getNodes(), auxNo.getParents())) {
 					if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE
-						&& !auxClique.getNodes().contains(auxNo)) {
+//						&& !auxClique.getNodes().contains(auxNo)) {
+						&& !SetToolkit.containsExact(auxClique.getNodes(), auxNo)) {
 						continue;
 					}
 					cliqueMin = auxClique;
@@ -717,6 +734,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 //			}
 		}
 	}
+	
+	
 
 	/**
 	 *  Builds the junction tree  - Frank Jensen

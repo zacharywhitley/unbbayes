@@ -28,9 +28,8 @@ import java.util.ResourceBundle;
 import unbbayes.prs.Node;
 
 /**
- *  Classe que fornece m�todos est�ticos para opera��es (uni�o e intersecao)
- *  entre conjuntos (List). A opera��o de subtra��o e de pertin�ncia s�o
- *  feitas utilizando m�todos do pr�prio List.
+ * This class offers some utility methods related to operations
+ * regaring {@link List} (e.g. union, intersection).
  *
  *@author     Michael e Rommel
  */
@@ -41,17 +40,17 @@ public class SetToolkit {
   			unbbayes.util.resources.UtilResources.class.getName());
 
     /**
-     *  Realiza a uni�o entre dois conjuntos.
+     * Union of two lists.
      *
-     *@param  conjuntoA  conjunto A
-     *@param  conjuntoB  conjunto B
-     *@return            A uni�o B
+     *@param  listA  
+     *@param  listB  
+     *@return the union of the two lists
      */
-    public static List union(List<?> conjuntoA, List<?> conjuntoB) {
-        List<Object> result = (ArrayList<Object>)clone(conjuntoA);
-        for (int c1 = 0; c1 < conjuntoB.size(); c1++) {
-            if (! conjuntoA.contains(conjuntoB.get(c1))) {
-                result.add(conjuntoB.get(c1));
+    public static List union(List<?> listA, List<?> listB) {
+        List<Object> result = (ArrayList<Object>)clone(listA);
+        for (int c1 = 0; c1 < listB.size(); c1++) {
+            if (! listA.contains(listB.get(c1))) {
+                result.add(listB.get(c1));
             }
         }
 
@@ -59,18 +58,16 @@ public class SetToolkit {
     }
 
     /**
-     *  Make the union between two sets
-     *
-     *@param  conjuntoA  conjunto A
-     *@param  conjuntoB  conjunto B
-     *@return            A uni�o B
+     *@param  listA  
+     *@param  listB 
+     *@return the union between two lists
      */
-    public static ArrayList<Node> union(ArrayList<Node> conjuntoA, ArrayList<Node> conjuntoB) {
-    	ArrayList<Node> result = new ArrayList<Node>(conjuntoA.size() + conjuntoB.size());
-        result.addAll(conjuntoA);
-        for (int c1 = 0; c1 < conjuntoB.size(); c1++) {
-            if (! conjuntoA.contains(conjuntoB.get(c1))) {
-                result.add(conjuntoB.get(c1));
+    public static ArrayList<Node> union(ArrayList<Node> listA, ArrayList<Node> listB) {
+    	ArrayList<Node> result = new ArrayList<Node>(listA.size() + listB.size());
+        result.addAll(listA);
+        for (int c1 = 0; c1 < listB.size(); c1++) {
+            if (! listA.contains(listB.get(c1))) {
+                result.add(listB.get(c1));
             }
         }
 
@@ -78,11 +75,9 @@ public class SetToolkit {
     }
 
     /**
-     *  Realiza a interse��o entre dois conjuntos.
-     *
-     *@param  conjuntoA  conjunto A
-     *@param  conjuntoB  conjunto B
-     *@return            A interse��o B
+     *@param  listA
+     *@param  listB
+     *@return  intersection between the lists
      */
     public static List intersection(List<?> conjuntoA, List<?> conjuntoB) {
         List<Object> result = (ArrayList<Object>)clone(conjuntoA);
@@ -92,29 +87,27 @@ public class SetToolkit {
     
     
 	/**
-     *  Realiza a interse��o entre dois conjuntos.
-     *
-     *@param  conjuntoA  conjunto A
-     *@param  conjuntoB  conjunto B
-     *@return            A interse��o B
+     *@param  listA
+     *@param  listB
+     *@return  intersection between the lists
      */
-    public static  ArrayList<Node> intersection( ArrayList<Node> conjuntoA,  ArrayList<Node> conjuntoB) {
-    	 ArrayList<Node> result = clone(conjuntoA);
-        result.retainAll(conjuntoB);
+    public static  ArrayList<Node> intersection( ArrayList<Node> listA,  ArrayList<Node> listB) {
+    	 ArrayList<Node> result = clone(listA);
+        result.retainAll(listB);
         return result;
     }
 
     /**
      * 
-     * @param conjunto
+     * @param collection
      * @return
      * @deprecated do not use this method anymore, because this does not implement type safety
      */
-    public static List clone(Collection conjunto) {
+    public static List clone(Collection collection) {
         try {
-            Class classe = conjunto.getClass();
+            Class classe = collection.getClass();
             List result = (List)classe.newInstance();
-            result.addAll(conjunto);
+            result.addAll(collection);
             return result;
         } catch (IllegalAccessException e) {
             throw new RuntimeException(resource.getString("IllegalAccessException"));
@@ -126,5 +119,43 @@ public class SetToolkit {
     public static ArrayList<Node> clone(ArrayList<Node> conjunto) {
     	return new ArrayList<Node>(conjunto);
     }
+    
+    /**
+	 * Because  {@link List#contains(Object)} applied to nodes
+	 * invokes {@link Node#equals(Object)}, which performs string comparison (slower),
+	 * this method can be used in order to perform exact object comparison (faster).
+	 * @see List#contains(Object)
+	 */
+	public static boolean containsExact(List collection, Object o) {
+		for (Object object : collection) {
+			if (object == o) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * Because  {@link List#containsAll(Collection)} applied to nodes
+	 * invokes {@link Node#equals(Object)}, which performs string comparison (slower),
+	 * this method can be used in order to perform exact object comparison (faster).
+	 * @see List#containsAll(Collection)
+	 */
+	public static boolean containsAllExact(List container, Collection contents) {
+		boolean hasObject;
+		for (Object content : contents) {
+			hasObject = false;
+			for (Object object : container) {
+				if (object == content) {
+					hasObject = true;
+					break;
+				}
+			}
+			if (!hasObject) {
+				return false;
+			}
+		}
+		return true;
+	}
 }
 
