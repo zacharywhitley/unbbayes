@@ -89,6 +89,9 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 
 	private boolean isToUseEstimatedTotalProbability = true;
 	
+	/** This is the error margin used when comparing probabilities */
+	public static final float ERROR_MARGIN = 0.00005f;
+	
 	/**
 	 * This listener can be used if you want the junction tree algorithm not to reset the clique potentials before each propagation.
 	 * This listener also clears all virtual nodes automatically at the end of the propagation.
@@ -2125,9 +2128,30 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		InCliqueConditionalProbabilityExtractor cptExtractor = (InCliqueConditionalProbabilityExtractor) InCliqueConditionalProbabilityExtractor.newInstance();
 		for (Node node : getNet().getNodes()) {
 			if (node instanceof ProbabilisticNode) {
+				
 				PotentialTable newCPT = (PotentialTable) cptExtractor.buildCondicionalProbability(node, node.getParentNodes(), getNet(), this);
 				PotentialTable oldCPT = ((ProbabilisticNode) node).getProbabilityFunction();
-				oldCPT.setValues(newCPT.getValues());
+				
+				// iterate over columns of the table, not over each cell
+				for (int indexOf1stCellOfColumn = 0; indexOf1stCellOfColumn < oldCPT.tableSize(); indexOf1stCellOfColumn+=oldCPT.getVariableAt(0).getStatesSize()) {	
+					
+					// check if parent has hard evidence (in such case, this column will have only 0% prob)
+					boolean isImpossibleState = true;
+					// iterate over cells in the current column
+					for (int stateIndex = 0; stateIndex < oldCPT.getVariableAt(0).getStatesSize(); stateIndex++) {
+						if (newCPT.getValue(indexOf1stCellOfColumn + stateIndex) > ERROR_MARGIN) {
+							isImpossibleState = false;
+							break;
+						}
+					}
+					
+					// if it is impossible state, then keep this column with old distribution. If it is a possible state, then update
+					if (!isImpossibleState) {
+						for (int stateIndex = 0; stateIndex < oldCPT.getVariableAt(0).getStatesSize(); stateIndex++) {
+							oldCPT.setValue(indexOf1stCellOfColumn+stateIndex,newCPT.getValue(indexOf1stCellOfColumn+stateIndex));
+						}
+					}
+				}
 			}
 		}
 		return this.getNet();
