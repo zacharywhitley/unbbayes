@@ -2028,6 +2028,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		nodeToTest = (TreeVariable) network.getNode("F");
 		nodeToTest.addFinding(0);
 		junctionTreeAlgorithm.propagate();
+		network.removeNode(network.getNode("F"));
 		
 		// check that new marginal of E is [0.8812, 0.1188], F is  [1, 0], and D is [0.8071, 0.1929]
 		nodeToTest = (TreeVariable) network.getNode("E");
@@ -2036,9 +2037,10 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		nodeToTest = (TreeVariable) network.getNode("D");
 		assertEquals(0.8071f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
 		assertEquals(0.1929f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
-		nodeToTest = (TreeVariable) network.getNode("F");
-		assertEquals(1f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
-		assertEquals(0f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+//		nodeToTest = (TreeVariable) network.getNode("F");
+//		assertEquals(1f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+//		assertEquals(0f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+		
 		
 		// check if updateCPTBasedOnCliques is working
 		junctionTreeAlgorithm.updateCPTBasedOnCliques();
@@ -2051,7 +2053,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 			junctionTreeAlgorithm.setNet((ProbabilisticNetwork) io.load(file));
 			junctionTreeAlgorithm.run();
 			network = junctionTreeAlgorithm.getNet();
-//			assertTrue(file.delete());
+			assertTrue(file.delete());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -2064,9 +2066,9 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		nodeToTest = (TreeVariable) network.getNode("D");
 		assertEquals(0.8071f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
 		assertEquals(0.1929f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
-		nodeToTest = (TreeVariable) network.getNode("F");
-		assertEquals(1f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
-		assertEquals(0f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+//		nodeToTest = (TreeVariable) network.getNode("F");
+//		assertEquals(1f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+//		assertEquals(0f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
 		
 		
 		
@@ -2074,17 +2076,19 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		nodeToTest = (TreeVariable) network.getNode("D");
 		nodeToTest.addFinding(1);
 		junctionTreeAlgorithm.propagate();
+		network.removeNode(network.getNode("D"));
 		
 		// check that new marginal of E is [0.5895, 0.4105], F is  [1, 0], and D is [0, 1]
 		nodeToTest = (TreeVariable) network.getNode("E");
 		assertEquals(0.5895f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
 		assertEquals(0.4105f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
-		nodeToTest = (TreeVariable) network.getNode("D");
-		assertEquals(0f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
-		assertEquals(1f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
-		nodeToTest = (TreeVariable) network.getNode("F");
-		assertEquals(1f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
-		assertEquals(0f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+//		nodeToTest = (TreeVariable) network.getNode("D");
+//		assertEquals(0f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+//		assertEquals(1f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+//		nodeToTest = (TreeVariable) network.getNode("F");
+//		assertEquals(1f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+//		assertEquals(0f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+		
 		
 		// check if updateCPTBasedOnCliques is working
 		junctionTreeAlgorithm.updateCPTBasedOnCliques();
@@ -2097,7 +2101,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 			junctionTreeAlgorithm.setNet((ProbabilisticNetwork) io.load(file));
 			junctionTreeAlgorithm.run();
 			network = junctionTreeAlgorithm.getNet();
-//			assertTrue(file.delete());
+			assertTrue(file.delete());
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -2107,12 +2111,12 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		nodeToTest = (TreeVariable) network.getNode("E");
 		assertEquals(0.5895f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
 		assertEquals(0.4105f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
-		nodeToTest = (TreeVariable) network.getNode("D");
-		assertEquals(0f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
-		assertEquals(1f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
-		nodeToTest = (TreeVariable) network.getNode("F");
-		assertEquals(1f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
-		assertEquals(0f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+//		nodeToTest = (TreeVariable) network.getNode("D");
+//		assertEquals(0f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+//		assertEquals(1f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
+//		nodeToTest = (TreeVariable) network.getNode("F");
+//		assertEquals(1f, nodeToTest.getMarginalAt(0), PROB_PRECISION_ERROR );
+//		assertEquals(0f, nodeToTest.getMarginalAt(1), PROB_PRECISION_ERROR );
 		
 		
 	}
