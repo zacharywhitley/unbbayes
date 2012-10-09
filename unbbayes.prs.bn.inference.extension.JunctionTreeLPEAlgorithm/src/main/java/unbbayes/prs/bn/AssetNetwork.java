@@ -303,4 +303,14 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	public boolean isToCalculateMarginalsOfAssetNodes() {
 		return isToCalculateMarginalsOfAssetNodes;
 	}
+
+	/**
+	 * Asset nets can never be hybrid bn.
+	 * @see unbbayes.prs.bn.SingleEntityNetwork#isHybridBN()
+	 */
+	public boolean isHybridBN() {
+		return false;
+	}
+	
+	
 }
