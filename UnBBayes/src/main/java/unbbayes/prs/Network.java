@@ -58,7 +58,8 @@ public class Network implements Graph{
 		this.id = this.name = name;
 		nodeList = new ArrayList<Node>();
         edgeList = new ArrayList<Edge>();
-        nodeIndexes = new ConcurrentHashMap<String,Integer>();	// concurrent hash maps are thread safe
+//        nodeIndexes = new ConcurrentHashMap<String,Integer>();	// concurrent hash maps are thread safe, although slower
+        nodeIndexes = new HashMap<String,Integer>();	
         
         // Event responsible for updating the index for the node that just changed its name.
         nodeNameChangedListener = new NodeNameChangedListener() {
