@@ -1070,7 +1070,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				break;
 			case BETWEEN_LIMITS:
 				if (minimum <= 0) {
-					minimum = engines.get(0).getCash(userId, null, null);
+					minimum = engines.get(1).getCash(userId, null, null);
 				}
 				assertTrue(engine.toString()+ ", min = " + minimum, minimum > 0);
 				break;

@@ -113,22 +113,23 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	/** default value of {@link #getRandomVariableComparator()} */
 	public static final Comparator<IRandomVariable> DEFAULT_RV_COMPARATOR = new Comparator<IRandomVariable>() {
 		public int compare(IRandomVariable v1, IRandomVariable v2) {
-			int nameComp = v1.toString().compareTo(v2.toString());
-			if (nameComp == 0) {
-				// do special treatment on cliques with same variables
-				if ((v1 instanceof Clique) && (v2 instanceof Clique)) {
-					return ((Clique)v1).getIndex() - ((Clique)v2).getIndex();
-				} else if ((v1 instanceof Separator) && (v2 instanceof Separator)) {
-					nameComp = this.compare(((Separator)v1).getClique1(), ((Separator)v2).getClique1());
-					if (nameComp == 0) {
-						return this.compare(((Separator)v1).getClique2(), ((Separator)v2).getClique2());
-					}
-					return nameComp;
-				} else if ((v1 instanceof Separator)) {
-					return 1;
-				}
-			}
-			return nameComp;
+//			int nameComp = v1.toString().compareTo(v2.toString());
+//			if (nameComp == 0) {
+//				// do special treatment on cliques with same variables
+//				if ((v1 instanceof Clique) && (v2 instanceof Clique)) {
+//					return ((Clique)v1).getIndex() - ((Clique)v2).getIndex();
+//				} else if ((v1 instanceof Separator) && (v2 instanceof Separator)) {
+//					nameComp = this.compare(((Separator)v1).getClique1(), ((Separator)v2).getClique1());
+//					if (nameComp == 0) {
+//						return this.compare(((Separator)v1).getClique2(), ((Separator)v2).getClique2());
+//					}
+//					return nameComp;
+//				} else if ((v1 instanceof Separator)) {
+//					return 1;
+//				}
+//			}
+//			return nameComp;
+			return v1.getInternalIdentificator() - v2.getInternalIdentificator();
 		}
 	};
 	
@@ -796,6 +797,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			for (Clique origClique : relatedProbabilisticNetwork.getJunctionTree().getCliques()) {
 				
 				Clique newClique = new Clique(AssetTable.getInstance());
+				newClique.setInternalIdentificator(origClique.getInternalIdentificator());
 				
 				boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in AssetNetwork.
 				for (Node node : origClique.getNodes()) {
@@ -878,6 +880,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				}
 				
 				Separator newSeparator = new Separator(assetClique1, assetClique2, AssetTable.getInstance());
+				newSeparator.setInternalIdentificator(origSeparator.getInternalIdentificator());
 				
 				// fill the separator's node list
 				for (Node origNode : origSeparator.getNodes()) {

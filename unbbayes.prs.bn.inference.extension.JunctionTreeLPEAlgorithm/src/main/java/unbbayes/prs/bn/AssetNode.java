@@ -13,10 +13,12 @@ import unbbayes.util.SerializablePoint2D;
 /**
  * @author Shou Matsumoto
  */
-public class AssetNode extends DecisionNode {
+public class AssetNode extends DecisionNode implements IRandomVariable {
 	
 	private static final long serialVersionUID = -1926227466217847395L;
 	private boolean isToCalculateMarginal = true;
+	
+	private int internalIdentificator = Integer.MIN_VALUE;
 
 	
 	
@@ -273,6 +275,39 @@ public class AssetNode extends DecisionNode {
 		super.setSize(width, height);
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Node#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof IRandomVariable) {
+			return this.internalIdentificator == ((IRandomVariable)obj).getInternalIdentificator();
+		}
+		return false;
+	}
+
+	/**
+	 * @return the internalIdentificator
+	 */
+	public int getInternalIdentificator() {
+		return internalIdentificator;
+	}
+
+	/**
+	 * @param internalIdentificator the internalIdentificator to set
+	 */
+	public void setInternalIdentificator(int internalIdentificator) {
+		this.internalIdentificator = internalIdentificator;
+	}
+
+	/**
+	 * @see unbbayes.prs.bn.IRandomVariable#getProbabilityFunction()
+	 * @deprecated
+	 */
+	public IProbabilityFunction getProbabilityFunction() {
+		return null;
+	}
+
 //	/**
 //	 * Instantiates the array of marginals and initializes its values to 1.
 //	 * The initial value is set to 1 because it is the identity value
@@ -288,7 +323,16 @@ public class AssetNode extends DecisionNode {
 //		}
 //	}
 
+	/**
+	 * Inserts a state with the specified name at the end of the list,
+	 * but it does not update {@link #getProbabilityFunction()},
+	 * because it is supposedly null or empty.
+	 * @param state
+	 *            Name of the state to be added.
+	 */
+	public void appendState(String state) {
+		states.add(state);
+	}
 	
-
    
 }

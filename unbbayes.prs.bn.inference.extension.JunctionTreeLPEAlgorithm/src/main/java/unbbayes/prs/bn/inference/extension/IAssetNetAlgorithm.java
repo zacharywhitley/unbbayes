@@ -9,13 +9,14 @@ import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
+import unbbayes.util.extension.bn.inference.IRandomVariableAwareInferenceAlgorithm;
 
 /**
  * Common interface for the algorithms related to assets
  * @author Shou Matsumoto
  *
  */
-public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
+public interface IAssetNetAlgorithm extends IRandomVariableAwareInferenceAlgorithm {
 	
 
 	/**

@@ -35,6 +35,7 @@ import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
+import unbbayes.util.extension.bn.inference.IRandomVariableAwareInferenceAlgorithm;
 
 /**
  * The pseudocode implemented by this algorithm is:<br/>
@@ -419,21 +420,21 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 				
 
 				public void onBeforeRun(IInferenceAlgorithm algorithm) {
-					if (algorithm == null) {
-						Debug.println(getClass(), "Algorithm == null");
-						return;
-					}
-					if ((algorithm.getNetwork() != null) && ( algorithm.getNetwork() instanceof SingleEntityNetwork)) {
-						SingleEntityNetwork net = (SingleEntityNetwork)algorithm.getNetwork();
-						
-						if (net.isHybridBN()) {
-							// TODO use resource file instead
-							throw new IllegalArgumentException(
-										algorithm.getName() 
-										+ " cannot handle continuous nodes. \n\n Please, go to the Global Options and choose another inference algorithm."
-									);
-						}
-					}
+//					if (algorithm == null) {
+//						Debug.println(getClass(), "Algorithm == null");
+//						return;
+//					}
+//					if ((algorithm.getNetwork() != null) && ( algorithm.getNetwork() instanceof SingleEntityNetwork)) {
+//						SingleEntityNetwork net = (SingleEntityNetwork)algorithm.getNetwork();
+//						
+//						if (net.isHybridBN()) {
+//							// TODO use resource file instead
+//							throw new IllegalArgumentException(
+//										algorithm.getName() 
+//										+ " cannot handle continuous nodes. \n\n Please, go to the Global Options and choose another inference algorithm."
+//									);
+//						}
+//					}
 				}
 				public void onBeforeReset(IInferenceAlgorithm algorithm) {}
 				
@@ -475,7 +476,12 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 						
 					// Finally propagate evidence
 				}
-				public void onAfterRun(IInferenceAlgorithm algorithm) {}
+				public void onAfterRun(IInferenceAlgorithm algorithm) {
+					// update the internal ids of separators, nodes, etc
+					if (algorithm instanceof IRandomVariableAwareInferenceAlgorithm) {
+						((IRandomVariableAwareInferenceAlgorithm)algorithm).initInternalIdentificators();
+					}
+				}
 				public void onAfterReset(IInferenceAlgorithm algorithm) {}
 				
 				/**
@@ -1698,6 +1704,16 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 */
 	public boolean isToChangeGUI() {
 		return isToChangeGUI;
+	}
+
+	/**
+	 * Only delegates to {@link #getProbabilityPropagationDelegator()}
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#initInternalIdentificators()
+	 */
+	public void initInternalIdentificators() {
+		if (getProbabilityPropagationDelegator() instanceof IRandomVariableAwareInferenceAlgorithm) {
+			((IRandomVariableAwareInferenceAlgorithm) getProbabilityPropagationDelegator()).initInternalIdentificators();
+		}
 	}
 
 

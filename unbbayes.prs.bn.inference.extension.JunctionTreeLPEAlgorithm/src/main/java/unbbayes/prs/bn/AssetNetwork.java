@@ -117,6 +117,7 @@ public class AssetNetwork extends ProbabilisticNetwork {
 					AssetNode assetNode = AssetNode.getInstance();
 					assetNode.setToCalculateMarginal(isToCalculateMarginalsOfAssetNodes());
 					assetNode.setName(node.getName());
+					assetNode.setInternalIdentificator(node.getInternalIdentificator());
 					// copy states
 					for (int i = 0; i < node.getStatesSize(); i++) {
 						assetNode.appendState(node.getStateAt(i));

@@ -2396,6 +2396,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// (i.e. keys - nodes - with same name will be considered as same key, although they are different instances)
 				Map<INode, Integer> mapOfEvidences = new TreeMap<INode, Integer>(new Comparator<INode>() {
 					public int compare(INode o1, INode o2) {
+//						if (o1 instanceof IRandomVariable && o2 instanceof IRandomVariable) {
+//							return ((IRandomVariable)o1).getInternalIdentificator() - ((IRandomVariable)o2).getInternalIdentificator();
+//						}
 						return o1.getName().compareTo(o2.getName());
 					}
 				});
