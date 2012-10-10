@@ -20,6 +20,7 @@
  */
 package unbbayes.prs.bn;
 
+
 /**
  * A interface for variables containing probability functions
  */
@@ -30,5 +31,29 @@ public interface IRandomVariable {
 	 * @return a probability function (e.g. probability table for tabled variables)
 	 */
     public IProbabilityFunction getProbabilityFunction();
+    
+    /**
+     * @returns the identification key which can be
+     * easily compared, so that this random
+     * variable can be uniquely identified over several 
+     * similar instances in the same network without performing
+     * name comparison or complex data comparison.
+     * This is particularly useful when a random variable
+     * must be re-used across different plug-ins,
+     * and performance is required.
+     */
+    public int getInternalIdentificator();
+    
+    /**
+     * @param internalIdentificator : the identification key which can be
+     * easily compared, so that this random
+     * variable can be uniquely identified over several 
+     * similar instances without performing
+     * name comparison or complex data comparison.
+     * This is particularly useful when a random variable
+     * must be re-used across different plug-ins,
+     * and performance is required.
+     */
+    public void setInternalIdentificator(int internalIdentificator);
     
 }

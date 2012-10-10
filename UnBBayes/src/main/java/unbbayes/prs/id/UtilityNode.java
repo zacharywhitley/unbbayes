@@ -46,6 +46,8 @@ public class UtilityNode extends Node implements IRandomVariable, java.io.Serial
     /** Load resource file from this package */
   	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.prs.bn.resources.BnResources.class.getName());
+  	
+  	private int internalIdentificator = Integer.MIN_VALUE;
 
   	/**
      * Constructs a UtilityNode with an initialized table and 
@@ -107,5 +109,21 @@ public class UtilityNode extends Node implements IRandomVariable, java.io.Serial
     public static void setStaticColor(int rgb) {
         color = new Color(rgb);
     }
+
+
+	/**
+	 * @return the internalIdentificator
+	 */
+	public int getInternalIdentificator() {
+		return internalIdentificator;
+	}
+
+
+	/**
+	 * @param internalIdentificator the internalIdentificator to set
+	 */
+	public void setInternalIdentificator(int internalIdentificator) {
+		this.internalIdentificator = internalIdentificator;
+	}
     
 }

@@ -50,6 +50,8 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
   	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.prs.bn.resources.BnResources.class.getName());
 
+  	private int internalIdentificator = Integer.MIN_VALUE;
+  	
     /**
      * Constructs a ProbabilisticNode with an initialized table and 
      * an incremented DrawElement.
@@ -85,6 +87,7 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
         no.setName(resource.getString("copyName") + this.getName());
         no.setDescription(resource.getString("copyName") + this.getDescription());
         no.tabelaPot = (ProbabilisticTable)this.tabelaPot.clone();
+        no.setInternalIdentificator(this.getInternalIdentificator());
         return no;
     }
     
@@ -107,6 +110,7 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
         float[] marginais = new float[super.marginalList.length];
         System.arraycopy(super.marginalList, 0, marginais, 0, marginais.length);
         cloned.marginalList = marginais;
+        cloned.setInternalIdentificator(this.getInternalIdentificator());
 //        cloned.copyMarginal();
         return cloned;
     }
@@ -131,6 +135,7 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
         if (this.hasEvidence()) {
         	cloned.addFinding(this.getEvidence());
         }
+        cloned.setInternalIdentificator(this.getInternalIdentificator());
         // TODO copy likelihood
         return cloned;
     }
@@ -335,6 +340,22 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
 	 */
 	public static Color getExplanationColor() {
 		return explanationColor;
+	}
+
+
+	/**
+	 * @return the internalIdentificator
+	 */
+	public int getInternalIdentificator() {
+		return internalIdentificator;
+	}
+
+
+	/**
+	 * @param internalIdentificator the internalIdentificator to set
+	 */
+	public void setInternalIdentificator(int internalIdentificator) {
+		this.internalIdentificator = internalIdentificator;
 	}
     
 }

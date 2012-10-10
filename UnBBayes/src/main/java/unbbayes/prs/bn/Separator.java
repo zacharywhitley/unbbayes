@@ -39,7 +39,7 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 	
     private PotentialTable tabelaPot;
    
-
+    private int internalIdentificator = Integer.MIN_VALUE;
 
 	private PotentialTable utilityTable;
     private ArrayList<Node> nos;
@@ -176,6 +176,26 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 		sb.append("-");
 		sb.append(this.getClique2());
 		return sb.toString();
+	}
+
+	/**
+	 * Internal identificators of separators
+	 * are using negative values, in order to distinguish
+	 * from cliques
+	 * @return the internalIdentificator
+	 */
+	public int getInternalIdentificator() {
+		return internalIdentificator;
+	}
+
+	/**
+	 * Internal identificators of separators
+	 * are using negative values, in order to distinguish
+	 * from cliques
+	 * @param internalIdentificator the internalIdentificator to set
+	 */
+	public void setInternalIdentificator(int internalIdentificator) {
+		this.internalIdentificator = internalIdentificator;
 	}
 }
 

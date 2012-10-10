@@ -26,6 +26,7 @@ import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
+import unbbayes.util.extension.bn.inference.IRandomVariableAwareInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
 
 /**
@@ -39,7 +40,7 @@ import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
  * @author Shou Matsumoto
  *
  */
-public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
+public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgorithm {
 	
 	private static ResourceBundle generalResource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.controller.resources.ControllerResources.class.getName(),
@@ -117,6 +118,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 							);
 				}
 			}
+			
 		}
 		public void onBeforeReset(IInferenceAlgorithm algorithm) {}
 		
@@ -158,7 +160,12 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 				
 			// Finally propagate evidence
 		}
-		public void onAfterRun(IInferenceAlgorithm algorithm) {}
+		public void onAfterRun(IInferenceAlgorithm algorithm) {
+			// update indexes of nodes, separators, etc
+			if (algorithm instanceof IRandomVariableAwareInferenceAlgorithm) {
+				((IRandomVariableAwareInferenceAlgorithm)algorithm).initInternalIdentificators();
+			}
+		}
 		public void onAfterReset(IInferenceAlgorithm algorithm) {}
 		
 		/**
@@ -227,6 +234,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 								);
 					}
 				}
+				
 			}
 			public void onBeforeReset(IInferenceAlgorithm algorithm) {}
 			
@@ -345,7 +353,12 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 					
 				// Finally propagate evidence
 			}
-			public void onAfterRun(IInferenceAlgorithm algorithm) {}
+			public void onAfterRun(IInferenceAlgorithm algorithm) {
+				// update indexes of nodes, separators, etc.
+				if (algorithm instanceof IRandomVariableAwareInferenceAlgorithm) {
+					((IRandomVariableAwareInferenceAlgorithm)algorithm).initInternalIdentificators();
+				}
+			}
 			public void onAfterReset(IInferenceAlgorithm algorithm) {}
 			
 			/**
@@ -391,6 +404,55 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 		
 		// add dynamically changeable behavior (i.e. routines that are not "mandatory", so it is interesting to be able to disable them when needed)
 		this.getInferenceAlgorithmListeners().add(DEFAULT_INFERENCE_ALGORITHM_LISTENER);
+	}
+	
+	/**
+	 * Initializes the values of {@link IRandomVariable#getInternalIdentificator()}
+	 * of the nodes in {@link #getNet()}. 
+	 * By default, the internal id will be the index of the node within the network.
+	 * @see IInferenceAlgorithmListener#onBeforeRun(IInferenceAlgorithm)
+	 */
+	public void initInternalIdentificators() {
+		// the network to be considered is the current network
+		ProbabilisticNetwork probabilisticNetwork = getNet();
+		if (probabilisticNetwork != null) {
+			
+			// update ids of nodes (mainly prob nodes and utility nodes)
+			int nodeCount = probabilisticNetwork.getNodeCount();
+			for (int i = 0; i < nodeCount; i++) {
+				Node node = probabilisticNetwork.getNodeAt(i);
+				if (node instanceof IRandomVariable) {
+					// by default, the internal identificator will be the index of the node within the network.
+					((IRandomVariable) node).setInternalIdentificator(i);
+				}
+			}
+			
+			// update variables in junction tree (i.e. cliques and separators)
+			IJunctionTree junctionTree = probabilisticNetwork.getJunctionTree();
+			if (junctionTree != null) {
+				// update ids of cliques. Note: Clique#getIndex() is not actually enough to identificate a clique, as it claims
+				List<Clique> cliques = junctionTree.getCliques();
+				if (cliques != null) {
+					// cliques have non-negative ids
+					int index = 0;
+					for (Clique clique : cliques) {
+						clique.setInternalIdentificator(index);
+						index++;
+					}
+				}
+				// update ids of separators
+				Collection<Separator> separators = junctionTree.getSeparators();
+				if (separators != null) {
+					// separators have negative ids, in order to distinguish from cliques
+					int index = -1;
+					for (Separator separator : separators) {
+						separator.setInternalIdentificator(index);
+						index--;
+					}
+				}
+			}
+			
+		}
 	}
 	
 	/**
@@ -1958,6 +2020,8 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 			if (originalNet.getJunctionTree() != null && originalNet.getJunctionTree().getCliques() != null) {
 				for (Clique origClique : originalNet.getJunctionTree().getCliques()) {
 					Clique newClique = new Clique();
+					newClique.setInternalIdentificator(origClique.getInternalIdentificator());
+					
 //					boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in new network.
 					// add nodes to clique
 					for (Node node : origClique.getNodes()) {
@@ -2035,6 +2099,7 @@ public class JunctionTreeAlgorithm implements IInferenceAlgorithm {
 					}
 					
 					Separator newSeparator = new Separator(newClique1, newClique2);
+					newSeparator.setInternalIdentificator(origSeparator.getInternalIdentificator());
 					
 					// fill the separator's node list
 					for (Node origNode : origSeparator.getNodes()) {

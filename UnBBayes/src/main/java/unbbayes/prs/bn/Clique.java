@@ -47,9 +47,11 @@ public class Clique implements IRandomVariable, java.io.Serializable {
   			unbbayes.prs.bn.resources.BnResources.class.getName());
 
     /**
-     *  Identifica unicamente o no.
+     *  It identifies the clique uniquely if the network is connected. If disconnected, then the uniqueness is not guaranteed.
      */
     private int index;
+    
+    private int internalIdentificator = Integer.MIN_VALUE;
 
     /**
      *  Referencia para o clique pai.
@@ -357,6 +359,22 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 	 */
 	public void setChildren(List<Clique> children) {
 		this.children = children;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IRandomVariable#getInternalIdentificator()
+	 */
+	public int getInternalIdentificator() {
+		return this.internalIdentificator;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IRandomVariable#setInternalIdentificator(int)
+	 */
+	public void setInternalIdentificator(int internalIdentificator) {
+		this.internalIdentificator = internalIdentificator;
 	}
 
 }
