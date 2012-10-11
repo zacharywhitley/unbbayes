@@ -32,6 +32,7 @@ import unbbayes.util.Debug;
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
+
 public class BuilderStructureImpl implements IBuilderStructure{
 
 	/** How many parents a resident node with {@link ResidentNode#isToLimitQuantityOfParentsInstances()} will have. */
@@ -60,8 +61,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	IdentationLevel level6;
 
 	
-	/**@deprecated use {@link #newInstance()} instead*/
-	protected BuilderStructureImpl(){
+	private BuilderStructureImpl(){
 		
 	}
 	
@@ -192,7 +192,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			logManager.printText(level2, false, "Evaluate unfinished node" + ": " + node);
 		}
 		
-		//Note: In this implementation don't is averiguated if already have a equal MFragInstance. 
+		//Note: In this implementation is not checked if already have an equal MFragInstance. 
 		
 		//Build the MFragInstance related to the node
 		MFragInstance mFragInstance = MFragInstance.getInstance(node.getResidentNode().getMFrag()); 
@@ -221,7 +221,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	}
 	
 	/**
-	 * Evaluate the fathers of a node in a MFrag. 
+	 * Evaluate the MFrag Instance:
+	 * 1) Evaluate context nodes
+	 * 2) Create parents of the original ssbnNode (based on entities found)
 	 * 
 	 * @param ssbnNode
 	 * @param mFragInstance
@@ -1059,6 +1061,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 						logManager.printText(level4, false,"Still ov fault... nothing more to do. " +
 							"Use default distribution");
 					}
+					
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_FAIL); 
 					mFragInstance.setUseDefaultDistribution(true);
