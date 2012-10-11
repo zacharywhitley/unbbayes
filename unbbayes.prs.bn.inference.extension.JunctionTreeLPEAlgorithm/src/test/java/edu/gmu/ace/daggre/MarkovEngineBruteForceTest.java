@@ -62,7 +62,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private List<MarkovEngineImpl> engines;
 
 	/** This value indicates how many test iterations (5-point tests) will be performed by default*/
-	private int howManyTradesToTest = 100; //(int) (Math.random() * 200);
+	private int howManyTradesToTest = 300; //(int) (Math.random() * 200);
 
 
 	private enum FivePointTestType {BELOW_LIMIT, ON_LOWER_LIMIT, BETWEEN_LIMITS, ON_UPPER_LIMIT, ABOVE_LIMIT}; 
@@ -83,7 +83,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 
 	private boolean isToCompare = false;
 
-	private float bias = .7f;
+	private float bias = 0f;//.9f;
+
+	private boolean isToCheckCashAfterBalance = false;
 	
 	/** Class used to trace data which will be printed out */
 	protected class Tracer {
@@ -602,8 +604,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		super.setUp();
 		engines = new ArrayList<MarkovEngineImpl>();
 		
-		// TODO fix BruteForceMarkovEngine#revertTrade regarding the balance trade
-		engines.add(BruteForceMarkovEngine.getInstance(2f, 100f, 100f));
+//		engines.add(BruteForceMarkovEngine.getInstance(2f, 100f, 100f));
+//		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 100f));
 		
 		
 //		engines.add(CPTBruteForceMarkovEngine.getInstance(2f, 100f, 100f));
@@ -730,11 +732,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					if (Math.random() < getBias()) {
 						// get either a low delta (close to lower bound) or high delta (close to upper bound)
 						if (Math.random() < .5) {
-							// low delta  (1/100 of the maximum)
-							delta = (editLimits.get(1) - editLimits.get(0))*.05;
+							// low delta  
+							delta = (editLimits.get(1) - editLimits.get(0))*.005;
 						} else {
-							// high delta  (99/100 of the maximum)
-							delta = (editLimits.get(1) - editLimits.get(0))*.95;
+							// high delta 
+							delta = (editLimits.get(1) - editLimits.get(0))*.995;
 						}
 					}
 					probOfStateToConsider = editLimits.get(0) + delta;
@@ -4275,7 +4277,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			
 			// Occasionally, user will attempt to exit from a question
 			boolean hasBalanced = false;	// this var will become true only if we actually did a balance trade action
-			if (isToTestBalanceTrade  && Math.random() <= (assumptionIds.isEmpty()?0.05:0.15)) {
+			if (isToTestBalanceTrade  && Math.random() <= .5) {
 				// TODO BruteForceMarkovEngine needs doBalanceTrade correctly implemented
 				Date occurredWhen = new Date();
 				List<Float> cashPerStates = null;
@@ -4394,11 +4396,13 @@ public class MarkovEngineBruteForceTest extends TestCase {
 								assetsIf.get(0), assetsIf.get(i), ASSET_ERROR_MARGIN);
 					}
 					// check that conditional min assets per state are close each other
-					cashPerStates = engine.getCashPerStates(userId, questionId, assumptionIds, assumedStates);
-					for (int i = 1; i < assetsIf.size(); i++) {
-						assertEquals(engine.toString()+", user = "+userId+", question = " + questionId+", assumptions: " + assumptionIds+"="+assumedStates
-								+ "cash per state = " + cashPerStates,
-								cashPerStates.get(0), cashPerStates.get(i), ASSET_ERROR_MARGIN);
+					if (isToCheckCashAfterBalance ) {
+						cashPerStates = engine.getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+						for (int i = 1; i < assetsIf.size(); i++) {
+							assertEquals(engine.toString()+", user = "+userId+", question = " + questionId+", assumptions: " + assumptionIds+"="+assumedStates
+									+ "cash per state = " + cashPerStates,
+									cashPerStates.get(0), cashPerStates.get(i), ASSET_ERROR_MARGIN);
+						}
 					}
 				}
 				
@@ -4406,7 +4410,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 //						+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")");
 //				System.out.println("getCashPerStates(userId="+userId+",questionId="+questionId
 //						+",assumptionIds+"+assumptionIds+",assumedStates="+assumedStates+")="+cashPerStates);
-			} 
+			}
 			
 			if (!hasBalanced)  {	// do not make trades if user actually exitted a trade
 				// a.) 5-point min-q values test regarding the edit bound; expect to see corresponding q<1, =1, >1 respectively.
@@ -4494,13 +4498,21 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				}
 				
 				// check marginal probability
-				probabilities = engines.get(0).getProbLists(null, null, null); // we assume the 1st engine does not delete resolved questions
+				probabilities = engines.get(0).getProbLists(null, null, null); 
+				if (engines.get(0).isToDeleteResolvedNode()) {
+					// force probabilities to contain resolved nodes
+					List<Float> prob = engines.get(0).getProbList(questionId, null, null);
+					assertNotNull(prob);
+					assertFalse(prob.isEmpty());
+					probabilities.put(questionId, prob);
+				} 
 				
 				// check that the resolved state is 100% and other states are 0%
 				for (int state = 0; state < probabilities.get(questionId).size(); state++) {
 					assertEquals("Resolved question = " + questionId + ", state = " + settledState,
 							((settledState==state)?1f:0f), probabilities.get(questionId).get(state), ASSET_ERROR_MARGIN);
 				}
+				
 				
 				// check that all engines are retrieving the same marginals
 //				System.out.println("getProbLists(questionIds=null,assumptionIds=null,assumedStates=null)="+probabilities);
@@ -4525,8 +4537,6 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				}
 				
 				// check values related to assets as well
-				List<Float> scoreUserQuestionEvStates = engines.get(0).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
-				List<Float> cashPerStates = engines.get(0).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
 				float scoreUserEv = engines.get(0).scoreUserEv(userId, null, null);
 				float conditionalScoreUserEv = engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates);
 				float newCash = engines.get(0).getCash(userId, null, null);
@@ -4562,7 +4572,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						} catch (IllegalArgumentException e) {
 							// OK
 						}
-					} else {
+					} else if (!engines.get(0).isToDeleteResolvedNode()) {
+						List<Float> scoreUserQuestionEvStates = engines.get(0).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
+						List<Float> cashPerStates = engines.get(0).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
 						// nodes are still present in the system
 						scoreUserQuestionEvStatesToCompare = engines.get(i).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
 //						cashPerStatesToCompare = engines.get(i).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
@@ -4619,7 +4631,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			}
 			
 			// revert trades occasionally
-			if (Math.random() < .1 && (!hasResolved || !isToTrace())) {// TODO return back to .1 after we get response from Dr. Robin about the expected behavior of revert trade + add cash
+			if (Math.random() < .03 && (!hasResolved || !isToTrace())) {// TODO return back to .1 after we get response from Dr. Robin about the expected behavior of revert trade + add cash
 				
 				if (isToTrace()) {
 					tracer.setToRevertTrade(true);

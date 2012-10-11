@@ -1,6 +1,7 @@
 
 package edu.gmu.ace.daggre;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import java.util.List;
  * @author Shou Matsumoto
  * @see MarkovEngineInterface
  */
-public interface QuestionEvent {
+public interface QuestionEvent extends Serializable {
 	/**
 	 * @return the date/time when this action was created.
 	 */

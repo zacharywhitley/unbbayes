@@ -14706,7 +14706,7 @@ public class MarkovEngineTest extends TestCase {
 		
 		// 0 - Resolve some question which is not the selected question
 		Map<Long, List<Float>> probMap = engine.getProbLists(null, null, null);
-		probMap.remove(questionId);
+		assertNotNull(probMap.remove(questionId));
 		engine.resolveQuestion(null, new Date(), probMap.keySet().iterator().next(), (Math.random()<.5)?0:1);
 		
 		// 1 - Balance question
@@ -17973,12 +17973,16 @@ public class MarkovEngineTest extends TestCase {
 		questionHistory = engine.getQuestionHistory(0L, null, null);
 		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
 		assertFalse(((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades().isEmpty());
+		boolean hasAssumptionState = false;
 		for (TradeSpecification trade : ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades()) {
 			assertEquals(2L, trade.getUserId().longValue());
 			assertEquals(0L, trade.getQuestionId().longValue());
 			assertTrue(trade.getAssumptionIds().contains(2L));
-			assertTrue(trade.getAssumedStates().contains(2));
+			if (trade.getAssumedStates().contains(2)) {
+				hasAssumptionState = true;
+			}
 		}
+		assertTrue(hasAssumptionState);
 		
 		// check that the assets given states of a balanced question are the same
 		assetsIf = engine.getAssetsIfStates(2, 0, Collections.singletonList(2L), Collections.singletonList(2));
@@ -18145,7 +18149,74 @@ public class MarkovEngineTest extends TestCase {
 		
 	}
 	
-
-	
+	/**
+	 * Tests an optimization which tries to integrate independent
+	 * trades into a single propagation
+	 */
+	public final void testExecuteTradesFullyDisconnected1Transaction()  {
+		engine.setDefaultInitialAssetTableValue(1000);
+		engine.setCurrentCurrencyConstant(100);
+		engine.setCurrentLogBase(2);
+		engine.setToDeleteResolvedNode(true);
+		engine.setToIntegrateConsecutiveResolutions(true);
+		engine.initialize();
+		
+		/*
+		 * Create the following network:
+		 * 
+		 * 1->2 3 4
+		 */
+		
+		engine.addQuestion(null, new Date(), 1L, 2, null);
+		engine.addQuestion(null, new Date(), 2L, 2, null);
+		engine.addQuestion(null, new Date(), 3L, 2, null);
+		engine.addQuestion(null, new Date(), 4L, 2, null);
+		engine.addQuestionAssumption(null, new Date(), 2L, Collections.singletonList(1L), null);
+		
+		long transactionKey = engine.startNetworkActions();
+		
+		/*
+		 * Trade sequence:
+		 *   User  question  prob
+		 *1  1     2|1=0     [.2,.8]  buffer
+		 *2  2     3         [.2,.8]  wait
+		 *3  3     4         [.2,.8]  wait
+		 *4  1     2|1=1     [.8,.2]  integrate with trade 1
+		 *5  2     4         [.3,.7]  must commit question 4 trade 3 (user 3), wait
+		 *6  1     3         [.3,.7]  must commit question 3 trade 2 (user 2), wait
+		 *7  3     1         [.3,.7]  must commit buffer trade 1 (user 1), buffer
+		 *8  1     2         [.3,.7]  must commit buffer trade 7 (user 2), buffer
+		 *9  2     4         [.4,.6]  override question 4, wait
+		 *10 1     2         [.4,.6]  override buffer, buffer
+		 *11 resolve 4 commit everything
+		 *12 1     2|1=0     [.2,.8]  buffer
+		 *13 2     3         [.2,.8]  wait
+		 * END - commit everything
+		 */
+		
+//		*1  1     2|1=0     [.2,.8]  buffer
+		List<Float> newValues = new ArrayList<Float>(); newValues.add(.2f); newValues.add(.8f);
+		engine.addTrade(transactionKey, new Date(1), "1;2|1=0;[.2,.8]", 1L, 2L, newValues , Collections.singletonList(1L), Collections.singletonList(0), false);
+//		*2  2     3         [.2,.8]  wait
+		newValues = new ArrayList<Float>(); newValues.add(.2f); newValues.add(.8f);
+		engine.addTrade(transactionKey, new Date(1), "2;3;[.2,.8]", 2L, 3L, newValues , null, null, false);
+//		*3  3     4         [.2,.8]  wait
+		newValues = new ArrayList<Float>(); newValues.add(.2f); newValues.add(.8f);
+		engine.addTrade(transactionKey, new Date(1), "3;4;[.2,.8]", 3L, 4L, newValues , null, null, false);
+//		*4  1     2|1=1     [.8,.2]  integrate with trade 1
+		newValues = new ArrayList<Float>(); newValues.add(.8f); newValues.add(.2f);
+		engine.addTrade(transactionKey, new Date(1), "1;2|1=2;[.8,.2]", 1L, 2L, newValues , Collections.singletonList(1L), Collections.singletonList(1), false);
+//		*5  2     4         [.3,.7]  must commit question 4 trade 3 (user 3), wait
+//		*6  1     3         [.3,.7]  must commit question 3 trade 2 (user 2), wait
+//		*7  3     1         [.3,.7]  must commit buffer trade 1 (user 1), buffer
+//		*8  1     2         [.3,.7]  must commit buffer trade 7 (user 2), buffer
+//		*9  2     4         [.4,.6]  override question 4, wait
+//		*10 1     2         [.4,.6]  override buffer, buffer
+//		*11 resolve 4 commit everything
+//		*12 1     2|1=0     [.2,.8]  buffer
+//		*13 2     3         [.2,.8]  wait
+//		* END - commit everything
+		engine.commitNetworkActions(transactionKey);
+	}
 
 }

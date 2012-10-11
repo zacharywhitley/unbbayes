@@ -159,7 +159,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	private boolean isToLogAssets = false;
 
-	private Clique editClique;
+	private List<Clique> editCliques = new ArrayList<Clique>(1);
 
 //	private Map<IRandomVariable, DoublePrecisionProbabilisticTable> assetTablesBeforeLastPropagation;
 
@@ -486,6 +486,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 *  This method uses the property {@link #LAST_PROBABILITY_PROPERTY} of {@link #getNetwork()} and {@link Graph#getProperty(String)}
 	 * in order to calculate the ratio of change in probability compared to the previous values.
 	 * It assumes {@link #updateProbabilityPriorToPropagation()} was called prior to this method.
+	 * This will also reset {@link #getEditCliques()}
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#propagate()
 	 */
 	public synchronized void propagate() {
@@ -495,9 +496,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 		// assertions
 		if (this.getNetwork() == null) {
+			getEditCliques().clear(); // reset these cliques, so that next call to propagate() does not reuse this list
 			throw new NullPointerException(this.getClass() + "#propagate() was called without setting the asset network to a non-null value." );
 		}
 		if (this.getRelatedProbabilisticNetwork() == null) {
+			getEditCliques().clear(); // reset these cliques, so that next call to propagate() does not reuse this list
 			throw new NullPointerException(this.getClass() + "#propagate() was called without setting the probabilistic network to a non-null value." );
 		}
 		
@@ -506,9 +509,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		
 		// cliques/separators to update
 		Set<IRandomVariable> cliquesOrSepsToUpdate = new HashSet<IRandomVariable>();
-		if (isToUpdateOnlyEditClique() && getEditClique() != null) {
+		if (isToUpdateOnlyEditClique() && getEditCliques() != null && !getEditCliques().isEmpty()) {
 			// update only the edited clique
-			cliquesOrSepsToUpdate.add(getEditClique());
+			cliquesOrSepsToUpdate.addAll(getEditCliques());
 		} else {
 			// update all cliques
 			cliquesOrSepsToUpdate.addAll(getOriginalCliqueToAssetCliqueMap().keySet());
@@ -518,6 +521,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		for (IRandomVariable origCliqueOrSeparator : cliquesOrSepsToUpdate) {
 			IRandomVariable assetCliqueOrSeparator = getOriginalCliqueToAssetCliqueMap().get(origCliqueOrSeparator);
 			if (assetCliqueOrSeparator == null || assetCliqueOrSeparator.getProbabilityFunction() == null) {
+				getEditCliques().clear(); // reset these cliques, so that next call to propagate() does not reuse this list
 				throw new RuntimeException("Probabilistic network and asset network are not synchronized: " + getAssetNetwork());
 			}
 			((PotentialTable)assetCliqueOrSeparator.getProbabilityFunction()).copyData();
@@ -573,6 +577,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 						// This is an impossible state, because some complementary state is set as a finding.
 						// Impossible supposedly cannot be changed anymore, so do not update this state.
 						if (currentProbabilities.getValue(i) > 0) {
+							getEditCliques().clear(); // reset these cliques, so that next call to propagate() does not reuse this list
 							throw new RuntimeException("Invalid attempt to change probability of clique/separator " 
 									+ assetTable
 									+ ", coordinate " + assetTable.getMultidimensionalCoord(i)
@@ -603,7 +608,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 //							((TreeVariable)assetTable.getVariableAt(j)).updateMarginal();
 //						}
 //					}
-						
+						getEditCliques().clear(); // reset these cliques, so that next call to propagate() does not reuse this list
 						throw new ZeroAssetsException((isToUseQValues()?"Q-values":"Assets") + " of clique/separator " + assetCliqueOrSeparator + " went to " + newValue);
 					}
 					assetTable.setValue(i,  newValue);
@@ -630,6 +635,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 				listener.onAfterPropagate(this);
 			}
+			getEditCliques().clear(); // reset these cliques, so that next call to propagate() does not reuse this list
 			throw e;
 		}
 		
@@ -640,6 +646,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			this.runMinPropagation(null);
 		}
 		
+		
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onAfterPropagate(this);
 		}
@@ -648,6 +655,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		for (IRandomVariable origCliqueOrSeparator : cliquesOrSepsToUpdate) {
 			((PotentialTable)origCliqueOrSeparator.getProbabilityFunction()).copyData();
 		}
+		
+		getEditCliques().clear(); // reset these cliques, so that next call to propagate() does not reuse this list
 	}
 	
 	
@@ -669,7 +678,15 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		// property value to set
 //		Map<IRandomVariable, PotentialTable> property = new TreeMap<IRandomVariable, PotentialTable>(this.getRandomVariableComparator());
 		
-		if (isToUpdateOnlyEditClique()) {
+		// this list contains the asset cliques which shall be considered
+		List<Clique> cliqueToUpdate = getEditCliques();	// reuse the same instance of getEditCliques() whenever possible
+		if (cliqueToUpdate == null) {
+			cliqueToUpdate = new ArrayList<Clique>(1);
+			setEditCliques(cliqueToUpdate);
+		}
+		
+		// update getEditCliques() if it was not specified
+		if (isToUpdateOnlyEditClique() && cliqueToUpdate.isEmpty()) {
 			for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
 				if (node instanceof TreeVariable) {
 					TreeVariable treeVar = (TreeVariable) node;
@@ -678,12 +695,10 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 						likelihoodParents.add(treeVar);
 						List<Clique> cliquesContainingAllNodes = getRelatedProbabilisticNetwork().getJunctionTree().getCliquesContainingAllNodes(likelihoodParents, 1);
 						if (cliquesContainingAllNodes.isEmpty()) {
-							setEditClique(null);
+							throw new RuntimeException("Detected a trade on node " + treeVar + " with invalid assumptions: there is no clique containing " + likelihoodParents);
 						} else {
-							setEditClique(cliquesContainingAllNodes.get(0));
+							cliqueToUpdate.add(cliquesContainingAllNodes.get(0));
 						}
-						// TODO do not assume only 1 edit per propagation
-						break;
 					}
 				}
 			}
@@ -1723,17 +1738,24 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	}
 
 	/**
-	 * @param editCliquesOrSeparators the editCliquesOrSeparators to set
+	 * @param editCliques the cliques containing the nodes with soft evidences in the next call of {@link #propagate()}.
+	 * If set to null or empty, then {@link #updateProbabilityPriorToPropagation()} will
+	 * attempt to infer what cliques contains such evidences.
+	 * This list will be reset after {@link #propagate()}.
 	 */
-	protected void setEditClique(Clique editClique) {
-		this.editClique = editClique;
+	public void setEditCliques(List<Clique> editCliques) {
+		this.editCliques = editCliques;
 	}
 
 	/**
-	 * @return the editCliquesOrSeparators
+	 * 
+	 * @return the cliques containing the nodes with soft evidences in the next call of {@link #propagate()}.
+	 * If set to null or empty, then {@link #updateProbabilityPriorToPropagation()} will
+	 * attempt to infer what cliques contains such evidences.
+	 * This list will be reset after {@link #propagate()}.
 	 */
-	protected Clique getEditClique() {
-		return editClique;
+	public List<Clique> getEditCliques() {
+		return editCliques;
 	}
 
 	/*
@@ -2191,7 +2213,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		 * It backs up the values of probability clique tables and asset tables.
 		 */
 		public AssetPropagationInferenceAlgorithmMemento() {
-			super();
+//			super();
 			// backup probabilities
 			if (getRelatedProbabilisticNetwork() != null && getRelatedProbabilisticNetwork().getJunctionTree() != null){
 				// fill probCliques

@@ -65,7 +65,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	private boolean isToUseQValues = false;
 	
-	
+	private boolean isToForceBalanceQuestionEntirely = true;
 
 	/** 
 	 * This is used in {@link #getAssetsIfStates(long, List, List, AssetAwareInferenceAlgorithm, boolean)} 
@@ -1589,7 +1589,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// TODO return the cash before execution
 		public List<Float> getOldValues() { return null; }
 		// TODO return the cash after execution
-		public List<Float> getNewValues() { return null; }
+		public List<Float> getNewValues() { return Collections.singletonList(delta); }
 		/** Returns the description */
 		public String getTradeId() { return description; }
 		public Long getQuestionId() { return null; }
@@ -1657,6 +1657,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //		private Map<IRandomVariable, DoublePrecisionProbabilisticTable> qTablesBeforeTrade;
 		private List<Float> oldValues = null;
 		private Date whenExecutedFirst;
+		private List<Float> newValues;
 //		/** link from this original trade to all virtual trades (representation of changes in marginals caused by this original trade) */
 //		private List<DummyTradeAction> affectedQuestions = new ArrayList<MarkovEngineImpl.DummyTradeAction>();
 //		private final List<Integer> originalAssumedStates;
@@ -1667,6 +1668,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.transactionKey = transactionKey;
 			this.whenCreated = occurredWhen;
 			this.tradeKey = tradeKey;
+			this.newValues = newValues;
 			this.allowNegative = allowNegative;
 			if (assumptionIds != null) {
 				// fill trade specification with an instance that we are sure that is mutable, because executeTrade may change its content
@@ -1794,7 +1796,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public String getTradeId() { return tradeKey; }
 //		/** Mapping from {@link Clique}/{@link Separator} to q-tables before {@link #execute()}*/
 //		public Map<IRandomVariable, DoublePrecisionProbabilisticTable> getqTablesBeforeTrade() { return qTablesBeforeTrade; }
-		public List<Float> getNewValues() { return tradeSpecification.getProbabilities(); }
+		public List<Float> getNewValues() { return newValues; }
+		protected void setNewValues(List<Float> newValues) { this.newValues = newValues; this.tradeSpecification.setProbabilities(newValues); }
 //		public void setNewValues(List<Float> newValues) { this.newValues = newValues; }
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { 
@@ -2399,7 +2402,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //						if (o1 instanceof IRandomVariable && o2 instanceof IRandomVariable) {
 //							return ((IRandomVariable)o1).getInternalIdentificator() - ((IRandomVariable)o2).getInternalIdentificator();
 //						}
-						return o1.getName().compareTo(o2.getName());
+//						return o1.getName().compareTo(o2.getName());
+						return ((IRandomVariable)o1).getInternalIdentificator() - ((IRandomVariable)o2).getInternalIdentificator();
 					}
 				});
 				
@@ -3844,11 +3848,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				throw new InexistingQuestionException("Question " + assumptiveQuestionId + " not found.", assumptiveQuestionId);
 			} 
 			if (parent.hasEvidence()) {
-				throw new IllegalArgumentException("Question " + parent + " is already resolved and cannot be changed.");
+//				throw new IllegalArgumentException("Question " + parent + " is already resolved and cannot be used.");
+				Debug.println(getClass(),"Question " + parent + " is already resolved and cannot be used.");
+				continue;
 			}
 			for (int i = 0; i < parent.getStatesSize(); i++) {
 				if (parent.getMarginalAt(i) == 0.0f || parent.getMarginalAt(i) == 1.0f) {
-					throw new IllegalArgumentException("State " + i + " of question " + parent + " has probability " + parent.getMarginalAt(i) + " and cannot be changed.");
+//					throw new IllegalArgumentException("State " + i + " of question " + parent + " has probability " + parent.getMarginalAt(i) + " and cannot be changed.");
+					Debug.println(getClass(),"State " + i + " of question " + parent + " has probability " + parent.getMarginalAt(i) + " and cannot be changed.");
+					continue;
 				}
 			}
 			assumptionNodes.add(parent);
@@ -4009,7 +4017,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 									throw new RuntimeException("Could not revert last trade after a negative asset was detected. The probability or assets may be inconsistent now.",e);
 								}
 							}
-							throw new ZeroAssetsException("Cash <= 0");
+							throw new ZeroAssetsException(algorithm.getAssetNetwork() + ", Cash <= 0");
 						}
 						// if successful, only revert last min propagation
 						algorithm.undoMinPropagation();
@@ -4541,10 +4549,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					throw new RuntimeException("Could not obtain algorithm for the user " + getUserId(), e);
 				}
 				// obtain the cliques which will be affected by this balance operation
-				Collection<Clique> cliques = getAssetCliqueFromQuestionIDAndAssumptions(getQuestionId(), getAssumptionIds(), algorithm);
+				Collection<Clique> cliques = null;
+				if (isToForceBalanceQuestionEntirely()) {
+					cliques = getAssetCliqueFromQuestionIDAndAssumptions(getQuestionId(), null, algorithm);
+				} else {
+					cliques = getAssetCliqueFromQuestionIDAndAssumptions(getQuestionId(), getAssumptionIds(), algorithm);
+				}
 				for (Clique clique : cliques) {
 					// obtain trade values for exiting the user from a question given assumptions, for the current clique
-					List<TradeSpecification> balancingTrades = previewBalancingTrades(getUserId(), getQuestionId(), getAssumptionIds(), getAssumedStates(), clique);
+					List<TradeSpecification> balancingTrades = null;
+					if (isToForceBalanceQuestionEntirely()) {
+						balancingTrades = previewBalancingTrades(getUserId(), getQuestionId(), Collections.EMPTY_LIST, Collections.EMPTY_LIST, clique);
+					} else {
+						balancingTrades = previewBalancingTrades(getUserId(), getQuestionId(), getAssumptionIds(), getAssumedStates(), clique);
+					}
 					try {
 						for (TradeSpecification tradeSpecification : balancingTrades ) {
 							// execute the trade without releasing lock
@@ -4560,7 +4578,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 				}
 				// by default, set the probabilities of this action to the marginal after trade
-				backup.setProbabilities(getProbList(getQuestionId(), null, null));
+				this.setNewValues(getProbList(getQuestionId(), null, null));
+				// the above code will also do the following
+//				backup.setProbabilities(getProbList(getQuestionId(), null, null));
 				// restore original trade specification
 				this.setTradeSpecification(backup);
 			}
@@ -6667,6 +6687,25 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public float getAssetErrorMargin() {
 		return assetErrorMargin;
+	}
+
+	/**
+	 * If true, {@link BalanceTradeNetworkAction} will balance a question given all
+	 * possible assumptions, no matter what was the actual assumption.
+	 * @param isToForceBalanceQuestionEntirely the isToForceBalanceQuestionEntirely to set
+	 */
+	public void setToForceBalanceQuestionEntirely(
+			boolean isToForceBalanceQuestionEntirely) {
+		this.isToForceBalanceQuestionEntirely = isToForceBalanceQuestionEntirely;
+	}
+
+	/**
+	 * If true, {@link BalanceTradeNetworkAction} will balance a question given all
+	 * possible assumptions, no matter what was the actual assumption.
+	 * @return the isToForceBalanceQuestionEntirely
+	 */
+	public boolean isToForceBalanceQuestionEntirely() {
+		return isToForceBalanceQuestionEntirely;
 	}
 
 

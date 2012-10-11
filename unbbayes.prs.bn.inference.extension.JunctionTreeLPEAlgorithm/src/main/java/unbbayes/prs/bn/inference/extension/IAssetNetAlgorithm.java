@@ -16,7 +16,7 @@ import unbbayes.util.extension.bn.inference.IRandomVariableAwareInferenceAlgorit
  * @author Shou Matsumoto
  *
  */
-public interface IAssetNetAlgorithm extends IRandomVariableAwareInferenceAlgorithm {
+public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	
 
 	/**

@@ -221,6 +221,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		if (getNetwork() instanceof SingleEntityNetwork && ((SingleEntityNetwork) getNetwork()).isID()) {
 			throw new IllegalStateException(this.getName() + " does not support Influence Diagrams.");
 		}
+		
 		// explicitly reset all evidences
 		if (isToResetEvidenceBeforeRun()) {
 			for (Node node : getNetwork().getNodes()) {
@@ -476,12 +477,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 						
 					// Finally propagate evidence
 				}
-				public void onAfterRun(IInferenceAlgorithm algorithm) {
-					// update the internal ids of separators, nodes, etc
-					if (algorithm instanceof IRandomVariableAwareInferenceAlgorithm) {
-						((IRandomVariableAwareInferenceAlgorithm)algorithm).initInternalIdentificators();
-					}
-				}
+				public void onAfterRun(IInferenceAlgorithm algorithm) {}
 				public void onAfterReset(IInferenceAlgorithm algorithm) {}
 				
 				/**
@@ -1706,15 +1702,15 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		return isToChangeGUI;
 	}
 
-	/**
-	 * Only delegates to {@link #getProbabilityPropagationDelegator()}
-	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#initInternalIdentificators()
-	 */
-	public void initInternalIdentificators() {
-		if (getProbabilityPropagationDelegator() instanceof IRandomVariableAwareInferenceAlgorithm) {
-			((IRandomVariableAwareInferenceAlgorithm) getProbabilityPropagationDelegator()).initInternalIdentificators();
-		}
-	}
+//	/**
+//	 * Only delegates to {@link #getProbabilityPropagationDelegator()}
+//	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#initInternalIdentificators()
+//	 */
+//	public void initInternalIdentificators() {
+//		if (getProbabilityPropagationDelegator() instanceof IRandomVariableAwareInferenceAlgorithm) {
+//			((IRandomVariableAwareInferenceAlgorithm) getProbabilityPropagationDelegator()).initInternalIdentificators();
+//		}
+//	}
 
 
 	

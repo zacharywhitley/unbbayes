@@ -3,6 +3,7 @@
  */
 package edu.gmu.ace.daggre;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -12,7 +13,7 @@ import java.util.List;
  * @see MarkovEngineInterface#previewBalancingTrades(long, long, java.util.List, java.util.List).
  *
  */
-public interface TradeSpecification {
+public interface TradeSpecification extends Serializable {
 	
 	/** The ID of the user making the trade */
 	public Long getUserId();

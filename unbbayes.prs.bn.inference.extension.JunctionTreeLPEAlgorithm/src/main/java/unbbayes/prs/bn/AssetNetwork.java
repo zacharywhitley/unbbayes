@@ -208,7 +208,10 @@ public class AssetNetwork extends ProbabilisticNetwork {
 		}
 
 	    // delete node from the list of all available nodes in the network
-	    if (getNodes().remove(nodeToRemove)) {
+		int indexToRemove = this.getNodeIndex(nodeToRemove.getName());
+	    if (indexToRemove >= 0) {
+	    	getNodes().remove(indexToRemove);
+	    	
 	    	// rebuild index of names
 	    	getNodeIndexes().clear();
 	    	for (int indexOfNode = 0; indexOfNode < getNodes().size(); indexOfNode++) {
@@ -217,16 +220,23 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	    	}
 	    	
 	    	// remove edges containing nodeToRemove
-	    	List<Edge> edgesContainingNodeToRemove = new ArrayList<Edge>();
-	    	for (Edge edge : getEdges()) {
-	    		if ((edge.getOriginNode().equals(nodeToRemove)) || (edge.getDestinationNode().equals(nodeToRemove))) {
-	    			edgesContainingNodeToRemove.add(edge);
+	    	List<Edge> edges = getEdges();
+	    	for (int i = 0; i < edges.size(); i++) {
+	    		Edge edge = edges.get(i);
+	    		// compare the internal identificator instead of equals (name comparison) for performance
+	    		if (((IRandomVariable)edge.getOriginNode()).getInternalIdentificator() ==  ((IRandomVariable)nodeToRemove).getInternalIdentificator()) {
+	    			// we are not removing the parents/children for performance
+	    			// TODO remove edge.getOriginNode() from parents of edge.getDestinationNode()
+	    			edges.remove(i);
+	    			i--;
+	    		} else if	(((IRandomVariable)edge.getDestinationNode()).getInternalIdentificator() ==  ((IRandomVariable)nodeToRemove).getInternalIdentificator()) {
+	    			// we are not removing the parents/children for performance
+    				// TODO remove edge.getDestinationNode() from parents of edge.getOriginNode()
+    				edges.remove(i);
+    				i--;
+	    			
 	    		}
-	    	}
-	    	for (Edge edge : edgesContainingNodeToRemove) {
-	    		// this is supposed to remove parent and child relationship as well
-	    		this.removeEdge(edge);
-	    	}
+			}
 	    }
 	}
 	
