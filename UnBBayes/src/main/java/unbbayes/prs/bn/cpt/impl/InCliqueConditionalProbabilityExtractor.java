@@ -93,6 +93,22 @@ public class InCliqueConditionalProbabilityExtractor implements
 	 * @throws NoCliqueException when there is no clique satisfying input conditions.
 	 */
 	public IProbabilityFunction buildCondicionalProbability(INode mainNode, List<INode> parentNodes, Graph net, IInferenceAlgorithm algorithm, CliqueEvidenceUpdater cliqueEvidenceUpdater) throws NoCliqueException {
+		return this.buildCondicionalProbability(mainNode, parentNodes, net, algorithm, cliqueEvidenceUpdater, null);
+	}
+	
+	/**
+	 * This is the same as {@link #buildCondicionalProbability(INode, List, Graph, IInferenceAlgorithm, CliqueEvidenceUpdater)},
+	 * but we can specify which clique to use.
+	 * @param mainNode
+	 * @param parentNodes
+	 * @param net
+	 * @param algorithm
+	 * @param cliqueEvidenceUpdater
+	 * @param clique : if set to null, a clique containing mainNode and parentNodes will be selected.
+	 * @return
+	 * @throws NoCliqueException
+	 */
+	public IProbabilityFunction buildCondicionalProbability(INode mainNode, List<INode> parentNodes, Graph net, IInferenceAlgorithm algorithm, CliqueEvidenceUpdater cliqueEvidenceUpdater, Clique clique) throws NoCliqueException {
 		// assertion
 		if (mainNode == null) {
 			throw new NullPointerException("mainNode == null");
@@ -134,13 +150,16 @@ public class InCliqueConditionalProbabilityExtractor implements
 		}
 		
 		// find clique containing all variables
-		Clique clique = null;
-		if (net instanceof SingleEntityNetwork) {
-			// Note: parentNodes != null && mainNode != null at this point
-			Set<INode> nodes = new HashSet<INode>(parentNodes);
-			nodes.add(mainNode);
-			nodes.remove(null);	// do not allow null content
-			clique = this.getCliqueContainingAllNodes((SingleEntityNetwork) net, nodes);
+		if (clique == null) {
+			if (net instanceof SingleEntityNetwork) {
+				// Note: parentNodes != null && mainNode != null at this point
+				Set<INode> nodes = new HashSet<INode>(parentNodes);
+				nodes.add(mainNode);
+				nodes.remove(null);	// do not allow null content
+				clique = this.getCliqueContainingAllNodes((SingleEntityNetwork) net, nodes);
+			}
+		} else if (!clique.getNodes().contains(mainNode) || !clique.getNodes().containsAll(parentNodes)) {
+			throw new NoCliqueException(clique + " should contain " + mainNode + " and " + parentNodes);
 		}
 		if (clique == null) {
 			// TODO use resource files

@@ -103,6 +103,31 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			seps.add(sep);
 		}
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#removeSeparator(unbbayes.prs.bn.Separator)
+	 */
+	public void removeSeparator(Separator sep) {
+		Set<Separator> seps = separatorsMap.get(sep.getClique1());
+		if (seps != null) {
+			seps.remove(sep);
+			// if the list became empty, delete the key too
+			if (seps.isEmpty()) {
+				separatorsMap.remove(sep.getClique1());
+			}
+		}
+		seps = separatorsMap.get(sep.getClique2());
+		if (seps != null) {
+			seps.remove(sep);
+			// if the list became empty, delete the key too
+			if (seps.isEmpty()) {
+				separatorsMap.remove(sep.getClique2());
+			}
+		}
+		separators.remove(sep);
+	}
+	
 
 //	/**
 //	 * (non-Javadoc)
@@ -216,8 +241,8 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		clique1.getProbabilityFunction().opTab(dummyTable, PotentialTable.PRODUCT_OPERATOR);
     }
 	
-	/*
-	 * (non-Javadoc)
+	/**
+	 * This method also updates the {@link IRandomVariable#getInternalIdentificator()}
 	 * @see unbbayes.prs.bn.IJunctionTree#initBeliefs()
 	 */
 	public void initBeliefs() throws Exception {
@@ -227,10 +252,15 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			int sizeCliques = cliques.size();
 			for (int k = 0; k < sizeCliques; k++) {
 				auxClique = cliques.get(k);
+				// also, update the internal id, for fast comparison
+				auxClique.setInternalIdentificator(k);
 				this.initBelief(auxClique);
 			}
 	
+			int separatorId = -1;
 			for (Separator auxSep : getSeparators()) {
+				// also, update the internal id, for fast comparison
+				auxSep.setInternalIdentificator(separatorId--);
 				this.initBelief(auxSep);
 			}
 			
@@ -349,7 +379,9 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		Set<Separator> seps = separatorsMap.get(clique1);
 		if (seps != null) {
 			for (Separator separator : seps) {
-				if (separator.getClique2().equals(clique2) || separator.getClique1().equals(clique2)) {
+//				if (separator.getClique2().equals(clique2) || separator.getClique1().equals(clique2)) {
+				if (separator.getClique2().getInternalIdentificator() == clique2.getInternalIdentificator()
+						|| separator.getClique1().getInternalIdentificator() == clique2.getInternalIdentificator()) {
 					return separator;
 				}
 			}
@@ -392,15 +424,206 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		if (nodes == null || nodes.isEmpty()) {
 			return new ArrayList<Clique>(this.getCliques());
 		}
-		// TODO optimize using indexing or other algorithms instead of linear search
 		List<Clique> ret = new ArrayList<Clique>();
-		for (Clique clique : this.getCliques()) {
-			if (clique.getNodes() != null && clique.getNodes().containsAll(nodes)) {
-				ret.add(clique);
-				if (ret.size() >= maxCount) {
-					return ret;
+//		for (Clique clique : this.getCliques()) {
+//			if (clique.getNodes() != null && clique.getNodes().containsAll(nodes)) {
+//				ret.add(clique);
+//				if (ret.size() >= maxCount) {
+//					return ret;
+//				}
+//			}
+//		}
+		// visit nodes in the junction tree starting from pivot
+		TreeVariable pivot = (TreeVariable) nodes.iterator().next();	// use 1st node as pivot
+		
+		// get clique/separator connected to pivot
+		IRandomVariable cliqueOrSeparator = pivot.getAssociatedClique();
+		
+		// from pivot, visit adjacent cliques in looking for the cliques containing all nodes
+		if (cliqueOrSeparator instanceof Separator) {
+			HashSet<Clique> visited = new HashSet<Clique>();
+			// visit clique 1
+			maxCount -= this.visitCliquesSeparatorsContainingAllNodesRecursive(
+					((Separator)cliqueOrSeparator).getClique1(), nodes, maxCount, (List)ret, false, visited
+				);
+			// we do not need to visit second clique, because the above call has visited it recursively
+//			// visit clique 2 if we added less than maxCount cliques into ret
+//			if (maxCount > 0) {
+//				this.visitCliquesSeparatorsContainingAllNodesRecursive(
+//						((Separator)cliqueOrSeparator).getClique2(), nodes, maxCount, (List)ret, false, visited
+//					);
+//			}
+		} else if (cliqueOrSeparator instanceof Clique) {
+			// recursively visit clique and adjacents
+			this.visitCliquesSeparatorsContainingAllNodesRecursive((Clique)cliqueOrSeparator, nodes, maxCount, (List)ret, false, new HashSet<Clique>());
+		}
+		return ret;
+	}
+	
+	/**
+	 * Runs the junction tree recursively looking for cliques/separators containing all nodes.
+	 * @param pivot : current clique in iteration
+	 * @param nodesToContain : cliques/separators shall contain all these nodes in order to be considered
+	 * @param maxCount : max number of cliques to be included in output
+	 * @param output : this list will be modified and contain the cliques/separators containing all nodes
+	 * in nodesToContain.
+	 * @param isToVisitSeparators : if true, output will be filled with separators. If false, output will be
+	 * filled with cliques.
+	 * @param visitedCliques : this will be used in order to track which cliques were already visited.
+	 * @return how many cliques/separators were visited and added to output
+	 */
+	protected int visitCliquesSeparatorsContainingAllNodesRecursive(Clique pivot, Collection<INode> nodesToContain, 
+			int maxCount, List<IRandomVariable> output, boolean isToVisitSeparators, Set<Clique> visitedCliques) {
+		if (maxCount <= 0) {
+			return 0;
+		}
+		
+		// mark current clique as visited
+		if (!visitedCliques.add(pivot)) {
+			// return immediately if visitedCliques already contained pivot (in such case, Set#add() will return false)
+			return 0;
+		}
+		
+		// get the intersection between the nodes in pivot and nodesToContain
+		List<INode> intersection = new ArrayList<INode>(nodesToContain);
+		intersection.retainAll(pivot.getNodes());
+		
+		// if pivot contains nothing about nodesToContain, then no separators and adjacent nodes can contain all nodesToContain
+		if (intersection.isEmpty()) {
+			return 0;
+		}
+		int addedQuantity = 0;
+		if (isToVisitSeparators) { // we are only considering separators
+			// visit parent if its not null and not visited yet
+			if (pivot.getParent() != null && !visitedCliques.contains(pivot.getParent())) {
+				Separator separator = getSeparator(pivot, pivot.getParent());
+				// do not re-visit it if it's in output already
+				if (separator!= null && !SetToolkit.containsExact(output, separator)) {
+					if (separator.getNodes().containsAll(nodesToContain)) {
+						output.add(separator);
+						addedQuantity++;
+						// do not visit other cliques if we reached maxCount
+						if (maxCount - addedQuantity <= 0) {
+							return addedQuantity;
+						}
+					}
+					// visit parent
+					addedQuantity += this.visitCliquesSeparatorsContainingAllNodesRecursive(
+							pivot.getParent(), nodesToContain, maxCount-addedQuantity, output, isToVisitSeparators, visitedCliques
+						);
+					// do not visit other cliques if we reached maxCount
+					if (maxCount - addedQuantity <= 0) {
+						return addedQuantity;
+					}
 				}
 			}
+			// visit children
+			if (pivot.getChildren() != null) {
+				for (Clique child : pivot.getChildren()) {
+					if (visitedCliques.contains(child)) {
+						// do not visit cliques if it was visited already
+						continue;
+					}
+					Separator separator = getSeparator(pivot, child);
+					// visit child if its not null and not visited yet
+					if (separator!= null && !SetToolkit.containsExact(output, separator)) {
+						if (separator.getNodes().containsAll(nodesToContain)) {
+							output.add(separator);
+							addedQuantity++;
+							// do not visit other cliques if we reached maxCount
+							if (maxCount - addedQuantity <= 0) {
+								return addedQuantity;
+							}
+						}
+						// visit child
+						addedQuantity += this.visitCliquesSeparatorsContainingAllNodesRecursive(
+								child, nodesToContain, maxCount-addedQuantity, output, isToVisitSeparators, visitedCliques
+							);
+						// do not visit other cliques if we reached maxCount
+						if (maxCount - addedQuantity <= 0) {
+							return addedQuantity;
+						}
+					}
+				}
+			}
+		} else { // we are only considering cliques
+			// check pivot
+			if (pivot.getNodes() != null && pivot.getNodes().containsAll(nodesToContain)) {
+				// add pivot to output
+				output.add(pivot);
+				addedQuantity++;
+				// do not visit other cliques if we reached maxCount
+				if (maxCount - addedQuantity <= 0) {
+					return addedQuantity;
+				}
+			}
+			// visit parent if its not null, not visited yet, and not in output
+			if (pivot.getParent() != null && !visitedCliques.contains(pivot.getParent()) && !SetToolkit.containsExact(output, pivot.getParent())) {
+				addedQuantity += this.visitCliquesSeparatorsContainingAllNodesRecursive(
+						pivot.getParent(), nodesToContain, maxCount-addedQuantity, output, isToVisitSeparators, visitedCliques
+					);
+				// do not visit other cliques if we reached maxCount
+				if (maxCount - addedQuantity <= 0) {
+					return addedQuantity;
+				}
+			}
+			// visit children
+			if (pivot.getChildren() != null) {
+				for (Clique child : pivot.getChildren()) {
+					if (visitedCliques.contains(child)) {
+						// do not visit cliques if it was visited already
+						continue;
+					}
+					if (!SetToolkit.containsExact(output, child)) {
+						addedQuantity += this.visitCliquesSeparatorsContainingAllNodesRecursive(
+								child, nodesToContain, maxCount-addedQuantity, output, isToVisitSeparators,visitedCliques
+							);
+						// do not visit other cliques if we reached maxCount
+						if (maxCount - addedQuantity <= 0) {
+							return addedQuantity;
+						}
+					}
+				}
+			}
+		}
+		return addedQuantity;
+	}
+	
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#getSeparatorsContainingAllNodes(java.util.Collection, int)
+	 */
+	public List<Separator> getSeparatorsContainingAllNodes(Collection<INode> nodes, int maxCount) {
+		if (maxCount <= 0) {
+			return new ArrayList<Separator>();
+		}
+		if (nodes == null || nodes.isEmpty()) {
+			return new ArrayList<Separator>(this.getSeparators());
+		}
+		List<Separator> ret = new ArrayList<Separator>();
+		
+		// visit nodes in the junction tree starting from pivot
+		TreeVariable pivot = (TreeVariable) nodes.iterator().next();	// use 1st node as pivot
+		
+		// get clique/separator connected to pivot
+		IRandomVariable cliqueOrSeparator = pivot.getAssociatedClique();
+		
+		// from pivot, visit adjacent cliques in looking for the cliques containing all nodes
+		if (cliqueOrSeparator instanceof Separator) {
+			// visit clique 1
+			maxCount -= this.visitCliquesSeparatorsContainingAllNodesRecursive(
+					((Separator)cliqueOrSeparator).getClique1(), nodes, maxCount, (List)ret, true, new HashSet<Clique>()
+				);
+			// visit clique 2 if we added less than maxCount cliques into ret
+			if (maxCount > 0) {
+				this.visitCliquesSeparatorsContainingAllNodesRecursive(
+						((Separator)cliqueOrSeparator).getClique2(), nodes, maxCount, (List)ret, true, new HashSet<Clique>()
+					);
+			}
+		} else if (cliqueOrSeparator instanceof Clique) {
+			// recursively visit clique and adjacents
+			this.visitCliquesSeparatorsContainingAllNodesRecursive((Clique)cliqueOrSeparator, nodes, maxCount, (List)ret, true, new HashSet<Clique>());
 		}
 		return ret;
 	}

@@ -80,7 +80,7 @@ public class SetToolkit {
      *@return  intersection between the lists
      */
     public static List intersection(List<?> conjuntoA, List<?> conjuntoB) {
-        List<Object> result = (ArrayList<Object>)clone(conjuntoA);
+        List<Object> result = (List<Object>)clone(conjuntoA);
         result.retainAll(conjuntoB);
         return result;
     }

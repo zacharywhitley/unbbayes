@@ -160,12 +160,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				
 			// Finally propagate evidence
 		}
-		public void onAfterRun(IInferenceAlgorithm algorithm) {
-			// update indexes of nodes, separators, etc
-			if (algorithm instanceof IRandomVariableAwareInferenceAlgorithm) {
-				((IRandomVariableAwareInferenceAlgorithm)algorithm).initInternalIdentificators();
-			}
-		}
+		public void onAfterRun(IInferenceAlgorithm algorithm) {}
 		public void onAfterReset(IInferenceAlgorithm algorithm) {}
 		
 		/**
@@ -353,12 +348,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 					
 				// Finally propagate evidence
 			}
-			public void onAfterRun(IInferenceAlgorithm algorithm) {
-				// update indexes of nodes, separators, etc.
-				if (algorithm instanceof IRandomVariableAwareInferenceAlgorithm) {
-					((IRandomVariableAwareInferenceAlgorithm)algorithm).initInternalIdentificators();
-				}
-			}
+			public void onAfterRun(IInferenceAlgorithm algorithm) {}
 			public void onAfterReset(IInferenceAlgorithm algorithm) {}
 			
 			/**
@@ -427,30 +417,31 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				}
 			}
 			
-			// update variables in junction tree (i.e. cliques and separators)
-			IJunctionTree junctionTree = probabilisticNetwork.getJunctionTree();
-			if (junctionTree != null) {
-				// update ids of cliques. Note: Clique#getIndex() is not actually enough to identificate a clique, as it claims
-				List<Clique> cliques = junctionTree.getCliques();
-				if (cliques != null) {
-					// cliques have non-negative ids
-					int index = 0;
-					for (Clique clique : cliques) {
-						clique.setInternalIdentificator(index);
-						index++;
-					}
-				}
-				// update ids of separators
-				Collection<Separator> separators = junctionTree.getSeparators();
-				if (separators != null) {
-					// separators have negative ids, in order to distinguish from cliques
-					int index = -1;
-					for (Separator separator : separators) {
-						separator.setInternalIdentificator(index);
-						index--;
-					}
-				}
-			}
+			// the following are updated at JunctionTree#initBelief
+//			// update variables in junction tree (i.e. cliques and separators)
+//			IJunctionTree junctionTree = probabilisticNetwork.getJunctionTree();
+//			if (junctionTree != null) {
+//				// update ids of cliques. Note: Clique#getIndex() is not actually enough to identificate a clique, as it claims
+//				List<Clique> cliques = junctionTree.getCliques();
+//				if (cliques != null) {
+//					// cliques have non-negative ids
+//					int index = 0;
+//					for (Clique clique : cliques) {
+//						clique.setInternalIdentificator(index);
+//						index++;
+//					}
+//				}
+//				// update ids of separators
+//				Collection<Separator> separators = junctionTree.getSeparators();
+//				if (separators != null) {
+//					// separators have negative ids, in order to distinguish from cliques
+//					int index = -1;
+//					for (Separator separator : separators) {
+//						separator.setInternalIdentificator(index);
+//						index--;
+//					}
+//				}
+//			}
 			
 		}
 	}
@@ -706,6 +697,9 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#run()
 	 */
 	public void run() throws IllegalStateException {
+		// make sure all internal IDs were initialized
+		this.initInternalIdentificators();
+		
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onBeforeRun(this);
 		}
@@ -1262,7 +1256,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			}
 		}
 		virtualNode.setName(newName);
-		
+		virtualNode.setInternalIdentificator(net.getNodeCount());
 		// we need to add only 2 states (one will be set as a finding)
 		virtualNode.appendState(this.getResource().getString("likelihoodName"));
 		virtualNode.appendState(this.getResource().getString("dummyState"));
@@ -1306,8 +1300,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		// find the smallest clique containing all the parents
 		int smallestSize = Integer.MAX_VALUE;
 		Clique smallestCliqueContainingAllParents = null;
-		for (Clique clique : junctionTree.getCliques()) {
-			if (clique.getNodes().containsAll(parentNodes) && !clique.getNodes().contains(virtualNode) && (clique.getProbabilityFunction().tableSize() < smallestSize)) {
+		for (Clique clique : junctionTree.getCliquesContainingAllNodes(parentNodes, Integer.MAX_VALUE)) {
+			if (!clique.getNodes().contains(virtualNode) && (clique.getProbabilityFunction().tableSize() < smallestSize)) {
 				smallestCliqueContainingAllParents = clique;
 				smallestSize = clique.getProbabilityFunction().tableSize();
 			}
@@ -1334,10 +1328,10 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		for (INode parentNode : orderedParentNodes) {
 			cliqueOfVirtualNode.getProbabilityFunction().addVariable(parentNode);
 		}
+		cliqueOfVirtualNode.setInternalIdentificator(junctionTree.getCliques().size());
 		
 		// add clique to junction tree, so that the algorithm can handle the clique correctly
 		junctionTree.getCliques().add(cliqueOfVirtualNode);
-		
 		// create separator between the clique of parent nodes and virtual node (the separator should contain all parents)
 		Separator separatorOfVirtualCliqueAndParents = new Separator(smallestCliqueContainingAllParents , cliqueOfVirtualNode);
 		separatorOfVirtualCliqueAndParents.setNodes(new ArrayList<Node>((List)orderedParentNodes));
@@ -1345,7 +1339,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			separatorOfVirtualCliqueAndParents.getProbabilityFunction().addVariable(parentNode);
 		}
 		junctionTree.addSeparator(separatorOfVirtualCliqueAndParents);
-		
+		separatorOfVirtualCliqueAndParents.setInternalIdentificator(-junctionTree.getSeparators().size());
 		// just to guarantee that the network is fresh
 		net.resetNodesCopy();
 		
@@ -1398,17 +1392,40 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 */
 	public void clearVirtualNodes() {
 		for (INode virtualNode : getVirtualNodesToCliquesAndSeparatorsMap().keySet()) {
-			getNetwork().removeNode((Node) virtualNode);
+			
+			// remove the node but does not update cliques
+			getNet().removeNode((Node) virtualNode, false);
 			
 			// remove clique/separator from junction tree
 			for (IRandomVariable cliqueOrSep : getVirtualNodesToCliquesAndSeparatorsMap().get(virtualNode)) {
 				if (cliqueOrSep instanceof Clique) {
 					// remove this clique from parent
 					Clique clique = (Clique) cliqueOrSep;
-					clique.getParent().removeChild(clique);
+					// do not use List#remove() because it uses equals internally
+					int indexToRemove = 0;
+					for (Clique child :  clique.getParent().getChildren()) {
+						// use this comparison, because it's faster than equals()
+						if (child.getInternalIdentificator() == clique.getInternalIdentificator()) {
+							break;
+						}
+						indexToRemove++;
+					}
+					clique.getParent().getChildren().remove(indexToRemove);
+					
+					// remove the clique containing the virtual node
+					List<Clique> cliques = this.getNet().getJunctionTree().getCliques();
+					indexToRemove = 0;
+					for (Clique cliqueToCompare : this.getNet().getJunctionTree().getCliques()) {
+						// do this comparison instead of equals, which is a name comparison
+						if (cliqueToCompare.getInternalIdentificator() == cliqueOrSep.getInternalIdentificator()) {
+							break;
+						}
+						indexToRemove++;
+					}
+					cliques.remove(indexToRemove);
+				} else {
+					this.getNet().getJunctionTree().removeSeparator((Separator)cliqueOrSep);
 				}
-				this.getNet().getJunctionTree().getCliques().remove(cliqueOrSep);
-				this.getNet().getJunctionTree().getSeparators().remove(cliqueOrSep);
 			}
 		}
 		getVirtualNodesToCliquesAndSeparatorsMap().clear();

@@ -25,6 +25,12 @@ public interface IJunctionTree {
 	public abstract void addSeparator(Separator sep);
 	
 	/**
+	 * Deletes a separator from junction tree and clears all indexes
+	 * @param sep
+	 */
+	public abstract void removeSeparator(Separator sep);
+	
+	/**
 	 * This method returns cliques containing all specified nodes
 	 * @param nodes : only cliques containing these nodes will be returned.
 	 * @param maxCount : no more than this quantity of cliques will be returned.
@@ -32,6 +38,14 @@ public interface IJunctionTree {
 	 */
 	public List<Clique> getCliquesContainingAllNodes(Collection<INode> nodes, int maxCount);
 
+	/**
+	 * This method returns separators containing all specified nodes
+	 * @param nodes : only cliques containing these nodes will be returned.
+	 * @param maxCount : no more than this quantity of cliques will be returned.
+	 * @return list of separators
+	 */
+	public List<Separator> getSeparatorsContainingAllNodes(Collection<INode> nodes, int maxCount);
+	
 //	/**
 //	 * The current size of the collection of separators stored in this
 //	 * junction tree.

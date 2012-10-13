@@ -22,6 +22,8 @@ package unbbayes.prs.bn;
 
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import unbbayes.prs.Node;
 import unbbayes.util.SetToolkit;
@@ -169,20 +171,29 @@ public class ProbabilisticNetwork
 	 * @see unbbayes.prs.Network#removeNode(unbbayes.prs.Node)
 	 */
 	public void removeNode(Node nodeToRemove) {
+		this.removeNode(nodeToRemove, true);
+	}
+	
+	/**
+	 * Removes a node from network.
+	 * @param nodeToRemove
+	 * @param isToDeleteCliqueAndSeparator : if true, it will remove the node from cliques and separators too
+	 */
+	public void removeNode(Node nodeToRemove, boolean isToDeleteCliqueAndSeparator) {
 		/*
 		 * NOTE: this method assumes that the junction tree algorithm is implemented in a way
 		 * which it ignores separators containing 0 nodes (i.e. the empty separator still represents
 		 * a link between cliques, but such link is used only for accessing cliques in a 
 		 * hierarchic ordering, and it is not supposed to propagate evidences - e.g. absorb will do nothing).
 		 */
-		if (!this.isID() && !this.isHybridBN()) {
+		if (isToDeleteCliqueAndSeparator && !this.isID() && !this.isHybridBN()) {
 			// attempt to remove probabilistic nodes from junction tree as well
 			// this only makes sense if we are attempting to remove nodes from a compiled BN
 			// (nonsense if you are deleting nodes in edit mode)
 			if (getJunctionTree() != null) {
 				// remove variable from separators
 				if (getJunctionTree().getSeparators() != null) {
-					for (Separator separator : getJunctionTree().getSeparators()) {
+					for (Separator separator : getJunctionTree().getSeparatorsContainingAllNodes((List)Collections.singletonList(nodeToRemove), Integer.MAX_VALUE)) {
 						if (separator.getNodes().contains(nodeToRemove)) {
 							PotentialTable sepTable = separator.getProbabilityFunction();
 							sepTable.removeVariable(nodeToRemove, false);
@@ -193,14 +204,12 @@ public class ProbabilisticNetwork
 				}
 				// remove variable from cliques
 				if (getJunctionTree().getCliques() != null) {
-					for (Clique clique : getJunctionTree().getCliques()) {
-						if (clique.getNodes().contains(nodeToRemove)) {
-							PotentialTable cliqueTable = clique.getProbabilityFunction();
-							cliqueTable.removeVariable(nodeToRemove, false);
-							cliqueTable.normalize();
-							clique.getAssociatedProbabilisticNodes().remove(nodeToRemove);
-							clique.getNodes().remove(nodeToRemove);
-						}
+					for (Clique clique : getJunctionTree().getCliquesContainingAllNodes((List)Collections.singletonList(nodeToRemove), Integer.MAX_VALUE)) {
+						PotentialTable cliqueTable = clique.getProbabilityFunction();
+						cliqueTable.removeVariable(nodeToRemove, false);
+						cliqueTable.normalize();
+						clique.getAssociatedProbabilisticNodes().remove(nodeToRemove);
+						clique.getNodes().remove(nodeToRemove);
 					}
 				}
 			}

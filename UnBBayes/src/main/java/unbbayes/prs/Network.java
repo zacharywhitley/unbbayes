@@ -193,7 +193,10 @@ public class Network implements Graph{
 	    Node node;
 	    Edge edge;
 	    
-	    nodeList.remove(element);
+	    Integer index = nodeIndexes.get(element.getName());
+	    if (index != null && index.intValue() >= 0) {
+	    	nodeList.remove(index.intValue());
+	    }
 	    
 	    //nodeIndexes.remove(elemento.getName());
 	    nodeIndexes.clear();
