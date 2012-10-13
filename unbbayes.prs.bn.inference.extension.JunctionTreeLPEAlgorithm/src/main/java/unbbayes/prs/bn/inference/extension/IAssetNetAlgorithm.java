@@ -6,10 +6,10 @@ import java.util.Map;
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.AssetNetwork;
+import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
-import unbbayes.util.extension.bn.inference.IRandomVariableAwareInferenceAlgorithm;
 
 /**
  * Common interface for the algorithms related to assets
@@ -335,5 +335,16 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * @author Shou Matsumoto
 	 */
 	public interface IAssetNetAlgorithmMemento{};
+	
+	/**
+	 * @return the cliques containing the nodes with soft evidences in the next call of {@link #propagate()}.
+	 * If set to null or empty, then {@link #updateProbabilityPriorToPropagation()} will
+	 * attempt to infer what cliques contains such evidences.
+	 * This list will be reset after {@link #propagate()}.
+	 * CAUTION: these cliques are expected to be in {@link #getRelatedProbabilisticNetwork()}, so
+	 * they are cliques with probabilities. This is because we need to obtain the probabilities' ratio
+	 * in order to calculate the value to update.
+	 */
+	public List<Clique> getEditCliques();
 	
 }

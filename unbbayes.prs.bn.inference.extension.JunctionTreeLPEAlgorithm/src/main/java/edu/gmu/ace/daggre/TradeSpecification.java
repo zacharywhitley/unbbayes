@@ -61,5 +61,16 @@ public interface TradeSpecification extends Serializable {
 	 * @param probabilities
 	 */
 	public void setProbabilities(List<Float> probabilities);
+	
+	/**
+	 * @return the probability before the trade.
+	 */
+	public List<Float> getOldProbabilities();
+	
+	/**
+	 * @param oldProb :  the probability before the trade.
+	 */
+	public void setOldProbabilities(List<Float> oldProb);
+	
 
 }

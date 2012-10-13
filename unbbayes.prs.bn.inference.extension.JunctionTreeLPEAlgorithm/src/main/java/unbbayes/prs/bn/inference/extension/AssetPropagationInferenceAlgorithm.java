@@ -88,6 +88,13 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * in the probabilistic network in {@link #setRelatedProbabilisticNetwork(ProbabilisticNetwork)}.
 	 */
 	public static final String ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY = AssetPropagationInferenceAlgorithm.class.getName() + ".originalCliqueToAssetCliqueMap";
+	
+	/** 
+	 * Name of the property in {@link Graph#getProperty(String)} which manages the inverse mapping
+	 * of {@link #ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY}, that is, from asset cliques/seps to
+	 * original (probabilistic) cliques/seps.
+	 */
+	public static final String ASSETCLIQUE_TO_ORIGINALCLIQUE_MAP_PROPERTY = AssetPropagationInferenceAlgorithm.class.getName() + ".assetCliqueToOriginalCliqueMap";
 
 	private ProbabilisticNetwork relatedProbabilisticNetwork;
 	
@@ -342,6 +349,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	private boolean isToUseQValues = IS_TO_USE_Q_VALUES;
 
+	private boolean isToRebuildOrigCliqueToAssetCliqueMapping = false;
+
 //	private AssetAwareInferenceAlgorithm assetAwareInferenceAlgorithm;
 	
 //	private IInferenceAlgorithmListener listenerToStorePriorProbability = new IInferenceAlgorithmListener() {
@@ -508,17 +517,28 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 //		Map<Clique, PotentialTable> currentAssetsMap = (Map<Clique, PotentialTable>) this.getNetwork().getProperty(CURRENT_ASSETS_PROPERTY);
 		
 		// cliques/separators to update
-		Set<IRandomVariable> cliquesOrSepsToUpdate = new HashSet<IRandomVariable>();
-		if (isToUpdateOnlyEditClique() && getEditCliques() != null && !getEditCliques().isEmpty()) {
-			// update only the edited clique
-			cliquesOrSepsToUpdate.addAll(getEditCliques());
+		Set<IRandomVariable> probCliquesOrSepsToUpdate = new HashSet<IRandomVariable>();
+		if (isToUpdateOnlyEditClique()) {
+			if (getEditCliques() != null) {
+				// update only the edited clique
+				for (IRandomVariable unknownCliqueOrSep : getEditCliques()) {
+					// we don't know if unknownCliqueOrSeparator is an asset clique/sep or prob clique/sep. Use the mapping to get the prob clique
+					IRandomVariable origCliqueOrSeparator = getAssetCliqueToOriginalCliqueMap().get(unknownCliqueOrSep.getInternalIdentificator());
+					probCliquesOrSepsToUpdate.add(origCliqueOrSeparator);
+				}
+			} else {
+//				throw new IllegalStateException("isToUpdateOnlyEditClique == true, but no clique was specified in getEditCliques.");
+				Debug.println(getClass(), "isToUpdateOnlyEditClique == true, but no clique was specified in getEditCliques.");
+			}
 		} else {
 			// update all cliques
-			cliquesOrSepsToUpdate.addAll(getOriginalCliqueToAssetCliqueMap().keySet());
+			probCliquesOrSepsToUpdate.addAll(getOriginalCliqueToAssetCliqueMap().keySet());
 		}
 		
 		// backup assets before changing something, so that we can revert
-		for (IRandomVariable origCliqueOrSeparator : cliquesOrSepsToUpdate) {
+		for (IRandomVariable origCliqueOrSeparator : probCliquesOrSepsToUpdate) {
+			
+			// get the respective asset clique/sep
 			IRandomVariable assetCliqueOrSeparator = getOriginalCliqueToAssetCliqueMap().get(origCliqueOrSeparator);
 			if (assetCliqueOrSeparator == null || assetCliqueOrSeparator.getProbabilityFunction() == null) {
 				getEditCliques().clear(); // reset these cliques, so that next call to propagate() does not reuse this list
@@ -532,7 +552,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 //		Map<IRandomVariable, DoublePrecisionProbabilisticTable> assetTableBackup = new HashMap<IRandomVariable, DoublePrecisionProbabilisticTable>();
 		
 		try {
-			for (IRandomVariable origCliqueOrSeparator : cliquesOrSepsToUpdate) {
+			for (IRandomVariable origCliqueOrSeparator : probCliquesOrSepsToUpdate) {
 				// extract clique related to the asset 
 				IRandomVariable assetCliqueOrSeparator = getOriginalCliqueToAssetCliqueMap().get(origCliqueOrSeparator);
 				if (assetCliqueOrSeparator == null) {
@@ -624,7 +644,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			// here, we only need to revert assets, because caller is supposed to call this.revertLastProbabilityUpdate() to revert probabilities
 			
 			// revert all changes in assets
-			for (IRandomVariable origCliqueOrSeparator : cliquesOrSepsToUpdate) {
+			for (IRandomVariable origCliqueOrSeparator : probCliquesOrSepsToUpdate) {
 				IRandomVariable assetCliqueOrSeparator = getOriginalCliqueToAssetCliqueMap().get(origCliqueOrSeparator);
 				((PotentialTable)assetCliqueOrSeparator.getProbabilityFunction()).restoreData();
 			}
@@ -652,7 +672,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		
 		// by now, everything went OK. Backup values
-		for (IRandomVariable origCliqueOrSeparator : cliquesOrSepsToUpdate) {
+		for (IRandomVariable origCliqueOrSeparator : probCliquesOrSepsToUpdate) {
 			((PotentialTable)origCliqueOrSeparator.getProbabilityFunction()).copyData();
 		}
 		
@@ -807,6 +827,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			
 			setOriginalCliqueToAssetCliqueMap(ret, new TreeMap<IRandomVariable, IRandomVariable>(this.getRandomVariableComparator()));
 //			setOriginalCliqueToAssetCliqueMap(ret, new HashMap<IRandomVariable, IRandomVariable>());
+			
+			setAssetCliqueToOriginalCliqueMap(ret, new HashMap<Integer, IRandomVariable>());
 
 			// copy cliques
 			for (Clique origClique : relatedProbabilisticNetwork.getJunctionTree().getCliques()) {
@@ -875,7 +897,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				
 				jt.getCliques().add(newClique);
 				getOriginalCliqueToAssetCliqueMap(ret).put(origClique, newClique);
-				
+				getAssetCliqueToOriginalCliqueMap(ret).put(newClique.getInternalIdentificator(), origClique);
 			}
 			
 			// copy relationship of cliques (separators)
@@ -934,6 +956,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				// NOTE: this is ignoring utility table and nodes
 				jt.addSeparator(newSeparator);
 				getOriginalCliqueToAssetCliqueMap(ret).put(origSeparator, newSeparator);
+				getAssetCliqueToOriginalCliqueMap(ret).put(newSeparator.getInternalIdentificator(), origSeparator);
 			}
 			
 			// copy relationship between cliques/separator and nodes
@@ -1086,6 +1109,32 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		return null;
 	}
+	
+	/**
+	 * This is a mapping from {@link IRandomVariable#getInternalIdentificator()} to
+	 * probabilistic clique/separator.
+	 * This can be used as the inverse mapping of {@link #getOriginalCliqueToAssetCliqueMap()}
+	 * @return
+	 */
+	public Map<Integer, IRandomVariable> getAssetCliqueToOriginalCliqueMap() {
+		return this.getAssetCliqueToOriginalCliqueMap(getAssetNetwork());
+	}
+	
+	/**
+	 * This is a mapping from {@link IRandomVariable#getInternalIdentificator()} to
+	 * probabilistic clique/separator.
+	 * This can be used as the inverse mapping of {@link #getOriginalCliqueToAssetCliqueMap()}
+	 * @param assetNet
+	 * @return
+	 */
+	protected Map<Integer, IRandomVariable> getAssetCliqueToOriginalCliqueMap(Network assetNet) {
+		try {
+			return (Map<Integer, IRandomVariable>) assetNet.getProperty(ASSETCLIQUE_TO_ORIGINALCLIQUE_MAP_PROPERTY);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 
 
 	/**
@@ -1095,16 +1144,36 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	public void setOriginalCliqueToAssetCliqueMap(Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMap) {
 		this.setOriginalCliqueToAssetCliqueMap(getAssetNetwork(), originalCliqueToAssetCliqueMap);
 	}
+	
+	/**
+	 * Calls {@link #setAssetCliqueToOriginalCliqueMap(Network, Map)} using {@link #getAssetNetwork()} as a parameter
+	 * @param map
+	 */
+	public void setAssetCliqueToOriginalCliqueMap(Map<Integer, IRandomVariable> map) {
+		this.setAssetCliqueToOriginalCliqueMap(getAssetNetwork(), map);
+	}
 
 	/**
 	 * It stores originalCliqueToAssetCliqueMap into the property {@link #ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY} of
-	 * the network assetNet, which is supposedly .
+	 * the network assetNet.
 	 * @param assetNet :  the network where the mapping is going to be stored.
 	 * @param originalCliqueToAssetCliqueMap : a mapping from cliques/separators of probabilities to cliques/separators of assetNet.
 	 */
 	protected void setOriginalCliqueToAssetCliqueMap(Network assetNet, Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMap) {
 		if (assetNet != null) {
 			assetNet.addProperty(ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY, originalCliqueToAssetCliqueMap);
+		}
+	}
+	
+	/**
+	 * It stores a maping into the property {@link #ASSETCLIQUE_TO_ORIGINALCLIQUE_MAP_PROPERTY} of
+	 * the network assetNet, which is supposedly.
+	 * @param assetNet :  the network where the mapping is going to be stored.
+	 * @param map : a mapping from {@link IRandomVariable#getInternalIdentificator()} to cliques/separators of probabilities.
+	 */
+	protected void setAssetCliqueToOriginalCliqueMap(Network assetNet, Map<Integer, IRandomVariable> map) {
+		if (assetNet != null) {
+			assetNet.addProperty(ASSETCLIQUE_TO_ORIGINALCLIQUE_MAP_PROPERTY, map);
 		}
 	}
 	
@@ -1945,7 +2014,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			// backup mapping, because a change in the cliques/seps may cause this mapping to become inaccessible (we may need to rebuild mapping)
 			// convert tree map to hash map. HashMap can correctly map elements whose name mapping is broken (because it uses hash, not name comparison)
 			Map<IRandomVariable, IRandomVariable> originalCliqueToAssetCliqueMapBackup = null;
-			if (!(getOriginalCliqueToAssetCliqueMap() instanceof HashMap)) {
+			if (isToRebuildOrigCliqueToAssetCliqueMapping() && !(getOriginalCliqueToAssetCliqueMap() instanceof HashMap)) {
 				originalCliqueToAssetCliqueMapBackup = new HashMap<IRandomVariable, IRandomVariable>(getOriginalCliqueToAssetCliqueMap());
 			}
 			
@@ -2351,6 +2420,23 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		} else {
 			throw new NoSuchFieldException("Expected an instance of " + AssetPropagationInferenceAlgorithmMemento.class.getName());
 		}
+	}
+
+	/**
+	 * If true, {@link #setAsPermanentEvidence(Map, boolean)} will rebuild the {@link #getOriginalCliqueToAssetCliqueMap()}
+	 * @param isToRebuildOrigCliqueToAssetCliqueMapping the isToRebuildOrigCliqueToAssetCliqueMapping to set
+	 */
+	public void setToRebuildOrigCliqueToAssetCliqueMapping(
+			boolean isToRebuildOrigCliqueToAssetCliqueMapping) {
+		this.isToRebuildOrigCliqueToAssetCliqueMapping = isToRebuildOrigCliqueToAssetCliqueMapping;
+	}
+
+	/**
+	 * If true, {@link #setAsPermanentEvidence(Map, boolean)} will rebuild the {@link #getOriginalCliqueToAssetCliqueMap()}
+	 * @return the isToRebuildOrigCliqueToAssetCliqueMapping
+	 */
+	public boolean isToRebuildOrigCliqueToAssetCliqueMapping() {
+		return isToRebuildOrigCliqueToAssetCliqueMapping;
 	}
 	
 

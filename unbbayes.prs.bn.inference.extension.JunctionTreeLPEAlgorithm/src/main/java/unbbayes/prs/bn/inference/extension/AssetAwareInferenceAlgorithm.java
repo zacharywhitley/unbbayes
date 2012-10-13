@@ -35,7 +35,6 @@ import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
-import unbbayes.util.extension.bn.inference.IRandomVariableAwareInferenceAlgorithm;
 
 /**
  * The pseudocode implemented by this algorithm is:<br/>
@@ -1700,6 +1699,17 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 */
 	public boolean isToChangeGUI() {
 		return isToChangeGUI;
+	}
+
+	/**
+	 * Just delegates to {@link #getAssetPropagationDelegator()}
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getEditCliques()
+	 */
+	public List<Clique> getEditCliques() {
+		if (getAssetPropagationDelegator() != null) {
+			return getAssetPropagationDelegator().getEditCliques();
+		}
+		return null;
 	}
 
 //	/**

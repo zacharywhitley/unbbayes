@@ -1718,18 +1718,30 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //						algorithm.setNetwork(getProbabilisticNetwork());
 					}
 					
+					// store marginal before trade
+					// the difference between oldValues and tradeSpecification.oldProbabilities is that the prior is only marginal prob
+					oldValues = getProbList(tradeSpecification.getQuestionId(), null, null);
+					
+					// check if we should do clique-sensitive operation, like balance trade
+					if (tradeSpecification instanceof CliqueSensitiveTradeSpecification) {
+						// extract the clique from tradeSpecification. Note: this is supposedly an asset clique
+						// fortunately, the algorithm doesn't care if it is an asset or prob clique, so privide the asset clique to algorithm
+						algorithm.getEditCliques().add(((CliqueSensitiveTradeSpecification) tradeSpecification).getClique());
+						// by forcing the algorithm to update only this clique, we are forcing the balance trade to balance the provided clique
+					}
+					
 					// backup config of assets
 					boolean backup = algorithm.isToUpdateAssets();
 					algorithm.setToUpdateAssets(isToUpdateAssets);
 					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
 					// 2nd boolean == true := overwrite assumptionIds and assumedStates when necessary
-					oldValues = executeTrade(
+					tradeSpecification.setOldProbabilities(executeTrade(
 							tradeSpecification.getQuestionId(), 
 							tradeSpecification.getProbabilities(), 
 							tradeSpecification.getAssumptionIds(), 
 							tradeSpecification.getAssumedStates(), 
 							allowNegative, algorithm, true, false, this
-						);
+						));
 					algorithm.setToUpdateAssets(backup);	// revert config of assets
 					// backup the previous delta so that we can revert this trade
 //					qTablesBeforeTrade = algorithm.getAssetTablesBeforeLastPropagation();
@@ -1742,6 +1754,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					if (!questions.contains(tradeSpecification.getQuestionId())) {
 						questions.add(tradeSpecification.getQuestionId());
 					}
+					// tradeSpecification.getProbabilities() contains the edit value, and newValues contains the new marginal
+					newValues = getProbList(tradeSpecification.getQuestionId(), null, null);
 				}
 			}
 			
@@ -1797,7 +1811,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //		/** Mapping from {@link Clique}/{@link Separator} to q-tables before {@link #execute()}*/
 //		public Map<IRandomVariable, DoublePrecisionProbabilisticTable> getqTablesBeforeTrade() { return qTablesBeforeTrade; }
 		public List<Float> getNewValues() { return newValues; }
-		protected void setNewValues(List<Float> newValues) { this.newValues = newValues; this.tradeSpecification.setProbabilities(newValues); }
+		protected void setNewValues(List<Float> newValues) { this.newValues = newValues; /*this.tradeSpecification.setProbabilities(newValues);*/ }
 //		public void setNewValues(List<Float> newValues) { this.newValues = newValues; }
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { 
@@ -1832,7 +1846,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 	}
 	
-	
+	/**
+	 * This represents a trade caused by a {@link ImportNetworkAction}.
+	 * @author Shou Matsumoto
+	 */
 	public class VirtualTradeAction extends AddTradeNetworkAction {
 		private final NetworkAction parentAction;
 
@@ -1849,7 +1866,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction#execute(boolean)
 		 */
 		public void execute(boolean isToUpdateAssets) {
-			setOldValues(executeTrade(getQuestionId(), getNewValues(), getAssumptionIds() , getAssumedStates() , true, getDefaultInferenceAlgorithm(), false, false, getParentAction()));
+			setOldValues(getProbList(getTradeSpecification().getQuestionId(), null, null));
+			getTradeSpecification().setOldProbabilities(executeTrade(getQuestionId(), getTradeSpecification().getProbabilities(), getAssumptionIds() , getAssumedStates() , true, getDefaultInferenceAlgorithm(), false, false, getParentAction()));
+			setNewValues(getProbList(getTradeSpecification().getQuestionId(), null, null));
 		}
 
 		public NetworkAction getParentAction() { return parentAction; }
@@ -3034,7 +3053,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		
-		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false);	// false := return assets instead of q-values
+		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false, null);	// false := return assets instead of q-values
 	}
 	
 	/**
@@ -3049,6 +3068,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @param isToReturnQValuesInsteadOfAssets : if false, the returned list will contain values returned by {@link #getScoreFromQValues(float)} 
 	 * (i.e. logarithm values, instead of the q-values stored in the asset tables). 
 	 * If true, the returned list will contain q-values (values actually stored in the delta table) instead of what the DAGGRE side call "delta" (the logarithm values).
+	 * @param clique : only assets in this clique will be considered. If null, a clique containing questionId and assumptionIds will be used
 	 * @return the change in user delta if a given states occurs if the specified assumptions are met. 
 	 * The indexes are relative to the indexes of the states.
 	 * In the case of a binary question this will return a [if_true, if_false] value, if multiple choice will return a [if_0, if_1, if_2...] value list
@@ -3058,8 +3078,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * question while it is in state "true".
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
-	protected List getAssetsIfStates(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, AssetAwareInferenceAlgorithm algorithm, boolean isToReturnQValuesInsteadOfAssets)
-			throws IllegalArgumentException {
+	protected List getAssetsIfStates(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, 
+			AssetAwareInferenceAlgorithm algorithm, boolean isToReturnQValuesInsteadOfAssets, Clique clique)
+				throws IllegalArgumentException {
 		// basic assertion
 		if (algorithm == null) {
 			throw new NullPointerException("AssetAwareInferenceAlgorithm cannot be null");
@@ -3082,7 +3103,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			if (parentNodes.isEmpty()) { // we are not calculating the conditional delta. We are calculating delta of 1 node only (i.e. "marginal" delta)
 				boolean backup = mainNode.isToCalculateMarginal();	// backup old config
+				IRandomVariable associatedCliqueSepBkp = mainNode.getAssociatedClique();	// backup old clique/separator associated w/ this node
 				mainNode.setToCalculateMarginal(true);		// force marginalization to calculate something.
+				if (clique != null) {
+					mainNode.setAssociatedClique(clique);	// force marginalization to use the current clique
+				}
 //				double[] marginal = mainNode.(); 					
 //				mainNode.setToCalculateMarginal(backup);	// revert to previous config
 //				List ret = new ArrayList(mainNode.getStatesSize());
@@ -3098,10 +3123,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //				return ret;
 				mainNode.updateMarginal(); 					// make sure values of mainNode.getMarginalAt(index) is up to date
 				mainNode.setToCalculateMarginal(backup);	// revert to previous config
+				if (clique != null) {
+					mainNode.setAssociatedClique(associatedCliqueSepBkp);	// restore to backup
+				}
 			}
 			if (conditionalProbabilityExtractor instanceof InCliqueConditionalProbabilityExtractor) {
 				InCliqueConditionalProbabilityExtractor inCliqueConditionalProbabilityExtractor = (InCliqueConditionalProbabilityExtractor) conditionalProbabilityExtractor;
-				assetTable = (PotentialTable) inCliqueConditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, algorithm.getAssetNetwork(), algorithm.getAssetPropagationDelegator(), ASSET_CLIQUE_EVIDENCE_UPDATER);
+				assetTable = (PotentialTable) inCliqueConditionalProbabilityExtractor.buildCondicionalProbability(
+						mainNode, parentNodes, algorithm.getAssetNetwork(), algorithm.getAssetPropagationDelegator(), ASSET_CLIQUE_EVIDENCE_UPDATER, clique
+					);
 			} else {
 				throw new UnsupportedOperationException("getConditionalProbabilityExtractor() with instance other than " 
 						+ InCliqueConditionalProbabilityExtractor.class.getName() + " is not supported by this version.");
@@ -3690,13 +3720,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (isToDoFullPreview()) {
 			// TODO optimize (executeTrade and getAssetsIfStates have redundant portion of code)
 			// return the asset position
-			return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false); // false := return assets instead of q-values
+			return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false, null); // false := return assets instead of q-values
 		}
 		
 		// just return estimated values
 		// obtain q-values
 //		List<Float> qValues = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, true);
-		List<Float> assets = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false);
+		List<Float> assets = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false, null);
 //		if (oldValues != null && (oldValues.size() == newValues.size()) && (qValues.size() == newValues.size())) {
 //			// they are all related by indexes
 //			List<Float> ret = new ArrayList<Float>(newValues.size());
@@ -4140,7 +4170,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * to "balance a1 and a2 given b1 and c1, and then balance a1 and a2 given b2 and c1".
 	 * 
 	 */
-	protected List<TradeSpecification> previewBalancingTrades(long userId, long questionId, List<Long> originalAssumptionIds, List<Integer> originalAssumedStates, Clique clique) throws IllegalArgumentException {
+	protected List<TradeSpecification> previewBalancingTrades(long userId, long questionId, List<Long> originalAssumptionIds, 
+			List<Integer> originalAssumedStates, Clique clique) throws IllegalArgumentException {
 		// initial assertions
 		if (originalAssumptionIds != null && !originalAssumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, originalAssumptionIds).isEmpty()) {
 			if (this.isToThrowExceptionOnInvalidAssumptions()) {
@@ -4201,9 +4232,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		if (fullParentNodes.isEmpty()) { // we are not calculating the conditional asset. We are calculating asset of 1 node only (i.e. "marginal" asset)
 			boolean backup = mainNode.isToCalculateMarginal();	// backup old config
+			IRandomVariable cliqueSepBkp = mainNode.getAssociatedClique();	// backup the clique/separator associated with this node
 			mainNode.setToCalculateMarginal(true);		// force marginalization to calculate something.
+			if (clique.getNodes().contains(mainNode)) {
+				mainNode.setAssociatedClique(clique);		// force marginalization to use clique provided from caller of this method
+			} else if (cliqueSepBkp instanceof Separator) {
+				// make sure we are using cliques, never separators
+				mainNode.setAssociatedClique(((Separator) cliqueSepBkp).getClique1());	// use 1st clique, by default
+			}
 			mainNode.updateMarginal(); 					// make sure values of mainNode.getMarginalAt(index) is up to date
 			mainNode.setToCalculateMarginal(backup);	// revert to previous config
+			mainNode.setAssociatedClique(cliqueSepBkp);	// revert to previous clique/separator
 		}
 		// generate a table with mainNode as the 1st variable, so that we can easily iterate over all states of parents
 		// TODO use another way to iterate over parents
@@ -4271,8 +4310,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					throw new RuntimeException("Failed to consistently handle resolved questions in assumption: " 
 							+ fullAssumptionIds + " = " + fullAssumedStates);
 				}
-				List<Float> balancingTrade = this.previewBalancingTrade(userId, questionId, fullAssumptionIds, fullAssumedStates);
-				ret.add(new TradeSpecificationImpl(userId, questionId, balancingTrade, fullAssumptionIds, fullAssumedStates));
+				List<Float> balancingTrade = this.previewBalancingTrade(userId, questionId, fullAssumptionIds, fullAssumedStates, clique);
+				ret.add(new CliqueSensitiveTradeSpecificationImpl(userId, questionId, balancingTrade, fullAssumptionIds, fullAssumedStates, clique));
 			}
 		}
 		return ret;
@@ -4298,49 +4337,50 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 * @see #doBalanceTrade(long, Date, String, long, long, List, List)
 	 */
-	protected List<TradeSpecification> previewBalancingTrades(long userId, long questionId, List<Long> originalAssumptionIds, List<Integer> originalAssumedStates) throws IllegalArgumentException {
-		
-		// initial assertions
-		if (originalAssumptionIds != null && !originalAssumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, originalAssumptionIds).isEmpty()) {
-			if (this.isToThrowExceptionOnInvalidAssumptions()) {
-				new InvalidAssumptionException(originalAssumptionIds + " are invalid assumptions for question " + questionId);
-			}
-			// convert the set of assumptions to a valid set
-			List<Long> oldAssumptionIds = originalAssumptionIds;
-			// note: getMaximumValidAssumptionsSublists will always return at least 1 element (at least the empty list)
-			originalAssumptionIds = this.getMaximumValidAssumptionsSublists(questionId, originalAssumptionIds, 1).get(0);
-			// change assumedStates accordingly to new assumptionIds
-			originalAssumedStates = this.convertAssumedStates(originalAssumptionIds, oldAssumptionIds, originalAssumedStates);
-
-		}
-		if (originalAssumptionIds == null) {
-			originalAssumptionIds = Collections.EMPTY_LIST;
-		}
-		if (originalAssumedStates == null) {
-			originalAssumedStates = Collections.EMPTY_LIST;
-		}
-		
-		// asset net algorithm of the user (this will be used to extract cliques and nodes)
-		AssetAwareInferenceAlgorithm userAssetAlgorithm = null;
-		try {
-			userAssetAlgorithm = getAlgorithmAndAssetNetFromUserID(userId);
-		} catch (InvalidParentException e) {
-			throw new RuntimeException("Could not instantiate user " + userId,e);
-		}
-		
-		// extract all cliques containing questionId and originalAssumptionIds
-		Collection<Clique> cliques = this.getAssetCliqueFromQuestionIDAndAssumptions(questionId, originalAssumptionIds, userAssetAlgorithm);;
-		
-		// the specification to return
-		List<TradeSpecification> ret = new ArrayList<TradeSpecification>();
-		
-		synchronized (getResolvedQuestions()) {
-			for (Clique clique : cliques) {
-				ret.addAll(this.previewBalancingTrades(userId, questionId, originalAssumptionIds, originalAssumedStates, clique));
-			}
-		}
-		
-		return ret;
+	public List<TradeSpecification> previewBalancingTrades(long userId, long questionId, List<Long> originalAssumptionIds, 
+			List<Integer> originalAssumedStates) throws IllegalArgumentException {
+		return this.previewBalancingTrades(userId, questionId, originalAssumptionIds, originalAssumedStates, null);
+//		// initial assertions
+//		if (originalAssumptionIds != null && !originalAssumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, originalAssumptionIds).isEmpty()) {
+//			if (this.isToThrowExceptionOnInvalidAssumptions()) {
+//				new InvalidAssumptionException(originalAssumptionIds + " are invalid assumptions for question " + questionId);
+//			}
+//			// convert the set of assumptions to a valid set
+//			List<Long> oldAssumptionIds = originalAssumptionIds;
+//			// note: getMaximumValidAssumptionsSublists will always return at least 1 element (at least the empty list)
+//			originalAssumptionIds = this.getMaximumValidAssumptionsSublists(questionId, originalAssumptionIds, 1).get(0);
+//			// change assumedStates accordingly to new assumptionIds
+//			originalAssumedStates = this.convertAssumedStates(originalAssumptionIds, oldAssumptionIds, originalAssumedStates);
+//
+//		}
+//		if (originalAssumptionIds == null) {
+//			originalAssumptionIds = Collections.EMPTY_LIST;
+//		}
+//		if (originalAssumedStates == null) {
+//			originalAssumedStates = Collections.EMPTY_LIST;
+//		}
+//		
+//		// asset net algorithm of the user (this will be used to extract cliques and nodes)
+//		AssetAwareInferenceAlgorithm userAssetAlgorithm = null;
+//		try {
+//			userAssetAlgorithm = getAlgorithmAndAssetNetFromUserID(userId);
+//		} catch (InvalidParentException e) {
+//			throw new RuntimeException("Could not instantiate user " + userId,e);
+//		}
+//		
+//		// extract all cliques containing questionId and originalAssumptionIds
+//		Collection<Clique> cliques = this.getAssetCliqueFromQuestionIDAndAssumptions(questionId, originalAssumptionIds, userAssetAlgorithm);;
+//		
+//		// the specification to return
+//		List<TradeSpecification> ret = new ArrayList<TradeSpecification>();
+//		
+//		synchronized (getResolvedQuestions()) {
+//			for (Clique clique : cliques) {
+//				ret.addAll(this.previewBalancingTrades(userId, questionId, originalAssumptionIds, originalAssumedStates, clique));
+//			}
+//		}
+//		
+//		return ret;
 	}
 	
 	/**
@@ -4400,6 +4440,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#previewBalancingTrade(long, long, java.util.List, java.util.List)
 	 */
 	public List<Float> previewBalancingTrade(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		return this.previewBalancingTrade(userId, questionId, assumptionIds, assumedStates, null);
+	}
+	
+	/**
+	 * Performs the same as described in {@link MarkovEngineInterface#previewBalancingTrade(long, long, List, List)},
+	 * but we can specify which clique to consider.
+	 * @param userId
+	 * @param questionId
+	 * @param assumptionIds
+	 * @param assumedStates
+	 * @param clique : if set to null, then the clique containing all nodes will be picked from the junction tree
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
+	public List<Float> previewBalancingTrade(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates, Clique clique) throws IllegalArgumentException {
 		if (assumptionIds != null && assumedStates != null && assumptionIds.size() != assumedStates.size()) {
 			throw new IllegalArgumentException("This method does not allow assumptionIds and assumedStates with different sizes.");
 		}
@@ -4438,7 +4493,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// obtain q1, q1, ... , qn (the asset's q values)
-		List qValues = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, true);	// true := return q-values instead of asset
+		List qValues = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, true, clique);	// true := return q-values instead of asset
 		
 		// list to be used to store probabilities and products of q temporary
 		List<Double> products = new ArrayList<Double>(probList.size());
@@ -4513,7 +4568,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		private List<TradeSpecification> executedTrades = null;
 		/** Default constructor initializing fields\ */
 		public BalanceTradeNetworkAction(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) {
-			super(transactionKey, occurredWhen, tradeKey, userId, questionId, null, assumptionIds, assumedStates, false);
+			super(transactionKey, occurredWhen, tradeKey, userId, questionId, null, assumptionIds, assumedStates, true);
 		}
 		/** Virtually does {@link MarkovEngineImpl#previewBalancingTrade(long, long, List, List)} and then {@link AddTradeNetworkAction#execute()} */
 		public void execute(boolean isToUpdateAssets) {
@@ -4533,6 +4588,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					this.setTradeSpecification(backup);
 					throw new RuntimeException(e);
 				}
+				this.setTradeSpecification(backup);
 				return;
 			}
 			// prepare the list of trades actually executed by this balance operation
@@ -4559,7 +4615,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// obtain trade values for exiting the user from a question given assumptions, for the current clique
 					List<TradeSpecification> balancingTrades = null;
 					if (isToForceBalanceQuestionEntirely()) {
-						balancingTrades = previewBalancingTrades(getUserId(), getQuestionId(), Collections.EMPTY_LIST, Collections.EMPTY_LIST, clique);
+						balancingTrades = previewBalancingTrades(getUserId(), getQuestionId(), null, null, clique);
 					} else {
 						balancingTrades = previewBalancingTrades(getUserId(), getQuestionId(), getAssumptionIds(), getAssumedStates(), clique);
 					}
@@ -4577,12 +4633,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						throw new RuntimeException(e);
 					}
 				}
+				// restore original trade specification
+				this.setTradeSpecification(backup);
 				// by default, set the probabilities of this action to the marginal after trade
 				this.setNewValues(getProbList(getQuestionId(), null, null));
 				// the above code will also do the following
 //				backup.setProbabilities(getProbList(getQuestionId(), null, null));
-				// restore original trade specification
-				this.setTradeSpecification(backup);
 			}
 		}
 		public void revert() throws UnsupportedOperationException {

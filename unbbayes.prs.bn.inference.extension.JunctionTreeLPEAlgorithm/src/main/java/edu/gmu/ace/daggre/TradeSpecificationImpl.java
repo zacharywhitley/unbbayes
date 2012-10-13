@@ -6,17 +6,21 @@ package edu.gmu.ace.daggre;
 import java.util.List;
 
 /**
- * This is a default implementation of {@link TradeSpecification}
+ * This is a default implementation of {@link TradeSpecification}.
+ * {@link #isCliqueSensitive()} will return false by default.
  * @author Shou Matsumoto
  *
  */
 public class TradeSpecificationImpl implements TradeSpecification {
 
+	private static final long serialVersionUID = 3800020097173226814L;
+	
 	private Long userId;
 	private Long questionId;
 	private List<Float> probabilities;
 	private List<Long> assumptionIds;
 	private List<Integer> assumedStates;
+	private List<Float> oldProbabilities;
 	
 	
 	/**
@@ -41,10 +45,9 @@ public class TradeSpecificationImpl implements TradeSpecification {
 
 
 	/**
-	 * Default constructor is at least "protected", in order to allow
-	 * easy inheritance
+	 * Default constructor without fields
 	 */
-	protected TradeSpecificationImpl() {
+	public TradeSpecificationImpl() {
 		// TODO Auto-generated constructor stub
 	}
 
@@ -139,6 +142,24 @@ public class TradeSpecificationImpl implements TradeSpecification {
 	 */
 	public void setAssumedStates(List<Integer> assumedStates) {
 		this.assumedStates = assumedStates;
+	}
+
+
+
+	/**
+	 * @return the oldProbabilities
+	 */
+	public List<Float> getOldProbabilities() {
+		return oldProbabilities;
+	}
+
+
+
+	/**
+	 * @param oldProbabilities the oldProbabilities to set
+	 */
+	public void setOldProbabilities(List<Float> oldProbabilities) {
+		this.oldProbabilities = oldProbabilities;
 	}
 
 

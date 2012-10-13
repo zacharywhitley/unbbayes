@@ -18218,5 +18218,232 @@ public class MarkovEngineTest extends TestCase {
 //		* END - commit everything
 		engine.commitNetworkActions(transactionKey);
 	}
+	
+	/**
+	 * Tests a condition which balances a question in a separator.
+	 * The E<-D->F Bayes net is used
+	 */
+	public final void testBalanceSeparator()  {
+		// initialize configuration of this test
+		engine.setDefaultInitialAssetTableValue(1000f);
+		engine.setCurrentCurrencyConstant(100f);
+		engine.setCurrentLogBase(2);
+		engine.initialize();
+		engine.setToForceBalanceQuestionEntirely(true);	// ignore assumptions in balance trade (i.e. exit from question completely)
+		
+		
+		// create the E<-D->F Bayes net
+		long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0x0DL, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0EL, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0FL, 2, null);
+		// D->E
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		// D->F
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		engine.commitNetworkActions(transactionKey);
+		
+		// make sure we have 2 cliques each with size 3 ([D,E];[D,F])
+		assertEquals(2, engine.getProbabilisticNetwork().getJunctionTree().getCliques().size());
+		assertEquals(2, engine.getProbabilisticNetwork().getJunctionTree().getCliques().get(0).getNodes().size());
+		assertEquals(2, engine.getProbabilisticNetwork().getJunctionTree().getCliques().get(1).getNodes().size());
+		
+		// make sure we have 1 separator with size 1 ([D])
+		assertEquals(1, engine.getProbabilisticNetwork().getJunctionTree().getSeparators().size());
+		assertEquals(1, engine.getProbabilisticNetwork().getJunctionTree().getSeparators().iterator().next().getNodes().size());
+		
+		// make trades in the separators that: in one of the cliques, state 0 has high assets position, in the other clique, state 1 has low asset position
+		
+		// in [D,E], D=0 has higher asset position
+		List<Float> newValues = new ArrayList<Float>(4);
+		newValues.add(0.8f);	// P(D=0|E=0)
+		newValues.add(0.2f);	// P(D=1|E=0)
+		newValues.add(0.8f);	// P(D=0|E=1)
+		newValues.add(0.2f);	// P(D=1|E=1)
+		engine.addTrade( null, new Date(), 
+				"1 trades P(D|E) = [.8,.2,.8,.2]", 
+				1, 0x0DL, newValues , 
+				Collections.singletonList(0x0EL), 
+				null, 	// set states to null, so that I can specify the whole conditional probabilities at once
+				false	// do not allow negative cash
+			);
+		
+		// make sure the conditional probabilities are OK
+		List<Float> probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), null);
+		assertEquals(4, probList.size());
+		assertEquals(.8, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(.2, probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(.8, probList.get(2), PROB_ERROR_MARGIN);
+		assertEquals(.2, probList.get(3), PROB_ERROR_MARGIN);
+		
+		// user 2 resets the dependency P(D|E), so that we have another user with unbalanced D
+		newValues = new ArrayList<Float>(4);
+		newValues.add(0.5f);	// P(D=0|E=0)
+		newValues.add(0.5f);	// P(D=1|E=0)
+		newValues.add(0.5f);	// P(D=0|E=1)
+		newValues.add(0.5f);	// P(D=1|E=1)
+		engine.addTrade( null, new Date(), 
+				"2 trades P(D|E) = [.5,.5,.5,.5]", 
+				2, 0x0DL, newValues , 
+				Collections.singletonList(0x0EL), 
+				null, 	// set states to null, so that I can specify the whole conditional probabilities at once
+				false	// do not allow negative cash
+		);
+		
+		// make sure the conditional probabilities are OK
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), null);
+		assertEquals(4, probList.size());
+		assertEquals(.5, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5, probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(.5, probList.get(2), PROB_ERROR_MARGIN);
+		assertEquals(.5, probList.get(3), PROB_ERROR_MARGIN);
+		
+		// in [D,F], D=1 has higher asset position
+		newValues = new ArrayList<Float>(4);
+		newValues.add(0.3f);	// P(D=0|F=0)
+		newValues.add(0.7f);	// P(D=1|F=0)
+		newValues.add(0.3f);	// P(D=0|F=1)
+		newValues.add(0.7f);	// P(D=1|F=1)
+		engine.addTrade( null, new Date(), 
+				"1 trades P(D|F) = [.3,.7,.3,.7]", 
+				1, 0x0DL, newValues , 
+				Collections.singletonList(0x0FL), 
+				null, 	// set states to null, so that I can specify the whole conditional probabilities at once
+				false	// do not allow negative cash
+		);
+		
+		// make sure the conditional probabilities are OK
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), null);
+		assertEquals(4, probList.size());
+		assertEquals(.3, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(.7, probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(.3, probList.get(2), PROB_ERROR_MARGIN);
+		assertEquals(.7, probList.get(3), PROB_ERROR_MARGIN);
+		
+		// user 2 resets the dependency P(D|F), so that we have another user with unbalanced D
+		newValues = new ArrayList<Float>(4);
+		newValues.add(0.5f);	// P(D=0|F=0)
+		newValues.add(0.5f);	// P(D=1|F=0)
+		newValues.add(0.5f);	// P(D=0|F=1)
+		newValues.add(0.5f);	// P(D=1|F=1)
+		engine.addTrade( null, new Date(), 
+				"2 trades P(D|F) = [.5,.5,.5,.5]", 
+				2, 0x0DL, newValues , 
+				Collections.singletonList(0x0FL), 
+				null, 	// set states to null, so that I can specify the whole conditional probabilities at once
+				false	// do not allow negative cash
+		);
+		
+		
+		// make sure the conditional probabilities are OK
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), null);
+		assertEquals(4, probList.size());
+		assertEquals(.5, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(.5, probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(.5, probList.get(2), PROB_ERROR_MARGIN);
+		assertEquals(.5, probList.get(3), PROB_ERROR_MARGIN);
+		
+		// resolve E, so that we have at least 1 clique with only D
+		engine.resolveQuestion(null, new Date(), 0x0EL, (Math.random()<.5)?0:1);
+		
+		// balance D, which is in 2 cliques
+		engine.doBalanceTrade(null, new Date(), "User 1 balances D", 1L, 0x0DL, null, null);
+		
+		// make sure history is OK
+		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		QuestionEvent questionEvent = questionHistory.get(questionHistory.size()-1);
+		assertTrue(questionEvent instanceof BalanceTradeNetworkAction);
+		List<TradeSpecification> executedTrades = ((BalanceTradeNetworkAction)questionEvent).getExecutedTrades();
+		assertEquals(1 + 2, executedTrades.size());	// 1 in the clique [D], and 2 of [D,E]
+		
+		// check that assetsIf are the same
+		List<Float> assetsIfStates = engine.getAssetsIfStates(1L, 0x0DL, null, null);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(assetsIfStates.get(0), assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// check that cash given states are the same
+		List<Float> cashPerState = engine.getCashPerStates(1L, 0x0DL, null, null);
+		assertEquals(2, cashPerState.size());
+		assertEquals(cashPerState.get(0), cashPerState.get(1), ASSET_ERROR_MARGIN);
+		
+		// now, resolve F, so that we have 2 cliques with only D in them
+		engine.resolveQuestion(null, new Date(), 0x0FL, (Math.random()<.5)?0:1);
+		
+		// balance D, which is in 2 cliques
+		engine.doBalanceTrade(null, new Date(), "User 2 balances D", 2L, 0x0DL, null, null);
+		
+		// make sure history is OK
+		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		questionEvent = questionHistory.get(questionHistory.size()-1);
+		assertTrue(questionEvent instanceof BalanceTradeNetworkAction);
+		executedTrades = ((BalanceTradeNetworkAction)questionEvent).getExecutedTrades();
+		assertEquals(1+1, executedTrades.size());	// 1 for each clique
+		
+		// check that assetsIf are the same
+		assetsIfStates = engine.getAssetsIfStates(2L, 0x0DL, null, null);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(assetsIfStates.get(0), assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// check that cash given states are the same
+		cashPerState = engine.getCashPerStates(2L, 0x0DL, null, null);
+		assertEquals(2, cashPerState.size());
+		assertEquals(cashPerState.get(0), cashPerState.get(1), ASSET_ERROR_MARGIN);
+		
+		// get the marginals now, for comparison
+		Map<Long, List<Float>> probsBeforeEmptyBalance = engine.getProbLists(null, null, null);
+		
+		// if we balance again, it shouldn't do anything
+		engine.doBalanceTrade(null, new Date(), "User 1 balances D", 1L, 0x0DL, null, null);
+		
+		// make sure it did nothing in the history
+		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		questionEvent = questionHistory.get(questionHistory.size()-1);
+		assertTrue(questionEvent instanceof BalanceTradeNetworkAction);
+		executedTrades = ((BalanceTradeNetworkAction)questionEvent).getExecutedTrades();
+		assertEquals(0, executedTrades.size());	// 1 in the clique [D], and 2 of [D,E]
+		
+		// check that assetsIf are still the same
+		assetsIfStates = engine.getAssetsIfStates(1L, 0x0DL, null, null);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(assetsIfStates.get(0), assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// check that cash given states are still the same
+		cashPerState = engine.getCashPerStates(1L, 0x0DL, null, null);
+		assertEquals(2, cashPerState.size());
+		assertEquals(cashPerState.get(0), cashPerState.get(1), ASSET_ERROR_MARGIN);
+		
+		// check other user as well
+		engine.doBalanceTrade(null, new Date(), "User 2 balances D", 2L, 0x0DL, null, null);
+		
+		// make sure it did nothing in the history
+		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		questionEvent = questionHistory.get(questionHistory.size()-1);
+		assertTrue(questionEvent instanceof BalanceTradeNetworkAction);
+		executedTrades = ((BalanceTradeNetworkAction)questionEvent).getExecutedTrades();
+		assertEquals(0, executedTrades.size());	// it did nothing
+		
+		// check that assetsIf are still the same
+		assetsIfStates = engine.getAssetsIfStates(2L, 0x0DL, null, null);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(assetsIfStates.get(0), assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// check that cash given states are still the same
+		cashPerState = engine.getCashPerStates(2L, 0x0DL, null, null);
+		assertEquals(2, cashPerState.size());
+		assertEquals(cashPerState.get(0), cashPerState.get(1), ASSET_ERROR_MARGIN);
+		
+		Map<Long, List<Float>> probsAfterEmptyBalance = engine.getProbLists(null, null, null);
+		
+		// make sure the marginals did not change
+		assertEquals(probsBeforeEmptyBalance.size(), probsAfterEmptyBalance.size());
+		for (Long questionId : probsBeforeEmptyBalance.keySet()) {
+			List<Float> before = probsBeforeEmptyBalance.get(questionId);
+			List<Float> after = probsAfterEmptyBalance.get(questionId);
+			assertEquals(probsBeforeEmptyBalance + " -> " + probsAfterEmptyBalance, before.size(), after.size());
+			for (int i = 0; i < before.size(); i++) {
+				assertEquals(probsBeforeEmptyBalance + " -> " + probsAfterEmptyBalance, before.get(i), after.get(i), PROB_ERROR_MARGIN);
+			}
+		}
+	}
 
 }
