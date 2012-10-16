@@ -2,6 +2,7 @@
 -- DB CREATION SCRIPT.
 -- Generation Time: Oct 06, 2012 at 05:40 PM
 
+
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
 
@@ -32,6 +33,16 @@ CREATE TABLE IF NOT EXISTS `ELECTRONIC_EQUIPMENT` (
   KEY `type` (`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+--
+-- Dumping data for table `ELECTRONIC_EQUIPMENT`
+--
+
+INSERT INTO `ELECTRONIC_EQUIPMENT` (`id`, `isWorking`, `isResponsive`, `type`, `owner`) VALUES
+(1, 'T', 'T', 2, NULL),
+(2, 'F', 'F', NULL, NULL),
+(3, NULL, NULL, 1, 4),
+(4, NULL, NULL, 2, 2);
+
 -- --------------------------------------------------------
 
 --
@@ -42,7 +53,16 @@ CREATE TABLE IF NOT EXISTS `EQUIPMENT_TYPE` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(10) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=4 ;
+
+--
+-- Dumping data for table `EQUIPMENT_TYPE`
+--
+
+INSERT INTO `EQUIPMENT_TYPE` (`id`, `name`) VALUES
+(1, 'Radio'),
+(2, 'Radar'),
+(3, 'AIS');
 
 -- --------------------------------------------------------
 
@@ -57,6 +77,13 @@ CREATE TABLE IF NOT EXISTS `MEETING` (
   KEY `ship2` (`ship2`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+--
+-- Dumping data for table `MEETING`
+--
+
+INSERT INTO `MEETING` (`ship1`, `ship2`) VALUES
+(2, 4);
+
 -- --------------------------------------------------------
 
 --
@@ -69,6 +96,15 @@ CREATE TABLE IF NOT EXISTS `ORGANIZATION` (
   `isTerrorist` varchar(1) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `ORGANIZATION`
+--
+
+INSERT INTO `ORGANIZATION` (`id`, `name`, `isTerrorist`) VALUES
+(1, 'The Muppets', 'F'),
+(2, 'The Usual suspects', 'T'),
+(3, 'The NN', NULL);
 
 -- --------------------------------------------------------
 
@@ -93,6 +129,8 @@ CREATE TABLE IF NOT EXISTS `PERSON` (
 --
 
 INSERT INTO `PERSON` (`id`, `relatedTo`, `isTerrorist`, `organization`, `crewMember`) VALUES
+('Burrows', 'Scofield', NULL, NULL, 1),
+('Scofield', NULL, NULL, 3, 4),
 ('Terrorist', NULL, 'T', NULL, NULL),
 ('TerroristRelated', 'Terrorist', 'F', NULL, NULL);
 
@@ -111,6 +149,15 @@ CREATE TABLE IF NOT EXISTS `SHIP` (
   KEY `type` (`type`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+--
+-- Dumping data for table `SHIP`
+--
+
+INSERT INTO `SHIP` (`id`, `isOfInterest`, `type`, `isECMDeployed`) VALUES
+(1, 'T', 1, 'T'),
+(2, 'F', 2, 'F'),
+(4, NULL, 2, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -121,7 +168,16 @@ CREATE TABLE IF NOT EXISTS `SHIP_TYPE` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(10) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=4 ;
+
+--
+-- Dumping data for table `SHIP_TYPE`
+--
+
+INSERT INTO `SHIP_TYPE` (`id`, `name`) VALUES
+(1, 'NavyShip'),
+(2, 'Fishing'),
+(3, 'MerchantSh');
 
 --
 -- Constraints for dumped tables
@@ -131,8 +187,8 @@ CREATE TABLE IF NOT EXISTS `SHIP_TYPE` (
 -- Constraints for table `ELECTRONIC_EQUIPMENT`
 --
 ALTER TABLE `ELECTRONIC_EQUIPMENT`
-  ADD CONSTRAINT `ELECTRONIC_EQUIPMENT_ibfk_2` FOREIGN KEY (`type`) REFERENCES `EQUIPMENT_TYPE` (`id`),
-  ADD CONSTRAINT `ELECTRONIC_EQUIPMENT_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `SHIP` (`id`);
+  ADD CONSTRAINT `ELECTRONIC_EQUIPMENT_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `SHIP` (`id`),
+  ADD CONSTRAINT `ELECTRONIC_EQUIPMENT_ibfk_2` FOREIGN KEY (`type`) REFERENCES `EQUIPMENT_TYPE` (`id`);
 
 --
 -- Constraints for table `MEETING`
@@ -145,9 +201,9 @@ ALTER TABLE `MEETING`
 -- Constraints for table `PERSON`
 --
 ALTER TABLE `PERSON`
-  ADD CONSTRAINT `PERSON_ibfk_9` FOREIGN KEY (`crewMember`) REFERENCES `SHIP` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
   ADD CONSTRAINT `PERSON_ibfk_1` FOREIGN KEY (`relatedTo`) REFERENCES `PERSON` (`id`),
-  ADD CONSTRAINT `PERSON_ibfk_8` FOREIGN KEY (`organization`) REFERENCES `ORGANIZATION` (`id`) ON DELETE SET NULL ON UPDATE SET NULL;
+  ADD CONSTRAINT `PERSON_ibfk_8` FOREIGN KEY (`organization`) REFERENCES `ORGANIZATION` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
+  ADD CONSTRAINT `PERSON_ibfk_9` FOREIGN KEY (`crewMember`) REFERENCES `SHIP` (`id`) ON DELETE SET NULL ON UPDATE SET NULL;
 
 --
 -- Constraints for table `SHIP`
