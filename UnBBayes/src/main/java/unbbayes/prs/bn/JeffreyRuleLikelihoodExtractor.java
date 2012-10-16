@@ -1,6 +1,3 @@
-/**
- * 
- */
 package unbbayes.prs.bn;
 
 import java.util.ArrayList;
