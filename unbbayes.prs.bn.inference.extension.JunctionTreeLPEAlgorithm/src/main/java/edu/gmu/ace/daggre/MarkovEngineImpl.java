@@ -189,7 +189,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private Map<DummyTradeAction, Set<Long>> virtualTradeToAffectedQuestionsMap = new HashMap<DummyTradeAction, Set<Long>>();
 
-
+	private boolean isToStoreOnlyCliqueChangeHistory = false;;
 
 
 	
@@ -2035,38 +2035,43 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	protected void addToLastNCliquePotentialMap(NetworkAction parentAction, Map<Clique, PotentialTable> previousCliquePotentials) {
 		// iterate on all cliques and compare differences
-		for (Clique clique : getProbabilisticNetwork().getJunctionTree().getCliques()) {
+		for (Clique clique : previousCliquePotentials.keySet()) {
 			
-			// extract the clique potentials before and after the trade
+			// extract the clique potentials after the trade (to be stored in potential map - the history)
 			PotentialTable currentTable = clique.getProbabilityFunction();
-			PotentialTable lastTable = previousCliquePotentials.get(clique);
-			
-			// some assertions
-			if (lastTable == null) {
-				throw new IllegalStateException("Clique " + clique + " was not found in " + previousCliquePotentials
-						+ ", which is a snapshot of cliques before a trade on question " + parentAction.getQuestionId()
-						+ ". This is an unexpected state of the system, which may have been caused by a clique modified during a trade.");
-			}
 			
 			// true if the clique potentials have changed
 			boolean isChanged = false;
 			
-			if (currentTable.tableSize() != lastTable.tableSize()) {
+			// check if clique potentials have changed
+			if (isToStoreOnlyCliqueChangeHistory()) { // if isToStoreOnlyCliqueChangeHistory() == true, then we have to compare clique potentials before and after edit
+				// extract the clique potentials before the trade
+				PotentialTable lastTable = previousCliquePotentials.get(clique);
+				if (lastTable == null) {
+					throw new IllegalStateException("Clique " + clique + " was not found in " + previousCliquePotentials
+							+ ", which is a snapshot of cliques before a trade on question " + parentAction.getQuestionId()
+							+ ". This is an unexpected state of the system, which may have been caused by a clique modified during a trade.");
+				}
+				
+				
+				if (currentTable.tableSize() != lastTable.tableSize()) {
 //				throw new IllegalStateException("The size of clique table of " + clique + " has changed from "
 //						+ lastTable.tableSize() + " to " + currentTable.tableSize()
 //						+ " during a trade. This is an unexpected behavior of the system.");
-				isChanged = true; // this can happen if we resolve a question
-			} else {
-				// check if content has changed, regarding an error margin
-				for (int i = 0; i < currentTable.tableSize(); i++) {
-					if (Math.abs(currentTable.getValue(i) - lastTable.getValue(i)) > getProbabilityErrorMargin()) {
-						isChanged = true;
-						break;
+					isChanged = true; // this can happen if we resolve a question
+				} else {
+					// check if content has changed, regarding an error margin
+					for (int i = 0; i < currentTable.tableSize(); i++) {
+						if (Math.abs(currentTable.getValue(i) - lastTable.getValue(i)) > getProbabilityErrorMargin()) {
+							isChanged = true;
+							break;
+						}
 					}
 				}
 			}
 			
-			if (isChanged) {
+			// store only the cliques which were changed. If isToStoreOnlyCliqueChangeHistory == false, then store anyway
+			if (isChanged || !isToStoreOnlyCliqueChangeHistory()) {
 				// store in the history
 				synchronized (getLastNCliquePotentialMap()) {
 					List<ParentActionPotentialTablePair> history = getLastNCliquePotentialMap().get(clique);
@@ -6762,6 +6767,27 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public boolean isToForceBalanceQuestionEntirely() {
 		return isToForceBalanceQuestionEntirely;
+	}
+
+	/**
+	 * If true, {@link #addToLastNCliquePotentialMap(NetworkAction, Map)} will
+	 * store only the {@link #getLastNCliquePotentialMap()} cliques which have actually changed
+	 * (note: checking whether a clique potential have changed may be computationally expensive).
+	 * @param isToStoreOnlyCliqueChangeHistory the isToStoreOnlyCliqueChangeHistory to set
+	 */
+	public void setToStoreOnlyCliqueChangeHistory(
+			boolean isToStoreOnlyCliqueChangeHistory) {
+		this.isToStoreOnlyCliqueChangeHistory = isToStoreOnlyCliqueChangeHistory;
+	}
+
+	/**
+	 * If true, {@link #addToLastNCliquePotentialMap(NetworkAction, Map)} will
+	 * store only the {@link #getLastNCliquePotentialMap()} cliques which have actually changed
+	 * (note: checking whether a clique potential have changed may be computationally expensive).
+	 * @return the isToStoreOnlyCliqueChangeHistory
+	 */
+	public boolean isToStoreOnlyCliqueChangeHistory() {
+		return isToStoreOnlyCliqueChangeHistory;
 	}
 
 

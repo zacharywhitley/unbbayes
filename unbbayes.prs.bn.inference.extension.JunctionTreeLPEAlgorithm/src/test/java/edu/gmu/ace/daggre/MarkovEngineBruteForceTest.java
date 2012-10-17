@@ -4677,7 +4677,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			}
 			
 			// revert trades occasionally
-			if (Math.random() < .03 && (!hasResolved || !isToTrace())) {// TODO return back to .1 after we get response from Dr. Robin about the expected behavior of revert trade + add cash
+			if (Math.random() < .02 && (!hasResolved || !isToTrace())) {// TODO return back to .1 after we get response from Dr. Robin about the expected behavior of revert trade + add cash
 				
 				if (isToTrace()) {
 					tracer.setToRevertTrade(true);

@@ -13,6 +13,7 @@ import java.util.Map;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNode;
+import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.TreeVariable;
@@ -158,9 +159,9 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineImpl#getAssetsIfStates(long, java.util.List, java.util.List, unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm, boolean)
+	 * @see edu.gmu.ace.daggre.MarkovEngineImpl#getAssetsIfStates(long, java.util.List, java.util.List, unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm, boolean, unbbayes.prs.bn.Clique)
 	 */
-	protected List getAssetsIfStates(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, AssetAwareInferenceAlgorithm alg, boolean isToReturnQValuesInsteadOfAssets)
+	protected List getAssetsIfStates(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, AssetAwareInferenceAlgorithm alg, boolean isToReturnQValuesInsteadOfAssets, Clique clique)
 			throws IllegalArgumentException {
 		
 		if (assumptionIds != null && assumedStates != null && assumptionIds.size() != assumedStates.size()) {
