@@ -196,26 +196,26 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 	private void saveProbabilisticModel(File file) {
 
-//		// Save CPDs.
-//		HashMap<String, FloatCollection[]> cpds = prmController.getCpds();
-//
-//		// Save Parents
-//		List<ParentRel> parents = prmController.getParents();
-//
-//		try {
-//			// use buffering
-//			OutputStream fos = new FileOutputStream(file);
-//			OutputStream buffer = new BufferedOutputStream(fos);
-//			ObjectOutput output = new ObjectOutputStream(buffer);
-//			try {
-//				output.writeObject(cpds);
-//				output.writeObject(parents);
-//			} finally {
-//				output.close();
-//			}
-//		} catch (IOException ex) {
-//			log.error("Cannot perform output.", ex);
-//		}
+		// // Save CPDs.
+		// HashMap<String, FloatCollection[]> cpds = prmController.getCpds();
+		//
+		// // Save Parents
+		// List<ParentRel> parents = prmController.getParents();
+		//
+		// try {
+		// // use buffering
+		// OutputStream fos = new FileOutputStream(file);
+		// OutputStream buffer = new BufferedOutputStream(fos);
+		// ObjectOutput output = new ObjectOutputStream(buffer);
+		// try {
+		// output.writeObject(cpds);
+		// output.writeObject(parents);
+		// } finally {
+		// output.close();
+		// }
+		// } catch (IOException ex) {
+		// log.error("Cannot perform output.", ex);
+		// }
 	}
 
 	private void loadProbabilisticModel(File file) {
@@ -292,12 +292,12 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 						possiblePaths);
 				parentPathDialog.setModal(true);
 				parentPathDialog.setVisible(true);
-				
+
 				// Cancel button
-				if(parentPathDialog.isCancelled()){
+				if (parentPathDialog.isCancelled()) {
 					return;
 				}
-				
+
 				newRel.setPath(parentPathDialog.getSelectedPath());
 				newRel.setAggregateFunction(parentPathDialog
 						.getSelectedAggregateFunction());
@@ -386,15 +386,15 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 				childValues);
 
 		// show CPT table
-		try{
-		PrmTable table = showPrmTable(attribute.toString(), parentStates,
-				childStates);
+		try {
+			PrmTable table = showPrmTable(attribute.toString(), parentStates,
+					childStates);
 
-		potentialTables.add(table.getCPD());
-		prmController.setCPD(attribute,
-				potentialTables.toArray(new PotentialTable[0]));
-		}catch(Exception e){
-			JOptionPane.showMessageDialog(this, "Error: "+e.getMessage());
+			potentialTables.add(table.getCPD());
+			prmController.setCPD(attribute,
+					potentialTables.toArray(new PotentialTable[0]));
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(this, "Error: " + e.getMessage());
 			log.error(e);
 			e.printStackTrace();
 		}
@@ -434,7 +434,10 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 			// Show the SSBN.
 			NetworkWindow netWindow = new NetworkWindow(bn);
 			netWindow.setVisible(true);
-			unbbayesDesktop.delegateToGraphRenderer(bn);
+			
+			// Show the result
+			unbbayesDesktop.delegateToGraphRenderer(bn,
+					compiler.getInferenceAlgorithm());
 
 		} catch (Exception e) {
 			JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());

@@ -44,6 +44,7 @@ public class PrmCompiler {
 	private Set<String> nodeNames;
 
 	private HashMap<ProbabilisticNode, String> evidence;
+	private IInferenceAlgorithm inferenceAlgorithm;
 
 	public PrmCompiler(IPrmController prmController, IDBController dbController) {
 		this.prmController = prmController;
@@ -74,16 +75,14 @@ public class PrmCompiler {
 		fillNetworkWithParents(resultNet, queryAtt, queryNode,
 				uniqueIndexColumn, indexValue, value);
 
-		// Run algorithm with evidence.
-		IInferenceAlgorithm algorithm = new JunctionTreeAlgorithm();
-		algorithm.setNetwork(resultNet);
-		algorithm.run();
-//		algorithm.reset();
-		
+		inferenceAlgorithm = new JunctionTreeAlgorithm();
+		inferenceAlgorithm.setNetwork(resultNet);
+		inferenceAlgorithm.run();
+		// algorithm.reset();
 
 		// Update evidences.
-		addEvidences(resultNet);
-		algorithm.propagate();
+//		addEvidences(resultNet);
+//		algorithm.propagate();
 
 		return resultNet;
 	}
@@ -104,8 +103,6 @@ public class PrmCompiler {
 			}
 		}
 	}
-
-
 
 	/**
 	 * 
@@ -139,6 +136,53 @@ public class PrmCompiler {
 
 		// Find parent instances for each parent relationship.
 		for (ParentRel parentRel : parents) {
+
+			// ////////// For intrinsic attributes ////////////////
+			// If the parent is intrinsic, it only has two attributes in the
+			// path, because it does not have foreign keys.
+			if (parentRel.getPath().length == 2) {
+				// Possible values
+				String[] possibleValues = dbController
+						.getPossibleValues(parentRel.getParent());
+
+				// Create a new node.
+				String nodeName = indexValue + "-"
+						+ parentRel.getParent().getAttribute().getName();
+				ProbabilisticNode parentNode = createProbNode(nodeName,
+						possibleValues);
+				resultNet.addNode(parentNode);
+
+				String specificValue = dbController.getSpecificValue(parentRel
+						.getParent().getAttribute(), new Attribute(parentRel
+						.getParent().getTable(), indexCol), "" + indexValue);
+
+				// Get instance value
+				evidence.put(parentNode, specificValue);
+
+				// Edge to the child.
+				try {
+					resultNet.addEdge(new Edge(parentNode, queryNode));
+				} catch (InvalidParentException e) {
+					log.error(e);
+				}
+
+				// / CPT Table
+				PotentialTable pt = prmController.getCPD(parentRel.getParent());
+
+				if (pt == null) {
+					throw new Exception("Attribute "
+							+ parentRel.getParent().getTable().getName() + "."
+							+ parentRel.getParent().getAttribute().getName()
+							+ " does not have an associated CPT");
+				}
+
+				assignCPDToNode(parentNode, pt);
+
+				//
+				continue;
+			}
+
+			// /////////// For external attributes./////////////7
 			// Get the foreign key with the second element of the path.
 			Attribute fkAttribute = parentRel.getPath()[1];
 			// Get the local table with the fist element of the path.
@@ -285,4 +329,7 @@ public class PrmCompiler {
 		return node;
 	}
 
+	public IInferenceAlgorithm getInferenceAlgorithm() {
+		return inferenceAlgorithm;
+	}
 }

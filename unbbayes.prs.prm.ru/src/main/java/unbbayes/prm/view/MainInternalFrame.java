@@ -21,6 +21,7 @@ import unbbayes.prs.Graph;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.UnBBayesModule;
+import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
  * Main PRM internal window.
@@ -125,13 +126,14 @@ public class MainInternalFrame extends UnBBayesModule {
 	 * 
 	 * @param graph
 	 */
-	public void delegateToGraphRenderer(Graph graph) {
+	public void delegateToGraphRenderer(Graph graph, IInferenceAlgorithm alg) {
 		Debug.println(this.getClass(), "Opening compiled network: " + graph);
 		if (graph instanceof ProbabilisticNetwork) {
 			NetworkWindow bnWindow = new NetworkWindow(
 					(ProbabilisticNetwork) graph);
 			this.getUnbbayesFrame().addWindow(bnWindow);
-
+			bnWindow.getController().setInferenceAlgorithm(alg);
+			
 			bnWindow.changeToPNCompilationPane();
 			bnWindow.setVisible(true);
 
