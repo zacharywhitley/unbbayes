@@ -38,6 +38,9 @@ public class PrmCompiler {
 	private IPrmController prmController;
 	private IDBController dbController;
 
+	private static final int NUM_COLUMNS = 4;
+	private int nodePosition;
+
 	/**
 	 * Node names to do not repeat.
 	 */
@@ -55,6 +58,10 @@ public class PrmCompiler {
 	public Graph compile(Table t, Column uniqueIndexColumn, Object indexValue,
 			Column column, Object value) throws Exception {
 		nodeNames = new HashSet<String>();
+		// Clear evidence
+		evidence = new HashMap<ProbabilisticNode, String>();
+		nodePosition = 0;
+
 		// Resultant network
 		ProbabilisticNetwork resultNet = networkBuilder
 				.buildNetwork("RESULTANT BN");
@@ -68,8 +75,11 @@ public class PrmCompiler {
 				+ queryAtt.getAttribute().getName(), possibleValues);
 		resultNet.addNode(queryNode);
 
-		// Clear evidence
-		evidence = new HashMap<ProbabilisticNode, String>();
+		// /// Evidence for the first node ///
+		String specificValue = dbController.getSpecificValue(column,
+				new Attribute(t, uniqueIndexColumn), "" + indexValue);
+		// Get instance value
+		evidence.put(queryNode, specificValue);
 
 		// ///// Create nodes for the parents //////
 		fillNetworkWithParents(resultNet, queryAtt, queryNode,
@@ -78,11 +88,11 @@ public class PrmCompiler {
 		inferenceAlgorithm = new JunctionTreeAlgorithm();
 		inferenceAlgorithm.setNetwork(resultNet);
 		inferenceAlgorithm.run();
-		// algorithm.reset();
+		inferenceAlgorithm.reset();
 
 		// Update evidences.
-//		addEvidences(resultNet);
-//		algorithm.propagate();
+		addEvidences(resultNet);
+		inferenceAlgorithm.propagate();
 
 		return resultNet;
 	}
@@ -152,6 +162,7 @@ public class PrmCompiler {
 						possibleValues);
 				resultNet.addNode(parentNode);
 
+				// EVIDENCE
 				String specificValue = dbController.getSpecificValue(parentRel
 						.getParent().getAttribute(), new Attribute(parentRel
 						.getParent().getTable(), indexCol), "" + indexValue);
@@ -297,6 +308,13 @@ public class PrmCompiler {
 			String[] possibleValues) {
 		ProbabilisticNode node = new ProbabilisticNode();
 
+		// Node position
+		int x = (nodePosition % NUM_COLUMNS) * 320 + 20;// Only 5 Columns
+		int y = (nodePosition / NUM_COLUMNS) * 150 + 20;
+		node.setPosition(x, y);
+		nodePosition++;
+
+		
 		// Node name must be unique.
 		while (!nodeNames.add(nodeName)) {
 			String substring = nodeName.substring(nodeName.length() - 1);

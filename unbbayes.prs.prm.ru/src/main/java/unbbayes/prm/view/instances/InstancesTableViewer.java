@@ -1,6 +1,7 @@
 package unbbayes.prm.view.instances;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -20,7 +21,6 @@ import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Table;
 import org.apache.log4j.Logger;
 
-import unbbayes.prm.util.helper.DBSchemaHelper;
 import unbbayes.prm.view.graphicator.editor.TableModelWithGraphics;
 import unbbayes.prm.view.graphicator.editor.TableRenderer;
 
@@ -85,6 +85,9 @@ public class InstancesTableViewer extends JPanel implements MouseListener {
 		add(new JScrollPane(graphicTable));
 
 		graphicTable.addMouseListener(this);
+
+		// Hand cursor for table
+		graphicTable.setCursor(new Cursor(Cursor.HAND_CURSOR));
 	}
 
 	private TableModel getTableModel(Iterator<DynaBean> dataIterator) {
@@ -135,13 +138,10 @@ public class InstancesTableViewer extends JPanel implements MouseListener {
 		Object value = data[row][column];
 
 		// Notify only when there is data without evidence.
-		if (value == null) {
-			log.debug("Value=" + value);
-			
-			
+//		if (value == null) {
 			listener.attributeSelected(table, uniqueIndexColumn, indexValue,
 					table.getColumn(column), value);
-		}
+//		}
 	}
 
 	public void mousePressed(MouseEvent e) {

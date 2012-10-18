@@ -48,12 +48,23 @@ public class PathFinderAlgorithm {
 		// Add parent as a fist node of the path.
 		path.add(parent);
 
+		// Identify possible paths based on DB schema.
 		identifyPaths(parent, child, path);
+
+		// Local or intrinsec path.
+		if (child.getTable().equals(parent.getTable())) {
+			List<Attribute> intrinsecPath = new ArrayList<Attribute>();
+			intrinsecPath.add(child);
+			intrinsecPath.add(parent);
+			paths.add(intrinsecPath.toArray(new Attribute[0]));
+		}
 
 		return paths;
 	}
 
 	/**
+	 * Identify possible paths based on the Database schema and foreign keys. It
+	 * is a recursive algorithm.
 	 * 
 	 * @param path
 	 * 
@@ -119,7 +130,8 @@ public class PathFinderAlgorithm {
 				// FK is checked.
 				checkedFks.add(foreignKey);
 
-				// 3. If the target is not inside this column, then apply recu
+				// 3. If the target is not inside this column, then apply
+				// recursively.
 				identifyPaths(tmpParent, tmpChild, newPath);
 			}
 		}
