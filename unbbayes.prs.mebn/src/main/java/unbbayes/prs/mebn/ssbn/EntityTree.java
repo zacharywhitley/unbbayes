@@ -137,15 +137,15 @@ public class EntityTree{
 	}	
 	
 	/**
-	 * Monta uma combinação de todos os resultados possíveis para as variáveis 
-	 * ordinárias contidas em ovSearchArray, utilizando a arvore de entidades onde 
-	 * será utilizada os valores das variáveis já preenchidas. 
+	 * Build the combination of possible outcomes for the Ordinary Variables 
+	 * contained in ovSearchArray. To this, uses the branches of the Entity Tree
+	 * that satisfies the ordinary variables already fulfilled. 
 	 * 
 	 * @param knownOVArray
 	 * @param knownEntityArray
 	 * @param ovSearchArray
-	 * @return Um array com todos os resultados possíveis para a lista ovSearchArray. 
-	 *         Os elementos do retorno estão na mesma ordem. 
+	 * @return Array with all the possible outcomes for the ordinary variables 
+	 * in ovSearchArray. The elements of the return are on the same order 
 	 */
 	public List<String[]> recoverCombinationsEntitiesPossibles(
 			OrdinaryVariable[] knownOVArray,
@@ -197,7 +197,7 @@ public class EntityTree{
 				if(resultComplete){
 					combinationList.add(tempEntityArray);
 				}else{
-					throw new RuntimeException("Falta variável ordinária"); 
+					throw new RuntimeException("Ordinary Variable fault!!!"); 
 				}
 			}
 			
