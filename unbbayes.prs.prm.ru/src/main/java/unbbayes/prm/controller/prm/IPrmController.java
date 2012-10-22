@@ -54,6 +54,15 @@ public interface IPrmController {
 	 * @return parents.
 	 */
 	ParentRel[] parentsOf(Attribute attribute);
+	
+	/**
+	 * Get the children for an attribute.
+	 * 
+	 * @param attribute
+	 *            interested attribute.
+	 * @return parents.
+	 */
+	ParentRel[] childrenOf(Attribute attribute);
 
 	/**
 	 * Define a Conditional Probability Distribution for an attribute.

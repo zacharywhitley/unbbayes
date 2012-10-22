@@ -134,6 +134,17 @@ public class PrmController implements IPrmController {
 		}
 		return parentsOf.toArray(new ParentRel[0]);
 	}
+	
+	public ParentRel[] childrenOf(Attribute attribute) {
+		List<ParentRel> childrenOf = new ArrayList<ParentRel>();
+		for (ParentRel parent : parents) {
+			if (parent.getParent().equals(attribute)) {
+				childrenOf.add(parent);
+			}
+		}
+		return childrenOf.toArray(new ParentRel[0]);
+	}
+	
 
 	/**
 	 * @see IPrmController
@@ -148,6 +159,8 @@ public class PrmController implements IPrmController {
 	public void setParents(List<ParentRel> parents) {
 		this.parents = parents;
 	}
+
+	
 
 	// public HashMap<String, FloatCollection[]> getCpds() {
 	// Set<String> attributes = cpds.keySet();

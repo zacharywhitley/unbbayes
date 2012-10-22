@@ -150,7 +150,7 @@ public class DBControllerImp implements IDBController {
 	 * @return String[][] with two columns. The first column is the id and the
 	 *         second is the value.
 	 */
-	public String[][] getRelatedInstances(ParentRel relationship,
+	public String[][] getParentRelatedInstances(ParentRel relationship,
 			final String queryIndex2) {
 		Attribute[] path = relationship.getPath();
 		// To create a list of non duplicated table names.
