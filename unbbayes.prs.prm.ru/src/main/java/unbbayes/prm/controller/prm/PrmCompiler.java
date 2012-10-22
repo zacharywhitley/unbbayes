@@ -77,8 +77,8 @@ public class PrmCompiler {
 		Attribute queryAtt = new Attribute(t, column);
 
 		// Probabilistic node
-		ProbabilisticNode queryNode = createProbNode((String) indexValue,
-				queryAtt, resultNet);
+		ProbabilisticNode queryNode = createProbNode(
+				String.valueOf(indexValue), queryAtt, resultNet);
 
 		// /// Evidence for the first node ///
 		String specificValue = dbController.getSpecificValue(column,
@@ -411,15 +411,23 @@ public class PrmCompiler {
 	 * @param cpd
 	 */
 	private void assignCPDToNode(ProbabilisticNode queryNode, PotentialTable cpd) {
-		// int variablesSize = cpd.getValues().length;
-		// PotentialTable probabilityFunction =
-		// queryNode.getProbabilityFunction();
-		//
-		// // Variable
-		// for (int i = 0; i < variablesSize; i++) {
-		// probabilityFunction.addValueAt(i, cpd.getValue(i));
-		// }
-		queryNode.setProbabilityFunction((ProbabilisticTable) cpd);
+		// If it exist
+		float[] vals = queryNode.getProbabilityFunction().getValues();
+		if (vals.length == 0) {
+			log.debug("new cpt for node");
+			return;
+		} else {
+			log.debug("old node");
+		}
+
+		int variablesSize = cpd.getValues().length;
+		PotentialTable probabilityFunction = queryNode.getProbabilityFunction();
+
+		// Variable
+		for (int i = 0; i < variablesSize; i++) {
+			probabilityFunction.setValue(i, cpd.getValue(i));
+		}
+		// queryNode.setProbabilityFunction((ProbabilisticTable) cpd);
 	}
 
 	public IInferenceAlgorithm getInferenceAlgorithm() {
