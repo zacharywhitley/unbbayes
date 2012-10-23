@@ -41,7 +41,7 @@ public class PrmCompiler {
 	private IPrmController prmController;
 	private IDBController dbController;
 
-	private static final int NUM_COLUMNS = 4;
+	private static final int NUM_COLUMNS = 3;
 	private int nodePosition;
 
 	/**
@@ -170,6 +170,16 @@ public class PrmCompiler {
 				PotentialTable pt = getCPT(parentAtt);
 				assignCPDToNode(parentNode, pt);
 
+				// Verify consistency for the new node.
+				try {
+					((ProbabilisticTable) parentNode.getProbabilityFunction())
+							.verifyConsistency();
+				} catch (Exception e) {
+					throw new Exception(
+							"Error verifying consistence for the node "
+									+ parentNode.getName() + " ", e);
+				}
+
 				// EVIDENCE
 				addEvidenceToNode(parentAtt, indexCol, indexValue, parentNode);
 
@@ -191,6 +201,24 @@ public class PrmCompiler {
 			// If it has parents
 			if (fkInstanceValue == null
 					|| fkInstanceValue.equalsIgnoreCase("null")) {
+				log.debug("Relationship is null. The parent can not be added.");
+				
+				// create Node
+				ProbabilisticNode parentNode = createProbNode("Unknown", parentAtt,
+						resultNet);
+				
+				// Edge to the child.
+				addEdge(resultNet, parentNode, queryNode);
+
+				// // CPT ////
+				// If the node parent is the same child.
+				if (parentAtt.equals(parentRel.getChild())) {
+					assignCPDToNode(parentNode, cpDs[cpdIndex++]);
+				} else {
+					PotentialTable pt = getCPT(parentAtt);
+					assignCPDToNode(parentNode, pt);
+				}
+				
 				continue;
 			}
 
@@ -222,6 +250,15 @@ public class PrmCompiler {
 			} else {
 				PotentialTable pt = getCPT(parentAtt);
 				assignCPDToNode(parentNode, pt);
+			}
+
+			// Verify consistency for the new node.
+			try {
+				((ProbabilisticTable) parentNode.getProbabilityFunction())
+						.verifyConsistency();
+			} catch (Exception e) {
+				throw new Exception("Error verifying consistence for the node "
+						+ parentNode.getName() + " ", e);
 			}
 
 			// Path to the next node
@@ -303,6 +340,15 @@ public class PrmCompiler {
 			PotentialTable pt = getCPT(childAtt);
 			assignCPDToNode(childNode, pt);
 
+			// Verify consistency for the new node.
+			try {
+				((ProbabilisticTable) childNode.getProbabilityFunction())
+						.verifyConsistency();
+			} catch (Exception e) {
+				throw new Exception("Error verifying consistence for the node "
+						+ childNode.getName() + " ", e);
+			}
+
 			// Evidence
 			evidence.put(childNode, afValue);
 
@@ -338,7 +384,7 @@ public class PrmCompiler {
 	private ProbabilisticNode createProbNode(Object indexValue,
 			Attribute parentAtt, ProbabilisticNetwork resultNet) {
 		String nodeName = parentAtt.getTable().getName() + " " + indexValue
-				+ "-" + parentAtt.getAttribute().getName();
+				+ " " + parentAtt.getAttribute().getName();
 		// Possible values
 		String[] possibleValues = dbController.getPossibleValues(parentAtt);
 
@@ -353,7 +399,7 @@ public class PrmCompiler {
 		}
 
 		// Node position
-		int x = (nodePosition % NUM_COLUMNS) * 320 + 20;// Only 5 Columns
+		int x = (nodePosition % NUM_COLUMNS) * 310 + 20;// Only 5 Columns
 		int y = (nodePosition / NUM_COLUMNS) * 150 + 20;
 		node.setPosition(x, y);
 		nodePosition++;
@@ -412,14 +458,21 @@ public class PrmCompiler {
 	 */
 	private void assignCPDToNode(ProbabilisticNode queryNode, PotentialTable cpd) {
 		// If it exist
-		float[] vals = queryNode.getProbabilityFunction().getValues();
-		if (vals.length == 0) {
-			log.debug("new cpt for node");
-			return;
-		} else {
-			log.debug("old node");
-		}
-
+		// float[] vals = queryNode.getProbabilityFunction().getValues();
+		// for (float f : vals) {
+		// if (f > 0) {
+		// return;
+		// }
+		// }
+		// if (vals.length == 0) {
+		// log.debug("new cpt for node");
+		// return;
+		// } else {
+		// log.debug("old node");
+		// }
+		// int variablesSize2 = cpd.getVariablesSize();
+	
+		
 		int variablesSize = cpd.getValues().length;
 		PotentialTable probabilityFunction = queryNode.getProbabilityFunction();
 
@@ -427,7 +480,7 @@ public class PrmCompiler {
 		for (int i = 0; i < variablesSize; i++) {
 			probabilityFunction.setValue(i, cpd.getValue(i));
 		}
-		// queryNode.setProbabilityFunction((ProbabilisticTable) cpd);
+//		 queryNode.setProbabilityFunction((ProbabilisticTable) cpd);
 	}
 
 	public IInferenceAlgorithm getInferenceAlgorithm() {
