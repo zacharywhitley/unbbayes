@@ -34,7 +34,7 @@ public class PrmTable extends JPanel {
 	/**
 	 * Combbox to choose the aggregate function.
 	 */
-//	private JComboBox comboAggregateFunctions;
+	// private JComboBox comboAggregateFunctions;
 
 	/**
 	 * Graphic table to show the CPT.
@@ -170,8 +170,14 @@ public class PrmTable extends JPanel {
 		return auxCPT;
 	}
 
-//	public AggregateFunctionName getSelectedAggregateFunc() {
-//		return AggregateFunctionName.valueOf(comboAggregateFunctions
-//				.getSelectedItem().toString());
-//	}
+	public void setProbabilities(double[] stateProbability) {
+		for (int j = 0; j < stateProbability.length; j++) {
+			table.setValueAt(stateProbability[j], j, 1);
+		}
+	}
+
+	// public AggregateFunctionName getSelectedAggregateFunc() {
+	// return AggregateFunctionName.valueOf(comboAggregateFunctions
+	// .getSelectedItem().toString());
+	// }
 }

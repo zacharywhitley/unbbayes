@@ -19,6 +19,7 @@ import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
 
 import unbbayes.prm.controller.dao.IDBController;
 import unbbayes.prm.model.Attribute;
+import unbbayes.prm.model.AttributeStates;
 import unbbayes.prm.model.ParentRel;
 import unbbayes.prm.util.helper.DBSchemaHelper;
 
@@ -251,5 +252,48 @@ public class DBControllerImp implements IDBController {
 		} else {
 			return null;
 		}
+	}
+
+	public double[] getStateProbability(AttributeStates attributeStates) {
+		Attribute attribute = attributeStates.getAttribute();
+		String columnName = attribute.getAttribute().getName();
+		String[] states = attributeStates.getStates();
+
+		// Probabilities
+		double[] probs = new double[states.length];
+
+		for (int i = 0; i < states.length; i++) {
+			// SELECT COUNT(isECMDeployed) FROM SHIP WHERE isECMDeployed='F'
+			String sqlQuery = "SELECT COUNT(" + columnName + ") AS R  FROM "
+					+ attribute.getTable().getName() + " WHERE " + columnName
+					+ "='" + states[i] + "'";
+
+			log.debug("query=" + sqlQuery);
+
+			Iterator<DynaBean> it1 = platform.query(getRelSchema(), sqlQuery);
+			DynaBean bean = it1.next();
+
+			probs[i] = Double.parseDouble(bean.get("R").toString());
+		}
+
+		// sum probs
+		double sum = 0;
+		for (double d : probs) {
+			sum += d;
+		}
+
+		// Normalize
+		if (sum > 0) {
+			for (int i = 0; i < probs.length; i++) {
+				probs[i] /= sum;
+			}
+		} else {
+			for (int i = 0; i < probs.length; i++) {
+				probs[i] = 1 / probs.length;
+			}
+		}
+
+		return probs;
+
 	}
 }

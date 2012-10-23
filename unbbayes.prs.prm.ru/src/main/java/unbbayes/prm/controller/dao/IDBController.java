@@ -8,6 +8,7 @@ import org.apache.ddlutils.model.Database;
 import org.apache.ddlutils.model.Table;
 
 import unbbayes.prm.model.Attribute;
+import unbbayes.prm.model.AttributeStates;
 import unbbayes.prm.model.ParentRel;
 
 /**
@@ -97,4 +98,6 @@ public interface IDBController {
 	 * @return
 	 */
 	String getSpecificValue(Column queryColumn, Attribute attribute, String instanceId);
+
+	double[] getStateProbability(AttributeStates childStates);
 }

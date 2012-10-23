@@ -400,13 +400,26 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		}
 	}
 
-	private PrmTable showPrmTable(String title, AttributeStates[] as,
+	private PrmTable showPrmTable(String title, AttributeStates[] parentStates,
 			AttributeStates childStates) {
 		JDialog dialog = new JDialog();
 		dialog.setTitle(title);
 
 		// Graphic table
-		PrmTable table = new PrmTable(as, childStates, dialog);
+		PrmTable table = new PrmTable(parentStates, childStates, dialog);
+
+		try {
+			if (parentStates.length == 0) {
+				// TODO Get probability of each state
+				double[] stateProbability = dbController
+						.getStateProbability(childStates);
+				// TODO Show in the table
+				table.setProbabilities(stateProbability);
+			}
+		} catch (Exception e) {
+			log.warn(e);
+			e.printStackTrace();
+		}
 
 		dialog.setModal(true);
 		dialog.getContentPane().add(table);
@@ -434,7 +447,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 			// Show the SSBN.
 			NetworkWindow netWindow = new NetworkWindow(bn);
 			netWindow.setVisible(true);
-			
+
 			// Show the result
 			unbbayesDesktop.delegateToGraphRenderer(bn,
 					compiler.getInferenceAlgorithm());
