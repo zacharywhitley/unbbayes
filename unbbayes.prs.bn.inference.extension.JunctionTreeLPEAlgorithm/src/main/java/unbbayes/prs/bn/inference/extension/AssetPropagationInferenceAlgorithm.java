@@ -105,7 +105,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	private boolean isToPropagateForGlobalConsistency = false;
 
-	private boolean isToUpdateSeparators = true;
+	private boolean isToUpdateSeparators = false;
 	
 	private boolean isToUpdateOnlyEditClique = true;
 	
@@ -1913,6 +1913,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		Set<INode> evidenceNodes = evidences.keySet();
 		
 		// Set cells of clique tables to values which are ignored by the algorithm. 
+		// TODO do not run on all cliques. CAUTION: make sure we are editing asset cliques, never prob cliques
 		for (Clique clique : getAssetNetwork().getJunctionTree().getCliques()) {
 			
 			// extract clique table
@@ -1969,40 +1970,43 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				resolvedAssetValues.put(clique, resolvedAsset);
 			}
 		}
+		
 		// Set cells of separator tables to zero as well.
-		for (Separator separator : getAssetNetwork().getJunctionTree().getSeparators()) {
-			// extract separator table
-			PotentialTable separatorTable = separator.getProbabilityFunction();
-			// consider only separator tables containing node
-			// separator.getNodes() may be different from the variables in separatorTable. 
-			// We'd like to prioritize vars in the tables rather than in separator.getNodes()
-			if (separatorTable.tableSize() <= 1) {
-				// ignore, because there is nothing to resolve
-				continue;
-			}
-			for (int indexOfNodeInSeparator = 0; indexOfNodeInSeparator < separatorTable.getVariablesSize(); indexOfNodeInSeparator++) {
-				INode node = separatorTable.getVariableAt(indexOfNodeInSeparator);
-				if (evidenceNodes.contains(node)) {
-					// Extract state of finding
-					Integer state = evidences.get(node);
-					// check consistency of findings
-					if (state == null) {
-						Debug.println(getClass(), "Finding of node "+ node + " was set to null");
-						continue;
-					}
-					if (state < 0 || state >= node.getStatesSize()) {
-						throw new ArrayIndexOutOfBoundsException(state + " is not a valid index for a state of node " + node);
-					}
-					// iterate over cells in the separator table
-					for (int i = 0; i < separatorTable.tableSize(); i++) {
-						// using "multidimensionalCoord" is easier than "i" if our objective is to compare with "state"
-						int[] multidimensionalCoord = separatorTable.getMultidimensionalCoord(i);
-						// set all cells unrelated to "state" to 0
-						if (multidimensionalCoord[separatorTable.getVariableIndex((Node) node)] != state) {
-							if (isToUseQValues()) {
-								separatorTable.setValue(i,0f);
-							} else {
-								separatorTable.setValue(i,Float.POSITIVE_INFINITY);
+		if (isToUpdateSeparators()) {
+			for (Separator separator : getAssetNetwork().getJunctionTree().getSeparators()) {
+				// extract separator table
+				PotentialTable separatorTable = separator.getProbabilityFunction();
+				// consider only separator tables containing node
+				// separator.getNodes() may be different from the variables in separatorTable. 
+				// We'd like to prioritize vars in the tables rather than in separator.getNodes()
+				if (separatorTable.tableSize() <= 1) {
+					// ignore, because there is nothing to resolve
+					continue;
+				}
+				for (int indexOfNodeInSeparator = 0; indexOfNodeInSeparator < separatorTable.getVariablesSize(); indexOfNodeInSeparator++) {
+					INode node = separatorTable.getVariableAt(indexOfNodeInSeparator);
+					if (evidenceNodes.contains(node)) {
+						// Extract state of finding
+						Integer state = evidences.get(node);
+						// check consistency of findings
+						if (state == null) {
+							Debug.println(getClass(), "Finding of node "+ node + " was set to null");
+							continue;
+						}
+						if (state < 0 || state >= node.getStatesSize()) {
+							throw new ArrayIndexOutOfBoundsException(state + " is not a valid index for a state of node " + node);
+						}
+						// iterate over cells in the separator table
+						for (int i = 0; i < separatorTable.tableSize(); i++) {
+							// using "multidimensionalCoord" is easier than "i" if our objective is to compare with "state"
+							int[] multidimensionalCoord = separatorTable.getMultidimensionalCoord(i);
+							// set all cells unrelated to "state" to 0
+							if (multidimensionalCoord[separatorTable.getVariableIndex((Node) node)] != state) {
+								if (isToUseQValues()) {
+									separatorTable.setValue(i,0f);
+								} else {
+									separatorTable.setValue(i,Float.POSITIVE_INFINITY);
+								}
 							}
 						}
 					}
