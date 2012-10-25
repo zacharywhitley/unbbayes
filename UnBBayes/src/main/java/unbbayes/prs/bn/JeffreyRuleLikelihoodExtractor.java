@@ -19,8 +19,8 @@ import unbbayes.util.Debug;
  */
 public class JeffreyRuleLikelihoodExtractor implements ILikelihoodExtractor {
 	
-	/** Differences below this value will be considered as not different */
-	public static final float PROB_ERROR_MARGIN = 0.00005f;
+//	/** Differences below this value will be considered as not different */
+//	public static final float PROB_ERROR_MARGIN = 0.00005f;
 	
 	private IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = InCliqueConditionalProbabilityExtractor.newInstance();
 
@@ -81,11 +81,10 @@ public class JeffreyRuleLikelihoodExtractor implements ILikelihoodExtractor {
 		}
 		
 		float total = 0;	// this value will be used to normalize ratio
-		// calculate ratio
+		// calculate ratio. 
 		for (int i = 0; i < ratio.length; i++) {
-			// The actual probability can be retrieved from the main node's marginal
-			if (Math.abs(expectedProbability[i] - currentProbability[i]) <= PROB_ERROR_MARGIN) {
-				// this will also catch case in which we change from 0 to 0
+			if (expectedProbability[i] == 0f && currentProbability[i] == 0f) {
+				// we are changing the probability from 0 to 0. Although 0/0 is not defined, we consider the ratio to be 1 (because they don't change)
 				ratio[i] = 1f;
 			} else {
 				ratio[i] = expectedProbability[i] / currentProbability[i];
