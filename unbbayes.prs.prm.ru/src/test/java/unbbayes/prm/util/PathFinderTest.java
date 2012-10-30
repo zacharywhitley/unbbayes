@@ -23,15 +23,21 @@ import unbbayes.prm.model.Attribute;
 public class PathFinderTest {
 	/**
 	 */
-	private static String DB_URL = "jdbc:derby:/home/dav/workspace-unb/unbbayes.prs.prm2/examples/bloodType/BloodType.db";
+	private static String DB_URL = "jdbc:mysql://localhost:3306/PathTesting?user=root&password=fds";
 
 	IDBController relSchemaLoader;
+
+	private Database db;
+
+	private PathFinderAlgorithm pf;
 
 	@Before
 	public void setUp() throws Exception {
 		relSchemaLoader = new DBControllerImp();
 		relSchemaLoader.init(DB_URL);
 
+		db = relSchemaLoader.getRelSchema();
+		pf = new PathFinderAlgorithm();
 	}
 
 	@After
@@ -44,34 +50,123 @@ public class PathFinderTest {
 	@Test
 	public void testDoubleReferenceToSameTable() {
 
-		Database db = relSchemaLoader.getRelSchema();
-
 		// Table PERSON
-		Table tablePerson = db.getTable(0);
+		Table tablePerson = db.getTable(6);
 		// Column blood type
-		Column column = tablePerson.getColumn(3);
+		Column column = tablePerson.getColumn(4);
 
 		// Parent and child are the same but there are three paths.
 		Attribute parent = new Attribute(tablePerson, column);
 		Attribute child = new Attribute(tablePerson, column);
 
 		// Path finder
-		PathFinderAlgorithm pf = new PathFinderAlgorithm();
-		List<Attribute[]> possiblePaths = pf.getPossiblePaths(parent, parent);
+		List<Attribute[]> possiblePaths = pf
+				.getPossiblePaths(db, child, parent);
 
-		assertTrue(possiblePaths.size() == 2);
+		assertTrue(possiblePaths.size() == 5);
 
-		Attribute[] path1 = possiblePaths.get(0);
+		// First path
+		validatePath(possiblePaths.get(0),"PERSON.BLOODTYPE PERSON.MOTHER PERSON.ID PERSON.BLOODTYPE ");
+		validatePath(possiblePaths.get(1),"PERSON.BLOODTYPE PERSON.FATHER PERSON.ID PERSON.BLOODTYPE ");
+		validatePath(possiblePaths.get(2),"PERSON.BloodType PERSON.id PERSON.Mother PERSON.BloodType ");
+		validatePath(possiblePaths.get(3),"PERSON.BloodType PERSON.id PERSON.FATHER PERSON.BloodType ");
+		validatePath(possiblePaths.get(4),"PERSON.BloodType PERSON.BloodType ");
+				
+	}
+
+	private void validatePath(Attribute[] path1, String stringPath) {
 		String path1String = pathToString(path1);
 		System.out.println(path1String);
-		assertTrue(path1String.equals(
-				"PERSON.BLOODTYPE PERSON.MOTHER PERSON.ID PERSON.BLOODTYPE "));
+		assertTrue(path1String.equalsIgnoreCase(stringPath));
+		
+	}
 
-		Attribute[] path2 = possiblePaths.get(1);
-		String path2String = pathToString(path2);
-		System.out.println(path2String);
-		assertTrue(path2String.equals(
-				"PERSON.BLOODTYPE PERSON.FATHER PERSON.ID PERSON.BLOODTYPE "));
+	/**
+	 * This evaluates a case when the relationships is a cascade. A->B->C. Only
+	 * many-to-one and one-to-one relationships.
+	 */
+	@Test
+	public void testDirectPath() {
+		// Table A
+		Table tableA = db.getTable(0);
+		// Initial Column
+		Column columnI = tableA.getColumn(0);
+
+		// Table C
+		Table tableC = db.getTable(2);
+		// Ending Column
+		Column columnE = tableC.getColumn(1);
+
+		// First we evaluate A.I as a parent
+		// Parent and child are the same but there are three paths.
+		Attribute parent = new Attribute(tableA, columnI);
+		Attribute child = new Attribute(tableC, columnE);
+
+		// Apply the algorithm
+		List<Attribute[]> possiblePaths = pf
+				.getPossiblePaths(db, child, parent);
+
+		assertTrue(possiblePaths.size() == 1);
+
+		validatePath(possiblePaths.get(0), "A.Init A.BFK B.id B.CFK C.id C.End ");
+		
+	}
+
+	/**
+	 * This evaluates a case when the relationships is a cascade. A->B->C, but
+	 * in this case, the path begins in C.
+	 */
+	@Test
+	public void testInversePath() {
+
+		// Table A
+		Table tableA = db.getTable(0);
+		// Initial Column
+		Column columnI = tableA.getColumn(0);
+
+		// Table C
+		Table tableC = db.getTable(2);
+		// Ending Column
+		Column columnE = tableC.getColumn(1);
+
+		// Second we evaluate A.I as a child.
+		// Parent and child are the same but there are three paths.
+		Attribute child1 = new Attribute(tableA, columnI);
+		Attribute parent1 = new Attribute(tableC, columnE);
+
+		List<Attribute[]> possiblePaths2 = pf.getPossiblePaths(db, child1,
+				parent1);
+		assertTrue(possiblePaths2.size() == 1);
+
+		validatePath(possiblePaths2.get(0),"C.End C.id B.CFK B.id A.BFK A.Init ");
+	}
+
+	/**
+	 * This evaluates the one-to-Many relationship. H->I<-J
+	 */
+	@Test
+	public void testIndirectPath() {
+		// Table H
+		Table tableH = db.getTable(3);
+		// Initial Column
+		Column columnI = tableH.getColumn(0);
+
+		// Table C
+		Table tableJ = db.getTable(5);
+		// Ending Column
+		Column columnE = tableJ.getColumn(1);
+
+		// Second we evaluate A.I as a child.
+		// Parent and child are the same but there are three paths.
+		Attribute parent1 = new Attribute(tableH, columnI);
+		Attribute child1 = new Attribute(tableJ, columnE);
+
+		List<Attribute[]> possiblePaths2 = pf.getPossiblePaths(db, child1,
+				parent1);
+		assertTrue(possiblePaths2.size() == 1);
+
+		validatePath(possiblePaths2.get(0),"H.Init H.IFK I.id J.IFK J.End ");
+
 	}
 
 	private String pathToString(Attribute[] possiblePath) {

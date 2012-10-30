@@ -269,7 +269,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 			PathFinderAlgorithm paths = new PathFinderAlgorithm();
 			// Get possible paths
-			List<Attribute[]> possiblePaths = paths.getPossiblePaths(parentPM,
+			List<Attribute[]> possiblePaths = paths.getPossiblePaths(relSchema,parentPM,
 					childPM);
 
 			// Only one path is assigned automatically. If more than one exist
