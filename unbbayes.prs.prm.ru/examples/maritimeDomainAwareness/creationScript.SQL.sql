@@ -2,6 +2,8 @@
 -- DB CREATION SCRIPT.
 -- Generation Time: Oct 06, 2012 at 05:40 PM
 
+-- Server version: 5.5.27
+-- PHP Version: 5.4.6-1ubuntu1
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -15,6 +17,26 @@ SET time_zone = "+00:00";
 --
 -- Database: `MDA`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `BEHAVIOR`
+--
+
+CREATE TABLE IF NOT EXISTS `BEHAVIOR` (
+  `id` int(11) NOT NULL,
+  `name` varchar(20) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `BEHAVIOR`
+--
+
+INSERT INTO `BEHAVIOR` (`id`, `name`) VALUES
+(1, 'EvasiveBehavior'),
+(2, 'NormalBehavior');
 
 -- --------------------------------------------------------
 
@@ -38,10 +60,8 @@ CREATE TABLE IF NOT EXISTS `ELECTRONIC_EQUIPMENT` (
 --
 
 INSERT INTO `ELECTRONIC_EQUIPMENT` (`id`, `isWorking`, `isResponsive`, `type`, `owner`) VALUES
-(1, 'T', 'T', 2, NULL),
-(2, 'F', 'F', NULL, NULL),
-(3, NULL, NULL, 1, 4),
-(4, NULL, NULL, 2, 2);
+(1, 'T', 'T', 1, NULL),
+(2, 'F', 'F', 2, NULL);
 
 -- --------------------------------------------------------
 
@@ -53,16 +73,15 @@ CREATE TABLE IF NOT EXISTS `EQUIPMENT_TYPE` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(10) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=4 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=23 ;
 
 --
 -- Dumping data for table `EQUIPMENT_TYPE`
 --
 
 INSERT INTO `EQUIPMENT_TYPE` (`id`, `name`) VALUES
-(1, 'Radio'),
-(2, 'Radar'),
-(3, 'AIS');
+(1, 'Nuclear Bo'),
+(2, 'Ant killer');
 
 -- --------------------------------------------------------
 
@@ -76,13 +95,6 @@ CREATE TABLE IF NOT EXISTS `MEETING` (
   KEY `ship1` (`ship1`),
   KEY `ship2` (`ship2`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `MEETING`
---
-
-INSERT INTO `MEETING` (`ship1`, `ship2`) VALUES
-(2, 4);
 
 -- --------------------------------------------------------
 
@@ -102,8 +114,8 @@ CREATE TABLE IF NOT EXISTS `ORGANIZATION` (
 --
 
 INSERT INTO `ORGANIZATION` (`id`, `name`, `isTerrorist`) VALUES
-(1, 'The Muppets', 'F'),
-(2, 'The Usual suspects', 'T'),
+(1, 'The Company', 'T'),
+(2, 'The Dogs', 'N'),
 (3, 'The NN', NULL);
 
 -- --------------------------------------------------------
@@ -117,22 +129,40 @@ CREATE TABLE IF NOT EXISTS `PERSON` (
   `relatedTo` varchar(30) DEFAULT NULL,
   `isTerrorist` varchar(1) DEFAULT NULL,
   `organization` int(11) DEFAULT NULL,
-  `crewMember` int(11) DEFAULT NULL,
+  `crewMemberOf` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `relatedTo` (`relatedTo`),
   KEY `organization` (`organization`),
-  KEY `crewMember` (`crewMember`)
+  KEY `crewMember` (`crewMemberOf`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `PERSON`
 --
 
-INSERT INTO `PERSON` (`id`, `relatedTo`, `isTerrorist`, `organization`, `crewMember`) VALUES
-('Burrows', 'Scofield', NULL, NULL, 1),
-('Scofield', NULL, NULL, 3, 4),
+INSERT INTO `PERSON` (`id`, `relatedTo`, `isTerrorist`, `organization`, `crewMemberOf`) VALUES
 ('Terrorist', NULL, 'T', NULL, NULL),
 ('TerroristRelated', 'Terrorist', 'F', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ROUTE`
+--
+
+CREATE TABLE IF NOT EXISTS `ROUTE` (
+  `id` int(11) NOT NULL,
+  `name` varchar(20) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `ROUTE`
+--
+
+INSERT INTO `ROUTE` (`id`, `name`) VALUES
+(0, 'UnusualRoute'),
+(1, 'UsualRoute');
 
 -- --------------------------------------------------------
 
@@ -145,18 +175,23 @@ CREATE TABLE IF NOT EXISTS `SHIP` (
   `isOfInterest` varchar(1) DEFAULT NULL,
   `type` int(11) DEFAULT NULL,
   `isECMDeployed` varchar(1) DEFAULT NULL,
+  `hasTerroristCrew` varchar(1) DEFAULT NULL,
+  `behavior` int(11) DEFAULT NULL,
+  `route` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `type` (`type`)
+  KEY `type` (`type`),
+  KEY `behavior` (`behavior`),
+  KEY `route` (`route`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `SHIP`
 --
 
-INSERT INTO `SHIP` (`id`, `isOfInterest`, `type`, `isECMDeployed`) VALUES
-(1, 'T', 1, 'T'),
-(2, 'F', 2, 'F'),
-(4, NULL, 2, NULL);
+INSERT INTO `SHIP` (`id`, `isOfInterest`, `type`, `isECMDeployed`, `hasTerroristCrew`, `behavior`, `route`) VALUES
+(1, 'N', NULL, 'N', 'N', NULL, 0),
+(2, 'T', NULL, 'T', 'T', NULL, 0),
+(4, NULL, NULL, NULL, NULL, NULL, 0);
 
 -- --------------------------------------------------------
 
@@ -168,16 +203,7 @@ CREATE TABLE IF NOT EXISTS `SHIP_TYPE` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(10) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=4 ;
-
---
--- Dumping data for table `SHIP_TYPE`
---
-
-INSERT INTO `SHIP_TYPE` (`id`, `name`) VALUES
-(1, 'NavyShip'),
-(2, 'Fishing'),
-(3, 'MerchantSh');
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
 --
 -- Constraints for dumped tables
@@ -201,15 +227,17 @@ ALTER TABLE `MEETING`
 -- Constraints for table `PERSON`
 --
 ALTER TABLE `PERSON`
-  ADD CONSTRAINT `PERSON_ibfk_1` FOREIGN KEY (`relatedTo`) REFERENCES `PERSON` (`id`),
+  ADD CONSTRAINT `PERSON_ibfk_10` FOREIGN KEY (`relatedTo`) REFERENCES `PERSON` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
   ADD CONSTRAINT `PERSON_ibfk_8` FOREIGN KEY (`organization`) REFERENCES `ORGANIZATION` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
-  ADD CONSTRAINT `PERSON_ibfk_9` FOREIGN KEY (`crewMember`) REFERENCES `SHIP` (`id`) ON DELETE SET NULL ON UPDATE SET NULL;
+  ADD CONSTRAINT `PERSON_ibfk_9` FOREIGN KEY (`crewMemberOf`) REFERENCES `SHIP` (`id`) ON DELETE SET NULL ON UPDATE SET NULL;
 
 --
 -- Constraints for table `SHIP`
 --
 ALTER TABLE `SHIP`
-  ADD CONSTRAINT `SHIP_ibfk_1` FOREIGN KEY (`type`) REFERENCES `SHIP_TYPE` (`id`);
+  ADD CONSTRAINT `SHIP_ibfk_5` FOREIGN KEY (`route`) REFERENCES `ROUTE` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
+  ADD CONSTRAINT `SHIP_ibfk_2` FOREIGN KEY (`type`) REFERENCES `SHIP_TYPE` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
+  ADD CONSTRAINT `SHIP_ibfk_3` FOREIGN KEY (`behavior`) REFERENCES `BEHAVIOR` (`id`) ON DELETE SET NULL ON UPDATE SET NULL;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
