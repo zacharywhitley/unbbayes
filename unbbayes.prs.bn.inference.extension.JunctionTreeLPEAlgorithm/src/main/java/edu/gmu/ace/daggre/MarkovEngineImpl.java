@@ -1404,10 +1404,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.tradeSpecification = new TradeSpecificationImpl(userId, questionId, newValues, assumptionIds, assumedStates);
 			
 		}
+		/** Calls {@link #execute(true)}
+		 * @see #execute(boolean) */
 		public void execute() {
 			this.execute(true);
 		}
+		/** Calls {@link #execute(boolean, true)}
+		 * @see #execute(boolean, boolean) */
 		public void execute(boolean isToUpdateAssets) {
+			this.execute(isToUpdateAssets, true);
+		}
+		public void execute(boolean isToUpdateAssets, boolean isToUpdateAssumptionIds) {
 			// extract user's asset network from user ID
 			AssetAwareInferenceAlgorithm algorithm = null;
 			try {
@@ -1458,13 +1465,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					algorithm.setToUpdateAssets(isToUpdateAssets);
 					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
 					// 2nd boolean == true := overwrite assumptionIds and assumedStates when necessary
-					tradeSpecification.setOldProbabilities(executeTrade(
-							tradeSpecification.getQuestionId(), 
-							tradeSpecification.getProbabilities(), 
-							tradeSpecification.getAssumptionIds(), 
-							tradeSpecification.getAssumedStates(), 
-							allowNegative, algorithm, true, false, this
-						));
+					tradeSpecification.setOldProbabilities(
+							executeTrade(
+								tradeSpecification.getQuestionId(), 
+								tradeSpecification.getProbabilities(), 
+								tradeSpecification.getAssumptionIds(), 
+								tradeSpecification.getAssumedStates(), 
+								allowNegative, algorithm, isToUpdateAssumptionIds, false, this
+							)
+					);
 					algorithm.setToUpdateAssets(backup);	// revert config of assets
 					// backup the previous delta so that we can revert this trade
 //					qTablesBeforeTrade = algorithm.getAssetTablesBeforeLastPropagation();
@@ -3625,17 +3634,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				throw new InexistingQuestionException("Question " + assumptiveQuestionId + " not found.", assumptiveQuestionId);
 			} 
 //			if (parent.hasEvidence()) {
-//				throw new IllegalArgumentException("Question " + parent + " is already resolved and cannot be used.");
+////				throw new IllegalArgumentException("Question " + parent + " is already resolved and cannot be used.");
 //				Debug.println(getClass(),"Question " + parent + " is already resolved and cannot be used.");
 //				continue;
 //			}
-			for (int i = 0; i < parent.getStatesSize(); i++) {
-				if (parent.getMarginalAt(i) == 0.0f || parent.getMarginalAt(i) == 1.0f) {
-//					throw new IllegalArgumentException("State " + i + " of question " + parent + " has probability " + parent.getMarginalAt(i) + " and cannot be changed.");
-					Debug.println(getClass(),"State " + i + " of question " + parent + " has probability " + parent.getMarginalAt(i) + " and cannot be changed.");
-					continue;
-				}
-			}
+//			for (int i = 0; i < parent.getStatesSize(); i++) {
+//				if (parent.getMarginalAt(i) == 0.0f || parent.getMarginalAt(i) == 1.0f) {
+////					throw new IllegalArgumentException("State " + i + " of question " + parent + " has probability " + parent.getMarginalAt(i) + " and cannot be changed.");
+//					Debug.println(getClass(),"State " + i + " of question " + parent + " has probability " + parent.getMarginalAt(i) + " and cannot be changed.");
+//					continue;
+//				}
+//			}
 			assumptionNodes.add(parent);
 			// size of cpd if  = MULT (<quantity of states of child and parents>).
 			expectedSizeOfCPD *= parent.getStatesSize();
@@ -4317,7 +4326,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public BalanceTradeNetworkAction(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) {
 			super(transactionKey, occurredWhen, tradeKey, userId, questionId, null, assumptionIds, assumedStates, true);
 		}
-		/** Virtually does {@link MarkovEngineImpl#previewBalancingTrade(long, long, List, List)} and then {@link AddTradeNetworkAction#execute()} */
+		/** Virtually does {@link MarkovEngineImpl#previewBalancingTrade(long, long, List, List)} and then {@link AddTradeNetworkAction#execute()}.
+		 * it calls super's {@link #execute(boolean, false)} 
+		 * @see #execute(boolean, boolean)*/
 		public void execute(boolean isToUpdateAssets) {
 			// if this action was executed previously, we are re-running the history, and getExecutedTrades() will contain something
 			if (getExecutedTrades() != null && !getExecutedTrades().isEmpty()) {
