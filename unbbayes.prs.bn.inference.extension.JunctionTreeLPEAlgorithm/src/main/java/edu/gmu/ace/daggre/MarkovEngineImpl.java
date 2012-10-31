@@ -49,6 +49,7 @@ import unbbayes.prs.bn.inference.extension.IQValuesToAssetsConverter;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
+import unbbayes.util.dseparation.impl.MSeparationUtility;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
 
@@ -165,7 +166,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToIntegrateConsecutiveResolutions = true;
 
 
-
 	private boolean isToRetriveOnlyTradeHistory = true;
 
 	/** This is the default initial value of {@link #getMaxConditionalProbHistorySize()} */
@@ -189,10 +189,23 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private Map<DummyTradeAction, Set<Long>> virtualTradeToAffectedQuestionsMap = new HashMap<DummyTradeAction, Set<Long>>();
 
-	private boolean isToStoreOnlyCliqueChangeHistory = false;;
+	private boolean isToStoreOnlyCliqueChangeHistory = false;
 
-
+	/** If set to true, all nodes in a same clique will be fully connected during {@link RebuildNetworkAction#execute()},
+	 * so that newly created cliques are always extensions of old cliques. */
+	private boolean isToFullyConnectNodesInCliquesOnRebuild = false;//true;
 	
+	/**
+	 * If true, actions created in {@link RebuildNetworkAction#execute()} to fully connect nodes in edited clique
+	 * will be included in to history, so that next rebuild will re-use the same arcs. <br/>
+	 * CAUTION: re-using the arcs may need extra care not to include cycles.
+	 * @see #isToFullyConnectNodesInCliquesOnRebuild()
+	 */
+	private boolean isToIncludeFullConnectActionsOfRebuildIntoHistory = false;
+	
+	/** This is mainly used for finding cycles in {@link RebuildNetworkAction#execute()} */
+	private MSeparationUtility mseparationUtility = MSeparationUtility.newInstance();;
+
 	/**
 	 * Default constructor is protected to allow inheritance.
 	 * Use {@link #getInstance()} to actually instantiate objects of this class.
@@ -590,6 +603,82 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// the list "actions" without network change actions
 			List<NetworkAction> actionsToExecute = new ArrayList<NetworkAction>();	
 			synchronized (actions) {
+				// store the current clique structure before cleaning the net, so that we can consult it 
+				// posteriorly in order to connect all nodes in the same clique
+				// (this will guarantee that the inclusion of new nodes + edges will not split old cliques,
+				// making the assumptions of old trades invalid
+//				List<List<Long>> cliqueStructures = null;
+//				if (isToFullyConnectNodesInCliquesOnRebuild() ){
+//					cliqueStructures = getQuestionAssumptionGroups();
+//				}
+				
+				// prepare the set of all questions traded at least once
+				Set<Long> tradedQuestions = new HashSet<Long>();
+				for (Set<Long> traded : getTradedQuestionsMap().values()) {
+					tradedQuestions.addAll(traded);
+				};
+				
+				// separate the content of actions into those building network structure and those not changing structure
+				List<NetworkAction> networkConstructionActions = new ArrayList<NetworkAction>(); 
+				// also check whether we have AddQuestionAssumptionNetworkAction, because it is supposedly the only action
+				// which may eventually split old cliques.			
+				// Keep track of which nodes are affected by 
+				Set<Long> nodesAffectedByNewArcs = null; // if this set is null or empty, no AddQuestionAssumptionNetworkAction were present
+				if (isToFullyConnectNodesInCliquesOnRebuild()) {
+					nodesAffectedByNewArcs = new HashSet<Long>();
+				}
+				for (NetworkAction action : actions) {
+					if (action.isStructureConstructionAction()) {
+						if (isToFullyConnectNodesInCliquesOnRebuild() && action instanceof AddQuestionAssumptionNetworkAction) {
+							// fill set with nodes affected by the insertion of this arc. 
+							// This set will be used to decide what nodes should become fully connected
+							// in order to avoid splitting old cliques.
+							if (tradedQuestions.contains(action.getQuestionId())) {
+								// only consider questions which were traded
+								nodesAffectedByNewArcs.add(action.getQuestionId());
+							}
+							for (Long assumptionId : action.getAssumptionIds()) {
+								if (tradedQuestions.contains(assumptionId)) {
+									// only consider questions which were traded
+									nodesAffectedByNewArcs.add(assumptionId);
+								}
+							}
+						}
+						networkConstructionActions.add(action);
+					} else {
+						actionsToExecute.add(action);
+					}
+				}
+				
+				// extract what cliques shall become fully connected
+				Set<Clique> affectedProbCliques = null;	// cliques to be considered
+				if (isToFullyConnectNodesInCliquesOnRebuild()) {
+					// extract the cliques affected by the newly added arcs
+					affectedProbCliques = new HashSet<Clique>();
+					for (Long nodeId : nodesAffectedByNewArcs) {
+						// extract the cliques related to nodeId
+						INode node = getProbabilisticNetwork().getNode(nodeId.toString());
+						if (node == null && isToDeleteResolvedNode()) {
+							// some nodes may have been resolved. Ignore if so
+							continue;
+						}
+						List<Clique> cliquesContainingNode = getProbabilisticNetwork().getJunctionTree().getCliquesContainingAllNodes(Collections.singletonList(node), Integer.MAX_VALUE);
+						for (Clique clique : cliquesContainingNode) {
+							if (getMaxConditionalProbHistorySize() > 0) {
+								// If we are tracking the history of cliques, we can use it to consider only edited cliques
+								List<ParentActionPotentialTablePair> list = getLastNCliquePotentialMap().get(clique);
+								if (list == null || list.isEmpty()) {
+									// no one has edited this clique. Ignore.
+									// TODO this may fail if setMaxConditionalProbHistorySize was recently set from zero to positive
+									continue;
+								}
+							}
+							affectedProbCliques.add(clique);
+						}
+					}
+				}
+				
+				// clear the current network and junction tree now, so that we can re-generate the structure by running networkConstructionActions posteriorly
 				synchronized (getDefaultInferenceAlgorithm()) {
 					synchronized (net) {
 						// clear content of net in a fast way
@@ -605,17 +694,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						}
 					}
 				}
-				// separate the content of actions into those building network structure and those not changing structure
-				List<NetworkAction> networkConstructionActions = new ArrayList<NetworkAction>(); 
-				for (NetworkAction action : actions) {
-					if (action.isStructureConstructionAction()) {
-						networkConstructionActions.add(action);
-					} else {
-						actionsToExecute.add(action);
-					}
-				}
+				
 				// execute the trades related to network construction before actionsToExecute
 				for (NetworkAction changeAction : networkConstructionActions) {
+					// no need to call changeAction.setWhenExecutedFirstTime(whenExecutedFirst), because it was supposedly executed during commitNetworkActions(transactionKey)
 					changeAction.execute();
 					/*
 					 * Caution: do not change this behavior (recreate network structure
@@ -624,6 +706,61 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					 * in order to add edges before resolution of nodes
 					 */
 				}
+				
+				// fully connect cliques after the new structure is ready, so that we can avoid cycles.
+				if (isToFullyConnectNodesInCliquesOnRebuild()) {
+					// fully connect nodes in cliques affected by the newly added arcs. 
+					for (Clique clique : affectedProbCliques) {
+						// iterate over combinations of 2 nodes in clique 
+						for (int i = 0; i < clique.getNodes().size()-1; i++) {
+							for (int j = i+1; j < clique.getNodes().size(); j++) {
+								// extract the 2 nodes in the new (rebuilt) network. Same nodes supposedly have same names.
+								Node node1 = getProbabilisticNetwork().getNode(clique.getNodes().get(i).getName());
+								Node node2 = getProbabilisticNetwork().getNode(clique.getNodes().get(j).getName());
+								if (node1 == null || node2 == null) {
+									Debug.println(getClass(), "Could not find "+ i + "th node or " + j + "th node in clique " + clique);
+									continue;
+								}
+								
+								// check if there is an arc between these 2 nodes
+								if (node1.getParents().contains(node2) || node2.getParents().contains(node1)){
+									// ignore this combination of nodes, because they are already connected
+									continue;
+								}
+								
+								// we shall create an arc node1->node2 or node2->node1, but without creating cycles. Supposedly, this will connect siblings 
+								
+								// create the action which will add the new arc
+								AddQuestionAssumptionNetworkAction action = null;
+								// use the m-separation utility component in order to find a path between node1 and node2
+								if (getMSeparationUtility().getRoutes(node1, node2, null, null, 1).isEmpty()) {
+									// there is no route from node1 to node2, so we can create node2->node1 without generating cycle
+									action = new AddQuestionAssumptionNetworkAction(
+											getTransactionKey(), getWhenCreated(), Long.parseLong(node1.getName()), Collections.singletonList(Long.parseLong(node2.getName())), null);
+								} else {
+									// there is a route from node1 to node2, so we cannot create node2->node1 (it will create a cycle if we do so), so create node1->node2
+									action = new AddQuestionAssumptionNetworkAction(
+											getTransactionKey(), getWhenCreated(), Long.parseLong(node2.getName()), Collections.singletonList(Long.parseLong(node1.getName())), null);
+								}
+								
+								// mark action as executed before it is actually executed 
+								// (this is the default behavior of commitNetworkTransaction on actions changing net structure)
+								if (isToIncludeFullConnectActionsOfRebuildIntoHistory()) {
+									action.setWhenExecutedFirstTime(new Date());	
+									synchronized (getExecutedActions()) {
+										getExecutedActions().add(action);	
+									}
+								}
+								
+								// execute the new action which connects nodes in cliques
+								action.execute();
+							}
+						}
+					}
+				}
+				
+				
+				
 			}
 			
 			// clear the mapping which stores the resolved questions, so that the actions during the rebuild do not think that questions are resolved already
@@ -631,7 +768,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				getResolvedQuestions().clear();
 			}
 			
-			// recompile network and execute actions which does not change network structure
+			// recompile network and execute actionsToExecute (actions which does not change network structure) now
 			this.execute(actionsToExecute); 
 		}
 		/** Rebuild the BN */
@@ -1252,6 +1389,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see MarkovEngineImpl#addCash(long, Date, long, float, String)
 	 * @see MarkovEngineImpl#isToAddCashProportionally()
 	 * @see MarkovEngineImpl#setToAddCashProportionally(boolean)
+	 * TODO not to initialize user until the user makes a trade.
 	 */
 	public class AddCashNetworkAction implements NetworkAction {
 		private final Long transactionKey;
@@ -1412,7 +1550,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		/** Calls {@link #execute(boolean, true)}
 		 * @see #execute(boolean, boolean) */
 		public void execute(boolean isToUpdateAssets) {
-			this.execute(isToUpdateAssets, true);
+			this.execute(isToUpdateAssets, !isToThrowExceptionOnInvalidAssumptions());
 		}
 		public void execute(boolean isToUpdateAssets, boolean isToUpdateAssumptionIds) {
 			// extract user's asset network from user ID
@@ -1599,7 +1737,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 */
 		public void execute(boolean isToUpdateAssets) {
 			setOldValues(getProbList(getTradeSpecification().getQuestionId(), null, null));
-			getTradeSpecification().setOldProbabilities(executeTrade(getQuestionId(), getTradeSpecification().getProbabilities(), getAssumptionIds() , getAssumedStates() , true, getDefaultInferenceAlgorithm(), false, false, getParentAction()));
+			getTradeSpecification().setOldProbabilities(executeTrade(getQuestionId(), getTradeSpecification().getProbabilities(), getAssumptionIds() , getAssumedStates() , true, getDefaultInferenceAlgorithm(), !isToThrowExceptionOnInvalidAssumptions(), false, getParentAction()));
 			setNewValues(getProbList(getTradeSpecification().getQuestionId(), null, null));
 		}
 
@@ -1818,7 +1956,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// delete entries if the size will become greater than getMaxConditionalProbHistorySize().
 					// Note: getMaxConditionalProbHistorySize() > 0 at this point, because of "if (memento != null && getMaxConditionalProbHistorySize() > 0)"
 					while (history.size() + 1 > getMaxConditionalProbHistorySize()) {
-						history.remove(0);	// remove the initial entries (old records)
+						ParentActionPotentialTablePair removed = history.remove(0);	// remove the initial entries (old records)
+						removed.setParentAction(null);
 					}
 					// add entry in the history
 					history.add(new ParentActionPotentialTablePair(parentAction, (PotentialTable) currentTable.clone()));
@@ -3471,7 +3610,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// 1st boolean == true := allow negative delta, since this is a preview. 
 		// 2nd boolean == false := do not overwrite assumptionIds and assumedStates
 		// last null argument indicates that we are not interested in obtaining what other questions' marginals were affected by this trade
-		List<Float> oldValues = this.executeTrade(questionId, newValues, assumptionIds, assumedStates, true, algorithm, false, !isToDoFullPreview(), null);	
+		List<Float> oldValues = this.executeTrade(questionId, newValues, assumptionIds, assumedStates, true, algorithm, !isToThrowExceptionOnInvalidAssumptions(), !isToDoFullPreview(), null);	
 		
 		if (isToDoFullPreview()) {
 			// TODO optimize (executeTrade and getAssetsIfStates have redundant portion of code)
@@ -3546,7 +3685,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * {@link AssetAwareInferenceAlgorithm#getNetwork()} will be used to access the Bayes net.
 	 * {@link AssetAwareInferenceAlgorithm#getAssetNetwork()} will be used to access the asset net.
 	 * @param isToUpdateAssumptionIds : if true, assumptionIds and assumedStates will be both input and output arguments.
-	 * If false, they will be only input arguments. 
+	 * If false, they will be only input arguments. Note: if  assumptionIds and assumedStates are immutable lists, then
+	 * they will be only input arguments anyway.
 	 * @param parentTrade : (optional) points to the trade action executing this method. This will be used to fill
 	 * trade history of conditional probabilities.
 	 * @see #addTrade(long, Date, String, long, long, List, List, List, boolean)
@@ -3591,15 +3731,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		List<Long> oldAssumptionIds = null;	// this will store a copy of the original assumptions list
 		if (assumptionIds != null) {
 			oldAssumptionIds = new ArrayList<Long>(assumptionIds);
+			List<Long> validAssumptions = this.getMaximumValidAssumptionsSublists(questionId, oldAssumptionIds, 1).get(0);
 			if (isToUpdateAssumptionIds) {
 				// CAUTION: this is modifying an input argument (this is the desired behavior)
-				assumptionIds.clear();
-			}
-			List<Long> validAssumptions = this.getMaximumValidAssumptionsSublists(questionId, oldAssumptionIds, 1).get(0);
-			if (validAssumptions == null) {
-				assumptionIds = null;
-			} else {
-				if (isToUpdateAssumptionIds) {
+				try {
+					assumptionIds.clear();
+				} catch (UnsupportedOperationException e) {
+					// this list is immutable. Use a mutable instance instead.
+					assumptionIds = new ArrayList<Long>(assumptionIds.size());
+				}
+				if (validAssumptions != null) {
 					assumptionIds.addAll(validAssumptions); 
 				}
 			}
@@ -3611,7 +3752,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			List<Integer> oldAssumedStates = new ArrayList<Integer>(assumedStates);
 			if (isToUpdateAssumptionIds) {
 				// CAUTION: this is modifying an input argument (this is the desired behavior)
-				assumedStates.clear();
+				try {
+					assumedStates.clear();
+				} catch (UnsupportedOperationException e) {
+					// this list is immutable. Use a mutable instance instead.
+					assumedStates = new ArrayList<Integer>(assumedStates.size());
+				}
 			}
 			List<Integer> validStates = this.convertAssumedStates(assumptionIds, oldAssumptionIds, oldAssumedStates); 
 			if (validStates == null) {
@@ -4424,7 +4570,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		try {
-			if (this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
+			if (assumptionIds != null && !assumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
 				if (isToThrowExceptionOnInvalidAssumptions()) {
 					throw new InvalidAssumptionException(assumptionIds + " are invalid assumptions for question " + questionId);
 				}
@@ -4516,7 +4662,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 				}
 			}
-			if (willCreateNodeOnCommit) {	
+			if (!willCreateNodeOnCommit) {	
 				throw new InexistingQuestionException("Question ID " + questionId + " does not exist.", questionId);
 			}
 		}
@@ -5927,6 +6073,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	}
 
 	/**
+	 * If true, methods like {@link #addTrade(long, Date, String, long, long, List, List, List, boolean)}
+	 * or {@link #previewTrade(long, long, List, List, List)} will throw exception
 	 * @param isToThrowExceptionOnInvalidAssumptions the isToThrowExceptionOnInvalidAssumptions to set
 	 */
 	public void setToThrowExceptionOnInvalidAssumptions(
@@ -6202,7 +6350,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * history of conditional probabilities (i.e. clique potentials) until the number
 	 * of stored clique tables reaches this value. 
 	 * Old histories will be deleted when new entries are added.
-	 * Set this value to 0 or below in order to disable history of conditional probabilities.
+	 * Set this value to 0 or below in order to disable history of conditional probabilities 
+	 * (this will also clear {@link #getLastNCliquePotentialMap()}).
+	 * <br/>
+	 * <br/>
+	 * CAUTION: increasing this value will not automatically fill the history. Only
+	 * trades performed after the increment will be affected.
+	 * <br/>
+	 * <br/>
+	 * {@link RebuildNetworkAction#execute()} uses this value and 
+	 * {@link #getLastNCliquePotentialMap()} in order to check
+	 * whether a clique was edited, so that it can automatically connect
+	 * the nodes of modified cliques before any change in network structure (if {@link #isToFullyConnectNodesInCliquesOnRebuild()} == true). 
+	 * Hence, starting this value with zero, performing some trades, and then
+	 * seting this value to non-zero will make {@link RebuildNetworkAction#execute()} to think that 
+	 * the feature of history of cliques is enabled (because this value is above zero), but
+	 * there is no change in the cliques (because there is no content in the history). Consequently, in such scenario,
+	 * {@link RebuildNetworkAction#execute()} will not connect the nodes in the clique.
+	 * Because of this, it is suggested to re-initialize the markov engine if you change this value.
 	 * @param maxConditionalProbHistorySize the maxConditionalProbHistorySize to set
 	 */
 	public void setMaxConditionalProbHistorySize( int maxConditionalProbHistorySize ) {
@@ -6236,6 +6401,22 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * of stored clique tables reaches this value. 
 	 * Old histories will be deleted when new entries are added.
 	 * Set this value to 0 or below in order to disable history of conditional probabilities.
+	 * <br/>
+	 * <br/>
+	 * CAUTION: increasing this value will not automatically fill the history. Only
+	 * trades performed after the increment will be affected.
+	 * <br/>
+	 * <br/>
+	 * {@link RebuildNetworkAction#execute()} uses this value and 
+	 * {@link #getLastNCliquePotentialMap()} in order to check
+	 * whether a clique was edited, so that it can automatically connect
+	 * the nodes of modified cliques before any change in network structure (if {@link #isToFullyConnectNodesInCliquesOnRebuild()} == true). 
+	 * Hence, starting this value with zero, performing some trades, and then
+	 * seting this value to non-zero will make {@link RebuildNetworkAction#execute()} to think that 
+	 * the feature of history of cliques is enabled (because this value is above zero), but
+	 * there is no change in the cliques (because there is no content in the history). Consequently, in such scenario,
+	 * {@link RebuildNetworkAction#execute()} will not connect the nodes in the clique.
+	 * Because of this, it is suggested to re-initialize the markov engine if you change this value.
 	 * @return the maxConditionalProbHistorySize
 	 */
 	public int getMaxConditionalProbHistorySize() {
@@ -6270,13 +6451,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @author Shou Matsumoto
 	 */
 	public class ParentActionPotentialTablePair {
-		private final NetworkAction parentAction;
-		private final PotentialTable table;
+		private NetworkAction parentAction;
+		private PotentialTable table;
 		public ParentActionPotentialTablePair(NetworkAction parentAction, PotentialTable table) {
 			this.parentAction = parentAction;
 			this.table = table;
 		}
 		public NetworkAction getParentAction() { return parentAction; }
+		public void setParentAction(NetworkAction action) { parentAction = action; }
 		public PotentialTable getTable() { return table; }
 	}
 
@@ -6843,6 +7025,64 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public boolean isToStoreOnlyCliqueChangeHistory() {
 		return isToStoreOnlyCliqueChangeHistory;
 	}
+
+	/**
+	 * @param isToFullyConnectNodesInCliquesOnRebuild : if set to true, 
+	 * all nodes in a same clique will be fully connected during {@link RebuildNetworkAction#execute()},
+	 * so that newly created cliques are always extensions of old cliques.
+	 */
+	public void setToFullyConnectNodesInCliquesOnRebuild(
+			boolean isToFullyConnectNodesInCliquesOnRebuild) {
+		this.isToFullyConnectNodesInCliquesOnRebuild = isToFullyConnectNodesInCliquesOnRebuild;
+	}
+
+	/**
+	 * @return if true, all nodes in a same clique will be fully connected during {@link RebuildNetworkAction#execute()},
+	 * so that newly created cliques are always extensions of old cliques.
+	 */
+	public boolean isToFullyConnectNodesInCliquesOnRebuild() {
+		return isToFullyConnectNodesInCliquesOnRebuild;
+	}
+
+	/**
+	 * This is mainly used for finding cycles in {@link RebuildNetworkAction#execute()}
+	 * @param mseparationUtility the mseparationUtility to set
+	 * @see MSeparationUtility#getRoutes(INode, INode, Map, Set, int)
+	 */
+	public void setMSeparationUtility(MSeparationUtility mseparationUtility) {
+		this.mseparationUtility = mseparationUtility;
+	}
+
+	/**
+	 * This is mainly used for finding cycles in {@link RebuildNetworkAction#execute()}
+	 * @return the mseparationUtility
+	 * @see MSeparationUtility#getRoutes(INode, INode, Map, Set, int)
+	 */
+	public MSeparationUtility getMSeparationUtility() {
+		return mseparationUtility;
+	}
+
+	/**
+	 * If true, actions created in {@link RebuildNetworkAction#execute()} to fully connect nodes in edited clique
+	 * will be included in to history, so that next rebuild will re-use the same arcs. <br/>
+	 * CAUTION: re-using the arcs may need extra care not to include cycles.
+	 * @param isToIncludeFullConnectActionsOfRebuildIntoHistory the isToIncludeFullConnectActionsOfRebuildIntoHistory to set
+	 */
+	public void setToIncludeFullConnectActionsOfRebuildIntoHistory(
+			boolean isToIncludeFullConnectActionsOfRebuildIntoHistory) {
+		this.isToIncludeFullConnectActionsOfRebuildIntoHistory = isToIncludeFullConnectActionsOfRebuildIntoHistory;
+	}
+
+	/**
+	 * If true, actions created in {@link RebuildNetworkAction#execute()} to fully connect nodes in edited clique
+	 * will be included in to history, so that next rebuild will re-use the same arcs. <br/>
+	 * CAUTION: re-using the arcs may need extra care not to include cycles.
+	 * @return the isToIncludeFullConnectActionsOfRebuildIntoHistory
+	 */
+	public boolean isToIncludeFullConnectActionsOfRebuildIntoHistory() {
+		return isToIncludeFullConnectActionsOfRebuildIntoHistory;
+	}
+
 
 
 }

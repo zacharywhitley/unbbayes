@@ -94,7 +94,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static final String NODE_NAME_PREFIX = "N";
 
 	/** This program will enter in a loop at this iteration number. Use with care. Set to negative if you don't want this program to stop at the iteration */
-	private static final int iterationToDebug = 18;
+	private static final int iterationToDebug = 33;
 
 	/** this object will group the data to be printed out in {@link #testFilesWithResolution()} */
 	private Tracer tracer = null;
@@ -113,7 +113,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static float probToAddCash = .2f;
 
 	/** If true, some test results and test specifications will be printed out by {@link #tracer} */
-	private static boolean isToTrace = false;//true;
+	private static boolean isToTrace = true;//false;//true;
 
 //	private static boolean isToCompare = false;
 
@@ -129,11 +129,15 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If true, assets and probabilities before and after {@link #createNode(Long, Network, List, List, List, Collection)} will be compared */
 	private boolean isToCompareValuesBeforeAndAfterCreateNode = true;//false;
 
+	/** If true, {@link #testFilesWithResolutionSingleEngine()} will call {@link #createNodesInMarkovBlanket(Long, Network, List, List, List, Collection)}
+	 * instead of {@link #createNode(Long, Network, List, List, List, Collection)} */
+	private static boolean isToAlwaysCreateMarkovBlanket = true;
+
 	/** Potentials of cliques containing these nodes will be printed in {@link #createNode(Long, Network, List, List, List, Collection)}*/
-	private static long[] nodesToTraceCliquePotentials = {26L,38L};	// null;
+	private static long[] nodesToTraceCliquePotentials = null;//{26L,38L};	// null;
 
 	/** If false, consistency assertion in 5 point test will be skipped (this is useful if your objective is only to print test traces) */
-	private static boolean isToAssertConsistencyIn5PointTest = false;
+	private static boolean isToAssertConsistencyIn5PointTest = false;//true;
 
 	/** Maximum quantity of nodes to be alive in this test. If the quantity of nods reaches this value, no new nodes will be created */
 	private static int maxLiveNodes = 20;
@@ -143,7 +147,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static int indexOfEngineToUseInTestFilesWithResolutionSingleEngine = -1;
 
 	/** If false, infinite assets will not be compared */
-	private static boolean isToCompareInfiniteExpectedScore = true;
+	private static boolean isToCompareInfiniteExpectedScore = false;
 
 	/** If {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)} generates a big edit,
 	 * the edit will not set the probabilities to less than 0+{@link #probDistanceFromDeterministicValues} or 1-{@link #probDistanceFromDeterministicValues}.
@@ -176,7 +180,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If there are less than this number of questions, questions will not be resolved */
 	private static int minAliveQuestionNumber = 0;
 
-	private static long seed = 0x0f;//666;//new Date().getTime();
+	private static long seed = 666;//new Date().getTime();
 	/** Random number generator, with seed */
 	private static Random random = new Random(seed);
 
@@ -746,7 +750,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 //		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 100f));
 //		engines.get(engines.size()-1).setToDeleteResolvedNode(false);
 //		engines.get(engines.size()-1).setToObtainProbabilityOfResolvedQuestions(true);
-		
+		engines.get(engines.size()-1).setToThrowExceptionOnInvalidAssumptions(true);
 		
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();
@@ -4566,8 +4570,13 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				if (nodesToCreate.contains(network.getNode(questionId.toString()))) {
 					if (engines.get(0).getProbabilisticNetwork().getNodeCount() < maxLiveNodes) {
 						// can create new node without any problem
-						this.createNode(questionId, network, engines, (List)Collections.emptyList(), 
-								nodesToCreate, resolvedQuestions);
+						if (isToAlwaysCreateMarkovBlanket ) {
+							this.createNodesInMarkovBlanket(questionId, network, engines, (List)Collections.emptyList(), 
+									nodesToCreate, resolvedQuestions);
+						} else {
+							this.createNode(questionId, network, engines, (List)Collections.emptyList(), 
+									nodesToCreate, resolvedQuestions);
+						}
 						break;	// this question is OK to go now, because it was created
 					} else {
 						// cannot use this question, because it is a new node, but we cannot create more nodes due to max limit
@@ -5960,8 +5969,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						}
 					}
 				}
-				try { System.out.print("38="+engines.get(0).getProbList(38L, null, null)); } catch (Exception e) {}
-				try { System.out.print("26="+engines.get(0).getProbList(26L, null, null));} catch (Exception e) {}
+//				try { System.out.print("38="+engines.get(0).getProbList(38L, null, null)); } catch (Exception e) {}
+//				try { System.out.print("26="+engines.get(0).getProbList(26L, null, null));} catch (Exception e) {}
 				System.out.println();
 			}
 			
@@ -5990,8 +5999,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						}
 					}
 				}
-				try { System.out.print("38="+engines.get(0).getProbList(38L, null, null)); } catch (Exception e) {}
-				try { System.out.print("26="+engines.get(0).getProbList(26L, null, null));} catch (Exception e) {}
+//				try { System.out.print("38="+engines.get(0).getProbList(38L, null, null)); } catch (Exception e) {}
+//				try { System.out.print("26="+engines.get(0).getProbList(26L, null, null));} catch (Exception e) {}
 				System.out.println();
 			}
 			
@@ -6049,11 +6058,23 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		INode nodeToCreate = net.getNode(questionId.toString());
 		assertNotNull(questionId.toString(), nodeToCreate);
 		
+		// variables for comparison
+		Map<Long, float[]> userToScoreAndCashMap = null;
+		Map<Long, List<Float>> oldProbLists = null;
+		
 		// create all nodes in markov blanket
 		for (MarkovEngineImpl engine : engines) {
 			if (enginesNotToChangeNetwork.contains(engine)) {
 				// do not add new node into this engine
 				continue;
+			}
+			if (isToCompareValuesBeforeAndAfterCreateNode) {
+				oldProbLists = engine.getProbLists(null, null, null);
+				userToScoreAndCashMap = new HashMap<Long, float[]>();
+				for (Long user : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+					float[] scoreCash = {engine.scoreUserEv(user, null, null), engine.getCash(user, null, null)};
+					userToScoreAndCashMap.put(user, scoreCash);
+				}
 			}
 			if (nodesNotPresent.contains(nodeToCreate)) {
 				engine.addQuestion(null, new Date(), questionId, nodeToCreate.getStatesSize(), null);
@@ -6075,12 +6096,16 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		}
 		
 		List<Long> parentQuestionIds = new ArrayList<Long>();
+		// extract child node in the last ME, so that we can check for existence of edges
+		Node childInLastME = engines.get(engines.size()-1).getProbabilisticNetwork().getNode(nodeToCreate.getName());
 		// add edges if parents are already present in the system
 		for (INode parent : nodeToCreate.getParentNodes()) {
 			if (!nodesNotPresent.contains(parent)) {
-				// TODO do not re-add edges which are already present
-				// the parent is already present in the system. Add edge
-				parentQuestionIds.add(Long.parseLong(parent.getName()));
+				Node parentInLastME = engines.get(engines.size()-1).getProbabilisticNetwork().getNode(parent.getName());
+				// do not re-add edges which are already present
+				if (engines.get(engines.size()-1).getProbabilisticNetwork().getEdge(parentInLastME, childInLastME) == null) {
+					parentQuestionIds.add(Long.parseLong(parent.getName())); // the parent is already present in the system. Add edge
+				}
 			}
 		}
 		if (!parentQuestionIds.isEmpty() && !new ArrayList<Long>(resolvedQuestions).removeAll(parentQuestionIds)) {
@@ -6109,7 +6134,19 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						// do not add new node into this engine
 						continue;
 					}
-					engine.addQuestionAssumption(null, new Date(), Long.parseLong(child.getName()), Collections.singletonList(Long.parseLong(nodeToCreate.getName())), null);
+					// extract child and parent in current engine, so that exact comparison does not fail
+					Node childInCurrentME = engine.getProbabilisticNetwork().getNode(child.getName());
+					if (childInCurrentME == null) {
+						continue;
+					}
+					Node parentInCurrentME = engine.getProbabilisticNetwork().getNode(nodeToCreate.getName());
+					if (parentInCurrentME == null) {
+						continue;
+					}
+					// only create edge if it does not exist
+					if (engine.getProbabilisticNetwork().getEdge(parentInCurrentME, childInCurrentME) == null) {
+						engine.addQuestionAssumption(null, new Date(), Long.parseLong(child.getName()), Collections.singletonList(Long.parseLong(nodeToCreate.getName())), null);
+					}
 					// make sure creation of the edge did not reappear the resolved nodes
 					if (engine.isToDeleteResolvedNode()) {
 						Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
@@ -6141,11 +6178,55 @@ public class MarkovEngineBruteForceTest extends TestCase {
 							assertFalse(engine.toString()+", resolved="+resolvedQuestions+", probLists="+probLists,new ArrayList<Long>(resolvedQuestions).removeAll(probLists.keySet()));
 						}
 					}
-					engine.addQuestionAssumption(null, new Date(), Long.parseLong(child.getName()), parentQuestionIds, null);
+					// extract child and parent in current engine, so that exact comparison does not fail
+					Node childInCurrentME = engine.getProbabilisticNetwork().getNode(child.getName());
+					if (childInCurrentME == null) {
+						continue;
+					}
+					// remove the parents which are already in ME
+					List<Long> parentQuestionIdsToAdd = new ArrayList<Long>(parentQuestionIds.size());
+					for (Long parentId : parentQuestionIds) {
+						Node parentInCurrentME = engine.getProbabilisticNetwork().getNode(parentId.toString());
+						if (engine.getProbabilisticNetwork().getEdge(parentInCurrentME, childInCurrentME) == null) {
+							parentQuestionIdsToAdd.add(parentId);
+						}
+					}
+					if (parentQuestionIdsToAdd.isEmpty()) {
+						continue;
+					}
+					// only create edge if it does not exist
+					if (!parentQuestionIdsToAdd.isEmpty()) {
+						engine.addQuestionAssumption(null, new Date(), Long.parseLong(child.getName()), parentQuestionIdsToAdd, null);
+					}
 					// make sure creation of the edge did not reappear the resolved nodes
 					if (engine.isToDeleteResolvedNode()) {
 						Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
 						assertFalse(engine.toString()+", resolved="+resolvedQuestions+", probLists="+probLists,new ArrayList<Long>(resolvedQuestions).removeAll(probLists.keySet()));
+					}
+					// compare values before and after creation of node/edge
+					if (isToCompareValuesBeforeAndAfterCreateNode) {
+						// compare marginals
+						Map<Long, List<Float>> newProbLists = engine.getProbLists(null, null, null);
+						// shall have more nodes than before
+						assertTrue(newProbLists.size() > oldProbLists.size()); 
+						for (Long id : oldProbLists.keySet()) {
+							List<Float> oldProb = oldProbLists.get(id);
+							List<Float> newProb = newProbLists.get(id);
+							assertEquals(oldProb.size(), newProb.size());
+							for (int i = 0; i < oldProb.size(); i++) {
+								assertEquals("Node=" + id + ", index=" + i + ", old="+oldProbLists+"; new=" + newProbLists,
+										oldProb.get(i), newProb.get(i), PROB_ERROR_MARGIN);
+							}
+						}
+						// compare user's score and cash
+						for (Long user : userToScoreAndCashMap.keySet()) {
+							float[] oldScoreCash = userToScoreAndCashMap.get(user);
+							float[] newScoreCash = {engine.scoreUserEv(user, null, null), engine.getCash(user, null, null)};
+							assertEquals("user="+user+";"+oldScoreCash+newScoreCash, 
+									oldScoreCash[0], newScoreCash[0], ASSET_ERROR_MARGIN);
+							assertEquals("user="+user+";"+oldScoreCash+newScoreCash, 
+									oldScoreCash[1], newScoreCash[1], ASSET_ERROR_MARGIN);
+						}
 					}
 				}
 				if (nodesNotPresent.contains(child)) {
