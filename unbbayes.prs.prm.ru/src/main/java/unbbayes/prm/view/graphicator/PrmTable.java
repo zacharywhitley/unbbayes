@@ -103,7 +103,7 @@ public class PrmTable extends JPanel {
 		});
 		panel.add(btnNewButton);
 
-		// Init CPT
+		// Initialize CPT
 		initianize();
 	}
 

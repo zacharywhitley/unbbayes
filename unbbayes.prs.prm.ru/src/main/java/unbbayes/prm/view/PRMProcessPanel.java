@@ -269,8 +269,8 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 			PathFinderAlgorithm paths = new PathFinderAlgorithm();
 			// Get possible paths
-			List<Attribute[]> possiblePaths = paths.getPossiblePaths(relSchema,parentPM,
-					childPM);
+			List<Attribute[]> possiblePaths = paths.getPossiblePaths(relSchema,
+					parentPM, childPM);
 
 			// Only one path is assigned automatically. If more than one exist
 			// then ask to user to choose.
@@ -345,10 +345,17 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		log.debug("Show CPD for " + attribute.getAttribute().getName());
 
 		// Ask user to introduce CPD.
-		showCPDTableDialog(attribute);
+		try {
+			showCPDTableDialog(attribute);
+		} catch (Exception e) {
+			log.warn(e);
+			JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
+					JOptionPane.WARNING_MESSAGE);
+			
+		}
 	}
 
-	private void showCPDTableDialog(final Attribute attribute) {
+	private void showCPDTableDialog(final Attribute attribute) throws Exception {
 		// Get parents
 		ParentRel[] parentRels = prmController.parentsOf(attribute);
 		AttributeStates[] parentStates = new AttributeStates[parentRels.length];
@@ -360,6 +367,13 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 			Attribute parent2 = parentRels[i].getParent();
 			String[] possibleValues = dbController
 					.getPossibleValues(parentRels[i].getParent());
+
+			// There are not states.
+			if (possibleValues.length == 0) {
+				throw new Exception("The parent attribute " + parent2
+						+ " does not have possible states.");
+			}
+
 			parentStates[i] = new AttributeStates(parent2, possibleValues);
 
 			// When it is the same parent.
