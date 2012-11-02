@@ -193,7 +193,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	/** If set to true, all nodes in a same clique will be fully connected during {@link RebuildNetworkAction#execute()},
 	 * so that newly created cliques are always extensions of old cliques. */
-	private boolean isToFullyConnectNodesInCliquesOnRebuild = false;//true;
+	private boolean isToFullyConnectNodesInCliquesOnRebuild = true;
 	
 	/**
 	 * If true, actions created in {@link RebuildNetworkAction#execute()} to fully connect nodes in edited clique
@@ -202,6 +202,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see #isToFullyConnectNodesInCliquesOnRebuild()
 	 */
 	private boolean isToIncludeFullConnectActionsOfRebuildIntoHistory = false;
+	
+	/** If false, {@link CliqueSensitiveTradeSpecification#getClique()} will be set to null after execution of balance trade, and
+	 * old cliques will not remain in history */
+	private boolean isToKeepCliquesOfBalanceTradeInMemory = false;
+	
+	/** If true, balancing trades will always be re-calculated (instead of precisely re-executing previous balancing trades) 
+	 * when actions are re-executed from history 
+	 * @see RebuildNetworkAction#execute()
+	 * @see BalanceTradeNetworkAction#execute()*/
+	private boolean isToRecalculateBalancingTradeOnRebuild = false;//isToForceBalanceQuestionEntirely;
+	
+	/** If true, marginals of actions executed in {@link RebuildNetworkAction#execute()} will be compared to the marginals which can be found in the history */
+	private boolean isToCompareProbOnRebuild = false;
 	
 	/** This is mainly used for finding cycles in {@link RebuildNetworkAction#execute()} */
 	private MSeparationUtility mseparationUtility = MSeparationUtility.newInstance();;
@@ -597,86 +610,101 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		/** Rebuild the BN */
 		public void execute() {
+			
+			// we must re-run all executed history.
+			// CAUTION: it is expected that the commit method has also included the new changes in network structure here in this list
 			List<NetworkAction> actions = getExecutedActions();
+			
 			// network to be reset
 			ProbabilisticNetwork net = getProbabilisticNetwork();
+			
 			// the list "actions" without network change actions
 			List<NetworkAction> actionsToExecute = new ArrayList<NetworkAction>();	
+			
+			// TODO check if we really need to synchronize on actions 
+			// (because commit is supposedly synchronized already, and actions are only modified in commit)
 			synchronized (actions) {
-				// store the current clique structure before cleaning the net, so that we can consult it 
-				// posteriorly in order to connect all nodes in the same clique
-				// (this will guarantee that the inclusion of new nodes + edges will not split old cliques,
-				// making the assumptions of old trades invalid
-//				List<List<Long>> cliqueStructures = null;
-//				if (isToFullyConnectNodesInCliquesOnRebuild() ){
-//					cliqueStructures = getQuestionAssumptionGroups();
-//				}
-				
-				// prepare the set of all questions traded at least once
-				Set<Long> tradedQuestions = new HashSet<Long>();
-				for (Set<Long> traded : getTradedQuestionsMap().values()) {
-					tradedQuestions.addAll(traded);
-				};
 				
 				// separate the content of actions into those building network structure and those not changing structure
 				List<NetworkAction> networkConstructionActions = new ArrayList<NetworkAction>(); 
-				// also check whether we have AddQuestionAssumptionNetworkAction, because it is supposedly the only action
-				// which may eventually split old cliques.			
-				// Keep track of which nodes are affected by 
-				Set<Long> nodesAffectedByNewArcs = null; // if this set is null or empty, no AddQuestionAssumptionNetworkAction were present
+				
+				// trace what cliques shall become fully connected.
+				Set<List<Long>> probCliquesToFullyConnect = null;	// use Ids, because the nodes may have been resolved (thus removed)
 				if (isToFullyConnectNodesInCliquesOnRebuild()) {
-					nodesAffectedByNewArcs = new HashSet<Long>();
+					// only use extra space in memory if needed
+					probCliquesToFullyConnect = new HashSet<List<Long>>();
 				}
+				
+				// check the content of actions, and separate them by type of action (whether it changes the net structure or not)
 				for (NetworkAction action : actions) {
+					
 					if (action.isStructureConstructionAction()) {
-						if (isToFullyConnectNodesInCliquesOnRebuild() && action instanceof AddQuestionAssumptionNetworkAction) {
-							// fill set with nodes affected by the insertion of this arc. 
-							// This set will be used to decide what nodes should become fully connected
-							// in order to avoid splitting old cliques.
-							if (tradedQuestions.contains(action.getQuestionId())) {
-								// only consider questions which were traded
-								nodesAffectedByNewArcs.add(action.getQuestionId());
-							}
-							for (Long assumptionId : action.getAssumptionIds()) {
-								if (tradedQuestions.contains(assumptionId)) {
-									// only consider questions which were traded
-									nodesAffectedByNewArcs.add(assumptionId);
+						
+						// this one changes network structure
+						networkConstructionActions.add(action);
+						// note: "resolve questions" are not included here 
+						
+					} else {	// this one does not change network structure or it is a "resolve question"
+						
+						// check what cliques were affected by trades, so that I can fully connect nodes within them.
+						if (isToFullyConnectNodesInCliquesOnRebuild() && action instanceof AddTradeNetworkAction) {
+							
+							// NOTE: I'm assuming that when the action was executed, it executed on correct clique
+							// i.e. nodes were within cliques when trade was initially executed.
+							// TODO check if this assumption is reliable
+							
+							// if this is a trade, we can store which nodes should be in the same clique, and what clique is it
+							if (action instanceof BalanceTradeNetworkAction){
+								
+								// balance trades have special treatment, because it is actually a set of several trades
+								BalanceTradeNetworkAction balanceTrade = (BalanceTradeNetworkAction) action;
+								
+								// iterate over the set of trades this balance trade represents
+								for (TradeSpecification tradeSpec : balanceTrade.getExecutedTrades()) {
+									
+									// Note: since we are storing ids instead of the clique itself, we do not need to check whether this 
+									// trade specification is CliqueSensitiveTradeSpecification or not
+									
+									// variable to store the ids of the assumptions and traded question
+									List<Long> questionsInThisTradeSpec = new ArrayList<Long>();
+									
+									// questionsInThisTradeSpec will contain the traded node...
+									questionsInThisTradeSpec.add(tradeSpec.getQuestionId());
+									
+									// ... and all its assumptions
+									if (tradeSpec.getAssumptionIds() != null) {
+										// NOTE: I'm assuming that tradeSpec.getAssumptionIds() won't have repetitions and don't include the traded question itself
+										questionsInThisTradeSpec.addAll(tradeSpec.getAssumptionIds());
+									}
+									
+									// store the questions to become fully connect
+									probCliquesToFullyConnect.add(questionsInThisTradeSpec);
 								}
+							} else { // treat all other types of trades as ordinal trades
+								
+								// variable to store the ids of the assumptions and traded question
+								List<Long> questionsInThisTrade = new ArrayList<Long>();
+								
+								// questionsInThisTrade will contain the traded node...
+								questionsInThisTrade.add(action.getQuestionId());
+								
+								// ... and all its assumptions
+								if (action.getAssumptionIds() != null) {
+									// NOTE: I'm assuming that action.getAssumptionIds() won't have repetitions and don't include the traded question itself
+									questionsInThisTrade.addAll(action.getAssumptionIds());
+								}
+								
+								// store the questions to become fully connect
+								probCliquesToFullyConnect.add(questionsInThisTrade);
 							}
 						}
-						networkConstructionActions.add(action);
-					} else {
+						
+						// this action will be executed after the network structure is re-generated
 						actionsToExecute.add(action);
+						
 					}
 				}
 				
-				// extract what cliques shall become fully connected
-				Set<Clique> affectedProbCliques = null;	// cliques to be considered
-				if (isToFullyConnectNodesInCliquesOnRebuild()) {
-					// extract the cliques affected by the newly added arcs
-					affectedProbCliques = new HashSet<Clique>();
-					for (Long nodeId : nodesAffectedByNewArcs) {
-						// extract the cliques related to nodeId
-						INode node = getProbabilisticNetwork().getNode(nodeId.toString());
-						if (node == null && isToDeleteResolvedNode()) {
-							// some nodes may have been resolved. Ignore if so
-							continue;
-						}
-						List<Clique> cliquesContainingNode = getProbabilisticNetwork().getJunctionTree().getCliquesContainingAllNodes(Collections.singletonList(node), Integer.MAX_VALUE);
-						for (Clique clique : cliquesContainingNode) {
-							if (getMaxConditionalProbHistorySize() > 0) {
-								// If we are tracking the history of cliques, we can use it to consider only edited cliques
-								List<ParentActionPotentialTablePair> list = getLastNCliquePotentialMap().get(clique);
-								if (list == null || list.isEmpty()) {
-									// no one has edited this clique. Ignore.
-									// TODO this may fail if setMaxConditionalProbHistorySize was recently set from zero to positive
-									continue;
-								}
-							}
-							affectedProbCliques.add(clique);
-						}
-					}
-				}
 				
 				// clear the current network and junction tree now, so that we can re-generate the structure by running networkConstructionActions posteriorly
 				synchronized (getDefaultInferenceAlgorithm()) {
@@ -707,19 +735,26 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					 */
 				}
 				
-				// fully connect cliques after the new structure is ready, so that we can avoid cycles.
+				// fully connect nodes in cliques only after the new structure is ready, so that we check path and avoid cycles.
 				if (isToFullyConnectNodesInCliquesOnRebuild()) {
+					
 					// fully connect nodes in cliques affected by the newly added arcs. 
-					for (Clique clique : affectedProbCliques) {
-						// iterate over combinations of 2 nodes in clique 
-						for (int i = 0; i < clique.getNodes().size()-1; i++) {
-							for (int j = i+1; j < clique.getNodes().size(); j++) {
-								// extract the 2 nodes in the new (rebuilt) network. Same nodes supposedly have same names.
-								Node node1 = getProbabilisticNetwork().getNode(clique.getNodes().get(i).getName());
-								Node node2 = getProbabilisticNetwork().getNode(clique.getNodes().get(j).getName());
-								if (node1 == null || node2 == null) {
-									Debug.println(getClass(), "Could not find "+ i + "th node or " + j + "th node in clique " + clique);
-									continue;
+					for (List<Long> idsOfNodesInClique : probCliquesToFullyConnect) {
+						
+						// iterate over combinations of 2 questions in the list 
+						for (int i = 0; i < idsOfNodesInClique.size()-1; i++) {
+							for (int j = i+1; j < idsOfNodesInClique.size(); j++) {
+								
+								// extract the 2 nodes in the new (rebuilt) network. Same nodes supposedly have same names (ids).
+								Node node1 = getProbabilisticNetwork().getNode(idsOfNodesInClique.get(i).toString());
+								Node node2 = getProbabilisticNetwork().getNode(idsOfNodesInClique.get(j).toString());
+								
+								// basic assertion
+								if (node1 == null || node2 == null || node1.equals(node2)) {
+									Debug.println(getClass(), 
+											"Could not find "+ i + "th node or " + j + "th node in clique " + idsOfNodesInClique 
+											+ ", or they were the same node.");
+									continue;	// ignore and try the best
 								}
 								
 								// check if there is an arc between these 2 nodes
@@ -728,25 +763,36 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 									continue;
 								}
 								
-								// we shall create an arc node1->node2 or node2->node1, but without creating cycles. Supposedly, this will connect siblings 
+								// we shall create an arc node1->node2 or node2->node1, but without creating cycles. 
+								// Supposedly, this will connect parents of children (which are dependencies but not connected directly)
 								
-								// create the action which will add the new arc
+								// prepare the placeholder for the action which will add the new arc
 								AddQuestionAssumptionNetworkAction action = null;
+								
 								// use the m-separation utility component in order to find a path between node1 and node2
 								if (getMSeparationUtility().getRoutes(node1, node2, null, null, 1).isEmpty()) {
+									
 									// there is no route from node1 to node2, so we can create node2->node1 without generating cycle
 									action = new AddQuestionAssumptionNetworkAction(
 											getTransactionKey(), getWhenCreated(), Long.parseLong(node1.getName()), Collections.singletonList(Long.parseLong(node2.getName())), null);
-								} else {
+									
+								} else { // supposedly, we can always add edges in one of the directions (i.e. there is no way we add arc in each direction and both result in cycle)
+									
 									// there is a route from node1 to node2, so we cannot create node2->node1 (it will create a cycle if we do so), so create node1->node2
 									action = new AddQuestionAssumptionNetworkAction(
 											getTransactionKey(), getWhenCreated(), Long.parseLong(node2.getName()), Collections.singletonList(Long.parseLong(node1.getName())), null);
 								}
 								
-								// mark action as executed before it is actually executed 
-								// (this is the default behavior of commitNetworkTransaction on actions changing net structure)
+								// check if we should consider adding this new arc into the history, so that they reappear when rebuilding the network again
+								// CAUTION: if we add them to history, the direction will be virtually fixed 
+								// (so it may result in undesired restrictions in the future if we don't want cycles)
 								if (isToIncludeFullConnectActionsOfRebuildIntoHistory()) {
+									
+									// mark action as executed before it is actually executed 
+									// (this is the default behavior of commitNetworkTransaction on actions changing net structure)
 									action.setWhenExecutedFirstTime(new Date());	
+									
+									// add action into history
 									synchronized (getExecutedActions()) {
 										getExecutedActions().add(action);	
 									}
@@ -840,10 +886,41 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 									}
 								}
 							}
+							
+							// compare probability before 
+							if (isToCompareProbOnRebuild()
+									&& (action instanceof AddTradeNetworkAction || action instanceof ResolveQuestionNetworkAction)) {
+								List<Float> probList = getProbList(action.getQuestionId(), null, null);
+								for (int i = 0; i < probList.size(); i++) {
+									if (Math.abs(probList.get(i) - action.getOldValues().get(i)) > getProbabilityErrorMargin()){
+										if (action instanceof AddTradeNetworkAction) {
+											throw new IllegalStateException("Re-execution before trade " + action.getTradeId() 
+													+ " has caused marginal of question " + action.getQuestionId() 
+													+ " to change from " + action.getOldValues() + " to " + probList);
+										} else {
+											throw new IllegalStateException("Re-execution of action before resolution of question " 
+													+ action.getQuestionId() + " to state " + action.getSettledState()
+													+ " has caused its probability to change from " + action.getOldValues() + " to " + probList);
+										}
+									}
+								}
+							}
+							
 							// redo all trades using the history
 							// actions with action.isStructureChangeAction() == false are supposedly the ones changing probabilities/assets and not changing structure
-							action.execute();
-							// this is not an ordinal execution of the action, so do not update attribute whenExecutedFirst.
+							action.execute(); // this is not an ordinal execution of the action, so do not update attribute whenExecutedFirst.
+							
+							// compare probability after 
+							if (isToCompareProbOnRebuild() && action instanceof AddTradeNetworkAction) {
+								List<Float> probList = getProbList(action.getQuestionId(), null, null);
+								for (int i = 0; i < probList.size(); i++) {
+									if (Math.abs(probList.get(i) - action.getNewValues().get(i)) > getProbabilityErrorMargin()){
+										throw new IllegalStateException("Re-execution of trade " + action.getTradeId() 
+												+ " has caused marginal of question " + action.getQuestionId() 
+												+ " to change from " + action.getNewValues() + " to " + probList);
+									}
+								}
+							}
 						}
 						
 						// from this point, play back actions without updating assets in trades
@@ -1592,10 +1669,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					
 					// check if we should do clique-sensitive operation, like balance trade
 					if (tradeSpecification instanceof CliqueSensitiveTradeSpecification) {
+						CliqueSensitiveTradeSpecification cliqueSensitiveTradeSpecification = (CliqueSensitiveTradeSpecification) tradeSpecification;
 						// extract the clique from tradeSpecification. Note: this is supposedly an asset clique
-						// fortunately, the algorithm doesn't care if it is an asset or prob clique, so privide the asset clique to algorithm
-						algorithm.getEditCliques().add(((CliqueSensitiveTradeSpecification) tradeSpecification).getClique());
-						// by forcing the algorithm to update only this clique, we are forcing the balance trade to balance the provided clique
+						if (cliqueSensitiveTradeSpecification.getClique() != null) {
+							// fortunately, the algorithm doesn't care if it is an asset or prob clique, so privide the asset clique to algorithm
+							algorithm.getEditCliques().add(cliqueSensitiveTradeSpecification.getClique());
+							// by forcing the algorithm to update only this clique, we are forcing the balance trade to balance the provided clique
+						}
 					}
 					
 					// backup config of assets
@@ -2225,6 +2305,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public List<Float> getOldValues() { return marginalWhenResolved; }
 		/** Builds the list of new values (1 for the resolved state and 0 otherwise) under request */
 		public List<Float> getNewValues() {
+			//need to use this, because we cannot retrieve what was the number of states of this question locally...
 			StatePair statePair = getResolvedQuestions().get(questionId);
 			if (statePair == null) {
 				return null;
@@ -4476,25 +4557,34 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * it calls super's {@link #execute(boolean, false)} 
 		 * @see #execute(boolean, boolean)*/
 		public void execute(boolean isToUpdateAssets) {
-			// if this action was executed previously, we are re-running the history, and getExecutedTrades() will contain something
-			if (getExecutedTrades() != null && !getExecutedTrades().isEmpty()) {
-				// backup original trade specification, because we will change it several times
-				TradeSpecification backup = this.getTradeSpecification();
-				try {
-					// re-execute old trades
-					for (TradeSpecification tradeSpecification : getExecutedTrades() ) {
-						// execute the trade without releasing lock
-						this.setTradeSpecification(tradeSpecification);
-						super.execute(isToUpdateAssets);
+			// if ME is set not to re-calculate the balancing trades again, and if this action was executed previously, we shall re-run getExecutedTrades(), 
+			if (!isToRecalculateBalancingTradeOnRebuild() && this.getWhenExecutedFirstTime() != null) {
+				// re-execute the same trades if getExecutedTrades() will contain something
+				if (getExecutedTrades() != null && !getExecutedTrades().isEmpty()) {
+					// backup original trade specification, because we will change it several times
+					TradeSpecification backup = this.getTradeSpecification();
+					try {
+						// re-execute old trades
+						for (TradeSpecification tradeSpecification : getExecutedTrades() ) {
+							// execute the trade without releasing lock
+							this.setTradeSpecification(tradeSpecification);
+							super.execute(isToUpdateAssets);
+						}
+					} catch (Exception e) {
+						// restore original trade specification
+						this.setTradeSpecification(backup);
+						throw new RuntimeException(e);
 					}
-				} catch (Exception e) {
-					// restore original trade specification
 					this.setTradeSpecification(backup);
-					throw new RuntimeException(e);
 				}
-				this.setTradeSpecification(backup);
 				return;
 			}
+			// store the old marginals now and call setOldValues(oldValues) later, because a call to super will overwrite this value
+			List<Float> oldMarginal = null;
+			if (this.getWhenExecutedFirstTime() == null) {
+				oldMarginal = getProbList(getQuestionId(), null, null);
+			}
+			
 			// prepare the list of trades actually executed by this balance operation
 			setExecutedTrades(new ArrayList<TradeSpecification>());
 			synchronized (getProbabilisticNetwork()) {
@@ -4529,7 +4619,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							this.setTradeSpecification(tradeSpecification);
 							super.execute(isToUpdateAssets);
 							// mark this trade as executed
-							getExecutedTrades().add(tradeSpecification);
+							if (isToKeepCliquesOfBalanceTradeInMemory()) {
+								// if tradeSpecification instanceof CliqueSensitiveTradeSpecification, then the clique will be kept in memory.
+								// if not, then tradeSpecification will not contain cliques anyway, so add to getExecutedTrades().
+								getExecutedTrades().add(tradeSpecification);
+							} else if (tradeSpecification instanceof CliqueSensitiveTradeSpecification) {
+								// if we should not keep clique in history, and tradeSpecification instanceof CliqueSensitiveTradeSpecification,
+								// then we need to discard it and substitute to a specification which does not store clique
+								getExecutedTrades().add(
+										new TradeSpecificationImpl(
+												tradeSpecification.getUserId(), 
+												tradeSpecification.getQuestionId(), 
+												tradeSpecification.getProbabilities(), 
+												tradeSpecification.getAssumptionIds(), 
+												tradeSpecification.getAssumedStates()
+										)
+								);
+								// let the garbage collector discard the tradeSpecification
+							}
 						}
 					} catch (Exception e) {
 						// restore original trade specification
@@ -4539,10 +4646,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 				// restore original trade specification
 				this.setTradeSpecification(backup);
-				// by default, set the probabilities of this action to the marginal after trade
-				this.setNewValues(getProbList(getQuestionId(), null, null));
-				// the above code will also do the following
-//				backup.setProbabilities(getProbList(getQuestionId(), null, null));
+				
+				if (this.getWhenExecutedFirstTime() == null) {
+					// overwrite the old marginals, because a call to super has changed this value.
+					this.setOldValues(oldMarginal);
+					// by default, set the probabilities of this action to the marginal after trade
+					this.setNewValues(getProbList(getQuestionId(), null, null));
+					// the above code will also do the following
+//					backup.setProbabilities(getProbList(getQuestionId(), null, null));
+				}
 			}
 		}
 		public void revert() throws UnsupportedOperationException {
@@ -7081,6 +7193,64 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public boolean isToIncludeFullConnectActionsOfRebuildIntoHistory() {
 		return isToIncludeFullConnectActionsOfRebuildIntoHistory;
+	}
+
+	/**
+	 * If false, {@link CliqueSensitiveTradeSpecification#getClique()} will be set to null after execution of balance trade, and
+	 * old cliques will not remain in history
+	 * @param isToKeepCliquesOfBalanceTradeInMemory the isToKeepCliquesOfBalanceTradeInMemory to set
+	 */
+	public void setToKeepCliquesOfBalanceTradeInMemory(
+			boolean isToKeepCliquesOfBalanceTradeInMemory) {
+		this.isToKeepCliquesOfBalanceTradeInMemory = isToKeepCliquesOfBalanceTradeInMemory;
+	}
+
+	/**
+	 * If false, {@link CliqueSensitiveTradeSpecification#getClique()} will be set to null after execution of balance trade, and
+	 * old cliques will not remain in history
+	 * @return the isToKeepCliquesOfBalanceTradeInMemory
+	 */
+	public boolean isToKeepCliquesOfBalanceTradeInMemory() {
+		return isToKeepCliquesOfBalanceTradeInMemory;
+	}
+
+	/**
+	 * If true, balancing trades will always be re-calculated (instead of precisely re-executing previous balancing trades) 
+	 * when actions are re-executed from history 
+	 * @see RebuildNetworkAction#execute()
+	 * @see BalanceTradeNetworkAction#execute()
+	 * @see #isToForceBalanceQuestionEntirely()
+	 * @param isToRecalculateBalancingTradeOnRebuild the isToRecalculateBalancingTradeOnRebuild to set
+	 */
+	public void setToRecalculateBalancingTradeOnRebuild(
+			boolean isToRecalculateBalancingTradeOnRebuild) {
+		this.isToRecalculateBalancingTradeOnRebuild = isToRecalculateBalancingTradeOnRebuild;
+	}
+
+	/**
+	 * If true, balancing trades will always be re-calculated (instead of precisely re-executing previous balancing trades) 
+	 * when actions are re-executed from history 
+	 * @see RebuildNetworkAction#execute()
+	 * @see BalanceTradeNetworkAction#execute()
+	 * @see #isToForceBalanceQuestionEntirely()
+	 * @return the isToRecalculateBalancingTradeOnRebuild
+	 */
+	public boolean isToRecalculateBalancingTradeOnRebuild() {
+		return isToRecalculateBalancingTradeOnRebuild;
+	}
+
+	/**
+	 * @param isToCompareProbOnRebuild the isToCompareProbOnRebuild to set
+	 */
+	public void setToCompareProbOnRebuild(boolean isToCompareProbOnRebuild) {
+		this.isToCompareProbOnRebuild = isToCompareProbOnRebuild;
+	}
+
+	/**
+	 * @return the isToCompareProbOnRebuild
+	 */
+	public boolean isToCompareProbOnRebuild() {
+		return isToCompareProbOnRebuild;
 	}
 
 

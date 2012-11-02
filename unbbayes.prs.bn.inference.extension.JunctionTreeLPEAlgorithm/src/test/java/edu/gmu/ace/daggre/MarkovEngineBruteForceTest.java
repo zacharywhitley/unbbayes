@@ -94,7 +94,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static final String NODE_NAME_PREFIX = "N";
 
 	/** This program will enter in a loop at this iteration number. Use with care. Set to negative if you don't want this program to stop at the iteration */
-	private static final int iterationToDebug = 33;
+	private static final int iterationToDebug = -117;//-136;
 
 	/** this object will group the data to be printed out in {@link #testFilesWithResolution()} */
 	private Tracer tracer = null;
@@ -131,13 +131,13 @@ public class MarkovEngineBruteForceTest extends TestCase {
 
 	/** If true, {@link #testFilesWithResolutionSingleEngine()} will call {@link #createNodesInMarkovBlanket(Long, Network, List, List, List, Collection)}
 	 * instead of {@link #createNode(Long, Network, List, List, List, Collection)} */
-	private static boolean isToAlwaysCreateMarkovBlanket = true;
+	private static boolean isToAlwaysCreateMarkovBlanket = false;//true;
 
 	/** Potentials of cliques containing these nodes will be printed in {@link #createNode(Long, Network, List, List, List, Collection)}*/
 	private static long[] nodesToTraceCliquePotentials = null;//{26L,38L};	// null;
 
 	/** If false, consistency assertion in 5 point test will be skipped (this is useful if your objective is only to print test traces) */
-	private static boolean isToAssertConsistencyIn5PointTest = false;//true;
+	private static boolean isToAssertConsistencyIn5PointTest = true;//false;
 
 	/** Maximum quantity of nodes to be alive in this test. If the quantity of nods reaches this value, no new nodes will be created */
 	private static int maxLiveNodes = 20;
@@ -147,7 +147,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static int indexOfEngineToUseInTestFilesWithResolutionSingleEngine = -1;
 
 	/** If false, infinite assets will not be compared */
-	private static boolean isToCompareInfiniteExpectedScore = false;
+	private static boolean isToCompareInfiniteExpectedScore = true;
 
 	/** If {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)} generates a big edit,
 	 * the edit will not set the probabilities to less than 0+{@link #probDistanceFromDeterministicValues} or 1-{@link #probDistanceFromDeterministicValues}.
@@ -751,6 +751,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 //		engines.get(engines.size()-1).setToDeleteResolvedNode(false);
 //		engines.get(engines.size()-1).setToObtainProbabilityOfResolvedQuestions(true);
 		engines.get(engines.size()-1).setToThrowExceptionOnInvalidAssumptions(true);
+		engines.get(engines.size()-1).setToCompareProbOnRebuild(true);
 		
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();
@@ -4433,6 +4434,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 * 1 ME will be run (hence, no comparison is performed).
 	 */
 	public final void testFilesWithResolutionSingleEngine() {
+		isToAssertConsistencyIn5PointTest = false;
 		
 		// most basic assertion
 		assertNotNull(engines);
@@ -4517,10 +4519,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			// this is just a counter of how many iterations went to the branch of edits close to the bound
 			int numIterationsCloseToBoundsBeforeIteration = numEditsCloseToLimits;
 			if (iteration == iterationToDebug) {
-				// enter in loop, so that we can only get out of the loop if we enter in debug mode by using external means
-				while(!Debug.isDebugMode());
 				Debug.setDebug(true);
-//				Debug.setDebug(false);
 			}
 			if (isToTrace()) {
 				tracer = new Tracer();
@@ -5976,7 +5975,6 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			
 			// commit transaction in order to actually create the nodes & all edges. This will re-run the history
 			engine.commitNetworkActions(transactionKey);
-			
 			if (nodesToTraceCliquePotentials != null) {
 				System.out.println("\n After creating node " + questionId);
 				for (Clique clique : engines.get(0).getProbabilisticNetwork().getJunctionTree().getCliques()) {
@@ -6016,7 +6014,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					assertEquals(oldProb.size(), newProb.size());
 					for (int i = 0; i < oldProb.size(); i++) {
 						assertEquals("Node=" + id + ", index=" + i + ", old="+oldProbLists+"; new=" + newProbLists,
-								oldProb.get(i), newProb.get(i), PROB_ERROR_MARGIN);
+								oldProb.get(i), newProb.get(i), RELAXED_PROB_ERROR_MARGIN);
 					}
 				}
 				// compare user's score and cash

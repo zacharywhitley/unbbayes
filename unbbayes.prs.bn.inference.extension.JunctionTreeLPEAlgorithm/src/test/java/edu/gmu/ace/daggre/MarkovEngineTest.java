@@ -18532,4 +18532,6 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(cashPerStates.get(0), cashPerStates.get(1), ASSET_ERROR_MARGIN);
 		
 	}
+	
+	
 }
