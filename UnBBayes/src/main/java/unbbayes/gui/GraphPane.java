@@ -87,7 +87,7 @@ import unbbayes.util.extension.manager.CorePluginNodeManager;
  * @see JPanel Modified by Young, 4.13.2009
  * 
  */
-public class GraphPane extends UCanvas implements KeyListener {
+public class GraphPane extends UCanvas {
 
 	private static final int MOVE_Y_COPY = 100;
 
@@ -170,6 +170,8 @@ public class GraphPane extends UCanvas implements KeyListener {
 		action = GraphAction.NONE;
 
 		update();
+		
+		addKeyListener(new CopyPasteKeyManager());
 	}
 
 	/**
@@ -197,86 +199,11 @@ public class GraphPane extends UCanvas implements KeyListener {
 		action = GraphAction.NONE;
 
 		graphViewport.setViewSize(visibleDimension);
+		
+		addKeyListener(new CopyPasteKeyManager());
 	}
 
-	public void keyTyped(KeyEvent e) {
-	}
-
-	public void keyReleased(KeyEvent e) {
-		// Capture Ctr+C = Copy
-		if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C) {
-			Debug.println("Copy");
-
-			// Get selected network
-			List<Node> group = getSelectedGroup();
-
-			// Add network to clipboard
-			InternalClipboard.getInstance().putToClipboard(group);
-		}
-		// Capture Ctr+V = Paste
-		else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V) {
-			Debug.println("Paste");
-
-			// Load network from clipboard
-			Object fromClipboard = InternalClipboard.getInstance()
-					.getFromClipboard();
-
-			try {
-				List<Node> group = (List<Node>) fromClipboard;
-
-				pasteAndDrawNodes(group);
-			} catch (Exception ex) {
-				Debug.println(GraphPane.class, "Error pasting", ex);
-			}
-		}
-	}
-
-	private void pasteAndDrawNodes(List<Node> group) {
-
-		// Nodes to copy are noly parents.
-		List<Node> parentNodesToCopy = new ArrayList<Node>();
-
-		// Find parent nodes or nodes without selected parents
-		for (Node node : group) {
-			List<Node> parents = node.getParents();
-
-			boolean hasParents = false;
-			for (Node parent : parents) {
-
-				if (getNodeUShape(parent).getState().equals(
-						UShape.STATE_SELECTED)) {
-					hasParents = true;
-					break;
-				}
-			}
-			// If node has parents then continue.
-			if (hasParents) {
-				continue;
-			}
-
-			parentNodesToCopy.add(node);
-		}
-
-		HashMap<Node, Node> sharedNodes = new HashMap<Node, Node>();
-
-		// copy nodes
-		// FIXME this for could be inside the last for
-		for (Node rootNode : parentNodesToCopy) {
-
-			// No root identified.
-			if (rootNode == null) {
-				Debug.println("Root node not identified");
-				return;
-			}
-
-			// Des-select initial node.
-			getNodeUShape(rootNode).setState(UShape.STATE_NONE, null);
-
-			// Clone the root and their children recursively
-			addClonedNode(rootNode, sharedNodes);
-		}
-
-	}
+	
 
 	/**
 	 * Create a new node based on another one. It clone the node's children as
@@ -408,8 +335,7 @@ public class GraphPane extends UCanvas implements KeyListener {
 		return newName;
 	}
 
-	public void keyPressed(KeyEvent e) {
-	}
+
 
 	/**
 	 * Seta o atributo graphDimension (tamanho da rede Bayesiana) do objeto da
@@ -1339,4 +1265,88 @@ public class GraphPane extends UCanvas implements KeyListener {
 		this.toUseSelectionForLines = toUseSelectionForLines;
 	}
 
+	
+	class CopyPasteKeyManager implements KeyListener{
+		public void keyTyped(KeyEvent e) {
+		}
+
+		public void keyReleased(KeyEvent e) {
+			// Capture Ctr+C = Copy
+			if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C) {
+				Debug.println("Copy");
+
+				// Get selected network
+				List<Node> group = getSelectedGroup();
+
+				// Add network to clipboard
+				InternalClipboard.getInstance().putToClipboard(group);
+			}
+			// Capture Ctr+V = Paste
+			else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V) {
+				Debug.println("Paste");
+
+				// Load network from clipboard
+				Object fromClipboard = InternalClipboard.getInstance()
+						.getFromClipboard();
+
+				try {
+					List<Node> group = (List<Node>) fromClipboard;
+
+					pasteAndDrawNodes(group);
+				} catch (Exception ex) {
+					Debug.println(GraphPane.class, "Error pasting", ex);
+				}
+			}
+		}
+
+		private void pasteAndDrawNodes(List<Node> group) {
+
+			// Nodes to copy are noly parents.
+			List<Node> parentNodesToCopy = new ArrayList<Node>();
+
+			// Find parent nodes or nodes without selected parents
+			for (Node node : group) {
+				List<Node> parents = node.getParents();
+
+				boolean hasParents = false;
+				for (Node parent : parents) {
+
+					if (getNodeUShape(parent).getState().equals(
+							UShape.STATE_SELECTED)) {
+						hasParents = true;
+						break;
+					}
+				}
+				// If node has parents then continue.
+				if (hasParents) {
+					continue;
+				}
+
+				parentNodesToCopy.add(node);
+			}
+
+			HashMap<Node, Node> sharedNodes = new HashMap<Node, Node>();
+
+			// copy nodes
+			// FIXME this for could be inside the last for
+			for (Node rootNode : parentNodesToCopy) {
+
+				// No root identified.
+				if (rootNode == null) {
+					Debug.println("Root node not identified");
+					return;
+				}
+
+				// Des-select initial node.
+				getNodeUShape(rootNode).setState(UShape.STATE_NONE, null);
+
+				// Clone the root and their children recursively
+				addClonedNode(rootNode, sharedNodes);
+			}
+
+		}
+
+		public void keyPressed(KeyEvent e) {
+		}
+	}
 }
