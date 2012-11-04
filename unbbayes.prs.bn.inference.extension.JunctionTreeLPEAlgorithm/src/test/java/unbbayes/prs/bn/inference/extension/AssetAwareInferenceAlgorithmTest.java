@@ -7,6 +7,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -2120,5 +2121,317 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		
 		
 	}
+	
+	/**
+	 * This is a test case for {@link AssetAwareInferenceAlgorithm#calculateExpectedLocalAssets(Map)}
+	 */
+	public final void testDEFNetCalculateExpectedLocalAssets() {
+		// set up to the default values used in daggre market
+		assetQAlgorithm.setqToAssetConverter(new IQValuesToAssetsConverter() {
+			public void setCurrentLogBase(float base) { throw new UnsupportedOperationException(); }
+			public void setCurrentCurrencyConstant(float b) {throw new UnsupportedOperationException(); }
+			public float getScoreFromQValues(double assetQ) {
+				return (float) (getCurrentCurrencyConstant()*(Math.log(assetQ)/Math.log(getCurrentLogBase())));
+			}
+			public double getQValuesFromScore(float score) {
+				return Math.pow(getCurrentLogBase(), score/getCurrentCurrencyConstant());
+			}
+			public float getCurrentLogBase() {
+				return 2f;
+			}
+			public float getCurrentCurrencyConstant() {
+				return 100f;
+			}
+		});
+		assetQAlgorithm.setDefaultInitialAssetTableValue(1000);
+		assetQAlgorithm.setToPropagateForGlobalConsistency(false);	// do not call min propagation after update
+		
+		// create new user Tom and his asset net. A new asset net represents a new user.
+		AssetNetwork assetNetTom = null;
+		try {
+			assetNetTom = assetQAlgorithm.createAssetNetFromProbabilisticNet(network);
+			assetNetTom.setName("Tom");
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		assertNotNull(assetNetTom);
+		
+		// set Tom as the current network user
+		assetQAlgorithm.setAssetNetwork(assetNetTom);
+		assertEquals(assetNetTom, assetQAlgorithm.getAssetNetwork());
+		
+		// insert soft evidence
+		InCliqueConditionalProbabilityExtractor conditionalProbabilityExtractor = (InCliqueConditionalProbabilityExtractor) InCliqueConditionalProbabilityExtractor.newInstance();	
+		assertNotNull(conditionalProbabilityExtractor);
+		
+		// Tom bets P(E|D) = [.1, .9, .3, .7]
+		
+		ProbabilisticNode betNode = (ProbabilisticNode) assetQAlgorithm.getRelatedProbabilisticNetwork().getNode("E");
+		// bet node is still E
+		assertEquals(network.getNode("E"), betNode);
+		
+		// add D to bet condition
+		Node assumedNode = network.getNode("D");
+		assertNotNull(assumedNode);
+		List<INode> betConditions = new ArrayList<INode>();
+		betConditions.add(assumedNode);
+		assertEquals(1, betConditions.size());
+		assertTrue(betConditions.contains(assumedNode));
+		
+		// extract CPT of E given D
+		PotentialTable potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		assertNotNull(potential);
+		assertEquals(4, potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+		
+		
+		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1 (i.e. we are changing only the cells we want)
+		potential.setValue(0, 0.1f);
+		potential.setValue(1, 0.9f);
+		potential.setValue(2, 0.3f);
+		potential.setValue(3, 0.7f);
+		
+		// fill array of likelihood with values in CPT
+		float[] likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		betNode.addLikeliHood(likelihood, betConditions);
+		
+		try {
+			// propagate soft evidence
+			assetQAlgorithm.propagate();
+			System.out.println(network.getLog());
+			network.getLogManager().clear();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// assert that the expected assets of clique FD did not change by trading on E
+		Map<INode, Integer> conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("F"), 0);
+		double expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1000d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("F"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1000d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		
+		// test conditioned on E
+		conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("E"), 0);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(886.6794025d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("E"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1068.9372625d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		
+		// test conditioned on D
+		conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("D"), 0);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1053.10045d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1011.870931d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		
+		// test conditioned on D and E
+		conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("D"), 0);
+		conditions.put(network.getNode("E"), 0);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(767.8072d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 1);
+		conditions.put(network.getNode("E"), 0);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(926.30347d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 0);
+		conditions.put(network.getNode("E"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1084.7997d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 1);
+		conditions.put(network.getNode("E"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1048.5427d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		
+		// test conditioned on D and F (which did not change)
+		conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("D"), 0);
+		conditions.put(network.getNode("F"), 0);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1000d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 1);
+		conditions.put(network.getNode("F"), 0);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1000d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 0);
+		conditions.put(network.getNode("F"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1000d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 1);
+		conditions.put(network.getNode("F"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1000d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		
+		// test invalid conditions
+		conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("E"), (int)Math.round(Math.random()));
+		conditions.put(network.getNode("F"), (int)Math.round(Math.random()));
+		try {
+			expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+		conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("D"), (int)Math.round(Math.random()));
+		conditions.put(network.getNode("E"), (int)Math.round(Math.random()));
+		conditions.put(network.getNode("F"), 0);
+		try {
+			expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+		
+		// Tom bets P(D|F) = [.1, .9, .3, .7]
+		
+		betNode = (ProbabilisticNode) assetQAlgorithm.getRelatedProbabilisticNetwork().getNode("D");
+		
+		// add D to bet condition
+		assumedNode = network.getNode("F");
+		assertNotNull(assumedNode);
+		betConditions = new ArrayList<INode>();
+		betConditions.add(assumedNode);
+		assertEquals(1, betConditions.size());
+		assertTrue(betConditions.contains(assumedNode));
+		
+		// extract CPT of E given D
+		potential = (PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(betNode, betConditions, network, junctionTreeAlgorithm);
+		assertNotNull(potential);
+		assertEquals(4, potential.tableSize());	// CPT of a node with 2 states conditioned to a node with 2 states -> CPT with 2*2 cells.
+		
+		
+		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1 (i.e. we are changing only the cells we want)
+		potential.setValue(0, 0.1f);
+		potential.setValue(1, 0.9f);
+		potential.setValue(2, 0.3f);
+		potential.setValue(3, 0.7f);
+		
+		// fill array of likelihood with values in CPT
+		likelihood = new float[potential.tableSize()];
+		for (int i = 0; i < likelihood.length; i++) {
+			likelihood[i] = potential.getValue(i);
+		}
+		
+		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
+		betNode.addLikeliHood(likelihood, betConditions);
+		
+		try {
+			// propagate soft evidence
+			assetQAlgorithm.propagate();
+			System.out.println(network.getLog());
+			network.getLogManager().clear();
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		
+		// test conditioned on F
+		conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("F"), 0);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1053.10045d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("F"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1011.870931d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		
+		// test conditioned on E
+		conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("E"), 0);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(914.1114492308, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("E"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1057.3619702703d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		
+		// test conditioned on D
+		conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("D"), 0);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(939.7798525d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1080.8081935d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		
+		// test conditioned on D and E
+		conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("D"), 0);
+		conditions.put(network.getNode("E"), 0);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(767.8072d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 1);
+		conditions.put(network.getNode("E"), 0);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(926.30347d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 0);
+		conditions.put(network.getNode("E"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1084.7997d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 1);
+		conditions.put(network.getNode("E"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1048.5427d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		
+		// test conditioned on D and F
+		conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("D"), 0);
+		conditions.put(network.getNode("F"), 0);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(767.8072d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 1);
+		conditions.put(network.getNode("F"), 0);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1084.7997d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 0);
+		conditions.put(network.getNode("F"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(926.30347d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		conditions.put(network.getNode("D"), 1);
+		conditions.put(network.getNode("F"), 1);
+		expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+		assertEquals(1048.5427d, expectedLocalAssets, ASSET_PRECISION_ERROR);
+		
+		// test invalid conditions
+		conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("E"), (int)Math.round(Math.random()));
+		conditions.put(network.getNode("F"), (int)Math.round(Math.random()));
+		try {
+			expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+		conditions = new HashMap<INode, Integer>();
+		conditions.put(network.getNode("D"), (int)Math.round(Math.random()));
+		conditions.put(network.getNode("E"), (int)Math.round(Math.random()));
+		conditions.put(network.getNode("F"), 0);
+		try {
+			expectedLocalAssets = assetQAlgorithm.calculateExpectedLocalAssets(conditions);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+
+	}
+	
+	
 	
 }

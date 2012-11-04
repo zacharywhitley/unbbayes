@@ -534,8 +534,26 @@ public interface MarkovEngineInterface {
 	 * @return a list of score expectations for each possible choice that could result. This is p(state)*user_assets(state).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
+	 * @deprecated use {@link #scoreUserQuestionEvStates(long, long, List, List, boolean)} instead
 	 */
 	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	
+	/**
+	 * @param userId : the ID of the user (owner of the assets).
+	 * @param questionId :  the ID of the question to be considered. 
+	 * @param assumptionIds : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
+	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
+	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
+	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
+	 * If it does not have the same size of assumptionIDs, MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
+	 * @param isToComputeLocally : if true, the method will not calculate global/joint expected assets.
+	 * Implementations based on cliques will attempt to calculate the expected scores given states within the cliques.
+	 * @return a list of score expectations for each possible choice that could result. This is p(state)*user_assets(state).
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
+	 * 
+	 */
+	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates, boolean isToComputeLocally) throws IllegalArgumentException;
 	
 	/**
 	 * Method for calculating the global "conditional" expected score.

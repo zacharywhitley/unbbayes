@@ -6,9 +6,11 @@ package unbbayes.prs.bn.inference.extension;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JComponent;
 
@@ -20,6 +22,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.IJunctionTree;
 import unbbayes.prs.bn.ILikelihoodExtractor;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
@@ -736,6 +739,252 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		return this.getAssetPropagationDelegator().createAssetNetFromProbabilisticNet(relatedProbabilisticNetwork);
 	}
 	
+	/**
+	 * Calculates the expected assets using only cliques containing the conditions.
+	 * This method uses {@link #getEmptySeparatorsDefaultContent()}.
+	 * This is conceptually different from {@link #calculateExpectedAssets()}, because {@link #calculateExpectedAssets()}
+	 * calculates the expected assets jointly (i.e. considers all nodes), but this method
+	 * only considers nodes in conditions.
+	 * @param conditions : set of nodes and a mapping to what states shall be considered.
+	 * It is assumed to be probabilistic nodes.
+	 * It is expected that the nodes in conditions are in the same clique.
+	 * Negative values will be considered as negative findings (e.g. -1 is "not 0", -2 is "not 1" and so on).
+	 * @return expected assets SUM(ProbCliques * AssetsClique) - SUM(ProbSeparators * AssetsSeparators).
+	 */
+	public double calculateExpectedLocalAssets(Map<INode, Integer> conditions) {
+		// this is the value to be returned by this method
+		double ret = 0 ;
+		
+		// this is the probabilistic network to be used. If there is no conditions, then this is the original network
+		SingleEntityNetwork  assetNet = this.getAssetNetwork();
+		
+		// initial assertion
+		if (assetNet.getJunctionTree() == null
+				|| assetNet.getJunctionTree().getCliques() == null) {
+			throw new IllegalStateException("Asset network is not correctly initialized. Please, generate it from a compiled Bayes net.");
+		}
+		
+		// prepare the mapping from clique ID to prob cliques/separators
+		Map<Integer, IRandomVariable> idToOriginalCliqueOrSepMap;
+		if (getAssetPropagationDelegator() instanceof AssetPropagationInferenceAlgorithm) {
+			// reuse the one from AssetPropagationInferenceAlgorithm
+			idToOriginalCliqueOrSepMap = ((AssetPropagationInferenceAlgorithm)getAssetPropagationDelegator()).getAssetCliqueToOriginalCliqueMap();
+		} else {
+			// extract the prob net to be used to extract cliques and separators
+			ProbabilisticNetwork bayesNet = (ProbabilisticNetwork) this.getNetwork();
+			if (bayesNet.getJunctionTree() == null
+					||  bayesNet.getJunctionTree().getCliques() == null) {
+				throw new IllegalStateException("Probabilistic network of " + assetNet +  " is not correctly initialized. Please, compile it.");
+			}
+			// build a new mapping from id to prob clique/separator
+			idToOriginalCliqueOrSepMap = new HashMap<Integer, IRandomVariable>();
+			for (Clique probClique : bayesNet.getJunctionTree().getCliques()) {
+				idToOriginalCliqueOrSepMap.put(probClique.getInternalIdentificator(), probClique);
+			}
+			for (Separator probSep : bayesNet.getJunctionTree().getSeparators()) {
+				idToOriginalCliqueOrSepMap.put(probSep.getInternalIdentificator(), probSep);
+			}
+		}
+		
+		// generate a list of asset nodes which is specified in conditions, so that I can extract asset cliques containing them
+		// by doing this, we can guarantee that conditions can be any type of node (assets or prob nodes)
+		List<INode> assetNodesConditions = new ArrayList<INode>();
+		for (INode unknownNode : conditions.keySet()) {
+			assetNodesConditions.add(assetNet.getNode(unknownNode.getName()));
+		}
+		
+		// extract the asset cliques which are related to the condition nodes (prob cliques can be retrieved from assetCliqueToOriginalCliqueMap)
+		List<Clique> assetCliques = assetNet.getJunctionTree().getCliquesContainingAllNodes(assetNodesConditions, Integer.MAX_VALUE);
+		if (assetCliques == null || assetCliques.isEmpty()) {
+			throw new IllegalArgumentException("Could not find clique containing " + assetNodesConditions + " simultaneously.");
+		}
+		
+		// extract the separators which are related to asset cliques. The mapping to original separators is idToOriginalCliqueMap
+		List<Separator> assetSeparators = new ArrayList<Separator>(assetCliques.size()-1);
+		// iterate on cliques 2 by 2 to see if they have separators
+		for (int i = 0; i < assetCliques.size()-1; i++) {
+			for (int j = i+1; j < assetCliques.size(); j++) {
+				// get separator connecting the 2 asset cliques
+				Separator assetSeparator = assetNet.getJunctionTree().getSeparator(assetCliques.get(i), assetCliques.get(j));
+				// note: there should be some non-empty separator, because we extracted cliques containing all specified nodes
+				assetSeparators.add(assetSeparator);
+			}
+		}
+		
+		// set impossible values of prob cliques and separators to 0 and then normalize (i.e. propagate findings locally)
+		try {
+			// integrate cliques and separators, because they will do the same thing
+			List<IRandomVariable> cliquesAndSeps = new ArrayList<IRandomVariable>(assetCliques);
+			cliquesAndSeps.addAll(assetSeparators);
+			
+			// iterate on both cliques and separators
+			for (IRandomVariable assetCliqueOrSep : cliquesAndSeps) {
+				
+				// extract the prob table using the idToOriginalCliqueMap
+				PotentialTable potential = (PotentialTable) idToOriginalCliqueOrSepMap.get(assetCliqueOrSep.getInternalIdentificator()).getProbabilityFunction();
+				
+				// backup the probabilities before any modification, so that we can revert it later.
+				potential.copyData();
+				
+				// set the impossible values (not in condition) to zero
+				for (int i = 0; i < potential.tableSize(); i++) {
+					
+					boolean isPossible = true;
+					// convert the current index in table to a coordinate related to the states of the nodes
+					int[] coord = potential.getMultidimensionalCoord(i);
+					// iterate over coord to see if the states it points matches the conditions
+					for (int nodeIndex = 0; nodeIndex < coord.length; nodeIndex++) {
+						// we assume conditions contains probabilistic nodes (i.e. nodes in bayesNet)
+						Integer state = conditions.get(potential.getVariableAt(nodeIndex));
+						if (state != null) {
+							// conditions is specifying some evidence to this node
+							if (state < 0 && (-state.intValue() - 1) == coord[nodeIndex]) {
+								// this is a "negative" evidence, and state *matches* coord (so, we shall set this to 0)
+								isPossible = false;
+								break;
+							} else if (state.intValue() != coord[nodeIndex]) {
+								// the state in coord does *not* match this state (so, we shall set this to 0)
+								isPossible = false;
+								break;
+							}
+						}
+					}
+					if (!isPossible) {
+						potential.setValue(i, 0f);
+					}
+				}
+				// normalize
+				potential.normalize();
+			}
+		} catch (Exception e) {
+			// revert the clique/separator potentials whose findings were propagated locally
+			for (Separator separator : assetSeparators) {
+				((Separator)idToOriginalCliqueOrSepMap.get(separator.getInternalIdentificator())).getProbabilityFunction().restoreData();
+			}
+			for (Clique clique : assetCliques) {
+				((Clique)idToOriginalCliqueOrSepMap.get(clique.getInternalIdentificator())).getProbabilityFunction().restoreData();
+			}
+			// exception translation is not a good habit, but we are at least including the original exception as a cause
+			throw new RuntimeException(e);
+		}
+		
+		
+		// extract iterators of cliques and separators, so that we can add cliques and subtract separators alternately
+		// so that we avoid making ret to become too huge
+		Iterator<Clique> assetCliqueIterator = assetCliques.iterator();
+		Iterator<Separator> assetSeparatorIterator = assetSeparators.iterator();
+		
+		try {
+			// at this point, assetCliqueIterator and probCliqueIterator have same size and supposedly have same ordering
+			while (assetCliqueIterator.hasNext() || assetSeparatorIterator.hasNext()) {
+				if (assetCliqueIterator.hasNext()) {
+					// add product of probabilities and assets of cliques , 
+					Clique assetClique = assetCliqueIterator.next();
+					Clique probClique  = (Clique) idToOriginalCliqueOrSepMap.get(assetClique.getInternalIdentificator());
+					for (int j = 0; j < assetClique.getProbabilityFunction().tableSize(); j++) {
+						// extract values in the cell
+						float assetValue = assetClique.getProbabilityFunction().getValue(j);
+						float probValue = 1f; 
+						if (probClique.getProbabilityFunction().tableSize() > 1) {
+							// note: if probClique has no variable, it is considered as if it has 1 variable with 100% prob
+							probValue = probClique.getProbabilityFunction().getValue(j);
+						}
+						
+						if (probValue == 0f) {
+							continue; // if probability is zero, no need to consider it
+						} 
+						if (isToUseQValues()) {
+							if (assetValue <= 0f) {
+								// revert the clique/separator potentials
+								for (Separator separator : assetSeparators) {
+									separator.getProbabilityFunction().restoreData();
+								}
+								for (Clique clique : assetCliques) {
+									clique.getProbabilityFunction().restoreData();
+								}
+								throw new ZeroAssetsException("Negative infinite asset detected in clique "+ assetClique +". User = " + getAssetNetwork());
+							}
+						} else if (Float.isInfinite(assetValue)) {
+							throw new ZeroAssetsException("Inconsistent asset detected in clique "+ assetClique +": " + assetValue + ", user = " + getAssetNetwork());
+						}
+						double value;
+						if (isToUseQValues()) {
+							value = probValue 
+								* (getqToAssetConverter().getScoreFromQValues(assetValue) - getExpectedAssetBasis());
+						} else {
+							value = probValue * (assetValue );
+						}
+						ret +=  value;
+//						this.notifyExpectedAssetCellListener(probClique, assetClique, j, j, value);
+					}			
+				}
+				if (assetSeparatorIterator.hasNext()) {
+					// subtracts the product of probabilities and assets of separators 
+					Separator assetSeparator = assetSeparatorIterator.next();
+					Separator probSeparator = (Separator) idToOriginalCliqueOrSepMap.get(assetSeparator.getInternalIdentificator());
+					if (probSeparator.getNodes() == null || probSeparator.getNodes().isEmpty()
+							|| probSeparator.getProbabilityFunction().getVariablesSize() <= 0 
+							|| probSeparator.getProbabilityFunction().tableSize() <= 0) {
+						// this is an empty separator, so it has 
+						double value;
+						if (isToUseQValues()) {
+							value = getqToAssetConverter().getScoreFromQValues(getEmptySeparatorsDefaultContent()) ;
+						} else {
+							value = getEmptySeparatorsDefaultContent();
+						}
+						ret -= value;
+//						this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, -1, -1, value);
+					}
+					for (int i = 0; i < assetSeparator.getProbabilityFunction().tableSize(); i++) {	
+						if (probSeparator.getProbabilityFunction().getValue(i) == 0f) {
+							continue; // if probability is zero, no need to consider it
+						} 
+						if (isToUseQValues()) {
+							if (assetSeparator.getProbabilityFunction().getValue(i) <= 0f) {
+								throw new ZeroAssetsException("Negative infinite asset detected in separator "+ assetSeparator +  ". User = " + getAssetNetwork());
+							}
+						} else if (Float.isInfinite(assetSeparator.getProbabilityFunction().getValue(i))) {
+							throw new ZeroAssetsException("Inconsistent asset detected in separator + " + assetSeparator+  " : " + assetSeparator.getProbabilityFunction().getValue(i) + ", user = " + getAssetNetwork());
+						}
+						double value ;
+						if (isToUseQValues()) {
+							value = probSeparator.getProbabilityFunction().getValue(i) 
+								* (getqToAssetConverter().getScoreFromQValues(assetSeparator.getProbabilityFunction().getValue(i)) );
+						} else {
+							value = probSeparator.getProbabilityFunction().getValue(i) 
+								* (assetSeparator.getProbabilityFunction().getValue(i));
+						}
+						ret -= value;
+//						this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, i, i, value);
+					}
+				}
+				if (Double.isInfinite(ret)) {
+					throw new ZeroAssetsException("Overflow when calculating expected assets of user " + assetNet);
+				}
+			}
+		} catch (Exception e) {
+			// revert the clique/separator potentials whose findings were propagated locally
+			for (Separator separator : assetSeparators) {
+				((Separator)idToOriginalCliqueOrSepMap.get(separator.getInternalIdentificator())).getProbabilityFunction().restoreData();
+			}
+			for (Clique clique : assetCliques) {
+				((Clique)idToOriginalCliqueOrSepMap.get(clique.getInternalIdentificator())).getProbabilityFunction().restoreData();
+			}
+			// exception translation is not a good habit, but we are at least including the original exception as a cause
+			throw new RuntimeException(e);
+		}
+		
+		
+		// revert the clique/separator potentials whose findings were propagated locally
+		for (Separator separator : assetSeparators) {
+			((Separator)idToOriginalCliqueOrSepMap.get(separator.getInternalIdentificator())).getProbabilityFunction().restoreData();
+		}
+		for (Clique clique : assetCliques) {
+			((Clique)idToOriginalCliqueOrSepMap.get(clique.getInternalIdentificator())).getProbabilityFunction().restoreData();
+		}
+		
+		return ret;
+	}
 	
 	/**
 	 * Calculates the expected assets.
@@ -1710,6 +1959,83 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			return getAssetPropagationDelegator().getEditCliques();
 		}
 		return null;
+	}
+	
+	/**
+	 * @param node : node to consider. If null, an empty list will be returned.
+	 * @return list of probabilistic cliques which cannot be reached from node
+	 * @see #getCliquesConnectedToNode()
+	 */
+	public Set<Clique> getCliquesDisconnectedFromNode(ProbabilisticNode node) {
+		Set<Clique> ret = new HashSet<Clique>();
+		if (node == null) {
+			return ret;
+		}
+		// start ret with all cliques, and then remove cliques connected to node
+		try {
+			ret.addAll(getRelatedProbabilisticNetwork().getJunctionTree().getCliques());
+			ret.removeAll(getCliquesConnectedToNode(node));
+		} catch (NullPointerException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+			return ret;
+		}
+		
+		return ret;
+	}
+	
+	/**
+	 * This is the opposite of {@link #getCliquesDisconnectedFromNode(INode)}
+	 * @param node : node to consider. If null, an empty list will be returned.
+	 * @return list of probabilistic cliques which can be reached from node
+	 * @see #getCliquesDisconnectedFromNode(INode)
+	 * @see #getRelatedProbabilisticNetwork()
+	 */
+	public Set<Clique> getCliquesConnectedToNode(ProbabilisticNode node) {
+		Set<Clique> ret = new HashSet<Clique>();
+		
+		// initial assertions
+		ProbabilisticNetwork probabilisticNetwork = getRelatedProbabilisticNetwork();
+		if (node == null
+				|| probabilisticNetwork == null
+				|| probabilisticNetwork.getJunctionTree() == null
+				|| probabilisticNetwork.getJunctionTree().getCliques() == null) {
+			return ret;
+		}
+		
+		IRandomVariable rv = node.getAssociatedClique();
+		if (rv instanceof Clique) {
+			visitCliquesConnectedToNodeRec((Clique) rv, ret, probabilisticNetwork.getJunctionTree());
+		} else if (rv instanceof Separator) {
+			visitCliquesConnectedToNodeRec(((Separator) rv).getClique1(), ret, probabilisticNetwork.getJunctionTree());
+		}
+		return ret;
+	}
+	
+	/**
+	 * Recursively visit cliques reachable from currentClique.
+	 * @param currentClique : clique of current iteration
+	 * @param visited : cliques already visited.
+	 * @param jt : junction tree containing the cliques and separators
+	 * @see Clique#getParent()
+	 * @see Clique#getChildren()
+	 */
+	protected void visitCliquesConnectedToNodeRec(Clique currentClique, Set<Clique> visited, IJunctionTree jt) {
+		if (currentClique != null) {
+			visited.add(currentClique);
+			Clique parent = currentClique.getParent();
+			if (parent != null && !visited.contains(parent) && !jt.getSeparator(currentClique, parent).getNodes().isEmpty()) {
+				// if we did not visit parent yet, and there is a link (separator), then visit
+				this.visitCliquesConnectedToNodeRec(parent, visited, jt);
+			}
+			if (currentClique.getChildren() != null) {
+				for (Clique child : currentClique.getChildren()) {
+					if (!visited.contains(child) && !jt.getSeparator(currentClique, child).getNodes().isEmpty()) {
+						// if we did not visit child yet, and there is a link (separator), then visit
+						this.visitCliquesConnectedToNodeRec(child, visited, jt);
+					}
+				}
+			}
+		}
 	}
 
 //	/**

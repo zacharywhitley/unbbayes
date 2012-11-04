@@ -3350,6 +3350,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUserQuestionEvStates(long, long, java.util.List, java.util.List)
 	 */
 	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		// do not compute expected score locally (i.e. compute globally)
+		return this.scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates, false);
+	}
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUserQuestionEvStates(long, long, java.util.List, java.util.List, boolean)
+	 */
+	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, 
+			List<Long>assumptionIds, List<Integer> assumedStates, boolean isToComputeLocally) throws IllegalArgumentException {
+		// TODO not to recalculate values in disconnected cliques, because they are not likely to change
 		// initial assertion: if assumptions were specified and states were not specified
 		if (assumptionIds != null && assumedStates != null && assumedStates.size() != assumptionIds.size()) {
 			throw new IllegalArgumentException("Expected size of assumedStates is " + assumptionIds.size() + ", but was " + assumedStates.size());
@@ -3366,42 +3376,102 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// list to return
 		List<Float> ret = new ArrayList<Float>(node.getStatesSize());
 		
-		// this is a non-null list of assumptions to pass to scoreUserEv (assumptionIds & questionId)
-		List<Long> assumptionsIncludingThisQuestion = new ArrayList<Long>();
-		// similarly, non-null list of states to pass to scoreUserEv (assumedStates and states of questionId)
-		List<Integer> assumedStatesIncludingThisState = new ArrayList<Integer>();	// do not reuse 
-		if (assumptionIds != null) {
-			assumptionsIncludingThisQuestion.addAll(assumptionIds);
-		}
-		if (assumedStates != null) {
-			assumedStatesIncludingThisState.addAll(assumedStates);
-		}
 		
-		// if questionId is in assumption, this var will have the index of questionId in assumptionsIncludingThisQuestion
-		int indexOfThisQuestion = assumptionsIncludingThisQuestion.indexOf(questionId);
+		// this is the mapt to be passetd to the local expected score calculation
+		Map<INode, Integer> conditionsForLocalExpectedScore = null;
+		AssetAwareInferenceAlgorithm algorithm = null;
+		// fill map if isToComputeLocally, or the two lists if not
+		if (isToComputeLocally) {
+			// use mapping from node to state
+			conditionsForLocalExpectedScore = new HashMap<INode, Integer>();	// mapping from prob node to assumed states
+			if (assumptionIds != null) {
+				// extract the nodes
+				synchronized (getProbabilisticNetwork()) {
+					for (int index = 0; index < assumptionIds.size(); index++) {
+						INode assumptionNode = getProbabilisticNetwork().getNode(assumptionIds.get(index).toString());
+						if (assumptionNode == null) {
+//							throw new IllegalArgumentException("Question " + assumptionIds.get(index) + " is not present in the system.");
+							Debug.println(getClass(), "Question " + assumptionIds.get(index) + " is not present in the system.");
+							continue;
+						}
+						if (assumedStates.size() <= index || assumedStates.get(index) == null) {
+							Debug.println(getClass(), "State in index " + index + " will be ignored.");
+							continue;
+						}
+						conditionsForLocalExpectedScore.put(assumptionNode, assumedStates.get(index));
+					}
+				}
+			}
+			try {
+				// extract the algorithm to be used for local calculation
+				algorithm = getAlgorithmAndAssetNetFromUserID(userId);
+			} catch (Exception e) {
+				// exception translation is not a good habit, but at least the original is included in cause
+				throw new RuntimeException(e);
+			}
+		}
 		
 		// if we assume the question itself, do different operations
-		if (indexOfThisQuestion < 0) {	// questionId is not assumed
+		if (assumptionIds == null || !assumptionIds.contains(questionId)) {	// questionId is not assumed
+			// this is a non-null list of assumptions to pass to scoreUserEv (assumptionIds & questionId) 
+			List<Long> assumptionsIncludingThisQuestion = null;
+			List<Integer> assumedStatesIncludingThisState = null;
 			
-			// the last element in the list will contain the question itself
-			assumptionsIncludingThisQuestion.add(questionId);
-			assumedStatesIncludingThisState.add(0);
+			if (!isToComputeLocally) {
+				// use 2 lists: one with assumption nodes and another with states
+				assumptionsIncludingThisQuestion = new ArrayList<Long>();
+				// similarly, non-null list of states to pass to scoreUserEv (assumedStates and states of questionId)
+				assumedStatesIncludingThisState = new ArrayList<Integer>(); // do not reuse 
+				if (assumptionIds != null) {
+					assumptionsIncludingThisQuestion.addAll(assumptionIds);
+				}
+				if (assumedStates != null) {
+					assumedStatesIncludingThisState.addAll(assumedStates);
+				}
+				// the last element in the list will contain the question itself
+				assumptionsIncludingThisQuestion.add(questionId);
+				assumedStatesIncludingThisState.add(0);
+			}
 			
 			// just calculate conditional expected score given each state of questionId... Use assumptionsIncludingThisQuestion and states
 			for (int i = 0; i < node.getStatesSize(); i++) {
-				// TODO optimize
-				assumedStatesIncludingThisState.set(assumedStatesIncludingThisState.size()-1, i);
-				ret.add(this.scoreUserEv(userId, assumptionsIncludingThisQuestion, assumedStatesIncludingThisState));
+				if (isToComputeLocally) {
+					// set the state of main node to the current state
+					conditionsForLocalExpectedScore.put(node, i);
+					
+					// calculate expected assets locally
+					synchronized (algorithm.getRelatedProbabilisticNetwork()) {
+						synchronized (algorithm.getAssetNetwork()) {
+							ret.add((float) algorithm.calculateExpectedLocalAssets(conditionsForLocalExpectedScore));
+						}
+					}
+					
+				} else { 
+					// TODO optimize
+					assumedStatesIncludingThisState.set(assumedStatesIncludingThisState.size()-1, i);
+					ret.add(this.scoreUserEv(userId, assumptionsIncludingThisQuestion, assumedStatesIncludingThisState));
+				}
 			}
 		} else {	// questionId is assumed
-//			throw new IllegalArgumentException("Assumptions must not contain the question itself.");
-			Integer assumedStateOfThisQuestion = assumedStatesIncludingThisState.get(indexOfThisQuestion);
+			// at this point, assumptionIds is not null and contains questionId
+			// extract what was assumed
+			Integer assumedStateOfThisQuestion = assumedStates.get(assumptionIds.indexOf(questionId));
 			// calculate conditional expected score only for the evidence state, and the other states will have 0
 			for (int i = 0; i < node.getStatesSize(); i++) {
 				// TODO optimize
 				if (i == assumedStateOfThisQuestion) {
 					// the assumed state will have the value added
-					ret.add(this.scoreUserEv(userId, assumptionsIncludingThisQuestion, assumedStatesIncludingThisState));
+					if (isToComputeLocally) {
+						try {
+							// calculate expected assets locally
+							ret.add((float)algorithm.calculateExpectedLocalAssets(conditionsForLocalExpectedScore));
+						} catch (Exception e) {
+							// exception translation is not a good habit, but at least the original is included in cause
+							throw new RuntimeException(e);
+						}
+					} else {
+						ret.add(this.scoreUserEv(userId, assumptionIds, assumedStates));
+					}
 				} else {
 					// other states will have expected value = 0f
 					ret.add(0f);

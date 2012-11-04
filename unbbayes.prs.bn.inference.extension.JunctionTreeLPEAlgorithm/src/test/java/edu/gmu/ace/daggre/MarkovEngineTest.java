@@ -28,6 +28,7 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.Separator;
+import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import unbbayes.prs.exception.InvalidParentException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
@@ -10020,6 +10021,81 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(1638.4f, engine.getQValuesFromScore(engine.scoreUserEv(1L, null, null)), ASSET_ERROR_MARGIN);
 		assertEquals(engine.getScoreFromQValues(1638.4f), engine.scoreUserEv(1L, null, null), ASSET_ERROR_MARGIN);
 		
+		
+		engine.initialize();
+		
+		engine.setDefaultInitialAssetTableValue(1000);
+		engine.setCurrentCurrencyConstant(100);
+		engine.setCurrentLogBase(2);
+		
+		engine.addQuestion(null, new Date(), 0x0DL, 2, null);
+		engine.addQuestion(null, new Date(), 0x0EL, 2, null);
+		engine.addQuestion(null, new Date(), 0x0FL, 2, null);
+		engine.addQuestionAssumption(null, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		
+		newValues = new ArrayList<Float>();
+		newValues.add(.4f);
+		newValues.add(.6f);
+		engine.addTrade(
+				null, 
+				new Date(), 
+				"User 2 trades P(F) = " + newValues, 
+				2L, 
+				0x0FL, 
+				newValues, 
+				null, 
+				null, 
+				false
+		);
+		newValues = new ArrayList<Float>();
+		newValues.add(.8f);
+		newValues.add(.2f);
+		engine.addTrade(
+				null, 
+				new Date(), 
+				"User 1 trades P(F) = " + newValues, 
+				1L, 
+				0x0FL, 
+				newValues, 
+				null, 
+				null, 
+				false
+			);
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(.9f);
+		newValues.add(.9f);
+		newValues.add(.1f);
+		engine.addTrade(
+				null, 
+				new Date(), 
+				"User 2 trades P(F|D) = " + newValues, 
+				2L, 
+				0x0FL, 
+				newValues, 
+				Collections.singletonList(0x0DL), 
+				null, 
+				false
+		);
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(.9f);
+		newValues.add(.9f);
+		newValues.add(.1f);
+		engine.addTrade(
+				null, 
+				new Date(), 
+				"User 2 trades P(D|E) = "+newValues, 
+				2L, 
+				0x0DL, 
+				newValues, 
+				Collections.singletonList(0x0EL), 
+				null, 
+				false
+		);
+		List<Float> evStates = engine.scoreUserQuestionEvStates(1L, 0x0EL, null, null);
+		assertFalse(evStates.toString(), Math.abs(evStates.get(0)-evStates.get(1))<ASSET_ERROR_MARGIN);
 	}
 	
 	/**
@@ -18533,5 +18609,268 @@ public class MarkovEngineTest extends TestCase {
 		
 	}
 	
+
+	/**
+	 * This is a test case for {@link AssetAwareInferenceAlgorithm#calculateExpectedLocalAssets(Map)}
+	 */
+	public final void testDEFNetCalculateExpectedLocalAssets() {
+		// set up to the default values used in daggre market
+		engine.setCurrentCurrencyConstant(100);
+		engine.setCurrentLogBase(2);
+		engine.setDefaultInitialAssetTableValue(1000f);
+		engine.initialize();
+		
+		// create the DEF network with one disconnected nodes and one disconnected sub-net with 2 nodes
+		long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0x0DL, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0EL, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0FL, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0AL, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0BL, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0CL, 2, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0BL, Collections.singletonList(0x0AL), null);
+		engine.commitNetworkActions(transactionKey);
+		
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(.9f);
+		newValues.add(.3f);
+		newValues.add(.7f);
+		engine.addTrade(
+				null, 
+				new Date(), 
+				"User 1 bets P(E|D) = [.1, .9, .3, .7]", 
+				1L, 
+				0x0EL, 
+				newValues, 
+				Collections.singletonList(0x0DL), 
+				null, 
+				false
+			);
+		
+		
+		// assert that the expected assets of clique FD did not change by trading on E
+		List<Float> evStates = engine.scoreUserQuestionEvStates(1L, 0x0FL, null, null, true);
+		assertEquals(2, evStates.size());
+		assertEquals(1000d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1000d, evStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// test conditioned on E
+		evStates = engine.scoreUserQuestionEvStates(1L, 0x0EL, null, null, true);
+		assertEquals(2, evStates.size());
+		assertEquals(886.6794025d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1068.9372625d, evStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// test conditioned on D
+		evStates = engine.scoreUserQuestionEvStates(1L, 0x0DL, null, null, true);
+		assertEquals(2, evStates.size());
+		assertEquals(1053.10045d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1011.870931d, evStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// test conditioned on D and E
+		evStates = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0), true);
+		assertEquals(2, evStates.size());
+		assertEquals(767.8072d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(926.30347d, evStates.get(1), ASSET_ERROR_MARGIN);
+		evStates = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1), true);
+		assertEquals(2, evStates.size());
+		assertEquals(1084.7997d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1048.5427d, evStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// test conditioned on D and F (which did not change)
+		evStates = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0), true);
+		assertEquals(2, evStates.size());
+		assertEquals(1000d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1000d, evStates.get(1), ASSET_ERROR_MARGIN);
+		evStates = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1), true);
+		assertEquals(2, evStates.size());
+		assertEquals(1000d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1000d, evStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// test invalid conditions
+		try {
+			evStates = engine.scoreUserQuestionEvStates(1L, 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList((int)Math.round(Math.random())), true);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+		try {
+			evStates = engine.scoreUserQuestionEvStates(1L, 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList((int)Math.round(Math.random())), true);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+		try {
+			List<Long> assumptions = new ArrayList<Long>();
+			assumptions.add(0x0EL);
+			assumptions.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add((int)Math.round(Math.random()));
+			assumedStates.add((int)Math.round(Math.random()));
+			evStates = engine.scoreUserQuestionEvStates(1L, 0x0DL, assumptions, assumedStates , true);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+		try {
+			List<Long> assumptions = new ArrayList<Long>();
+			assumptions.add(0x0DL);
+			assumptions.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add((int)Math.round(Math.random()));
+			assumedStates.add((int)Math.round(Math.random()));
+			evStates = engine.scoreUserQuestionEvStates(1L, 0x0EL, assumptions, assumedStates , true);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+		try {
+			List<Long> assumptions = new ArrayList<Long>();
+			assumptions.add(0x0EL);
+			assumptions.add(0x0DL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add((int)Math.round(Math.random()));
+			assumedStates.add((int)Math.round(Math.random()));
+			evStates = engine.scoreUserQuestionEvStates(1L, 0x0FL, assumptions, assumedStates , true);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+		
+		// Tom bets P(D|F) = [.9, .1, .3, .7]
+		engine.addTrade(
+				null, 
+				new Date(), 
+				"User 1 bets P(D|F) = [.1, .9, .3, .7]", 
+				1L, 
+				0x0DL, 
+				newValues, 
+				Collections.singletonList(0x0FL), 
+				null, 
+				false
+			);
+		
+		// test conditioned on F
+		evStates = engine.scoreUserQuestionEvStates(1L, 0x0FL, null, null, true);
+		assertEquals(2, evStates.size());
+		assertEquals(1053.10045d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1011.870931d, evStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// test conditioned on E
+		evStates = engine.scoreUserQuestionEvStates(1L, 0x0EL, null, null, true);
+		assertEquals(2, evStates.size());
+		assertEquals(914.1114492308d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1057.3619702703d, evStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// test conditioned on D
+		evStates = engine.scoreUserQuestionEvStates(1L, 0x0DL, null, null, true);
+		assertEquals(2, evStates.size());
+		assertEquals(939.7798525d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1080.8081935d, evStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// test conditioned on D and E
+		evStates = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0), true);
+		assertEquals(2, evStates.size());
+		assertEquals(767.8072d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(926.30347d, evStates.get(1), ASSET_ERROR_MARGIN);
+		evStates = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1), true);
+		assertEquals(2, evStates.size());
+		assertEquals(1084.7997d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1048.5427d, evStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// test conditioned on D and F (which did not change)
+		evStates = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0), true);
+		assertEquals(2, evStates.size());
+		assertEquals(767.8072d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1084.7997d, evStates.get(1), ASSET_ERROR_MARGIN);
+		evStates = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1), true);
+		assertEquals(2, evStates.size());
+		assertEquals(926.30347d, evStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(1048.5427d, evStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// test invalid conditions
+		try {
+			evStates = engine.scoreUserQuestionEvStates(1L, 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList((int)Math.round(Math.random())), true);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+		try {
+			evStates = engine.scoreUserQuestionEvStates(1L, 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList((int)Math.round(Math.random())), true);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+		try {
+			List<Long> assumptions = new ArrayList<Long>();
+			assumptions.add(0x0EL);
+			assumptions.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add((int)Math.round(Math.random()));
+			assumedStates.add((int)Math.round(Math.random()));
+			evStates = engine.scoreUserQuestionEvStates(1L, 0x0DL, assumptions, assumedStates , true);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+		try {
+			List<Long> assumptions = new ArrayList<Long>();
+			assumptions.add(0x0DL);
+			assumptions.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add((int)Math.round(Math.random()));
+			assumedStates.add((int)Math.round(Math.random()));
+			evStates = engine.scoreUserQuestionEvStates(1L, 0x0EL, assumptions, assumedStates , true);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+		try {
+			List<Long> assumptions = new ArrayList<Long>();
+			assumptions.add(0x0EL);
+			assumptions.add(0x0DL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add((int)Math.round(Math.random()));
+			assumedStates.add((int)Math.round(Math.random()));
+			evStates = engine.scoreUserQuestionEvStates(1L, 0x0FL, assumptions, assumedStates , true);
+			fail();
+		} catch (IllegalArgumentException e) {
+			assertNotNull(e);
+			// OK
+		}
+
+	}
 	
+	
+	
+	
+
+	
+	/**
+	 * Tests the lazy creation of users (create users
+	 * only on first edit)
+	 */
+	public final void testLazyUserCreation()  {
+		// decide what will be the initial assets of every user
+		float initialAssets = (float) (100+Math.random()*1000);
+		
+		// decide what will be the manna
+		float manna = (float) (100+Math.random()*1000);
+		
+		// set the initial assets of users to the generated value
+		engine.setDefaultInitialAssetTableValue(initialAssets);
+		
+		
+	}
 }
