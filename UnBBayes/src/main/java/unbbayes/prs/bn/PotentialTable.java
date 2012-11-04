@@ -159,10 +159,12 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * Restores the data from the table using its stored copy.
 	 */
 	public void restoreData() {
-		int dataSize = dataPT.size;
-		for (int i = 0; i < dataSize; i++) {
-			dataPT.data[i] = dataCopy.data[i];
-		}
+//		int dataSize = dataPT.size;
+//		for (int i = 0; i < dataSize; i++) {
+//			dataPT.data[i] = dataCopy.data[i];
+//		}
+		// the following is a faster version of the above code
+		System.arraycopy(dataCopy.data, 0, dataPT.data, 0, dataPT.size);
 	}
 
 	/*
