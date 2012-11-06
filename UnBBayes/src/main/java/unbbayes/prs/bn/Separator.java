@@ -136,8 +136,11 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 
 
 	public boolean equals(Object obj) {
-		if (obj != null) {
-			return this.toString().equals(obj.toString());
+//		if (obj != null) {
+//			return this.toString().equals(obj.toString());
+//		}
+		if (obj != null && obj instanceof IRandomVariable) {
+			return this.getInternalIdentificator() == ((IRandomVariable)obj).getInternalIdentificator();
 		}
 		return super.equals(obj);
 	}
