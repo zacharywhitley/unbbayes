@@ -18001,14 +18001,36 @@ public class MarkovEngineTest extends TestCase {
 		// case 1: clique has 2 nodes and we are balancing a node not in separator
 		
 		// user 1 balances question 3
+		List<TradeSpecification> previewedTrades = engine.previewBalancingTrades(1, 3 , null, null);	// check that preview matches executed
 		engine.doBalanceTrade(null, new Date(), "Case 1 - balance 3", 1, 3, null, null);
 		
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(3L, null, null);
 		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
 		assertFalse(((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades().isEmpty());
-		for (TradeSpecification trade : ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades()) {
+		List<TradeSpecification> executedTrades = ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades();
+		for (int i = 0; i < executedTrades.size(); i++) {
+			TradeSpecification trade = executedTrades.get(i);
 			assertEquals(3L, trade.getQuestionId().longValue());
 			assertEquals(1L, trade.getUserId().longValue());
+			
+			// compare with previewed
+			assertEquals(trade.getQuestionId(), previewedTrades.get(i).getQuestionId());
+			assertEquals(trade.getUserId(), previewedTrades.get(i).getUserId());
+			if (trade.getAssumptionIds() == null) {
+				assertNull(previewedTrades.get(i).getAssumptionIds());
+			} else {
+				// check that the content of assumptions are the same
+				assertEquals(trade.getAssumptionIds().size(), previewedTrades.get(i).getAssumptionIds().size());
+				for (int j = 0; j < trade.getAssumptionIds().size(); j++) {
+					assertEquals(trade.getAssumptionIds().get(j), previewedTrades.get(i).getAssumptionIds().get(j));
+					assertEquals(trade.getAssumedStates().get(j), previewedTrades.get(i).getAssumedStates().get(j));
+				}
+			}
+			// check that the  probabilities are the same
+			assertEquals(trade.getProbabilities().size(), previewedTrades.get(i).getProbabilities().size());
+			for (int j = 0; j < trade.getProbabilities().size(); j++) {
+				assertEquals(trade.getProbabilities().get(j), previewedTrades.get(i).getProbabilities().get(j));
+			}
 		}
 		
 		// check that the assets given states of a balanced question are the same
@@ -18046,17 +18068,39 @@ public class MarkovEngineTest extends TestCase {
 		// case 2: clique has 3 nodes and we are balancing a node not in separator, given only 1 assumption
 		
 		// user 2 balances question 0 given 2=2
+		previewedTrades = engine.previewBalancingTrades(2, 0, Collections.singletonList(2L), Collections.singletonList(2));	// check that preview matches executed
 		engine.doBalanceTrade(null, new Date(), "Case 2 - balance 0|2=2", 2, 0, Collections.singletonList(2L), Collections.singletonList(2));
 		questionHistory = engine.getQuestionHistory(0L, null, null);
 		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
 		assertFalse(((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades().isEmpty());
 		boolean hasAssumptionState = false;
-		for (TradeSpecification trade : ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades()) {
+		executedTrades = ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades();
+		for (int i = 0; i < executedTrades.size(); i++) {
+			TradeSpecification trade = executedTrades.get(i);
 			assertEquals(2L, trade.getUserId().longValue());
 			assertEquals(0L, trade.getQuestionId().longValue());
 			assertTrue(trade.getAssumptionIds().contains(2L));
 			if (trade.getAssumedStates().contains(2)) {
 				hasAssumptionState = true;
+			}
+			
+			// compare with previewed
+			assertEquals(trade.getQuestionId(), previewedTrades.get(i).getQuestionId());
+			assertEquals(trade.getUserId(), previewedTrades.get(i).getUserId());
+			if (trade.getAssumptionIds() == null) {
+				assertNull(previewedTrades.get(i).getAssumptionIds());
+			} else {
+				// check that the content of assumptions are the same
+				assertEquals(trade.getAssumptionIds().size(), previewedTrades.get(i).getAssumptionIds().size());
+				for (int j = 0; j < trade.getAssumptionIds().size(); j++) {
+					assertEquals(trade.getAssumptionIds().get(j), previewedTrades.get(i).getAssumptionIds().get(j));
+					assertEquals(trade.getAssumedStates().get(j), previewedTrades.get(i).getAssumedStates().get(j));
+				}
+			}
+			// check that the  probabilities are the same
+			assertEquals(trade.getProbabilities().size(), previewedTrades.get(i).getProbabilities().size());
+			for (int j = 0; j < trade.getProbabilities().size(); j++) {
+				assertEquals(trade.getProbabilities().get(j), previewedTrades.get(i).getProbabilities().get(j));
 			}
 		}
 		assertTrue(hasAssumptionState);
@@ -18105,13 +18149,35 @@ public class MarkovEngineTest extends TestCase {
 		// case 3 balance a node in separator
 		
 		// User 3 balances question 1
+		previewedTrades = engine.previewBalancingTrades(3, 1, null, null);	// check that preview matches executed
 		engine.doBalanceTrade(null, new Date(), "User 3 balances question 1", 3, 1, null, null);
 		questionHistory = engine.getQuestionHistory(1L, null, null);
 		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
 		assertFalse(((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades().isEmpty());
-		for (TradeSpecification trade : ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades()) {
+		executedTrades = ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades();
+		for (int i = 0; i < executedTrades.size(); i++) {
+			TradeSpecification trade = executedTrades.get(i);
 			assertEquals(3L, trade.getUserId().longValue());
 			assertEquals(1L, trade.getQuestionId().longValue());
+			
+			// compare with previewed
+			assertEquals(trade.getQuestionId(), previewedTrades.get(i).getQuestionId());
+			assertEquals(trade.getUserId(), previewedTrades.get(i).getUserId());
+			if (trade.getAssumptionIds() == null) {
+				assertNull(previewedTrades.get(i).getAssumptionIds());
+			} else {
+				// check that the content of assumptions are the same
+				assertEquals(trade.getAssumptionIds().size(), previewedTrades.get(i).getAssumptionIds().size());
+				for (int j = 0; j < trade.getAssumptionIds().size(); j++) {
+					assertEquals(trade.getAssumptionIds().get(j), previewedTrades.get(i).getAssumptionIds().get(j));
+					assertEquals(trade.getAssumedStates().get(j), previewedTrades.get(i).getAssumedStates().get(j));
+				}
+			}
+			// check that the  probabilities are the same
+			assertEquals(trade.getProbabilities().size(), previewedTrades.get(i).getProbabilities().size());
+			for (int j = 0; j < trade.getProbabilities().size(); j++) {
+				assertEquals(trade.getProbabilities().get(j), previewedTrades.get(i).getProbabilities().get(j));
+			}
 		}
 		
 		// check that the assets given states of a balanced question are the same

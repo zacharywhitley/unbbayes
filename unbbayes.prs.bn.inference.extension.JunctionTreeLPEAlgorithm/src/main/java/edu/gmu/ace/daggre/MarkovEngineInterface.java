@@ -666,6 +666,30 @@ public interface MarkovEngineInterface {
 	
 
 	/**
+	 * This method will determine the states of balancing trades which would minimize impact once the question is resolved.
+	 * This is different from {@link #previewBalancingTrade(long, long, List, List)} in a sense that this method
+	 * can return a set of trades in order to exit from a question given incomplete assumptions.
+	 * Ideally this balancing trade is a set of trades where all assetsifStates states where equal so settling the question would have no effect. 
+	 * <br/><br/>
+	 * CAUTION: in a multi-thread environment, use {@link #doBalanceTrade(long, Date, String, long, long, List, List)} if you want to commit a trade
+	 * which will balance the user's assets given assumptions, instead of using this method to calculate the balancing
+	 * trade and then run {@link #addTrade(long, Date, String, long, long, List, List, List, boolean)}.
+	 * @param userID: the ID of the user (i.e. owner of the assets).
+	 * @param questionId : the id of the question to be balanced.
+	 * @param assumptionIds : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
+	 * because the ordering in this list will be used in order to identify the correct indexes in assumedStates.
+	 * @param assumedStates : indicates the states of the nodes in assumptionIDs.
+	 * If it does not have the same size of assumptionIDs, {@link Math#min(assumptionIDs.size(), assumedStates.size())} shall be considered. 
+	 * @return a list of {@link TradeSpecification} which represents the sequence of trades to be executed in order to
+	 * exit from this question given assumptions.
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
+	 * @see #doBalanceTrade(long, Date, String, long, long, List, List)
+	 */
+	public List<TradeSpecification> previewBalancingTrades(long userId, long questionId, List<Long> originalAssumptionIds, 
+			List<Integer> originalAssumedStates) throws IllegalArgumentException;
+	
+	/**
 	 * This is similar to doing {@link #previewBalancingTrade(long, long, List, List)} and then
 	 * {@link #addTrade(long, Date, String, long, long, List, List, List, boolean)}.
 	 * However, this method is safer than calling {@link #previewBalancingTrade(long, long, List, List)}

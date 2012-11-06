@@ -120,22 +120,6 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	/** default value of {@link #getRandomVariableComparator()} */
 	public static final Comparator<IRandomVariable> DEFAULT_RV_COMPARATOR = new Comparator<IRandomVariable>() {
 		public int compare(IRandomVariable v1, IRandomVariable v2) {
-//			int nameComp = v1.toString().compareTo(v2.toString());
-//			if (nameComp == 0) {
-//				// do special treatment on cliques with same variables
-//				if ((v1 instanceof Clique) && (v2 instanceof Clique)) {
-//					return ((Clique)v1).getIndex() - ((Clique)v2).getIndex();
-//				} else if ((v1 instanceof Separator) && (v2 instanceof Separator)) {
-//					nameComp = this.compare(((Separator)v1).getClique1(), ((Separator)v2).getClique1());
-//					if (nameComp == 0) {
-//						return this.compare(((Separator)v1).getClique2(), ((Separator)v2).getClique2());
-//					}
-//					return nameComp;
-//				} else if ((v1 instanceof Separator)) {
-//					return 1;
-//				}
-//			}
-//			return nameComp;
 			return v1.getInternalIdentificator() - v2.getInternalIdentificator();
 		}
 	};
@@ -1205,9 +1189,52 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setAssetNetwork(unbbayes.prs.bn.AssetNetwork)
 	 */
-	public void setAssetNetwork(AssetNetwork network)
+	public void setAssetNetwork(AssetNetwork assetNet)
 			throws IllegalArgumentException {
-		this.setNetwork(network);
+		
+		this.setNetwork(assetNet);
+//		if (assetNet == null) {
+//			// do not update mappings if assetNet is null, because such mappings are stored in asset nets.
+//			return;
+//		}
+//		
+//		// update the mapping to prob cliques/seps, because cliques/seps are different
+//		Map<Integer, IRandomVariable> idToOriginal = getAssetCliqueToOriginalCliqueMap();
+//		if (idToOriginal == null) {
+//			idToOriginal = new HashMap<Integer, IRandomVariable>();
+//			setAssetCliqueToOriginalCliqueMap(assetNet, idToOriginal);
+//		} else {
+//			idToOriginal.clear();
+//		}
+//		ProbabilisticNetwork bn = getRelatedProbabilisticNetwork();
+//		if (assetNet!= null && assetNet.getJunctionTree() != null
+//				&& bn != null && bn.getJunctionTree() != null) {
+//			// only fill with cliques if we do have some asset net
+//			for (Clique clique : bn.getJunctionTree().getCliques()) {
+//				idToOriginal.put(clique.getInternalIdentificator(), clique);
+//			}
+//			for (Separator sep : bn.getJunctionTree().getSeparators()) {
+//				idToOriginal.put(sep.getInternalIdentificator(), sep);
+//			}
+//		}
+//		
+//		// also, update the inverse by using the above mapping
+//		Map<IRandomVariable, IRandomVariable> originalToAsset = getOriginalCliqueToAssetCliqueMap();
+//		if (originalToAsset == null) {
+//			originalToAsset = new HashMap<IRandomVariable, IRandomVariable>();
+//			setOriginalCliqueToAssetCliqueMap(assetNet , originalToAsset);
+//		} else {
+//			originalToAsset.clear();
+//		}
+//		if (assetNet!= null && assetNet.getJunctionTree() != null) {
+//			for (Clique assetClique : assetNet.getJunctionTree().getCliques()) {
+//				originalToAsset.put(idToOriginal.get(assetClique.getInternalIdentificator()), assetClique);
+//			}
+//			for (Separator assetSep : assetNet.getJunctionTree().getSeparators()) {
+//				originalToAsset.put(idToOriginal.get(assetSep.getInternalIdentificator()), assetSep);
+//			}
+//		}
+		
 	}
 
 	/*

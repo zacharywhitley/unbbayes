@@ -66,7 +66,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	private boolean isToUseQValues = false;
 	
-	private boolean isToForceBalanceQuestionEntirely = true;
+	private boolean isToForceBalanceQuestionEntirely = false;//true;
 
 	/** 
 	 * This is used in {@link #getAssetsIfStates(long, List, List, AssetAwareInferenceAlgorithm, boolean)} 
@@ -2668,7 +2668,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public List<Float> getProbList(long questionId, List<Long> assumptionIds,
 			List<Integer> assumedStates) throws IllegalArgumentException {
-		return this.getProbList(questionId, assumptionIds, assumedStates, true);
+		
+//		return this.getProbList(questionId, assumptionIds, assumedStates, true);
+		Map<Long, List<Float>> probLists = this.getProbLists(Collections.singletonList(questionId), assumptionIds, assumedStates, true, null, false);
+		if (probLists != null) {
+			return probLists.get(questionId);
+		}
+		return null;
 	}
 	
 	/**
@@ -2676,11 +2682,27 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * there is an additional argument to indicate whether or not to normalize the result.
 	 * @param isToNormalize : if false, the returned list will contain the clique potentials without normalization.
 	 * This may be useful for obtaining the clique potentials instead of the conditional probabilities.
+	 * @param net : network to be used in order to extract the probabilities
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getProbList(long, java.util.List, java.util.List)
 	 * @see #getProbList(long, List, List)
 	 */
 	public List<Float> getProbList(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, boolean isToNormalize) throws IllegalArgumentException {
-		Map<Long, List<Float>> probLists = this.getProbLists(Collections.singletonList(questionId), assumptionIds, assumedStates, isToNormalize);
+		return this.getProbList(questionId, assumptionIds, assumedStates, isToNormalize, null);
+	}
+	/**
+	 * This method offers the same functionality of {@link #getProbList(long, List, List)}, but
+	 * there is an additional argument to indicate whether or not to normalize the result.
+	 * @param isToNormalize : if false, the returned list will contain the clique potentials without normalization.
+	 * This may be useful for obtaining the clique potentials instead of the conditional probabilities.
+	 * @param net : network to be used in order to extract the probabilities
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getProbList(long, java.util.List, java.util.List)
+	 * @see #getProbList(long, List, List)
+	 */
+	public List<Float> getProbList(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, 
+			boolean isToNormalize, ProbabilisticNetwork net) throws IllegalArgumentException {
+		Map<Long, List<Float>> probLists = this.getProbLists(
+				Collections.singletonList(questionId), assumptionIds, assumedStates, isToNormalize, net,
+				net != getProbabilisticNetwork()); // if net != shared net, then we can change it
 		if (probLists != null) {
 			return probLists.get(questionId);
 		}
@@ -2693,42 +2715,76 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getProbLists(java.util.List, java.util.List, java.util.List)
 	 */
 	public Map<Long,List<Float>> getProbLists(List<Long> questionIds, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
-		return this.getProbLists(questionIds, assumptionIds, assumedStates, true);
+		return this.getProbLists(questionIds, assumptionIds, assumedStates, true, null, false);
 	}
 
+//	/**
+//	 * This method offers the same functionality of {@link #getProbLists(List, List, List)}, but
+//	 * there is an additional argument to indicate whether or not to normalize the result.
+//	 * @param isToNormalize : if false, the returned list will contain the clique potentials without normalization.
+//	 * This may be useful for obtaining the clique potentials instead of the conditional probabilities.
+//	 * @param net : net to be used to extract probabilities.
+//	 * {@link #getProbabilisticNetwork()} will be used if not specified.
+//	 * @param dontChangeNet : if false, values in net may be changed after this call. Setting this to false
+//	 * may improve speed.
+//	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getProbList(long, java.util.List, java.util.List)
+//	 */
+//	public Map<Long,List<Float>> getProbLists(List<Long> questionIds, List<Long>assumptionIds, List<Integer> assumedStates, boolean isToNormalize) throws IllegalArgumentException {
+//		return this.getProbLists(questionIds, assumptionIds, assumedStates, isToNormalize, null, true);
+//	}
+	
 	/**
 	 * This method offers the same functionality of {@link #getProbLists(List, List, List)}, but
 	 * there is an additional argument to indicate whether or not to normalize the result.
 	 * @param isToNormalize : if false, the returned list will contain the clique potentials without normalization.
 	 * This may be useful for obtaining the clique potentials instead of the conditional probabilities.
+	 * @param net : net to be used to extract probabilities.
+	 * {@link #getProbabilisticNetwork()} will be used if not specified.
+	 * @param canChangeNet : if true, values in net may be changed after this call. Setting this to true
+	 * may improve speed. This value is ignored if net == null.
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getProbList(long, java.util.List, java.util.List)
 	 */
-	public Map<Long,List<Float>> getProbLists(List<Long> questionIds, List<Long>assumptionIds, List<Integer> assumedStates, boolean isToNormalize) throws IllegalArgumentException {
+	public Map<Long,List<Float>> getProbLists(List<Long> questionIds, List<Long>assumptionIds, List<Integer> assumedStates, 
+			boolean isToNormalize, ProbabilisticNetwork net, boolean canChangeNet) throws IllegalArgumentException {
 		
 		// initial assertion: check consistency of assumptionIds and assumedStates
 		if (assumptionIds != null && assumedStates != null) {
 			if (assumedStates.size() != assumptionIds.size()) {
-				throw new IllegalArgumentException("assumptionIds.size() == " + assumptionIds.size() + ", assumedStates.size() == " + assumedStates.size());
+				throw new IllegalArgumentException("assumptionIds.size() == " + assumptionIds.size() 
+						+ ", assumedStates.size() == " + assumedStates.size());
 			}
 		}
 		
 		// this object extracts conditional probability of any nodes in same clique (it assumes prob network was compiled using junction tree algorithm)
 		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
 		if (conditionalProbabilityExtractor == null) {
-			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
+			throw new RuntimeException(
+					"Could not reuse conditional probability extractor of the current default inference algorithm. " +
+					"Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
 		}
 		
 		// this is the object to be returned
 		Map<Long,List<Float>> ret = new HashMap<Long, List<Float>>();
 		
 		// if assumptions are not in same clique, we can still use BN propagation to obtain probabilities.
-		ProbabilisticNetwork netToUseWhenAssumptionsAreNotInSameClique = null;	// this is going to be a clone of the shared BN
+		ProbabilisticNetwork netToUseWhenNotInSameClique = null;	// this is going to be a clone of the shared BN
 		List<PotentialTable> cptList = new ArrayList<PotentialTable>();	// will contain conditional probability within clique
+		
+		// use the shared prob net, if not specified
+		if (net == null) {
+			net = getProbabilisticNetwork();
+			// do not allow changes in the shared net
+			canChangeNet = false;
+		}
 		
 		// if we need to get probabilities of all nodes, and there are assumptions, then we need propagation anyway
 		if (questionIds == null && assumptionIds != null && assumedStates != null && !assumptionIds.isEmpty() && !assumedStates.isEmpty()) {
 			// netToUseWhenAssumptionsAreNotInSameClique != null if we need propagation
-			netToUseWhenAssumptionsAreNotInSameClique = getDefaultInferenceAlgorithm().cloneProbabilisticNetwork(getProbabilisticNetwork());
+			if (canChangeNet) {
+				netToUseWhenNotInSameClique = net;
+			} else {
+				netToUseWhenNotInSameClique = getDefaultInferenceAlgorithm().cloneProbabilisticNetwork(net);
+			}
 		} else {
 			// first, attempt to fill cptList with conditional probabilities that can be calculated without propagation.
 			int howManyIterations = getProbabilisticNetwork().getNodeCount();
@@ -2736,14 +2792,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				howManyIterations = questionIds.size();
 			}
 			for (int i = 0; i < howManyIterations; i++) {
-				synchronized (getProbabilisticNetwork()) {
+				synchronized (net) {
 					INode mainNode = null;
 					Long questionId = null;
 					if (questionIds != null && !questionIds.isEmpty()) {
 						questionId = questionIds.get(i);
-						mainNode = getProbabilisticNetwork().getNode(Long.toString(questionId));
+						mainNode = net.getNode(Long.toString(questionId));
 					} else {
-						mainNode = getProbabilisticNetwork().getNodeAt(i);
+						mainNode = net.getNodeAt(i);
 						questionId = Long.parseLong(mainNode.getName());
 					}
 					if (mainNode == null || questionId == null) {
@@ -2790,7 +2846,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					List<INode> parentNodes = new ArrayList<INode>();
 					if (assumptionIds != null) {
 						for (Long id : assumptionIds) {
-							INode node = getProbabilisticNetwork().getNode(Long.toString(id));
+							INode node = net.getNode(Long.toString(id));
 							if (node == null) {
 								throw new InexistingQuestionException("Question " + questionId + " not found", questionId);
 							}
@@ -2799,23 +2855,23 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 					if (isToNormalize) {
 						try {
-							cptList.add((PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), null));
+							cptList.add((PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, net, null));
 						} catch (NoCliqueException e) {
 							Debug.println(getClass(), "Could not extract potentials within clique. Trying global propagation.", e);
-							netToUseWhenAssumptionsAreNotInSameClique = getDefaultInferenceAlgorithm().cloneProbabilisticNetwork(getProbabilisticNetwork());
+							netToUseWhenNotInSameClique = getDefaultInferenceAlgorithm().cloneProbabilisticNetwork(net);
 							break;	// do not fill cptList anymore, because if we need to do 1 propagation anyway, the computational cost if the same for any quantity of nodes to propagate
 						}
 					} else {
 						// by specifying a non-normalized junction tree algorithm to conditionalProbabilityExtractor, we can force it not to normalize the result
-						cptList.add((PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, getProbabilisticNetwork(), getDefaultInferenceAlgorithm().getAssetPropagationDelegator()));
+						cptList.add((PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, net, getDefaultInferenceAlgorithm().getAssetPropagationDelegator()));
 					}
 				}	// unlock prob network
 			}	// end of loop
 		}
 		
 		// If we need to do propagation, do it in non-critical portion of code
-		if (netToUseWhenAssumptionsAreNotInSameClique != null) {
-			return this.previewProbPropagation(questionIds, assumptionIds, assumedStates, netToUseWhenAssumptionsAreNotInSameClique);
+		if (netToUseWhenNotInSameClique != null) {
+			return this.previewProbPropagation(questionIds, assumptionIds, assumedStates, netToUseWhenNotInSameClique);
 		}
 		
 		// at this point of code, all probabilities can be estimated from cptList
@@ -4223,7 +4279,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * to "balance a1 and a2 given b1 and c1, and then balance a1 and a2 given b2 and c1".
 	 * 
 	 */
-	protected List<TradeSpecification> previewBalancingTrades(long userId, long questionId, List<Long> originalAssumptionIds, 
+	protected List<TradeSpecification> previewBalancingTrades(AssetAwareInferenceAlgorithm userAssetAlgorithm, long questionId, List<Long> originalAssumptionIds, 
 			List<Integer> originalAssumedStates, Clique clique) throws IllegalArgumentException {
 		// initial assertions
 		if (originalAssumptionIds != null && !originalAssumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, originalAssumptionIds).isEmpty()) {
@@ -4248,12 +4304,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		List<TradeSpecification> ret = new ArrayList<TradeSpecification>();
 		
 		// asset net algorithm of the user (this will be used to extract cliques and nodes)
-		AssetAwareInferenceAlgorithm userAssetAlgorithm = null;
-		try {
-			userAssetAlgorithm = getAlgorithmAndAssetNetFromUserID(userId);
-		} catch (InvalidParentException e) {
-			throw new RuntimeException("Could not instantiate user " + userId,e);
-		}
+//		AssetAwareInferenceAlgorithm userAssetAlgorithm = null;
+//		try {
+//			userAssetAlgorithm = getAlgorithmAndAssetNetFromUserID(userId);
+//		} catch (InvalidParentException e) {
+//			throw new RuntimeException("Could not instantiate user " + userId,e);
+//		}
 		
 		// node identified by questionId
 		AssetNode mainNode = null;	
@@ -4363,8 +4419,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					throw new RuntimeException("Failed to consistently handle resolved questions in assumption: " 
 							+ fullAssumptionIds + " = " + fullAssumedStates);
 				}
-				List<Float> balancingTrade = this.previewBalancingTrade(userId, questionId, fullAssumptionIds, fullAssumedStates, clique);
-				ret.add(new CliqueSensitiveTradeSpecificationImpl(userId, questionId, balancingTrade, fullAssumptionIds, fullAssumedStates, clique));
+				List<Float> balancingTrade = this.previewBalancingTrade(userAssetAlgorithm, questionId, fullAssumptionIds, fullAssumedStates, clique);
+				// the name of the asset net is supposedly the user ID
+				ret.add(new CliqueSensitiveTradeSpecificationImpl(Long.parseLong(userAssetAlgorithm.getAssetNetwork().getName()), questionId, balancingTrade, fullAssumptionIds, fullAssumedStates, clique));
 			}
 		}
 		return ret;
@@ -4392,48 +4449,53 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public List<TradeSpecification> previewBalancingTrades(long userId, long questionId, List<Long> originalAssumptionIds, 
 			List<Integer> originalAssumedStates) throws IllegalArgumentException {
-		return this.previewBalancingTrades(userId, questionId, originalAssumptionIds, originalAssumedStates, null);
-//		// initial assertions
-//		if (originalAssumptionIds != null && !originalAssumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, originalAssumptionIds).isEmpty()) {
-//			if (this.isToThrowExceptionOnInvalidAssumptions()) {
-//				new InvalidAssumptionException(originalAssumptionIds + " are invalid assumptions for question " + questionId);
-//			}
-//			// convert the set of assumptions to a valid set
-//			List<Long> oldAssumptionIds = originalAssumptionIds;
-//			// note: getMaximumValidAssumptionsSublists will always return at least 1 element (at least the empty list)
-//			originalAssumptionIds = this.getMaximumValidAssumptionsSublists(questionId, originalAssumptionIds, 1).get(0);
-//			// change assumedStates accordingly to new assumptionIds
-//			originalAssumedStates = this.convertAssumedStates(originalAssumptionIds, oldAssumptionIds, originalAssumedStates);
-//
-//		}
-//		if (originalAssumptionIds == null) {
-//			originalAssumptionIds = Collections.EMPTY_LIST;
-//		}
-//		if (originalAssumedStates == null) {
-//			originalAssumedStates = Collections.EMPTY_LIST;
-//		}
-//		
-//		// asset net algorithm of the user (this will be used to extract cliques and nodes)
-//		AssetAwareInferenceAlgorithm userAssetAlgorithm = null;
-//		try {
-//			userAssetAlgorithm = getAlgorithmAndAssetNetFromUserID(userId);
-//		} catch (InvalidParentException e) {
-//			throw new RuntimeException("Could not instantiate user " + userId,e);
-//		}
-//		
-//		// extract all cliques containing questionId and originalAssumptionIds
-//		Collection<Clique> cliques = this.getAssetCliqueFromQuestionIDAndAssumptions(questionId, originalAssumptionIds, userAssetAlgorithm);;
-//		
-//		// the specification to return
-//		List<TradeSpecification> ret = new ArrayList<TradeSpecification>();
-//		
-//		synchronized (getResolvedQuestions()) {
-//			for (Clique clique : cliques) {
-//				ret.addAll(this.previewBalancingTrades(userId, questionId, originalAssumptionIds, originalAssumedStates, clique));
-//			}
-//		}
-//		
-//		return ret;
+		// value to return
+		List<TradeSpecification> balancingTrades =  new ArrayList<TradeSpecification>();
+		// algorithm to be used to extract data related to assets and probabilities
+		AssetAwareInferenceAlgorithm algorithm = null;
+		try {
+			// we need to propagate eventually, so we need clones
+			algorithm = (AssetAwareInferenceAlgorithm) getAlgorithmAndAssetNetFromUserID(userId).clone();
+		} catch (Exception e) {
+			throw new RuntimeException("Could not obtain algorithm for the user " + userId, e);
+		}
+		// obtain the cliques which will be affected by this balance operation
+		Collection<Clique> cliques = null;
+		if (isToForceBalanceQuestionEntirely()) {
+			cliques = getAssetCliqueFromQuestionIDAndAssumptions(questionId, null, algorithm);
+		} else {
+			cliques = getAssetCliqueFromQuestionIDAndAssumptions(questionId, originalAssumptionIds, algorithm);
+		}
+		for (Clique clique : cliques) {
+			// obtain trade values for exiting the user from a question given assumptions, for the current clique
+			if (isToForceBalanceQuestionEntirely()) {
+				balancingTrades.addAll(previewBalancingTrades(algorithm, questionId, null, null, clique));
+			} else {
+				balancingTrades.addAll(previewBalancingTrades(algorithm, questionId, originalAssumptionIds, originalAssumedStates, clique));
+			}
+			for (TradeSpecification tradeSpecification : balancingTrades ) {
+				// check if we should do clique-sensitive operation
+				if (tradeSpecification instanceof CliqueSensitiveTradeSpecification) {
+					CliqueSensitiveTradeSpecification cliqueSensitiveTradeSpecification = (CliqueSensitiveTradeSpecification) tradeSpecification;
+					// extract the clique from tradeSpecification. Note: this is supposedly an asset clique
+					if (cliqueSensitiveTradeSpecification.getClique() != null) {
+						// fortunately, the algorithm doesn't care if it is an asset or prob clique, so privide the asset clique to algorithm
+						algorithm.getEditCliques().add(cliqueSensitiveTradeSpecification.getClique());
+						// by forcing the algorithm to update only this clique, we are forcing the balance trade to balance the provided clique
+					}
+				}
+				
+				// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
+				executeTrade(
+						tradeSpecification.getQuestionId(), 
+						tradeSpecification.getProbabilities(), 
+						tradeSpecification.getAssumptionIds(), 
+						tradeSpecification.getAssumedStates(),
+						true, algorithm, true, false, null
+				);
+			}
+		}
+		return balancingTrades;
 	}
 	
 	/**
@@ -4493,13 +4555,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#previewBalancingTrade(long, long, java.util.List, java.util.List)
 	 */
 	public List<Float> previewBalancingTrade(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
-		return this.previewBalancingTrade(userId, questionId, assumptionIds, assumedStates, null);
+		AssetAwareInferenceAlgorithm algorithm;
+		try {
+			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
+		} catch (InvalidParentException e) {
+			throw new RuntimeException(e);
+		}
+		return this.previewBalancingTrade(algorithm, questionId, assumptionIds, assumedStates, null);
 	}
 	
 	/**
 	 * Performs the same as described in {@link MarkovEngineInterface#previewBalancingTrade(long, long, List, List)},
 	 * but we can specify which clique to consider.
-	 * @param userId
+	 * @param algorithm: the algorithm with the asset net of the user
 	 * @param questionId
 	 * @param assumptionIds
 	 * @param assumedStates
@@ -4507,7 +4575,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return
 	 * @throws IllegalArgumentException
 	 */
-	public List<Float> previewBalancingTrade(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates, Clique clique) throws IllegalArgumentException {
+	public List<Float> previewBalancingTrade(AssetAwareInferenceAlgorithm algorithm, long questionId, List<Long> assumptionIds, List<Integer> assumedStates, Clique clique) throws IllegalArgumentException {
 		if (assumptionIds != null && assumedStates != null && assumptionIds.size() != assumedStates.size()) {
 			throw new IllegalArgumentException("This method does not allow assumptionIds and assumedStates with different sizes.");
 		}
@@ -4526,17 +4594,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// extract user's asset network from user ID
-		AssetAwareInferenceAlgorithm algorithm = null;
-		try {
-			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
-		} catch (InvalidParentException e) {
-			throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
-		}
+//		AssetAwareInferenceAlgorithm algorithm = null;
+//		try {
+//			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
+//		} catch (InvalidParentException e) {
+//			throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
+//		}
 		if (algorithm == null) {
-			throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+//			throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+			throw new RuntimeException("Could not extract delta from user " + algorithm.getAssetNetwork().getName() + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		// list to be used to store list of probabilities temporary
-		List<Float> probList = this.getProbList(questionId, assumptionIds, assumedStates);
+		List<Float> probList = this.getProbList(questionId, assumptionIds, assumedStates, true, algorithm.getRelatedProbabilisticNetwork());
 		if (probList == null) {
 			throw new RuntimeException("Could not obtain probability of question " + questionId + ", with assumptions = " + assumptionIds + ", states = " + assumedStates);
 		}
@@ -4589,7 +4658,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		if (Double.isInfinite(commonDenominator)) {
-			throw new ZeroAssetsException("Overflow detected when calculating the balancing trade of user " + userId + " on question " + questionId);
+			throw new ZeroAssetsException("Overflow detected when calculating the balancing trade of user " 
+					+ algorithm.getAssetNetwork().getName() + " on question " + questionId);
 		}
 		
 		if (commonDenominator == 0.0d) {
@@ -4679,9 +4749,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// obtain trade values for exiting the user from a question given assumptions, for the current clique
 					List<TradeSpecification> balancingTrades = null;
 					if (isToForceBalanceQuestionEntirely()) {
-						balancingTrades = previewBalancingTrades(getUserId(), getQuestionId(), null, null, clique);
+						balancingTrades = previewBalancingTrades(algorithm, getQuestionId(), null, null, clique);
 					} else {
-						balancingTrades = previewBalancingTrades(getUserId(), getQuestionId(), getAssumptionIds(), getAssumedStates(), clique);
+						balancingTrades = previewBalancingTrades(algorithm, getQuestionId(), getAssumptionIds(), getAssumedStates(), clique);
 					}
 					try {
 						for (TradeSpecification tradeSpecification : balancingTrades ) {

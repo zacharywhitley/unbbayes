@@ -73,7 +73,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private List<MarkovEngineImpl> engines;
 
 	/** This value indicates how many test iterations (5-point tests) will be performed by default*/
-	private static int howManyTradesToTest = 1000; //(int) (random.nextDouble() * 200);
+	private static int howManyTradesToTest = 50;//1000;
 
 
 	private enum FivePointTestType {BELOW_LIMIT, ON_LOWER_LIMIT, BETWEEN_LIMITS, ON_UPPER_LIMIT, ABOVE_LIMIT}; 
@@ -94,7 +94,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static final String NODE_NAME_PREFIX = "N";
 
 	/** This program will enter in a loop at this iteration number. Use with care. Set to negative if you don't want this program to stop at the iteration */
-	private static final int iterationToDebug = -117;//-136;
+	private static final int iterationToDebug = -290;
 
 	/** this object will group the data to be printed out in {@link #testFilesWithResolution()} */
 	private Tracer tracer = null;
@@ -107,7 +107,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 
 	/** probability to balance a trade */
 //	private static float probToBalance = 0f;
-	private static float probToBalance = 0.1f;
+	private static float probToBalance = 0.3f;//0.1f;
 
 	/** probability to add cash */
 	private static float probToAddCash = .2f;
@@ -172,7 +172,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static int maxIterationToSelectQuestion = 1000/maxLiveNodes;
 
 	/** If true, the cash will be tested after a balance trade */
-	private static boolean isToCheckCashAfterBalance = true;
+	private static boolean isToCheckCashAfterBalance = false;
 
 	/** if true, the 1st engine in {@link #engines} will contain all nodes from {@link #fileNames} from the beginning. */
 	private static boolean isToSet1stEngineToContainAllNodes = true;
@@ -180,7 +180,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If there are less than this number of questions, questions will not be resolved */
 	private static int minAliveQuestionNumber = 0;
 
-	private static long seed = 666;//new Date().getTime();
+	private static long seed = new Date().getTime();//666;
 	/** Random number generator, with seed */
 	private static Random random = new Random(seed);
 
@@ -188,7 +188,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 * If true, {@link #do5PointTest(Map, Long, int, List, Long, List, List, FivePointTestType, Map, boolean, Collection, boolean)} will check
 	 * whether cash went to negative without error margin, if {@link FivePointTestType} is {@link FivePointTestType#BETWEEN_LIMITS}.
 	 */
-	private static boolean isStrictlyNonNegativeCash = true;//false;
+	private static boolean isStrictlyNonNegativeCash = false;
 
 	/**If true, {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)} will randomize
 	 * trades close to the edit limits*/
@@ -1467,7 +1467,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						if (minimum+ASSET_ERROR_MARGIN < 0 || (isStrictlyNonNegativeCash && minimum < 0)) {
 							minimum = engines.get(1).getCash(userId, null, null);
 						}
-						assertTrue("User=" + userId+"," + engine.toString()+ ", min = " + minimum, minimum >= (isStrictlyNonNegativeCash ?0:ASSET_ERROR_MARGIN));
+						assertTrue("User=" + userId+"," + engine.toString()+ ", min = " + minimum, minimum >= (isStrictlyNonNegativeCash ?0:-ASSET_ERROR_MARGIN));
 					}
 					break;
 				case ON_UPPER_LIMIT:
@@ -4600,6 +4600,50 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				tracer.setAssumedStates(new ArrayList<Integer>(assumedStates));
 			}
 			
+			// check that the marginal  probability of this node can be changed
+			for (Float p : engines.get(engines.size()-1).getProbList(questionId, null, null)) {
+				// do not trade on nodes which is 0 or 1 (this may happen because of balance trade).
+				if (p == 0f || p == 1f) {
+					Debug.println(getClass(), "User " + userId + " cannot trade on question " + questionId 
+							+ " given " + assumptionIds + "=" + assumedStates
+							+ " because it has 0% or 100% prob");
+					iteration--;
+					if (isToTrace()) {
+						if (tracer.getAddedCash() > 0f) {
+							for (MarkovEngineImpl engine: engines) {
+								engine.addCash(null, new Date(), userId, -tracer.getAddedCash(), "Undoing the last add cash operation...");
+							}
+						}
+						addedQuestionsInVoidIteration = tracer.getAddedQuestions();
+						addedQuestionsStateSizeInVoidIteration = tracer.getAddedQuestionsStateSize();
+					}
+					numEditsCloseToLimits = numIterationsCloseToBoundsBeforeIteration;
+					continue;
+				}
+			}
+			
+			// check that the conditional probability of this node can be changed
+			for (Float p : engines.get(engines.size()-1).getProbList(questionId, assumptionIds, assumedStates)) {
+				// do not trade on nodes which is 0 or 1 (this may happen because of balance trade).
+				if (p == 0f || p == 1f) {
+					Debug.println(getClass(), "User " + userId + " cannot trade on question " + questionId 
+							+ " given " + assumptionIds + "=" + assumedStates
+							+ " because it has 0% or 100% prob");
+					iteration--;
+					if (isToTrace()) {
+						if (tracer.getAddedCash() > 0f) {
+							for (MarkovEngineImpl engine: engines) {
+								engine.addCash(null, new Date(), userId, -tracer.getAddedCash(), "Undoing the last add cash operation...");
+							}
+						}
+						addedQuestionsInVoidIteration = tracer.getAddedQuestions();
+						addedQuestionsStateSizeInVoidIteration = tracer.getAddedQuestionsStateSize();
+					}
+					numEditsCloseToLimits = numIterationsCloseToBoundsBeforeIteration;
+					continue;
+				}
+			}
+			
 			
 			// if we have at least minNumQuestionToTriggerResolveQuestion live questions in last me, start resolving questions
 			if (engines.get(engines.size()-1).getProbabilisticNetwork().getNodeCount() >= minNumQuestionToTriggerResolveQuestion) {
@@ -5054,6 +5098,59 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				tracer.setAssumedStates(new ArrayList<Integer>(assumedStates));
 			}
 			
+			boolean has0or1 = false;
+			// check that the marginal  probability of this node can be changed
+			for (Float p : engines.get(engines.size()-1).getProbList(questionId, null, null)) {
+				// do not trade on nodes which is 0 or 1 (this may happen because of balance trade).
+				if (p == 0f || p == 1f) {
+					has0or1 = true;
+					break;
+				}
+			}
+			if (has0or1) {
+				Debug.println(getClass(), "User " + userId + " cannot trade on question " + questionId 
+						+ " given " + assumptionIds + "=" + assumedStates
+						+ " because it has 0% or 100% prob");
+				iteration--;
+				if (isToTrace()) {
+					if (tracer.getAddedCash() > 0f) {
+						for (MarkovEngineImpl engine: engines) {
+							engine.addCash(null, new Date(), userId, -tracer.getAddedCash(), "Undoing the last add cash operation...");
+						}
+					}
+					addedQuestionsInVoidIteration = tracer.getAddedQuestions();
+					addedQuestionsStateSizeInVoidIteration = tracer.getAddedQuestionsStateSize();
+				}
+				numEditsCloseToLimits = numIterationsCloseToBoundsBeforeIteration;
+				continue;
+			}
+			
+			// check that the conditional probability of this node can be changed
+			for (Float p : engines.get(engines.size()-1).getProbList(questionId, assumptionIds, assumedStates)) {
+				// do not trade on nodes which is 0 or 1 (this may happen because of balance trade).
+				if (p == 0f || p == 1f) {
+					has0or1 = true;
+					break;
+				}
+			}
+			if (has0or1) {
+				Debug.println(getClass(), "User " + userId + " cannot trade on question " + questionId 
+						+ " given " + assumptionIds + "=" + assumedStates
+						+ " because it has 0% or 100% prob");
+				iteration--;
+				if (isToTrace()) {
+					if (tracer.getAddedCash() > 0f) {
+						for (MarkovEngineImpl engine: engines) {
+							engine.addCash(null, new Date(), userId, -tracer.getAddedCash(), "Undoing the last add cash operation...");
+						}
+					}
+					addedQuestionsInVoidIteration = tracer.getAddedQuestions();
+					addedQuestionsStateSizeInVoidIteration = tracer.getAddedQuestionsStateSize();
+				}
+				numEditsCloseToLimits = numIterationsCloseToBoundsBeforeIteration;
+				continue;
+			}
+			
 			// Randomly add cash to the user
 			if (random.nextDouble() < probToAddCash ) {
 				float ammountToAdd = (float) (ASSET_ERROR_MARGIN + random.nextDouble() * MAX_CASH_TO_ADD);
@@ -5216,6 +5313,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				List<Float> cashPerStates = null;
 				
 				List<TradeSpecification> tradesToBalance = null;
+				List<TradeSpecification> tradesToBalancePreview = null;	// the previewed trades for balance, so that we compare with trades actually performed
+				
 				// run in inverse order, because BruteForceMarkovEngine is the 1st engine, and it cannot run doBalanceTrade
 				for (int engineIndex = engines.size()-1; engineIndex >= 0; engineIndex--) {
 					
@@ -5229,6 +5328,10 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						}
 					} else {
 						float cashBeforeBalance = engine.getCash(userId, null, null);
+						
+						// preview now, and compare with what was actually ran after trade
+						tradesToBalancePreview = engine.previewBalancingTrades(userId, questionId, assumptionIds, assumedStates);
+						
 						// actually balance
 						assertTrue(engine.doBalanceTrade(null, occurredWhen, 
 								"User "+userId + " exits question " + questionId + ", assumptions: " + assumptionIds+"="+assumedStates, 
@@ -5239,6 +5342,34 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						List<QuestionEvent> questionHistory = engine.getQuestionHistory(questionId, null, null);
 						assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
 						tradesToBalance = ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades();
+						
+						// compare with previewed trades to balance
+						assertEquals(tradesToBalance.size(), tradesToBalancePreview.size());
+						for (int i = 0; i < tradesToBalance.size(); i++) {
+							
+							// compare question and user
+							assertEquals(tradesToBalance.get(i).getQuestionId(), tradesToBalancePreview.get(i).getQuestionId());
+							assertEquals(tradesToBalance.get(i).getUserId(), tradesToBalancePreview.get(i).getUserId());
+							
+							// compare assumptions
+							assertEquals(tradesToBalance.get(i).getAssumptionIds().size(), tradesToBalancePreview.get(i).getAssumptionIds().size());
+							for (int j = 0; j < tradesToBalance.get(i).getAssumptionIds().size(); j++) {
+								assertEquals(tradesToBalance.get(i).getAssumptionIds().get(j), tradesToBalancePreview.get(i).getAssumptionIds().get(j));
+							}
+							
+							// compare assumed states
+							assertEquals(tradesToBalance.get(i).getAssumedStates().size(), tradesToBalancePreview.get(i).getAssumedStates().size());
+							for (int j = 0; j < tradesToBalance.get(i).getAssumedStates().size(); j++) {
+								assertEquals(tradesToBalance.get(i).getAssumedStates().get(j), tradesToBalancePreview.get(i).getAssumedStates().get(j));
+							}
+							
+							// compare prob
+							assertEquals(tradesToBalance.get(i).getProbabilities().size(), tradesToBalancePreview.get(i).getProbabilities().size());
+							for (int j = 0; j < tradesToBalance.get(i).getProbabilities().size(); j++) {
+								assertEquals(tradesToBalance.get(i).getProbabilities().get(j), tradesToBalancePreview.get(i).getProbabilities().get(j), PROB_ERROR_MARGIN);
+							}
+						}
+						
 						// only mark as if we did balance a question if we really did balance a question
 						if (!tradesToBalance.isEmpty()) {
 							hasBalanced = true;
@@ -5246,49 +5377,14 @@ public class MarkovEngineBruteForceTest extends TestCase {
 								tracer.setBalanceTradeSpecification(tradesToBalance);
 							}
 						} else {
-							List<Float> assetsIf = engine.getAssetsIfStates(userId, questionId, assumptionIds, assumedStates);
-							boolean equals = true;
-							// check that conditional assets if state are close each other
-							for (int i = 1; i < assetsIf.size(); i++) {
-								if (Math.abs(assetsIf.get(0) - assetsIf.get(i)) > ASSET_ERROR_MARGIN) {
-									equals = false;
-									break;
-								}
-							}
 							// check that conditional min assets per state are close each other
-							List<Float> cashes = engine.getCashPerStates(userId, questionId, assumptionIds, assumedStates);
-							for (int i = 1; i < cashes.size(); i++) {
-								if (cashBeforeBalance >= 0) {
-									// if cash before balance was non negative, balance will keep cash non-negative
-									assertTrue(cashBeforeBalance + "->" + cashes.get(i), cashes.get(i) >= 0);
-								} 
-								if (Math.abs(cashes.get(0) - cashes.get(i)) > ASSET_ERROR_MARGIN) {
-									equals = false;
-									break;
-								}
-							}
-							if (!equals) {// if not, re-run balance trade
-								try {
-									Thread.sleep(500);
-								} catch (InterruptedException e) {
-									e.printStackTrace();
-								}
-								assertTrue(engine.doBalanceTrade(null, occurredWhen, 
-										"User "+userId + " exits question " + questionId + ", assumptions: " + assumptionIds+"="+assumedStates, 
-										userId, questionId, assumptionIds, assumedStates
-								));
-								try {
-									Thread.sleep(500);
-								} catch (InterruptedException e) {
-									e.printStackTrace();
-								}
-								questionHistory = engine.getQuestionHistory(questionId, null, null);
-								tradesToBalance = ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades();
-								if (!tradesToBalance.isEmpty()) {
-									hasBalanced = true;
-									if (isToTrace()) {
-										tracer.setBalanceTradeSpecification(tradesToBalance);
-									}
+							if (isToCheckCashAfterBalance) {
+								List<Float> cashes = engine.getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+								for (int i = 1; i < cashes.size(); i++) {
+									if (cashBeforeBalance >= 0) {
+										// if cash before balance was non negative, balance will keep cash non-negative
+										assertTrue(cashBeforeBalance + "->" + cashes.get(i), cashes.get(i) >= 0);
+									} 
 								}
 							}
 						}
@@ -5310,28 +5406,28 @@ public class MarkovEngineBruteForceTest extends TestCase {
 									+ ", assumptions:"+assumptionIds +"=" +assumedStates,1f, sum,PROB_ERROR_MARGIN);
 						}
 						
-					}
-					
-					List<Float> assetsIf = engine.getAssetsIfStates(userId, questionId, assumptionIds, assumedStates);
-					// check number of states of this question
-					assertEquals(engine.toString()+", user = "+userId+", question = " + questionId+", assumptions: " + assumptionIds+"="+assumedStates
-							+ "assets-if per state = " + assetsIf, 
-							probabilities.get(questionId).size(), assetsIf.size());
-					// check that assets given scores per question are close each other
-					for (int i = 1; i < assetsIf.size(); i++) {
+						List<Float> assetsIf = engine.getAssetsIfStates(userId, questionId, assumptionIds, assumedStates);
+						// check number of states of this question
 						assertEquals(engine.toString()+", user = "+userId+", question = " + questionId+", assumptions: " + assumptionIds+"="+assumedStates
-								+ "score per state = " + assetsIf,
-								assetsIf.get(0), assetsIf.get(i), ASSET_ERROR_MARGIN);
-					}
-					// check that conditional min assets per state are close each other
-					if (isToCheckCashAfterBalance ) {
-						cashPerStates = engine.getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+								+ "assets-if per state = " + assetsIf, 
+								probabilities.get(questionId).size(), assetsIf.size());
+						// check that assets given scores per question are close each other
 						for (int i = 1; i < assetsIf.size(); i++) {
 							assertEquals(engine.toString()+", user = "+userId+", question = " + questionId+", assumptions: " + assumptionIds+"="+assumedStates
-									+ "cash per state = " + cashPerStates,
-									cashPerStates.get(0), cashPerStates.get(i), ASSET_ERROR_MARGIN);
+									+ "score per state = " + assetsIf,
+									assetsIf.get(0), assetsIf.get(i), ASSET_ERROR_MARGIN);
+						}
+						// check that conditional min assets per state are close each other
+						if (isToCheckCashAfterBalance ) {
+							cashPerStates = engine.getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+							for (int i = 1; i < assetsIf.size(); i++) {
+								assertEquals(engine.toString()+", user = "+userId+", question = " + questionId+", assumptions: " + assumptionIds+"="+assumedStates
+										+ "cash per state = " + cashPerStates,
+										cashPerStates.get(0), cashPerStates.get(i), ASSET_ERROR_MARGIN);
+							}
 						}
 					}
+					
 				}
 				
 //				System.out.println("doBalanceTrade(occurredWhen="+occurredWhen+",userId="+userId+",questionId="+questionId

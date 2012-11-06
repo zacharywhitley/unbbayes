@@ -1006,109 +1006,139 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		ProbabilisticNetwork bayesNet = (ProbabilisticNetwork) this.getNetwork();
 		SingleEntityNetwork  assetNet = this.getAssetNetwork();
 		
-		// initial assertion
-		if (assetNet.getJunctionTree() == null
-				|| assetNet.getJunctionTree().getCliques() == null
-				||  bayesNet.getJunctionTree() == null
-				||  bayesNet.getJunctionTree().getCliques() == null) {
-			throw new IllegalStateException("Probabilistic network or asset network of " + assetNet +  " is not correctly initialized.");
+		// initial assertion: check if network is compiled with junction tree algorithm
+		if (assetNet.getJunctionTree() == null ||  bayesNet.getJunctionTree() == null){
+			throw new IllegalStateException("Junction tree of probabilistic network or asset network of " + assetNet +  " is not correctly initialized.");
 		}
+		
+		// extract the cliques
+		List<Clique> assetCliques = assetNet.getJunctionTree().getCliques();
+		List<Clique> probCliques = bayesNet.getJunctionTree().getCliques();
+		if (assetCliques == null ||  probCliques == null) {
+			throw new IllegalStateException("Cliques of probabilistic network or asset network of " + assetNet +  " is not correctly initialized.");
+		}
+		
+		
 		
 		// guarantee that quantity of cliques matches
-		if (assetNet.getJunctionTree().getCliques().size() !=  bayesNet.getJunctionTree().getCliques().size()) {
-			throw new IllegalStateException("Probabilistic network has " + bayesNet.getJunctionTree().getCliques().size()
-					+ " cliques, but asset network has " + assetNet.getJunctionTree().getCliques().size() + " cliques.");
+		if (assetCliques.size() !=  probCliques.size()) {
+			throw new IllegalStateException("Probabilistic network has " + probCliques.size()
+					+ " cliques, but asset network has " + assetCliques.size() + " cliques.");
 		}
 		
-		/*
-		 * Since ArrayList<Separator> uses Separator#equals() for searching objects within the list, 
-		 * and Separator#equals() compares the names of nodes contained in the separator
-		 * (and nodes in prob separators and asset separator are the same),
-		 * if we convert the set of prob separators to ArrayList, it is possible to
-		 * search for prob separators using asset separators as argument.
-		 */
-		List<Separator> listOfProbSeparator = new ArrayList<Separator>( bayesNet.getJunctionTree().getSeparators() );
 		
 		// extract iterators of cliques and separators, so that we can add cliques and subtract separators alternately
-		// so that we avoid making ret to become too huge
-		Iterator<Clique> assetCliqueIterator = assetNet.getJunctionTree().getCliques().iterator();
-		Iterator<Clique> probCliqueIterator = bayesNet.getJunctionTree().getCliques().iterator();
+		// so that we avoid making ret to become too huge.
+		// Cliques can be accessed in parallel, because they are synchronized by indexes.
+		Iterator<Clique> assetCliqueIterator = assetCliques.iterator();
+		Iterator<Clique> probCliqueIterator = probCliques.iterator();
+		
 		Iterator<Separator> assetSeparatorIterator = assetNet.getJunctionTree().getSeparators().iterator();
+		
+		// separators needs mapping, because they are not stored in ordered structures.
+		Map<Integer, IRandomVariable> sepMapping = null;
+//		if (getAssetPropagationDelegator() instanceof AssetPropagationInferenceAlgorithm) {
+//			// reuse the mapping created by AssetPropagationInferenceAlgorithm, if it was using the same net
+//			sepMapping = ((AssetPropagationInferenceAlgorithm)getAssetPropagationDelegator()).getAssetCliqueToOriginalCliqueMap();
+//			// the name is getAssetCliqueToOriginalCliqueMap, but it also stores mapping to separators
+//		} else {
+			// have to create mapping from scratch, but we only need to map separators in this method
+			sepMapping = new HashMap<Integer, IRandomVariable>();
+			for (Separator probSep : bayesNet.getJunctionTree().getSeparators()) {
+				// supposedly, separators of assets and separators of probs have same internal identificator
+				sepMapping.put(probSep.getInternalIdentificator(), probSep);
+			}
+//		}
+		
 		
 		// at this point, assetCliqueIterator and probCliqueIterator have same size and supposedly have same ordering
 		while (assetCliqueIterator.hasNext() || assetSeparatorIterator.hasNext()) {
 			if (assetCliqueIterator.hasNext()) {
+				
 				// add product of probabilities and assets of cliques , 
+				
 				Clique assetClique = assetCliqueIterator.next();
-				Clique probClique  = probCliqueIterator.next();
-				for (int j = 0; j < assetClique.getProbabilityFunction().tableSize(); j++) {
+				Clique probClique = probCliqueIterator.next();
+				PotentialTable assetTable = assetClique.getProbabilityFunction();
+				PotentialTable probTable  = probClique.getProbabilityFunction();
+				
+				for (int j = 0; j < assetTable.tableSize(); j++) {
 					// extract values in the cell
-					float assetValue = assetClique.getProbabilityFunction().getValue(j);
+					float assetValue = assetTable.getValue(j);
 					float probValue = 1f; 
-					if (probClique.getProbabilityFunction().tableSize() > 1) {
+					if (probTable.tableSize() > 1) {
 						// note: if probClique has no variable, it is considered as if it has 1 variable with 100% prob
-						probValue = probClique.getProbabilityFunction().getValue(j);
+						probValue = probTable.getValue(j);
 					}
 					
 					if (probValue == 0f) {
 						continue; // if probability is zero, no need to consider it
 					} 
-					if (isToUseQValues()) {
+					if (isToUseQValues) {
 						if (assetValue <= 0f) {
-							throw new ZeroAssetsException("Negative infinite asset detected in clique "+ assetClique +". User = " + getAssetNetwork());
+							throw new ZeroAssetsException("Negative infinite asset detected in clique "+ assetTable +". User = " + getAssetNetwork());
 						}
 					} else if (Float.isInfinite(assetValue)) {
-						throw new ZeroAssetsException("Inconsistent asset detected in clique "+ assetClique +": " + assetValue + ", user = " + getAssetNetwork());
+						throw new ZeroAssetsException("Inconsistent asset detected in clique "+ assetTable +": " + assetValue + ", user = " + getAssetNetwork());
 					}
 					double value;
-					if (isToUseQValues()) {
+					if (isToUseQValues) {
 						value = probValue 
 							* (getqToAssetConverter().getScoreFromQValues(assetValue) - getExpectedAssetBasis());
 					} else {
 						value = probValue * (assetValue - getExpectedAssetBasis());
 					}
 					ret +=  value;
-					this.notifyExpectedAssetCellListener(probClique, assetClique, j, j, value);
+					if (getExpectedAssetCellListeners() != null) {
+						this.notifyExpectedAssetCellListener(assetClique, probClique, j, j, value);
+					}
 				}			
 			}
 			if (assetSeparatorIterator.hasNext()) {
 				// subtracts the product of probabilities and assets of separators 
 				Separator assetSeparator = assetSeparatorIterator.next();
-				Separator probSeparator = listOfProbSeparator.get(listOfProbSeparator.indexOf(assetSeparator));
+				Separator probSeparator = (Separator) sepMapping.get(assetSeparator.getInternalIdentificator());
+				PotentialTable assetTable = assetSeparator.getProbabilityFunction();
+				PotentialTable probTable = probSeparator.getProbabilityFunction();
+				
 				if (probSeparator.getNodes() == null || probSeparator.getNodes().isEmpty()
-						|| probSeparator.getProbabilityFunction().getVariablesSize() <= 0 
-						|| probSeparator.getProbabilityFunction().tableSize() <= 0) {
+						|| probTable.getVariablesSize() <= 0 
+						|| probTable.tableSize() <= 0) {
 					// this is an empty separator, so it has 
 					double value;
-					if (isToUseQValues()) {
+					if (isToUseQValues) {
 						value = getqToAssetConverter().getScoreFromQValues(getEmptySeparatorsDefaultContent()) - getExpectedAssetBasis();
 					} else {
 						value = getEmptySeparatorsDefaultContent() - getExpectedAssetBasis();
 					}
 					ret -= value;
-					this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, -1, -1, value);
+					if (getExpectedAssetCellListeners() != null) {
+						this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, -1, -1, value);
+					}
 				}
-				for (int i = 0; i < assetSeparator.getProbabilityFunction().tableSize(); i++) {	
-					if (probSeparator.getProbabilityFunction().getValue(i) == 0f) {
+				for (int i = 0; i < assetTable.tableSize(); i++) {	
+					if (probTable.getValue(i) == 0f) {
 						continue; // if probability is zero, no need to consider it
 					} 
-					if (isToUseQValues()) {
-						if (assetSeparator.getProbabilityFunction().getValue(i) <= 0f) {
+					if (isToUseQValues) {
+						if (assetTable.getValue(i) <= 0f) {
 							throw new ZeroAssetsException("Negative infinite asset detected in separator "+ assetSeparator +  ". User = " + getAssetNetwork());
 						}
-					} else if (Float.isInfinite(assetSeparator.getProbabilityFunction().getValue(i))) {
-						throw new ZeroAssetsException("Inconsistent asset detected in separator + " + assetSeparator+  " : " + assetSeparator.getProbabilityFunction().getValue(i) + ", user = " + getAssetNetwork());
+					} else if (Float.isInfinite(assetTable.getValue(i))) {
+						throw new ZeroAssetsException("Inconsistent asset detected in separator + " + assetSeparator+  " : " + assetTable.getValue(i) + ", user = " + getAssetNetwork());
 					}
 					double value ;
-					if (isToUseQValues()) {
-						value = probSeparator.getProbabilityFunction().getValue(i) 
-							* (getqToAssetConverter().getScoreFromQValues(assetSeparator.getProbabilityFunction().getValue(i))  - getExpectedAssetBasis());
+					if (isToUseQValues) {
+						value = probTable.getValue(i) 
+							* (getqToAssetConverter().getScoreFromQValues(assetTable.getValue(i))  - getExpectedAssetBasis());
 					} else {
-						value = probSeparator.getProbabilityFunction().getValue(i) 
-							* (assetSeparator.getProbabilityFunction().getValue(i)  - getExpectedAssetBasis());
+						value = probTable.getValue(i) 
+							* (assetTable.getValue(i)  - getExpectedAssetBasis());
 					}
 					ret -= value;
-					this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, i, i, value);
+					if (getExpectedAssetCellListeners() != null) {
+						this.notifyExpectedAssetCellListener(probSeparator, assetSeparator, i, i, value);
+					}
 				}
 			}
 			if (Double.isInfinite(ret)) {
@@ -1433,6 +1463,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		} catch (InvalidParentException e) {
 			throw new RuntimeException("Could not clone asset network of user " + getAssetNetwork(), e);
 		}
+		
+		// make sure the names are the same
+		newAssetNet.setName(this.getAssetNetwork().getName());
 		
 		// mapping between original cliques to copied cliques.
 		Map<Clique, Clique> oldCliqueToNewCliqueMap = new HashMap<Clique, Clique>();
