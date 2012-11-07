@@ -88,11 +88,11 @@ import unbbayes.util.extension.manager.CorePluginNodeManager;
  * 
  */
 public class GraphPane extends UCanvas {
-
-	private static final int MOVE_Y_COPY = 100;
+	/** Move y pixels to the new node. */
+	private int yPixelsToCopy = 100;
 
 	/** Move x pixels to the new node. */
-	private static final int MOVE_X_COPY = 100;
+	private int xPixesToCopy = 100;
 
 	private static final int DEFAULT_DIMENSION = 1500;
 
@@ -170,7 +170,7 @@ public class GraphPane extends UCanvas {
 		action = GraphAction.NONE;
 
 		update();
-		
+
 		addKeyListener(new CopyPasteKeyManager());
 	}
 
@@ -199,11 +199,9 @@ public class GraphPane extends UCanvas {
 		action = GraphAction.NONE;
 
 		graphViewport.setViewSize(visibleDimension);
-		
+
 		addKeyListener(new CopyPasteKeyManager());
 	}
-
-	
 
 	/**
 	 * Create a new node based on another one. It clone the node's children as
@@ -223,8 +221,8 @@ public class GraphPane extends UCanvas {
 		// A new cloned node to create.
 		Node clonedNode;
 
-		double positionX = originalNode.getPosition().getX() + MOVE_X_COPY;
-		double positionY = originalNode.getPosition().getY() + MOVE_Y_COPY;
+		double positionX = originalNode.getPosition().getX() + xPixesToCopy;
+		double positionY = originalNode.getPosition().getY() + yPixelsToCopy;
 		// Validate if the node is new.
 		if (sharedNodes.get(originalNode) == null) {
 
@@ -254,7 +252,7 @@ public class GraphPane extends UCanvas {
 		createNode(clonedNode);
 		getNodeUShape(clonedNode).setState(UShape.STATE_SELECTED, null);
 
-		//// Set general attributes
+		// // Set general attributes
 		// Name is not necessary, because it is automatic when it is created.
 		// Description
 		clonedNode.setDescription(originalNode.getDescription());
@@ -284,7 +282,6 @@ public class GraphPane extends UCanvas {
 
 			try {
 				clonedNode.addChildNode(childNode);
-
 
 				// Add a line between parent and new child.
 				UShapeLine line = new UShapeLine(this,
@@ -332,8 +329,6 @@ public class GraphPane extends UCanvas {
 
 		return newName;
 	}
-
-
 
 	/**
 	 * Seta o atributo graphDimension (tamanho da rede Bayesiana) do objeto da
@@ -1259,8 +1254,8 @@ public class GraphPane extends UCanvas {
 		this.toUseSelectionForLines = toUseSelectionForLines;
 	}
 
-	
-	class CopyPasteKeyManager implements KeyListener{
+	class CopyPasteKeyManager implements KeyListener {
+
 		public void keyTyped(KeyEvent e) {
 		}
 
@@ -1294,6 +1289,15 @@ public class GraphPane extends UCanvas {
 		}
 
 		private void pasteAndDrawNodes(List<Node> group) {
+
+			// Relative node position based on the mouse position.
+			if (group.size() > 0) {
+				Node firstNode = group.get(0);
+				xPixesToCopy = (int) (mouseX - firstNode.getPosition().getX() - firstNode
+						.getSize().getX() / 2);
+				yPixelsToCopy = (int) (mouseY - firstNode.getPosition().getY() - firstNode
+						.getSize().getY() / 2);
+			}
 
 			// Nodes to copy are noly parents.
 			List<Node> parentNodesToCopy = new ArrayList<Node>();
