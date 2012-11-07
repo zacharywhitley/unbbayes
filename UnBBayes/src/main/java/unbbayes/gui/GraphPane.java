@@ -254,10 +254,9 @@ public class GraphPane extends UCanvas {
 		createNode(clonedNode);
 		getNodeUShape(clonedNode).setState(UShape.STATE_SELECTED, null);
 
-		// Set general attributes
-		String newName = originalNode.getName() + "_1";
-		newName = getUniqueName(newName);
-		clonedNode.setName(newName);
+		//// Set general attributes
+		// Name is not necessary, because it is automatic when it is created.
+		// Description
 		clonedNode.setDescription(originalNode.getDescription());
 
 		// Clear the default states
@@ -286,7 +285,6 @@ public class GraphPane extends UCanvas {
 			try {
 				clonedNode.addChildNode(childNode);
 
-				Debug.println("Line between " + newName + " and " + clonedChild);
 
 				// Add a line between parent and new child.
 				UShapeLine line = new UShapeLine(this,
@@ -502,8 +500,6 @@ public class GraphPane extends UCanvas {
 	 * @see MouseEvent
 	 */
 	public void mouseClicked(MouseEvent e) {
-		// TODO stop using direct access to controller as a field, and start
-		// using get/set methods
 		if (SwingUtilities.isLeftMouseButton(e)) {
 			Node newNode = null;
 
@@ -1132,8 +1128,6 @@ public class GraphPane extends UCanvas {
 			// this is a node inserted by plugin infrastructure
 
 			// Obtains the correct panel builder for currently selected node
-			// TODO find a better way to couple the node and its builder without
-			// messing up the draw/Node/GUI relationship
 			IProbabilityFunctionPanelBuilder builder = null;
 			try {
 				builder = this.getPluginNodeManager()
