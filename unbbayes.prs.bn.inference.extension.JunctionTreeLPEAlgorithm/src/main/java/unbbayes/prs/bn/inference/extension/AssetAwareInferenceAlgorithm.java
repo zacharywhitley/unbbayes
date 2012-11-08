@@ -556,6 +556,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * @see #runMinPropagation()
 	 * @see #calculateExplanation(List)
 	 * @see #undoMinPropagation()
+	 * @see #calculateIntervalOfAllowedEdit(boolean, float, double, double, IQValuesToAssetsConverter)
 	 */
 	public float[] calculateIntervalOfAllowedEdit(PotentialTable cpt, int indexInCPT) {
 		// initial assertions
@@ -633,6 +634,56 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			if (Float.isInfinite(ret[1]) || Float.isNaN(ret[1])) {
 				// in this case, calculateExplanation returned min assets. Convert it to Q.
 				minValueAssumingNotTarget = this.getqToAssetConverter().getQValuesFromScore((float) minValueAssumingNotTarget);
+				// we can still try using the old equation using q-values
+				ret[1] = (float) (1-((1 - prob)/minValueAssumingNotTarget));
+			}
+		}
+		
+		return calculateIntervalOfAllowedEdit(isToUseQValues(), prob, minValue, minValueAssumingNotTarget, this.getqToAssetConverter());
+	}
+	
+	/**
+	 * Returns the array [ P(T=t|A=a)/m1 ; 1- (1 - P(T=t|A=a))/m2 ], whose index 0 is the lower bound of allowed edit (probability that guarantees that
+	 * the min-q will never become below 1), and index 1 is the respective upper bound. 
+	 * In this formula, the value m1 is the min-q assuming T=t and A=a, and m2 is the min-q
+	 * assuming T!=t and A=a.
+	 * <br/><br/>
+	 * If isToUseQValues == false (i.e. asset tables are storing assets - logarithm space - instead of q-values), then
+	 * this method returns [ P(T=t|A=a)*power(base, -m1/b) ; 1- (1 - P(T=t|A=a))*power(base,-m2/b) ]
+	 * @param isToUseQValues : if true, the 
+	 * @param prob : P(T=t|A=a)
+	 * @param minValue : m1
+	 * @param minValueAssumingNotTarget : m2
+	 * @param qToAssetConverter : this object converts assets to score and vice-versa
+	 * @return the calculated interval of edit
+	 * @see #calculateIntervalOfAllowedEdit(PotentialTable, int)
+	 */
+	public static float[] calculateIntervalOfAllowedEdit(boolean isToUseQValues, float prob, double minValue, double minValueAssumingNotTarget,
+			IQValuesToAssetsConverter qToAssetConverter) {
+		// this will be the value to return
+		float[] ret = new float[2];
+		
+		if (isToUseQValues) {
+			// P(T=t|A=a)/m1  
+			ret[0] = (float) (prob/minValue);
+			// 1 - (1-P(T=t|A=a))/m2
+			ret[1] = (float) (1-((1 - prob)/minValueAssumingNotTarget));
+		} else { // minQValue and minQValueAssumingNotTarget are asset values instead of q-values
+			// P(T=t|A=a)*power(base, -m1/b)
+			ret[0] = 
+				(float) (prob*(Math.pow(qToAssetConverter.getCurrentLogBase(), -minValue/qToAssetConverter.getCurrentCurrencyConstant())));
+			if (Float.isInfinite(ret[0]) || Float.isNaN(ret[0])) {
+				// in this case, calculateExplanation returned min assets. Convert it to Q.
+				minValue = qToAssetConverter.getQValuesFromScore((float) minValue);
+				// we can still try using the old equation using q-values
+				ret[0] = (float) (prob/minValue);
+			}
+			// 1- (1 - P(T=t|A=a))*power(base,-m2/b)
+			ret[1] = 
+				(float) (1-((1 - prob)*Math.pow(qToAssetConverter.getCurrentLogBase(), -minValueAssumingNotTarget/qToAssetConverter.getCurrentCurrencyConstant())));
+			if (Float.isInfinite(ret[1]) || Float.isNaN(ret[1])) {
+				// in this case, calculateExplanation returned min assets. Convert it to Q.
+				minValueAssumingNotTarget = qToAssetConverter.getQValuesFromScore((float) minValueAssumingNotTarget);
 				// we can still try using the old equation using q-values
 				ret[1] = (float) (1-((1 - prob)/minValueAssumingNotTarget));
 			}

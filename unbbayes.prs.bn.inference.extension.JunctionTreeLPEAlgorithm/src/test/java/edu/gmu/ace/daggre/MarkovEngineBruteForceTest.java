@@ -22,7 +22,6 @@ import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -73,7 +72,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private List<MarkovEngineImpl> engines;
 
 	/** This value indicates how many test iterations (5-point tests) will be performed by default*/
-	private static int howManyTradesToTest = 50;//1000;
+	private static int howManyTradesToTest = 1000;
 
 
 	private enum FivePointTestType {BELOW_LIMIT, ON_LOWER_LIMIT, BETWEEN_LIMITS, ON_UPPER_LIMIT, ABOVE_LIMIT}; 
@@ -88,13 +87,13 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static String fileNameToUseInTestFilesWithResolutionSingleEngine = "bn20_tw5_max41_bn20_tw10_max31.net";
 	
 	/** If true, the 4-points which causes 0 or negative assets in a 5-point test will be run. */
-	private static  boolean isToRun5PointTestInStructureTest = false;
+	private static  boolean isToRun5PointTestInStructureTest = true;
 
 	/** {@link #tracer} will pring node names starting with this prefix */
 	public static final String NODE_NAME_PREFIX = "N";
 
 	/** This program will enter in a loop at this iteration number. Use with care. Set to negative if you don't want this program to stop at the iteration */
-	private static final int iterationToDebug = -290;
+	private static final int iterationToDebug = -154;
 
 	/** this object will group the data to be printed out in {@link #testFilesWithResolution()} */
 	private Tracer tracer = null;
@@ -103,19 +102,16 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static float probToRevert = 0f;
 
 	/** probability to resolve a question */
-	private static float probResolve = 0.1f;//0.03f;
+	private static float probResolve = 0.03f;//0.1f;
 
 	/** probability to balance a trade */
-//	private static float probToBalance = 0f;
-	private static float probToBalance = 0.3f;//0.1f;
+	private static float probToBalance = 0.03f;
 
 	/** probability to add cash */
 	private static float probToAddCash = .2f;
 
 	/** If true, some test results and test specifications will be printed out by {@link #tracer} */
-	private static boolean isToTrace = true;//false;//true;
-
-//	private static boolean isToCompare = false;
+	private static boolean isToTrace = true;
 
 	/** This is the probability that if trade is chosen to be {@link FivePointTestType#BETWEEN_LIMITS}, it is very close to the limits */
 	private static float probNearEditLimitBias = 0.6f;
@@ -129,18 +125,22 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If true, assets and probabilities before and after {@link #createNode(Long, Network, List, List, List, Collection)} will be compared */
 	private boolean isToCompareValuesBeforeAndAfterCreateNode = true;//false;
 
+	/** If true, {@link MarkovEngineImpl#doBalanceTrade(Long, Date, String, long, long, List, List)} of 
+	 * {@link #runRandomTestSingleEngine(Network, List)} will balance the question entirely (consider all possible assumptions) */
+	private static boolean isToForceBalanceQuestionEntirely = true;
+
 	/** If true, {@link #testFilesWithResolutionSingleEngine()} will call {@link #createNodesInMarkovBlanket(Long, Network, List, List, List, Collection)}
 	 * instead of {@link #createNode(Long, Network, List, List, List, Collection)} */
 	private static boolean isToAlwaysCreateMarkovBlanket = false;//true;
 
-	/** Potentials of cliques containing these nodes will be printed in {@link #createNode(Long, Network, List, List, List, Collection)}*/
-	private static long[] nodesToTraceCliquePotentials = null;//{26L,38L};	// null;
+//	/** Potentials of cliques containing these nodes will be printed in {@link #createNode(Long, Network, List, List, List, Collection)}*/
+//	private static long[] nodesToTraceCliquePotentials = null;//{26L,38L};	// null;
 
 	/** If false, consistency assertion in 5 point test will be skipped (this is useful if your objective is only to print test traces) */
-	private static boolean isToAssertConsistencyIn5PointTest = true;//false;
+	private static boolean isToAssertConsistencyIn5PointTest = true;
 
 	/** Maximum quantity of nodes to be alive in this test. If the quantity of nods reaches this value, no new nodes will be created */
-	private static int maxLiveNodes = 20;
+	private static int maxLiveNodes = 10;
 
 	/** This is the index of {@link #engines} to be used as the sole engine to be run in {@link #testFilesWithResolutionSingleEngine()}.
 	 * Negative values will be interpreted as "the last element in the list" */
@@ -180,7 +180,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If there are less than this number of questions, questions will not be resolved */
 	private static int minAliveQuestionNumber = 0;
 
-	private static long seed = new Date().getTime();//666;
+	private static long seed = new Date().getTime();
 	/** Random number generator, with seed */
 	private static Random random = new Random(seed);
 
@@ -192,7 +192,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 
 	/**If true, {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)} will randomize
 	 * trades close to the edit limits*/
-	private static boolean isToRandomizeTradeCloseToEdit = false;
+	private static boolean isToRandomizeTradeCloseToEdit = true;//false;
 
 	/** {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)} will attempt to generate edits
 	 * which exceeds or equals to this value of difference compared to current probability */
@@ -201,11 +201,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If false, edit limit will be set to the default [0, 1] */
 	private static boolean isToCalculateEditLimit = true;
 
-
+	/** This is just a counter of how many edits went to the branch of edits close to limits */
 	private static int numEditsCloseToLimits = 0;
 
 	/** If the number of live questions reaches this number, the test suite will start to resolve questions with probability {@link #probResolve} */
-	private static int minNumQuestionToTriggerResolveQuestion = 15; //0;
+	private static int minNumQuestionToTriggerResolveQuestion = 10; //0;
 	
 	
 	/** Class used to trace data which will be printed out */
@@ -1402,12 +1402,12 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				}
 				// commit transaction and compare results
 				engine.commitNetworkActions(transactionKey);
-				if (nodesToTraceCliquePotentials != null) {
-					System.out.println("\nTrade: " + "User " + userId + " trades on P(" + questionId + " | " + assumptionsOfTrade + " = " + statesOfAssumption + ") = " + newValues);
-					try { System.out.print("38="+engines.get(0).getProbList(38L, null, null)); } catch (Exception e) {}
-					try { System.out.print("26="+engines.get(0).getProbList(26L, null, null));} catch (Exception e) {}
-					System.out.println();
-				}
+//				if (nodesToTraceCliquePotentials != null) {
+//					System.out.println("\nTrade: " + "User " + userId + " trades on P(" + questionId + " | " + assumptionsOfTrade + " = " + statesOfAssumption + ") = " + newValues);
+//					try { System.out.print("38="+engines.get(0).getProbList(38L, null, null)); } catch (Exception e) {}
+//					try { System.out.print("26="+engines.get(0).getProbList(26L, null, null));} catch (Exception e) {}
+//					System.out.println();
+//				}
 			}
 			
 			// do some consistency check after trade
@@ -1753,6 +1753,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		if (isToRevertTrade) {
 			for (MarkovEngineImpl engine : mementos.keySet()) {
 				engine.restoreMemento(mementos.get(engine));	// revert last trade
+				engine.getExecutedActions().remove(engine.getExecutedActions().size()-1);
 			}
 		}
 		return newValues;
@@ -4485,6 +4486,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private void runRandomTestSingleEngine(Network network, List<Long> userIDs) {
 		assertNotNull(engines);
 		assertEquals(1,engines.size());
+		engines.get(0).setToForceBalanceQuestionEntirely(isToForceBalanceQuestionEntirely);
 		
 		// this list stores which nodes were not created yet
 		List<INode> nodesToCreate = new ArrayList<INode>(network.getNodes());
@@ -4513,9 +4515,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		
 		// actually run the tests (start iteration);
 		for (int iteration = 0; iteration < getHowManyTradesToTest(); iteration++) {
-			if (nodesToTraceCliquePotentials != null) {
-				System.out.println("\nIteration " + iteration);
-			}
+//			if (nodesToTraceCliquePotentials != null) {
+//				System.out.println("\nIteration " + iteration);
+//			}
 			// this is just a counter of how many iterations went to the branch of edits close to the bound
 			int numIterationsCloseToBoundsBeforeIteration = numEditsCloseToLimits;
 			if (iteration == iterationToDebug) {
@@ -4718,12 +4720,12 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						userId, questionId, assumptionIds, assumedStates
 				));
 				
-				if (nodesToTraceCliquePotentials != null) {
-					System.out.println("\nBalanced question " + questionId);
-					try { System.out.print("38="+engines.get(0).getProbList(38L, null, null)); } catch (Exception e) {}
-					try { System.out.print("26="+engines.get(0).getProbList(26L, null, null));} catch (Exception e) {}
-					System.out.println();
-				}
+//				if (nodesToTraceCliquePotentials != null) {
+//					System.out.println("\nBalanced question " + questionId);
+//					try { System.out.print("38="+engines.get(0).getProbList(38L, null, null)); } catch (Exception e) {}
+//					try { System.out.print("26="+engines.get(0).getProbList(26L, null, null));} catch (Exception e) {}
+//					System.out.println();
+//				}
 				
 				// obtain the balancing trade from history, so that I can be certain that a balance trade was actually executed, and to fill the tracer
 				List<QuestionEvent> questionHistory = engines.get(0).getQuestionHistory(questionId, null, null);
@@ -4877,12 +4879,12 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				}
 				resolvedQuestions.add(questionId);
 				
-				if (nodesToTraceCliquePotentials != null) {
-					System.out.println("\nResolved question " + questionId + " to state " + settledState);
-					try { System.out.print("38="+engines.get(0).getProbList(38L, null, null)); } catch (Exception e) {}
-					try { System.out.print("26="+engines.get(0).getProbList(26L, null, null));} catch (Exception e) {}
-					System.out.println();
-				}
+//				if (nodesToTraceCliquePotentials != null) {
+//					System.out.println("\nResolved question " + questionId + " to state " + settledState);
+//					try { System.out.print("38="+engines.get(0).getProbList(38L, null, null)); } catch (Exception e) {}
+//					try { System.out.print("26="+engines.get(0).getProbList(26L, null, null));} catch (Exception e) {}
+//					System.out.println();
+//				}
 				
 				if (isToTrace()) {
 					// store all users' score and cash after resolution
@@ -6040,63 +6042,63 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					engine.addQuestionAssumption(transactionKey, new Date(), Long.parseLong(child.getName()), parentQuestionIds, null);
 				}
 			}
-			if (nodesToTraceCliquePotentials != null) {
-				System.out.println("\n Before creating node " + questionId);
-				if (engines.get(0).getProbabilisticNetwork().getJunctionTree() != null) {
-					for (Clique clique : engines.get(0).getProbabilisticNetwork().getJunctionTree().getCliques()) {
-						boolean hasNodes = false;
-						for (Long id : nodesToTraceCliquePotentials) {
-							Node node = engines.get(0).getProbabilisticNetwork().getNode(id.toString());
-							if (node != null && clique.getNodes().contains(node)) {
-								hasNodes = true;
-								break;
-							}
-						}
-						if (hasNodes) {
-							System.out.print("\nClique = [");
-							for (int i = 0; i < clique.getProbabilityFunction().getVariablesSize(); i++) {
-								System.out.print(clique.getProbabilityFunction().getVariableAt(i));
-							}
-							System.out.println("]");
-							for (int i = 0; i < clique.getProbabilityFunction().tableSize(); i++) {
-								System.out.println(clique.getProbabilityFunction().getValue(i));
-							}
-						}
-					}
-				}
-//				try { System.out.print("38="+engines.get(0).getProbList(38L, null, null)); } catch (Exception e) {}
-//				try { System.out.print("26="+engines.get(0).getProbList(26L, null, null));} catch (Exception e) {}
-				System.out.println();
-			}
+//			if (nodesToTraceCliquePotentials != null) {
+//				System.out.println("\n Before creating node " + questionId);
+//				if (engines.get(0).getProbabilisticNetwork().getJunctionTree() != null) {
+//					for (Clique clique : engines.get(0).getProbabilisticNetwork().getJunctionTree().getCliques()) {
+//						boolean hasNodes = false;
+//						for (Long id : nodesToTraceCliquePotentials) {
+//							Node node = engines.get(0).getProbabilisticNetwork().getNode(id.toString());
+//							if (node != null && clique.getNodes().contains(node)) {
+//								hasNodes = true;
+//								break;
+//							}
+//						}
+//						if (hasNodes) {
+//							System.out.print("\nClique = [");
+//							for (int i = 0; i < clique.getProbabilityFunction().getVariablesSize(); i++) {
+//								System.out.print(clique.getProbabilityFunction().getVariableAt(i));
+//							}
+//							System.out.println("]");
+//							for (int i = 0; i < clique.getProbabilityFunction().tableSize(); i++) {
+//								System.out.println(clique.getProbabilityFunction().getValue(i));
+//							}
+//						}
+//					}
+//				}
+////				try { System.out.print("38="+engines.get(0).getProbList(38L, null, null)); } catch (Exception e) {}
+////				try { System.out.print("26="+engines.get(0).getProbList(26L, null, null));} catch (Exception e) {}
+//				System.out.println();
+//			}
 			
 			// commit transaction in order to actually create the nodes & all edges. This will re-run the history
 			engine.commitNetworkActions(transactionKey);
-			if (nodesToTraceCliquePotentials != null) {
-				System.out.println("\n After creating node " + questionId);
-				for (Clique clique : engines.get(0).getProbabilisticNetwork().getJunctionTree().getCliques()) {
-					boolean hasNodes = false;
-					for (Long id : nodesToTraceCliquePotentials) {
-						Node node = engines.get(0).getProbabilisticNetwork().getNode(id.toString());
-						if (node != null && clique.getNodes().contains(node)) {
-							hasNodes = true;
-							break;
-						}
-					}
-					if (hasNodes) {
-						System.out.print("\nClique = [");
-						for (int i = 0; i < clique.getProbabilityFunction().getVariablesSize(); i++) {
-							System.out.print(clique.getProbabilityFunction().getVariableAt(i));
-						}
-						System.out.println("]");
-						for (int i = 0; i < clique.getProbabilityFunction().tableSize(); i++) {
-							System.out.println(clique.getProbabilityFunction().getValue(i));
-						}
-					}
-				}
+//			if (nodesToTraceCliquePotentials != null) {
+//				System.out.println("\n After creating node " + questionId);
+//				for (Clique clique : engines.get(0).getProbabilisticNetwork().getJunctionTree().getCliques()) {
+//					boolean hasNodes = false;
+//					for (Long id : nodesToTraceCliquePotentials) {
+//						Node node = engines.get(0).getProbabilisticNetwork().getNode(id.toString());
+//						if (node != null && clique.getNodes().contains(node)) {
+//							hasNodes = true;
+//							break;
+//						}
+//					}
+//					if (hasNodes) {
+//						System.out.print("\nClique = [");
+//						for (int i = 0; i < clique.getProbabilityFunction().getVariablesSize(); i++) {
+//							System.out.print(clique.getProbabilityFunction().getVariableAt(i));
+//						}
+//						System.out.println("]");
+//						for (int i = 0; i < clique.getProbabilityFunction().tableSize(); i++) {
+//							System.out.println(clique.getProbabilityFunction().getValue(i));
+//						}
+//					}
+//				}
 //				try { System.out.print("38="+engines.get(0).getProbList(38L, null, null)); } catch (Exception e) {}
 //				try { System.out.print("26="+engines.get(0).getProbList(26L, null, null));} catch (Exception e) {}
-				System.out.println();
-			}
+//				System.out.println();
+//			}
 			
 			// compare values before and after creation of node/edge
 			if (isToCompareValuesBeforeAndAfterCreateNode) {

@@ -217,7 +217,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToCompareProbOnRebuild = false;
 	
 	/** This is mainly used for finding cycles in {@link RebuildNetworkAction#execute()} */
-	private MSeparationUtility mseparationUtility = MSeparationUtility.newInstance();;
+	private MSeparationUtility mseparationUtility = MSeparationUtility.newInstance();
+
+	/** This is used in lazy user initialization. If user did never trade, but assets were queried, this map will be used. */
+	private Map<Long, Float> uninitializedUserToAssetMap = new HashMap<Long, Float>();
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -410,6 +413,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// list of all instances of virtual trades created by this markov engine in order to trace the marginal probabilities
 		setVirtualTradeToAffectedQuestionsMap(new HashMap<DummyTradeAction, Set<Long>>());
+		
+		// map of users loaded lazily
+		setUninitializedUserToAssetMap(new HashMap<Long, Float>());
 		
 		return true;
 	}
@@ -1488,6 +1494,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		public void execute() {
 			
+			// add cash to the mapping of lazily loaded users, if user was not initialized yet
+			if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+				// user was not initialized. Check if cash was added to user previously.
+				Float assetOfLazyUser = getUninitializedUserToAssetMap().get(userId);
+				if (assetOfLazyUser == null) {
+					// this is the first time we add cash to uninitialized user. So, we are adding cash to the default initial value.
+					assetOfLazyUser = getDefaultInitialAssetTableValue();
+				} 
+				// just add more cash to what the user already have
+				getUninitializedUserToAssetMap().put(userId, assetOfLazyUser + delta);
+				return;
+			}
+			
 			// extract user's asset net and related algorithm
 			AssetAwareInferenceAlgorithm inferenceAlgorithm = null;
 			
@@ -1672,7 +1691,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						CliqueSensitiveTradeSpecification cliqueSensitiveTradeSpecification = (CliqueSensitiveTradeSpecification) tradeSpecification;
 						// extract the clique from tradeSpecification. Note: this is supposedly an asset clique
 						if (cliqueSensitiveTradeSpecification.getClique() != null) {
-							// fortunately, the algorithm doesn't care if it is an asset or prob clique, so privide the asset clique to algorithm
+							// fortunately, the algorithm doesn't care if it is an asset or prob clique, so provide the asset clique to algorithm
 							algorithm.getEditCliques().add(cliqueSensitiveTradeSpecification.getClique());
 							// by forcing the algorithm to update only this clique, we are forcing the balance trade to balance the provided clique
 						}
@@ -3074,6 +3093,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		
+		// initial assertion
+		if (assumptionIds != null && assumptionIds.contains(questionId)) {
+			throw new IllegalArgumentException("Question " + questionId + " should not assume itself: " + assumptionIds);
+		}
+		
+		// check that user was created (lazily or completely)
+		List<Float> unitializedAssets = getListOfAssetsOfLazyOrUnInitializedUser(userId, questionId, assumptionIds, assumedStates);
+		if (unitializedAssets != null) {
+			return unitializedAssets;
+		}
+		
 		// extract user's asset network from user ID
 		AssetAwareInferenceAlgorithm algorithm = null;
 		try {
@@ -3088,6 +3118,102 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false, null);	// false := return assets instead of q-values
 	}
 	
+	/**
+	 * This method uses checks {@link #getUserToAssetAwareAlgorithmMap()} to
+	 * see if a user was created. If not created yet, then it uses
+	 *  {@link #getUninitializedUserToAssetMap()}  in order to see if the
+	 *  user is lazily initialized.
+	 *  If the user is lazily initialized, it creates a list whose size is
+	 *  number of states of questionId * number of states of nodes in assumptionIds
+	 *  which states were not specified in assumedStates.
+	 *  The list is then filled with the content of {@link #getUninitializedUserToAssetMap()}
+	 * @param userId : this user will be tested whether user was already created or not
+	 * @param questionId : the returned list will represent the table of this question and the assumptions
+	 * @param assumptionIds 
+	 * @param assumedStates
+	 * @return
+	 */
+	protected List<Float> getListOfAssetsOfLazyOrUnInitializedUser(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) {
+		if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+			// user was not created yet. Check if user is in the collection of lazily initialized users
+			int sizeOfRet = 0;	// this will be the states of question multiplied by states of assumptions
+			synchronized (getProbabilisticNetwork()) {
+				// extract the node, so that we know how many states there are
+				Node node = getProbabilisticNetwork().getNode(Long.toString(questionId));
+				if (node == null) {
+					throw new InexistingQuestionException("Question " + questionId + " not found in the network", questionId);
+				}
+				sizeOfRet = node.getStatesSize();
+				// multiply by the sizes of the assumptions
+				if (assumptionIds != null) {
+					for (int i = 0; i < assumptionIds.size(); i++) {
+						if (assumedStates == null || assumedStates.size() <= i || assumedStates.get(i) == null) {
+							// the state of this assumption was not specified. 
+							// Hence, the size of the list to return must contain all the possible states of this assumption.
+							// So, the size will be multiplied by the number of states of this assumption
+							Node assumption = getProbabilisticNetwork().getNode(Long.toString(assumptionIds.get(i)));
+							if (assumption == null) {
+								throw new InexistingQuestionException("Assumption " + assumptionIds.get(i) + " not found in the network", assumptionIds.get(i));
+							}
+							sizeOfRet *= assumption.getStatesSize();
+						}
+					}
+				}
+			}
+			// prepare the list to return
+			List<Float> ret = new ArrayList<Float>(sizeOfRet);
+			Float asset = null;	// if user was created lazily, this will become non-null
+			synchronized (getUninitializedUserToAssetMap()) {
+				asset = getUninitializedUserToAssetMap().get(userId);
+			}
+			if (asset == null) {
+				//user was not created yet. Hence, by default, user's asset is the initial value
+				asset = getDefaultInitialAssetTableValue();
+			} // else, the user is stored in the collection of lazily initialized users. The variable "asset" will contain initial value + manna
+			
+			for (int i = 0; i < sizeOfRet; i++) {
+				ret.add(asset);
+			}
+			
+			return ret;
+		}
+		return null;
+	}
+	
+	/**
+	 * This method is similar to {@link #getListOfAssetsOfLazyOrUnInitializedUser(long, long, List, List)},
+	 * but it returns a single value instead of a list.
+	 * This method uses checks {@link #getUserToAssetAwareAlgorithmMap()} to
+	 * see if a user was created. If not created yet, then it uses
+	 *  {@link #getUninitializedUserToAssetMap()}  in order to see if the
+	 *  user is lazily initialized.
+	 *  If the user is lazily initialized, it creates a list whose size is
+	 *  number of states of questionId * number of states of nodes in assumptionIds
+	 *  which states were not specified in assumedStates.
+	 *  The list is then filled with the content of {@link #getUninitializedUserToAssetMap()}
+	 * @param userId : this user will be tested whether user was already created or not
+	 * @param questionId : the returned list will represent the table of this question and the assumptions
+	 * @param assumptionIds 
+	 * @param assumedStates
+	 * @return
+	 */
+	protected Float getAssetsOfLazyOrUnInitializedUser(long userId) {
+		if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+			// user was not created yet. Check if user is in the collection of lazily initialized users
+			Float asset = null;	// if user was created lazily, this will become non-null
+			synchronized (getUninitializedUserToAssetMap()) {
+				asset = getUninitializedUserToAssetMap().get(userId);
+			}
+			if (asset == null) {
+				//user was not created yet. Hence, by default, user's asset is the initial value
+				asset = getDefaultInitialAssetTableValue();
+			} // else, the user is stored in the collection of lazily initialized users. The variable "asset" will contain initial value + manna
+			
+			return asset;
+		}
+		return null;
+	}
+
 	/**
 	 * This method is used in {@link #getAssetsIfStates(long, long, List, List)} and {@link #previewTrade(long, long, List, List, List)}
 	 * in order to extract the conditional delta from the {@link AssetNetwork} related to a given algorithm.
@@ -3283,6 +3409,31 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		}
 		
+		// if user was not initialized yet, try calculating the interval of edits without initializing user
+		try {
+			if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+				// get the cash of uninitialized user
+				Float asset = getAssetsOfLazyOrUnInitializedUser(userId);
+				// user was not initialized yet
+				float editInterval[] = AssetAwareInferenceAlgorithm.calculateIntervalOfAllowedEdit(
+						isToUseQValues(), 															// just pass configuration of this object
+						getProbList(questionId, assumptionIds, assumedStates).get(questionState), 	// P(T=t|A)
+						asset, asset,																// Min(T=t|A) = Min(T!=t|A) = asset
+						this																		// MarkovEngineImpl can convert asssets<->qvalues
+					);
+				
+				// convert editInterval to a list
+				List<Float> ret = new ArrayList<Float>(editInterval.length);
+				for (float interval : editInterval) {
+					ret.add(interval);
+				}
+				return ret;
+			}
+		} catch (Throwable t) {
+			Debug.println(getClass(), t.getMessage(), t);
+			// if edit limit could not be calculated from uninitialized user, we have to initialize user anyway.
+		}
+		
 		AssetAwareInferenceAlgorithm algorithm = null;
 		try {
 			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
@@ -3334,6 +3485,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getCash(long, java.util.List, java.util.List)
 	 */
 	public float getCash(long userId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		// initial assertion: assert that the bayes net was compiled
+		if (getProbabilisticNetwork() == null || getProbabilisticNetwork().getJunctionTree() == null) {
+			throw new IllegalStateException("The Bayes net was not initialized. Nodes must be added.");
+		}
+		
+		// check if user is not initialized, or user is lazily initialized. If so, we do not need calculation
+		Float asset = getAssetsOfLazyOrUnInitializedUser(userId);
+		if (asset != null) {
+			// the user was not initialized, or it is lazily initialized.
+			return asset;
+		}
+		
 		AssetAwareInferenceAlgorithm algorithm = null;
 		try {
 			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
@@ -3390,15 +3553,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public float scoreUserQuestionEv(long userId, Long questionId,
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
-		List<Float> evPerStates = this.scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
-		if (evPerStates == null || evPerStates.isEmpty()) {
-			throw new RuntimeException("Failed to obtain estimated values.");
+		/*
+		 * Note:
+		 * Expected[ Expected( Assets(X=x1|A) ) + ... + Expected( Assets(X=xn|A) ) ] 
+		 * = P(X=x1) * Expected( Assets(X=x1|A) ) + ... + P(X=xn) * Expected(Assets(X=xn|A)) 
+		 * = expected global assets.
+		 * Hence, we can just call scoreUserEv instead.
+		 * However, we must at least check that questionId exist
+		 */
+		if (questionId != null) {
+			Node node = null;
+			synchronized (getProbabilisticNetwork()) {
+				node = getProbabilisticNetwork().getNode(questionId.toString());
+			}
+			if (node == null) {
+				throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
+			}
 		}
-		float sum = 0;
-		for (Float ev : evPerStates) {
-			sum += ev;
-		}
-		return sum;
+		return scoreUserEv(userId, assumptionIds, assumedStates);
 	}
 	
 	/*
@@ -3420,6 +3592,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (assumptionIds != null && assumedStates != null && assumedStates.size() != assumptionIds.size()) {
 			throw new IllegalArgumentException("Expected size of assumedStates is " + assumptionIds.size() + ", but was " + assumedStates.size());
 		}
+		
+		// check if user was properly initialized. If not, we can just return stored or constant values
+		List<Float> listOfAssetsOfLazyInitializedUser = this.getListOfAssetsOfLazyOrUnInitializedUser(userId, questionId, assumptionIds, assumedStates);
+		if (listOfAssetsOfLazyInitializedUser != null) {
+			// the user is not completely initialized yet, so return the content obtained from getListOfAssetsOfLazyInitializedUser
+			return listOfAssetsOfLazyInitializedUser;
+		}
+		
 		// obtain the main node
 		INode node = null;
 		synchronized (getProbabilisticNetwork()) {
@@ -3555,6 +3735,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (assumptionIds != null && assumedStates != null && assumedStates.size() != assumptionIds.size()) {
 			throw new IllegalArgumentException("Expected size of assumedStates is " + assumptionIds.size() + ", but was " + assumedStates.size());
 		}
+		
+		// check if user was properly initialized. If not, we can just return stored or constant values
+		List<Float> listOfAssetsOfLazyInitializedUser = this.getListOfAssetsOfLazyOrUnInitializedUser(userId, questionId, assumptionIds, assumedStates);
+		if (listOfAssetsOfLazyInitializedUser != null) {
+			// the user is not completely initialized yet, so return the content obtained from getListOfAssetsOfLazyInitializedUser
+			return listOfAssetsOfLazyInitializedUser;
+		}
+		
 		// obtain the main node
 		INode node = null;
 		synchronized (getProbabilisticNetwork()) {
@@ -3663,6 +3851,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 				}
 			}
+		}
+		
+		// check if user is not initialized, or user is lazily initialized. If so, we do not need calculation
+		Float asset = getAssetsOfLazyOrUnInitializedUser(userId);
+		if (asset != null) {
+			// the user was not initialized, or it is lazily initialized.
+			return asset;
 		}
 		
 		AssetAwareInferenceAlgorithm origAlgorithm;
@@ -3786,6 +3981,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			assumedStates = this.convertAssumedStates(assumptionIds, oldAssumptionIds, assumedStates);
 		}
 		
+		// check if user was properly initialized. If not, we can just return stored or constant values
+		List<Float> assets = this.getListOfAssetsOfLazyOrUnInitializedUser(userId, questionId, assumptionIds, assumedStates);
+		if (assets != null) {
+			// the user is not completely initialized yet, so return values calculated from getListOfAssetsOfLazyInitializedUser
+			// extract the current (old) probability, in order to calculate the ratio
+			List<Float> oldValues = getProbList(questionId, assumptionIds, assumedStates);
+			// this is the list to be returned
+			List<Float> ret = new ArrayList<Float>(newValues.size());
+			for (int i = 0; i < newValues.size(); i++) {
+				// probs and assets are all supposedly related by indexes
+				ret.add(assets.get(i) + this.getScoreFromQValues(newValues.get(i)/oldValues.get(i)));
+			}
+			return ret;
+		}
+		
 		// this algorithm will be alive only during the context of this method. It will contain clones of the bayesian network and asset net
 		AssetAwareInferenceAlgorithm algorithm = null;
 		try {
@@ -3828,7 +4038,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// just return estimated values
 		// obtain q-values
 //		List<Float> qValues = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, true);
-		List<Float> assets = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false, null);
+		assets = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, false, null);
 //		if (oldValues != null && (oldValues.size() == newValues.size()) && (qValues.size() == newValues.size())) {
 //			// they are all related by indexes
 //			List<Float> ret = new ArrayList<Float>(newValues.size());
@@ -4127,20 +4337,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					algorithm.propagate();
 //					algorithm.setToAllowQValuesSmallerThan1(backup);
 					
-					// check if prob clique potentials have changed. If so, store in the history of conditional probabilities
-					// only store in the history if we are currently editing the shared Bayes net
-					if (memento != null && (getMaxConditionalProbHistorySize() > 0 && (!child.getParents().isEmpty() || !child.getChildren().isEmpty()) )) { 
-						// note: memento != null includes the condition: algorithm.getRelatedProbabilisticNetwork() == getProbabilisticNetwork()
-						if (memento instanceof AssetPropagationInferenceAlgorithmMemento) {
-							// update the map getLastNCliquePotentialMap()
-							addToLastNCliquePotentialMap(parentTrade, ((AssetPropagationInferenceAlgorithmMemento) memento).getProbCliques());
-						} else {
-							throw new UnsupportedOperationException("This version of the markov engine can only support "
-									+ AssetPropagationInferenceAlgorithmMemento.class.getName()
-									+ ". This may have been caused by incompatible libraries or version numbers.");
-						}
-					}
-					
 					// check that minimum is below 0
 					if (!isToAllowNegative) {
 						// calculate minimum by running min propagation and then calculating global assets posterior to min propagation
@@ -4160,7 +4356,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						}
 						// if successful, only revert last min propagation
 						algorithm.undoMinPropagation();
-					} 
+					}
+					
+					// check if prob clique potentials have changed. If so, store in the history of conditional probabilities
+					// only store in the history if we are currently editing the shared Bayes net
+					if (memento != null && (getMaxConditionalProbHistorySize() > 0 && (!child.getParents().isEmpty() || !child.getChildren().isEmpty()) )) { 
+						// note: memento != null includes the condition: algorithm.getRelatedProbabilisticNetwork() == getProbabilisticNetwork()
+						if (memento instanceof AssetPropagationInferenceAlgorithmMemento) {
+							// update the map getLastNCliquePotentialMap()
+							addToLastNCliquePotentialMap(parentTrade, ((AssetPropagationInferenceAlgorithmMemento) memento).getProbCliques());
+						} else {
+							throw new UnsupportedOperationException("This version of the markov engine can only support "
+									+ AssetPropagationInferenceAlgorithmMemento.class.getName()
+									+ ". This may have been caused by incompatible libraries or version numbers.");
+						}
+					}
 					
 				}
 			}
@@ -4451,6 +4661,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			List<Integer> originalAssumedStates) throws IllegalArgumentException {
 		// value to return
 		List<TradeSpecification> balancingTrades =  new ArrayList<TradeSpecification>();
+		
+		// if this user was not initialized, then user did not trade at all. In such case, there is no balancing trade
+		if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+			return Collections.EMPTY_LIST;	// return empty list.
+		}
+		
 		// algorithm to be used to extract data related to assets and probabilities
 		AssetAwareInferenceAlgorithm algorithm = null;
 		try {
@@ -4555,12 +4771,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#previewBalancingTrade(long, long, java.util.List, java.util.List)
 	 */
 	public List<Float> previewBalancingTrade(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		
+		// if user was not initialized, then we do not need to balance (i.e. return a trade which does not change probability)
+		if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+			return this.getProbList(questionId, assumptionIds, assumedStates);
+		}
+		
 		AssetAwareInferenceAlgorithm algorithm;
 		try {
 			algorithm = this.getAlgorithmAndAssetNetFromUserID(userId);
 		} catch (InvalidParentException e) {
 			throw new RuntimeException(e);
 		}
+		
 		return this.previewBalancingTrade(algorithm, questionId, assumptionIds, assumedStates, null);
 	}
 	
@@ -4969,6 +5192,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		}
 		
+		// do nothing if user was not initialized or user is lazily initialized
+		// (in both cases, user did neveer trade, so balancing is useless)
+		if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+			return true;
+		}
+		
 		if (transactionKey == null) {
 			transactionKey = this.startNetworkActions();
 			this.addNetworkAction(transactionKey, new BalanceTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, assumptionIds, assumedStates));
@@ -5020,7 +5249,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * {@link AddQuestionAssumptionNetworkAction} and {@link AddQuestionNetworkAction} will
 	 * also be retrieved.
 	 * <br/><br/>
-	 * If assumptionIds != null, then it will use
+	 * If assumptionIds != null, then it will use {@link #getLastNCliquePotentialMap()}
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getQuestionHistory(java.lang.Long, java.util.List, java.util.List)
 	 */
 	public List<QuestionEvent> getQuestionHistory(Long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
@@ -5602,7 +5831,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
 				junctionTreeAlgorithm.setLikelihoodExtractor(AssetAwareInferenceAlgorithm.DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR);
 				// prepare default inference algorithm for asset network
-				algorithm = getAssetAwareInferenceAlgorithmBuilder().build(junctionTreeAlgorithm, getDefaultInitialAssetTableValue());
+				algorithm = getAssetAwareInferenceAlgorithmBuilder().build(junctionTreeAlgorithm, getAssetsOfLazyOrUnInitializedUser(userID));
 				algorithm.setToCalculateLPE(false);	// we are only interested on min-values, never min-states
 				// set markov engine as the converter between q-values and assets
 				algorithm.setqToAssetConverter(this);
@@ -5635,6 +5864,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						}
 					}
 					algorithm.setAsPermanentEvidence(evidences, isToDeleteResolvedNode());
+				}
+				
+				// make sure this user is not considered unititialized anymore, so that methods related to lazy loading do not consider this user
+				synchronized (getUninitializedUserToAssetMap()) {
+					getUninitializedUserToAssetMap().remove(userID);
 				}
 			}
 		}
@@ -7391,6 +7625,23 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public boolean isToCompareProbOnRebuild() {
 		return isToCompareProbOnRebuild;
+	}
+
+	/**
+	 * This is used in lazy user initialization. If user did never trade, but assets were queried, this map will be used.
+	 * @param uninitializedUserToAssetMap the uninitializedUserToAssetMap to set
+	 */
+	protected void setUninitializedUserToAssetMap(
+			Map<Long, Float> uninitializedUserToAssetMap) {
+		this.uninitializedUserToAssetMap = uninitializedUserToAssetMap;
+	}
+
+	/**
+	 * This is used in lazy user initialization. If user did never trade, but assets were queried, this map will be used.
+	 * @return the uninitializedUserToAssetMap
+	 */
+	protected Map<Long, Float> getUninitializedUserToAssetMap() {
+		return uninitializedUserToAssetMap;
 	}
 
 

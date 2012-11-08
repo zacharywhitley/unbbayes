@@ -7344,6 +7344,7 @@ public class MarkovEngineTest extends TestCase {
 		// add 100 q-values to new users
 		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Joe"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
 
+		
 		// Joe bets P(E=e1|D=d2) = .55 -> .4
 		newValues = new ArrayList<Float>();
 		newValues.add(.4f);
@@ -18397,6 +18398,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// make trades in the separators that: in one of the cliques, state 0 has high assets position, in the other clique, state 1 has low asset position
 		
+
+		// check that if I preview balancing trades now, it returns empty
+		assertTrue(engine.previewBalancingTrades(1, 0x0D, null, null).isEmpty());
+		assertTrue(engine.previewBalancingTrades(1, 0x0E, null, null).isEmpty());
+		assertTrue(engine.previewBalancingTrades(1, 0x0F, null, null).isEmpty());
+		
 		// in [D,E], D=0 has higher asset position
 		List<Float> newValues = new ArrayList<Float>(4);
 		newValues.add(0.8f);	// P(D=0|E=0)
@@ -18418,6 +18425,12 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(.2, probList.get(1), PROB_ERROR_MARGIN);
 		assertEquals(.8, probList.get(2), PROB_ERROR_MARGIN);
 		assertEquals(.2, probList.get(3), PROB_ERROR_MARGIN);
+		
+
+		// check that if I preview balancing trades now, it returns empty
+		assertTrue(engine.previewBalancingTrades(2, 0x0D, null, null).isEmpty());
+		assertTrue(engine.previewBalancingTrades(2, 0x0E, null, null).isEmpty());
+		assertTrue(engine.previewBalancingTrades(2, 0x0F, null, null).isEmpty());
 		
 		// user 2 resets the dependency P(D|E), so that we have another user with unbalanced D
 		newValues = new ArrayList<Float>(4);
@@ -18937,6 +18950,891 @@ public class MarkovEngineTest extends TestCase {
 		// set the initial assets of users to the generated value
 		engine.setDefaultInitialAssetTableValue(initialAssets);
 		
+		/*
+		 * Create following structure: F<-D->E
+		 */
+		engine.addQuestion(null, new Date(), 0x0DL, 2, null);
+		engine.addQuestion(null, new Date(), 0x0EL, 2, null);
+		engine.addQuestion(null, new Date(), 0x0FL, 2, null);
+		engine.addQuestionAssumption(null, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		// make sure the arcs were created correctly
+		assertTrue(engine.getProbabilisticNetwork().getNode("14").getParents().contains(engine.getProbabilisticNetwork().getNode("13")));
+		assertTrue(engine.getProbabilisticNetwork().getNode("15").getParents().contains(engine.getProbabilisticNetwork().getNode("13")));
 		
+		// assert that user is not created yet
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L));
+		
+		// call methods that will not create user.
+		List<Float> returnedValues = engine.getAssetsIfStates(1L, 0x0DL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0EL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0FL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0DL, Collections.singletonList(0x0EL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0DL, Collections.singletonList(0x0FL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0EL, Collections.singletonList(0x0DL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0FL, Collections.singletonList(0x0DL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0FL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		
+		returnedValues = engine.getCashPerStates(1L, 0x0DL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0EL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0FL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0DL, Collections.singletonList(0x0EL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0DL, Collections.singletonList(0x0FL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0EL, Collections.singletonList(0x0DL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0FL, Collections.singletonList(0x0DL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0FL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0EL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0FL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0EL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0FL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0EL, Collections.singletonList(0x0DL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0FL, Collections.singletonList(0x0DL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0FL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, null, null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0EL, null, null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0FL, null, null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0EL), null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0FL), null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0EL, Collections.singletonList(0x0DL), null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0FL, Collections.singletonList(0x0DL), null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList((int)Math.round(Math.random())), (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList((int)Math.round(Math.random())), (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())), (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0FL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())), (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets, asset);
+		}
+		
+		// preview trade shall return OK for uninitialized users
+		
+		// generate a random trade
+		
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add((float) Math.random());
+		newValues.add(1-newValues.get(0));
+		
+		// pick question to trade
+		long questionId = (Math.random()<.34)?0x0DL:(Math.random()<.5)?0x0EL:0x0FL;
+		
+		// generate random assumption
+		List<Long> assumptionIds = new ArrayList<Long>();
+		if (questionId == 0x0DL) {
+			if (Math.random() < .5) {
+				// eventually add E or F as asssumption
+				assumptionIds.add((Math.random() < .5)?0x0EL:0x0FL);
+			} // else, do not add assumption
+		} else {
+			// this is either E or F, so the only possible assumption is D
+			if (Math.random() < .5) {
+				assumptionIds.add(0x0DL);
+			} // else, do not add assumption
+		}
+		
+		// randomly set assumed states
+		List<Integer> assumedStates = new ArrayList<Integer>();
+		for (int i = 0; i < assumptionIds.size(); i++) {
+			assumedStates.add((int) Math.round(Math.random()));
+		}
+		
+		// eventually test null assumption
+		if (assumptionIds.isEmpty() && Math.random() < .5) {
+			assumptionIds = null;
+			assumedStates = null;
+		}
+		
+
+		// make sure the calculation of edit limits is OK.
+		List<Float> probList = engine.getEditLimits(1L, questionId, (int) Math.round(Math.random()), assumptionIds, assumedStates);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, probList.size());
+		assertTrue(Math.abs(probList.get(0) - probList.get(1)) > PROB_ERROR_MARGIN); // this fails if cash == 0
+		
+		
+		// get old probability, in order to calculate the ratio
+		probList = engine.getProbList(questionId, assumptionIds, assumedStates);
+		
+		// preview the trade
+		returnedValues = engine.previewTrade(1L, questionId, newValues, assumptionIds, assumedStates);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		assertEquals(initialAssets + engine.getScoreFromQValues(newValues.get(0)/probList.get(0)), returnedValues.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(initialAssets + engine.getScoreFromQValues(newValues.get(1)/probList.get(1)), returnedValues.get(1), ASSET_ERROR_MARGIN);
+		
+		assertEquals(initialAssets, engine.scoreUserQuestionEv(1L, 0x0DL, null, null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets, engine.scoreUserQuestionEv(1L, 0x0EL, null, null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets, engine.scoreUserQuestionEv(1L, 0x0FL, null, null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets, engine.scoreUserQuestionEv(1L, 0x0DL, Collections.singletonList(0x0EL), null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets, engine.scoreUserQuestionEv(1L, 0x0DL, Collections.singletonList(0x0FL), null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets, engine.scoreUserQuestionEv(1L, 0x0EL, Collections.singletonList(0x0DL), null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets, engine.scoreUserQuestionEv(1L, 0x0FL, Collections.singletonList(0x0DL), null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		// the following methods were supposedly called by the above methods, so test only random combinations
+		
+		assertEquals(initialAssets, engine.getCash(1L, null, null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		assumptionIds = new ArrayList<Long>(3);
+		if (Math.random() < .5) { assumptionIds.add(0x0DL); }
+		if (Math.random() < .5) { assumptionIds.add(0x0EL); }
+		if (Math.random() < .5) { assumptionIds.add(0x0FL); }
+		assumedStates = new ArrayList<Integer>();
+		for (int i = 0; i < assumptionIds.size(); i++) {
+			assumedStates.add((int) Math.round(Math.random()));
+		}
+		assertEquals(initialAssets, engine.getCash(1L, assumptionIds, assumedStates));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets, engine.scoreUserEv(1L, assumptionIds, assumedStates));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		// a previewBalancingTrade (singular) with uninitialized user should return a trade which does not change anything.
+		
+		List<Float> balancingTrade = engine.previewBalancingTrade(1L, 0x0DL, null, null);
+		probList = engine.getProbList(0x0DL, null, null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		balancingTrade = engine.previewBalancingTrade(1L, 0x0EL, null, null);
+		probList = engine.getProbList(0x0EL, null, null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		balancingTrade = engine.previewBalancingTrade(1L, 0x0FL, null, null);
+		probList = engine.getProbList(0x0FL, null, null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+
+		balancingTrade = engine.previewBalancingTrade(1L, 0x0DL, Collections.singletonList(0x0EL), null);
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		balancingTrade = engine.previewBalancingTrade(1L, 0x0DL, Collections.singletonList(0x0FL), null);
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		balancingTrade = engine.previewBalancingTrade(1L, 0x0EL, Collections.singletonList(0x0DL), null);
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		balancingTrade = engine.previewBalancingTrade(1L, 0x0FL, Collections.singletonList(0x0DL), null);
+		probList = engine.getProbList(0x0FL, Collections.singletonList(0x0DL), null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		// assert that user is not created by balancing a trade which is balanced already
+		int sizeOfHistory = engine.getExecutedActions().size();
+		assumptionIds.remove(questionId); // make sure assumptionIds does not contain questionId
+		engine.doBalanceTrade(null, new Date(), "User 1 balances " + questionId + " | " + assumptionIds + "=" + assumedStates, 
+				1L, questionId, assumptionIds, assumedStates);
+		// check that nothing was done
+		assertEquals(sizeOfHistory, engine.getExecutedActions().size());
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		
+		/************************************************************************************************************/
+		
+		// add cash to user
+		engine.addCash(null, new Date(), 1L, manna, "Added cash " + manna + " to user 1");
+		
+		
+		/************************************************************************************************************/
+		
+		
+		// call methods that will not create user again and check that values were modified.
+		returnedValues = engine.getAssetsIfStates(1L, 0x0DL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0EL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0FL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0DL, Collections.singletonList(0x0EL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0DL, Collections.singletonList(0x0FL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0EL, Collections.singletonList(0x0DL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0FL, Collections.singletonList(0x0DL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getAssetsIfStates(1L, 0x0FL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		
+		returnedValues = engine.getCashPerStates(1L, 0x0DL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0EL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0FL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0DL, Collections.singletonList(0x0EL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0DL, Collections.singletonList(0x0FL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0EL, Collections.singletonList(0x0DL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0FL, Collections.singletonList(0x0DL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.getCashPerStates(1L, 0x0FL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0EL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0FL, null, null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0EL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0FL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0EL, Collections.singletonList(0x0DL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0FL, Collections.singletonList(0x0DL), null);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0FL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, null, null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0EL, null, null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0FL, null, null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0EL), null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0FL), null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0EL, Collections.singletonList(0x0DL), null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0FL, Collections.singletonList(0x0DL), null, (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(4, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList((int)Math.round(Math.random())), (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0DL, Collections.singletonList(0x0FL), Collections.singletonList((int)Math.round(Math.random())), (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())), (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		returnedValues = engine.scoreUserQuestionEvStates(1L, 0x0FL, Collections.singletonList(0x0DL), Collections.singletonList((int)Math.round(Math.random())), (Math.random()<.5));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		for (Float asset : returnedValues) {
+			assertEquals(initialAssets + manna, asset);
+		}
+		
+		assertEquals(initialAssets + manna, engine.scoreUserQuestionEv(1L, 0x0DL, null, null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets + manna, engine.scoreUserQuestionEv(1L, 0x0EL, null, null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets + manna, engine.scoreUserQuestionEv(1L, 0x0FL, null, null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets + manna, engine.scoreUserQuestionEv(1L, 0x0DL, Collections.singletonList(0x0EL), null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets + manna, engine.scoreUserQuestionEv(1L, 0x0DL, Collections.singletonList(0x0FL), null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets + manna, engine.scoreUserQuestionEv(1L, 0x0EL, Collections.singletonList(0x0DL), null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets + manna, engine.scoreUserQuestionEv(1L, 0x0FL, Collections.singletonList(0x0DL), null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		assertTrue(engine.previewBalancingTrades(1L, 0x0DL, null, null).isEmpty());
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertTrue(engine.previewBalancingTrades(1L, 0x0EL, null, null).isEmpty());
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertTrue(engine.previewBalancingTrades(1L, 0x0FL, null, null).isEmpty());
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertTrue(engine.previewBalancingTrades(1L, 0x0DL, Collections.singletonList(0x0EL), null).isEmpty());
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertTrue(engine.previewBalancingTrades(1L, 0x0DL, Collections.singletonList(0x0FL), null).isEmpty());
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertTrue(engine.previewBalancingTrades(1L, 0x0EL, Collections.singletonList(0x0DL), null).isEmpty());
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertTrue(engine.previewBalancingTrades(1L, 0x0FL, Collections.singletonList(0x0DL), null).isEmpty());
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		// a previewBalancingTrade (singular) with uninitialized user should return a trade which does not change anything, even after cash was added.
+		
+		balancingTrade = engine.previewBalancingTrade(1L, 0x0DL, null, null);
+		probList = engine.getProbList(0x0DL, null, null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		balancingTrade = engine.previewBalancingTrade(1L, 0x0EL, null, null);
+		probList = engine.getProbList(0x0EL, null, null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		balancingTrade = engine.previewBalancingTrade(1L, 0x0FL, null, null);
+		probList = engine.getProbList(0x0FL, null, null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+
+		balancingTrade = engine.previewBalancingTrade(1L, 0x0DL, Collections.singletonList(0x0EL), null);
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		balancingTrade = engine.previewBalancingTrade(1L, 0x0DL, Collections.singletonList(0x0FL), null);
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		balancingTrade = engine.previewBalancingTrade(1L, 0x0EL, Collections.singletonList(0x0DL), null);
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		balancingTrade = engine.previewBalancingTrade(1L, 0x0FL, Collections.singletonList(0x0DL), null);
+		probList = engine.getProbList(0x0FL, Collections.singletonList(0x0DL), null);
+		assertEquals(probList.size(), balancingTrade.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.get(i), balancingTrade.get(i), PROB_ERROR_MARGIN);
+		}
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		
+		// the following methods were supposedly called by the above methods, so test only random combinations
+		
+		assertEquals(initialAssets + manna, engine.getCash(1L, null, null));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		assumptionIds = new ArrayList<Long>(3);
+		if (Math.random() < .5) { assumptionIds.add(0x0DL); }
+		if (Math.random() < .5) { assumptionIds.add(0x0EL); }
+		if (Math.random() < .5) { assumptionIds.add(0x0FL); }
+		assumedStates = new ArrayList<Integer>();
+		for (int i = 0; i < assumptionIds.size(); i++) {
+			assumedStates.add((int) Math.round(Math.random()));
+		}
+		assertEquals(initialAssets + manna, engine.getCash(1L, assumptionIds, assumedStates));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(initialAssets + manna, engine.scoreUserEv(1L, assumptionIds, assumedStates));
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		// preview trade shall return OK for uninitialized users, after adding cash
+		// generate a random trade
+		newValues = new ArrayList<Float>();
+		newValues.add((float) Math.random());
+		newValues.add(1-newValues.get(0));
+		
+		// pick question to trade
+		questionId = (Math.random()<.34)?0x0DL:(Math.random()<.5)?0x0EL:0x0FL;
+		
+		// generate random assumption
+		assumptionIds = new ArrayList<Long>();
+		if (questionId == 0x0DL) {
+			if (Math.random() < .5) {
+				// eventually add E or F as asssumption
+				assumptionIds.add((Math.random() < .5)?0x0EL:0x0FL);
+			} // else, do not add assumption
+		} else {
+			// this is either E or F, so the only possible assumption is D
+			if (Math.random() < .5) {
+				assumptionIds.add(0x0DL);
+			} // else, do not add assumption
+		}
+		
+		// randomly set assumed states
+		assumedStates = new ArrayList<Integer>();
+		for (int i = 0; i < assumptionIds.size(); i++) {
+			assumedStates.add((int) Math.round(Math.random()));
+		}
+		
+		// eventually test null assumption
+		if (assumptionIds.isEmpty() && Math.random() < .5) {
+			assumptionIds = null;
+			assumedStates = null;
+		}
+		// get old probability, in order to calculate the ratio
+		probList = engine.getProbList(questionId, assumptionIds, assumedStates);
+		
+		// preview the trade
+		returnedValues = engine.previewTrade(1L, questionId, newValues, assumptionIds, assumedStates);
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		assertEquals(2, returnedValues.size());
+		assertEquals(initialAssets + manna + engine.getScoreFromQValues(newValues.get(0)/probList.get(0)), returnedValues.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(initialAssets + manna + engine.getScoreFromQValues(newValues.get(1)/probList.get(1)), returnedValues.get(1), ASSET_ERROR_MARGIN);
+		
+		// assert that user is not created by balancing a trade which is balanced already
+		sizeOfHistory = engine.getExecutedActions().size();
+		engine.doBalanceTrade(null, new Date(), "User 1 balances " + questionId + " | " + assumptionIds + "=" + assumedStates, 
+				1L, questionId, assumptionIds, assumedStates);
+		// check that nothing was done
+		assertEquals(sizeOfHistory, engine.getExecutedActions().size());
+		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
+		
+		/******************************************************************************************************************/
+		
+		// assert that user is created by adding a trade
+		engine.addTrade(
+				null, new Date(), "Trade of user 1", 
+				1L,  ((Math.random()<.34)?0x0DL:(Math.random()<.5)?0x0EL:0x0FL), 
+				newValues,  assumptionIds, assumedStates,  false);
+		assertNotNull(engine.getUserToAssetAwareAlgorithmMap().get(1L));
+		assertNotNull(engine.getUserToAssetAwareAlgorithmMap().get(1L));
 	}
 }
