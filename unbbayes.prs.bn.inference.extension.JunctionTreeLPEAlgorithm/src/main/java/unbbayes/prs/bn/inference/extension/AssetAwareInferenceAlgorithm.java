@@ -650,7 +650,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * <br/><br/>
 	 * If isToUseQValues == false (i.e. asset tables are storing assets - logarithm space - instead of q-values), then
 	 * this method returns [ P(T=t|A=a)*power(base, -m1/b) ; 1- (1 - P(T=t|A=a))*power(base,-m2/b) ]
-	 * @param isToUseQValues : if true, the 
+	 * @param isToUseQValues : if true, this method assumes that we are using q-values
 	 * @param prob : P(T=t|A=a)
 	 * @param minValue : m1
 	 * @param minValueAssumingNotTarget : m2

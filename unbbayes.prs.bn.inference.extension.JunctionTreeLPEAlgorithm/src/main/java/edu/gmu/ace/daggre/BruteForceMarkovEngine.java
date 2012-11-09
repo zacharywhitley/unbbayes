@@ -44,6 +44,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 		this.initialize();
 		this.setToDoFullPreview(true);
 		this.setToIntegrateConsecutiveResolutions(false);
+		this.setToLazyInitializeUsers(false);
 	}
 	
 	/**

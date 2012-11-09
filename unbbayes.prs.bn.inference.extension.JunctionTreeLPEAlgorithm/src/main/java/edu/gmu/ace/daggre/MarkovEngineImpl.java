@@ -216,6 +216,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/** If true, marginals of actions executed in {@link RebuildNetworkAction#execute()} will be compared to the marginals which can be found in the history */
 	private boolean isToCompareProbOnRebuild = false;
 	
+	/** If true, users will be only initialized if they make trade. */
+	private boolean isToLazyInitializeUsers = true;
+	
 	/** This is mainly used for finding cycles in {@link RebuildNetworkAction#execute()} */
 	private MSeparationUtility mseparationUtility = MSeparationUtility.newInstance();
 
@@ -1495,7 +1498,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void execute() {
 			
 			// add cash to the mapping of lazily loaded users, if user was not initialized yet
-			if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+			if (isToLazyInitializeUsers() && !getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
 				// user was not initialized. Check if cash was added to user previously.
 				Float assetOfLazyUser = getUninitializedUserToAssetMap().get(userId);
 				if (assetOfLazyUser == null) {
@@ -1503,7 +1506,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					assetOfLazyUser = getDefaultInitialAssetTableValue();
 				} 
 				// just add more cash to what the user already have
-				getUninitializedUserToAssetMap().put(userId, assetOfLazyUser + delta);
+				if (isToUseQValues()) {
+					float ratio = (float) Math.pow(getCurrentLogBase(), delta / getCurrentCurrencyConstant() );
+					getUninitializedUserToAssetMap().put(userId, assetOfLazyUser * ratio);
+				} else {
+					getUninitializedUserToAssetMap().put(userId, assetOfLazyUser + delta);
+				}
 				return;
 			}
 			
@@ -3134,7 +3142,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return
 	 */
 	protected List<Float> getListOfAssetsOfLazyOrUnInitializedUser(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) {
-		if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+		if (isToLazyInitializeUsers() && !getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
 			// user was not created yet. Check if user is in the collection of lazily initialized users
 			int sizeOfRet = 0;	// this will be the states of question multiplied by states of assumptions
 			synchronized (getProbabilisticNetwork()) {
@@ -3198,7 +3206,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return
 	 */
 	protected Float getAssetsOfLazyOrUnInitializedUser(long userId) {
-		if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+		if (isToLazyInitializeUsers() && !getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
 			// user was not created yet. Check if user is in the collection of lazily initialized users
 			Float asset = null;	// if user was created lazily, this will become non-null
 			synchronized (getUninitializedUserToAssetMap()) {
@@ -3209,6 +3217,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				asset = getDefaultInitialAssetTableValue();
 			} // else, the user is stored in the collection of lazily initialized users. The variable "asset" will contain initial value + manna
 			
+			if (isToUseQValues()) {
+				return getScoreFromQValues(asset);
+			} 
 			return asset;
 		}
 		return null;
@@ -3411,9 +3422,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// if user was not initialized yet, try calculating the interval of edits without initializing user
 		try {
-			if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+			if (isToLazyInitializeUsers() && !getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
 				// get the cash of uninitialized user
 				Float asset = getAssetsOfLazyOrUnInitializedUser(userId);
+				if (isToUseQValues()) {
+					// getAssetsOfLazyOrUnInitializedUser returns asset values, but AssetAwareInferenceAlgorithm.calculateIntervalOfAllowedEdit
+					// expects q-values if isToUseQValues() == true. So, convert assets to q-values
+					asset = (float) getQValuesFromScore(asset);
+				}
 				// user was not initialized yet
 				float editInterval[] = AssetAwareInferenceAlgorithm.calculateIntervalOfAllowedEdit(
 						isToUseQValues(), 															// just pass configuration of this object
@@ -4663,7 +4679,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		List<TradeSpecification> balancingTrades =  new ArrayList<TradeSpecification>();
 		
 		// if this user was not initialized, then user did not trade at all. In such case, there is no balancing trade
-		if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+		if (isToLazyInitializeUsers() && !getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
 			return Collections.EMPTY_LIST;	// return empty list.
 		}
 		
@@ -4773,7 +4789,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public List<Float> previewBalancingTrade(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		
 		// if user was not initialized, then we do not need to balance (i.e. return a trade which does not change probability)
-		if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+		if (isToLazyInitializeUsers() && !getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
 			return this.getProbList(questionId, assumptionIds, assumedStates);
 		}
 		
@@ -5831,7 +5847,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
 				junctionTreeAlgorithm.setLikelihoodExtractor(AssetAwareInferenceAlgorithm.DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR);
 				// prepare default inference algorithm for asset network
-				algorithm = getAssetAwareInferenceAlgorithmBuilder().build(junctionTreeAlgorithm, getAssetsOfLazyOrUnInitializedUser(userID));
+				if (!isToLazyInitializeUsers()) {
+					algorithm = getAssetAwareInferenceAlgorithmBuilder().build(junctionTreeAlgorithm, getDefaultInitialAssetTableValue());
+				} else if (isToUseQValues()) {
+					// getAssetsOfLazyOrUnInitializedUser contains assets, but if engine is configured to use q-values, then we must convert
+					algorithm = getAssetAwareInferenceAlgorithmBuilder().build(junctionTreeAlgorithm, (float) getQValuesFromScore(getAssetsOfLazyOrUnInitializedUser(userID)));
+				} else {
+					algorithm = getAssetAwareInferenceAlgorithmBuilder().build(junctionTreeAlgorithm, getAssetsOfLazyOrUnInitializedUser(userID));
+				}
 				algorithm.setToCalculateLPE(false);	// we are only interested on min-values, never min-states
 				// set markov engine as the converter between q-values and assets
 				algorithm.setqToAssetConverter(this);
@@ -6468,10 +6491,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public class ProbabilityAndAssetTablesMemento {
 		protected Map<IRandomVariable, PotentialTable> probTableMap;
 		protected Map<AssetAwareInferenceAlgorithm, Map<IRandomVariable, PotentialTable>> assetTableMap;
+		private Map<Long, Float> uninitializedUserMap;
+		private Set<Long> usersPresentInSystemBefore;
 
 		/**
 		 * Stores probability tables of cliques/separators of {@link MarkovEngineImpl#getProbabilisticNetwork()}
 		 * and asset tables of {@link MarkovEngineImpl#getUserToAssetAwareAlgorithmMap()}.
+		 * It also stores the content of {@link MarkovEngineImpl#getUninitializedUserToAssetMap()}
 		 */
 		public ProbabilityAndAssetTablesMemento() {
 			probTableMap = new HashMap<IRandomVariable, PotentialTable>();
@@ -6497,7 +6523,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 					assetTableMap.put(algorithm, assetTables);
 				}
+				// store what users are present now, so that we can delete new users from system when we restore
+				usersPresentInSystemBefore = new HashSet<Long>(getUserToAssetAwareAlgorithmMap().keySet());
 			}
+			// also store the users which were not initialized yet.
+			synchronized (getUninitializedUserToAssetMap()) {
+				uninitializedUserMap = new HashMap<Long, Float>(getUninitializedUserToAssetMap());
+			}
+			
 		}
 		/** Restore the {@link MarkovEngineImpl} to the state of this memento */
 		protected void restore() {
@@ -6530,6 +6563,23 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							separator.getProbabilityFunction().setValues(assetTables.get(separator).getValues());
 //							separator.getProbabilityFunction().copyData();
 						}
+					}
+				}
+			}
+			// also, restore uninitialized users.
+			synchronized (getUninitializedUserToAssetMap()) {
+				getUninitializedUserToAssetMap().clear();
+				getUninitializedUserToAssetMap().putAll(uninitializedUserMap);
+				// remove newly created users (delete users which were not in in the system when this memento was created)
+				synchronized (getUserToAssetAwareAlgorithmMap()) {
+					Set<Long> usersToDelete = new HashSet<Long>();
+					for (Long userToCheck : getUserToAssetAwareAlgorithmMap().keySet()) {
+						if (!usersPresentInSystemBefore.contains(userToCheck)) {
+							usersToDelete.add(userToCheck);
+						}
+					}
+					for (Long userToDelete : usersToDelete) {
+						getUserToAssetAwareAlgorithmMap().remove(userToDelete);
 					}
 				}
 			}
@@ -7642,6 +7692,26 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	protected Map<Long, Float> getUninitializedUserToAssetMap() {
 		return uninitializedUserToAssetMap;
+	}
+
+	/**
+	 *  If true, users will be only initialized if they make trade.
+	 * @param isToLazyInitializeUsers the isToLazyInitializeUsers to set
+	 */
+	public void setToLazyInitializeUsers(boolean isToLazyInitializeUsers) {
+		this.isToLazyInitializeUsers = isToLazyInitializeUsers;
+		if (!isToLazyInitializeUsers) {
+			// reset mapping of non-inintialized users, because it won't be used anymore
+			getUninitializedUserToAssetMap().clear();
+		}
+	}
+
+	/**
+	 *  If true, users will be only initialized if they make trade.
+	 * @return the isToLazyInitializeUsers
+	 */
+	public boolean isToLazyInitializeUsers() {
+		return isToLazyInitializeUsers;
 	}
 
 

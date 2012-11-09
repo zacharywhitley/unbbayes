@@ -52,6 +52,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** Error margin used when comparing 2 probability values. {@link CPTBruteForceMarkovEngine} have less precision. */
 	public static final float RELAXED_PROB_ERROR_MARGIN = 0.0005f;
 	
+	/** Error margin used when comparing 2 edit limits. */
+	public static final float RELAXED_EDITLIMIT_ERROR_MARGIN = 0.005f;
+	
 	/** Error margin used when comparing 2 asset (score) values */
 	public static final float ASSET_ERROR_MARGIN = 1f;	
 
@@ -93,7 +96,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static final String NODE_NAME_PREFIX = "N";
 
 	/** This program will enter in a loop at this iteration number. Use with care. Set to negative if you don't want this program to stop at the iteration */
-	private static final int iterationToDebug = -154;
+	private static final int iterationToDebug = -40;
 
 	/** this object will group the data to be printed out in {@link #testFilesWithResolution()} */
 	private Tracer tracer = null;
@@ -180,7 +183,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If there are less than this number of questions, questions will not be resolved */
 	private static int minAliveQuestionNumber = 0;
 
-	private static long seed = new Date().getTime();
+	private static long seed = 666L;//new Date().getTime();
 	/** Random number generator, with seed */
 	private static Random random = new Random(seed);
 
@@ -752,6 +755,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 //		engines.get(engines.size()-1).setToObtainProbabilityOfResolvedQuestions(true);
 		engines.get(engines.size()-1).setToThrowExceptionOnInvalidAssumptions(true);
 		engines.get(engines.size()-1).setToCompareProbOnRebuild(true);
+		engines.get(engines.size()-1).setToForceBalanceQuestionEntirely(true);
 		
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();
@@ -1263,7 +1267,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 										+ ", probBeforeTrade = "+probBeforeTrade + ", priorProbToCompare = "+priorProbToCompare,  
 										marginal.get(state), 
 										marginalToCompare.get(state), 
-										((engine instanceof CPTBruteForceMarkovEngine)?RELAXED_PROB_ERROR_MARGIN:PROB_ERROR_MARGIN)
+										RELAXED_PROB_ERROR_MARGIN
 								);
 							}
 						} else if (!isToConsider1stEngineAsHavingAllNodes) {
@@ -5291,7 +5295,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 									+", state=" + stateOfEditLimit + ", assumptions: " +  assumptionIds + "=" + assumedStates
 									+", expectedEditLimit = " + editLimits + ", obtainedEditLimit = " + editLimitsOfOtherEngine, 
 									editLimits.get(j), editLimitsOfOtherEngine.get(j), 
-									RELAXED_PROB_ERROR_MARGIN);
+									RELAXED_EDITLIMIT_ERROR_MARGIN);
 						}
 					}
 				}
@@ -5342,8 +5346,12 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						
 						// obtain the balancing trade from history, so that the next iteration can use it if the next engine is a Brute force engine
 						List<QuestionEvent> questionHistory = engine.getQuestionHistory(questionId, null, null);
-						assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
-						tradesToBalance = ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades();
+						if (engine.getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
+							assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
+							tradesToBalance = ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades();
+						} else {
+							tradesToBalance = Collections.EMPTY_LIST;
+						}
 						
 						// compare with previewed trades to balance
 						assertEquals(tradesToBalance.size(), tradesToBalancePreview.size());

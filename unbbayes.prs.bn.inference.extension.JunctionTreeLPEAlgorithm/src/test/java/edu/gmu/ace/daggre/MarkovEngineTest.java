@@ -18941,6 +18941,9 @@ public class MarkovEngineTest extends TestCase {
 	 * only on first edit)
 	 */
 	public final void testLazyUserCreation()  {
+		// force engine to lazy init users
+		engine.setToLazyInitializeUsers(true);
+		
 		// decide what will be the initial assets of every user
 		float initialAssets = (float) (100+Math.random()*1000);
 		
