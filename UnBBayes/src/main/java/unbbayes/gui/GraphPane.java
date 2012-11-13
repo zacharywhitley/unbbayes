@@ -248,14 +248,19 @@ public class GraphPane extends UCanvas {
 			return clonedNode;
 		}
 
+		// // Set general attributes
+		// Name
+		String newName = originalNode.getName() + "_1";
+		newName = getUniqueName(newName);
+		clonedNode.setName(newName);
+		System.out.println("newNome=" + newName);
+		// Description
+		clonedNode.setDescription(originalNode.getDescription());
+		
 		// Create a new shape for a new node
 		createNode(clonedNode);
 		getNodeUShape(clonedNode).setState(UShape.STATE_SELECTED, null);
 
-		// // Set general attributes
-		// Name is not necessary, because it is automatic when it is created.
-		// Description
-		clonedNode.setDescription(originalNode.getDescription());
 
 		// Clear the default states
 		clonedNode.removeStates();
