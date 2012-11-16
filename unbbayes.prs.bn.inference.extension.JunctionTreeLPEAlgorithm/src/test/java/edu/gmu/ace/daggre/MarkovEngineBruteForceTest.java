@@ -52,9 +52,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** Error margin used when comparing 2 probability values. {@link CPTBruteForceMarkovEngine} have less precision. */
 	public static final float RELAXED_PROB_ERROR_MARGIN = 0.0005f;
 	
-	/** Error margin used when comparing 2 edit limits. */
 	public static final float RELAXED_EDITLIMIT_ERROR_MARGIN = 0.005f;
-	
+		
 	/** Error margin used when comparing 2 asset (score) values */
 	public static final float ASSET_ERROR_MARGIN = 1f;	
 
@@ -75,7 +74,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private List<MarkovEngineImpl> engines;
 
 	/** This value indicates how many test iterations (5-point tests) will be performed by default*/
-	private static int howManyTradesToTest = 1000;
+	private static int howManyTradesToTest = 100;//3000;
 
 
 	private enum FivePointTestType {BELOW_LIMIT, ON_LOWER_LIMIT, BETWEEN_LIMITS, ON_UPPER_LIMIT, ABOVE_LIMIT}; 
@@ -96,7 +95,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static final String NODE_NAME_PREFIX = "N";
 
 	/** This program will enter in a loop at this iteration number. Use with care. Set to negative if you don't want this program to stop at the iteration */
-	private static final int iterationToDebug = -40;
+	private static final int iterationToDebug = -128;
 
 	/** this object will group the data to be printed out in {@link #testFilesWithResolution()} */
 	private Tracer tracer = null;
@@ -108,7 +107,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static float probResolve = 0.03f;//0.1f;
 
 	/** probability to balance a trade */
-	private static float probToBalance = 0.03f;
+	private static float probToBalance = 0.01f; //0.03f;
 
 	/** probability to add cash */
 	private static float probToAddCash = .2f;
@@ -117,7 +116,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static boolean isToTrace = true;
 
 	/** This is the probability that if trade is chosen to be {@link FivePointTestType#BETWEEN_LIMITS}, it is very close to the limits */
-	private static float probNearEditLimitBias = 0.6f;
+	private static float probNearEditLimitBias = 0.3f;//0.6f;
 
 	/** This is the probability that {@link #runRandomTest(Network, List, List)} will not choose {@link FivePointTestType#BETWEEN_LIMITS} to trade */
 	private static float probTradeOutsideLimit = 0.0f;
@@ -143,7 +142,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static boolean isToAssertConsistencyIn5PointTest = true;
 
 	/** Maximum quantity of nodes to be alive in this test. If the quantity of nods reaches this value, no new nodes will be created */
-	private static int maxLiveNodes = 10;
+	private static int maxLiveNodes = 8;//Integer.MAX_VALUE; 
 
 	/** This is the index of {@link #engines} to be used as the sole engine to be run in {@link #testFilesWithResolutionSingleEngine()}.
 	 * Negative values will be interpreted as "the last element in the list" */
@@ -157,7 +156,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 * @see #minProbDiffOfBigEdit
 	 * @see #probBigEdit
 	 *  */
-	private static float probDistanceFromDeterministicValues = 0.005f;//0f;
+	private static float probDistanceFromDeterministicValues = 0.01f;//0.005f;
 
 	/** This value is considered to be a big change in probability
 	 * @see #probBigEdit */
@@ -165,14 +164,14 @@ public class MarkovEngineBruteForceTest extends TestCase {
 
 	/** Prob of {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)} to make a change a big change in current prob
 	* @see #minProbDiffOfBigEdit */
-	private static float probBigEdit = .4f;//0f;
+	private static float probBigEdit = 0.2f;//.4f;//0f;
 
 
 	/** If the program iterated more than this quantity in order to generate the edit, it considers that it could not generate a consistent edit */
 	private static int maxIterationToGenerateEdit = 50;
 	
 	/** If the program iterated more than this quantity in order to choose the question to edit, the test will fail */
-	private static int maxIterationToSelectQuestion = 1000/maxLiveNodes;
+	private static int maxIterationToSelectQuestion = howManyTradesToTest/maxLiveNodes;
 
 	/** If true, the cash will be tested after a balance trade */
 	private static boolean isToCheckCashAfterBalance = false;
@@ -181,9 +180,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static boolean isToSet1stEngineToContainAllNodes = true;
 
 	/** If there are less than this number of questions, questions will not be resolved */
-	private static int minAliveQuestionNumber = 0;
+	private static int minAliveQuestionNumber = -1;
 
-	private static long seed = 666L;//new Date().getTime();
+	private static long seed = new Date().getTime();
 	/** Random number generator, with seed */
 	private static Random random = new Random(seed);
 
@@ -191,7 +190,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 * If true, {@link #do5PointTest(Map, Long, int, List, Long, List, List, FivePointTestType, Map, boolean, Collection, boolean)} will check
 	 * whether cash went to negative without error margin, if {@link FivePointTestType} is {@link FivePointTestType#BETWEEN_LIMITS}.
 	 */
-	private static boolean isStrictlyNonNegativeCash = false;
+	private static boolean isStrictlyNonNegativeCash = true;
 
 	/**If true, {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)} will randomize
 	 * trades close to the edit limits*/
@@ -208,7 +207,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static int numEditsCloseToLimits = 0;
 
 	/** If the number of live questions reaches this number, the test suite will start to resolve questions with probability {@link #probResolve} */
-	private static int minNumQuestionToTriggerResolveQuestion = 10; //0;
+	private static int minNumQuestionToTriggerResolveQuestion = 8; //0;
 	
 	
 	/** Class used to trace data which will be printed out */
@@ -755,7 +754,6 @@ public class MarkovEngineBruteForceTest extends TestCase {
 //		engines.get(engines.size()-1).setToObtainProbabilityOfResolvedQuestions(true);
 		engines.get(engines.size()-1).setToThrowExceptionOnInvalidAssumptions(true);
 		engines.get(engines.size()-1).setToCompareProbOnRebuild(true);
-		engines.get(engines.size()-1).setToForceBalanceQuestionEntirely(true);
 		
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();
@@ -4694,7 +4692,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			
 			if (isToCalculateEditLimit) {
 				// if we have negative assets, then there can be negative/zero edit limit. In such case, this user cannot trade
-				if ((editLimits.get(0) < PROB_ERROR_MARGIN || editLimits.get(1) <= PROB_ERROR_MARGIN || editLimits.get(0) > editLimits.get(1))) {
+				if ((editLimits.get(0) < 0f || editLimits.get(1) < 0f || editLimits.get(0) > editLimits.get(1))) {
 					Debug.println(getClass(), "User " + userId + " cannot trade on question " + questionId + " because of negative assets");
 					iteration--;
 					if (isToTrace()) {
@@ -4733,14 +4731,15 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				
 				// obtain the balancing trade from history, so that I can be certain that a balance trade was actually executed, and to fill the tracer
 				List<QuestionEvent> questionHistory = engines.get(0).getQuestionHistory(questionId, null, null);
-				assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
-				List<TradeSpecification> tradesToBalance = ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades();
-				
-				// only mark as if we did balance a question if we really did balance a question
-				if (!tradesToBalance.isEmpty()) {
-					hasBalanced = true;
-					if (isToTrace()) {
-						tracer.setBalanceTradeSpecification(tradesToBalance);
+				if (!questionHistory.isEmpty() && questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction) {
+					List<TradeSpecification> tradesToBalance = ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades();
+					
+					// only mark as if we did balance a question if we really did balance a question
+					if (!tradesToBalance.isEmpty()) {
+						hasBalanced = true;
+						if (isToTrace()) {
+							tracer.setBalanceTradeSpecification(tradesToBalance);
+						}
 					}
 				}
 			}

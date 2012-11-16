@@ -19385,7 +19385,9 @@ public class MarkovEngineTest extends TestCase {
 		
 		// assert that user is not created by balancing a trade which is balanced already
 		int sizeOfHistory = engine.getExecutedActions().size();
-		assumptionIds.remove(questionId); // make sure assumptionIds does not contain questionId
+		if (assumptionIds.remove(questionId)){ // make sure assumptionIds does not contain questionId
+			assumedStates.remove(0);  // make sure the size of the 2 lists remains the same
+		}
 		engine.doBalanceTrade(null, new Date(), "User 1 balances " + questionId + " | " + assumptionIds + "=" + assumedStates, 
 				1L, questionId, assumptionIds, assumedStates);
 		// check that nothing was done
@@ -19832,12 +19834,89 @@ public class MarkovEngineTest extends TestCase {
 		
 		/******************************************************************************************************************/
 		
+		questionId = ((Math.random()<.34)?0x0DL:(Math.random()<.5)?0x0EL:0x0FL);
+		if (assumptionIds != null && assumptionIds.remove(questionId)){ // make sure assumptionIds does not contain questionId
+			assumedStates.remove(0);  // make sure the size of the 2 lists remains the same
+		}
+		
 		// assert that user is created by adding a trade
 		engine.addTrade(
 				null, new Date(), "Trade of user 1", 
-				1L,  ((Math.random()<.34)?0x0DL:(Math.random()<.5)?0x0EL:0x0FL), 
+				1L,  questionId, 
 				newValues,  assumptionIds, assumedStates,  false);
 		assertNotNull(engine.getUserToAssetAwareAlgorithmMap().get(1L));
 		assertNotNull(engine.getUserToAssetAwareAlgorithmMap().get(1L));
+	}
+	
+	/**
+	 * Check a condition which a trade should not update history
+	 */
+	public final void testHistoryOfCancelledTrades()  {
+		
+		engine.setDefaultInitialAssetTableValue(100);
+		engine.setCurrentCurrencyConstant(100);
+		engine.setCurrentLogBase(2);
+		engine.setToForceBalanceQuestionEntirely(false);
+		engine.initialize();
+		
+		// create DEF net
+		engine.addQuestion(null, new Date(), 0x0DL, 2, null);
+		engine.addQuestion(null, new Date(), 0x0EL, 2, null);
+		engine.addQuestion(null, new Date(), 0x0FL, 2, null);
+		engine.addQuestionAssumption(null, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		
+		// set clique potential of clique FD to [0.126	0.374	0.25	0.25], so that the cash does depend heavily on clique FD instead of ED
+		List<Float> newValues = new ArrayList<Float>(2);
+		newValues.add(.252f); newValues.add(.748f);
+		engine.addTrade(null, new Date(), "User 1 sets P(F|d1)=[0.252,0.748]", 1, 0x0FL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(0), false);
+		
+		// make sure cash depends on F and D and does not change on E
+		List<Float> cashPerStates = engine.getCashPerStates(1, 0x0FL, null, null);
+		assertEquals(2, cashPerStates.size());
+		assertEquals(cashPerStates.toString(), 1.1495638838f, cashPerStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(cashPerStates.toString(), 100f, cashPerStates.get(1), ASSET_ERROR_MARGIN);
+		cashPerStates = engine.getCashPerStates(1, 0x0DL, null, null);
+		assertEquals(2, cashPerStates.size());
+		assertEquals(cashPerStates.toString(), 1.1495638838f, cashPerStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(cashPerStates.toString(), 100f, cashPerStates.get(1), ASSET_ERROR_MARGIN);
+		cashPerStates = engine.getCashPerStates(1, 0x0EL, null, null);
+		assertEquals(2, cashPerStates.size());
+		assertEquals(cashPerStates.toString(), 1.1495638838f, cashPerStates.get(0), ASSET_ERROR_MARGIN);
+		assertEquals(cashPerStates.toString(),  1.1495638838f, cashPerStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// make sure the history did only change the marginal of F
+		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		assertEquals(1, questionHistory.size());
+		assertTrue(questionHistory.get(0) instanceof AddTradeNetworkAction);
+		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		assertEquals(0, questionHistory.size());
+		questionHistory = engine.getQuestionHistory(0x0EL, null, null);
+		assertEquals(0, questionHistory.size());
+		
+		// make a trade that will make the cash (global min asset) to go negative, but the local assets is still positive
+		
+		try {
+			// Changing P(E|d1) to [.4,.6] shall do the work
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.4f); newValues.add(.6f);
+			engine.addTrade(null, new Date(), "User 1 sets P(F|d1)=[0.4,0.6]", 1, 0x0EL, newValues, 
+					Collections.singletonList(0x0DL), Collections.singletonList(0), false);
+			fail("Shall throw exception indicating that cash went to negative");
+		} catch (ZeroAssetsException e) {
+			// OK
+		}
+		
+		// make sure the history did not change
+		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		assertEquals(1, questionHistory.size());
+		assertTrue(questionHistory.get(0) instanceof AddTradeNetworkAction);
+		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		assertEquals(0, questionHistory.size());
+		questionHistory = engine.getQuestionHistory(0x0EL, null, null);
+		assertEquals(0, questionHistory.size());
+		
+		
 	}
 }

@@ -169,7 +169,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToRetriveOnlyTradeHistory = true;
 
 	/** This is the default initial value of {@link #getMaxConditionalProbHistorySize()} */
-	public static int DEFAULT_MAX_CONDITIONAL_PROB_HISTORY_SIZE = 10;
+	public static int DEFAULT_MAX_CONDITIONAL_PROB_HISTORY_SIZE = 20;
 
 	private int maxConditionalProbHistorySize = DEFAULT_MAX_CONDITIONAL_PROB_HISTORY_SIZE;
 
@@ -224,6 +224,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	/** This is used in lazy user initialization. If user did never trade, but assets were queried, this map will be used. */
 	private Map<Long, Float> uninitializedUserToAssetMap = new HashMap<Long, Float>();
+
+	/** If true, {@link #previewBalancingTrades(long, long, List, List)}, {@link #previewBalancingTrade(long, long, List, List)}, and
+	 * {@link BalanceTradeNetworkAction#execute()} will also return balancing trades that may result in negative assets*/
+	private boolean isToAllowNegativeInBalanceTrade = false;
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -564,7 +568,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 				
 				// actually run action
-				action.execute();
+				try {
+					action.execute();
+				} catch (ZeroAssetsException z) {
+					// do not consider this action anymore
+					removeNetworkActionIntoQuestionMap(action, action.getQuestionId());
+					// remove transaction before releasing the lock to actions
+					getNetworkActionsMap().remove(transactionKey);
+					throw z;
+				}
 				
 				// mark action as executed
 				action.setWhenExecutedFirstTime(new Date());	// normal execution of action -> update attribute "whenExecutedFirst"
@@ -4503,10 +4515,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * and then balancing a1 and a2 given b2 and c1.
 	 * The following routines converts "balance a1 and a2 given assumption c1"
 	 * to "balance a1 and a2 given b1 and c1, and then balance a1 and a2 given b2 and c1".
+	 * @param isToAllowNegative : if false, the preview will not generate trades that will result in negative assets
 	 * 
 	 */
 	protected List<TradeSpecification> previewBalancingTrades(AssetAwareInferenceAlgorithm userAssetAlgorithm, long questionId, List<Long> originalAssumptionIds, 
-			List<Integer> originalAssumedStates, Clique clique) throws IllegalArgumentException {
+			List<Integer> originalAssumedStates, Clique clique, boolean isToAllowNegative) throws IllegalArgumentException {
 		// initial assertions
 		if (originalAssumptionIds != null && !originalAssumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, originalAssumptionIds).isEmpty()) {
 			if (this.isToThrowExceptionOnInvalidAssumptions()) {
@@ -4645,7 +4658,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					throw new RuntimeException("Failed to consistently handle resolved questions in assumption: " 
 							+ fullAssumptionIds + " = " + fullAssumedStates);
 				}
-				List<Float> balancingTrade = this.previewBalancingTrade(userAssetAlgorithm, questionId, fullAssumptionIds, fullAssumedStates, clique);
+				List<Float> balancingTrade = this.previewBalancingTrade(userAssetAlgorithm, questionId, fullAssumptionIds, fullAssumedStates, clique, isToAllowNegative);
 				// the name of the asset net is supposedly the user ID
 				ret.add(new CliqueSensitiveTradeSpecificationImpl(Long.parseLong(userAssetAlgorithm.getAssetNetwork().getName()), questionId, balancingTrade, fullAssumptionIds, fullAssumedStates, clique));
 			}
@@ -4701,9 +4714,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		for (Clique clique : cliques) {
 			// obtain trade values for exiting the user from a question given assumptions, for the current clique
 			if (isToForceBalanceQuestionEntirely()) {
-				balancingTrades.addAll(previewBalancingTrades(algorithm, questionId, null, null, clique));
+				balancingTrades.addAll(previewBalancingTrades(algorithm, questionId, null, null, clique, isToAllowNegativeInBalanceTrade()));
 			} else {
-				balancingTrades.addAll(previewBalancingTrades(algorithm, questionId, originalAssumptionIds, originalAssumedStates, clique));
+				balancingTrades.addAll(previewBalancingTrades(algorithm, questionId, originalAssumptionIds, originalAssumedStates, clique, isToAllowNegativeInBalanceTrade()));
 			}
 			for (TradeSpecification tradeSpecification : balancingTrades ) {
 				// check if we should do clique-sensitive operation
@@ -4800,7 +4813,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new RuntimeException(e);
 		}
 		
-		return this.previewBalancingTrade(algorithm, questionId, assumptionIds, assumedStates, null);
+		return this.previewBalancingTrade(algorithm, questionId, assumptionIds, assumedStates, null, isToAllowNegativeInBalanceTrade());
 	}
 	
 	/**
@@ -4814,7 +4827,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return
 	 * @throws IllegalArgumentException
 	 */
-	public List<Float> previewBalancingTrade(AssetAwareInferenceAlgorithm algorithm, long questionId, List<Long> assumptionIds, List<Integer> assumedStates, Clique clique) throws IllegalArgumentException {
+	public List<Float> previewBalancingTrade(AssetAwareInferenceAlgorithm algorithm, long questionId, List<Long> assumptionIds, List<Integer> assumedStates, 
+			Clique clique, boolean isToAllowNegative) throws IllegalArgumentException {
 		if (assumptionIds != null && assumedStates != null && assumptionIds.size() != assumedStates.size()) {
 			throw new IllegalArgumentException("This method does not allow assumptionIds and assumedStates with different sizes.");
 		}
@@ -4916,6 +4930,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			probList.add((float) (product/commonDenominator));
 		}
 		
+		// check that this trade may cause the cash to go negative
+//		if (!isToAllowNegative) {
+//			// for each entry in probList, 
+//			for (int state = 0; state < probList.size(); state++) {
+//				// the name of the asset net is supposedly the ID of the user
+//				List<Float> editLimits = getEditLimits(Long.parseLong(algorithm.getAssetNetwork().getName()), questionId, state, assumptionIds, assumedStates);
+//				if (probList.get(state) < editLimits.get(0) || editLimits.get(1) < probList.get(state)) {
+//					// TODO change this probability automatically in order to fit into the edit limit
+//					throw new ZeroAssetsException("Setting P("+questionId+"|"+assumptionIds+"="+assumedStates+") = " 
+//							+ probList + " may result in negative assets. The new probability at state "+state+" is not within edit limit " 
+//							+ editLimits + ".");
+//				}
+//			}
+//		}
+		
 //		return products;
 		return probList;
 	}
@@ -4988,9 +5017,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// obtain trade values for exiting the user from a question given assumptions, for the current clique
 					List<TradeSpecification> balancingTrades = null;
 					if (isToForceBalanceQuestionEntirely()) {
-						balancingTrades = previewBalancingTrades(algorithm, getQuestionId(), null, null, clique);
+						balancingTrades = previewBalancingTrades(algorithm, getQuestionId(), null, null, clique, isToAllowNegativeInBalanceTrade());
 					} else {
-						balancingTrades = previewBalancingTrades(algorithm, getQuestionId(), getAssumptionIds(), getAssumedStates(), clique);
+						balancingTrades = previewBalancingTrades(algorithm, getQuestionId(), getAssumptionIds(), getAssumedStates(), clique, isToAllowNegativeInBalanceTrade());
 					}
 					try {
 						for (TradeSpecification tradeSpecification : balancingTrades ) {
@@ -5317,9 +5346,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// never return the object itself (because we do not want the caller to change content of getNetworkActionsIndexedByQuestions())
 					return Collections.emptyList();	
 				}
-				// fill ret with values in list, but filter by assumptionIDs and assumedStates
+				// fill ret with values in list, but do basic filtering
 				for (NetworkAction action : list) {
-					if (isToRetriveOnlyTradeHistory() && !(action instanceof AddTradeNetworkAction)) {
+					if (isToRetriveOnlyTradeHistory() 
+							&& (!(action instanceof AddTradeNetworkAction) ) 
+							|| (action.getWhenExecutedFirstTime() == null)) {	// do not consider actions which were not executed
 						// do not consider AddQuestionNetworkAction if engine is configured to ignore them
 						continue;
 					}
@@ -6287,6 +6318,40 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		}
 		return indexOfNewElement;
+	}
+	
+	/**
+	 * This method removes networkAction from {@link #getNetworkActionsIndexedByQuestions()}.
+	 * @param questionId : the question id to be considered as the key.
+	 * Null is allowed as the key (in this case, {@link NetworkAction#getQuestionId()} will be used as the key).
+	 * @param networkAction : the object to be removed.
+	 * {@link NetworkAction#getQuestionId()} will be used as the key of {@link #getNetworkActionsIndexedByQuestions()},
+	 * if questionId is null. 
+	 * @return true if {@link #getNetworkActionsIndexedByQuestions()} was changed as a result of this method 
+	 */
+	protected boolean removeNetworkActionIntoQuestionMap(NetworkAction networkAction, Long questionId) {
+		// initial assertion
+		if (networkAction == null) {
+			throw new NullPointerException("networkAction == null");
+		}
+		// get list of actions from getNetworkActionsIndexedByQuestions.
+		List<NetworkAction> list = null;
+		synchronized (getNetworkActionsIndexedByQuestions()) {
+			if (questionId == null) {
+				questionId = networkAction.getQuestionId();
+			}
+			list = getNetworkActionsIndexedByQuestions().get(questionId);
+		}
+		if (list == null || list.isEmpty()) {
+			// no entry to delete
+			return false;
+		}
+		// at this point, list != null
+		boolean hasRemoved = false;
+		synchronized (list) {
+			hasRemoved = list.remove(networkAction);
+		}
+		return hasRemoved;
 	}
 	
 	/*
@@ -7712,6 +7777,29 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public boolean isToLazyInitializeUsers() {
 		return isToLazyInitializeUsers;
+	}
+
+	/**
+	 * If true, {@link #previewBalancingTrades(long, long, List, List)},
+	 * {@link #previewBalancingTrade(long, long, List, List)}, and
+	 * {@link BalanceTradeNetworkAction#execute()} 
+	 * will also return balancing trades that may result in negative assets
+	 * @param isToAllowNegativeInBalanceTrade the isToAllowNegativeInBalanceTrade to set
+	 */
+	public void setToAllowNegativeInBalanceTrade(
+			boolean isToAllowNegativeInBalanceTrade) {
+		this.isToAllowNegativeInBalanceTrade = isToAllowNegativeInBalanceTrade;
+	}
+
+	/**
+	 * If true, {@link #previewBalancingTrades(long, long, List, List)},
+	 * {@link #previewBalancingTrade(long, long, List, List)},  and
+	 * {@link BalanceTradeNetworkAction#execute()}
+	 * will also return balancing trades that may result in negative assets
+	 * @return the isToAllowNegativeInBalanceTrade
+	 */
+	public boolean isToAllowNegativeInBalanceTrade() {
+		return isToAllowNegativeInBalanceTrade;
 	}
 
 
