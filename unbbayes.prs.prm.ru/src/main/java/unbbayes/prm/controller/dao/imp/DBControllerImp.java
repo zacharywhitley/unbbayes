@@ -198,17 +198,25 @@ public class DBControllerImp implements IDBController {
 		}
 
 		// Parent information.
-		String parentTableName = relationship.getParent().getTable().getName();
 		String parentAttName = relationship.getParent().getAttribute()
 				.getName();
 
 		// Column Index.
 		Attribute attributeId = path[path.length - 2];
-		String tableId = path[path.length - 2].toString();
+		String tableId;
+
+		// If this is the primary key
+		if (path[path.length - 2].getAttribute().isPrimaryKey()) {
+			tableId = path[path.length - 2].toString();
+		} else {
+			// Maybe this is not the best way but it works.
+			tableId = path[path.length - 2].getTable().getPrimaryKeyColumns()[0]
+					.getName();
+		}
 
 		// SQL query.
-		String sqlQuery = "SELECT " + parentTableName + "." + parentAttName
-				+ ", " + tableId + " FROM " + queryTables + where;
+		String sqlQuery = "SELECT " + tableId+ ", " + relationship.getParent()  
+				+ " FROM " + queryTables + where;
 		log.debug("SQL query = " + sqlQuery);
 
 		// Query to DB.
@@ -219,8 +227,7 @@ public class DBControllerImp implements IDBController {
 		while (it1.hasNext()) {
 			DynaBean dynaBean = (DynaBean) it1.next();
 			String inst = String.valueOf(dynaBean.get(parentAttName));
-			String id = String.valueOf(dynaBean.get(attributeId.getAttribute()
-					.getName()));
+			String id = String.valueOf(dynaBean.get(tableId));
 
 			instances.add(new String[] { id, inst });
 
@@ -229,16 +236,90 @@ public class DBControllerImp implements IDBController {
 		return instances.toArray(new String[0][0]);
 	}
 
-	public String getSpecificValue(Column queryColumn, Attribute attribute,
+	/**
+	 * Get a specific value of an instance.
+	 * 
+	 * @param queryColumn
+	 *            query column
+	 * @param localIdColum
+	 *            unique index column or a FK.
+	 * @param idValue
+	 *            instance id.
+	 * @return
+	 */
+	public String getSpecificValue(Column queryColumn, Attribute localIdColum,
 			String instanceId) {
-		// id string
-		instanceId = attribute.getAttribute().getType().contains("CHAR") ? "'"
-				+ instanceId + "'" : instanceId;
+		// Id string.
+		instanceId = localIdColum.getAttribute().getType().contains("CHAR") ? "'"
+				+ instanceId + "'"
+				: instanceId;
 
 		// SQL query.
 		String sqlQuery = "SELECT " + queryColumn.getName() + " FROM "
-				+ attribute.getTable().getName() + " WHERE "
-				+ attribute.toString() + "=" + instanceId;
+				+ localIdColum.getTable().getName() + " WHERE "
+				+ localIdColum.toString() + "=" + instanceId;
+
+		log.debug("SQL for specific value=" + sqlQuery);
+
+		// Query to DB.
+		Iterator<DynaBean> it1 = platform.query(getRelSchema(), sqlQuery);
+
+		if (it1.hasNext()) {
+			DynaBean bean = it1.next();
+
+			return String.valueOf(bean.get(queryColumn.getName()));
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * Get a specific value of an instance.
+	 * 
+	 * @param queryColumn
+	 *            query column
+	 * @param destinyIdAttribute
+	 *            unique index column.
+	 * @param idValue
+	 *            instance id.
+	 * @return
+	 */
+	public String getSpecificValue(Column queryColumn,
+			Attribute destinyIdAttribute, Attribute origRefAttribute,
+			Attribute origIdAttribute, String originInstanceId) {
+		// id string
+		originInstanceId = destinyIdAttribute.getAttribute().getType()
+				.contains("CHAR") ? "'" + originInstanceId + "'"
+				: originInstanceId;
+
+		// Validate if the origin attribute exists.
+		// String originAtt = origAttribute.getAttribute().getName();
+		// String fkValidationQuery = "SELECT " + originAtt + " FROM "
+		// + origAttribute.getTable().getName() + " WHERE " + originAtt + "="
+		// + instanceId+" AND "+;
+		// Iterator<DynaBean> itVal = platform.query(getRelSchema(),
+		// fkValidationQuery);
+		// log.debug("SQL for specific value=" + fkValidationQuery);
+		// if(!itVal.hasNext()){
+		// return null;
+		// }
+		//
+		//
+
+		//
+		String fkInstanceValue = "(SELECT "
+				+ origRefAttribute.getAttribute().getName() + " FROM "
+				+ origRefAttribute.getTable().getName() + " WHERE "
+				+ origIdAttribute.getAttribute().getName() + "="
+				+ originInstanceId + ")";
+
+		// Instance query.
+		String fromTable = destinyIdAttribute.getTable().getName();
+		String where = destinyIdAttribute.toString() + "=" + fkInstanceValue;
+
+		// SQL query.
+		String sqlQuery = "SELECT " + queryColumn.getName() + " FROM "
+				+ fromTable + " WHERE " + where;
 
 		log.debug("SQL for specific value=" + sqlQuery);
 

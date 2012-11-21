@@ -285,8 +285,6 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 				childPM = null;
 
 				return;
-				// } else if (possiblePaths.size() == 1) {
-				// newRel.setPath(possiblePaths.get(0));
 			} else {
 				ParentPathDialog parentPathDialog = new ParentPathDialog(
 						possiblePaths);
@@ -295,6 +293,8 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 				// Cancel button
 				if (parentPathDialog.isCancelled()) {
+					parentPM = null;
+					childPM = null;
 					return;
 				}
 
