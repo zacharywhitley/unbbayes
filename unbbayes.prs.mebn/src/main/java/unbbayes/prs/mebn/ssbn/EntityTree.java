@@ -154,13 +154,13 @@ public class EntityTree{
 		
 		List<String[]> combinationList = new ArrayList<String[]>(); 
 		
-		List<EntityNode> nodesOfLastLevel = getNodesOfLastLevel(); 
+		List<EntityNode> nodesOfLeafLevel = getNodesOfLastLevel(); 
 		
 		//Search in each path
-		for(EntityNode lastNodeOfPath: nodesOfLastLevel){
+		for(EntityNode lastNodeOfPath: nodesOfLeafLevel){
 			
 			EntityNode nodeOfPath = lastNodeOfPath; 
-			int ovFoundQuant = 0; 
+			int ovFoundCount = 0; 
 			String[] tempEntityArray = new String[ovSearchArray.length]; 
 			
 			//Node for node... 
@@ -169,7 +169,7 @@ public class EntityTree{
 				for(int index = 0; index < knownOVArray.length; index++){
 					if(nodeOfPath.getOv().equals(knownOVArray[index])){
 						if(nodeOfPath.entityName.equals(knownEntityArray[index].getInstanceName())){
-							ovFoundQuant++; 
+							ovFoundCount++; 
 						}else{
 							break; 
 						}
@@ -187,18 +187,21 @@ public class EntityTree{
 
 			} //while (Node of a path)
 			
-			if(ovFoundQuant == knownOVArray.length){ //All OV found
+			if(ovFoundCount == knownOVArray.length){ //All OV found
+				
 				boolean resultComplete = true; 
 				for(int i = 0; i < ovSearchArray.length; i++){
 					if(tempEntityArray[i] == null){
 						resultComplete = false; 
 					}
 				}
+				
 				if(resultComplete){
 					combinationList.add(tempEntityArray);
 				}else{
 					throw new RuntimeException("Ordinary Variable fault!!!"); 
 				}
+				
 			}
 			
 		}//for path
