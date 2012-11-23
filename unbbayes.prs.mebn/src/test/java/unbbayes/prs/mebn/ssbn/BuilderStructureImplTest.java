@@ -362,7 +362,8 @@ public class BuilderStructureImplTest extends TestCase{
 		} 
 		
 		try {
-			builderStructure.evaluateMFragContextNodes(mFragInstance);
+			MFragContextNodeAvaliator mFragContextNodeAvaliator = new MFragContextNodeAvaliator(ssbn); 
+			mFragContextNodeAvaliator.evaluateMFragContextNodes(mFragInstance);
 		} catch (ImplementationRestrictionException e) {
 			e.printStackTrace();
 			fail(); 
@@ -401,7 +402,8 @@ public class BuilderStructureImplTest extends TestCase{
 		} 
 		
 		try {
-			builderStructure.evaluateMFragContextNodes(mFragInstance);
+			MFragContextNodeAvaliator mFragContextNodeAvaliator = new MFragContextNodeAvaliator(ssbn); 
+			mFragContextNodeAvaliator.evaluateMFragContextNodes(mFragInstance);
 		} catch (ImplementationRestrictionException e) {
 			e.printStackTrace();
 			fail(); 
@@ -436,7 +438,8 @@ public class BuilderStructureImplTest extends TestCase{
 		} 
 		
 		try {
-			builderStructure.evaluateMFragContextNodes(mFragInstance);
+			MFragContextNodeAvaliator mFragContextNodeAvaliator = new MFragContextNodeAvaliator(ssbn); 
+			mFragContextNodeAvaliator.evaluateMFragContextNodes(mFragInstance);
 		} catch (ImplementationRestrictionException e) {
 			e.printStackTrace();
 			fail(); 
