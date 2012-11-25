@@ -1,3 +1,16 @@
+UNBBAYES VERSION 4.13.5
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+12		129			Added a new menu "save as"
+13		85			Copy paste feature is working for probabilistic, utility and decision nodes.
+
+BUG LIST		
+Number	Request ID	Summary
+5		136		Tooltip text "compile junction tree" has been changed by "Compile Bayesian Network".
+
+
+
 UNBBAYES VERSION 4.11.4
 ----------------------------
 FEATURE LIST		

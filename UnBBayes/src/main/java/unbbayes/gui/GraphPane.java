@@ -1,6 +1,6 @@
 /*
  *  UnbBayes
- *  Copyright (C) 2002 Universidade de Bras�lia
+ *  Copyright (C) 2002 Universidade de Brasilia
  *
  *  This file is part of UnbBayes.
  *
@@ -26,13 +26,17 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -57,32 +61,44 @@ import unbbayes.draw.UShapeUtilityNode;
 import unbbayes.draw.extension.IPluginUShape;
 import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.prs.Edge;
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.extension.IPluginNode;
 import unbbayes.prs.hybridbn.ContinuousNode;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 import unbbayes.util.Debug;
+import unbbayes.util.clipboard.InternalClipboard;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
 import unbbayes.util.extension.manager.CorePluginNodeManager;
 
 /**
- * Essa classe � respons�vel por desenhar a rede Bayesiana ou a MFrag na tela.
- * Ela extende a classe <code>JPanel</code>. Ela tamb�m implementa as interfaces
- * MouseListener e MouseMotionListener, para poder tratar os eventos de mouse e
- * desenhar a rede Bayesiana.
+ * This class has to draw a bayesian network. This is a <code>JPanel</code> and
+ * also implements the interfaces MouseListener and MouseMotionListener, in
+ * order to capture mouse events and design a bayesian network.
  * 
- *@author Michael S. Onishi
- *@author Rommel N. Carvalho
- *@created 27 de Junho de 2001
- *@see JPanel Modified by Young, 4.13.2009
+ * @author Michael S. Onishi
+ * @author Rommel N. Carvalho
+ * @created 27 de Junho de 2001
+ * @see JPanel Modified by Young, 4.13.2009
  * 
  */
-public class GraphPane extends UCanvas implements MouseListener,
-		MouseMotionListener {
+public class GraphPane extends UCanvas {
+	/** Move y pixels to the new node. */
+	private int yPixelsToCopy = 100;
+
+	/** Move x pixels to the new node. */
+	private int xPixesToCopy = 100;
+
+	private static final int DEFAULT_DIMENSION = 1500;
+
+	private static final int DEFAULT_WIDTH = 600;
+
+	private static final int DEFAULT_HEIGH = 800;
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
@@ -95,8 +111,6 @@ public class GraphPane extends UCanvas implements MouseListener,
 	// lista de Edge. Fazer isso em todo lugar que for necess�rio, at� que se
 	// possa exluir o NodeList
 	public List<Node> nodeList;
-
-	public List<Node> selectedGroup;
 
 	public GraphAction action;
 
@@ -149,22 +163,24 @@ public class GraphPane extends UCanvas implements MouseListener,
 		edgeList = net.getEdges();
 		nodeList = net.getNodes();
 
-		this.setSize(800, 600);
+		this.setSize(DEFAULT_HEIGH, DEFAULT_WIDTH);
 
-		graphDimension = new Dimension(1500, 1500);
+		graphDimension = new Dimension(DEFAULT_DIMENSION, DEFAULT_DIMENSION);
 		visibleDimension = new Dimension(0, 0);
 		action = GraphAction.NONE;
 
 		update();
+
+		addKeyListener(new CopyPasteKeyManager());
 	}
 
 	/**
 	 * O construtor � respons�vel por iniciar todas as vari�veis que ser�o
 	 * utilizadas por essa classe para que se possa desenhar a rede Bayesiana.
 	 * 
-	 *@param controlador
+	 * @param controlador
 	 *            o controlador (<code>TControladorTelaPrincipal</code>)
-	 *@param graphViewport
+	 * @param graphViewport
 	 *            a tela, (<code>TViewport</code>), onde ser� inserida essa
 	 *            classe
 	 */
@@ -173,27 +189,159 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 		this.controller = controller;
 		this.graphViewport = graphViewport;
-		this.setSize(800, 600);
+		this.setSize(DEFAULT_HEIGH, DEFAULT_WIDTH);
 
 		edgeList = controller.getGraph().getEdges();
 		nodeList = controller.getGraph().getNodes();
 
-		selectedGroup = new ArrayList<Node>();
-		graphDimension = new Dimension(1500, 1500);
+		graphDimension = new Dimension(DEFAULT_DIMENSION, DEFAULT_DIMENSION);
 		visibleDimension = new Dimension(0, 0);
 		action = GraphAction.NONE;
 
 		graphViewport.setViewSize(visibleDimension);
 
+		addKeyListener(new CopyPasteKeyManager());
+	}
+
+	/**
+	 * Create a new node based on another one. It clone the node's children as
+	 * well recursively.
+	 * 
+	 * @param originalNode
+	 *            node to copy
+	 * @param sharedNodes
+	 *            this attribute is created in order to not duplicate nodes with
+	 *            some network topologies.
+	 * @return a new cloned node.
+	 */
+	private Node addClonedNode(final Node originalNode,
+			HashMap<Node, Node> sharedNodes) {
+		Debug.println("Cloning " + originalNode);
+
+		// A new cloned node to create.
+		Node clonedNode;
+
+		double positionX = originalNode.getPosition().getX() + xPixesToCopy;
+		double positionY = originalNode.getPosition().getY() + yPixelsToCopy;
+		// Validate if the node is new.
+		if (sharedNodes.get(originalNode) == null) {
+
+			// FIXME this if else if else if can be improved.
+			if (originalNode instanceof ProbabilisticNode) {
+				clonedNode = controller.insertProbabilisticNode(positionX,
+						positionY);
+			} else if (originalNode instanceof UtilityNode) {
+				clonedNode = controller.insertUtilityNode(positionX, positionY);
+			} else if (originalNode instanceof DecisionNode) {
+				clonedNode = controller
+						.insertDecisionNode(positionX, positionY);
+			} else {
+				// TODO extend to any type of node.
+				// TODO throw new exception "unsupported type of node".
+				return null;
+			}
+
+			// add new node to shared nodes.
+			sharedNodes.put(originalNode, clonedNode);
+		} else {
+			clonedNode = sharedNodes.get(originalNode);
+			return clonedNode;
+		}
+
+		// // Set general attributes
+		// Name
+		String newName = originalNode.getName() + "_1";
+		newName = getUniqueName(newName);
+		clonedNode.setName(newName);
+		System.out.println("newNome=" + newName);
+		// Description
+		clonedNode.setDescription(originalNode.getDescription());
+		
+		// Create a new shape for a new node
+		createNode(clonedNode);
+		getNodeUShape(clonedNode).setState(UShape.STATE_SELECTED, null);
+
+
+		// Clear the default states
+		clonedNode.removeStates();
+
+		// Copy states
+		int numStates = originalNode.getStatesSize();
+		for (int i = 0; i < numStates; i++) {
+			clonedNode.appendState(originalNode.getStateAt(i));
+		}
+
+		// add children recursively.
+		List<Node> children = originalNode.getChildren();
+		// Validate that every children is selected
+		for (Node childNode : children) {
+
+			// If child node is not selected then
+			if (!getNodeUShape(childNode).getState().equals(
+					UShape.STATE_SELECTED)) {
+				continue;
+			}
+
+			// Create child recursively.
+			Node clonedChild = addClonedNode(childNode, sharedNodes);
+
+			try {
+				clonedNode.addChildNode(childNode);
+
+				// Add a line between parent and new child.
+				UShapeLine line = new UShapeLine(this,
+						getNodeUShape(clonedNode), getNodeUShape(clonedChild));
+
+				Edge edge = new Edge(clonedNode, clonedChild);
+				line.setEdge(edge);
+
+				line.setLearningLineSelection(false);
+				addShape(line);
+				insertEdge(edge);
+				onDrawConnectLineReleased(line, 0, 0);
+
+			} catch (InvalidParentException e) {
+				Debug.println(GraphPane.class, "Node did not add as a child", e);
+			}
+		}
+
+		return clonedNode;
+
+	}
+
+	/**
+	 * Obtain an unique name comparing a newName with all existing node names.
+	 * This algorithm is recursive in order to verify that the new name is
+	 * unique.
+	 * 
+	 * @param newName
+	 *            first new proposed unique node name.
+	 * @return a unique node name.
+	 */
+	private String getUniqueName(String newName) {
+		List<Node> nodes = controller.getGraph().getNodes();
+		for (Node node : nodes) {
+			if (newName.equals(node.getName())) {
+				int tempNameIndex = newName.lastIndexOf("_") + 1;
+				String copyCounter = newName.substring(tempNameIndex);
+				int c = Integer.valueOf(copyCounter) + 1;
+
+				newName = newName.substring(0, tempNameIndex) + c;
+
+				return getUniqueName(newName);
+			}
+		}
+
+		return newName;
 	}
 
 	/**
 	 * Seta o atributo graphDimension (tamanho da rede Bayesiana) do objeto da
 	 * classe GraphPane
 	 * 
-	 *@param graphDimension
+	 * @param graphDimension
 	 *            O novo valor do tamanho da rede (<code>Dimension</code>)
-	 *@see Dimension
+	 * @see Dimension
 	 */
 	public void setGraphDimension(Dimension graphDimension) {
 		this.graphDimension = graphDimension;
@@ -203,10 +351,10 @@ public class GraphPane extends UCanvas implements MouseListener,
 	 * Retorna o objeto selecionado (<code>Object</code>), que pode ser um
 	 * <code>Node</code> ou <code>Edge</code>
 	 * 
-	 *@return O valor do <code>Object</code> selected
-	 *@see Object
-	 *@see Node
-	 *@see Edge
+	 * @return O valor do <code>Object</code> selected
+	 * @see Object
+	 * @see Node
+	 * @see Edge
 	 */
 	public Object getSelected() {
 		UShape selectedShape = getSelectedShape();
@@ -235,13 +383,13 @@ public class GraphPane extends UCanvas implements MouseListener,
 	 * Retorna uma lista de selecionados (<code>List</code>), que podem ser um
 	 * <code>Node</code> e/ou <code>Edge</code>
 	 * 
-	 *@return O valor do <code>List</code> selectedGroup
-	 *@see List
-	 *@see Node
-	 *@see Edge
+	 * @return O valor do <code>List</code> selectedGroup
+	 * @see List
+	 * @see Node
+	 * @see Edge
 	 */
 	public List<Node> getSelectedGroup() {
-		selectedGroup.clear();
+		List<Node> selectedGroup = new ArrayList<Node>();
 
 		int n = this.getComponentCount();
 		for (int i = 0; i < n; i++) {
@@ -261,7 +409,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 	/**
 	 * Pega a <code>Dimension</code> tamanhoRede do objeto da classe GraphPane
 	 * 
-	 *@return A <code>Dimension</code> graphDimension
+	 * @return A <code>Dimension</code> graphDimension
 	 */
 	public Dimension getGraphDimension() {
 		return this.graphDimension;
@@ -274,7 +422,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 	/**
 	 * Pega o atributo focusTransversable do objeto da classe GraphPane
 	 * 
-	 *@return True como valor do focusTransversable (m�todo necess�rio para que
+	 * @return True como valor do focusTransversable (m�todo necess�rio para que
 	 *         se possa tratar evento de tecla)
 	 */
 	public boolean isFocusable() {
@@ -285,8 +433,8 @@ public class GraphPane extends UCanvas implements MouseListener,
 	 * Pega o atributo graphViewport (<code>JViewport</code>) do objeto da
 	 * classe GraphPane
 	 * 
-	 *@return O graphViewport (container onde essa classe se encontra inserida)
-	 *@see JViewport
+	 * @return O graphViewport (container onde essa classe se encontra inserida)
+	 * @see JViewport
 	 */
 	public JViewport getGraphViewport() {
 		return this.graphViewport;
@@ -296,8 +444,8 @@ public class GraphPane extends UCanvas implements MouseListener,
 	 * Pega o maior ponto (<code>Point2D.Double</code>) do objeto da classe
 	 * GraphPane
 	 * 
-	 *@return O maior ponto (x,y) existente nessa rede Bayesiana
-	 *@see Point2D.Double
+	 * @return O maior ponto (x,y) existente nessa rede Bayesiana
+	 * @see Point2D.Double
 	 */
 	public Point2D.Double getBiggestPoint() {
 		double maiorX = 0;
@@ -330,12 +478,12 @@ public class GraphPane extends UCanvas implements MouseListener,
 			// not updating name and description text field
 			if (this.controller.getScreen() != null) {
 				if (this.controller.getScreen().getTxtName() != null) {
-					this.controller.getScreen().getTxtName().setText(
-							newNode.getName());
+					this.controller.getScreen().getTxtName()
+							.setText(newNode.getName());
 				}
 				if (this.controller.getScreen().getTxtDescription() != null) {
-					this.controller.getScreen().getTxtDescription().setText(
-							newNode.getDescription());
+					this.controller.getScreen().getTxtDescription()
+							.setText(newNode.getDescription());
 				}
 			}
 			if (controller.getGraph() instanceof SingleEntityNetwork) {
@@ -347,13 +495,11 @@ public class GraphPane extends UCanvas implements MouseListener,
 	/**
 	 * This method is responsible to treat mouse button events
 	 * 
-	 *@param e
+	 * @param e
 	 *            <code>MouseEvent</code>
-	 *@see MouseEvent
+	 * @see MouseEvent
 	 */
 	public void mouseClicked(MouseEvent e) {
-		// TODO stop using direct access to controller as a field, and start
-		// using get/set methods
 		if (SwingUtilities.isLeftMouseButton(e)) {
 			Node newNode = null;
 
@@ -362,11 +508,11 @@ public class GraphPane extends UCanvas implements MouseListener,
 			case CREATE_CONTINUOUS_NODE: {
 				newNode = controller.insertContinuousNode(e.getX(), e.getY());
 				UShapeProbabilisticNode shape = new UShapeProbabilisticNode(
-						this, newNode, (int) newNode.getPosition().x
-								- newNode.getWidth() / 2, (int) newNode
-								.getPosition().y
-								- newNode.getHeight() / 2, newNode.getWidth(),
-						newNode.getHeight());
+						this,
+						newNode,
+						(int) newNode.getPosition().x - newNode.getWidth() / 2,
+						(int) newNode.getPosition().y - newNode.getHeight() / 2,
+						newNode.getWidth(), newNode.getHeight());
 				addShape(shape);
 				shape.setState(UShape.STATE_SELECTED, null);
 				showCPT(newNode);
@@ -376,11 +522,11 @@ public class GraphPane extends UCanvas implements MouseListener,
 				newNode = controller
 						.insertProbabilisticNode(e.getX(), e.getY());
 				UShapeProbabilisticNode shape = new UShapeProbabilisticNode(
-						this, newNode, (int) newNode.getPosition().x
-								- newNode.getWidth() / 2, (int) newNode
-								.getPosition().y
-								- newNode.getHeight() / 2, newNode.getWidth(),
-						newNode.getHeight());
+						this,
+						newNode,
+						(int) newNode.getPosition().x - newNode.getWidth() / 2,
+						(int) newNode.getPosition().y - newNode.getHeight() / 2,
+						newNode.getWidth(), newNode.getHeight());
 				addShape(shape);
 				shape.setState(UShape.STATE_SELECTED, null);
 				showCPT(newNode);
@@ -389,12 +535,12 @@ public class GraphPane extends UCanvas implements MouseListener,
 				break;
 			case CREATE_DECISION_NODE: {
 				newNode = controller.insertDecisionNode(e.getX(), e.getY());
-				UShapeDecisionNode shape = new UShapeDecisionNode(this,
-						newNode, (int) newNode.getPosition().x
-								- newNode.getWidth() / 2, (int) newNode
-								.getPosition().y
-								- newNode.getHeight() / 2, newNode.getWidth(),
-						newNode.getHeight());
+				UShapeDecisionNode shape = new UShapeDecisionNode(
+						this,
+						newNode,
+						(int) newNode.getPosition().x - newNode.getWidth() / 2,
+						(int) newNode.getPosition().y - newNode.getHeight() / 2,
+						newNode.getWidth(), newNode.getHeight());
 				addShape(shape);
 				shape.setState(UShape.STATE_SELECTED, null);
 				showCPT(newNode);
@@ -467,15 +613,15 @@ public class GraphPane extends UCanvas implements MouseListener,
 		super.mouseReleased(e);
 
 		if (SwingUtilities.isLeftMouseButton(e)) {
-			Debug.println(this.getClass(), "Left button released.");
+			// Debug.println(this.getClass(), "Left button released.");
 		}
 
 		if (SwingUtilities.isMiddleMouseButton(e)) {
-			Debug.println(this.getClass(), "Middle button released.");
+			// Debug.println(this.getClass(), "Middle button released.");
 		}
 
 		if (SwingUtilities.isRightMouseButton(e)) {
-			Debug.println(this.getClass(), "Right button released.");
+			// Debug.println(this.getClass(), "Right button released.");
 
 			if (getPaneMode() == PANEMODE_COMPILE) {
 				resetPopup();
@@ -671,9 +817,9 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 		if (newNode instanceof IPluginNode) {
 			try {
-				shape = this.getPluginNodeManager().getPluginNodeInformation(
-						newNode.getClass()).getShapeBuilder().build()
-						.getUShape(newNode, this);
+				shape = this.getPluginNodeManager()
+						.getPluginNodeInformation(newNode.getClass())
+						.getShapeBuilder().build().getUShape(newNode, this);
 			} catch (IllegalAccessException e) {
 				throw new RuntimeException(e);
 			} catch (InstantiationException e) {
@@ -681,28 +827,30 @@ public class GraphPane extends UCanvas implements MouseListener,
 			}
 		}
 
-		// TODO stop using if-instanceof structure and start using object
-		// binding to a UShape builder.
+		// FIXME stop using if-instanceof structure and start using object
+		// binding to a UShape builder. It could be changen by a factory.
 		if (shape == null) {
 			// if we could not find a plugin node, start testing ordinal nodes
 			if (newNode instanceof ContinuousNode) {
 				shape = new UShapeProbabilisticNode(this, newNode,
-						(int) newNode.getPosition().x, (int) newNode
-								.getPosition().y, newNode.getWidth(), newNode
-								.getHeight());
+						(int) newNode.getPosition().x,
+						(int) newNode.getPosition().y, newNode.getWidth(),
+						newNode.getHeight());
 			} else if (newNode instanceof ProbabilisticNode) {
 				shape = new UShapeProbabilisticNode(this, newNode,
-						(int) newNode.getPosition().x, (int) newNode
-								.getPosition().y, newNode.getWidth(), newNode
-								.getHeight());
+						(int) newNode.getPosition().x,
+						(int) newNode.getPosition().y, newNode.getWidth(),
+						newNode.getHeight());
 			} else if (newNode instanceof DecisionNode) {
-				shape = new UShapeDecisionNode(this, newNode, (int) newNode
-						.getPosition().x, (int) newNode.getPosition().y,
-						newNode.getWidth(), newNode.getHeight());
+				shape = new UShapeDecisionNode(this, newNode,
+						(int) newNode.getPosition().x,
+						(int) newNode.getPosition().y, newNode.getWidth(),
+						newNode.getHeight());
 			} else if (newNode instanceof UtilityNode) {
-				shape = new UShapeUtilityNode(this, newNode, (int) newNode
-						.getPosition().x, (int) newNode.getPosition().y,
-						newNode.getWidth(), newNode.getHeight());
+				shape = new UShapeUtilityNode(this, newNode,
+						(int) newNode.getPosition().x,
+						(int) newNode.getPosition().y, newNode.getWidth(),
+						newNode.getHeight());
 			}
 		}
 
@@ -717,18 +865,18 @@ public class GraphPane extends UCanvas implements MouseListener,
 			}
 		}
 	}
-	
+
 	public void resizeAllToFitText() {
 		int n = this.getComponentCount();
 
 		for (int i = 0; i < n; i++) {
 			UShape shape = (UShape) this.getComponent(i);
-				shape.resizeToFitText();
-				shape.repaint();
+			shape.resizeToFitText();
+			shape.repaint();
 		}
-		
+
 		updateLines();
-		
+
 		setShapeStateAll(UShape.STATE_NONE, null);
 	}
 
@@ -738,7 +886,7 @@ public class GraphPane extends UCanvas implements MouseListener,
 		this.removeAll();
 
 		Node n;
-		Edge e;
+
 		UShape shape = null;
 
 		// Load all nodes.
@@ -758,7 +906,9 @@ public class GraphPane extends UCanvas implements MouseListener,
 					shape.shapeTypeChange(UShapeProbabilisticNode.STYPE_BAR);
 					shape.setState(UShape.STATE_RESIZED, null);
 				} else {
-					Debug.println(getClass(), "Warning. Could not extract shape from getNodeUShape(" + n +")");
+					Debug.println(getClass(),
+							"Warning. Could not extract shape from getNodeUShape("
+									+ n + ")");
 				}
 			}
 
@@ -766,12 +916,12 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 		// Load all Edges
 		for (int i = 0; i < edgeList.size(); i++) {
-			e = edgeList.get(i);
+			Edge e = edgeList.get(i);
 
 			if (getNodeUShape(e.getOriginNode()) != null
 					&& getNodeUShape(e.getDestinationNode()) != null) {
-				UShapeLine line = new UShapeLine(this, getNodeUShape(e
-						.getOriginNode()),
+				UShapeLine line = new UShapeLine(this,
+						getNodeUShape(e.getOriginNode()),
 						getNodeUShape(e.getDestinationNode()));
 				line.setEdge(e);
 				// by young 1/23/2010
@@ -831,8 +981,8 @@ public class GraphPane extends UCanvas implements MouseListener,
 			// createLine
 			if (getNodeUShape(e.getOriginNode()) != null
 					&& getNodeUShape(e.getDestinationNode()) != null) {
-				UShapeLine line = new UShapeLine(this, getNodeUShape(e
-						.getOriginNode()),
+				UShapeLine line = new UShapeLine(this,
+						getNodeUShape(e.getOriginNode()),
 						getNodeUShape(e.getDestinationNode()));
 				line.setEdge(e);
 				// line.setUseSelection();
@@ -847,10 +997,10 @@ public class GraphPane extends UCanvas implements MouseListener,
 		setShapeStateAll(UShape.STATE_NONE, null);
 		fitCanvasSizeToAllUShapes();
 
-		if (controller != null){
+		if (controller != null) {
 			Node selectedNode = controller.getSelectedNode();
 			if (selectedNode != null) {
-				UShape selectedUshape = this.getNodeUShape(selectedNode);  
+				UShape selectedUshape = this.getNodeUShape(selectedNode);
 				if (selectedUshape != null) {
 					selectedUshape.setState(UShape.STATE_SELECTED, null);
 				}
@@ -891,8 +1041,8 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 	public void useNameAllShape() {
 		setTextOutputMode(TEXTOUTPUTMODEMODE_USE_NAME);
-		controller.getScreen().getEvidenceTree().setTextOutputMode(
-				TEXTOUTPUTMODEMODE_USE_NAME);
+		controller.getScreen().getEvidenceTree()
+				.setTextOutputMode(TEXTOUTPUTMODEMODE_USE_NAME);
 
 		int n = this.getComponentCount();
 		for (int i = 0; i < n; i++) {
@@ -908,8 +1058,8 @@ public class GraphPane extends UCanvas implements MouseListener,
 
 	public void useDescAllShape() {
 		setTextOutputMode(TEXTOUTPUTMODEMODE_USE_DESC);
-		controller.getScreen().getEvidenceTree().setTextOutputMode(
-				TEXTOUTPUTMODEMODE_USE_DESC);
+		controller.getScreen().getEvidenceTree()
+				.setTextOutputMode(TEXTOUTPUTMODEMODE_USE_DESC);
 
 		int n = this.getComponentCount();
 		for (int i = 0; i < n; i++) {
@@ -953,7 +1103,8 @@ public class GraphPane extends UCanvas implements MouseListener,
 			if (e != null) {
 				if (insertEdge(e) == true) {
 					line.setEdge(e);
-					line.setLearningLineSelection(this.isToUseSelectionForLines());
+					line.setLearningLineSelection(this
+							.isToUseSelectionForLines());
 				} else {
 					delShape(line);
 					repaint();
@@ -967,8 +1118,8 @@ public class GraphPane extends UCanvas implements MouseListener,
 	public void onShapeChanged(UShape s) {
 		if (s instanceof UShapeState) {
 			Node n = ((UShape) s.getParent()).getNode();
-			controller.getScreen().getEvidenceTree().selectTreeItemByState(n,
-					s.getName());
+			controller.getScreen().getEvidenceTree()
+					.selectTreeItemByState(n, s.getName());
 			((UShapeProbabilisticNode) s.getParent()).update(s.getName());
 		} else if (s instanceof UShapeLine) {
 
@@ -977,12 +1128,10 @@ public class GraphPane extends UCanvas implements MouseListener,
 			// this is a node inserted by plugin infrastructure
 
 			// Obtains the correct panel builder for currently selected node
-			// TODO find a better way to couple the node and its builder without
-			// messing up the draw/Node/GUI relationship
 			IProbabilityFunctionPanelBuilder builder = null;
 			try {
-				builder = this.getPluginNodeManager().getPluginNodeInformation(
-						s.getNode().getClass())
+				builder = this.getPluginNodeManager()
+						.getPluginNodeInformation(s.getNode().getClass())
 						.getProbabilityFunctionPanelBuilder();
 			} catch (Exception e) {
 				Debug.println(this.getClass(),
@@ -1110,4 +1259,97 @@ public class GraphPane extends UCanvas implements MouseListener,
 		this.toUseSelectionForLines = toUseSelectionForLines;
 	}
 
+	class CopyPasteKeyManager implements KeyListener {
+
+		public void keyTyped(KeyEvent e) {
+		}
+
+		public void keyReleased(KeyEvent e) {
+			// Capture Ctr+C = Copy
+			if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C) {
+				Debug.println("Copy");
+
+				// Get selected network
+				List<Node> group = getSelectedGroup();
+
+				// Add network to clipboard
+				InternalClipboard.getInstance().putToClipboard(group);
+			}
+			// Capture Ctr+V = Paste
+			else if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_V) {
+				Debug.println("Paste");
+
+				// Load network from clipboard
+				Object fromClipboard = InternalClipboard.getInstance()
+						.getFromClipboard();
+
+				try {
+					List<Node> group = (List<Node>) fromClipboard;
+
+					pasteAndDrawNodes(group);
+				} catch (Exception ex) {
+					Debug.println(GraphPane.class, "Error pasting", ex);
+				}
+			}
+		}
+
+		private void pasteAndDrawNodes(List<Node> group) {
+
+			// Relative node position based on the mouse position.
+			if (group.size() > 0) {
+				Node firstNode = group.get(0);
+				xPixesToCopy = (int) (mouseX - firstNode.getPosition().getX() - firstNode
+						.getSize().getX() / 2);
+				yPixelsToCopy = (int) (mouseY - firstNode.getPosition().getY() - firstNode
+						.getSize().getY() / 2);
+			}
+
+			// Nodes to copy are noly parents.
+			List<Node> parentNodesToCopy = new ArrayList<Node>();
+
+			// Find parent nodes or nodes without selected parents
+			for (Node node : group) {
+				List<Node> parents = node.getParents();
+
+				boolean hasParents = false;
+				for (Node parent : parents) {
+
+					if (getNodeUShape(parent).getState().equals(
+							UShape.STATE_SELECTED)) {
+						hasParents = true;
+						break;
+					}
+				}
+				// If node has parents then continue.
+				if (hasParents) {
+					continue;
+				}
+
+				parentNodesToCopy.add(node);
+			}
+
+			HashMap<Node, Node> sharedNodes = new HashMap<Node, Node>();
+
+			// copy nodes
+			// FIXME this for could be inside the last for
+			for (Node rootNode : parentNodesToCopy) {
+
+				// No root identified.
+				if (rootNode == null) {
+					Debug.println("Root node not identified");
+					return;
+				}
+
+				// Des-select initial node.
+				getNodeUShape(rootNode).setState(UShape.STATE_NONE, null);
+
+				// Clone the root and their children recursively
+				addClonedNode(rootNode, sharedNodes);
+			}
+
+		}
+
+		public void keyPressed(KeyEvent e) {
+		}
+	}
 }
