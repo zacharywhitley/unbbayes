@@ -229,6 +229,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * {@link BalanceTradeNetworkAction#execute()} will also return balancing trades that may result in negative assets*/
 	private boolean isToAllowNegativeInBalanceTrade = false;
 
+	/** If true, {@link #collapseSimilarBalancingTrades(List)} will try to group similar balancing trades into 1 trade */
+	private boolean isToCollapseSimilarBalancingTrades = true;
+
 	/**
 	 * Default constructor is protected to allow inheritance.
 	 * Use {@link #getInstance()} to actually instantiate objects of this class.
@@ -4663,8 +4666,26 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				ret.add(new CliqueSensitiveTradeSpecificationImpl(Long.parseLong(userAssetAlgorithm.getAssetNetwork().getName()), questionId, balancingTrade, fullAssumptionIds, fullAssumedStates, clique));
 			}
 		}
+		
+		// reduce the quantity of balancing trades
+		return this.collapseSimilarBalancingTrades(ret);
+	}
+	
+	/**
+	 * Some set of trades with same probabilities and common set of assumptions can be
+	 * collapsed into a single trade. This method converts such set of trades into
+	 * a collapsed set of trades.
+	 * @param trades : input and output argument. 
+	 */
+	protected List<TradeSpecification> collapseSimilarBalancingTrades( List<TradeSpecification> trades) {
+		if (!isToCollapseSimilarBalancingTrades()) {
+			return trades;
+		}
+		List<TradeSpecification> ret = new ArrayList<TradeSpecification>(trades);
+		
 		return ret;
 	}
+
 	/**
 	 * This method will determine the states of balancing trades which would minimize impact once the question is resolved.
 	 * This is different from {@link #previewBalancingTrade(long, long, List, List)} in a sense that this method
@@ -6495,11 +6516,77 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		this.isToDeleteResolvedNode = isToDeleteResolvedNode;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getQuestionAssumptionGroups()
+	 * @see #getQuestionAssumptionGroups(List)
 	 */
 	public List<List<Long>> getQuestionAssumptionGroups() {
+		return this.getQuestionAssumptionGroups(null);
+	}
+	
+	/**
+	 * @return the list of indexes of {@link #getQuestionAssumptionGroups()} indicating
+	 * which clique is parent of which clique.
+	 * In other words, this method returns the content of the first argument (which is actually an output argument)
+	 * of {@link #getQuestionAssumptionGroups(List)}. Hence, it is equivalent to calling:
+	 * <br/><br/>
+	 * List ret = new ArrayList();
+	 * <br/>
+	 * getQuestionAssumptionGroups(ret)
+	 * <br/>
+	 * return ret;
+	 * <br/><br/>
+	 * Example:
+	 * <br/><br/>
+	 * Suppose the original junction tree is  [1,2] <- [1,3] -> [1,4]
+	 * <br/>
+	 * (i.e. [1,3] is the "parent" of [1,2] and [1,4]).
+	 * <br/><br/>
+	 * Also, suppose that {@link #getQuestionAssumptionGroups()} returns the list [ [1,2], [1,3], [1,4] ].
+	 * <br/>
+	 * In this list, clique [1,2] is at position 0; [1,3] at position 1, and [1,4] at 2.
+	 * <br/><br/>
+	 * Then, this method will return [ 1 , -1 , 1 ].
+	 * <br/><br/>
+	 * It indicates that the clique at position 0 (i.e. [1,2]) has its parent at position 1 
+	 * (clique [1,3]), the clique at position 1 (clique [1,3]) 
+	 * has parent at position -1 (which is an invalid position - indicates
+	 * that it is a root clique), and the clique at position 2 (clique [1,4])
+	 * has parent at position 1 (clique [1,3]).
+	 * @see #getQuestionAssumptionGroups()
+	 * @see #getQuestionAssumptionGroups(List)
+	 */
+	public List<Integer> getParentCliqueIndexes() {
+		List<Integer> ret = new ArrayList<Integer>();
+		this.getQuestionAssumptionGroups(ret);
+		return ret;
+	}
+	
+	/**
+	 * 
+	 * @param cliqueParentOutputList : this is actually an output argument. If not null, this list
+	 * will be filled with indexes of the parents of the returned cliques. 
+	 * <br/><br/>
+	 * Example:
+	 * <br/><br/>
+	 * Suppose the original junction tree is  [1,2] <- [1,3] -> [1,4]
+	 * <br/>
+	 * (i.e. [1,3] is the "parent" of [1,2] and [1,4]).
+	 * <br/><br/>
+	 * Also, suppose that this method returns the list [ [1,2], [1,3], [1,4] ].
+	 * <br/>
+	 * In this list, clique [1,2] is at position 0; [1,3] at position 1, and [1,4] at 2.
+	 * <br/><br/>
+	 * Then, the cliqueParentOutputList will be [ 1 , -1 , 1 ].
+	 * <br/><br/>
+	 * It indicates that the clique at position 0 (i.e. [1,2]) has its parent at position 1 
+	 * (clique [1,3]), the clique at position 1 (clique [1,3]) 
+	 * has parent at position -1 (which is an invalid position - indicates
+	 * that it is a root clique), and the clique at position 2 (clique [1,4])
+	 * has parent at position 1 (clique [1,3]).
+	 * @return a list of any possible assumptions groups (likely cliques in some implementations). 
+	 */
+	public List<List<Long>> getQuestionAssumptionGroups(List<Integer> cliqueParentOutputList) {
 		// value to be returned
 		List<List<Long>> ret = new ArrayList<List<Long>>();
 		
@@ -6509,40 +6596,81 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// extract cliques
-		List<Clique> cliques = null;
 		synchronized (getProbabilisticNetwork()) {
 			if (getProbabilisticNetwork().getJunctionTree() == null 
 					|| getProbabilisticNetwork().getJunctionTree().getCliques() == null) {
 				return ret;
 			}
+			List<Clique> cliques = null;
 			List<Clique> originalCliqueList = getProbabilisticNetwork().getJunctionTree().getCliques();
 			if (originalCliqueList != null) {
 				// we are using another instance, so that we can release the lock and let other threads change the clique structre as they wish
 				cliques = new ArrayList<Clique>(originalCliqueList);
 			}
-		}
-		// TODO check it is OK to release lock here
-		if (cliques == null) {
-			return ret;
-		}
-		
-		// populate list of question ids based on nodes in cliques
-		for (Clique clique : cliques) {
-			if (clique.getNodes().isEmpty() || clique.getProbabilityFunction().tableSize() <= 1) {
-				// this clique is empty. Do not consider this
-				continue;
+			
+			if (cliques == null) {
+				return ret;
 			}
-			List<Long> questionIds = new ArrayList<Long>();
-			for (Node node : clique.getNodes()) {
-				try {
-					questionIds.add(Long.parseLong(node.getName()));
-				} catch (Exception e) {
-					Debug.println(getClass(), e.getMessage(), e);
-					// ignore exception
+			
+			// a mapping from clique to its index which will be used to fill cliquePrentOutputList
+			Map<Clique, Integer> cliqueIndexMap = null; 
+			if (cliqueParentOutputList != null) {
+				cliqueIndexMap = new HashMap<Clique, Integer>();
+			}
+			
+			// populate list of question ids based on nodes in cliques
+			int index = 0;	// index to be used in order to fill cliqueIndexMap
+			for (Clique clique : cliques) {
+				if (clique.getNodes().isEmpty() || clique.getProbabilityFunction().tableSize() <= 1) {
+					// this clique is empty. Do not consider this
+					continue;
+				}
+				
+				// fill mapping from clique to its index. This index can be used in "ret" too, because ret and cliques are synchronized by index.
+				if (cliqueParentOutputList != null) {
+					cliqueIndexMap.put(clique, index);
+					index++;
+				}
+				
+				List<Long> questionIds = new ArrayList<Long>();
+				for (Node node : clique.getNodes()) {
+					try {
+						questionIds.add(Long.parseLong(node.getName()));
+					} catch (Exception e) {
+						Debug.println(getClass(), e.getMessage(), e);
+						// ignore exception
+					}
+				}
+				ret.add(questionIds);
+			}
+			
+			// at this point, "ret" is filled, and its ordering is the same of the ordering in "cliques", so their indexes are the same
+			
+			// use the cliqueIndexMap to fill cliquePrentOutputList
+			if (cliqueParentOutputList != null && cliqueIndexMap != null && !cliqueIndexMap.isEmpty()) {
+				for (Clique clique : cliques) {
+					if (clique.getNodes().isEmpty() || clique.getProbabilityFunction().tableSize() <= 1) {
+						// ret is not considering this clique, so cliquePrentOutputList should not
+						continue;
+					}
+					Clique parent = clique.getParent();
+					if (parent == null) {
+						cliqueParentOutputList.add(-1); // negative means no parent clique
+					} else {
+						Integer cliqueIndex = cliqueIndexMap.get(parent);
+						if (cliqueIndex != null) {
+							cliqueParentOutputList.add(cliqueIndex);
+						} else {
+							cliqueParentOutputList.add(-1); // negative means no parent clique
+						}
+					}
+				}
+				if (ret.size() != cliqueParentOutputList.size()) {
+					throw new IllegalStateException("Desync ocurred while obtaining parents of cliques.");
 				}
 			}
-			ret.add(questionIds);
 		}
+		
 		return ret;
 	}
 	
@@ -7800,6 +7928,23 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public boolean isToAllowNegativeInBalanceTrade() {
 		return isToAllowNegativeInBalanceTrade;
+	}
+
+	/**
+	 *  If true, {@link #collapseSimilarBalancingTrades(List)} will try to group similar balancing trades into 1 trade
+	 * @param isToCollapseSimilarBalancingTrades the isToCollapseSimilarBalancingTrades to set
+	 */
+	public void setToCollapseSimilarBalancingTrades(
+			boolean isToCollapseSimilarBalancingTrades) {
+		this.isToCollapseSimilarBalancingTrades = isToCollapseSimilarBalancingTrades;
+	}
+
+	/**
+	 *  If true, {@link #collapseSimilarBalancingTrades(List)} will try to group similar balancing trades into 1 trade
+	 * @return the isToCollapseSimilarBalancingTrades
+	 */
+	public boolean isToCollapseSimilarBalancingTrades() {
+		return isToCollapseSimilarBalancingTrades;
 	}
 
 

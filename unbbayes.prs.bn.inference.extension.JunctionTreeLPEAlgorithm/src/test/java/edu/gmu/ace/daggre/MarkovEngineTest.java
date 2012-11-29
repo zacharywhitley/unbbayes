@@ -19919,4 +19919,159 @@ public class MarkovEngineTest extends TestCase {
 		
 		
 	}
+	
+	/**
+	 * Test method for {@link MarkovEngineImpl#getParentCliqueIndexes()}
+	 */
+	public final void testGetParentCliqueIndexes()  {
+		
+		// load network from file
+		NetIO io = new NetIO();
+		ProbabilisticNetwork network = null;
+		try {
+			network = (ProbabilisticNetwork) io.load(new File(getClass().getClassLoader().getResource("bn20_tw5_max41_bn20_tw10_max31.net").getFile()));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		} 
+		assertNotNull(network);
+		
+		engine.initialize();
+		
+		long transactionKey = engine.startNetworkActions();
+		// create nodes
+		for (Node node : network.getNodes()) {
+			engine.addQuestion(transactionKey, new Date(), Long.parseLong(node.getName()), node.getStatesSize(), null); // assume uniform distribution for all nodes 
+		}
+		// create edges 
+		for (Node node : network.getNodes()) {
+			List<Long> parentIds = new ArrayList<Long>();
+			for (Node parent : node.getParents()) {
+				parentIds.add(Long.parseLong(parent.getName()));
+			}
+			if (parentIds.isEmpty()) {
+				parentIds = null;
+			}
+			engine.addQuestionAssumption(transactionKey, new Date(), Long.parseLong(node.getName()), parentIds, null);	// cpd == null -> linear distro
+		}
+		// commit changes
+		engine.commitNetworkActions(transactionKey);
+		
+		
+		List<Integer> parentCliqueIndexes = engine.getParentCliqueIndexes();
+		List<List<Long>> questionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		
+		assertEquals(parentCliqueIndexes.size(), questionAssumptionGroups.size());
+		
+		network = engine.getProbabilisticNetwork();
+		
+		// since we do not have empty cliques, the sizes should match.
+		assertEquals(parentCliqueIndexes.size(), network.getJunctionTree().getCliques().size());
+		
+		
+		int index = 0;
+		for (Clique clique : network.getJunctionTree().getCliques()) {
+			// extract the values to test
+			Integer parentIndex = parentCliqueIndexes.get(index);
+			assertNotNull(parentIndex);
+			List<Long> cliqueNodeIds = questionAssumptionGroups.get(index);
+			assertNotNull(cliqueNodeIds);
+			assertFalse(cliqueNodeIds.isEmpty());
+			index++;
+			
+			// check that the current clique (cliqueNodeIds) is the correct
+			assertEquals(cliqueNodeIds.size(), clique.getNodes().size());	// check that they have the same size
+			for (Node node : clique.getNodes()) {
+				// check that cliqueNodeIds contains ids of all nodes in the clique
+				assertTrue(clique + ", node = " + node, cliqueNodeIds.contains(Long.parseLong(node.getName())));
+			}
+			
+			// check that the parent is OK
+			if (parentIndex < 0) {
+				// this clique should be a root
+				assertNull(clique.getParent());
+			} else {
+				Clique parentClique = network.getJunctionTree().getCliques().get(parentIndex);
+				assertEquals(parentClique, clique.getParent());
+			}
+		}
+		
+	}
+	
+	/**
+	 * {@link MarkovEngineImpl#previewBalancingTrades(long, long, List, List)} shall return
+	 * trades that do not consider all combination of parents whenever possible.
+	 */
+	public final void testIntegratedPreviewBalanceTrade()  {
+		// set up default configuration
+		engine.setDefaultInitialAssetTableValue(1000);
+		engine.setCurrentCurrencyConstant(200);
+		engine.setCurrentLogBase(2);
+		engine.setToForceBalanceQuestionEntirely(false);
+		
+		/*
+		 * Create the following structure
+		 * 
+		 * {1,2,3}->0->4
+		 * 3 states each node		
+		 */
+		engine.addQuestion(null, new Date(), 0, 3, null);
+		engine.addQuestion(null, new Date(), 1, 3, null);
+		engine.addQuestion(null, new Date(), 2, 3, null);
+		engine.addQuestion(null, new Date(), 3, 3, null);
+		engine.addQuestion(null, new Date(), 4, 3, null);
+		engine.addQuestionAssumption(null, new Date(), 0L, Collections.singletonList(1L), null);
+		engine.addQuestionAssumption(null, new Date(), 0L, Collections.singletonList(2L), null);
+		engine.addQuestionAssumption(null, new Date(), 0L, Collections.singletonList(3L), null);
+		engine.addQuestionAssumption(null, new Date(), 4L, Collections.singletonList(0L), null);
+		
+		
+		// {0,1,2,3} are in the same clique, and 4 is in separate clique
+		
+		// make trade on 0 with incomplete assumptions (i.e. assumptions are not all 3 parents simultaneously)
+		List<Long> assumptionIds = new ArrayList<Long>(2);
+		List<Integer> assumedStates = new ArrayList<Integer>(2);
+		assumptionIds.add(2L);	assumedStates.add(0);
+		// trade is [.2,.2,.6]
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(.1f); newValues.add(.1f); newValues.add(.8f);
+		
+		// execute the trade
+		engine.addTrade(null, new Date(), "User 0 trades P(0|2=0) = [.1,.1,.8]", 
+				0, 0L, newValues, assumptionIds, assumedStates, false);
+		
+		// set up another trade, which is more restricted than the previous trade
+		// change assumption to 1=1,2=0
+		assumptionIds.add(1L);	assumedStates.add(1);
+		// trade is [.7,.1,.2]
+		newValues = new ArrayList<Float>();
+		newValues.add(.9f); newValues.add(.05f); newValues.add(.05f);
+		// execute the trade
+		engine.addTrade(null, new Date(), "User 0 trades P(0|1=1,2=0) = [.9,.05,.05]", 
+				0, 0L, newValues, assumptionIds, assumedStates, false);
+		
+		// preview the balancing trade for the question
+		List<TradeSpecification> balancingTrades = engine.previewBalancingTrades(0, 0L, null, null);
+		
+		engine.doBalanceTrade(null, new Date(), "User 0 balances 0", 0, 0, null, null);
+		BalanceTradeNetworkAction networkAction = (BalanceTradeNetworkAction) engine.getExecutedActions().get(engine.getExecutedActions().size()-1);
+		
+		assertEquals(balancingTrades.size(), networkAction.getExecutedTrades().size());
+		for (int i = 0; i < balancingTrades.size(); i++) {
+			assertEquals(balancingTrades.get(i).getQuestionId(), networkAction.getExecutedTrades().get(i).getQuestionId());
+			assertEquals(balancingTrades.get(i).getUserId(), networkAction.getExecutedTrades().get(i).getUserId());
+			for (int j = 0; j < balancingTrades.get(i).getAssumptionIds().size(); j++) {
+				assertEquals(balancingTrades.get(i).getAssumptionIds().get(j), networkAction.getExecutedTrades().get(i).getAssumptionIds().get(j));
+			}
+			for (int j = 0; j < balancingTrades.get(i).getAssumedStates().size(); j++) {
+				assertEquals(balancingTrades.get(i).getAssumedStates().get(j), networkAction.getExecutedTrades().get(i).getAssumedStates().get(j));
+			}
+			for (int j = 0; j < balancingTrades.get(i).getProbabilities().size(); j++) {
+				assertEquals(balancingTrades.get(i).getProbabilities().get(j), networkAction.getExecutedTrades().get(i).getProbabilities().get(j), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		assertEquals(3, balancingTrades.size());
+		
+	}
 }
