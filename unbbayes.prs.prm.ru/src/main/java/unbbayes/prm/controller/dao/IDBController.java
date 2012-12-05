@@ -89,6 +89,8 @@ public interface IDBController {
 	 * @return value of the instances.
 	 */
 	String[][] getParentRelatedInstances(ParentRel path, String queryIndex);
+	
+	String[][] getChildRelatedInstances(ParentRel path, String queryIndex);
 
 	/**
 	 * Get a specific value of an instance.

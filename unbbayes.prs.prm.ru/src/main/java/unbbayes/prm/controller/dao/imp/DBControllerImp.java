@@ -202,12 +202,11 @@ public class DBControllerImp implements IDBController {
 				.getName();
 
 		// Column Index.
-		Attribute attributeId = path[path.length - 2];
 		String tableId;
 
 		// If this is the primary key
 		if (path[path.length - 2].getAttribute().isPrimaryKey()) {
-			tableId = path[path.length - 2].toString();
+			tableId = path[path.length - 2].getAttribute().getName();
 		} else {
 			// Maybe this is not the best way but it works.
 			tableId = path[path.length - 2].getTable().getPrimaryKeyColumns()[0]
@@ -215,7 +214,102 @@ public class DBControllerImp implements IDBController {
 		}
 
 		// SQL query.
-		String sqlQuery = "SELECT " + tableId+ ", " + relationship.getParent()  
+		String sqlQuery = "SELECT " + tableId + ", " + relationship.getParent()
+				+ " FROM " + queryTables + where;
+		log.debug("SQL query = " + sqlQuery);
+
+		// Query to DB.
+		Iterator<DynaBean> it1 = platform.query(getRelSchema(), sqlQuery);
+
+		// Convert to string[]
+		List<String[]> instances = new ArrayList<String[]>();
+		while (it1.hasNext()) {
+			DynaBean dynaBean = (DynaBean) it1.next();
+			String inst = String.valueOf(dynaBean.get(parentAttName));
+			String id = String.valueOf(dynaBean.get(tableId));
+
+			instances.add(new String[] { id, inst });
+
+		}
+
+		return instances.toArray(new String[0][0]);
+	}
+
+	/**
+	 * 
+	 * @return String[][] with two columns. The first column is the id and the
+	 *         second is the value.
+	 */
+	public String[][] getChildRelatedInstances(ParentRel relationship,
+			final String queryIndex2) {
+		Attribute[] path = relationship.getPath();
+		// To create a list of non duplicated table names.
+		Set<String> tableNames = new HashSet<String>();
+
+		// If it is a char type
+		String queryIndex = path[1].getAttribute().getType().contains("CHAR") ? "'"
+				+ queryIndex2 + "'"
+				: queryIndex2;
+
+		// Path example: PERSON.BLOODTYPE -> PERSON.MOTHER -> PERSON.ID ->
+		// PERSON.BLOODTYPE. Child to -> parent.
+		// Then we have path[0]=PERSON.BLOODTYPE, path[1]=PERSON.MOTHER, etc.
+
+		// Direction
+		boolean directionFkToId = path[path.length - 2].getAttribute()
+				.isPrimaryKey();
+
+		// XXX this maybe does not work.
+		int indexPosition = path.length - (directionFkToId ? 2 : 3);
+		// The fist FK is the query.
+		String where = " WHERE " + path[indexPosition] + "=" + queryIndex;
+
+		// Slot chain.
+		for (int i = 2; i < path.length - 1; i += 2) {
+			// If i is even then is a remote index.
+			Attribute attributeRemoteId = path[i];
+			// If i is odd then is a local FK.
+			Attribute attributeLocalFk = path[i + 1]; // Be careful with this +1
+
+			// Table names
+			String remoteIdName = attributeRemoteId.getTable().getName();
+			String localFkName = attributeLocalFk.getTable().getName();
+
+			// If the table names are different, then add the cross.
+			if (!remoteIdName.equals(localFkName)) {
+				where = where + " " + attributeRemoteId + "="
+						+ attributeLocalFk;
+			}
+
+			// add if it is not duplicated.
+			tableNames.add(remoteIdName);
+			tableNames.add(localFkName);
+		}
+
+		// Related tables
+		String queryTables = "";
+		for (String tableName : tableNames) {
+			queryTables = queryTables
+					+ (queryTables.length() == 0 ? tableName : "," + tableName);
+		}
+
+		// Parent information.
+		String parentAttName = relationship.getParent().getAttribute()
+				.getName();
+
+		// Column Index.
+		String tableId;
+
+		// If this is the primary key
+		if (directionFkToId) {
+			tableId = path[1].getAttribute().getName();
+		} else {
+			// Maybe this is not the best way but it works.
+			tableId = path[1].getTable().getPrimaryKeyColumns()[0].getName();
+		}
+
+		// SQL query.
+		String sqlQuery = "SELECT " + tableId + ", " + relationship.getParent()
 				+ " FROM " + queryTables + where;
 		log.debug("SQL query = " + sqlQuery);
 

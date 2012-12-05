@@ -13,7 +13,7 @@ import org.apache.ddlutils.model.Table;
  * @author David Saldaña
  * 
  */
-public class Attribute implements Serializable{
+public class Attribute implements Serializable {
 
 	/**
 	 * 
@@ -59,12 +59,8 @@ public class Attribute implements Serializable{
 		}
 		Attribute ext = (Attribute) obj;
 
-		boolean sameTableName = this.getTable().getName()
-				.equals(ext.getTable().getName());
-		boolean sameAttName = this.getAttribute().getName()
-				.equals(ext.getAttribute().getName());
-
-		return sameTableName && sameAttName;
+		// Validate by the name: TABLE.ATTRIBUTE
+		return this.toString().equals(ext.toString());
 	}
 
 	@Override
