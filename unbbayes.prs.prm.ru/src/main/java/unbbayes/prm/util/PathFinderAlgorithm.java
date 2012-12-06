@@ -213,12 +213,12 @@ public class PathFinderAlgorithm {
 			// Find every attribute who is pointing to a unique index
 			List<ForeignKey> pointingAtts = pointingAttributes
 					.get(indexAttribute.toString());
-			
+
 			// Index without associated foreign key.
-			if(pointingAtts == null){
+			if (pointingAtts == null) {
 				continue;
 			}
-			
+
 			for (ForeignKey pointingFK : pointingAtts) {
 				List<Attribute> newPath = new ArrayList<Attribute>(path);
 				// External column with FK.
@@ -291,10 +291,7 @@ public class PathFinderAlgorithm {
 		String path = "";
 
 		for (Attribute attribute : possiblePath) {
-			path = path
-					+ " "
-					+ (attribute.getTable().getName() + "."
-							+ attribute.getAttribute().getName() + " ");
+			path = path + " " + attribute;
 		}
 		return path;
 

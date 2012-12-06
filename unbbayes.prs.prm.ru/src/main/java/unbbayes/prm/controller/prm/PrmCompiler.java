@@ -228,9 +228,9 @@ public class PrmCompiler {
 
 				if (directionFKToId) {
 					// Get FK value.
-					initInstanceValue = dbController.getSpecificValue(
-							destinyAtt.getAttribute(), new Attribute(
-									localTable, indexCol), String
+					initInstanceValue = dbController.getSpecificValue(originAtt
+							.getAttribute(),
+							new Attribute(localTable, indexCol), String
 									.valueOf(indexValue));
 				} else {
 					// id value.
@@ -255,17 +255,17 @@ public class PrmCompiler {
 					String afValue = instanceValues[i][1];
 
 					// create Node
-					ProbabilisticNode childNode = createProbNode(afIndex,
-							childAtt, resultNet);
+					ProbabilisticNode parentNode = createProbNode(afIndex,
+							parentAtt, resultNet);
 
 					// Add parent nodes to the query node.
-					parentInstanceNodes.get(parentRel).add(childNode);
+					parentInstanceNodes.get(parentRel).add(parentNode);
 
 					// Store evidence.
-					evidence.put(childNode, afValue);
+					evidence.put(parentNode, afValue);
 
 					// Edge to the child.
-					addEdge(resultNet, childNode, queryNode);
+					addEdge(resultNet, parentNode, queryNode);
 
 					Column parentIndex;
 					// Path id to the next node.
@@ -292,7 +292,7 @@ public class PrmCompiler {
 							queryAtt));
 
 					// Fill with parents recursively.
-					fillNetworkWithParents(resultNet, childAtt, childNode,
+					fillNetworkWithParents(resultNet, childAtt, parentNode,
 							parentIndex, afIndex, afValue);
 				}
 			}
@@ -300,6 +300,7 @@ public class PrmCompiler {
 
 		assignDynamicCPT(queryNode, queryAtt, parentInstanceNodes);
 
+		// ////////////////////////CHILDREN////////////////////////////////
 		// //// Navigate by related children until null references. ///////
 		ParentRel[] children = prmController.childrenOf(queryAtt);
 
@@ -391,7 +392,7 @@ public class PrmCompiler {
 				// Get instances.
 				String[][] instanceValues = dbController
 						.getChildRelatedInstances(childRel, initInstanceValue);
-				
+
 				// Create a node for each parent instance.
 				for (int i = 0; i < instanceValues.length; i++) {
 					// Index for the instance i.
@@ -417,7 +418,7 @@ public class PrmCompiler {
 					evidence.put(childNode, afValue);
 
 					// Edge to the child.
-					addEdge(resultNet,queryNode, childNode );
+					addEdge(resultNet, queryNode, childNode);
 
 					// Path to the next node
 					Column parentIndex = childRel.getPath()[1].getAttribute();
