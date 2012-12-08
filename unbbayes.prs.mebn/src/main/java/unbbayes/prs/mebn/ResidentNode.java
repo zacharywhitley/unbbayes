@@ -88,6 +88,8 @@ public class ResidentNode extends MultiEntityNode
 	
 	private ICompiler compiler = null;
 	
+	private int internalIdentificator = Integer.MIN_VALUE;
+	
 	//DON'T USE THIS CONSTRUCTOR! IS ONLY TEMPORARY FOR CLEAR THE TESTS
 	public ResidentNode(){
 	}
@@ -880,6 +882,22 @@ public class ResidentNode extends MultiEntityNode
 			throw new IllegalStateException("Limitation on quantity of parents available only for boolean nodes.");
 		}
 		this.isToLimitQuantityOfParentsInstances = isToLimit;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IRandomVariable#getInternalIdentificator()
+	 */
+	public int getInternalIdentificator() {
+		return internalIdentificator;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IRandomVariable#setInternalIdentificator(int)
+	 */
+	public void setInternalIdentificator(int internalIdentificator) {
+		this.internalIdentificator = internalIdentificator;
 	}
 	
 }
