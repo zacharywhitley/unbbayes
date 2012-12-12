@@ -13,13 +13,14 @@ import java.util.List;
  */
 public interface QuestionEvent extends Serializable {
 	/**
-	 * @return the date/time when this action was created.
+	 * @return the date/time when this action request was originally created.
+	 * This is likely to be the moment a user actually requested the trade.
 	 */
 	Date getWhenCreated();
 	
 	/**
-	 * @return the date/time when this action was actually executed
-	 * (more precisely, the moment it finished executing).
+	 * @return the date/time when this action was actually executed in the currently running system
+	 * (more precisely, the moment it finished executing in the current running system).
 	 */
 	Date getWhenExecutedFirstTime();
 	
