@@ -239,7 +239,7 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes</artifactId>
-				<version>4.11.5</version>
+				<version>4.13.5</version>
 			</dependency>
 			
 			<!-- This is for reading csv files -->
