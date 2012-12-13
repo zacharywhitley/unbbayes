@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -112,6 +113,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private float probabilityErrorMargin = 0.001f;
 	
+	private float probabilityErrorMarginBalanceTrade = 0.0000001f;
+	
 	private float assetErrorMargin = 0.5f;
 
 	private Map<Long, List<NetworkAction>> networkActionsMap;
@@ -169,7 +172,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToRetriveOnlyTradeHistory = true;
 
 	/** This is the default initial value of {@link #getMaxConditionalProbHistorySize()} */
-	public static int DEFAULT_MAX_CONDITIONAL_PROB_HISTORY_SIZE = 20;
+	public static int DEFAULT_MAX_CONDITIONAL_PROB_HISTORY_SIZE = 10;
 
 	private int maxConditionalProbHistorySize = DEFAULT_MAX_CONDITIONAL_PROB_HISTORY_SIZE;
 
@@ -189,7 +192,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private Map<DummyTradeAction, Set<Long>> virtualTradeToAffectedQuestionsMap = new HashMap<DummyTradeAction, Set<Long>>();
 
-	private boolean isToStoreOnlyCliqueChangeHistory = false;
+	private boolean isToStoreOnlyCliqueChangeHistory = true;
 
 	/** If set to true, all nodes in a same clique will be fully connected during {@link RebuildNetworkAction#execute()},
 	 * so that newly created cliques are always extensions of old cliques. */
@@ -230,7 +233,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToAllowNegativeInBalanceTrade = false;
 
 	/** If true, {@link #collapseSimilarBalancingTrades(List)} will try to group similar balancing trades into 1 trade */
-	private boolean isToCollapseSimilarBalancingTrades = true;
+	private boolean isToCollapseSimilarBalancingTrades = false;//true;
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -2887,12 +2890,47 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 					List<INode> parentNodes = new ArrayList<INode>();
 					if (assumptionIds != null) {
+						// prepare a list to store assumptions which were resolved - they will be deleted from the assumptionIds.
+						List<Long> resolvedAssumptionIds = new ArrayList<Long>();
+						List<Integer> indexesOfResolvedAssumptionIds = new ArrayList<Integer>();	// stores the index of resolved assumptions, so that we can use it in assumedStates
 						for (Long id : assumptionIds) {
 							INode node = net.getNode(Long.toString(id));
 							if (node == null) {
-								throw new InexistingQuestionException("Question " + questionId + " not found", questionId);
+								// Node not in current BN. Check whether it was resolved
+								synchronized (getResolvedQuestions()) {
+									// check if id was resolved
+									StatePair statePair = getResolvedQuestions().get(id);
+									if (statePair != null) {
+										resolvedAssumptionIds.add(id);
+										indexesOfResolvedAssumptionIds.add(assumptionIds.indexOf(id));
+									} else {
+										// this question actually does not exist
+										throw new InexistingQuestionException("Question " + questionId + " not found", questionId);
+									}
+								}
+							} else {
+								parentNodes.add(node);
 							}
-							parentNodes.add(node);
+						}
+						// update the assumptionIds if there were resolved questions in it
+						if (!resolvedAssumptionIds.isEmpty()) {
+							// update assumedStates
+							List<Integer> auxAssumedStates = new ArrayList<Integer>();
+							// fill auxAssumedStates only with states which are not of resolved assumptions
+							if (assumedStates != null) {
+								for (int j = 0; j < assumedStates.size(); j++) {
+									if (!indexesOfResolvedAssumptionIds.contains(j)) {
+										auxAssumedStates.add(assumedStates.get(j));
+									}
+								}
+							}
+							assumedStates = auxAssumedStates;
+							
+							// update the assumptionIds
+							// use a clone, so that we won't change the original list
+							assumptionIds = new ArrayList<Long>(assumptionIds);
+							// filter the resolved assumptions 
+							assumptionIds.removeAll(resolvedAssumptionIds);
 						}
 					}
 					if (isToNormalize) {
@@ -4675,13 +4713,556 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * Some set of trades with same probabilities and common set of assumptions can be
 	 * collapsed into a single trade. This method converts such set of trades into
 	 * a collapsed set of trades.
-	 * @param trades : input and output argument. 
+	 * @param trades : trade specifications obtained from 
+	 * {@link #previewBalancingTrades(AssetAwareInferenceAlgorithm, long, List, List, Clique, boolean)}
+	 * @see #splitTradesByTargetQuestion(List)
+	 * @see #splitTradesByCliques(List)
+	 * @see #splitTradesByAssumptions(List)
+	 * @see #splitTradesByProbability(List)
 	 */
 	protected List<TradeSpecification> collapseSimilarBalancingTrades( List<TradeSpecification> trades) {
 		if (!isToCollapseSimilarBalancingTrades()) {
 			return trades;
 		}
-		List<TradeSpecification> ret = new ArrayList<TradeSpecification>(trades);
+		
+		// split the list of trades by using some categories (e.g. split the trades by same probabilities and same assumptions)
+		List<List<TradeSpecification>> splittedList = new ArrayList<List<TradeSpecification>>(1);
+		
+		// initialize the list with the trades
+		splittedList.add(trades);
+		
+		// TODO use dependency injection in order to create a common method for all splitTrades* methods
+		
+		// divide the trades by questions
+		splittedList = splitTradesByTargetQuestion(splittedList);
+		
+		// divide the trades by cliques
+		splittedList = (List)splitTradesByCliques((List)splittedList);
+		
+		// divide the trades by assumptions
+		splittedList = splitTradesByAssumptions(splittedList);
+		
+		// divide the trades by probability
+		splittedList = splitTradesByProbability(splittedList);
+		
+		// This list will contain the collaped trades
+		List<TradeSpecification> ret = new ArrayList<TradeSpecification>(trades.size());
+		
+		// if same probability is being applied for all states in an assumption, merge
+		for (List<TradeSpecification> list : splittedList) {
+			ret.addAll(this.mergeBalancingTradesWithSameAssumptions(list));
+		}
+		
+		return ret;
+	}
+
+	
+
+	/**
+	 * If a set of trades sets the probability to a same value, uses same assumptions (but the states may be different), and
+	 * some of the assumptions are using all possible states, then such assumption can be deleted from trade.
+	 * <br/>
+	 * <br/>
+	 * E.g.
+	 * <br/>
+	 * <br/>
+	 * Suppose that the nodes have 2 states:
+	 * <br/>
+	 * Assumptions = [0,1]
+	 * <br/>
+	 * Assumed states = [0,0], [0,1]
+	 * <br/>
+	 * Since the states for node 1 are 0 and 1 (i.e. all possible states of node 1), this assumption can be reduced to:
+	 * <br/>
+	 * <br/>
+	 * Assumptions = [0]
+	 * <br/>
+	 * Assumed states = [0].
+	 * <br/><br/>
+	 * Another example:
+	 * <br/><br/>
+	 * Suppose all questions have 3 states ([0,1,2], [3,4,5], [6,7,8] respectively), and the assumed states are:<br/>
+	 * [0,3,6] <br/>
+	 * [0,3,7]<br/>
+	 * [0,3,8]<br/>
+	 * [0,4,7]<br/>
+	 * [1,3,7]<br/>
+	 * [2,3,7]<br/>
+	 * <br/><br/>
+	 * Then the method will do:
+	 * <br/><br/>
+	 * 1st step (checks the 1st column of the assumed statess):
+	 * (mapping from the value of 1st column the respective values in the other columns)<br/>
+	 * 		0 -> [3,6], [3,7], [3,8], [4,7]	<br/>
+	 * 		1 -> [3,7]<br/>
+	 * 		2 -> [3,7]<br/>
+	 * <br/><br/>
+	 * Because all states {0,1,2} have mappings, 
+	 * and [3,7] is common to all states of 1st node, the assumptions [0,3,7], [1,3,7], [2,3,7] will be merged to [_,3,7], resulting in:
+	 * <br/><br/>
+	 * [0,3,6] <br/>
+	 * [0,3,8]<br/>
+	 * [0,4,7]<br/>
+	 * [_,3,7]<br/>
+	 * <br/><br/>
+	 * 2nd step (treats the 2nd column of the assumed states):
+	 * (mapping from the value of 2nd column the respective values in the other columns - )<br/>
+	 * 		3 -> [0,6], [0,8]; [0,7], [1,7], [2,7] (these last three actually represents line [3,7])<br/>
+	 * 		4 -> [0,7]<br/>
+	 * 		5 -> null<br/>
+	 * <br/><br/>
+	 * Because state 5 is not mapped, 2nd step does nothing
+	 * <br/><br/>
+	 * 3rd step (checks the 3rd column of the assumed statess):
+	 * (mapping from the value of 3rd column the respective values in the other columns)<br/>
+	 * 		6 -> [0,3],	<br/>
+	 * 		7 -> [0,4]; [0,3], [1,3], [2,3] (the last three actually represents line [3,7])<br/>
+	 * 		8 -> [0,3]<br/>
+	 * <br/><br/>
+	 * Because all states {6,7,8} have mappings, 
+	 * and [0,3] is common to all states of 1st node, the assumptions [0,3,6], [0,3,7], [0,3,8] will be merged to [0,3,_], resulting in:
+	 * <br/><br/>
+	 * [0,4,7]<br/>
+	 * [_,3,7]<br/>
+	 * [0,3,_]<br/>
+	 * <br/><br/>
+	 * Hence, the 6 assumed states were merged into the following 3 assumptions:
+	 * <br/><br/>
+	 * [node1, node2, node3] -> states [0,4,7]<br/>
+	 * [node2, node3] -> states [3,7]<br/>
+	 * [node1, node2] -> states [0,3]<br/>
+	 * <br/><br/>
+	 * Another simple example for one assumption with 3 possible states:
+	 * <br/><br/>
+	 * [0]
+	 * [1]
+	 * [2]
+	 * <br/><br/>
+	 * Step 1:	<br/>
+	 * 		0 -> []	<br/>
+	 * 		1 -> []<br/>
+	 * 		2 -> []<br/>
+	 * <br/><br/>
+	 * All states {0,1,2} have mapping, and [] is a common assumption. [0], [1], [2] will be merged, resulting in:
+	 * <br/><br/>
+	 * [_]
+	 * <br/><br/>
+	 * Hence, the assumption will become empty.
+	 * <br/><br/>
+	 * Another example:
+	 * <br/><br/>
+	 * [0,3,6]<br/>
+	 * [0,3,7]<br/>
+	 * [0,3,8]<br/>
+	 * [0,4,7]<br/>
+	 * [1,3,7]<br/>
+	 * [1,4,7]<br/>
+	 * [2,3,7]<br/>
+	 * [2,4,7]<br/>
+	 * <br/><br/>
+	 * Step (column) 1:
+	 * <br/><br/>
+	 * 		0 -> [3,6], [3,7], [3,8], [4,7]	<br/>
+	 * 		1 -> [3,7], [4,7]<br/>
+	 * 		2 -> [3,7], [4,7]<br/>
+	 * <br/><br/>
+	 * All states are mapped, and [3,7], [4,7] are common.
+	 * <br/><br/>
+	 * [0,3,6]<br/>
+	 * [0,3,8]<br/>
+	 * [_,3,7]<br/>
+	 * [_,4,7]<br/>
+	 * <br/><br/>
+	 * Step (column) 2:
+	 * <br/><br/>
+	 * 		3 -> [0,6], [0,7], [0,8], [1,7], [2,7]	<br/>
+	 * 		4 -> [0,7], [1,7], [2,7]<br/>
+	 * <br/><br/>
+	 * Not all states are mapped. Ignore this step.
+	 * <br/><br/>
+	 * Step (column) 3:
+	 * <br/><br/>
+	 * 		6 -> [0,3]	<br/>
+	 * 		7 -> [0,3], [1,3], [2,3], [0,4], [1,4], [2,4]<br/>
+	 * 		8 -> [0,3]<br/>
+	 * <br/><br/>
+	 * All states are mapped, and [0,3] is common.
+	 * <br/><br/>
+	 * [_,3,7]<br/>
+	 * [_,4,7]<br/>
+	 * [0,3,_]<br/>
+	 * <br/><br/>
+	 * Hence, the 6 assumed states were merged into the following 3 assumptions:
+	 * <br/><br/>
+	 * [node2, node3] -> states [3,7]<br/>
+	 * [node2, node3] -> states [4,7]<br/>
+	 * [node1, node2] -> states [0,3]<br/>
+	 * @param list :  list of TradeSpecification with same assumptions and same probabilities, of same question, and same clique.
+	 * @return list with some TradeSpecification using all states of an assumption merged together
+	 * @see #collapseSimilarBalancingTrades(List)
+	 */
+	protected Collection<? extends TradeSpecification> mergeBalancingTradesWithSameAssumptions( List<TradeSpecification> list) {
+		// initial assertion
+		if (list == null || list.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		// it is assumed that all elements in the list have the same assumed questions and there is no repetitions
+		
+		/*
+		 * This matrix contains the original assumed states and will be referenced by the steps in this algorithm
+		 * [0,3,6]
+		 * [0,3,7]
+		 * [0,3,8]
+		 * [0,4,7]
+		 * [1,3,7]
+		 * [2,3,7]
+		 */
+		List<List<Integer>> originalAssumedStates = new ArrayList<List<Integer>>(list.size());
+		// it is assumed that the input argument has no repetitions.
+		
+		// fill originalAssumedStates
+		for (TradeSpecification spec : list) {
+			// check consistency
+			if (!spec.getAssumptionIds().equals(list.get(0).getAssumptionIds())) {
+				// all assumptions must be the same
+				throw new IllegalArgumentException("Expected assumptions " + list.get(0).getAssumptionIds() 
+						+ " for all trades in the argument, but found " + spec.getAssumptionIds());
+			}
+			if (spec.getAssumedStates().size() != list.get(0).getAssumptionIds().size()) {
+				// all lists (of assumed states) must be with same size = number of assumed questions
+				throw new IllegalArgumentException("The states assumed in the argument should have size " + list.get(0).getAssumptionIds().size() 
+						+ ", but the assumption " + spec.getAssumptionIds() + " had states " + spec.getAssumedStates());
+			}
+			if (originalAssumedStates.contains(spec.getAssumedStates())) {
+				// the list should not have repeated assumptions (2 trades with exactly the same assumptions - questions + states)
+				throw new IllegalArgumentException("Repeated assumption found: questions = " + spec.getAssumptionIds()
+						+ ", states = " + spec.getAssumedStates());
+			}
+			// use a cloned array instead of a reference to spec.getAssumedStates(), because we want to keep the values intact when spec.getAssumedStates() is changed
+			originalAssumedStates.add(new ArrayList<Integer>(spec.getAssumedStates()));
+		}
+		
+		/*
+		 * This will contain the resulting lists. For example,
+		 * [0,4,7]
+		 * [_,3,7]
+		 * [0,3,_]
+		 * The underscore "_" will be represented as null.
+		 * The content will be initialized with originalAssumedStates
+		 */
+//		List<List<Integer>> resultingList = new ArrayList<List<Integer>>(originalAssumedStates);
+		
+		// the list to actually return. This has index initially synchronized with originalAssumedStates
+		List<TradeSpecification> ret = new ArrayList<TradeSpecification>(list);
+		
+		// this list will contain the nodes (i.e. instances of class ProbabilisticNode) of the assumptions
+		List<ProbabilisticNode> assumptionNodes = new ArrayList<ProbabilisticNode>(originalAssumedStates.get(0).size());
+		// fill assumptionNodes
+		synchronized (getProbabilisticNetwork()) {
+			for (Long nodeId : list.get(0).getAssumptionIds()) {
+				if (nodeId == null) {
+					throw new IllegalArgumentException("Null is an invalid question ID for an assumption.");
+				}
+				// names of nodes are the ids
+				Node node = getProbabilisticNetwork().getNode(nodeId.toString());
+				if (node == null) {
+					throw new IllegalArgumentException("Could not find node with name " + nodeId);
+				}
+				assumptionNodes.add((ProbabilisticNode) node);
+			}
+		}
+		
+		// at this point, all lists in originalAssumedStates have same size and represents the same state
+		
+		// another consistency check: if there is no assumption, but there are more than 1 combination of assumptions, then there is some repetition
+		if (originalAssumedStates.get(0).size() <= 0 && originalAssumedStates.size() > 1) {
+			throw new IllegalArgumentException("There is no assumption, but there are " + originalAssumedStates.size() + " trades to the same question " + list.get(0).getQuestionId());
+		}
+		
+		// Do the steps. The number of steps is the number of assumed questions we have (size of any list in originalAssumedStates)
+		// each step treats the "column" of the originalAssumedStates.
+		int iterations = originalAssumedStates.get(0).size();	// extract this number only 1 time, to avoid change of context by calling originalAssumedStates.get(0).size() multiple times
+		for (int columnIndex = 0; columnIndex < iterations; columnIndex++) {
+			/*
+			 * this is the mapping which will store the results of each step. For example:
+			 * 		0 -> [3,6], [3,7], [3,8], [4,7]	
+			 * 		1 -> [3,7]
+			 * 		2 -> [3,7]
+			 */
+			Map<Integer,List<List<Integer>>> mapping = new HashMap<Integer,List<List<Integer>>>();
+			
+			// use values in originalAssumedStates (instead of resultingList) and fill mapping
+			// We use originalAssumedStates instead of resultingList because we don't want intersections of states with wildcards
+			// to be ignored (e.g. [_,3,7] and [0,3,_] have [0,3,7] as intersection, and don't want it to be ignored at each iteration).
+			for (List<Integer> assumedStates : originalAssumedStates) {
+				// this is the key to be used in the mapping (i.e. value of the current column)
+				Integer key = assumedStates.get(columnIndex);
+				
+				// extract the mapped values
+				List<List<Integer>> mappedValues = mapping.get(key);
+				if (mappedValues == null) {
+					// this is the 1st time we use reference this key, so create the mappedStates
+					mappedValues = new ArrayList<List<Integer>>();
+					mapping.put(key, mappedValues);
+				}
+				
+				// generate a list containing the values except the current column
+				// e.g. if current column is the 2nd, and assumedStates = [1,2,3], then generate [1,3]
+				List<Integer> statesExceptCurrentColumn = new ArrayList<Integer>(assumedStates.size() - 1);
+				for (int i = 0; i < assumedStates.size(); i++) {
+					if (i != columnIndex) {
+						statesExceptCurrentColumn.add(assumedStates.get(i));
+					}
+				}
+				
+				// add the statesExceptCurrentColumn to the mapping
+				mappedValues.add(statesExceptCurrentColumn);	// this will update mapping too, because it is a reference
+				// note: we assume that the input argument had no repetitions
+			}
+			
+			// this is the node currently being used in the key of mapping (i.e. node representing the current column of originalAssumedStates)
+			ProbabilisticNode currentNode = assumptionNodes.get(columnIndex);
+			
+			// check basic consistency of key of mapping
+			if (currentNode.getStatesSize() < mapping.keySet().size()) {
+				// I cannot have more keys than the quantity of states of the currrent node, because the keys represents the states of current node...
+				throw new IllegalArgumentException("Inconsistent state found. Question " + currentNode + " has " + currentNode.getStatesSize()
+						+ ", but the trade is using " + mapping.keySet().size() + " states.");
+			}
+			
+			// check if there is any state not in key
+			if (currentNode.getStatesSize() > mapping.keySet().size()) {
+				// if the size does not match, then there is some state not being mapped.
+				continue;  // this step does nothing
+			}
+			
+			// check if there is a value common to all keys
+			List<List<Integer>> commonValues = new ArrayList<List<Integer>>();
+			if (!mapping.isEmpty()) {
+				// use this iterator to iterate over keys, so that we can compare the values in 1st key to values in the other keys
+				Iterator<Integer> keyIterator = mapping.keySet().iterator();
+				// iterate over values mapped from the 1st key.
+				for (List<Integer> valueMappedFrom1stKey : mapping.get(keyIterator.next())) {
+					boolean isCommon = true;
+					while (keyIterator.hasNext()) {
+						// extract the next key
+						Integer keyOtherThan1st = keyIterator.next();
+						if (!mapping.get(keyOtherThan1st).contains(valueMappedFrom1stKey)) {
+							// the values mapped from current key does not contain the current value of the 1st key, so this value is not common
+							isCommon = false;
+							break;
+						}
+					}
+					if (isCommon) {
+						// note: value may be an empty list
+						commonValues.add(valueMappedFrom1stKey);
+					}
+				}
+			}
+			
+			// delete trade specs with assumed states matching commonValues, pick one (last) 
+			if (!ret.isEmpty() && !commonValues.isEmpty()) {
+				// this map traces what trade specifications should have wildcards ("_")
+				// this basically contains trade specs whose assumed states contains the values in commonValues,
+				// (the keys are the values in commonValues)
+				// so that for each value in commonValues, we can pick the last specification whose assumed states contains values in commonValues.
+				// the picked trade specs will then have wildcards ("_") added, and the other trade specs will just be deleted.
+				// Note a map is used because I want only 1 trade specification for the same common value 
+				Map<List<Integer>, TradeSpecification> wildCardedSpecs = new HashMap<List<Integer>, TradeSpecification>();
+				// delete the lines regarding the common value from 
+				Set<TradeSpecification> specsToDelete = new HashSet<TradeSpecification>();	// this will also contain wildCardedSpecs
+				for (TradeSpecification spec : ret) {
+					List<Integer> line = spec.getAssumedStates();
+					
+					// use a clone, so that we can delete a column and compare
+					List<Integer> lineWithoutColumn = new ArrayList<Integer>(line);
+					lineWithoutColumn.remove(columnIndex);
+					int indexOfLineToDelete = commonValues.indexOf(lineWithoutColumn);
+					if (indexOfLineToDelete >= 0) {
+						specsToDelete.add(spec);
+						// put last spec into the mapping of wildcards
+						wildCardedSpecs.put(commonValues.get(indexOfLineToDelete), spec);
+					}
+				}
+				ret.removeAll(specsToDelete);
+				
+				// pick trade spec from the map of wildcards and add to ret
+				for (TradeSpecification tradeSpecification : wildCardedSpecs.values()) {
+					// mark current column with wildcard state (i.e. delete current column from assumption).
+					tradeSpecification.getAssumptionIds().remove(columnIndex);
+					tradeSpecification.getAssumedStates().remove(columnIndex);
+					ret.add(tradeSpecification);
+				}
+			}
+			
+//			// generate the common value with the wildcard (e.g. [_,3,7])
+//			for (List<Integer> commonValue : commonValues) {
+//				List<Integer> commonValueWithWildcard = new ArrayList<Integer>(commonValue);
+//				// note: the wildcard "_" is represented as null
+//				commonValueWithWildcard.add(columnIndex, null);
+//				// add the common value with wildcard into resultingList
+//				resultingList.add(commonValueWithWildcard);
+//			}
+		} // end of iteration for each column
+		
+		
+		return ret;
+	}
+	
+	/**
+	 * Divides the input list into a list of lists whose each
+	 * sub list has the same value of {@link TradeSpecification#getQuestionId()}.
+	 * The content will not be re-ordered
+	 * @param splittedList : it is assumed to be a list generated by {@link #previewBalancingTrades(AssetAwareInferenceAlgorithm, long, List, List, Clique, boolean)}.
+	 * @return
+	 * @see #collapseSimilarBalancingTrades(List)
+	 */
+	protected List<List<TradeSpecification>> splitTradesByTargetQuestion( List<List<TradeSpecification>> listBeforeSplit) {
+		if (listBeforeSplit == null || listBeforeSplit.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		List<List<TradeSpecification>> ret = new ArrayList<List<TradeSpecification>>();
+		
+		for (List<TradeSpecification> list : listBeforeSplit) {
+			// instantiate a list which stores the indexes to split the list by using list.subList
+			List<Integer> splitPoints = new ArrayList<Integer>();
+			splitPoints.add(0); // by default, include the 1st element as the split point
+			for (int i = 0; i < list.size() - 1; i++) {
+				if (!list.get(i).getQuestionId().equals(list.get(i+1).getQuestionId())) {
+					// dont add split point if the cliques are equal
+					// (i.e. add split point if cliques are different)
+					splitPoints.add(i+1);
+				}
+			}
+			splitPoints.add(list.size()); // by default, include the last index (exclusive) as the split point
+			for (int i = 0; i < splitPoints.size()-1; i++) {
+				ret.add(list.subList(splitPoints.get(i), splitPoints.get(i+1)));
+			}
+		}
+		
+		return ret;
+	}
+	
+	/**
+	 * Divides the input list into a list of lists whose each
+	 * sub list has the same value of {@link CliqueSensitiveTradeSpecification#getCliqueId()}.
+	 * The content will not be re-ordered
+	 * @param splittedList : it is assumed to be a list generated by {@link #previewBalancingTrades(AssetAwareInferenceAlgorithm, long, List, List, Clique, boolean)}.
+	 * @return
+	 * @see #collapseSimilarBalancingTrades(List)
+	 */
+	protected List<List<? extends TradeSpecification>> splitTradesByCliques( List<List<CliqueSensitiveTradeSpecification>> listBeforeSplit) {
+		if (listBeforeSplit == null || listBeforeSplit.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		List<List<? extends TradeSpecification>> ret = new ArrayList<List<? extends TradeSpecification>>();
+		
+		for (List<CliqueSensitiveTradeSpecification> list : listBeforeSplit) {
+			// instantiate a list which stores the indexes to split the list by using list.subList
+			List<Integer> splitPoints = new ArrayList<Integer>();
+			splitPoints.add(0); // by default, include the 1st element as the split point
+			for (int i = 0; i < list.size() - 1; i++) {
+				if (!list.get(i).getCliqueId().equals(list.get(i+1).getCliqueId())) {
+					// dont add split point if the cliques are equal
+					// (i.e. add split point if cliques are different)
+					splitPoints.add(i+1);
+				}
+			}
+			splitPoints.add(list.size()); // by default, include the last index (exclusive) as the split point
+			for (int i = 0; i < splitPoints.size()-1; i++) {
+				ret.add((List)list.subList(splitPoints.get(i), splitPoints.get(i+1)));
+			}
+		}
+		
+		return ret;
+	}
+
+	/**
+	 * Divides the input list into a list of lists whose each
+	 * sub list has the same value of {@link TradeSpecification#getProbabilities()}.
+	 * The content will not be re-ordered
+	 * @param splittedList : it is assumed to be a list generated by {@link #previewBalancingTrades(AssetAwareInferenceAlgorithm, long, List, List, Clique, boolean)}.
+	 * @return
+	 * @see #collapseSimilarBalancingTrades(List)
+	 */
+	protected List<List<TradeSpecification>> splitTradesByProbability( List<List<TradeSpecification>> listBeforeSplit) {
+		if (listBeforeSplit == null || listBeforeSplit.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		List<List<TradeSpecification>> ret = new ArrayList<List<TradeSpecification>>();
+		
+		for (List<TradeSpecification> list : listBeforeSplit) {
+			// instantiate a list which stores the indexes to split the list by using list.subList
+			List<Integer> splitPoints = new ArrayList<Integer>();
+			splitPoints.add(0); // by default, include the 1st element as the split point
+			for (int i = 0; i < list.size() - 1; i++) {
+				// probabilities are different if their sizes are different or their contents are different
+				boolean isDifferent = list.get(i).getProbabilities().size() != list.get(i+1).getProbabilities().size();
+				if (!isDifferent) {
+					// their sizes are equal. Now check content
+					for (int j = 0; j < list.get(i).getProbabilities().size(); j++) {
+						// contents are different if their differences is greater than error margin
+						if (Math.abs(list.get(i).getProbabilities().get(j) - list.get(i+1).getProbabilities().get(j)) > getProbabilityErrorMarginBalanceTrade()) {
+							isDifferent = true;
+							break;
+						}
+					}
+				}	// else their sizes are diffferent
+				if (isDifferent) {
+					// dont add split point if the assumptions have same size and one contain all the other 
+					// (i.e. add split point if assumptions are different)
+					splitPoints.add(i+1);
+				}
+			}
+			splitPoints.add(list.size()); // by default, include the last index (exclusive) as the split point
+			for (int i = 0; i < splitPoints.size()-1; i++) {
+				ret.add(list.subList(splitPoints.get(i), splitPoints.get(i+1)));
+			}
+		}
+		
+		return ret;
+	}
+
+	/**
+	 * Divides the input list into a list of lists whose each
+	 * sub list has the same assumptions.
+	 * The content will not be re-ordered
+	 * @param splittedList : it is assumed to be a list generated by {@link #previewBalancingTrades(AssetAwareInferenceAlgorithm, long, List, List, Clique, boolean)}.
+	 * The assumptions in {@link TradeSpecification#getAssumptionIds()} are order-sensitive 
+	 * (i.e. [1,2,3] is not equal to [3,2,1], although they are the same assumptions)
+	 * @return
+	 * @see #collapseSimilarBalancingTrades(List)
+	 */
+	protected List<List<TradeSpecification>> splitTradesByAssumptions( List<List<TradeSpecification>> listBeforeSplit) {
+		if (listBeforeSplit == null || listBeforeSplit.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		List<List<TradeSpecification>> ret = new ArrayList<List<TradeSpecification>>();
+		
+		for (List<TradeSpecification> list : listBeforeSplit) {
+			// instantiate a list which stores the indexes to split the list by using list.subList
+			List<Integer> splitPoints = new ArrayList<Integer>();
+			splitPoints.add(0); // by default, include the 1st element as the split point
+			for (int i = 0; i < list.size() - 1; i++) {
+//				if (list.get(i).getAssumptionIds().size() != list.get(i+1).getAssumptionIds().size()
+//						|| !list.get(i).getAssumptionIds().containsAll(list.get(i+1).getAssumptionIds())) {
+				// the above check is more complete, but we assume that assumptions are order-sensitive
+				if (!list.get(i).getAssumptionIds().equals(list.get(i+1).getAssumptionIds())) {
+					// dont add split point if the assumptions have same size and one contain all the other 
+					// (i.e. add split point if assumptions are different)
+					splitPoints.add(i+1);
+				}
+			}
+			splitPoints.add(list.size()); // by default, include the last index (exclusive) as the split point
+			for (int i = 0; i < splitPoints.size()-1; i++) {
+				ret.add(list.subList(splitPoints.get(i), splitPoints.get(i+1)));
+			}
+		}
 		
 		return ret;
 	}
@@ -7606,6 +8187,93 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		this.commitNetworkActions(transactionKey, false);	
 		
 	}
+	
+	/**
+	 * This method returns some statistics of the currently used
+	 * probabilistic network.
+	 * For example, the returned object will contain several information, including the size of the network
+	 * organized by number of possible states of a node.
+	 * In a clique-based implementation, this will also include
+	 * information related to clique size.
+	 * @return instance of {@link NetStatistics}
+	 * @see NetStatistics
+	 * @see NetStatisticsImpl
+	 */
+	public NetStatistics getNetStatistics() {
+		NetStatistics ret = new NetStatisticsImpl();
+		
+		// extract network statistics
+		ProbabilisticNetwork net = this.getProbabilisticNetwork();
+		if (net == null) {
+			throw new IllegalStateException("No network is instantiated.");
+		}
+		
+		// count the quantity of nodes by quantity of states
+		Map<Integer, Integer> numberOfStatesToNumberOfNodesMap = new HashMap<Integer, Integer>();
+		// also get the max number of parents per node
+		int maxNumParents = 0;
+		synchronized (net) {
+			for (Node node : net.getNodes()) {
+				Integer count = numberOfStatesToNumberOfNodesMap.get(node.getStatesSize());
+				if (count == null) {
+					count = 0;
+				}
+				count++;
+				numberOfStatesToNumberOfNodesMap.put(node.getStatesSize(), count);
+				if (node.getParents().size() > maxNumParents) {
+					maxNumParents = node.getParents().size();
+				}
+			}
+		}
+		
+		ret.setNumberOfStatesToNumberOfNodesMap(numberOfStatesToNumberOfNodesMap);
+		ret.setMaxNumParents(maxNumParents);
+		
+		// see the maximum clique table size and degree of freedom
+		int maxCliqueTableSize = 0;
+		long df = 0;
+		int sumOfCliqueSizes = 0;
+		int sumOfCliqueSizesWithoutResolvedCliques = 0;
+		for (Clique clique : net.getJunctionTree().getCliques()) {
+			if (clique.getProbabilityFunction().tableSize() > maxCliqueTableSize) {
+				maxCliqueTableSize = clique.getProbabilityFunction().tableSize();
+			}
+			if ((clique.getProbabilityFunction().tableSize() - 1) > 0) {
+				df += (clique.getProbabilityFunction().tableSize() - 1);
+			}
+			sumOfCliqueSizes += clique.getProbabilityFunction().tableSize();
+			if (clique.getProbabilityFunction().tableSize() > 1) {
+				sumOfCliqueSizesWithoutResolvedCliques += clique.getProbabilityFunction().tableSize();
+			}
+		}
+		
+		ret.setSumOfCliqueTableSizes(sumOfCliqueSizes);
+		ret.setSumOfCliqueTableSizesWithoutResolvedCliques(sumOfCliqueSizesWithoutResolvedCliques);
+		
+		// subtract the degree of freedom from separators
+		for (Separator sep : net.getJunctionTree().getSeparators()) {
+			 sumOfCliqueSizes += sep.getProbabilityFunction().tableSize();
+			 if (sep.getProbabilityFunction().tableSize() > 1) {
+					sumOfCliqueSizesWithoutResolvedCliques += sep.getProbabilityFunction().tableSize();
+				}
+			 if (sep.getProbabilityFunction().tableSize() > 0) {
+				 df -= (sep.getProbabilityFunction().tableSize() - 1);
+			 }
+		}
+		ret.setSumOfCliqueAndSeparatorTableSizes(sumOfCliqueSizes);
+		ret.setSumOfCliqueAndSeparatorTableSizesWithoutResolvedCliques(sumOfCliqueSizesWithoutResolvedCliques);
+		ret.setDegreeOfFreedom((int) df);
+		
+		// extract other statistics of cliques
+		ret.setNumberOfCliques(net.getJunctionTree().getCliques().size());
+		ret.setNumberOfSeparators(net.getJunctionTree().getSeparators().size());
+		ret.setMaxCliqueTableSize(maxCliqueTableSize);
+		ret.setNumberOfNonEmptyCliques(this.getQuestionAssumptionGroups().size());
+		
+		// extract statistics of parents of nodes
+		
+		return ret;
+	}
 
 	/**
 	 * This object will be used by {@link #exportNetwork(File)}
@@ -7945,6 +8613,26 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public boolean isToCollapseSimilarBalancingTrades() {
 		return isToCollapseSimilarBalancingTrades;
+	}
+
+	/**
+	 * @param probabilityErrorMarginBalanceTrade the probabilityErrorMarginBalanceTrade to set
+	 */
+	public void setProbabilityErrorMarginBalanceTrade(
+			float probabilityErrorMarginBalanceTrade) {
+		this.probabilityErrorMarginBalanceTrade = probabilityErrorMarginBalanceTrade;
+	}
+
+	
+	/**
+	 * This is the error margin for probabilities regarding the {@link #previewBalancingTrade(long, long, List, List)}
+	 * (because operations regarding a balancing trade requires more precision).
+	 * This value is used in {@link #splitTradesByAssumptions(List)}
+	 * so that probabilities whose differences are within this margin will be considered as equal.
+	 * @return the probabilityErrorMarginBalanceTrade
+	 */
+	public float getProbabilityErrorMarginBalanceTrade() {
+		return probabilityErrorMarginBalanceTrade;
 	}
 
 

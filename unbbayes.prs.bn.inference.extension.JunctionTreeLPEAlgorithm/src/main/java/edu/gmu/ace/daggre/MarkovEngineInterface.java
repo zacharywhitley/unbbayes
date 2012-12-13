@@ -812,6 +812,19 @@ public interface MarkovEngineInterface {
 	 */
 	public void importNetwork(File file) throws IOException, IllegalStateException;
 	
+	/**
+	 * This method returns some statistics of the currently used
+	 * probabilistic network.
+	 * For example, the returned object will contain several information, including the size of the network
+	 * organized by number of possible states of a node.
+	 * In a clique-based implementation, this will also include
+	 * information related to clique size.
+	 * @return instance of {@link NetStatistics}
+	 * @see NetStatistics
+	 * @see NetStatisticsImpl
+	 */
+	public NetStatistics getNetStatistics();
+	
 
 //	/**
 //	 * Note: Not required in the 1st iteration. 

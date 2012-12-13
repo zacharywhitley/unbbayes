@@ -8016,7 +8016,12 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			probList = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null);
 			if (engine.isToDeleteResolvedNode()) {
-				fail("D should not be present anymore");
+//				fail("D should not be present anymore");
+				// from December 2012, resolved assumptions are ignored if the state is either not specified or valid 
+				// (if invalid, it will throw exception, though)
+				assertEquals(2, probList.size());
+				assertEquals(0.9509f, probList.get(0), PROB_ERROR_MARGIN);
+				assertEquals(0.0491f, probList.get(1), PROB_ERROR_MARGIN);
 			} else {
 				// check that final marginal of E is [0.9509, 0.0491]
 				assertEquals(4, probList.size());
@@ -19995,6 +20000,64 @@ public class MarkovEngineTest extends TestCase {
 				assertEquals(parentClique, clique.getParent());
 			}
 		}
+		
+	}
+	
+	/**
+	 * Test method for {@link MarkovEngineImpl#getNetStatistics()}
+	 */
+	public final void testGetNetStatistics()  {
+		// generate the DEF net
+		this.createDEFNetIn1Transaction(new HashMap<String, Long>());
+		
+		// extract the statistics
+		NetStatistics statistics = engine.getNetStatistics();
+		assertNotNull(statistics);
+		
+		// test the numeric statistics
+		assertEquals(5, statistics.getDegreeOfFreedom());
+		assertEquals(4, statistics.getMaxCliqueTableSize());
+		assertEquals(1, statistics.getMaxNumParents());
+		assertEquals(2, statistics.getNumberOfCliques());
+		assertEquals(2, statistics.getNumberOfNonEmptyCliques());
+		assertEquals(1, statistics.getNumberOfSeparators());
+		assertEquals(10, statistics.getSumOfCliqueAndSeparatorTableSizes());
+		assertEquals(10, statistics.getSumOfCliqueAndSeparatorTableSizesWithoutResolvedCliques());
+		assertEquals(8, statistics.getSumOfCliqueTableSizes());
+		assertEquals(8, statistics.getSumOfCliqueTableSizesWithoutResolvedCliques());
+		
+		// test the mapping
+		Map<Integer, Integer> map = statistics.getNumberOfStatesToNumberOfNodesMap();
+		assertNotNull(map);
+		assertEquals(1, map.size());
+		assertEquals(2, (int) map.keySet().iterator().next());
+		assertEquals(3, (int) map.get(2));
+		
+		// do the same test after resolving D (which is the separator)
+		engine.resolveQuestion(null, new Date(), 0x0DL, 0);
+		
+		// extract the statistics
+		statistics = engine.getNetStatistics();
+		assertNotNull(statistics);
+		
+		// test the numeric statistics
+		assertEquals(2, statistics.getDegreeOfFreedom());
+		assertEquals(2, statistics.getMaxCliqueTableSize());
+		assertEquals(0, statistics.getMaxNumParents());
+		assertEquals(2, statistics.getNumberOfCliques());
+		assertEquals(2, statistics.getNumberOfNonEmptyCliques());
+		assertEquals(1, statistics.getNumberOfSeparators());
+		assertEquals(4, statistics.getSumOfCliqueAndSeparatorTableSizes());
+		assertEquals(4, statistics.getSumOfCliqueAndSeparatorTableSizesWithoutResolvedCliques());
+		assertEquals(4, statistics.getSumOfCliqueTableSizes());
+		assertEquals(4, statistics.getSumOfCliqueTableSizesWithoutResolvedCliques());
+		
+		// test the mapping
+		map = statistics.getNumberOfStatesToNumberOfNodesMap();
+		assertNotNull(map);
+		assertEquals(1, map.size());
+		assertEquals(2, (int) map.keySet().iterator().next());
+		assertEquals(2, (int) map.get(2));
 		
 	}
 	
