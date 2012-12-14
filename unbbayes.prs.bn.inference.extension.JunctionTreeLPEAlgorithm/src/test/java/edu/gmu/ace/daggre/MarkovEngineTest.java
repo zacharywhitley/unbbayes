@@ -18515,7 +18515,11 @@ public class MarkovEngineTest extends TestCase {
 		QuestionEvent questionEvent = questionHistory.get(questionHistory.size()-1);
 		assertTrue(questionEvent instanceof BalanceTradeNetworkAction);
 		List<TradeSpecification> executedTrades = ((BalanceTradeNetworkAction)questionEvent).getExecutedTrades();
-		assertEquals(1 + 2, executedTrades.size());	// 1 in the clique [D], and 2 of [D,E]
+		if (engine.isToCollapseSimilarBalancingTrades()) {
+			assertEquals(2, executedTrades.size());	// 1 in the clique [D], and 1 in [D,E] - collapsed from 2
+		} else {
+			assertEquals(1 + 2, executedTrades.size());	// 1 in the clique [D], and 2 of [D,E]
+		}
 		
 		// check that assetsIf are the same
 		List<Float> assetsIfStates = engine.getAssetsIfStates(1L, 0x0DL, null, null);
@@ -20136,5 +20140,16 @@ public class MarkovEngineTest extends TestCase {
 		
 		assertEquals(3, balancingTrades.size());
 		
+		// check if the assets have been equalized
+		// prepare the list of assumptions
+		List<Long> assumptions = new ArrayList<Long>(3);
+		assumptions.add(1L);
+		assumptions.add(2L);
+		assumptions.add(3L);
+		List<Float> assetsIfStates = engine.getAssetsIfStates(0L, 0L, assumptions , null);
+		assertEquals(81, assetsIfStates.size());
+		for (int i = 0; i < assetsIfStates.size()-1; i++) {
+			assertEquals("Index " + i + " of " + assetsIfStates, assetsIfStates.get(i), assetsIfStates.get(i+1), ASSET_ERROR_MARGIN);
+		}
 	}
 }

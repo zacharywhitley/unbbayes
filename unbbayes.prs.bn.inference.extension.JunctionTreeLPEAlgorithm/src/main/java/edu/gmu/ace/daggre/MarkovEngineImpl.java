@@ -113,7 +113,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private float probabilityErrorMargin = 0.001f;
 	
-	private float probabilityErrorMarginBalanceTrade = 0.0000001f;
+	private float probabilityErrorMarginBalanceTrade = 0.000000005f;
 	
 	private float assetErrorMargin = 0.5f;
 
@@ -233,7 +233,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToAllowNegativeInBalanceTrade = false;
 
 	/** If true, {@link #collapseSimilarBalancingTrades(List)} will try to group similar balancing trades into 1 trade */
-	private boolean isToCollapseSimilarBalancingTrades = false;//true;
+	private boolean isToCollapseSimilarBalancingTrades = true;
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -4757,7 +4757,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	}
 
 	
-
+	/**
+	 * If a set of trades sets the probability to a same value, uses same assumptions (but the states may be different), and
+	 * some of the assumptions are using all possible states, then such assumption can be deleted from trade.
+	 * This method deletes such assumptions.
+	 * @see #mergeBalancingTradesWithSameAssumptions(List, int).
+	 */
+	protected List<TradeSpecification> mergeBalancingTradesWithSameAssumptions( List<TradeSpecification> list) {
+		return this.mergeBalancingTradesWithSameAssumptions(list, 0);
+	}
+	
 	/**
 	 * If a set of trades sets the probability to a same value, uses same assumptions (but the states may be different), and
 	 * some of the assumptions are using all possible states, then such assumption can be deleted from trade.
@@ -4898,10 +4907,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * [node2, node3] -> states [4,7]<br/>
 	 * [node1, node2] -> states [0,3]<br/>
 	 * @param list :  list of TradeSpecification with same assumptions and same probabilities, of same question, and same clique.
+	 * @param indexOfAssumptionToStart : assumptions will be analysed from this index. This value should be usually set to 0
+	 * when calling this method. 
+	 * For example, if the assumptions are [3,6,8] and this argument is 1, then the assumption at index 0 (i.e. assumption 3)
+	 * will not be considered.
 	 * @return list with some TradeSpecification using all states of an assumption merged together
 	 * @see #collapseSimilarBalancingTrades(List)
 	 */
-	protected Collection<? extends TradeSpecification> mergeBalancingTradesWithSameAssumptions( List<TradeSpecification> list) {
+	protected List<TradeSpecification> mergeBalancingTradesWithSameAssumptions( List<TradeSpecification> list, int indexOfAssumptionToStart) {
 		// initial assertion
 		if (list == null || list.isEmpty()) {
 			return Collections.emptyList();
@@ -4983,7 +4996,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// Do the steps. The number of steps is the number of assumed questions we have (size of any list in originalAssumedStates)
 		// each step treats the "column" of the originalAssumedStates.
 		int iterations = originalAssumedStates.get(0).size();	// extract this number only 1 time, to avoid change of context by calling originalAssumedStates.get(0).size() multiple times
-		for (int columnIndex = 0; columnIndex < iterations; columnIndex++) {
+		
+		// we loop on indexOfAssumptionToStart until the result of a step has changed (i.e. loop ignoring columns which did not change). 
+		// If changed, call recursive.
+		// That's is: we only do a loop on indexOfAssumptionToStart because we want to increment indexOfAssumptionToStart until we get to the index of
+		// assumption which will actually change. The actual steps will be performed by a recursive call.
+		for (; indexOfAssumptionToStart < iterations; indexOfAssumptionToStart++) {
 			/*
 			 * this is the mapping which will store the results of each step. For example:
 			 * 		0 -> [3,6], [3,7], [3,8], [4,7]	
@@ -4997,7 +5015,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// to be ignored (e.g. [_,3,7] and [0,3,_] have [0,3,7] as intersection, and don't want it to be ignored at each iteration).
 			for (List<Integer> assumedStates : originalAssumedStates) {
 				// this is the key to be used in the mapping (i.e. value of the current column)
-				Integer key = assumedStates.get(columnIndex);
+				Integer key = assumedStates.get(indexOfAssumptionToStart);
 				
 				// extract the mapped values
 				List<List<Integer>> mappedValues = mapping.get(key);
@@ -5011,7 +5029,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// e.g. if current column is the 2nd, and assumedStates = [1,2,3], then generate [1,3]
 				List<Integer> statesExceptCurrentColumn = new ArrayList<Integer>(assumedStates.size() - 1);
 				for (int i = 0; i < assumedStates.size(); i++) {
-					if (i != columnIndex) {
+					if (i != indexOfAssumptionToStart) {
 						statesExceptCurrentColumn.add(assumedStates.get(i));
 					}
 				}
@@ -5022,7 +5040,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			
 			// this is the node currently being used in the key of mapping (i.e. node representing the current column of originalAssumedStates)
-			ProbabilisticNode currentNode = assumptionNodes.get(columnIndex);
+			ProbabilisticNode currentNode = assumptionNodes.get(indexOfAssumptionToStart);
 			
 			// check basic consistency of key of mapping
 			if (currentNode.getStatesSize() < mapping.keySet().size()) {
@@ -5077,7 +5095,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					
 					// use a clone, so that we can delete a column and compare
 					List<Integer> lineWithoutColumn = new ArrayList<Integer>(line);
-					lineWithoutColumn.remove(columnIndex);
+					lineWithoutColumn.remove(indexOfAssumptionToStart);
 					int indexOfLineToDelete = commonValues.indexOf(lineWithoutColumn);
 					if (indexOfLineToDelete >= 0) {
 						specsToDelete.add(spec);
@@ -5090,10 +5108,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// pick trade spec from the map of wildcards and add to ret
 				for (TradeSpecification tradeSpecification : wildCardedSpecs.values()) {
 					// mark current column with wildcard state (i.e. delete current column from assumption).
-					tradeSpecification.getAssumptionIds().remove(columnIndex);
-					tradeSpecification.getAssumedStates().remove(columnIndex);
+					tradeSpecification.getAssumptionIds().remove(indexOfAssumptionToStart);
+					tradeSpecification.getAssumedStates().remove(indexOfAssumptionToStart);
 					ret.add(tradeSpecification);
 				}
+				
+				// the results have changed. Call recursive for the new list
+				ret = this.mergeBalancingTradesWithSameAssumptions(ret, indexOfAssumptionToStart);
+				
+				// we don't need to iterate on indexOfAssumptionToStart anymore, because the recursive call did check all columns after indexOfAssumptionToStart
+				break;
 			}
 			
 //			// generate the common value with the wildcard (e.g. [_,3,7])
@@ -5183,7 +5207,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/**
 	 * Divides the input list into a list of lists whose each
 	 * sub list has the same value of {@link TradeSpecification#getProbabilities()}.
-	 * The content will not be re-ordered
+	 * <br/>
+	 * <br/>
+	 * CAUTION: the contents in the sub-lists will be re-ordered by the values inside the probability vector.
+	 * Hence, this method ASSUMES THAT {@link #splitTradesByAssumptions(List)}, {@link #splitTradesByCliques(List)}, {@link #splitTradesByTargetQuestion(List)}
+	 * were called before this method, so that trades in different contexts are not mixed togather.
 	 * @param splittedList : it is assumed to be a list generated by {@link #previewBalancingTrades(AssetAwareInferenceAlgorithm, long, List, List, Clique, boolean)}.
 	 * @return
 	 * @see #collapseSimilarBalancingTrades(List)
@@ -5196,6 +5224,39 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		List<List<TradeSpecification>> ret = new ArrayList<List<TradeSpecification>>();
 		
 		for (List<TradeSpecification> list : listBeforeSplit) {
+			
+			// quick sort the content by the probabilities
+			Collections.sort(list, new Comparator<TradeSpecification>() {
+				/** The Comparator specifies how to compare two TradeSpecification in the quicksort.
+				 *  The compared values are the contents of the probability vector. 
+				 *  Do something similar to a string comparison (sort by 1st prob, then by 2nd prob, and so on).
+				 *  That is, the values in smaller indexes are considered to be more significative. */
+				public int compare(TradeSpecification spec1, TradeSpecification spec2) {
+					// extract the probability vectors here, so that we don't change context frequently
+					List<Float> prob1 = spec1.getProbabilities();
+					List<Float> prob2 = spec2.getProbabilities();
+					// do basic assertions
+					if (prob1 == null) {
+						if (prob2 == null) { // both are null
+							return 0;
+						} else { // only prob1 is null
+							return -1;
+						}
+					} else if (prob2 == null) { // only prob2 is null
+						return 1;
+					}
+					// at this point, both are non-null
+					for (int i = 0; i < prob1.size() && i < prob2.size(); i++) {
+						// probs differ if their differences are greater than an error margin
+						if (Math.abs(prob1.get(i) - prob2.get(i)) > getProbabilityErrorMarginBalanceTrade()) {
+							return ((prob1.get(i) - prob2.get(i)) > 0)?1:-1;
+						}
+					}
+					// If reached this point, contents of same index have matched.
+					return  prob1.size() - prob2.size(); // Size of vectors may be different. Use the size for comparison in this case.
+				}
+			});
+			
 			// instantiate a list which stores the indexes to split the list by using list.subList
 			List<Integer> splitPoints = new ArrayList<Integer>();
 			splitPoints.add(0); // by default, include the 1st element as the split point
@@ -5320,26 +5381,28 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			} else {
 				balancingTrades.addAll(previewBalancingTrades(algorithm, questionId, originalAssumptionIds, originalAssumedStates, clique, isToAllowNegativeInBalanceTrade()));
 			}
-			for (TradeSpecification tradeSpecification : balancingTrades ) {
-				// check if we should do clique-sensitive operation
-				if (tradeSpecification instanceof CliqueSensitiveTradeSpecification) {
-					CliqueSensitiveTradeSpecification cliqueSensitiveTradeSpecification = (CliqueSensitiveTradeSpecification) tradeSpecification;
-					// extract the clique from tradeSpecification. Note: this is supposedly an asset clique
-					if (cliqueSensitiveTradeSpecification.getClique() != null) {
-						// fortunately, the algorithm doesn't care if it is an asset or prob clique, so privide the asset clique to algorithm
-						algorithm.getEditCliques().add(cliqueSensitiveTradeSpecification.getClique());
-						// by forcing the algorithm to update only this clique, we are forcing the balance trade to balance the provided clique
+			if (balancingTrades.size() > 1) {
+				for (TradeSpecification tradeSpecification : balancingTrades ) {
+					// check if we should do clique-sensitive operation
+					if (tradeSpecification instanceof CliqueSensitiveTradeSpecification) {
+						CliqueSensitiveTradeSpecification cliqueSensitiveTradeSpecification = (CliqueSensitiveTradeSpecification) tradeSpecification;
+						// extract the clique from tradeSpecification. Note: this is supposedly an asset clique
+						if (cliqueSensitiveTradeSpecification.getClique() != null) {
+							// fortunately, the algorithm doesn't care if it is an asset or prob clique, so privide the asset clique to algorithm
+							algorithm.getEditCliques().add(cliqueSensitiveTradeSpecification.getClique());
+							// by forcing the algorithm to update only this clique, we are forcing the balance trade to balance the provided clique
+						}
 					}
+					
+					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
+					executeTrade(
+							tradeSpecification.getQuestionId(), 
+							tradeSpecification.getProbabilities(), 
+							tradeSpecification.getAssumptionIds(), 
+							tradeSpecification.getAssumedStates(),
+							true, algorithm, true, false, null
+					);
 				}
-				
-				// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
-				executeTrade(
-						tradeSpecification.getQuestionId(), 
-						tradeSpecification.getProbabilities(), 
-						tradeSpecification.getAssumptionIds(), 
-						tradeSpecification.getAssumedStates(),
-						true, algorithm, true, false, null
-				);
 			}
 		}
 		return balancingTrades;
