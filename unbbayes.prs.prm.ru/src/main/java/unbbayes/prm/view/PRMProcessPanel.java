@@ -6,20 +6,8 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.ImageIcon;
@@ -53,8 +41,13 @@ import unbbayes.prm.view.instances.IInstanceTableListener;
 import unbbayes.prm.view.instances.InstancesTableViewer;
 import unbbayes.prs.Network;
 import unbbayes.prs.bn.PotentialTable;
-import unbbayes.util.FloatCollection;
 
+/**
+ * Main panel.
+ * 
+ * @author David Saldaña.
+ * 
+ */
 public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		IInstanceTableListener {
 	/**
@@ -244,7 +237,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		InstancesTableViewer dt = new InstancesTableViewer(t,
 				dbController.getTableValues(t), this);
 		outerSplit.setRightComponent(dt);
-		outerSplit.setDividerLocation(400);
+		outerSplit.setDividerLocation(this.getHeight() * 2 / 3);
 	}
 
 	public void selectedAttributes(Attribute[] attributes) {
@@ -351,7 +344,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 			log.warn(e);
 			JOptionPane.showMessageDialog(null, e.getMessage(), "Error",
 					JOptionPane.WARNING_MESSAGE);
-			
+
 		}
 	}
 

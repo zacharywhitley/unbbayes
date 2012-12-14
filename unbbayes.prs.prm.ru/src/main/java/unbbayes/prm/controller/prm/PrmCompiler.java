@@ -13,16 +13,13 @@ import org.apache.log4j.Logger;
 
 import unbbayes.prm.controller.dao.IDBController;
 import unbbayes.prm.model.Attribute;
-import unbbayes.prm.model.InstanceRelationship;
 import unbbayes.prm.model.ParentRel;
-import unbbayes.prm.util.helper.DBSchemaHelper;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.builder.IProbabilisticNetworkBuilder;
 import unbbayes.prs.builder.impl.DefaultProbabilisticNetworkBuilder;
 import unbbayes.prs.exception.InvalidParentException;
@@ -47,8 +44,12 @@ public class PrmCompiler {
 
 	private HashMap<ProbabilisticNode, String> evidence;
 	private IInferenceAlgorithm inferenceAlgorithm;
-	private List<InstanceRelationship> createdInstances;
+	private List<String> createdNodeNames;
 	private Hashtable<String, ProbabilisticNode> createdNodes;
+
+	private Hashtable<ProbabilisticNode, Attribute> createdNodeAtts;
+
+	Hashtable<ParentRel, List<ProbabilisticNode>> parentInstanceNodes;
 
 	public PrmCompiler(IPrmController prmController, IDBController dbController) {
 		this.prmController = prmController;
@@ -79,8 +80,11 @@ public class PrmCompiler {
 		// Clear evidence
 		evidence = new HashMap<ProbabilisticNode, String>();
 		nodePosition = 0;
-		createdInstances = new ArrayList<InstanceRelationship>();
+		createdNodeNames = new ArrayList<String>();
 		createdNodes = new Hashtable<String, ProbabilisticNode>();
+		createdNodeAtts = new Hashtable<ProbabilisticNode, Attribute>();
+		// This is to create a dynamic CPT because it depends on the parents.
+		parentInstanceNodes = new Hashtable<ParentRel, List<ProbabilisticNode>>();
 
 		// Resultant network
 		ProbabilisticNetwork resultNet = networkBuilder
@@ -104,16 +108,32 @@ public class PrmCompiler {
 		fillNetworkWithParents(resultNet, queryAtt, queryNode,
 				uniqueIndexColumn, indexValue, qValue);
 
+		// Fill CPTs
+		fillCPTs();
+
 		inferenceAlgorithm = new JunctionTreeAlgorithm();
 		inferenceAlgorithm.setNetwork(resultNet);
 		inferenceAlgorithm.run();
 		inferenceAlgorithm.reset();
-		//
-		// // Update evidences.
+
+		// Update evidences.
 		addEvidences(resultNet);
 		inferenceAlgorithm.propagate();
 
 		return resultNet;
+	}
+
+	private void fillCPTs() throws Exception {
+		Enumeration<ProbabilisticNode> probNodes = createdNodeAtts.keys();
+
+		while (probNodes.hasMoreElements()) {
+			ProbabilisticNode pNode = (ProbabilisticNode) probNodes
+					.nextElement();
+
+			assignDynamicCPT(pNode, createdNodeAtts.get(pNode));
+
+		}
+
 	}
 
 	private void addEvidences(ProbabilisticNetwork resultNet) {
@@ -154,16 +174,16 @@ public class PrmCompiler {
 		// Get the parent relationships of the probabilistic model.
 		ParentRel[] parents = prmController.parentsOf(queryAtt);
 
-		// This is to create a dynamic CPT because it depends on the parents.
-		Hashtable<ParentRel, List<ProbabilisticNode>> parentInstanceNodes = new Hashtable<ParentRel, List<ProbabilisticNode>>();
-
 		// Find parent instances for each parent relationship.
 		for (ParentRel parentRel : parents) {
-			parentInstanceNodes.put(parentRel,
-					new ArrayList<ProbabilisticNode>());
-
+			
+			if (parentInstanceNodes.get(parentRel) == null) {
+				parentInstanceNodes.put(parentRel,
+						new ArrayList<ProbabilisticNode>());
+			}
+			
+			
 			Attribute parentAtt = parentRel.getParent();
-			Attribute childAtt = parentRel.getChild();
 
 			// ////////// For intrinsic attributes ////////////////
 			// If the parent is intrinsic, it only has two attributes in the
@@ -183,7 +203,7 @@ public class PrmCompiler {
 				// .verifyConsistency();
 				// } catch (Exception e) {
 				// throw new Exception(
-				// "Error verifying consistence for the node "
+				// "Error verifying consistency for the node "
 				// + parentNode.getName() + " ", e);
 				// }
 
@@ -199,10 +219,6 @@ public class PrmCompiler {
 				// Add parent nodes to the query node.
 				parentInstanceNodes.get(parentRel).add(parentNode);
 
-				createdInstances
-						.add(new InstanceRelationship(indexValue.toString(),
-								parentAtt, indexValue.toString(), queryAtt));
-
 				// Fill with parents recursively.
 				fillNetworkWithParents(resultNet, parentAtt, parentNode,
 						indexCol, indexValue, specificValue);
@@ -215,9 +231,9 @@ public class PrmCompiler {
 				// /////////// For external attributes./////////////
 				// Get the foreign key with the second element of the path.
 				Attribute originAtt = parentRel.getPath()[1];
-				Attribute destinyAtt = parentRel.getPath()[2];
 
-				// DIRECTION local.FK to other.ID or local.ID to other.FK
+				// DIRECTION local.FK to other.ID or local.ID to other.FK. Child
+				// to parent.
 				boolean directionFKToId = !originAtt.getAttribute().equals(
 						indexCol);
 
@@ -258,6 +274,7 @@ public class PrmCompiler {
 					ProbabilisticNode parentNode = createProbNode(afIndex,
 							parentAtt, resultNet);
 
+					
 					// Add parent nodes to the query node.
 					parentInstanceNodes.get(parentRel).add(parentNode);
 
@@ -286,19 +303,12 @@ public class PrmCompiler {
 
 					}
 
-					// Register the created relationship.
-					createdInstances.add(new InstanceRelationship(afIndex
-							.toString(), childAtt, indexValue.toString(),
-							queryAtt));
-
 					// Fill with parents recursively.
-					fillNetworkWithParents(resultNet, childAtt, parentNode,
+					fillNetworkWithParents(resultNet, parentAtt, parentNode,
 							parentIndex, afIndex, afValue);
 				}
 			}
 		}
-
-		assignDynamicCPT(queryNode, queryAtt, parentInstanceNodes);
 
 		// ////////////////////////CHILDREN////////////////////////////////
 		// //// Navigate by related children until null references. ///////
@@ -315,6 +325,12 @@ public class PrmCompiler {
 			// }
 
 			if (childRel.getPath().length == 2) {
+				// Validate repeated value.
+				if (createdNodeNames.contains(createNodeName(indexValue,
+						childAtt))) {
+					continue;
+				}
+				
 				// Create a new node.
 				ProbabilisticNode childNode = createProbNode(indexValue,
 						childAtt, resultNet);
@@ -359,27 +375,24 @@ public class PrmCompiler {
 				// /////////// For external attributes./////////////
 				// Get the foreign key with the second element of the path.
 				Attribute chilAttInit = path[path.length - 2];
-				Attribute parentLinkAtt = path[path.length - 3];
 
 				// DIRECTION local.FK to other.ID or local.ID to other.FK
-				boolean directionFKToId = chilAttInit.getAttribute().equals(
+				boolean directionFKToId = !chilAttInit.getAttribute().equals(
 						indexCol);
 
 				// Get the local table with the fist element of the path.
-				Table localTable = path[0].getTable();
+				Table localTable = path[path.length - 1].getTable();
 
 				String initInstanceValue;
 
 				if (directionFKToId) {
 					// Get FK value.
-					// XXX test if it works
-					initInstanceValue = String.valueOf(indexValue);
-
-				} else {
 					initInstanceValue = dbController.getSpecificValue(
 							chilAttInit.getAttribute(), new Attribute(
 									localTable, indexCol), String
 									.valueOf(indexValue));
+				} else {
+					initInstanceValue = String.valueOf(indexValue);
 				}
 
 				// If it has childs.
@@ -400,9 +413,8 @@ public class PrmCompiler {
 					// Value for the instance i.
 					String afValue = instanceValues[i][1];
 
-					// TODO validate repeated value.
-					if (createdInstances.contains(new InstanceRelationship(
-							indexValue.toString(), queryAtt, initInstanceValue,
+					// Validate repeated value.
+					if (createdNodeNames.contains(createNodeName(afIndex,
 							childAtt))) {
 						continue;
 					}
@@ -412,7 +424,7 @@ public class PrmCompiler {
 							childAtt, resultNet);
 
 					// Add parent nodes to the query node.
-					parentInstanceNodes.get(childRel).add(childNode);
+					// parentInstanceNodes.get(childRel).add(childNode);
 
 					// Store evidence.
 					evidence.put(childNode, afValue);
@@ -432,8 +444,7 @@ public class PrmCompiler {
 	}
 
 	private void assignDynamicCPT(ProbabilisticNode queryNode,
-			Attribute queryAtt,
-			Hashtable<ParentRel, List<ProbabilisticNode>> parentInstanceNodes)
+			Attribute queryAtt)
 			throws Exception {
 
 		// CPTs for the query attribute.
@@ -441,24 +452,22 @@ public class PrmCompiler {
 		int cptCols = 1;
 
 		// ////// CPD for child/query node.////////
-
-		// number Of Parents
-		int numberOfParents = 0;
-
-		Enumeration<List<ProbabilisticNode>> parents11 = parentInstanceNodes
-				.elements();
-
-		while (parents11.hasMoreElements()) {
-			List<ProbabilisticNode> list = (List<ProbabilisticNode>) parents11
-					.nextElement();
-
-			numberOfParents += list.size();
-
-			for (ProbabilisticNode pn : list) {
-				cptCols *= pn.getStatesSize();
+		Enumeration<ParentRel> keys = parentInstanceNodes.keys();
+		
+		while (keys.hasMoreElements()) {
+			ParentRel parentRel = (ParentRel) keys.nextElement();
+			
+			// Only for children.
+			if(parentRel.getChild().equals(queryAtt)){
+				List<ProbabilisticNode> list = parentInstanceNodes.get(parentRel);
+				
+				for (ProbabilisticNode pn : list) {
+					cptCols *= pn.getStatesSize();
+				}
 			}
 		}
-
+		
+		
 		log.debug("CPT for " + queryNode.getName() + " cols: " + cptCols
 				+ " rows: " + cptRows);
 
@@ -470,12 +479,6 @@ public class PrmCompiler {
 					+ " does not have an associated CPT");
 		}
 
-		int cpdIndex;
-		if (numberOfParents == 0) {
-			cpdIndex = 0;
-		} else {
-			cpdIndex = 1;
-		}
 
 		// TODO CREATE A DYNAMIC CPT
 		// assignCPDToNode(queryNode, cpDs[cpdIndex]);
@@ -503,12 +506,17 @@ public class PrmCompiler {
 
 	}
 
-	private ProbabilisticNode createProbNode(Object indexValue,
-			Attribute parentAtt, ProbabilisticNetwork resultNet) {
+	private String createNodeName(Object indexValue, Attribute parentAtt) {
 		String nodeName = parentAtt.getTable().getName() + " " + indexValue
 				+ " " + parentAtt.getAttribute().getName();
+		return nodeName;
+	}
+
+	private ProbabilisticNode createProbNode(Object indexValue,
+			Attribute attribute, ProbabilisticNetwork resultNet) {
+		String nodeName = createNodeName(indexValue, attribute);
 		// Possible values
-		String[] possibleValues = dbController.getPossibleValues(parentAtt);
+		String[] possibleValues = dbController.getPossibleValues(attribute);
 
 		// New node
 		ProbabilisticNode node = createdNodes.get(nodeName);
@@ -546,6 +554,8 @@ public class PrmCompiler {
 		// Add to the network
 		resultNet.addNode(node);
 
+		createdNodeNames.add(nodeName);
+		createdNodeAtts.put(node, attribute);
 		return node;
 	}
 
@@ -578,7 +588,6 @@ public class PrmCompiler {
 		for (int i = 0; i < variablesSize; i++) {
 			probabilityFunction.setValue(i, cpd.getValue(i));
 		}
-		// queryNode.setProbabilityFunction((ProbabilisticTable) cpd);
 	}
 
 	public IInferenceAlgorithm getInferenceAlgorithm() {

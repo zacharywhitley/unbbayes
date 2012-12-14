@@ -256,16 +256,16 @@ public class DBControllerImp implements IDBController {
 		// Then we have path[0]=PERSON.BLOODTYPE, path[1]=PERSON.MOTHER, etc.
 
 		// Direction
-		boolean directionFkToId = path[path.length - 2].getAttribute()
+		boolean directionFkToId = !path[path.length - 2].getAttribute()
 				.isPrimaryKey();
 
-		// XXX this maybe does not work.
+		// Index position depends on the direction
 		int indexPosition = path.length - (directionFkToId ? 2 : 3);
 		// The fist FK is the query.
 		String where = " WHERE " + path[indexPosition] + "=" + queryIndex;
 
 		// Slot chain.
-		for (int i = 2; i < path.length - 1; i += 2) {
+		for (int i = path.length - 3; i > 0; i -= 2) {
 			// If i is even then is a remote index.
 			Attribute attributeRemoteId = path[i];
 			// If i is odd then is a local FK.
@@ -277,8 +277,7 @@ public class DBControllerImp implements IDBController {
 
 			// If the table names are different, then add the cross.
 			if (!remoteIdName.equals(localFkName)) {
-				where = where + " " + attributeRemoteId + "="
-						+ attributeLocalFk;
+				where += " AND " + attributeRemoteId + "=" + attributeLocalFk;
 			}
 
 			// add if it is not duplicated.
@@ -302,15 +301,17 @@ public class DBControllerImp implements IDBController {
 
 		// If this is the primary key
 		if (directionFkToId) {
+			// Maybe this is not the best way but it works.
 			tableId = path[1].getAttribute().getName();
 		} else {
-			// Maybe this is not the best way but it works.
 			tableId = path[1].getTable().getPrimaryKeyColumns()[0].getName();
 		}
 
+		String tableIdName = path[1].getTable().getName() + "." + tableId;
+
 		// SQL query.
-		String sqlQuery = "SELECT " + tableId + ", " + relationship.getParent()
-				+ " FROM " + queryTables + where;
+		String sqlQuery = "SELECT " + tableIdName + ", "
+				+ relationship.getChild() + " FROM " + queryTables + where;
 		log.debug("SQL query = " + sqlQuery);
 
 		// Query to DB.
@@ -320,11 +321,11 @@ public class DBControllerImp implements IDBController {
 		List<String[]> instances = new ArrayList<String[]>();
 		while (it1.hasNext()) {
 			DynaBean dynaBean = (DynaBean) it1.next();
-			String inst = String.valueOf(dynaBean.get(parentAttName));
 			String id = String.valueOf(dynaBean.get(tableId));
+			String inst = String.valueOf(dynaBean.get(relationship.getChild()
+					.getAttribute().getName()));
 
 			instances.add(new String[] { id, inst });
-
 		}
 
 		return instances.toArray(new String[0][0]);
