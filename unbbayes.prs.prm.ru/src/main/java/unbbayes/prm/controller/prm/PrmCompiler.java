@@ -3,6 +3,7 @@ package unbbayes.prm.controller.prm;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
@@ -49,7 +50,7 @@ public class PrmCompiler {
 
 	private Hashtable<ProbabilisticNode, Attribute> createdNodeAtts;
 
-	Hashtable<ParentRel, List<ProbabilisticNode>> parentInstanceNodes;
+	Hashtable<ParentRel, Set<ProbabilisticNode>> parentInstanceNodes;
 
 	public PrmCompiler(IPrmController prmController, IDBController dbController) {
 		this.prmController = prmController;
@@ -84,7 +85,7 @@ public class PrmCompiler {
 		createdNodes = new Hashtable<String, ProbabilisticNode>();
 		createdNodeAtts = new Hashtable<ProbabilisticNode, Attribute>();
 		// This is to create a dynamic CPT because it depends on the parents.
-		parentInstanceNodes = new Hashtable<ParentRel, List<ProbabilisticNode>>();
+		parentInstanceNodes = new Hashtable<ParentRel, Set<ProbabilisticNode>>();
 
 		// Resultant network
 		ProbabilisticNetwork resultNet = networkBuilder
@@ -176,13 +177,12 @@ public class PrmCompiler {
 
 		// Find parent instances for each parent relationship.
 		for (ParentRel parentRel : parents) {
-			
+
 			if (parentInstanceNodes.get(parentRel) == null) {
 				parentInstanceNodes.put(parentRel,
-						new ArrayList<ProbabilisticNode>());
+						new HashSet<ProbabilisticNode>());
 			}
-			
-			
+
 			Attribute parentAtt = parentRel.getParent();
 
 			// ////////// For intrinsic attributes ////////////////
@@ -274,7 +274,6 @@ public class PrmCompiler {
 					ProbabilisticNode parentNode = createProbNode(afIndex,
 							parentAtt, resultNet);
 
-					
 					// Add parent nodes to the query node.
 					parentInstanceNodes.get(parentRel).add(parentNode);
 
@@ -316,6 +315,13 @@ public class PrmCompiler {
 
 		// For each child a new node is created and the recursive algorithm.
 		for (ParentRel childRel : children) {
+			if (parentInstanceNodes.get(childRel) == null) {
+				parentInstanceNodes.put(childRel,
+						new HashSet<ProbabilisticNode>());
+			}
+			// Add parent nodes to the query node.
+			parentInstanceNodes.get(childRel).add(queryNode);
+
 			Attribute childAtt = childRel.getChild();
 			// Validate if this relationship has been created before.
 			// if (compiledRels.contains(childRel)) {
@@ -330,7 +336,7 @@ public class PrmCompiler {
 						childAtt))) {
 					continue;
 				}
-				
+
 				// Create a new node.
 				ProbabilisticNode childNode = createProbNode(indexValue,
 						childAtt, resultNet);
@@ -356,9 +362,6 @@ public class PrmCompiler {
 
 				// Get instance value
 				evidence.put(childNode, specificValue);
-
-				// Add parent nodes to the query node.
-				parentInstanceNodes.get(childRel).add(childNode);
 
 				// Fill with children recursively.
 				fillNetworkWithParents(resultNet, childAtt, childNode,
@@ -444,8 +447,7 @@ public class PrmCompiler {
 	}
 
 	private void assignDynamicCPT(ProbabilisticNode queryNode,
-			Attribute queryAtt)
-			throws Exception {
+			Attribute queryAtt) throws Exception {
 
 		// CPTs for the query attribute.
 		int cptRows = queryNode.getStatesSize();
@@ -453,21 +455,21 @@ public class PrmCompiler {
 
 		// ////// CPD for child/query node.////////
 		Enumeration<ParentRel> keys = parentInstanceNodes.keys();
-		
+
 		while (keys.hasMoreElements()) {
 			ParentRel parentRel = (ParentRel) keys.nextElement();
-			
+
 			// Only for children.
-			if(parentRel.getChild().equals(queryAtt)){
-				List<ProbabilisticNode> list = parentInstanceNodes.get(parentRel);
-				
+			if (parentRel.getChild().equals(queryAtt)) {
+				Set<ProbabilisticNode> list = parentInstanceNodes
+						.get(parentRel);
+
 				for (ProbabilisticNode pn : list) {
 					cptCols *= pn.getStatesSize();
 				}
 			}
 		}
-		
-		
+
 		log.debug("CPT for " + queryNode.getName() + " cols: " + cptCols
 				+ " rows: " + cptRows);
 
@@ -479,7 +481,6 @@ public class PrmCompiler {
 					+ " does not have an associated CPT");
 		}
 
-
 		// TODO CREATE A DYNAMIC CPT
 		// assignCPDToNode(queryNode, cpDs[cpdIndex]);
 		// int variablesSize = cpDs[cpdIndex].getValues().length;
@@ -489,7 +490,11 @@ public class PrmCompiler {
 		// Variable
 		for (int c = 0; c < cptCols; c++) {
 			for (int r = 0; r < cptRows; r++) {
-				probabilityFunction.setValue(valueCptCounter, 1f / cptRows);
+				try {
+					probabilityFunction.setValue(valueCptCounter, 1f / cptRows);
+				} catch (ArrayIndexOutOfBoundsException e) {
+					throw new Exception("Invalid Value " + valueCptCounter, e);
+				}
 				valueCptCounter++;
 			}
 		}
