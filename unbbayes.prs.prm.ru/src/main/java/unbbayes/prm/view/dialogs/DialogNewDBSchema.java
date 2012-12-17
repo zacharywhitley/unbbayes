@@ -16,14 +16,15 @@ import java.awt.event.ActionEvent;
 
 public class DialogNewDBSchema extends JDialog {
 
-	private static final String DEFAULT_DB_URL = "jdbc:mysql://localhost:3306/BloodType?user=root&password=fds";
+//	private static final String DEFAULT_DB_URL = "jdbc:mysql://localhost:3306/BloodType?user=root&password=fds";
+	private static final String DEFAULT_DB_URL = "jdbc:mysql://localhost:3306/MDA?user=root&password=fds";
 //	 private static final String DEFAULT_DB_URL =
 //	 "examples/movies/MovieTest.db";
 	private final JPanel contentPanel = new JPanel();
 	private JTextField txtUrl;
 
 	/**
-	 * Flag if the dialog was canceled or accpeted.
+	 * Flag if the dialog was canceled or accepted.
 	 */
 	private boolean dialogAccepted = false;
 	/**

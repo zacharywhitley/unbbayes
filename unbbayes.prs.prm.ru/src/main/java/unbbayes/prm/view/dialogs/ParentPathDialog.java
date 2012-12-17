@@ -76,6 +76,7 @@ public class ParentPathDialog extends JDialog {
 		}
 		{
 			JLabel lblSelectAPath = new JLabel("Parent path:");
+			lblSelectAPath.setToolTipText("Parent path (direction is child to parent)");
 			GridBagConstraints gbc_lblSelectAPath = new GridBagConstraints();
 			gbc_lblSelectAPath.anchor = GridBagConstraints.WEST;
 			gbc_lblSelectAPath.insets = new Insets(0, 0, 0, 5);
