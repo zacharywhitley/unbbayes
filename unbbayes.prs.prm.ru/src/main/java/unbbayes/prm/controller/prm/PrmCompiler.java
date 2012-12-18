@@ -29,7 +29,7 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
  * This is the the main class related to compile a bayesian network based on
- * data base instances. It is the implemantation of Probabilistic Relational
+ * data base instances. It is the implementation of Probabilistic Relational
  * Models Algorithm [Geetor, 2001].
  * 
  * @author David Saldaña.
@@ -51,7 +51,10 @@ public class PrmCompiler {
 
 	private Hashtable<ProbabilisticNode, Attribute> createdNodeAtts;
 
-	Hashtable<ParentRel, Set<ProbabilisticNode>> parentInstanceNodes;
+	/**
+	 * key: node name value: relationship where the node is the parent.
+	 */
+	Hashtable<String, ParentRel> parentInstanceNodes;
 
 	public PrmCompiler(IPrmController prmController, IDBController dbController) {
 		this.prmController = prmController;
@@ -86,7 +89,7 @@ public class PrmCompiler {
 		createdNodes = new Hashtable<String, ProbabilisticNode>();
 		createdNodeAtts = new Hashtable<ProbabilisticNode, Attribute>();
 		// This is to create a dynamic CPT because it depends on the parents.
-		parentInstanceNodes = new Hashtable<ParentRel, Set<ProbabilisticNode>>();
+		parentInstanceNodes = new Hashtable<String, ParentRel>();
 
 		// Resultant network
 		ProbabilisticNetwork resultNet = networkBuilder
@@ -179,11 +182,6 @@ public class PrmCompiler {
 		// Find parent instances for each parent relationship.
 		for (ParentRel parentRel : parents) {
 
-			if (parentInstanceNodes.get(parentRel) == null) {
-				parentInstanceNodes.put(parentRel,
-						new HashSet<ProbabilisticNode>());
-			}
-
 			Attribute parentAtt = parentRel.getParent();
 
 			// ////////// For intrinsic attributes ////////////////
@@ -208,7 +206,7 @@ public class PrmCompiler {
 				evidence.put(parentNode, specificValue);
 
 				// Add parent nodes to the query node.
-				parentInstanceNodes.get(parentRel).add(parentNode);
+				parentInstanceNodes.put(parentNode.getName(), parentRel);
 
 				// Fill with parents recursively.
 				fillNetworkWithParents(resultNet, parentAtt, parentNode,
@@ -263,13 +261,12 @@ public class PrmCompiler {
 
 					// Validate repeated value is not necessary for parents.
 
-					
 					// Create Node.
 					ProbabilisticNode parentNode = createProbNode(afIndex,
 							parentAtt, resultNet);
 
 					// Add parent nodes to the query node.
-					parentInstanceNodes.get(parentRel).add(parentNode);
+					parentInstanceNodes.put(parentNode.getName(), parentRel);
 
 					// Store evidence.
 					evidence.put(parentNode, afValue);
@@ -309,20 +306,10 @@ public class PrmCompiler {
 
 		// For each child a new node is created and the recursive algorithm.
 		for (ParentRel childRel : children) {
-			if (parentInstanceNodes.get(childRel) == null) {
-				parentInstanceNodes.put(childRel,
-						new HashSet<ProbabilisticNode>());
-			}
 			// Add parent nodes to the query node.
-			parentInstanceNodes.get(childRel).add(queryNode);
+			parentInstanceNodes.put(queryNode.getName(), childRel);
 
 			Attribute childAtt = childRel.getChild();
-			// Validate if this relationship has been created before.
-			// if (compiledRels.contains(childRel)) {
-			// continue;
-			// } else {
-			// compiledRels.add(childRel);
-			// }
 
 			if (childRel.getPath().length == 2) {
 				// Validate repeated value.
@@ -460,21 +447,58 @@ public class PrmCompiler {
 
 	private void assignDynamicCPT(ProbabilisticNode queryNode,
 			Attribute queryAtt) throws Exception {
-		// // CPTs for the query attribute.
-		int cptRows = queryNode.getStatesSize();
-		int cptCols = 1;
 
+		ParentRel[] parentRels = prmController.parentsOf(queryAtt);
+
+		// Parent nodes
 		List<INode> parentNodes = queryNode.getParentNodes();
 
-		for (INode parentNode : parentNodes) {
-			ProbabilisticNode probNode = (ProbabilisticNode) parentNode;
+		// Potential tables are many when an attribute is a parent and a child.
+		PotentialTable[] cpDs = prmController.getCPDs(queryAtt);
 
-			cptCols *= probNode.getStatesSize();
+		// the
+		PotentialTable rightCpd;
+
+		// Identify if queryNode is a parent or a child.
+		// If the node is a parent.
+		if (parentRels.length == 0) {
+			rightCpd = cpDs[0]; // FIXME it could be other parent.
+			log.debug("var count=" + rightCpd.variableCount());
+			assignCPDToNode(queryNode, rightCpd);
+			return;
+		} else {
+			rightCpd = cpDs[cpDs.length - 1];
 		}
 
+		// Parent relationships
+		for (ParentRel parentRel : parentRels) {
+			for (INode parentNode : parentNodes) {
+				// If this node is related to this relationship.
+				if (parentInstanceNodes.get(parentNode.getName()).equals(
+						parentRel)) {
+
+				}
+			}
+		}
+
+		// // CPTs for the query attribute.
+		// int cptRows = queryNode.getStatesSize();
+		// int cptCols = 1;
 		//
-		// // Table to assign.
-		PotentialTable probabilityFunction = queryNode.getProbabilityFunction();
+		// for (INode parentNode : parentNodes) {
+		// ProbabilisticNode probNode = (ProbabilisticNode) parentNode;
+		//
+		// cptCols *= probNode.getStatesSize();
+		//
+		// ParentRel parentRel = parentInstanceNodes.get(probNode.getName());
+		//
+		// }
+		//
+		// //
+		// // // Table to assign.
+		// PotentialTable probabilityFunction =
+		// queryNode.getProbabilityFunction();
+
 		//
 		// // ////// CPD for child/query node.////////
 		// Enumeration<ParentRel> keys = parentInstanceNodes.keys();
@@ -515,18 +539,18 @@ public class PrmCompiler {
 		// // int variablesSize = cpDs[cpdIndex].getValues().length;
 		//
 
-		int valueCptCounter = 0;
-		// Variable
-		for (int c = 0; c < cptCols; c++) {
-			for (int r = 0; r < cptRows; r++) {
-				try {
-					probabilityFunction.setValue(valueCptCounter, 1f / cptRows);
-				} catch (ArrayIndexOutOfBoundsException e) {
-					throw new Exception("Invalid Value " + valueCptCounter, e);
-				}
-				valueCptCounter++;
-			}
-		}
+		// int valueCptCounter = 0;
+		// // Variable
+		// for (int c = 0; c < cptCols; c++) {
+		// for (int r = 0; r < cptRows; r++) {
+		// try {
+		// probabilityFunction.setValue(valueCptCounter, 1f / cptRows);
+		// } catch (ArrayIndexOutOfBoundsException e) {
+		// throw new Exception("Invalid Value " + valueCptCounter, e);
+		// }
+		// valueCptCounter++;
+		// }
+		// }
 
 	}
 
