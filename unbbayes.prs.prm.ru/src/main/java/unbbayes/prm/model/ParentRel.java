@@ -17,6 +17,7 @@ public class ParentRel implements Serializable{
 	 */
 	private static final long serialVersionUID = 6521692027180658334L;
 	
+	private String idRelationsShip;
 	/**
 	 * Child of the relationship.
 	 */
@@ -92,6 +93,14 @@ public class ParentRel implements Serializable{
 
 	public void setAggregateFunction(AggregateFunctionName aggregateFunction) {
 		this.aggregateFunction = aggregateFunction;
+	}
+
+	public String getIdRelationsShip() {
+		return idRelationsShip;
+	}
+
+	public void setIdRelationsShip(String idRelationsShip) {
+		this.idRelationsShip = idRelationsShip;
 	}
 
 }

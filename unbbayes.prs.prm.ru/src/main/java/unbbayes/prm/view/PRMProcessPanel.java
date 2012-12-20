@@ -356,7 +356,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 		List<PotentialTable> potentialTables = new ArrayList<PotentialTable>();
 
 		// Fill possible values for parents.
-		for (int i = 0; i < parentStates.length; i++) {
+		for (int i = 0; i < parentRels.length; i++) {
 			Attribute parent2 = parentRels[i].getParent();
 			String[] possibleValues = dbController
 					.getPossibleValues(parentRels[i].getParent());
@@ -368,6 +368,7 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 			}
 
 			parentStates[i] = new AttributeStates(parent2, possibleValues);
+			parentStates[i].setAssociatedIdRel(parentRels[i].getIdRelationsShip());
 
 			// When it is the same parent.
 			if (parent2.equals(attribute)) {
@@ -417,10 +418,9 @@ public class PRMProcessPanel extends JPanel implements IGraphicTableListener,
 
 		try {
 			if (parentStates.length == 0) {
-				// TODO Get probability of each state
+				// Get probability of each state
 				double[] stateProbability = dbController
 						.getStateProbability(childStates);
-				// TODO Show in the table
 				table.setProbabilities(stateProbability);
 			}
 		} catch (Exception e) {

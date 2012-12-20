@@ -29,6 +29,7 @@ public class DBSchemaHelper {
 	 * @param rel
 	 *            relationship to invert
 	 * @return inverted relationship
+	 * @deprecated not in use.
 	 */
 	public static ParentRel invertParentRelationship(ParentRel rel) {
 		ParentRel inverted = new ParentRel(rel.getChild(), rel.getParent());

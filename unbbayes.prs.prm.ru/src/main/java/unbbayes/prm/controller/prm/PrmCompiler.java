@@ -3,7 +3,6 @@ package unbbayes.prm.controller.prm;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +46,10 @@ public class PrmCompiler {
 	private HashMap<ProbabilisticNode, String> evidence;
 	private IInferenceAlgorithm inferenceAlgorithm;
 	private List<String> createdNodeNames;
+
+	/**
+	 * key: node name. value: node object.
+	 */
 	private Hashtable<String, ProbabilisticNode> createdNodes;
 
 	private Hashtable<ProbabilisticNode, Attribute> createdNodeAtts;
@@ -192,6 +195,7 @@ public class PrmCompiler {
 				// Create a new node.
 				ProbabilisticNode parentNode = createProbNode(indexValue,
 						parentAtt, resultNet);
+				parentNode.setDescription(parentRel.getIdRelationsShip());
 
 				// Edge to the child.
 				addEdge(resultNet, parentNode, queryNode);
@@ -264,6 +268,7 @@ public class PrmCompiler {
 					// Create Node.
 					ProbabilisticNode parentNode = createProbNode(afIndex,
 							parentAtt, resultNet);
+					parentNode.setDescription(parentRel.getIdRelationsShip());
 
 					// Add parent nodes to the query node.
 					parentInstanceNodes.put(parentNode.getName(), parentRel);
@@ -306,6 +311,7 @@ public class PrmCompiler {
 
 		// For each child a new node is created and the recursive algorithm.
 		for (ParentRel childRel : children) {
+
 			// Add parent nodes to the query node.
 			parentInstanceNodes.put(queryNode.getName(), childRel);
 
@@ -322,18 +328,11 @@ public class PrmCompiler {
 				ProbabilisticNode childNode = createProbNode(indexValue,
 						childAtt, resultNet);
 
+				queryNode.setDescription(queryNode.getDescription() + " "
+						+ childRel.getIdRelationsShip());
+
 				// Edge to the child.
 				addEdge(resultNet, queryNode, childNode);
-
-				// Verify consistency for the new node.
-				// try {
-				// ((ProbabilisticTable) childNode.getProbabilityFunction())
-				// .verifyConsistency();
-				// } catch (Exception e) {
-				// throw new Exception(
-				// "Error verifying consistence for the node "
-				// + childNode.getName() + " ", e);
-				// }
 
 				// EVIDENCE
 				String specificValue = dbController.getSpecificValue(
@@ -390,6 +389,12 @@ public class PrmCompiler {
 				String[][] instanceValues = dbController
 						.getChildRelatedInstances(childRel, initInstanceValue);
 
+				// relationship in description.
+				if (instanceValues.length > 0) {
+					queryNode.setDescription(queryNode.getDescription() + " "
+							+ childRel.getIdRelationsShip());
+				}
+
 				// Create a node for each parent instance.
 				for (int i = 0; i < instanceValues.length; i++) {
 					// Index for the instance i.
@@ -436,7 +441,6 @@ public class PrmCompiler {
 						}
 					}
 
-					// createdInstances.add(new InstanceRelationship(
 					// Fill with parents recursively.
 					fillNetworkWithParents(resultNet, childAtt, childNode,
 							childIndex, afIndex, afValue);
@@ -453,33 +457,75 @@ public class PrmCompiler {
 		// Parent nodes
 		List<INode> parentNodes = queryNode.getParentNodes();
 
+		// ///////////////// IDENTIFY the right CPT with values ////////////////
 		// Potential tables are many when an attribute is a parent and a child.
-		PotentialTable[] cpDs = prmController.getCPDs(queryAtt);
+		PotentialTable[] cptsWithValues = prmController.getCPDs(queryAtt);
 
-		// the
-		PotentialTable rightCpd;
+		// the right CPT depending on if the query node is parent or child.
+		PotentialTable rightCptWithValues;
 
 		// Identify if queryNode is a parent or a child.
 		// If the node is a parent.
 		if (parentRels.length == 0) {
-			rightCpd = cpDs[0]; // FIXME it could be other parent.
-			log.debug("var count=" + rightCpd.variableCount());
-			assignCPDToNode(queryNode, rightCpd);
+			rightCptWithValues = cptsWithValues[0]; // FIXME it could be other
+													// parent.
+			log.debug("var count=" + rightCptWithValues.variableCount());
+			assignCPDToNode(queryNode, rightCptWithValues);
 			return;
 		} else {
-			rightCpd = cpDs[cpDs.length - 1];
+			// if the node is a child
+			rightCptWithValues = cptsWithValues[cptsWithValues.length - 1];
 		}
 
-		// Parent relationships
-		for (ParentRel parentRel : parentRels) {
-			for (INode parentNode : parentNodes) {
-				// If this node is related to this relationship.
-				if (parentInstanceNodes.get(parentNode.getName()).equals(
-						parentRel)) {
+		// ////////////// FILL THE QUERY NODE CPT /////////////////////
 
+		PotentialTable newTable = (PotentialTable) rightCptWithValues.clone();
+
+		// CPT parents
+		int numCptParents = rightCptWithValues.getVariablesSize();
+		// Every cpt parent. the first one is discarded because it is the same
+		// attribute.
+		for (int i = 1; i < numCptParents; i++) {
+			// CPT parent node
+			INode parentCptNode = rightCptWithValues.getVariableAt(i);
+			String idRelationship = parentCptNode.getDescription();
+
+			// Cuales instancias padres de nodo query están relacionadas con
+			// este nodo cpt.
+			List<INode> parentNodeInstances = queryNode.getParentNodes();
+			for (INode parentNodeInstance : parentNodeInstances) {
+				// if the node is part of this thing.
+				if (parentNodeInstance.getDescription().contains(
+						parentCptNode.getDescription())) {
+					// TODO apply aggregate function.
+					// throw new
+					// Exception("Aggregate function No implementada");
 				}
 			}
+			// if does not exist any node for this cpt parent
+			if (parentNodeInstances.size() == 0) {
+				newTable.removeVariable(parentCptNode, true);
+			}
+
+			String name = parentCptNode.getName();
+			log.debug("Parent cpt variable = " + name);
+
 		}
+
+		//assign
+		assignCPDToNode(queryNode, newTable);
+		
+		// Parent relationships
+//		for (ParentRel parentRel : parentRels) {
+//			for (INode parentNode : parentNodes) {
+//
+//				// If this node is related to this relationship.
+//				if (parentInstanceNodes.get(parentNode.getName()).equals(
+//						parentRel)) {
+//
+//				}
+//			}
+//		}
 
 		// // CPTs for the query attribute.
 		// int cptRows = queryNode.getStatesSize();
@@ -639,7 +685,7 @@ public class PrmCompiler {
 		// }
 		// int variablesSize2 = cpd.getVariablesSize();
 
-		int variablesSize = cpd.getValues().length;
+		int variablesSize = cpd.tableSize();
 		PotentialTable probabilityFunction = queryNode.getProbabilityFunction();
 
 		// Variable

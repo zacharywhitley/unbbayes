@@ -7,10 +7,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -18,7 +15,6 @@ import javax.swing.JTable;
 import org.apache.log4j.Logger;
 
 import unbbayes.gui.table.GUIPotentialTable;
-import unbbayes.prm.model.AggregateFunctionName;
 import unbbayes.prm.model.AttributeStates;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -140,13 +136,17 @@ public class PrmTable extends JPanel {
 		// Fill each parent.
 		for (int i = 0; i < nodes.length; i++) {
 			nodes[i] = new ProbabilisticNode();
-
+			
 			// Node name
 			nodes[i].setName(parentStates[i].getAttribute().getAttribute()
 					.getName());
 
 			String[] states = parentStates[i].getStates();
 
+			// Associated id in node description.
+			nodes[i].setDescription(parentStates[i].getAssociatedIdRel());
+			
+			
 			// Add node states
 			for (String state : states) {
 				nodes[i].appendState(state);

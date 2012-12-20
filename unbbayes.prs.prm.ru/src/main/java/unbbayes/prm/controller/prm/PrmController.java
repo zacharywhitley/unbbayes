@@ -48,6 +48,9 @@ public class PrmController implements IPrmController {
 				+ parent.getParent().getAttribute().getName() + " -> "
 				+ parent.getChild().getAttribute().getName());
 
+		// The parent relationship id is the number of the relationship.
+		parent.setIdRelationsShip(String.valueOf(parents.size()));
+		
 		parents.add(parent);
 
 	}
