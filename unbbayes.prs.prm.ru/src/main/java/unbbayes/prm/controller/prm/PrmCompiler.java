@@ -1,6 +1,7 @@
 package unbbayes.prm.controller.prm;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -14,6 +15,7 @@ import org.apache.log4j.Logger;
 import unbbayes.prm.controller.dao.IDBController;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
+import unbbayes.prm.util.helper.DynamicTableHelper;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
@@ -483,7 +485,11 @@ public class PrmCompiler {
 
 		// CPT parents
 		int numCptParents = rightCptWithValues.getVariablesSize();
-		// Every cpt parent. the first one is discarded because it is the same
+
+		// Get the number of columns.
+		int numColumns = DynamicTableHelper.getNumColumns(rightCptWithValues);
+
+		// Every CPT parent. the first one is discarded because it is the same
 		// attribute.
 		for (int i = 1; i < numCptParents; i++) {
 			// CPT parent node
@@ -494,12 +500,41 @@ public class PrmCompiler {
 			// este nodo cpt.
 			List<INode> parentNodeInstances = queryNode.getParentNodes();
 			for (INode parentNodeInstance : parentNodeInstances) {
+				int parentCounter = 0;
 				// if the node is part of this thing.
 				if (parentNodeInstance.getDescription().contains(
 						parentCptNode.getDescription())) {
 					// TODO apply aggregate function.
 					// throw new
 					// Exception("Aggregate function No implementada");
+					if (parentCounter > 0) {
+						// TODO modificar los valores según la función de
+						// agregación.
+
+						// Get number of states for this variable (parent).
+						int numStates = parentNodeInstance.getStatesSize();
+
+						// Get the number of sub-states for one state.
+						int numSubStates = DynamicTableHelper.getNumSubStates(
+								i, rightCptWithValues);
+
+						// Get the number of upper states.
+						int numUpperStates = DynamicTableHelper
+								.getNumUpperStates(i, rightCptWithValues);
+
+						// Identify the columns related with every state of this
+						// variable.
+						int statesOrder[] = DynamicTableHelper
+								.statesOrderInCpt(numColumns, numStates,
+										numSubStates);
+
+						// Insert the new variable.
+						newTable.addVariable(parentNodeInstance);
+
+						// fill with values and apply aggregate function.
+
+					}
+					parentCounter++;
 				}
 			}
 			// if does not exist any node for this cpt parent
@@ -512,20 +547,20 @@ public class PrmCompiler {
 
 		}
 
-		//assign
+		// assign
 		assignCPDToNode(queryNode, newTable);
-		
+
 		// Parent relationships
-//		for (ParentRel parentRel : parentRels) {
-//			for (INode parentNode : parentNodes) {
-//
-//				// If this node is related to this relationship.
-//				if (parentInstanceNodes.get(parentNode.getName()).equals(
-//						parentRel)) {
-//
-//				}
-//			}
-//		}
+		// for (ParentRel parentRel : parentRels) {
+		// for (INode parentNode : parentNodes) {
+		//
+		// // If this node is related to this relationship.
+		// if (parentInstanceNodes.get(parentNode.getName()).equals(
+		// parentRel)) {
+		//
+		// }
+		// }
+		// }
 
 		// // CPTs for the query attribute.
 		// int cptRows = queryNode.getStatesSize();
