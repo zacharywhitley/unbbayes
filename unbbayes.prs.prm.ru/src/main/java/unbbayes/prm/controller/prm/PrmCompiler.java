@@ -532,7 +532,14 @@ public class PrmCompiler {
 						newTable.addVariable(parentNodeInstance);
 
 						// fill with values and apply aggregate function.
+						int newNumCols = numStates * numColumns;
 
+						for (int st = 0; st < numStates; st++) {
+							for (int col = 0; col < numColumns; col++) {
+								int col1;
+								int col2 = col;
+							}
+						}
 					}
 					parentCounter++;
 				}

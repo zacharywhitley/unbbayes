@@ -1,15 +1,20 @@
 package unbbayes.prm.util.helper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.bn.PotentialTable;
 
+/**
+ * 
+ * @author David Saldaña.
+ * 
+ */
 public class DynamicTableHelper {
 
 	/**
-	 * The the order of the states in a cpt. This is to identify how to clone a
+	 * The the order of the states in a CPT. This is to identify how to clone a
 	 * state.
 	 * 
 	 * @param numColumns
@@ -28,7 +33,7 @@ public class DynamicTableHelper {
 		int nextVal = 0;
 		for (int l = 0; l < iter; l++) {
 			for (int s = 0; s < numStates; s++) {
-				while (statesOrder.contains(nextVal+ s * numUpperStates)) {
+				while (statesOrder.contains(nextVal + s * numUpperStates)) {
 					nextVal++;
 				}
 				statesOrder.add(nextVal + s * numUpperStates);
@@ -41,7 +46,7 @@ public class DynamicTableHelper {
 		for (int i = 0; i < result.length; i++) {
 			result[i] = statesOrder.get(i);
 		}
-		
+
 		return result;
 	}
 
@@ -89,16 +94,50 @@ public class DynamicTableHelper {
 	public static int getNumUpperStates(int level,
 			PotentialTable rightCptWithValues) {
 
-		if (level <1) {
+		if (level < 1) {
 			return 0;
 		}
 
 		int numUpperStates = 1;
 		for (int k = 0; k < level; k++) {
-			numUpperStates *= rightCptWithValues.getVariableAt(k+1)
+			numUpperStates *= rightCptWithValues.getVariableAt(k + 1)
 					.getStatesSize();
 		}
 		return numUpperStates;
 	}
 
+	/**
+	 * Create a new level based in a organized array of columns.
+	 * 
+	 * @param level
+	 * @param cpt
+	 * @param childNode
+	 * @param numColumns
+	 * @return
+	 */
+	public static int[] addLevel(int level, PotentialTable cpt,
+			INode childNode, int numColumns, int[] order) {
+		int numSubStates = getNumSubStates(level, cpt);
+		numSubStates = numSubStates == 0 ? 1 : numSubStates;
+
+		int numStates = childNode.getStatesSize();
+
+		int numResultCols = numColumns * numStates;
+		int[] result = new int[numResultCols];
+		int currentVal = 0;
+
+		int index = 0;
+		int tmpStates = 0;
+		for (int s = 0; s < numColumns; s += numSubStates) {
+			tmpStates = s;
+			for (int j = 0; j < numStates; j++) {
+				currentVal = tmpStates;
+				for (int i = 0; i < numSubStates; i++) {
+					result[index++] = order[currentVal];
+					currentVal++;
+				}
+			}
+		}
+		return result;
+	}
 }
