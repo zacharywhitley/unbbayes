@@ -69,8 +69,8 @@ public class DynamicTableHelperTest {
 		int numUpperStates = DynamicTableHelper.getNumUpperStates(level, cpt);
 		assertTrue(numUpperStates == 0);
 
-		int[] statesOrderInCpt = DynamicTableHelper.statesOrderInCpt(
-				numColumns, childNode.getStatesSize(), numUpperStates);
+		int[] statesOrderInCpt = DynamicTableHelper
+				.statesOrderInCpt(level, cpt);
 
 		System.out.println("Order for level " + level);
 		for (int i = 0; i < numColumns; i++) {
@@ -80,12 +80,11 @@ public class DynamicTableHelperTest {
 
 		// Level 1
 		level = 1;
-		rightOrder = new int[] { 0, 2, 1, 3, 4, 6, 5, 7 };
+		rightOrder = new int[] { 0, 1, 4, 5, 2, 3, 6, 7 };
 		numSubStates = DynamicTableHelper.getNumSubStates(level, cpt);
 		numUpperStates = DynamicTableHelper.getNumUpperStates(level, cpt);
 		assertTrue(numUpperStates == 2);
-		statesOrderInCpt = DynamicTableHelper.statesOrderInCpt(numColumns,
-				childNode.getStatesSize(), numUpperStates);
+		statesOrderInCpt = DynamicTableHelper.statesOrderInCpt(level, cpt);
 
 		System.out.println("\nOrder for level " + level);
 		for (int i = 0; i < numColumns; i++) {
@@ -95,12 +94,11 @@ public class DynamicTableHelperTest {
 
 		// Level 2
 		level = 2;
-		rightOrder = new int[] { 0, 4, 1, 5, 2, 6, 3, 7 };
+		rightOrder = new int[] { 0, 2, 4, 6, 1, 3, 5, 7 };
 		numSubStates = DynamicTableHelper.getNumSubStates(level, cpt);
 		numUpperStates = DynamicTableHelper.getNumUpperStates(level, cpt);
 		assertTrue(numUpperStates == 4);
-		statesOrderInCpt = DynamicTableHelper.statesOrderInCpt(numColumns,
-				childNode.getStatesSize(), numUpperStates);
+		statesOrderInCpt = DynamicTableHelper.statesOrderInCpt(level, cpt);
 
 		System.out.println("\nOrder for level " + level);
 		for (int i = 0; i < numColumns; i++) {
@@ -122,20 +120,27 @@ public class DynamicTableHelperTest {
 		int[] initialOrder = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 		int numUpperStates = DynamicTableHelper.getNumUpperStates(level, cpt);
 
-		int[] statesOrderInCpt = DynamicTableHelper.statesOrderInCpt(
-				numColumns, childNode.getStatesSize(), numUpperStates);
+		int[] statesOrderInCpt = DynamicTableHelper
+				.statesOrderInCpt(level, cpt);
+
+		validateArray(statesOrderInCpt, initialOrder);
+
+		// Level 1
+		level = 1;
+		System.out.println("\n level " + level);
+		statesOrderInCpt = DynamicTableHelper.statesOrderInCpt(level, cpt);
+
+		initialOrder = new int[] { 0, 1, 2, 6, 7, 8, 3, 4, 5, 9, 10, 11 };
 
 		validateArray(statesOrderInCpt, initialOrder);
 
 		// Level 2
 		level = 2;
-		System.out.println("\n level "+level);
-		numUpperStates = DynamicTableHelper.getNumUpperStates(level, cpt);
-		statesOrderInCpt = DynamicTableHelper.statesOrderInCpt(numColumns,
-				childNode.getStatesSize(), numUpperStates);
+		System.out.println("\n level " + level);
+		statesOrderInCpt = DynamicTableHelper.statesOrderInCpt(level, cpt);
 
-		initialOrder = new int[]{ 0, 6, 1, 7, 2, 8, 3, 9, 4, 10, 5, 11 };
-		
+		initialOrder = new int[] { 0, 3, 6, 9, 1, 4, 7, 10, 2, 5, 8, 11 };
+
 		validateArray(statesOrderInCpt, initialOrder);
 	}
 
@@ -209,8 +214,8 @@ public class DynamicTableHelperTest {
 		// Level 2
 		level = 2;
 		int numUpperStates = DynamicTableHelper.getNumUpperStates(level, cpt);
-		int[] statesOrderInCpt = DynamicTableHelper.statesOrderInCpt(
-				numColumns, childNode.getStatesSize(), numUpperStates);
+		int[] statesOrderInCpt = DynamicTableHelper
+				.statesOrderInCpt(level, cpt);
 		// TODO
 
 		ordered = DynamicTableHelper.addLevel(level, cpt, childNode,

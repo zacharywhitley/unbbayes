@@ -524,9 +524,9 @@ public class PrmCompiler {
 
 						// Identify the columns related with every state of this
 						// variable.
+						// FIME the right level.
 						int statesOrder[] = DynamicTableHelper
-								.statesOrderInCpt(numColumns, numStates,
-										numSubStates);
+								.statesOrderInCpt(00, rightCptWithValues);
 
 						// Insert the new variable.
 						newTable.addVariable(parentNodeInstance);

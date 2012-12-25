@@ -22,21 +22,71 @@ public class DynamicTableHelper {
 	 * @param numUpperStates
 	 * @return
 	 */
-	public static int[] statesOrderInCpt(int numColumns, int numStates,
-			int numUpperStates) {
+	public static int[] statesOrderInCpt(int level, PotentialTable cpt) {
+		int numColumns = getNumColumns(cpt);
+		int numStates = cpt.getVariableAt(level + 1).getStatesSize();
+		int numSubStates = getNumSubStates(level, cpt);
+
+		numSubStates = numSubStates == 0 ? 1 : numSubStates;
 
 		// Identify the columns related with every state of this
 		// variable.
 		List<Integer> statesOrder = new ArrayList<Integer>(numColumns);
-
-		int iter = numColumns / numStates;
 		int nextVal = 0;
-		for (int l = 0; l < iter; l++) {
-			for (int s = 0; s < numStates; s++) {
-				while (statesOrder.contains(nextVal + s * numUpperStates)) {
+
+		// number of columns for a block;
+		int colsForState = numSubStates * numStates;
+		colsForState = colsForState == numColumns ? colsForState / numStates
+				: colsForState;
+
+		int iters = numColumns / numSubStates;
+
+		int varIndex = 0;
+		int blockIndex = 0;
+		// Each block
+		for (int j = 0; j < iters; j++) {
+
+			// Each substate
+			for (int i = 0; i < numSubStates; i++) {
+				statesOrder.add(nextVal);
+
+				if (i + 1 < numSubStates) {
 					nextVal++;
 				}
-				statesOrder.add(nextVal + s * numUpperStates);
+			}
+			if(statesOrder.size()==numColumns){
+				break;
+			}
+
+			blockIndex++;
+			nextVal = colsForState * (blockIndex) + varIndex;
+
+			boolean initial = true;
+			// find a hole
+			while (nextVal >= numColumns || statesOrder.contains(nextVal)) {
+				if (initial) {
+					blockIndex = 0;
+					initial = false;
+				}
+				varIndex++;
+				nextVal = colsForState * (blockIndex) + varIndex;
+
+				if (varIndex > numStates) {
+					varIndex = 0;
+					blockIndex++;
+				}
+				
+				// for (int i = 0; i < numColumns; i++) {
+				// if (!statesOrder.contains(i)) {
+				// nextVal = i;
+				//
+				// if ((colsForState * (blockIndex) + varIndex) > numColumns) {
+				// blockIndex = 0;
+				// varIndex++;
+				// }
+				// break;
+				// }
+				// }
 			}
 		}
 
