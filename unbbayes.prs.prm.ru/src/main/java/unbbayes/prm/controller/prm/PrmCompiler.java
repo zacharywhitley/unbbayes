@@ -463,6 +463,10 @@ public class PrmCompiler {
 		// Potential tables are many when an attribute is a parent and a child.
 		PotentialTable[] cptsWithValues = prmController.getCPDs(queryAtt);
 
+		if (cptsWithValues == null) {
+			throw new Exception("No CPTs for " + queryAtt);
+		}
+
 		// the right CPT depending on if the query node is parent or child.
 		PotentialTable rightCptWithValues;
 
@@ -491,60 +495,70 @@ public class PrmCompiler {
 
 		// Every CPT parent. the first one is discarded because it is the same
 		// attribute.
-		for (int i = 1; i < numCptParents; i++) {
+		for (int level = 0; level < numCptParents - 1; level++) {
 			// CPT parent node
-			INode parentCptNode = rightCptWithValues.getVariableAt(i);
+			INode parentCptNode = rightCptWithValues.getVariableAt(level + 1);
 			String idRelationship = parentCptNode.getDescription();
 
 			// Cuales instancias padres de nodo query están relacionadas con
 			// este nodo cpt.
 			List<INode> parentNodeInstances = queryNode.getParentNodes();
-			for (INode parentNodeInstance : parentNodeInstances) {
-				int parentCounter = 0;
+
+			// Every instance in this level.
+			// The fist node is created by default.
+			for (int i = 1; i < parentNodeInstances.size(); i++) {
+				// TODO rename fist name in cpt.
+				// if(i=) newTable.getVariableAt().setName();
+
+				INode parentNodeInstance = parentNodeInstances.get(0);
+
 				// if the node is part of this thing.
 				if (parentNodeInstance.getDescription().contains(
 						parentCptNode.getDescription())) {
-					// TODO apply aggregate function.
-					// throw new
-					// Exception("Aggregate function No implementada");
-					if (parentCounter > 0) {
-						// TODO modificar los valores según la función de
-						// agregación.
+					// Get number of states for this variable (parent).
+					int numNodeStates = parentNodeInstance.getStatesSize();
+					// FIXME it could not be necessary because is the same
+					// attribute numNodeStates.
+					int numLevelStates = rightCptWithValues.getVariableAt(
+							level + 1).getStatesSize();
 
-						// Get number of states for this variable (parent).
-						int numStates = parentNodeInstance.getStatesSize();
+					// Identify the columns related with every state of this
+					// variable.
+					int statesOrder2[] = DynamicTableHelper.statesOrderInCpt(
+							level, rightCptWithValues);
 
-						// Get the number of sub-states for one state.
-						int numSubStates = DynamicTableHelper.getNumSubStates(
-								i, rightCptWithValues);
+					int[] addedLevel = DynamicTableHelper.addLevel(level,
+							newTable, queryNode, numColumns, statesOrder2);
 
-						// Get the number of upper states.
-						int numUpperStates = DynamicTableHelper
-								.getNumUpperStates(i, rightCptWithValues);
+					// Insert the new variable.
+					newTable.addVariable(parentNodeInstance);
 
-						// Identify the columns related with every state of this
-						// variable.
-						// FIME the right level.
-						int statesOrder[] = DynamicTableHelper
-								.statesOrderInCpt(00, rightCptWithValues);
+					// fill with values and apply aggregate function.
+					int newNumCols = numLevelStates * numColumns;
 
-						// Insert the new variable.
-						newTable.addVariable(parentNodeInstance);
-
-						// fill with values and apply aggregate function.
-						int newNumCols = numStates * numColumns;
-
-						for (int st = 0; st < numStates; st++) {
-							for (int col = 0; col < numColumns; col++) {
-								int col1;
-								int col2 = col;
+					for (int st = 0; st < numLevelStates; st++) {
+						for (int col = 0; col < numColumns; col++) {
+							// For rows
+							for (int row = 0; row < numNodeStates; row++) {
+								float col1 = rightCptWithValues
+										.getValue(addedLevel[col + row]);
+								float col2 = rightCptWithValues.getValue(col
+										* numNodeStates + row);
+								//TODO index no está funcionandoOOOOOOOOOOOOOOOOOOOOOO
+								int index = st * numColumns + col
+										* numNodeStates + row;
+								// TODO aggregate function
+								log.debug("Aggregate fuction " + index + ": ["
+										+ col + "," + row + "] for " + col1
+										+ " y " + col2);
+								newTable.setValue(index, col1 + col2);
 							}
+
 						}
 					}
-					parentCounter++;
 				}
 			}
-			// if does not exist any node for this cpt parent
+			// If does not exist any node for this cpt parent.
 			if (parentNodeInstances.size() == 0) {
 				newTable.removeVariable(parentCptNode, true);
 			}
@@ -554,92 +568,32 @@ public class PrmCompiler {
 
 		}
 
-		// assign
+		// Normalize every column (this could be an external method).
+
+		int newNumColumns = DynamicTableHelper.getNumColumns(newTable);
+		int numRows = 2; // FIXME it must be calculated.
+		for (int i = 0; i < newNumColumns; i++) {
+			// Column sum
+			float colSum = 0;
+			for (int j = 0; j < numRows; j++) {
+				colSum += newTable.getValue(i * numRows + j);
+			}
+			log.debug("Column sum for " + i + ": " + colSum);
+			for (int j = 0; j < numRows; j++) {
+				newTable.setValue(i * numRows + j,
+						newTable.getValue(i * numRows + j) / colSum);
+			}
+
+		}
+
+		// float normalize = newTable.computeFactors();
+
+		// if (normalize != 1) {
+		// throw new Exception("Error normalizing. Result " + normalize);
+		// }
+
+		// assign new cpt.
 		assignCPDToNode(queryNode, newTable);
-
-		// Parent relationships
-		// for (ParentRel parentRel : parentRels) {
-		// for (INode parentNode : parentNodes) {
-		//
-		// // If this node is related to this relationship.
-		// if (parentInstanceNodes.get(parentNode.getName()).equals(
-		// parentRel)) {
-		//
-		// }
-		// }
-		// }
-
-		// // CPTs for the query attribute.
-		// int cptRows = queryNode.getStatesSize();
-		// int cptCols = 1;
-		//
-		// for (INode parentNode : parentNodes) {
-		// ProbabilisticNode probNode = (ProbabilisticNode) parentNode;
-		//
-		// cptCols *= probNode.getStatesSize();
-		//
-		// ParentRel parentRel = parentInstanceNodes.get(probNode.getName());
-		//
-		// }
-		//
-		// //
-		// // // Table to assign.
-		// PotentialTable probabilityFunction =
-		// queryNode.getProbabilityFunction();
-
-		//
-		// // ////// CPD for child/query node.////////
-		// Enumeration<ParentRel> keys = parentInstanceNodes.keys();
-		//
-		// while (keys.hasMoreElements()) {
-		// ParentRel parentRel = (ParentRel) keys.nextElement();
-		//
-		// // Special case where parent is the same that the child. It requeres
-		// // to know if the instance is a parent or a child.
-		// if (parentRel.getChild().equals(parentRel.getParent())) {
-		// if(queryNode.getP.)
-		// }
-		//
-		// // Only for children.
-		// if (parentRel.getChild().equals(queryAtt)) {
-		// Set<ProbabilisticNode> list = parentInstanceNodes
-		// .get(parentRel);
-		//
-		// for (ProbabilisticNode pn : list) {
-		// cptCols *= pn.getStatesSize();
-		// }
-		// }
-		// }
-		//
-		// log.debug("CPT for " + queryNode.getName() + " cols: " + cptCols
-		// + " rows: " + cptRows);
-		//
-		// // Get the saved CPTs.
-		// PotentialTable[] cpDs = prmController.getCPDs(queryAtt);
-		// if (cpDs == null) {
-		// throw new Exception("Attribute " + queryAtt.getTable().getName()
-		// + "." + queryAtt.getAttribute().getName()
-		// + " does not have an associated CPT");
-		// }
-		//
-		// // TODO CREATE A DYNAMIC CPT
-		// // assignCPDToNode(queryNode, cpDs[cpdIndex]);
-		// // int variablesSize = cpDs[cpdIndex].getValues().length;
-		//
-
-		// int valueCptCounter = 0;
-		// // Variable
-		// for (int c = 0; c < cptCols; c++) {
-		// for (int r = 0; r < cptRows; r++) {
-		// try {
-		// probabilityFunction.setValue(valueCptCounter, 1f / cptRows);
-		// } catch (ArrayIndexOutOfBoundsException e) {
-		// throw new Exception("Invalid Value " + valueCptCounter, e);
-		// }
-		// valueCptCounter++;
-		// }
-		// }
-
 	}
 
 	private void addEdge(ProbabilisticNetwork resultNet,

@@ -75,18 +75,6 @@ public class DynamicTableHelper {
 					varIndex = 0;
 					blockIndex++;
 				}
-				
-				// for (int i = 0; i < numColumns; i++) {
-				// if (!statesOrder.contains(i)) {
-				// nextVal = i;
-				//
-				// if ((colsForState * (blockIndex) + varIndex) > numColumns) {
-				// blockIndex = 0;
-				// varIndex++;
-				// }
-				// break;
-				// }
-				// }
 			}
 		}
 
