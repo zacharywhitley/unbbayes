@@ -152,10 +152,8 @@ public class DynamicTableHelperTest {
 		int level = 0;
 		System.out.println("level " + level);
 
-		int[] initialOrder = { 0, 1, 2, 3, 4, 5, 6, 7 };
 
-		int[] ordered = DynamicTableHelper.addLevel(level, cpt, childNode,
-				numColumns, initialOrder);
+		int[] ordered = DynamicTableHelper.addLevel(level, cpt, childNode);
 
 		int[] finalResult = { 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7 };
 
@@ -165,10 +163,8 @@ public class DynamicTableHelperTest {
 		level = 1;
 		System.out.println("\nlevel " + level);
 
-		initialOrder = new int[] { 0, 2, 1, 3, 4, 6, 5, 7 };
 
-		ordered = DynamicTableHelper.addLevel(level, cpt, childNode,
-				numColumns, initialOrder);
+		ordered = DynamicTableHelper.addLevel(level, cpt, childNode);
 
 		finalResult = new int[] { 0, 2, 0, 2, 1, 3, 1, 3, 4, 6, 4, 6, 5, 7, 5,
 				7 };
@@ -179,10 +175,8 @@ public class DynamicTableHelperTest {
 		level = 2;
 		System.out.println("\nlevel " + level);
 
-		initialOrder = new int[] { 0, 4, 1, 5, 2, 6, 3, 7 };
 
-		ordered = DynamicTableHelper.addLevel(level, cpt, childNode,
-				numColumns, initialOrder);
+		ordered = DynamicTableHelper.addLevel(level, cpt, childNode);
 
 		finalResult = new int[] { 0, 0, 4, 4, 1, 1, 5, 5, 2, 2, 6, 6, 3, 3, 7,
 				7 };
@@ -201,10 +195,8 @@ public class DynamicTableHelperTest {
 		int level = 0;
 		System.out.println("level " + level);
 
-		int[] initialOrder = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
-		int[] ordered = DynamicTableHelper.addLevel(level, cpt, childNode,
-				numColumns, initialOrder);
+		int[] ordered = DynamicTableHelper.addLevel(level, cpt, childNode);
 
 		int[] finalResult = { 0, 1, 2, 3, 4, 5, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
 				10, 11, 6, 7, 8, 9, 10, 11 };
@@ -216,10 +208,8 @@ public class DynamicTableHelperTest {
 		int numUpperStates = DynamicTableHelper.getNumUpperStates(level, cpt);
 		int[] statesOrderInCpt = DynamicTableHelper
 				.statesOrderInCpt(level, cpt);
-		// TODO
 
-		ordered = DynamicTableHelper.addLevel(level, cpt, childNode,
-				numColumns, statesOrderInCpt);
+		ordered = DynamicTableHelper.addLevel(level, cpt, childNode);
 		finalResult = new int[] { 0, 0, 0, 4, 4, 4, 1, 1, 1, 5, 5, 5, 2, 2, 2,
 				6, 6, 6, 3, 3, 3, 7, 7, 7, 8, 8, 8, 12, 12, 12 };
 

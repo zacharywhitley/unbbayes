@@ -1,7 +1,6 @@
 package unbbayes.prm.controller.prm;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -456,9 +455,6 @@ public class PrmCompiler {
 
 		ParentRel[] parentRels = prmController.parentsOf(queryAtt);
 
-		// Parent nodes
-		List<INode> parentNodes = queryNode.getParentNodes();
-
 		// ///////////////// IDENTIFY the right CPT with values ////////////////
 		// Potential tables are many when an attribute is a parent and a child.
 		PotentialTable[] cptsWithValues = prmController.getCPDs(queryAtt);
@@ -467,7 +463,7 @@ public class PrmCompiler {
 			throw new Exception("No CPTs for " + queryAtt);
 		}
 
-		// the right CPT depending on if the query node is parent or child.
+		// The right CPT depending on if the query node is parent or child.
 		PotentialTable rightCptWithValues;
 
 		// Identify if queryNode is a parent or a child.
@@ -485,31 +481,33 @@ public class PrmCompiler {
 
 		// ////////////// FILL THE QUERY NODE CPT /////////////////////
 
-		PotentialTable newTable = (PotentialTable) rightCptWithValues.clone();
-
 		// CPT parents
 		int numCptParents = rightCptWithValues.getVariablesSize();
 
-		// Get the number of columns.
-		int numColumns = DynamicTableHelper.getNumColumns(rightCptWithValues);
+		PotentialTable tmpTable = rightCptWithValues;
 
 		// Every CPT parent. the first one is discarded because it is the same
 		// attribute.
 		for (int level = 0; level < numCptParents - 1; level++) {
 			// CPT parent node
 			INode parentCptNode = rightCptWithValues.getVariableAt(level + 1);
-			String idRelationship = parentCptNode.getDescription();
 
-			// Cuales instancias padres de nodo query están relacionadas con
-			// este nodo cpt.
+			// Parent instances to apply the aggregate function.
 			List<INode> parentNodeInstances = queryNode.getParentNodes();
 
+			log.debug("Parent 1 is discarted because it exists in the default CPT");
 			// Every instance in this level.
 			// The fist node is created by default.
 			for (int i = 1; i < parentNodeInstances.size(); i++) {
-				// TODO rename fist name in cpt.
-				// if(i=) newTable.getVariableAt().setName();
+				// Get the number of columns.
+				int numColumns = DynamicTableHelper.getNumColumns(tmpTable);
 
+				PotentialTable newTable = (PotentialTable) tmpTable.clone();
+
+				log.debug("Parent " + (i + 1) + " of "
+						+ parentNodeInstances.size());
+
+				// XXX no es i en vez de 0?
 				INode parentNodeInstance = parentNodeInstances.get(0);
 
 				// if the node is part of this thing.
@@ -524,43 +522,43 @@ public class PrmCompiler {
 
 					// Identify the columns related with every state of this
 					// variable.
-					int statesOrder2[] = DynamicTableHelper.statesOrderInCpt(
-							level, rightCptWithValues);
-
 					int[] addedLevel = DynamicTableHelper.addLevel(level,
-							newTable, queryNode, numColumns, statesOrder2);
+							newTable, queryNode);
 
 					// Insert the new variable.
 					newTable.addVariable(parentNodeInstance);
-
-					// fill with values and apply aggregate function.
-					int newNumCols = numLevelStates * numColumns;
 
 					for (int st = 0; st < numLevelStates; st++) {
 						for (int col = 0; col < numColumns; col++) {
 							// For rows
 							for (int row = 0; row < numNodeStates; row++) {
-								float col1 = rightCptWithValues
-										.getValue(addedLevel[col + row]);
-								float col2 = rightCptWithValues.getValue(col
-										* numNodeStates + row);
-								//TODO index no está funcionandoOOOOOOOOOOOOOOOOOOOOOO
-								int index = st * numColumns + col
+								int indxValue = addedLevel[numLevelStates * st
+										+ col]
 										* numNodeStates + row;
+								float col1 = tmpTable
+										.getValue(indxValue);
+
+								indxValue = col * numNodeStates + row;
+								float col2 = tmpTable.getValue(indxValue);
+
+								int index = st * numColumns * numNodeStates
+										+ col * numNodeStates + row;
 								// TODO aggregate function
 								log.debug("Aggregate fuction " + index + ": ["
 										+ col + "," + row + "] for " + col1
-										+ " y " + col2);
+										+ " y " + col2 + " Result="
+										+ (col1 + col2));
 								newTable.setValue(index, col1 + col2);
 							}
-
 						}
 					}
 				}
+				tmpTable = newTable;
 			}
-			// If does not exist any node for this cpt parent.
+
+			// If does not exist any node for this CPT parent.
 			if (parentNodeInstances.size() == 0) {
-				newTable.removeVariable(parentCptNode, true);
+				tmpTable.removeVariable(parentCptNode, true);
 			}
 
 			String name = parentCptNode.getName();
@@ -570,30 +568,22 @@ public class PrmCompiler {
 
 		// Normalize every column (this could be an external method).
 
-		int newNumColumns = DynamicTableHelper.getNumColumns(newTable);
-		int numRows = 2; // FIXME it must be calculated.
+		int newNumColumns = DynamicTableHelper.getNumColumns(tmpTable);
+		int numRows = queryNode.getStatesSize(); // FIXME it must be calculated.
 		for (int i = 0; i < newNumColumns; i++) {
 			// Column sum
 			float colSum = 0;
 			for (int j = 0; j < numRows; j++) {
-				colSum += newTable.getValue(i * numRows + j);
+				colSum += tmpTable.getValue(i * numRows + j);
 			}
-			log.debug("Column sum for " + i + ": " + colSum);
 			for (int j = 0; j < numRows; j++) {
-				newTable.setValue(i * numRows + j,
-						newTable.getValue(i * numRows + j) / colSum);
+				tmpTable.setValue(i * numRows + j,
+						tmpTable.getValue(i * numRows + j) / colSum);
 			}
-
 		}
 
-		// float normalize = newTable.computeFactors();
-
-		// if (normalize != 1) {
-		// throw new Exception("Error normalizing. Result " + normalize);
-		// }
-
-		// assign new cpt.
-		assignCPDToNode(queryNode, newTable);
+		// Assign the new CPT.
+		assignCPDToNode(queryNode, tmpTable);
 	}
 
 	private void addEdge(ProbabilisticNetwork resultNet,

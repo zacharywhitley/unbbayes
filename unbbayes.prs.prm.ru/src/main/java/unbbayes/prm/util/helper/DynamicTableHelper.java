@@ -154,8 +154,16 @@ public class DynamicTableHelper {
 	 * @return
 	 */
 	public static int[] addLevel(int level, PotentialTable cpt,
-			INode childNode, int numColumns, int[] order) {
+			INode childNode) {
+		
+		 int numColumns = getNumColumns(cpt);
 		int numSubStates = getNumSubStates(level, cpt);
+		
+		
+		int order[] = DynamicTableHelper.statesOrderInCpt(
+				level, cpt);
+		
+		
 		numSubStates = numSubStates == 0 ? 1 : numSubStates;
 
 		int numStates = childNode.getStatesSize();
