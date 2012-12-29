@@ -44,7 +44,7 @@ import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
  */
 public class MarkovEngineTest extends TestCase {
 	
-	private static final int THREAD_NUM = 1;//75;	// quantity of threads to use in order to test multi-thread behavior
+	private static final int THREAD_NUM = 75;	// quantity of threads to use in order to test multi-thread behavior
 
 	public static final int MAX_NETWIDTH = 3;
 	public static final int MAX_STATES = 5;
@@ -3771,7 +3771,6 @@ public class MarkovEngineTest extends TestCase {
 				Collections.singletonList(0), 
 				false
 			).isEmpty());
-		
 
 		
 		// Let's create user Joe, ID = 1.
@@ -20152,4 +20151,315 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals("Index " + i + " of " + assetsIfStates, assetsIfStates.get(i), assetsIfStates.get(i+1), ASSET_ERROR_MARGIN);
 		}
 	}
+	
+	/**
+	 * This is a test method for trades being corrected when
+	 * {@link MarkovEngineInterface#setToUseCorrectiveTrades(boolean)}
+	 * is set to true.
+	 * Trades will be executed in a single transaction
+	 */
+	public final void testCorrectiveTradeSingleTransaction()  {
+		assertTrue(engine.isToUseCorrectiveTrades());
+		
+		engine.setDefaultInitialAssetTableValue(0f);
+		
+		// crate transaction
+		long transactionKey = engine.startNetworkActions();
+		
+		// create nodes D, E, F
+		engine.addQuestion(transactionKey, new Date(), 0x0D, 2, null);	// question D has ID = hexadecimal D. CPD == null -> linear distro
+		engine.addQuestion(transactionKey, new Date(), 0x0E, 2, null);	// question E has ID = hexadecimal E. CPD == null -> linear distro
+		engine.addQuestion(transactionKey, new Date(), 0x0F, 2, null);	// question F has ID = hexadecimal F. CPD == null -> linear distro
+		// create edge D->E 
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+		// create edge D->F
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
+
+		// this is a nameless user created just to adjust probabilities
+		assertTrue(engine.addCash(transactionKey, new Date(), Long.MIN_VALUE, engine.getScoreFromQValues(2000f), "Initialize John Doe's asset to 2000"));
+		
+		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(.9f);
+		newValues.add(.1f);
+		assertTrue( engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"John Doe bets P(E=e1|D=d1) = 0.9", 
+				Long.MIN_VALUE, 
+				0x0E, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(0), 
+				false
+			).isEmpty());
+		
+
+		// this is a mapping from user name to user ID
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		
+		// Let's create user Joe, ID = 1.
+		userNameToIDMap.put("Joe", (long) 1);
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Joe"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+
+		// Joe bets P(E=e1|D=d2) = .55 -> .4
+		List<Float> oldValues = new ArrayList<Float>();
+		oldValues.add(.55f);
+		oldValues.add(.45f);
+		newValues = new ArrayList<Float>();
+		newValues.add(.4f);
+		newValues.add(.6f);
+		assertTrue( engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(E=e1|D=d2) = .55 -> .4", 
+				userNameToIDMap.get("Joe"), 
+				0x0E, 
+				oldValues,
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(1), 
+				false
+			).isEmpty());
+		
+		// John Doe bets P(F=f1|D=d1) = .5 -> .3
+		newValues = new ArrayList<Float>();
+		newValues.add(.3f);
+		newValues.add(.7f);
+		assertTrue( engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"John Doe bets P(F=f1|D=d1) = 0.3", 
+				Long.MIN_VALUE, 
+				0x0F, 
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(0), 
+				false
+			).isEmpty());
+
+		// Joe bets P(F=f1|D=d2) = .5 -> .1
+		oldValues = new ArrayList<Float>();
+		oldValues.add(.5f);
+		oldValues.add(.5f);
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(.9f);
+		assertTrue( engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Joe bets P(F=f1|D=d2) = .5 -> .1", 
+				userNameToIDMap.get("Joe"), 
+				0x0F, 
+				oldValues,
+				newValues, 
+				Collections.singletonList((long)0x0D), 
+				Collections.singletonList(1), 
+				false
+			).isEmpty());
+		
+		
+		// create new user Eric
+		userNameToIDMap.put("Eric", (long) -666);
+		
+		// add 100 q-values to new users
+		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Eric"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		
+		// Eric bets P(E=e1) = .65 -> .8
+		oldValues = new ArrayList<Float>();
+		oldValues.add(.65f);
+		oldValues.add(1f-.65f);
+		newValues = new ArrayList<Float>();
+		newValues.add(.8f);
+		newValues.add(.2f);
+		assertTrue( engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(E=e1) = .65 -> .8", 
+				userNameToIDMap.get("Eric"), 
+				0x0E, 
+				oldValues,
+				newValues, 
+				(List)Collections.emptyList(), 
+				(List)Collections.emptyList(), 
+				false
+			).isEmpty());
+		
+		// Eric bets  P(D=d1|F=f2) = 0.52 -> 0.7
+		oldValues = new ArrayList<Float>();
+		oldValues.add(.52f);
+		oldValues.add(1f-.52f);
+		newValues = new ArrayList<Float>();
+		newValues.add(.7f);
+		newValues.add(.3f);
+		assertTrue( engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(D=d1|F=f2) = 0.52 -> 0.7", 
+				userNameToIDMap.get("Eric"), 
+				0x0D, 
+				oldValues,
+				newValues, 
+				Collections.singletonList((long)0x0F), 
+				Collections.singletonList(1), 
+				false
+			).isEmpty());
+		
+		// commit all trades (including the creation of network and user)
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that final marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
+		List<Float> probList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.7232f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.2768f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.8509f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.1491f, probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.2165f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.7835f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		// set assumptions to D,E,F, so that we can use it to calculate conditional min-q (in order to test consistency of LPE)
+		ArrayList<Long> assumptionIds = new ArrayList<Long>();
+		assumptionIds.add((long) 0x0D);		// 1st node is D; assumedStates must follow this order
+		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
+		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
+		// init list of states of the assumptions
+		ArrayList<Integer> assumedStates = new ArrayList<Integer>();	
+		assumedStates.add(0);	// d1
+		assumedStates.add(0);	// e1
+		assumedStates.add(0);	// f1
+		
+		
+		// check that min-q of Joe is 14.5454545...
+		float minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
+		assertEquals((engine.getScoreFromQValues(14.5454545f)), (minCash), ASSET_ERROR_MARGIN);
+		assertEquals(14.5454545f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that LPE of Joe contains d2, e1, f1
+		
+		// check combination d1, e1, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		float cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check that final min-q of Eric is 35.7393...
+		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
+		assertEquals((engine.getScoreFromQValues(35.7393f)), (minCash), ASSET_ERROR_MARGIN);
+		assertEquals(35.7393f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		
+		// check that final LPE of Eric is d2, e2 and f2
+		
+		// check combination d1, e1, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e1, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f1
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d1, e2, f2
+		assumedStates.set(0, 0);	// d1
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f1 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e1, f2 
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 0);	// e1
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e2, f1
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 0);	// f1
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertTrue("Obtained cash = " + cash, minCash < cash);
+		
+		// check combination d2, e2, f2
+		assumedStates.set(0, 1);	// d2
+		assumedStates.set(1, 1);	// e2
+		assumedStates.set(2, 1);	// f2
+		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
+		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+		
+		
+	}
+	
 }

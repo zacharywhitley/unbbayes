@@ -27,12 +27,13 @@ public class TradeSpecificationImpl implements TradeSpecification {
 	 * Default constructor method using fields
 	 * @param userId
 	 * @param questionId
+	 * @param oldProbabilities
 	 * @param probabilities
 	 * @param assumptionIds
 	 * @param assumedStates
 	 */
 	public TradeSpecificationImpl(Long userId, Long questionId,
-			List<Float> probabilities, List<Long> assumptionIds,
+			List<Float> oldProbabilities, List<Float> probabilities, List<Long> assumptionIds,
 			List<Integer> assumedStates) {
 		super();
 		this.userId = userId;
@@ -40,6 +41,24 @@ public class TradeSpecificationImpl implements TradeSpecification {
 		this.probabilities = probabilities;
 		this.assumptionIds = assumptionIds;
 		this.assumedStates = assumedStates;
+		this.oldProbabilities = oldProbabilities;
+	}
+	
+	/**
+	 * Default constructor method using fields, but {@link #oldProbabilities} will
+	 * be set to null.
+	 * @param userId
+	 * @param questionId
+	 * @param probabilities
+	 * @param assumptionIds
+	 * @param assumedStates
+	 * @see #TradeSpecificationImpl(Long, Long, List, List, List, List)
+	 */
+	public TradeSpecificationImpl(Long userId, Long questionId,
+			List<Float> probabilities, List<Long> assumptionIds,
+			List<Integer> assumedStates) {
+		this(userId, questionId, probabilities, probabilities, assumptionIds, assumedStates);
+		this.oldProbabilities = null;
 	}
 
 

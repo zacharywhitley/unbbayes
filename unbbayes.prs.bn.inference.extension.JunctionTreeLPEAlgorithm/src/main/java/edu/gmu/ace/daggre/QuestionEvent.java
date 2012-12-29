@@ -52,4 +52,15 @@ public interface QuestionEvent extends Serializable {
 	 * this method the settled state.
 	 */
 	Integer getSettledState();
+	
+	/**
+	 * @return true if this entry is a
+	 * "corrective" trade. That is, a 
+	 * virtual trade which will force the current probability
+	 * of the system to become equal to {@link TradeSpecification#getOldProbabilities()}.
+	 * This is useful for distinguishing whether this entry in the history was caused
+	 * by an actual trade (or question settlement), or it was automatically
+	 * performed by the engine for correcting the probabilities.
+	 */
+	Boolean isCorrectiveTrade();
 }

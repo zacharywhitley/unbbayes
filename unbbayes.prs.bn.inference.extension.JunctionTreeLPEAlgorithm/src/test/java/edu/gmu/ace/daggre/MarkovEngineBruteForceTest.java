@@ -47,7 +47,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static final long PROB_FRACTIONAL_DIGITS = 4;
 	
 	/** If true, {@link #PROB_FRACTIONAL_DIGITS} will be used to round the edits. */
-	private static boolean isToRoundEdit = true;
+	private static boolean isToRoundEdit = false; //true;
 
 	/** Error margin used when comparing 2 probability values. {@link CPTBruteForceMarkovEngine} have less precision. */
 	public static final float RELAXED_PROB_ERROR_MARGIN = 0.0005f;
@@ -107,16 +107,16 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static float probResolve = 0.03f;//0.1f;
 
 	/** probability to balance a trade */
-	private static float probToBalance = 0.01f; //0.03f;
+	private static float probToBalance = 0.3f;//0.1f;
 
 	/** probability to add cash */
-	private static float probToAddCash = .2f;
+	private static float probToAddCash = 0.3f;//.2f;
 
 	/** If true, some test results and test specifications will be printed out by {@link #tracer} */
-	private static boolean isToTrace = true;
+	private static boolean isToTrace = false;//true;
 
 	/** This is the probability that if trade is chosen to be {@link FivePointTestType#BETWEEN_LIMITS}, it is very close to the limits */
-	private static float probNearEditLimitBias = 0.3f;//0.6f;
+	private static float probNearEditLimitBias = 0.03f;//0.6f;
 
 	/** This is the probability that {@link #runRandomTest(Network, List, List)} will not choose {@link FivePointTestType#BETWEEN_LIMITS} to trade */
 	private static float probTradeOutsideLimit = 0.0f;
@@ -129,7 +129,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 
 	/** If true, {@link MarkovEngineImpl#doBalanceTrade(Long, Date, String, long, long, List, List)} of 
 	 * {@link #runRandomTestSingleEngine(Network, List)} will balance the question entirely (consider all possible assumptions) */
-	private static boolean isToForceBalanceQuestionEntirely = true;
+	private static boolean isToForceBalanceQuestionEntirely = false;
 
 	/** If true, {@link #testFilesWithResolutionSingleEngine()} will call {@link #createNodesInMarkovBlanket(Long, Network, List, List, List, Collection)}
 	 * instead of {@link #createNode(Long, Network, List, List, List, Collection)} */
@@ -142,7 +142,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static boolean isToAssertConsistencyIn5PointTest = true;
 
 	/** Maximum quantity of nodes to be alive in this test. If the quantity of nods reaches this value, no new nodes will be created */
-	private static int maxLiveNodes = 8;//Integer.MAX_VALUE; 
+	private static int maxLiveNodes = 10;//Integer.MAX_VALUE; 
 
 	/** This is the index of {@link #engines} to be used as the sole engine to be run in {@link #testFilesWithResolutionSingleEngine()}.
 	 * Negative values will be interpreted as "the last element in the list" */
@@ -160,18 +160,18 @@ public class MarkovEngineBruteForceTest extends TestCase {
 
 	/** This value is considered to be a big change in probability
 	 * @see #probBigEdit */
-	private static float minProbDiffOfBigEdit = .6f;//0f;
+	private static float minProbDiffOfBigEdit = 0f;//.6f;
 
 	/** Prob of {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)} to make a change a big change in current prob
 	* @see #minProbDiffOfBigEdit */
-	private static float probBigEdit = 0.2f;//.4f;//0f;
+	private static float probBigEdit = 0f;//0.2f;//.4f;
 
 
 	/** If the program iterated more than this quantity in order to generate the edit, it considers that it could not generate a consistent edit */
-	private static int maxIterationToGenerateEdit = 50;
+	private static int maxIterationToGenerateEdit = 500;
 	
 	/** If the program iterated more than this quantity in order to choose the question to edit, the test will fail */
-	private static int maxIterationToSelectQuestion = howManyTradesToTest/maxLiveNodes;
+	private static int maxIterationToSelectQuestion = 1000/maxLiveNodes; //howManyTradesToTest/maxLiveNodes;
 
 	/** If true, the cash will be tested after a balance trade */
 	private static boolean isToCheckCashAfterBalance = false;
@@ -183,6 +183,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static int minAliveQuestionNumber = -1;
 
 	private static long seed = new Date().getTime();
+	
 	/** Random number generator, with seed */
 	private static Random random = new Random(seed);
 
@@ -198,7 +199,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 
 	/** {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)} will attempt to generate edits
 	 * which exceeds or equals to this value of difference compared to current probability */
-	private static float probDiffToConsiderSufficientChange = 0.01f;
+	private static float probDiffToConsiderSufficientChange = 0.0000001f;//0.01f;
 	
 	/** If false, edit limit will be set to the default [0, 1] */
 	private static boolean isToCalculateEditLimit = true;
@@ -754,6 +755,14 @@ public class MarkovEngineBruteForceTest extends TestCase {
 //		engines.get(engines.size()-1).setToObtainProbabilityOfResolvedQuestions(true);
 		engines.get(engines.size()-1).setToThrowExceptionOnInvalidAssumptions(true);
 		engines.get(engines.size()-1).setToCompareProbOnRebuild(true);
+		engines.get(engines.size()-1).setToCollapseSimilarBalancingTrades(false);
+		engines.get(engines.size()-1).setToUseCorrectiveTrades(false);
+		
+		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 100f));
+		engines.get(engines.size()-1).setToThrowExceptionOnInvalidAssumptions(true);
+		engines.get(engines.size()-1).setToCompareProbOnRebuild(true);
+		engines.get(engines.size()-1).setToCollapseSimilarBalancingTrades(true);
+		engines.get(engines.size()-1).setToUseCorrectiveTrades(true);
 		
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();
@@ -867,8 +876,10 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				probOfStateToConsider = editLimits.get(0);
 				break;
 			case BETWEEN_LIMITS:
-				assertFalse(editLimits.toString() + " cannot have values between them when precision is " + PROB_FRACTIONAL_DIGITS + " fractional digits.", 
-						Math.round( (editLimits.get(1) - editLimits.get(0)) * Math.pow(10, PROB_FRACTIONAL_DIGITS) ) <= 1);
+				if (isToRoundEdit()) {
+					assertFalse(editLimits.toString() + " cannot have values between them when precision is " + PROB_FRACTIONAL_DIGITS + " fractional digits.", 
+							Math.round( (editLimits.get(1) - editLimits.get(0)) * Math.pow(10, PROB_FRACTIONAL_DIGITS) ) <= 1);
+				}
 				for (; iteration < maxIterationToGenerateEdit; iteration++) {
 					isCloseToEdit = false;
 					double delta = ((editLimits.get(1) - editLimits.get(0))*random.nextDouble());
@@ -915,6 +926,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 							// change is greater if we move towards 0
 							probOfStateToConsider = probList.get(stateToConsider) - minProbDiffOfBigEdit - (random.nextDouble()*(probList.get(stateToConsider)-minProbDiffOfBigEdit));
 						}
+					} else {
+						// just set the value without any adaptation
+						probOfStateToConsider = editLimits.get(0) + delta;
 					}
 					if (isToRoundEdit()) {
 						// round to the PROB_FRACTIONAL_DIGITSth digit
@@ -976,7 +990,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			}
 			
 			// make sure the edit will change the probability considerably
-			if (!hasConsiderableProbChange(ret, questionId, assumptionIds, assumedStates)) {
+			if (type == FivePointTestType.BETWEEN_LIMITS && !hasConsiderableProbChange(ret, questionId, assumptionIds, assumedStates)) {
 				continue;
 			}
 			
@@ -1007,7 +1021,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					continue;
 				}
 				// make sure the edit will change the probability considerably
-				if (!hasConsiderableProbChange(ret, questionId, assumptionIds, assumedStates)) {
+				if (type == FivePointTestType.BETWEEN_LIMITS && !hasConsiderableProbChange(ret, questionId, assumptionIds, assumedStates)) {
 					continue;
 				}
 				sum = 0d;
@@ -1033,7 +1047,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						continue;
 					}
 					// make sure the edit will change the probability considerably
-					if (!hasConsiderableProbChange(ret, questionId, assumptionIds, assumedStates)) {
+					if (type == FivePointTestType.BETWEEN_LIMITS && !hasConsiderableProbChange(ret, questionId, assumptionIds, assumedStates)) {
 						continue;
 					}
 					
@@ -1070,7 +1084,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 							continue;
 						}
 						// make sure the edit will change the probability considerably
-						if (!hasConsiderableProbChange(ret, questionId, assumptionIds, assumedStates)) {
+						if (type == FivePointTestType.BETWEEN_LIMITS && !hasConsiderableProbChange(ret, questionId, assumptionIds, assumedStates)) {
 							continue;
 						}
 						
@@ -1347,7 +1361,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			// get the conditional probability before the trade and compare with newValues to see if this trade is supposed to change something
 			boolean hasChangedProb = false;	// this value will be used posteriorly to check if we should verify whether scores have also changed
 			List<Float> condProbBeforeTrade = null;
-			if (isToAssertConsistencyIn5PointTest ) {
+			if (isToAssertConsistencyIn5PointTest && (uncommittedTransactionsKeyMap == null || !uncommittedTransactionsKeyMap.containsKey(engine))) {
 				condProbBeforeTrade = engine.getProbList(questionId, assumptionIds, assumedStates);
 				// just to make sure the size of the nodes did not change over time
 				assertEquals(newValues + "," + condProbBeforeTrade, newValues.size(), condProbBeforeTrade.size());
@@ -1858,22 +1872,27 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			
 			// a.) 5-point min-q values test regarding the edit bound; expect to see corresponding q<1, =1, >1 respectively.
 			
-			if (uncommittedTransactionKeyMap.isEmpty()) {	// only do these tests if we are not comparing the cases which runs all trades in 1 transaction or multiple transactions
-				// (1) the probability close to but smaller than the lower bound; last boolean is true because we want to undo this trade
-				this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.BELOW_LIMIT, uncommittedTransactionKeyMap, false, (Set)Collections.emptySet(), true);
+			try {
+				if (uncommittedTransactionKeyMap.isEmpty()) {	// only do these tests if we are not comparing the cases which runs all trades in 1 transaction or multiple transactions
+					// (1) the probability close to but smaller than the lower bound; last boolean is true because we want to undo this trade
+					this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.BELOW_LIMIT, uncommittedTransactionKeyMap, false, (Set)Collections.emptySet(), true);
+					
+					// (2) the probability exactly on the lower bound;last boolean is true because we want to undo this trade
+					this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ON_LOWER_LIMIT, uncommittedTransactionKeyMap, false, (Set)Collections.emptySet(), true);
+					
+					// (4) the probability exactly on the upper bound; last boolean is true because we want to undo this trade
+					this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ON_UPPER_LIMIT, uncommittedTransactionKeyMap, false, (Set)Collections.emptySet(), true);
+					
+					// (5) the probability close to but bigger than the upper bound; last boolean is true because we want to undo this trade
+					this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ABOVE_LIMIT, uncommittedTransactionKeyMap, false, (Set)Collections.emptySet(), true);
+				}
 				
-				// (2) the probability exactly on the lower bound;last boolean is true because we want to undo this trade
-				this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ON_LOWER_LIMIT, uncommittedTransactionKeyMap, false, (Set)Collections.emptySet(), true);
-				
-				// (4) the probability exactly on the upper bound; last boolean is true because we want to undo this trade
-				this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ON_UPPER_LIMIT, uncommittedTransactionKeyMap, false, (Set)Collections.emptySet(), true);
-				
-				// (5) the probability close to but bigger than the upper bound; last boolean is true because we want to undo this trade
-				this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.ABOVE_LIMIT, uncommittedTransactionKeyMap, false, (Set)Collections.emptySet(), true);
+				// (3) random probability in between the bound; last boolean is false because we don't want to undo this trade
+				this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.BETWEEN_LIMITS, uncommittedTransactionKeyMap, false, (Set)Collections.emptySet(), false);
+			} catch (Exception e) {
+				Debug.println(getClass(), e.getMessage(), e);
+				iteration--;
 			}
-			
-			// (3) random probability in between the bound; last boolean is false because we don't want to undo this trade
-			this.do5PointTest(questionsToNumberOfStatesMap, questionId, stateOfEditLimit, editLimits, userId, assumptionIds, assumedStates, FivePointTestType.BETWEEN_LIMITS, uncommittedTransactionKeyMap, false, (Set)Collections.emptySet(), false);
 		}	// end of for : iteration
 	}
 
@@ -4437,7 +4456,6 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 * 1 ME will be run (hence, no comparison is performed).
 	 */
 	public final void testFilesWithResolutionSingleEngine() {
-		isToAssertConsistencyIn5PointTest = false;
 		
 		// most basic assertion
 		assertNotNull(engines);

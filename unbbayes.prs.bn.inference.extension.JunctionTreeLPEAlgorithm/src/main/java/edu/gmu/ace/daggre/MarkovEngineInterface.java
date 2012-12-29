@@ -262,6 +262,75 @@ public interface MarkovEngineInterface {
 	 * @deprecated use {@link #addTrade(Long, Date, String, TradeSpecification, boolean)} instead
 	 */
 	public List<Float> addTrade(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException;
+	
+	/**
+	 * This function will add a specific trade to the system. 
+	 * Implementations shall be synchronized.
+	 * This feature is also described in
+	 * <a href="https://docs.google.com/document/d/1p1TY-paqEmJNshQYThr6H3SyR2-e6xmoXrI9HleqiPM/edit">https://docs.google.com/document/d/1p1TY-paqEmJNshQYThr6H3SyR2-e6xmoXrI9HleqiPM/edit</a>
+	 * as follows:
+	 * <br/><br/>
+	 * We use a Bayesian network (BN) to represent the prediction market of our interest. 
+	 * And we use the BN inference algorithm (Junction tree) to incorporate whatever edit P*(T=t|A=a), which is viewed as conditional soft evidence for the BN. 
+	 * Our particular procedure is the following:
+	 * <br/><br/>
+	 * First, add a binary dummy node called Dummy to the network, with {T, A} as its parents. 
+	 * The CPT for Dummy can be calculated by the equation: P*(T=t|A=a)/P(T=t|A=a). For P*(T=state other than t|A=a), we change it proportionally based on the original probabilities.
+	 * <br/><br/>
+	 * Note that Dummy is always observed at state 1. Call inference engine on this new network to update consensus probabilities for all cliques and separators, and save them into engine. 
+	 * Note that implementations may also update all CPDs for the original network with the ones from the new network with dummy node to be observed at state 1
+	 * (i.e. implementations are free to keep the dummy node or remove it, making sure that its remotion will not revert the changes). 
+	 * <br/><br/>
+	 * Identify the cliques containing A and/or T, update the q-table for the clique by Equation (4). 
+	 * <br/><br/>
+	 * Calculate the overall expected score after the edit. 
+	 * <br/><br/>
+	 * Calculate the global min-q value after the edit by min-q-propagation.
+	 * 
+	 * @param transactionKey : key returned by {@link #startNetworkActions()}
+	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
+	 * @param tradeKey : revert and history functions can refer to specific trade actions easier, by referring to this key (identifier).
+	 * @param userId : the ID of the user (i.e. owner of the assets).
+	 * @param questionId : the id of the question to be edited (i.e. the random variable "T"  in the example)
+	 * 
+	 * @param oldValues : this is a list (ordered collection) representing the probability values before the edit. 
+	 * If the current probability is not this value, then a correction trade shall be made in order to set the current probability
+	 * to this value.
+	 * If null, the current probabilities will be used, as in {@link #addTrade(Long, Date, String, long, long, List, List, List, boolean)}.
+	 * @param newValues : this is a list (ordered collection) representing the probability values after the edit. 
+	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
+	 * Then, the list must be filled as follows:<br/>
+	 * index 0 - P(T=t1 | A1=a11, A2=a21)<br/>
+	 * index 1 - P(T=t2 | A1=a11, A2=a21)<br/>
+	 * index 2 - P(T=t1 | A1=a12, A2=a21)<br/>
+	 * index 3 - P(T=t2 | A1=a12, A2=a21)<br/>
+	 * index 4 - P(T=t1 | A1=a11, A2=a22)<br/>
+	 * index 5 - P(T=t2 | A1=a11, A2=a22)<br/>
+	 * index 6 - P(T=t1 | A1=a12, A2=a22)<br/>
+	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
+	 * <br/>
+	 * If the states of the conditions are specified in assumedStates, then this list will only specify the conditional
+	 * probabilities of each states of questionID.
+	 * E.g. Again, suppose T is the target question with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.]
+	 * Also suppose that assumedStates = (1,0). Then, the content of newValues must be: <br/>
+	 * index 0 - P(T=t1 | A1=a12, A2=a21)<br/>
+	 * index 1 - P(T=t2 | A1=a12, A2=a21)<br/>
+	 * @param assumptionIds : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
+	 * because the ordering in this list will be used in order to identify the correct indexes in "newValues".
+	 * @param assumedStates : this shall be null if newValues contains full data (all cells of the conditional probability distribution).
+	 * If not null, this list indicates which states the nodes in assumptionIds are.
+	 * If negative, then "not" Math.abs(state + 1) will be considered as the state (i.e. the state Math.abs(state + 1) will be
+	 * considered as 0%).
+	 * @param allowNegative : If true (default is False), then checks for sufficient assets should be bypassed and we allow 
+	 * the user to go into the hole
+	 * @return the assets per state changed, if the user has sufficient assets 
+	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
+	 * If user doesn't have sufficient assets, or if the result of the trade cannot be previewed now (e.g. it is adding a trade
+	 * to a question which is still going to be created in the same transaction), it will return null.
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 * @deprecated use {@link #addTrade(Long, Date, String, TradeSpecification, boolean)} instead
+	 */
+	public List<Float> addTrade(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> oldValues, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException;
 
 	/**
 	 * This method will add a specific trade to the system. 
@@ -825,6 +894,16 @@ public interface MarkovEngineInterface {
 	 */
 	public NetStatistics getNetStatistics();
 	
+	/**
+	 * If true, {@link #addTrade(Long, Date, String, long, long, List, List, List, List, boolean)}
+	 * and {@link #addTrade(Long, Date, String, TradeSpecification, boolean)}
+	 * will attempt to use house account to run corrective trades when the old probabilities provided by the caller is different
+	 * from the actual probabilities retrieved from the engine before trade.
+	 * @param isToUseCorrectiveTrades : true to use the corrective trade feature. False otherwise.
+	 * @see QuestionEvent#isCorrectiveTrade()
+	 * @see TradeSpecification#setOldProbabilities(List)
+	 */
+	public void setToUseCorrectiveTrades(boolean isToUseCorrectiveTrades);
 
 //	/**
 //	 * Note: Not required in the 1st iteration. 
@@ -852,4 +931,6 @@ public interface MarkovEngineInterface {
 //	 * invalid state.
 //	 */
 //	public void importNetwork(InputStream stream)  throws IOException, IllegalStateException;
+	
+	
 }

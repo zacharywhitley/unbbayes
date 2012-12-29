@@ -234,6 +234,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	/** If true, {@link #collapseSimilarBalancingTrades(List)} will try to group similar balancing trades into 1 trade */
 	private boolean isToCollapseSimilarBalancingTrades = true;
+	
+	/** If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)}
+	 * will attempt to use house account to run corrective trades when the old probabilities provided by the caller is different
+	 * from the actual probabilities retrieved from the Bayes net before trade. */
+	private boolean isToUseCorrectiveTrades = true;
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -404,7 +409,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		defaultAlgorithm.setToLogAssets(false);						// optimization: do not generate logs
 		defaultAlgorithm.setToUpdateOnlyEditClique(true);			// optimization: only update current clique, if it is to update at all
 		defaultAlgorithm.setToUpdateSeparators(false);				// optimization: do not touch separators of asset junction tree
-		defaultAlgorithm.setToUpdateAssets(false);					// optimization: do not update assets at all for the default (markov engine) user
+		defaultAlgorithm.setToUpdateAssets(false);					// optimization: do not update assets at all for the default (markov engine, or "house") user
 		setDefaultInferenceAlgorithm(defaultAlgorithm);				
 		
 		
@@ -612,6 +617,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see MarkovEngineImpl#commitNetworkActions(long)
 	 */
 	public class RebuildNetworkAction implements NetworkAction {
+		private static final long serialVersionUID = 8411524472507631510L;
 		private final Date whenCreated;
 		private final Long transactionKey;
 		private Date whenExecutedFirst = null;
@@ -995,6 +1001,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Date getTradesStartingWhen() { return tradesStartingWhen; }
 		public boolean isHardEvidenceAction() {return false; }
 		public Integer getSettledState() {return null;}
+		public Boolean isCorrectiveTrade() {return Boolean.FALSE;}
 	}
 	
 	/**
@@ -1004,6 +1011,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @author Shou Matsumoto
 	 */
 	public class RevertTradeNetworkAction extends RebuildNetworkAction {
+		private static final long serialVersionUID = -8931208967252690587L;
+
 		/** Default constructor initializing fields */
 		public RevertTradeNetworkAction(Long transactionKey, Date whenCreated, Date tradesStartingWhen, Long questionId) {
 			super(transactionKey, whenCreated, tradesStartingWhen, questionId);
@@ -1074,6 +1083,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	/** Class of network actions which changes network structure */
 	public abstract class StructureChangeNetworkAction implements NetworkAction {
+		private static final long serialVersionUID = -3914118334576683558L;
 		public boolean isStructureConstructionAction() { return true; }
 		/**
 		 * Changes the structure of the current network
@@ -1095,6 +1105,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see MarkovEngineImpl#addQuestion(long, Date, long, int, List)
 	 */
 	public class AddQuestionNetworkAction extends StructureChangeNetworkAction {
+		private static final long serialVersionUID = -945067175977550970L;
 		private final Long transactionKey;
 		private final Date occurredWhen;
 		private final long questionId;
@@ -1190,6 +1201,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
 		/** returns {@link #getNumberStates()} */
 		public Integer getSettledState() {return numberStates;}
+		public Boolean isCorrectiveTrade() {return Boolean.FALSE;}
 	}
 
 	/* (non-Javadoc)
@@ -1360,6 +1372,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see MarkovEngineImpl#addQuestionAssumption(long, Date, long, long, List)
 	 */
 	public class AddQuestionAssumptionNetworkAction extends StructureChangeNetworkAction {
+		private static final long serialVersionUID = -6698600239325323921L;
 		private final Long transactionKey;
 		private final Date occurredWhen;
 		private final long sourceQuestionId;
@@ -1485,6 +1498,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
 		public boolean isHardEvidenceAction() {return false; }
 		public Integer getSettledState() {return null;}
+		public Boolean isCorrectiveTrade() {return Boolean.FALSE;}
 	}
 	
 	/**
@@ -1496,6 +1510,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * TODO not to initialize user until the user makes a trade.
 	 */
 	public class AddCashNetworkAction implements NetworkAction {
+		private static final long serialVersionUID = 3388244461494885573L;
 		private final Long transactionKey;
 		private final Date occurredWhen;
 		private final long userId;
@@ -1578,6 +1593,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
 		public boolean isHardEvidenceAction() {return false; }
 		public Integer getSettledState() {return null;}
+		public Boolean isCorrectiveTrade() {return Boolean.FALSE;}
 	}
 
 	
@@ -1628,6 +1644,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @author Shou Matsumoto
 	 */
 	public class AddTradeNetworkAction implements NetworkAction {
+		private static final long serialVersionUID = 3286763933079436306L;
 		private final Date whenCreated;
 		private final Long transactionKey;
 		private final String tradeKey;
@@ -1642,7 +1659,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //		private final List<Integer> originalAssumedStates;
 //		private final List<Long> originalAssumptionIds;
 		/** Default constructor initializing fields */
-		public AddTradeNetworkAction(Long transactionKey, Date occurredWhen, String tradeKey, Long userId, Long questionId, List<Float> newValues, 
+		public AddTradeNetworkAction(Long transactionKey, Date occurredWhen, String tradeKey, Long userId, Long questionId, 
+				List<Float> oldValues, List<Float> newValues, 
 				List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) {
 			this.transactionKey = transactionKey;
 			this.whenCreated = occurredWhen;
@@ -1661,7 +1679,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //				throw new IllegalArgumentException("Probability must be set to some value.");
 //			}
 			// fill trade specification
-			this.tradeSpecification = new TradeSpecificationImpl(userId, questionId, newValues, assumptionIds, assumedStates);
+			this.tradeSpecification = new TradeSpecificationImpl(userId, questionId, oldValues, newValues, assumptionIds, assumedStates);
 			
 		}
 		/** Calls {@link #execute(true)}
@@ -1726,17 +1744,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// backup config of assets
 					boolean backup = algorithm.isToUpdateAssets();
 					algorithm.setToUpdateAssets(isToUpdateAssets);
-					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
-					// 2nd boolean == true := overwrite assumptionIds and assumedStates when necessary
-					tradeSpecification.setOldProbabilities(
-							executeTrade(
-								tradeSpecification.getQuestionId(), 
-								tradeSpecification.getProbabilities(), 
-								tradeSpecification.getAssumptionIds(), 
-								tradeSpecification.getAssumedStates(), 
-								allowNegative, algorithm, isToUpdateAssumptionIds, false, this
-							)
-					);
+					
+					// do trade. The var "algorithm" has a reference to the network to be changed
+					List<Float> oldConditionalProb = executeTrade(	// this method returns what was the conditional prob before trade
+							tradeSpecification.getQuestionId(), 
+							tradeSpecification.getOldProbabilities(),
+							tradeSpecification.getProbabilities(), 
+							tradeSpecification.getAssumptionIds(), 
+							tradeSpecification.getAssumedStates(), 
+							allowNegative, algorithm, 
+							isToUpdateAssumptionIds, // if this boolean is true, then it will overwrite assumptionIds and assumedStates on out-of-clique edits
+							false, this
+						);
+					
+					// store what was the conditional probability before the trade, if it was not specified in the tradeSpecification
+					if (tradeSpecification.getOldProbabilities() == null || tradeSpecification.getOldProbabilities().isEmpty()) {
+						tradeSpecification.setOldProbabilities(oldConditionalProb);
+					}
+					
 					algorithm.setToUpdateAssets(backup);	// revert config of assets
 					// backup the previous delta so that we can revert this trade
 //					qTablesBeforeTrade = algorithm.getAssetTablesBeforeLastPropagation();
@@ -1839,20 +1864,26 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public TradeSpecification getTradeSpecification() {
 			return tradeSpecification;
 		}
+		public Boolean isCorrectiveTrade() {return Boolean.FALSE;}
 	}
 	
 	/**
 	 * This represents a trade caused by a {@link ImportNetworkAction}.
+	 * These "virtual" trades represents changes in the probability caused
+	 * when importing a network in which the CPT is not uniform 
+	 * (in such case, the probabilities shall be adjusted in order to reflect the
+	 * imported non-uniform cpt)
 	 * @author Shou Matsumoto
 	 */
 	public class VirtualTradeAction extends AddTradeNetworkAction {
+		private static final long serialVersionUID = 8661055377387997997L;
 		private final NetworkAction parentAction;
 
 		public VirtualTradeAction(NetworkAction parentAction, Long questionId, List<Float> newValues, 
 				List<Long> assumptionIds, List<Integer> assumedStates) {
 			// initialize fields using values of parentAction mostly.
 			super(parentAction.getTransactionKey(), parentAction.getWhenCreated(), parentAction.getTradeId(), parentAction.getUserId(), 
-					questionId, newValues, assumptionIds, assumedStates, true);
+					questionId, null, newValues, assumptionIds, assumedStates, true);
 			this.setWhenExecutedFirstTime(parentAction.getWhenExecutedFirstTime());
 			this.parentAction = parentAction;
 		}
@@ -1862,12 +1893,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 */
 		public void execute(boolean isToUpdateAssets) {
 			setOldValues(getProbList(getTradeSpecification().getQuestionId(), null, null));
-			getTradeSpecification().setOldProbabilities(executeTrade(getQuestionId(), getTradeSpecification().getProbabilities(), getAssumptionIds() , getAssumedStates() , true, getDefaultInferenceAlgorithm(), !isToThrowExceptionOnInvalidAssumptions(), false, getParentAction()));
+			getTradeSpecification().setOldProbabilities(
+					executeTrade(
+							getQuestionId(), 
+							getTradeSpecification().getOldProbabilities(),
+							getTradeSpecification().getProbabilities(), 
+							getAssumptionIds() , getAssumedStates() , true, 
+							getDefaultInferenceAlgorithm(), !isToThrowExceptionOnInvalidAssumptions(), 
+							false, getParentAction()
+						)
+				);
 			setNewValues(getProbList(getTradeSpecification().getQuestionId(), null, null));
 		}
-
 		public NetworkAction getParentAction() { return parentAction; }
-		
+		/** Return true if {@link #getParentAction()} is a corrective trade */
+		public Boolean isCorrectiveTrade() {return parentAction.isCorrectiveTrade();}
 	}
 	
 	/**
@@ -1881,6 +1921,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @author Shou Matsumoto
 	 */
 	public class DummyTradeAction extends VirtualTradeAction {
+		private static final long serialVersionUID = 2421096723861974085L;
 		private final Integer settledState;
 		/**
 		 * Default constructor initializing fields.
@@ -1915,6 +1956,35 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Date getWhenExecutedFirstTime() { return (getParentAction() != null)?getParentAction().getWhenExecutedFirstTime():null; }
 		public Integer getSettledState() { return settledState; }
 		
+	}
+	
+	/**
+	 * Objects of this class represents trades automatically executed for correction.
+	 * {@link MarkovEngineInterface#addTrade(Long, Date, String, long, long, List, List, List, List, boolean)}
+	 * and {@link MarkovEngineInterface#addTrade(Long, Date, String, TradeSpecification, boolean)}
+	 * can specify the old probabilities (in the latter case, at {@link TradeSpecification#setOldProbabilities(List)}).
+	 * If the old probabilities are specified, then {@link MarkovEngineImpl} is expected to set the probability to
+	 * that value before letting the user do the actual trade. The change of probability before the actual trade
+	 * is the corrective trade, which is represented by this class.
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public class CorrectiveTradeAction extends DummyTradeAction {
+		private static final long serialVersionUID = 4348158555507387962L;
+		/**
+		 * Default constructor initializing fields.
+		 * @param parentAction : original trade (trade which made the marginals of questionId to change
+		 * @param questionId : the affected question
+		 * @param oldMarginal : the old marginal (before the trade)
+		 * @param newMarginal :  the new marginal (after the trade)
+		 */
+		public CorrectiveTradeAction(NetworkAction parentAction, long questionId, List<Float> oldMarginal, List<Float> newMarginal) {
+			// initialize fields using values of parentAction mostly.
+			super(parentAction, questionId, oldMarginal, newMarginal);
+		}
+		/** This is the only type of trade which is used specially to correct the probabilities when the actual
+		 * probability is different from what the caller has provided. */
+		public Boolean isCorrectiveTrade() {return Boolean.TRUE;}
 	}
 	
 	/**
@@ -2091,6 +2161,32 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		} // end of iteration over cliques
 	}
 	
+	/* (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addTrade(long, java.util.Date, long, long, long, java.util.List, java.util.List, java.util.List, java.util.List, java.lang.Boolean)
+	 */
+	public List<Float> addTrade(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException {
+		return this.addTrade(
+				transactionKey, occurredWhen, tradeKey, 
+				new TradeSpecificationImpl(userId, questionId, null, newValues, assumptionIds, assumedStates), 
+				allowNegative
+		);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addTrade(java.lang.Long, java.util.Date, java.lang.String, long, long, java.util.List, java.util.List, java.util.List, java.util.List, boolean)
+	 */
+	public List<Float> addTrade(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, 
+			List<Float> oldValues, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) 
+			throws IllegalArgumentException{
+		return this.addTrade(
+				transactionKey, occurredWhen, tradeKey, 
+				new TradeSpecificationImpl(userId, questionId, oldValues, newValues, assumptionIds, assumedStates), 
+				allowNegative
+			);
+	}
+	
+	
 	/**
 	 * Just delegates to {@link #addTrade(Long, Date, String, long, long, List, List, List, boolean)}.
 	 * This delegation is not in the opposite direction, because {@link #addTrade(Long, Date, String, long, long, List, List, List, boolean)}
@@ -2100,17 +2196,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addTrade(java.lang.Long, java.util.Date, java.lang.String, edu.gmu.ace.daggre.TradeSpecification, boolean)
 	 */
 	public List<Float> addTrade(Long transactionKey, Date occurredWhen, String tradeKey, TradeSpecification tradeSpecification, boolean allowNegative) throws IllegalArgumentException {
-		return this.addTrade(
-				transactionKey, occurredWhen, tradeKey, 
-				tradeSpecification.getUserId(), tradeSpecification.getQuestionId(), tradeSpecification.getProbabilities(), 
-				tradeSpecification.getAssumptionIds(), tradeSpecification.getAssumedStates(), allowNegative
-			);
-	}
-	
-	/* (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addTrade(long, java.util.Date, long, long, long, java.util.List, java.util.List, java.util.List, java.util.List, java.lang.Boolean)
-	 */
-	public List<Float> addTrade(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) throws IllegalArgumentException {
 		
 		// initial assertions
 		if (occurredWhen == null) {
@@ -2119,6 +2204,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (transactionKey != null && this.getNetworkActionsMap().get(transactionKey) == null) {
 			// startNetworkAction should have been called.
 			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		}
+		if (tradeSpecification == null) {
+			throw new IllegalArgumentException("Argument \"tradeSpecification\" is mandatory.");
 		}
 		
 		// if this.isToThrowExceptionOnInvalidAssumptions() == false, preview trade will not throw InvalidAssumptionException. 
@@ -2139,8 +2227,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //			}
 //		}
 		
+		// extract some values from tradeSpecification which are frequently used
+		Long userId = tradeSpecification.getUserId();
+		Long questionId = tradeSpecification.getQuestionId();
+		List<Float> newValues = tradeSpecification.getProbabilities();
+		List<Long> assumptionIds = tradeSpecification.getAssumptionIds();
+		List<Integer> assumedStates = tradeSpecification.getAssumedStates();
+		
 		// returned value is the same of preview trade
 		List<Float> ret = new ArrayList<Float>();
+		
 		try {
 			ret = this.previewTrade(userId, questionId, newValues, assumptionIds, assumedStates);
 		} catch (IllegalStateException e) {
@@ -2172,19 +2268,23 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		} catch (InvalidAssumptionException e) {
 			// If new nodes/edges are added within the same transaction, there are still some chances for the assumptions to become valid.
 			// However, it is very hard to check such conditions right now. So, ignore this exception if such chance may occur.
-			boolean isToIgnoreThisException = false;
-			List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey); // getNetworkActionsMap() is supposedly a concurrent map
-			synchronized (actions) {	// actions is not a concurrent list, so must lock it
-				for (NetworkAction action : actions) {
-					if (action instanceof AddQuestionNetworkAction || action instanceof AddQuestionAssumptionNetworkAction) {
-						// there is a small chance for the assumptions to become correct
-						isToIgnoreThisException = true;
-						break;
-						// TODO implement algorithm for anticipating what #getPossibleQuestionAssumptions will return after the commitment this transaction and never ignore InvalidAssumptionException
+			if (transactionKey != null) {
+				boolean isToIgnoreThisException = false;
+				List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey); // getNetworkActionsMap() is supposedly a concurrent map
+				synchronized (actions) {	// actions is not a concurrent list, so must lock it
+					for (NetworkAction action : actions) {
+						if (action instanceof AddQuestionNetworkAction || action instanceof AddQuestionAssumptionNetworkAction) {
+							// there is a small chance for the assumptions to become correct
+							isToIgnoreThisException = true;
+							break;
+							// TODO implement algorithm for anticipating what #getPossibleQuestionAssumptions will return after the commitment this transaction and never ignore InvalidAssumptionException
+						}
 					}
 				}
-			}
-			if (!isToIgnoreThisException && this.isToThrowExceptionOnInvalidAssumptions()) {
+				if (!isToIgnoreThisException && this.isToThrowExceptionOnInvalidAssumptions()) {
+					throw e;
+				}
+			} else {
 				throw e;
 			}
 		}
@@ -2208,12 +2308,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		if (transactionKey == null) {
 			transactionKey = this.startNetworkActions();
-			AddTradeNetworkAction newAction = new AddTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, newValues, assumptionIds, assumedStates, allowNegative);
+			AddTradeNetworkAction newAction = new AddTradeNetworkAction(
+					transactionKey, occurredWhen, tradeKey, userId, questionId, 
+					tradeSpecification.getOldProbabilities(), newValues, 
+					assumptionIds, assumedStates, allowNegative
+				);
 			this.addNetworkAction(transactionKey, newAction);
 			this.commitNetworkActions(transactionKey);
 		} else {
 			// instantiate the action object for adding trade
-			AddTradeNetworkAction newAction = new AddTradeNetworkAction(transactionKey, occurredWhen, tradeKey, userId, questionId, newValues, assumptionIds, assumedStates, allowNegative);
+			AddTradeNetworkAction newAction = new AddTradeNetworkAction(
+					transactionKey, occurredWhen, tradeKey, userId, questionId, 
+					tradeSpecification.getOldProbabilities(), newValues, 
+					assumptionIds, assumedStates, allowNegative
+				);
 			this.addNetworkAction(transactionKey, newAction);
 		}
 		
@@ -2229,6 +2337,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @author Shou Matsumoto
 	 */
 	public class ResolveQuestionNetworkAction implements NetworkAction {
+		private static final long serialVersionUID = -8173040985188570655L;
 		private final Long transactionKey;
 		private final Date occurredWhen;
 		private final long questionId;
@@ -2307,6 +2416,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 								// in this algorithm, setAsPermanentEvidence will only use assetNode for name comparison and to check size of states, 
 								// so we can try using a stub node
 								assetNode = new Node() {	// a node just for purpose of searching nodes in lists
+									private static final long serialVersionUID = -2789947150055767730L;
 									public int getType() { return Node.DECISION_NODE_TYPE; }	 // not important, but mandatory because this is abstract method
 									public String getName() { return Long.toString(questionId); }// important for search
 									public int getStatesSize() { return Integer.MAX_VALUE; }	 // important for state size consistency check
@@ -2369,6 +2479,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
 		public boolean isHardEvidenceAction() {return true; }
+		public Boolean isCorrectiveTrade() {return Boolean.FALSE;}
 	}
 	
 	/**
@@ -2398,6 +2509,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @author Shou Matsumoto
 	 */
 	public class ResolveSetOfQuestionsNetworkAction extends ResolveQuestionNetworkAction {
+		private static final long serialVersionUID = -5871486893244279962L;
 		/** The set of ResolveQuestionNetworkAction which this action integrates */
 		private final Collection<ResolveQuestionNetworkAction> resolutions;
 		
@@ -3150,6 +3262,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getAssetsIfStates(long, long, java.util.List, java.util.List)
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Float> getAssetsIfStates(long userId, long questionId,
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
@@ -3300,6 +3413,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * question while it is in state "true".
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected List getAssetsIfStates(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, 
 			AssetAwareInferenceAlgorithm algorithm, boolean isToReturnQValuesInsteadOfAssets, Clique clique)
 				throws IllegalArgumentException {
@@ -4013,6 +4127,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#previewTrade(long, long, java.util.List, java.util.List, java.util.List)
 	 */
+	@SuppressWarnings("unchecked")
 	public List<Float> previewTrade(long userId, long questionId,List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		
 		// initial assertions
@@ -4093,10 +4208,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// do trade on specified algorithm (which only contains link to copies of BN and asset net)
-		// 1st boolean == true := allow negative delta, since this is a preview. 
-		// 2nd boolean == false := do not overwrite assumptionIds and assumedStates
-		// last null argument indicates that we are not interested in obtaining what other questions' marginals were affected by this trade
-		List<Float> oldValues = this.executeTrade(questionId, newValues, assumptionIds, assumedStates, true, algorithm, !isToThrowExceptionOnInvalidAssumptions(), !isToDoFullPreview(), null);	
+		List<Float> oldValues = this.executeTrade(
+				questionId, 
+				null,	// if this is null, it won't do corrective trades
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				true,  // 1st boolean == true := allow negative delta, since this is a preview. 
+				algorithm, 
+				!isToThrowExceptionOnInvalidAssumptions(),  // whether do or don't overwrite assumptionIds and assumedStates
+				!isToDoFullPreview(), 
+				null // we are not interested in obtaining what other questions' marginals were affected by this trade
+			);	
 		
 		if (isToDoFullPreview()) {
 			// TODO optimize (executeTrade and getAssetsIfStates have redundant portion of code)
@@ -4136,6 +4259,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/**
 	 * 
 	 * @param questionId : the id of the question to be edited (i.e. the random variable "T"  in the example)
+	 * @param oldValues : this is a list (ordered collection) representing the probability values before the edit. 
+	 * If {@link #isToUseCorrectiveTrades()} == false, this value will just be ignored.
+	 * If null, these values will be simply extracted from the network referenced by the argument "algorithm".
+	 * If non-null, the house account (a special user which will not have limitations regarding assets) will add a trade
+	 * in order to set the current probability to the value specified in this argument, if the current probability
+	 * differs (with error margin {@link #getProbabilityErrorMargin()}) from the specified here.
 	 * @param newValues : this is a list (ordered collection) representing the probability values after the edit. 
 	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
 	 * Then, the list must be filled as follows:<br/>
@@ -4175,12 +4304,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * they will be only input arguments anyway.
 	 * @param parentTrade : (optional) points to the trade action executing this method. This will be used to fill
 	 * trade history of conditional probabilities.
-	 * @see #addTrade(long, Date, String, long, long, List, List, List, boolean)
-	 * @see #previewTrade(long, long, List, List, List)
 	 * @return the probabilities before trade. This list will have the same structure of newValues, but its content will be filled
 	 * with the probabilities before applying the trade.
+	 * @see #addTrade(long, Date, String, long, long, List, List, List, boolean)
+	 * @see #previewTrade(long, long, List, List, List)
+	 * @see #getProbabilityErrorMargin()
+	 * @see #isToUseCorrectiveTrades()
 	 */
-	protected List<Float> executeTrade(long questionId,List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates, 
+	protected List<Float> executeTrade(long questionId, List<Float> oldValues, List<Float> newValues, 
+			List<Long> assumptionIds, List<Integer> assumedStates, 
 			boolean isToAllowNegative, AssetAwareInferenceAlgorithm algorithm, boolean isToUpdateAssumptionIds, boolean isPreview, 
 			NetworkAction parentTrade) {
 		// basic assertions
@@ -4316,6 +4448,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		}
 		
+		// note: at this point, newValues is consistent, so we can compare it to oldValues to see if oldValues is consistent
+		if (isToUseCorrectiveTrades() && oldValues != null && !oldValues.isEmpty()	// these are conditions for not ignoring oldValues
+				&& oldValues.size() != newValues.size()) { // if we should not ignore oldValues, then the size of oldValues must be the same of newValues
+			throw new IllegalArgumentException("Inconsistent specification of old probabilities: the size of oldValues should be the same of newValues.");
+		}
+		
 		
 		// this object extracts conditional probability of any nodes in same clique (it assumes prob network was compiled using junction tree algorithm)
 		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
@@ -4332,13 +4470,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new RuntimeException("Could not extract current probabilities. Please, verify the version of your Markov Engine and UnBBayes.");
 		}
 		
-		// the list to be returned (the old values)
-		List<Float> oldValues = new ArrayList<Float>(newValues.size());	// force oldValues to have the same size of newValues
+		// the list to be returned (the old values). This will also be used to compare with old values specified by caller 
+		// (so that we can execute corrective trades)
+		List<Float> condProbBeforeTrade = new ArrayList<Float>(newValues.size());	// force probBeforeTrade to have the same size of newValues
 		
 		// change content of potential according to newValues and assumedStates
 		if (assumedStates == null || assumedStates.isEmpty()) {
 			for (int i = 0; i < newValues.size(); i++) {
-				oldValues.add(potential.getValue(i));
+				condProbBeforeTrade.add(potential.getValue(i));
 				potential.setValue(i, newValues.get(i));
 			}
 		} else {
@@ -4351,18 +4490,71 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// modify content of potential table according to newValues 
 			for (int i = 0; i < newValues.size(); i++) {	// at this point, newValues.size() == child.statesSize()
 				multidimensionalCoord[0] = i; // only iterate over states of the main node (i.e. index 0 of multidimensionalCoord)
-				oldValues.add(potential.getValue(multidimensionalCoord));
+				condProbBeforeTrade.add(potential.getValue(multidimensionalCoord));
 				potential.setValue(multidimensionalCoord, newValues.get(i));
 			}
 		}
 		
+		// note: we already checked that the size of oldValues and newValues matched. 
+		if (isToUseCorrectiveTrades() && oldValues != null && !oldValues.isEmpty() // these are conditions for not ignoring oldValues
+				&& condProbBeforeTrade.size() != oldValues.size()) {	// Now, need to check whether sizes of oldValues and condProbBeforeTrade matches.
+			throw new IllegalStateException("The current Bayes net indicates that question " + questionId + " has " + condProbBeforeTrade.size()
+					+ " states, but the old probabilities provided by caller had " + oldValues.size() 
+					+ " states. This may indicate inconsistency of the Bayes net, or you may be using incompatible version of Markov Engine.");
+		}
+		
 		if (isPreview) {
 			// don't actually propagate if we only need to preview
-			return oldValues;
+			return condProbBeforeTrade;
+		}
+		
+		// if the oldValues was specified by the caller, then we have to check whether it matches with current probability. If not, we must do correction
+		if (isToUseCorrectiveTrades() && oldValues != null && !oldValues.isEmpty() ){	// these are conditions for not ignoring oldValues
+			// compare current probability with the probability specified by caller as being the probability before trade
+			boolean isDifferent = false;
+			// note: we already checked that the size of oldValues and condProbBeforeTrade matched
+			for (int i = 0; i < oldValues.size(); i++) {
+				if (Math.abs(oldValues.get(i) - condProbBeforeTrade.get(i)) > getProbabilityErrorMargin()) {
+					isDifferent = true;
+					break;
+				}
+			}
+			if (isDifferent) {	// must do a corrective trade
+				// use a house account (with infinite assets) in order to do the corrective trade
+				AssetAwareInferenceAlgorithm houseAccountAlgorithm = algorithm;
+				if (algorithm.getNetwork() == getProbabilisticNetwork()) {
+					// if this is changing the global shared net, use the default algorithm (which is for administrative/house user)
+					houseAccountAlgorithm = getDefaultInferenceAlgorithm();
+				} // or else, use the original algorithm, but setting setToUpdateAssets(false). 
+				synchronized (houseAccountAlgorithm) {
+					synchronized (houseAccountAlgorithm.getNetwork()) {
+						// store current config regarding whether to update assets
+						boolean backupConfig = houseAccountAlgorithm.isToUpdateAssets();
+						houseAccountAlgorithm.setToUpdateAssets(false);	// force algorithm not to update assets (simulate infinite assets)
+						// recursively call executeTrade in order to set the current probability to the ones specified in oldValues
+						this.executeTrade(
+								questionId, 
+								null,		// disable corrective trade this time, by setting oldValues = null, so that we don't generate loop
+								oldValues,	// the trade shall set the current probability to oldValues
+								assumptionIds, assumedStates, 
+								isToAllowNegative, houseAccountAlgorithm, isToUpdateAssumptionIds, isPreview, 
+								new CorrectiveTradeAction(parentTrade, questionId, condProbBeforeTrade, oldValues) // intantiate a network action representing the corrective trade
+						);
+						// restore config
+						houseAccountAlgorithm.setToUpdateAssets(backupConfig);
+					}
+				}
+				// Note: because this recursive call to executeTrade calls addToLastNCliquePotentialMap and addVirtualTradeIntoMarginalHistory,
+				// and these 2 methods instantiates VirtualTradeAction, whose returns isCorrectiveTrade == true when the wrapped
+				// trade is a CorrectiveTradeAction, this call guarantees that the QuestionEvent retrieved in getQuestionHistory
+				// will have isCorrectiveTrade == true (so, we can be detect that a corrective trade has changed the probability).
+				// Additionally, we won't include the CorrectiveTradeAction into getExecutedActions(), because we don't want
+				// the corrective trade to be re-executed on rebuild (we want it to be always re-calculated on-the-fly)
+			}
 		}
 		
 		// this map will hold marginal probabilities before the trade, so that we can store the history of changes in marginal probabilities of other nodes
-		Map<Long, List<Float>> marginalsBefore = null;
+		Map<Long, List<Float>> marginalsBefore = null;	// note: marginalsBefore is usually different to condProbBeforeTrade, because marginalsBefore is unconditional prob
 		
 		// fill array of likelihood with values in CPT
 		float [] likelihood = new float[potential.tableSize()];
@@ -4407,7 +4599,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //					algorithm.setToAllowQValuesSmallerThan1(backup);
 					
 					// check that minimum is below 0
-					if (!isToAllowNegative) {
+					if (algorithm.isToUpdateAssets() && !isToAllowNegative) {
 						// calculate minimum by running min propagation and then calculating global assets posterior to min propagation
 						algorithm.runMinPropagation(null);
 						// Note: if we are using q-values, 1 means 0 (because of log scale).
@@ -4451,7 +4643,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			addVirtualTradeIntoMarginalHistory(parentTrade, marginalsBefore); // link from original trade to virtual trades
 		}
 		
-		return oldValues;
+		return condProbBeforeTrade;
 	}
 
 
@@ -4575,10 +4767,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 		}
 		if (originalAssumptionIds == null) {
-			originalAssumptionIds = Collections.EMPTY_LIST;
+			originalAssumptionIds = Collections.emptyList();
 		}
 		if (originalAssumedStates == null) {
-			originalAssumedStates = Collections.EMPTY_LIST;
+			originalAssumedStates = Collections.emptyList();
 		}
 		
 		List<TradeSpecification> ret = new ArrayList<TradeSpecification>();
@@ -4720,6 +4912,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see #splitTradesByAssumptions(List)
 	 * @see #splitTradesByProbability(List)
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	protected List<TradeSpecification> collapseSimilarBalancingTrades( List<TradeSpecification> trades) {
 		if (!isToCollapseSimilarBalancingTrades()) {
 			return trades;
@@ -5177,6 +5370,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return
 	 * @see #collapseSimilarBalancingTrades(List)
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected List<List<? extends TradeSpecification>> splitTradesByCliques( List<List<CliqueSensitiveTradeSpecification>> listBeforeSplit) {
 		if (listBeforeSplit == null || listBeforeSplit.isEmpty()) {
 			return Collections.emptyList();
@@ -5215,6 +5409,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @param splittedList : it is assumed to be a list generated by {@link #previewBalancingTrades(AssetAwareInferenceAlgorithm, long, List, List, Clique, boolean)}.
 	 * @return
 	 * @see #collapseSimilarBalancingTrades(List)
+	 * @see #getProbabilityErrorMarginBalanceTrade()
 	 */
 	protected List<List<TradeSpecification>> splitTradesByProbability( List<List<TradeSpecification>> listBeforeSplit) {
 		if (listBeforeSplit == null || listBeforeSplit.isEmpty()) {
@@ -5356,7 +5551,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// if this user was not initialized, then user did not trade at all. In such case, there is no balancing trade
 		if (isToLazyInitializeUsers() && !getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
-			return Collections.EMPTY_LIST;	// return empty list.
+			return Collections.emptyList();	// return empty list.
 		}
 		
 		// algorithm to be used to extract data related to assets and probabilities
@@ -5397,6 +5592,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// do trade. Since algorithm is linked to actual networks, changes will affect the actual networks
 					executeTrade(
 							tradeSpecification.getQuestionId(), 
+							tradeSpecification.getOldProbabilities(),
 							tradeSpecification.getProbabilities(), 
 							tradeSpecification.getAssumptionIds(), 
 							tradeSpecification.getAssumedStates(),
@@ -5492,7 +5688,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return
 	 * @throws IllegalArgumentException
 	 */
-	public List<Float> previewBalancingTrade(AssetAwareInferenceAlgorithm algorithm, long questionId, List<Long> assumptionIds, List<Integer> assumedStates, 
+	public List<Float> previewBalancingTrade(AssetAwareInferenceAlgorithm algorithm, long questionId, 
+			List<Long> assumptionIds, List<Integer> assumedStates, 
 			Clique clique, boolean isToAllowNegative) throws IllegalArgumentException {
 		if (assumptionIds != null && assumedStates != null && assumptionIds.size() != assumedStates.size()) {
 			throw new IllegalArgumentException("This method does not allow assumptionIds and assumedStates with different sizes.");
@@ -5520,7 +5717,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //		}
 		if (algorithm == null) {
 //			throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
-			throw new RuntimeException("Could not extract delta from user " + algorithm.getAssetNetwork().getName() + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
+			throw new RuntimeException("The provided algorithm to a trade in question " + questionId 
+					+ " given " + assumptionIds + " = " + assumedStates 
+					+ " to clique " + clique
+					+ (isToAllowNegative?"":" not") 
+					+ " allowing negative assets is null. You may be using old or incompatible version of Markov Engine or UnBBayes.");
 		}
 		// list to be used to store list of probabilities temporary
 		List<Float> probList = this.getProbList(questionId, assumptionIds, assumedStates, true, algorithm.getRelatedProbabilisticNetwork());
@@ -5533,6 +5734,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// obtain q1, q1, ... , qn (the asset's q values)
+		@SuppressWarnings("rawtypes")
 		List qValues = this.getAssetsIfStates(questionId, assumptionIds, assumedStates, algorithm, true, clique);	// true := return q-values instead of asset
 		
 		// list to be used to store probabilities and products of q temporary
@@ -5621,10 +5823,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @author Shou Matsumoto
 	 */
 	public class BalanceTradeNetworkAction extends AddTradeNetworkAction {
+		private static final long serialVersionUID = -2802963614618187679L;
 		private List<TradeSpecification> executedTrades = null;
 		/** Default constructor initializing fields\ */
 		public BalanceTradeNetworkAction(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) {
-			super(transactionKey, occurredWhen, tradeKey, userId, questionId, null, assumptionIds, assumedStates, true);
+			super(transactionKey, occurredWhen, tradeKey, userId, questionId, null, null, assumptionIds, assumedStates, true);
 		}
 		/** Virtually does {@link MarkovEngineImpl#previewBalancingTrade(long, long, List, List)} and then {@link AddTradeNetworkAction#execute()}.
 		 * it calls super's {@link #execute(boolean, false)} 
@@ -6260,11 +6463,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		final List<SummaryContribution> sepComponents = new ArrayList<ScoreSummary.SummaryContribution>();
 		
 		// this is a dummy node used just for searching nodes in a list, by using Object#equals()
-		final Node dummyNode = new Node() {
-			public int getType() { return 0; }
-			/** Object#equals() will call this method */
-			public String getName() {return ""+questionId; }
-		};
+//		final Node dummyNode = new Node() {
+//			private static final long serialVersionUID = 2328320084149877840L;
+//			public int getType() { return 0; }
+//			/** Object#equals() will call this method */
+//			public String getName() {return ""+questionId; }
+//		};
 		
 		// prepare listener to be notified when cells of asset tables and prob tables are multiplied
 		ExpectedAssetCellMultiplicationListener listener = new ExpectedAssetCellMultiplicationListener() {
@@ -6474,6 +6678,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/**
 	 * This is the error margin used when comparing two probability values.
 	 * If ((prob1 - probabilityErrorMargin) < prob2) && (prob2 < (prob1 + probabilityErrorMargin)), then prob1 == prob2.
+	 * This value is also used in {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)}
+	 * in order to check whether the old probability specified in the argument differs from the probability before the trade
+	 * (if so, the house account may add a trade for correction).
 	 * @param probabilityErrorMargin the probabilityErrorMargin to set
 	 */
 	public void setProbabilityErrorMargin(float probabilityErrorMargin) {
@@ -6483,6 +6690,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/**
 	 * This is the error margin used when comparing two probability values.
 	 * If ((prob1 - probabilityErrorMargin) < prob2) && (prob2 < (prob1 + probabilityErrorMargin)), then prob1 == prob2.
+	 * This value is also used in {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)}
+	 * in order to check whether the old probability specified in the argument differs from the probability before the trade
+	 * (if so, the house account may add a trade for correction).
 	 * @return the probabilityErrorMargin
 	 */
 	public float getProbabilityErrorMargin() {
@@ -6866,6 +7076,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/**
 	 * @return an instance of {@link AssetAwareInferenceAlgorithm}
 	 * which is not necessary related to some user.
+	 * This can be interpreted as the "house" user
+	 * (the user which represents the Markov Engine itself, with special priviledges).
 	 */
 	public AssetAwareInferenceAlgorithm getDefaultInferenceAlgorithm() {
 		return defaultInferenceAlgorithm;
@@ -6874,6 +7086,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/**
 	 * @param defaultInferenceAlgorithm : an instance of {@link AssetAwareInferenceAlgorithm}
 	 * which is not necessary related to some user.
+	 * This can be interpreted as the "house" user
+	 * (the user which represents the Markov Engine itself, with special priviledges).
 	 */
 	public void setDefaultInferenceAlgorithm(
 			AssetAwareInferenceAlgorithm defaultInferenceAlgorithm) {
@@ -7928,6 +8142,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @author Shou Matsumoto
 	 */
 	public class ImportNetworkAction extends StructureChangeNetworkAction {
+		private static final long serialVersionUID = 1370086072061130060L;
 		private final Long transactionKey;
 		private final Date occurredWhen;
 		private final ProbabilisticNetwork importedNet;
@@ -8205,7 +8420,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public List<Integer> getAssumedStates() { return null; }
 		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirstTime = whenExecutedFirst; }
 		public ProbabilisticNetwork getImportedNet() { return importedNet; }
-
+		public Boolean isCorrectiveTrade() {return Boolean.FALSE;}
 	}
 
 
@@ -8696,6 +8911,26 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public float getProbabilityErrorMarginBalanceTrade() {
 		return probabilityErrorMarginBalanceTrade;
+	}
+
+	/**
+	 * If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)}
+	 * will attempt to use house account to run corrective trades when the old probabilities provided by the caller is different
+	 * from the actual probabilities retrieved from the Bayes net before trade.
+	 * @param isToUseCorrectiveTrades the isToUseCorrectiveTrades to set
+	 */
+	public void setToUseCorrectiveTrades(boolean isToUseCorrectiveTrades) {
+		this.isToUseCorrectiveTrades = isToUseCorrectiveTrades;
+	}
+
+	/**
+	 * If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)}
+	 * will attempt to use house account to run corrective trades when the old probabilities provided by the caller is different
+	 * from the actual probabilities retrieved from the Bayes net before trade.
+	 * @return the isToUseCorrectiveTrades
+	 */
+	public boolean isToUseCorrectiveTrades() {
+		return isToUseCorrectiveTrades;
 	}
 
 

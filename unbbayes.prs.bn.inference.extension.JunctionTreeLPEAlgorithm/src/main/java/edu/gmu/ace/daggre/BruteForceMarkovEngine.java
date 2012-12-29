@@ -175,6 +175,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 			throw new NullPointerException("AssetAwareInferenceAlgorithm cannot be null");
 		}
 		
+		@SuppressWarnings("rawtypes")
 		List ret = new ArrayList();
 		synchronized (algorithm.getAssetNetwork()) {
 			AssetNode mainNode = (AssetNode) algorithm.getAssetNetwork().getNode(Long.toString(questionId));
