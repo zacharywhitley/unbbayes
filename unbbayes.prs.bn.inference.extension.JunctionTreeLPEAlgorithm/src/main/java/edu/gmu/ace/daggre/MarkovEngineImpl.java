@@ -240,6 +240,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * from the actual probabilities retrieved from the Bayes net before trade. */
 	private boolean isToUseCorrectiveTrades = true;
 
+	/** If true, {@link #commitNetworkActions(long, boolean)} will place all {@link AddCashNetworkAction} before trades. */
+	private boolean isToSortAddCashAction = true;
+
 	/**
 	 * Default constructor is protected to allow inheritance.
 	 * Use {@link #getInstance()} to actually instantiate objects of this class.
@@ -504,12 +507,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 */
 		synchronized (actions) {	// make sure actions are not changed by other threads
 			List<NetworkAction> netChangeActions = new ArrayList<NetworkAction>();	// will store actions which changes network structures
+			List<NetworkAction> addCashActions = null;	// will store actions which adds cash to users
+			if (isToSortAddCashAction) {
+				// only instantiate if we will use it
+				addCashActions = new ArrayList<NetworkAction>();
+			}
 			List<NetworkAction> otherActions = new ArrayList<NetworkAction>();	// will store actions which does not change network structure
 			// collect all network change actions and other actions, regarding their original order
 			for (NetworkAction action : actions) {
 				if (action.isStructureConstructionAction()) {
 					netChangeActions.add(action);
+				} else if (isToSortAddCashAction && (action instanceof AddCashNetworkAction)) {
+					addCashActions.add(action);
 				} else {
+					// Note: if isToSortAddCashAction() == false, AddCashNetworkAction will be included here
 					otherActions.add(action);
 				}
 			}
@@ -540,6 +551,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //				actions.addAll(netChangeActions);	// netChangeActions comes first
 				rebuildNetworkAction = new RebuildNetworkAction(netChangeActions.get(0).getTransactionKey(), new Date(), null, null);
 				actions.add(rebuildNetworkAction);	// <rebuild action> is inserted between netChangeActions and otherActions
+				if (isToSortAddCashAction) {
+					// note: if isToSortAddCashAction() == true, addCashActions was supposedly initialized and filled, but let's just make sure and use try-catch
+					try {
+						actions.addAll(addCashActions);
+					} catch (NullPointerException e) {
+						// populate message with more useful info
+						throw new RuntimeException("The flag \"isToSortAddCashAction\" is " + isToSortAddCashAction() 
+								+ ", and an attempt to sort addCash operations was performed. However, the list of actions was null. " +
+								"This is probably due to incompatible version of Markov Engine. " +
+								"Please, check version, or try changing the value of the flag \"isToSortAddCashAction\".", e);
+					}
+				}
 				actions.addAll(otherActions);	// otherActions comes later
 			}
 			
@@ -8971,6 +8994,28 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public boolean isToUseCorrectiveTrades() {
 		return isToUseCorrectiveTrades;
+	}
+
+	/**
+	 * If true, {@link #commitNetworkActions(long, boolean)} will place all {@link AddCashNetworkAction} before trades.
+	 * This is useful when {@link #isToLazyInitializeUsers()} is set to true, because when 
+	 * users are lazily initialized, calling {@link #addCash(Long, Date, long, float, String)}
+	 * before the trades is supposedly faster, because adding cash to uninitialized users is faster.
+	 * @return the isToSortAddCashAction
+	 */
+	public boolean isToSortAddCashAction() {
+		return isToSortAddCashAction;
+	}
+
+	/**
+	 * If true, {@link #commitNetworkActions(long, boolean)} will place all {@link AddCashNetworkAction} before trades.
+	 * This is useful when {@link #isToLazyInitializeUsers()} is set to true, because when 
+	 * users are lazily initialized, calling {@link #addCash(Long, Date, long, float, String)}
+	 * before the trades is supposedly faster, because adding cash to uninitialized users is faster.
+	 * @param isToSortAddCashAction the isToSortAddCashAction to set
+	 */
+	public void setToSortAddCashAction(boolean isToSortAddCashAction) {
+		this.isToSortAddCashAction = isToSortAddCashAction;
 	}
 
 
