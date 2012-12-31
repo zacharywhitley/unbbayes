@@ -723,8 +723,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					if (actionsInSameTransaction != null) {
 						// handle actions in the same transaction until we find the 1st action executed strictly after the last action which changes net structure 
 						for (NetworkAction action : actionsInSameTransaction) {
-							if (lastNetConstructionActionTimestamp.after(action.getWhenCreated())) {
-								// do not continue if the other actions were created strictly after the last net construction action
+							if (!(action instanceof AddTradeNetworkAction)){
+								// only consider trades. Ignore other types of actions.
+								// this is important, because there's no guarantee that other types of actions are sorted by action.getWhenCreated()
+								continue;
+							}
+							if (lastNetConstructionActionTimestamp.before(action.getWhenCreated())) {
+								// do not fully connect questions regarding trades which were created strictly after the last net construction action
+								// Note: we are assuming that trades are sorted by action.getWhenCreated().
 								break;
 							}
 							probCliquesToFullyConnect = this.addActionIntoSetOfQuestionsToFullyConnect(probCliquesToFullyConnect, action);
