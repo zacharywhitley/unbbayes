@@ -185,7 +185,7 @@ public class AssetNetwork extends ProbabilisticNetwork {
 					for (Separator separator : getJunctionTree().getSeparators()) {
 						// testing presence of variable in a list has almost same comput. cost of just deleting
 						PotentialTable sepTable = separator.getProbabilityFunction();
-						sepTable.removeVariable(nodeToRemove, false);
+						sepTable.purgeVariable(nodeToRemove, false);
 						separator.getNodes().remove(nodeToRemove);
 					}
 				}
@@ -194,7 +194,7 @@ public class AssetNetwork extends ProbabilisticNetwork {
 					for (Clique clique : getJunctionTree().getCliques()) {
 						// testing presence of variable in a list has almost same comput. cost of just deleting
 						PotentialTable cliqueTable = clique.getProbabilityFunction();
-						cliqueTable.removeVariable(nodeToRemove, false);
+						cliqueTable.purgeVariable(nodeToRemove, false);
 						clique.getAssociatedProbabilisticNodes().remove(nodeToRemove);
 						clique.getNodes().remove(nodeToRemove);
 					}
