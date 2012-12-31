@@ -71,6 +71,16 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
 	public void removeVariable(INode variable, boolean normalize) {
 		removeVariable(variable); 
 	}
+	
+	/**
+	 * This method just delegates to {@link #removeVariable(INode)},
+	 * because {@link #removeVariable(INode)} is already implemented
+	 * not to use logical removal.
+	 * @see unbbayes.prs.bn.PotentialTable#purgeVariable(unbbayes.prs.INode, boolean)
+	 */
+	public void purgeVariable(INode variable, boolean normalize) {
+		removeVariable(variable); 
+	}
     
     protected void argMax(int control, int index, int coord[]) {
         if (control == -1) {

@@ -35,24 +35,41 @@ public interface IProbabilityFunction {
 	
 	/**
 	 * Remove the variable from this function.
-	 * You should implement general marginalization as well
+	 * You should implement general marginalization as well.
+	 * For optimization, this may be implemented as a logical removal.
 	 * 
 	 * @param variable
 	 *            variable to be removed.
+	 * @see #purgeVariable(INode, boolean)
 	 */
 	public abstract void removeVariable(INode variable);
 	
 	/**
 	 * Remove the variable from this function.
-	 * You should implement general marginalization as well
+	 * You should implement general marginalization as well.
+	 * For optimization, this may be implemented as a logical removal.
 	 * 
 	 * @param variable
 	 *            variable to be removed.
 	 * @param update
 	 * 			  this parameter should be set to true/false if an active update to some values of 
 	 * 			  probability function is required (or not).
+	 * @see #purgeVariable(INode, boolean)
 	 */
 	public abstract void removeVariable(INode variable, boolean update);
+	
+	/**
+	 * This method is equivalent to {@link #removeVariable(INode, boolean)},
+	 * except for the fact that this method should guarantee that memory space is
+	 * not kept after variable removal 
+	 * (because {@link #removeVariable(INode, boolean)} may use logical deletion).
+	 * @param variable
+	 *            variable to be removed.
+	 * @param update
+	 * 			  this parameter should be set to true/false if an active update to some values of 
+	 * 			  probability function is required (or not).
+	 */
+	public abstract void purgeVariable(INode variable, boolean update); 
 	
 	/**
 	 * Inserts a variable into position

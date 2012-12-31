@@ -22,8 +22,10 @@ package unbbayes.prs.bn;
 
 import java.util.ResourceBundle;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.DecisionNode;
+import unbbayes.util.FloatCollection;
 
 /**
  * Probabilistic Potential Table
@@ -168,6 +170,22 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	 */
 	public String toString() {
 		return variableList+"@"+ super.toString();
+	}
+
+	/**
+	 * This method just calls {@link #removeVariable(INode, boolean)},
+	 * and then reallocates {@link FloatCollection#size} of space for {@link FloatCollection#data},
+	 * because {@link #removeVariable(INode, boolean)} only changes the value of {@link FloatCollection#size}
+	 * without reallocating.
+	 * After that, this method expects the garbage collector to actually free the memory.
+	 * @see unbbayes.prs.bn.PotentialTable#purgeVariable(unbbayes.prs.INode, boolean)
+	 */
+	public void purgeVariable(INode variable, boolean normalize) {
+		this.removeVariable(variable, normalize);
+		// reallocate with length = dataPT.size
+		float[] aux = dataPT.data;
+		dataPT.data = new float[dataPT.size];
+		System.arraycopy(aux, 0, dataPT.data, 0, dataPT.size);
 	}
 	
 	

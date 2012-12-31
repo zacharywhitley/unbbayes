@@ -196,7 +196,7 @@ public class ProbabilisticNetwork
 					for (Separator separator : getJunctionTree().getSeparatorsContainingAllNodes((List)Collections.singletonList(nodeToRemove), Integer.MAX_VALUE)) {
 						if (separator.getNodes().contains(nodeToRemove)) {
 							PotentialTable sepTable = separator.getProbabilityFunction();
-							sepTable.removeVariable(nodeToRemove, false);
+							sepTable.purgeVariable(nodeToRemove, false);
 							sepTable.normalize();
 							separator.getNodes().remove(nodeToRemove);
 						}
@@ -206,7 +206,7 @@ public class ProbabilisticNetwork
 				if (getJunctionTree().getCliques() != null) {
 					for (Clique clique : getJunctionTree().getCliquesContainingAllNodes((List)Collections.singletonList(nodeToRemove), Integer.MAX_VALUE)) {
 						PotentialTable cliqueTable = clique.getProbabilityFunction();
-						cliqueTable.removeVariable(nodeToRemove, false);
+						cliqueTable.purgeVariable(nodeToRemove, false);
 						cliqueTable.normalize();
 						clique.getAssociatedProbabilisticNodes().remove(nodeToRemove);
 						clique.getNodes().remove(nodeToRemove);

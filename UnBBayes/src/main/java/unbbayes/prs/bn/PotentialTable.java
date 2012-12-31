@@ -49,6 +49,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 			// this is a stub implementation of PotentialTable created  just in order to instantiate SumOperation
 			public void removeVariable(INode variable) {}
 			public void removeVariable(INode variable, boolean normalize) {}
+			public void purgeVariable(INode variable, boolean normalize) {}
 			public PotentialTable newInstance() { return null; }
 		}.new SumOperation();	// created an anonymous extension of PotentialTable just to instantiate inner class SumOperation
 
@@ -434,14 +435,22 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	
 	/**
 	 * Remove the variable of the table. 
+	 * For optimization, this can be implemented as a logical removal.
 	 * 
 	 * Note: 
 	 * Substitute the previous method removeVariable(Node variable)
 	 *
 	 * @param variable  Variable to be removed
 	 * @param normalize True if is to normalize the cpt after the node remotion
+	 * @see #purgeVariable(INode, boolean)
 	 */	
 	public abstract void removeVariable(INode variable, boolean normalize); 
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IProbabilityFunction#purgeVariable(unbbayes.prs.INode, boolean)
+	 */
+	public abstract void purgeVariable(INode variable, boolean normalize); 
 	
 	/*
 	 * (non-Javadoc)
