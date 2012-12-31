@@ -256,8 +256,9 @@ public interface MarkovEngineInterface {
 	 * the user to go into the hole
 	 * @return the assets per state changed, if the user has sufficient assets 
 	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
-	 * If user doesn't have sufficient assets, or if the result of the trade cannot be previewed now (e.g. it is adding a trade
-	 * to a question which is still going to be created in the same transaction), it will return null.
+	 * If user doesn't have sufficient assets, it will return null.
+	 * If the result of the trade cannot be previewed now (e.g. it is adding a trade to a question which is still going to be created in the same transaction), 
+	 * it will return an empty list.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 * @deprecated use {@link #addTrade(Long, Date, String, TradeSpecification, boolean)} instead
 	 */
@@ -325,8 +326,9 @@ public interface MarkovEngineInterface {
 	 * the user to go into the hole
 	 * @return the assets per state changed, if the user has sufficient assets 
 	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
-	 * If user doesn't have sufficient assets, or if the result of the trade cannot be previewed now (e.g. it is adding a trade
-	 * to a question which is still going to be created in the same transaction), it will return null.
+	 * If user doesn't have sufficient assets, it will return null.
+	 * If the result of the trade cannot be previewed now (e.g. it is adding a trade to a question which is still going to be created in the same transaction), 
+	 * it will return an empty list.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 * @deprecated use {@link #addTrade(Long, Date, String, TradeSpecification, boolean)} instead
 	 */
@@ -365,8 +367,9 @@ public interface MarkovEngineInterface {
 	 * the user to go into the hole
 	 * @return the assets per state changed, if the user has sufficient assets 
 	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
-	 * If user doesn't have sufficient assets, or if the result of the trade cannot be previewed now (e.g. it is adding a trade
-	 * to a question which is still going to be created in the same transaction), it will return null.
+	 * If user doesn't have sufficient assets, it will return null.
+	 * If the result of the trade cannot be previewed now (e.g. it is adding a trade to a question which is still going to be created in the same transaction), 
+	 * it will return an empty list.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 */
 	public List<Float> addTrade(Long transactionKey, Date occurredWhen, String tradeKey, TradeSpecification tradeSpecification,  boolean allowNegative) throws IllegalArgumentException;

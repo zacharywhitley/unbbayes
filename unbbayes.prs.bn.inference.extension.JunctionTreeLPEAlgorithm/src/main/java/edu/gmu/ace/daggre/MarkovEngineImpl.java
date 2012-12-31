@@ -61,7 +61,7 @@ import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
  * It adds history feature and transactional behaviors to
  * {@link AssetAwareInferenceAlgorithm}.
  * @author Shou Matsumoto
- * @version July 01, 2012
+ * @version December 30, 2012
  */
 public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssetsConverter {
 	
@@ -678,63 +678,34 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						// note: "resolve questions" are not included here 
 						
 					} else {	// this one does not change network structure or it is a "resolve question"
-						
-						// check what cliques were affected by trades, so that I can fully connect nodes within them.
-						if (isToFullyConnectNodesInCliquesOnRebuild() && action instanceof AddTradeNetworkAction) {
-							
-							// NOTE: I'm assuming that when the action was executed, it executed on correct clique
-							// i.e. nodes were within cliques when trade was initially executed.
-							// TODO check if this assumption is reliable
-							
-							// if this is a trade, we can store which nodes should be in the same clique, and what clique is it
-							if (action instanceof BalanceTradeNetworkAction){
-								
-								// balance trades have special treatment, because it is actually a set of several trades
-								BalanceTradeNetworkAction balanceTrade = (BalanceTradeNetworkAction) action;
-								
-								// iterate over the set of trades this balance trade represents
-								for (TradeSpecification tradeSpec : balanceTrade.getExecutedTrades()) {
-									
-									// Note: since we are storing ids instead of the clique itself, we do not need to check whether this 
-									// trade specification is CliqueSensitiveTradeSpecification or not
-									
-									// variable to store the ids of the assumptions and traded question
-									List<Long> questionsInThisTradeSpec = new ArrayList<Long>();
-									
-									// questionsInThisTradeSpec will contain the traded node...
-									questionsInThisTradeSpec.add(tradeSpec.getQuestionId());
-									
-									// ... and all its assumptions
-									if (tradeSpec.getAssumptionIds() != null) {
-										// NOTE: I'm assuming that tradeSpec.getAssumptionIds() won't have repetitions and don't include the traded question itself
-										questionsInThisTradeSpec.addAll(tradeSpec.getAssumptionIds());
-									}
-									
-									// store the questions to become fully connect
-									probCliquesToFullyConnect.add(questionsInThisTradeSpec);
-								}
-							} else { // treat all other types of trades as ordinal trades
-								
-								// variable to store the ids of the assumptions and traded question
-								List<Long> questionsInThisTrade = new ArrayList<Long>();
-								
-								// questionsInThisTrade will contain the traded node...
-								questionsInThisTrade.add(action.getQuestionId());
-								
-								// ... and all its assumptions
-								if (action.getAssumptionIds() != null) {
-									// NOTE: I'm assuming that action.getAssumptionIds() won't have repetitions and don't include the traded question itself
-									questionsInThisTrade.addAll(action.getAssumptionIds());
-								}
-								
-								// store the questions to become fully connect
-								probCliquesToFullyConnect.add(questionsInThisTrade);
-							}
-						}
+						// check if action is a trade, and if so, fully connect questions used by the trade
+						probCliquesToFullyConnect = this.addActionIntoSetOfQuestionsToFullyConnect(probCliquesToFullyConnect, action);
 						
 						// this action will be executed after the network structure is re-generated
 						actionsToExecute.add(action);
 						
+					}
+				}
+				
+				// also fill probCliquesToFullyConnect regarding the actions which were not executed, but are in same transaction
+				if (getTransactionKey() != null) {
+					// Obtain the timestamp of the last action which changed network structure. 
+					// We don't need to handle trades happening after creation of such action.
+					// TODO this is a weak check, because events happening at the same millisecond will also be included.
+					Date lastNetConstructionActionTimestamp = networkConstructionActions.get(networkConstructionActions.size()-1).getWhenCreated();
+					
+					// extract the actions pertaining in the same transaction
+					List<NetworkAction> actionsInSameTransaction = getNetworkActionsMap().get(getTransactionKey());
+					// TODO perhaps we can optimize this, because getNetworkActionsMap().get(getTransactionKey()) was sweeped previously at commitNetworkAction
+					if (actionsInSameTransaction != null) {
+						// handle actions in the same transaction until we find the 1st action executed strictly after the last action which changes net structure 
+						for (NetworkAction action : actionsInSameTransaction) {
+							if (lastNetConstructionActionTimestamp.after(action.getWhenCreated())) {
+								// do not continue if the other actions were created strictly after the last net construction action
+								break;
+							}
+							probCliquesToFullyConnect = this.addActionIntoSetOfQuestionsToFullyConnect(probCliquesToFullyConnect, action);
+						}
 					}
 				}
 				
@@ -850,6 +821,74 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// recompile network and execute actionsToExecute (actions which does not change network structure) now
 			this.execute(actionsToExecute); 
 		}
+		
+		/**
+		 * Checks what questions (main question and assumptions) are used in the NetworkAction argument and
+		 * includes them in the Set argument.
+		 * This is used posteriorly in {@link #execute()} in order to fully connect such questions,
+		 * so that trades made previously are still in the same clique.
+		 * Basically, this method checks whether the action is a trade (balancing trades inclusively), 
+		 * and if so, it fully connects the questions used by that trade.
+		 * @param probCliquesToFullyConnect : the set argument to be modified.
+		 * @param action : the NetworkAction object to be checked.
+		 * @return probCliquesToFullyConnect
+		 */
+		protected  Set<List<Long>> addActionIntoSetOfQuestionsToFullyConnect( Set<List<Long>> probCliquesToFullyConnect, NetworkAction action) {
+			// check what cliques were affected by trades, so that I can fully connect nodes within them.
+			if (isToFullyConnectNodesInCliquesOnRebuild() && action instanceof AddTradeNetworkAction) {
+				
+				// NOTE: I'm assuming that when the action was executed, it executed on correct clique
+				// i.e. nodes were within cliques when trade was initially executed.
+				// TODO check if this assumption is reliable
+				
+				// if this is a trade, we can store which nodes should be in the same clique, and what clique is it
+				if (action instanceof BalanceTradeNetworkAction){
+					
+					// balance trades have special treatment, because it is actually a set of several trades
+					BalanceTradeNetworkAction balanceTrade = (BalanceTradeNetworkAction) action;
+					
+					// iterate over the set of trades this balance trade represents
+					for (TradeSpecification tradeSpec : balanceTrade.getExecutedTrades()) {
+						
+						// Note: since we are storing ids instead of the clique itself, we do not need to check whether this 
+						// trade specification is CliqueSensitiveTradeSpecification or not
+						
+						// variable to store the ids of the assumptions and traded question
+						List<Long> questionsInThisTradeSpec = new ArrayList<Long>();
+						
+						// questionsInThisTradeSpec will contain the traded node...
+						questionsInThisTradeSpec.add(tradeSpec.getQuestionId());
+						
+						// ... and all its assumptions
+						if (tradeSpec.getAssumptionIds() != null) {
+							// NOTE: I'm assuming that tradeSpec.getAssumptionIds() won't have repetitions and don't include the traded question itself
+							questionsInThisTradeSpec.addAll(tradeSpec.getAssumptionIds());
+						}
+						
+						// store the questions to become fully connect
+						probCliquesToFullyConnect.add(questionsInThisTradeSpec);
+					}
+				} else { // treat all other types of trades as ordinal trades
+					
+					// variable to store the ids of the assumptions and traded question
+					List<Long> questionsInThisTrade = new ArrayList<Long>();
+					
+					// questionsInThisTrade will contain the traded node...
+					questionsInThisTrade.add(action.getQuestionId());
+					
+					// ... and all its assumptions
+					if (action.getAssumptionIds() != null) {
+						// NOTE: I'm assuming that action.getAssumptionIds() won't have repetitions and don't include the traded question itself
+						questionsInThisTrade.addAll(action.getAssumptionIds());
+					}
+					
+					// store the questions to become fully connect
+					probCliquesToFullyConnect.add(questionsInThisTrade);
+				}
+			}
+			return probCliquesToFullyConnect;
+		}
+		
 		/** Rebuild the BN */
 		public void execute(List<NetworkAction> actions) {
 			// BN to rebuild
@@ -6833,16 +6872,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// let's add action to the managed list. 
 		synchronized (actions) {
 			// Prepare index of where in actions we should add newAction
-			int indexOfFirstActionCreatedAfterNewAction = 0;	// this will point to the first action created after occurredWhen
+			int indexOfFirstActionCreatedAfterNewAction = actions.size()-1;	// this will point to the first action created after occurredWhen
 			// Make sure the action list is ordered by the date. Insert new action to a correct position when necessary.
-			for (; indexOfFirstActionCreatedAfterNewAction < actions.size(); indexOfFirstActionCreatedAfterNewAction++) {
-				if (actions.get(indexOfFirstActionCreatedAfterNewAction).getWhenCreated().after(newAction.getWhenCreated())) {
+			for (; indexOfFirstActionCreatedAfterNewAction >= 0; indexOfFirstActionCreatedAfterNewAction--) {
+				if (!actions.get(indexOfFirstActionCreatedAfterNewAction).getWhenCreated().after(newAction.getWhenCreated())) {
+					// add here if the current action was not created after the new action (i.e. getWhenCreated is equal or before)
 					break;
 				}
 			}
 			
-			// insert new action at the correct position
-			actions.add(indexOfFirstActionCreatedAfterNewAction, newAction);
+			// insert new action at the correct position (after the last occurrence of actions created before the new action to be inserted)
+			actions.add(++indexOfFirstActionCreatedAfterNewAction, newAction);
 			
 			// insert new action into the map to be used for searching actions by question id
 			this.addNetworkActionIntoQuestionMap(newAction, null);
