@@ -5685,14 +5685,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			cliques = getAssetCliqueFromQuestionIDAndAssumptions(questionId, originalAssumptionIds, algorithm);
 		}
 		for (Clique clique : cliques) {
+			// these will be the specification of balancing trades of the current clique.
+			List<TradeSpecification> balancingTradesForCurrentClique = null;
 			// obtain trade values for exiting the user from a question given assumptions, for the current clique
 			if (isToForceBalanceQuestionEntirely()) {
-				balancingTrades.addAll(previewBalancingTrades(algorithm, questionId, null, null, clique, isToAllowNegativeInBalanceTrade()));
+				balancingTradesForCurrentClique = previewBalancingTrades(algorithm, questionId, null, null, clique, isToAllowNegativeInBalanceTrade());
 			} else {
-				balancingTrades.addAll(previewBalancingTrades(algorithm, questionId, originalAssumptionIds, originalAssumedStates, clique, isToAllowNegativeInBalanceTrade()));
+				balancingTradesForCurrentClique = previewBalancingTrades(algorithm, questionId, originalAssumptionIds, originalAssumedStates, clique, isToAllowNegativeInBalanceTrade());
 			}
-			if (balancingTrades.size() > 1) {
-				for (TradeSpecification tradeSpecification : balancingTrades ) {
+			if (!balancingTradesForCurrentClique.isEmpty()) {
+				// don't forget to include the current balancing trades into the global set of balancing trades
+				balancingTrades.addAll(balancingTradesForCurrentClique);
+				// we need to execute the current balancing trades now, because it will influence the balancing trades of next clique.
+				for (TradeSpecification tradeSpecification : balancingTradesForCurrentClique ) {
 					// check if we should do clique-sensitive operation
 					if (tradeSpecification instanceof CliqueSensitiveTradeSpecification) {
 						CliqueSensitiveTradeSpecification cliqueSensitiveTradeSpecification = (CliqueSensitiveTradeSpecification) tradeSpecification;
