@@ -1,5 +1,7 @@
 package unbbayes.prm.model;
 
 public enum AggregateFunctionName {
-	mode, min, max, mean, median,
+	// Mode and median are currently unsupported.
+	// mode,median,
+	min, max, mean, add, subtract
 }

@@ -496,7 +496,7 @@ public class PrmCompiler {
 			List<INode> parentNodeInstances = queryNode.getParentNodes();
 
 			log.debug("Parent 1 is discarted because it exists in the default CPT");
-			// Every instance in this level.
+			// Every instance in tXXXhis level.
 			// The fist node is created by default.
 			for (int i = 1; i < parentNodeInstances.size(); i++) {
 				// Get the number of columns.
@@ -507,18 +507,31 @@ public class PrmCompiler {
 				log.debug("Parent " + (i + 1) + " of "
 						+ parentNodeInstances.size());
 
-				// XXX no es i en vez de 0?
+				// FIXME no es i en vez de 0?
 				INode parentNodeInstance = parentNodeInstances.get(0);
 
-				// if the node is part of this thing.
-				if (parentNodeInstance.getDescription().contains(
-						parentCptNode.getDescription())) {
+				String relId = parentNodeInstance.getDescription();
+				String cptRelId = parentCptNode.getDescription();
+				// if the node is part of this thing.the id reletionship is
+				// stored in the node description.
+				if (relId.contains(cptRelId)) {
 					// Get number of states for this variable (parent).
 					int numNodeStates = parentNodeInstance.getStatesSize();
-					// FIXME it could not be necessary because is the same
+					// FIXME it could notnull be necessary because is the same
 					// attribute numNodeStates.
 					int numLevelStates = rightCptWithValues.getVariableAt(
 							level + 1).getStatesSize();
+
+					// Parent relationship.
+					ParentRel rel = null;
+					for (ParentRel r : parentRels) {
+						if(r.getIdRelationsShip().equals(cptRelId)){
+							rel = r;
+						}
+					}
+					if (rel == null) {
+						throw new Exception("Relationship not found");
+					}
 
 					// Identify the columns related with every state of this
 					// variable.
@@ -535,20 +548,25 @@ public class PrmCompiler {
 								int indxValue = addedLevel[numLevelStates * st
 										+ col]
 										* numNodeStates + row;
-								float col1 = tmpTable
-										.getValue(indxValue);
+								float col1 = tmpTable.getValue(indxValue);
 
 								indxValue = col * numNodeStates + row;
 								float col2 = tmpTable.getValue(indxValue);
 
 								int index = st * numColumns * numNodeStates
 										+ col * numNodeStates + row;
+
+								// right relationship
+
+								float afResult = AggregateFunction.calculate(
+										rel.getAggregateFunction(), col1, col2);
+
 								// TODO aggregate function
 								log.debug("Aggregate fuction " + index + ": ["
 										+ col + "," + row + "] for " + col1
 										+ " y " + col2 + " Result="
-										+ (col1 + col2));
-								newTable.setValue(index, col1 + col2);
+										+ afResult);
+								newTable.setValue(index, afResult);
 							}
 						}
 					}
@@ -567,7 +585,6 @@ public class PrmCompiler {
 		}
 
 		// Normalize every column (this could be an external method).
-
 		int newNumColumns = DynamicTableHelper.getNumColumns(tmpTable);
 		int numRows = queryNode.getStatesSize(); // FIXME it must be calculated.
 		for (int i = 0; i < newNumColumns; i++) {
@@ -656,21 +673,6 @@ public class PrmCompiler {
 	 * @param cpd
 	 */
 	private void assignCPDToNode(ProbabilisticNode queryNode, PotentialTable cpd) {
-		// If it exist
-		// float[] vals = queryNode.getProbabilityFunction().getValues();
-		// for (float f : vals) {
-		// if (f > 0) {
-		// return;
-		// }
-		// }
-		// if (vals.length == 0) {
-		// log.debug("new cpt for node");
-		// return;
-		// } else {
-		// log.debug("old node");
-		// }
-		// int variablesSize2 = cpd.getVariablesSize();
-
 		int variablesSize = cpd.tableSize();
 		PotentialTable probabilityFunction = queryNode.getProbabilityFunction();
 
