@@ -95,4 +95,32 @@ public interface NetworkAction extends QuestionEvent {
 	 * (i.e. the first time).
 	 */
 	void setWhenExecutedFirstTime(Date whenExecutedFirst);
+	
+	/**
+	 * If {@link #isCorrectiveTrade()} == true, then
+	 * this method should return what trade is being corrected by this trade.
+	 * @return
+	 */
+	NetworkAction getCorrectedTrade ();
+
+	/**
+	 * This will be the marginal probability before a trade.
+	 * This is related with with {@link #getOldValues()}.
+	 * Do not be confused with {@link TradeSpecification#setOldProbabilities(List)},
+	 * because {@link TradeSpecification#setOldProbabilities(List)} can be conditional
+	 * probability.
+	 * @param oldValues
+	 */
+	void setOldValues(List<Float> oldValues);
+
+	/**
+	 * This will be the marginal probability after a trade.
+	 * This is related with with {@link #getNewValues()}.
+	 * Do not be confused with {@link TradeSpecification#setProbabilities(List)},
+	 * because {@link TradeSpecification#setProbabilities(List)} can be conditional
+	 * probability.
+	 * @param newValues
+	 */
+	void setNewValues(List<Float> newValues);
+	
 }

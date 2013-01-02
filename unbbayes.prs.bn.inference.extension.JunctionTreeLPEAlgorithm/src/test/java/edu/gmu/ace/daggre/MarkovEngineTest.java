@@ -20694,10 +20694,10 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue( engine.addTrade(
 				transactionKey, 
 				new Date(), 
-				"Joe bets P(F=f1|D=d2) = .5 -> .1", 
+				"Joe bets P(F=f1|D=d2) = .1", 
 				userNameToIDMap.get("Joe"), 
 				0x0F, 
-				oldValues,
+				//oldValues,
 				newValues, 
 				Collections.singletonList((long)0x0D), 
 				Collections.singletonList(1), 
@@ -20721,10 +20721,10 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue( engine.addTrade(
 				transactionKey, 
 				new Date(), 
-				"Eric bets P(E=e1) = .65 -> .8", 
+				"Eric bets P(E=e1) = .8", 
 				userNameToIDMap.get("Eric"), 
 				0x0E, 
-				oldValues,
+//				oldValues,
 				newValues, 
 				(List)Collections.emptyList(), 
 				(List)Collections.emptyList(), 
@@ -20753,6 +20753,88 @@ public class MarkovEngineTest extends TestCase {
 		
 		// commit all trades (including the creation of network and user)
 		engine.commitNetworkActions(transactionKey);
+		
+		// test consistency of history when corrective trades are present
+		
+		// there should be 1 corrective trade for E at position 1
+		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0EL, null, null);
+		assertEquals(5, questionHistory.size());
+		for (int i = 0; i < questionHistory.size(); i++) {
+			if (i == 1) {
+				assertTrue(questionHistory.get(i).isCorrectiveTrade());
+			} else {
+				assertFalse(questionHistory.get(i).isCorrectiveTrade());
+			}
+		}
+		// there should be 1 corrective trade for P(E|D=d2) at position 1
+		questionHistory = engine.getQuestionHistory(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertEquals(4, questionHistory.size());
+		for (int i = 0; i < questionHistory.size(); i++) {
+			if (i == 1) {
+				assertTrue(questionHistory.get(i).isCorrectiveTrade());
+			} else {
+				assertFalse(questionHistory.get(i).isCorrectiveTrade());
+			}
+		}
+		
+		// no corrective trade for marginal of D
+		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		assertEquals(2, questionHistory.size());
+		for (int i = 0; i < questionHistory.size(); i++) {
+			assertFalse(questionHistory.get(i).isCorrectiveTrade());
+		}
+		
+		// because there is 1 corrective trade for P(E|D=d2) at position 1, there should be a reciprocal for P(D|E=e1) at position 1
+		questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(4, questionHistory.size());
+		for (int i = 0; i < questionHistory.size(); i++) {
+			if (i == 1) {
+				assertTrue(questionHistory.get(i).isCorrectiveTrade());
+			} else {
+				assertFalse(questionHistory.get(i).isCorrectiveTrade());
+			}
+		}
+		// because there is 1 corrective trade for P(E|D=d2) at position 1, there should be a reciprocal for P(D|E=e2) at position 1
+		questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(4, questionHistory.size());
+		for (int i = 0; i < questionHistory.size(); i++) {
+			if (i == 1) {
+				assertTrue(questionHistory.get(i).isCorrectiveTrade());
+			} else {
+				assertFalse(questionHistory.get(i).isCorrectiveTrade());
+			}
+		}
+		// no corrective trade for D given F
+		questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertEquals(3, questionHistory.size());
+		for (int i = 0; i < questionHistory.size(); i++) {
+			assertFalse(questionHistory.get(i).isCorrectiveTrade());
+		}
+		questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals(4, questionHistory.size());
+		for (int i = 0; i < questionHistory.size(); i++) {
+			assertFalse(questionHistory.get(i).isCorrectiveTrade());
+		}
+		
+		
+		// no corrective trade for F
+		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		assertEquals(3, questionHistory.size());
+		for (int i = 0; i < questionHistory.size(); i++) {
+			assertFalse(questionHistory.get(i).isCorrectiveTrade());
+		}
+		
+		// no corrective trade for F conditioned to D
+		questionHistory = engine.getQuestionHistory(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertEquals(2, questionHistory.size());
+		for (int i = 0; i < questionHistory.size(); i++) {
+			assertFalse(questionHistory.get(i).isCorrectiveTrade());
+		}
+		questionHistory = engine.getQuestionHistory(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertEquals(3, questionHistory.size());
+		for (int i = 0; i < questionHistory.size(); i++) {
+			assertFalse(questionHistory.get(i).isCorrectiveTrade());
+		}
 		
 		// check that final marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
 		List<Float> probList = engine.getProbList(0x0D, null, null);
