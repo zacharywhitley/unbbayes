@@ -250,7 +250,7 @@ public class PrmCompiler {
 				// If it has parents.
 				if (initInstanceValue == null
 						|| initInstanceValue.equalsIgnoreCase("null")) {
-					log.debug("Foreign key is null. The recursivity must STOP here for this parent.");
+					log.debug("Foreign key is null for "+indexValue+". The recursivity must STOP here for this parent.");
 					continue;
 				}
 
@@ -469,14 +469,14 @@ public class PrmCompiler {
 		// Identify if queryNode is a parent or a child.
 		// If the node is a parent.
 		if (parentRels.length == 0) {
-			rightCptWithValues = cptsWithValues[0]; // FIXME it could be other
+			rightCptWithValues = (PotentialTable) cptsWithValues[0].clone(); // FIXME it could be other
 													// parent.
 			log.debug("var count=" + rightCptWithValues.variableCount());
 			assignCPDToNode(queryNode, rightCptWithValues);
 			return;
 		} else {
 			// if the node is a child
-			rightCptWithValues = cptsWithValues[cptsWithValues.length - 1];
+			rightCptWithValues = (PotentialTable) cptsWithValues[cptsWithValues.length - 1].clone();
 		}
 
 		// ////////////// FILL THE QUERY NODE CPT /////////////////////
@@ -525,7 +525,7 @@ public class PrmCompiler {
 					// Parent relationship.
 					ParentRel rel = null;
 					for (ParentRel r : parentRels) {
-						if(r.getIdRelationsShip().equals(cptRelId)){
+						if (r.getIdRelationsShip().equals(cptRelId)) {
 							rel = r;
 						}
 					}
@@ -564,8 +564,7 @@ public class PrmCompiler {
 								// TODO aggregate function
 								log.debug("Aggregate fuction " + index + ": ["
 										+ col + "," + row + "] for " + col1
-										+ " y " + col2 + " Result="
-										+ afResult);
+										+ " y " + col2 + " Result=" + afResult);
 								newTable.setValue(index, afResult);
 							}
 						}
@@ -671,15 +670,26 @@ public class PrmCompiler {
 	 * 
 	 * @param queryNode
 	 * @param cpd
+	 * @throws Exception
 	 */
-	private void assignCPDToNode(ProbabilisticNode queryNode, PotentialTable cpd) {
+	private void assignCPDToNode(ProbabilisticNode queryNode, PotentialTable cpd)
+			throws Exception {
 		int variablesSize = cpd.tableSize();
 		PotentialTable probabilityFunction = queryNode.getProbabilityFunction();
 
 		// Variable
-		for (int i = 0; i < variablesSize; i++) {
-			probabilityFunction.setValue(i, cpd.getValue(i));
+
+		try {
+			for (int i = 0; i < variablesSize; i++) {
+				probabilityFunction.setValue(i, cpd.getValue(i));
+			}
+
+		} catch (IndexOutOfBoundsException e) {
+			throw new Exception("Error assigning the CPT. VariableSize="
+					+ variablesSize + " and CPT size="
+					+ probabilityFunction.getValues().length, e);
 		}
+
 	}
 
 	public IInferenceAlgorithm getInferenceAlgorithm() {

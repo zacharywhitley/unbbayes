@@ -18,7 +18,13 @@ import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.prm.model.AttributeStates;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
-
+/**
+ * 
+ * Graphic interface to introduce the CPT.
+ * 
+ * @author David Saldaña.
+ *
+ */
 public class PrmTable extends JPanel {
 	/**
 	 * Default serial.
@@ -28,7 +34,7 @@ public class PrmTable extends JPanel {
 	private static Logger log = Logger.getLogger(PrmTable.class);
 
 	/**
-	 * Combbox to choose the aggregate function.
+	 * Combobox to choose the aggregate function.
 	 */
 	// private JComboBox comboAggregateFunctions;
 
@@ -57,22 +63,6 @@ public class PrmTable extends JPanel {
 				Double.MIN_VALUE };
 		setLayout(gridBagLayout);
 
-		// Aggregate function
-		// JPanel panel_1 = new JPanel();
-		// GridBagConstraints gbc_panel_1 = new GridBagConstraints();
-		// gbc_panel_1.insets = new Insets(0, 0, 5, 0);
-		// gbc_panel_1.fill = GridBagConstraints.BOTH;
-		// gbc_panel_1.gridx = 0;
-		// gbc_panel_1.gridy = 0;
-		// add(panel_1, gbc_panel_1);
-		//
-		// JLabel lblAggregateFunction = new JLabel("Aggregate function:");
-		// panel_1.add(lblAggregateFunction);
-		//
-		// comboAggregateFunctions = new JComboBox();
-		// comboAggregateFunctions.setModel(new DefaultComboBoxModel(
-		// AggregateFunctionName.values()));
-		// panel_1.add(comboAggregateFunctions);
 
 		// CPT Table
 		table = new GUIPotentialTable(getPotentialTable(child)).makeTable();

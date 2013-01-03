@@ -54,7 +54,7 @@ public class DynamicTableHelper {
 					nextVal++;
 				}
 			}
-			if(statesOrder.size()==numColumns){
+			if (statesOrder.size() == numColumns) {
 				break;
 			}
 
@@ -121,12 +121,14 @@ public class DynamicTableHelper {
 	 * @return
 	 */
 	public static int getNumColumns(PotentialTable rightCptWithValues) {
-		int numColumns = 1;
-		int numCptParents = rightCptWithValues.getVariablesSize();
-		for (int i = 1; i < numCptParents; i++) {
-			numColumns *= rightCptWithValues.getVariableAt(i).getStatesSize();
-		}
-		return numColumns;
+		// int numColumns = 1;
+		// int numCptParents = rightCptWithValues.getVariablesSize();
+		// for (int i = 1; i < numCptParents; i++) {
+		// numColumns *= rightCptWithValues.getVariableAt(i).getStatesSize();
+		// }
+		return rightCptWithValues.tableSize()
+				/ rightCptWithValues.getVariableAt(0).getStatesSize();
+		// return numColumns;
 	}
 
 	public static int getNumUpperStates(int level,
@@ -153,17 +155,13 @@ public class DynamicTableHelper {
 	 * @param numColumns
 	 * @return
 	 */
-	public static int[] addLevel(int level, PotentialTable cpt,
-			INode childNode) {
-		
-		 int numColumns = getNumColumns(cpt);
+	public static int[] addLevel(int level, PotentialTable cpt, INode childNode) {
+
+		int numColumns = getNumColumns(cpt);
 		int numSubStates = getNumSubStates(level, cpt);
-		
-		
-		int order[] = DynamicTableHelper.statesOrderInCpt(
-				level, cpt);
-		
-		
+
+		int order[] = DynamicTableHelper.statesOrderInCpt(level, cpt);
+
 		numSubStates = numSubStates == 0 ? 1 : numSubStates;
 
 		int numStates = childNode.getStatesSize();
