@@ -202,20 +202,22 @@ public class DBControllerImp implements IDBController {
 				.getName();
 
 		// Column Index.
-		String tableId;
-
+		String columnId;
+		String table;
 		// If this is the primary key
 		if (path[path.length - 2].getAttribute().isPrimaryKey()) {
-			tableId = path[path.length - 2].getAttribute().getName();
+			columnId = path[path.length - 2].getAttribute().getName();
+			table = path[path.length - 2].getTable().getName();
 		} else {
 			// Maybe this is not the best way but it works.
-			tableId = path[path.length - 2].getTable().getPrimaryKeyColumns()[0]
+			columnId = path[path.length - 2].getTable().getPrimaryKeyColumns()[0]
 					.getName();
+			table = path[path.length - 2].getTable().getName();
 		}
 
 		// SQL query.
-		String sqlQuery = "SELECT " + tableId + ", " + relationship.getParent()
-				+ " FROM " + queryTables + where;
+		String sqlQuery = "SELECT " + table + "." + columnId + ", "
+				+ relationship.getParent() + " FROM " + queryTables + where;
 		log.debug("SQL query = " + sqlQuery);
 
 		// Query to DB.
@@ -226,7 +228,7 @@ public class DBControllerImp implements IDBController {
 		while (it1.hasNext()) {
 			DynaBean dynaBean = (DynaBean) it1.next();
 			String inst = String.valueOf(dynaBean.get(parentAttName));
-			String id = String.valueOf(dynaBean.get(tableId));
+			String id = String.valueOf(dynaBean.get(columnId));
 
 			instances.add(new String[] { id, inst });
 

@@ -250,7 +250,9 @@ public class PrmCompiler {
 				// If it has parents.
 				if (initInstanceValue == null
 						|| initInstanceValue.equalsIgnoreCase("null")) {
-					log.debug("Foreign key is null for "+indexValue+". The recursivity must STOP here for this parent.");
+					log.debug("Foreign key is null for "
+							+ indexValue
+							+ ". The recursivity must STOP here for this parent.");
 					continue;
 				}
 
@@ -455,6 +457,8 @@ public class PrmCompiler {
 
 		ParentRel[] parentRels = prmController.parentsOf(queryAtt);
 
+		List<INode> childNodes = queryNode.getChildNodes();
+
 		// ///////////////// IDENTIFY the right CPT with values ////////////////
 		// Potential tables are many when an attribute is a parent and a child.
 		PotentialTable[] cptsWithValues = prmController.getCPDs(queryAtt);
@@ -468,23 +472,31 @@ public class PrmCompiler {
 
 		// Identify if queryNode is a parent or a child.
 		// If the node is a parent.
-		if (parentRels.length == 0) {
-			rightCptWithValues = (PotentialTable) cptsWithValues[0].clone(); // FIXME it could be other
-													// parent.
+		// FIXME sometimes, parentRelationships!=0, but it is a parent.
+		// This (childNodes.size() > 0) is a trick, I am not sure if it always
+		// works.
+		if (parentRels.length == 0
+				|| (childNodes.size() > 0 && queryNode.getParentNodes().size() == 0)) {
+			// FIXME it could be other parent.
+			rightCptWithValues = (PotentialTable) cptsWithValues[0].clone();
 			log.debug("var count=" + rightCptWithValues.variableCount());
 			assignCPDToNode(queryNode, rightCptWithValues);
 			return;
 		} else {
 			// if the node is a child
-			rightCptWithValues = (PotentialTable) cptsWithValues[cptsWithValues.length - 1].clone();
+			rightCptWithValues = (PotentialTable) cptsWithValues[cptsWithValues.length - 1]
+					.clone();
 		}
 
 		// ////////////// FILL THE QUERY NODE CPT /////////////////////
-
+		// TODO Bug multiples parents. could duplicate the instances.
 		// CPT parents
 		int numCptParents = rightCptWithValues.getVariablesSize();
 
 		PotentialTable tmpTable = rightCptWithValues;
+
+		// Parent instances to apply the aggregate function.
+		List<INode> parentNodeInstances = queryNode.getParentNodes();
 
 		// Every CPT parent. the first one is discarded because it is the same
 		// attribute.
@@ -492,13 +504,13 @@ public class PrmCompiler {
 			// CPT parent node
 			INode parentCptNode = rightCptWithValues.getVariableAt(level + 1);
 
-			// Parent instances to apply the aggregate function.
-			List<INode> parentNodeInstances = queryNode.getParentNodes();
-
 			log.debug("Parent 1 is discarted because it exists in the default CPT");
-			// Every instance in tXXXhis level.
+
+			int instanceCont = 0;
+
+			// Find every instance in this level.
 			// The fist node is created by default.
-			for (int i = 1; i < parentNodeInstances.size(); i++) {
+			for (int i = 0; i < parentNodeInstances.size(); i++) {
 				// Get the number of columns.
 				int numColumns = DynamicTableHelper.getNumColumns(tmpTable);
 
@@ -515,6 +527,11 @@ public class PrmCompiler {
 				// if the node is part of this thing.the id reletionship is
 				// stored in the node description.
 				if (relId.contains(cptRelId)) {
+					instanceCont++;
+					if (instanceCont <= 1) {
+						continue;
+					}
+
 					// Get number of states for this variable (parent).
 					int numNodeStates = parentNodeInstance.getStatesSize();
 					// FIXME it could notnull be necessary because is the same
@@ -574,7 +591,7 @@ public class PrmCompiler {
 			}
 
 			// If does not exist any node for this CPT parent.
-			if (parentNodeInstances.size() == 0) {
+			if (instanceCont == 0) {
 				tmpTable.removeVariable(parentCptNode, true);
 			}
 
@@ -685,9 +702,9 @@ public class PrmCompiler {
 			}
 
 		} catch (IndexOutOfBoundsException e) {
-			throw new Exception("Error assigning the CPT. VariableSize="
-					+ variablesSize + " and CPT size="
-					+ probabilityFunction.getValues().length, e);
+			throw new Exception("Error assigning the CPT for "
+					+ queryNode.getName() + ". VariableSize=" + variablesSize
+					+ " and CPT size=" + probabilityFunction.tableSize(), e);
 		}
 
 	}
