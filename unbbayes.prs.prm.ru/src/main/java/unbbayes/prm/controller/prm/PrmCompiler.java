@@ -493,7 +493,7 @@ public class PrmCompiler {
 		// CPT parents
 		int numCptParents = rightCptWithValues.getVariablesSize();
 
-		PotentialTable tmpTable = rightCptWithValues;
+		PotentialTable tmpTable = (PotentialTable) rightCptWithValues.clone();
 
 		// Parent instances to apply the aggregate function.
 		List<INode> parentNodeInstances = queryNode.getParentNodes();
@@ -501,8 +501,10 @@ public class PrmCompiler {
 		// Every CPT parent. the first one is discarded because it is the same
 		// attribute.
 		for (int level = 0; level < numCptParents - 1; level++) {
+			int relativeLevel = level + 1 ;
 			// CPT parent node
-			INode parentCptNode = rightCptWithValues.getVariableAt(level + 1);
+			INode parentCptNode = rightCptWithValues
+					.getVariableAt(relativeLevel);
 
 			log.debug("Parent 1 is discarted because it exists in the default CPT");
 
@@ -516,11 +518,12 @@ public class PrmCompiler {
 
 				PotentialTable newTable = (PotentialTable) tmpTable.clone();
 
-				log.debug("Parent " + (i + 1) + " of "
-						+ parentNodeInstances.size());
+				log.debug("Parent relationship " + (i + 1) + "/"
+						+ parentNodeInstances.size() + " for node "
+						+ queryNode.getName());
 
 				// FIXME no es i en vez de 0?
-				INode parentNodeInstance = parentNodeInstances.get(0);
+				INode parentNodeInstance = parentNodeInstances.get(i);
 
 				String relId = parentNodeInstance.getDescription();
 				String cptRelId = parentCptNode.getDescription();
@@ -537,7 +540,7 @@ public class PrmCompiler {
 					// FIXME it could notnull be necessary because is the same
 					// attribute numNodeStates.
 					int numLevelStates = rightCptWithValues.getVariableAt(
-							level + 1).getStatesSize();
+							relativeLevel).getStatesSize();
 
 					// Parent relationship.
 					ParentRel rel = null;
@@ -552,8 +555,8 @@ public class PrmCompiler {
 
 					// Identify the columns related with every state of this
 					// variable.
-					int[] addedLevel = DynamicTableHelper.addLevel(level,
-							newTable, queryNode);
+					int[] addedLevel = DynamicTableHelper.addLevel(
+							relativeLevel, newTable, queryNode);
 
 					// Insert the new variable.
 					newTable.addVariable(parentNodeInstance);
