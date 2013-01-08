@@ -149,7 +149,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	private boolean isToDeleteResolvedNode = true;
 	
-	private boolean isToThrowExceptionOnInvalidAssumptions = false;
+	private boolean isToThrowExceptionOnInvalidAssumptions = true;
 
 //	/** Set this value to < 0 to disable this feature */
 //	private float forcedInitialQValue = 100.0;
@@ -242,6 +242,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	/** If true, {@link #commitNetworkActions(long, boolean)} will place all {@link AddCashNetworkAction} before trades. */
 	private boolean isToSortAddCashAction = true;
+	
+	/** If true, {@link RebuildNetworkAction#execute()} will "see" trades which are in the same transaction and created after the rebuild action. */
+	private boolean isToLookAheadForTradesCreatedAfterRebuild = true;
+
+	/** If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)} will
+	 * throw exception when the question has probability 0 or 1 in any state */
+	private boolean isToThrowExceptionInTradesToResolvedQuestions = false;
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -728,7 +735,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 								// this is important, because there's no guarantee that other types of actions are sorted by action.getWhenCreated()
 								continue;
 							}
-							if (lastNetConstructionActionTimestamp.before(action.getWhenCreated())) {
+							if (!isToLookAheadForTradesCreatedAfterRebuild()
+									&& lastNetConstructionActionTimestamp.before(action.getWhenCreated())) {
 								// do not fully connect questions regarding trades which were created strictly after the last net construction action
 								// Note: we are assuming that trades are sorted by action.getWhenCreated().
 								break;
@@ -895,7 +903,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						}
 						
 						// store the questions to become fully connect
-						probCliquesToFullyConnect.add(questionsInThisTradeSpec);
+						if (questionsInThisTradeSpec.size() > 1) {
+							probCliquesToFullyConnect.add(questionsInThisTradeSpec);
+						}
 					}
 				} else { // treat all other types of trades as ordinal trades
 					
@@ -912,7 +922,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 					
 					// store the questions to become fully connect
-					probCliquesToFullyConnect.add(questionsInThisTrade);
+					if (questionsInThisTrade.size() > 1) {
+						probCliquesToFullyConnect.add(questionsInThisTrade);
+					}
 				}
 			}
 			return probCliquesToFullyConnect;
@@ -2735,17 +2747,42 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			node = getProbabilisticNetwork().getNode(Long.toString(questionId));
 		}
 		if (node == null) {
-			throw new InexistingQuestionException("Question ID " + questionId + " was not found.", questionId);
-		}
-		if (settledState >= node.getStatesSize()) {
-			throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
-		}
-		if (node instanceof TreeVariable) {
-			TreeVariable var = (TreeVariable) node;
-			if (var.hasEvidence()) {
-				int state = (settledState<0)?((-settledState)-1):settledState;
-				if (var.getEvidence() != state || var.getMarginalAt(state) <= 0f) {
-					throw new IllegalArgumentException("Question " + questionId + " is already resolved, hence it cannot be resolved to " + settledState);
+			// check if node will be created in same transaction
+			boolean isOK = false;
+			if (transactionKey != null) {
+				List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey);
+				if (actions == null) {
+					throw new IllegalArgumentException("Transaction key " + transactionKey + " was not started or was concluded.");
+				}
+				synchronized (actions) {
+					for (NetworkAction networkAction : actions) {
+						if (networkAction instanceof AddQuestionNetworkAction
+								&& networkAction.getQuestionId() != null
+								&& networkAction.getQuestionId().longValue() == questionId) {
+							if (settledState >= ((AddQuestionNetworkAction)networkAction).getNumberStates()) {
+								throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
+							}
+							isOK = true;
+							break;
+						}
+					}
+				}
+			}
+			if (!isOK) {
+				throw new InexistingQuestionException("Question ID " + questionId + " was not found.", questionId);
+			}
+		} else {
+			// node != null at this point. Check consistency
+			if (settledState >= node.getStatesSize()) {
+				throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
+			}
+			if (node instanceof TreeVariable ) {
+				TreeVariable var = (TreeVariable) node;
+				if (var.hasEvidence()) {
+					int state = (settledState<0)?((-settledState)-1):settledState;
+					if (var.getEvidence() != state || var.getMarginalAt(state) <= 0f) {
+						throw new IllegalArgumentException("Question " + questionId + " is already resolved, hence it cannot be resolved to " + settledState);
+					}
 				}
 			}
 		}
@@ -4434,7 +4471,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		for (int i = 0; i < child.getStatesSize(); i++) {
 			if (child.getMarginalAt(i) == 0.0f || child.getMarginalAt(i) == 1.0f) {
-				throw new IllegalArgumentException("State " + i + " of question " + child + " given " + assumptionIds +  " = " + assumedStates + " has probability " + child.getMarginalAt(i) + " and cannot be changed.");
+				if (isToThrowExceptionInTradesToResolvedQuestions()) {
+					throw new IllegalArgumentException("State " + i + " of question " + child + " given " + assumptionIds +  " = " + assumedStates + " has probability " + child.getMarginalAt(i) + " and cannot be changed.");
+				} else {
+					return null;
+				}
 			}
 		}
 		
@@ -9089,6 +9130,46 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public void setToSortAddCashAction(boolean isToSortAddCashAction) {
 		this.isToSortAddCashAction = isToSortAddCashAction;
+	}
+
+	/**
+	 * If true, {@link RebuildNetworkAction#execute()} will "see" trades which are in the same transaction and created after the rebuild action.
+	 * In other words, it will attempt to connect questions used in trades which happened after the occurrence of the last
+	 * {@link AddQuestionNetworkAction} or {@link AddQuestionAssumptionNetworkAction}, if they are in the same transaction.
+	 * @return the isToLookAheadForTradesCreatedAfterRebuild
+	 */
+	public boolean isToLookAheadForTradesCreatedAfterRebuild() {
+		return isToLookAheadForTradesCreatedAfterRebuild;
+	}
+
+	/**
+	 * If true, {@link RebuildNetworkAction#execute()} will "see" trades which are in the same transaction and created after the rebuild action.
+	 * In other words, it will attempt to connect questions used in trades which happened after the occurrence of the last
+	 * {@link AddQuestionNetworkAction} or {@link AddQuestionAssumptionNetworkAction}, if they are in the same transaction.
+	 * @param isToLookAheadForTradesCreatedAfterRebuild the isToLookAheadForTradesCreatedAfterRebuild to set
+	 */
+	public void setToLookAheadForTradesCreatedAfterRebuild(
+			boolean isToLookAheadForTradesCreatedAfterRebuild) {
+		this.isToLookAheadForTradesCreatedAfterRebuild = isToLookAheadForTradesCreatedAfterRebuild;
+	}
+
+	/**
+	 * If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)} will
+	 * throw exception when the question has probability 0 or 1 in any state
+	 * @return the isToThrowExceptionInTradesToResolvedQuestions
+	 */
+	public boolean isToThrowExceptionInTradesToResolvedQuestions() {
+		return isToThrowExceptionInTradesToResolvedQuestions;
+	}
+
+	/**
+	 * If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)} will
+	 * throw exception when the question has probability 0 or 1 in any state
+	 * @param isToThrowExceptionInTradesToResolvedQuestions the isToThrowExceptionInTradesToResolvedQuestions to set
+	 */
+	public void setToThrowExceptionInTradesToResolvedQuestions(
+			boolean isToThrowExceptionInTradesToResolvedQuestions) {
+		this.isToThrowExceptionInTradesToResolvedQuestions = isToThrowExceptionInTradesToResolvedQuestions;
 	}
 
 

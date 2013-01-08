@@ -20353,7 +20353,7 @@ public class MarkovEngineTest extends TestCase {
 			// Changing P(E|d1) to [.4,.6] shall do the work
 			newValues = new ArrayList<Float>(2);
 			newValues.add(.4f); newValues.add(.6f);
-			engine.addTrade(null, new Date(), "User 1 sets P(F|d1)=[0.4,0.6]", 1, 0x0EL, newValues, 
+			engine.addTrade(null, new Date(), "User 1 sets P(E|d1)=[0.4,0.6]", 1, 0x0EL, newValues, 
 					Collections.singletonList(0x0DL), Collections.singletonList(0), false);
 			fail("Shall throw exception indicating that cash went to negative");
 		} catch (ZeroAssetsException e) {
@@ -20368,6 +20368,56 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0, questionHistory.size());
 		questionHistory = engine.getQuestionHistory(0x0EL, null, null);
 		assertEquals(0, questionHistory.size());
+		
+		// now, add cash to user, so that user can do the trade
+		engine.addCash(null, new Date(), 1, 50, "Added 50 to user 1");
+		
+		// Changing P(E|d1) to [.4,.6] shall do the work
+		newValues = new ArrayList<Float>(2);
+		newValues.add(.4f); newValues.add(.6f);
+		engine.addTrade(null, new Date(), "User 1 sets P(E|d1)=[0.4,0.6]", 1, 0x0EL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(0), false);
+		
+		// make sure the history did change the marginal of E
+		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		assertEquals(1, questionHistory.size());
+		assertTrue(questionHistory.get(0) instanceof AddTradeNetworkAction);
+		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		assertEquals(0, questionHistory.size());
+		questionHistory = engine.getQuestionHistory(0x0EL, null, null);
+		assertEquals(1, questionHistory.size());
+		
+		try {
+			// Make a change in E which should change F indirectly, but will be cancelled due to cash
+			newValues = new ArrayList<Float>(2);
+			newValues.add(.9f); newValues.add(.1f);
+			engine.addTrade(null, new Date(), "User 1 sets P(E)=[0.9,0.1]", 1, 0x0EL, newValues, 
+					null, null, false);
+			fail("Shall throw exception indicating that cash went to negative");
+		} catch (ZeroAssetsException e) {
+			// OK
+		}
+		// make sure the history did not change
+		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		assertEquals(1, questionHistory.size());
+		assertTrue(questionHistory.get(0) instanceof AddTradeNetworkAction);
+		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		assertEquals(0, questionHistory.size());
+		questionHistory = engine.getQuestionHistory(0x0EL, null, null);
+		assertEquals(1, questionHistory.size());
+		
+		engine.resolveQuestion(null, new Date(), 0x0EL, 0);
+		
+		// make sure the history did change for all questions
+		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		assertEquals(2, questionHistory.size());
+		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof DummyTradeAction);
+		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		assertEquals(1, questionHistory.size());
+		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof DummyTradeAction);
+//		questionHistory = engine.getQuestionHistory(0x0EL, null, null);
+//		assertEquals(2, questionHistory.size());
+		
 		
 		
 	}
@@ -21081,6 +21131,48 @@ public class MarkovEngineTest extends TestCase {
 		
 		// restore old config
 		engine.setToFullyConnectNodesInCliquesOnRebuild(backup);
+	}
+	
+	/**
+	 * Checks if we can add and resolve questions in a single transaction
+	 */
+	public final void testAddResolveQuestionSingleTransaction() {
+		engine.setCurrentCurrencyConstant(100);
+		engine.setCurrentLogBase(2);
+		engine.setDefaultInitialAssetTableValue(1000);
+		
+		// start transaction
+		long transactionKey = engine.startNetworkActions();
+		// create 0 -> 1
+		engine.addQuestion(transactionKey, new Date(1), 0, 3, null);
+		engine.addQuestion(transactionKey, new Date(2), 1, 3, null);
+		engine.addQuestionAssumption(transactionKey, new Date(3), 1, Collections.singletonList(0L), null);
+		// set P(1|0=2) = [.2,.2,.8]
+		List<Float> newValues = new ArrayList<Float>(3);
+		newValues.add(.1f);
+		newValues.add(.1f);
+		newValues.add(.8f);
+		engine.addTrade(transactionKey, new Date(4), "User 0 sets P(1|0=2) = [.1,.1,.8]", 0, 1L, newValues, 
+				Collections.singletonList(0L), Collections.singletonList(2), false);
+		// resolve question 0
+		engine.resolveQuestion(transactionKey, new Date(5), 0, 2);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that question 0 resolved
+		List<Float> probList = engine.getProbList(0, null, null);
+		assertEquals(3, probList.size());
+		assertEquals(0f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0f, probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(1f, probList.get(2), PROB_ERROR_MARGIN);
+		
+
+		// check that propagation to question 1 was OK
+		probList = engine.getProbList(1, null, null);
+		assertEquals(3, probList.size());
+		assertEquals(.1f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(.1f, probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(.8f, probList.get(2), PROB_ERROR_MARGIN);
+		
 	}
 	
 }
