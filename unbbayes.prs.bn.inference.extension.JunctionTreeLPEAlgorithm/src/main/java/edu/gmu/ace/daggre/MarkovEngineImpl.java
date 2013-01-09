@@ -248,7 +248,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	/** If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)} will
 	 * throw exception when the question has probability 0 or 1 in any state */
-	private boolean isToThrowExceptionInTradesToResolvedQuestions = false;
+	private boolean isToThrowExceptionInTradesToResolvedQuestions = true;
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -881,32 +881,53 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// if this is a trade, we can store which nodes should be in the same clique, and what clique is it
 				if (action instanceof BalanceTradeNetworkAction){
 					
-					// balance trades have special treatment, because it is actually a set of several trades
 					BalanceTradeNetworkAction balanceTrade = (BalanceTradeNetworkAction) action;
 					
-					// iterate over the set of trades this balance trade represents
-					for (TradeSpecification tradeSpec : balanceTrade.getExecutedTrades()) {
-						
-						// Note: since we are storing ids instead of the clique itself, we do not need to check whether this 
-						// trade specification is CliqueSensitiveTradeSpecification or not
-						
-						// variable to store the ids of the assumptions and traded question
-						List<Long> questionsInThisTradeSpec = new ArrayList<Long>();
-						
-						// questionsInThisTradeSpec will contain the traded node...
-						questionsInThisTradeSpec.add(tradeSpec.getQuestionId());
-						
-						// ... and all its assumptions
-						if (tradeSpec.getAssumptionIds() != null) {
+					if (balanceTrade.getExecutedTrades() == null) {	// this was never executed
+						// store the combinations of questions regarding what the user specified in balancing trade
+						if (balanceTrade.getQuestionId() != null && balanceTrade.getAssumptionIds() != null && !balanceTrade.getAssumptionIds().isEmpty()) {
+							// variable to store the ids of the assumptions and traded question
+							List<Long> questionsInThisTradeSpec = new ArrayList<Long>();
+							
+							// questionsInThisTradeSpec will contain the traded node...
+							questionsInThisTradeSpec.add(balanceTrade.getQuestionId());
+							
+							// ... and all its assumptions
 							// NOTE: I'm assuming that tradeSpec.getAssumptionIds() won't have repetitions and don't include the traded question itself
-							questionsInThisTradeSpec.addAll(tradeSpec.getAssumptionIds());
-						}
-						
-						// store the questions to become fully connect
-						if (questionsInThisTradeSpec.size() > 1) {
+							questionsInThisTradeSpec.addAll(balanceTrade.getAssumptionIds());
+							
+							// store the questions to become fully connect
+							// note: at this point, 
+							// since balanceTrade.getQuestionId() != null && balanceTrade.getAssumptionIds() != null && !balanceTrade.getAssumptionIds().isEmpty(),
+							// questionsInThisTradeSpec has always 2 or more elements.
 							probCliquesToFullyConnect.add(questionsInThisTradeSpec);
+						} 
+					} else {	// this balancing trade was executed already
+						// balance trades have special treatment, because it is actually a set of several trades
+						for (TradeSpecification tradeSpec : balanceTrade.getExecutedTrades()) { // iterate over the set of trades this balance trade represents
+							
+							// Note: since we are storing ids instead of the clique itself, we do not need to check whether this 
+							// trade specification is CliqueSensitiveTradeSpecification or not
+							
+							// variable to store the ids of the assumptions and traded question
+							List<Long> questionsInThisTradeSpec = new ArrayList<Long>();
+							
+							// questionsInThisTradeSpec will contain the traded node...
+							questionsInThisTradeSpec.add(tradeSpec.getQuestionId());
+							
+							// ... and all its assumptions
+							if (tradeSpec.getAssumptionIds() != null) {
+								// NOTE: I'm assuming that tradeSpec.getAssumptionIds() won't have repetitions and don't include the traded question itself
+								questionsInThisTradeSpec.addAll(tradeSpec.getAssumptionIds());
+							}
+							
+							// store the questions to become fully connect
+							if (questionsInThisTradeSpec.size() > 1) {
+								probCliquesToFullyConnect.add(questionsInThisTradeSpec);
+							}
 						}
 					}
+					
 				} else { // treat all other types of trades as ordinal trades
 					
 					// variable to store the ids of the assumptions and traded question
@@ -6266,10 +6287,41 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		}
 		
-		// do nothing if user was not initialized or user is lazily initialized
-		// (in both cases, user did neveer trade, so balancing is useless)
+		// do nothing if user was not initialized or user is lazily initialized (in both cases, user did neveer trade, so balancing is useless)
 		if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
-			return true;
+			if (transactionKey == null) {
+				return true;
+			} else { // trades may be performed in same transaction, so user may become initialized within transaction
+				// extract the actions pertaining in the same transaction
+				List<NetworkAction> actionsInSameTransaction = getNetworkActionsMap().get(transactionKey);
+				if (actionsInSameTransaction == null) {
+					throw new IllegalArgumentException("Transaction with key " + transactionKey + " was not initialized or was already commited.");
+				}
+				// this variable will become true if the user has a trade before this balancing trade.
+				boolean hasUserTradeBeforeBalance = false;
+				// handle actions in the same transaction until we find the 1st transaction to be executed strictly after this balancing trade
+				for (NetworkAction action : actionsInSameTransaction) {
+					if (action == null || !(action instanceof AddTradeNetworkAction)){
+						// only consider trades. Ignore other types of actions.
+						// this is important, because there's no guarantee that other types of actions are sorted by action.getWhenCreated()
+						continue;
+					}
+					if (action.getWhenCreated().after(occurredWhen)) {
+						// do not consider trades performed after the current balancing command
+						// Note: we are assuming that trades are sorted by action.getWhenCreated().
+						break;	
+					}
+					if (action.getUserId() != null && action.getUserId().longValue() == userId) {
+						// found a trade of user "userId", so we may need a balancing trade.
+						hasUserTradeBeforeBalance = true;
+						break;
+					}
+				}
+				if (!hasUserTradeBeforeBalance) {
+					// There was no trade, so no balancing trade is necessary.
+					return true;	// just return and do nothing
+				}
+			}
 		}
 		
 		if (transactionKey == null) {

@@ -21118,9 +21118,31 @@ public class MarkovEngineTest extends TestCase {
 				newValues, Collections.singletonList(2L), 
 				Collections.singletonList((int)(numStatesOfQuestion2*Math.random())), false).isEmpty() );
 		
-		// change structure to: 1 -> 0 <- 2 -> 3
+		// change structure to: 1 -> 0 <- 2 <- [3,4]
 		engine.addQuestion(transactionKey, new Date(), 3L, 2+(int)Math.round(Math.random()*5), null);	
-		engine.addQuestionAssumption(transactionKey, new Date(), 3L , Collections.singletonList(2L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 2L , Collections.singletonList(3L), null);
+		engine.addQuestion(transactionKey, new Date(), 4L, 2+(int)Math.round(Math.random()*5), null);	
+		engine.addQuestionAssumption(transactionKey, new Date(), 2L , Collections.singletonList(4L), null);
+		
+		// trade on 2|3=0 just in order to have a position
+		newValues = new ArrayList<Float>(numStatesOfQuestion2);
+		newValues.add(.7f);  
+		for (int i = 1; i < numStatesOfQuestion2; i++) {
+			newValues.add((float) (.3 / (numStatesOfQuestion2-1)));
+		}
+		assertTrue( engine.addTrade( transactionKey, new Date(), 
+				"User 666 trades P(2|3=0) = [.7,[uniform]]", 666L, 2L, 
+				newValues, Collections.singletonList(3L), 
+				Collections.singletonList(0), false).isEmpty() );
+		
+		// add a balancing trade of 2 | [3,4]
+		List<Long> assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add(3L);
+		assumptionIds.add(4L);
+		List<Integer> assumedStates = new ArrayList<Integer>(2);
+		assumedStates.add(0);
+		assumedStates.add(0);
+		engine.doBalanceTrade(transactionKey, new Date(), "666 balances 2 | [3=0,4=0]", 666, 2, assumptionIds, assumedStates);
 		
 		// commit transaction
 		engine.commitNetworkActions(transactionKey);
@@ -21128,6 +21150,10 @@ public class MarkovEngineTest extends TestCase {
 		// check that 1 and 2 are explicitly connected
 		assertTrue( engine.getProbabilisticNetwork().getNode("1").getParents().contains(engine.getProbabilisticNetwork().getNode("2"))
 				|| engine.getProbabilisticNetwork().getNode("2").getParents().contains(engine.getProbabilisticNetwork().getNode("1")));
+		
+		// check that 3 and 4 are explicitly connected
+		assertTrue( engine.getProbabilisticNetwork().getNode("3").getParents().contains(engine.getProbabilisticNetwork().getNode("4"))
+				|| engine.getProbabilisticNetwork().getNode("4").getParents().contains(engine.getProbabilisticNetwork().getNode("3")));
 		
 		// restore old config
 		engine.setToFullyConnectNodesInCliquesOnRebuild(backup);
