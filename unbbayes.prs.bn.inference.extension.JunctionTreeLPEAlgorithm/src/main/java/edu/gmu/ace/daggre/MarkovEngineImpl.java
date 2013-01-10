@@ -248,7 +248,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	/** If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)} will
 	 * throw exception when the question has probability 0 or 1 in any state */
-	private boolean isToThrowExceptionInTradesToResolvedQuestions = true;
+	private boolean isToThrowExceptionInTradesToResolvedQuestions = false;
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -927,7 +927,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							}
 						}
 					}
-					
 				} else { // treat all other types of trades as ordinal trades
 					
 					// variable to store the ids of the assumptions and traded question
@@ -2380,7 +2379,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey); // getNetworkActionsMap() is supposedly a concurrent map
 			synchronized (actions) {	// actions is not a concurrent list, so must lock it
 				for (NetworkAction action : actions) {
-					if ((action instanceof AddQuestionNetworkAction) && (e.getQuestionId() == action.getQuestionId().longValue())) {
+					if ((action instanceof AddQuestionNetworkAction) && (e.getQuestionId() != null) && (e.getQuestionId().equals(action.getQuestionId()))) {
 						// this action will create the question which was not found.
 						isNodeToBeCreatedWithinTransaction = true;
 						break;
@@ -6158,7 +6157,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey); // getNetworkActionsMap() is supposedly a concurrent map
 			synchronized (actions) {	// actions is not a concurrent list, so must lock it
 				for (NetworkAction action : actions) {
-					if ((action instanceof AddQuestionNetworkAction) && (e.getQuestionId() == action.getQuestionId().longValue())) {
+					if ((action instanceof AddQuestionNetworkAction) && (e.getQuestionId().equals(action.getQuestionId()))) {
 						// this action will create the question which was not found.
 						isNodeToBeCreatedWithinTransaction = true;
 						break;
@@ -6225,7 +6224,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				for (NetworkAction networkAction : actions) {
 					if (networkAction instanceof AddQuestionNetworkAction) {
 						AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
-						if (addQuestionNetworkAction.getQuestionId() == questionId) {
+						if (addQuestionNetworkAction.getQuestionId()!= null && addQuestionNetworkAction.getQuestionId().longValue() == questionId) {
 							willCreateNodeOnCommit = true;
 							break;
 						}
@@ -6272,7 +6271,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						for (NetworkAction networkAction : actions) {
 							if (networkAction instanceof AddQuestionNetworkAction) {
 								AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
-								if (addQuestionNetworkAction.getQuestionId() == assumptiveQuestionId) {
+								if (addQuestionNetworkAction.getQuestionId().equals(assumptiveQuestionId)) {
 									hasFound = true;
 									break;
 								}
@@ -7094,7 +7093,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				NetworkAction action = actions.get(i);
 				if (action instanceof AddQuestionNetworkAction) {
 					AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) action;
-					if (addQuestionNetworkAction.getQuestionId() == newAction.getQuestionId()) {
+					if (addQuestionNetworkAction.getQuestionId().equals(newAction.getQuestionId())) {
 						// duplicate question in the same transaction
 						throw new IllegalArgumentException("Question ID " + newAction.getQuestionId() + " is already present.");
 					}
