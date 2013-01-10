@@ -1,0 +1,248 @@
+net
+{
+     node_size = (0 0);
+     name = "New BN";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node nod1
+{
+     label = "C0";
+     position = (136 68);
+     states = ("State 0");
+}
+
+node nod2
+{
+     label = "C1";
+     position = (271 62);
+     states = ("State 0");
+}
+
+node nod5
+{
+     label = "C2";
+     position = (401 67);
+     states = ("State 0");
+}
+
+node nod6
+{
+     label = "C3";
+     position = (555 71);
+     states = ("State 0");
+}
+
+node nod7
+{
+     label = "C4";
+     position = (730 89);
+     states = ("State 0");
+}
+
+node nod8
+{
+     label = "C5";
+     position = (850 87);
+     states = ("State 0");
+}
+
+node nod12
+{
+     label = "C6";
+     position = (977 82);
+     states = ("State 0");
+}
+
+node nod13
+{
+     label = "C7";
+     position = (122 158);
+     states = ("State 0");
+}
+
+node nod15
+{
+     label = "C8";
+     position = (251 159);
+     states = ("State 0");
+}
+
+node nod16
+{
+     label = "C9";
+     position = (388 161);
+     states = ("State 0");
+}
+
+node nod18
+{
+     label = "C10";
+     position = (548 157);
+     states = ("State 0");
+}
+
+node nod21
+{
+     label = "C11";
+     position = (732 167);
+     states = ("State 0");
+}
+
+node nod23
+{
+     label = "C12";
+     position = (823 167);
+     states = ("State 0");
+}
+
+node nod24
+{
+     label = "C13";
+     position = (979 158);
+     states = ("State 0");
+}
+
+node nod25
+{
+     label = "C14";
+     position = (102 259);
+     states = ("State 0");
+}
+
+node nod26
+{
+     label = "C15";
+     position = (264 254);
+     states = ("State 0");
+}
+
+node nod27
+{
+     label = "C16";
+     position = (421 254);
+     states = ("State 0");
+}
+
+node nod28
+{
+     label = "C17";
+     position = (542 251);
+     states = ("State 0");
+}
+
+node nod30
+{
+     label = "C18";
+     position = (756 251);
+     states = ("State 0");
+}
+
+node nod31
+{
+     label = "C19";
+     position = (857 253);
+     states = ("State 0");
+}
+
+potential (nod1)
+{
+ data = ( 1.0 );
+}
+
+potential (nod2)
+{
+ data = ( 1.0 );
+}
+
+potential (nod5)
+{
+ data = ( 1.0 );
+}
+
+potential (nod6)
+{
+ data = ( 1.0 );
+}
+
+potential (nod7)
+{
+ data = ( 1.0 );
+}
+
+potential (nod8)
+{
+ data = ( 1.0 );
+}
+
+potential (nod12)
+{
+ data = ( 1.0 );
+}
+
+potential (nod13)
+{
+ data = ( 1.0 );
+}
+
+potential (nod15)
+{
+ data = ( 1.0 );
+}
+
+potential (nod16)
+{
+ data = ( 1.0 );
+}
+
+potential (nod18)
+{
+ data = ( 1.0 );
+}
+
+potential (nod21)
+{
+ data = ( 1.0 );
+}
+
+potential (nod23)
+{
+ data = ( 1.0 );
+}
+
+potential (nod24)
+{
+ data = ( 1.0 );
+}
+
+potential (nod25)
+{
+ data = ( 1.0 );
+}
+
+potential (nod26)
+{
+ data = ( 1.0 );
+}
+
+potential (nod27)
+{
+ data = ( 1.0 );
+}
+
+potential (nod28)
+{
+ data = ( 1.0 );
+}
+
+potential (nod30)
+{
+ data = ( 1.0 );
+}
+
+potential (nod31)
+{
+ data = ( 1.0 );
+}
+

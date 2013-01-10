@@ -1,0 +1,1542 @@
+// ~->[DNET-1]->~
+
+// File created by someone at SEOR-GMU using Netica 4.16 on Oct 11, 2012 at 15:43:50.
+
+bnet BaseballPlayoffs_NoZeros {
+AutoCompile = TRUE;
+autoupdate = TRUE;
+whenchanged = 1349952402;
+
+visual V1 {
+	defdispform = BELIEFBARS;
+	nodelabeling = TITLE;
+	NodeMaxNumEntries = 50;
+	nodefont = font {shape= "Arial"; size= 9;};
+	linkfont = font {shape= "Arial"; size= 9;};
+	windowposn = (4, 21, 1382, 560);
+	scrollposn = (1721, 2113);
+	resolution = 72;
+	magnification = 0.615345;
+	drawingbounds = (6279, 4063);
+	showpagebreaks = FALSE;
+	usegrid = TRUE;
+	gridspace = (6, 6);
+	NodeSet Node {BuiltIn = 1; Color = 0xe1e1e1;};
+	NodeSet Nature {BuiltIn = 1; Color = 0xf8eed2;};
+	NodeSet Deterministic {BuiltIn = 1; Color = 0xd3caa6;};
+	NodeSet Finding {BuiltIn = 1; Color = 0xc8c8c8;};
+	NodeSet Constant {BuiltIn = 1; Color = 0xffffff;};
+	NodeSet ConstantValue {BuiltIn = 1; Color = 0xffffb4;};
+	NodeSet Utility {BuiltIn = 1; Color = 0xffbdbd;};
+	NodeSet Decision {BuiltIn = 1; Color = 0xdee8ff;};
+	NodeSet Documentation {BuiltIn = 1; Color = 0xf0fafa;};
+	NodeSet Title {BuiltIn = 1; Color = 0xffffff;};
+	NodeSet target {Disabled = 1; Color = 0xc8c8c8;};
+	PrinterSetting A {
+		margins = (1270, 1270, 1270, 1270);
+		landscape = FALSE;
+		magnify = 1;
+		};
+	};
+
+node NLFinalist21 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (SF1_CIN0, SF0_CIN1);
+	parents = ();
+	probs = 
+		// SF1 CIN0     SF0 CIN1     
+		  (0.47,        0.53);
+	whenchanged = 1349621255;
+	evidence = SF0_CIN1;
+	belief = (0, 1);
+	visual V1 {
+		center = (138, 774);
+		height = 8;
+		};
+	};
+
+node NLFinalist22 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (SF2_CIN0, SF1_CIN1, SF0_CIN2);
+	parents = (NLFinalist21);
+	probs = 
+		// SF2 CIN0     SF1 CIN1     SF0 CIN2      // NLFinalist21 
+		  (0.47,        0.53,        0,            // SF1 CIN0     
+		   0,           0.47,        0.53);        // SF0 CIN1     ;
+	numcases = 1;
+	whenchanged = 1349699322;
+	evidence = SF0_CIN2;
+	belief = (0, 0, 1);
+	visual V1 {
+		center = (258, 858);
+		height = 9;
+		link 1 {
+			path = ((177, 803), (205, 822));
+			};
+		};
+	};
+
+node NLFinalist23 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (SF3_CIN0, SF2_CIN1, SF1_CIN2, SF0_CIN3);
+	parents = (NLFinalist22);
+	probs = 
+		// SF3 CIN0     SF2 CIN1     SF1 CIN2     SF0 CIN3      // NLFinalist22 
+		  (0.47,        0.53,        0,           0,            // SF2 CIN0     
+		   0,           0.47,        0.53,        0,            // SF1 CIN1     
+		   0,           0,           0.47,        0.53);        // SF0 CIN2     ;
+	whenchanged = 1349866916;
+	evidence = SF1_CIN2;
+	belief = (0, 0, 1, 0);
+	visual V1 {
+		center = (420, 960);
+		height = 10;
+		link 1 {
+			path = ((314, 895), (349, 916));
+			};
+		};
+	};
+
+node NLFinalist24 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (SF3_CIN0, SF3_CIN1, SF2_CIN2, SF1_CIN3, SF0_CIN3);
+	parents = (NLFinalist23);
+	probs = 
+		// SF3 CIN0     SF3 CIN1     SF2 CIN2     SF1 CIN3     SF0 CIN3      // NLFinalist23 
+		  (1,           0,           0,           0,           0,            // SF3 CIN0     
+		   0,           0.47,        0.53,        0,           0,            // SF2 CIN1     
+		   0,           0,           0.47,        0.53,        0,            // SF1 CIN2     
+		   0,           0,           0,           0,           1);           // SF0 CIN3     ;
+	numcases = 1;
+	whenchanged = 1349914234;
+	evidence = SF2_CIN2;
+	belief = (0, 0, 1, 0, 0);
+	visual V1 {
+		center = (612, 1074);
+		height = 11;
+		link 1 {
+			path = ((493, 1005), (523, 1022));
+			};
+		};
+	};
+
+node NLFinalist25 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (SF3_CIN0, SF3_CIN1, SF3_CIN2, SF2_CIN3, SF1_CIN3, SF0_CIN3);
+	parents = (NLFinalist24);
+	probs = 
+		// SF3 CIN0     SF3 CIN1     SF3 CIN2     SF2 CIN3     SF1 CIN3     SF0 CIN3      // NLFinalist24 
+		  (1,           0,           0,           0,           0,           0,            // SF3 CIN0     
+		   0,           1,           0,           0,           0,           0,            // SF3 CIN1     
+		   0,           0,           0.47,        0.53,        0,           0,            // SF2 CIN2     
+		   0,           0,           0,           0,           1,           0,            // SF1 CIN3     
+		   0,           0,           0,           0,           0,           1);           // SF0 CIN3     ;
+	whenchanged = 1349312796;
+	belief = (0, 0, 0.47, 0.53, 0, 0);
+	visual V1 {
+		center = (786, 1224);
+		height = 13;
+		link 1 {
+			path = ((671, 1127), (715, 1164));
+			};
+		};
+	};
+
+node NLFinalist2 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (Cincinnati, SanFrancisco);
+	parents = (NLFinalist25);
+	probs = 
+		// Cincinnati   SanFrancisco  // NLFinalist25 
+		  (9.999e-5,    0.9999,       // SF3 CIN0     
+		   9.999e-5,    0.9999,       // SF3 CIN1     
+		   9.999e-5,    0.9999,       // SF3 CIN2     
+		   0.9999,      9.999e-5,     // SF2 CIN3     
+		   0.9999,      9.999e-5,     // SF1 CIN3     
+		   0.9999,      9.999e-5);    // SF0 CIN3     ;
+	whenchanged = 1349794290;
+	belief = (0.529994, 0.470006);
+	visual V1 {
+		center = (954, 1356);
+		height = 12;
+		link 1 {
+			path = ((862, 1285), (922, 1331));
+			};
+		};
+	};
+
+node NLWC {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (Atlanta, St_Louis);
+	parents = ();
+	probs = 
+		// Atlanta      St Louis     
+		  (0.55,        0.45);
+	whenchanged = 1349531135;
+	evidence = St_Louis;
+	belief = (0, 1);
+	visual V1 {
+		center = (120, 636);
+		height = 7;
+		};
+	};
+
+node NLFinalist11 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (WC1_WSH0, WC0_WSH1);
+	parents = ();
+	probs = 
+		// WC1 WSH0     WC0 WSH1     
+		  (0.47,        0.53);
+	whenchanged = 1349650964;
+	evidence = WC0_WSH1;
+	belief = (0, 1);
+	visual V1 {
+		center = (144, 54);
+		height = 1;
+		};
+	};
+
+node NLFinalist12 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (WC2_WSH0, WC1_WSH1, WC0_WSH2);
+	parents = (NLFinalist11);
+	probs = 
+		// WC2 WSH0     WC1 WSH1     WC0 WSH2      // NLFinalist11 
+		  (0.47,        0.53,        0,            // WC1 WSH0     
+		   0,           0.47,        0.53);        // WC0 WSH1     ;
+	numcases = 1;
+	whenchanged = 1349744071;
+	evidence = WC1_WSH1;
+	belief = (0, 1, 0);
+	visual V1 {
+		center = (264, 138);
+		height = 2;
+		link 1 {
+			path = ((184, 83), (212, 102));
+			};
+		};
+	};
+
+node NLFinalist13 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (WC3_WSH0, WC2_WSH1, WC1_WSH2, WC0_WSH3);
+	parents = (NLFinalist12);
+	probs = 
+		// WC3 WSH0     WC2 WSH1     WC1 WSH2     WC0 WSH3      // NLFinalist12 
+		  (0.47,        0.53,        0,           0,            // WC2 WSH0     
+		   0,           0.47,        0.53,        0,            // WC1 WSH1     
+		   0,           0,           0.47,        0.53);        // WC0 WSH2     ;
+	whenchanged = 1349914225;
+	evidence = WC2_WSH1;
+	belief = (0, 1, 0, 0);
+	visual V1 {
+		center = (426, 240);
+		height = 3;
+		link 1 {
+			path = ((321, 175), (355, 196));
+			};
+		};
+	};
+
+node NLFinalist14 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (WC3_WSH0, WC3_WSH1, WC2_WSH2, WC1_WSH3, WC0_WSH3);
+	parents = (NLFinalist13);
+	probs = 
+		// WC3 WSH0     WC3 WSH1     WC2 WSH2     WC1 WSH3     WC0 WSH3      // NLFinalist13 
+		  (1,           0,           0,           0,           0,            // WC3 WSH0     
+		   0,           0.47,        0.53,        0,           0,            // WC2 WSH1     
+		   0,           0,           0.47,        0.53,        0,            // WC1 WSH2     
+		   0,           0,           0,           0,           1);           // WC0 WSH3     ;
+	numcases = 1;
+	whenchanged = 1349312379;
+	belief = (0, 0.47, 0.53, 0, 0);
+	visual V1 {
+		center = (618, 354);
+		height = 4;
+		link 1 {
+			path = ((500, 285), (530, 302));
+			};
+		};
+	};
+
+node NLFinalist15 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (WC3_WSH0, WC3_WSH1, WC3_WSH2, WC2_WSH3, WC1_WSH3, WC0_WSH3);
+	parents = (NLFinalist14);
+	probs = 
+		// WC3 WSH0     WC3 WSH1     WC3 WSH2     WC2 WSH3     WC1 WSH3     WC0 WSH3      // NLFinalist14 
+		  (1,           0,           0,           0,           0,           0,            // WC3 WSH0     
+		   0,           1,           0,           0,           0,           0,            // WC3 WSH1     
+		   0,           0,           0.47,        0.53,        0,           0,            // WC2 WSH2     
+		   0,           0,           0,           0,           1,           0,            // WC1 WSH3     
+		   0,           0,           0,           0,           0,           1);           // WC0 WSH3     ;
+	whenchanged = 1349312684;
+	belief = (0, 0.47, 0.2491, 0.2809, 0, 0);
+	visual V1 {
+		center = (792, 504);
+		height = 5;
+		link 1 {
+			path = ((678, 407), (722, 444));
+			};
+		};
+	};
+
+node NLFinalist1 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (Washington, Atlanta, St_Louis);
+	parents = (NLWC, NLFinalist15);
+	probs = 
+		// Washington   Atlanta      St Louis      // NLWC     NLFinalist15 
+		  (9.998e-5,    9.998e-5,    0.9998,       // Atlanta  WC3 WSH0     
+		   9.998e-5,    9.998e-5,    0.9998,       // Atlanta  WC3 WSH1     
+		   9.998e-5,    9.998e-5,    0.9998,       // Atlanta  WC3 WSH2     
+		   0.9998,      9.998e-5,    9.998e-5,     // Atlanta  WC2 WSH3     
+		   0.9998,      9.998e-5,    9.998e-5,     // Atlanta  WC1 WSH3     
+		   0.9998,      9.998e-5,    9.998e-5,     // Atlanta  WC0 WSH3     
+		   9.998e-5,    9.998e-5,    0.9998,       // St Louis WC3 WSH0     
+		   9.998e-5,    9.998e-5,    0.9998,       // St Louis WC3 WSH1     
+		   9.998e-5,    9.998e-5,    0.9998,       // St Louis WC3 WSH2     
+		   0.9998,      9.998e-5,    9.998e-5,     // St Louis WC2 WSH3     
+		   0.9998,      9.998e-5,    9.998e-5,     // St Louis WC1 WSH3     
+		   0.9998,      9.998e-5,    9.998e-5);    // St Louis WC0 WSH3     ;
+	whenchanged = 1349867846;
+	belief = (0.2809157, 9.998e-5, 0.7189843);
+	visual V1 {
+		center = (960, 636);
+		height = 6;
+		link 2 {
+			path = ((860, 558), (919, 604));
+			};
+		};
+	};
+
+node NLChamp1 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A1_B0, A0_B1);
+	parents = ();
+	probs = 
+		// A1 B0        A0 B1        
+		  (0.5,         0.5);
+	whenchanged = 1349313514;
+	belief = (0.5, 0.5);
+	visual V1 {
+		center = (1260, 522);
+		height = 14;
+		};
+	};
+
+node NLChamp2 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A2_B0, A1_B1, A0_B2);
+	parents = (NLChamp1);
+	probs = 
+		// A2 B0        A1 B1        A0 B2         // NLChamp1 
+		  (0.5,         0.5,         0,            // A1 B0    
+		   0,           0.5,         0.5);         // A0 B1    ;
+	numcases = 1;
+	whenchanged = 1349313525;
+	belief = (0.25, 0.5, 0.25);
+	visual V1 {
+		center = (1380, 606);
+		height = 15;
+		link 1 {
+			path = ((1299, 551), (1327, 570));
+			};
+		};
+	};
+
+node NLChamp3 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A3_B0, A2_B1, A1_B2, A0_B3);
+	parents = (NLChamp2);
+	probs = 
+		// A3 B0        A2 B1        A1 B2        A0 B3         // NLChamp2 
+		  (0.5,         0.5,         0,           0,            // A2 B0    
+		   0,           0.5,         0.5,         0,            // A1 B1    
+		   0,           0,           0.5,         0.5);         // A0 B2    ;
+	numcases = 1;
+	whenchanged = 1349313537;
+	belief = (0.125, 0.375, 0.375, 0.125);
+	visual V1 {
+		center = (1542, 708);
+		height = 16;
+		link 1 {
+			path = ((1436, 643), (1471, 664));
+			};
+		};
+	};
+
+node NLChamp4 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A4_B0, A3_B1, A2_B2, A1_B3, A0_B4);
+	parents = (NLChamp3);
+	probs = 
+		// A4 B0        A3 B1        A2 B2        A1 B3        A0 B4         // NLChamp3 
+		  (0.5,         0.5,         0,           0,           0,            // A3 B0    
+		   0,           0.5,         0.5,         0,           0,            // A2 B1    
+		   0,           0,           0.5,         0.5,         0,            // A1 B2    
+		   0,           0,           0,           0.5,         0.5);         // A0 B3    ;
+	numcases = 1;
+	whenchanged = 1349313553;
+	belief = (0.0625, 0.25, 0.375, 0.25, 0.0625);
+	visual V1 {
+		center = (1734, 822);
+		height = 17;
+		link 1 {
+			path = ((1615, 753), (1655, 777));
+			};
+		};
+	};
+
+node NLChamp5 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A4_B0, A4_B1, A3_B2, A2_B3, A1_B4, A0_B4);
+	parents = (NLChamp4);
+	probs = 
+		// A4 B0        A4 B1        A3 B2        A2 B3        A1 B4        A0 B4         // NLChamp4 
+		  (1,           0,           0,           0,           0,           0,            // A4 B0    
+		   0,           0.5,         0.5,         0,           0,           0,            // A3 B1    
+		   0,           0,           0.5,         0.5,         0,           0,            // A2 B2    
+		   0,           0,           0,           0.5,         0.5,         0,            // A1 B3    
+		   0,           0,           0,           0,           0,           1);           // A0 B4    ;
+	numcases = 1;
+	whenchanged = 1349313568;
+	belief = (0.0625, 0.125, 0.3125, 0.3125, 0.125, 0.0625);
+	visual V1 {
+		center = (1908, 972);
+		height = 18;
+		link 1 {
+			path = ((1794, 875), (1838, 912));
+			};
+		};
+	};
+
+node NLChamp6 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A4_B0, A4_B1, A4_B2, A3_B3, A2_B4, A1_B4, A0_B4);
+	parents = (NLChamp5);
+	probs = 
+		// A4 B0        A4 B1        A4 B2        A3 B3        A2 B4        A1 B4        A0 B4         // NLChamp5 
+		  (1,           0,           0,           0,           0,           0,           0,            // A4 B0    
+		   0,           1,           0,           0,           0,           0,           0,            // A4 B1    
+		   0,           0,           0.5,         0.5,         0,           0,           0,            // A3 B2    
+		   0,           0,           0,           0.5,         0.5,         0,           0,            // A2 B3    
+		   0,           0,           0,           0,           0,           1,           0,            // A1 B4    
+		   0,           0,           0,           0,           0,           0,           1);           // A0 B4    ;
+	numcases = 
+		                 // NLChamp5 
+		  (1,            // A4 B0    
+		   0.47,         // A4 B1    
+		   0,            // A3 B2    
+		   0,            // A2 B3    
+		   0,            // A1 B4    
+		   0);           // A0 B4    ;
+	whenchanged = 1349313645;
+	belief = (0.0625, 0.125, 0.15625, 0.3125, 0.15625, 0.125, 0.0625);
+	visual V1 {
+		center = (2166, 1092);
+		height = 19;
+		link 1 {
+			path = ((1987, 1009), (2087, 1056));
+			};
+		};
+	};
+
+node NLChamp7 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A4_B0, A4_B1, A4_B2, A4_B3, A3_B4, A2_B4, A1_B4, A0_B4);
+	parents = (NLChamp6);
+	probs = 
+		// A4 B0        A4 B1        A4 B2        A4 B3        A3 B4        A2 B4        A1 B4        A0 B4         // NLChamp6 
+		  (1,           0,           0,           0,           0,           0,           0,           0,            // A4 B0    
+		   0,           1,           0,           0,           0,           0,           0,           0,            // A4 B1    
+		   0,           0,           1,           0,           0,           0,           0,           0,            // A4 B2    
+		   0,           0,           0,           0.5,         0.5,         0,           0,           0,            // A3 B3    
+		   0,           0,           0,           0,           0,           1,           0,           0,            // A2 B4    
+		   0,           0,           0,           0,           0,           0,           1,           0,            // A1 B4    
+		   0,           0,           0,           0,           0,           0,           0,           1);           // A0 B4    ;
+	numcases = 1;
+	whenchanged = 1349313725;
+	belief = (0.0625, 0.125, 0.15625, 0.15625, 0.15625, 0.15625, 0.125, 0.0625);
+	visual V1 {
+		center = (2364, 1182);
+		height = 20;
+		};
+	};
+
+node NLChamp {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (Washington, Atlanta, St_Louis, Cincinnati, San_Francisco);
+	parents = (NLFinalist1, NLFinalist2, NLChamp7);
+	probs = 
+		// Washington   Atlanta      St Louis     Cincinnati   San Francisco  // NLFinalist1 NLFinalist2  NLChamp7 
+		  (0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // Washington  Cincinnati   A4 B0    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // Washington  Cincinnati   A4 B1    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // Washington  Cincinnati   A4 B2    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // Washington  Cincinnati   A4 B3    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Washington  Cincinnati   A3 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Washington  Cincinnati   A2 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Washington  Cincinnati   A1 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Washington  Cincinnati   A0 B4    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // Washington  SanFrancisco A4 B0    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // Washington  SanFrancisco A4 B1    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // Washington  SanFrancisco A4 B2    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // Washington  SanFrancisco A4 B3    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Washington  SanFrancisco A3 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Washington  SanFrancisco A2 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Washington  SanFrancisco A1 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Washington  SanFrancisco A0 B4    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Atlanta     Cincinnati   A4 B0    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Atlanta     Cincinnati   A4 B1    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Atlanta     Cincinnati   A4 B2    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Atlanta     Cincinnati   A4 B3    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Atlanta     Cincinnati   A3 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Atlanta     Cincinnati   A2 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Atlanta     Cincinnati   A1 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Atlanta     Cincinnati   A0 B4    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Atlanta     SanFrancisco A4 B0    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Atlanta     SanFrancisco A4 B1    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Atlanta     SanFrancisco A4 B2    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Atlanta     SanFrancisco A4 B3    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Atlanta     SanFrancisco A3 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Atlanta     SanFrancisco A2 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Atlanta     SanFrancisco A1 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Atlanta     SanFrancisco A0 B4    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // St Louis    Cincinnati   A4 B0    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // St Louis    Cincinnati   A4 B1    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // St Louis    Cincinnati   A4 B2    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // St Louis    Cincinnati   A4 B3    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // St Louis    Cincinnati   A3 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // St Louis    Cincinnati   A2 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // St Louis    Cincinnati   A1 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // St Louis    Cincinnati   A0 B4    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // St Louis    SanFrancisco A4 B0    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // St Louis    SanFrancisco A4 B1    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // St Louis    SanFrancisco A4 B2    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // St Louis    SanFrancisco A4 B3    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // St Louis    SanFrancisco A3 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // St Louis    SanFrancisco A2 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // St Louis    SanFrancisco A1 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996);      // St Louis    SanFrancisco A0 B4    ;
+	whenchanged = 1349794279;
+	belief = (0.1404876, 1.49925e-4, 0.3594124, 0.2649645, 0.2349855);
+	visual V1 {
+		center = (1980, 1422);
+		height = 21;
+		link 2 {
+			path = ((1046, 1361), (1887, 1416));
+			};
+		};
+	};
+
+node Cincinnati_in_NLCS {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (NLFinalist2);
+	probs = 
+		// True         False         // NLFinalist2  
+		  (0.9999,      9.999e-5,     // Cincinnati   
+		   9.999e-5,    0.9999);      // SanFrancisco ;
+	whenchanged = 1349794125;
+	belief = (0.529988, 0.470012);
+	visual V1 {
+		center = (906, 1488);
+		height = 58;
+		};
+	};
+
+node San_Francisco_in_NLCS {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (NLFinalist2);
+	probs = 
+		// True         False         // NLFinalist2  
+		  (9.999e-5,    0.9999,       // Cincinnati   
+		   0.9999,      9.999e-5);    // SanFrancisco ;
+	whenchanged = 1349794158;
+	belief = (0.470012, 0.529988);
+	visual V1 {
+		center = (1050, 1548);
+		height = 59;
+		};
+	};
+
+node WorldSeries1 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (NL1_AL0, NL0_AL1);
+	parents = ();
+	probs = 
+		// NL1 AL0      NL0 AL1      
+		  (0.5,         0.5);
+	whenchanged = 1349446235;
+	belief = (0.5, 0.5);
+	visual V1 {
+		center = (2624, 1524);
+		height = 43;
+		};
+	};
+
+node WorldSeries2 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (NL2_AL0, NL1_AL1, NL0_AL2);
+	parents = (WorldSeries1);
+	probs = 
+		// NL2 AL0      NL1 AL1      NL0 AL2       // WorldSeries1 
+		  (0.5,         0.5,         0,            // NL1 AL0      
+		   0,           0.5,         0.5);         // NL0 AL1      ;
+	numcases = 1;
+	whenchanged = 1349446259;
+	belief = (0.25, 0.5, 0.25);
+	visual V1 {
+		center = (2730, 1608);
+		height = 44;
+		link 1 {
+			path = ((2653, 1549), (2690, 1577));
+			};
+		};
+	};
+
+node WorldSeries3 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (NL3_AL0, NL2_AL1, NL1_AL2, NL0_AL3);
+	parents = (WorldSeries2);
+	probs = 
+		// NL3 AL0      NL2 AL1      NL1 AL2      NL0 AL3       // WorldSeries2 
+		  (0.5,         0.5,         0,           0,            // NL2 AL0      
+		   0,           0.5,         0.5,         0,            // NL1 AL1      
+		   0,           0,           0.5,         0.5);         // NL0 AL2      ;
+	numcases = 1;
+	whenchanged = 1349446288;
+	belief = (0.125, 0.375, 0.375, 0.125);
+	visual V1 {
+		center = (2892, 1710);
+		height = 45;
+		};
+	};
+
+node WorldSeries4 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (NL4_AL0, NL3_AL1, NL2_AL2, NL1_AL3, NL0_AL4);
+	parents = (WorldSeries3);
+	probs = 
+		// NL4 AL0      NL3 AL1      NL2 AL2      NL1 AL3      NL0 AL4       // WorldSeries3 
+		  (0.5,         0.5,         0,           0,           0,            // NL3 AL0      
+		   0,           0.5,         0.5,         0,           0,            // NL2 AL1      
+		   0,           0,           0.5,         0.5,         0,            // NL1 AL2      
+		   0,           0,           0,           0.5,         0.5);         // NL0 AL3      ;
+	numcases = 1;
+	whenchanged = 1349446348;
+	belief = (0.0625, 0.25, 0.375, 0.25, 0.0625);
+	visual V1 {
+		center = (3084, 1824);
+		height = 46;
+		link 1 {
+			path = ((2953, 1748), (3009, 1780));
+			};
+		};
+	};
+
+node WorldSeries5 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (NL4_AL0, NL4_AL1, NL3_AL2, NL2_AL3, NL1_AL4, NL0_AL4);
+	parents = (WorldSeries4);
+	probs = 
+		// NL4 AL0      NL4 AL1      NL3 AL2      NL2 AL3      NL1 AL4      NL0 AL4       // WorldSeries4 
+		  (1,           0,           0,           0,           0,           0,            // NL4 AL0      
+		   0,           0.5,         0.5,         0,           0,           0,            // NL3 AL1      
+		   0,           0,           0.5,         0.5,         0,           0,            // NL2 AL2      
+		   0,           0,           0,           0.5,         0.5,         0,            // NL1 AL3      
+		   0,           0,           0,           0,           0,           1);           // NL0 AL4      ;
+	numcases = 1;
+	whenchanged = 1349446405;
+	belief = (0.0625, 0.125, 0.3125, 0.3125, 0.125, 0.0625);
+	visual V1 {
+		center = (3258, 1974);
+		height = 47;
+		};
+	};
+
+node WorldSeries6 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (NL4_AL0, NL4_AL1, NL4_AL2, NL3_AL3, NL2_AL4, NL1_AL4, NL0_AL4);
+	parents = (WorldSeries5);
+	probs = 
+		// NL4 AL0      NL4 AL1      NL4 AL2      NL3 AL3      NL2 AL4      NL1 AL4      NL0 AL4       // WorldSeries5 
+		  (1,           0,           0,           0,           0,           0,           0,            // NL4 AL0      
+		   0,           1,           0,           0,           0,           0,           0,            // NL4 AL1      
+		   0,           0,           0.5,         0.5,         0,           0,           0,            // NL3 AL2      
+		   0,           0,           0,           0.5,         0.5,         0,           0,            // NL2 AL3      
+		   0,           0,           0,           0,           0,           1,           0,            // NL1 AL4      
+		   0,           0,           0,           0,           0,           0,           1);           // NL0 AL4      ;
+	numcases = 
+		                 // WorldSeries5 
+		  (1,            // NL4 AL0      
+		   0.47,         // NL4 AL1      
+		   0,            // NL3 AL2      
+		   0,            // NL2 AL3      
+		   0,            // NL1 AL4      
+		   0);           // NL0 AL4      ;
+	whenchanged = 1349446450;
+	belief = (0.0625, 0.125, 0.15625, 0.3125, 0.15625, 0.125, 0.0625);
+	visual V1 {
+		center = (3516, 2094);
+		height = 48;
+		link 1 {
+			path = ((3350, 2016), (3424, 2051));
+			};
+		};
+	};
+
+node NLChamp8 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (NL4_AL0, NL4_AL1, NL4_AL2, NL4_AL3, NL3_AL4, NL2_AL4, NL1_AL4, NL0_AL4);
+	parents = (WorldSeries6);
+	probs = 
+		// NL4 AL0      NL4 AL1      NL4 AL2      NL4 AL3      NL3 AL4      NL2 AL4      NL1 AL4      NL0 AL4       // WorldSeries6 
+		  (1,           0,           0,           0,           0,           0,           0,           0,            // NL4 AL0      
+		   0,           1,           0,           0,           0,           0,           0,           0,            // NL4 AL1      
+		   0,           0,           1,           0,           0,           0,           0,           0,            // NL4 AL2      
+		   0,           0,           0,           0.5,         0.5,         0,           0,           0,            // NL3 AL3      
+		   0,           0,           0,           0,           0,           1,           0,           0,            // NL2 AL4      
+		   0,           0,           0,           0,           0,           0,           1,           0,            // NL1 AL4      
+		   0,           0,           0,           0,           0,           0,           0,           1);           // NL0 AL4      ;
+	numcases = 1;
+	whenchanged = 1349446491;
+	belief = (0.0625, 0.125, 0.15625, 0.15625, 0.15625, 0.15625, 0.125, 0.0625);
+	visual V1 {
+		center = (3714, 2184);
+		height = 49;
+		link 1 {
+			path = ((3608, 2136), (3622, 2143));
+			};
+		};
+	};
+
+node WinningLeague {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (NL, AL);
+	parents = (NLChamp8);
+	probs = 
+		// NL           AL            // NLChamp8 
+		  (0.9999,      9.999e-5,     // NL4 AL0  
+		   0.9999,      9.999e-5,     // NL4 AL1  
+		   0.9999,      9.999e-5,     // NL4 AL2  
+		   0.9999,      9.999e-5,     // NL4 AL3  
+		   9.999e-5,    0.9999,       // NL3 AL4  
+		   9.999e-5,    0.9999,       // NL2 AL4  
+		   9.999e-5,    0.9999,       // NL1 AL4  
+		   9.999e-5,    0.9999);      // NL0 AL4  ;
+	whenchanged = 1349868121;
+	belief = (0.5, 0.5);
+	visual V1 {
+		center = (3408, 2334);
+		height = 51;
+		link 1 {
+			path = ((3632, 2224), (3458, 2309));
+			};
+		};
+	};
+
+node ALWC {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (Texas, Baltimore);
+	parents = ();
+	probs = 
+		// Texas        Baltimore    
+		  (0.55,        0.45);
+	whenchanged = 1349531139;
+	evidence = Baltimore;
+	belief = (0, 1);
+	visual V1 {
+		center = (150, 1980);
+		height = 28;
+		};
+	};
+
+node ALFinalist11 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (WC1_NYY0, WC0_NYY1);
+	parents = ();
+	probs = 
+		// WC1 NYY0     WC0 NYY1     
+		  (0.47,        0.53);
+	whenchanged = 1349699328;
+	evidence = WC0_NYY1;
+	belief = (0, 1);
+	visual V1 {
+		center = (174, 1398);
+		height = 22;
+		};
+	};
+
+node ALFinalist12 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (WC2_NYY0, WC1_NYY1, WC0_NYY2);
+	parents = (ALFinalist11);
+	probs = 
+		// WC2 NYY0     WC1 NYY1     WC0 NYY2      // ALFinalist11 
+		  (0.47,        0.53,        0,            // WC1 NYY0     
+		   0,           0.47,        0.53);        // WC0 NYY1     ;
+	numcases = 1;
+	whenchanged = 1349867791;
+	evidence = WC1_NYY1;
+	belief = (0, 1, 0);
+	visual V1 {
+		center = (294, 1482);
+		height = 23;
+		link 1 {
+			path = ((207, 1423), (249, 1451));
+			};
+		};
+	};
+
+node ALFinalist13 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (WC3_NYY0, WC2_NYY1, WC1_NYY2, WC0_NYY3);
+	parents = (ALFinalist12);
+	probs = 
+		// WC3 NYY0     WC2 NYY1     WC1 NYY2     WC0 NYY3      // ALFinalist12 
+		  (0.47,        0.53,        0,           0,            // WC2 NYY0     
+		   0,           0.47,        0.53,        0,            // WC1 NYY1     
+		   0,           0,           0.47,        0.53);        // WC0 NYY2     ;
+	whenchanged = 1349952308;
+	evidence = WC1_NYY2;
+	belief = (0, 0, 1, 0);
+	visual V1 {
+		center = (456, 1584);
+		height = 24;
+		};
+	};
+
+node ALFinalist14 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (WC3_NYY0, WC3_NYY1, WC2_NYY2, WC1_NYY3, WC0_NYY3);
+	parents = (ALFinalist13);
+	probs = 
+		// WC3 NYY0     WC3 NYY1     WC2 NYY2     WC1 NYY3     WC0 NYY3      // ALFinalist13 
+		  (1,           0,           0,           0,           0,            // WC3 NYY0     
+		   0,           0.47,        0.53,        0,           0,            // WC2 NYY1     
+		   0,           0,           0.47,        0.53,        0,            // WC1 NYY2     
+		   0,           0,           0,           0,           1);           // WC0 NYY3     ;
+	numcases = 1;
+	whenchanged = 1349445519;
+	belief = (0, 0, 0.47, 0.53, 0);
+	visual V1 {
+		center = (648, 1698);
+		height = 25;
+		link 1 {
+			path = ((517, 1622), (573, 1654));
+			};
+		};
+	};
+
+node ALFinalist15 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (WC3_NYY0, WC3_NYY1, WC3_NYY2, WC2_NYY3, WC1_NYY3, WC0_NYY3);
+	parents = (ALFinalist14);
+	probs = 
+		// WC3 NYY0     WC3 NYY1     WC3 NYY2     WC2 NYY3     WC1 NYY3     WC0 NYY3      // ALFinalist14 
+		  (1,           0,           0,           0,           0,           0,            // WC3 NYY0     
+		   0,           1,           0,           0,           0,           0,            // WC3 NYY1     
+		   0,           0,           0.47,        0.53,        0,           0,            // WC2 NYY2     
+		   0,           0,           0,           0,           1,           0,            // WC1 NYY3     
+		   0,           0,           0,           0,           0,           1);           // WC0 NYY3     ;
+	whenchanged = 1349445549;
+	belief = (0, 0, 0.2209, 0.2491, 0.53, 0);
+	visual V1 {
+		center = (822, 1848);
+		height = 26;
+		};
+	};
+
+node ALFinalist1 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (New_York, Texas, Baltimore);
+	parents = (ALWC, ALFinalist15);
+	probs = 
+		// New York     Texas        Baltimore     // ALWC      ALFinalist15 
+		  (9.998e-5,    0.9998,      9.998e-5,     // Texas     WC3 NYY0     
+		   9.998e-5,    0.9998,      9.998e-5,     // Texas     WC3 NYY1     
+		   9.998e-5,    0.9998,      9.998e-5,     // Texas     WC3 NYY2     
+		   0.9998,      9.998e-5,    9.998e-5,     // Texas     WC2 NYY3     
+		   0.9998,      9.998e-5,    9.998e-5,     // Texas     WC1 NYY3     
+		   0.9998,      9.998e-5,    9.998e-5,     // Texas     WC0 NYY3     
+		   9.998e-5,    9.998e-5,    0.9998,       // Baltimore WC3 NYY0     
+		   9.998e-5,    9.998e-5,    0.9998,       // Baltimore WC3 NYY1     
+		   9.998e-5,    9.998e-5,    0.9998,       // Baltimore WC3 NYY2     
+		   0.9998,      9.998e-5,    9.998e-5,     // Baltimore WC2 NYY3     
+		   0.9998,      9.998e-5,    9.998e-5,     // Baltimore WC1 NYY3     
+		   0.9998,      9.998e-5,    9.998e-5);    // Baltimore WC0 NYY3     ;
+	whenchanged = 1349794733;
+	belief = (0.7789662, 9.998e-5, 0.2209338);
+	visual V1 {
+		center = (990, 1980);
+		height = 27;
+		link 2 {
+			path = ((885, 1899), (949, 1948));
+			};
+		};
+	};
+
+node ALFinalist21 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (DET1_OAK0, DET0_OAK1);
+	parents = ();
+	probs = 
+		// DET1 OAK0    DET0 OAK1    
+		  (0.47,        0.53);
+	whenchanged = 1349616014;
+	evidence = DET1_OAK0;
+	belief = (1, 0);
+	visual V1 {
+		center = (168, 2118);
+		height = 29;
+		};
+	};
+
+node ALFinalist22 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (DET2_OAK0, DET1_OAK1, DET0_OAK2);
+	parents = (ALFinalist21);
+	probs = 
+		// DET2 OAK0    DET1 OAK1    DET0 OAK2     // ALFinalist21 
+		  (0.47,        0.53,        0,            // DET1 OAK0    
+		   0,           0.47,        0.53);        // DET0 OAK1    ;
+	numcases = 1;
+	whenchanged = 1349650926;
+	evidence = DET2_OAK0;
+	belief = (1, 0, 0);
+	visual V1 {
+		center = (288, 2202);
+		height = 30;
+		link 1 {
+			path = ((201, 2143), (243, 2171));
+			};
+		};
+	};
+
+node ALFinalist23 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (DET3_OAK0, DET2_OAK1, DET1_OAK2, DET0_OAK3);
+	parents = (ALFinalist22);
+	probs = 
+		// DET3 OAK0    DET2 OAK1    DET1 OAK2    DET0 OAK3     // ALFinalist22 
+		  (0.47,        0.53,        0,           0,            // DET2 OAK0    
+		   0,           0.47,        0.53,        0,            // DET1 OAK1    
+		   0,           0,           0.47,        0.53);        // DET0 OAK2    ;
+	whenchanged = 1349866898;
+	evidence = DET2_OAK1;
+	belief = (0, 1, 0, 0);
+	visual V1 {
+		center = (450, 2304);
+		height = 31;
+		};
+	};
+
+node ALFinalist24 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (DET3_OAK0, DET3_OAK1, DET2_OAK2, DET1_OAK3, DET0_OAK3);
+	parents = (ALFinalist23);
+	probs = 
+		// DET3 OAK0    DET3 OAK1    DET2 OAK2    DET1 OAK3    DET0 OAK3     // ALFinalist23 
+		  (1,           0,           0,           0,           0,            // DET3 OAK0    
+		   0,           0.47,        0.53,        0,           0,            // DET2 OAK1    
+		   0,           0,           0.47,        0.53,        0,            // DET1 OAK2    
+		   0,           0,           0,           0,           1);           // DET0 OAK3    ;
+	numcases = 1;
+	whenchanged = 1349952402;
+	evidence = DET2_OAK2;
+	belief = (0, 0, 1, 0, 0);
+	visual V1 {
+		center = (642, 2418);
+		height = 32;
+		link 1 {
+			path = ((511, 2342), (567, 2374));
+			};
+		};
+	};
+
+node ALFinalist25 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (DET3_OAK0, DET3_OAK1, DET3_OAK2, DET2_OAK3, DET1_OAK3, DET0_OAK3);
+	parents = (ALFinalist24);
+	probs = 
+		// DET3 OAK0    DET3 OAK1    DET3 OAK2    DET2 OAK3    DET1 OAK3    DET0 OAK3     // ALFinalist24 
+		  (1,           0,           0,           0,           0,           0,            // DET3 OAK0    
+		   0,           1,           0,           0,           0,           0,            // DET3 OAK1    
+		   0,           0,           0.47,        0.53,        0,           0,            // DET2 OAK2    
+		   0,           0,           0,           0,           1,           0,            // DET1 OAK3    
+		   0,           0,           0,           0,           0,           1);           // DET0 OAK3    ;
+	whenchanged = 1349445953;
+	belief = (0, 0, 0.47, 0.53, 0, 0);
+	visual V1 {
+		center = (816, 2568);
+		height = 34;
+		};
+	};
+
+node ALFinalist2 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (Oakland, Detroit);
+	parents = (ALFinalist25);
+	probs = 
+		// Oakland      Detroit       // ALFinalist25 
+		  (9.999e-5,    0.9999,       // DET3 OAK0    
+		   9.999e-5,    0.9999,       // DET3 OAK1    
+		   9.999e-5,    0.9999,       // DET3 OAK2    
+		   0.9999,      9.999e-5,     // DET2 OAK3    
+		   0.9999,      9.999e-5,     // DET1 OAK3    
+		   0.9999,      9.999e-5);    // DET0 OAK3    ;
+	whenchanged = 1349794699;
+	belief = (0.529994, 0.470006);
+	visual V1 {
+		center = (984, 2700);
+		height = 33;
+		link 1 {
+			path = ((879, 2619), (952, 2675));
+			};
+		};
+	};
+
+node ALChamp1 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A1_B0, A0_B1);
+	parents = ();
+	probs = 
+		// A1 B0        A0 B1        
+		  (0.5,         0.5);
+	whenchanged = 1349445166;
+	belief = (0.5, 0.5);
+	visual V1 {
+		center = (1290, 1866);
+		height = 35;
+		};
+	};
+
+node ALChamp2 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A2_B0, A1_B1, A0_B2);
+	parents = (ALChamp1);
+	probs = 
+		// A2 B0        A1 B1        A0 B2         // ALChamp1 
+		  (0.5,         0.5,         0,            // A1 B0    
+		   0,           0.5,         0.5);         // A0 B1    ;
+	numcases = 1;
+	whenchanged = 1349445174;
+	belief = (0.25, 0.5, 0.25);
+	visual V1 {
+		center = (1410, 1950);
+		height = 36;
+		link 1 {
+			path = ((1323, 1891), (1365, 1919));
+			};
+		};
+	};
+
+node ALChamp3 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A3_B0, A2_B1, A1_B2, A0_B3);
+	parents = (ALChamp2);
+	probs = 
+		// A3 B0        A2 B1        A1 B2        A0 B3         // ALChamp2 
+		  (0.5,         0.5,         0,           0,            // A2 B0    
+		   0,           0.5,         0.5,         0,            // A1 B1    
+		   0,           0,           0.5,         0.5);         // A0 B2    ;
+	numcases = 1;
+	whenchanged = 1349445180;
+	belief = (0.125, 0.375, 0.375, 0.125);
+	visual V1 {
+		center = (1572, 2052);
+		height = 37;
+		};
+	};
+
+node ALChamp4 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A4_B0, A3_B1, A2_B2, A1_B3, A0_B4);
+	parents = (ALChamp3);
+	probs = 
+		// A4 B0        A3 B1        A2 B2        A1 B3        A0 B4         // ALChamp3 
+		  (0.5,         0.5,         0,           0,           0,            // A3 B0    
+		   0,           0.5,         0.5,         0,           0,            // A2 B1    
+		   0,           0,           0.5,         0.5,         0,            // A1 B2    
+		   0,           0,           0,           0.5,         0.5);         // A0 B3    ;
+	numcases = 1;
+	whenchanged = 1349445186;
+	belief = (0.0625, 0.25, 0.375, 0.25, 0.0625);
+	visual V1 {
+		center = (1764, 2166);
+		height = 38;
+		link 1 {
+			path = ((1633, 2090), (1689, 2122));
+			};
+		};
+	};
+
+node ALChamp5 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A4_B0, A4_B1, A3_B2, A2_B3, A1_B4, A0_B4);
+	parents = (ALChamp4);
+	probs = 
+		// A4 B0        A4 B1        A3 B2        A2 B3        A1 B4        A0 B4         // ALChamp4 
+		  (1,           0,           0,           0,           0,           0,            // A4 B0    
+		   0,           0.5,         0.5,         0,           0,           0,            // A3 B1    
+		   0,           0,           0.5,         0.5,         0,           0,            // A2 B2    
+		   0,           0,           0,           0.5,         0.5,         0,            // A1 B3    
+		   0,           0,           0,           0,           0,           1);           // A0 B4    ;
+	numcases = 1;
+	whenchanged = 1349445241;
+	belief = (0.0625, 0.125, 0.3125, 0.3125, 0.125, 0.0625);
+	visual V1 {
+		center = (1938, 2316);
+		height = 39;
+		};
+	};
+
+node ALChamp6 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A4_B0, A4_B1, A4_B2, A3_B3, A2_B4, A1_B4, A0_B4);
+	parents = (ALChamp5);
+	probs = 
+		// A4 B0        A4 B1        A4 B2        A3 B3        A2 B4        A1 B4        A0 B4         // ALChamp5 
+		  (1,           0,           0,           0,           0,           0,           0,            // A4 B0    
+		   0,           1,           0,           0,           0,           0,           0,            // A4 B1    
+		   0,           0,           0.5,         0.5,         0,           0,           0,            // A3 B2    
+		   0,           0,           0,           0.5,         0.5,         0,           0,            // A2 B3    
+		   0,           0,           0,           0,           0,           1,           0,            // A1 B4    
+		   0,           0,           0,           0,           0,           0,           1);           // A0 B4    ;
+	numcases = 
+		                 // ALChamp5 
+		  (1,            // A4 B0    
+		   0.47,         // A4 B1    
+		   0,            // A3 B2    
+		   0,            // A2 B3    
+		   0,            // A1 B4    
+		   0);           // A0 B4    ;
+	whenchanged = 1349445249;
+	belief = (0.0625, 0.125, 0.15625, 0.3125, 0.15625, 0.125, 0.0625);
+	visual V1 {
+		center = (2196, 2436);
+		height = 40;
+		};
+	};
+
+node ALChamp7 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (A4_B0, A4_B1, A4_B2, A4_B3, A3_B4, A2_B4, A1_B4, A0_B4);
+	parents = (ALChamp6);
+	probs = 
+		// A4 B0        A4 B1        A4 B2        A4 B3        A3 B4        A2 B4        A1 B4        A0 B4         // ALChamp6 
+		  (1,           0,           0,           0,           0,           0,           0,           0,            // A4 B0    
+		   0,           1,           0,           0,           0,           0,           0,           0,            // A4 B1    
+		   0,           0,           1,           0,           0,           0,           0,           0,            // A4 B2    
+		   0,           0,           0,           0.5,         0.5,         0,           0,           0,            // A3 B3    
+		   0,           0,           0,           0,           0,           1,           0,           0,            // A2 B4    
+		   0,           0,           0,           0,           0,           0,           1,           0,            // A1 B4    
+		   0,           0,           0,           0,           0,           0,           0,           1);           // A0 B4    ;
+	numcases = 1;
+	whenchanged = 1349445255;
+	belief = (0.0625, 0.125, 0.15625, 0.15625, 0.15625, 0.15625, 0.125, 0.0625);
+	visual V1 {
+		center = (2394, 2526);
+		height = 41;
+		};
+	};
+
+node ALChamp {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (New_York, Texas, Baltimore, Oakland, Detroit);
+	parents = (ALFinalist1, ALFinalist2, ALChamp7);
+	probs = 
+		// New York     Texas        Baltimore    Oakland      Detroit       // ALFinalist1 ALFinalist2 ALChamp7 
+		  (0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // New York    Oakland     A4 B0    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // New York    Oakland     A4 B1    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // New York    Oakland     A4 B2    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // New York    Oakland     A4 B3    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // New York    Oakland     A3 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // New York    Oakland     A2 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // New York    Oakland     A1 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // New York    Oakland     A0 B4    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // New York    Detroit     A4 B0    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // New York    Detroit     A4 B1    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // New York    Detroit     A4 B2    
+		   0.9996,      9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,     // New York    Detroit     A4 B3    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // New York    Detroit     A3 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // New York    Detroit     A2 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // New York    Detroit     A1 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // New York    Detroit     A0 B4    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Texas       Oakland     A4 B0    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Texas       Oakland     A4 B1    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Texas       Oakland     A4 B2    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Texas       Oakland     A4 B3    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Texas       Oakland     A3 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Texas       Oakland     A2 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Texas       Oakland     A1 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Texas       Oakland     A0 B4    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Texas       Detroit     A4 B0    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Texas       Detroit     A4 B1    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Texas       Detroit     A4 B2    
+		   9.996e-5,    0.9996,      9.996e-5,    9.996e-5,    9.996e-5,     // Texas       Detroit     A4 B3    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Texas       Detroit     A3 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Texas       Detroit     A2 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Texas       Detroit     A1 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Texas       Detroit     A0 B4    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // Baltimore   Oakland     A4 B0    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // Baltimore   Oakland     A4 B1    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // Baltimore   Oakland     A4 B2    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // Baltimore   Oakland     A4 B3    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Baltimore   Oakland     A3 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Baltimore   Oakland     A2 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Baltimore   Oakland     A1 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    0.9996,      9.996e-5,     // Baltimore   Oakland     A0 B4    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // Baltimore   Detroit     A4 B0    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // Baltimore   Detroit     A4 B1    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // Baltimore   Detroit     A4 B2    
+		   9.996e-5,    9.996e-5,    0.9996,      9.996e-5,    9.996e-5,     // Baltimore   Detroit     A4 B3    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Baltimore   Detroit     A3 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Baltimore   Detroit     A2 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996,       // Baltimore   Detroit     A1 B4    
+		   9.996e-5,    9.996e-5,    9.996e-5,    9.996e-5,    0.9996);      // Baltimore   Detroit     A0 B4    ;
+	whenchanged = 1349794623;
+	belief = (0.3893885, 1.49925e-4, 0.1105116, 0.2649645, 0.2349855);
+	visual V1 {
+		center = (2010, 2766);
+		height = 42;
+		};
+	};
+
+node WorldSeriesWinner {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (Washington, Atlanta, St_Louis, Cincinnati, San_Francisco, New_York, Texas, Baltimore, Oakland, Detroit);
+	parents = (WinningLeague, ALChamp, NLChamp);
+	probs = 
+		// Washington   Atlanta      St Louis     Cincinnati   San Francisco New York    Texas        Baltimore    Oakland      Detroit       // WinningLeague ALChamp   NLChamp       
+		  (0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            New York  Washington    
+		   9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            New York  Atlanta       
+		   9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            New York  St Louis      
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            New York  Cincinnati    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            New York  San Francisco 
+		   0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Texas     Washington    
+		   9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Texas     Atlanta       
+		   9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Texas     St Louis      
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Texas     Cincinnati    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Texas     San Francisco 
+		   0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Baltimore Washington    
+		   9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Baltimore Atlanta       
+		   9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Baltimore St Louis      
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Baltimore Cincinnati    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Baltimore San Francisco 
+		   0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Oakland   Washington    
+		   9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Oakland   Atlanta       
+		   9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Oakland   St Louis      
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Oakland   Cincinnati    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Oakland   San Francisco 
+		   0.9992006,   9.992006e-5, 9.992006e-5, 9.992006e-5, 0,           9.992006e-5, 9.992006e-5, 9.992006e-5, 9.992006e-5, 9.992006e-5,  // NL            Detroit   Washington    
+		   9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Detroit   Atlanta       
+		   9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Detroit   St Louis      
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Detroit   Cincinnati    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // NL            Detroit   San Francisco 
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // AL            New York  Washington    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // AL            New York  Atlanta       
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // AL            New York  St Louis      
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // AL            New York  Cincinnati    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5,  // AL            New York  San Francisco 
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5,  // AL            Texas     Washington    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5,  // AL            Texas     Atlanta       
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5,  // AL            Texas     St Louis      
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5,  // AL            Texas     Cincinnati    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5, 9.991008e-5,  // AL            Texas     San Francisco 
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5,  // AL            Baltimore Washington    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5,  // AL            Baltimore Atlanta       
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5,  // AL            Baltimore St Louis      
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5,  // AL            Baltimore Cincinnati    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5, 9.991008e-5,  // AL            Baltimore San Francisco 
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5,  // AL            Oakland   Washington    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5,  // AL            Oakland   Atlanta       
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5,  // AL            Oakland   St Louis      
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5,  // AL            Oakland   Cincinnati    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,   9.991008e-5,  // AL            Oakland   San Francisco 
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,    // AL            Detroit   Washington    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,    // AL            Detroit   Atlanta       
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,    // AL            Detroit   St Louis      
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008,    // AL            Detroit   Cincinnati    
+		   9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 9.991008e-5, 0.9991008);   // AL            Detroit   San Francisco ;
+	whenchanged = 1349794491;
+	belief = (0.07027518, 1.747979e-4, 0.1796266, 0.1324498, 0.1174736, 0.1945996, 1.747979e-4, 0.0553005, 0.1324498, 0.1174753);
+	visual V1 {
+		center = (3252, 2610);
+		height = 50;
+		link 1 {
+			path = ((3394, 2360), (3298, 2529));
+			};
+		};
+	};
+
+node Washington_in_NLCS {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (NLFinalist1);
+	probs = 
+		// True         False         // NLFinalist1 
+		  (0.9999,      9.999e-5,     // Washington  
+		   9.999e-5,    0.9999,       // Atlanta     
+		   9.999e-5,    0.9999);      // St Louis    ;
+	whenchanged = 1349794028;
+	belief = (0.2809595, 0.7190405);
+	visual V1 {
+		center = (828, 744);
+		height = 52;
+		link 1 {
+			path = ((921, 669), (859, 719));
+			};
+		};
+	};
+
+node Atlanta_in_NLCS {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (NLFinalist1);
+	probs = 
+		// True         False         // NLFinalist1 
+		  (9.999e-5,    0.9999,       // Washington  
+		   0.9999,      9.999e-5,     // Atlanta     
+		   9.999e-5,    0.9999);      // St Louis    ;
+	whenchanged = 1349867911;
+	belief = (1.9995e-4, 0.9998);
+	visual V1 {
+		center = (936, 822);
+		height = 53;
+		};
+	};
+
+node St_Louis_in_NLCS {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (NLFinalist1);
+	probs = 
+		// True         False         // NLFinalist1 
+		  (9.999e-5,    0.9999,       // Washington  
+		   9.999e-5,    0.9999,       // Atlanta     
+		   0.9999,      9.999e-5);    // St Louis    ;
+	whenchanged = 1349794082;
+	belief = (0.7189406, 0.2810595);
+	visual V1 {
+		center = (1044, 894);
+		height = 54;
+		};
+	};
+
+node New_York_in_ALCS {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	inputs = (NLFinalist1);
+	parents = (ALFinalist1);
+	probs = 
+		// True         False         // NLFinalist1 
+		  (0.9999,      9.999e-5,     // New York    
+		   9.999e-5,    0.9999,       // Texas       
+		   9.999e-5,    0.9999);      // Baltimore   ;
+	whenchanged = 1349794753;
+	belief = (0.7789105, 0.2210895);
+	visual V1 {
+		center = (870, 2142);
+		height = 55;
+		};
+	};
+
+node Texas_in_ALCS {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	inputs = (NLFinalist1);
+	parents = (ALFinalist1);
+	probs = 
+		// True         False         // NLFinalist1 
+		  (9.999e-5,    0.9999,       // New York    
+		   0.9999,      9.999e-5,     // Texas       
+		   9.999e-5,    0.9999);      // Baltimore   ;
+	whenchanged = 1349867971;
+	belief = (1.9995e-4, 0.9998);
+	visual V1 {
+		center = (978, 2220);
+		height = 56;
+		};
+	};
+
+node Baltimore_in_ALCS {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	inputs = (NLFinalist1);
+	parents = (ALFinalist1);
+	probs = 
+		// True         False         // NLFinalist1 
+		  (9.999e-5,    0.9999,       // New York    
+		   9.999e-5,    0.9999,       // Texas       
+		   0.9999,      9.999e-5);    // Baltimore   ;
+	whenchanged = 1349794797;
+	belief = (0.2209895, 0.7790105);
+	visual V1 {
+		center = (1086, 2292);
+		height = 57;
+		};
+	};
+
+node Oakland_in_ALCS {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	inputs = (NLFinalist2);
+	parents = (ALFinalist2);
+	probs = 
+		// True         False         // NLFinalist2 
+		  (0.9999,      9.999e-5,     // Oakland     
+		   9.999e-5,    0.9999);      // Detroit     ;
+	whenchanged = 1349794674;
+	belief = (0.529988, 0.470012);
+	visual V1 {
+		center = (954, 2862);
+		height = 60;
+		};
+	};
+
+node Detroit_in_ALCS {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	inputs = (NLFinalist2);
+	parents = (ALFinalist2);
+	probs = 
+		// True         False         // NLFinalist2 
+		  (9.999e-5,    0.9999,       // Oakland     
+		   0.9999,      9.999e-5);    // Detroit     ;
+	whenchanged = 1349794658;
+	belief = (0.470012, 0.529988);
+	visual V1 {
+		center = (1098, 2922);
+		height = 61;
+		};
+	};
+NodeSet target {Nodes = ();};
+ElimOrder = (Cincinnati_in_NLCS, San_Francisco_in_NLCS, Oakland_in_ALCS, Detroit_in_ALCS, NLFinalist21, NLFinalist11, NLChamp1, WorldSeries1, ALFinalist11, ALFinalist21, ALChamp1, Washington_in_NLCS, Atlanta_in_NLCS, St_Louis_in_NLCS, New_York_in_ALCS, Texas_in_ALCS, Baltimore_in_ALCS, NLFinalist22, NLFinalist12, NLChamp2, WorldSeries2, ALFinalist12, ALFinalist22, ALChamp2, NLFinalist23, NLFinalist13, NLChamp3, WorldSeries3, ALFinalist13, ALFinalist23, ALChamp3, NLFinalist24, NLFinalist25, NLFinalist14, NLChamp4, WorldSeries4, ALFinalist14, ALFinalist24, ALFinalist25, ALChamp4, NLWC, NLFinalist15, ALWC, ALFinalist15, NLChamp5, WorldSeries5, ALChamp5, NLChamp6, WorldSeries6, NLChamp8, ALChamp6, NLFinalist2, NLFinalist1, NLChamp7, ALFinalist1, ALFinalist2, ALChamp7, NLChamp, WinningLeague, ALChamp, WorldSeriesWinner);
+};

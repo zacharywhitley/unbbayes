@@ -1,0 +1,1042 @@
+net
+{
+     node_size = (0 0);
+     name = "BaseballPlayoffsV4";
+     tree = "()";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node NLFinalist21
+{
+     label = "";
+     position = (90 156);
+     states = ("SF1_CIN0" "SF0_CIN1");
+}
+
+node NLFinalist22
+{
+     label = "";
+     position = (216 162);
+     states = ("SF2_CIN0" "SF1_CIN1" "SF0_CIN2");
+}
+
+node NLFinalist23
+{
+     label = "";
+     position = (349 168);
+     states = ("SF3_CIN0" "SF2_CIN1" "SF1_CIN2" "SF0_CIN3");
+}
+
+node NLFinalist24
+{
+     label = "";
+     position = (474 174);
+     states = ("SF3_CIN0" "SF3_CIN1" "SF2_CIN2" "SF1_CIN3" "SF0_CIN3");
+}
+
+node NLFinalist25
+{
+     label = "";
+     position = (600 180);
+     states = ("SF3_CIN0" "SF3_CIN1" "SF3_CIN2" "SF2_CIN3" "SF1_CIN3" "SF0_CIN3");
+}
+
+node NLFinalist2
+{
+     label = "";
+     position = (831 171);
+     states = ("Cincinnati" "SanFrancisco");
+}
+
+node NLWC
+{
+     label = "";
+     position = (1150 18);
+     states = ("Atlanta" "St_Louis");
+}
+
+node NLFinalist11
+{
+     label = "";
+     position = (96 30);
+     states = ("WC1_WSH0" "WC0_WSH1");
+}
+
+node NLFinalist12
+{
+     label = "";
+     position = (239 36);
+     states = ("WC2_WSH0" "WC1_WSH1" "WC0_WSH2");
+}
+
+node NLFinalist13
+{
+     label = "";
+     position = (343 41);
+     states = ("WC3_WSH0" "WC2_WSH1" "WC1_WSH2" "WC0_WSH3");
+}
+
+node NLFinalist14
+{
+     label = "";
+     position = (504 32);
+     states = ("WC3_WSH0" "WC3_WSH1" "WC2_WSH2" "WC1_WSH3" "WC0_WSH3");
+}
+
+node NLFinalist15
+{
+     label = "";
+     position = (637 26);
+     states = ("WC3_WSH0" "WC3_WSH1" "WC3_WSH2" "WC2_WSH3" "WC1_WSH3" "WC0_WSH3");
+}
+
+node NLFinalist1
+{
+     label = "";
+     position = (876 1);
+     states = ("Washington" "Atlanta" "St_Louis");
+}
+
+node NLChamp1
+{
+     label = "";
+     position = (84 276);
+     states = ("A1_B0" "A0_B1");
+}
+
+node NLChamp2
+{
+     label = "";
+     position = (240 282);
+     states = ("A2_B0" "A1_B1" "A0_B2");
+}
+
+node NLChamp3
+{
+     label = "";
+     position = (408 294);
+     states = ("A3_B0" "A2_B1" "A1_B2" "A0_B3");
+}
+
+node NLChamp4
+{
+     label = "";
+     position = (564 300);
+     states = ("A4_B0" "A3_B1" "A2_B2" "A1_B3" "A0_B4");
+}
+
+node NLChamp5
+{
+     label = "";
+     position = (720 306);
+     states = ("A4_B0" "A4_B1" "A3_B2" "A2_B3" "A1_B4" "A0_B4");
+}
+
+node NLChamp6
+{
+     label = "";
+     position = (876 312);
+     states = ("A4_B0" "A4_B1" "A4_B2" "A3_B3" "A2_B4" "A1_B4" "A0_B4");
+}
+
+node NLChamp7
+{
+     label = "";
+     position = (1026 318);
+     states = ("A4_B0" "A4_B1" "A4_B2" "A4_B3" "A3_B4" "A2_B4" "A1_B4" "A0_B4");
+}
+
+node NLChamp
+{
+     label = "";
+     position = (1356 109);
+     states = ("Washington" "Atlanta" "St_Louis" "Cincinnati" "San_Francisco");
+}
+
+node Cincinnati_in_NLCS
+{
+     label = "";
+     position = (759 227);
+     states = ("True" "False");
+}
+
+node San_Francisco_in_NLCS
+{
+     label = "";
+     position = (937 216);
+     states = ("True" "False");
+}
+
+node WorldSeries1
+{
+     label = "";
+     position = (96 420);
+     states = ("NL1_AL0" "NL0_AL1");
+}
+
+node WorldSeries2
+{
+     label = "";
+     position = (222 426);
+     states = ("NL2_AL0" "NL1_AL1" "NL0_AL2");
+}
+
+node WorldSeries3
+{
+     label = "";
+     position = (348 432);
+     states = ("NL3_AL0" "NL2_AL1" "NL1_AL2" "NL0_AL3");
+}
+
+node WorldSeries4
+{
+     label = "";
+     position = (474 438);
+     states = ("NL4_AL0" "NL3_AL1" "NL2_AL2" "NL1_AL3" "NL0_AL4");
+}
+
+node WorldSeries5
+{
+     label = "";
+     position = (600 444);
+     states = ("NL4_AL0" "NL4_AL1" "NL3_AL2" "NL2_AL3" "NL1_AL4" "NL0_AL4");
+}
+
+node WorldSeries6
+{
+     label = "";
+     position = (726 450);
+     states = ("NL4_AL0" "NL4_AL1" "NL4_AL2" "NL3_AL3" "NL2_AL4" "NL1_AL4" "NL0_AL4");
+}
+
+node NLChamp8
+{
+     label = "";
+     position = (858 456);
+     states = ("NL4_AL0" "NL4_AL1" "NL4_AL2" "NL4_AL3" "NL3_AL4" "NL2_AL4" "NL1_AL4" "NL0_AL4");
+}
+
+node WinningLeague
+{
+     label = "";
+     position = (1128 499);
+     states = ("NL" "AL");
+}
+
+node ALWC
+{
+     label = "";
+     position = (1158 564);
+     states = ("Texas" "Baltimore");
+}
+
+node ALFinalist11
+{
+     label = "";
+     position = (90 564);
+     states = ("WC1_NYY0" "WC0_NYY1");
+}
+
+node ALFinalist12
+{
+     label = "";
+     position = (166 581);
+     states = ("WC2_NYY0" "WC1_NYY1" "WC0_NYY2");
+}
+
+node ALFinalist13
+{
+     label = "";
+     position = (354 576);
+     states = ("WC3_NYY0" "WC2_NYY1" "WC1_NYY2" "WC0_NYY3");
+}
+
+node ALFinalist14
+{
+     label = "";
+     position = (486 582);
+     states = ("WC3_NYY0" "WC3_NYY1" "WC2_NYY2" "WC1_NYY3" "WC0_NYY3");
+}
+
+node ALFinalist15
+{
+     label = "";
+     position = (612 588);
+     states = ("WC3_NYY0" "WC3_NYY1" "WC3_NYY2" "WC2_NYY3" "WC1_NYY3" "WC0_NYY3");
+}
+
+node ALFinalist1
+{
+     label = "";
+     position = (881 528);
+     states = ("New_York" "Texas" "Baltimore");
+}
+
+node ALFinalist21
+{
+     label = "";
+     position = (96 690);
+     states = ("DET1_OAK0" "DET0_OAK1");
+}
+
+node ALFinalist22
+{
+     label = "";
+     position = (228 696);
+     states = ("DET2_OAK0" "DET1_OAK1" "DET0_OAK2");
+}
+
+node ALFinalist23
+{
+     label = "";
+     position = (372 708);
+     states = ("DET3_OAK0" "DET2_OAK1" "DET1_OAK2" "DET0_OAK3");
+}
+
+node ALFinalist24
+{
+     label = "";
+     position = (516 714);
+     states = ("DET3_OAK0" "DET3_OAK1" "DET2_OAK2" "DET1_OAK3" "DET0_OAK3");
+}
+
+node ALFinalist25
+{
+     label = "";
+     position = (654 720);
+     states = ("DET3_OAK0" "DET3_OAK1" "DET3_OAK2" "DET2_OAK3" "DET1_OAK3" "DET0_OAK3");
+}
+
+node ALFinalist2
+{
+     label = "";
+     position = (894 690);
+     states = ("Oakland" "Detroit");
+}
+
+node ALChamp1
+{
+     label = "";
+     position = (90 816);
+     states = ("A1_B0" "A0_B1");
+}
+
+node ALChamp2
+{
+     label = "";
+     position = (198 823);
+     states = ("A2_B0" "A1_B1" "A0_B2");
+}
+
+node ALChamp3
+{
+     label = "";
+     position = (318 828);
+     states = ("A3_B0" "A2_B1" "A1_B2" "A0_B3");
+}
+
+node ALChamp4
+{
+     label = "";
+     position = (432 834);
+     states = ("A4_B0" "A3_B1" "A2_B2" "A1_B3" "A0_B4");
+}
+
+node ALChamp5
+{
+     label = "";
+     position = (552 840);
+     states = ("A4_B0" "A4_B1" "A3_B2" "A2_B3" "A1_B4" "A0_B4");
+}
+
+node ALChamp6
+{
+     label = "";
+     position = (666 846);
+     states = ("A4_B0" "A4_B1" "A4_B2" "A3_B3" "A2_B4" "A1_B4" "A0_B4");
+}
+
+node ALChamp7
+{
+     label = "";
+     position = (774 852);
+     states = ("A4_B0" "A4_B1" "A4_B2" "A4_B3" "A3_B4" "A2_B4" "A1_B4" "A0_B4");
+}
+
+node ALChamp
+{
+     label = "";
+     position = (1356 666);
+     states = ("New_York" "Texas" "Baltimore" "Oakland" "Detroit");
+}
+
+node WorldSeriesWinner
+{
+     label = "";
+     position = (1356 294);
+     states = ("Washington" "Atlanta" "St_Louis" "Cincinnati" "San_Francisco" "New_York" "Texas" "Baltimore" "Oakland" "Detroit");
+}
+
+node Washington_in_NLCS
+{
+     label = "";
+     position = (816 102);
+     states = ("True" "False");
+}
+
+node Atlanta_in_NLCS
+{
+     label = "";
+     position = (974 117);
+     states = ("True" "False");
+}
+
+node St_Louis_in_NLCS
+{
+     label = "";
+     position = (1071 93);
+     states = ("True" "False");
+}
+
+node New_York_in_ALCS
+{
+     label = "";
+     position = (780 630);
+     states = ("True" "False");
+}
+
+node Texas_in_ALCS
+{
+     label = "";
+     position = (912 630);
+     states = ("True" "False");
+}
+
+node Baltimore_in_ALCS
+{
+     label = "";
+     position = (1037 630);
+     states = ("True" "False");
+}
+
+node Oakland_in_ALCS
+{
+     label = "";
+     position = (834 744);
+     states = ("True" "False");
+}
+
+node Detroit_in_ALCS
+{
+     label = "";
+     position = (990 744);
+     states = ("True" "False");
+}
+
+potential (NLFinalist21)
+{
+ data = ( 0.4422422 0.5577579 );
+}
+
+potential (NLFinalist22 | NLFinalist21)
+{
+ data = (( 0.43861654 0.5613834 0.0 )
+( 0.0 0.44511694 0.55488306 ));
+}
+
+potential (NLFinalist23 | NLFinalist22)
+{
+ data = (( 0.4461498 0.55385023 0.0 0.0 )
+( 0.0 0.432731 0.56726897 0.0 )
+( 0.0 0.0 0.45505074 0.54494923 ));
+}
+
+potential (NLFinalist24 | NLFinalist23)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.42693716 0.5730629 0.0 0.0 )
+( 0.0 0.0 0.43714935 0.56285065 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (NLFinalist25 | NLFinalist24)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.39485413 0.6051459 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (NLFinalist2 | NLFinalist25)
+{
+ data = (( 0.0 1.0 )
+( 0.0 1.0 )
+( 0.0 1.0 )
+( 1.0 0.0 )
+( 1.0 0.0 )
+( 1.0 0.0 ));
+}
+
+potential (NLWC)
+{
+ data = ( 0.525548 0.47445214 );
+}
+
+potential (NLFinalist11)
+{
+ data = ( 0.41238934 0.58761084 );
+}
+
+potential (NLFinalist12 | NLFinalist11)
+{
+ data = (( 0.3699716 0.63002837 0.0 )
+( 0.0 0.4421582 0.5578418 ));
+}
+
+potential (NLFinalist13 | NLFinalist12)
+{
+ data = (( 0.008376674 0.99162334 0.0 0.0 )
+( 0.0 0.5823108 0.4176892 0.0 )
+( 0.0 0.0 0.33106992 0.6689301 ));
+}
+
+potential (NLFinalist14 | NLFinalist13)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.7644443 0.23555574 0.0 0.0 )
+( 0.0 0.0 0.32839364 0.67160636 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (NLFinalist15 | NLFinalist14)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.53718626 0.46281376 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (NLFinalist1 | NLWC NLFinalist15)
+{
+ data = ((( 0.0 1.0 0.0 )
+( 0.0 1.0 0.0 )
+( 0.0 1.0 0.0 )
+( 1.0 0.0 0.0 )
+( 1.0 0.0 0.0 )
+( 1.0 0.0 0.0 ))
+(( 0.0 0.0 1.0 )
+( 0.0 0.0 1.0 )
+( 0.0 0.0 1.0 )
+( 1.0 0.0 0.0 )
+( 1.0 0.0 0.0 )
+( 1.0 0.0 0.0 )));
+}
+
+potential (NLChamp1)
+{
+ data = ( 0.45802495 0.54197514 );
+}
+
+potential (NLChamp2 | NLChamp1)
+{
+ data = (( 0.45860976 0.54139024 0.0 )
+( 0.0 0.45753068 0.54246926 ));
+}
+
+potential (NLChamp3 | NLChamp2)
+{
+ data = (( 0.4252377 0.5747623 0.0 0.0 )
+( 0.0 0.48687926 0.5131207 0.0 )
+( 0.0 0.0 0.43277717 0.56722283 ));
+}
+
+potential (NLChamp4 | NLChamp3)
+{
+ data = (( 0.42659587 0.57340413 0.0 0.0 0.0 )
+( 0.0 0.4242318 0.57576823 0.0 0.0 )
+( 0.0 0.0 0.54632086 0.45367914 0.0 )
+( 0.0 0.0 0.0 0.34614643 0.6538536 ));
+}
+
+potential (NLChamp5 | NLChamp4)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.28105265 0.71894735 0.0 0.0 0.0 )
+( 0.0 0.0 0.52973086 0.4702692 0.0 0.0 )
+( 0.0 0.0 0.0 0.5662997 0.43370035 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (NLChamp6 | NLChamp5)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.54425764 0.4557424 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.51336485 0.4866352 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (NLChamp7 | NLChamp6)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.66162366 0.3383764 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (NLChamp | NLFinalist1 NLFinalist2 NLChamp7)
+{
+ data = (((( 1.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 ))
+(( 1.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )))
+((( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 ))
+(( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )))
+((( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 ))
+(( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 ))));
+}
+
+potential (Cincinnati_in_NLCS | NLFinalist2)
+{
+ data = (( 1.0 0.0 )
+( 0.0 1.0 ));
+}
+
+potential (San_Francisco_in_NLCS | NLFinalist2)
+{
+ data = (( 0.0 1.0 )
+( 1.0 0.0 ));
+}
+
+potential (WorldSeries1)
+{
+ data = ( 0.5000001 0.49999994 );
+}
+
+potential (WorldSeries2 | WorldSeries1)
+{
+ data = (( 0.5000001 0.49999985 0.0 )
+( 0.0 0.50000006 0.5 ));
+}
+
+potential (WorldSeries3 | WorldSeries2)
+{
+ data = (( 0.49999988 0.50000006 0.0 0.0 )
+( 0.0 0.5000004 0.4999996 0.0 )
+( 0.0 0.0 0.4999999 0.5000001 ));
+}
+
+potential (WorldSeries4 | WorldSeries3)
+{
+ data = (( 0.49999958 0.5000004 0.0 0.0 0.0 )
+( 0.0 0.49999908 0.5000009 0.0 0.0 )
+( 0.0 0.0 0.49999985 0.5000002 0.0 )
+( 0.0 0.0 0.0 0.50000024 0.4999998 ));
+}
+
+potential (WorldSeries5 | WorldSeries4)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.49999988 0.5000001 0.0 0.0 0.0 )
+( 0.0 0.0 0.500001 0.49999902 0.0 0.0 )
+( 0.0 0.0 0.0 0.49999994 0.5000001 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (WorldSeries6 | WorldSeries5)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.49999914 0.50000083 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.5000001 0.49999994 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (NLChamp8 | WorldSeries6)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.5000002 0.49999982 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (WinningLeague | NLChamp8)
+{
+ data = (( 1.0 0.0 )
+( 1.0 0.0 )
+( 1.0 0.0 )
+( 1.0 0.0 )
+( 0.0 1.0 )
+( 0.0 1.0 )
+( 0.0 1.0 )
+( 0.0 1.0 ));
+}
+
+potential (ALWC)
+{
+ data = ( 0.32676548 0.67323476 );
+}
+
+potential (ALFinalist11)
+{
+ data = ( 0.2631402 0.73686016 );
+}
+
+potential (ALFinalist12 | ALFinalist11)
+{
+ data = (( 0.25333995 0.74666005 0.0 )
+( 0.0 0.26663965 0.7333604 ));
+}
+
+potential (ALFinalist13 | ALFinalist12)
+{
+ data = (( 0.019699838 0.9803001 0.0 0.0 )
+( 0.0 0.33261362 0.66738635 0.0 )
+( 0.0 0.0 0.24265288 0.75734705 ));
+}
+
+potential (ALFinalist14 | ALFinalist13)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.18294951 0.81705046 0.0 0.0 )
+( 0.0 0.0 0.4072031 0.5927969 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (ALFinalist15 | ALFinalist14)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.35826933 0.64173067 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (ALFinalist1 | ALWC ALFinalist15)
+{
+ data = ((( 0.0 1.0 0.0 )
+( 0.0 1.0 0.0 )
+( 0.0 1.0 0.0 )
+( 1.0 0.0 0.0 )
+( 1.0 0.0 0.0 )
+( 1.0 0.0 0.0 ))
+(( 0.0 0.0 1.0 )
+( 0.0 0.0 1.0 )
+( 0.0 0.0 1.0 )
+( 1.0 0.0 0.0 )
+( 1.0 0.0 0.0 )
+( 1.0 0.0 0.0 )));
+}
+
+potential (ALFinalist21)
+{
+ data = ( 0.449756 0.5502442 );
+}
+
+potential (ALFinalist22 | ALFinalist21)
+{
+ data = (( 0.4474934 0.55250657 0.0 )
+( 0.0 0.4516051 0.54839486 ));
+}
+
+potential (ALFinalist23 | ALFinalist22)
+{
+ data = (( 0.45323548 0.54676455 0.0 0.0 )
+( 0.0 0.44284388 0.5571561 0.0 )
+( 0.0 0.0 0.4588179 0.5411821 ));
+}
+
+potential (ALFinalist24 | ALFinalist23)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.4393395 0.56066054 0.0 0.0 )
+( 0.0 0.0 0.4456283 0.5543717 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (ALFinalist25 | ALFinalist24)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.41531268 0.58468735 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (ALFinalist2 | ALFinalist25)
+{
+ data = (( 0.0 1.0 )
+( 0.0 1.0 )
+( 0.0 1.0 )
+( 1.0 0.0 )
+( 1.0 0.0 )
+( 1.0 0.0 ));
+}
+
+potential (ALChamp1)
+{
+ data = ( 0.5117391 0.4882611 );
+}
+
+potential (ALChamp2 | ALChamp1)
+{
+ data = (( 0.53317606 0.4668239 0.0 )
+( 0.0 0.4892711 0.5107289 ));
+}
+
+potential (ALChamp3 | ALChamp2)
+{
+ data = (( 0.5816888 0.41831118 0.0 0.0 )
+( 0.0 0.47776842 0.5222316 0.0 )
+( 0.0 0.0 0.50028986 0.49971014 ));
+}
+
+potential (ALChamp4 | ALChamp3)
+{
+ data = (( 0.65290654 0.34709343 0.0 0.0 0.0 )
+( 0.0 0.4826559 0.5173441 0.0 0.0 )
+( 0.0 0.0 0.47329745 0.5267026 0.0 )
+( 0.0 0.0 0.0 0.5273143 0.4726857 ));
+}
+
+potential (ALChamp5 | ALChamp4)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.67538154 0.3246185 0.0 0.0 0.0 )
+( 0.0 0.0 0.30285135 0.6971487 0.0 0.0 )
+( 0.0 0.0 0.0 0.6264628 0.37353718 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (ALChamp6 | ALChamp5)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.448288 0.55171204 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.23967165 0.76032835 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (ALChamp7 | ALChamp6)
+{
+ data = (( 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.24764098 0.752359 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 ));
+}
+
+potential (ALChamp | ALFinalist1 ALFinalist2 ALChamp7)
+{
+ data = (((( 1.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 ))
+(( 1.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 )
+( 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )))
+((( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 ))
+(( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )))
+((( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 ))
+(( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 1.0 ))));
+}
+
+potential (WorldSeriesWinner | WinningLeague ALChamp NLChamp)
+{
+ data = (((( 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 ))
+(( 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 ))
+(( 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 ))
+(( 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 ))
+(( 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 0.0 )))
+((( 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0 ))
+(( 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 ))
+(( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0 ))
+(( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 ))
+(( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 )
+( 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 1.0 ))));
+}
+
+potential (Washington_in_NLCS | NLFinalist1)
+{
+ data = (( 1.0 0.0 )
+( 0.0 1.0 )
+( 0.0 1.0 ));
+}
+
+potential (Atlanta_in_NLCS | NLFinalist1)
+{
+ data = (( 0.0 1.0 )
+( 1.0 0.0 )
+( 0.0 1.0 ));
+}
+
+potential (St_Louis_in_NLCS | NLFinalist1)
+{
+ data = (( 0.0 1.0 )
+( 0.0 1.0 )
+( 1.0 0.0 ));
+}
+
+potential (New_York_in_ALCS | ALFinalist1)
+{
+ data = (( 1.0 0.0 )
+( 0.0 1.0 )
+( 0.0 1.0 ));
+}
+
+potential (Texas_in_ALCS | ALFinalist1)
+{
+ data = (( 0.0 1.0 )
+( 1.0 0.0 )
+( 0.0 1.0 ));
+}
+
+potential (Baltimore_in_ALCS | ALFinalist1)
+{
+ data = (( 0.0 1.0 )
+( 0.0 1.0 )
+( 1.0 0.0 ));
+}
+
+potential (Oakland_in_ALCS | ALFinalist2)
+{
+ data = (( 1.0 0.0 )
+( 0.0 1.0 ));
+}
+
+potential (Detroit_in_ALCS | ALFinalist2)
+{
+ data = (( 0.0 1.0 )
+( 1.0 0.0 ));
+}
+

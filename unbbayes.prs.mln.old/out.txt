@@ -1,4 +1,0 @@
-0,85	Cancer("Edward")
-0,55	Cancer("Anna")
-0,50	Cancer("Frank")
-0,40	Cancer("Bob")
