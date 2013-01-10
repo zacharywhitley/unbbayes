@@ -4223,6 +4223,7 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestion(transactionKey, new Date(2), 0x0E, 2, null);	// question E has ID = hexadecimal E. CPD == null -> linear distro
 		engine.addQuestionAssumption(transactionKey, new Date(4), 0x0E, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
 		
+		
 		// Eric bets  P(D=d1|F=f2) = 0.52 -> 0.7
 		newValues = new ArrayList<Float>();
 		newValues.add(.7f);
@@ -4353,6 +4354,13 @@ public class MarkovEngineTest extends TestCase {
 		
 		// add 100 q-values to new users
 		assertTrue(engine.addCash(transactionKey, new Date(6), userNameToIDMap.get("Tom"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		
+//		assertTrue(engine.addCash(transactionKey, new Date(3), 999L, engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.9f);		
+		newValues.add(0.1f);		
+		engine.addTrade(transactionKey, new Date(2), "Trade to revert", 999L, 0x0EL, newValues, null, null, true);
+		engine.doBalanceTrade(transactionKey, new Date(3), "Undo the last trade", 999L, 0x0EL, null, null);
 		
 		// commit all trades (including the creation of network and user)
 		engine.commitNetworkActions(transactionKey);
@@ -21118,7 +21126,7 @@ public class MarkovEngineTest extends TestCase {
 				newValues, Collections.singletonList(2L), 
 				Collections.singletonList((int)(numStatesOfQuestion2*Math.random())), false).isEmpty() );
 		
-		// change structure to: 1 -> 0 <- 2 <- [3,4]
+		// change structure to: 1 -> 0 <- 2 <- [3,4]	9
 		engine.addQuestion(transactionKey, new Date(), 3L, 2+(int)Math.round(Math.random()*5), null);	
 		engine.addQuestionAssumption(transactionKey, new Date(), 2L , Collections.singletonList(3L), null);
 		engine.addQuestion(transactionKey, new Date(), 4L, 2+(int)Math.round(Math.random()*5), null);	
@@ -21133,27 +21141,33 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue( engine.addTrade( transactionKey, new Date(), 
 				"User 666 trades P(2|3=0) = [.7,[uniform]]", 666L, 2L, 
 				newValues, Collections.singletonList(3L), 
-				Collections.singletonList(0), false).isEmpty() );
+				Collections.singletonList(0), true).isEmpty() );
 		
 		// add a balancing trade of 2 | [3,4]
 		List<Long> assumptionIds = new ArrayList<Long>(2);
 		assumptionIds.add(3L);
-		assumptionIds.add(4L);
+		assumptionIds.add(9L);
 		List<Integer> assumedStates = new ArrayList<Integer>(2);
 		assumedStates.add(0);
 		assumedStates.add(0);
-		engine.doBalanceTrade(transactionKey, new Date(), "666 balances 2 | [3=0,4=0]", 666, 2, assumptionIds, assumedStates);
+		engine.addQuestion(transactionKey, new Date(), 9L, 2+(int)Math.round(Math.random()*5), null);	
+		engine.doBalanceTrade(transactionKey, new Date(), "666 balances 2 | [3=0,9=0]", 666, 2, assumptionIds, assumedStates);
 		
 		// commit transaction
 		engine.commitNetworkActions(transactionKey);
+		
+		List<QuestionEvent> questionHistory = engine.getQuestionHistory(2L, Collections.singletonList(0x03L), Collections.singletonList(0));
+		assertTrue(questionHistory.size() > 1);
+		questionHistory = engine.getQuestionHistory(2L, null, null);
+		assertTrue(questionHistory.size() > 1);
 		
 		// check that 1 and 2 are explicitly connected
 		assertTrue( engine.getProbabilisticNetwork().getNode("1").getParents().contains(engine.getProbabilisticNetwork().getNode("2"))
 				|| engine.getProbabilisticNetwork().getNode("2").getParents().contains(engine.getProbabilisticNetwork().getNode("1")));
 		
-		// check that 3 and 4 are explicitly connected
-		assertTrue( engine.getProbabilisticNetwork().getNode("3").getParents().contains(engine.getProbabilisticNetwork().getNode("4"))
-				|| engine.getProbabilisticNetwork().getNode("4").getParents().contains(engine.getProbabilisticNetwork().getNode("3")));
+		// check that 3 and 1 are explicitly connected
+		assertTrue( engine.getProbabilisticNetwork().getNode("3").getParents().contains(engine.getProbabilisticNetwork().getNode("9"))
+				|| engine.getProbabilisticNetwork().getNode("9").getParents().contains(engine.getProbabilisticNetwork().getNode("3")));
 		
 		// restore old config
 		engine.setToFullyConnectNodesInCliquesOnRebuild(backup);
@@ -21199,6 +21213,17 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(.1f, probList.get(1), PROB_ERROR_MARGIN);
 		assertEquals(.8f, probList.get(2), PROB_ERROR_MARGIN);
 		
+	}
+	
+	public final void testConditionalHistorySingleTransaction() {
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		engine.setToStoreOnlyCliqueChangeHistory(true);
+		this.createDEFNetIn1Transaction(userNameToIDMap);
+		
+		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertTrue(questionHistory.size() > 1);
+		questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertTrue(questionHistory.size() > 1);
 	}
 	
 }
