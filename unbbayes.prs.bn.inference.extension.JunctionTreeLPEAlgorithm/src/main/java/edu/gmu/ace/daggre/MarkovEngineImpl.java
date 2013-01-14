@@ -233,7 +233,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToAllowNegativeInBalanceTrade = false;
 
 	/** If true, {@link #collapseSimilarBalancingTrades(List)} will try to group similar balancing trades into 1 trade */
-	private boolean isToCollapseSimilarBalancingTrades = true;
+	private boolean isToCollapseSimilarBalancingTrades = false;
+	
+	
 	
 	/** If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)}
 	 * will attempt to use house account to run corrective trades when the old probabilities provided by the caller is different
@@ -241,7 +243,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToUseCorrectiveTrades = true;
 
 	/** If true, {@link #commitNetworkActions(long, boolean)} will place all {@link AddCashNetworkAction} before trades. */
-	private boolean isToSortAddCashAction = true;
+	private boolean isToSortAddCashAction = false;
 	
 	/** If true, {@link RebuildNetworkAction#execute()} will "see" trades which are in the same transaction and created after the rebuild action. */
 	private boolean isToLookAheadForTradesCreatedAfterRebuild = true;
