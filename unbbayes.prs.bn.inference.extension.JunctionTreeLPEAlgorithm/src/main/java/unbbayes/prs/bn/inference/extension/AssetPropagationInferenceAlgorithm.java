@@ -189,8 +189,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	
 	private IQValuesToAssetsConverter qToAssetConverter = DEFAULT_Q_TO_ASSETS_CONVERTER;
 
-	/** Initialize with default implementation */
-	private IMinQCalculator globalQValueCalculator = new IMinQCalculator() {
+	/** Initialize with default implementation {@link #DEFAULT_GLOBAL_QVALUE_CALCULATOR} */
+	private IMinQCalculator globalQValueCalculator = DEFAULT_GLOBAL_QVALUE_CALCULATOR;
+	
+	/** This is the default implementation of {@link IMinQCalculator} for this class. */
+	public static final IMinQCalculator DEFAULT_GLOBAL_QVALUE_CALCULATOR = new IMinQCalculator() {
 		
 		/** 
 		 * Returns Product(Cliques)/Product(Separators). It assumes assetNet was compiled (i.e. has {@link AssetNetwork#getJunctionTree()}).
@@ -200,14 +203,14 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		 * then this method calculates Sum(Cliques) - Sum(Separators), because it assumes
 		 * that the asset tables contains logarithmic values.
 		 */
-		public float getGlobalQ(AssetNetwork assetNet, Map<INode, Integer> filter) {
+		public float getGlobalQ(IAssetNetAlgorithm assetAlgorithm, AssetNetwork assetNet, Map<INode, Integer> filter) {
 			
 			// initial assertion
 			if (assetNet == null) {
 				return 0f;
 			}
 			
-			double ret = isToUseQValues()?1:0;	// var to be returned is initialized with identity value (1 if product, 0 if sum)
+			double ret = assetAlgorithm.isToUseQValues()?1:0;	// var to be returned is initialized with identity value (1 if product, 0 if sum)
 			
 			// calculate Product(Cliques) (or Sum(Cliques)) and divide by Product(Separators) (or subtract Sum(Separators)) alternatively, 
 			// so that ret don't get too huge
@@ -241,7 +244,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 							}
 						}
 						// note: at this point, this cell in cliqueTable matches filter
-						if (isToUseQValues()) {
+						if (assetAlgorithm.isToUseQValues()) {
 							if (Float.compare(value , 0.0f) == 0) {
 								// Zero represents impossible state.
 								throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in clique " + clique);
@@ -251,7 +254,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 						} else {
 							if (value == Float.POSITIVE_INFINITY) {
 								// infinite represents impossible state.
-								if (isToAllowInfinite()) {
+								if (assetAlgorithm.isToAllowInfinite()) {
 									// by convention, we consider the min asset of invalid state is infinitely low.
 									return Float.NEGATIVE_INFINITY;
 								} else {
@@ -274,10 +277,10 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					if (separator.getNodes() == null || separator.getNodes().isEmpty()
 							|| sepTable.getVariablesSize() <= 0 || sepTable.tableSize() <= 0) {
 						// this is an empty separator (i.e. network is disconnected). Use a default value when empty separator is found
-						if (isToUseQValues()) {
-							ret /= getEmptySeparatorsDefaultContent();
+						if (assetAlgorithm.isToUseQValues()) {
+							ret /= assetAlgorithm.getEmptySeparatorsDefaultContent();
 						} else {
-							ret -= getEmptySeparatorsDefaultContent();
+							ret -= assetAlgorithm.getEmptySeparatorsDefaultContent();
 						}
 					} else {	// separator is not empty
 						// iterate on each cell of separator table
@@ -302,7 +305,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 								}
 							}
 							// note: at this point, this cell in sepTable matches filter
-							if (isToUseQValues()) {
+							if (assetAlgorithm.isToUseQValues()) {
 								if (Float.compare(value, 0.0f) == 0) {
 									// once divided by zero, it will be always undefined.
 									throw new ZeroAssetsException("Attempted to calculate assets regarding an impossible state in separator " + separator);
@@ -361,9 +364,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		 * Calculates the global q value given set of states.
 		 * @param assetNet : network containing nodes and states
 		 * @param filter : mapping from node to respective state.
+		 * @param assetAlgorithm : object to be used in order to extract some configurations or other related data which is not 
+		 * reachable from assetNet
 		 * @return global q value
 		 */
-		float getGlobalQ(AssetNetwork assetNet , Map<INode, Integer> filter);
+		float getGlobalQ(IAssetNetAlgorithm assetAlgorithm, AssetNetwork assetNet , Map<INode, Integer> filter);
 	}
 	
 	/**
@@ -1406,7 +1411,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		
 		// calculate global Q value
-		float ret = this.getGlobalQValueCalculator().getGlobalQ(getAssetNetwork(), nodeToLPEMap);
+		float ret = this.getGlobalQValueCalculator().getGlobalQ(this, getAssetNetwork(), nodeToLPEMap);
 		
 		
 		// this is just for debugging

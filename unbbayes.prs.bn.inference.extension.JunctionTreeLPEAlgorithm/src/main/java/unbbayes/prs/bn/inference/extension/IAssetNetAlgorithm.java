@@ -292,6 +292,12 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * @return the isToCalculateLPE
 	 */
 	public boolean isToCalculateLPE() ;
+	
+	/**
+	 * @return if true, this algorithm considers the {@link Float#POSITIVE_INFINITY} or {@link Float#NEGATIVE_INFINITY}
+	 * as valid values.
+	 */
+	public boolean isToAllowInfinite();
 
 	/**
 	 * If true, {@link #calculateExplanation(List)} will 

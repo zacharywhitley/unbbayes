@@ -2122,6 +2122,18 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		}
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#isToAllowInfinite()
+	 */
+	public boolean isToAllowInfinite() {
+		IAssetNetAlgorithm assetAlgorithm = this.getAssetPropagationDelegator();
+		if (assetAlgorithm != null) {
+			return assetAlgorithm.isToAllowInfinite();
+		}
+		return false;	// default value
+	}
+
 //	/**
 //	 * Only delegates to {@link #getProbabilityPropagationDelegator()}
 //	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#initInternalIdentificators()

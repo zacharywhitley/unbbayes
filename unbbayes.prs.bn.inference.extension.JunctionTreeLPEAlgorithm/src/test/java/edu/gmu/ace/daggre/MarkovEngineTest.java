@@ -20639,7 +20639,12 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 		
-		assertEquals(3, balancingTrades.size());
+		if (engine.isToCollapseSimilarBalancingTrades()) {
+			assertEquals(3, balancingTrades.size());
+		} else {
+			assertEquals(9, balancingTrades.size());
+		}
+			
 		
 		// check if the assets have been equalized
 		// prepare the list of assumptions
@@ -21043,7 +21048,6 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 		
-		
 	}
 	
 	/**
@@ -21088,6 +21092,7 @@ public class MarkovEngineTest extends TestCase {
 		// check that 1 and 2 are explicitly connected
 		assertTrue( engine.getProbabilisticNetwork().getNode("1").getParents().contains(engine.getProbabilisticNetwork().getNode("2"))
 				 || engine.getProbabilisticNetwork().getNode("2").getParents().contains(engine.getProbabilisticNetwork().getNode("1")));
+		
 		
 		// restore old config
 		engine.setToFullyConnectNodesInCliquesOnRebuild(backup);
@@ -21213,6 +21218,267 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(.1f, probList.get(1), PROB_ERROR_MARGIN);
 		assertEquals(.8f, probList.get(2), PROB_ERROR_MARGIN);
 		
+	}
+	
+	/**
+	 * Checks that the probabilities reported by corrective tradees are of
+	 * the queried question.
+	 * 
+	 */
+	public final void testCorrectiveTradeHistoryProbListSize() {
+		engine.setDefaultInitialAssetTableValue(1000);
+		engine.setCurrentCurrencyConstant(100);
+		engine.setCurrentLogBase(2);
+		engine.initialize();
+		
+		// create nodes 1313(2states) <- 666(3states) -> 999(5states)
+		engine.addQuestion(null, new Date(), 1313L, 2, null);
+		engine.addQuestion(null, new Date(), 666L, 3, null);
+		engine.addQuestion(null, new Date(), 999L, 5, null);
+		engine.addQuestionAssumption(null, new Date(), 1313L, Collections.singletonList(666L), null);
+		engine.addQuestionAssumption(null, new Date(), 999L, Collections.singletonList(666L), null);
+		
+		// do some trades which will generate corrective trades
+		
+		List<Float> oldValues = new ArrayList<Float>();
+		List<Float> newValues = new ArrayList<Float>();
+		oldValues.add(.3f);
+		oldValues.add(.7f);
+		newValues.add(.6f);
+		newValues.add(.4f);
+		engine.addTrade(null, new Date(), 
+				"P(1313|666 = 0) = [.3,.7] -> [.6, .4]", 
+				(long)(Math.random() * (Long.MAX_VALUE - 1)), // random user
+				1313L, oldValues, newValues, 
+				Collections.singletonList(666L), Collections.singletonList(0), 
+				false
+		);
+		
+		oldValues = new ArrayList<Float>();
+		newValues = new ArrayList<Float>();
+		oldValues.add(.7f);
+		oldValues.add(.3f);
+		newValues.add(.5f);
+		newValues.add(.5f);
+		engine.addTrade(null, new Date(), 
+				"P(1313|666 = 1) = [.7,.3] -> [.5, .5]", 
+				(long)(Math.random() * (Long.MAX_VALUE - 1)), // random user
+				1313L, oldValues, newValues, 
+				Collections.singletonList(666L), Collections.singletonList(1), 
+				false
+		);
+		
+		oldValues = new ArrayList<Float>();
+		newValues = new ArrayList<Float>();
+		oldValues.add(.2f);
+		oldValues.add(.8f);
+		newValues.add(.8f);
+		newValues.add(.2f);
+		engine.addTrade(null, new Date(), 
+				"P(1313|666 = 2) = [.2,.8] -> [.8, .2]", 
+				(long)(Math.random() * (Long.MAX_VALUE - 1)), // random user
+				1313L, oldValues, newValues, 
+				Collections.singletonList(666L), Collections.singletonList(2), 
+				false
+		);
+		
+		oldValues = new ArrayList<Float>();
+		newValues = new ArrayList<Float>();
+		oldValues.add(.1f);
+		oldValues.add(.1f);
+		oldValues.add(.1f);
+		oldValues.add(.1f);
+		oldValues.add(.6f);
+		newValues.add(.2f);
+		newValues.add(.2f);
+		newValues.add(.2f);
+		newValues.add(.2f);
+		newValues.add(.2f);
+		engine.addTrade(null, new Date(), 
+				"P(999|666 = 0) = [.1,.1,.1,.1,.6] -> [.2,.2,.2,.2,.2]", 
+				(long)(Math.random() * (Long.MAX_VALUE - 1)), // random user
+				999L, oldValues, newValues, 
+				Collections.singletonList(666L), Collections.singletonList(0), 
+				false
+		);
+		
+		oldValues = new ArrayList<Float>();
+		newValues = new ArrayList<Float>();
+		oldValues.add(.1f);
+		oldValues.add(.2f);
+		oldValues.add(.3f);
+		oldValues.add(.2f);
+		oldValues.add(.2f);
+		newValues.add(.4f);
+		newValues.add(.3f);
+		newValues.add(.2f);
+		newValues.add(.05f);
+		newValues.add(.05f);
+		engine.addTrade(null, new Date(), 
+				"P(999|666 = 1) = [.1,.2,.3,.2,.2] -> [.4,.3,.2,.05,.05]", 
+				(long)(Math.random() * (Long.MAX_VALUE - 1)), // random user
+				999L, oldValues, newValues, 
+				Collections.singletonList(666L), Collections.singletonList(1), 
+				false
+		);
+		
+		oldValues = new ArrayList<Float>();
+		newValues = new ArrayList<Float>();
+		oldValues.add(.4f);
+		oldValues.add(.3f);
+		oldValues.add(.2f);
+		oldValues.add(.05f);
+		oldValues.add(.05f);
+		newValues.add(.25f);
+		newValues.add(.2f);
+		newValues.add(.1f);
+		newValues.add(.2f);
+		newValues.add(.25f);
+		engine.addTrade(null, new Date(), 
+				"P(999|666 = 2) = [.4,.3,.2,.05,.05] -> [.25,.2,.1,.2,.25]", 
+				(long)(Math.random() * (Long.MAX_VALUE - 1)), // random user
+				999L, oldValues, newValues, 
+				Collections.singletonList(666L), Collections.singletonList(2), 
+				false
+		);
+		
+		// also add some trades that will generate indirect changes in cliques
+
+		oldValues = new ArrayList<Float>();
+		newValues = new ArrayList<Float>();
+		oldValues.add(.3f);
+		oldValues.add(.3f);
+		oldValues.add(.2f);
+		oldValues.add(.1f);
+		oldValues.add(.1f);
+		newValues.add(.2f);
+		newValues.add(.2f);
+		newValues.add(.2f);
+		newValues.add(.2f);
+		newValues.add(.2f);
+		engine.addTrade(null, new Date(), 
+				"P(999) = [.3,.3,.2,.1,.1] -> [.2,.2,.2,.2,.2]", 
+				(long)(Math.random() * (Long.MAX_VALUE - 1)), // random user
+				999L, oldValues, newValues, 
+				null, null, 
+				false
+		);
+		
+		oldValues = new ArrayList<Float>();
+		newValues = new ArrayList<Float>();
+		oldValues.add(.5f);
+		oldValues.add(.5f);
+		newValues.add(.1f);
+		newValues.add(.9f);
+		engine.addTrade(null, new Date(), 
+				"P(1313) = [.5,.5] -> [.1, .9]", 
+				(long)(Math.random() * (Long.MAX_VALUE - 1)), // random user
+				1313L, oldValues, newValues, 
+				null, null, 
+				false
+		);
+		
+		
+		// this list is used just in order to obtain the size of the questions
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		
+		// assert that the size of probabilities in the history is still consistent
+		// question 1313
+		List<QuestionEvent> history = engine.getQuestionHistory(1313L, null, null);
+		for (QuestionEvent questionEvent : history) {
+			// check the size of probability list
+			assertEquals(probLists.get(1313L).size(), questionEvent.getNewValues().size());
+			if (questionEvent.getOldValues() != null) {
+				assertEquals(probLists.get(1313L).size(), questionEvent.getOldValues().size());
+			}
+		}
+		// question 666
+		history = engine.getQuestionHistory(666L, null, null);
+		for (QuestionEvent questionEvent : history) {
+			// check the size of probability list
+			assertEquals(probLists.get(666L).size(), questionEvent.getNewValues().size());
+			if (questionEvent.getOldValues() != null) {
+				assertEquals(probLists.get(666L).size(), questionEvent.getOldValues().size());
+			}
+		}
+		// question 999
+		history = engine.getQuestionHistory(999L, null, null);
+		for (QuestionEvent questionEvent : history) {
+			// check the size of probability list
+			assertEquals(probLists.get(999L).size(), questionEvent.getNewValues().size());
+			if (questionEvent.getOldValues() != null) {
+				assertEquals(probLists.get(999L).size(), questionEvent.getOldValues().size());
+			}
+		}
+		
+		// do the same check for conditional probabilities for all possible combinations of assumptions
+		Long questionId = 1313L;
+		Long assumptionId = 666L;
+		for (int i = 0; i < probLists.get(assumptionId).size(); i++) {
+			history = engine.getQuestionHistory(
+					questionId, 
+					Collections.singletonList(assumptionId), 
+					Collections.singletonList((int)(Math.random()*probLists.get(assumptionId).size()))
+					);
+			for (QuestionEvent questionEvent : history) {
+				// check the size of probability list
+				assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
+				if (questionEvent.getOldValues() != null) {
+					assertEquals(probLists.get(questionId).size(), questionEvent.getOldValues().size());
+				}
+			}
+		}
+
+		questionId = 666L;
+		assumptionId = 999L;
+		for (int i = 0; i < probLists.get(assumptionId).size(); i++) {
+			history = engine.getQuestionHistory(
+					questionId, 
+					Collections.singletonList(assumptionId), 
+					Collections.singletonList((int)(Math.random()*probLists.get(assumptionId).size()))
+					);
+			for (QuestionEvent questionEvent : history) {
+				// check the size of probability list
+				assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
+				if (questionEvent.getOldValues() != null) {
+					assertEquals(probLists.get(questionId).size(), questionEvent.getOldValues().size());
+				}
+			}
+		}
+
+		questionId = 999L;
+		assumptionId = 666L;
+		for (int i = 0; i < probLists.get(assumptionId).size(); i++) {
+			history = engine.getQuestionHistory(
+					questionId, 
+					Collections.singletonList(assumptionId), 
+					Collections.singletonList((int)(Math.random()*probLists.get(assumptionId).size()))
+					);
+			for (QuestionEvent questionEvent : history) {
+				// check the size of probability list
+				assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
+				if (questionEvent.getOldValues() != null) {
+					assertEquals(probLists.get(questionId).size(), questionEvent.getOldValues().size());
+				}
+			}
+		}
+
+		questionId = 666L;
+		assumptionId = 1313L;
+		for (int i = 0; i < probLists.get(assumptionId).size(); i++) {
+			history = engine.getQuestionHistory(
+					questionId, 
+					Collections.singletonList(assumptionId), 
+					Collections.singletonList((int)(Math.random()*probLists.get(assumptionId).size()))
+					);
+			for (QuestionEvent questionEvent : history) {
+				// check the size of probability list
+				assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
+				if (questionEvent.getOldValues() != null) {
+					assertEquals(probLists.get(questionId).size(), questionEvent.getOldValues().size());
+				}
+			}
+		}
 	}
 	
 	public final void testConditionalHistorySingleTransaction() {

@@ -2144,11 +2144,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				if (hasChanged) {
 					// generate a virtual trade representing a change of marginal probability of another node caused by this trade.
 					DummyTradeAction virtualTrade = null;
-					if (parentAction instanceof DummyTradeAction) {
-						virtualTrade = (DummyTradeAction)parentAction;
-					} else {
+//					if (parentAction instanceof DummyTradeAction) {
+//						virtualTrade = (DummyTradeAction)parentAction;
+//					} else {
 						virtualTrade = new DummyTradeAction(parentAction, question, oldMarginal, newMarginal);
-					}
+//					}
 					// indicate that this trade is related to question (although indirectly).
 					addNetworkActionIntoQuestionMap(virtualTrade, question);
 					

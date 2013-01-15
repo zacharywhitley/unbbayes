@@ -127,6 +127,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If true, assets and probabilities before and after {@link #createNode(Long, Network, List, List, List, Collection)} will be compared */
 	private boolean isToCompareValuesBeforeAndAfterCreateNode = true;//false;
 
+
 	/** If true, {@link MarkovEngineImpl#doBalanceTrade(Long, Date, String, long, long, List, List)} of 
 	 * {@link #runRandomTestSingleEngine(Network, List)} will balance the question entirely (consider all possible assumptions) */
 	private static boolean isToForceBalanceQuestionEntirely = false;
@@ -210,6 +211,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If the number of live questions reaches this number, the test suite will start to resolve questions with probability {@link #probResolve} */
 	private static int minNumQuestionToTriggerResolveQuestion = 8; //0;
 	
+	/** 
+	 * If true, size of probabilities returned by {@link MarkovEngineInterface#getQuestionHistory(Long, List, List)} will be checked with 
+	 * respective sizes in {@link MarkovEngineInterface#getProbLists(List, List, List)}
+	 */
+	private static boolean isToCheckHistoryProbListSize = true;
 	
 	/** Class used to trace data which will be printed out */
 	protected class Tracer {
@@ -1894,6 +1900,48 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				iteration--;
 			}
 		}	// end of for : iteration
+		
+		
+		if (isToCheckHistoryProbListSize) {
+			// assert that the size of probabilities in the history is still consistent
+			Map<Long, List<Float>> probLists = engines.get(0).getProbLists(null, null, null);	// this list will only be used to check # of states of question
+			for (MarkovEngineImpl engine : engines) {
+				if (uncommittedTransactionKeyMap.containsKey(engine)) {
+					continue;
+				}
+				for (Long questionId : probLists.keySet()) {
+					List<QuestionEvent> marginalHistory = engine.getQuestionHistory(questionId, null, null);
+					for (QuestionEvent questionEvent : marginalHistory) {
+						// check the size of probability list
+						assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
+						if (questionEvent.getOldValues() != null) {
+							assertEquals(probLists.get(questionId).size(), questionEvent.getOldValues().size());
+						}
+					}
+					
+					// obtain what assumptions are possible for this question
+					List<Long> possibleQuestionAssumptions = engine.getPossibleQuestionAssumptions(questionId, null);
+					for (Long assumptionId : possibleQuestionAssumptions) {
+						for (int i = 0; i < probLists.get(assumptionId).size(); i++) {
+							// choose 1 possible assumption and check history of conditional probability
+							List<QuestionEvent> conditionalHistory = engine.getQuestionHistory(
+									questionId, 
+									Collections.singletonList(assumptionId), 
+									Collections.singletonList(i)	// number of states can be extracted from probList
+									);
+							for (QuestionEvent questionEvent : conditionalHistory) {
+								// check the size of probability list
+								assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
+								if (questionEvent.getOldValues() != null) {
+									assertEquals(probLists.get(questionId).size(), questionEvent.getOldValues().size());
+								}
+							}
+						}
+					}
+					// TODO check conditional history more intensively
+				}
+			}
+		}
 	}
 
 
@@ -6851,6 +6899,44 @@ public class MarkovEngineBruteForceTest extends TestCase {
 										scoreSummaryObject.getScoreEV(), sumOfScoreComponents, ASSET_ERROR_MARGIN);
 							}
 						}
+					}
+				}
+				
+				
+
+				if (isToCheckHistoryProbListSize) {
+					// assert that the size of probabilities in the history is still consistent
+					Map<Long, List<Float>> probLists = engines.get(0).getProbLists(null, null, null);	// this list will only be used to check # of states of question
+					for (Long questionId : probLists.keySet()) {
+						List<QuestionEvent> marginalHistory = engine.getQuestionHistory(questionId, null, null);
+						for (QuestionEvent questionEvent : marginalHistory) {
+							// check the size of probability list
+							assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
+							if (questionEvent.getOldValues() != null) {
+								assertEquals(probLists.get(questionId).size(), questionEvent.getOldValues().size());
+							}
+						}
+						
+						// obtain what assumptions are possible for this question
+						List<Long> possibleQuestionAssumptions = engine.getPossibleQuestionAssumptions(questionId, null);
+						for (Long assumptionId : possibleQuestionAssumptions) {
+							for (int j = 0; j < probLists.get(assumptionId).size(); j++) {
+								// choose 1 possible assumption and check history of conditional probability
+								List<QuestionEvent> conditionalHistory = engine.getQuestionHistory(
+										questionId, 
+										Collections.singletonList(assumptionId), 
+										Collections.singletonList(j)	// number of states can be extracted from probList
+										);
+								for (QuestionEvent questionEvent : conditionalHistory) {
+									// check the size of probability list
+									assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
+									if (questionEvent.getOldValues() != null) {
+										assertEquals(probLists.get(questionId).size(), questionEvent.getOldValues().size());
+									}
+								}
+							}
+						}
+						// TODO check conditional history more intensively
 					}
 				}
 			} // end of value verification
