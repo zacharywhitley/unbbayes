@@ -6070,7 +6070,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					if (isToForceBalanceQuestionEntirely()) {
 						balancingTrades = previewBalancingTrades(algorithm, getQuestionId(), null, null, clique, isToAllowNegativeInBalanceTrade());
 					} else {
-						balancingTrades = previewBalancingTrades(algorithm, getQuestionId(), getAssumptionIds(), getAssumedStates(), clique, isToAllowNegativeInBalanceTrade());
+						balancingTrades = previewBalancingTrades(algorithm,
+								// preview shall use original (backup) configurations for questions/assumptions, instead of this.getAssumptionIds() and this.getAssumedStates(),
+								// because setTradeSpecification(tradeSpecification) is called in next block, so this.getAssumptionIds() and this.getAssumedStates() is referencing the clique in previuous loop
+								backup.getQuestionId(), backup.getAssumptionIds(), backup.getAssumedStates(), 
+								clique, isToAllowNegativeInBalanceTrade());
 					}
 					try {
 						for (TradeSpecification tradeSpecification : balancingTrades ) {
@@ -6103,7 +6107,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						throw new RuntimeException(e);
 					}
 				}
-				// restore original trade specification
+				
+				// restore trade specification, because it is probably containing the ones returned by the preview
 				this.setTradeSpecification(backup);
 				
 				if (this.getWhenExecutedFirstTime() == null) {

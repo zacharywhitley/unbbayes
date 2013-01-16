@@ -19061,6 +19061,114 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 	}
+	
+	/**
+	 * This method checks whether {@link MarkovEngineImpl#doBalanceTrade(Long, Date, String, long, long, List, List)}
+	 * will balance both cliques related to a node in the separator.
+	 * This test is similar to {@link #testBalanceSeparator()}, but this test focuses on
+	 * whether both cliques are balanced locally.
+	 */
+	public final void testLocallyAndGloballyBalanceSeparator() {
+		// make sure new users starts with 100 assets, and b=100 and base of log is 2
+		engine.setDefaultInitialAssetTableValue(1000);
+		engine.setCurrentCurrencyConstant(100);
+		engine.setCurrentLogBase(2);
+		
+		// start the transaction
+		Long transactionKey = engine.startNetworkActions();;
+		
+		// generate network with 2 cliques, with separator of size 2. Network = E->[C,D]->F; junction tree = [CDE]-[CD]-[CDF]
+		engine.addQuestion(transactionKey, new Date(), 0x0CL, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0DL, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0EL, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0FL, 2, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0CL, Collections.singletonList(0x0EL), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0DL, Collections.singletonList(0x0EL), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0FL, Collections.singletonList(0x0CL), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		
+		// generate some trades, so that user has position in both cliques
+		// trade which changes the position of clique CDE
+		List<Long> assumptions = new ArrayList<Long>(2);
+		assumptions.add(0x0CL);
+		assumptions.add(0x0DL);
+		List<Float> newValues = new ArrayList<Float>(4);
+		newValues.add(.2f);
+		newValues.add(.8f);
+		newValues.add(.7f);
+		newValues.add(.3f);
+		newValues.add(.1f);
+		newValues.add(.9f);
+		newValues.add(.6f);
+		newValues.add(.4f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"User 666 sets P(E|C,D) = [.2,.8,.7,.3,.1,.9,.6,.4]",  // this should be a string UUID, but I use as comment in test suites
+				666L, 
+				0x0EL, 
+				newValues, 
+				assumptions, null, // assumed question & unspecified state
+				false);
+		// trade which changes the position of clique CDF
+		newValues = new ArrayList<Float>(4);
+		newValues.add(.9f);
+		newValues.add(.1f);
+		newValues.add(.4f);
+		newValues.add(.6f);
+		newValues.add(.7f);
+		newValues.add(.3f);
+		newValues.add(.8f);
+		newValues.add(.2f);
+		engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"User 666 sets P(F|C,D) = [.9,.1,.4,.6,.7,.3,.8,.2]",  // this should be a string UUID, but I use as comment in test suites
+				666L, 
+				0x0FL, 
+				newValues, 
+				assumptions, null, // assumed question & unspecified state
+				false);
+		
+		// finish the transaction
+		engine.commitNetworkActions(transactionKey);
+		
+		
+		// balance D, which belongs to separators.
+		engine.doBalanceTrade(null, new Date(), "Balance D", 666L, 0x0DL, null, null);
+		
+		// make sure getAssetsIf is returning same values
+		List<Float> assetsIfStates = engine.getAssetsIfStates(666L, 0x0DL, null, null);
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(assetsIfStates.get(0), assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		
+		// make sure getAssetsIf of cliques having E is balanced
+		assumptions = new ArrayList<Long>(2);
+		assumptions.add(0x0CL);
+		assumptions.add(0x0EL);
+		assetsIfStates = engine.getAssetsIfStates(666L, 0x0DL, assumptions, null);
+		assertEquals(8, assetsIfStates.size());
+		assertEquals(assetsIfStates.get(0), assetsIfStates.get(1), ASSET_ERROR_MARGIN);	
+		assertEquals(assetsIfStates.get(2), assetsIfStates.get(3), ASSET_ERROR_MARGIN);	
+		assertEquals(assetsIfStates.get(4), assetsIfStates.get(5), ASSET_ERROR_MARGIN);
+		assertEquals(assetsIfStates.get(6), assetsIfStates.get(7), ASSET_ERROR_MARGIN);
+		// make sure getAssetsIf of cliques having F is balanced
+		assumptions = new ArrayList<Long>(2);
+		assumptions.add(0x0CL);
+		assumptions.add(0x0FL);
+		assetsIfStates = engine.getAssetsIfStates(666L, 0x0DL, assumptions, null);
+		assertEquals(8, assetsIfStates.size());
+		assertEquals(assetsIfStates.get(0), assetsIfStates.get(1), ASSET_ERROR_MARGIN);	
+		assertEquals(assetsIfStates.get(2), assetsIfStates.get(3), ASSET_ERROR_MARGIN);	
+		assertEquals(assetsIfStates.get(4), assetsIfStates.get(5), ASSET_ERROR_MARGIN);
+		assertEquals(assetsIfStates.get(6), assetsIfStates.get(7), ASSET_ERROR_MARGIN);
+		
+		// make sure the cash is also the same for both outputs
+		assetsIfStates = engine.getCashPerStates(666L, 0x0DL,  Collections.singletonList(0x0CL), Collections.singletonList(0));
+		assertEquals(2, assetsIfStates.size());
+		assertEquals(assetsIfStates.get(0), assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		
+	}
 
 	
 	/**
@@ -21480,6 +21588,7 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 	}
+	
 	
 	public final void testConditionalHistorySingleTransaction() {
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
