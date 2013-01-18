@@ -1,7 +1,9 @@
 package unbbayes.prm.util.helper;
 
 import org.apache.ddlutils.model.Column;
+import org.apache.ddlutils.model.ForeignKey;
 import org.apache.ddlutils.model.Index;
+import org.apache.ddlutils.model.Reference;
 import org.apache.ddlutils.model.Table;
 import org.apache.log4j.Logger;
 
@@ -43,5 +45,27 @@ public class DBSchemaHelper {
 		inverted.setPath(invertedPath);
 
 		return inverted;
+	}
+
+	/**
+	 * Evaluate if the attribute is a foreign key.
+	 * 
+	 * @param a
+	 *            attribute.
+	 * @return if the attribute is a foreign key.
+	 */
+	public static boolean isAttributeFK(Attribute a) {
+		ForeignKey[] foreignKeys = a.getTable().getForeignKeys();
+
+		for (ForeignKey foreignKey : foreignKeys) {
+			Reference[] refs = foreignKey.getReferences();
+			for (Reference reference : refs) {
+				if (reference.getLocalColumn().getName().equals(
+						a.getAttribute().getName())) {
+					return true;
+				}
+			}	
+		}
+		return false;
 	}
 }
