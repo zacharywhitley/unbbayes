@@ -50,7 +50,7 @@ public class PrmController implements IPrmController {
 
 		// The parent relationship id is the number of the relationship.
 		parent.setIdRelationsShip(String.valueOf(parents.size()));
-		
+
 		parents.add(parent);
 
 	}
@@ -137,7 +137,7 @@ public class PrmController implements IPrmController {
 		}
 		return parentsOf.toArray(new ParentRel[0]);
 	}
-	
+
 	public ParentRel[] childrenOf(Attribute attribute) {
 		List<ParentRel> childrenOf = new ArrayList<ParentRel>();
 		for (ParentRel parent : parents) {
@@ -147,7 +147,6 @@ public class PrmController implements IPrmController {
 		}
 		return childrenOf.toArray(new ParentRel[0]);
 	}
-	
 
 	/**
 	 * @see IPrmController
@@ -162,30 +161,4 @@ public class PrmController implements IPrmController {
 	public void setParents(List<ParentRel> parents) {
 		this.parents = parents;
 	}
-
-	
-
-	// public HashMap<String, FloatCollection[]> getCpds() {
-	// Set<String> attributes = cpds.keySet();
-	// HashMap<String, FloatCollection[]> resp = new HashMap<String,
-	// FloatCollection[]>();
-	//
-	// for (String att : attributes) {
-	// PotentialTable[] potentialTables = cpds.get(att);
-	// FloatCollection[] fs = new FloatCollection[potentialTables.length];
-	//
-	// for (int i = 0; i < fs.length; i++) {
-	// fs[i] = potentialTables[i].getDataPT();
-	// }
-	// resp.put(att, fs);
-	// }
-	//
-	//
-	// return resp;
-	// }
-	//
-	// public void setCpds(HashMap<String, PotentialTable[]> cpds) {
-	// this.cpds = cpds;
-	// }
-
 }

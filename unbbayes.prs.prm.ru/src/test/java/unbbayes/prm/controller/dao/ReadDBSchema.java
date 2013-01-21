@@ -1,6 +1,6 @@
 package unbbayes.prm.controller.dao;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Database;
@@ -10,7 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import unbbayes.prm.controller.dao.imp.DBControllerImp;
-import unbbayes.prm.view.graphicator.RelationalGraphicator;
 
 /**
  * 
@@ -35,6 +34,7 @@ public class ReadDBSchema {
 
 	@After
 	public void tearDown() throws Exception {
+		relSchemaLoader.end();
 	}
 
 	@Test

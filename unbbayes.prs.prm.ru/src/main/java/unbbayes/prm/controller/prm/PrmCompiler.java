@@ -501,7 +501,7 @@ public class PrmCompiler {
 		// Every CPT parent. the first one is discarded because it is the same
 		// attribute.
 		for (int level = 0; level < numCptParents - 1; level++) {
-			int relativeLevel = level + 1 ;
+			int relativeLevel = level + 1;
 			// CPT parent node
 			INode parentCptNode = rightCptWithValues
 					.getVariableAt(relativeLevel);
@@ -522,7 +522,7 @@ public class PrmCompiler {
 						+ parentNodeInstances.size() + " for node "
 						+ queryNode.getName());
 
-				// FIXME no es i en vez de 0?
+				// Parent instance.
 				INode parentNodeInstance = parentNodeInstances.get(i);
 
 				String relId = parentNodeInstance.getDescription();
@@ -696,14 +696,32 @@ public class PrmCompiler {
 			throws Exception {
 		int variablesSize = cpd.tableSize();
 		PotentialTable probabilityFunction = queryNode.getProbabilityFunction();
+		
+		
+		int nodeTableSize = probabilityFunction.tableSize();
+
+		if (nodeTableSize != variablesSize) {
+			throw new Exception("Error in CPT assignation in node "
+					+ queryNode.getName() + ". Different table sizes "
+					+ "CPT size="+variablesSize + " Node size=" + nodeTableSize);
+		}
 
 		// Variable
 
 		try {
+			String assignedTable = "";
+
 			for (int i = 0; i < variablesSize; i++) {
 				probabilityFunction.setValue(i, cpd.getValue(i));
-			}
 
+				assignedTable += cpd.getValue(i) + " ";
+
+				if ((i + 1) % queryNode.getStatesSize() == 0) {
+					assignedTable += "|";
+				}
+			}
+			log.debug("Assigned table for node " + queryNode.getName() + ":\n"
+					+ assignedTable);
 		} catch (IndexOutOfBoundsException e) {
 			throw new Exception("Error assigning the CPT for "
 					+ queryNode.getName() + ". VariableSize=" + variablesSize

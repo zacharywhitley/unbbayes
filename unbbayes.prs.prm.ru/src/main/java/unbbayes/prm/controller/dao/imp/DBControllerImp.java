@@ -143,7 +143,8 @@ public class DBControllerImp implements IDBController {
 	}
 
 	public void end() {
-		// TODO close connection.
+		// Close the connection.
+		platform.shutdownDatabase();
 	}
 
 	/**
@@ -175,21 +176,23 @@ public class DBControllerImp implements IDBController {
 			// If i is odd then is a local FK.
 			Attribute attributeLocalFk = path[i + 1]; // Be careful with this +1
 
-			// Table names
-			String remoteIdName = attributeRemoteId.getTable().getName();
-			String localFkName = attributeLocalFk.getTable().getName();
-
 			// Validate Fk - Fk
 			boolean remoteIdIsFK = DBSchemaHelper
 					.isAttributeFK(attributeRemoteId);
 			boolean localFkIsFK = DBSchemaHelper
 					.isAttributeFK(attributeLocalFk);
 
+			// TODO: EL PROBLEMA ESTÁ AQUÍ EN FK-FK
 			// FK-FK then it moves one place the slot chain.
 			if (remoteIdIsFK && localFkIsFK) {
 				i--;
 				continue;
+//				attributeLocalFk = path[i + 2];
 			}
+
+			// Table names
+			String remoteIdName = attributeRemoteId.getTable().getName();
+			String localFkName = attributeLocalFk.getTable().getName();
 
 			// If the table names are different, then add the cross.
 			if (!remoteIdName.equals(localFkName)) {
