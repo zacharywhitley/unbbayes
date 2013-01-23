@@ -268,6 +268,7 @@ public class DBControllerImp implements IDBController {
 				+ queryIndex2 + "'"
 				: queryIndex2;
 
+		// TODO caso especial FK-FK
 		// Path example: PERSON.BLOODTYPE -> PERSON.MOTHER -> PERSON.ID ->
 		// PERSON.BLOODTYPE. Child to -> parent.
 		// Then we have path[0]=PERSON.BLOODTYPE, path[1]=PERSON.MOTHER, etc.

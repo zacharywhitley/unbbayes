@@ -1,5 +1,9 @@
 package unbbayes.prm.controller.prm;
 
+import static org.junit.Assert.assertTrue;
+
+import java.util.ArrayList;
+
 import org.apache.ddlutils.model.Column;
 import org.apache.ddlutils.model.Database;
 import org.apache.ddlutils.model.Table;
@@ -12,8 +16,10 @@ import unbbayes.prm.controller.dao.IDBController;
 import unbbayes.prm.controller.dao.imp.DBControllerImp;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 
 public class PrmCompilerTest {
 
@@ -53,8 +59,14 @@ public class PrmCompilerTest {
 		dbController.end();
 	}
 
+	/**
+	 * This is to test the FK to FK relationship, specifically for MEETING
+	 * table.
+	 * 
+	 * @throws Exception
+	 */
 	@Test
-	public void test() throws Exception {
+	public void testSimpleFKtoFKRelationship() throws Exception {
 		// PATH
 		// SHIP.isOfInterest SHIP.id MEETING.ship1 MEETING.ship2 SHIP.id
 		// SHIP.isOfInterest
@@ -70,13 +82,41 @@ public class PrmCompilerTest {
 		System.out.println("Creating relationships");
 		// Registry relationships.
 		// MEETING Relationship.
+		String idRel = "0";
 		ParentRel newRel = new ParentRel(att, att);
 		newRel.setPath(path);
+		newRel.setIdRelationsShip(idRel);
 		prmController.addParent(newRel);
 
-		// TODO create the cpts
-		PotentialTable parentTable = null;
-		PotentialTable childTable = null;
+		// Nodes for cpts
+		ProbabilisticNode parentNode = new ProbabilisticNode();
+		parentNode.setDescription(idRel);
+		ProbabilisticNode childNode = new ProbabilisticNode();
+		childNode.setDescription(idRel);
+
+		// States
+		String[] states = dbController.getPossibleValues(att);
+		for (String state : states) {
+			parentNode.appendState(state);
+			childNode.appendState(state);
+		}
+		// Parent
+		childNode.addParent(parentNode);
+
+		// Create the CPTs
+		PotentialTable parentTable = parentNode.getProbabilityFunction();
+		parentTable.addVariable(parentNode);
+		PotentialTable childTable = childNode.getProbabilityFunction();
+		childTable.addVariable(childNode);
+		childTable.addVariable(parentNode);
+
+		// Init cpts
+		parentTable.setValue(0, 0.5f);
+		parentTable.setValue(1, 0.5f);
+		childTable.setValue(0, 0.5f);
+		childTable.setValue(1, 0.5f);
+		childTable.setValue(2, 0.5f);
+		childTable.setValue(3, 0.5f);
 
 		PotentialTable cpts[] = { parentTable, childTable };
 		// CPTs
@@ -88,6 +128,11 @@ public class PrmCompilerTest {
 		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
 				.compile(att.getTable(), idCol.getAttribute(), "1",
 						att.getAttribute(), "N");
+
+		ArrayList<Node> nodes = resultNetwork.getNodes();
+		assertTrue(nodes.size() == 2);
+		assertTrue(nodes.contains("SHIP 1 isOfInterest"));
+		assertTrue(nodes.contains("SHIP 2 isOfInterest"));
 
 	}
 
