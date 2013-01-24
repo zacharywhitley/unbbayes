@@ -785,7 +785,12 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		if (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
 			JunctionTreeAlgorithm junctionTreeAlgorithm = (JunctionTreeAlgorithm) getProbabilityPropagationDelegator();
 			// create asset net without dummy (virtual) nodes
-			return this.getAssetPropagationDelegator().createAssetNetFromProbabilisticNet(new ProbabilisticNetworkFilter(relatedProbabilisticNetwork, junctionTreeAlgorithm.getVirtualNodesToCliquesAndSeparatorsMap().keySet()));
+			if (junctionTreeAlgorithm.getVirtualNodesToCliquesAndSeparatorsMap().isEmpty()) {
+				// do not instantiate new object (ProbabilisticNetworkFilter), if we do not need to filter nodes
+				return this.getAssetPropagationDelegator().createAssetNetFromProbabilisticNet(relatedProbabilisticNetwork);
+			} else {
+				return this.getAssetPropagationDelegator().createAssetNetFromProbabilisticNet(new ProbabilisticNetworkFilter(relatedProbabilisticNetwork, junctionTreeAlgorithm.getVirtualNodesToCliquesAndSeparatorsMap().keySet()));
+			}
 		}
 		return this.getAssetPropagationDelegator().createAssetNetFromProbabilisticNet(relatedProbabilisticNetwork);
 	}

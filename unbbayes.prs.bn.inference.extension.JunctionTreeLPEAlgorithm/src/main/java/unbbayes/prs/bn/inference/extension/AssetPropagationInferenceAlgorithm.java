@@ -98,7 +98,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	private ProbabilisticNetwork relatedProbabilisticNetwork;
 	
-	private float defaultInitialAssetTableValue = 1000.0f;
+	/** Initial value used in {@link #getDefaultInitialAssetTableValue()}. 
+	 * @see #setDefaultInitialAssetTableValue(float) */
+	public static final float DEFAULT_INITIAL_ASSET_TABLE_VALUE = 1000f;
+	
+	private float defaultInitialAssetTableValue = DEFAULT_INITIAL_ASSET_TABLE_VALUE;
 	
 	private INetworkMediator mediator;
 	
@@ -1749,7 +1753,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		// disable listeners of propagate() temporary, because this is not the official "propagation" service offered by this class
 		// if we do not do so, these listeners will be invokes as if we are executing the official propagate().
 		List<IInferenceAlgorithmListener> backup = this.getInferenceAlgorithmListeners();
-		this.setInferenceAlgorithmListeners(new ArrayList<IInferenceAlgorithmListener>(0));
+		this.setInferenceAlgorithmListeners(Collections.EMPTY_LIST);
 		super.propagate();
 		// restore listeners
 		this.setInferenceAlgorithmListeners(backup);
