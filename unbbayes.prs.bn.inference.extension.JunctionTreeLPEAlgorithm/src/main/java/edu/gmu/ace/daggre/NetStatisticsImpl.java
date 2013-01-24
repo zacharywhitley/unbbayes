@@ -12,6 +12,8 @@ import java.util.Map;
  */
 public class NetStatisticsImpl implements NetStatistics {
 
+	private static final long serialVersionUID = -106466719737571173L;
+
 	private Map<Integer, Integer> numberOfStatesToNumberOfNodesMap = new HashMap<Integer, Integer>(0);
 	
 	private int sumOfCliqueTableSizes = 0;
@@ -24,6 +26,7 @@ public class NetStatisticsImpl implements NetStatistics {
 	private int maxCliqueTableSize = 0;
 	private int numberOfNonEmptyCliques = 0;
 	private int maxNumParents = 0;
+	private int numArcs = 0;
 	
 	
 	
@@ -275,7 +278,9 @@ public class NetStatisticsImpl implements NetStatistics {
 		for (Integer numStates : getNumberOfStatesToNumberOfNodesMap().keySet()) {
 			ret += "-nodes with " + numStates + " possible states: " + getNumberOfStatesToNumberOfNodesMap().get(numStates) + "\n";
 		}
-		ret += "\n";
+		
+		ret += "\n Total quantity of arcs: " + getNumArcs() + "\n\n";
+		
 
 		// append info related to clique table sizes
 		ret += "Sum of clique table sizes: " + getSumOfCliqueTableSizes() + "\n";
@@ -320,6 +325,22 @@ public class NetStatisticsImpl implements NetStatistics {
 	 */
 	public int getMaxNumParents() {
 		return maxNumParents;
+	}
+
+
+	/**
+	 * @return the numArcs
+	 */
+	public int getNumArcs() {
+		return this.numArcs;
+	}
+
+
+	/**
+	 * @param numArcs the numArcs to set
+	 */
+	public void setNumArcs(int numArcs) {
+		this.numArcs = numArcs;
 	}
 
 

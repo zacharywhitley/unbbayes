@@ -209,4 +209,16 @@ public interface NetStatistics extends Serializable {
 	 */
 	public int getMaxNumParents();
 	
+	/**
+	 * @return the total quantity of arcs
+	 */
+	public int getNumArcs();
+	
+	/**
+	 * @param numArcs the total quantity of arcs
+	 */
+	public void setNumArcs(int numArcs);
+	
+	
+	
 }
