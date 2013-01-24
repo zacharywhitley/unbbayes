@@ -74,7 +74,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private List<MarkovEngineImpl> engines;
 
 	/** This value indicates how many test iterations (5-point tests) will be performed by default*/
-	private static int howManyTradesToTest = 100;//3000;
+	private static int howManyTradesToTest = 200;//3000;
 
 
 	private enum FivePointTestType {BELOW_LIMIT, ON_LOWER_LIMIT, BETWEEN_LIMITS, ON_UPPER_LIMIT, ABOVE_LIMIT}; 
@@ -95,7 +95,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static final String NODE_NAME_PREFIX = "N";
 
 	/** This program will enter in a loop at this iteration number. Use with care. Set to negative if you don't want this program to stop at the iteration */
-	private static final int iterationToDebug = -88;
+	private static final int iterationToDebug = -142;
 
 	/** this object will group the data to be printed out in {@link #testFilesWithResolution()} */
 	private Tracer tracer = null;
