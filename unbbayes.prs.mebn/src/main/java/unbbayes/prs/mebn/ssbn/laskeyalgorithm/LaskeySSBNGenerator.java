@@ -231,7 +231,7 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 //			node.setCompiler(null); // this will set resident node's compiler to null!!
 		}
 		
-		System.gc();
+//		System.gc();
 	}
 
 	private void printSimpleSSBNNodeList(SSBN ssbn) {

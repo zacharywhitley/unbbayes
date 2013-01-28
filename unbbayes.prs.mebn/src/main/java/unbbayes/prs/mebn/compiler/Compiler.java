@@ -764,7 +764,7 @@ public class Compiler implements ICompiler {
 		this.text = null;
 		this.value = null;
 		this.clearCache();
-		System.gc();
+//		System.gc();
 	}
 	
 	/* (non-Javadoc)

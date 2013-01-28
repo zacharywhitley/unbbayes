@@ -125,7 +125,7 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 		if (clearSimpleSSBNNodeListAtLPD) {
 			ssbn.getSimpleSsbnNodeList().clear();
 			// clearing memory before we continue
-			System.gc();
+//			System.gc();
 		}
 		
 	    CPTForSSBNNodeGenerator build = this.getCptForSSBNNodeGeneratorBuilder().buildCPTForSSBNNodeGenerator(logManager);
@@ -205,7 +205,7 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 		if (clearSimpleSSBNNodeListAtLPD) {
 			ssbn.getSimpleSsbnNodeList().clear();
 			// clearing memory before we continue
-			System.gc();
+//			System.gc();
 		}
 		
 	    CPTForSSBNNodeGenerator build = new CPTForSSBNNodeGenerator(ssbn.getLogManager());
