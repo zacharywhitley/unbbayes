@@ -124,11 +124,13 @@
     </extension>
     
     <!-- DL reasoner for PR-OWL1 in OWL2 -->
+    <!-- Ignore this reasoner because it is not a standard
     <extension plugin-id="unbbayes.prs.mebn" point-id="KnowledgeBase" id="Protege41Reasoners4PROWL1">
         <parameter id="class" value="unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBaseBuilder"/>
         <parameter id="name" value="Protégé reasoners (for PR-OWL1 in OWL2)"/>
         <parameter id="optionPanel" value="unbbayes.gui.mebn.extension.kb.protege.OWL2KnowledgeBaseOptionPanelBuilder"/>
     </extension>
+     -->
     
     <!-- DL reasoner for PR-OWL2 in OWL2 -->
     <extension plugin-id="unbbayes.prs.mebn" point-id="KnowledgeBase" id="Protege41Reasoners4PROWL2">

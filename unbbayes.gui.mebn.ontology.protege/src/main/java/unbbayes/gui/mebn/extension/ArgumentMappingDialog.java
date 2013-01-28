@@ -186,7 +186,7 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 		this.pack();
 		this.repaint();
 		
-		System.gc();
+//		System.gc();
 		
 		this.setVisible(true);
 	}

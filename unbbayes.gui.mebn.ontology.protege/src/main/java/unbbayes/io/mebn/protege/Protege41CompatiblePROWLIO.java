@@ -57,7 +57,7 @@ public class Protege41CompatiblePROWLIO extends OWLAPICompatiblePROWLIO {
 	 */
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException,
 			IOMebnException {
-		System.gc();
+//		System.gc();
 		
 		OWLEditorKit kit = null;	// kit to extract ontology and fill storage implementor (of mebn)
 		
@@ -228,7 +228,7 @@ public class Protege41CompatiblePROWLIO extends OWLAPICompatiblePROWLIO {
 			}
 		}
 		
-		System.gc();
+//		System.gc();
 		
 		return ret;
 	}

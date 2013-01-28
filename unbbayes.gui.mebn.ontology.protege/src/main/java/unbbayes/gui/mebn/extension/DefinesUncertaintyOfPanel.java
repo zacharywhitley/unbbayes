@@ -150,7 +150,7 @@ public class DefinesUncertaintyOfPanel extends JPanel implements IOWLIconsHolder
 		nodeAndPropertyPanel.add(this.getCurrentlySelectedResidentNodeLabel());
 		
 		
-		// set up the label showing the OWL property referenced by the currently selectedÅ@node
+		// set up the label showing the OWL property referenced by the currently selectedÔøΩ@node
 		OWLProperty owlProperty = this.getOWLPropertyOfSelectedNode();
 		if (owlProperty != null) {
 			// there was a related owl property
@@ -217,7 +217,7 @@ public class DefinesUncertaintyOfPanel extends JPanel implements IOWLIconsHolder
 		// prepare panel to show argument mappings
 		this.updateArgumentMappingPanel();
 		
-		System.gc();
+//		System.gc();
 	}
 	
 	/**
@@ -314,11 +314,11 @@ public class DefinesUncertaintyOfPanel extends JPanel implements IOWLIconsHolder
 					SwingConstants.CENTER
 			));
 		}
-		try {
-			System.gc();
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
+//		try {
+//			System.gc();
+//		} catch (Throwable t) {
+//			t.printStackTrace();
+//		}
 		
 		this.getContentPanel().updateUI();
 		this.getContentPanel().repaint();
@@ -481,7 +481,7 @@ public class DefinesUncertaintyOfPanel extends JPanel implements IOWLIconsHolder
 			}
 		});
 		
-		System.gc();
+//		System.gc();
 	}
 	
 	/**

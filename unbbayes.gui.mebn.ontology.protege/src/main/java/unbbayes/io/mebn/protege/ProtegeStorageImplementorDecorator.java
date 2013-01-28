@@ -6,10 +6,12 @@ package unbbayes.io.mebn.protege;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.inference.OWLReasonerManager;
+import org.protege.editor.owl.model.inference.ReasonerStatus;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import unbbayes.io.mebn.owlapi.OWLAPIStorageImplementorDecorator;
+import unbbayes.util.Debug;
 import unbbayes.util.IBridgeImplementor;
 
 /**
@@ -110,7 +112,33 @@ public class ProtegeStorageImplementorDecorator extends OWLAPIStorageImplementor
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		super.setOWLReasoner(owlReasoner);
+		// I need the owlReasonerManager to return the correct reasoner, but it will return the old reasoner if the new one is not initialized.
+		// So, do polling and wait until the new reasoner is initialized
+		// TODO find out how to stop using polling.
+		for (int i = 0; i < 120; i++) {
+			if (ReasonerStatus.INITIALIZED.equals(owlReasonerManager.getReasonerStatus())) {
+				// stop polling if reasoner has initialized
+				break;
+			}
+				
+			try {
+				Debug.println(this.getClass(), "Waiting for " + owlReasoner.getReasonerName() + " to initialize");
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			
+			System.gc();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		if (!ReasonerStatus.INITIALIZED.equals(owlReasonerManager.getReasonerStatus())) {
+			throw new RuntimeException("Failed to initialize reasoner " + owlReasoner.getReasonerName() + ", this reasoner may be incompatible with current version.");
+		}
+		super.setOWLReasoner(owlReasonerManager.getCurrentReasoner());
 	}
 	
 	

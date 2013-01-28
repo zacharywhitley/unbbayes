@@ -201,7 +201,7 @@ public class OWLPropertyImportPanelBuilder extends JPanel implements IMEBNEditio
 		this.removeAll();
 		this.initComponents();
 		this.initListeners();
-		System.gc();
+//		System.gc();
 	}
 
 	/**

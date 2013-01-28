@@ -61,7 +61,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	 */
 	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException,
 			IOMebnException {
-		System.gc();
+//		System.gc();
 		
 		OWLEditorKit kit = null;	// kit to extract ontology and fill storage implementor (of mebn)
 		
@@ -132,7 +132,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 			}
 		}
 		
-		System.gc();
+//		System.gc();
 		
 		return ret;
 	}
@@ -220,8 +220,9 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 			// it will hold the reasoner's ID except the null object (which is an instance of NoOPReasoner, and it's assigned name is "None")
 			String reasonerIDExceptNone = null;
 			for (ProtegeOWLReasonerInfo info : protegeModelManager.getOWLReasonerManager().getInstalledReasonerFactories()) {
-				if ( ! NoOpReasonerInfo.NULL_REASONER_ID.equals( info.getReasonerId() ) ){
-					// We are now sure that this is not a NULL reasoner.
+//				if ( ! NoOpReasonerInfo.NULL_REASONER_ID.equals( info.getReasonerId() ) ){ // We are now sure that this is not a NULL reasoner.
+				if ( info.getReasonerId().contains("HermiT") ){	// only initialize hermit, because waiting for all reasoners to initialize is too much time
+					// user must manually initialize other reasoners by pressing the button Load KB after changing the reasoner.
 					try {
 						protegeModelManager.getOWLReasonerManager().setCurrentReasonerFactoryId(info.getReasonerId());
 						protegeModelManager.getOWLReasonerManager().classifyAsynchronously(protegeModelManager.getOWLReasonerManager().getReasonerPreferences().getPrecomputedInferences());
@@ -333,7 +334,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	 * @see #getMaximumBuzyWaitingCount()
 	 */
 	public long getSleepTimeWaitingReasonerInitialization() {
-		System.gc();	// ...just because methods calling this method are "expensive"
+//		System.gc();	// ...just because methods calling this method are "expensive"
 		return sleepTimeWaitingReasonerInitialization;
 	}
 

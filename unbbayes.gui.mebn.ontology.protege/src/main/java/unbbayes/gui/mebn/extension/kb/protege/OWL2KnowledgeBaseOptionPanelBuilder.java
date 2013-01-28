@@ -235,7 +235,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 			owl2KnowledgeBase.undoClearKnowledgeBase();
 		}
 		
-		System.gc();
+//		System.gc();
 		
 		// initial assertion
 		if (this.getKB() == null
@@ -276,8 +276,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 					((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).setOWLReasoner(stubReasonerJustToSendAProtegePluginID);
 					
 //					// because our knowledge base may not use the same reasoner from the storage implementor, we must explicitly make them synchronized.
-//					((OWL2KnowledgeBase)this.getKB()).setDefaultOWLReasoner(((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getOWLReasoner());
-					// the above line was commented because if not explicitly set to some value, the KB will reuse the reasoner from mebn (and that's the desired behavior)
+					((OWL2KnowledgeBase)this.getKB()).setDefaultOWLReasoner(((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getOWLReasoner());
 					
 					// we do need to check if the new reasoner is equal to the last one, because we want that re-selecting the reasoner re-triggers the initialization again.
 					// (i.e. the above ProtegeStorageImplementorDecorator#setOWLReasoner() is going to call OWLReasonerManager#classifyAsynchronously too)
@@ -303,7 +302,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 					UIManager.getString("OptionPane.messageDialogTitle"), 
 					JOptionPane.ERROR_MESSAGE);
 		}
-		System.gc();
+//		System.gc();
 	}
 
 	/*
@@ -399,7 +398,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 		
 		this.repaint();
 		
-		System.gc();
+//		System.gc();
 	}
 
 	/**
