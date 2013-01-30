@@ -268,7 +268,6 @@ public class DBControllerImp implements IDBController {
 				+ queryIndex2 + "'"
 				: queryIndex2;
 
-		// TODO caso especial FK-FK
 		// Path example: PERSON.BLOODTYPE -> PERSON.MOTHER -> PERSON.ID ->
 		// PERSON.BLOODTYPE. Child to -> parent.
 		// Then we have path[0]=PERSON.BLOODTYPE, path[1]=PERSON.MOTHER, etc.
@@ -284,11 +283,23 @@ public class DBControllerImp implements IDBController {
 
 		// Slot chain.
 		for (int i = path.length - 3; i > 0; i -= 2) {
+			
+			
 			// If i is even then is a remote index.
 			Attribute attributeRemoteId = path[i];
 			// If i is odd then is a local FK.
-			Attribute attributeLocalFk = path[i + 1]; // Be careful with this +1
+			Attribute attributeLocalFk = path[i -1]; // Be careful with this +1
 
+			// Validate FK-FK relationship.
+			boolean remoteIdIsFK = DBSchemaHelper.isAttributeFK(attributeRemoteId);
+			boolean localFkIsFK = DBSchemaHelper.isAttributeFK(attributeLocalFk);
+
+			// FK-FK then it moves one place the slot chain.
+			if (remoteIdIsFK && localFkIsFK) {
+				i++;
+				continue;	
+			}	
+			
 			// Table names
 			String remoteIdName = attributeRemoteId.getTable().getName();
 			String localFkName = attributeLocalFk.getTable().getName();

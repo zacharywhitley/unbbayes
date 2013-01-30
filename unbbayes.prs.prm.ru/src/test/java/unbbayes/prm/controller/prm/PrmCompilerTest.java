@@ -61,23 +61,81 @@ public class PrmCompilerTest {
 
 	/**
 	 * This is to test the FK to FK relationship, specifically for MEETING
-	 * table.
+	 * table. In this case, the query is on the parent.
 	 * 
 	 * @throws Exception
 	 */
 	@Test
-	public void testSimpleFKtoFKRelationship() throws Exception {
-		// PATH
-		// SHIP.isOfInterest SHIP.id MEETING.ship1 MEETING.ship2 SHIP.id
-		// SHIP.isOfInterest
-		Attribute pt1 = att;
-		Attribute pt2 = idCol;
-		Attribute pt3 = getAttribute("MEETING", "ship1");
-		Attribute pt4 = getAttribute("MEETING", "ship2");
-		Attribute pt5 = pt2;
-		Attribute pt6 = pt1;
+	public void testSimpleFKtoFKParentRelationship() throws Exception {
 
-		Attribute[] path = { pt1, pt2, pt3, pt4, pt5, pt6 };
+		createNewRelationShipForMeeting();
+
+		System.out.println("Compiling");
+
+		// The query is on the ship with id=1.
+		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
+				.compile(att.getTable(), idCol.getAttribute(), "1",
+						att.getAttribute(), "N");
+
+		// Validate Result
+		String[] nodeNames = { "SHIP 1 isOfInterest", "SHIP 2 isOfInterest" };
+		validateResult(resultNetwork, nodeNames);
+	}
+
+	/**
+	 * This is to test the FK to FK relationship, specifically for MEETING
+	 * table. In this case, the query is on the child.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testSimpleFKtoFKChildRelationship() throws Exception {
+
+		createNewRelationShipForMeeting();
+
+		System.out.println("Compiling");
+
+		// The query is on the ship with id=2
+		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
+				.compile(att.getTable(), idCol.getAttribute(), "2",
+						att.getAttribute(), "N");
+
+		// Validate Result
+		String[] nodeNames = { "SHIP 1 isOfInterest", "SHIP 2 isOfInterest" };
+		validateResult(resultNetwork, nodeNames);
+
+	}
+
+	/**
+	 * Validate if every node name has a node in the network.
+	 * 
+	 * @param resultNetwork
+	 * @param nodeNames
+	 */
+	private void validateResult(ProbabilisticNetwork resultNetwork,
+			String[] nodeNames) {
+		ArrayList<Node> nodes = new ArrayList<Node>(resultNetwork.getNodes());
+
+		assertTrue(nodes.size() == nodeNames.length);
+
+		for (String nodeName : nodeNames) {
+			boolean nodeExists = false;
+
+			for (Node node : nodes) {
+				if (node.getName().equals(nodeName)) {
+					nodeExists = true;
+
+					// To make the algorithm faster.
+					nodes.remove(node);
+					break;
+				}
+			}
+			assertTrue(nodeExists);
+		}
+	}
+
+	private void createNewRelationShipForMeeting() throws Exception {
+		Attribute[] path = createMeetingPath();
 
 		System.out.println("Creating relationships");
 		// Registry relationships.
@@ -122,18 +180,24 @@ public class PrmCompilerTest {
 		// CPTs
 		System.out.println("CPTs");
 		prmController.setCPD(att, cpts);
+	}
 
-		System.out.println("Compiling");
-
-		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
-				.compile(att.getTable(), idCol.getAttribute(), "1",
-						att.getAttribute(), "N");
-
-		ArrayList<Node> nodes = resultNetwork.getNodes();
-		assertTrue(nodes.size() == 2);
-		assertTrue(nodes.contains("SHIP 1 isOfInterest"));
-		assertTrue(nodes.contains("SHIP 2 isOfInterest"));
-
+	/**
+	 * Create a path for meeting: SHIP.isOfInterest SHIP.id MEETING.ship1
+	 * MEETING.ship2 SHIP.id SHIP.isOfInterest
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	private Attribute[] createMeetingPath() throws Exception {
+		// PATH
+		Attribute pt1 = att;
+		Attribute pt2 = idCol;
+		Attribute pt3 = getAttribute("MEETING", "ship1");
+		Attribute pt4 = getAttribute("MEETING", "ship2");
+		Attribute pt5 = pt2;
+		Attribute pt6 = pt1;
+		return new Attribute[] { pt1, pt2, pt3, pt4, pt5, pt6 };
 	}
 
 	/**
