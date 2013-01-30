@@ -63,6 +63,9 @@ public class PrmCompilerTest {
 	 * This is to test the FK to FK relationship, specifically for MEETING
 	 * table. In this case, the query is on the parent.
 	 * 
+	 * Relationship 1: SHIP.isOfInterest SHIP.id MEETING.ship1 MEETING.ship2
+	 * SHIP.id SHIP.isOfInterest
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -86,6 +89,9 @@ public class PrmCompilerTest {
 	 * This is to test the FK to FK relationship, specifically for MEETING
 	 * table. In this case, the query is on the child.
 	 * 
+	 * Relationship 1: SHIP.isOfInterest SHIP.id MEETING.ship1 MEETING.ship2
+	 * SHIP.id SHIP.isOfInterest
+	 * 
 	 * @throws Exception
 	 */
 	@Test
@@ -104,6 +110,89 @@ public class PrmCompilerTest {
 		String[] nodeNames = { "SHIP 1 isOfInterest", "SHIP 2 isOfInterest" };
 		validateResult(resultNetwork, nodeNames);
 
+	}
+
+	/**
+	 * This is to test the FK to FK relationship and a intrinsic relationship.
+	 * 
+	 * Relationship 1: SHIP.isOfInterest SHIP.id MEETING.ship1 MEETING.ship2
+	 * SHIP.id SHIP.isOfInterest
+	 * 
+	 * Relationship 2: SHIP.isOfInterest SHIP.hasTerrowristCrew
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testIntrinsicRel() throws Exception {
+
+		createNewRelationShipForMeeting();
+		createIntrisecRelForHasTerroristCrew();
+
+		System.out.println("Compiling");
+
+		// The query is on the ship with id=1 attribute=isOfInterest.
+		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
+				.compile(att.getTable(), idCol.getAttribute(), "1",
+						att.getAttribute(), "N");
+
+		// Validate Result
+		String[] nodeNames = { "SHIP 1 isOfInterest",
+				"SHIP 1 hasTerroristCrew", "SHIP 2 hasTerroristCrew",
+				"SHIP 2 isOfInterest" };
+		validateResult(resultNetwork, nodeNames);
+
+	}
+
+	private void createIntrisecRelForHasTerroristCrew() throws Exception {
+		Attribute[] path = createHasTerroristPath();
+
+		System.out.println("Creating hasTerroristCrew relationship");
+		String idRel = "1";
+
+		// Has terrorist crew Attribute.
+		Attribute htcAttribute = getAttribute("SHIP", "hasTerroristCrew");
+
+		// Parent rel
+		ParentRel newRel = new ParentRel(att, htcAttribute);
+		newRel.setPath(path);
+		newRel.setIdRelationsShip(idRel);
+		prmController.addParent(newRel);
+
+		// Nodes for cpts
+		ProbabilisticNode parentNode = new ProbabilisticNode();
+		parentNode.setDescription(idRel);
+		ProbabilisticNode childNode = new ProbabilisticNode();
+		childNode.setDescription(idRel);
+
+		// Parent States
+		String[] states = dbController.getPossibleValues(att);
+		for (String state : states) {
+			parentNode.appendState(state);
+		}
+		// Child States
+		String[] childStates = dbController.getPossibleValues(htcAttribute);
+		for (String state : childStates) {
+			childNode.appendState(state);
+		}
+
+		// Child
+		childNode.addParent(parentNode);
+
+		// Create the CPTs
+		PotentialTable childTable = childNode.getProbabilityFunction();
+		childTable.addVariable(childNode);
+		childTable.addVariable(parentNode);
+
+		// Init cpts
+		childTable.setValue(0, 0.5f);
+		childTable.setValue(1, 0.5f);
+		childTable.setValue(2, 0.5f);
+		childTable.setValue(3, 0.5f);
+
+		PotentialTable cpts[] = { childTable };
+		// CPTs
+		System.out.println("CPTs");
+		prmController.setCPD(htcAttribute, cpts);
 	}
 
 	/**
@@ -137,7 +226,7 @@ public class PrmCompilerTest {
 	private void createNewRelationShipForMeeting() throws Exception {
 		Attribute[] path = createMeetingPath();
 
-		System.out.println("Creating relationships");
+		System.out.println("Creating meeting relationship");
 		// Registry relationships.
 		// MEETING Relationship.
 		String idRel = "0";
@@ -198,6 +287,20 @@ public class PrmCompilerTest {
 		Attribute pt5 = pt2;
 		Attribute pt6 = pt1;
 		return new Attribute[] { pt1, pt2, pt3, pt4, pt5, pt6 };
+	}
+
+	/**
+	 * Create a path for meeting: SHIP.isOfInterest SHIP.hasTerrorisCrew.
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+	private Attribute[] createHasTerroristPath() throws Exception {
+		// PATH
+		// PATH
+		Attribute pt1 = att;
+		Attribute pt2 = getAttribute("SHIP", "hasTerroristCrew");
+		return new Attribute[] { pt1, pt2 };
 	}
 
 	/**
