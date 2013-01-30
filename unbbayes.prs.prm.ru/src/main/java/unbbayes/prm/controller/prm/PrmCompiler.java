@@ -196,7 +196,8 @@ public class PrmCompiler {
 				// Create a new node.
 				ProbabilisticNode parentNode = createProbNode(indexValue,
 						parentAtt, resultNet);
-				parentNode.setDescription(parentRel.getIdRelationsShip());
+				parentNode.setDescription(parentNode.getDescription() + " "
+						+ parentRel.getIdRelationsShip());
 
 				// Edge to the child.
 				addEdge(resultNet, parentNode, queryNode);
@@ -271,7 +272,7 @@ public class PrmCompiler {
 					// Create Node.
 					ProbabilisticNode parentNode = createProbNode(afIndex,
 							parentAtt, resultNet);
-					parentNode.setDescription(parentRel.getIdRelationsShip());
+					parentNode.setDescription(parentNode.getDescription()+" "+ parentRel.getIdRelationsShip());
 
 					// Add parent nodes to the query node.
 					parentInstanceNodes.put(parentNode.getName(), parentRel);
@@ -392,7 +393,7 @@ public class PrmCompiler {
 				String[][] instanceValues = dbController
 						.getChildRelatedInstances(childRel, initInstanceValue);
 
-				// relationship in description.
+				// Relationship in description.
 				if (instanceValues.length > 0) {
 					queryNode.setDescription(queryNode.getDescription() + " "
 							+ childRel.getIdRelationsShip());
@@ -423,6 +424,7 @@ public class PrmCompiler {
 
 					// Edge to the child.
 					addEdge(resultNet, queryNode, childNode);
+					childNode.addParent(queryNode);
 
 					// Path to the next node
 					Column childIndex;
@@ -527,7 +529,7 @@ public class PrmCompiler {
 
 				String relId = parentNodeInstance.getDescription();
 				String cptRelId = parentCptNode.getDescription();
-				// if the node is part of this thing.the id reletionship is
+				// If the node is part of this relationship.the id reletionship is
 				// stored in the node description.
 				if (relId.contains(cptRelId)) {
 					instanceCont++;
@@ -696,14 +698,14 @@ public class PrmCompiler {
 			throws Exception {
 		int variablesSize = cpd.tableSize();
 		PotentialTable probabilityFunction = queryNode.getProbabilityFunction();
-		
-		
+
 		int nodeTableSize = probabilityFunction.tableSize();
 
 		if (nodeTableSize != variablesSize) {
 			throw new Exception("Error in CPT assignation in node "
 					+ queryNode.getName() + ". Different table sizes "
-					+ "CPT size="+variablesSize + " Node size=" + nodeTableSize);
+					+ "CPT size=" + variablesSize + " Node size="
+					+ nodeTableSize);
 		}
 
 		// Variable

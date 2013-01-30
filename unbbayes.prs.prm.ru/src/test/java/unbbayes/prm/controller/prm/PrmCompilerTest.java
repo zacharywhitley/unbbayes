@@ -34,6 +34,8 @@ public class PrmCompilerTest {
 	Attribute att;
 	private Attribute idCol;
 
+	private Attribute htcAttribute;
+
 	@Before
 	public void setUp() throws Exception {
 		System.out.println("Start");
@@ -130,17 +132,38 @@ public class PrmCompilerTest {
 
 		System.out.println("Compiling");
 
-		// The query is on the ship with id=1 attribute=isOfInterest.
+		String[] nodeNames = { "SHIP 1 isOfInterest",
+				"SHIP 1 hasTerroristCrew", "SHIP 2 hasTerroristCrew",
+				"SHIP 2 isOfInterest" };
+
+		// FISRT CASE: The query is on the ship with id=1
+		// attribute=isOfInterest.
 		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
 				.compile(att.getTable(), idCol.getAttribute(), "1",
 						att.getAttribute(), "N");
 
 		// Validate Result
-		String[] nodeNames = { "SHIP 1 isOfInterest",
-				"SHIP 1 hasTerroristCrew", "SHIP 2 hasTerroristCrew",
-				"SHIP 2 isOfInterest" };
 		validateResult(resultNetwork, nodeNames);
 
+		// SECOND CASE: The query is on the ship with id=1
+		// attribute=hasTerroristCrew.
+		resultNetwork = (ProbabilisticNetwork) compiler.compile(att.getTable(),
+				idCol.getAttribute(), "1", htcAttribute.getAttribute(), "N");
+		validateResult(resultNetwork, nodeNames);
+
+		// THIRD CASE: The query is on the ship with id=1
+		// attribute=hasTerroristCrew.
+		resultNetwork = (ProbabilisticNetwork) compiler.compile(att.getTable(),
+				idCol.getAttribute(), "2", htcAttribute.getAttribute(), "N");
+		validateResult(resultNetwork, nodeNames);
+
+		// FOURTH CASE: The query is on the ship with id=2  attribute=isOfInterest.
+		 resultNetwork = (ProbabilisticNetwork) compiler
+				.compile(att.getTable(), idCol.getAttribute(), "2",
+						att.getAttribute(), "N");
+
+		// Validate Result
+		validateResult(resultNetwork, nodeNames);
 	}
 
 	private void createIntrisecRelForHasTerroristCrew() throws Exception {
@@ -149,8 +172,7 @@ public class PrmCompilerTest {
 		System.out.println("Creating hasTerroristCrew relationship");
 		String idRel = "1";
 
-		// Has terrorist crew Attribute.
-		Attribute htcAttribute = getAttribute("SHIP", "hasTerroristCrew");
+		htcAttribute = getAttribute("SHIP", "hasTerroristCrew");
 
 		// Parent rel
 		ParentRel newRel = new ParentRel(att, htcAttribute);
