@@ -281,14 +281,14 @@ public class DBControllerImp implements IDBController {
 		// The fist FK is the query.
 		String where = " WHERE " + path[indexPosition] + "=" + queryIndex;
 
-		// Slot chain.
+		// Slot chain. 
 		for (int i = path.length - 3; i > 0; i -= 2) {
 			
 			
 			// If i is even then is a remote index.
 			Attribute attributeRemoteId = path[i];
 			// If i is odd then is a local FK.
-			Attribute attributeLocalFk = path[i -1]; // Be careful with this +1
+			Attribute attributeLocalFk = path[i -1]; 
 
 			// Validate FK-FK relationship.
 			boolean remoteIdIsFK = DBSchemaHelper.isAttributeFK(attributeRemoteId);
@@ -301,17 +301,17 @@ public class DBControllerImp implements IDBController {
 			}	
 			
 			// Table names
-			String remoteIdName = attributeRemoteId.getTable().getName();
-			String localFkName = attributeLocalFk.getTable().getName();
+			String remoteIdTableName = attributeRemoteId.getTable().getName();
+			String localFkTableName = attributeLocalFk.getTable().getName();
 
 			// If the table names are different, then add the cross.
-			if (!remoteIdName.equals(localFkName)) {
+			if (!remoteIdTableName.equals(localFkTableName)) {
 				where += " AND " + attributeRemoteId + "=" + attributeLocalFk;
 			}
 
 			// add if it is not duplicated.
-			tableNames.add(remoteIdName);
-			tableNames.add(localFkName);
+			tableNames.add(remoteIdTableName);
+			tableNames.add(localFkTableName);
 		}
 
 		// Related tables
