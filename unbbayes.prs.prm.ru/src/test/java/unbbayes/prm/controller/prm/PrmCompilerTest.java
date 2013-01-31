@@ -127,7 +127,9 @@ public class PrmCompilerTest {
 	@Test
 	public void testIntrinsicRel() throws Exception {
 
+		// MEETING
 		createNewRelationShipForMeeting();
+		// HAS TERRORIST
 		createIntrisecRelForHasTerroristCrew();
 
 		System.out.println("Compiling");
@@ -157,13 +159,50 @@ public class PrmCompilerTest {
 				idCol.getAttribute(), "2", htcAttribute.getAttribute(), "N");
 		validateResult(resultNetwork, nodeNames);
 
-		// FOURTH CASE: The query is on the ship with id=2  attribute=isOfInterest.
-		 resultNetwork = (ProbabilisticNetwork) compiler
+		// FOURTH CASE: The query is on the ship with id=2
+		// attribute=isOfInterest.
+		resultNetwork = (ProbabilisticNetwork) compiler.compile(att.getTable(),
+				idCol.getAttribute(), "2", att.getAttribute(), "N");
+
+		// Validate Result
+		validateResult(resultNetwork, nodeNames);
+	}
+
+	/**
+	 * This is to test the FK to FK relationship, specifically for MEETING
+	 * table. In this case, the query is on the child.
+	 * 
+	 * Relationship 1: SHIP.isOfInterest SHIP.id MEETING.ship1 MEETING.ship2
+	 * SHIP.id SHIP.isOfInterest
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testMeetingAndFK() throws Exception {
+
+		// MEETING
+		createNewRelationShipForMeeting();
+		// HAS TERRORIST
+		createIntrisecRelForHasTerroristCrew();
+		// ROUTE
+		createRouteRel();
+
+		System.out.println("Compiling");
+
+		// The query is on the ship with id=2
+		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
 				.compile(att.getTable(), idCol.getAttribute(), "2",
 						att.getAttribute(), "N");
 
 		// Validate Result
+		String[] nodeNames = { "SHIP 1 isOfInterest", "SHIP 2 isOfInterest" };
 		validateResult(resultNetwork, nodeNames);
+
+	}
+
+	private void createRouteRel() throws Exception {
+		Attribute[] path = createRoutePath();
+
 	}
 
 	private void createIntrisecRelForHasTerroristCrew() throws Exception {
@@ -309,6 +348,15 @@ public class PrmCompilerTest {
 		Attribute pt5 = pt2;
 		Attribute pt6 = pt1;
 		return new Attribute[] { pt1, pt2, pt3, pt4, pt5, pt6 };
+	}
+
+	private Attribute[] createRoutePath() throws Exception {
+		// PATH
+		Attribute pt1 = getAttribute("ROUTE", "name");
+		Attribute pt2 = getAttribute("ROUTE", "id");
+		Attribute pt3 = getAttribute("SHIP", "route");
+		Attribute pt4 = getAttribute("SHIP", "isOfInterest");
+		return new Attribute[] { pt1, pt2, pt3, pt4};
 	}
 
 	/**

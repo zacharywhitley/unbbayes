@@ -54,7 +54,8 @@ public class PathFinderAlgorithm {
 	 *            Ending attribute, the end of the path.
 	 * @param initAtt
 	 *            The fist attribute.
-	 * @return all possible paths.
+	 * @return all possible paths. Every path starts with the child and ends
+	 *         with the parent.
 	 */
 	public List<Attribute[]> getPossiblePaths(Database db,
 			final Attribute endAtt, final Attribute initAtt) {
@@ -76,8 +77,8 @@ public class PathFinderAlgorithm {
 		// Add Local or intrinsic path.
 		if (endAtt.getTable().equals(initAtt.getTable())) {
 			List<Attribute> intrinsecPath = new ArrayList<Attribute>();
-			intrinsecPath.add(endAtt);
 			intrinsecPath.add(initAtt);
+			intrinsecPath.add(endAtt);
 			paths.add(intrinsecPath.toArray(new Attribute[0]));
 		}
 
