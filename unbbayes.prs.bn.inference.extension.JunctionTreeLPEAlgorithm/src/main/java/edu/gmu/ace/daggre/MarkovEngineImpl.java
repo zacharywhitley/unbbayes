@@ -61,7 +61,7 @@ import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
  * It adds history feature and transactional behaviors to
  * {@link AssetAwareInferenceAlgorithm}.
  * @author Shou Matsumoto
- * @version December 30, 2012
+ * @version January 30, 2013
  */
 public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssetsConverter {
 	
@@ -641,6 +641,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		return true;
 	}
+	
 	
 	/**
 	 * Represents a network action for rebuilding BN, all asset nets, and
@@ -3092,8 +3093,70 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			canChangeNet = false;
 		}
 		
+		// treat assumptions at this point, so that we can handle resolved questions in assumptions too
+		List<INode> parentNodes = new ArrayList<INode>();
+		boolean hasIncompatibleResolvedAssumption = false;
+		if (assumptionIds != null) {
+			// prepare a list to store assumptions which were resolved - they will be deleted from the assumptionIds if provided states are compatible.
+			List<Long> resolvedAssumptionIds = new ArrayList<Long>();
+			List<Integer> indexesOfResolvedAssumptionIds = new ArrayList<Integer>();	// stores the index of resolved assumptions, so that we can use it in assumedStates
+			for (Long id : assumptionIds) {
+				INode node = net.getNode(Long.toString(id));
+				if (node == null) {
+					// Node not in current BN. Check whether it was resolved
+					synchronized (getResolvedQuestions()) {
+						// check if id was resolved
+						StatePair statePair = getResolvedQuestions().get(id);
+						if (statePair != null) {
+							if (assumedStates == null || assumptionIds.indexOf(id) >= assumedStates.size() || assumedStates.get(assumptionIds.indexOf(id)) == null) {
+								// the state was not specified. Just ignore the assumption in such case
+								resolvedAssumptionIds.add(id);
+								indexesOfResolvedAssumptionIds.add(assumptionIds.indexOf(id));
+							} else  if (statePair.getResolvedState() != assumedStates.get(assumptionIds.indexOf(id))) {
+								// found a resolved assumption which is not compatible with the resolution (i.e. assumed a state which differs from resolved state)
+								// we should return NaN in this case.
+								hasIncompatibleResolvedAssumption = true;
+								break;
+							} else {
+								// in all other cases (e.g. the assumption was resolved, and the specified state is equal to the settled state), 
+								// then just ignore the assumption
+								resolvedAssumptionIds.add(id);
+								indexesOfResolvedAssumptionIds.add(assumptionIds.indexOf(id));
+							}
+						} else {
+							// this question actually does not exist
+							throw new InexistingQuestionException("Assumption " + id + " not found", id);
+						}
+					}
+				} else {
+					parentNodes.add(node);
+				}
+			}
+			// update the assumptionIds if there were resolved questions in it
+			if (!resolvedAssumptionIds.isEmpty()) {
+				// update assumedStates
+				List<Integer> auxAssumedStates = new ArrayList<Integer>();
+				// fill auxAssumedStates only with states which are not of resolved assumptions
+				if (assumedStates != null) {
+					for (int j = 0; j < assumedStates.size(); j++) {
+						if (!indexesOfResolvedAssumptionIds.contains(j)) {
+							auxAssumedStates.add(assumedStates.get(j));
+						}
+					}
+				}
+				assumedStates = auxAssumedStates;
+				
+				// update the assumptionIds
+				// use a clone, so that we won't change the original list
+				assumptionIds = new ArrayList<Long>(assumptionIds);
+				// filter the resolved assumptions 
+				assumptionIds.removeAll(resolvedAssumptionIds);
+			}
+		}
+		
 		// if we need to get probabilities of all nodes, and there are assumptions, then we need propagation anyway
-		if (questionIds == null && assumptionIds != null && assumedStates != null && !assumptionIds.isEmpty() && !assumedStates.isEmpty()) {
+		List<Long> questionIdsWithoutResolvedQuestions = (questionIds == null)?null:new ArrayList<Long>(questionIds);
+		if (!hasIncompatibleResolvedAssumption && questionIds == null && assumptionIds != null && assumedStates != null && !assumptionIds.isEmpty() && !assumedStates.isEmpty()) {
 			// netToUseWhenAssumptionsAreNotInSameClique != null if we need propagation
 			if (canChangeNet) {
 				netToUseWhenNotInSameClique = net;
@@ -3102,11 +3165,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		} else {
 			// first, attempt to fill cptList with conditional probabilities that can be calculated without propagation.
-			int howManyIterations = getProbabilisticNetwork().getNodeCount();
+			int sizeOfQuestionIdsOrTotalNodeNum = getProbabilisticNetwork().getNodeCount();
 			if (questionIds != null && !questionIds.isEmpty()) {
-				howManyIterations = questionIds.size();
+				sizeOfQuestionIdsOrTotalNodeNum = questionIds.size();
 			}
-			for (int i = 0; i < howManyIterations; i++) {
+			for (int i = 0; i < sizeOfQuestionIdsOrTotalNodeNum; i++) {
 				synchronized (net) {
 					INode mainNode = null;
 					Long questionId = null;
@@ -3117,8 +3180,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						mainNode = net.getNodeAt(i);
 						questionId = Long.parseLong(mainNode.getName());
 					}
-					if (mainNode == null || questionId == null) {
-						boolean isResolvedQuestion = false;
+					if (mainNode == null ) { // note: questionId == null will not happen here, because it would have thrown nullpointerexception
+						// this  boolean was commented out because it was only useful when questionId == null, which cannot happen at this point
+//						boolean isResolvedQuestion = false;
 						if (isToObtainProbabilityOfResolvedQuestions()) {
 							// If it is a resolved question, we can get marginal (non-assumptive) probabilities from history.
 							// TODO also build conditional probability
@@ -3129,89 +3193,91 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							}
 							// Retrieve from history
 							synchronized (getResolvedQuestions()) {
-								// if questionId == null, retrieve all resolved questions. 
-								Collection<Long> questionsToSearch = null;
-								if (questionId == null) {
-									questionsToSearch = getResolvedQuestions().keySet();
-								} else {
-									questionsToSearch = Collections.singletonList(questionId);
-								}
-								// iterate either on single node or all resolved nodes
-								for (Long id : questionsToSearch) {
-									StatePair statePair = getResolvedQuestions().get(id);
-									if (statePair != null) {
-										// build probability of resolution (1 state is 100% and others are 0%)
-										int stateCount = statePair.getStatesSize();	// retrieve quantity of states
-										List<Float> marginal = new ArrayList<Float>(stateCount);	// list of marginal probs
-										for (int k = 0; k < stateCount; k++) {
-											// set the settled state as 100%, and all others to 0%
+//								// if questionId == null, retrieve all resolved questions. 
+//								Collection<Long> questionsToSearch = null;
+//								if (questionId == null) {
+//									questionsToSearch = getResolvedQuestions().keySet();
+//								} else {
+//									questionsToSearch = Collections.singletonList(questionId);
+//								}
+//								// iterate either on single node or all resolved nodes
+//								for (Long id : questionsToSearch) {
+//									StatePair statePair = getResolvedQuestions().get(id);
+//									if (statePair != null) {
+//										// build probability of resolution (1 state is 100% and others are 0%)
+//										int stateCount = statePair.getStatesSize();	// retrieve quantity of states
+//										List<Float> marginal = new ArrayList<Float>(stateCount);	// list of marginal probs
+//										for (int k = 0; k < stateCount; k++) {
+//											// set the settled state as 100%, and all others to 0%
+//											if (hasIncompatibleResolvedAssumption) {
+//												marginal.add(Float.NaN);	// if there is incompatible assumption, it is NaN no matter what was the settled state
+//											} else {
+//												marginal.add((k==statePair.getResolvedState())?1f:0f);
+//											}
+//										}
+//										ret.put(questionId, marginal);
+//										isResolvedQuestion = true;	// remember that this question was actually resolved previously
+//									}
+//								}
+								// note: the above code was commented and substituted with the following because questionId == null cannot happen at this point
+								StatePair statePair = getResolvedQuestions().get(questionId);
+								if (statePair != null) {
+									if (questionIdsWithoutResolvedQuestions != null) {
+										// questionIdsWithoutResolvedQuestions == null means we are treating all nodes anyway, so we do not need to filter nodes.
+										// this list is used when there are out-of-clique assumptions. Because ret is already filled with probs of resolved questions, we only need
+										// to complete it with questions not resolved yet. So, this list stores which questions were not resolved yet.
+										questionIdsWithoutResolvedQuestions.remove(questionId);	
+									}
+									// build probability of resolution (1 state is 100% and others are 0%)
+									int stateCount = statePair.getStatesSize();	// retrieve quantity of states
+									List<Float> marginal = new ArrayList<Float>(stateCount);	// list of marginal probs
+									for (int k = 0; k < stateCount; k++) {
+										// set the settled state as 100%, and all others to 0%
+										if (hasIncompatibleResolvedAssumption) {
+											marginal.add(Float.NaN);	// if there is incompatible assumption, it is NaN no matter what was the settled state
+										} else {
 											marginal.add((k==statePair.getResolvedState())?1f:0f);
 										}
-										ret.put(questionId, marginal);
-										isResolvedQuestion = true;	// remember that this question was actually resolved previously
 									}
+									ret.put(questionId, marginal);
+									continue; // resolved question was treated, so we do not need to execute the remaining code of current loop
 								}
 							}
 						}
-						if (isResolvedQuestion) {
-							continue;
-						}
+						// the following code was commented out because when resolved question was trated, then continue was called anyway
+//						if (isResolvedQuestion) {
+//							// note: resolved question was treated completely, so we do not need to execute the remaining code of current loop
+//							continue;
+//						}
 						throw new InexistingQuestionException("Question " + questionId + " not found", questionId);
-					}
-					List<INode> parentNodes = new ArrayList<INode>();
-					if (assumptionIds != null) {
-						// prepare a list to store assumptions which were resolved - they will be deleted from the assumptionIds.
-						List<Long> resolvedAssumptionIds = new ArrayList<Long>();
-						List<Integer> indexesOfResolvedAssumptionIds = new ArrayList<Integer>();	// stores the index of resolved assumptions, so that we can use it in assumedStates
-						for (Long id : assumptionIds) {
-							INode node = net.getNode(Long.toString(id));
-							if (node == null) {
-								// Node not in current BN. Check whether it was resolved
-								synchronized (getResolvedQuestions()) {
-									// check if id was resolved
-									StatePair statePair = getResolvedQuestions().get(id);
-									if (statePair != null) {
-										resolvedAssumptionIds.add(id);
-										indexesOfResolvedAssumptionIds.add(assumptionIds.indexOf(id));
-									} else {
-										// this question actually does not exist
-										throw new InexistingQuestionException("Question " + questionId + " not found", questionId);
-									}
-								}
-							} else {
-								parentNodes.add(node);
-							}
+					} else if (hasIncompatibleResolvedAssumption) { // note: "else" means mainNode != null
+						// fill with NaN
+						List<Float> prob = new ArrayList<Float>(mainNode.getStatesSize());
+						for (int index = 0; index < mainNode.getStatesSize(); index++) {
+							prob.add(Float.NaN);
 						}
-						// update the assumptionIds if there were resolved questions in it
-						if (!resolvedAssumptionIds.isEmpty()) {
-							// update assumedStates
-							List<Integer> auxAssumedStates = new ArrayList<Integer>();
-							// fill auxAssumedStates only with states which are not of resolved assumptions
-							if (assumedStates != null) {
-								for (int j = 0; j < assumedStates.size(); j++) {
-									if (!indexesOfResolvedAssumptionIds.contains(j)) {
-										auxAssumedStates.add(assumedStates.get(j));
-									}
-								}
-							}
-							assumedStates = auxAssumedStates;
-							
-							// update the assumptionIds
-							// use a clone, so that we won't change the original list
-							assumptionIds = new ArrayList<Long>(assumptionIds);
-							// filter the resolved assumptions 
-							assumptionIds.removeAll(resolvedAssumptionIds);
-						}
+						ret.put(questionId, prob);
+						continue; // this question was treated (as NaN), so we do not need to execute the remaining code of current loop (no need to fill cptList)
+					} else { // mainNode != null && !hasIncompatibleResolvedAssumption
+						// this is not a resolved question, and we are not dealing with resolved assumptions.
 					}
-					if (isToNormalize) {
+					if (assumptionIds != null && assumptionIds.contains(questionId) && assumedStates != null && assumedStates.size() > assumptionIds.indexOf(questionId)) {
+						// this is requesting for a probability conditioned to itself... If we assume something, then the probability is 1 for assumed state.
+						List<Float> prob = new ArrayList<Float>(mainNode.getStatesSize());
+						for (int index = 0; index < mainNode.getStatesSize(); index++) {
+							prob.add((index==assumedStates.get(assumptionIds.indexOf(questionId)))?1f:0f);
+						}
+						ret.put(questionId, prob);
+					} else if (isToNormalize) { // questionId is not in assumption
 						try {
 							cptList.add((PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, net, null));
 						} catch (NoCliqueException e) {
 							Debug.println(getClass(), "Could not extract potentials within clique. Trying global propagation.", e);
 							netToUseWhenNotInSameClique = getDefaultInferenceAlgorithm().cloneProbabilisticNetwork(net);
-							break;	// do not fill cptList anymore, because if we need to do 1 propagation anyway, the computational cost if the same for any quantity of nodes to propagate
+							cptList.clear();
+							break;	// do not fill cptList anymore, because if we need to do 1 propagation anyway, the computational cost is the same for any quantity of nodes to propagate
 						}
-					} else {
+					} else {  // questionId is not in assumption and it is not to normalize
 						// by specifying a non-normalized junction tree algorithm to conditionalProbabilityExtractor, we can force it not to normalize the result
 						cptList.add((PotentialTable) conditionalProbabilityExtractor.buildCondicionalProbability(mainNode, parentNodes, net, getDefaultInferenceAlgorithm().getAssetPropagationDelegator()));
 					}
@@ -3219,9 +3285,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}	// end of loop
 		}
 		
+		if (hasIncompatibleResolvedAssumption) {
+			// at this point, ret is supposedly filled with NaN for all queried nodes
+			return ret;
+		}
+		
 		// If we need to do propagation, do it in non-critical portion of code
 		if (netToUseWhenNotInSameClique != null) {
-			return this.previewProbPropagation(questionIds, assumptionIds, assumedStates, netToUseWhenNotInSameClique);
+			// note: ret is supposedly alredy filled with probs of resolved nodes, so we need only to fill probs of unresolved nodes
+			// this method is supposedly not including resolved questions.
+			ret.putAll(this.previewProbPropagation(questionIdsWithoutResolvedQuestions, assumptionIds, assumedStates, netToUseWhenNotInSameClique));
+			return ret;
 		}
 		
 		// at this point of code, all probabilities can be estimated from cptList
@@ -3277,7 +3351,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	/**
 	 * It uses findingNodeIDs and findingStates to set and propagate findings
-	 * in pn, and return the marginal of node identified by filterNodes
+	 * in pn, and return the marginal of node identified by filterNodes.
+	 * This method do not include resolved questions.
 	 * @param filterNodes : only marginals of nodes in this list will be returned.
 	 * If null, marginals of all nodes will be returned.
 	 * @param findingNodeIDs : nodes to add findings
@@ -3345,6 +3420,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				mainNode = (TreeVariable) pn.getNodeAt(i);
 			}
 			if (mainNode == null) {
+//				Treat resolved nodes
 				throw new InexistingQuestionException("Could not extract some of the nodes from the network: " + filterNodes + ", index " + i, null); 
 			}
 			
@@ -3583,7 +3659,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (algorithm == null) {
 			throw new NullPointerException("AssetAwareInferenceAlgorithm cannot be null");
 		}
+		
+		// some assumptions may be ignored because they were resolved. 
+		// In such case, unignoredAssumedStates will contain only the states of assumptions which were not ignored
+		List<Integer> unignoredAssumedStates = (assumedStates==null)?null:new ArrayList<Integer>(assumedStates.size());
+		
 		PotentialTable assetTable = null;	// asset tables (clique table containing delta) are instances of potential tables
+		boolean hasIncompatibleResolvedAssumption = false;
 		synchronized (algorithm.getAssetNetwork()) {
 			AssetNode mainNode = (AssetNode) algorithm.getAssetNetwork().getNode(Long.toString(questionId));
 			if (mainNode == null) {
@@ -3594,9 +3676,38 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				for (Long id : assumptionIds) {
 					INode node = algorithm.getAssetNetwork().getNode(Long.toString(id));
 					if (node == null) {
-						throw new InexistingQuestionException("Question " + questionId + " not found in asset structure of user " + algorithm.getAssetNetwork(), questionId);
+						synchronized (getResolvedQuestions()) {
+							// check if id was resolved
+							StatePair statePair = getResolvedQuestions().get(id);
+							if (statePair != null) {
+								if (assumedStates == null || assumptionIds.indexOf(id) >= assumedStates.size() || assumedStates.get(assumptionIds.indexOf(id)) == null) {
+									// the state was not specified. Just ignore the assumption in such case
+								} else  if (statePair.getResolvedState() != assumedStates.get(assumptionIds.indexOf(id))) {
+									// found a resolved assumption which is not compatible with the resolution (i.e. assumed a state which differs from resolved state)
+									// we should return NaN in this case.
+									hasIncompatibleResolvedAssumption = true;
+								} else {
+									// in all other cases (e.g. the assumption was resolved, and the specified state is equal to the settled state), 
+									// then just ignore the assumption
+								}
+							} else {
+								// this question actually does not exist
+								throw new InexistingQuestionException("Assumption " + id + " not found", id);
+							}
+						}
+					} else {
+						if (unignoredAssumedStates != null) {
+							// add state to unignoredAssumedStates so that we can use it later in order to extract assets in correct positions regarding only non-questions
+							if (assumptionIds.indexOf(id) <  assumedStates.size()) {
+								// only add state if the state was really specified
+								unignoredAssumedStates.add(assumedStates.get(assumptionIds.indexOf(id)));
+							} else {
+								// by default, null should be considered as ignorable state
+								unignoredAssumedStates.add(null);
+							}
+						} 
+						parentNodes.add(node);
 					}
-					parentNodes.add(node);
 				}
 			}
 			if (parentNodes.isEmpty()) { // we are not calculating the conditional delta. We are calculating delta of 1 node only (i.e. "marginal" delta)
@@ -3606,19 +3717,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				if (clique != null) {
 					mainNode.setAssociatedClique(clique);	// force marginalization to use the current clique
 				}
-//				double[] marginal = mainNode.(); 					
-//				mainNode.setToCalculateMarginal(backup);	// revert to previous config
-//				List ret = new ArrayList(mainNode.getStatesSize());
-//				for (int i = 0; i < mainNode.getStatesSize(); i++) {
-//					if (isToReturnQValuesInsteadOfAssets) {
-//						// return q-values directly
-//						ret.add(marginal[i]);
-//					} else {
-//						// convert q-values to delta (i.e. logarithmic values)
-//						ret.add((float) this.getScoreFromQValues(marginal[i]));
-//					}
-//				}
-//				return ret;
 				mainNode.updateMarginal(); 					// make sure values of mainNode.getMarginalAt(index) is up to date
 				mainNode.setToCalculateMarginal(backup);	// revert to previous config
 				if (clique != null) {
@@ -3641,26 +3739,29 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		List ret = new ArrayList(assetTable.tableSize());
 		for (int i = 0; i < assetTable.tableSize(); i++) {
 			boolean isToSkip = false;
-			// filter entries which are incompatible with assumedStates
-			if (assumedStates != null && !assumedStates.isEmpty()) {
+			// filter entries which are incompatible with unignoredAssumedStates
+			if (unignoredAssumedStates != null && !unignoredAssumedStates.isEmpty()) {
 				// extract coordinate of the states (e.g. [2,1,0] means state of mainNode = 2, state of parent1 = 1, and parent2 == 0)
 				int[] multidimensionalCoord = assetTable.getMultidimensionalCoord(i);
-				// note: size of assumedStates is 1 unit smaller than multidimensionalCoord, because assumedStates does not contain the main node
-				if (multidimensionalCoord.length != assumedStates.size() + 1) {
+				// note: size of unignoredAssumedStates is 1 unit smaller than multidimensionalCoord, because unignoredAssumedStates does not contain the main node
+				if (multidimensionalCoord.length != unignoredAssumedStates.size() + 1) {
 					throw new RuntimeException("Multi dimensional coordinate of index " + i + " has size " + multidimensionalCoord.length
-							+ ". Expected " + (assumedStates.size()+1));
+							+ ". Expected " + (unignoredAssumedStates.size()+1));
 				}
 				// start from index 1, because index 0 of multidimensionalCoord is the main node
 				for (int j = 1; j < multidimensionalCoord.length; j++) {
-					if ((assumedStates.get(j-1) != null)
-							&& (assumedStates.get(j-1) != multidimensionalCoord[j])) {
+					if ((unignoredAssumedStates.get(j-1) != null)
+							&& (unignoredAssumedStates.get(j-1) != multidimensionalCoord[j])) {
 						isToSkip = true;
 						break;
 					}
 				}
 			}
 			if (!isToSkip) {
-				if (isToReturnQValuesInsteadOfAssets) {
+				if (hasIncompatibleResolvedAssumption) {
+					// if the resolved assumption is not in the resolved state, the value is undefined.
+					ret.add(Float.NaN);
+				} else if (isToReturnQValuesInsteadOfAssets) {
 					// return q-values directly
 					if (algorithm.isToUseQValues()) {
 						ret.add(assetTable.getValue(i));
@@ -3862,7 +3963,27 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				for (int i = 0; i < assumptionIds.size(); i++) {
 					AssetNode node = (AssetNode) algorithm.getAssetNetwork().getNode(Long.toString(assumptionIds.get(i)));
 					if (node == null) {
-						throw new InexistingQuestionException("Question " + assumptionIds.get(i) + " does not exist.", assumptionIds.get(i));
+						synchronized (getResolvedQuestions()) {
+							// check if id was resolved
+							StatePair statePair = getResolvedQuestions().get(assumptionIds.get(i));
+							if (statePair != null) {
+								if (assumedStates == null || assumptionIds.indexOf(assumptionIds.get(i)) >= assumedStates.size() || assumedStates.get(assumptionIds.indexOf(assumptionIds.get(i))) == null) {
+									// the state was not specified. Just ignore the assumption in such case
+									continue; // by continuing, this assumption won't be added into conditions (so it won't be set to Infinite in min propagation)
+								} else  if (statePair.getResolvedState() != assumedStates.get(assumptionIds.indexOf(assumptionIds.get(i)))) {
+									// found a resolved assumption which is not compatible with the resolution (i.e. assumed a state which differs from resolved state)
+									// we should return NaN in this case.
+									return Float.NaN;
+								} else {
+									// in all other cases (e.g. the assumption was resolved, and the specified state is equal to the settled state), 
+									// then just ignore the assumption
+									continue; // by continuing, this assumption won't be added into conditions (so it won't be set to Infinite in min propagation)
+								}
+							} else {
+								// this question actually does not exist
+								throw new InexistingQuestionException("Assumption " + assumptionIds.get(i) + " does not exist.", assumptionIds.get(i));
+							}
+						}
 					}
 					Integer stateIndex = assumedStates.get(i);
 					if (stateIndex != null) {
@@ -3913,8 +4034,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			synchronized (getProbabilisticNetwork()) {
 				node = getProbabilisticNetwork().getNode(questionId.toString());
 			}
-			if (node == null) {
-				throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
+			synchronized (getResolvedQuestions()) {
+				if (node == null && !getResolvedQuestions().containsKey(questionId)) {
+					// node is not in network, and it is not a resolved question either.
+					throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
+				}
 			}
 		}
 		return scoreUserEv(userId, assumptionIds, assumedStates);
@@ -3953,6 +4077,27 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			node = getProbabilisticNetwork().getNode(Long.toString(questionId));
 		}
 		if (node == null) {
+			// check if node was resolved
+			synchronized (getResolvedQuestions()) {
+				// check if id was resolved
+				StatePair statePair = getResolvedQuestions().get(questionId);
+				if (statePair != null) {
+					// resolved questions have special treatment
+					List<Float> ret = new ArrayList<Float>(statePair.getStatesSize());
+					for (int i = 0; i < statePair.getStatesSize(); i++) {
+						// the settled state will have the global/conditional score. Everything else will be NaN
+						if (statePair.getResolvedState() != null && i == statePair.getResolvedState().intValue()) {
+							// Note: this portion will be called only once
+							ret.add(this.scoreUserEv(userId, assumptionIds, assumedStates));
+						} else {
+							ret.add(Float.NaN);
+						}
+					}
+					// return immediately
+					return ret;
+				}
+			}
+			// if reached this portion, then this question actually does not exist
 			throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
 		}
 		
@@ -4090,17 +4235,32 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			return listOfAssetsOfLazyInitializedUser;
 		}
 		
-		// obtain the main node
+		// obtain the main node, so that we can obtain how many states it has
 		INode node = null;
 		synchronized (getProbabilisticNetwork()) {
 			node = getProbabilisticNetwork().getNode(Long.toString(questionId));
 		}
+		// this var will hold the number of states that the main node (identified by questionId) has
+		int statesSize = 0;	// the number of states will be used as the size of the list to return (and for iteration)
 		if (node == null) {
-			throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
+			synchronized (getResolvedQuestions()) {
+				// check if id was resolved
+				StatePair statePair = getResolvedQuestions().get(questionId);
+				if (statePair == null) {
+					// this question actually does not exist, because it is neither in the shared BN nor in the resolved questions
+					throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
+				} else {
+					// extract number of states from the history of resolved questions
+					statesSize = statePair.getStatesSize();
+				}
+			}
+		} else {
+			// extract number of states from the current node
+			statesSize = node.getStatesSize();
 		}
 		
 		// list to return
-		List<Float> ret = new ArrayList<Float>(node.getStatesSize());
+		List<Float> ret = new ArrayList<Float>(statesSize);
 		
 		// this is a non-null list of assumptions to pass to scoreUserEv (assumptionIds & questionId)
 		List<Long> assumptionsIncludingThisQuestion = new ArrayList<Long>();
@@ -4124,7 +4284,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			assumedStatesIncludingThisState.add(0);
 			
 			// just calculate conditional expected score given each state of questionId... Use assumptionsIncludingThisQuestion and states
-			for (int i = 0; i < node.getStatesSize(); i++) {
+			for (int i = 0; i < statesSize; i++) {
 				// TODO optimize
 				assumedStatesIncludingThisState.set(assumedStatesIncludingThisState.size()-1, i);
 				ret.add(this.getCash(userId, assumptionsIncludingThisQuestion, assumedStatesIncludingThisState));
@@ -4133,7 +4293,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //			throw new IllegalArgumentException("Assumptions must not contain the question itself.");
 			Integer assumedStateOfThisQuestion = assumedStatesIncludingThisState.get(indexOfThisQuestion);
 			// calculate conditional expected score only for the evidence state, and the other states will have 0
-			for (int i = 0; i < node.getStatesSize(); i++) {
+			for (int i = 0; i < statesSize; i++) {
 				// TODO optimize
 				if (i == assumedStateOfThisQuestion) {
 					// the assumed state will have the value added
@@ -4183,7 +4343,27 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				synchronized (getProbabilisticNetwork()) {
 					assumption = getProbabilisticNetwork().getNode(Long.toString(id));
 					if (assumption == null) {
-						throw new InexistingQuestionException("Question " + id + " not found.", id);
+						synchronized (getResolvedQuestions()) {
+							// check if id was resolved
+							StatePair statePair = getResolvedQuestions().get(id);
+							if (statePair != null) {
+								if (assumedStates == null || assumptionIds.indexOf(id) >= assumedStates.size() || assumedStates.get(assumptionIds.indexOf(id)) == null) {
+									// the state was not specified. Just ignore the assumption in such case
+									continue; // by continuing, this assumption won't be added into nodeNameToStateMap (so it won't be used in hard evidence propagation)
+								} else  if (statePair.getResolvedState() != assumedStates.get(assumptionIds.indexOf(id))) {
+									// found a resolved assumption which is not compatible with the resolution (i.e. assumed a state which differs from resolved state)
+									// we should return NaN in this case.
+									return Float.NaN;
+								} else {
+									// in all other cases (e.g. the assumption was resolved, and the specified state is equal to the settled state), 
+									// then just ignore the assumption
+									continue; // by continuing, this assumption won't be added into nodeNameToStateMap (so it won't be used in hard evidence propagation)
+								}
+							} else {
+								// this question actually does not exist
+								throw new InexistingQuestionException("Assumption " + id + " not found", id);
+							}
+						}
 					}
 					// check state consistency
 					if ( (assumedStates != null)  && (i < assumedStates.size()) ) {

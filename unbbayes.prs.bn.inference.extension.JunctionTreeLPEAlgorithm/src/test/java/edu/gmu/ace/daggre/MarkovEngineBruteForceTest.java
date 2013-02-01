@@ -183,7 +183,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If there are less than this number of questions, questions will not be resolved */
 	private static int minAliveQuestionNumber = -1;
 	
-	private static long seed = new Date().getTime();
+	private static long seed = new Date().getTime();//1359656973478L;
 	
 	/** Random number generator, with seed */
 	private static Random random = new Random(seed);
@@ -5761,17 +5761,24 @@ public class MarkovEngineBruteForceTest extends TestCase {
 //					List<Float> cashPerStatesToCompare = null;
 					// the following shall throw exception if engine is configured to delete resolved nodes
 					if (engines.get(i).isToDeleteResolvedNode() || !engines.get(i).isToObtainProbabilityOfResolvedQuestions()) {
-						try {
-							engines.get(i).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
-							fail(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates);
-						} catch (IllegalArgumentException e) {
-							// OK
+						List<Float> assetsList = engines.get(i).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
+						assertNotNull(assetsList);
+						// From Jan 2013, assets/probs of resolved questions are NaN if it is not the settled state
+						for (int j = 0; j < assetsList.size(); j++) {
+							if (j == settledState) {
+								assertEquals(conditionalScoreUserEvToCompare, assetsList.get(j), ASSET_ERROR_MARGIN);
+							} else {
+								assertEquals(Float.NaN, assetsList.get(j));
+							}
 						}
-						try {
-							engines.get(i).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
-							fail(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates);
-						} catch (IllegalArgumentException e) {
-							// OK
+						assetsList = engines.get(i).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+						// From Jan 2013, assets/probs of resolved questions are NaN if it is not the settled state
+						for (int j = 0; j < assetsList.size(); j++) {
+							if (j == settledState) {
+								assertEquals(newConditionalCashToCompare, assetsList.get(j), ASSET_ERROR_MARGIN);
+							} else {
+								assertEquals(Float.NaN, assetsList.get(j));
+							}
 						}
 					} else if (!engines.get(0).isToDeleteResolvedNode()) {
 						List<Float> scoreUserQuestionEvStates = engines.get(0).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);

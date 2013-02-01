@@ -3915,8 +3915,22 @@ public class MarkovEngineTest extends TestCase {
 			assertNotNull(e);
 		}
 		
+		// check that we can retrieve out-of-clique probs and expected scores
+		List<Float> probList = engine.getProbList(0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertNotNull(probList);
+		assertEquals(2, probList.size());
+		
+		probList = engine.scoreUserQuestionEvStates(userNameToIDMap.get("Eric"),0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertNotNull(probList);
+		assertEquals(2, probList.size());
+		
+		probList = engine.getCashPerStates(userNameToIDMap.get("Eric"),0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertNotNull(probList);
+		assertEquals(2, probList.size());
+		
+		
 		// check that final marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
-		List<Float> probList = engine.getProbList(0x0D, null, null);
+		probList = engine.getProbList(0x0D, null, null);
 		assertEquals(0.7232f, probList.get(0), PROB_ERROR_MARGIN);
 		assertEquals(0.2768f, probList.get(1), PROB_ERROR_MARGIN);
 		probList = engine.getProbList(0x0E, null, null);
@@ -8131,7 +8145,7 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 0x0E);		// 2nd node is E; assumedStates must follow this order
 		assumptionIds.add((long) 0x0F);		// 3rd node is F; assumedStates must follow this order
 		// init list of states of the assumptions
-		ArrayList<Integer> assumedStates = new ArrayList<Integer>();	
+		List<Integer> assumedStates = new ArrayList<Integer>();	
 		assumedStates.add(0);	// d1
 		assumedStates.add(0);	// e1
 		assumedStates.add(0);	// f1
@@ -8511,7 +8525,13 @@ public class MarkovEngineTest extends TestCase {
 			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
 			List<Float> assetsIfStates = engine.getAssetsIfStates(userId, (long)0x0E, Collections.singletonList((long)0x0D), null);
 			if (engine.isToDeleteResolvedNode()) {
-				fail("D should not be present anymore");
+//				fail("D should not be present anymore");
+				// after 2013 Jan, resolved questions are ignored if it's in settled state, and NaN is returned if not in settled state
+				List<Float> assetsIfStatesWithoutAssumption = engine.getAssetsIfStates(userId, (long)0x0E, null, null);
+				assertEquals(assetsIfStatesWithoutAssumption.size(), assetsIfStates.size());
+				for (int i = 0; i < assetsIfStates.size(); i++) {
+					assertEquals(assetsIfStatesWithoutAssumption.get(i), assetsIfStates.get(i), ASSET_ERROR_MARGIN);
+				}
 			} else {
 				// make sure the impossible state has assets == 0
 				assertEquals(4, assetsIfStates.size());
@@ -8530,7 +8550,9 @@ public class MarkovEngineTest extends TestCase {
 			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
 			cash = engine.getCash(userId, Collections.singletonList((long)0x0D), Collections.singletonList(1));
 			if (engine.isToDeleteResolvedNode()) {
-				fail("D should not be present anymore");
+//				fail("D should not be present anymore");
+				// from 2013 Jan, resolved questions are properly treated
+				assertEquals(Float.NaN, cash, ASSET_ERROR_MARGIN);
 			} else {
 				// make sure the impossible state has assets == 0
 				fail("Should throw exeption indicating that assets == inconsistent (or 0)");
@@ -8633,9 +8655,11 @@ public class MarkovEngineTest extends TestCase {
 		}
 		Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
 		try {
-			engine.scoreUserQuestionEv(userId, (long)0x0D, null, null);
+			float scoreUserQuestionEv = engine.scoreUserQuestionEv(userId, (long)0x0D, null, null);
 			if (engine.isToDeleteResolvedNode()) {
-				fail("D should not be present anymore");
+//				fail("D should not be present anymore");
+				//　from Jan 30, 2013, scoreUserQuestionEv of a resolved question will be equal to scoreUserEv.
+				assertEquals(engine.scoreUserEv(userId, null, null), scoreUserQuestionEv, ASSET_ERROR_MARGIN);
 			}
 		} catch (ZeroAssetsException e) {
 			e.printStackTrace();
@@ -8650,9 +8674,17 @@ public class MarkovEngineTest extends TestCase {
 		}
 		try {
 			userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
-			engine.scoreUserQuestionEv(userId, (long)((Math.random() < .5)?0x0E:0x0F), Collections.singletonList((long)0x0D), Collections.singletonList(((Math.random()<.5)?0:1)));
+			long questionId = (long)((Math.random() < .5)?0x0E:0x0F);
+			assumedStates = (List) Collections.singletonList(((Math.random()<.5)?0:1));
+			float scoreUserQuestionEv = engine.scoreUserQuestionEv(userId, questionId, Collections.singletonList((long)0x0D), assumedStates);
 			if (engine.isToDeleteResolvedNode()) {
-				fail("D should not be present anymore");
+//				fail("D should not be present anymore");
+				//　from Jan 30, 2013, scoreUserQuestionEv of a resolved question will be equal to scoreUserEv.
+				if (assumedStates.get(0).intValue() == 0) {
+					assertEquals(engine.scoreUserEv(userId, null, null), scoreUserQuestionEv, ASSET_ERROR_MARGIN);
+				} else {
+					assertEquals(Float.NaN, scoreUserQuestionEv, ASSET_ERROR_MARGIN);
+				}
 			}
 		} catch (ZeroAssetsException e) {
 			e.printStackTrace();
@@ -8667,9 +8699,13 @@ public class MarkovEngineTest extends TestCase {
 		}
 		try {
 			userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
-			engine.scoreUserQuestionEvStates(userId, (long)0x0D, null, null);
+			List<Float> scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userId, (long)0x0D, null, null);
 			if (engine.isToDeleteResolvedNode()) {
-				fail("D should not be present anymore");
+//				fail("D should not be present anymore");
+				// from 2013 Jan, resolved questions are properly treated by using NaN in states other than the settled
+				assertEquals(2, scoreUserQuestionEvStates.size());
+				assertEquals(engine.scoreUserEv(userId, null, null), scoreUserQuestionEvStates.get(0), ASSET_ERROR_MARGIN);
+				assertEquals(Float.NaN, scoreUserQuestionEvStates.get(1));
 			}
 		} catch (IllegalArgumentException e) {
 			if (engine.isToDeleteResolvedNode()) {
@@ -8681,9 +8717,25 @@ public class MarkovEngineTest extends TestCase {
 		}
 		try {
 			userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
-			engine.scoreUserQuestionEvStates(userId, (long)((Math.random() < .5)?0x0E:0x0F), Collections.singletonList((long)0x0D), Collections.singletonList(((Math.random()<.5)?0:1)));
+			long questionId = (long)((Math.random() < .5)?0x0E:0x0F);
+			assumedStates = Collections.singletonList(((Math.random()<.5)?0:1));
+			List<Float> scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userId, questionId, Collections.singletonList((long)0x0D), assumedStates);
 			if (engine.isToDeleteResolvedNode()) {
-				fail("D should not be present anymore");
+//				fail("D should not be present anymore");
+				// from 2013 Jan, resolved questions are properly handled by using NaN when state is other than the settled.
+				if (assumedStates.get(0).intValue() == 0 ) {
+					// assumption is in the settled state, so it's the same of ignoring such assumption
+					List<Float> scoreUserQuestionEvStatesIgnoringAssumptions = engine.scoreUserQuestionEvStates(userId, questionId, null, null);
+					assertEquals(scoreUserQuestionEvStatesIgnoringAssumptions.size(), scoreUserQuestionEvStates.size());
+					for (int i = 0; i < scoreUserQuestionEvStates.size(); i++) {
+						assertEquals(scoreUserQuestionEvStatesIgnoringAssumptions.get(i), scoreUserQuestionEvStates.get(i), ASSET_ERROR_MARGIN);
+					}
+				} else {
+					// the assumption is not in the settled state
+					for (Float score : scoreUserQuestionEvStates) {
+						assertEquals(Float.NaN, score);
+					}
+				}
 			}
 		} catch (IllegalArgumentException e) {
 			if (engine.isToDeleteResolvedNode()) {
@@ -21589,6 +21641,598 @@ public class MarkovEngineTest extends TestCase {
 		}
 	}
 	
+	/**
+	 * Check whether we can use resolved questions as arguments of the following methods:
+	 * {@link MarkovEngineInterface#getAssetsIfStates(long, long, List, List)}
+	 * {@link MarkovEngineInterface#getProbList(long, List, List)}
+	 * {@link MarkovEngineInterface#getProbLists(List, List, List)}
+	 * {@link MarkovEngineInterface#scoreUserEv(long, List, List)}
+	 * {@link MarkovEngineInterface#scoreUserQuestionEv(long, Long, List, List)}
+	 * {@link MarkovEngineInterface#scoreUserQuestionEvStates(long, long, List, List)}
+	 * {@link MarkovEngineInterface#getCash(long, List, List)}
+	 */
+	public final void testResolvedQuestionAsArgument() {
+		// generate the DEF network
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		this.createDEFNetIn1Transaction(userNameToIDMap );
+		
+		// check that I can call the tested method with no problems now
+		
+		// first, test methods which does not depend on users
+		
+		// {@link MarkovEngineInterface#getProbList(long, List, List)}
+		// different clique
+		List<Float> probList = engine.getProbList(0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertNotNull(probList);
+		assertEquals(2, probList.size());
+		assertTrue(probList.get(0) > 0 &&probList.get(1) > 0);
+		assertTrue(probList.get(0) < 1 &&probList.get(1) < 1);
+		assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals(2, probList.size());
+		assertTrue(probList.get(0) > 0 &&probList.get(1) > 0);
+		assertTrue(probList.get(0) < 1 &&probList.get(1) < 1);
+		assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(2, probList.size());
+		assertTrue(probList.get(0) > 0 &&probList.get(1) > 0);
+		assertTrue(probList.get(0) < 1 &&probList.get(1) < 1);
+		assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		assertEquals(2, probList.size());
+		assertTrue(probList.get(0) > 0 &&probList.get(1) > 0);
+		assertTrue(probList.get(0) < 1 &&probList.get(1) < 1);
+		assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		// same clique
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(2, probList.size());
+		assertTrue(probList.get(0) > 0 &&probList.get(1) > 0);
+		assertTrue(probList.get(0) < 1 &&probList.get(1) < 1);
+		assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		assertEquals(2, probList.size());
+		assertTrue(probList.get(0) > 0 &&probList.get(1) > 0);
+		assertTrue(probList.get(0) < 1 &&probList.get(1) < 1);
+		assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertEquals(2, probList.size());
+		assertTrue(probList.get(0) > 0 &&probList.get(1) > 0);
+		assertTrue(probList.get(0) < 1 &&probList.get(1) < 1);
+		assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertEquals(2, probList.size());
+		assertTrue(probList.get(0) > 0 &&probList.get(1) > 0);
+		assertTrue(probList.get(0) < 1 &&probList.get(1) < 1);
+		assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		
+		// {@link MarkovEngineInterface#getProbLists(List, List, List)}
+		// this method can test different cliques and same cliques at once
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0FL));
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= 1 &&probList.get(1) <= 1);
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		}
+		probLists = engine.getProbLists(null, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0FL));
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= 1 &&probList.get(1) <= 1);
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		}
+		probLists = engine.getProbLists(null, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0EL));
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= 1 &&probList.get(1) <= 1);
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		}
+		probLists = engine.getProbLists(null, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0EL));
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= 1 &&probList.get(1) <= 1);
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		}
+		List<Long> allQuestions = new ArrayList<Long>(3);
+		allQuestions.add(0x0DL);
+		allQuestions.add(0x0EL);
+		allQuestions.add(0x0FL);
+		probLists = engine.getProbLists(allQuestions, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0FL));
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= 1 &&probList.get(1) <= 1);
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		}
+		probLists = engine.getProbLists(allQuestions, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0FL));
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= 1 &&probList.get(1) <= 1);
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		}
+		probLists = engine.getProbLists(allQuestions, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0EL));
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= 1 &&probList.get(1) <= 1);
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		}
+		probLists = engine.getProbLists(allQuestions, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0EL));
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= 1 &&probList.get(1) <= 1);
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		}
+		List<Long> outOfCliqueAssumptions = new ArrayList<Long>();
+		outOfCliqueAssumptions.add(0x0EL);
+		outOfCliqueAssumptions.add(0x0FL);
+		List<Integer> outOfCliqueAssumptionsStates = new ArrayList<Integer>();
+		outOfCliqueAssumptionsStates.add(1);
+		outOfCliqueAssumptionsStates.add(1);
+		probLists = engine.getProbLists(allQuestions, outOfCliqueAssumptions, outOfCliqueAssumptionsStates);
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0EL));
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= 1 &&probList.get(1) <= 1);
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		}
+		
+		// then, test methods which depends on users
+		
+		for (String userName : userNameToIDMap.keySet()) {
+			// {@link MarkovEngineInterface#getAssetsIfStates(long, long, List, List)}
+			// in this case, the node must be in the same clique
+			List<Float> assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+			assertNotNull(assets);
+			assertEquals(2, assets.size());
+			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+			assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+			assertNotNull(assets);
+			assertEquals(2, assets.size());
+			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+			assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertNotNull(assets);
+			assertEquals(2, assets.size());
+			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+			assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+			assertNotNull(assets);
+			assertEquals(2, assets.size());
+			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+			
+			// {@link MarkovEngineInterface#scoreUserEv(long, List, List)}
+			float score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertTrue(score > 0);
+			score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(1));
+			assertTrue(score > 0);
+			
+			// {@link MarkovEngineInterface#scoreUserQuestionEv(long, Long, List, List)}
+			// different cliques
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertTrue(score > 0);
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+			assertTrue(score > 0);
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+			assertTrue(score > 0);
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+			assertTrue(score > 0);
+			// same clique
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertTrue(score > 0);
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+			assertTrue(score > 0);
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+			assertTrue(score > 0);
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+			assertTrue(score > 0);
+					
+			// {@link MarkovEngineInterface#scoreUserQuestionEvStates(long, long, List, List)}
+			// different clique
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertNotNull(assets);
+			assertEquals(2, assets.size());
+			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+			assertNotNull(assets);
+			assertEquals(2, assets.size());
+			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+			assertNotNull(assets);
+			assertEquals(2, assets.size());
+			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+			assertNotNull(assets);
+			assertEquals(2, assets.size());
+			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+			// same clique
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertNotNull(assets);
+			assertEquals(2, assets.size());
+			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+			assertNotNull(assets);
+			assertEquals(2, assets.size());
+			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+			assertNotNull(assets);
+			assertEquals(2, assets.size());
+			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+			assertNotNull(assets);
+			assertEquals(2, assets.size());
+			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+			
+		}
+		
+		// settle/resolve question E on state 1 (so that assuming state 0 will be invalid)
+		engine.resolveQuestion(null, new Date(), 0x0EL, 1);
+		
+		// check the methods after settlement
+		
+		// first, test methods which does not depend on users
+		
+		// {@link MarkovEngineInterface#getProbList(long, List, List)}
+		// different clique
+		// obtaining the probability of resolved question should return [0,1]
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertNotNull(probList);
+		assertEquals(2, probList.size());
+		assertEquals(0 , probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(1 , probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals(2, probList.size());
+		assertEquals(0 , probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(1 , probList.get(1), PROB_ERROR_MARGIN);
+		
+		// prob of other questions assuming resolved questions with incompatible state is NaN
+		probList = engine.getProbList(0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(2, probList.size());
+		assertEquals(Float.NaN, probList.get(0));
+		assertEquals(Float.NaN, probList.get(1));
+		
+		// probability of other questions assuming resolved question will be the same without the assumption, if the assumed state is compatible with settled state
+		probList = engine.getProbList(0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		List<Float> probListIgnoringResolvedAssumption = engine.getProbList(0x0FL, null, null);
+		assertEquals(probListIgnoringResolvedAssumption.size(), probList.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probListIgnoringResolvedAssumption.get(i), probList.get(i), PROB_ERROR_MARGIN);
+		}
+		
+		// same clique
+		
+		// prob of other questions assuming resolved questions with incompatible state is NaN
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(2, probList.size());
+		assertEquals(Float.NaN, probList.get(0));
+		assertEquals(Float.NaN, probList.get(1));
+		
+		// probability of other questions assuming resolved question will be the same without the assumption, if the assumed state is compatible with settled state
+		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		probListIgnoringResolvedAssumption = engine.getProbList(0x0DL, null, null);
+		assertEquals(probListIgnoringResolvedAssumption.size(), probList.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probListIgnoringResolvedAssumption.get(i), probList.get(i), PROB_ERROR_MARGIN);
+		}
+		
+		// obtaining the probability of resolved question should return [0,1]
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertEquals(2, probList.size());
+		assertEquals(0 , probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(1 , probList.get(1), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		assertEquals(2, probList.size());
+		assertEquals(0 , probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(1 , probList.get(1), PROB_ERROR_MARGIN);
+		
+		// {@link MarkovEngineInterface#getProbLists(List, List, List)}
+		// this method can test different cliques and same cliques at once
+		
+		// prob of other questions assuming resolved questions with incompatible state is NaN
+		probLists = engine.getProbLists(null, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(2, probLists.size());
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertEquals(Float.NaN, probList.get(0));
+			assertEquals(Float.NaN, probList.get(1));
+		}
+		
+		probLists = engine.getProbLists(null, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		Map<Long, List<Float>> probListsIgnoringResolvedAssumption = engine.getProbLists(null, null, null);
+		assertEquals(probListsIgnoringResolvedAssumption.size(), probLists.size());
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			probListIgnoringResolvedAssumption = probListsIgnoringResolvedAssumption.get(key);
+			assertEquals(probListIgnoringResolvedAssumption.size(), probList.size());
+			for (int i = 0; i < probList.size(); i++) {
+				assertEquals(probListIgnoringResolvedAssumption.get(i), probList.get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		probLists = engine.getProbLists(allQuestions, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		assertEquals(3, probLists.size());
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertEquals(Float.NaN, probList.get(0));
+			assertEquals(Float.NaN, probList.get(1));
+		}
+		
+		probLists = engine.getProbLists(allQuestions, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		probListsIgnoringResolvedAssumption = engine.getProbLists(allQuestions, null, null);
+		assertEquals(probListsIgnoringResolvedAssumption.size(), probLists.size());
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			probListIgnoringResolvedAssumption = probListsIgnoringResolvedAssumption.get(key);
+			assertEquals(probListIgnoringResolvedAssumption.size(), probList.size());
+			for (int i = 0; i < probList.size(); i++) {
+				assertEquals(probListIgnoringResolvedAssumption.get(i), probList.get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// obtaining the probability of remaining questions
+		probLists = engine.getProbLists(null, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertEquals(2, probLists.size());
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= 1 &&probList.get(1) <= 1);
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		}
+		// prob of resolved question should be [0,1]
+		probLists = engine.getProbLists(Collections.singletonList(0x0EL), Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertEquals(0, probLists.get(0x0EL).get(0), PROB_ERROR_MARGIN);
+		assertEquals(1, probLists.get(0x0EL).get(1), PROB_ERROR_MARGIN);
+		
+		probLists = engine.getProbLists(null, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals(2, probLists.size());
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= (1+PROB_ERROR_MARGIN) &&probList.get(1) <= (1+PROB_ERROR_MARGIN));
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		}
+		// prob of resolved question should be [0,1]
+		probLists = engine.getProbLists(Collections.singletonList(0x0EL), Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals(0, probLists.get(0x0EL).get(0), PROB_ERROR_MARGIN);
+		assertEquals(1, probLists.get(0x0EL).get(1), PROB_ERROR_MARGIN);
+		
+		// prob of node conditioned to itself should be [0,1]
+		probLists = engine.getProbLists(Collections.singletonList(0x0FL), Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertEquals(1, probLists.get(0x0FL).get(0), PROB_ERROR_MARGIN);
+		assertEquals(0, probLists.get(0x0FL).get(1), PROB_ERROR_MARGIN);
+		
+		probLists = engine.getProbLists(Collections.singletonList(0x0FL), Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals(0, probLists.get(0x0FL).get(0), PROB_ERROR_MARGIN);
+		assertEquals(1, probLists.get(0x0FL).get(1), PROB_ERROR_MARGIN);
+		
+		
+		// obtaining the probability of remaining questions
+		probLists = engine.getProbLists(allQuestions, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0EL));
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= 1 &&probList.get(1) <= 1);
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+			if (key.longValue() == 0x0EL) {
+				// prob of resolved question should be [0,1]
+				assertEquals(0, probLists.get(0x0EL).get(0), PROB_ERROR_MARGIN);
+				assertEquals(1, probLists.get(0x0EL).get(1), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		probLists = engine.getProbLists(allQuestions, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0EL));
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= (1+PROB_ERROR_MARGIN) &&probList.get(1) <= (1+PROB_ERROR_MARGIN));
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+			if (key.longValue() == 0x0EL) {
+				// prob of resolved question should be [0,1]
+				assertEquals(0, probLists.get(0x0EL).get(0), PROB_ERROR_MARGIN);
+				assertEquals(1, probLists.get(0x0EL).get(1), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// method should also support multiple assumptions which are outside the clique
+		probLists = engine.getProbLists(allQuestions, outOfCliqueAssumptions, outOfCliqueAssumptionsStates);
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0EL));
+		for (Long key : probLists.keySet()) {
+			probList = probLists.get(key);
+			assertEquals(2, probList.size());
+			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+			assertTrue(probList.get(0) <= (1+PROB_ERROR_MARGIN) &&probList.get(1) <= (1+PROB_ERROR_MARGIN));
+			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+			if (key.longValue() == 0x0EL) {
+				// prob of resolved question should be [0,1]
+				assertEquals(0, probLists.get(0x0EL).get(0), PROB_ERROR_MARGIN);
+				assertEquals(1, probLists.get(0x0EL).get(1), PROB_ERROR_MARGIN);
+			}
+		}
+		probList = engine.getProbList(0x0DL, outOfCliqueAssumptions, outOfCliqueAssumptionsStates);
+		assertEquals(2, probList.size());
+		assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
+		assertTrue(probList.get(0) <= (1+PROB_ERROR_MARGIN) &&probList.get(1) <= (1+PROB_ERROR_MARGIN));
+		assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
+		
+		// then, test methods which depends on users
+		
+		for (String userName : userNameToIDMap.keySet()) {
+			// {@link MarkovEngineInterface#getAssetsIfStates(long, long, List, List)}
+			// in this case, the node must be in the same clique
+			List<Float> assets = null;
+			try {
+				// assets of resolved node is not well defined
+				assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+				fail();
+			} catch (RuntimeException e) {
+				// OK
+			}
+			try {
+				// assets of resolved node is not well defined
+				assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+				fail();
+			} catch (RuntimeException e) {
+				// OK
+			}
+			// assets with assumption incompatible with settlement is NaN
+			assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertEquals(2, assets.size());
+			assertEquals(Float.NaN, assets.get(0));
+			assertEquals(Float.NaN, assets.get(1));
+			
+			// if assumption is compatible, then it must be the same as ignoring the resolved assumption
+			assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+			List<Float> assetsIgnoringAssumption = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, null, null);
+			assertEquals(assetsIgnoringAssumption.size(), assets.size());
+			for (int i = 0; i < assets.size(); i++) {
+				assertEquals(assetsIgnoringAssumption.get(i), assets.get(i), ASSET_ERROR_MARGIN);
+			}
+			
+			// {@link MarkovEngineInterface#scoreUserEv(long, List, List)}
+			float score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertEquals(Float.NaN, score);
+			score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(1));
+			float scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName), null, null);
+			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+			
+			// {@link MarkovEngineInterface#scoreUserQuestionEv(long, Long, List, List)}
+			// different cliques
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertEquals(Float.NaN, score);
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+			scoreIgnoringIncompatibleState = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, null, null);
+			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+			
+			// score question EV of resolved question should be equals to the conditional expected assets regardless of settled question
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+			scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0FL), Collections.singletonList(0));
+			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+			scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0FL), Collections.singletonList(1));
+			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+			
+			// same clique
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertEquals(Float.NaN, score);
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+			scoreIgnoringIncompatibleState = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, null, null);
+			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+			
+			// score question EV of resolved question should be equals to the conditional expected assets regardless of settled question
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+			scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName),  Collections.singletonList(0x0DL), Collections.singletonList(0));
+			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+			scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0DL), Collections.singletonList(1));
+			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+			
+			// {@link MarkovEngineInterface#scoreUserQuestionEvStates(long, long, List, List)}
+			
+			// different clique
+			
+			// assets with assumption incompatible with settlement is NaN
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertEquals(2, assets.size());
+			assertEquals(Float.NaN, assets.get(0));
+			assertEquals(Float.NaN, assets.get(1));
+			
+			// if assumption is compatible, then it must be the same as ignoring the resolved assumption
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+			assetsIgnoringAssumption = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, null, null);
+			assertEquals(assetsIgnoringAssumption.size(), assets.size());
+			for (int i = 0; i < assets.size(); i++) {
+				assertEquals(assetsIgnoringAssumption.get(i), assets.get(i), ASSET_ERROR_MARGIN);
+			}
+			
+			// score of resolved question will be NaN for the incompatible state, and the global conditional expected assets for the compatible state
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+			score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0FL), Collections.singletonList(0));
+			assertEquals(2, assets.size());
+			assertEquals(Float.NaN, assets.get(0));
+			assertEquals(score, assets.get(1));
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+			score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0FL), Collections.singletonList(1));
+			assertEquals(2, assets.size());
+			assertEquals(Float.NaN, assets.get(0));
+			assertEquals(score, assets.get(1));
+			
+			// same clique
+			
+			// assets with assumption incompatible with settlement is NaN
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertEquals(2, assets.size());
+			assertEquals(Float.NaN, assets.get(0));
+			assertEquals(Float.NaN, assets.get(1));
+			
+			// if assumption is compatible, then it must be the same as ignoring the resolved assumption
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+			assetsIgnoringAssumption = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, null, null);
+			assertEquals(assetsIgnoringAssumption.size(), assets.size());
+			for (int i = 0; i < assets.size(); i++) {
+				assertEquals(assetsIgnoringAssumption.get(i), assets.get(i), ASSET_ERROR_MARGIN);
+			}
+			
+			// score of resolved question will be NaN for the incompatible state, and the global conditional expected assets for the compatible state
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+			score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0DL), Collections.singletonList(0));
+			assertEquals(2, assets.size());
+			assertEquals(Float.NaN, assets.get(0));
+			assertEquals(score, assets.get(1));
+			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+			score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0DL), Collections.singletonList(1));
+			assertEquals(2, assets.size());
+			assertEquals(Float.NaN, assets.get(0));
+			assertEquals(score, assets.get(1));
+			
+			// {@link MarkovEngineInterface#getCash(long, List, List)}
+			score = engine.getCash(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(0));
+			assertEquals(Float.NaN, score);
+			score = engine.getCash(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(1));
+			scoreIgnoringIncompatibleState = engine.getCash(userNameToIDMap.get(userName), null, null);
+			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+			
+		}
+	}
 	
 	public final void testConditionalHistorySingleTransaction() {
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();

@@ -418,6 +418,8 @@ public interface MarkovEngineInterface {
 	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
 	 * If negative, then "not" Math.abs(state + 1) will be considered as the state (i.e. the state Math.abs(state + 1) will be
 	 * considered as 0%).
+	 * If a resolved assumption is passed and the state is not equal to the settled state, then this method will return a list
+	 * filled with {@link Float#NaN}.
 	 * @return the probability of a question (i.e. random variable) given assumptions.
 	 * The order is important for identifying the states (i.e. 1st value is for the 1st state, and so on).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
@@ -437,6 +439,8 @@ public interface MarkovEngineInterface {
 	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
 	 * If negative, then "not" Math.abs(state + 1) will be considered as the state (i.e. the state Math.abs(state + 1) will be
 	 * considered as 0%).
+	 * If a resolved assumption is passed and the state is not equal to the settled state, then this method will return a list
+	 * filled with {@link Float#NaN}.
 	 * @return a mapping from question ID to the probabilities of that question.
 	 * The order is important for identifying the states (i.e. 1st value is for the 1st state, and so on).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
@@ -511,6 +515,9 @@ public interface MarkovEngineInterface {
 	 * If assumedStates is filled with null values, then this method will return conditional asset table.
 	 * <br/><br/>
 	 * E.g. [Asset(X=x0|Y=y0,Z=z0) ; Asset(X=x1|Y=y0,Z=z0); Asset(X=x0|Y=y0,Z=z1); Asset(X=x1|Y=y0,Z=z1)]
+	 * <br/><br/>
+	 * If a resolved assumption is passed and the state is not equal to the settled state, then this method will return a list
+	 * filled with {@link Float#NaN}.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 */
@@ -583,30 +590,35 @@ public interface MarkovEngineInterface {
 	/**
 	 * Obtains the expected assets (probability * asset).
 	 * @param userId : the ID of the user (owner of the assets).
-	 * @param questionId :  the ID of the question to be considered. If set to null, this method shall be equivalent to {@link #scoreUserEv(long, List, List)}.
+	 * @param questionId :  the ID of the question to be considered. If set to null or to a resolved question, this method shall be equivalent to {@link #scoreUserEv(long, List, List)}.
 	 * @param assumptionIds : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
 	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
 	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
 	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
 	 * If it does not have the same size of assumptionIDs, MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
+	 * If a resolved assumption is passed and the state is not equal to the settled state, then this method will return a list
+	 * filled with {@link Float#NaN}.
 	 * @return current expected value portion of user score given a set of assumptions. 
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
+	 * @deprecated use {@link #scoreUserEv(long, List, List)} or {@link #scoreUserQuestionEvStates(long, long, List, List)} instead
 	 */
 	public float scoreUserQuestionEv(long userId, Long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * @param userId : the ID of the user (owner of the assets).
-	 * @param questionId :  the ID of the question to be considered. 
+	 * @param questionId :  the ID of the question to be considered. If this question was resolved, then the state which is not the settled state
+	 * will have {@link Float#NaN} in its value.
 	 * @param assumptionIds : (optional) list (ordered collection) of question IDs assumed when obtaining the estimated assets. If specified,
 	 * the questions (i.e. random variables) with these IDs will be assumed to be in the states specified in the argument "assumedStates".
 	 * @param assumedStates : (mandatory if assumptionIDs is specified - must have the same size of assumptionIDs) indexes
 	 * of states (i.e. choices - if boolean, then it is either 0 or 1) of assumptionIDs to be assumed.
 	 * If it does not have the same size of assumptionIDs, MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
+	 * If a resolved assumption is passed and the state is not equal to the settled state, then this method will return a list
+	 * filled with {@link Float#NaN}.
 	 * @return a list of score expectations for each possible choice that could result. This is p(state)*user_assets(state).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
-	 * @deprecated use {@link #scoreUserQuestionEvStates(long, long, List, List, boolean)} instead
 	 */
 	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
@@ -623,7 +635,7 @@ public interface MarkovEngineInterface {
 	 * @return a list of score expectations for each possible choice that could result. This is p(state)*user_assets(state).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. inexistent question or state, or invalid assumptions).
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
-	 * 
+	 * @deprecated use {@link #scoreUserQuestionEvStates(long, long, List, List)} instead
 	 */
 	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates, boolean isToComputeLocally) throws IllegalArgumentException;
 	
@@ -638,6 +650,8 @@ public interface MarkovEngineInterface {
 	 * If it does not have the same size of assumptionIDs, MIN(assumptionIDs.size(), assumedStates.size()) shall be considered.
 	 * If negative, then "not" Math.abs(state + 1) will be considered as the state (i.e. the state Math.abs(state + 1) will be
 	 * considered as 0%).
+	 * If a resolved assumption is passed and the state is not equal to the settled state, then this method will return a list
+	 * filled with {@link Float#NaN}.
 	 * @return TOTAL current expected value portion of across all questions given a set of assumptions.
 	 * @throws IllegalArgumentException
 	 * @see {@link #scoreUserQuestionEv(long, Long, List, List)}

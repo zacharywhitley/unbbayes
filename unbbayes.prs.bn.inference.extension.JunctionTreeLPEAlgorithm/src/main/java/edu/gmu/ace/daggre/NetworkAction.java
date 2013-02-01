@@ -123,4 +123,11 @@ public interface NetworkAction extends QuestionEvent {
 	 */
 	void setNewValues(List<Float> newValues);
 	
+//	/**
+//	 * @return : how many bytes this object retains only for data (not considering any
+//	 * space occupied by auxiliary objects). For example, this value can be reported as a sum
+//	 * of the size of attributes provided in the constructor.
+//	 */
+//	long getSizeOfActionInBytes();
+	
 }
