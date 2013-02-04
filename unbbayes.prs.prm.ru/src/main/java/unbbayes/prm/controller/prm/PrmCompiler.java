@@ -259,7 +259,9 @@ public class PrmCompiler {
 
 				// Get instances.
 				String[][] instanceValues = dbController
-						.getParentRelatedInstances(parentRel, initInstanceValue);
+						.getParentRelatedInstances(parentRel,
+								initInstanceValue);
+				
 				// Create a node for each parent instance.
 				for (int i = 0; i < instanceValues.length; i++) {
 					// Index for the instance i.
@@ -267,7 +269,7 @@ public class PrmCompiler {
 					// Value for the instance i.
 					String afValue = instanceValues[i][1];
 
-					// Validate repeated value is not necessary for parents.
+					// Validate repeated node .
 
 					// Create Node.
 					ProbabilisticNode parentNode = createProbNode(afIndex,
@@ -361,14 +363,14 @@ public class PrmCompiler {
 
 				// /////////// For external attributes./////////////
 				// Get the foreign key with the second element of the path.
-				Attribute chilAttInit = path[path.length - 2];
+				Attribute chilAttInit = path[1];
 
 				// DIRECTION local.FK to other.ID or local.ID to other.FK
 				boolean directionFKToId = !chilAttInit.getAttribute().equals(
 						indexCol);
 
 				// Get the local table with the fist element of the path.
-				Table localTable = path[path.length - 1].getTable();
+				Table localTable = path[0].getTable();
 
 				String initInstanceValue;
 
@@ -391,7 +393,7 @@ public class PrmCompiler {
 
 				// Get instances.
 				String[][] instanceValues = dbController
-						.getChildRelatedInstances(childRel, initInstanceValue);
+						.getChildRelatedInstances(childRel, initInstanceValue,indexCol,indexValue);
 
 				// Relationship in description.
 				if (instanceValues.length > 0) {
@@ -493,7 +495,7 @@ public class PrmCompiler {
 		// ////////////// FILL THE QUERY NODE CPT /////////////////////
 		// TODO Bug multiples parents. could duplicate the instances.
 		// CPT parents
-		int numCptParents = rightCptWithValues.getVariablesSize();
+		int numCptParents = rightCptWithValues.getVariablesSize()- 1;
 
 		PotentialTable tmpTable = (PotentialTable) rightCptWithValues.clone();
 
@@ -502,7 +504,7 @@ public class PrmCompiler {
 
 		// Every CPT parent. the first one is discarded because it is the same
 		// attribute.
-		for (int level = 0; level < numCptParents - 1; level++) {
+		for (int level = 0; level < numCptParents ; level++) {
 			int relativeLevel = level + 1;
 			// CPT parent node
 			INode parentCptNode = rightCptWithValues
@@ -539,7 +541,7 @@ public class PrmCompiler {
 
 					// Get number of states for this variable (parent).
 					int numNodeStates = parentNodeInstance.getStatesSize();
-					// FIXME it could notnull be necessary because is the same
+					// FIXME it could not null be necessary because is the same
 					// attribute numNodeStates.
 					int numLevelStates = rightCptWithValues.getVariableAt(
 							relativeLevel).getStatesSize();

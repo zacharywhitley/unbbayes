@@ -39,6 +39,8 @@ public class PrmCompilerTest {
 
 	private Attribute attRoute;
 
+	private int idRelationship =0;
+	
 	@Before
 	public void setUp() throws Exception {
 		System.out.println("Start");
@@ -180,7 +182,7 @@ public class PrmCompilerTest {
 	/**
 	 * This is to test for Route.
 	 * 
-	 * Relationship 1: ROUTE.name ROUTE.id SHIP.route SHIP.isOfInterest
+	 * Relationship 1: SHIP.isOfInterest SHIP.route ROUTE.id ROUTE.name  
 	 * 
 	 * @throws Exception
 	 */
@@ -188,9 +190,9 @@ public class PrmCompilerTest {
 	public void testRoute() throws Exception {
 
 		// MEETING
-//		createNewRelationShipForMeeting();
+		// createNewRelationShipForMeeting();
 		// HAS TERRORIST
-//		createIntrisecRelForHasTerroristCrew();
+		// createIntrisecRelForHasTerroristCrew();
 		// ROUTE
 		createRouteRel();
 
@@ -202,7 +204,7 @@ public class PrmCompilerTest {
 						attIsOfInterest.getAttribute(), "N");
 
 		// Validate Result
-		String[] nodeNames = { "SHIP 1 isOfInterest", "ROUTE 0 UnusualRoute" };
+		String[] nodeNames = { "SHIP 1 isOfInterest", "ROUTE 0 name" };
 		validateResult(resultNetwork, nodeNames);
 
 	}
@@ -211,7 +213,7 @@ public class PrmCompilerTest {
 		Attribute[] path = createRoutePath();
 
 		System.out.println("Creating route relationship");
-		String idRel = "2";
+		String idRel = idRelationship++ +"";
 
 		// Parent rel
 		createRel(idRel, path, attIsOfInterest, attRoute);
@@ -221,7 +223,7 @@ public class PrmCompilerTest {
 		Attribute[] path = createHasTerroristPath();
 
 		System.out.println("Creating hasTerroristCrew relationship");
-		String idRel = "1";
+		String idRel = idRelationship++ +"";
 
 		createRel(idRel, path, attIsOfInterest, htcAttribute);
 	}
@@ -229,47 +231,58 @@ public class PrmCompilerTest {
 	private void createRel(String idRel, Attribute[] path, Attribute parent,
 			Attribute child) throws InvalidParentException {
 		// Parent rel
-				ParentRel newRel = new ParentRel(parent, child);
-				newRel.setPath(path);
-				newRel.setIdRelationsShip(idRel);
-				prmController.addParent(newRel);
+		ParentRel newRel = new ParentRel(parent, child);
+		newRel.setPath(path);
+		newRel.setIdRelationsShip(idRel);
+		prmController.addParent(newRel);
 
-				// Nodes for cpts
-				ProbabilisticNode parentNode = new ProbabilisticNode();
-				parentNode.setDescription(idRel);
-				ProbabilisticNode childNode = new ProbabilisticNode();
-				childNode.setDescription(idRel);
+		// Nodes for cpts
+		ProbabilisticNode parentNode = new ProbabilisticNode();
+		parentNode.setDescription(idRel);
+		ProbabilisticNode childNode = new ProbabilisticNode();
+		childNode.setDescription(idRel);
 
-				// Parent States
-				String[] states = dbController.getPossibleValues(parent);
-				for (String state : states) {
-					parentNode.appendState(state);
+		// Parent States
+//		String[] states = dbController.getPossibleValues(parent);
+//		for (String state : states) {
+//			parentNode.appendState(state);
+//		}
+		
+		// CPT for parent
+				if (prmController.getCPD(parent) == null) {
+					prmController.setCPD(parent,
+							createIsOfInterestParentTable(parentNode));
 				}
-				// Child States
-				String[] childStates = dbController.getPossibleValues(child);
-				for (String state : childStates) {
-					childNode.appendState(state);
-				}
+				
+				
+		// Child States
+		String[] childStates = dbController.getPossibleValues(child);
+		for (String state : childStates) {
+			childNode.appendState(state);
+		}
 
-				// Child
-				childNode.addParent(parentNode);
+		// Child
+		childNode.addParent(parentNode);
 
-				// Create the CPTs
-				PotentialTable childTable = childNode.getProbabilityFunction();
-				childTable.addVariable(childNode);
-				childTable.addVariable(parentNode);
+		// Create the CPTs
+		PotentialTable childTable = childNode.getProbabilityFunction();
+		childTable.addVariable(childNode);
+		childTable.addVariable(parentNode);
 
-				// Init cpts
-				childTable.setValue(0, 0.5f);
-				childTable.setValue(1, 0.5f);
-				childTable.setValue(2, 0.5f);
-				childTable.setValue(3, 0.5f);
+		// Init CPTs
+		childTable.setValue(0, 0.5f);
+		childTable.setValue(1, 0.5f);
+		childTable.setValue(2, 0.5f);
+		childTable.setValue(3, 0.5f);
 
-				PotentialTable cpts[] = { childTable };
-				// CPTs
-				System.out.println("CPTs");
-				prmController.setCPD(child, cpts);
+		PotentialTable cpts[] = { childTable };
+		// CPTs
+		System.out.println("CPTs");
+		prmController.setCPD(child, cpts);
+
+		
 	}
+
 	/**
 	 * Validate if every node name has a node in the network.
 	 * 
@@ -298,13 +311,14 @@ public class PrmCompilerTest {
 		}
 	}
 
+	
 	private void createNewRelationShipForMeeting() throws Exception {
 		Attribute[] path = createMeetingPath();
 
 		System.out.println("Creating meeting relationship");
 		// Registry relationships.
 		// MEETING Relationship.
-		String idRel = "0";
+		String idRel = idRelationship++ +"";
 		ParentRel newRel = new ParentRel(attIsOfInterest, attIsOfInterest);
 		newRel.setPath(path);
 		newRel.setIdRelationsShip(idRel);
@@ -316,6 +330,8 @@ public class PrmCompilerTest {
 		ProbabilisticNode childNode = new ProbabilisticNode();
 		childNode.setDescription(idRel);
 
+		PotentialTable parentTable = createIsOfInterestParentTable(parentNode);
+
 		// States
 		String[] states = dbController.getPossibleValues(attIsOfInterest);
 		for (String state : states) {
@@ -326,15 +342,11 @@ public class PrmCompilerTest {
 		childNode.addParent(parentNode);
 
 		// Create the CPTs
-		PotentialTable parentTable = parentNode.getProbabilityFunction();
-		parentTable.addVariable(parentNode);
 		PotentialTable childTable = childNode.getProbabilityFunction();
 		childTable.addVariable(childNode);
 		childTable.addVariable(parentNode);
 
 		// Init cpts
-		parentTable.setValue(0, 0.5f);
-		parentTable.setValue(1, 0.5f);
 		childTable.setValue(0, 0.5f);
 		childTable.setValue(1, 0.5f);
 		childTable.setValue(2, 0.5f);
@@ -344,6 +356,25 @@ public class PrmCompilerTest {
 		// CPTs
 		System.out.println("CPTs");
 		prmController.setCPD(attIsOfInterest, cpts);
+	}
+
+	private PotentialTable createIsOfInterestParentTable(
+			ProbabilisticNode parentNode) {
+		// States
+		String[] states = dbController.getPossibleValues(attIsOfInterest);
+		for (String state : states) {
+			parentNode.appendState(state);
+		}
+
+		// Create the CPTs
+		PotentialTable parentTable = parentNode.getProbabilityFunction();
+		parentTable.addVariable(parentNode);
+
+		// Init cpts
+		parentTable.setValue(0, 0.5f);
+		parentTable.setValue(1, 0.5f);
+
+		return parentTable;
 	}
 
 	/**
@@ -365,17 +396,17 @@ public class PrmCompilerTest {
 	}
 
 	/**
-	 * Create a path for route: ROUTE.name ROUTE.id SHIP.route SHIP.isOfInterest
+	 * Create a path for route: SHIP.isOfInterest SHIP.route ROUTE.id ROUTE.name
 	 * 
 	 * @return
 	 * @throws Exception
 	 */
 
 	private Attribute[] createRoutePath() throws Exception {
-		Attribute pt1 = attRoute;
-		Attribute pt2 = getAttribute("ROUTE", "id");
-		Attribute pt3 = getAttribute("SHIP", "route");
-		Attribute pt4 = attIsOfInterest;
+		Attribute pt1 = attIsOfInterest;
+		Attribute pt2 = getAttribute("SHIP", "route");
+		Attribute pt3 = getAttribute("ROUTE", "id");
+		Attribute pt4 = attRoute;
 		return new Attribute[] { pt1, pt2, pt3, pt4 };
 	}
 

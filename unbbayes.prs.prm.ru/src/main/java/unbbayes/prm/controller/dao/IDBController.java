@@ -90,7 +90,7 @@ public interface IDBController {
 	 */
 	String[][] getParentRelatedInstances(ParentRel path, String queryIndex);
 	
-	String[][] getChildRelatedInstances(ParentRel path, String queryIndex);
+	String[][] getChildRelatedInstances(ParentRel path, String queryIndex, Column indexCol, Object indexValue);
 
 	/**
 	 * Get a specific value of an instance.

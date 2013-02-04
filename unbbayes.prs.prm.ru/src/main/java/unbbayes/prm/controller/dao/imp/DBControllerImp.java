@@ -159,18 +159,22 @@ public class DBControllerImp implements IDBController {
 		Set<String> tableNames = new HashSet<String>();
 
 		// If it is a char type
-		String queryIndex = path[path.length - 1].getAttribute().getType()
-				.contains("CHAR") ? "'" + queryIndex2 + "'" : queryIndex2;
+		String queryIndex = path[1].getAttribute().getType().contains("CHAR") ? "'"
+				+ queryIndex2 + "'"
+				: queryIndex2;
 
 		// Path example: PERSON.BLOODTYPE -> PERSON.MOTHER -> PERSON.ID ->
 		// PERSON.BLOODTYPE. Child to -> parent.
 		// Then we have path[0]=PERSON.BLOODTYPE, path[1]=PERSON.MOTHER, etc.
 
 		// The fist FK is the query.
-		String where = " WHERE " + path[2] + "=" + queryIndex;
+		String where = " WHERE " + path[1] + "=" + queryIndex;
+//				+ " AND " + path[path.length-1].getTable().getName() + "."
+//				+ indexCol.getName() + "=" + indexValue;
+		
 
 		// Slot chain.
-		for (int i = 2; i < path.length - 1; i += 2) {
+		for (int i = 1; i < path.length - 2; i += 2) {
 			// If i is even then is a remote index.
 			Attribute attributeRemoteId = path[i];
 			// If i is odd then is a local FK.
@@ -182,12 +186,10 @@ public class DBControllerImp implements IDBController {
 			boolean localFkIsFK = DBSchemaHelper
 					.isAttributeFK(attributeLocalFk);
 
-			// TODO: EL PROBLEMA ESTÁ AQUÍ EN FK-FK
 			// FK-FK then it moves one place the slot chain.
 			if (remoteIdIsFK && localFkIsFK) {
 				i--;
 				continue;
-//				attributeLocalFk = path[i + 2];
 			}
 
 			// Table names
@@ -220,14 +222,13 @@ public class DBControllerImp implements IDBController {
 		String columnId;
 		String table;
 		// If this is the primary key
-		if (path[path.length - 2].getAttribute().isPrimaryKey()) {
-			columnId = path[path.length - 2].getAttribute().getName();
-			table = path[path.length - 2].getTable().getName();
+		if (path[1].getAttribute().isPrimaryKey()) {
+			columnId = path[1].getAttribute().getName();
+			table = path[1].getTable().getName();
 		} else {
 			// Maybe this is not the best way but it works.
-			columnId = path[path.length - 2].getTable().getPrimaryKeyColumns()[0]
-					.getName();
-			table = path[path.length - 2].getTable().getName();
+			columnId = path[1].getTable().getPrimaryKeyColumns()[0].getName();
+			table = path[1].getTable().getName();
 		}
 
 		// SQL query.
@@ -258,7 +259,7 @@ public class DBControllerImp implements IDBController {
 	 *         second is the value.
 	 */
 	public String[][] getChildRelatedInstances(ParentRel relationship,
-			final String queryIndex2) {
+			final String queryIndex2, Column indexCol, Object indexValue) {
 		Attribute[] path = relationship.getPath();
 		// To create a list of non duplicated table names.
 		Set<String> tableNames = new HashSet<String>();
@@ -273,33 +274,35 @@ public class DBControllerImp implements IDBController {
 		// Then we have path[0]=PERSON.BLOODTYPE, path[1]=PERSON.MOTHER, etc.
 
 		// Direction
-		boolean directionFkToId = !path[path.length - 2].getAttribute()
-				.isPrimaryKey();
+		boolean directionFkToId = !path[1].getAttribute().isPrimaryKey();
 
 		// Index position depends on the direction
-		int indexPosition = path.length - (directionFkToId ? 2 : 3);
+		int indexPosition = (directionFkToId ? 2 : 1);
 		// The fist FK is the query.
-		String where = " WHERE " + path[indexPosition] + "=" + queryIndex;
+		String where = " WHERE " + path[indexPosition] + "=" + queryIndex
+				+ " AND " + path[0].getTable().getName() + "."
+				+ indexCol.getName() + "=" + indexValue;
 
-		// Slot chain. 
-		for (int i = path.length - 3; i > 0; i -= 2) {
-			
-			
+		// Slot chain.
+		for (int i = 1; i < path.length - 2; i += 2) {
+
 			// If i is even then is a remote index.
 			Attribute attributeRemoteId = path[i];
 			// If i is odd then is a local FK.
-			Attribute attributeLocalFk = path[i -1]; 
+			Attribute attributeLocalFk = path[i + 1];
 
 			// Validate FK-FK relationship.
-			boolean remoteIdIsFK = DBSchemaHelper.isAttributeFK(attributeRemoteId);
-			boolean localFkIsFK = DBSchemaHelper.isAttributeFK(attributeLocalFk);
+			boolean remoteIdIsFK = DBSchemaHelper
+					.isAttributeFK(attributeRemoteId);
+			boolean localFkIsFK = DBSchemaHelper
+					.isAttributeFK(attributeLocalFk);
 
 			// FK-FK then it moves one place the slot chain.
 			if (remoteIdIsFK && localFkIsFK) {
-				i++;
-				continue;	
-			}	
-			
+				i--;
+				continue;
+			}
+
 			// Table names
 			String remoteIdTableName = attributeRemoteId.getTable().getName();
 			String localFkTableName = attributeLocalFk.getTable().getName();
@@ -321,22 +324,19 @@ public class DBControllerImp implements IDBController {
 					+ (queryTables.length() == 0 ? tableName : "," + tableName);
 		}
 
-		// Parent information.
-		String parentAttName = relationship.getParent().getAttribute()
-				.getName();
-
 		// Column Index.
 		String tableId;
 
 		// If this is the primary key
 		if (directionFkToId) {
-			// Maybe this is not the best way but it works.
-			tableId = path[1].getAttribute().getName();
+			tableId = path[path.length - 2].getAttribute().getName();
 		} else {
-			tableId = path[1].getTable().getPrimaryKeyColumns()[0].getName();
+			tableId = path[path.length - 2].getTable().getPrimaryKeyColumns()[0]
+					.getName();
 		}
 
-		String tableIdName = path[1].getTable().getName() + "." + tableId;
+		String tableIdName = path[path.length - 2].getTable().getName() + "."
+				+ tableId;
 
 		// SQL query.
 		String sqlQuery = "SELECT " + tableIdName + ", "
