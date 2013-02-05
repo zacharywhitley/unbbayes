@@ -39,8 +39,8 @@ public class PrmCompilerTest {
 
 	private Attribute attRoute;
 
-	private int idRelationship =0;
-	
+	private int idRelationship = 0;
+
 	@Before
 	public void setUp() throws Exception {
 		System.out.println("Start");
@@ -182,7 +182,7 @@ public class PrmCompilerTest {
 	/**
 	 * This is to test for Route.
 	 * 
-	 * Relationship 1: SHIP.isOfInterest SHIP.route ROUTE.id ROUTE.name  
+	 * Relationship 1: SHIP.isOfInterest SHIP.route ROUTE.id ROUTE.name
 	 * 
 	 * @throws Exception
 	 */
@@ -213,7 +213,7 @@ public class PrmCompilerTest {
 		Attribute[] path = createRoutePath();
 
 		System.out.println("Creating route relationship");
-		String idRel = idRelationship++ +"";
+		String idRel = idRelationship++ + "";
 
 		// Parent rel
 		createRel(idRel, path, attIsOfInterest, attRoute);
@@ -223,7 +223,7 @@ public class PrmCompilerTest {
 		Attribute[] path = createHasTerroristPath();
 
 		System.out.println("Creating hasTerroristCrew relationship");
-		String idRel = idRelationship++ +"";
+		String idRel = idRelationship++ + "";
 
 		createRel(idRel, path, attIsOfInterest, htcAttribute);
 	}
@@ -242,19 +242,20 @@ public class PrmCompilerTest {
 		ProbabilisticNode childNode = new ProbabilisticNode();
 		childNode.setDescription(idRel);
 
-		// Parent States
-//		String[] states = dbController.getPossibleValues(parent);
-//		for (String state : states) {
-//			parentNode.appendState(state);
-//		}
 		
+
 		// CPT for parent
-				if (prmController.getCPD(parent) == null) {
-					prmController.setCPD(parent,
-							createIsOfInterestParentTable(parentNode));
-				}
-				
-				
+		if (prmController.getCPD(parent) == null) {
+			prmController.setCPD(parent,
+					createIsOfInterestParentTable(parentNode));
+		}else{
+			// Parent States
+			String[] states = dbController.getPossibleValues(parent);
+			for (String state : states) {
+				parentNode.appendState(state);
+			}
+		}
+
 		// Child States
 		String[] childStates = dbController.getPossibleValues(child);
 		for (String state : childStates) {
@@ -280,7 +281,6 @@ public class PrmCompilerTest {
 		System.out.println("CPTs");
 		prmController.setCPD(child, cpts);
 
-		
 	}
 
 	/**
@@ -311,14 +311,13 @@ public class PrmCompilerTest {
 		}
 	}
 
-	
 	private void createNewRelationShipForMeeting() throws Exception {
 		Attribute[] path = createMeetingPath();
 
 		System.out.println("Creating meeting relationship");
 		// Registry relationships.
 		// MEETING Relationship.
-		String idRel = idRelationship++ +"";
+		String idRel = idRelationship++ + "";
 		ParentRel newRel = new ParentRel(attIsOfInterest, attIsOfInterest);
 		newRel.setPath(path);
 		newRel.setIdRelationsShip(idRel);
@@ -334,8 +333,7 @@ public class PrmCompilerTest {
 
 		// States
 		String[] states = dbController.getPossibleValues(attIsOfInterest);
-		for (String state : states) {
-			parentNode.appendState(state);
+		for (String state : states) {			
 			childNode.appendState(state);
 		}
 		// Parent

@@ -158,27 +158,32 @@ public class DBControllerImp implements IDBController {
 		// To create a list of non duplicated table names.
 		Set<String> tableNames = new HashSet<String>();
 
-		// If it is a char type
-		String queryIndex = path[1].getAttribute().getType().contains("CHAR") ? "'"
-				+ queryIndex2 + "'"
-				: queryIndex2;
+		// Identify if the direction is FK to ID or ID to FK.
+		boolean fkToIdDirection = !path[1].getAttribute().isPrimaryKey();
 
+		// Get the index value in the chain (path).
+
+		int keyInChain =  path.length - 3;
+		Attribute keyAtt = path[keyInChain];
+		
+		// Get the index as a char or integer.
+		String queryIndex = keyAtt.getAttribute().getType()
+				.contains("CHAR") ? "'" + queryIndex2 + "'" : queryIndex2;
+
+		int initInChain = fkToIdDirection? path.length - 2:path.length - 3;
 		// Path example: PERSON.BLOODTYPE -> PERSON.MOTHER -> PERSON.ID ->
 		// PERSON.BLOODTYPE. Child to -> parent.
 		// Then we have path[0]=PERSON.BLOODTYPE, path[1]=PERSON.MOTHER, etc.
 
-		// The fist FK is the query.
-		String where = " WHERE " + path[1] + "=" + queryIndex;
-//				+ " AND " + path[path.length-1].getTable().getName() + "."
-//				+ indexCol.getName() + "=" + indexValue;
-		
+		// The fist id in the query.
+		String where = " WHERE " + keyAtt + "=" + queryIndex;
 
 		// Slot chain.
-		for (int i = 1; i < path.length - 2; i += 2) {
+		for (int i = initInChain ; i > 1; i -= 2) {
 			// If i is even then is a remote index.
 			Attribute attributeRemoteId = path[i];
 			// If i is odd then is a local FK.
-			Attribute attributeLocalFk = path[i + 1]; // Be careful with this +1
+			Attribute attributeLocalFk = path[i - 1]; // Be careful with this +1
 
 			// Validate Fk - Fk
 			boolean remoteIdIsFK = DBSchemaHelper
@@ -188,7 +193,7 @@ public class DBControllerImp implements IDBController {
 
 			// FK-FK then it moves one place the slot chain.
 			if (remoteIdIsFK && localFkIsFK) {
-				i--;
+				i++;
 				continue;
 			}
 
@@ -213,7 +218,7 @@ public class DBControllerImp implements IDBController {
 			queryTables = queryTables
 					+ (queryTables.length() == 0 ? tableName : "," + tableName);
 		}
-
+		//fixme validate tablenames not cero elements
 		// Parent information.
 		String parentAttName = relationship.getParent().getAttribute()
 				.getName();
@@ -221,14 +226,16 @@ public class DBControllerImp implements IDBController {
 		// Column Index.
 		String columnId;
 		String table;
+
 		// If this is the primary key
-		if (path[1].getAttribute().isPrimaryKey()) {
-			columnId = path[1].getAttribute().getName();
-			table = path[1].getTable().getName();
+		if (fkToIdDirection) {
+			columnId = path[path.length - 2].getAttribute().getName();
+			table = path[path.length - 2].getTable().getName();
 		} else {
 			// Maybe this is not the best way but it works.
-			columnId = path[1].getTable().getPrimaryKeyColumns()[0].getName();
-			table = path[1].getTable().getName();
+			columnId = path[path.length - 2].getTable().getPrimaryKeyColumns()[0]
+					.getName();
+			table = path[path.length - 2].getTable().getName();
 		}
 
 		// SQL query.
@@ -264,27 +271,36 @@ public class DBControllerImp implements IDBController {
 		// To create a list of non duplicated table names.
 		Set<String> tableNames = new HashSet<String>();
 
+		// Identify if the direction is FK to ID or ID to FK.
+		boolean fkToIdDirection = !path[1].getAttribute().isPrimaryKey();
+		
+		// Get the index value in the chain (path).
+		int indexInChain =  2;
+
+		Attribute keyAtt = path[indexInChain];
 		// If it is a char type
-		String queryIndex = path[1].getAttribute().getType().contains("CHAR") ? "'"
-				+ queryIndex2 + "'"
-				: queryIndex2;
+		String queryIndex = keyAtt.getAttribute().getType()
+				.contains("CHAR") ? "'" + queryIndex2 + "'" : queryIndex2;
 
 		// Path example: PERSON.BLOODTYPE -> PERSON.MOTHER -> PERSON.ID ->
 		// PERSON.BLOODTYPE. Child to -> parent.
 		// Then we have path[0]=PERSON.BLOODTYPE, path[1]=PERSON.MOTHER, etc.
 
-		// Direction
-		boolean directionFkToId = !path[1].getAttribute().isPrimaryKey();
 
-		// Index position depends on the direction
-		int indexPosition = (directionFkToId ? 2 : 1);
 		// The fist FK is the query.
-		String where = " WHERE " + path[indexPosition] + "=" + queryIndex
-				+ " AND " + path[0].getTable().getName() + "."
-				+ indexCol.getName() + "=" + indexValue;
+		String where = " WHERE " + keyAtt + "=" + queryIndex;
+
+		if (fkToIdDirection) {
+			// FIXME parece que es 0 en vez de 1.
+			where += " AND " + path[0].getTable().getName() + "."
+					+ indexCol.getName() + "=" + indexValue;
+		}
+		
+		// Index position depends on the direction
+		int intitChain = (fkToIdDirection ? 1 : 2);
 
 		// Slot chain.
-		for (int i = 1; i < path.length - 2; i += 2) {
+		for (int i = intitChain; i < path.length - 2; i += 2) {
 
 			// If i is even then is a remote index.
 			Attribute attributeRemoteId = path[i];
@@ -323,19 +339,20 @@ public class DBControllerImp implements IDBController {
 			queryTables = queryTables
 					+ (queryTables.length() == 0 ? tableName : "," + tableName);
 		}
-
+		//FIXME validar tableNames dif de cero.
 		// Column Index.
 		String tableId;
 
 		// If this is the primary key
-		if (directionFkToId) {
+		if (fkToIdDirection) {
+			// if indexInChain=1 then with -3 it will change to 2 (and bis).
 			tableId = path[path.length - 2].getAttribute().getName();
 		} else {
 			tableId = path[path.length - 2].getTable().getPrimaryKeyColumns()[0]
 					.getName();
 		}
 
-		String tableIdName = path[path.length - 2].getTable().getName() + "."
+		String tableIdName = path[3 - indexInChain].getTable().getName() + "."
 				+ tableId;
 
 		// SQL query.
