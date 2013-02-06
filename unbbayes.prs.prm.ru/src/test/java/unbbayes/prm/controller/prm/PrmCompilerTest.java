@@ -206,6 +206,28 @@ public class PrmCompilerTest {
 		// Validate Result
 		String[] nodeNames = { "SHIP 1 isOfInterest", "ROUTE 0 name" };
 		validateResult(resultNetwork, nodeNames);
+	}
+
+	/**
+	 * Test route with multiples parents.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testRouteMultiParents() throws Exception {
+		createRouteRel();
+
+		System.out.println("Compiling");
+
+		// The query is on the ship with id=4
+		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
+				.compile(attIsOfInterest.getTable(), idCol.getAttribute(), "4",
+						attIsOfInterest.getAttribute(), "N");
+
+		// Validate Result
+		String[] nodeNames = new String[] { "SHIP 4 isOfInterest",
+				"SHIP 5 isOfInterest", "ROUTE 1 name" };
+		validateResult(resultNetwork, nodeNames);
 
 	}
 
@@ -242,13 +264,11 @@ public class PrmCompilerTest {
 		ProbabilisticNode childNode = new ProbabilisticNode();
 		childNode.setDescription(idRel);
 
-		
-
 		// CPT for parent
 		if (prmController.getCPD(parent) == null) {
 			prmController.setCPD(parent,
 					createIsOfInterestParentTable(parentNode));
-		}else{
+		} else {
 			// Parent States
 			String[] states = dbController.getPossibleValues(parent);
 			for (String state : states) {
@@ -333,7 +353,7 @@ public class PrmCompilerTest {
 
 		// States
 		String[] states = dbController.getPossibleValues(attIsOfInterest);
-		for (String state : states) {			
+		for (String state : states) {
 			childNode.appendState(state);
 		}
 		// Parent

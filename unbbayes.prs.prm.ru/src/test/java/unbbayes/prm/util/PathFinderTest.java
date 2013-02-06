@@ -2,6 +2,7 @@ package unbbayes.prm.util;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.ddlutils.model.Column;
@@ -65,13 +66,27 @@ public class PathFinderTest {
 
 		assertTrue(possiblePaths.size() == 5);
 
-		// First path
-		validatePath(possiblePaths.get(0),"PERSON.BLOODTYPE PERSON.MOTHER PERSON.ID PERSON.BLOODTYPE ");
-		validatePath(possiblePaths.get(1),"PERSON.BLOODTYPE PERSON.FATHER PERSON.ID PERSON.BLOODTYPE ");
-		validatePath(possiblePaths.get(2),"PERSON.BloodType PERSON.id PERSON.Mother PERSON.BloodType ");
-		validatePath(possiblePaths.get(3),"PERSON.BloodType PERSON.id PERSON.FATHER PERSON.BloodType ");
-		validatePath(possiblePaths.get(4),"PERSON.BloodType PERSON.BloodType ");
-				
+		String paths[] = new String[]{"PERSON.BloodType PERSON.Mother PERSON.id PERSON.BloodType ",
+				"PERSON.BloodType PERSON.Father PERSON.id PERSON.BloodType ",
+				"PERSON.BloodType PERSON.id PERSON.Mother PERSON.BloodType ",
+				"PERSON.BloodType PERSON.id PERSON.Father PERSON.BloodType ",
+				"PERSON.BloodType PERSON.BloodType "
+		};
+		
+		// Validate paths
+		validatePaths(possiblePaths,paths);			
+	}
+
+	private void validatePaths(List<Attribute[]> possiblePaths, String[] paths) {
+		List<String> lPaths = new ArrayList<String>();
+		
+		for (Attribute[] path : possiblePaths) {
+			lPaths.add(pathToString(path));
+		}
+		
+		
+		ValidatorHelper.validateStringList(lPaths, paths);	
+		
 	}
 
 	private void validatePath(Attribute[] path1, String stringPath) {

@@ -560,7 +560,7 @@ public class PrmCompiler {
 					// Identify the columns related with every state of this
 					// variable.
 					int[] addedLevel = DynamicTableHelper.addLevel(
-							relativeLevel, newTable, queryNode);
+							relativeLevel-1, newTable, queryNode);
 
 					// Insert the new variable.
 					newTable.addVariable(parentNodeInstance);
