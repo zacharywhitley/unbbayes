@@ -259,9 +259,8 @@ public class PrmCompiler {
 
 				// Get instances.
 				String[][] instanceValues = dbController
-						.getParentRelatedInstances(parentRel,
-								initInstanceValue);
-				
+						.getParentRelatedInstances(parentRel, initInstanceValue);
+
 				// Create a node for each parent instance.
 				for (int i = 0; i < instanceValues.length; i++) {
 					// Index for the instance i.
@@ -274,7 +273,8 @@ public class PrmCompiler {
 					// Create Node.
 					ProbabilisticNode parentNode = createProbNode(afIndex,
 							parentAtt, resultNet);
-					parentNode.setDescription(parentNode.getDescription()+" "+ parentRel.getIdRelationsShip());
+					parentNode.setDescription(parentNode.getDescription() + " "
+							+ parentRel.getIdRelationsShip());
 
 					// Add parent nodes to the query node.
 					parentInstanceNodes.put(parentNode.getName(), parentRel);
@@ -393,7 +393,8 @@ public class PrmCompiler {
 
 				// Get instances.
 				String[][] instanceValues = dbController
-						.getChildRelatedInstances(childRel, initInstanceValue,indexCol,indexValue);
+						.getChildRelatedInstances(childRel, initInstanceValue,
+								indexCol, indexValue);
 
 				// Relationship in description.
 				if (instanceValues.length > 0) {
@@ -456,6 +457,12 @@ public class PrmCompiler {
 		}
 	}
 
+	/**
+	 * 
+	 * @param queryNode
+	 * @param queryAtt
+	 * @throws Exception
+	 */
 	private void assignDynamicCPT(ProbabilisticNode queryNode,
 			Attribute queryAtt) throws Exception {
 
@@ -495,7 +502,7 @@ public class PrmCompiler {
 		// ////////////// FILL THE QUERY NODE CPT /////////////////////
 		// TODO Bug multiples parents. could duplicate the instances.
 		// CPT parents
-		int numCptParents = rightCptWithValues.getVariablesSize()- 1;
+		int numCptParents = rightCptWithValues.getVariablesSize() - 1;
 
 		PotentialTable tmpTable = (PotentialTable) rightCptWithValues.clone();
 
@@ -504,13 +511,13 @@ public class PrmCompiler {
 
 		// Every CPT parent. the first one is discarded because it is the same
 		// attribute.
-		for (int level = 0; level < numCptParents ; level++) {
-			int relativeLevel = level + 1;
+		for (int level = 0; level < numCptParents; level++) {
+			// The level 0 is the parent 1 and so on.
+			int parentNodeLevel = level + 1;
+
 			// CPT parent node
 			INode parentCptNode = rightCptWithValues
-					.getVariableAt(relativeLevel);
-
-			log.debug("Parent 1 is discarted because it exists in the default CPT");
+					.getVariableAt(parentNodeLevel);
 
 			int instanceCont = 0;
 
@@ -531,11 +538,16 @@ public class PrmCompiler {
 
 				String relId = parentNodeInstance.getDescription();
 				String cptRelId = parentCptNode.getDescription();
-				// If the node is part of this relationship.the id reletionship is
+				// If the node is part of this relationship.the id reletionship
+				// is
 				// stored in the node description.
 				if (relId.contains(cptRelId)) {
 					instanceCont++;
+
+					// Parent 1 is discarded because it exists in the default
+					// CPT.
 					if (instanceCont <= 1) {
+						log.debug("Parent 1 is discarted because it exists in the default CPT");
 						continue;
 					}
 
@@ -544,7 +556,7 @@ public class PrmCompiler {
 					// FIXME it could not null be necessary because is the same
 					// attribute numNodeStates.
 					int numLevelStates = rightCptWithValues.getVariableAt(
-							relativeLevel).getStatesSize();
+							parentNodeLevel).getStatesSize();
 
 					// Parent relationship.
 					ParentRel rel = null;
@@ -559,8 +571,8 @@ public class PrmCompiler {
 
 					// Identify the columns related with every state of this
 					// variable.
-					int[] addedLevel = DynamicTableHelper.addLevel(
-							relativeLevel-1, newTable, queryNode);
+					int[] addedLevel = DynamicTableHelper.addLevel(level,
+							newTable, queryNode);
 
 					// Insert the new variable.
 					newTable.addVariable(parentNodeInstance);
@@ -580,6 +592,12 @@ public class PrmCompiler {
 								int index = st * numColumns * numNodeStates
 										+ col * numNodeStates + row;
 
+								// Aggregate function
+								if (rel.getAggregateFunction() == null) {
+									throw new Exception(
+											"Error: aggregate function is null for node: "
+													+ queryNode.getName());
+								}
 								// right relationship
 
 								float afResult = AggregateFunction.calculate(

@@ -10,7 +10,8 @@ import unbbayes.prm.model.AggregateFunctionName;
 public class AggregateFunction {
 
 	public static float calculate(AggregateFunctionName af, float num1,
-			float num2) throws Exception {
+			float num2) throws Exception {			
+		
 		switch (af) {
 		// case mode:
 		// break;

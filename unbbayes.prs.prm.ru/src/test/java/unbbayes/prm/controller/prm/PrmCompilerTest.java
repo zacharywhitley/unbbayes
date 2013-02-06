@@ -14,6 +14,7 @@ import org.junit.Test;
 
 import unbbayes.prm.controller.dao.IDBController;
 import unbbayes.prm.controller.dao.imp.DBControllerImp;
+import unbbayes.prm.model.AggregateFunctionName;
 import unbbayes.prm.model.Attribute;
 import unbbayes.prm.model.ParentRel;
 import unbbayes.prs.Node;
@@ -254,6 +255,7 @@ public class PrmCompilerTest {
 			Attribute child) throws InvalidParentException {
 		// Parent rel
 		ParentRel newRel = new ParentRel(parent, child);
+		newRel.setAggregateFunction(AggregateFunctionName.add);
 		newRel.setPath(path);
 		newRel.setIdRelationsShip(idRel);
 		prmController.addParent(newRel);
