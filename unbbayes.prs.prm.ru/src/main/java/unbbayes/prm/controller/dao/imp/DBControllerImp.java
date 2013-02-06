@@ -163,14 +163,15 @@ public class DBControllerImp implements IDBController {
 
 		// Get the index value in the chain (path).
 
-		int keyInChain =  path.length - 3;
+		int keyInChain = path.length - 3;
 		Attribute keyAtt = path[keyInChain];
-		
-		// Get the index as a char or integer.
-		String queryIndex = keyAtt.getAttribute().getType()
-				.contains("CHAR") ? "'" + queryIndex2 + "'" : queryIndex2;
 
-		int initInChain = fkToIdDirection? path.length - 2:path.length - 3;
+		// Get the index as a char or integer.
+		String queryIndex = keyAtt.getAttribute().getType().contains("CHAR") ? "'"
+				+ queryIndex2 + "'"
+				: queryIndex2;
+
+		int initInChain = fkToIdDirection ? path.length - 2 : path.length - 3;
 		// Path example: PERSON.BLOODTYPE -> PERSON.MOTHER -> PERSON.ID ->
 		// PERSON.BLOODTYPE. Child to -> parent.
 		// Then we have path[0]=PERSON.BLOODTYPE, path[1]=PERSON.MOTHER, etc.
@@ -179,7 +180,7 @@ public class DBControllerImp implements IDBController {
 		String where = " WHERE " + keyAtt + "=" + queryIndex;
 
 		// Slot chain.
-		for (int i = initInChain ; i > 1; i -= 2) {
+		for (int i = initInChain; i > 1; i -= 2) {
 			// If i is even then is a remote index.
 			Attribute attributeRemoteId = path[i];
 			// If i is odd then is a local FK.
@@ -218,7 +219,7 @@ public class DBControllerImp implements IDBController {
 			queryTables = queryTables
 					+ (queryTables.length() == 0 ? tableName : "," + tableName);
 		}
-		//fixme validate tablenames not cero elements
+		// fixme validate tablenames not cero elements
 		// Parent information.
 		String parentAttName = relationship.getParent().getAttribute()
 				.getName();
@@ -227,16 +228,10 @@ public class DBControllerImp implements IDBController {
 		String columnId;
 		String table;
 
-		// If this is the primary key
-		if (fkToIdDirection) {
-			columnId = path[path.length - 2].getAttribute().getName();
-			table = path[path.length - 2].getTable().getName();
-		} else {
-			// Maybe this is not the best way but it works.
-			columnId = path[path.length - 2].getTable().getPrimaryKeyColumns()[0]
-					.getName();
-			table = path[path.length - 2].getTable().getName();
-		}
+		// The parent id node is related to the primary key of the parent.
+		columnId = relationship.getParent().getTable().getPrimaryKeyColumns()[0]
+				.getName();
+		table = relationship.getParent().getTable().getName();
 
 		// SQL query.
 		String sqlQuery = "SELECT " + table + "." + columnId + ", "
@@ -244,7 +239,7 @@ public class DBControllerImp implements IDBController {
 		log.debug("SQL query = " + sqlQuery);
 
 		// Query to DB.
-		Iterator<DynaBean> it1 = platform.query(getRelSchema(), sqlQuery);
+		Iterator<?> it1 = platform.query(getRelSchema(), sqlQuery);
 
 		// Convert to string[]
 		List<String[]> instances = new ArrayList<String[]>();
@@ -273,29 +268,28 @@ public class DBControllerImp implements IDBController {
 
 		// Identify if the direction is FK to ID or ID to FK.
 		boolean fkToIdDirection = !path[1].getAttribute().isPrimaryKey();
-		
+
 		// Get the index value in the chain (path).
-		int indexInChain =  2;
+		int indexInChain = 2;
 
 		Attribute keyAtt = path[indexInChain];
 		// If it is a char type
-		String queryIndex = keyAtt.getAttribute().getType()
-				.contains("CHAR") ? "'" + queryIndex2 + "'" : queryIndex2;
+		String queryIndex = keyAtt.getAttribute().getType().contains("CHAR") ? "'"
+				+ queryIndex2 + "'"
+				: queryIndex2;
 
 		// Path example: PERSON.BLOODTYPE -> PERSON.MOTHER -> PERSON.ID ->
 		// PERSON.BLOODTYPE. Child to -> parent.
 		// Then we have path[0]=PERSON.BLOODTYPE, path[1]=PERSON.MOTHER, etc.
 
-
 		// The fist FK is the query.
 		String where = " WHERE " + keyAtt + "=" + queryIndex;
 
 		if (fkToIdDirection) {
-			// FIXME parece que es 0 en vez de 1.
 			where += " AND " + path[0].getTable().getName() + "."
 					+ indexCol.getName() + "=" + indexValue;
 		}
-		
+
 		// Index position depends on the direction
 		int intitChain = (fkToIdDirection ? 1 : 2);
 
@@ -339,7 +333,7 @@ public class DBControllerImp implements IDBController {
 			queryTables = queryTables
 					+ (queryTables.length() == 0 ? tableName : "," + tableName);
 		}
-		//FIXME validar tableNames dif de cero.
+		// FIXME validar tableNames dif de cero.
 		// Column Index.
 		String tableId;
 
@@ -352,7 +346,7 @@ public class DBControllerImp implements IDBController {
 					.getName();
 		}
 
-		String tableIdName = path[3 - indexInChain].getTable().getName() + "."
+		String tableIdName = path[path.length - 2].getTable().getName() + "."
 				+ tableId;
 
 		// SQL query.

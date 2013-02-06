@@ -50,6 +50,7 @@
 			<groupId>jgraphx</groupId>
 			<artifactId>jgraphx</artifactId>
 			<version>1</version>
+<!-- 			<systemPath>${basedir}/lib/jgraphx.jar</systemPath> -->
 		</dependency>
 		<dependency>
 			<groupId>mysql</groupId>
