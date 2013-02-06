@@ -8,6 +8,7 @@ import org.junit.Test;
 import unbbayes.prm.util.helper.DynamicTableHelper;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.exception.InvalidParentException;
 
 public class DynamicTableHelperTest {
 
@@ -109,7 +110,10 @@ public class DynamicTableHelperTest {
 
 	@Test
 	public void statesOrderInCptTest2() {
+		cpt.removeVariable(parentNode3);
 		parentNode3.appendState("Z");
+		cpt.addVariable(parentNode3);
+
 		int numColumns = DynamicTableHelper.getNumColumns(cpt);
 		assertTrue(numColumns == 12);
 
@@ -146,13 +150,12 @@ public class DynamicTableHelperTest {
 
 	@Test
 	public void distributeOrder() {
-		int numColumns = DynamicTableHelper.getNumColumns(cpt);
 
 		// Level 0
 		int level = 0;
 		System.out.println("level " + level);
 
-
+		// Add a new level.
 		int[] ordered = DynamicTableHelper.addLevel(level, cpt, childNode);
 
 		int[] finalResult = { 0, 1, 2, 3, 0, 1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7 };
@@ -163,10 +166,9 @@ public class DynamicTableHelperTest {
 		level = 1;
 		System.out.println("\nlevel " + level);
 
-
 		ordered = DynamicTableHelper.addLevel(level, cpt, childNode);
 
-		finalResult = new int[] { 0, 2, 0, 2, 1, 3, 1, 3, 4, 6, 4, 6, 5, 7, 5,
+		finalResult = new int[] { 0, 1, 0, 1, 4, 5, 4, 5, 2, 3, 2, 3, 6, 7, 6,
 				7 };
 
 		validateArray(ordered, finalResult);
@@ -175,10 +177,9 @@ public class DynamicTableHelperTest {
 		level = 2;
 		System.out.println("\nlevel " + level);
 
-
 		ordered = DynamicTableHelper.addLevel(level, cpt, childNode);
 
-		finalResult = new int[] { 0, 0, 4, 4, 1, 1, 5, 5, 2, 2, 6, 6, 3, 3, 7,
+		finalResult = new int[] { 0, 0, 2, 2, 4, 4, 6, 6, 1, 1, 3, 3, 5, 5, 7,
 				7 };
 
 		validateArray(ordered, finalResult);
@@ -187,14 +188,16 @@ public class DynamicTableHelperTest {
 
 	@Test
 	public void distributeOrder2() {
+		cpt.removeVariable(parentNode3);
 		parentNode3.appendState("Z");
+		cpt.addVariable(parentNode3);
+
 		int numColumns = DynamicTableHelper.getNumColumns(cpt);
 		assertTrue(numColumns == 12);
 
 		// Level 0
 		int level = 0;
 		System.out.println("level " + level);
-
 
 		int[] ordered = DynamicTableHelper.addLevel(level, cpt, childNode);
 
@@ -203,23 +206,33 @@ public class DynamicTableHelperTest {
 
 		validateArray(ordered, finalResult);
 
+		// Level 1
+		level = 1;
+		ordered = DynamicTableHelper.addLevel(level, cpt, childNode);
+
+		finalResult = new int[] { 0, 1, 2, 0, 1, 2, 6, 7, 8, 6, 7, 8, 3, 4, 5,
+				3, 4, 5, 9, 10, 11, 9, 10, 11 };
+
+		validateArray(ordered, finalResult);
+
 		// Level 2
 		level = 2;
-		int numUpperStates = DynamicTableHelper.getNumUpperStates(level, cpt);
-		int[] statesOrderInCpt = DynamicTableHelper
-				.statesOrderInCpt(level, cpt);
-
 		ordered = DynamicTableHelper.addLevel(level, cpt, childNode);
-		finalResult = new int[] { 0, 0, 0, 4, 4, 4, 1, 1, 1, 5, 5, 5, 2, 2, 2,
-				6, 6, 6, 3, 3, 3, 7, 7, 7, 8, 8, 8, 12, 12, 12 };
+		finalResult = new int[] { 0, 0, 0, 3, 3, 3, 6, 6, 6, 9, 9, 9, 1, 1, 1,
+				4, 4, 4, 7, 7, 7, 10, 10, 10, 2, 2, 2, 5, 5, 5, 8, 8, 8, 11,
+				11, 11 };
+		validateArray(ordered, finalResult);
 
 	}
 
 	private void validateArray(int[] ordered, int[] finalResult) {
+		assertTrue(ordered.length == finalResult.length);
+
 		for (int i = 0; i < finalResult.length; i++) {
 			System.out.print(ordered[i] + " ");
 			assertTrue(finalResult[i] == ordered[i]);
 		}
+		System.out.println();
 	}
 
 }

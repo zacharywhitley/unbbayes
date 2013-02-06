@@ -2,24 +2,21 @@ package unbbayes.prm.view.table;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 
-import unbbayes.controller.SENController;
-//import unbbayes.gui.prm.PRMTableGUI;
-import unbbayes.gui.table.GUIPotentialTable;
-import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.ProbabilisticTable;
 
 public class UnBBayesTableTest extends JFrame {
 
+	/**
+	 * Serial version.
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private JPanel contentPane;
 
 	/**
@@ -64,11 +61,6 @@ public class UnBBayesTableTest extends JFrame {
 		PotentialTable potTab = newNode.getProbabilityFunction();
 		potTab.addValueAt(0, 0.3f);
 		potTab.addValueAt(1, 0.7f);
-
-		// JTable table = new GUIPotentialTable(potTab).makeTable();
-
-//		JTable table = PRMTableGUI.newInstance(null);
-//		contentPane.add(table);
 	}
 
 }

@@ -164,7 +164,7 @@ public class DynamicTableHelper {
 
 		numSubStates = numSubStates == 0 ? 1 : numSubStates;
 
-		int numStates = childNode.getStatesSize();
+		int numStates = childNode.getParentNodes().get(level).getStatesSize();
 
 		int numResultCols = numColumns * numStates;
 		int[] result = new int[numResultCols];
