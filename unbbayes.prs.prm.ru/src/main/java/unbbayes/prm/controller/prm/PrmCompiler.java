@@ -187,12 +187,13 @@ public class PrmCompiler {
 		for (ParentRel parentRel : parents) {
 
 			Attribute parentAtt = parentRel.getParent();
+			Attribute[] path = parentRel.getPath();
 
 			// ////////// For intrinsic attributes ////////////////
 			// If the parent is intrinsic, it only has two attributes in the
 			// path, because it does not have foreign keys and the relationship
 			// is in the same instance.
-			if (parentRel.getPath().length == 2) {
+			if (path.length == 2) {
 				// Create a new node.
 				ProbabilisticNode parentNode = createProbNode(indexValue,
 						parentAtt, resultNet);
@@ -219,13 +220,13 @@ public class PrmCompiler {
 						indexCol, indexValue, specificValue);
 
 				continue;
-			} else if (parentRel.getPath().length < 2) {
+			} else if (path.length < 2) {
 				throw new Exception("Invalid rel" + parentRel);
 			} else {
 
 				// /////////// For external attributes./////////////
 				// Get the foreign key with the second element of the path.
-				Attribute originAtt = parentRel.getPath()[1];
+				Attribute originAtt = path[1];
 
 				// DIRECTION local.FK to other.ID or local.ID to other.FK. Child
 				// to parent.
@@ -233,28 +234,20 @@ public class PrmCompiler {
 						indexCol);
 
 				// Get the local table with the fist element of the path.
-				Table localTable = parentRel.getPath()[0].getTable();
+				Table childTable = parentRel.getChild().getTable();
 
 				String initInstanceValue;
 
 				if (directionFKToId) {
-					// Get FK value.
-					initInstanceValue = dbController.getSpecificValue(originAtt
-							.getAttribute(),
-							new Attribute(localTable, indexCol), String
-									.valueOf(indexValue));
-				} else {
 					// id value.
 					initInstanceValue = String.valueOf(indexValue);
-				}
-
-				// If it has parents.
-				if (initInstanceValue == null
-						|| initInstanceValue.equalsIgnoreCase("null")) {
-					log.debug("Foreign key is null for "
-							+ indexValue
-							+ ". The recursivity must STOP here for this parent.");
-					continue;
+				} else {
+					// Get FK value.
+					initInstanceValue = dbController.getSpecificValue(
+							path[path.length - 2].getAttribute(),
+							new Attribute(childTable, childTable
+									.getPrimaryKeyColumns()[0]), String
+									.valueOf(indexValue));
 				}
 
 				// Get instances.

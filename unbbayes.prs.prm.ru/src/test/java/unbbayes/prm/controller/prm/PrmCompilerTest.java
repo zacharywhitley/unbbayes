@@ -188,7 +188,7 @@ public class PrmCompilerTest {
 	 * @throws Exception
 	 */
 	@Test
-	public void testRoute() throws Exception {
+	public void testParentRoute() throws Exception {
 
 		// MEETING
 		// createNewRelationShipForMeeting();
@@ -206,6 +206,43 @@ public class PrmCompilerTest {
 
 		// Validate Result
 		String[] nodeNames = { "SHIP 1 isOfInterest", "ROUTE 0 name" };
+		validateResult(resultNetwork, nodeNames);
+
+	}
+
+	/**
+	 * This is to test for Route. In this case, the query is the route.
+	 * 
+	 * Relationship 1: SHIP.isOfInterest SHIP.route ROUTE.id ROUTE.name
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testChildRoute() throws Exception {
+		createRouteRel();
+
+		System.out.println("Compiling");
+
+		// CHILD
+		Attribute attIdRoute = getAttribute("ROUTE", "id");
+
+		// The query is on the route with id=0
+		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
+				.compile(attRoute.getTable(), attIdRoute.getAttribute(), "0",
+						attRoute.getAttribute(), "N");
+
+		// Validate Result
+		String[] nodeNames = new String[] { "SHIP 1 isOfInterest",
+				"ROUTE 0 name" };
+		validateResult(resultNetwork, nodeNames);
+
+		// The query is on the route with id=0
+		resultNetwork = (ProbabilisticNetwork) compiler.compile(
+				attRoute.getTable(), attIdRoute.getAttribute(), "1",
+				attRoute.getAttribute(), "N");
+
+		// Validate Result
+		nodeNames = new String[] { "SHIP 4 isOfInterest","SHIP 5 isOfInterest", "ROUTE 1 name" };
 		validateResult(resultNetwork, nodeNames);
 	}
 
@@ -232,6 +269,46 @@ public class PrmCompilerTest {
 
 	}
 
+	/**
+	 * This is to test for Route.
+	 * 
+	 * Relationship 1:   ROUTE.name ROUTE.id SHIP.route SHIP.isOfInterest
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testInverseChildRoute() throws Exception {
+
+		// MEETING
+		// createNewRelationShipForMeeting();
+		// HAS TERRORIST
+		// createIntrisecRelForHasTerroristCrew();
+		// ROUTE
+		createInverseRouteRel();
+
+		System.out.println("Compiling");
+
+		// The query is on the ship with id=1
+		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
+				.compile(attIsOfInterest.getTable(), idCol.getAttribute(), "1",
+						attIsOfInterest.getAttribute(), "N");
+
+		// Validate Result
+		String[] nodeNames = { "SHIP 1 isOfInterest", "ROUTE 0 name" };
+		validateResult(resultNetwork, nodeNames);
+
+	}
+	
+	private void createInverseRouteRel() throws Exception {
+		Attribute[] path = createInverseRoutePath();
+
+		System.out.println("Creating route relationship");
+		String idRel = idRelationship++ + "";
+
+		// Parent rel
+		createRel(idRel, path,  attRoute,attIsOfInterest );
+	}
+	
 	private void createRouteRel() throws Exception {
 		Attribute[] path = createRoutePath();
 
@@ -427,6 +504,21 @@ public class PrmCompilerTest {
 		Attribute pt2 = getAttribute("SHIP", "route");
 		Attribute pt3 = getAttribute("ROUTE", "id");
 		Attribute pt4 = attRoute;
+		return new Attribute[] { pt1, pt2, pt3, pt4 };
+	}
+	
+	/**
+	 * Create a path for route: SHIP.isOfInterest SHIP.route ROUTE.id ROUTE.name
+	 * 
+	 * @return
+	 * @throws Exception
+	 */
+
+	private Attribute[] createInverseRoutePath() throws Exception {
+		Attribute pt1 = attRoute;
+		Attribute pt2 = getAttribute("ROUTE", "id");
+		Attribute pt3 = getAttribute("SHIP", "route");
+		Attribute pt4 = attIsOfInterest;
 		return new Attribute[] { pt1, pt2, pt3, pt4 };
 	}
 

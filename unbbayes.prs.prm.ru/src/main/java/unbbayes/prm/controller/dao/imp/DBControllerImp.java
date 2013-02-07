@@ -219,6 +219,11 @@ public class DBControllerImp implements IDBController {
 			queryTables = queryTables
 					+ (queryTables.length() == 0 ? tableName : "," + tableName);
 		}
+
+		if (initInChain == 1) {
+			queryTables = path[0].getTable().getName();
+		}
+
 		// fixme validate tablenames not cero elements
 		// Parent information.
 		String parentAttName = relationship.getParent().getAttribute()
@@ -333,6 +338,11 @@ public class DBControllerImp implements IDBController {
 			queryTables = queryTables
 					+ (queryTables.length() == 0 ? tableName : "," + tableName);
 		}
+
+		if (queryTables.isEmpty()) {
+			queryTables = path[path.length - 2].getTable().getName();
+		}
+
 		// FIXME validar tableNames dif de cero.
 		// Column Index.
 		String tableId;
