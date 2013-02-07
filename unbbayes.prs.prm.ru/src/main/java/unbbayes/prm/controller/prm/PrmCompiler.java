@@ -230,8 +230,7 @@ public class PrmCompiler {
 
 				// DIRECTION local.FK to other.ID or local.ID to other.FK. Child
 				// to parent.
-				boolean directionFKToId = !originAtt.getAttribute().equals(
-						indexCol);
+				boolean directionFKToId = !originAtt.getAttribute().isPrimaryKey();
 
 				// Get the local table with the fist element of the path.
 				Table childTable = parentRel.getChild().getTable();

@@ -155,6 +155,7 @@ public class DBControllerImp implements IDBController {
 	public String[][] getParentRelatedInstances(ParentRel relationship,
 			final String queryIndex2) {
 		Attribute[] path = relationship.getPath();
+		Attribute childAtt = relationship.getChild();
 		// To create a list of non duplicated table names.
 		Set<String> tableNames = new HashSet<String>();
 
@@ -163,8 +164,14 @@ public class DBControllerImp implements IDBController {
 
 		// Get the index value in the chain (path).
 
-		int keyInChain = path.length - 3;
-		Attribute keyAtt = path[keyInChain];
+		Attribute keyAtt;
+//		if (fkToIdDirection) {
+			int keyInChain = path.length - 3;
+			keyAtt = path[keyInChain];
+//		} else {
+//			keyAtt = new Attribute(childAtt.getTable(), childAtt.getTable()
+//					.getPrimaryKeyColumns()[0]);
+//		}
 
 		// Get the index as a char or integer.
 		String queryIndex = keyAtt.getAttribute().getType().contains("CHAR") ? "'"
