@@ -1339,7 +1339,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			separatorOfVirtualCliqueAndParents.getProbabilityFunction().addVariable(parentNode);
 		}
 		junctionTree.addSeparator(separatorOfVirtualCliqueAndParents);
-		separatorOfVirtualCliqueAndParents.setInternalIdentificator(-junctionTree.getSeparators().size());
+		separatorOfVirtualCliqueAndParents.setInternalIdentificator(-(junctionTree.getSeparators().size()+1));
 		// just to guarantee that the network is fresh
 		net.resetNodesCopy();
 		
