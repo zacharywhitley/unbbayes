@@ -95,7 +95,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static final String NODE_NAME_PREFIX = "N";
 
 	/** This program will enter in a loop at this iteration number. Use with care. Set to negative if you don't want this program to stop at the iteration */
-	private static final int iterationToDebug = -142;
+	private static final int iterationToDebug = -54;
 
 	/** this object will group the data to be printed out in {@link #testFilesWithResolution()} */
 	private Tracer tracer = null;
@@ -183,7 +183,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If there are less than this number of questions, questions will not be resolved */
 	private static int minAliveQuestionNumber = -1;
 	
-	private static long seed = new Date().getTime();//1359656973478L;
+	private static long seed = new Date().getTime();
 	
 	/** Random number generator, with seed */
 	private static Random random = new Random(seed);

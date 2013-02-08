@@ -11,6 +11,7 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
+
 /**
  * Common interface for the algorithms related to assets
  * @author Shou Matsumoto
@@ -352,5 +353,15 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * in order to calculate the value to update.
 	 */
 	public List<Clique> getEditCliques();
+	
+	/**
+	 * Creates a new node using the object passed as the argument, and adds it into {@link #getAssetNetwork()}.
+	 * @param nodeInProbNet : node in  probNet to be cloned into assetNet
+	 * @param probNet : network where nodeInProbNet resides.
+	 * @param assetNet : network where the new node will be created.
+	 * @return the created node
+	 */
+	public INode addDisconnectedNodeIntoAssetNet(INode nodeInProbNet, Graph probNet, AssetNetwork assetNet);
+	
 	
 }

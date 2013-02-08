@@ -21,6 +21,7 @@ import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.BruteForceAssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.BruteForceAssetAwareInferenceAlgorithm.JointPotentialTable;
 import unbbayes.prs.bn.inference.extension.IAssetAwareInferenceAlgorithmBuilder;
+import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
@@ -534,7 +535,211 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 		throw new UnsupportedOperationException("This operation is not supported by this engine yet");
 	}
 
+	public synchronized boolean commitNetworkActions(long transactionKey, boolean isToRebuildNetOnStructureChange) throws IllegalArgumentException, ZeroAssetsException {
+		
+		// TODO revert actions on error.
+		
+		// initial assertion : make sure transactionKey is valid
+		List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey);
+		if (actions == null) {
+			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		}
+		
+		/*
+		 * Reorder actions so that changes in BN structure comes first,
+		 * insert a "rebuild structure" action after the last BN structure change actions in a row,
+		 * and then execute the actions in sequence.
+		 * 
+		 * E.g. assuming that <add node> and <add edge> changes the BN structures (and the others doesn't), then:
+		 * 
+		 * [<add node 1>, <add node 2>, <add edge 1>, <add trade 1>, <add edge 2>, <get cash 1>]
+		 * 
+		 * will be converted to:
+		 * 
+		 * [<add node 1>, <add node 2>, <add edge 1>, <add edge 2>, <rebuild 1> , <add trade 1>, <get cash 1>]
+		 * 
+		 * The <rebuild 1> action shall read the history and redo all trades (only trades which is not a BN structure change).
+		 */
+		synchronized (actions) {	// make sure actions are not changed by other threads
+			List<NetworkAction> netChangeActions = new ArrayList<NetworkAction>();	// will store actions which changes network structures
+			List<NetworkAction> addCashActions = null;	// will store actions which adds cash to users
+			if (isToSortAddCashAction()) {
+				// only instantiate if we will use it
+				addCashActions = new ArrayList<NetworkAction>();
+			}
+			List<NetworkAction> otherActions = new ArrayList<NetworkAction>();	// will store actions which does not change network structure
+			// collect all network change actions and other actions, regarding their original order
+			for (NetworkAction action : actions) {
+				if (action.isStructureConstructionAction()) {
+					netChangeActions.add(action);
+				} else if (isToSortAddCashAction() && (action instanceof AddCashNetworkAction)) {
+					addCashActions.add(action);
+				} else {
+					// Note: if isToSortAddCashAction() == false, AddCashNetworkAction will be included here
+					otherActions.add(action);
+				}
+			}
+			
+			// this is the action which rebuilds the network if there is any action changing network structure
+			RebuildNetworkAction rebuildNetworkAction = null;
+			
+			// change the content of actions. Since we are using the same list object, this should also change the values stored in getNetworkActionsMap.
+			if (!netChangeActions.isEmpty() && isToRebuildNetOnStructureChange) {
+				// only make changes (reorder actions and recompile network) if there is any action changing the structure of network.
+				actions.clear();	// reset actions first
+				
+				/*
+				 * mark the structure change actions as executed, 
+				 * so that RebuildNetworkAction can handle them when rebuilding network.
+				 * CAUTION: be careful not to change the behavior of RebuildNetworkAction
+				 */
+				for (NetworkAction action : netChangeActions) {
+					// mark action as executed
+					action.setWhenExecutedFirstTime(new Date());	// normal execution of action -> update attribute "whenExecutedFirst"
+					if (!(action.equals(rebuildNetworkAction))) {
+						synchronized (getExecutedActions()) {
+							// this is partially ordered by NetworkAction#getWhenCreated(), because actions is ordered by NetworkAction#getWhenCreated()
+							getExecutedActions().add(action);	
+						}
+					}
+				}
+//				actions.addAll(netChangeActions);	// netChangeActions comes first
+				rebuildNetworkAction = new RebuildNetworkAction(netChangeActions.get(0).getTransactionKey(), new Date(), null, null);
+				actions.add(rebuildNetworkAction);	// <rebuild action> is inserted between netChangeActions and otherActions
+				if (isToSortAddCashAction()) {
+					// note: if isToSortAddCashAction() == true, addCashActions was supposedly initialized and filled, but let's just make sure and use try-catch
+					try {
+						actions.addAll(addCashActions);
+					} catch (NullPointerException e) {
+						// populate message with more useful info
+						throw new RuntimeException("The flag \"isToSortAddCashAction\" is " + isToSortAddCashAction() 
+								+ ", and an attempt to sort addCash operations was performed. However, the list of actions was null. " +
+								"This is probably due to incompatible version of Markov Engine. " +
+								"Please, check version, or try changing the value of the flag \"isToSortAddCashAction\".", e);
+					}
+				}
+				actions.addAll(otherActions);	// otherActions comes later
+			}
+			
+			// TODO trades of same user to same node given compatible assumptions (all nodes in same clique) can be integrated to 1 trade
+			
+			// then, execute all actions
+			for (int i = 0; i < actions.size(); i++) {
+				NetworkAction action = actions.get(i);
+				
+				// check if we can integrate several resolutions into a single mass resolution (if there are resolutions in sequence)
+				if (isToIntegrateConsecutiveResolutions() && 
+						(action instanceof ResolveQuestionNetworkAction) 
+						&& (i+1 < actions.size()) && (actions.get(i+1) instanceof ResolveQuestionNetworkAction)) {
+					
+					// store the series of resolutions
+					List<ResolveQuestionNetworkAction> consecutiveResolutions = new ArrayList<MarkovEngineImpl.ResolveQuestionNetworkAction>();
+					// add the 2 consecutive resolutions to the list
+					consecutiveResolutions.add((ResolveQuestionNetworkAction) action);
+					consecutiveResolutions.add((ResolveQuestionNetworkAction)actions.get(++i));
+					
+					// check if there are more resolutions following the above two
+					while (++i < actions.size()) {
+						if (actions.get(i) instanceof ResolveQuestionNetworkAction) {
+							consecutiveResolutions.add((ResolveQuestionNetworkAction) actions.get(i));
+						} else {
+							// the i should be pointing to the last instance of ResolveQuestionNetworkAction 
+							// (so that in next iteration of for it will point to an action which is not a ResolveQuestionNetworkAction)
+							--i;
+							break;
+						}
+					}
+					// note: it's OK if i >= actions.size() happens at this point, 
+					// because ResolveSetOfQuestionsNetworkAction will be executed and the "for" loop will finish
+					
+					// substitute consecutive resolutions to a single mass resolution
+					action = new ResolveSetOfQuestionsNetworkAction(transactionKey, action.getWhenCreated(), consecutiveResolutions);
+				}
+				
+				// actually run action
+				try {
+					action.execute();
+				} catch (ZeroAssetsException z) {
+					// do not consider this action anymore
+					removeNetworkActionFromQuestionMap(action, action.getQuestionId());
+					// remove transaction before releasing the lock to actions
+					getNetworkActionsMap().remove(transactionKey);
+					throw z;
+				}
+				
+				// mark action as executed
+				action.setWhenExecutedFirstTime(new Date());	// normal execution of action -> update attribute "whenExecutedFirst"
+				if (!action.equals(rebuildNetworkAction)) {
+					synchronized (getExecutedActions()) {
+						// this is partially ordered by NetworkAction#getWhenCreated(), because actions is ordered by NetworkAction#getWhenCreated()
+						//if (!getExecutedActions().contains(action)) {
+							getExecutedActions().add(action);	
+						//}
+						// TODO do we need to store RebuildNetworkAction in the history?
+					}
+				}
+			}
+			
+			// remove transaction before releasing the lock to actions
+			getNetworkActionsMap().remove(transactionKey);
+			
+		}	// release lock to actions
+		
+		return true;
+	}
 	
+	/* (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addQuestion(long, java.util.Date, long, int, java.util.List)
+	 */
+	public synchronized boolean addQuestion(Long transactionKey, Date occurredWhen,
+			long questionId, int numberStates, List<Float> initProbs)
+			throws IllegalArgumentException {
+		
+		// initial assertions
+		if (numberStates <= 0) {
+			// invalid quantity of states
+			throw new IllegalArgumentException("Attempted to add a question with " + numberStates + " states.");
+		}
+		if (occurredWhen == null) {
+			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
+		}
+		
+		synchronized (this.getResolvedQuestions()) {
+			if (this.getResolvedQuestions().containsKey(questionId)) {
+				throw new IllegalArgumentException("Question " + questionId + " was already resolved.");
+			}
+		}
+		synchronized (getProbabilisticNetwork()) {
+			if (getProbabilisticNetwork().getNode(Long.toString(questionId)) != null) {
+				// duplicate question
+				throw new IllegalArgumentException("Question ID " + questionId + " is already present.");
+			}
+		}
+		if (initProbs != null && !initProbs.isEmpty()) {
+			float sum = 0;
+			for (Float prob : initProbs) {
+				if (prob < 0 || prob > 1) {
+					throw new IllegalArgumentException("Invalid probability declaration found: " + prob);
+				}
+				sum += prob;
+			}
+			// check if sum of initProbs is 1 (with error margin)
+			if (!(((1 - getProbabilityErrorMargin()) < sum) && (sum < (1 + getProbabilityErrorMargin())))) {
+				throw new IllegalArgumentException("Inconsistent prior probability: " + sum);
+			}
+		}
+		
+		// instantiate the action object for adding a question
+		if (transactionKey == null) {
+			transactionKey = this.startNetworkActions();
+			this.addNetworkAction(transactionKey, new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs, false));
+			this.commitNetworkActions(transactionKey);
+		} else {
+			this.addNetworkAction(transactionKey, new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs, false));
+		}
+		
+		return true;
+	}
 
 	// TODO BruteForceMarkovEngine needs doBalanceTrade correctly implemented
 

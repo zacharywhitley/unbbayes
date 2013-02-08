@@ -40,6 +40,12 @@ public interface NetworkAction extends QuestionEvent {
 	 */
 	boolean isStructureConstructionAction();
 	
+	/**
+	 * @return actions which shall trigger a re-run of the history
+	 * shall return true in this method.
+	 */
+	boolean isTriggerForRebuild();
+	
 
 	/**
 	 * This is true in actions which adds hard evidences into the network, 

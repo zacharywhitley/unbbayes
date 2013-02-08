@@ -24,6 +24,7 @@ import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.DefaultJunctionTreeBuilder;
+import unbbayes.prs.bn.IJunctionTree;
 import unbbayes.prs.bn.IJunctionTreeBuilder;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.LogarithmicMinProductJunctionTree;
@@ -471,11 +472,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		
 		for (Clique clique : this.getAssetNetwork().getJunctionTree().getCliques()) {
-			this.initAssetPotential(clique.getProbabilityFunction(), getAssetNetwork());
+			this.initAssetPotential(clique.getProbabilityFunction(), getAssetNetwork(), this.getDefaultInitialAssetTableValue());
 		}
 		
 		for (Separator sep : this.getAssetNetwork().getJunctionTree().getSeparators()) {
-			this.initAssetPotential(sep.getProbabilityFunction(), getAssetNetwork());
+			this.initAssetPotential(sep.getProbabilityFunction(), getAssetNetwork(), this.getDefaultInitialAssetTableValue());
 		}
 		
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
@@ -883,7 +884,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				}
 				
 				// fills the values of assets with default values
-				this.initAssetPotential(assetPotential, ret);
+				this.initAssetPotential(assetPotential, ret, this.getDefaultInitialAssetTableValue());
 				
 				
 				// NOTE: this is ignoring utility table and nodes
@@ -943,7 +944,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				}
 				
 				// fills the values of assets with default values
-				this.initAssetPotential(assetPotential, ret);
+				this.initAssetPotential(assetPotential, ret, this.getDefaultInitialAssetTableValue());
 				
 				
 				// NOTE: this is ignoring utility table and nodes
@@ -973,15 +974,157 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		
 		return ret;
 	}
+	
+	/**
+	 * Creates a new node using the object passed as the argument, and adds it into assetNet.
+	 * @param nodeInProbNet : node in probNet to be cloned into assetNet.
+	 * The node is supposed to be disconnected from other nodes.
+	 * In current default implementation (February 2013),
+	 * it is expected to have a clique in {@link TreeVariable#getAssociatedClique()} 
+	 * and its separator to be connected to a root.
+	 * @param probNet : network where nodeInProbNet resides. If null, {@link #getRelatedProbabilisticNetwork()}
+	 * will be used.
+	 * @param assetNet : network where the new node will be created. If null, {@link #getAssetNetwork()}
+	 * will be used.
+	 * @return the created node
+	 */
+	public INode addDisconnectedNodeIntoAssetNet(INode nodeInProbNet, Graph probNet, AssetNetwork assetNet) {
+		// TODO use builders and create common method with createNodeInProbabilisticNetwork
+		// create new node
+		AssetNode assetNode = AssetNode.getInstance();
+		assetNode.setToCalculateMarginal(isToCalculateMarginalsOfAssetNodes());
+		assetNode.setName(nodeInProbNet.getName());
+		assetNode.setInternalIdentificator(((IRandomVariable)nodeInProbNet).getInternalIdentificator());
+		// copy states
+		for (int i = 0; i < nodeInProbNet.getStatesSize(); i++) {
+			assetNode.appendState(nodeInProbNet.getStateAt(i));
+		}
+		assetNode.initMarginalList();	// guarantee that marginal list is initialized
+		
+		if (assetNet == null) {
+			assetNet = getAssetNetwork();
+		}
+		
+		// we assume the asset network is never read in parallel.
+		assetNet.addNode(assetNode); // add node into the network
+		
+		// only update junction tree if isToUpdateJunctionTree was set to true, and there is a junction tree accessible from the network
+		if (assetNet.getJunctionTree() != null) {
+			
+			// extract the junction tree of the net
+			IJunctionTree junctionTree = assetNet.getJunctionTree();
+			
+			// create clique for the virtual node and parents
+			Clique cliqueOfNewNode = new Clique(AssetTable.getInstance());
+			cliqueOfNewNode.getNodes().add(assetNode);
+			cliqueOfNewNode.getProbabilityFunction().addVariable(assetNode);
+			
+			// extract probabilistic network
+			if (probNet != null && !(probNet instanceof ProbabilisticNetwork)) {
+				throw new ClassCastException("Current version expects instances of " + ProbabilisticNetwork.class.getName() + " as the shared probabilistic network.");
+			}
+			ProbabilisticNetwork net = (ProbabilisticNetwork) probNet;
+			if (net == null) {
+				net = getRelatedProbabilisticNetwork();
+			}
+			if (net == null) {
+				throw new NullPointerException("The shared bayes net is null.");
+			}
+			
+			// synchronize shared bayes net, because we are accessing prob cliques and separators
+			synchronized (net) {
+				
+				// I'm assuming that the associated variable is always a clique, and its separator is connected to root. 
+				// TODO Do not consider such assumption
+				Clique origClique = (Clique)((TreeVariable) nodeInProbNet).getAssociatedClique();
+				if (origClique == null) {
+					throw new IllegalArgumentException("Current version assumes that node " + nodeInProbNet + " is disconnected, but has some associated clique.");
+				}
+				
+				// update internal identificator, and also extract original (probabilistic) clique and separator
+				cliqueOfNewNode.setInternalIdentificator(origClique.getInternalIdentificator());
+				
+				// extract separator, but assume that nodeInProbNet is a disconnected node too
+				if (origClique.getParent() == null || origClique.getParent().getParent() != null) {
+					// TODO Do not consider such assumption anymore and implement more generic ways
+					throw new RuntimeException("Current version excepts cliques of disconnected nodes to be connected to the root clique.");
+				}
+				
+				
+				// fills the values of assets with default values. Use the assets of empty separators, because it reflects added cash
+				this.initAssetPotential(cliqueOfNewNode.getProbabilityFunction(), assetNet, this.getEmptySeparatorsDefaultContent());
+				
+				if (origClique != null) {
+					getOriginalCliqueToAssetCliqueMap(assetNet).put(origClique, cliqueOfNewNode);
+					getAssetCliqueToOriginalCliqueMap(assetNet).put(cliqueOfNewNode.getInternalIdentificator(), origClique);
+				}
+				
+				// extract the root junction tree node (clique with no parents)
+				Clique rootClique = null;
+				// do sequential search, but the root is likely to be the 1st clique
+				for (Clique clique : junctionTree.getCliques()) {
+					if (clique.getParent() == null) {
+						rootClique = clique;
+						break;
+					}
+				}
+				if (rootClique == null) {
+					throw new RuntimeException("Inconsistent junction tree structure: no root node was found.");
+				}
+				
+				// add clique to junction tree, so that the algorithm can handle the clique correctly
+				junctionTree.getCliques().add(cliqueOfNewNode);
+				
+				// extract prob separator- we need to extract it from shared prob node
+				Separator origSeparator = net.getJunctionTree().getSeparator(origClique.getParent(), origClique);
+				if (origSeparator == null) {
+					throw new RuntimeException("Could not obtain separator between cliques " + origClique + " and its parent " + origClique.getParent());
+				}
+				
+				// create separator between the clique of parent nodes and virtual node (the separator should contain all parents)
+				Separator separatorOfNewNode = new Separator(rootClique , cliqueOfNewNode, AssetTable.getInstance());
+				separatorOfNewNode.setInternalIdentificator(-(junctionTree.getSeparators().size()+1)); // internal identificator must be set before adding separator, because it is used as key
+				junctionTree.addSeparator(separatorOfNewNode);
+				
+				// fills the values of assets with default values. Use the assets of empty separators, because it reflects added cash
+				this.initAssetPotential(cliqueOfNewNode.getProbabilityFunction(), assetNet, this.getEmptySeparatorsDefaultContent());
+				
+				getOriginalCliqueToAssetCliqueMap(assetNet).put(origSeparator, separatorOfNewNode);
+				getAssetCliqueToOriginalCliqueMap(assetNet).put(separatorOfNewNode.getInternalIdentificator(), origSeparator);
+				// just to guarantee that the network is fresh
+				assetNet.resetNodesCopy();
+				
+				// now, let's link the nodes with the cliques
+				cliqueOfNewNode.getAssociatedProbabilisticNodes().add(assetNode);
+				assetNode.setAssociatedClique(cliqueOfNewNode);
+				
+				// this is not necessary for asset nodes, but other types of nodes may need explicit initialization of the marginals
+//			assetNode.initMarginalList();
+				
+				
+				// initialize the probabilities of clique and separator
+//			assetNet.getJunctionTree().initBelief(cliqueOfNewNode);
+//			assetNet.getJunctionTree().initBelief(separatorOfNewNode);	// this one sets all separator potentials to 1
+				
+				// store the potentials after propagation, so that the "reset" will restore these values
+				cliqueOfNewNode.getProbabilityFunction().copyData();	
+				separatorOfNewNode.getProbabilityFunction().copyData();
+			}
+		}
+		
+		return assetNode;
+	}
 
 	/**
 	 * Initializes the assets potential of a asset clique potential.
 	 * This method also calls {@link PotentialTable#copyData()}, so that these initial potentials can be restored posteriorly.
 	 * @param assetCliquePotential
+	 * @param net : net to initialize;
+	 * @param initialAsset : value of the initial asset to be used in order to fill the asset tables initially.
 	 * @see #createAssetNetFromProbabilisticNet(ProbabilisticNetwork)
 	 * @see #reset()
 	 */
-	protected void initAssetPotential(PotentialTable assetCliquePotential, AssetNetwork net) {
+	protected void initAssetPotential(PotentialTable assetCliquePotential, AssetNetwork net, float initialAsset) {
 		// set up the marginalization operator (in our case, set up min-out operation)
 		if (net.getJunctionTree() instanceof MinProductJunctionTree) {
 			MinProductJunctionTree minProductJunctionTree = (MinProductJunctionTree) net.getJunctionTree();
@@ -992,7 +1135,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		
 		for (int i = 0; i < assetCliquePotential.tableSize(); i++) {
-			assetCliquePotential.setValue(i, this.getDefaultInitialAssetTableValue());
+			assetCliquePotential.setValue(i, initialAsset);
 		}
 		assetCliquePotential.copyData();
 	}

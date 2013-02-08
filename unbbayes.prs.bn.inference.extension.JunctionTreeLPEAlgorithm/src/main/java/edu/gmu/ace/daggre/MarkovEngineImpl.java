@@ -523,7 +523,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			List<NetworkAction> otherActions = new ArrayList<NetworkAction>();	// will store actions which does not change network structure
 			// collect all network change actions and other actions, regarding their original order
+			boolean isToRebuildFromHistory = false;	// if an action which is set as a trigger for rebuild is found, this flag will turn on
 			for (NetworkAction action : actions) {
+				if (action.isTriggerForRebuild()) {
+					// there is at least one trigger for re-running history, so remember that and instantiate a RebuildNetworkAction afterwards.
+					isToRebuildFromHistory = true;
+				}
 				if (action.isStructureConstructionAction()) {
 					netChangeActions.add(action);
 				} else if (isToSortAddCashAction && (action instanceof AddCashNetworkAction)) {
@@ -542,24 +547,31 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// only make changes (reorder actions and recompile network) if there is any action changing the structure of network.
 				actions.clear();	// reset actions first
 				
-				/*
-				 * mark the structure change actions as executed, 
-				 * so that RebuildNetworkAction can handle them when rebuilding network.
-				 * CAUTION: be careful not to change the behavior of RebuildNetworkAction
-				 */
-				for (NetworkAction action : netChangeActions) {
-					// mark action as executed
-					action.setWhenExecutedFirstTime(new Date());	// normal execution of action -> update attribute "whenExecutedFirst"
-					if (!(action.equals(rebuildNetworkAction))) {
+				if (!isToRebuildFromHistory) {
+					// netChangeActions comes first, if they do not trigger a RebuildNetworkAction.
+					actions.addAll(netChangeActions); 
+				} else {
+					/*
+					 * mark the structure change actions as executed, 
+					 * so that RebuildNetworkAction can handle them when rebuilding network.
+					 * CAUTION: be careful not to change the behavior of RebuildNetworkAction
+					 */
+					for (NetworkAction action : netChangeActions) {
+						if (action == null) {
+							continue;	// ignore null entries
+						}
+						// mark action as executed
+						action.setWhenExecutedFirstTime(new Date());	// normal execution of action -> update attribute "whenExecutedFirst"
 						synchronized (getExecutedActions()) {
 							// this is partially ordered by NetworkAction#getWhenCreated(), because actions is ordered by NetworkAction#getWhenCreated()
 							getExecutedActions().add(action);	
 						}
 					}
+					// Note: if they trigger a RebuildNetworkAction, then actions in getExecutedActions() will be re-executed, 
+					// and netChangeActions will be executed anyway during rebuild, so no need to add them into actions.
+					rebuildNetworkAction = new RebuildNetworkAction(netChangeActions.get(0).getTransactionKey(), new Date(), null, null);
+					actions.add(rebuildNetworkAction);	// <rebuild action> is inserted before addCashActions and otherActions
 				}
-//				actions.addAll(netChangeActions);	// netChangeActions comes first
-				rebuildNetworkAction = new RebuildNetworkAction(netChangeActions.get(0).getTransactionKey(), new Date(), null, null);
-				actions.add(rebuildNetworkAction);	// <rebuild action> is inserted between netChangeActions and otherActions
 				if (isToSortAddCashAction) {
 					// note: if isToSortAddCashAction() == true, addCashActions was supposedly initialized and filled, but let's just make sure and use try-catch
 					try {
@@ -770,7 +782,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// execute the trades related to network construction before actionsToExecute
 				for (NetworkAction changeAction : networkConstructionActions) {
 					// no need to call changeAction.setWhenExecutedFirstTime(whenExecutedFirst), because it was supposedly executed during commitNetworkActions(transactionKey)
-					changeAction.execute();
+					if (changeAction instanceof AddQuestionNetworkAction) {
+						// TODO use dependency injection in order to avoid using if-instanceof
+						synchronized (getProbabilisticNetwork()) {
+							((AddQuestionNetworkAction)changeAction).execute(getProbabilisticNetwork(), false);	// false := do not update junction tree now
+						}
+					} else {
+						changeAction.execute();
+					}
 					/*
 					 * Caution: do not change this behavior (recreate network structure
 					 * using the actions from the history), because
@@ -1109,6 +1128,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Integer getSettledState() {return null;}
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
+		/** This action does not trigger another rebuild */
+		public boolean isTriggerForRebuild() { return false; }
 	}
 	
 	/**
@@ -1167,13 +1188,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		} else {	// i.e. initProbs == null || initProbs.isEmpty()
 			// Instantiate initProbs. Reuse same instance if it was passed as argument
-			if (initProbs == null) {
-				initProbs = new ArrayList<Float>();
-			}
-			// prior probability was not set. Assume it to be uniform distribution
-			for (int i = 0; i < numberStates; i++) {
-				initProbs.add(1f/numberStates);
-			}
+//			if (initProbs == null) {
+//				initProbs = new ArrayList<Float>();
+//			}
+//			// prior probability was not set. Assume it to be uniform distribution
+//			for (int i = 0; i < numberStates; i++) {
+//				initProbs.add(1f/numberStates);
+//			}
+			// the above code was migrated to AddQuestionNetworkAction#execute()
 		}
 		
 		// instantiate the action object for adding a question
@@ -1219,6 +1241,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		private final int numberStates;
 		private List<Float> initProbs;
 		private Date whenExecutedFirst;
+		private boolean isToUpdateJunctionTreeAndAssetNets = true;
 		/** Default constructor initializing fields */
 		public AddQuestionNetworkAction(Long transactionKey, Date occurredWhen,
 				long questionId, int numberStates, List<Float> initProbs) {
@@ -1227,66 +1250,85 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.occurredWhen = occurredWhen;
 			this.questionId = questionId;
 			this.numberStates = numberStates;
-			if (initProbs != null) {
+			if (initProbs != null && !initProbs.isEmpty()) {
 				// use a copy, so that changes in the original do not affect this object
 				this.initProbs = new ArrayList<Float>(initProbs);
 			} else {
 				this.initProbs = null;
 			}
+			isToUpdateJunctionTreeAndAssetNets = true;
+		}
+		public AddQuestionNetworkAction(Long transactionKey, Date occurredWhen,
+				long questionId, int numberStates, List<Float> initProbs, boolean isToUpdateJunctionTreeAndAssetNets) {
+			this(transactionKey, occurredWhen, questionId, numberStates, initProbs);
+			this.setToUpdateJunctionTreeAndAssetNets(isToUpdateJunctionTreeAndAssetNets);
 		}
 		/**
 		 * Adds a new question into the specified network
 		 * @param net : the specified network
 		 */
 		public void execute(ProbabilisticNetwork net) {
-//			// do not execute action if there is a RebuildNetworkAction after this action, because it will be redundant
-//			synchronized (getNetworkActionsMap()) {
-//				List<NetworkAction> otherActionsInSameTransaction = getNetworkActionsMap().get(transactionKey);
-//				if (otherActionsInSameTransaction != null) {
-//					synchronized (otherActionsInSameTransaction) {
-//						int indexOfThisAction = otherActionsInSameTransaction.indexOf(this);
-//						if (indexOfThisAction < 0) {
-//							throw new IllegalStateException("Transaction " + transactionKey + " is in an invalid state.");
-//						}
-//						boolean hasRebuildAction = false;
-//						for (int i = indexOfThisAction + 1; i < otherActionsInSameTransaction.size(); i++) {
-//							if (otherActionsInSameTransaction.get(i) instanceof RebuildNetworkAction) {
-//								hasRebuildAction = true;
-//								break;
-//							}
-//						}
-//						if (hasRebuildAction) {
-//							Debug.println(getClass(), "Do not create node " + questionId + " now, because it will be re-executed later on rebuild action");
-//							return;
-//						}
-//					}
+			this.execute(net, isToUpdateJunctionTreeAndAssetNets());
+		}
+		
+		/**
+		 * Create a node in net
+		 * @param net : network where the node will be added.
+		 * @param isToUpdateJunctionTreeAndAssetNets : if true, the junction tree will also be updated automatically assuming that the new node will remain disconnected
+		 * from the rest of the network. If true, this method will also update asset networks of all users.
+		 * @see AssetAwareInferenceAlgorithm#createAssetNetFromProbabilisticNet(ProbabilisticNetwork)
+		 * @see AssetAwareInferenceAlgorithm#addDisconnectedNodeIntoAssetNet(INode)
+		 */
+		public void execute(ProbabilisticNetwork net, boolean isToUpdateJunctionTreeAndAssetNets) {
+			
+//			// create new node
+//			ProbabilisticNode node = new ProbabilisticNode();
+//			node.setName(Long.toString(this.questionId));
+//			// add states
+//			for (int i = 0; i < this.numberStates; i++) {
+//				node.appendState(Integer.toString(i));
+//			}
+//			// initialize CPT (actually, it is a prior probability, because we do not have parents yet).
+//			PotentialTable potTable = node.getProbabilityFunction();
+//			if (potTable.getVariablesSize() <= 0) {
+//				potTable.addVariable(node);
+//			}
+//			
+//			// fill cpt
+//			if (initProbs == null) {
+//				// prior probability was not set. Assume it to be uniform distribution
+//				for (int i = 0; i < potTable.tableSize(); i++) {
+//					potTable.setValue(i, 1f/numberStates);
+//				}
+//			} else {
+//				for (int i = 0; i < potTable.tableSize(); i++) {
+//					potTable.setValue(i, this.initProbs.get(i));
 //				}
 //			}
-			// the above check was migrated to commitNetworkAction
-			
-			// create new node
-			ProbabilisticNode node = new ProbabilisticNode();
-			node.setName(Long.toString(this.questionId));
-			// add states
-			for (int i = 0; i < this.numberStates; i++) {
-				node.appendState(Integer.toString(i));
+//			
+//			// make sure marginal list is never null
+//			node.initMarginalList();
+//			
+//			// add node into the network
+//			synchronized (net) {
+//				net.addNode(node);
+//			}
+			// the above code was migrated to AssetAwareInferenceAlgorithm#createNodeInProbabilisticNetwork
+			INode node = null;	// the new node 
+			synchronized (getDefaultInferenceAlgorithm()) {
+				node = getDefaultInferenceAlgorithm().createNodeInProbabilisticNetwork(Long.toString(this.questionId), numberStates, initProbs, isToUpdateJunctionTreeAndAssetNets, net);
 			}
-			// initialize CPT (actually, it is a prior probability, because we do not have parents yet).
-			PotentialTable potTable = node.getProbabilityFunction();
-			if (potTable.getVariablesSize() <= 0) {
-				potTable.addVariable(node);
-			}
-			// fill cpt
-			for (int i = 0; i < potTable.tableSize(); i++) {
-				potTable.setValue(i, this.initProbs.get(i));
+			if (node == null) {
+				throw new RuntimeException("Failed to create question " + questionId + " in the shared Bayes net.");
 			}
 			
-			// make sure marginal list is never null
-			node.initMarginalList();
-			
-			// add node into the network
-			synchronized (net) {
-				net.addNode(node);
+			if (isToUpdateJunctionTreeAndAssetNets) {
+				// create node in all asset networks too
+				synchronized (getUserToAssetAwareAlgorithmMap()) {
+					for (AssetAwareInferenceAlgorithm userAlgorithm : getUserToAssetAwareAlgorithmMap().values()) {
+						userAlgorithm.addDisconnectedNodeIntoAssetNet(node, net, userAlgorithm.getAssetNetwork());
+					}
+				}
 			}
 		}
 		public void revert() throws UnsupportedOperationException {
@@ -1312,6 +1354,29 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Integer getSettledState() {return numberStates;}
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
+		/** From Jan 2013, adding disconnected questions does not trigger another rebuild, unless network was not compiled yet */
+		public boolean isTriggerForRebuild() { 
+			synchronized (getProbabilisticNetwork()) {
+				if (getProbabilisticNetwork().getJunctionTree() == null || getProbabilisticNetwork().getJunctionTree().getCliques() == null
+						|| getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty()) {
+					return true;
+				}
+			}
+			return false; 
+		}
+		/**
+		 * @return the isToUpdateJunctionTreeAndAssetNets
+		 */
+		public boolean isToUpdateJunctionTreeAndAssetNets() {
+			return isToUpdateJunctionTreeAndAssetNets;
+		}
+		/**
+		 * @param isToUpdateJunctionTreeAndAssetNets the isToUpdateJunctionTreeAndAssetNets to set
+		 */
+		public void setToUpdateJunctionTreeAndAssetNets(
+				boolean isToUpdateJunctionTreeAndAssetNets) {
+			this.isToUpdateJunctionTreeAndAssetNets = isToUpdateJunctionTreeAndAssetNets;
+		}
 	}
 
 	/* (non-Javadoc)
@@ -1612,6 +1677,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Integer getSettledState() {return null;}
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
+		/** On Jan 2013, adding arcs is the only trigger for rebuild */
+		public boolean isTriggerForRebuild() { return true; }
 	}
 	
 	/**
@@ -1719,6 +1786,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Integer getSettledState() {return null;}
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
+		/** This action does not trigger another rebuild */
+		public boolean isTriggerForRebuild() { return false; }
 	}
 
 	
@@ -1980,6 +2049,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
+		/** This action does not trigger another rebuild */
+		public boolean isTriggerForRebuild() { return false; }
 	}
 	
 	/**
@@ -2614,6 +2685,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public boolean isHardEvidenceAction() {return true; }
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
+		/** This action does not trigger another rebuild */
+		public boolean isTriggerForRebuild() { return false; }
 	}
 	
 	/**
@@ -8530,7 +8603,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				if (action.isStructureConstructionAction()) {
 					
 					if (action instanceof AddQuestionNetworkAction) {
-						((AddQuestionNetworkAction)action).execute(netToSave);
+						((AddQuestionNetworkAction)action).execute(netToSave,false); // false := do not consider assets and junction tree
 						//		1.4. The position (x and y coordinates) of the nodes will be random.
 						Node node = netToSave.getNode(action.getQuestionId().toString());
 						node.setPosition(50 + Math.random()*getNodePositionRandomRange() , 50 + Math.random()*getNodePositionRandomRange());
@@ -8850,6 +8923,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public ProbabilisticNetwork getImportedNet() { return importedNet; }
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
+		/** Importing network may trigger rebuild, because it may add new arcs */
+		public boolean isTriggerForRebuild() { return true; }
 	}
 
 
