@@ -80,8 +80,9 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		return totalEstimatedProb;
 	}
 	
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Caution: {@link Separator#setInternalIdentificator(int)} must be set
+	 * to a value before calling this method.
 	 * @see unbbayes.prs.bn.IJunctionTree#addSeparator(unbbayes.prs.bn.Separator)
 	 */
 	public void addSeparator(Separator sep) {
