@@ -1185,6 +1185,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 
 	/**
 	 * Add a virtual node with 2 states.
+	 * This is the main mechanism used in likelihood evidence and soft evidence.
 	 * The new virtual node is just a child of parentNode.
 	 * It assumes parentNodes are all within {@link #getNet()}
 	 * and {@link #getLikelihoodExtractor()} can extract the likelihood from parentNodes.<br/>
