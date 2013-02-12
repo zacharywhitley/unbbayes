@@ -1,9 +1,8 @@
 -- MDA STUDY CASE
 -- DB CREATION SCRIPT.
--- Generation Time: Oct 06, 2012 at 05:40 PM
-
--- Server version: 5.5.27
--- PHP Version: 5.4.6-1ubuntu1
+-- Generation Time: Feb 12, 2013 at 01:42 PM
+-- Server version: 5.5.28
+-- PHP Version: 5.4.6-1ubuntu1.1
 
 SET SQL_MODE="NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
@@ -73,7 +72,7 @@ CREATE TABLE IF NOT EXISTS `EQUIPMENT_TYPE` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(10) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=23 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
 
 --
 -- Dumping data for table `EQUIPMENT_TYPE`
@@ -95,6 +94,13 @@ CREATE TABLE IF NOT EXISTS `MEETING` (
   KEY `ship1` (`ship1`),
   KEY `ship2` (`ship2`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `MEETING`
+--
+
+INSERT INTO `MEETING` (`ship1`, `ship2`) VALUES
+(1, 2);
 
 -- --------------------------------------------------------
 
@@ -141,6 +147,11 @@ CREATE TABLE IF NOT EXISTS `PERSON` (
 --
 
 INSERT INTO `PERSON` (`id`, `relatedTo`, `isTerrorist`, `organization`, `crewMemberOf`) VALUES
+('Burrows', 'Scolfield', NULL, 1, 2),
+('pato', NULL, 'T', NULL, 4),
+('pato2', 'pato', NULL, NULL, 4),
+('Scolfield', NULL, 'F', 3, 4),
+('snoopy', NULL, NULL, NULL, NULL),
 ('Terrorist', NULL, 'T', NULL, NULL),
 ('TerroristRelated', 'Terrorist', 'F', NULL, NULL);
 
@@ -190,8 +201,9 @@ CREATE TABLE IF NOT EXISTS `SHIP` (
 
 INSERT INTO `SHIP` (`id`, `isOfInterest`, `type`, `isECMDeployed`, `hasTerroristCrew`, `behavior`, `route`) VALUES
 (1, 'N', NULL, 'N', 'N', NULL, 0),
-(2, 'T', NULL, 'T', 'T', NULL, 0),
-(4, NULL, NULL, NULL, NULL, NULL, 0);
+(2, 'T', NULL, 'T', 'T', NULL, NULL),
+(4, NULL, NULL, NULL, NULL, NULL, 1),
+(5, NULL, NULL, NULL, NULL, NULL, 1);
 
 -- --------------------------------------------------------
 
@@ -203,7 +215,16 @@ CREATE TABLE IF NOT EXISTS `SHIP_TYPE` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(10) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=4 ;
+
+--
+-- Dumping data for table `SHIP_TYPE`
+--
+
+INSERT INTO `SHIP_TYPE` (`id`, `name`) VALUES
+(1, 'NavyShip'),
+(2, 'FishingShi'),
+(3, 'MerchantSh');
 
 --
 -- Constraints for dumped tables
@@ -235,9 +256,9 @@ ALTER TABLE `PERSON`
 -- Constraints for table `SHIP`
 --
 ALTER TABLE `SHIP`
-  ADD CONSTRAINT `SHIP_ibfk_5` FOREIGN KEY (`route`) REFERENCES `ROUTE` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
   ADD CONSTRAINT `SHIP_ibfk_2` FOREIGN KEY (`type`) REFERENCES `SHIP_TYPE` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
-  ADD CONSTRAINT `SHIP_ibfk_3` FOREIGN KEY (`behavior`) REFERENCES `BEHAVIOR` (`id`) ON DELETE SET NULL ON UPDATE SET NULL;
+  ADD CONSTRAINT `SHIP_ibfk_3` FOREIGN KEY (`behavior`) REFERENCES `BEHAVIOR` (`id`) ON DELETE SET NULL ON UPDATE SET NULL,
+  ADD CONSTRAINT `SHIP_ibfk_5` FOREIGN KEY (`route`) REFERENCES `ROUTE` (`id`) ON DELETE SET NULL ON UPDATE SET NULL;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
