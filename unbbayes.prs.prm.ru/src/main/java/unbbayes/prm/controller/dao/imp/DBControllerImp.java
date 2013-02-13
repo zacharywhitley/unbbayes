@@ -174,9 +174,7 @@ public class DBControllerImp implements IDBController {
 		// }
 
 		// Get the index as a char or integer.
-		String queryIndex = keyAtt.getAttribute().getType().contains("CHAR") ? "'"
-				+ queryIndex2 + "'"
-				: queryIndex2;
+		String queryIndex = "'" + queryIndex2 + "'";
 
 		int initInChain = fkToIdDirection ? path.length - 2 : path.length - 3;
 		// Path example: PERSON.BLOODTYPE -> PERSON.MOTHER -> PERSON.ID ->
@@ -286,9 +284,7 @@ public class DBControllerImp implements IDBController {
 
 		Attribute keyAtt = path[indexInChain];
 		// If it is a char type
-		String queryIndex = keyAtt.getAttribute().getType().contains("CHAR") ? "'"
-				+ queryIndex2 + "'"
-				: queryIndex2;
+		String queryIndex = "'" + queryIndex2 + "'";
 
 		// Path example: PERSON.BLOODTYPE -> PERSON.MOTHER -> PERSON.ID ->
 		// PERSON.BLOODTYPE. Child to -> parent.
@@ -298,8 +294,7 @@ public class DBControllerImp implements IDBController {
 		String where = " WHERE " + keyAtt + "=" + queryIndex;
 
 		if (fkToIdDirection) {
-			String sIndex = indexCol.getType().contains("CHAR") ? "'"
-					+ indexValue + "'" : indexValue.toString();
+			String sIndex = "'" + indexValue + "'";
 
 			where += " AND " + path[0].getTable().getName() + "."
 					+ indexCol.getName() + "=" + sIndex;
@@ -441,9 +436,7 @@ public class DBControllerImp implements IDBController {
 			Attribute destinyIdAttribute, Attribute origRefAttribute,
 			Attribute origIdAttribute, String originInstanceId) {
 		// id string
-		originInstanceId = destinyIdAttribute.getAttribute().getType()
-				.contains("CHAR") ? "'" + originInstanceId + "'"
-				: originInstanceId;
+		originInstanceId = "'" + originInstanceId + "'";
 
 		// Validate if the origin attribute exists.
 		// String originAtt = origAttribute.getAttribute().getName();

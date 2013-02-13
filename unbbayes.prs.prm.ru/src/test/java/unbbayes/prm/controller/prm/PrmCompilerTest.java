@@ -67,7 +67,7 @@ public class PrmCompilerTest {
 		attRoute = getAttribute("ROUTE", "name");
 		attPersonIsTerrorist = getAttribute("PERSON", "isTerrorist");
 		attPersonId = getAttribute("PERSON", "id");
-		
+
 		System.out.println("Seted up");
 	}
 
@@ -94,7 +94,8 @@ public class PrmCompilerTest {
 
 		// The query is on the ship with id=1.
 		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
-				.compile(attShipIsOfInterest.getTable(), attShipId.getAttribute(), "1",
+				.compile(attShipIsOfInterest.getTable(),
+						attShipId.getAttribute(), "1",
 						attShipIsOfInterest.getAttribute(), "N");
 
 		// Validate Result
@@ -120,7 +121,8 @@ public class PrmCompilerTest {
 
 		// The query is on the ship with id=2
 		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
-				.compile(attShipIsOfInterest.getTable(), attShipId.getAttribute(), "2",
+				.compile(attShipIsOfInterest.getTable(),
+						attShipId.getAttribute(), "2",
 						attShipIsOfInterest.getAttribute(), "N");
 
 		// Validate Result
@@ -156,7 +158,8 @@ public class PrmCompilerTest {
 		// FISRT CASE: The query is on the ship with id=1
 		// attribute=isOfInterest.
 		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
-				.compile(attShipIsOfInterest.getTable(), attShipId.getAttribute(), "1",
+				.compile(attShipIsOfInterest.getTable(),
+						attShipId.getAttribute(), "1",
 						attShipIsOfInterest.getAttribute(), "N");
 
 		// Validate Result
@@ -207,7 +210,8 @@ public class PrmCompilerTest {
 
 		// The query is on the ship with id=1
 		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
-				.compile(attShipIsOfInterest.getTable(), attShipId.getAttribute(), "1",
+				.compile(attShipIsOfInterest.getTable(),
+						attShipId.getAttribute(), "1",
 						attShipIsOfInterest.getAttribute(), "N");
 
 		// Validate Result
@@ -266,7 +270,8 @@ public class PrmCompilerTest {
 
 		// The query is on the ship with id=4
 		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
-				.compile(attShipIsOfInterest.getTable(), attShipId.getAttribute(), "4",
+				.compile(attShipIsOfInterest.getTable(),
+						attShipId.getAttribute(), "4",
 						attShipIsOfInterest.getAttribute(), "N");
 
 		// Validate Result
@@ -297,7 +302,8 @@ public class PrmCompilerTest {
 
 		// The query is on the ship with id=1
 		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
-				.compile(attShipIsOfInterest.getTable(), attShipId.getAttribute(), "1",
+				.compile(attShipIsOfInterest.getTable(),
+						attShipId.getAttribute(), "1",
 						attShipIsOfInterest.getAttribute(), "N");
 
 		// Validate Result
@@ -309,8 +315,8 @@ public class PrmCompilerTest {
 	/**
 	 * This is to test for Ship.hasTerroristCrew.
 	 * 
-	 * Relationship 1: Ship.hasTerroristCrew SHIP.id PERSON.crewMemberOf PERSON.isTerrorist
-	 * PERSON.isTerroris
+	 * Relationship 1: Ship.hasTerroristCrew SHIP.id PERSON.crewMemberOf
+	 * PERSON.isTerrorist PERSON.isTerroris
 	 * 
 	 * @throws Exception
 	 */
@@ -323,13 +329,72 @@ public class PrmCompilerTest {
 
 		// The query is on the PERSON with id=Burrows
 		ProbabilisticNetwork resultNetwork = (ProbabilisticNetwork) compiler
-				.compile(attPersonIsTerrorist.getTable(), attPersonId.getAttribute(), "Burrows",
+				.compile(attPersonIsTerrorist.getTable(),
+						attPersonId.getAttribute(), "Burrows",
 						attPersonIsTerrorist.getAttribute(), "T");
 
 		// Validate Result
-		String[] nodeNames = { "SHIP 2 hasTerroristCrew", "PERSON Burrows isTerrorist" };
+		String[] nodeNames = { "SHIP 2 hasTerroristCrew",
+				"PERSON Burrows isTerrorist" };
 		validateResult(resultNetwork, nodeNames);
 
+	}
+
+	/**
+	 * This is to test for related person PERSON.isTerrorist.
+	 * 
+	 * Relationship 1: PERSON.isTerrorist PERSON.relatedTo PERSON.id
+	 * PERSON.isTerrorist PERSON.isTerroris
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testRelatedPerson() throws Exception {
+
+		createPersonRelatedTo();
+
+		System.out.println("Compiling");
+
+		// The query is on the PERSON with id=Burrows
+		ProbabilisticNetwork resultNetwork ;
+		String[] nodeNames;
+//		resultNetwork= (ProbabilisticNetwork) compiler
+//				.compile(attPersonIsTerrorist.getTable(),
+//						attPersonId.getAttribute(), "Burrows",
+//						attPersonIsTerrorist.getAttribute(), "T");
+//
+//		// Validate Result
+//		nodeNames = new String[]{ "PERSON Burrows isTerrorist" };
+//		validateResult(resultNetwork, nodeNames);
+
+		// The query is on the PERSON with id=Burrows
+		resultNetwork = (ProbabilisticNetwork) compiler.compile(
+				attPersonIsTerrorist.getTable(), attPersonId.getAttribute(),
+				"Scolfield", attPersonIsTerrorist.getAttribute(), "T");
+
+		// Validate Result
+		nodeNames = new String[] {"PERSON Scolfield isTerrorist", "PERSON Burrows isTerrorist" };
+		validateResult(resultNetwork, nodeNames);
+	}
+
+	/**
+	 * Relationship 1: PERSON.isTerrorist PERSON.relatedTo PERSON.id
+	 * PERSON.isTerrorist
+	 * 
+	 * @throws Exception
+	 */
+	private void createPersonRelatedTo() throws Exception {
+		Attribute pt1 = attPersonIsTerrorist;
+		Attribute pt2 = getAttribute("PERSON", "relatedTo");
+		Attribute pt3 = attPersonId;
+		Attribute pt4 = attPersonIsTerrorist;
+		Attribute[] path = new Attribute[] { pt1, pt2, pt3, pt4 };
+
+		System.out.println("Creating route relationship");
+		String idRel = idRelationship++ + "";
+
+		// Parent rel
+		createRel(idRel, path, attPersonIsTerrorist, attPersonIsTerrorist);
 	}
 
 	private void createHasTerroristCrew() throws Exception {
@@ -460,7 +525,8 @@ public class PrmCompilerTest {
 		// Registry relationships.
 		// MEETING Relationship.
 		String idRel = idRelationship++ + "";
-		ParentRel newRel = new ParentRel(attShipIsOfInterest, attShipIsOfInterest);
+		ParentRel newRel = new ParentRel(attShipIsOfInterest,
+				attShipIsOfInterest);
 		newRel.setPath(path);
 		newRel.setIdRelationsShip(idRel);
 		prmController.addParent(newRel);
@@ -551,8 +617,8 @@ public class PrmCompilerTest {
 	}
 
 	/**
-	 * Create a path for has terrorist crew: 
-	 * Ship.hasTerroristCrew SHIP.id PERSON.crewMemberOf PERSON.isTerrorist
+	 * Create a path for has terrorist crew: Ship.hasTerroristCrew SHIP.id
+	 * PERSON.crewMemberOf PERSON.isTerrorist
 	 * 
 	 * @return
 	 * @throws Exception
