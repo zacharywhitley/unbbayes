@@ -165,13 +165,13 @@ public class DBControllerImp implements IDBController {
 		// Get the index value in the chain (path).
 
 		Attribute keyAtt;
-//		if (fkToIdDirection) {
-			int keyInChain = path.length - 3;
-			keyAtt = path[keyInChain];
-//		} else {
-//			keyAtt = new Attribute(childAtt.getTable(), childAtt.getTable()
-//					.getPrimaryKeyColumns()[0]);
-//		}
+		// if (fkToIdDirection) {
+		int keyInChain = path.length - 3;
+		keyAtt = path[keyInChain];
+		// } else {
+		// keyAtt = new Attribute(childAtt.getTable(), childAtt.getTable()
+		// .getPrimaryKeyColumns()[0]);
+		// }
 
 		// Get the index as a char or integer.
 		String queryIndex = keyAtt.getAttribute().getType().contains("CHAR") ? "'"
@@ -298,8 +298,11 @@ public class DBControllerImp implements IDBController {
 		String where = " WHERE " + keyAtt + "=" + queryIndex;
 
 		if (fkToIdDirection) {
+			String sIndex = indexCol.getType().contains("CHAR") ? "'"
+					+ indexValue + "'" : indexValue.toString();
+
 			where += " AND " + path[0].getTable().getName() + "."
-					+ indexCol.getName() + "=" + indexValue;
+					+ indexCol.getName() + "=" + sIndex;
 		}
 
 		// Index position depends on the direction
@@ -402,9 +405,7 @@ public class DBControllerImp implements IDBController {
 	public String getSpecificValue(Column queryColumn, Attribute localIdColum,
 			String instanceId) {
 		// Id string.
-		instanceId = localIdColum.getAttribute().getType().contains("CHAR") ? "'"
-				+ instanceId + "'"
-				: instanceId;
+		instanceId = "'" + instanceId + "'";
 
 		// SQL query.
 		String sqlQuery = "SELECT " + queryColumn.getName() + " FROM "
