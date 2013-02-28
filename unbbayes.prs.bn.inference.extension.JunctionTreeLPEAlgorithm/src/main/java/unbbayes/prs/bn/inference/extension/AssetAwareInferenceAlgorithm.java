@@ -1059,7 +1059,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		double ret = 0 ;
 		
 		// this is the probabilistic network to be used. If there is no conditions, then this is the original network
-		ProbabilisticNetwork bayesNet = (ProbabilisticNetwork) this.getNetwork();
+		ProbabilisticNetwork bayesNet = this.getRelatedProbabilisticNetwork();
 		SingleEntityNetwork  assetNet = this.getAssetNetwork();
 		
 		// initial assertion: check if network is compiled with junction tree algorithm
@@ -1652,7 +1652,8 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			for (Clique clique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
 				// TODO update only the important clique
 				if (clique.getProbabilityFunction().tableSize() <= 0) {
-					clique.getProbabilityFunction().addVariable(ONE_STATE_PROBNODE);
+					clique.getProbabilityFunction().addVariable(ONE_STATE_PROBNODE);  // this node has only 1 state
+					clique.getProbabilityFunction().setValue(0, 1f);	// if there is only 1 possible state, it should have 100% probability
 				}
 			}
 		}
@@ -2176,6 +2177,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			
 			// add node into the network
 			net.addNode(node);
+			net.resetNodesCopy();
 			
 			// treat junction tree
 			if (isToUpdateJunctionTree) {

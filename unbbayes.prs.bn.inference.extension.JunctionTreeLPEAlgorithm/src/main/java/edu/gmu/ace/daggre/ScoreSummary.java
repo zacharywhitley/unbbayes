@@ -3,7 +3,9 @@
  */
 package edu.gmu.ace.daggre;
 
+import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Classes implementing this interface shall represent
@@ -12,7 +14,7 @@ import java.util.List;
  * @author Shou Matsumoto
  *
  */
-public interface ScoreSummary {
+public interface ScoreSummary extends Serializable {
 	
 	/**
 	 * This is a value which can be also computed by {@link MarkovEngineInterface#scoreUserQuestionEv(long, Long, List, List)}
@@ -50,6 +52,17 @@ public interface ScoreSummary {
 	 * separators of the junction tree.
 	 */
 	List<SummaryContribution> getIntersectionScoreComponents();
+	
+	/**
+	 * If a question resolves, user's cash will change (usually increase).
+	 * This method returns how much cash a user has gained after a settlement of a question.
+	 * @return how much of cash each resolved question have contributed. The
+	 * key of this map is the question ID, and the value is the ammount of cash gained by
+	 * the settlement.
+	 * @see MarkovEngineInterface#resolveQuestion(Long, java.util.Date, long, int)
+	 * @see MarkovEngineInterface#getCash(long, List, List)
+	 */
+	Map<Long, Float> getCashContributionPerResolvedQuestion();
 	
 	/**
 	 * This "contribution" is represented in terms of  a collection of nodes and respective states

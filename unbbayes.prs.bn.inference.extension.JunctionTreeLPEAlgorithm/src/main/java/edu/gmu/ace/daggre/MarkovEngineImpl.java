@@ -243,7 +243,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToUseCorrectiveTrades = true;
 
 	/** If true, {@link #commitNetworkActions(long, boolean)} will place all {@link AddCashNetworkAction} before trades. */
-	private boolean isToSortAddCashAction = false;
+	private boolean isToSortAddCashAction = true;
 	
 	/** If true, {@link RebuildNetworkAction#execute()} will "see" trades which are in the same transaction and created after the rebuild action. */
 	private boolean isToLookAheadForTradesCreatedAfterRebuild = true;
@@ -251,6 +251,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/** If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)} will
 	 * throw exception when the question has probability 0 or 1 in any state */
 	private boolean isToThrowExceptionInTradesToResolvedQuestions = false;
+	
+	/** If true, cash of each user will be stored when questions are resolved */
+	private boolean isToStoreCashBeforeResolveQuestion = true;
 
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -569,7 +572,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 					// Note: if they trigger a RebuildNetworkAction, then actions in getExecutedActions() will be re-executed, 
 					// and netChangeActions will be executed anyway during rebuild, so no need to add them into actions.
-					rebuildNetworkAction = new RebuildNetworkAction(netChangeActions.get(0).getTransactionKey(), new Date(), null, null);
+					rebuildNetworkAction = new RebuildNetworkAction(netChangeActions.get(0).getTransactionKey(), new Date(), null, null); // negative millisecond means rebuild filter not specified by date/time
 					actions.add(rebuildNetworkAction);	// <rebuild action> is inserted before addCashActions and otherActions
 				}
 				if (isToSortAddCashAction) {
@@ -624,7 +627,47 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				
 				// actually run action
 				try {
+					if (action.getUserId() != null && action.getUserId().longValue() == 3487L && action.getQuestionId() != null && action.getQuestionId().longValue() == 208L) {
+						try {
+							AssetNetwork assetNetwork = getAlgorithmAndAssetNetFromUserID(action.getUserId()).getAssetNetwork();
+							System.out.println(i+" [Before] User = " + assetNetwork);
+							for (Clique clique : assetNetwork.getJunctionTree().getCliquesContainingAllNodes((List)Collections.singletonList(assetNetwork.getNode(action.getQuestionId().toString())), Integer.MAX_VALUE)) {
+								System.out.println(i+" [Before] Clique = " + clique);
+								System.out.print("[ ");
+								for (float asset : clique.getProbabilityFunction().getValues()) {
+									System.out.print( asset  + " , ");
+								}
+								System.out.print(" ]");
+							}
+							System.out.println(i+" [Before] Score = " + scoreUserEv(action.getUserId(), null, null));
+							System.out.println(i+" [Before] Cash = " + getCash(action.getUserId(), null, null));
+							System.out.println(i+" [Before] Score per state of Q" + action.getQuestionId() +  " = " + scoreUserQuestionEvStates(action.getUserId(), action.getQuestionId(), null, null));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						
+					}
 					action.execute();
+					if (action.getUserId() != null && action.getUserId().longValue() == 3487L && action.getQuestionId() != null && action.getQuestionId().longValue() == 208L) {
+						try {
+							AssetNetwork assetNetwork = getAlgorithmAndAssetNetFromUserID(action.getUserId()).getAssetNetwork();
+							System.out.println(i+ "[After] User = " + assetNetwork);
+							for (Clique clique : assetNetwork.getJunctionTree().getCliquesContainingAllNodes((List)Collections.singletonList(assetNetwork.getNode(action.getQuestionId().toString())), Integer.MAX_VALUE)) {
+								System.out.println(i+ "[After] Clique = " + clique);
+								System.out.print("[ ");
+								for (float asset : clique.getProbabilityFunction().getValues()) {
+									System.out.print( asset  + " , ");
+								}
+								System.out.print(" ]");
+							}
+							System.out.println(i+ "[After] Score = " + scoreUserEv(action.getUserId(), null, null));
+							System.out.println(i+ "[After] Cash = " + getCash(action.getUserId(), null, null));
+							System.out.println(i+ "[After] Score per state of Q" + action.getQuestionId() +  " = " + scoreUserQuestionEvStates(action.getUserId(), action.getQuestionId(), null, null));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						
+					}
 				} catch (ZeroAssetsException z) {
 					// do not consider this action anymore
 					removeNetworkActionFromQuestionMap(action, action.getQuestionId());
@@ -663,27 +706,27 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public class RebuildNetworkAction implements NetworkAction {
 		private static final long serialVersionUID = 8411524472507631510L;
-		private final Date whenCreated;
-		private final Long transactionKey;
-		private Date whenExecutedFirst = null;
-		private final Date tradesStartingWhen;
+		private final long whenCreated;
+		private final long transactionKey;
+		private long whenExecutedFirst = -1;
+		private final long tradesStartingWhen;
 		private final Long questionId;
 		/**
 		 * Default constructor.
 		 * @param transactionKey : mandatory key which can be obtained from {@link MarkovEngineImpl#startNetworkActions()}
 		 * @param whenCreated : when this action was created.
 		 * @param tradesStartingWhen : filter for the playback. Playback will stop after the first
-		 * {@link AddTradeNetworkAction} created after this date. If null, all actions will be played back.
+		 * {@link AddTradeNetworkAction} created after this date (represented as milliseconds - see {@link Date#getTime()}). If < 0, all actions will be played back.
 		 * @param questionId : another filter for the playback. 
 		 * If tradesStartingWhen == null, this argument will be ignored.
 		 * Playback will stop after the first
 		 * {@link AddTradeNetworkAction} with {@link AddTradeNetworkAction#getQuestionId()} matching
 		 * this questionId and created after tradesStartingWhen.
 		 */
-		public RebuildNetworkAction(Long transactionKey, Date whenCreated, Date tradesStartingWhen, Long questionId) {
+		public RebuildNetworkAction(long transactionKey, Date whenCreated, Date tradesStartingWhen, Long questionId) {
 			this.transactionKey = transactionKey;
-			this.whenCreated = whenCreated;
-			this.tradesStartingWhen = tradesStartingWhen;
+			this.whenCreated = (whenCreated==null)?-1:whenCreated.getTime();
+			this.tradesStartingWhen = (tradesStartingWhen==null)?-1:tradesStartingWhen.getTime();
 			this.questionId = questionId;
 		}
 		/** Rebuild the BN */
@@ -738,6 +781,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// We don't need to handle trades happening after creation of such action.
 					// TODO this is a weak check, because events happening at the same millisecond will also be included.
 					Date lastNetConstructionActionTimestamp = networkConstructionActions.get(networkConstructionActions.size()-1).getWhenCreated();
+//					long lastNetConstructionActionTimestamp = networkConstructionActions.get(networkConstructionActions.size()-1).getWhenCreatedMillis();
 					
 					// extract the actions pertaining in the same transaction
 					List<NetworkAction> actionsInSameTransaction = getNetworkActionsMap().get(getTransactionKey());
@@ -837,13 +881,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 									
 									// there is no route from node1 to node2, so we can create node2->node1 without generating cycle
 									action = new AddQuestionAssumptionNetworkAction(
-											getTransactionKey(), getWhenCreated(), Long.parseLong(node1.getName()), Collections.singletonList(Long.parseLong(node2.getName())), null);
+											getTransactionKey(), getWhenCreatedMillis(), Long.parseLong(node1.getName()), Collections.singletonList(Long.parseLong(node2.getName())), null);
 									
 								} else { // supposedly, we can always add edges in one of the directions (i.e. there is no way we add arc in each direction and both result in cycle)
 									
 									// there is a route from node1 to node2, so we cannot create node2->node1 (it will create a cycle if we do so), so create node1->node2
 									action = new AddQuestionAssumptionNetworkAction(
-											getTransactionKey(), getWhenCreated(), Long.parseLong(node2.getName()), Collections.singletonList(Long.parseLong(node1.getName())), null);
+											getTransactionKey(), getWhenCreatedMillis() , Long.parseLong(node2.getName()), Collections.singletonList(Long.parseLong(node1.getName())), null);
 								}
 								
 								// check if we should consider adding this new arc into the history, so that they reappear when rebuilding the network again
@@ -853,7 +897,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 									
 									// mark action as executed before it is actually executed 
 									// (this is the default behavior of commitNetworkTransaction on actions changing net structure)
-									action.setWhenExecutedFirstTime(new Date());	
+									action.setWhenExecutedFirstTimeMillis(System.currentTimeMillis());	
 									
 									// add action into history
 									synchronized (getExecutedActions()) {
@@ -1106,7 +1150,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 //		/** By overwriting this method, you can control which actions are executed in {@link #execute(List)} */
 //		protected boolean isToExecuteAction(NetworkAction action) { return true; /*!action.isStructureChangeAction();*/ }
-		public Date getWhenCreated() { return whenCreated; }
+		public Date getWhenCreated() { 
+			if (whenCreated < 0) {
+				return null;
+			}
+			return new Date(whenCreated); 
+		}
 		/** This action reboots the network, but does not change the structure by itself */
 		public boolean isStructureConstructionAction() { return false; }
 		public Long getTransactionKey() { return transactionKey; }
@@ -1120,16 +1169,53 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Long getQuestionId() { return this.questionId; }
 		public List<Long> getAssumptionIds() { return null; }
 		public List<Integer> getAssumedStates() { return null; }
-		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
-		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
-		/** This is a filter used when reverting trades */
-		public Date getTradesStartingWhen() { return tradesStartingWhen; }
+		public Date getWhenExecutedFirstTime() {
+			if (whenExecutedFirst < 0) {
+				return null;
+			}
+			return new Date(whenExecutedFirst) ; 
+		}
+		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { 
+			if (whenExecutedFirst == null) {
+				this.whenExecutedFirst = -1;	// negative represents invalid date/time
+			} else {
+				this.whenExecutedFirst = whenExecutedFirst.getTime(); 
+			}
+		}
+//		/** This is a filter used when reverting trades */
+		public Date getTradesStartingWhen() { 
+			if (tradesStartingWhen < 0) {
+				return null;
+			}
+			return new Date(tradesStartingWhen); 
+		}
+		/** This is a filter used when reverting trades, in milliseconds
+		 * @see Date#getTime() */
+//		public long getTradesStartingWhen() { return tradesStartingWhen; }
 		public boolean isHardEvidenceAction() {return false; }
 		public Integer getSettledState() {return null;}
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
 		/** This action does not trigger another rebuild */
 		public boolean isTriggerForRebuild() { return false; }
+		/**
+		 * @return the whenCreated
+		 */
+		public long getWhenCreatedMillis() {
+			return whenCreated;
+		}
+		/**
+		 * @return the whenExecutedFirst
+		 */
+		public long getWhenExecutedFirstTimeMillis() {
+			return whenExecutedFirst;
+		}
+		/**
+		 * @param whenExecutedFirst the whenExecutedFirst to set
+		 */
+		public void setWhenExecutedFirstTimeMillis(long whenExecutedFirst) {
+			this.whenExecutedFirst = whenExecutedFirst;
+		}
 	}
 	
 	/**
@@ -1142,7 +1228,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		private static final long serialVersionUID = -8931208967252690587L;
 
 		/** Default constructor initializing fields */
-		public RevertTradeNetworkAction(Long transactionKey, Date whenCreated, Date tradesStartingWhen, Long questionId) {
+		public RevertTradeNetworkAction(long transactionKey, Date whenCreated, Date tradesStartingWhen, Long questionId) {
 			super(transactionKey, whenCreated, tradesStartingWhen, questionId);
 		}
 	}
@@ -1235,19 +1321,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public class AddQuestionNetworkAction extends StructureChangeNetworkAction {
 		private static final long serialVersionUID = -945067175977550970L;
-		private final Long transactionKey;
-		private final Date occurredWhen;
+		private final long transactionKey;
+		private final long occurredWhen;
 		private final long questionId;
 		private final int numberStates;
 		private List<Float> initProbs;
-		private Date whenExecutedFirst;
+		private long whenExecutedFirst = -1;
 		private boolean isToUpdateJunctionTreeAndAssetNets = true;
 		/** Default constructor initializing fields */
-		public AddQuestionNetworkAction(Long transactionKey, Date occurredWhen,
+		public AddQuestionNetworkAction(long transactionKey, Date occurredWhen,
 				long questionId, int numberStates, List<Float> initProbs) {
 			super();
 			this.transactionKey = transactionKey;
-			this.occurredWhen = occurredWhen;
+			this.occurredWhen = (occurredWhen == null)?-1:occurredWhen.getTime();
 			this.questionId = questionId;
 			this.numberStates = numberStates;
 			if (initProbs != null && !initProbs.isEmpty()) {
@@ -1258,7 +1344,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			isToUpdateJunctionTreeAndAssetNets = true;
 		}
-		public AddQuestionNetworkAction(Long transactionKey, Date occurredWhen,
+		public AddQuestionNetworkAction(long transactionKey, Date occurredWhen,
 				long questionId, int numberStates, List<Float> initProbs, boolean isToUpdateJunctionTreeAndAssetNets) {
 			this(transactionKey, occurredWhen, questionId, numberStates, initProbs);
 			this.setToUpdateJunctionTreeAndAssetNets(isToUpdateJunctionTreeAndAssetNets);
@@ -1281,39 +1367,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 */
 		public void execute(ProbabilisticNetwork net, boolean isToUpdateJunctionTreeAndAssetNets) {
 			
-//			// create new node
-//			ProbabilisticNode node = new ProbabilisticNode();
-//			node.setName(Long.toString(this.questionId));
-//			// add states
-//			for (int i = 0; i < this.numberStates; i++) {
-//				node.appendState(Integer.toString(i));
-//			}
-//			// initialize CPT (actually, it is a prior probability, because we do not have parents yet).
-//			PotentialTable potTable = node.getProbabilityFunction();
-//			if (potTable.getVariablesSize() <= 0) {
-//				potTable.addVariable(node);
-//			}
-//			
-//			// fill cpt
-//			if (initProbs == null) {
-//				// prior probability was not set. Assume it to be uniform distribution
-//				for (int i = 0; i < potTable.tableSize(); i++) {
-//					potTable.setValue(i, 1f/numberStates);
-//				}
-//			} else {
-//				for (int i = 0; i < potTable.tableSize(); i++) {
-//					potTable.setValue(i, this.initProbs.get(i));
-//				}
-//			}
-//			
-//			// make sure marginal list is never null
-//			node.initMarginalList();
-//			
-//			// add node into the network
-//			synchronized (net) {
-//				net.addNode(node);
-//			}
-			// the above code was migrated to AssetAwareInferenceAlgorithm#createNodeInProbabilisticNetwork
 			INode node = null;	// the new node 
 			synchronized (getDefaultInferenceAlgorithm()) {
 				node = getDefaultInferenceAlgorithm().createNodeInProbabilisticNetwork(Long.toString(this.questionId), numberStates, initProbs, isToUpdateJunctionTreeAndAssetNets, net);
@@ -1335,7 +1388,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new UnsupportedOperationException("Reverting an addQuestion operation is not supported yet.");
 		}
 		public boolean isHardEvidenceAction() {return false; }
-		public Date getWhenCreated() { return this.occurredWhen; }
+		public Date getWhenCreated() { 
+			if (occurredWhen < 0) {
+				return null;
+			}
+			return new Date(this.occurredWhen); 
+		}
 		public Long getTransactionKey() { return transactionKey;}
 		public Long getQuestionId() { return questionId; }
 		public int getNumberStates() { return numberStates; }
@@ -1348,8 +1406,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public String getTradeId() { return null; }
 		public List<Long> getAssumptionIds() { return null; }
 		public List<Integer> getAssumedStates() { return null; }
-		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
-		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
+		public Date getWhenExecutedFirstTime() {
+			if (whenExecutedFirst < 0) {
+				return null;
+			}
+			return new Date(whenExecutedFirst) ; 
+		}
+		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { 
+			if (whenExecutedFirst == null) {
+				this.whenExecutedFirst = -1;	// negative represents invalid date/time
+			} else {
+				this.whenExecutedFirst = whenExecutedFirst.getTime(); 
+			}
+		}
 		/** returns {@link #getNumberStates()} */
 		public Integer getSettledState() {return numberStates;}
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
@@ -1376,6 +1445,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void setToUpdateJunctionTreeAndAssetNets(
 				boolean isToUpdateJunctionTreeAndAssetNets) {
 			this.isToUpdateJunctionTreeAndAssetNets = isToUpdateJunctionTreeAndAssetNets;
+		}
+		public long getWhenCreatedMillis() {
+			return occurredWhen;
+		}
+		public long getWhenExecutedFirstTimeMillis() {
+			return whenExecutedFirst;
+		}
+		public void setWhenExecutedFirstTimeMillis(long whenExecutedFirst) {
+			this.whenExecutedFirst = whenExecutedFirst;
 		}
 	}
 
@@ -1532,10 +1610,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// instantiate the action object for adding the edge
 		if (transactionKey == null) {
 			transactionKey = this.startNetworkActions();
-			this.addNetworkAction(transactionKey, new AddQuestionAssumptionNetworkAction(transactionKey, occurredWhen, childQuestionId, parentQuestionIds, cpd));
+			this.addNetworkAction(transactionKey, new AddQuestionAssumptionNetworkAction(transactionKey, occurredWhen.getTime(), childQuestionId, parentQuestionIds, cpd));
 			this.commitNetworkActions(transactionKey);
 		} else {
-			this.addNetworkAction(transactionKey, new AddQuestionAssumptionNetworkAction(transactionKey, occurredWhen, childQuestionId, parentQuestionIds, cpd));
+			this.addNetworkAction(transactionKey, new AddQuestionAssumptionNetworkAction(transactionKey, occurredWhen.getTime(), childQuestionId, parentQuestionIds, cpd));
 		}
 		
 		return true;
@@ -1548,16 +1626,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public class AddQuestionAssumptionNetworkAction extends StructureChangeNetworkAction {
 		private static final long serialVersionUID = -6698600239325323921L;
-		private final Long transactionKey;
-		private final Date occurredWhen;
+		private final long transactionKey;
+		private final long occurredWhen;
 		private final long sourceQuestionId;
 		private final List<Long> assumptiveQuestionIds;
 		private List<Float> cpd;
-		private Date whenExecutedFirst;
+		private long whenExecutedFirst = -1;
 
 		/** Default constructor initializing fields */
-		public AddQuestionAssumptionNetworkAction(Long transactionKey,
-				Date occurredWhen, long sourceQuestionId,
+		public AddQuestionAssumptionNetworkAction(long transactionKey,
+				long occurredWhen, long sourceQuestionId,
 				List<Long> assumptiveQuestionIds, List<Float> cpd) {
 			super();
 			this.transactionKey = transactionKey;
@@ -1581,30 +1659,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * @param net : the specified network
 		 */
 		public void execute(ProbabilisticNetwork network) {
-//			// do not execute action if there is a RebuildNetworkAction after this action, because it will be redundant
-//			synchronized (getNetworkActionsMap()) {
-//				List<NetworkAction> otherActionsInSameTransaction = getNetworkActionsMap().get(transactionKey);
-//				if (otherActionsInSameTransaction != null) {
-//					synchronized (otherActionsInSameTransaction) {
-//						int indexOfThisAction = otherActionsInSameTransaction.indexOf(this);
-//						if (indexOfThisAction < 0) {
-//							throw new IllegalStateException("Transaction " + transactionKey + " is in an invalid state.");
-//						}
-//						boolean hasRebuildAction = false;
-//						for (int i = indexOfThisAction + 1; i < otherActionsInSameTransaction.size(); i++) {
-//							if (otherActionsInSameTransaction.get(i) instanceof RebuildNetworkAction) {
-//								hasRebuildAction = true;
-//								break;
-//							}
-//						}
-//						if (hasRebuildAction) {
-//							Debug.println(getClass(), "Do not create arcs " + assumptiveQuestionIds + " -> " + sourceQuestionId + " now, because they will be created later on rebuild action");
-//							return;
-//						}
-//					}
-//				}
-//			}
-			// the above check was migrated to commitNetworkAction
 			
 			ProbabilisticNode child;	// this is the main node (the main question we are modifying)
 			
@@ -1659,7 +1713,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void revert() throws UnsupportedOperationException {
 			throw new UnsupportedOperationException("Reverting an addQuestion operation is not supported yet.");
 		}
-		public Date getWhenCreated() { return this.occurredWhen; }
+		public Date getWhenCreated() { 
+			if (occurredWhen < 0) {
+				return null;
+			}
+			return new Date(this.occurredWhen); 
+		}
 		public Long getTransactionKey() { return transactionKey; }
 		public Long getQuestionId() { return sourceQuestionId; }
 		public List<Long> getAssumptionIds() { return assumptiveQuestionIds; }
@@ -1671,14 +1730,34 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void setNewValues(List<Float> newValues) {this.cpd = newValues;}
 		public String getTradeId() { return null; }
 		public List<Integer> getAssumedStates() { return null; }
-		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
-		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
+		public Date getWhenExecutedFirstTime() {
+			if (whenExecutedFirst < 0) {
+				return null;
+			}
+			return new Date(whenExecutedFirst) ; 
+		}
+		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { 
+			if (whenExecutedFirst == null) {
+				this.whenExecutedFirst = -1;	// negative represents invalid date/time
+			} else {
+				this.whenExecutedFirst = whenExecutedFirst.getTime(); 
+			}
+		}
 		public boolean isHardEvidenceAction() {return false; }
 		public Integer getSettledState() {return null;}
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
 		/** On Jan 2013, adding arcs is the only trigger for rebuild */
 		public boolean isTriggerForRebuild() { return true; }
+		public long getWhenCreatedMillis() {
+			return occurredWhen;
+		}
+		public long getWhenExecutedFirstTimeMillis() {
+			return whenExecutedFirst;
+		}
+		public void setWhenExecutedFirstTimeMillis(long whenExecutedFirst) {
+			this.whenExecutedFirst = whenExecutedFirst;
+		}
 	}
 	
 	/**
@@ -1691,17 +1770,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public class AddCashNetworkAction implements NetworkAction {
 		private static final long serialVersionUID = 3388244461494885573L;
-		private final Long transactionKey;
-		private final Date occurredWhen;
+		private final long transactionKey;
+		private final long occurredWhen;
 		private final long userId;
 		private float delta;	// how much assets were added
 		private final String description;
 		/** becomes true once {@link #execute()} was called */
 		private boolean wasExecutedPreviously = false;
-		private Date whenExecutedFirst;
+		private long whenExecutedFirst = -1;
 //		private Float oldCash = Float.NaN;
 		/** Default constructor initializing fields */
-		public AddCashNetworkAction (Long transactionKey, Date occurredWhen, long userId, float assets, String description) {
+		public AddCashNetworkAction (long transactionKey, long occurredWhen, long userId, float assets, String description) {
 			this.transactionKey = transactionKey;
 			this.occurredWhen = occurredWhen;
 			this.userId = userId;
@@ -1753,7 +1832,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// this is not an ordinal execution of the action, so do not update whenExecutedFirst.
 			}
 		}
-		public Date getWhenCreated() { return occurredWhen; }
+		public Date getWhenCreated() { 
+			if (occurredWhen < 0) {
+				return null;
+			}
+			return new Date(this.occurredWhen); 
+		}
 		/**this operation does not change network structure*/
 		public boolean isStructureConstructionAction() { return false;	 }
 		public Long getTransactionKey() { return transactionKey; }
@@ -1780,14 +1864,43 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Long getQuestionId() { return null; }
 		public List<Long> getAssumptionIds() { return null; }
 		public List<Integer> getAssumedStates() { return null; }
-		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
-		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
+		public Date getWhenExecutedFirstTime() {
+			if (whenExecutedFirst < 0) {
+				return null;
+			}
+			return new Date(whenExecutedFirst) ; 
+		}
+		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { 
+			if (whenExecutedFirst == null) {
+				this.whenExecutedFirst = -1;	// negative represents invalid date/time
+			} else {
+				this.whenExecutedFirst = whenExecutedFirst.getTime(); 
+			}
+		}
 		public boolean isHardEvidenceAction() {return false; }
 		public Integer getSettledState() {return null;}
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
 		/** This action does not trigger another rebuild */
 		public boolean isTriggerForRebuild() { return false; }
+		/**
+		 * @return the occurredWhen
+		 */
+		public long getWhenCreatedMillis() {
+			return occurredWhen;
+		}
+		/**
+		 * @return the whenExecutedFirst
+		 */
+		public long getWhenExecutedFirstTimeMillis() {
+			return whenExecutedFirst;
+		}
+		/**
+		 * @param whenExecutedFirst the whenExecutedFirst to set
+		 */
+		public void setWhenExecutedFirstTimeMillis(long whenExecutedFirst) {
+			this.whenExecutedFirst = whenExecutedFirst;
+		}
 	}
 
 	
@@ -1822,10 +1935,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// instantiate the action object for adding cash
 		if (transactionKey == null) {
 			transactionKey = this.startNetworkActions();
-			this.addNetworkAction(transactionKey, new AddCashNetworkAction(transactionKey, occurredWhen, userId, assets, description));
+			this.addNetworkAction(transactionKey, new AddCashNetworkAction(transactionKey, occurredWhen.getTime(), userId, assets, description));
 			this.commitNetworkActions(transactionKey);
 		} else {
-			this.addNetworkAction(transactionKey, new AddCashNetworkAction(transactionKey, occurredWhen, userId, assets, description));
+			this.addNetworkAction(transactionKey, new AddCashNetworkAction(transactionKey, occurredWhen.getTime(), userId, assets, description));
 		}
 		
 		
@@ -1839,25 +1952,25 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public class AddTradeNetworkAction implements NetworkAction {
 		private static final long serialVersionUID = 3286763933079436306L;
-		private final Date whenCreated;
-		private final Long transactionKey;
+		private final long whenCreated;
+		private final long transactionKey;
 		private final String tradeKey;
 		private TradeSpecification tradeSpecification;
 		private final boolean allowNegative;
 //		private Map<IRandomVariable, DoublePrecisionProbabilisticTable> qTablesBeforeTrade;
 		private List<Float> oldValues = null;
-		private Date whenExecutedFirst;
+		private long whenExecutedFirst = -1;	// negative means invalid millisecond
 		private List<Float> newValues;
 //		/** link from this original trade to all virtual trades (representation of changes in marginals caused by this original trade) */
 //		private List<DummyTradeAction> affectedQuestions = new ArrayList<MarkovEngineImpl.DummyTradeAction>();
 //		private final List<Integer> originalAssumedStates;
 //		private final List<Long> originalAssumptionIds;
 		/** Default constructor initializing fields */
-		public AddTradeNetworkAction(Long transactionKey, Date occurredWhen, String tradeKey, Long userId, Long questionId, 
+		public AddTradeNetworkAction(long transactionKey, Date occurredWhen, String tradeKey, Long userId, Long questionId, 
 				List<Float> oldValues, List<Float> newValues, 
 				List<Long> assumptionIds, List<Integer> assumedStates,  boolean allowNegative) {
 			this.transactionKey = transactionKey;
-			this.whenCreated = occurredWhen;
+			this.whenCreated = (occurredWhen==null)?-1:occurredWhen.getTime();
 			this.tradeKey = tradeKey;
 			this.newValues = newValues;
 			this.allowNegative = allowNegative;
@@ -1900,7 +2013,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 			synchronized (getProbabilisticNetwork()) {
 				Node node = null;
-				if (getWhenExecutedFirstTime() == null) {
+				if (getWhenExecutedFirstTimeMillis() > 0) {
 					// for optimization, only update history if this is first execution.
 					// first, check that node exists
 					node = getProbabilisticNetwork().getNode(Long.toString(tradeSpecification.getQuestionId()));
@@ -1976,31 +2089,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * 
 		 */
 		public void revert() throws UnsupportedOperationException {
-//			// extract user's asset network from user ID
-//			AssetAwareInferenceAlgorithm algorithm = null;
-//			try {
-//				algorithm = getAlgorithmAndAssetNetFromUserID(userId);
-//			} catch (InvalidParentException e) {
-//				throw new RuntimeException("Could not extract delta from user " + userId + ". Perhaps the Bayesian network became invalid because of a structure change previously committed.");
-//			}
-//			if (algorithm == null) {
-//				throw new RuntimeException("Could not extract delta from user " + userId + ". You may be using old or incompatible version of Markov Engine or UnBBayes.");
-//			}
-//			synchronized (algorithm.getAssetNetwork()) {
-//				// TODO make sure resolved questions are OK
-//				// revert clique's q-tables
-//				for (Clique clique : algorithm.getAssetNetwork().getJunctionTree().getCliques()) {
-//					// current table and previous table are supposed to have same size
-//					((DoublePrecisionProbabilisticTable)clique.getProbabilityFunction()).setValues(getqTablesBeforeTrade().get(clique).getValues());
-//				}
-//				// revert separator's q-tables
-//				for (Separator separator : algorithm.getAssetNetwork().getJunctionTree().getSeparators()) {
-//					// current table and previous table are supposed to have same size
-//					((DoublePrecisionProbabilisticTable)separator.getProbabilityFunction()).setValues(getqTablesBeforeTrade().get(separator).getValues());
-//				}
-//			}
+			throw new UnsupportedOperationException("This version of ME cannot revert trades due to memory issues");
 		}
-		public Date getWhenCreated() { return whenCreated; }
+		public Date getWhenCreated() { 
+			if (whenCreated < 0) {
+				return null;
+			}
+			return new Date(this.whenCreated); 
+		}
 		public boolean isStructureConstructionAction() { return false; }
 		public Long getTransactionKey() { return transactionKey; }
 		public Long getUserId() { return tradeSpecification.getUserId(); }
@@ -2015,18 +2111,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //		public Map<IRandomVariable, DoublePrecisionProbabilisticTable> getqTablesBeforeTrade() { return qTablesBeforeTrade; }
 		public List<Float> getNewValues() { return newValues; }
 		public void setNewValues(List<Float> newValues) { this.newValues = newValues; /*this.tradeSpecification.setProbabilities(newValues);*/ }
-//		public void setNewValues(List<Float> newValues) { this.newValues = newValues; }
-		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
-		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { 
-			this.whenExecutedFirst = whenExecutedFirst; 
-//			for (AddTradeNetworkAction action : affectedQuestions) {
-//				action.setWhenExecutedFirstTime(whenExecutedFirst);
-//			}
+		public Date getWhenExecutedFirstTime() {
+			if (whenExecutedFirst < 0) {
+				return null;
+			}
+			return new Date(whenExecutedFirst) ; 
 		}
-//		/** @return the original values of {@link #getAssumedStates()} (because some may be ignored) */
-//		public List<Integer> getOriginalAssumedStates() { return originalAssumedStates; }
-//		/** @return the original values of {@link #getAssumptionIds() (because some may be ignored)  */
-//		public List<Long> getOriginalAssumptionIds() { return originalAssumptionIds; }
+		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { 
+			if (whenExecutedFirst == null) {
+				this.whenExecutedFirst = -1;	// negative represents invalid date/time
+			} else {
+				this.whenExecutedFirst = whenExecutedFirst.getTime(); 
+			}
+		}
 		/** 
 		 * Trades containing the marginals of affected questions before and after this trade 
 		 * In another word, this is a link from this original trade to all virtual trades 
@@ -2051,6 +2148,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public NetworkAction getCorrectedTrade() {return null; }
 		/** This action does not trigger another rebuild */
 		public boolean isTriggerForRebuild() { return false; }
+		/**
+		 * @return the whenCreated
+		 */
+		public long getWhenCreatedMillis() {
+			return whenCreated;
+		}
+		/**
+		 * @return the whenExecutedFirst
+		 */
+		public long getWhenExecutedFirstTimeMillis() {
+			return whenExecutedFirst;
+		}
+		/**
+		 * @param whenExecutedFirst the whenExecutedFirst to set
+		 */
+		public void setWhenExecutedFirstTimeMillis(long whenExecutedFirst) {
+			this.whenExecutedFirst = whenExecutedFirst;
+		}
 	}
 	
 	/**
@@ -2136,12 +2251,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// initialize fields using values of parentAction mostly.
 			super(parentAction, parentAction.getQuestionId(), newMarginal, parentAction.getAssumptionIds(), parentAction.getAssumedStates());
 			this.settledState = settledState;
-			this.setWhenExecutedFirstTime(parentAction.getWhenExecutedFirstTime());
+			this.setWhenExecutedFirstTimeMillis(parentAction.getWhenExecutedFirstTimeMillis());
 			this.setOldValues(oldMarginal);
 		}
-		
-		/** What trade caused the marginal of {@link #getQuestionId()} to change */
-		public Date getWhenExecutedFirstTime() { return (getParentAction() != null)?getParentAction().getWhenExecutedFirstTime():null; }
+		public Date getWhenExecutedFirstTime() {
+			if (getParentAction() == null) {
+				return null;
+			}
+			return getParentAction().getWhenExecutedFirstTime();
+		}
 		public Integer getSettledState() { return settledState; }
 		
 	}
@@ -2538,16 +2656,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public class ResolveQuestionNetworkAction implements NetworkAction {
 		private static final long serialVersionUID = -8173040985188570655L;
-		private final Long transactionKey;
-		private final Date occurredWhen;
+		private final long transactionKey;
+		private final long occurredWhen;
 		private final long questionId;
 		private final int settledState;
 		private List<Float> marginalWhenResolved;
-		private Date whenExecutedFirst;
+		private long whenExecutedFirst = -1;
 		/** Default constructor initializing fields */
-		public ResolveQuestionNetworkAction (Long transactionKey, Date occurredWhen, long questionId, int settledState) {
+		public ResolveQuestionNetworkAction (long transactionKey, Date occurredWhen, long questionId, int settledState) {
 			this.transactionKey = transactionKey;
-			this.occurredWhen = occurredWhen;
+			this.occurredWhen = (occurredWhen == null)?-1:occurredWhen.getTime();
 			this.questionId = questionId;
 			this.settledState = settledState;
 			
@@ -2612,16 +2730,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						IAssetNetAlgorithm assetAlgorithm = algorithm.getAssetPropagationDelegator();
 						synchronized (assetAlgorithm.getAssetNetwork()) {
 							INode assetNode = assetAlgorithm.getAssetNetwork().getNode(Long.toString(questionId));
-							if (assetNode == null && (assetAlgorithm instanceof AssetPropagationInferenceAlgorithm)) {
-								// in this algorithm, setAsPermanentEvidence will only use assetNode for name comparison and to check size of states, 
-								// so we can try using a stub node
-								assetNode = new Node() {	// a node just for purpose of searching nodes in lists
-									private static final long serialVersionUID = -2789947150055767730L;
-									public int getType() { return Node.DECISION_NODE_TYPE; }	 // not important, but mandatory because this is abstract method
-									public String getName() { return Long.toString(questionId); }// important for search
-									public int getStatesSize() { return Integer.MAX_VALUE; }	 // important for state size consistency check
-								};
-							}
+//							if (assetNode == null && (assetAlgorithm instanceof AssetPropagationInferenceAlgorithm)) {
+//								// in this algorithm, setAsPermanentEvidence will only use assetNode for name comparison and to check size of states, 
+//								// so we can try using a stub node
+//								assetNode = new Node() {	// a node just for purpose of searching nodes in lists
+//									private static final long serialVersionUID = -2789947150055767730L;
+//									public int getType() { return Node.DECISION_NODE_TYPE; }	 // not important, but mandatory because this is abstract method
+//									public String getName() { return Long.toString(questionId); }// important for search
+//									public int getStatesSize() { return Integer.MAX_VALUE; }	 // important for state size consistency check
+//								};
+//							}
 							if (assetNode != null) {
 								assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap(assetNode, settledState),isToDeleteResolvedNode());
 //								if (!isToDeleteResolvedNode()) {
@@ -2649,7 +2767,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void revert() throws UnsupportedOperationException {
 			throw new UnsupportedOperationException("Current version cannot revert a resolution of a question.");
 		}
-		public Date getWhenCreated() { return occurredWhen; }
+		public Date getWhenCreated() { 
+			if (occurredWhen < 0) {
+				return null;
+			}
+			return new Date(this.occurredWhen); 
+		}
 		/** Although this method changes the structure, we do not want to call {@link RebuildNetworkAction} after this action, so return false */
 		public boolean isStructureConstructionAction() { return false; }
 		public Long getTransactionKey() { return transactionKey; }
@@ -2680,13 +2803,33 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public String getTradeId() { return null; }
 		public List<Long> getAssumptionIds() { return null; }
 		public List<Integer> getAssumedStates() { return null; }
-		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
-		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
+		public Date getWhenExecutedFirstTime() {
+			if (whenExecutedFirst < 0) {
+				return null;
+			}
+			return new Date(whenExecutedFirst) ; 
+		}
+		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { 
+			if (whenExecutedFirst == null) {
+				this.whenExecutedFirst = -1;	// negative represents invalid date/time
+			} else {
+				this.whenExecutedFirst = whenExecutedFirst.getTime(); 
+			}
+		}
 		public boolean isHardEvidenceAction() {return true; }
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
 		/** This action does not trigger another rebuild */
 		public boolean isTriggerForRebuild() { return false; }
+		public long getWhenCreatedMillis() {
+			return occurredWhen;
+		}
+		public long getWhenExecutedFirstTimeMillis() {
+			return whenExecutedFirst;
+		}
+		public void setWhenExecutedFirstTimeMillis(long whenExecutedFirst) {
+			this.whenExecutedFirst = whenExecutedFirst;
+		}
 	}
 	
 	/**
@@ -2721,7 +2864,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		private final Collection<ResolveQuestionNetworkAction> resolutions;
 		
 		/** Default constructor using fields */
-		public ResolveSetOfQuestionsNetworkAction(Long transactionKey, Date occurredWhen, Collection<ResolveQuestionNetworkAction> resolutions) {
+		public ResolveSetOfQuestionsNetworkAction(long transactionKey, Date occurredWhen, Collection<ResolveQuestionNetworkAction> resolutions) {
 			super(transactionKey, occurredWhen, Long.MIN_VALUE, Integer.MIN_VALUE);
 			if (resolutions == null || resolutions.isEmpty()) {
 				throw new IllegalArgumentException("Invalid resolution: "+ resolutions);
@@ -2898,128 +3041,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return true;
 	}
 	
-//	/**
-//	 * This is the {@link NetworkAction} command representing
-//	 * {@link MarkovEngineImpl#revertTrade(long, Date, Date, Long)}
-//	 * @author Shou Matsumoto
-//	 */
-//	public class RevertTradeNetworkAction implements NetworkAction {
-//		private final Date occurredWhen;
-//		private final Date tradesStartingWhen;
-//		private final Long transactionKey;
-//		private final Long questionId;
-//		private List<Float> probBeforeRevert = null;
-//		private Date whenExecutedFirst;
-//		/** Default constructor initializing fields */
-//		public RevertTradeNetworkAction (Long transactionKey, Date occurredWhen,  Date tradesStartingWhen, Long questionId) {
-//			this.transactionKey = transactionKey;
-//			this.occurredWhen = occurredWhen;
-//			this.tradesStartingWhen = tradesStartingWhen;
-//			this.questionId = questionId;
-//		}
-//		/**
-//		 * This method just calls the {@link AddTradeNetworkAction#revert()} of the
-//		 * first instance of {@link AddTradeNetworkAction} of question {@link #getQuestionId()}, 
-//		 * executed after {@link #getTradesStartingWhen()}, for each possible user.
-//		 * {@link AddTradeNetworkAction#revert()} is supposed to set user's assets to the values
-//		 * prior to that edit.
-//		 * It will read the network actions in {@link MarkovEngineImpl#getExecutedActions()} 
-//		 * (i.e. only the actions actually executed) and will delete values from
-//		 * {@link MarkovEngineImpl#getExecutedActions()} to indicate that some
-//		 * actions will not be considered as \"executed\" anymore.
-//		 * The history is not affected, because {@link MarkovEngineImpl#getNetworkActionsIndexedByQuestions()}
-//		 * is not altered.
-//		 */
-//		public void execute() {
-//			// fill probBeforeRevert
-//			if (questionId != null) {
-//				boolean backup = isToObtainProbabilityOfResolvedQuestions();
-//				setToObtainProbabilityOfResolvedQuestions(true);
-//				probBeforeRevert = getProbList(questionId, null, null);
-//				setToObtainProbabilityOfResolvedQuestions(backup);
-//			} 
-//			/*
-//			 * NOTE: it is not guaranteed that actions in different transactions were executed in the same ordering/sequence of action.getWhenCreated()
-//			 * (it is only guaranteed that actions in same transaction were executed in the same ordering/sequence of action.getWhenCreated()).
-//			 * The argument tradesStartingWhen is supposedly a filter for action.getWhenCreated(), but
-//			 * for coherence, we must mainly consider the ordering of actual execution (because such ordering is
-//			 * what impacts the final values of the shared Bayes net and user's assets).
-//			 * That's why I'm searching for the first action in getExecutedActions() whose  tradesStartingWhen < action.getWhenCreated()
-//			 * and then replaying the actions prior to it.
-//			 */
-//			synchronized (getUserToAssetAwareAlgorithmMap()) {
-//				// do not allow new users to be created now
-//				synchronized (getExecutedActions()) {
-//					// actions to call revert()
-//					List<AddTradeNetworkAction> tradeActionsToRevert = new ArrayList<AddTradeNetworkAction>();	
-//					
-//					// will store what users were already processed, and what questions should be resolved again after reverting trades
-//					Map<Long, List<ResolveQuestionNetworkAction>> treatedUserToActionsToResolveMap = new HashMap<Long, List<ResolveQuestionNetworkAction>>();
-//					
-//					for (NetworkAction action : getExecutedActions()) {
-//						if (questionId != null  && !questionId.equals(action.getQuestionId())) {
-//							// ignore actions not matching question ID
-//							continue;
-//						}
-//						// If date of action is after tradesStartingWhen
-//						if (action.getWhenCreated().compareTo(tradesStartingWhen) >= 0 ) {
-//							// If treatedUserToActionsToResolveMap.size() >= getUserToAssetAwareAlgorithmMap().size(), 
-//							// then all users were already treated. So, there's no need to fill tradeActionsToRevert anymore.
-//							if (treatedUserToActionsToResolveMap.size() < getUserToAssetAwareAlgorithmMap().size()) { 
-//								if ( !treatedUserToActionsToResolveMap.containsKey(action.getUserId())	// action of a user not processed yet
-//										&& action instanceof AddTradeNetworkAction) {					// action is a trade
-//									tradeActionsToRevert.add((AddTradeNetworkAction)action);
-//									// init this map, which stores processed users and list of questions to resolve again (i.e. all resolutions coming after this action).
-//									treatedUserToActionsToResolveMap.put(action.getUserId(), new ArrayList<MarkovEngineImpl.ResolveQuestionNetworkAction>());
-//								}
-//							} 
-//						}
-//						// If executed after any AddTradeNetworkAction, the ResolveQuestionNetworkAction must be executed regardless of its value of getWhenCreated()
-//						if (!treatedUserToActionsToResolveMap.isEmpty() && action instanceof ResolveQuestionNetworkAction) {
-//							// fill values of treatedUserToActionsToResolveMap with all resolutions executed after the AddTradeNetworkAction to be reverted.
-//							for (Long userId : treatedUserToActionsToResolveMap.keySet()) {
-//								treatedUserToActionsToResolveMap.get(userId).add((ResolveQuestionNetworkAction) action);
-//							}
-//						}
-//					}
-//					
-//					// execute revert() so that user's assets are reverted to that moment 
-//					for (AddTradeNetworkAction action : tradeActionsToRevert) {
-//						action.revert();
-//					}
-//					
-//					// AddTradeNetworkAction#revert() will bring asset tables to the moment before the trade, including its structure. 
-//					// Questions must be resolved again in order to synchronize the structure of asset nets and shared Bayes net.
-//					for (Long userId : treatedUserToActionsToResolveMap.keySet()) {
-//						for (ResolveQuestionNetworkAction action : treatedUserToActionsToResolveMap.get(userId)) {
-//							action.execute(userId);	// resolve question only for this user
-//						}
-//					}
-//				}
-//			}
-//			/*
-//			 * Note: we should not remove the "reverted" trades from getExecutedActions(), because 
-//			 * the revert is only reseting the assets of the users.
-//			 * In order for the probabilities to be restorable from history, all trades
-//			 * including the reverted ones should be part of the getExecutedActions().
-//			 */
-//		}
-//		public void revert() throws UnsupportedOperationException {
-//			throw new UnsupportedOperationException("Current version cannot revert a \"revert\" operation.");
-//		}
-//		public Date getWhenCreated() { return occurredWhen; }
-//		public List<Float> getNewValues() { return probBeforeRevert; }
-//		public String getTradeId() { return null; }
-//		public boolean isStructureChangeAction() { return false; }
-//		public Long getTransactionKey() { return transactionKey; }
-//		public Long getUserId() { return null; }
-//		public Long getQuestionId() { return questionId; }
-//		public List<Long> getAssumptionIds() { return null; }
-//		public List<Integer> getAssumedStates() { return null; }
-//		public Date getTradesStartingWhen() { return tradesStartingWhen; }
-//		public Date getWhenExecutedFirstTime() {return whenExecutedFirst ; }
-//		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirst = whenExecutedFirst; }
-//	}
 
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#revertTrade(Long, java.util.Date, java.lang.Long, java.lang.Long)
@@ -3107,20 +3128,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return this.getProbLists(questionIds, assumptionIds, assumedStates, true, null, false);
 	}
 
-//	/**
-//	 * This method offers the same functionality of {@link #getProbLists(List, List, List)}, but
-//	 * there is an additional argument to indicate whether or not to normalize the result.
-//	 * @param isToNormalize : if false, the returned list will contain the clique potentials without normalization.
-//	 * This may be useful for obtaining the clique potentials instead of the conditional probabilities.
-//	 * @param net : net to be used to extract probabilities.
-//	 * {@link #getProbabilisticNetwork()} will be used if not specified.
-//	 * @param dontChangeNet : if false, values in net may be changed after this call. Setting this to false
-//	 * may improve speed.
-//	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getProbList(long, java.util.List, java.util.List)
-//	 */
-//	public Map<Long,List<Float>> getProbLists(List<Long> questionIds, List<Long>assumptionIds, List<Integer> assumedStates, boolean isToNormalize) throws IllegalArgumentException {
-//		return this.getProbLists(questionIds, assumptionIds, assumedStates, isToNormalize, null, true);
-//	}
 	
 	/**
 	 * This method offers the same functionality of {@link #getProbLists(List, List, List)}, but
@@ -6282,7 +6289,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * @see #execute(boolean, boolean)*/
 		public void execute(boolean isToUpdateAssets) {
 			// if ME is set not to re-calculate the balancing trades again, and if this action was executed previously, we shall re-run getExecutedTrades(), 
-			if (!isToRecalculateBalancingTradeOnRebuild() && this.getWhenExecutedFirstTime() != null) {
+			if (!isToRecalculateBalancingTradeOnRebuild() && this.getWhenExecutedFirstTimeMillis() > 0) {
 				// re-execute the same trades if getExecutedTrades() will contain something
 				if (getExecutedTrades() != null && !getExecutedTrades().isEmpty()) {
 					// backup original trade specification, because we will change it several times
@@ -6916,6 +6923,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			public float getScoreEV() {return scoreEV; }
 			public List<SummaryContribution> getScoreComponents() { return scoreEVPerStateList; }
 			public List<SummaryContribution> getIntersectionScoreComponents() { return Collections.emptyList(); }
+			public Map<Long, Float> getCashContributionPerResolvedQuestion() {
+				throw new RuntimeException("Not implemented yet");
+			}
 		};
 	}
 	
@@ -7050,6 +7060,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			public float getScoreEV() {return scoreEV; }
 			public List<SummaryContribution> getScoreComponents() { return cliqueComponents; }
 			public List<SummaryContribution> getIntersectionScoreComponents() { return sepComponents; }
+			public Map<Long, Float> getCashContributionPerResolvedQuestion() {
+				throw new RuntimeException("Not implemented yet");
+			}
 		};
 	}
 	
@@ -7683,7 +7696,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// NOTE: returning indexOfNewElement >= 0 indicates that the network action was added somewhere in the list
 				for (indexOfNewElement = 0; indexOfNewElement < list.size(); indexOfNewElement++) {
 					if ( ( list.get(indexOfNewElement) == null )
-							|| ( list.get(indexOfNewElement).getWhenCreated() == null ) ) { // at this point, list.get(indexOfNewElement) != null
+							|| ( list.get(indexOfNewElement).getWhenCreated() == null) ) { // at this point, list.get(indexOfNewElement) != null
 						// add new element always before null values or null dates
 						break;
 					}
@@ -8642,13 +8655,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public class ImportNetworkAction extends StructureChangeNetworkAction {
 		private static final long serialVersionUID = 1370086072061130060L;
-		private final Long transactionKey;
-		private final Date occurredWhen;
+		private final long transactionKey;
+		private final long occurredWhen;
 		private final ProbabilisticNetwork importedNet;
-		private Date whenExecutedFirstTime = null;
+		private long whenExecutedFirstTime = -1;
 
 		/** Default constructor initializing fields */
-		public ImportNetworkAction(Long transactionKey, Date occurredWhen, ProbabilisticNetwork importedNet) {
+		public ImportNetworkAction(Long transactionKey, long occurredWhen, ProbabilisticNetwork importedNet) {
 			if (importedNet == null) {
 				throw new IllegalArgumentException("Imported network cannot be null.");
 			}
@@ -8735,10 +8748,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						if (getExecutedActions().contains(this)) {
 							// make sure the current action is not in the history which will be executed by the RebuildNetworkAction (or else it will loop)
 							getExecutedActions().remove(this);
-							new RebuildNetworkAction(null, null, null, null).execute(actionsToExecute);
+							new RebuildNetworkAction(-1, null, null, null).execute(actionsToExecute);
 							getExecutedActions().add(this);
 						} else {
-							new RebuildNetworkAction(null, null, null, null).execute(actionsToExecute);
+							new RebuildNetworkAction(-1, null, null, null).execute(actionsToExecute);
 						}
 						
 						// "virtual" trades will be performed in order to set the current conditional probabilities equal to the non-uniform CPTs
@@ -8846,7 +8859,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 										VirtualTradeAction virtualTrade = new VirtualTradeAction(this, questionId, newValues, assumptionIds, assumedStates);
 										addNetworkActionIntoQuestionMap(virtualTrade, questionId);
 										virtualTrade.execute();
-										virtualTrade.setWhenExecutedFirstTime(new Date());
+										virtualTrade.setWhenExecutedFirstTimeMillis(System.currentTimeMillis());
 										
 										// note virtual trades should be added to history, so that future rebuild actions can execute them again when re-running history
 										synchronized (getExecutedActions()) {
@@ -8887,7 +8900,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 					
 					// rebuild structure and re-run trades, because we don't know when the exception was thrown
-					new RebuildNetworkAction(null, null, null, null).execute();
+					new RebuildNetworkAction(-1, null, null, null).execute();
 					
 					// Exception translation is not a good practice, but we need to convert it to runtime exception so that we can
 					// throw it to the caller without changing method signature of execute().
@@ -8905,8 +8918,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		/** Not defined */
 		public void revert() throws UnsupportedOperationException {throw new UnsupportedOperationException("Revert not supported for " + this.getClass());}
-		public Date getWhenCreated() { return occurredWhen; }
-		public Date getWhenExecutedFirstTime() { return whenExecutedFirstTime; }
+		public Date getWhenCreated() { 
+			if (occurredWhen < 0) {
+				return null;
+			}
+			return new Date(this.occurredWhen); 
+		}
+		public Date getWhenExecutedFirstTime() {
+			if (whenExecutedFirstTime < 0) {
+				return null;
+			}
+			return new Date(whenExecutedFirstTime) ; 
+		}
 		public List<Float> getOldValues() { return null; }
 		public void setOldValues(List<Float> oldValues) { }
 		public List<Float> getNewValues() { return null; }
@@ -8919,12 +8942,30 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Long getQuestionId() { return null; }
 		public List<Long> getAssumptionIds() {  return null; }
 		public List<Integer> getAssumedStates() { return null; }
-		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { this.whenExecutedFirstTime = whenExecutedFirst; }
+		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { 
+			if (whenExecutedFirst == null) {
+				this.whenExecutedFirstTime = -1;	// negative represents invalid date/time
+			} else {
+				this.whenExecutedFirstTime = whenExecutedFirst.getTime(); 
+			}
+		}
 		public ProbabilisticNetwork getImportedNet() { return importedNet; }
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
 		/** Importing network may trigger rebuild, because it may add new arcs */
 		public boolean isTriggerForRebuild() { return true; }
+
+		public long getWhenCreatedMillis() {
+			return occurredWhen;
+		}
+
+		public long getWhenExecutedFirstTimeMillis() {
+			return whenExecutedFirstTime;
+		}
+
+		public void setWhenExecutedFirstTimeMillis(long whenExecutedFirst) {
+			this.whenExecutedFirstTime = whenExecutedFirst;
+		}
 	}
 
 
@@ -8962,7 +9003,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// instantiate an action event for the "import" action and execute immediately
 		long transactionKey = this.startNetworkActions();
 		// this will be the action representing (and will be stored in the history)
-		ImportNetworkAction importAction = new ImportNetworkAction(transactionKey, new Date(), net);
+		ImportNetworkAction importAction = new ImportNetworkAction(transactionKey, System.currentTimeMillis(), net);
 		// do not forget to update history of actions, so that future rebuilds can execute this action again
 		this.addNetworkAction(transactionKey, importAction);
 		// execute action. This shall update the history as well
@@ -9499,6 +9540,23 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public void setToThrowExceptionInTradesToResolvedQuestions(
 			boolean isToThrowExceptionInTradesToResolvedQuestions) {
 		this.isToThrowExceptionInTradesToResolvedQuestions = isToThrowExceptionInTradesToResolvedQuestions;
+	}
+
+	/**
+	 * If true, cash of each user will be stored when questions are resolved
+	 * @return the isToStoreCashBeforeResolveQuestion
+	 */
+	public boolean isToStoreCashBeforeResolveQuestion() {
+		return isToStoreCashBeforeResolveQuestion;
+	}
+
+	/**
+	 * If true, cash of each user will be stored when questions are resolved
+	 * @param isToStoreCashBeforeResolveQuestion the isToStoreCashBeforeResolveQuestion to set
+	 */
+	public void setToStoreCashBeforeResolveQuestion(
+			boolean isToStoreCashBeforeResolveQuestion) {
+		this.isToStoreCashBeforeResolveQuestion = isToStoreCashBeforeResolveQuestion;
 	}
 
 

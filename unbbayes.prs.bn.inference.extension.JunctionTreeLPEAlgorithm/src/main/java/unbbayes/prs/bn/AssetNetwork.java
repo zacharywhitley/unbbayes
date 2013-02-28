@@ -4,6 +4,8 @@
 package unbbayes.prs.bn;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import unbbayes.prs.Edge;
@@ -34,7 +36,8 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	protected AssetNetwork() {
 		super("Asset Network");
 		setHierarchicTree(null);
-		getLogManager().setEnabled(false);
+		setLogManager(null);
+//		getLogManager().setEnabled(false);
 	}
 	
 	/**
@@ -191,7 +194,7 @@ public class AssetNetwork extends ProbabilisticNetwork {
 				}
 				// remove variable from cliques
 				if (getJunctionTree().getCliques() != null) {
-					for (Clique clique : getJunctionTree().getCliques()) {
+					for (Clique clique : getJunctionTree().getCliquesContainingAllNodes((Collection)Collections.singletonList(nodeToRemove), Integer.MAX_VALUE)) {
 						// testing presence of variable in a list has almost same comput. cost of just deleting
 						PotentialTable cliqueTable = clique.getProbabilityFunction();
 						cliqueTable.purgeVariable(nodeToRemove, false);

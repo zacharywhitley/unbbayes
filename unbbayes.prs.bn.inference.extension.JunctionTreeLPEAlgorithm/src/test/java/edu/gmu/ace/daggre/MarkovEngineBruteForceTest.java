@@ -95,7 +95,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static final String NODE_NAME_PREFIX = "N";
 
 	/** This program will enter in a loop at this iteration number. Use with care. Set to negative if you don't want this program to stop at the iteration */
-	private static final int iterationToDebug = -54;
+	private static final int iterationToDebug = -47;
 
 	/** this object will group the data to be printed out in {@link #testFilesWithResolution()} */
 	private Tracer tracer = null;
@@ -183,7 +183,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If there are less than this number of questions, questions will not be resolved */
 	private static int minAliveQuestionNumber = -1;
 	
-	private static long seed = new Date().getTime();
+	private static long seed = new Date().getTime(); // 1362009833965L
 	
 	/** Random number generator, with seed */
 	private static Random random = new Random(seed);
@@ -4944,7 +4944,22 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				}
 				
 				for (MarkovEngineImpl engine : engines) {
+					// get the expected score per node to be resolved for each user
+					Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+					for (Long id : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+						// store the expected score of the state to be resolved
+						expectedScorePerUsers.put(id, engine.scoreUserQuestionEvStates(id, questionId, null, null).get(settledState));
+					}
+					for (Long id : engine.getUninitializedUserToAssetMap().keySet()) {
+						// store the expected score of the state to be resolved
+						expectedScorePerUsers.put(id, engine.scoreUserQuestionEvStates(id, questionId, null, null).get(settledState));
+					}
+
 					engine.resolveQuestion(null, new Date(), questionId, settledState);
+					// check that the expected before resolve question is the current score
+					for (Long id : expectedScorePerUsers.keySet()) {
+						assertEquals("User=" + id, expectedScorePerUsers.get(id), engine.scoreUserEv(id, null, null), ASSET_ERROR_MARGIN);
+					}
 				}
 				resolvedQuestions.add(questionId);
 				
@@ -5652,7 +5667,22 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				
 //				System.out.println("resolveQuestion(questionId="+questionId+",settledState="+settledState+")");
 				for (MarkovEngineImpl engine : engines) {
+					// get the expected score per node to be resolved for each user
+					Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+					for (Long id : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+						// store the expected score of the state to be resolved
+						expectedScorePerUsers.put(id, engine.scoreUserQuestionEvStates(id, questionId, null, null).get(settledState));
+					}
+					for (Long id : engine.getUninitializedUserToAssetMap().keySet()) {
+						// store the expected score of the state to be resolved
+						expectedScorePerUsers.put(id, engine.scoreUserQuestionEvStates(id, questionId, null, null).get(settledState));
+					}
+
 					engine.resolveQuestion(null, new Date(), questionId, settledState);
+					// check that the expected before resolve question is the current score
+					for (Long id : expectedScorePerUsers.keySet()) {
+						assertEquals("User=" + id, expectedScorePerUsers.get(id), engine.scoreUserEv(id, null, null), ASSET_ERROR_MARGIN);
+					}
 					// check that the resolved state is 100% and other states are 0%
 					List<Float> probListsToCompare = engine.getProbList(questionId, null, null);
 					for (int state = 0; state < probListsToCompare.size(); state++) {

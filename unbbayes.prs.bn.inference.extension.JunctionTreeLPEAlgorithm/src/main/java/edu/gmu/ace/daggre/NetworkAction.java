@@ -102,6 +102,27 @@ public interface NetworkAction extends QuestionEvent {
 	 */
 	void setWhenExecutedFirstTime(Date whenExecutedFirst);
 	
+//	/**
+//	 * @return the time in milliseconds representing the date/time
+//	 * when this action was created. This can be converted back to date/time
+//	 * by calling {@link Date#Date(long)}
+//	 */
+//	public long getWhenCreatedMillis() ;
+//	
+//	/**
+//	 * @return the time in milliseconds representing the date/time
+//	 * when this action was executed in this system. This can be converted back to date/time
+//	 * by calling {@link Date#Date(long)}
+//	 */
+//	public long getWhenExecutedFirstTimeMillis();
+//	
+//	/**
+//	 * @param the time in milliseconds representing the date/time
+//	 * when this action was executed in this system. This can be extracted from date/time
+//	 * by calling {@link Date#getTime()}
+//	 */
+//	public void setWhenExecutedFirstTimeMillis(long whenExecutedFirst);
+	
 	/**
 	 * If {@link #isCorrectiveTrade()} == true, then
 	 * this method should return what trade is being corrected by this trade.

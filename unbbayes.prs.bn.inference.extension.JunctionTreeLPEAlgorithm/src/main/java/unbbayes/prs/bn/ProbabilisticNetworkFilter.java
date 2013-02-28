@@ -34,6 +34,8 @@ public class ProbabilisticNetworkFilter extends ProbabilisticNetwork {
 		super(adaptedNetwork.getId());
 		this.adaptedNetwork = adaptedNetwork;
 		this.filteredNodes = filteredNodes;
+		setLogManager(null);
+		setHierarchicTree(null);
 	}
 
 	/**
