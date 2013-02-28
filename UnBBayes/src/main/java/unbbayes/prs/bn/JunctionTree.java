@@ -54,7 +54,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	/**
 	 *  List of Associated separatorsMap.
 	 */
-	private Set<Separator> separators = new HashSet<Separator>();
+	private Collection<Separator> separators = new ArrayList<Separator>();
 	private Map<Clique, Set<Separator>> separatorsMap = new HashMap<Clique, Set<Separator>>();
 
 //	/**
@@ -413,6 +413,14 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	public Collection<Separator> getSeparators() {
 		return separators;
 	}
+	
+	/**
+	 * This is just for subclasses to be able to customize the behavior of {@link #getSeparators()}
+	 * @param separators
+	 */
+	protected void setSeparators(Collection<Separator> separators) {
+		this.separators = separators;
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -627,6 +635,22 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			this.visitCliquesSeparatorsContainingAllNodesRecursive((Clique)cliqueOrSeparator, nodes, maxCount, (List)ret, true, new HashSet<Clique>());
 		}
 		return ret;
+	}
+
+	/**
+	 * This is available just to allow subclasses to personalize map's behavior
+	 * @return the separatorsMap
+	 */
+	protected Map<Clique, Set<Separator>> getSeparatorsMap() {
+		return this.separatorsMap;
+	}
+
+	/**
+	 * This is available just to allow subclasses to personalize map's behavior
+	 * @param separatorsMap the separatorsMap to set
+	 */
+	protected void setSeparatorsMap(Map<Clique, Set<Separator>> separatorsMap) {
+		this.separatorsMap = separatorsMap;
 	}
 
 //	/**
