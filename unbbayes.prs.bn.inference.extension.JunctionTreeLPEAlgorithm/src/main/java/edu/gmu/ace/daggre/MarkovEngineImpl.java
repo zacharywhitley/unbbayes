@@ -2970,7 +2970,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						synchronized (assetAlgorithm.getAssetNetwork()) {
 							if (isToStoreCashBeforeResolveQuestion()) {
 								// update evidence one-by-one and store cash before/after them. Note that cash is only dependent to assets, that's why we can do this after we updated the shared BN
-								for (Entry<INode, Integer> nodeAndEvidence : mapOfEvidences.entrySet()) {
+								for (ResolveQuestionNetworkAction resolution : getResolutions()) {
 									// update getUserIdToResolvedQuestionCashBeforeMap() and getUserIdToResolvedQuestionCashGainMap() by obtaining cash before and after asset update
 									synchronized (getUserIdToResolvedQuestionCashBeforeMap()) { 
 										synchronized (getUserIdToResolvedQuestionCashGainMap()) { 
@@ -2989,16 +2989,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 											// obtain cash before
 											float cashBefore = getCash(userIdAndAlgorithm.getKey(), null, null);
 											// immediately store the cash before
-											questionToCashBefore.put(Long.getLong(nodeAndEvidence.getKey().getName()), cashBefore);
+											questionToCashBefore.put(resolution.getQuestionId(), cashBefore);
 											getUserIdToResolvedQuestionCashBeforeMap().put(userIdAndAlgorithm.getKey(), questionToCashBefore);
 											// resolve the question in the asset structure of this user
-											assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap(nodeAndEvidence.getKey(), nodeAndEvidence.getValue()), isToDeleteResolvedNode());
+											assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap((INode)assetAlgorithm.getAssetNetwork().getNode(resolution.getQuestionId().toString()), resolution.getSettledState()), isToDeleteResolvedNode());
 											// obtain the difference between cash before and after.
 											float gain = getCash(userIdAndAlgorithm.getKey(), null, null) - cashBefore;
 											// update the mapping if the difference was "large" enough
 											if (Math.abs(gain) > getProbabilityErrorMargin()) {
 												// put the mapping from question ID (of settled question) to gain from that question
-												questionToGain.put(Long.getLong(nodeAndEvidence.getKey().getName()), gain);
+												questionToGain.put(resolution.getQuestionId(), gain);
 												getUserIdToResolvedQuestionCashGainMap().put(userIdAndAlgorithm.getKey(), questionToGain);
 											}
 										}

@@ -40,7 +40,7 @@ public class LogarithmicMinProductJunctionTree extends MinProductJunctionTree {
 	 * {@link #getSeparators()}, and {@link #removeSeparator(Separator)}
 	 * will simply delegate to superclass.
 	 */
-	private boolean isToUseSeparatorsMap = false;
+	private boolean isToUseSeparatorsMap = true;
 	
 	
 	/**
