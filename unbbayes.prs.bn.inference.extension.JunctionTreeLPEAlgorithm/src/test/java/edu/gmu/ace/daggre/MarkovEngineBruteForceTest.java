@@ -4943,6 +4943,50 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					tracer.setResolvedState(settledState);
 				}
 				
+				// check gains of cash before resolution, for all users, including those who was not created yet
+				for (Long user : userIDs) {
+					// extract the score summary to be used as pivot for comparison
+					ScoreSummary scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, null, null, null);
+					// check size of gains and cash before resolution
+					assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= resolvedQuestions.size()); // 0 gains are not included in the map
+					assertTrue(resolvedQuestions.size()>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); // cash before are always included
+					// compare gains and cash before resolution
+					for (int i = 1; i < engines.size(); i++) {
+						// extract the score summary to compare
+						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user, null, null, null);
+						// check gains of resolutions
+						assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+						// check cash before resolutions
+						assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+					}
+					// do the same test, but with some filters
+					scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, questionId, assumptionIds, assumedStates);
+					// check size of gains and cash before resolution
+					assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= 1); // 0 gains are not included in the map
+					assertTrue(1>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); 
+					// compare gains and cash before resolution
+					for (int i = 1; i < engines.size(); i++) {
+						// extract the score summary to compare
+						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user,  questionId, assumptionIds, assumedStates);
+						// check gains of resolutions
+						assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+						// check cash before resolutions
+						assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+					}
+				}
+				
 				for (MarkovEngineImpl engine : engines) {
 					// get the expected score per node to be resolved for each user
 					Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
@@ -4954,7 +4998,6 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						// store the expected score of the state to be resolved
 						expectedScorePerUsers.put(id, engine.scoreUserQuestionEvStates(id, questionId, null, null).get(settledState));
 					}
-
 					engine.resolveQuestion(null, new Date(), questionId, settledState);
 					// check that the expected before resolve question is the current score
 					for (Long id : expectedScorePerUsers.keySet()) {
@@ -4962,6 +5005,50 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					}
 				}
 				resolvedQuestions.add(questionId);
+				
+				// check gains of cash after resolution
+				for (Long user : userIDs) {
+					// extract the score summary to be used as pivot for comparison
+					ScoreSummary scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, null, null, null);
+					// check size of gains and cash before resolution
+					assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= resolvedQuestions.size()); // 0 gains are not included in the map
+					assertTrue(resolvedQuestions.size()>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); 
+					// compare gains and cash before resolution
+					for (int i = 1; i < engines.size(); i++) {
+						// extract the score summary to compare
+						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user, null, null, null);
+						// check gains of resolutions
+						assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+						// check cash before resolutions
+						assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+					}
+					// do the same test, but with some filters
+					scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, questionId, assumptionIds, assumedStates);
+					// check size of gains and cash before resolution
+					assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= 1); // 0 gains are not included in the map
+					assertTrue(1>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); // cash before are always included
+					// compare gains and cash before resolution
+					for (int i = 1; i < engines.size(); i++) {
+						// extract the score summary to compare
+						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user,  questionId, assumptionIds, assumedStates);
+						// check gains of resolutions
+						assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+						// check cash before resolutions
+						assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+					}
+				}
 				
 //				if (nodesToTraceCliquePotentials != null) {
 //					System.out.println("\nResolved question " + questionId + " to state " + settledState);
@@ -5665,7 +5752,41 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					tracer.setResolvedState(settledState);
 				}
 				
-//				System.out.println("resolveQuestion(questionId="+questionId+",settledState="+settledState+")");
+				// make sure current question is not resolved
+				assertFalse(resolvedQuestions.contains(questionId));
+				
+				// check gains of cash before resolution
+				for (Long user : userIDs) {
+					// extract the score summary to be used as pivot for comparison
+					ScoreSummary scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, null, null, null);
+					// check size of gains and cash before resolution
+					assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= resolvedQuestions.size()); // 0 gains are not included in the map
+					assertTrue(resolvedQuestions.size()>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); 
+					// compare gains and cash before resolution
+					for (int i = 1; i < engines.size(); i++) {
+						// extract the score summary to compare
+						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user, null, null, null);
+						// check gains of resolutions
+						assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+						// check cash before resolutions
+						assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+					}
+					// do the same test, but with some filters
+					// if we filter by non-resolved node, then this should result in empty list
+					for (int i = 0; i < engines.size(); i++) {
+						// extract the score summary to compare
+						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user,  questionId, assumptionIds, assumedStates);
+						assertEquals(0,scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size()); 
+						assertEquals(0,scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
+					}
+				}
+				
 				for (MarkovEngineImpl engine : engines) {
 					// get the expected score per node to be resolved for each user
 					Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
@@ -5677,8 +5798,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						// store the expected score of the state to be resolved
 						expectedScorePerUsers.put(id, engine.scoreUserQuestionEvStates(id, questionId, null, null).get(settledState));
 					}
+					
 
 					engine.resolveQuestion(null, new Date(), questionId, settledState);
+					
+					
 					// check that the expected before resolve question is the current score
 					for (Long id : expectedScorePerUsers.keySet()) {
 						assertEquals("User=" + id, expectedScorePerUsers.get(id), engine.scoreUserEv(id, null, null), ASSET_ERROR_MARGIN);
@@ -5702,6 +5826,51 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					}
 				}
 				resolvedQuestions.add(questionId);
+				
+				// check gains of cash after resolution
+//				for (long user = 0; user < MAX_USER_NUM; user++) {
+				for (Long user : userIDs) {
+					// extract the score summary to be used as pivot for comparison
+					ScoreSummary scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, null, null, null);
+					// check size of gains and cash before resolution
+					assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= resolvedQuestions.size()); // 0 gains are not included in the map
+					assertTrue(resolvedQuestions.size()>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); 
+					// compare gains and cash before resolution
+					for (int i = 1; i < engines.size(); i++) {
+						// extract the score summary to compare
+						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user, null, null, null);
+						// check gains of resolutions
+						assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+						// check cash before resolutions
+						assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+					}
+					// do the same test, but with some filters
+					scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, questionId, assumptionIds, assumedStates);
+					// check size of gains and cash before resolution
+					assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= 1); // 0 gains are not included in the map
+					assertTrue(1>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); 
+					// compare gains and cash before resolution
+					for (int i = 1; i < engines.size(); i++) {
+						// extract the score summary to compare
+						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user,  questionId, assumptionIds, assumedStates);
+						// check gains of resolutions
+						assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+						// check cash before resolutions
+						assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
+						for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
+							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						}
+					}
+				}
 				
 				if (isToTrace()) {
 					// store all users' score and cash after resolution

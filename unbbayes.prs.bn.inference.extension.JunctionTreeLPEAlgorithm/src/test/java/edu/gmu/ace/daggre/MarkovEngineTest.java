@@ -8444,10 +8444,26 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 		mapOfConditionalCash.get("Eric").add(cash);
 		
+		// get the expected score per D for each user
+		Map<Long, Float> expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, null, null).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, null, null).get(0));
+		}
+		
 		// resolve to d1
 		long transactionKey = engine.startNetworkActions();
 		assertTrue(engine.resolveQuestion(transactionKey, new Date(), (long)0x0D, 0));
 		assertTrue(engine.commitNetworkActions(transactionKey));
+		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// cannot reuse same transaction key
 		try {
@@ -8875,11 +8891,36 @@ public class MarkovEngineTest extends TestCase {
 		
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap);
+		
+		// get the expected score per D for each user
+		Map<Long, Float> expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			List<Long> assumptionIds = new ArrayList<Long>();
+			assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add(0); assumedStates.add(0);
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, assumptionIds, assumedStates).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			List<Long> assumptionIds = new ArrayList<Long>();
+			assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add(0); assumedStates.add(0);
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, assumptionIds, assumedStates).get(0));
+		}
+		
 		long transactionKey = engine.startNetworkActions();
 		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, 0);
 		engine.resolveQuestion(transactionKey, new Date(), 0x0EL, 0);
 		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, 0);
 		engine.commitNetworkActions(transactionKey);
+		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
 		assertEquals(3, probLists.size());
@@ -8905,11 +8946,35 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToDeleteResolvedNode(true);
 		engine.initialize();
 		this.createDEFNetIn1Transaction(userNameToIDMap);
+		
+		// get the expected score per D for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			List<Long> assumptionIds = new ArrayList<Long>();
+			assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add(0); assumedStates.add(0);
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, assumptionIds, assumedStates).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			List<Long> assumptionIds = new ArrayList<Long>();
+			assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add(0); assumedStates.add(0);
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, assumptionIds, assumedStates).get(0));
+		}
 		transactionKey = engine.startNetworkActions();
 		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, 0);
 		engine.resolveQuestion(transactionKey, new Date(), 0x0EL, 0);
 		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, 0);
 		engine.commitNetworkActions(transactionKey);
+		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// assert that if we look for probabilities of all nodes, no node is present
 		probLists = engine.getProbLists(null, null, null);
@@ -8934,11 +8999,36 @@ public class MarkovEngineTest extends TestCase {
 		// run same test again, but 1 of the nodes will be resolved outside the trade
 		engine.initialize();
 		this.createDEFNetIn1Transaction(userNameToIDMap);
+		
+		// get the expected score per D for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			List<Long> assumptionIds = new ArrayList<Long>();
+			assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add(0); assumedStates.add(0);
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, assumptionIds, assumedStates).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			List<Long> assumptionIds = new ArrayList<Long>();
+			assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add(0); assumedStates.add(0);
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, null, null).get(0));
+		}
+		
 		transactionKey = engine.startNetworkActions();
 		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, 0);
 		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, 0);
 		engine.commitNetworkActions(transactionKey);
 		engine.resolveQuestion(null, new Date(), 0x0EL, 0);
+		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// assert that if we look for probabilities of all nodes, no node is present
 		probLists = engine.getProbLists(null, null, null);
@@ -8970,11 +9060,53 @@ public class MarkovEngineTest extends TestCase {
 		engine.setDefaultInitialAssetTableValue(10);
 		userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap);
+		
+		// get the expected score per node to be resolved for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(0));
+		}
+		
 		engine.resolveQuestion(null, new Date(), 0x0EL, 0);
+		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
+		
+		
+		// get the expected score per D for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			List<Long> assumptionIds = new ArrayList<Long>();
+			assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add(0); assumedStates.add(0);
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, assumptionIds, assumedStates).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			List<Long> assumptionIds = new ArrayList<Long>();
+			assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add(0); assumedStates.add(0);
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, assumptionIds, assumedStates).get(0));
+		}
 		transactionKey = engine.startNetworkActions();
 		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, 0);
 		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, 0);
 		engine.commitNetworkActions(transactionKey);
+		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		Map<String, Float> cashMap2 = new HashMap<String, Float>();
 		Map<String, Float> scoreMap2 = new HashMap<String, Float>();
@@ -9000,12 +9132,36 @@ public class MarkovEngineTest extends TestCase {
 		}
 		userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap);
+		
+		// get the expected score per D for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			List<Long> assumptionIds = new ArrayList<Long>();
+			assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add(0); assumedStates.add(0);
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, assumptionIds, assumedStates).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			List<Long> assumptionIds = new ArrayList<Long>();
+			assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add(0); assumedStates.add(0);
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, assumptionIds, assumedStates).get(0));
+		}
+		
 		transactionKey = engine.startNetworkActions();
 		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, 0);
 		engine.resolveQuestion(transactionKey, new Date(), 0x0EL, 0);
 		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, 0);
 		engine.commitNetworkActions(transactionKey);
 		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		for (String user : userNameToIDMap.keySet()) {
 			float cash = engine.getCash(userNameToIDMap.get(user), null, null);
@@ -9049,7 +9205,9 @@ public class MarkovEngineTest extends TestCase {
 	 *	Joe2:	P(F=f1|D=d2) = 0.5 to 0.1	<br/>
 	 *	Eric1:	P(E=e1) = 0.65 to 0.8	<br/> 
 	 *	Eric2:	P(D=d1|F=f2) = 0.52 to 0.7 <br/> 
-	 * @param userNameToIDMap : this is an output argumen. This map will be filled with the name
+	 *<br/> <br/> 
+	 *100 of cash is added to all users before the trades.
+	 * @param userNameToIDMap : this is an output argument. This map will be filled with the name
 	 * and ID of the users Tom, Joe, Amy, and Eric.
 	 * @return : list of actually executed trades.
 	 */
@@ -9672,10 +9830,26 @@ public class MarkovEngineTest extends TestCase {
 				);
 		}
 		
+		// get the expected score per node to be resolved for each user
+		Map<Long, Float> expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(0));
+		}
+
 		// resolve to d1. Resolutions are not reverted (i.e. resolutions are supposedly re-done)
 		transactionKey = engine.startNetworkActions();
 		assertTrue(engine.resolveQuestion(transactionKey, new Date(), (long)0x0D, 0));
 		assertTrue(engine.commitNetworkActions(transactionKey));
+		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that assets of question C is equal for everyone
 		for (String userName : userNameToIDMap.keySet()) {
@@ -10484,9 +10658,25 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(1067.8073f, scoreUserQuestionEvStates.get(0), ASSET_ERROR_MARGIN);
 		assertEquals(867.8072f, scoreUserQuestionEvStates.get(1), ASSET_ERROR_MARGIN);
 		
+		// get the expected score per node to be resolved for each user
+		Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 1L, null, null).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 1L, null, null).get(0));
+		}
+		
 		transactionKey = engine.startNetworkActions();
 		engine.resolveQuestion(transactionKey, new Date(), 1L, 0);
 		engine.commitNetworkActions(transactionKey);
+		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		assertFalse(Float.isNaN(engine.scoreUserEv(1L, null, null)));
 		assertEquals(1067.8073, engine.scoreUserEv(1L, null, null), ASSET_ERROR_MARGIN);
@@ -10520,12 +10710,29 @@ public class MarkovEngineTest extends TestCase {
 		
 		assertEquals(1000f, engine.scoreUserEv(1L, null, null), ASSET_ERROR_MARGIN);
 		
+		
+		// get the expected score per node to be resolved for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 1L, null, null).get(1));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 1L, null, null).get(1));
+		}
+		
 		transactionKey = engine.startNetworkActions();
 		newValues = new ArrayList<Float>();
 		newValues.add(.2f); newValues.add(.8f);
 		engine.addTrade(transactionKey, new Date(), "", 1L, 1L, newValues, null, null, false);
 		engine.resolveQuestion(transactionKey, new Date(), 1L, 1);
 		engine.commitNetworkActions(transactionKey);
+		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		assertEquals(1638.4f, engine.getQValuesFromScore(engine.scoreUserEv(1L, null, null)), ASSET_ERROR_MARGIN);
 		assertEquals(engine.getScoreFromQValues(1638.4f), engine.scoreUserEv(1L, null, null), ASSET_ERROR_MARGIN);
@@ -11727,7 +11934,24 @@ public class MarkovEngineTest extends TestCase {
 		int settledState = 1;
 		engine.addTrade(null, new Date(), "User 1 sets P(E|B=1) = [.5,.5]", 1L, 
 				0x0EL, newValues , Collections.singletonList(0x0BL), Collections.singletonList(settledState), false);
+		
+		// get the expected score per node to be resolved for each user
+		Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0BL, null, null).get(settledState));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0BL, null, null).get(settledState));
+		}
+
 		engine.resolveQuestion(null, new Date(), 0x0BL, settledState);
+		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		List<QuestionEvent> marginalHistoryAfterResolution = engine.getQuestionHistory(0x0EL, null, null);
 		assertEquals(marginalHistoryBeforeResolution.size() + 2, marginalHistoryAfterResolution.size());	// +2 because of the last addTrade and resolveQuestion
@@ -11883,11 +12107,36 @@ public class MarkovEngineTest extends TestCase {
 		
 		// resolve all questions and test again
 		settledState = (Math.random() < .5)?0:1;
+		
+		// get the expected score per D for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			List<Long> assumptionIds = new ArrayList<Long>();
+			assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add(settledState); assumedStates.add(settledState);
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, assumptionIds, assumedStates).get(settledState));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			List<Long> assumptionIds = new ArrayList<Long>();
+			assumptionIds.add(0x0EL); assumptionIds.add(0x0FL);
+			List<Integer> assumedStates = new ArrayList<Integer>();
+			assumedStates.add(settledState); assumedStates.add(settledState);
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, assumptionIds, assumedStates).get(settledState));
+		}
+		
 		transactionKey = engine.startNetworkActions();
 		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, settledState);
 		engine.resolveQuestion(transactionKey, new Date(), 0x0EL, settledState);
 		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, settledState);
 		engine.commitNetworkActions(transactionKey);
+		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// check invalid assumptions returns empty history
 		
@@ -15232,8 +15481,43 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestion(null, new Date(), 1L, 3, null);
 		engine.addQuestion(null, new Date(), 2L, 3, null);
 		engine.addQuestion(null, new Date(), 3L, 3, null);
+		
+		// get the expected score per node to be resolved for each user
+		Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 1L, null, null).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 1L, null, null).get(0));
+		}
+
 		engine.resolveQuestion(null, new Date(), 1, 0);
+		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
+		
+		// get the expected score per node to be resolved for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 2L, null, null).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 2L, null, null).get(0));
+		}
+		
 		engine.resolveQuestion(null, new Date(), 2, 0);
+		
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
+		
 		assertEquals(1f, engine.getProbList(1, null, null).get(0));
 		assertEquals(1f, engine.getProbList(2, null, null).get(0));
 		try {
@@ -15293,13 +15577,46 @@ public class MarkovEngineTest extends TestCase {
 		// 0 - Resolve some question which is not the selected question
 		Map<Long, List<Float>> probMap = engine.getProbLists(null, null, null);
 		assertNotNull(probMap.remove(questionId));
-		engine.resolveQuestion(null, new Date(), probMap.keySet().iterator().next(), (Math.random()<.5)?0:1);
+		
+		int settledState = (Math.random()<.5)?0:1;
+		
+		// get the expected score per node to be resolved for each user
+		Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, probMap.keySet().iterator().next(), null, null).get(settledState));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, probMap.keySet().iterator().next(), null, null).get(settledState));
+		}
+
+		engine.resolveQuestion(null, new Date(), probMap.keySet().iterator().next(), settledState );
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// 1 - Balance question
 		assertTrue(engine.doBalanceTrade(null, new Date(), user + " balances question " + questionId, userNameToIDMap.get(user), questionId, null, null));
 		
 		// 2 - Resolve question
-		assertTrue(engine.resolveQuestion(null, new Date(), questionId, (Math.random()<.5)?0:1));
+		settledState = (Math.random()<.5)?0:1;
+		// get the expected score per node to be resolved for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, questionId, null, null).get(settledState));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, questionId, null, null).get(settledState));
+		}
+		assertTrue(engine.resolveQuestion(null, new Date(), questionId, settledState));
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// 3 - Perform any action which rebuilds the DEF network (e.g. {@link MarkovEngineImpl#addQuestion(Long, Date, long, int, List)})
 		assertTrue(engine.addQuestion(null, new Date(), Long.MIN_VALUE, 2, null));
@@ -15316,14 +15633,45 @@ public class MarkovEngineTest extends TestCase {
 		probMap.remove(questionId);
 		probMap.remove(assumptionIds.get(0));
 		assertFalse(probMap.isEmpty());
-		engine.resolveQuestion(null, new Date(), probMap.keySet().iterator().next(), (Math.random()<.5)?0:1);
+		
+		settledState = (Math.random()<.5)?0:1;
+		// get the expected score per node to be resolved for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, probMap.keySet().iterator().next(), null, null).get(settledState));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, probMap.keySet().iterator().next(), null, null).get(settledState));
+		}
+		engine.resolveQuestion(null, new Date(), probMap.keySet().iterator().next(), settledState);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// 1 - Balance question given assumptions
 		assertTrue(engine.doBalanceTrade(null, new Date(), user + " balances question " + questionId, 
 				userNameToIDMap.get(user), questionId, assumptionIds, Collections.singletonList((Math.random()<.5)?0:1)));
 		
 		// 2 - Resolve assumed question
-		assertTrue(engine.resolveQuestion(null, new Date(), assumptionIds.get(0), (Math.random()<.5)?0:1));
+		settledState = (Math.random()<.5)?0:1;
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, assumptionIds.get(0), null, null).get(settledState));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, assumptionIds.get(0), null, null).get(settledState));
+		}
+		
+		assertTrue(engine.resolveQuestion(null, new Date(), assumptionIds.get(0), settledState));
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// 3 - Perform any action which rebuilds the DEF network (e.g. {@link MarkovEngineImpl#addQuestion(Long, Date, long, int, List)})
 		assertTrue(engine.addQuestion(null, new Date(), Long.MAX_VALUE, 2, null));
@@ -15338,7 +15686,22 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(engine.doBalanceTrade(null, new Date(), user + " balances question " + questionId, userNameToIDMap.get(user), questionId, null, null));
 		
 		// 2 - Resolve question
-		assertTrue(engine.resolveQuestion(null, new Date(), questionId, (Math.random()<.5)?0:1));
+		settledState = (Math.random()<.5)?0:1;
+		// get the expected score per node to be resolved for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, questionId, null, null).get(settledState));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, questionId, null, null).get(settledState));
+		}
+		assertTrue(engine.resolveQuestion(null, new Date(), questionId, settledState));
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// 3 - Perform any action which rebuilds the DEF network (e.g. {@link MarkovEngineImpl#addQuestion(Long, Date, long, int, List)})
 		assertTrue(engine.addQuestion(null, new Date(), Long.MIN_VALUE, 2, null));
@@ -15355,7 +15718,22 @@ public class MarkovEngineTest extends TestCase {
 				userNameToIDMap.get(user), questionId, assumptionIds, Collections.singletonList((Math.random()<.5)?0:1)));
 		
 		// 2 - Resolve assumed question
-		assertTrue(engine.resolveQuestion(null, new Date(), assumptionIds.get(0), (Math.random()<.5)?0:1));
+		settledState = (Math.random()<.5)?0:1;
+		// get the expected score per node to be resolved for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, assumptionIds.get(0), null, null).get(settledState));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, assumptionIds.get(0), null, null).get(settledState));
+		}
+		assertTrue(engine.resolveQuestion(null, new Date(), assumptionIds.get(0), settledState));
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// 3 - Perform any action which rebuilds the DEF network (e.g. {@link MarkovEngineImpl#addQuestion(Long, Date, long, int, List)})
 		assertTrue(engine.addQuestion(null, new Date(), Long.MAX_VALUE, 2, null));
@@ -15372,15 +15750,60 @@ public class MarkovEngineTest extends TestCase {
 		Set<Long> resolved = new HashSet<Long>();
 		
 		if (Math.random() < .5) {
-			assertTrue(engine.resolveQuestion(null, new Date(), 0x0DL, (Math.random()<.5)?0:1));
+			int settledState = (Math.random()<.5)?0:1;
+			// get the expected score per node to be resolved for each user
+			Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+			for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+				// store the expected score of the state to be resolved
+				expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, null, null).get(settledState));
+			}
+			for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+				// store the expected score of the state to be resolved
+				expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, null, null).get(settledState));
+			}
+			assertTrue(engine.resolveQuestion(null, new Date(), 0x0DL, settledState ));
+			// check that the expected before resolve question is the current score
+			for (Long userId : expectedScorePerUsers.keySet()) {
+				assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+			}
 			resolved.add(0x0DL);
 		}
 		if (Math.random() < .5) {
-			assertTrue(engine.resolveQuestion(null, new Date(), 0x0EL, (Math.random()<.5)?0:1));
+			int settledState = (Math.random()<.5)?0:1;
+			// get the expected score per node to be resolved for each user
+			Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+			for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+				// store the expected score of the state to be resolved
+				expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(settledState));
+			}
+			for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+				// store the expected score of the state to be resolved
+				expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(settledState));
+			}
+			assertTrue(engine.resolveQuestion(null, new Date(), 0x0EL, settledState ));
+			// check that the expected before resolve question is the current score
+			for (Long userId : expectedScorePerUsers.keySet()) {
+				assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+			}
 			resolved.add(0x0EL);
 		}
 		if (Math.random() < .5) {
-			assertTrue(engine.resolveQuestion(null, new Date(), 0x0FL, (Math.random()<.5)?0:1));
+			int settledState = (Math.random()<.5)?0:1;
+			// get the expected score per node to be resolved for each user
+			Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+			for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+				// store the expected score of the state to be resolved
+				expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0FL, null, null).get(settledState));
+			}
+			for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+				// store the expected score of the state to be resolved
+				expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0FL, null, null).get(settledState));
+			}
+			assertTrue(engine.resolveQuestion(null, new Date(), 0x0FL, settledState ));
+			// check that the expected before resolve question is the current score
+			for (Long userId : expectedScorePerUsers.keySet()) {
+				assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+			}
 			resolved.add(0x0FL);
 		}
 		
@@ -15466,7 +15889,22 @@ public class MarkovEngineTest extends TestCase {
 		this.createDEFNetIn1Transaction(userNameToIDMap);
 		
 		// make sure the export works with resolved questions
+		// get the expected score per node to be resolved for each user
+		Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0X0DL, null, null).get(1));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0X0DL, null, null).get(1));
+		}
+
 		engine.resolveQuestion(null, new Date(), 0X0DL, 1);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		try {
 			engine.setIO(new NetIO());
@@ -18281,8 +18719,21 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(101.49, engine.scoreUserEv(9, null, null), ASSET_ERROR_MARGIN);
 	        	
 		// iteration 10
-//		 resolveQuestion(questionId=2,settledState=0)
+		// get the expected score per node to be resolved for each user
+		Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 2L, null, null).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 2L, null, null).get(0));
+		}
 		engine.resolveQuestion(null, new Date(), 2L, 0);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		
 		
@@ -18347,9 +18798,22 @@ public class MarkovEngineTest extends TestCase {
 //		=============== Iteration#13, user3, (N6|N5,N8)
 //		getEditLimits(userId=3,questionId=6,questionState=0,assumptionIds=[5, 8],assumedStates=[2, 1])=[0.19670908, 0.6967091]
 		
-		
-//		resolveQuestion(questionId=6,settledState=0)
+		// get the expected score per node to be resolved for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 6L, null, null).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 6L, null, null).get(0));
+		}
+
 		engine.resolveQuestion(null, new Date(), 6L, 0);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		
 //		getProbLists(questionIds=null,assumptionIds=null,assumedStates=null)={0=[0.49999994, 0.50000006], 1=[0.41622594, 0.5837741], 2=[1.0, 0.0], 3=[0.620605, 0.379395], 4=[0.61241597, 0.38758403], 5=[0.26421338, 0.34479752, 0.39098936], 6=[1.0000002, 0.0], 7=[0.49992394, 0.5000763], 8=[0.48223865, 0.5177616], 9=[0.5312502, 0.46874982]}
@@ -18394,9 +18858,22 @@ public class MarkovEngineTest extends TestCase {
 		
 //		getEditLimits(userId=1,questionId=0,questionState=1,assumptionIds=[1],assumedStates=[0])=[0.1700802, 0.8784019]
 		
-		
-//		resolveQuestion(questionId=0,settledState=1)
+		// get the expected score per node to be resolved for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0L, null, null).get(1));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0L, null, null).get(1));
+		}
+
 		engine.resolveQuestion(null, new Date(), 0L, 1);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		
 //		getProbLists(questionIds=null,assumptionIds=null,assumedStates=null)={0=[0.0, 1.0], 1=[0.48541, 0.51459], 2=[1.0, 0.0], 3=[0.620605, 0.3793951], 4=[0.6237807, 0.37621933], 5=[0.26427856, 0.34488264, 0.39108586], 6=[1.0002471, 0.0], 7=[0.5000473, 0.50019974], 8=[0.4823577, 0.5178894], 9=[0.5312502, 0.46874982]}
@@ -19008,7 +19485,23 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(.5, probList.get(3), PROB_ERROR_MARGIN);
 		
 		// resolve E, so that we have at least 1 clique with only D
-		engine.resolveQuestion(null, new Date(), 0x0EL, (Math.random()<.5)?0:1);
+		int settledState = (Math.random()<.5)?0:1;
+		
+		// get the expected score per node to be resolved for each user
+		Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(settledState ));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(settledState));
+		}
+		engine.resolveQuestion(null, new Date(), 0x0EL, settledState);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// balance D, which is in 2 cliques
 		engine.doBalanceTrade(null, new Date(), "User 1 balances D", 1L, 0x0DL, null, null);
@@ -19035,7 +19528,22 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(cashPerState.get(0), cashPerState.get(1), ASSET_ERROR_MARGIN);
 		
 		// now, resolve F, so that we have 2 cliques with only D in them
-		engine.resolveQuestion(null, new Date(), 0x0FL, (Math.random()<.5)?0:1);
+		settledState = (Math.random()<.5)?0:1;
+		// get the expected score per node to be resolved for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0FL, null, null).get(settledState));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0FL, null, null).get(settledState));
+		}
+		engine.resolveQuestion(null, new Date(), 0x0FL, settledState);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// balance D, which is in 2 cliques
 		engine.doBalanceTrade(null, new Date(), "User 2 balances D", 2L, 0x0DL, null, null);
@@ -19283,7 +19791,22 @@ public class MarkovEngineTest extends TestCase {
 		
 		// resolve one of the parents of D
 		int resolvedStateE = (Math.random()<0.5)?0:1;
+		// get the expected score per node to be resolved for each user
+		Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(resolvedStateE));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(resolvedStateE));
+		}
+
 		engine.resolveQuestion(null, new Date(), 0x0EL, resolvedStateE);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that E was resolved
 		assertEquals(1, engine.getResolvedQuestions().size());
@@ -20574,7 +21097,22 @@ public class MarkovEngineTest extends TestCase {
 		questionHistory = engine.getQuestionHistory(0x0EL, null, null);
 		assertEquals(1, questionHistory.size());
 		
+		// get the expected score per node to be resolved for each user
+		Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(0));
+		}
+
 		engine.resolveQuestion(null, new Date(), 0x0EL, 0);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// make sure the history did change for all questions
 		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
@@ -20698,8 +21236,23 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(2, (int) map.keySet().iterator().next());
 		assertEquals(3, (int) map.get(2));
 		
+		// get the expected score per node to be resolved for each user
+		Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, null, null).get(0));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, null, null).get(0));
+		}
+
 		// do the same test after resolving D (which is the separator)
 		engine.resolveQuestion(null, new Date(), 0x0DL, 0);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// extract the statistics
 		statistics = engine.getNetStatistics();
@@ -21894,8 +22447,23 @@ public class MarkovEngineTest extends TestCase {
 			
 		}
 		
+		// get the expected score per node to be resolved for each user
+		Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(1));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(1));
+		}
+
 		// settle/resolve question E on state 1 (so that assuming state 0 will be invalid)
 		engine.resolveQuestion(null, new Date(), 0x0EL, 1);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
 		
 		// check the methods after settlement
 		
@@ -22243,6 +22811,440 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(questionHistory.size() > 1);
 		questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
 		assertTrue(questionHistory.size() > 1);
+	}
+	
+	/**
+	 * Tests {@link ScoreSummary#getCashContributionPerResolvedQuestion()}
+	 * of {@link MarkovEngineImpl#getScoreSummaryObject(long, Long, List, List)},
+	 * and respective entry in {@link MarkovEngineImpl#getScoreSummary(long, Long, List, List)}
+	 */
+	public final void testScoreSummayGetCashContributionPerResolvedQuestion() {
+		engine.setToStoreCashBeforeResolveQuestion(true);
+		
+		// create DEF net and do some trades
+		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
+		this.createDEFNetIn1Transaction(userNameToIDMap);
+		
+		
+		// store the cash of all users before resolving question
+		Map<Long, Float> userCashBeforeResolving1stQuestion = new HashMap<Long, Float>();
+		for (Long userId : userNameToIDMap.values()) {
+			userCashBeforeResolving1stQuestion.put(userId, engine.getCash(userId, null, null));
+		}
+		
+		// randomly decide which question to resolve
+		long resolvedQuestionID1 = (Math.random() < .3)?0x0DL:((Math.random() < .5)?0x0EL:0x0FL);
+		int settledState =  (Math.random() < .5)?0:1;
+		
+		// get the expected score per node to be resolved for each user
+		Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, resolvedQuestionID1, null, null).get(settledState));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, resolvedQuestionID1, null, null).get(settledState));
+		}
+
+		// resolve question
+		engine.resolveQuestion(null, new Date(), resolvedQuestionID1,settledState);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
+		
+		// check that the summary of cash contribution per resolved question is consistent with the cash before and after resolution
+		Map<Long, Float> contributionOfFirstSettlement = new HashMap<Long, Float>();	// store what was cash before - after, so that we can compare later
+		for (Long userId : userNameToIDMap.values()) {
+			// this is the main method to test
+			ScoreSummary scoreSummaryObject = engine.getScoreSummaryObject(userId, null, null, null);
+			// the same method, but filtered exactly by the resolved question
+			ScoreSummary scoreSummaryObjectFilteredByQuestion = engine.getScoreSummaryObject(userId, resolvedQuestionID1, null, null);
+			
+			// obtain current cash
+			float currentCash = engine.getCash(userId, null, null);
+			
+			// store current contribution, which is the current cash minus cash before resolution
+			contributionOfFirstSettlement.put(userId, currentCash - userCashBeforeResolving1stQuestion.get(userId));
+			
+			// check that only 1 question has resolved so far
+			if (Math.abs(contributionOfFirstSettlement.get(userId)) >= PROB_ERROR_MARGIN) {
+				assertEquals(1, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
+				assertEquals(1, scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().size());
+				// check that resolved question is resolvedQuestionID1
+				assertEquals(resolvedQuestionID1, scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet().iterator().next().longValue());
+				assertEquals(resolvedQuestionID1, scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().keySet().iterator().next().longValue());
+				assertNotNull(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1));
+				assertNotNull(scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1));
+				// check that contribution obtained from score summary equals to current cash minus cash before resolution
+				assertEquals(contributionOfFirstSettlement.get(userId), scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+				assertEquals(contributionOfFirstSettlement.get(userId), scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+				
+				float sum = userCashBeforeResolving1stQuestion.get(userId);
+				for (Float gain : scoreSummaryObject.getCashContributionPerResolvedQuestion().values()) {
+					sum += gain;
+				}
+				assertEquals("User = " + userId, currentCash, sum, ASSET_ERROR_MARGIN);
+			} else {
+				assertTrue( scoreSummaryObject.getCashContributionPerResolvedQuestion().isEmpty());
+				assertTrue( scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().isEmpty());
+			}
+			
+			// test cash before resolution
+			// only 1 question resolved so far
+			assertEquals(1, scoreSummaryObject.getCashBeforeResolvedQuestion().size());
+			assertEquals(1, scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().size());
+			// check content
+			assertEquals(userCashBeforeResolving1stQuestion.get(userId), scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+			assertEquals(userCashBeforeResolving1stQuestion.get(userId), scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+			assertEquals(currentCash, scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1) 
+					+ ((scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1) == null)?0:scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1)),
+					PROB_ERROR_MARGIN);
+			assertEquals(currentCash, 
+					scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1) 
+					+ ((scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1)==null)?0:scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1)),
+					PROB_ERROR_MARGIN);
+			
+			// TODO also check deprecated methods
+//			// this is a deprecated method, but we still need to test it
+//			List<Properties> scoreSummary = engine.getScoreSummary(userId, null, null, null);
+//			// the same method, but filtered exactly by the resolved question
+//			List<Properties> scoreSummaryFilteredByQuestion = engine.getScoreSummary(userId, resolvedQuestionID1, null, null);
+		}
+		
+		// store the cash of all users before resolving next question
+		HashMap<Long, Float> userCashBeforeResolving2ndQuestion = new HashMap<Long, Float>();
+		for (Long userId : userNameToIDMap.values()) {
+			userCashBeforeResolving2ndQuestion.put(userId, engine.getCash(userId, null, null));
+		}
+		
+		// randomly decide another question to resolve
+		long resolvedQuestionID2 = (Math.random() < .3)?0x0DL:((Math.random() < .5)?0x0EL:0x0FL);
+		while(resolvedQuestionID1 == resolvedQuestionID2) {
+			resolvedQuestionID2 = (Math.random() < .3)?0x0DL:((Math.random() < .5)?0x0EL:0x0FL);
+		}
+		
+		settledState = (Math.random() < .5)?0:1;
+		// get the expected score per node to be resolved for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, resolvedQuestionID2, null, null).get(settledState));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, resolvedQuestionID2, null, null).get(settledState));
+		}
+
+		// resolve new question
+		engine.resolveQuestion(null, new Date(), resolvedQuestionID2, settledState);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
+		
+		// check that the summary of cash contribution per resolved question is consistent with the cash before and after resolution
+		Map<Long, Float> contributionOfSecondSettlement = new HashMap<Long, Float>();	// store what was cash before - after, so that we can compare later
+		for (Long userId : userNameToIDMap.values()) {
+			// obtain current cash
+			float currentCash = engine.getCash(userId, null, null);
+			
+			// store last contribution, which is the current cash minus cash before last resolution
+			contributionOfSecondSettlement.put(userId, currentCash - userCashBeforeResolving2ndQuestion.get(userId));
+			
+			// this is the main method to test
+			ScoreSummary scoreSummaryObject = engine.getScoreSummaryObject(userId, null, null, null);
+			
+			// calculate how many gains the user had
+			int numGains = 0;
+			if (Math.abs(contributionOfFirstSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				numGains++;
+			}
+			if (Math.abs(contributionOfSecondSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				numGains++;
+			}
+			
+			// check that 2 questions have resolved so far
+			assertEquals(numGains, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
+			
+			// check that resolved question contains questions resolved so far and check that contribution obtained from score summary equals to current cash minus cash before resolution, for all considered questions
+			if (Math.abs(contributionOfFirstSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().containsKey(resolvedQuestionID1));
+				assertEquals(contributionOfFirstSettlement.get(userId), scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+			}
+			if (Math.abs(contributionOfSecondSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().containsKey(resolvedQuestionID2));
+				assertNotNull(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID2));
+				assertEquals(contributionOfSecondSettlement.get(userId), scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+			}
+			
+
+			// test cash before resolution
+			assertEquals(2, scoreSummaryObject.getCashBeforeResolvedQuestion().size());
+			assertEquals(userCashBeforeResolving1stQuestion.get(userId), scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+			assertEquals(userCashBeforeResolving2ndQuestion.get(userId), scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+			assertEquals(currentCash, 
+					scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1) 
+					+ ((scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1)==null)?0:scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1))
+					+ ((scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID2)==null)?0:scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID2)),
+					PROB_ERROR_MARGIN);
+			assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1) 
+					+ ((scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1)==null)?0:scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1)),
+					scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID2),
+					PROB_ERROR_MARGIN);
+			
+			
+			
+			// the same method, but filtered exactly by the resolved question
+			
+			// if we filtered by question ID, then there can only be 1 question. Check it
+			ScoreSummary scoreSummaryObjectFilteredByQuestion = engine.getScoreSummaryObject(userId, resolvedQuestionID1, null, null);
+			if (Math.abs(contributionOfFirstSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				assertTrue(scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().containsKey(resolvedQuestionID1));
+				assertFalse(scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().containsKey(resolvedQuestionID2));
+				assertNotNull(scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1));
+				assertEquals(contributionOfFirstSettlement.get(userId), scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+			} else {
+				assertFalse(engine.getScoreSummaryObject(userId, resolvedQuestionID1, null, null).getCashContributionPerResolvedQuestion().containsKey(resolvedQuestionID1));
+			}
+			// test cash before resolution
+			assertEquals(1, scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().size());
+			assertEquals(userCashBeforeResolving1stQuestion.get(userId), scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+			assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1), scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+			
+			// filter by the other question too
+			scoreSummaryObjectFilteredByQuestion = engine.getScoreSummaryObject(userId, resolvedQuestionID2, null, null);
+			if (Math.abs(contributionOfSecondSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				assertFalse(scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().containsKey(resolvedQuestionID1));
+				assertTrue(scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().containsKey(resolvedQuestionID2));
+				assertNotNull(scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().get(resolvedQuestionID2));
+				assertEquals(contributionOfSecondSettlement.get(userId), scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+			} else {
+				assertFalse(engine.getScoreSummaryObject(userId, resolvedQuestionID1, null, null).getCashContributionPerResolvedQuestion().containsKey(resolvedQuestionID2));
+			}
+			// test cash before resolution
+			assertEquals(1, scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().size());
+			assertEquals(userCashBeforeResolving2ndQuestion.get(userId), scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+			assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID2), scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+			
+			// check consistency about sum of gains
+			float sum = userCashBeforeResolving1stQuestion.get(userId);
+			for (Float gain : scoreSummaryObject.getCashContributionPerResolvedQuestion().values()) {
+				sum += gain;
+			}
+			assertEquals("User = " + userId, currentCash, sum, ASSET_ERROR_MARGIN);
+			
+			// TODO also check deprecated methods
+			
+//			// this is a deprecated method, but we still need to test it
+//			List<Properties> scoreSummary = engine.getScoreSummary(userId, null, null, null);
+//			// the same method, but filtered exactly by the resolved question
+//			List<Properties> scoreSummaryFilteredByQuestion = engine.getScoreSummary(userId, resolvedQuestionID1, null, null);
+		}
+		
+		// store the cash of all users before resolving next question
+		HashMap<Long, Float> userCashBeforeResolving3rdQuestion = new HashMap<Long, Float>();
+		for (Long userId : userNameToIDMap.values()) {
+			userCashBeforeResolving3rdQuestion.put(userId, engine.getCash(userId, null, null));
+		}
+		
+		// decide last question to resolve, which must be different from the previous questions
+		long resolvedQuestionID3 = 0x0DL;
+		while(resolvedQuestionID1 == resolvedQuestionID3 || resolvedQuestionID2 == resolvedQuestionID3) {
+			resolvedQuestionID3++;
+		}
+		assertTrue(0x0DL <= resolvedQuestionID3 && resolvedQuestionID3 <= 0x0FL);
+		
+		settledState = (Math.random() < .5)?0:1;
+		// get the expected score per node to be resolved for each user
+		expectedScorePerUsers = new HashMap<Long, Float>();
+		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, resolvedQuestionID3, null, null).get(settledState));
+		}
+		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
+			// store the expected score of the state to be resolved
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, resolvedQuestionID3, null, null).get(settledState));
+		}
+		
+		// resolve new question
+		engine.resolveQuestion(null, new Date(), resolvedQuestionID3, settledState);
+		// check that the expected before resolve question is the current score
+		for (Long userId : expectedScorePerUsers.keySet()) {
+			assertEquals("User=" + userId, expectedScorePerUsers.get(userId), engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		}
+		
+		// check that the summary of cash contribution per resolved question is consistent with the cash before and after resolution
+		Map<Long, Float> contributionOfThirdSettlement = new HashMap<Long, Float>();	// store what was cash before - after, so that we can compare later
+		for (Long userId : userNameToIDMap.values()) {
+			// obtain current cash
+			float currentCash = engine.getCash(userId, null, null);
+			
+			// store last contribution, which is the current cash minus cash before last resolution
+			contributionOfThirdSettlement.put(userId, currentCash - userCashBeforeResolving3rdQuestion.get(userId));
+			
+			// this is the main method to test
+			ScoreSummary scoreSummaryObject = engine.getScoreSummaryObject(userId, null, null, null);
+			
+			// calculate how many gains the user had
+			int numGains = 0;
+			if (Math.abs(contributionOfFirstSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				numGains++;
+			}
+			if (Math.abs(contributionOfSecondSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				numGains++;
+			}
+			if (Math.abs(contributionOfThirdSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				numGains++;
+			}
+			
+			// check that 3 (all) questions have resolved so far
+			assertEquals(numGains, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
+			
+			// check that resolved question contains questions resolved so far and check that contribution obtained from score summary equals to current cash minus cash before resolution, for all considered questions
+			if (Math.abs(contributionOfFirstSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().containsKey(resolvedQuestionID1));
+				assertEquals(contributionOfFirstSettlement.get(userId), scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+			}
+			if (Math.abs(contributionOfSecondSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().containsKey(resolvedQuestionID2));
+				assertNotNull(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID2));
+				assertEquals(contributionOfSecondSettlement.get(userId), scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+			}
+			if (Math.abs(contributionOfThirdSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().containsKey(resolvedQuestionID3));
+				assertNotNull(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID3));
+				assertEquals(contributionOfThirdSettlement.get(userId), scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID3),PROB_ERROR_MARGIN);
+			}
+			
+			// test cash before resolution
+			assertEquals(3, scoreSummaryObject.getCashBeforeResolvedQuestion().size());
+			assertEquals(userCashBeforeResolving1stQuestion.get(userId), scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+			assertEquals(userCashBeforeResolving2ndQuestion.get(userId), scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+			assertEquals(userCashBeforeResolving3rdQuestion.get(userId), scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID3),PROB_ERROR_MARGIN);
+			assertEquals(currentCash, 
+					scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1) 
+					+ ((scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1)==null)?0:scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1))
+					+ ((scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID2)==null)?0:scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID2))
+					+ ((scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID3)==null)?0:scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID3)),
+					PROB_ERROR_MARGIN);
+			assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1) 
+					+ ((scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1)==null)?0:scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1)),
+					scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID2),
+					PROB_ERROR_MARGIN);
+			assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID2) 
+					+ ((scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID2)==null)?0:scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestionID2)),
+					scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID3),
+					PROB_ERROR_MARGIN);
+			
+			
+			// the same method, but filtered exactly by the resolved question
+			// if we filtered by question ID, then there can only be 1 question. Check it
+			ScoreSummary scoreSummaryObjectFilteredByQuestion = engine.getScoreSummaryObject(userId, resolvedQuestionID1, null, null);
+			if (Math.abs(contributionOfFirstSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				assertEquals(1, scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().size());
+				assertEquals(contributionOfFirstSettlement.get(userId), scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+			} else {
+				assertTrue(engine.getScoreSummaryObject(userId, resolvedQuestionID1, null, null).getCashContributionPerResolvedQuestion().isEmpty());
+			}
+			// test cash before resolution
+			assertEquals(1, scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().size());
+			assertEquals(userCashBeforeResolving1stQuestion.get(userId), scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+			assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1), scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+			
+			
+			// check next question
+			scoreSummaryObjectFilteredByQuestion = engine.getScoreSummaryObject(userId, resolvedQuestionID2, null, null);
+			if (Math.abs(contributionOfSecondSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				assertEquals(1, scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().size());
+				assertEquals(contributionOfSecondSettlement.get(userId), scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+			} else {
+				assertTrue(engine.getScoreSummaryObject(userId, resolvedQuestionID2, null, null).getCashContributionPerResolvedQuestion().isEmpty());
+			}
+			// test cash before resolution
+			assertEquals(1, scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().size());
+			assertEquals(userCashBeforeResolving2ndQuestion.get(userId), scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+			assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID2), scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+			
+			// check next question
+			scoreSummaryObjectFilteredByQuestion = engine.getScoreSummaryObject(userId, resolvedQuestionID3, null, null);
+			if (Math.abs(contributionOfThirdSettlement.get(userId)) > PROB_ERROR_MARGIN) {
+				assertEquals(1, scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().size());
+				assertEquals(contributionOfThirdSettlement.get(userId), scoreSummaryObjectFilteredByQuestion.getCashContributionPerResolvedQuestion().get(resolvedQuestionID3),PROB_ERROR_MARGIN);
+			} else {
+				assertTrue(engine.getScoreSummaryObject(userId, resolvedQuestionID3, null, null).getCashContributionPerResolvedQuestion().isEmpty());
+			}
+			// test cash before resolution
+			assertEquals(1, scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().size());
+			assertEquals(userCashBeforeResolving3rdQuestion.get(userId), scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().get(resolvedQuestionID3),PROB_ERROR_MARGIN);
+			assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID3), scoreSummaryObjectFilteredByQuestion.getCashBeforeResolvedQuestion().get(resolvedQuestionID3),PROB_ERROR_MARGIN);
+			
+			
+			// check consistency about sum of gains
+			float sum = userCashBeforeResolving1stQuestion.get(userId);
+			for (Float gain : scoreSummaryObject.getCashContributionPerResolvedQuestion().values()) {
+				sum += gain;
+			}
+			assertEquals("User = " + userId, currentCash, sum, ASSET_ERROR_MARGIN);
+			
+			// TODO also check deprecated methods
+			
+//			// this is a deprecated method, but we still need to test it
+//			List<Properties> scoreSummary = engine.getScoreSummary(userId, null, null, null);
+//			// the same method, but filtered exactly by the resolved question
+//			List<Properties> scoreSummaryFilteredByQuestion = engine.getScoreSummary(userId, resolvedQuestionID1, null, null);
+		}
+		
+		// check scoreSummaryObject.getCashContributionPerResolvedQuestion() and scoreSummaryObject.userCashBeforeResolving3rdQuestion() for uninitialized users
+		// create an uninitialized user
+		long userId = Long.MAX_VALUE;
+		float initialCash = 666f;
+		engine.addCash(null, new Date(), Long.MAX_VALUE, initialCash , "Forced creation of an uninitialized user by adding 666 cash to user" + userId);
+		
+		// test cash before resolution of uninitialized users
+		ScoreSummary scoreSummaryObject = engine.getScoreSummaryObject(userId, null, null, null);
+		assertEquals(0, scoreSummaryObject.getCashBeforeResolvedQuestion().size());
+//		assertEquals(initialCash, scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+//		assertEquals(initialCash, scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+//		assertEquals(initialCash, scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID3),PROB_ERROR_MARGIN);
+		assertEquals(0, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
+		// check filtered ones
+		scoreSummaryObject = engine.getScoreSummaryObject(userId, resolvedQuestionID1, null, null);
+		assertEquals(0, scoreSummaryObject.getCashBeforeResolvedQuestion().size());
+		assertEquals(0, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
+//		assertEquals(initialCash, scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+		scoreSummaryObject = engine.getScoreSummaryObject(userId, resolvedQuestionID2, null, null);
+		assertEquals(0, scoreSummaryObject.getCashBeforeResolvedQuestion().size());
+		assertEquals(0, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
+//		assertEquals(initialCash, scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+		scoreSummaryObject = engine.getScoreSummaryObject(userId, resolvedQuestionID3, null, null);
+		assertEquals(0, scoreSummaryObject.getCashBeforeResolvedQuestion().size());
+		assertEquals(0, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
+//		assertEquals(initialCash, scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID3),PROB_ERROR_MARGIN);
+		
+		// test cash before resolution of a user never used
+		userId--;
+		scoreSummaryObject = engine.getScoreSummaryObject(userId, null, null, null);
+		assertEquals(0, scoreSummaryObject.getCashBeforeResolvedQuestion().size());
+//		assertEquals(0f, scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+//		assertEquals(0f, scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+//		assertEquals(0f, scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID3),PROB_ERROR_MARGIN);
+		assertEquals(0, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
+		// check filtered ones
+		scoreSummaryObject = engine.getScoreSummaryObject(userId, resolvedQuestionID1, null, null);
+		assertEquals(0, scoreSummaryObject.getCashBeforeResolvedQuestion().size());
+		assertEquals(0, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
+//		assertEquals(0f, scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID1),PROB_ERROR_MARGIN);
+		scoreSummaryObject = engine.getScoreSummaryObject(userId, resolvedQuestionID2, null, null);
+		assertEquals(0, scoreSummaryObject.getCashBeforeResolvedQuestion().size());
+		assertEquals(0, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
+//		assertEquals(0f, scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID2),PROB_ERROR_MARGIN);
+		scoreSummaryObject = engine.getScoreSummaryObject(userId, resolvedQuestionID3, null, null);
+		assertEquals(0, scoreSummaryObject.getCashBeforeResolvedQuestion().size());
+		assertEquals(0, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
+//		assertEquals(0f, scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestionID3),PROB_ERROR_MARGIN);
+		
 	}
 	
 }

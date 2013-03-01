@@ -54,15 +54,31 @@ public interface ScoreSummary extends Serializable {
 	List<SummaryContribution> getIntersectionScoreComponents();
 	
 	/**
-	 * If a question resolves, user's cash will change (usually increase).
+	 * If a question resolves, user's cash will change (usually increase or remain unchanged).
 	 * This method returns how much cash a user has gained after a settlement of a question.
 	 * @return how much of cash each resolved question have contributed. The
-	 * key of this map is the question ID, and the value is the ammount of cash gained by
+	 * key of this map is the question ID (of the resolved question), and the value is the amount of cash gained by
 	 * the settlement.
+	 * The map won't contain zero (or values very close to zero) gains (when the cash remained unchanged), 
+	 * so the size of this map may not match with the total quantity of resolved question.
 	 * @see MarkovEngineInterface#resolveQuestion(Long, java.util.Date, long, int)
 	 * @see MarkovEngineInterface#getCash(long, List, List)
+	 * @see #getCashBeforeResolvedQuestion()
 	 */
 	Map<Long, Float> getCashContributionPerResolvedQuestion();
+	
+	/**
+	 * If a question resolves, user's cash will change (usually increase or remain unchanged).
+	 * This method returns how much cash a user had before a settlement of a question.
+	 * By using this data combined with {@link #getCashContributionPerResolvedQuestion()},
+	 * the cash before and after a question settlement can be inferred.
+	 * @return how much of cash user had before the question has resolved. The
+	 * key of this map is the question ID (of the resolved question), and the value is the amount of cash user had at that moment.
+	 * @see MarkovEngineInterface#resolveQuestion(Long, java.util.Date, long, int)
+	 * @see MarkovEngineInterface#getCash(long, List, List)
+	 * @see #getCashContributionPerResolvedQuestion()
+	 */
+	Map<Long, Float> getCashBeforeResolvedQuestion();
 	
 	/**
 	 * This "contribution" is represented in terms of  a collection of nodes and respective states

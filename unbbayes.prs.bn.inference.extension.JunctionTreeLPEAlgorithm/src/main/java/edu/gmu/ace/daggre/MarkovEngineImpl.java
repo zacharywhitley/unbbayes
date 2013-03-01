@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -158,12 +159,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private boolean isToDoFullPreview = false;
 
-	private Map<Long, Set<Long>> tradedQuestionsMap = new HashMap<Long, Set<Long>>();
+	private Map<Long, Set<Long>> tradedQuestionsMap;
 
 	private boolean isToReturnEVComponentsAsScoreSummary = false;
 
 
-	private Map<Long,StatePair> resolvedQuestionsAndNumberOfStates = new HashMap<Long,StatePair>();
+	private Map<Long,StatePair> resolvedQuestionsAndNumberOfStates;
 
 
 	private boolean isToIntegrateConsecutiveResolutions = true;
@@ -190,7 +191,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 
 
-	private Map<VirtualTradeAction, Set<Long>> virtualTradeToAffectedQuestionsMap = new HashMap<VirtualTradeAction, Set<Long>>();
+	private Map<VirtualTradeAction, Set<Long>> virtualTradeToAffectedQuestionsMap;
 
 	private boolean isToStoreOnlyCliqueChangeHistory = true;
 
@@ -226,7 +227,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private MSeparationUtility mseparationUtility = MSeparationUtility.newInstance();
 
 	/** This is used in lazy user initialization. If user did never trade, but assets were queried, this map will be used. */
-	private Map<Long, Float> uninitializedUserToAssetMap = new HashMap<Long, Float>();
+	private Map<Long, Float> uninitializedUserToAssetMap;
 
 	/** If true, {@link #previewBalancingTrades(long, long, List, List)}, {@link #previewBalancingTrade(long, long, List, List)}, and
 	 * {@link BalanceTradeNetworkAction#execute()} will also return balancing trades that may result in negative assets*/
@@ -254,7 +255,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	/** If true, cash of each user will be stored when questions are resolved */
 	private boolean isToStoreCashBeforeResolveQuestion = true;
-
+	
+	/** This is a map which stores which user has gained how much cash in what resolved questions. The mapping is: userId -> (questionId -> cash gain). */
+	private Map<Long, Map<Long,Float>> userIdToResolvedQuestionCashGainMap;
+	
+	/** This is a map which stores what was the user's cash before resolved questions. The mapping is: userId -> (questionId -> cash). */
+	private Map<Long, Map<Long,Float>> userIdToResolvedQuestionCashBeforeMap;
+	
+	
 	/**
 	 * Default constructor is protected to allow inheritance.
 	 * Use {@link #getInstance()} to actually instantiate objects of this class.
@@ -449,6 +457,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// map of users loaded lazily
 		setUninitializedUserToAssetMap(new HashMap<Long, Float>());
+		
+		// mapping from resolved (usually deleted afterwards) questions to what where their resolutions and total number of states
+		setResolvedQuestions(new HashMap<Long,StatePair>());
+		
+		// mapping of cash gains per resolved questions
+		setUserIdToResolvedQuestionCashGainMap(new HashMap<Long, Map<Long,Float>>());
+		
+		// mapping of cash before resolved question
+		setUserIdToResolvedQuestionCashBeforeMap(new HashMap<Long, Map<Long,Float>>());
 		
 		return true;
 	}
@@ -2700,11 +2717,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				
 				// do not release lock to global BN until we change all asset nets
 				synchronized (getUserToAssetAwareAlgorithmMap()) {
-					Collection<AssetAwareInferenceAlgorithm> usersToChange = null;
-					
-					// update all stored users
-					usersToChange = getUserToAssetAwareAlgorithmMap().values();
-					
 					synchronized (getDefaultInferenceAlgorithm()) {
 						Node node = getProbabilisticNetwork().getNode(Long.toString(questionId));
 						if (node != null) {
@@ -2726,31 +2738,50 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 					
 					// do not allow getUserToAssetAwareAlgorithmMap() to be changed here. I.e. do not allow new users to be added now
-					for (AssetAwareInferenceAlgorithm algorithm : usersToChange) {
-						IAssetNetAlgorithm assetAlgorithm = algorithm.getAssetPropagationDelegator();
+					for (Entry<Long, AssetAwareInferenceAlgorithm> userIdAndAlgorithm : getUserToAssetAwareAlgorithmMap().entrySet()) {
+						IAssetNetAlgorithm assetAlgorithm = userIdAndAlgorithm.getValue().getAssetPropagationDelegator();
 						synchronized (assetAlgorithm.getAssetNetwork()) {
 							INode assetNode = assetAlgorithm.getAssetNetwork().getNode(Long.toString(questionId));
-//							if (assetNode == null && (assetAlgorithm instanceof AssetPropagationInferenceAlgorithm)) {
-//								// in this algorithm, setAsPermanentEvidence will only use assetNode for name comparison and to check size of states, 
-//								// so we can try using a stub node
-//								assetNode = new Node() {	// a node just for purpose of searching nodes in lists
-//									private static final long serialVersionUID = -2789947150055767730L;
-//									public int getType() { return Node.DECISION_NODE_TYPE; }	 // not important, but mandatory because this is abstract method
-//									public String getName() { return Long.toString(questionId); }// important for search
-//									public int getStatesSize() { return Integer.MAX_VALUE; }	 // important for state size consistency check
-//								};
-//							}
 							if (assetNode != null) {
-								assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap(assetNode, settledState),isToDeleteResolvedNode());
-//								if (!isToDeleteResolvedNode()) {
-//									// delete only from list 
-//									assetAlgorithm.getAssetNetwork().getNodeIndexes().remove(assetNode.getName());
-//									assetAlgorithm.getAssetNetwork().getNodes().remove(assetNode);
-//									assetAlgorithm.getAssetNetwork().getNodesCopy().remove(assetNode);
-//								}
+								if (isToStoreCashBeforeResolveQuestion()) {
+									// update getUserIdToResolvedQuestionCashBeforeMap() and UserIdToResolvedQuestionCashGainMap() by obtaining cash before and after asset update
+									synchronized (getUserIdToResolvedQuestionCashBeforeMap()) {  
+										synchronized (getUserIdToResolvedQuestionCashGainMap()) { 
+											// extract the mapping where we are going to store the cash before
+											Map<Long, Float> questionToCashBefore = getUserIdToResolvedQuestionCashBeforeMap().get(userIdAndAlgorithm.getKey());
+											if (questionToCashBefore == null) {
+												// generate entry if this is the first time
+												questionToCashBefore = new HashMap<Long, Float>();
+											}
+											// extract the mapping where we are going to store the gains
+											Map<Long, Float> questionToGain = getUserIdToResolvedQuestionCashGainMap().get(userIdAndAlgorithm.getKey());
+											if (questionToGain == null) {
+												// generate entry if this is the first time
+												questionToGain = new HashMap<Long, Float>();
+											}
+											// obtain cash before
+											float cashBefore = getCash(userIdAndAlgorithm.getKey(), null, null);
+											// immediately store the cash before
+											questionToCashBefore.put(questionId, cashBefore);
+											getUserIdToResolvedQuestionCashBeforeMap().put(userIdAndAlgorithm.getKey(), questionToCashBefore);
+											// resolve the question in the asset structure of this user
+											assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap(assetNode, settledState),isToDeleteResolvedNode());
+											// obtain the difference between cash before and after.
+											float gain = getCash(userIdAndAlgorithm.getKey(), null, null) - cashBefore;
+											// update the mapping if the difference was "large" enough
+											if (Math.abs(gain) > getProbabilityErrorMargin()) {
+												// put the mapping from question ID (of settled question) to gain from that question
+												questionToGain.put(questionId, gain);
+												getUserIdToResolvedQuestionCashGainMap().put(userIdAndAlgorithm.getKey(), questionToGain);
+											}
+										}
+									}
+								} else {
+									// just update assets in this case
+									assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap(assetNode, settledState),isToDeleteResolvedNode());
+								}
 							} else {
 								try {
-//									Debug.println(getClass(), "Node " + questionId + " is not present in asset net of user " + assetAlgorithm.getAssetNetwork());
 									throw new InexistingQuestionException("Node " + questionId + " is not present in asset net of user " + assetAlgorithm.getAssetNetwork(), questionId);
 								} catch (Throwable t) {
 									t.printStackTrace();
@@ -2933,14 +2964,50 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// Update only the asset nets of the users by using the asset nets + algorithms allocated for each user.
 				// CAUTION: Do not release lock to global BN until we change all asset nets
 				synchronized (getUserToAssetAwareAlgorithmMap()) {
-					// all users shall be changed
-					Collection<AssetAwareInferenceAlgorithm> usersToChange = getUserToAssetAwareAlgorithmMap().values();
-					
 					// do not allow getUserToAssetAwareAlgorithmMap() to be changed here. I.e. do not allow new users to be added now
-					for (AssetAwareInferenceAlgorithm algorithm : usersToChange) {
-						IAssetNetAlgorithm assetAlgorithm = algorithm.getAssetPropagationDelegator();
+					for (Entry<Long, AssetAwareInferenceAlgorithm> userIdAndAlgorithm : getUserToAssetAwareAlgorithmMap().entrySet()) {
+						IAssetNetAlgorithm assetAlgorithm = userIdAndAlgorithm.getValue().getAssetPropagationDelegator();
 						synchronized (assetAlgorithm.getAssetNetwork()) {
-							assetAlgorithm.setAsPermanentEvidence(mapOfEvidences, isToDeleteResolvedNode());
+							if (isToStoreCashBeforeResolveQuestion()) {
+								// update evidence one-by-one and store cash before/after them. Note that cash is only dependent to assets, that's why we can do this after we updated the shared BN
+								for (Entry<INode, Integer> nodeAndEvidence : mapOfEvidences.entrySet()) {
+									// update getUserIdToResolvedQuestionCashBeforeMap() and getUserIdToResolvedQuestionCashGainMap() by obtaining cash before and after asset update
+									synchronized (getUserIdToResolvedQuestionCashBeforeMap()) { 
+										synchronized (getUserIdToResolvedQuestionCashGainMap()) { 
+											// extract the mapping where we are going to store the cash before
+											Map<Long, Float> questionToCashBefore = getUserIdToResolvedQuestionCashBeforeMap().get(userIdAndAlgorithm.getKey());
+											if (questionToCashBefore == null) {
+												// generate entry if this is the first time
+												questionToCashBefore = new HashMap<Long, Float>();
+											}
+											// extract the mapping where we are going to store the gains
+											Map<Long, Float> questionToGain = getUserIdToResolvedQuestionCashGainMap().get(userIdAndAlgorithm.getKey());
+											if (questionToGain == null) {
+												// generate entry if this is the first time
+												questionToGain = new HashMap<Long, Float>();
+											}
+											// obtain cash before
+											float cashBefore = getCash(userIdAndAlgorithm.getKey(), null, null);
+											// immediately store the cash before
+											questionToCashBefore.put(Long.getLong(nodeAndEvidence.getKey().getName()), cashBefore);
+											getUserIdToResolvedQuestionCashBeforeMap().put(userIdAndAlgorithm.getKey(), questionToCashBefore);
+											// resolve the question in the asset structure of this user
+											assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap(nodeAndEvidence.getKey(), nodeAndEvidence.getValue()), isToDeleteResolvedNode());
+											// obtain the difference between cash before and after.
+											float gain = getCash(userIdAndAlgorithm.getKey(), null, null) - cashBefore;
+											// update the mapping if the difference was "large" enough
+											if (Math.abs(gain) > getProbabilityErrorMargin()) {
+												// put the mapping from question ID (of settled question) to gain from that question
+												questionToGain.put(Long.getLong(nodeAndEvidence.getKey().getName()), gain);
+												getUserIdToResolvedQuestionCashGainMap().put(userIdAndAlgorithm.getKey(), questionToGain);
+											}
+										}
+									}
+								}
+							} else {
+								// just update evidences all by once
+								assetAlgorithm.setAsPermanentEvidence(mapOfEvidences, isToDeleteResolvedNode());
+							}
 						}
 					}
 				}
@@ -6917,15 +6984,59 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		}
 		
+		// fill data related to cash before resolving questions. Filter it by questionId if necessary
+		Map<Long, Float> filteredCashBefore = Collections.EMPTY_MAP; 
+		
+		// extract map representing cash of this user before resolving questions
+		synchronized (getUserIdToResolvedQuestionCashBeforeMap()) {
+			Map<Long, Float> cashBeforeResolvedQuestion = getUserIdToResolvedQuestionCashBeforeMap().get(userId);
+			if (cashBeforeResolvedQuestion != null) {
+				if (questionId != null) {
+					// it's filtered by question ID, so return only this entry
+					Float value = cashBeforeResolvedQuestion.get(questionId);
+					if (value != null) {
+						filteredCashBefore = Collections.singletonMap(questionId, value);
+					}
+				} else {// not filtered by question ID, so return all available entries
+					// use a copy, because we do not want to change the original
+					filteredCashBefore = new HashMap<Long, Float>(cashBeforeResolvedQuestion);
+				}
+			}
+		}
+		// prepare a final variable to be used in order to pass it to the anonymous subclass of ScoreSummary
+		final Map<Long, Float> cashBefore = filteredCashBefore;
+		
+		// fill data related to gains in cash per resolved question. Filter cashContributionPerResolvedQuestion by questionId if necessary
+		Map<Long, Float> filteredContribution = Collections.EMPTY_MAP; 
+		// extract map representing gains of this user by resolved question
+		synchronized (getUserIdToResolvedQuestionCashGainMap()) {
+			Map<Long, Float> cashContributionPerResolvedQuestion = getUserIdToResolvedQuestionCashGainMap().get(userId);
+			if (cashContributionPerResolvedQuestion != null) {
+				if (questionId != null) {
+					// it's filtered by question ID, so return only this entry
+					Float value = cashContributionPerResolvedQuestion.get(questionId);
+					if (value != null) {
+						filteredContribution = Collections.singletonMap(questionId, value);
+					}
+				} else {// not filtered by question ID, so return all available entries
+					// use a copy, because we do not want to change the original
+					filteredContribution = new HashMap<Long, Float>(cashContributionPerResolvedQuestion);
+				}
+			}
+			// note: cash of uninitialized users supposedly did not change, so we do not include them.
+		}
+		// prepare a final variable to be used in order to pass it to the anonymous subclass of ScoreSummary
+		final Map<Long, Float> gain = filteredContribution;
+		
 		// integrate all data into one ScoreSummary and return.
 		return new ScoreSummary() {
+			private static final long serialVersionUID = -6182458469603900246L;
 			public float getCash() { return cash; }
 			public float getScoreEV() {return scoreEV; }
 			public List<SummaryContribution> getScoreComponents() { return scoreEVPerStateList; }
 			public List<SummaryContribution> getIntersectionScoreComponents() { return Collections.emptyList(); }
-			public Map<Long, Float> getCashContributionPerResolvedQuestion() {
-				throw new RuntimeException("Not implemented yet");
-			}
+			public Map<Long, Float> getCashContributionPerResolvedQuestion() {return gain; }
+			public Map<Long, Float> getCashBeforeResolvedQuestion() { return cashBefore; }
 		};
 	}
 	
@@ -7054,15 +7165,60 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// obtain the conditional expected score, passing the listener as argument, so that cliqueComponents and sepComponents are filled properly
 		final float scoreEV = this.scoreUserEv(userId, assumptionIds, assumedStates, Collections.singletonList(listener));
 		
+		
+		// fill data related to cash before resolving questions. Filter it by questionId if necessary
+		Map<Long, Float> filteredCashBefore = Collections.EMPTY_MAP; 
+		
+		// extract map representing cash of this user before resolving questions
+		synchronized (getUserIdToResolvedQuestionCashBeforeMap()) {
+			Map<Long, Float> cashBeforeResolvedQuestion = getUserIdToResolvedQuestionCashBeforeMap().get(userId);
+			if (cashBeforeResolvedQuestion != null) {
+				if (questionId != null) {
+					// it's filtered by question ID, so return only this entry
+					Float value = cashBeforeResolvedQuestion.get(questionId);
+					if (value != null) {
+						filteredCashBefore = Collections.singletonMap(questionId, value);
+					}
+				} else {// not filtered by question ID, so return all available entries
+					// use a copy, because we do not want to change the original
+					filteredCashBefore = new HashMap<Long, Float>(cashBeforeResolvedQuestion);
+				}
+			}
+		}
+		// prepare a final variable to be used in order to pass it to the anonymous subclass of ScoreSummary
+		final Map<Long, Float> cashBefore = filteredCashBefore;
+		
+		// fill data related to gains in cash per resolved question. Filter cashContributionPerResolvedQuestion by questionId if necessary
+		Map<Long, Float> filteredContribution = Collections.EMPTY_MAP; 
+		// extract map representing gains of this user by resolved question
+		synchronized (getUserIdToResolvedQuestionCashGainMap()) {
+			Map<Long, Float> cashContributionPerResolvedQuestion = getUserIdToResolvedQuestionCashGainMap().get(userId);
+			if (cashContributionPerResolvedQuestion != null) {
+				if (questionId != null) {
+					// it's filtered by question ID, so return only this entry
+					Float value = cashContributionPerResolvedQuestion.get(questionId);
+					if (value != null) {
+						filteredContribution = Collections.singletonMap(questionId, value);
+					}
+				} else {// not filtered by question ID, so return all available entries
+					// use a copy, because we do not want to change the original
+					filteredContribution = new HashMap<Long, Float>(cashContributionPerResolvedQuestion);
+				}
+			}
+			// note: cash of uninitialized users supposedly did not change, so we do not include them.
+		}
+		// prepare a final variable to be used in order to pass it to the anonymous subclass of ScoreSummary
+		final Map<Long, Float> gain = filteredContribution;
+		
 		// integrate all data into one ScoreSummary and return.
 		return new ScoreSummary() {
+			private static final long serialVersionUID = -7912423075696534526L;
 			public float getCash() { return cash; }
 			public float getScoreEV() {return scoreEV; }
 			public List<SummaryContribution> getScoreComponents() { return cliqueComponents; }
 			public List<SummaryContribution> getIntersectionScoreComponents() { return sepComponents; }
-			public Map<Long, Float> getCashContributionPerResolvedQuestion() {
-				throw new RuntimeException("Not implemented yet");
-			}
+			public Map<Long, Float> getCashContributionPerResolvedQuestion() { return gain;}
+			public Map<Long, Float> getCashBeforeResolvedQuestion() { return cashBefore; }
 		};
 	}
 	
@@ -9557,6 +9713,40 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public void setToStoreCashBeforeResolveQuestion(
 			boolean isToStoreCashBeforeResolveQuestion) {
 		this.isToStoreCashBeforeResolveQuestion = isToStoreCashBeforeResolveQuestion;
+	}
+
+	/**
+	 * This is a map which stores which user has gained how much cash in what resolved questions. The mapping is: userId -> (questionId -> cash gain).
+	 * @return the userIdToResolvedQuestionCashGainMap
+	 */
+	protected Map<Long, Map<Long,Float>> getUserIdToResolvedQuestionCashGainMap() {
+		return userIdToResolvedQuestionCashGainMap;
+	}
+
+	/**
+	 * This is a map which stores which user has gained how much cash in what resolved questions. The mapping is: userId -> (questionId -> cash gain).
+	 * @param userIdToResolvedQuestionCashGainMap the userIdToResolvedQuestionCashGainMap to set
+	 */
+	protected void setUserIdToResolvedQuestionCashGainMap(
+			Map<Long, Map<Long,Float>> userIdToResolvedQuestionCashGainMap) {
+		this.userIdToResolvedQuestionCashGainMap = userIdToResolvedQuestionCashGainMap;
+	}
+
+	/**
+	 * This is a map which stores what was the user's cash before resolved questions. The mapping is: userId -> (questionId -> cash).
+	 * @return the userIdToResolvedQuestionCashBeforeMap
+	 */
+	protected Map<Long, Map<Long,Float>> getUserIdToResolvedQuestionCashBeforeMap() {
+		return userIdToResolvedQuestionCashBeforeMap;
+	}
+
+	/**
+	 * This is a map which stores what was the user's cash before resolved questions. The mapping is: userId -> (questionId -> cash).
+	 * @param userIdToResolvedQuestionCashBeforeMap the userIdToResolvedQuestionCashBeforeMap to set
+	 */
+	protected void setUserIdToResolvedQuestionCashBeforeMap(
+			Map<Long, Map<Long,Float>> userIdToResolvedQuestionCashBeforeMap) {
+		this.userIdToResolvedQuestionCashBeforeMap = userIdToResolvedQuestionCashBeforeMap;
 	}
 
 

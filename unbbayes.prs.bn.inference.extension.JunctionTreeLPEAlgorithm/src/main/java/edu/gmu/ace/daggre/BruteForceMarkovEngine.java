@@ -4,11 +4,11 @@
 package edu.gmu.ace.daggre;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -437,9 +437,6 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 				
 				// do not release lock to global BN until we change all asset nets
 				synchronized (getUserToAssetAwareAlgorithmMap()) {
-					Collection<AssetAwareInferenceAlgorithm> usersToChange = null;
-					// update all stored users
-					usersToChange = getUserToAssetAwareAlgorithmMap().values();
 					
 					synchronized (getDefaultInferenceAlgorithm()) {
 						Node node = getProbabilisticNetwork().getNode(Long.toString(getQuestionId()));
@@ -451,13 +448,49 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 					}
 					
 					// do not allow getUserToAssetAwareAlgorithmMap() to be changed here. I.e. do not allow new users to be added now
-					for (AssetAwareInferenceAlgorithm algorithm : usersToChange) {
+					for (Entry<Long, AssetAwareInferenceAlgorithm> userIdAndAlgorithm : getUserToAssetAwareAlgorithmMap().entrySet()) {
+						AssetAwareInferenceAlgorithm algorithm = userIdAndAlgorithm.getValue();
 						synchronized (algorithm.getAssetNetwork()) {
 							Node assetNode = algorithm.getAssetNetwork().getNode(Long.toString(getQuestionId()));
 							if (assetNode == null ) {
 								throw new InexistingQuestionException("Node " + getQuestionId() + " is not present in asset net of user " + algorithm.getAssetNetwork(), getQuestionId());
 							}
-							algorithm.setAsPermanentEvidence(assetNode, getSettledState(),isToDeleteResolvedNode());
+							if (isToStoreCashBeforeResolveQuestion()) {
+								// update getUserIdToResolvedQuestionCashBeforeMap() and UserIdToResolvedQuestionCashGainMap() by obtaining cash before and after asset update
+								synchronized (getUserIdToResolvedQuestionCashBeforeMap()) {  
+									synchronized (getUserIdToResolvedQuestionCashGainMap()) { 
+										// extract the mapping where we are going to store the cash before
+										Map<Long, Float> questionToCashBefore = getUserIdToResolvedQuestionCashBeforeMap().get(userIdAndAlgorithm.getKey());
+										if (questionToCashBefore == null) {
+											// generate entry if this is the first time
+											questionToCashBefore = new HashMap<Long, Float>();
+										}
+										// extract the mapping where we are going to store the gains
+										Map<Long, Float> questionToGain = getUserIdToResolvedQuestionCashGainMap().get(userIdAndAlgorithm.getKey());
+										if (questionToGain == null) {
+											// generate entry if this is the first time
+											questionToGain = new HashMap<Long, Float>();
+										}
+										// obtain cash before
+										float cashBefore = getCash(userIdAndAlgorithm.getKey(), null, null);
+										// immediately store the cash before
+										questionToCashBefore.put(getQuestionId(), cashBefore);
+										getUserIdToResolvedQuestionCashBeforeMap().put(userIdAndAlgorithm.getKey(), questionToCashBefore);
+										// resolve the question in the asset structure of this user
+										algorithm.setAsPermanentEvidence(assetNode, getSettledState(),isToDeleteResolvedNode());
+										// obtain the difference between cash before and after.
+										float gain = getCash(userIdAndAlgorithm.getKey(), null, null) - cashBefore;
+										// update the mapping if the difference was "large" enough
+										if (Math.abs(gain) > getProbabilityErrorMargin()) {
+											// put the mapping from question ID (of settled question) to gain from that question
+											questionToGain.put(getQuestionId(), gain);
+											getUserIdToResolvedQuestionCashGainMap().put(userIdAndAlgorithm.getKey(), questionToGain);
+										}
+									}
+								}
+							} else {
+								algorithm.setAsPermanentEvidence(assetNode, getSettledState(),isToDeleteResolvedNode());
+							}
 						}
 					}
 				}
