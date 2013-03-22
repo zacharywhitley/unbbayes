@@ -37,6 +37,8 @@ import edu.gmu.ace.daggre.MarkovEngineImpl.DummyTradeAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.InexistingQuestionException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.RebuildNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.ResolveQuestionNetworkAction;
+import edu.gmu.ace.daggre.MarkovEngineImpl.StructureChangeNetworkAction;
+import edu.gmu.ace.daggre.MarkovEngineImpl.VirtualTradeAction;
 import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
 
 /**
@@ -2765,6 +2767,13 @@ public class MarkovEngineTest extends TestCase {
 		
 		// get history before transaction, so that we can make sure new transaction is not added into history
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
+		
 		
 		// check that final min-q of Tom is 20
 		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
@@ -3630,6 +3639,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that in the history, the assumption E was ignored
 		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertNotNull(questionHistory);
 		assertFalse(questionHistory.isEmpty());
 		AddTradeNetworkAction action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
@@ -3678,6 +3693,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that in the history, the assumption A was ignored
 		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertNotNull(questionHistory);
 		assertFalse(questionHistory.isEmpty());
 		action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
@@ -6413,6 +6434,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// get history before transaction, so that we can make sure new transaction is not added into history
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		
 		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
 		transactionKey = engine.startNetworkActions();
@@ -8066,6 +8093,10 @@ public class MarkovEngineTest extends TestCase {
 		HashSet<BalanceTradeNetworkAction> balanceTradesInHistory = new HashSet<MarkovEngineImpl.BalanceTradeNetworkAction>();
 		for (Long questionId : new HashSet<Long>(userToQuestionToBalanceMap.values())) {
 			for (QuestionEvent event : engine.getQuestionHistory(questionId, null, null)) {
+				if (!(event instanceof StructureChangeNetworkAction)
+						&& !(event.getQuestionId().longValue() != questionId)) {
+					assertNotNull(event.getUserId());
+				}
 				if (event instanceof BalanceTradeNetworkAction) {
 					balanceTradesInHistory.add((BalanceTradeNetworkAction) event);
 				}
@@ -8111,6 +8142,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that in the history, the assumption F was ignored
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0EL, null, null);
+		for (QuestionEvent qe : questionHistory) {
+			if (!(qe instanceof StructureChangeNetworkAction)
+					&& !(qe.getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(qe.getUserId());
+			}
+		}
 		assertNotNull(questionHistory);
 		assertFalse(questionHistory.isEmpty());
 		BalanceTradeNetworkAction action = (BalanceTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
@@ -8807,6 +8844,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// history and score detail/summary can be accessed normally
 		assertFalse(engine.getQuestionHistory((long) 0x0D, null, null).isEmpty());
+		for (QuestionEvent questionEvent : engine.getQuestionHistory(0x0DL, null, null)) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertFalse(engine.getScoreDetails(userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy"), (long)0x0D, null, null).isEmpty());
 		try {
 			assertNotNull(engine.getScoreSummary(userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy"), (long)0x0D, null, null));
@@ -9400,6 +9443,10 @@ public class MarkovEngineTest extends TestCase {
 		questionHistory.addAll(engine.getQuestionHistory((long)0x0F, null, null));
 		List<AddTradeNetworkAction> ret = new ArrayList<MarkovEngineImpl.AddTradeNetworkAction>();
 		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
 			if (questionEvent instanceof AddTradeNetworkAction
 					&& !(questionEvent instanceof DummyTradeAction)) {
 				// consider only direct trades
@@ -11243,20 +11290,44 @@ public class MarkovEngineTest extends TestCase {
 		int sum = engine.getQuestionHistory(null, null, null).size();
 		// there were 4 addCash
 		assertEquals(4, engine.getQuestionHistory(null, null, null).size());
+		for (QuestionEvent questionEvent : engine.getQuestionHistory(null, null, null)) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !( (questionEvent instanceof VirtualTradeAction) && (((VirtualTradeAction)questionEvent).getParentAction() instanceof ResolveQuestionNetworkAction))) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		
 		// check history of actions related each question
 		sum += engine.getQuestionHistory(0x0DL, null, null).size();
 		sum -= 1;	// do not count the indirect trad in the sum
 		// create node, 1 direct trade (trade on D), and 1 indirect trade (Eric bets P(E=e1) = 0.8) 
 		assertEquals(3, engine.getQuestionHistory(0x0DL, null, null).size());
+		for (QuestionEvent questionEvent : engine.getQuestionHistory(0x0DL, null, null)) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		sum += engine.getQuestionHistory(0x0EL, null, null).size();
 		sum -= 1;	// do not count the indirect trad in the sum
 		// create node, create edge, 3 direct trades, and 1 indirect trade (Eric bets P(D=d1|F=f2) = 0.7)
 		assertEquals(6, engine.getQuestionHistory(0x0EL, null, null).size());
+		for (QuestionEvent questionEvent : engine.getQuestionHistory(0x0EL,null, null)) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		sum += engine.getQuestionHistory(0x0FL, null, null).size();
 		sum -= 1;	// do not count the indirect trad in the sum
 		// create node, create arc, 2 direct trades, and 1 indirect trade (Eric bets P(E=e1) = 0.8)
 		assertEquals(5, engine.getQuestionHistory(0x0FL, null, null).size());
+		for (QuestionEvent questionEvent : engine.getQuestionHistory(0x0FL, null, null)) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		
 		assertEquals(engine.getExecutedActions().size(), sum);
 		
@@ -11303,14 +11374,32 @@ public class MarkovEngineTest extends TestCase {
 		sum -= 1;	// do not count the indirect trad in the sum
 		// 1 direct trade (trade on D), and 1 indirect trade (Eric bets P(E=e1) = 0.8) 
 		assertEquals(2, engine.getQuestionHistory(0x0DL, null, null).size());
+		for (QuestionEvent questionEvent : engine.getQuestionHistory(0x0DL, null, null)) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		sum += engine.getQuestionHistory(0x0EL, null, null).size();
 		sum -= 1;	// do not count the indirect trad in the sum
 		// 3 direct trades, and 1 indirect trade (Eric bets P(D=d1|F=f2) = 0.7)
 		assertEquals(4, engine.getQuestionHistory(0x0EL, null, null).size());
+		for (QuestionEvent questionEvent : engine.getQuestionHistory(0x0EL, null, null)) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		sum += engine.getQuestionHistory(0x0FL, null, null).size();
 		sum -= 1;	// do not count the indirect trad in the sum
 		// 2 direct trades, and 1 indirect trade (Eric bets P(E=e1) = 0.8)
 		assertEquals(3, engine.getQuestionHistory(0x0FL, null, null).size());
+		for (QuestionEvent questionEvent : engine.getQuestionHistory(0x0FL, null, null)) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		
 		// 4*addCash, 3*addQuestion, and 2*addQuestionAssumption were ignored (9 actions were ignored)
 		assertEquals(engine.getExecutedActions().size()-9, sum);
@@ -11482,6 +11571,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check content of history of each question
 		history = engine.getQuestionHistory(0x0Cl, null, null);
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0CL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(history.toString(), 2, history.size());
 		assertEquals("User 0 trades C = [.7,.3]", history.get(0).getTradeId());
 		assertEquals(2, history.get(0).getOldValues().size());
@@ -11503,6 +11598,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// F is a question which has arc, but is independent because the cpt is uniform
 		history = engine.getQuestionHistory(0x0Fl, null, null);
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(history.toString(), 2, history.size());
 		assertEquals("User 0 trades F = [.7,.3]", history.get(0).getTradeId());
 		assertEquals(2, history.get(0).getOldValues().size());
@@ -11524,6 +11625,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// special case: indirect trade may change prob
 		history = engine.getQuestionHistory(0x0Dl, null, null);
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(history.toString(), 4, history.size());	// 2 direct and 2 indirect trades from E
 		for (QuestionEvent questionEvent : history) {
 			assertEquals(0x0DL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
@@ -11533,6 +11640,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// special case: indirect trade may change prob
 		history = engine.getQuestionHistory(0x0El, null, null);
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(history.toString(), 3, history.size());	// 2 direct trad, and 1 indirect (User 0 trades D = [.5,.3,.2])
 		for (QuestionEvent questionEvent : history) {
 			assertEquals(0x0EL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
@@ -11583,6 +11696,12 @@ public class MarkovEngineTest extends TestCase {
 		// although F is independent because the cpt is uniform, changes in marginals usually changes conditional prob
 		// check P(F|D = d1)
 		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 2 <= history.size());
 		assertEquals("User 0 trades F = [.7,.3]", history.get(history.size()-2).getTradeId());
 		assertEquals(2, history.get(history.size()-2).getOldValues().size());
@@ -11610,6 +11729,12 @@ public class MarkovEngineTest extends TestCase {
 		}
 		// check P(F|D = d2), which should be equals to  P(F|D = d1) due to independency. 
 		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue(history.toString(), 2 <= history.size());
 		assertEquals("User 0 trades F = [.7,.3]", history.get(history.size()-2).getTradeId());
 		assertEquals(2, history.get(history.size()-2).getOldValues().size());
@@ -11638,6 +11763,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// special case: indirect trade may change conditional prob
 		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 1 <= history.size());	// the conditional probability given E is only changing 1 time
 		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -11645,6 +11776,12 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
 		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 2 <= history.size());	// the conditional probability given E2 was only changing twice
 		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -11652,6 +11789,12 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
 		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 4 <= history.size());	// at least 2 direct and 2 indirect trades from E
 		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -11659,6 +11802,13 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
 		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 4 <= history.size());	// at least 2 direct and 2 indirect trades from E
 		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -11668,6 +11818,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// special case: indirect trade may change conditional prob
 		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 3 <= history.size());	// at least 2 direct trade, and 1 indirect (User 0 trades D = [.5,.3,.2])
 		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -11675,6 +11831,12 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
 		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 3 <= history.size());	// at least 2 direct trade, and 1 indirect (User 0 trades D = [.5,.3,.2])
 		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -11725,6 +11887,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check content of history of each question again (they should be equal)
 		history = engine.getQuestionHistory(0x0Cl, null, null);
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0CL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(history.toString(), 2, history.size());
 		assertEquals("User 0 trades C = [.7,.3]", history.get(0).getTradeId());
 		assertEquals(2, history.get(0).getOldValues().size());
@@ -11746,6 +11914,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// F is a question which has arc, but is independent because the cpt is uniform
 		history = engine.getQuestionHistory(0x0Fl, null, null);
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(history.toString(), 2, history.size());
 		assertEquals("User 0 trades F = [.7,.3]", history.get(0).getTradeId());
 		assertEquals(2, history.get(0).getOldValues().size());
@@ -11767,6 +11941,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// special case: indirect trade may change prob
 		history = engine.getQuestionHistory(0x0Dl, null, null);
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(history.toString(), 4, history.size());	// 2 direct and 2 indirect trades from E
 		for (QuestionEvent questionEvent : history) {
 			assertEquals(0x0DL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
@@ -11776,6 +11956,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// special case: indirect trade may change prob
 		history = engine.getQuestionHistory(0x0El, null, null);
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(history.toString(), 3, history.size());	// 2 direct trad, and 1 indirect (User 0 trades D = [.5,.3,.2])
 		for (QuestionEvent questionEvent : history) {
 			assertEquals(0x0EL, ((AddTradeNetworkAction)questionEvent).getQuestionId().longValue());
@@ -11826,6 +12012,12 @@ public class MarkovEngineTest extends TestCase {
 		// although F is independent because the cpt is uniform, changes in marginals usually changes conditional prob
 		// check P(F|D = d1)
 		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 2 <= history.size());
 		assertEquals("User 0 trades F = [.7,.3]", history.get(history.size()-2).getTradeId());
 		assertEquals(2, history.get(history.size()-2).getOldValues().size());
@@ -11853,6 +12045,12 @@ public class MarkovEngineTest extends TestCase {
 		}
 		// check P(F|D = d2), which should be equals to  P(F|D = d1) due to independency. 
 		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue(history.toString(), 2 <= history.size());
 		assertEquals("User 0 trades F = [.7,.3]", history.get(history.size()-2).getTradeId());
 		assertEquals(2, history.get(history.size()-2).getOldValues().size());
@@ -11888,6 +12086,12 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
 		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 2 <= history.size());	// the conditional probability given E2 was only changing twice
 		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -11895,6 +12099,12 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
 		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 4 <= history.size());	// at least 2 direct and 2 indirect trades from E
 		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -11902,6 +12112,12 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
 		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 4 <= history.size());	// at least 2 direct and 2 indirect trades from E
 		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -11911,6 +12127,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// special case: indirect trade may change conditional prob
 		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 3 <= history.size());	// at least 2 direct trade, and 1 indirect (User 0 trades D = [.5,.3,.2])
 		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -11918,6 +12140,12 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
 		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 3 <= history.size());	// at least 2 direct trade, and 1 indirect (User 0 trades D = [.5,.3,.2])
 		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -11927,6 +12155,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// store history before resolution for comparison
 		List<QuestionEvent> marginalHistoryBeforeResolution = engine.getQuestionHistory(0x0EL, null, null);
+		for (QuestionEvent questionEvent : marginalHistoryBeforeResolution) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		
 		// resolve a question and test again, but before that, add dependency between B and E
 		List<Float> newValues = new ArrayList<Float>();
@@ -11954,6 +12188,12 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		List<QuestionEvent> marginalHistoryAfterResolution = engine.getQuestionHistory(0x0EL, null, null);
+		for (QuestionEvent questionEvent : marginalHistoryBeforeResolution) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(marginalHistoryBeforeResolution.size() + 2, marginalHistoryAfterResolution.size());	// +2 because of the last addTrade and resolveQuestion
 		assertTrue(((DummyTradeAction)marginalHistoryAfterResolution.get(marginalHistoryAfterResolution.size() - 1)).getParentAction() instanceof ResolveQuestionNetworkAction);
 		assertEquals(0x0BL, marginalHistoryAfterResolution.get(marginalHistoryAfterResolution.size() - 1).getQuestionId().longValue());
@@ -11999,6 +12239,12 @@ public class MarkovEngineTest extends TestCase {
 		// although F is independent because the cpt is uniform, changes in marginals usually changes conditional prob
 		// check P(F|D = d1)
 		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 2 <= history.size());
 		assertEquals("User 0 trades F = [.7,.3]", history.get(history.size()-2).getTradeId());
 		assertEquals(2, history.get(history.size()-2).getOldValues().size());
@@ -12026,6 +12272,12 @@ public class MarkovEngineTest extends TestCase {
 		}
 		// check P(F|D = d2), which should be equals to  P(F|D = d1) due to independency. 
 		history = engine.getQuestionHistory(0x0Fl, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue(history.toString(), 2 <= history.size());
 		assertEquals("User 0 trades F = [.7,.3]", history.get(history.size()-2).getTradeId());
 		assertEquals(2, history.get(history.size()-2).getOldValues().size());
@@ -12054,6 +12306,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// special case: indirect trade may change conditional prob
 		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 1 <= history.size());	// the conditional probability given E is only changing 1 time
 		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -12061,6 +12319,12 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
 		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0EL), Collections.singletonList(1));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 2 <= history.size());	// the conditional probability given E2 was only changing twice
 		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -12068,6 +12332,12 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
 		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 4 <= history.size());	// at least 2 direct and 2 indirect trades from E
 		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -12078,6 +12348,12 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0x0BL, history.get(history.size() - 1).getQuestionId().longValue());
 		assertEquals(settledState, history.get(history.size() - 1).getSettledState().intValue());
 		history = engine.getQuestionHistory(0x0Dl, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 4 <= history.size());	// at least 2 direct and 2 indirect trades from E
 		probList = engine.getProbList(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -12090,6 +12366,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// special case: indirect trade may change conditional prob
 		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 3 <= history.size());	// at least 2 direct trade, and 1 indirect (User 0 trades D = [.5,.3,.2])
 		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -12097,6 +12379,12 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.get(i), history.get(history.size()-1).getNewValues().get(i), PROB_ERROR_MARGIN);
 		}
 		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue("Obtained size = " + history.size(), 3 <= history.size());	// at least 2 direct trade, and 1 indirect (User 0 trades D = [.5,.3,.2])
 		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
 		assertEquals(probList.toString() + " != " + history.get(history.size()-1).getNewValues(), probList.size(), history.get(history.size()-1).getNewValues().size());
@@ -13918,6 +14206,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// get history before transaction, so that we can make sure new transaction is not added into history
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		
 		// check that final min-q of Tom is 20
 		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
@@ -14694,6 +14988,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that in the history, the assumption E was ignored
 		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertNotNull(questionHistory);
 		assertFalse(questionHistory.isEmpty());
 		AddTradeNetworkAction action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
@@ -14733,6 +15033,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that in the history, the assumption A was ignored
 		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertNotNull(questionHistory);
 		assertFalse(questionHistory.isEmpty());
 		action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
@@ -16019,6 +16325,13 @@ public class MarkovEngineTest extends TestCase {
 		// make sure history is retrieving some important changes in history
 		List<QuestionEvent> history = engine.getQuestionHistory(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(2));
 		assertFalse(history.isEmpty());
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof VirtualTradeAction
+					&& ( ((VirtualTradeAction)questionEvent).getParentAction() instanceof StructureChangeNetworkAction
+						|| ((VirtualTradeAction)questionEvent).getParentAction() instanceof ResolveQuestionNetworkAction  ) ) ) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		// last probability in the history should match the current in history
 		List<Float> probList = engine.getProbList(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(2));
 		assertEquals(2, probList.size());
@@ -16029,6 +16342,13 @@ public class MarkovEngineTest extends TestCase {
 		// make sure history is retrieving changes in history
 		history = engine.getQuestionHistory(0x0AL, null, null);
 		assertFalse(history.isEmpty());
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof VirtualTradeAction
+					&& ( ((VirtualTradeAction)questionEvent).getParentAction() instanceof StructureChangeNetworkAction
+						|| ((VirtualTradeAction)questionEvent).getParentAction() instanceof ResolveQuestionNetworkAction  ) ) ) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		// last probability in the history should match the current in history
 		probList = probAfterImport.get(0x0AL);
 		assertEquals(3, probList.size());
@@ -16118,6 +16438,13 @@ public class MarkovEngineTest extends TestCase {
 		// make sure history is still retrieving some important changes in history
 		history = engine.getQuestionHistory(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(2));
 		assertFalse(history.isEmpty());
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof VirtualTradeAction
+					&& ( ((VirtualTradeAction)questionEvent).getParentAction() instanceof StructureChangeNetworkAction
+						|| ((VirtualTradeAction)questionEvent).getParentAction() instanceof ResolveQuestionNetworkAction  ) ) ) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		// last probability in the history should match the current in history
 		probList = engine.getProbList(0x0EL, Collections.singletonList(0x0AL), Collections.singletonList(2));
 		assertEquals(2, probList.size());
@@ -16128,6 +16455,13 @@ public class MarkovEngineTest extends TestCase {
 		// make sure history is still retrieving previous changes in history
 		history = engine.getQuestionHistory(0x0AL, null, null);
 		assertFalse(history.isEmpty());
+		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof VirtualTradeAction
+					&& ( ((VirtualTradeAction)questionEvent).getParentAction() instanceof StructureChangeNetworkAction
+						|| ((VirtualTradeAction)questionEvent).getParentAction() instanceof ResolveQuestionNetworkAction  ) ) ) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		// last probability in the history should match the current in history
 		probList = probAfterImport.get(0x0AL);
 		assertEquals(3, probList.size());
@@ -18991,6 +19325,12 @@ public class MarkovEngineTest extends TestCase {
 		engine.doBalanceTrade(null, new Date(), "Case 1 - balance 3", 1, 3, null, null);
 		
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(3L, null, null);
+		for (QuestionEvent qe : questionHistory) {
+			if (!(qe instanceof StructureChangeNetworkAction)
+					&& !(qe.getQuestionId().longValue() != 3L)) {
+				assertNotNull(qe.getUserId());
+			}
+		}
 		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
 		assertFalse(((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades().isEmpty());
 		List<TradeSpecification> executedTrades = ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades();
@@ -19057,6 +19397,12 @@ public class MarkovEngineTest extends TestCase {
 		previewedTrades = engine.previewBalancingTrades(2, 0, Collections.singletonList(2L), Collections.singletonList(2));	// check that preview matches executed
 		engine.doBalanceTrade(null, new Date(), "Case 2 - balance 0|2=2", 2, 0, Collections.singletonList(2L), Collections.singletonList(2));
 		questionHistory = engine.getQuestionHistory(0L, null, null);
+		for (QuestionEvent qe : questionHistory) {
+			if (!(qe instanceof StructureChangeNetworkAction)
+					&& !(qe.getQuestionId().longValue() != 0L)) {
+				assertNotNull(qe.getUserId());
+			}
+		}
 		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
 		assertFalse(((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades().isEmpty());
 		boolean hasAssumptionState = false;
@@ -19138,6 +19484,12 @@ public class MarkovEngineTest extends TestCase {
 		previewedTrades = engine.previewBalancingTrades(3, 1, null, null);	// check that preview matches executed
 		engine.doBalanceTrade(null, new Date(), "User 3 balances question 1", 3, 1, null, null);
 		questionHistory = engine.getQuestionHistory(1L, null, null);
+		for (QuestionEvent qe : questionHistory) {
+			if (!(qe instanceof StructureChangeNetworkAction)
+					&& !(qe.getQuestionId().longValue() != 1L)) {
+				assertNotNull(qe.getUserId());
+			}
+		}
 		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
 		assertFalse(((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades().isEmpty());
 		executedTrades = ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades();
@@ -19508,6 +19860,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// make sure history is OK
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		QuestionEvent questionEvent = questionHistory.get(questionHistory.size()-1);
 		assertTrue(questionEvent instanceof BalanceTradeNetworkAction);
 		List<TradeSpecification> executedTrades = ((BalanceTradeNetworkAction)questionEvent).getExecutedTrades();
@@ -19550,6 +19908,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// make sure history is OK
 		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		for (QuestionEvent qe : questionHistory) {
+			if (!(qe instanceof StructureChangeNetworkAction)
+					&& !(qe.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(qe.getUserId());
+			}
+		}
 		questionEvent = questionHistory.get(questionHistory.size()-1);
 		assertTrue(questionEvent instanceof BalanceTradeNetworkAction);
 		executedTrades = ((BalanceTradeNetworkAction)questionEvent).getExecutedTrades();
@@ -19573,6 +19937,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// make sure it did nothing in the history
 		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		for (QuestionEvent qe : questionHistory) {
+			if (!(qe instanceof StructureChangeNetworkAction)
+					&& !(qe.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(qe.getUserId());
+			}
+		}
 		questionEvent = questionHistory.get(questionHistory.size()-1);
 		assertTrue(questionEvent instanceof BalanceTradeNetworkAction);
 		executedTrades = ((BalanceTradeNetworkAction)questionEvent).getExecutedTrades();
@@ -21031,6 +21401,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// make sure the history did only change the marginal of F
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(1, questionHistory.size());
 		assertTrue(questionHistory.get(0) instanceof AddTradeNetworkAction);
 		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
@@ -21053,6 +21429,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// make sure the history did not change
 		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(1, questionHistory.size());
 		assertTrue(questionHistory.get(0) instanceof AddTradeNetworkAction);
 		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
@@ -21071,11 +21453,23 @@ public class MarkovEngineTest extends TestCase {
 		
 		// make sure the history did change the marginal of E
 		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(1, questionHistory.size());
 		assertTrue(questionHistory.get(0) instanceof AddTradeNetworkAction);
 		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
 		assertEquals(0, questionHistory.size());
 		questionHistory = engine.getQuestionHistory(0x0EL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(1, questionHistory.size());
 		
 		try {
@@ -21090,12 +21484,24 @@ public class MarkovEngineTest extends TestCase {
 		}
 		// make sure the history did not change
 		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(1, questionHistory.size());
 		assertTrue(questionHistory.get(0) instanceof AddTradeNetworkAction);
 		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
 		assertEquals(0, questionHistory.size());
 		questionHistory = engine.getQuestionHistory(0x0EL, null, null);
 		assertEquals(1, questionHistory.size());
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		
 		// get the expected score per node to be resolved for each user
 		Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
@@ -21116,10 +21522,22 @@ public class MarkovEngineTest extends TestCase {
 		
 		// make sure the history did change for all questions
 		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertEquals(2, questionHistory.size());
 		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof DummyTradeAction);
 		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
 		assertEquals(1, questionHistory.size());
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertTrue(questionHistory.get(questionHistory.size()-1) instanceof DummyTradeAction);
 //		questionHistory = engine.getQuestionHistory(0x0EL, null, null);
 //		assertEquals(2, questionHistory.size());
@@ -21536,6 +21954,10 @@ public class MarkovEngineTest extends TestCase {
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0EL, null, null);
 		assertEquals(5, questionHistory.size());
 		for (int i = 0; i < questionHistory.size(); i++) {
+			if (!(questionHistory.get(i) instanceof StructureChangeNetworkAction)
+					&& !(questionHistory.get(i).getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionHistory.get(i).getUserId());
+			}
 			if (i == 1) {
 				assertTrue(questionHistory.get(i).isCorrectiveTrade());
 			} else {
@@ -21546,6 +21968,10 @@ public class MarkovEngineTest extends TestCase {
 		questionHistory = engine.getQuestionHistory(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
 		assertEquals(4, questionHistory.size());
 		for (int i = 0; i < questionHistory.size(); i++) {
+			if (!(questionHistory.get(i) instanceof StructureChangeNetworkAction)
+					&& !(questionHistory.get(i).getQuestionId().longValue() != 0x0EL)) {
+				assertNotNull(questionHistory.get(i).getUserId());
+			}
 			if (i == 1) {
 				assertTrue(questionHistory.get(i).isCorrectiveTrade());
 			} else {
@@ -21557,6 +21983,10 @@ public class MarkovEngineTest extends TestCase {
 		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
 		assertEquals(2, questionHistory.size());
 		for (int i = 0; i < questionHistory.size(); i++) {
+			if (!(questionHistory.get(i) instanceof StructureChangeNetworkAction)
+					&& !(questionHistory.get(i).getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionHistory.get(i).getUserId());
+			}
 			assertFalse(questionHistory.get(i).isCorrectiveTrade());
 		}
 		
@@ -21564,6 +21994,10 @@ public class MarkovEngineTest extends TestCase {
 		questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
 		assertEquals(4, questionHistory.size());
 		for (int i = 0; i < questionHistory.size(); i++) {
+			if (!(questionHistory.get(i) instanceof StructureChangeNetworkAction)
+					&& !(questionHistory.get(i).getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionHistory.get(i).getUserId());
+			}
 			if (i == 1) {
 				assertTrue(questionHistory.get(i).isCorrectiveTrade());
 			} else {
@@ -21574,6 +22008,10 @@ public class MarkovEngineTest extends TestCase {
 		questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
 		assertEquals(4, questionHistory.size());
 		for (int i = 0; i < questionHistory.size(); i++) {
+			if (!(questionHistory.get(i) instanceof StructureChangeNetworkAction)
+					&& !(questionHistory.get(i).getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionHistory.get(i).getUserId());
+			}
 			if (i == 1) {
 				assertTrue(questionHistory.get(i).isCorrectiveTrade());
 			} else {
@@ -21584,11 +22022,19 @@ public class MarkovEngineTest extends TestCase {
 		questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
 		assertEquals(3, questionHistory.size());
 		for (int i = 0; i < questionHistory.size(); i++) {
+			if (!(questionHistory.get(i) instanceof StructureChangeNetworkAction)
+					&& !(questionHistory.get(i).getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionHistory.get(i).getUserId());
+			}
 			assertFalse(questionHistory.get(i).isCorrectiveTrade());
 		}
 		questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(1));
 		assertEquals(4, questionHistory.size());
 		for (int i = 0; i < questionHistory.size(); i++) {
+			if (!(questionHistory.get(i) instanceof StructureChangeNetworkAction)
+					&& !(questionHistory.get(i).getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionHistory.get(i).getUserId());
+			}
 			assertFalse(questionHistory.get(i).isCorrectiveTrade());
 		}
 		
@@ -21597,6 +22043,10 @@ public class MarkovEngineTest extends TestCase {
 		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
 		assertEquals(3, questionHistory.size());
 		for (int i = 0; i < questionHistory.size(); i++) {
+			if (!(questionHistory.get(i) instanceof StructureChangeNetworkAction)
+					&& !(questionHistory.get(i).getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionHistory.get(i).getUserId());
+			}
 			assertFalse(questionHistory.get(i).isCorrectiveTrade());
 		}
 		
@@ -21604,11 +22054,19 @@ public class MarkovEngineTest extends TestCase {
 		questionHistory = engine.getQuestionHistory(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(0));
 		assertEquals(2, questionHistory.size());
 		for (int i = 0; i < questionHistory.size(); i++) {
+			if (!(questionHistory.get(i) instanceof StructureChangeNetworkAction)
+					&& !(questionHistory.get(i).getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionHistory.get(i).getUserId());
+			}
 			assertFalse(questionHistory.get(i).isCorrectiveTrade());
 		}
 		questionHistory = engine.getQuestionHistory(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(1));
 		assertEquals(3, questionHistory.size());
 		for (int i = 0; i < questionHistory.size(); i++) {
+			if (!(questionHistory.get(i) instanceof StructureChangeNetworkAction)
+					&& !(questionHistory.get(i).getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionHistory.get(i).getUserId());
+			}
 			assertFalse(questionHistory.get(i).isCorrectiveTrade());
 		}
 		
@@ -21875,8 +22333,20 @@ public class MarkovEngineTest extends TestCase {
 		engine.commitNetworkActions(transactionKey);
 		
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(2L, Collections.singletonList(0x03L), Collections.singletonList(0));
+		for (QuestionEvent qe : questionHistory) {
+			if (!(qe instanceof StructureChangeNetworkAction)
+					&& !(qe.getQuestionId().longValue() != 2L)) {
+				assertNotNull(qe.getUserId());
+			}
+		}
 		assertTrue(questionHistory.size() > 1);
 		questionHistory = engine.getQuestionHistory(2L, null, null);
+		for (QuestionEvent qe : questionHistory) {
+			if (!(qe instanceof StructureChangeNetworkAction)
+					&& !(qe.getQuestionId().longValue() != 2L)) {
+				assertNotNull(qe.getUserId());
+			}
+		}
 		assertTrue(questionHistory.size() > 1);
 		
 		// check that 1 and 2 are explicitly connected
@@ -22099,6 +22569,10 @@ public class MarkovEngineTest extends TestCase {
 		// question 1313
 		List<QuestionEvent> history = engine.getQuestionHistory(1313L, null, null);
 		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 1313L)) {
+				assertNotNull(questionEvent.getUserId());
+			}
 			// check the size of probability list
 			assertEquals(probLists.get(1313L).size(), questionEvent.getNewValues().size());
 			if (questionEvent.getOldValues() != null) {
@@ -22108,6 +22582,10 @@ public class MarkovEngineTest extends TestCase {
 		// question 666
 		history = engine.getQuestionHistory(666L, null, null);
 		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 666L)) {
+				assertNotNull(questionEvent.getUserId());
+			}
 			// check the size of probability list
 			assertEquals(probLists.get(666L).size(), questionEvent.getNewValues().size());
 			if (questionEvent.getOldValues() != null) {
@@ -22117,6 +22595,10 @@ public class MarkovEngineTest extends TestCase {
 		// question 999
 		history = engine.getQuestionHistory(999L, null, null);
 		for (QuestionEvent questionEvent : history) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 999L)) {
+				assertNotNull(questionEvent.getUserId());
+			}
 			// check the size of probability list
 			assertEquals(probLists.get(999L).size(), questionEvent.getNewValues().size());
 			if (questionEvent.getOldValues() != null) {
@@ -22134,6 +22616,10 @@ public class MarkovEngineTest extends TestCase {
 					Collections.singletonList((int)(Math.random()*probLists.get(assumptionId).size()))
 					);
 			for (QuestionEvent questionEvent : history) {
+				if (!(questionEvent instanceof StructureChangeNetworkAction)
+						&& !(questionEvent.getQuestionId().longValue() != questionId)) {
+					assertNotNull(questionEvent.getUserId());
+				}
 				// check the size of probability list
 				assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
 				if (questionEvent.getOldValues() != null) {
@@ -22151,6 +22637,10 @@ public class MarkovEngineTest extends TestCase {
 					Collections.singletonList((int)(Math.random()*probLists.get(assumptionId).size()))
 					);
 			for (QuestionEvent questionEvent : history) {
+				if (!(questionEvent instanceof StructureChangeNetworkAction)
+						&& !(questionEvent.getQuestionId() != questionId)) {
+					assertNotNull(questionEvent.getUserId());
+				}
 				// check the size of probability list
 				assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
 				if (questionEvent.getOldValues() != null) {
@@ -22168,6 +22658,10 @@ public class MarkovEngineTest extends TestCase {
 					Collections.singletonList((int)(Math.random()*probLists.get(assumptionId).size()))
 					);
 			for (QuestionEvent questionEvent : history) {
+				if (!(questionEvent instanceof StructureChangeNetworkAction)
+						&& !(questionEvent.getQuestionId() != questionId)) {
+					assertNotNull(questionEvent.getUserId());
+				}
 				// check the size of probability list
 				assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
 				if (questionEvent.getOldValues() != null) {
@@ -22185,6 +22679,10 @@ public class MarkovEngineTest extends TestCase {
 					Collections.singletonList((int)(Math.random()*probLists.get(assumptionId).size()))
 					);
 			for (QuestionEvent questionEvent : history) {
+				if (!(questionEvent instanceof StructureChangeNetworkAction)
+						&& !(questionEvent.getQuestionId() != questionId)) {
+					assertNotNull(questionEvent.getUserId());
+				}
 				// check the size of probability list
 				assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
 				if (questionEvent.getOldValues() != null) {
@@ -22808,8 +23306,20 @@ public class MarkovEngineTest extends TestCase {
 		this.createDEFNetIn1Transaction(userNameToIDMap);
 		
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+		for (QuestionEvent qe : questionHistory) {
+			if (!(qe instanceof StructureChangeNetworkAction)
+					&& !(qe.getQuestionId() != 0x0DL)) {
+				assertNotNull(qe.getUserId());
+			}
+		}
 		assertTrue(questionHistory.size() > 1);
 		questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		for (QuestionEvent qe : questionHistory) {
+			if (!(qe instanceof StructureChangeNetworkAction)
+					&& !(qe.getQuestionId() != 0x0DL)) {
+				assertNotNull(qe.getUserId());
+			}
+		}
 		assertTrue(questionHistory.size() > 1);
 	}
 	

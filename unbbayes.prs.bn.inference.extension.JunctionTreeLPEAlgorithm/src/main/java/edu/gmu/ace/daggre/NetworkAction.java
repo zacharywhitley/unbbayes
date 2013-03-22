@@ -59,14 +59,6 @@ public interface NetworkAction extends QuestionEvent {
 	 */
 	Long getTransactionKey();
 	
-	/**
-	 * If this action is related to some user ID
-	 * (e.g. the action is a trade performed by a
-	 * given user), then this 
-	 * method returns the user ID.
-	 * @return the user id.
-	 */
-	Long getUserId();
 	
 	/**
 	 * @return the identifier of the question associated with this network action.

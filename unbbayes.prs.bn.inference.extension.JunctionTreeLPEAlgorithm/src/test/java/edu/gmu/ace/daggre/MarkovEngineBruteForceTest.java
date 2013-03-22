@@ -32,6 +32,9 @@ import unbbayes.util.Debug;
 import edu.gmu.ace.daggre.MarkovEngineImpl.BalanceTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.InexistingQuestionException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.ProbabilityAndAssetTablesMemento;
+import edu.gmu.ace.daggre.MarkovEngineImpl.ResolveQuestionNetworkAction;
+import edu.gmu.ace.daggre.MarkovEngineImpl.StructureChangeNetworkAction;
+import edu.gmu.ace.daggre.MarkovEngineImpl.VirtualTradeAction;
 import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
 
 /**
@@ -183,7 +186,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If there are less than this number of questions, questions will not be resolved */
 	private static int minAliveQuestionNumber = -1;
 	
-	private static long seed = new Date().getTime(); // 1362009833965L
+	private static long seed = new Date().getTime(); // 1363964542586L
 	
 	/** Random number generator, with seed */
 	private static Random random = new Random(seed);
@@ -1912,6 +1915,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				for (Long questionId : probLists.keySet()) {
 					List<QuestionEvent> marginalHistory = engine.getQuestionHistory(questionId, null, null);
 					for (QuestionEvent questionEvent : marginalHistory) {
+						if (!(questionEvent instanceof VirtualTradeAction
+								&& ( ((VirtualTradeAction)questionEvent).getParentAction() instanceof StructureChangeNetworkAction
+									|| ((VirtualTradeAction)questionEvent).getParentAction() instanceof ResolveQuestionNetworkAction  ) ) ) {
+							assertNotNull(questionEvent.getUserId());
+						}
 						// check the size of probability list
 						assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
 						if (questionEvent.getOldValues() != null) {
@@ -1930,6 +1938,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 									Collections.singletonList(i)	// number of states can be extracted from probList
 									);
 							for (QuestionEvent questionEvent : conditionalHistory) {
+								if (!(questionEvent instanceof VirtualTradeAction
+										&& ( ((VirtualTradeAction)questionEvent).getParentAction() instanceof StructureChangeNetworkAction
+											|| ((VirtualTradeAction)questionEvent).getParentAction() instanceof ResolveQuestionNetworkAction  ) ) ) {
+									assertNotNull(questionEvent.getUserId());
+								}
 								// check the size of probability list
 								assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
 								if (questionEvent.getOldValues() != null) {
@@ -3592,6 +3605,13 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		// get history before transaction, so that we can make sure new transaction is not added into history
 		for (MarkovEngineImpl engine : engines) {
 			List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+			for (QuestionEvent questionEvent : questionHistory) {
+				if (!(questionEvent instanceof VirtualTradeAction
+						&& ( ((VirtualTradeAction)questionEvent).getParentAction() instanceof StructureChangeNetworkAction
+							|| ((VirtualTradeAction)questionEvent).getParentAction() instanceof ResolveQuestionNetworkAction  ) ) ) {
+					assertNotNull(questionEvent.getUserId());
+				}
+			}
 			
 			// check that final min-q of Tom is 20
 			minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
@@ -4797,6 +4817,13 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				
 				// obtain the balancing trade from history, so that I can be certain that a balance trade was actually executed, and to fill the tracer
 				List<QuestionEvent> questionHistory = engines.get(0).getQuestionHistory(questionId, null, null);
+				for (QuestionEvent questionEvent : questionHistory) {
+					if (!(questionEvent instanceof VirtualTradeAction
+							&& ( ((VirtualTradeAction)questionEvent).getParentAction() instanceof StructureChangeNetworkAction
+								|| ((VirtualTradeAction)questionEvent).getParentAction() instanceof ResolveQuestionNetworkAction  ) ) ) {
+						assertNotNull(questionEvent.getUserId());
+					}
+				}
 				if (!questionHistory.isEmpty() && questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction) {
 					List<TradeSpecification> tradesToBalance = ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades();
 					
@@ -5513,6 +5540,13 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						
 						// obtain the balancing trade from history, so that the next iteration can use it if the next engine is a Brute force engine
 						List<QuestionEvent> questionHistory = engine.getQuestionHistory(questionId, null, null);
+						for (QuestionEvent questionEvent : questionHistory) {
+							if (!(questionEvent instanceof VirtualTradeAction
+									&& ( ((VirtualTradeAction)questionEvent).getParentAction() instanceof StructureChangeNetworkAction
+										|| ((VirtualTradeAction)questionEvent).getParentAction() instanceof ResolveQuestionNetworkAction  ) ) ) {
+								assertNotNull(questionEvent.getUserId());
+							}
+						}
 						if (engine.getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
 							assertTrue(questionHistory.get(questionHistory.size()-1) instanceof BalanceTradeNetworkAction);
 							tradesToBalance = ((BalanceTradeNetworkAction)questionHistory.get(questionHistory.size()-1)).getExecutedTrades();
@@ -7116,6 +7150,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					for (Long questionId : probLists.keySet()) {
 						List<QuestionEvent> marginalHistory = engine.getQuestionHistory(questionId, null, null);
 						for (QuestionEvent questionEvent : marginalHistory) {
+							if (!(questionEvent instanceof VirtualTradeAction
+									&& ( ((VirtualTradeAction)questionEvent).getParentAction() instanceof StructureChangeNetworkAction
+										|| ((VirtualTradeAction)questionEvent).getParentAction() instanceof ResolveQuestionNetworkAction  ) ) ) {
+								assertNotNull(questionEvent.getUserId());
+							}
 							// check the size of probability list
 							assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
 							if (questionEvent.getOldValues() != null) {
@@ -7134,6 +7173,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 										Collections.singletonList(j)	// number of states can be extracted from probList
 										);
 								for (QuestionEvent questionEvent : conditionalHistory) {
+									if (!(questionEvent instanceof VirtualTradeAction
+											&& ( ((VirtualTradeAction)questionEvent).getParentAction() instanceof StructureChangeNetworkAction
+												|| ((VirtualTradeAction)questionEvent).getParentAction() instanceof ResolveQuestionNetworkAction  ) ) ) {
+										assertNotNull(questionEvent.getUserId());
+									}
 									// check the size of probability list
 									assertEquals(probLists.get(questionId).size(), questionEvent.getNewValues().size());
 									if (questionEvent.getOldValues() != null) {

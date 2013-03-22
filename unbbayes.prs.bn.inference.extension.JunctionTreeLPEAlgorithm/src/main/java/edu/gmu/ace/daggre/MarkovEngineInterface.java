@@ -771,7 +771,9 @@ public interface MarkovEngineInterface {
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
 	 * @see #doBalanceTrade(long, Date, String, long, long, List, List)
+	 * @deprecated use {@link #doBalanceTrade(Long, Date, String, long, long, List, List)} instead
 	 */
+	@Deprecated
 	public List<TradeSpecification> previewBalancingTrades(long userId, long questionId, List<Long> originalAssumptionIds, 
 			List<Integer> originalAssumedStates) throws IllegalArgumentException;
 	

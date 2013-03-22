@@ -63,4 +63,13 @@ public interface QuestionEvent extends Serializable {
 	 * performed by the engine for correcting the probabilities.
 	 */
 	Boolean isCorrectiveTrade();
+	
+	/**
+	 * If this action is related to some user ID
+	 * (e.g. the action is a trade performed by a
+	 * given user), then this 
+	 * method returns the user ID.
+	 * @return the user id.
+	 */
+	Long getUserId();
 }

@@ -2228,6 +2228,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Boolean isCorrectiveTrade() {return parentAction.isCorrectiveTrade();}
 		/** Just delegate to parent */
 		public NetworkAction getCorrectedTrade() {return parentAction.getCorrectedTrade(); }
+
+		/** 
+		 * Just delegates to {@link #getParentAction()}
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction#getUserId()
+		 */
+		public Long getUserId() { return parentAction.getUserId(); }
+		
 	}
 	
 	/**

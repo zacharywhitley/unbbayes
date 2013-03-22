@@ -26,6 +26,8 @@ import unbbayes.prs.exception.InvalidParentException;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.BalanceTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.InexistingQuestionException;
+import edu.gmu.ace.daggre.MarkovEngineImpl.ResolveQuestionNetworkAction;
+import edu.gmu.ace.daggre.MarkovEngineImpl.StructureChangeNetworkAction;
 import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
 
 /**
@@ -1233,7 +1235,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 	 *	Variables    D             E              F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.5 0.5]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	Trade-1: Tom would like to make a bet on E=e1, that has current probability as 0.5. First of all, we need to calculate TomÅfs edit limit (in this case, there is no assumption):	<br/> 
+	 *	Trade-1: Tom would like to make a bet on E=e1, that has current probability as 0.5. First of all, we need to calculate TomÔøΩfs edit limit (in this case, there is no assumption):	<br/> 
 	 *	Given E=e1, min-q1 = 100	<br/>
 	 *	Given E~=e1, min-q2 = 100	<br/>
 	 *	From Equation (1), edit interval is [0.005, 0.995].	<br/> 
@@ -1245,7 +1247,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.55 0.45]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	TomÅfs min-q is 90, at the following 4 min-states (found by min-asset-propagation):	<br/> 
+	 *	TomÔøΩfs min-q is 90, at the following 4 min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     1     2     1	<br/>
 	 *	     1     2     2	<br/>
@@ -1253,7 +1255,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 	 *	     2     2     2	<br/>
 	 *	<br/>	
 	 *	<br/>	
-	 *	Trade-2: Now Tom would like to make another conditional bet on E=e1 given D=d1 (current P(E=e1|D=d1) = 0.55). Again, let us calculate his edit limits first (in this case, we have assumed variable D=d1). And note that TomÅfs asset tables are not the initial ones any more, but updated from last trade he did, now:	<br/> 
+	 *	Trade-2: Now Tom would like to make another conditional bet on E=e1 given D=d1 (current P(E=e1|D=d1) = 0.55). Again, let us calculate his edit limits first (in this case, we have assumed variable D=d1). And note that TomÔøΩfs asset tables are not the initial ones any more, but updated from last trade he did, now:	<br/> 
 	 *	Given E=e1, and D=d1, min-q1 = 110	<br/>
 	 *	Given E~=e1, and D=d1, min-q2 = 90	<br/>
 	 *	From Equation (1), edit interval is [0.005, 0.995]	<br/>
@@ -1265,7 +1267,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.725 0.275]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	TomÅfs min-q is 20, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	TomÔøΩfs min-q is 20, at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     1     2    1	<br/>
 	 *	     1     2    2	<br/>
@@ -1286,7 +1288,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.5 0.5]	<br/>
 	 *	<br/>	
-	 *	JoeÅfs min-q is 72.72727272727..., at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	JoeÔøΩfs min-q is 72.72727272727..., at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     1    1	<br/>
 	 *	     2     1    2	<br/>
@@ -1308,7 +1310,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.4 0.6]	<br/>
 	 *	<br/>	
-	 *	AmyÅfs min-q is 60, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	AmyÔøΩfs min-q is 60, at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     1     1    1	<br/>
 	 *	     1     2    1	<br/>
@@ -1331,7 +1333,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5 0.5]   [0.65 0.35]   [0.2 0.8]	<br/>
 	 *	<br/>	
-	 *	JoeÅfs min-q is 14.54545454546, at the following unique min-states (found by min-asset-propagation):	<br/> 
+	 *	JoeÔøΩfs min-q is 14.54545454546, at the following unique min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     1    1	<br/>
 	 *	<br/>	
@@ -1340,7 +1342,7 @@ public class BruteForceMarkovEngineTest extends TestCase {
 	 *	From now on, we run test cases described in the paper.	<br/> 
 	 *	<br/>	
 	 *	Trade-6: Eric would like to trade on P(E=e1), which is currently 0.65.	<br/> 
-	 *	To decide long or short, S(E=e1) = 10, S(E~=e1)=10, no difference because this will be EricÅfs first trade.	<br/>
+	 *	To decide long or short, S(E=e1) = 10, S(E~=e1)=10, no difference because this will be EricÔøΩfs first trade.	<br/>
 	 *	Edit limit:	<br/>
 	 *	Given F=f1, and D=d2, min-q1 = 100	<br/>
 	 *	Given F~=f1, and D=d2, min-q2 = 100	<br/>
@@ -1358,8 +1360,8 @@ public class BruteForceMarkovEngineTest extends TestCase {
 	 *	Variables   D              E                   F	<br/> 
 	 *	Marginals   [0.5824, 0.4176]   [0.8, 0.2]   [0.2165, 0.7835]	<br/>
 	 *	<br/>	
-	 *	EricÅfs expected score is S=10.1177.	<br/>
-	 *	EricÅfs min-q is 57.142857, at the following two min-states (found by min-asset-propagation):	<br/> 
+	 *	EricÔøΩfs expected score is S=10.1177.	<br/>
+	 *	EricÔøΩfs min-q is 57.142857, at the following two min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     2    1	<br/>
 	 *	     2     2    2	<br/>
@@ -1385,8 +1387,8 @@ public class BruteForceMarkovEngineTest extends TestCase {
 	 *	Variables   D                            E                             F	<br/> 
 	 *	Marginals   [0.7232, 0.2768]   [0.8509, 0.1491]   [0.2165, 0.7835]	<br/>
 	 *	<br/>	
-	 *	EricÅfs expected score is now 10.31615.	<br/> 
-	 *	EricÅfs min-q is 35.7393, at the following unique min-states (found by min-asset-propagation):	<br/> 
+	 *	EricÔøΩfs expected score is now 10.31615.	<br/> 
+	 *	EricÔøΩfs min-q is 35.7393, at the following unique min-states (found by min-asset-propagation):	<br/> 
 	 *	     D    E    F	<br/>
 	 *	     2     2    2	<br/>
 	 *	<br/> 
@@ -2667,6 +2669,12 @@ public class BruteForceMarkovEngineTest extends TestCase {
 		
 		// get history before transaction, so that we can make sure new transaction is not added into history
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		
 		// check that final min-q of Tom is 20
 		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
@@ -3502,6 +3510,12 @@ public class BruteForceMarkovEngineTest extends TestCase {
 		
 		// check that in the history, the assumption E was ignored
 		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertNotNull(questionHistory);
 		assertFalse(questionHistory.isEmpty());
 		AddTradeNetworkAction action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
@@ -3543,6 +3557,12 @@ public class BruteForceMarkovEngineTest extends TestCase {
 		
 		// check that in the history, the assumption A was ignored
 		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertNotNull(questionHistory);
 		assertFalse(questionHistory.isEmpty());
 		action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
@@ -5810,6 +5830,12 @@ public class BruteForceMarkovEngineTest extends TestCase {
 		
 		// get history before transaction, so that we can make sure new transaction is not added into history
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		
 		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
 		transactionKey = engine.startNetworkActions();
@@ -8144,6 +8170,12 @@ public class BruteForceMarkovEngineTest extends TestCase {
 		
 		// history and score detail/summary can be accessed normally
 		assertFalse(engine.getQuestionHistory((long) 0x0D, null, null).isEmpty());
+		for (QuestionEvent questionEvent : engine.getQuestionHistory(0x0DL, null, null)) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		assertFalse(engine.getScoreDetails(userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy"), (long)0x0D, null, null).isEmpty());
 		try {
 			assertNotNull(engine.getScoreSummary(userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy"), (long)0x0D, null, null));
@@ -8528,6 +8560,10 @@ public class BruteForceMarkovEngineTest extends TestCase {
 		questionHistory.addAll(engine.getQuestionHistory((long)0x0F, null, null));
 		List<AddTradeNetworkAction> ret = new ArrayList<MarkovEngineImpl.AddTradeNetworkAction>();
 		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
 			if (questionEvent instanceof AddTradeNetworkAction) {
 				ret.add((AddTradeNetworkAction) questionEvent);
 			}
@@ -11609,6 +11645,12 @@ public class BruteForceMarkovEngineTest extends TestCase {
 		
 		// get history before transaction, so that we can make sure new transaction is not added into history
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+		for (QuestionEvent questionEvent : questionHistory) {
+			if (!(questionEvent instanceof StructureChangeNetworkAction)
+					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+				assertNotNull(questionEvent.getUserId());
+			}
+		}
 		
 		// check that final min-q of Tom is 20
 		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
