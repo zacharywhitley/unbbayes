@@ -1158,15 +1158,31 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		}
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * Just delegates to {@link #propagate()} passing null as its argument
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#propagate()
 	 */
 	public void propagate() {
+		this.propagate(null);
+	}
+	
+	/**
+	 * Performs a junction tree algorithm propagation, but only for the subtree of the junction tree
+	 * which is rooted by the clique passed as the argument.
+	 * This is particularly useful if only 1 clique has evidence and such clique is part of a disconnected
+	 * subnet (thus, the nodes in the subnet are part of a sub-tree in the junction tree which is connected with some empty separator).
+	 * @param rootOfSubtree: only this clique and its descendants will be considered in the propagation.
+	 */
+	public void propagate(Clique rootOfSubtree) {
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onBeforePropagate(this);
 		}
 		try {
-			this.getNet().updateEvidences();
+			if (rootOfSubtree != null) {
+				this.getNet().updateEvidences(rootOfSubtree);
+			} else {
+				this.getNet().updateEvidences();
+			}
 			if (this.getMediator() != null) {
 				// if we have access to the controller, update status label
 				float totalEstimateProb = this.getNet().PET();
@@ -2239,4 +2255,6 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		}
 		return this.getNet();
 	}
+
+	
 }

@@ -1255,10 +1255,27 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	}
 
 	/**
-	 * Calls the junction tree method in order to update evidences.
+	 * Delegates to {@link #updateEvidences(Clique)} passing null as its argument.
 	 *  @throws Exception : the message will contain any consistency error.
 	 */
 	public void updateEvidences() throws Exception {
+		this.updateEvidences(null);
+	}
+	
+	/**
+	 * Calls the junction tree method in order to update evidences.
+	 * @param rootClique : only this clique and all its descendants will be updated.
+	 * This is particularly useful if only 1 clique has evidences and there are disconnected
+	 * sub-networks (in such case, if we pass the root clique of the disconnected sub-network,
+	 * then other disconnected portions will not be considered during the propagation, and the scope
+	 * will be limited - thus, the propagation may take less time).
+	 * If null, then it is equivalent to passing the top root clique as this argument.
+	 *  @throws Exception : the message will contain any consistency error.
+	 *  @see IJunctionTree#consistency()
+	 *  @see IJunctionTree#consistency(Clique)
+	 */
+	public void updateEvidences(Clique rootClique) throws Exception {
+			
 		int sizeNos = this.getNodesCopy().size();
 		for (int c = 0; c < sizeNos; c++) {
 			TreeVariable node = (TreeVariable) copiaNos.get(c);
@@ -1266,7 +1283,11 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		}
 
 		try {
-			junctionTree.consistency();
+			if (rootClique != null) {
+				junctionTree.consistency(rootClique);
+			} else {
+				junctionTree.consistency();
+			}
 		} catch (Exception e) {
 			try {
 				initialize();

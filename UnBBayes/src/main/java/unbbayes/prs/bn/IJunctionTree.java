@@ -74,8 +74,20 @@ public interface IJunctionTree {
 	 *  Verifies global consistency.
 	 *  It applies the "collect" (propagate messages from leaves to root clique) and then "distribute" (propagate
 	 *  messages from root clique to leaves).
+	 *  This is equivalent to calling {@link #consistency(Clique)} to
+	 *  the root clique (assuming that we can visit all cliques from the root)
 	 */
 	public abstract void consistency() throws Exception;
+	
+	/**
+	 * Verifies global consistency.
+	 *  It applies the "collect" (propagate messages from leaves to root clique) and then "distribute" (propagate
+	 *  messages from root clique to leaves). However, its scope is limited only to cliques below (i.e. descendants)
+	 *  of the clique passed as its argument.
+	 * @throws Exception
+	 * @see unbbayes.prs.bn.IJunctionTree#consistency()
+	 */
+	public void consistency(Clique rootClique) throws Exception;
 
 	/**
 	 *  Initialize belief

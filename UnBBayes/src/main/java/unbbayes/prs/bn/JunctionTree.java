@@ -31,6 +31,7 @@ import java.util.Set;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.UtilityNode;
+import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -155,15 +156,46 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	}
 	
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * This method propagates the evidence of all cliques
+	 * accessible from the 1st clique at {@link #getCliques()}
+	 * (which is supposedly the root clique of the junction tree).
+	 * In the current implementation, the root clique is connected
+	 * to all disconnected sub-cliques through empty separators, therefore,
+	 * calling this method will automatically consider
+	 * all disconnected sub-trees as well.
 	 * @see unbbayes.prs.bn.IJunctionTree#consistency()
+	 * @see #consistency(Clique)
 	 */
 	public void consistency() throws Exception {
+		this.consistency(cliques.get(0));
+	}
+	
+	/**
+	 * Basically, this method propagates evidences by calling
+	 * {@link #coleteEvidencia(Clique)} and {@link #distributeEvidences(Clique)},
+	 * passing as their arguments the clique specified in the argument.
+	 * @param rootClique: this clique will be considered as the root node
+	 * of the junction tree during this propagation, and evidences will
+	 * only be propagated across this node and descendants.
+	 * This is useful in order to force the propagation to be limited
+	 * to a subtree of the junction tree, specially if such subtree is supposedly
+	 * disconnected from other portions, and no other evidence is expected in other
+	 * cliques disconnected from the current clique.
+	 * If null, then the 1st clique in {@link #getCliques()} will be used.
+	 * @throws Exception
+	 * @see unbbayes.prs.bn.IJunctionTree#consistency()
+	 * @see {@link #consistency()}
+	 * @see #coleteEvidencia(Clique)
+	 * @see #distributeEvidences(Clique)
+	 */
+	public void consistency(Clique rootClique) throws Exception {
+		if (rootClique == null) {
+			rootClique = cliques.get(0);
+		}
 		totalEstimatedProb = 1;
-		Clique raiz = cliques.get(0);
-		coleteEvidencia(raiz);
-		distributeEvidences(raiz);
+		coleteEvidencia(rootClique);
+		distributeEvidences(rootClique);
 	}
 
 	/**
@@ -194,9 +226,9 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 //			Separator sep = getSeparator(clique, auxClique); 
 //			auxClique.absorb(clique, sep.getPotentialTable());
 			absorb(auxClique, clique);
-			if (!auxClique.getChildren().isEmpty()) {
+//			if (!auxClique.getChildren().isEmpty()) {
 				distributeEvidences(auxClique);
-			}
+//			}
 		}
 	}
 	
