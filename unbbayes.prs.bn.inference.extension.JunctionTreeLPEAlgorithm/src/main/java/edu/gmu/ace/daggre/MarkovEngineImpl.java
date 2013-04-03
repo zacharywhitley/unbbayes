@@ -644,47 +644,47 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				
 				// actually run action
 				try {
-					if (action.getUserId() != null && action.getUserId().longValue() == 3487L && action.getQuestionId() != null && action.getQuestionId().longValue() == 208L) {
-						try {
-							AssetNetwork assetNetwork = getAlgorithmAndAssetNetFromUserID(action.getUserId()).getAssetNetwork();
-							System.out.println(i+" [Before] User = " + assetNetwork);
-							for (Clique clique : assetNetwork.getJunctionTree().getCliquesContainingAllNodes((List)Collections.singletonList(assetNetwork.getNode(action.getQuestionId().toString())), Integer.MAX_VALUE)) {
-								System.out.println(i+" [Before] Clique = " + clique);
-								System.out.print("[ ");
-								for (float asset : clique.getProbabilityFunction().getValues()) {
-									System.out.print( asset  + " , ");
-								}
-								System.out.print(" ]");
-							}
-							System.out.println(i+" [Before] Score = " + scoreUserEv(action.getUserId(), null, null));
-							System.out.println(i+" [Before] Cash = " + getCash(action.getUserId(), null, null));
-							System.out.println(i+" [Before] Score per state of Q" + action.getQuestionId() +  " = " + scoreUserQuestionEvStates(action.getUserId(), action.getQuestionId(), null, null));
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						
-					}
+//					if (action.getUserId() != null && action.getUserId().longValue() == 3487L && action.getQuestionId() != null && action.getQuestionId().longValue() == 208L) {
+//						try {
+//							AssetNetwork assetNetwork = getAlgorithmAndAssetNetFromUserID(action.getUserId()).getAssetNetwork();
+//							System.out.println(i+" [Before] User = " + assetNetwork);
+//							for (Clique clique : assetNetwork.getJunctionTree().getCliquesContainingAllNodes((List)Collections.singletonList(assetNetwork.getNode(action.getQuestionId().toString())), Integer.MAX_VALUE)) {
+//								System.out.println(i+" [Before] Clique = " + clique);
+//								System.out.print("[ ");
+//								for (float asset : clique.getProbabilityFunction().getValues()) {
+//									System.out.print( asset  + " , ");
+//								}
+//								System.out.print(" ]");
+//							}
+//							System.out.println(i+" [Before] Score = " + scoreUserEv(action.getUserId(), null, null));
+//							System.out.println(i+" [Before] Cash = " + getCash(action.getUserId(), null, null));
+//							System.out.println(i+" [Before] Score per state of Q" + action.getQuestionId() +  " = " + scoreUserQuestionEvStates(action.getUserId(), action.getQuestionId(), null, null));
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//						}
+//						
+//					}
 					action.execute();
-					if (action.getUserId() != null && action.getUserId().longValue() == 3487L && action.getQuestionId() != null && action.getQuestionId().longValue() == 208L) {
-						try {
-							AssetNetwork assetNetwork = getAlgorithmAndAssetNetFromUserID(action.getUserId()).getAssetNetwork();
-							System.out.println(i+ "[After] User = " + assetNetwork);
-							for (Clique clique : assetNetwork.getJunctionTree().getCliquesContainingAllNodes((List)Collections.singletonList(assetNetwork.getNode(action.getQuestionId().toString())), Integer.MAX_VALUE)) {
-								System.out.println(i+ "[After] Clique = " + clique);
-								System.out.print("[ ");
-								for (float asset : clique.getProbabilityFunction().getValues()) {
-									System.out.print( asset  + " , ");
-								}
-								System.out.print(" ]");
-							}
-							System.out.println(i+ "[After] Score = " + scoreUserEv(action.getUserId(), null, null));
-							System.out.println(i+ "[After] Cash = " + getCash(action.getUserId(), null, null));
-							System.out.println(i+ "[After] Score per state of Q" + action.getQuestionId() +  " = " + scoreUserQuestionEvStates(action.getUserId(), action.getQuestionId(), null, null));
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						
-					}
+//					if (action.getUserId() != null && action.getUserId().longValue() == 3487L && action.getQuestionId() != null && action.getQuestionId().longValue() == 208L) {
+//						try {
+//							AssetNetwork assetNetwork = getAlgorithmAndAssetNetFromUserID(action.getUserId()).getAssetNetwork();
+//							System.out.println(i+ "[After] User = " + assetNetwork);
+//							for (Clique clique : assetNetwork.getJunctionTree().getCliquesContainingAllNodes((List)Collections.singletonList(assetNetwork.getNode(action.getQuestionId().toString())), Integer.MAX_VALUE)) {
+//								System.out.println(i+ "[After] Clique = " + clique);
+//								System.out.print("[ ");
+//								for (float asset : clique.getProbabilityFunction().getValues()) {
+//									System.out.print( asset  + " , ");
+//								}
+//								System.out.print(" ]");
+//							}
+//							System.out.println(i+ "[After] Score = " + scoreUserEv(action.getUserId(), null, null));
+//							System.out.println(i+ "[After] Cash = " + getCash(action.getUserId(), null, null));
+//							System.out.println(i+ "[After] Score per state of Q" + action.getQuestionId() +  " = " + scoreUserQuestionEvStates(action.getUserId(), action.getQuestionId(), null, null));
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//						}
+//						
+//					}
 				} catch (ZeroAssetsException z) {
 					// do not consider this action anymore
 					removeNetworkActionFromQuestionMap(action, action.getQuestionId());

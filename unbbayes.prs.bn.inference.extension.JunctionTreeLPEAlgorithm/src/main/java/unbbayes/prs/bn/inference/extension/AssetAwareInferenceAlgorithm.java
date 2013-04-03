@@ -317,8 +317,37 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			// store the probability before the propagation, so that we can calculate the ratio
 			this.updateProbabilityPriorToPropagation();
 		}
+		
 		// propagate probability
-		this.getProbabilityPropagationDelegator().propagate();
+		
+		// check if we can limit the scope of propagation (if only 1 clique is edited, then we can limit to that subtree if it's disconnected from others)
+		List<Clique> editCliques = this.getEditCliques();
+		if ((this.getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) && editCliques != null && editCliques.size() == 1) {
+			// if there is only 1 clique being updated, then limit the scope only to that portion of the junction tree (do not consider other disconnected portions)
+			Clique rootOfSubtree = editCliques.get(0);
+			// the clique to be passed must be of the same network (can be different network if we are trying to simulate or using a copied network)
+			// TODO this is unsafe, because it assumes that the internal identificator is synchronized with the array index
+			int index = rootOfSubtree.getInternalIdentificator();
+			rootOfSubtree = ((JunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).getJunctionTree().getCliques().get(index);
+			if (rootOfSubtree.getInternalIdentificator() != index) {
+				throw new RuntimeException("The index of cliques of BN associated with user " + getAssetNetwork() + " is desynchronized.");
+			}
+			// visit parent cliques until we find the root of the edited sub-tree
+			while (rootOfSubtree.getParent() != null) {
+				// extract the separator
+				Separator separator = ((JunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).getJunctionTree().getSeparator(rootOfSubtree, rootOfSubtree.getParent());
+				if (separator == null || separator.getProbabilityFunction().tableSize() <= 0) {
+					// there is no more parent connected with non-empty separator
+					break;
+				}
+				rootOfSubtree = rootOfSubtree.getParent();
+			}
+			// only propagate through the sub-tree rooted by rootOfSubtree
+			((JunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).propagate(rootOfSubtree);
+		} else {
+			// assume there are other potential evidences all over the junction tree
+			this.getProbabilityPropagationDelegator().propagate();
+		}
 		
 		// zeroAssetsException != null if this.getAssetPropagationDelegator().propagate() has thrown such exception
 		ZeroAssetsException zeroAssetsException = null;	

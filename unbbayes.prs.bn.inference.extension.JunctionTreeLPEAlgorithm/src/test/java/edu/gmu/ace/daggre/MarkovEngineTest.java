@@ -31,6 +31,7 @@ import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.util.Debug;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.BalanceTradeNetworkAction;
 import edu.gmu.ace.daggre.MarkovEngineImpl.DummyTradeAction;
@@ -82,6 +83,7 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToReturnEVComponentsAsScoreSummary(false);
 		engine.setToDeleteResolvedNode(true);
 		engine.initialize();
+		Debug.setDebug(true);
 	}
 
 	/* (non-Javadoc)
