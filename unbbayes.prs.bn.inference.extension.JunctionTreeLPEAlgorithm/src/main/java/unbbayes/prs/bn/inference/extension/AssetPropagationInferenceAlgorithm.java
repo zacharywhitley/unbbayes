@@ -161,6 +161,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	private boolean isToCalculateMarginalsOfAssetNodes = false;
 	
+
+	private boolean isToCacheUnconditionalMinAssets = true;
+	
+	private float unconditionalMinAssetCache = Float.NaN;
+	
 	
 	/**
 	 * Default implementation of IQValuesToAssetsConverter used when {@link #getExpectedAssets(IQValuesToAssetsConverter)}
@@ -337,6 +342,11 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 	};
 
+	/** A property with this name is used in {@link #getAssetNetwork()} in order to store a flag which is true when {@link #runMinPropagation(Map)}
+	 * was executed already.
+	 * @see {@link unbbayes.prs.Network#getProperty(String)} */
+	public static final String MIN_PROPAGATION_FLAG_PROPERTY = AssetPropagationInferenceAlgorithm.class.getName()+".MIN_PROPAGATION_FLAG_PROPERTY";
+
 	private boolean isToAllowInfinite = false;
 
 	private boolean isToUseQValues = IS_TO_USE_Q_VALUES;
@@ -506,6 +516,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			getEditCliques().clear(); // reset these cliques, so that next call to propagate() does not reuse this list
 			throw new NullPointerException(this.getClass() + "#propagate() was called without setting the probabilistic network to a non-null value." );
 		}
+		
+		// clear the cache of cash
+		this.setUnconditionalMinAssetCache(Float.NaN);
 		
 //		 the assets to be updated
 //		Map<Clique, PotentialTable> currentAssetsMap = (Map<Clique, PotentialTable>) this.getNetwork().getProperty(CURRENT_ASSETS_PROPERTY);
@@ -1335,6 +1348,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	public void setDefaultInitialAssetTableValue(float defaultInitialAssetQuantity) {
 		this.defaultInitialAssetTableValue = defaultInitialAssetQuantity;
+		this.setUnconditionalMinAssetCache(Float.NaN);
 	}
 
 	/**
@@ -1512,7 +1526,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	public void setAssetNetwork(AssetNetwork assetNet)
 			throws IllegalArgumentException {
-		
+		this.setUnconditionalMinAssetCache(Float.NaN);
 		this.setNetwork(assetNet);
 //		if (assetNet == null) {
 //			// do not update mappings if assetNet is null, because such mappings are stored in asset nets.
@@ -1595,6 +1609,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	public void setToPropagateForGlobalConsistency(
 			boolean isToPropagateForGlobalConsistency) {
 		this.isToPropagateForGlobalConsistency = isToPropagateForGlobalConsistency;
+
+		this.setUnconditionalMinAssetCache(Float.NaN);
 	}
 
 	/**
@@ -1609,6 +1625,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	public void setToUpdateSeparators(boolean isToUpdateSeparators) {
 		this.isToUpdateSeparators = isToUpdateSeparators;
+
+		this.setUnconditionalMinAssetCache(Float.NaN);
 	}
 	
 	/** 
@@ -1620,6 +1638,10 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * We are also assuming that the variables in {@link Clique#getNodes()} are equals to
 	 * the variables related to {@link Clique#getProbabilityFunction()} (see {@link PotentialTable#getVariableAt(int)}),
 	 * no matter the ordering.
+	 * If the property {@link #MIN_PROPAGATION_FLAG_PROPERTY} of {@link #getAssetNetwork()} is not set to true
+	 * and inputOutpuArgumentForExplanation is non-null, then this method will automatically call
+	 * {@link #runMinPropagation(Map, boolean)} with null and true arguments in order to force min propagation
+	 * before calculating the explanation 
 	 * @param inputOutpuArgumentForExplanation : an input/output parameter. However, current implementation
 	 * assumes this is an empty collection (hence, this is only used as output argument).
 	 * Currently, this list will be filled with only 1 LPE.
@@ -1630,9 +1652,18 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * @see #getGlobalQValueCalculator()
 	 */
 	public float calculateExplanation( List<Map<INode, Integer>> inputOutpuArgumentForExplanation){
+		
+		
 		// if inputOutpuArgumentForExplanation == null, this means that we do not need to obtain min states
 		// (i.e. we only want the minimum assets or q-values)
 		if (inputOutpuArgumentForExplanation == null) {	
+			
+			if (isToCacheUnconditionalMinAssets() && !Float.isNaN(getUnconditionalMinAssetCache())) {
+				// unconditional min assets is being calculated. Cache is enabled, and cache was filled. We may use it, so no need to calculate again.
+				return getUnconditionalMinAssetCache();
+			}
+			
+			
 			// calculate only min-value
 			try {
 				return calculateMinimum();
@@ -1648,9 +1679,17 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					"obtain the min-states as well.");
 		}
 		
+		// check if runMinPropagation was really executed previously. If not, we may need to execute it now to get correct results
+		Boolean minPropagationWasExecuted = (Boolean) getAssetNetwork().getProperty(MIN_PROPAGATION_FLAG_PROPERTY);
+		if (minPropagationWasExecuted == null || !minPropagationWasExecuted) {
+			// ignore cache this time, in order to force propagation
+			// pass null as condition, because conditional min assets should be calculated running runMinPropagation explicitly
+			runMinPropagation(null, true);	
+		}
+		
 		// calculate both min value and min states
 		// TODO return more than 1 LPE
-		Debug.println(getClass(), "Current version returns only 1 explanation");
+//		Debug.println(getClass(), "Current version returns only 1 explanation");
 		
 		// this map will contain least probable state for each node
 		Map<INode, Integer> nodeToLPEMap = new HashMap<INode, Integer>();
@@ -2013,14 +2052,24 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 //	}
 
 	/**
+	 * Just delegates to {@link #runMinPropagation(Map, boolean)} passing false to its boolean argument.
+	 */
+	public void runMinPropagation(Map<INode, Integer> conditions) {
+		this.runMinPropagation(conditions, false);
+	}
+	
+	/**
 	 * Just executes {@link JunctionTreeLPEAlgorithm#propagate()}.
 	 * It uses {@link PotentialTable#copyData()} for all cliques and separator's tables,
 	 * so that {@link #undoMinPropagation()} can call {@link PotentialTable#restoreData()}
 	 * in order to revert any changes.
 	 * This will run min propagation even when {@link #isToPropagateForGlobalConsistency()} == false.
+	 * @param conditions
+	 * @param isToIgnoreCache : if true, {@link #isToCacheUnconditionalMinAssets()} and {@link #getUnconditionalMinAssetCache()} will
+	 * be ignored.
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#runMinPropagation(Map)
 	 */
-	public void runMinPropagation(Map<INode, Integer> conditions) {
+	public void runMinPropagation(Map<INode, Integer> conditions, boolean isToIgnoreCache) {
 		// do not run min propagation if network was not "compiled" (i.e. junction tree was not properly initialized)
 		if (this.getAssetNetwork() == null
 				|| this.getAssetNetwork().getJunctionTree() == null
@@ -2028,6 +2077,12 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				|| this.getAssetNetwork().getJunctionTree().getSeparators() == null) {
 			throw new IllegalStateException("Method \"runMinPropagation\" was invoked before compilation of junction tree of the network " + getAssetNetwork());
 		}
+		
+		if ((conditions == null || conditions.isEmpty()) && isToCacheUnconditionalMinAssets() && !Float.isNaN(getUnconditionalMinAssetCache()) && !isToIgnoreCache) {
+			// unconditional min assets is being calculated. Cache is enabled, and cache was filled. We may use it, so no need for propagation.
+			return;
+		}
+		
 		// "store" all clique potentials, so that it can be restored later
 		for (Clique clique : this.getAssetNetwork().getJunctionTree().getCliques()) {
 			clique.getProbabilityFunction().copyData();
@@ -2069,6 +2124,17 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		super.propagate();
 		// restore listeners
 		this.setInferenceAlgorithmListeners(backup);
+		
+		// tag this asset network as min-propagated
+		getAssetNetwork().addProperty(MIN_PROPAGATION_FLAG_PROPERTY, Boolean.TRUE);
+		
+		if ((conditions == null || conditions.isEmpty()) && isToCacheUnconditionalMinAssets()) {
+			// update cache
+			setUnconditionalMinAssetCache(calculateExplanation(null));
+		} else {
+			// reset cache
+			setUnconditionalMinAssetCache(Float.NaN);
+		}
 	}
 
 	/**
@@ -2093,6 +2159,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				((AssetNode) node).resetEvidence();
 			}
 		}
+		
+		// tag this asset network as min-propagated
+		getAssetNetwork().getProperties().remove(MIN_PROPAGATION_FLAG_PROPERTY);
 	}
 	
 	/**
@@ -2152,6 +2221,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	public void setToUpdateOnlyEditClique(boolean isToUpdateOnlyEditClique) {
 		this.isToUpdateOnlyEditClique = isToUpdateOnlyEditClique;
+
+		this.setUnconditionalMinAssetCache(Float.NaN);
 	}
 
 	/**
@@ -2254,6 +2325,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		if (evidences == null || evidences.isEmpty()) {
 			return;
 		}
+		
+		this.setUnconditionalMinAssetCache(Float.NaN);
 		
 		Map<Clique, Float> resolvedAssetValues = new HashMap<Clique, Float>();
 		
@@ -2501,6 +2574,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	public void setEmptySeparatorsDefaultContent(float emptySeparatorsContent) {
 		this.setEmptySeparatorsDefaultContent(getAssetNetwork(), emptySeparatorsContent);
+		this.setUnconditionalMinAssetCache(Float.NaN);
 	}
 	
 	/**
@@ -2524,6 +2598,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	protected void setEmptySeparatorsDefaultContent(Network net, float emptySeparatorsContent) {
 		net.getProperties().put(EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY, emptySeparatorsContent);
+		this.setUnconditionalMinAssetCache(Float.NaN);
 	}
 
 	/**
@@ -2556,6 +2631,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			}
 			this.setCellValuesComparator(isToUseQValues?DEFAULT_QVALUES_COMPARATOR:DEFAULT_ASSET_COMPARATOR);
 		}
+
+		this.setUnconditionalMinAssetCache(Float.NaN);
 	}
 
 	/**
@@ -2633,6 +2710,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			this.setJunctionTreeBuilder(isToUseQValues()?DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER:DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
 			this.setDefaultJunctionTreeBuilder(isToUseQValues()?DEFAULT_MIN_PROPAGATION_JUNCTION_TREE_BUILDER:DEFAULT_ONEWAY_LOGARITHMIC_MIN_PROPAGATION_JUNCTION_TREE_BUILDER);
 		}
+		this.setUnconditionalMinAssetCache(Float.NaN);
 	}
 	
 	/**
@@ -2788,6 +2866,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setMemento(unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm.IAssetNetAlgorithmMemento)
 	 */
 	public void setMemento(IAssetNetAlgorithmMemento memento) throws NoSuchFieldException {
+		this.setUnconditionalMinAssetCache(Float.NaN);
 		if (memento instanceof AssetPropagationInferenceAlgorithmMemento) {
 			((AssetPropagationInferenceAlgorithmMemento)memento).restore();
 		} else {
@@ -2810,6 +2889,49 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	public boolean isToRebuildOrigCliqueToAssetCliqueMapping() {
 		return isToRebuildOrigCliqueToAssetCliqueMapping;
+	}
+	
+	/**
+	 * If true, {@link #getUnconditionalMinAssetCache()} will be used
+	 * as a cache for unconditional min assets obtainable from
+	 * {@link #calculateExplanation(List)} with null as argument.
+	 * @return the isToCacheUnconditionalMinAssets
+	 */
+	public boolean isToCacheUnconditionalMinAssets() {
+		return isToCacheUnconditionalMinAssets;
+	}
+
+	/**
+	 * If true, {@link #getUnconditionalMinAssetCache()} will be used
+	 * as a cache for unconditional min assets obtainable from
+	 * {@link #calculateExplanation(List)} with null as argument.
+	 * Calling this method will also reset the content of {@link #setUnconditionalMinAssetCache(float)}
+	 * @param isToCacheUnconditionalMinAssets the isToCacheUnconditionalMinAssets to set
+	 */
+	public void setToCacheUnconditionalMinAssets(
+			boolean isToCacheUnconditionalMinAssets) {
+		this.isToCacheUnconditionalMinAssets = isToCacheUnconditionalMinAssets;
+		this.setUnconditionalMinAssetCache(Float.NaN);
+	}
+
+	/**
+	 * This value is used as a cache for {@link #calculateExplanation(List)}
+	 * with null argument when {@link #isToCacheUnconditionalMinAssets()} is true.
+	 * @return the unconditionalMinAssetCache
+	 */
+	protected float getUnconditionalMinAssetCache() {
+		return unconditionalMinAssetCache;
+	}
+
+	/**
+	 * This value is used as a cache for {@link #calculateExplanation(List)}
+	 * with null argument when {@link #isToCacheUnconditionalMinAssets()} is true.
+	 * @param unconditionalMinAssetCache the unconditionalMinAssetCache to set.
+	 * By setting this value to {@link Float#NaN}, the cache will be
+	 * updated at {@link #runMinPropagation(Map)} if no assumption was provided.
+	 */
+	protected void setUnconditionalMinAssetCache(float unconditionalMinAssetCache) {
+		this.unconditionalMinAssetCache = unconditionalMinAssetCache;
 	}
 	
 

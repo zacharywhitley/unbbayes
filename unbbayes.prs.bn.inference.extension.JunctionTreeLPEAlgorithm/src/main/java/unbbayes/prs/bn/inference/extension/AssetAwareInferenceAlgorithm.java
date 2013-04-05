@@ -144,6 +144,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	private boolean isToChangeGUI = true;
 	
 
+	
 
 	/**
 	 * Default constructor is at least protected, in order to allow inheritance.
@@ -352,6 +353,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		// zeroAssetsException != null if this.getAssetPropagationDelegator().propagate() has thrown such exception
 		ZeroAssetsException zeroAssetsException = null;	
 		if (isToUpdateAssets()) {
+			
 			// calculate ratio and propagate assets
 			try {
 				this.getAssetPropagationDelegator().propagate();
@@ -754,6 +756,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 */
 	public void setAssetPropagationDelegator(
 			IAssetNetAlgorithm assetPropagationDelegator) {
+		
 		this.assetPropagationDelegator = assetPropagationDelegator;
 	}
 
@@ -1296,6 +1299,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 */
 	public void setAssetNetwork(AssetNetwork network)
 			throws IllegalArgumentException {
+		
 		this.getAssetPropagationDelegator().setAssetNetwork(network);
 	}
 
@@ -1378,7 +1382,9 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#runMinPropagation(Map)
 	 */
 	public void runMinPropagation(Map<INode, Integer> conditions) {
+		
 		this.getAssetPropagationDelegator().runMinPropagation(conditions);
+		
 	}
 
 	/**
@@ -1646,6 +1652,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		if (evidences == null || evidences.isEmpty()) {
 			return;
 		}
+		
 		// fill the findings
 		for (INode node : evidences.keySet()) {
 			ProbabilisticNode probNode = (ProbabilisticNode) getRelatedProbabilisticNetwork().getNode(node.getName());
@@ -1894,6 +1901,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		if (this.getAssetPropagationDelegator() != null) {
 			this.getAssetPropagationDelegator().setToCalculateLPE(isToCalculateLPE);
 		}
+		
 	}
 
 	/**
@@ -1917,6 +1925,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		if (this.getAssetPropagationDelegator() == null) {
 			throw new NoSuchFieldException("this.getAssetPropagationDelegator() == null");
 		}
+		
 		this.getAssetPropagationDelegator().setMemento(memento);
 	}
 
@@ -2293,6 +2302,8 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		}
 		return false;	// default value
 	}
+
+	
 
 //	/**
 //	 * Only delegates to {@link #getProbabilityPropagationDelegator()}

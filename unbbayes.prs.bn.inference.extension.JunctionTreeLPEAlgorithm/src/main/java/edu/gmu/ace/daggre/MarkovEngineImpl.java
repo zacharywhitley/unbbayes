@@ -8290,6 +8290,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //							separator.getProbabilityFunction().copyData();
 						}
 					}
+					// reset cache of assets too
+					if (algorithm.getAssetPropagationDelegator() instanceof AssetPropagationInferenceAlgorithm) {
+						AssetPropagationInferenceAlgorithm assetAlgorithm = (AssetPropagationInferenceAlgorithm) algorithm.getAssetPropagationDelegator();
+						// this should reset min asset cache
+						assetAlgorithm.setToCacheUnconditionalMinAssets(assetAlgorithm.isToCacheUnconditionalMinAssets());
+					}
 				}
 			}
 			// also, restore uninitialized users.
