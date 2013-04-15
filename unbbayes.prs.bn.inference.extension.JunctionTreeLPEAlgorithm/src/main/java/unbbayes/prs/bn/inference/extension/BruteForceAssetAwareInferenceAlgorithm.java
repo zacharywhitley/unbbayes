@@ -703,7 +703,7 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 	 * @param jointAssetTable the jointAssetTable to set
 	 */
 	public void setJointQTable(JointPotentialTable jointAssetTable) {
-		getAssetNetwork().getProperties().put(JOINT_ASSET_TABLE_PROP, jointAssetTable);
+		getAssetNetwork().addProperty(JOINT_ASSET_TABLE_PROP, jointAssetTable);
 	}
 
 	/**

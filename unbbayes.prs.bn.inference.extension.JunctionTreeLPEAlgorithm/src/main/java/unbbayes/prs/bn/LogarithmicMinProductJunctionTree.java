@@ -6,6 +6,7 @@ package unbbayes.prs.bn;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -14,7 +15,6 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable.ISumOperation;
 import unbbayes.prs.bn.inference.extension.MinProductJunctionTree;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
-import unbbayes.util.SetToolkit;
 
 /**
  * This is an extension of {@link MinProductJunctionTree}
@@ -42,6 +42,11 @@ public class LogarithmicMinProductJunctionTree extends MinProductJunctionTree {
 	 */
 	private boolean isToUseSeparatorsMap = true;
 	
+	/** If true, {@link #absorb(Clique, Clique)} will use singleton temporary lists in order to reduce garbage */
+	private static boolean isToUseSingletonListsInAbsorb = true;
+	
+	/** This is the singleton temporary list used by {@link #absorb(Clique, Clique)} when {@link #isToUseSingletonListsInAbsorb()} == true */
+	private static List<Node> singletonListForAbsorb = new ArrayList<Node>(7);
 	
 	/**
 	 *  This is an extension of {@link MinProductJunctionTree}
@@ -54,6 +59,8 @@ public class LogarithmicMinProductJunctionTree extends MinProductJunctionTree {
 		if (!isToUseSeparatorsMap()) {
 			// disable the index of separators given cliques
 			this.setSeparatorsMap(null);
+		} else {
+//			this.setSeparatorsMap(new SeparatorMap());
 		}
 	}
 	
@@ -73,16 +80,20 @@ public class LogarithmicMinProductJunctionTree extends MinProductJunctionTree {
 			return;	// there is nothing to propagate
 		}
 		// who are going to be removed 
-		ArrayList<Node> minOut = SetToolkit.clone(clique2.getNodes());
-		
-		// variables in the separator are not going to be removed, so remove from maxOut
-		for (int i = 0; i < sepTab.variableCount(); i++) {
-			minOut.remove(sepTab.getVariableAt(i));			
+		List<Node> minOut = null;
+		if (isToUseSingletonListsInAbsorb) {
+			minOut = singletonListForAbsorb;
+			minOut.clear();
+			minOut.addAll(clique2.getNodes());
+			minOut.removeAll(sep.getNodes());
+		} else {
+			minOut = new ArrayList<Node>(clique2.getNodes());
+			minOut.removeAll(sep.getNodes());
 		}
 
 		// temporary table for ratio calculation
 		PotentialTable dummyTable =
-			(PotentialTable) clique2.getProbabilityFunction().clone();
+			(PotentialTable) clique2.getProbabilityFunction().getTemporaryClone();
 		
 		for (int i = 0; i < minOut.size(); i++) {
 			PotentialTable.ISumOperation backupOp = dummyTable.getSumOperation();	// backup real op
@@ -96,7 +107,7 @@ public class LogarithmicMinProductJunctionTree extends MinProductJunctionTree {
 		
 
 		PotentialTable originalSeparatorTable =
-			(PotentialTable) sepTab.clone();
+			(PotentialTable) sepTab.getTemporaryClone();
 
 		for (int i = sepTab.tableSize() - 1; i >= 0; i--) {
 			if (Float.isInfinite(dummyTable.getValue(i))) {
@@ -248,6 +259,7 @@ public class LogarithmicMinProductJunctionTree extends MinProductJunctionTree {
 	protected void initializeSeparatorMap() {
 		// this is the new map to initialize
 		Map<Clique, Set<Separator>> separatorMap = new HashMap<Clique, Set<Separator>>();
+//		Map<Clique, Set<Separator>> separatorMap = new SeparatorMap();
 		// simply iterate over all separators and fill separatorMap
 		for (Separator sep : getSeparators()) {
 			Set<Separator> seps = getSeparatorsMap().get(sep.getClique1());
@@ -269,6 +281,178 @@ public class LogarithmicMinProductJunctionTree extends MinProductJunctionTree {
 		}
 		// update attribute
 		this.setSeparatorsMap(separatorMap);
+	}
+	
+//	/**
+//	 * This is a map which is actually composed of two array lists: one for cliques, and another for separators.
+//	 * It basically represents a mapping from {@link IRandomVariable#getInternalIdentificator()}
+//	 * to a set of {@link IRandomVariable}
+//	 * This is used in order to represent a mapping from integer to a set of objects.
+//	 * The integer key is supposed to be fully sorted and can be negative.
+//	 * The expected values of the Keys are: 
+//	 * <br/> 
+//	 * <br/> 
+//	 * Positive {@link IRandomVariable#getInternalIdentificator()} (used by separators): 0,1,2,3... These will be stored in {@link #sepList}
+//	 * <br/> 
+//	 * CAUTION: {@link IRandomVariable#getInternalIdentificator()}  are expected to be a sequence with no "jumps" (i.e. if "3" is present, then 2,1, and 0 are always present; if
+//	 * -3 is present, then -2 and -1 are always present).
+//	 * This map replaces {@link HashMap} in order to reduce memory usage.
+//	 * @author Shou Matsumoto
+//	 */
+//	public class SeparatorMap implements Map<Clique, Set<Separator>> {
+//		/** This is the list representing the mapping of cliques to separators */
+//		protected List<Set<Separator>> cliqueList = new ArrayList<Set<Separator>>(0);
+//		
+//		public int size() {
+//			return cliqueList.size();
+//		}
+//
+//		public boolean isEmpty() {
+//			return cliqueList.isEmpty();
+//		}
+//
+//		public boolean containsKey(Object key) {
+//			if (key == null || !(key instanceof Clique)) {
+//				return false;
+//			}
+//			int index = ((Clique)key).getInternalIdentificator();
+//			if (index < 0) {
+//				return false;
+//			}
+//			return index < cliqueList.size();
+//		}
+//
+//		public boolean containsValue(Object value) {
+//			return cliqueList.contains(value);
+//		}
+//
+//		public Set<Separator> get(Object key) {
+//			// check if key is valid
+//			if (key == null || !(key instanceof Clique)) {
+//				return null;
+//			}
+//			// extract index
+//			int index = ((Clique)key).getInternalIdentificator();
+//			if (index >= 0 && index < cliqueList.size()) {
+//				// index is positive and within the size of cliqueList
+//				return cliqueList.get(index);
+//			} 
+//			return null;
+//		}
+//
+//		public Set<Separator> put(Clique clique, Set<Separator> value) {
+//			List<Set<Separator>> listToAdd = cliqueList; // this is the list to be used to add new element
+//			int index = clique.getInternalIdentificator();
+//			while (index >= listToAdd.size()) {
+//				// guarantee that index of the list is synchronized with key
+//				listToAdd.add(null);
+//			}
+//			return listToAdd.set(index, value); // this will return null if index was greater than size
+//		}
+//
+//		public Set<Separator> remove(Object key) {
+//			// check if key is valid
+//			if (key == null || !(key instanceof Clique)) {
+//				return null;
+//			}
+//			// extract index
+//			int index = ((Clique)key).getInternalIdentificator();
+//			List<Set<Separator>> listToDelete = cliqueList; // this is the list to be used to add new element
+//			if (index < 0 ) { 
+//				// index is negative, so remove from sepList
+//				listToDelete = sepList;
+//				index = (-index - 1);	// convert to index of sepList
+//			}
+//			if (index < listToDelete.size()) {
+//				return listToDelete.remove(index);
+//			}
+//			return null;
+//		}
+//
+//		/**
+//		 * Just iterates over m and calls {@link #put(Clique, Set<Separator>)}
+//		 * @see java.util.Map#putAll(java.util.Map)
+//		 */
+//		public void putAll(Map<? extends Clique, ? extends Set<Separator>> m) {
+//			for (Clique key : m.keySet()) {
+//				put(key, m.get(key));
+//			}
+//		}
+//
+//		public void clear() {
+//			cliqueList.clear();
+//			sepList.clear();
+//		}
+//
+//		/**
+//		 * Creates a new set containing indexes of non-null elements in {@link #list}, and returns it
+//		 * @see java.util.Map#keySet()
+//		 */
+//		public Set<Clique> keySet() {
+//			Set<Clique> ret = new HashSet<Clique>(size());
+//			for (int i = 0; i < cliqueList.size(); i++) {
+//				if (cliqueList.get(i) != null) {
+//					ret.add(i);
+//				}
+//			}
+//			for (int i = 0; i < sepList.size(); i++) {
+//				if (sepList.get(i) != null) {
+//					ret.add(-(i+1));	// 0->-1; 1->-2; 2->-3...
+//				}
+//			}
+//			return ret;
+//		}
+//
+//		/**
+//		 * returns content of {@link #cliqueList} concatenated with {@link #sepList}
+//		 * @see java.util.Map#values()
+//		 */
+//		public Collection<Set<Separator>> values() {
+//			Collection<Set<Separator>> ret = new ArrayList<Set<Separator>>(size());
+//			ret.addAll(cliqueList);
+//			ret.addAll(sepList);
+//			return ret;
+//		}
+//
+//		/**
+//		 * Creates a new set containing indexes and values of non-null elements in {@link #list} and returns.
+//		 * @see java.util.AbstractMap#entrySet()
+//		 */
+//		public Set<java.util.Map.Entry<Clique, Set<Separator>>> entrySet() {
+//			Set<java.util.Map.Entry<Clique, Set<Separator>>> ret = new HashSet<Map.Entry<Clique,Set<Separator>>>();
+//			for (int i = 0; i < cliqueList.size(); i++) {
+//				Set<Separator> value = cliqueList.get(i);
+//				if (value != null) {
+//					ret.add(new SimpleEntry(i, value));
+//				}
+//			}
+//			for (int i = 0; i < sepList.size(); i++) {
+//				Set<Separator> value = sepList.get(i);
+//				if (value != null) {
+//					ret.add(new SimpleEntry(-(i+1), value)); // the index is converted as following: 0->-1; 1->-2; 2->-3...
+//				}
+//			}
+//			return ret;
+//		}
+//	}
+	
+	/**
+	 * If true, {@link #absorb(Clique, Clique)} will use singleton temporary lists in order to reduce garbage
+	 * Turn this to false in concurrent calls of {@link #absorb(Clique, Clique)}
+	 * @return the isToUseSingletonListsInAbsorb
+	 */
+	public static boolean isToUseSingletonListsInAbsorb() {
+		return isToUseSingletonListsInAbsorb;
+	}
+
+	/**
+	 * If true, {@link #absorb(Clique, Clique)} will use singleton temporary lists in order to reduce garbage.
+	 * Turn this to false in concurrent calls of {@link #absorb(Clique, Clique)}
+	 * @param isToUseSingletonListsInAbsorb the isToUseSingletonListsInAbsorb to set
+	 */
+	public static void setToUseSingletonListsInAbsorb(
+			boolean isToUseSingletonListsInAbsorb) {
+		LogarithmicMinProductJunctionTree.isToUseSingletonListsInAbsorb = isToUseSingletonListsInAbsorb;
 	}
 
 }

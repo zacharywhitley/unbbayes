@@ -6,8 +6,10 @@ package edu.gmu.ace.daggre;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import unbbayes.prs.INode;
@@ -769,6 +771,15 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 			this.commitNetworkActions(transactionKey);
 		} else {
 			this.addNetworkAction(transactionKey, new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs, false));
+			// also add into index of questions being created in transaction
+			synchronized (getQuestionsToBeCreatedInTransaction()) {
+				Set<Long> set = getQuestionsToBeCreatedInTransaction().get(transactionKey);
+				if (set == null) {
+					set = new HashSet<Long>();
+				}
+				set.add(questionId);
+				getQuestionsToBeCreatedInTransaction().put(transactionKey, set);
+			}
 		}
 		
 		return true;

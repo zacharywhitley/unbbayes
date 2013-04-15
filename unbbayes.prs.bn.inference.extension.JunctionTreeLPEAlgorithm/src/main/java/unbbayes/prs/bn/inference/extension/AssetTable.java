@@ -3,6 +3,9 @@
  */
 package unbbayes.prs.bn.inference.extension;
 
+import java.util.ArrayList;
+
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticTable;
 
@@ -21,6 +24,7 @@ public class AssetTable extends ProbabilisticTable {
 	 */
 	protected AssetTable() {
 		super();
+		variableList = new ArrayList<Node>(0);
 	}
 	
 	/** Default constructor method */
@@ -49,14 +53,14 @@ public class AssetTable extends ProbabilisticTable {
     		}
     		return;    		    		
     	}
-    	
+    	int currentFactor = this.factorsPT[c];
     	if (index == c) {
     		for (int i = this.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
-	    		updateRecursive(marginalList, c+1, linear + i*this.factorsPT[c] , index, i);
+	    		updateRecursive(marginalList, c+1, linear + i*currentFactor , index, i);
     		}
     	} else {
 	    	for (int i = this.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
-	    		updateRecursive(marginalList, c+1, linear + i*this.factorsPT[c] , index, state);
+	    		updateRecursive(marginalList, c+1, linear + i*currentFactor , index, state);
     		}
     	}
     }

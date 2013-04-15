@@ -3,6 +3,7 @@
  */
 package unbbayes.prs.bn.inference.extension;
 
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -19,7 +20,6 @@ import unbbayes.prs.bn.PotentialTable.ISumOperation;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.Separator;
 import unbbayes.util.Debug;
-import unbbayes.util.SetToolkit;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
@@ -38,6 +38,11 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 	private Comparator tableExplanationComparator;
 	
 	private boolean isToNormalize = true;
+	
+	/** If true, {@link #absorb(Clique, Clique)} will use singleton temporary lists in order to reduce garbage */
+	private static boolean isToUseSingletonListsInAbsorb = true;
+	/** This is the singleton temporary list used by {@link #absorb(Clique, Clique)} when {@link #isToUseSingletonListsInAbsorb()} == true */
+	private static List<Node> singletonListForAbsorb = new ArrayList<Node>(7);
 	
 	/**
 	 * Default constructor
@@ -69,21 +74,31 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 		
 		// table of separator
 		PotentialTable sepTab = sep.getProbabilityFunction();
-		// who are going to be removed 
-		ArrayList<Node> maxOut = SetToolkit.clone(clique2.getNodes());
 		if (sepTab.tableSize() <= 0) {
 			// cliques are disconnected (they are separated subnets of a disconnected network)
 			return;	// there is nothing to propagate
 		}
-		
-		// variables in the separator are not going to be removed, so remove from maxOut
-		for (int i = 0; i < sepTab.variableCount(); i++) {
-			maxOut.remove(sepTab.getVariableAt(i));			
+		// who are going to be removed 
+//		ArrayList<Node> maxOut = SetToolkit.clone(clique2.getNodes());
+//		
+//		// variables in the separator are not going to be removed, so remove from maxOut
+//		for (int i = 0; i < sepTab.variableCount(); i++) {
+//			maxOut.remove(sepTab.getVariableAt(i));			
+//		}
+		List<Node> maxOut = null;
+		if (isToUseSingletonListsInAbsorb) {
+			maxOut = singletonListForAbsorb;
+			maxOut.clear();
+			maxOut.addAll(clique2.getNodes());
+			maxOut.removeAll(sep.getNodes());
+		} else {
+			maxOut = new ArrayList<Node>(clique2.getNodes());
+			maxOut.removeAll(sep.getNodes());
 		}
 
 		// temporary table for ratio calculation
 		PotentialTable dummyTable =
-			(PotentialTable) clique2.getProbabilityFunction().clone();
+			(PotentialTable) clique2.getProbabilityFunction().getTemporaryClone();
 		
 		for (int i = 0; i < maxOut.size(); i++) {
 			PotentialTable.ISumOperation backupOp = dummyTable.getSumOperation();	// backup real op
@@ -97,7 +112,7 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 		
 
 		PotentialTable originalSeparatorTable =
-			(PotentialTable) sepTab.clone();
+			(PotentialTable) sepTab.getTemporaryClone();
 
 		for (int i = sepTab.tableSize() - 1; i >= 0; i--) {
 			sepTab.setValue(i, dummyTable.getValue(i));
@@ -299,22 +314,31 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 		this.isToNormalize = isToNormalize;
 	}
 
-
+	/**
+	 * Simply delegates to {@link #collectEvidence(Clique, boolean)} passing true in its second argument
+	 * @param clique
+	 * @throws Exception
+	 * @deprecated use {@link #collectEvidence(Clique, boolean)} instead
+	 */
+	@Deprecated
+	protected void coleteEvidencia(Clique clique) throws Exception {
+		this.collectEvidence(clique, true);
+	}
 
 	/**
 	 * This is the same of the superclass's method. However,
 	 * if {@link #isToNormalize()} is false, it will not normalize the clique table.
-	 * @see unbbayes.prs.bn.JunctionTree#coleteEvidencia(unbbayes.prs.bn.Clique)
+	 * @see unbbayes.prs.bn.JunctionTree#collectEvidence(Clique, boolean)
 	 */
-	protected void coleteEvidencia(Clique clique) throws Exception {
+	protected void collectEvidence(Clique clique, boolean isToContinueOnEmptySep) throws Exception {
 		if (isToNormalize()) {
-			super.coleteEvidencia(clique);
+			super.collectEvidence(clique, isToContinueOnEmptySep);
 			return;
 		} else {
 			// this is the same of super.coleteEvidencia(clique), but without normalizing clique pot
 			for (Clique auxClique : clique.getChildren()) {
 				if (!auxClique.getChildren().isEmpty()) {
-					this.coleteEvidencia(auxClique);
+					this.collectEvidence(auxClique, isToContinueOnEmptySep);
 				}
 				
 				absorb(clique, auxClique);
@@ -362,5 +386,23 @@ public class MaxProductJunctionTree extends JunctionTree implements IPropagation
 		}
 		return ret;
 	}
+	
+	/**
+	 * If true, {@link #absorb(Clique, Clique)} will use singleton temporary lists in order to reduce garbage
+	 * Turn this to false in concurrent calls of {@link #absorb(Clique, Clique)}
+	 * @return the isToUseSingletonListsInAbsorb
+	 */
+	public static boolean isToUseSingletonListsInAbsorb() {
+		return isToUseSingletonListsInAbsorb;
+	}
 
+	/**
+	 * If true, {@link #absorb(Clique, Clique)} will use singleton temporary lists in order to reduce garbage.
+	 * Turn this to false in concurrent calls of {@link #absorb(Clique, Clique)}
+	 * @param isToUseSingletonListsInAbsorb the isToUseSingletonListsInAbsorb to set
+	 */
+	public static void setToUseSingletonListsInAbsorb(
+			boolean isToUseSingletonListsInAbsorb) {
+		MaxProductJunctionTree.isToUseSingletonListsInAbsorb = isToUseSingletonListsInAbsorb;
+	}
 }

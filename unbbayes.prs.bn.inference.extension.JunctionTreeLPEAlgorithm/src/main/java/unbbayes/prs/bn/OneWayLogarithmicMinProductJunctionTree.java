@@ -36,8 +36,7 @@ public class OneWayLogarithmicMinProductJunctionTree extends
 	 */
 	@Override
 	public void consistency() throws Exception {
-		Clique raiz = getCliques().get(0);
-		coleteEvidencia(raiz);
+		collectEvidence(getCliques().get(0), true);
 		// do not call distributeEvidences(raiz);
 	}
 

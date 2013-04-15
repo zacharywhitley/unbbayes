@@ -6,10 +6,13 @@ package unbbayes.prs.bn;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.inference.extension.AssetPropagationInferenceAlgorithm;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 
@@ -28,7 +31,12 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	
 	private ProbabilisticNetwork relatedNetwork;
 	private boolean isToCalculateMarginalsOfAssetNodes = false;
-
+	private float emptySeparatorsContent = Float.NaN;
+	private Map<Integer, IRandomVariable> originalCliqueToAssetCliqueMap = null;
+	private Map<Integer, IRandomVariable> assetCliqueToOriginalCliqueMap = null;
+	private boolean isPropagationExecuted = false;
+	
+	
 	/**
 	 * Default constructor is protected to allow inheritance.
 	 * Use {@link #getInstance()} to instantiate.
@@ -38,7 +46,15 @@ public class AssetNetwork extends ProbabilisticNetwork {
 		setHierarchicTree(null);
 		setLogManager(null);
 //		getLogManager().setEnabled(false);
+		
+		// reduce memory usage at maximum extent by default, because this is instantiated a lot
+		this.setProperties(Collections.EMPTY_MAP);
+		copiaNos = nodeList;
+		arcosMarkov = null;	// this is not used anyway
+		edgeList = Collections.EMPTY_LIST;	// this is not used anyway
 	}
+	
+	
 	
 	/**
 	 * Default constructor method initializing network.
@@ -204,11 +220,6 @@ public class AssetNetwork extends ProbabilisticNetwork {
 				}
 			}
 		}
-		
-		// delete copy of node (which is basically used by GUI to change marginals of nodes without changing the original node)
-		if (getNodesCopy() != null) {
-			getNodesCopy().remove(nodeToRemove);
-		}
 
 	    // delete node from the list of all available nodes in the network
 		int indexToRemove = this.getNodeIndex(nodeToRemove.getName());
@@ -241,6 +252,11 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	    		}
 			}
 	    }
+	    
+	    // delete copy of node (which is basically used by GUI to change marginals of nodes without changing the original node, or as a list of nodes without utility nodes)
+		if (getNodesCopy() != getNodes() && getNodesCopy() != null) {
+			getNodesCopy().remove(nodeToRemove);
+		}
 	}
 	
 	/**
@@ -324,6 +340,126 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	 */
 	public boolean isHybridBN() {
 		return false;
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Network#addProperty(java.lang.String, java.lang.Object)
+	 */
+	public void addProperty(String name, Object value) {
+		if (this.getProperties() == Collections.EMPTY_MAP) {
+			// make sure we won't throw exception because of immutable map
+			this.setProperties(new HashMap<String, Object>());
+		}
+		super.addProperty(name, value);
+	}
+	
+	/**
+	 * set the default value in asset tables of empty separators.
+	 * @param emptySeparatorsContent
+	 */
+	public void setEmptySeparatorsDefaultContent(float emptySeparatorsContent) {
+		this.emptySeparatorsContent = emptySeparatorsContent;
+	}
+
+
+	/**
+	 * @return the default value in asset tables of empty separators.
+	 */
+	public float getEmptySeparatorsDefaultContent() {
+		return this.emptySeparatorsContent;
+	}
+
+
+	/**
+	 * @return a mapping from {@link IRandomVariable#getInternalIdentificator()} of cliques/separators of probabilities 
+	 * to cliques/separators of assets.
+	 */
+	public Map<Integer, IRandomVariable> getOriginalCliqueToAssetCliqueMap() {
+		return originalCliqueToAssetCliqueMap;
+	}
+
+
+	/**
+	 * sets the mapping from {@link IRandomVariable#getInternalIdentificator()} of cliques/separators of probabilities 
+	 * to cliques/separators of assets.
+	 * @param originalCliqueToAssetCliqueMap
+	 */
+	public void setOriginalCliqueToAssetCliqueMap(
+			Map<Integer, IRandomVariable> originalCliqueToAssetCliqueMap) {
+		this.originalCliqueToAssetCliqueMap = originalCliqueToAssetCliqueMap;
+	}
+
+
+	/**
+	 * sets the map linking cliques from probabilistic network to
+	 * cliques in asset network.
+	 * @param map
+	 */
+	public void setAssetCliqueToOriginalCliqueMap(
+			Map<Integer, IRandomVariable> map) {
+		this.assetCliqueToOriginalCliqueMap = map;
+	}
+
+
+	/**
+	 * @return the map linking cliques from probabilistic network to
+	 * cliques in asset network.
+	 */
+	public Map<Integer, IRandomVariable> getAssetCliqueToOriginalCliqueMap() {
+		return assetCliqueToOriginalCliqueMap;
+	}
+
+
+
+	/**
+	 * this method does nothing, because in asset netwoks, the {@link #getNodes()}
+	 * and {@link #getNodesCopy()} are the same instance.
+	 * @see unbbayes.prs.bn.SingleEntityNetwork#resetNodesCopy()
+	 */
+	public void resetNodesCopy() {
+		copiaNos = getNodes();
+	}
+
+
+
+	/**
+	 * In {@link AssetNetwork}, this method
+	 * simply returns {@link #getNodes()}, because
+	 * there are no utility nodes
+	 * @see unbbayes.prs.bn.SingleEntityNetwork#getNodesCopy()
+	 */
+	public ArrayList<Node> getNodesCopy() {
+		return getNodes();
+	}
+
+
+
+	/**
+	 * This is a flag indicating that a  propagation (min propagation) was executed previously, so that
+	 * methods related to this network knows that the asset values in this junction tree
+	 * are not in its original form.
+	 * @return the isPropagationExecuted
+	 * @see AssetPropagationInferenceAlgorithm#runMinPropagation(Map, boolean)
+	 * @see AssetPropagationInferenceAlgorithm#undoMinPropagation()
+	 */
+	public boolean isPropagationExecuted() {
+		return this.isPropagationExecuted;
+	}
+
+
+
+	/**
+	 * This is a flag indicating that a  propagation (min propagation) was executed previously, so that
+	 * methods related to this network knows that the asset values in this junction tree
+	 * are not in its original form.
+	 * @param isPropagationExecuted the isPropagationExecuted to set
+	 * @see AssetPropagationInferenceAlgorithm#runMinPropagation(Map, boolean)
+	 * @see AssetPropagationInferenceAlgorithm#undoMinPropagation()
+	 */
+	public void setPropagationExecuted(boolean isPropagationExecuted) {
+		this.isPropagationExecuted = isPropagationExecuted;
 	}
 	
 	

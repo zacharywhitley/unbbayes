@@ -186,7 +186,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If there are less than this number of questions, questions will not be resolved */
 	private static int minAliveQuestionNumber = -1;
 	
-	private static long seed = new Date().getTime(); // 1363964542586L; //1364947893820L; //1364966189144L; //1365123116683L;
+	private static long seed = new Date().getTime(); // 1363964542586L; //1364947893820L; //1364966189144L; //1365123116683L; 1365173646728L; 1365743912639L; 1365882937277L
 	
 	/** Random number generator, with seed */
 	private static Random random = new Random(seed);
@@ -746,6 +746,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 */
 	protected void setUp() throws Exception {
 		super.setUp();
+		Debug.setDebug(true);
 		engines = new ArrayList<MarkovEngineImpl>();
 		
 		engines.add(BruteForceMarkovEngine.getInstance(2f, 100f, 100f));

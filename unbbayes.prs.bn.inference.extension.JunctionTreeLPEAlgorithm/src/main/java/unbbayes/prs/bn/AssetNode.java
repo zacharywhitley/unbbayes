@@ -122,7 +122,7 @@ public class AssetNode extends DecisionNode implements IRandomVariable {
 ////    	}
 ////    	return;
     	
-    	PotentialTable auxTab = (PotentialTable) ((PotentialTable)getAssociatedClique().getProbabilityFunction()).clone();
+    	PotentialTable auxTab = (PotentialTable) ((PotentialTable)getAssociatedClique().getProbabilityFunction()).getTemporaryClone();
         int index = auxTab.indexOfVariable(this);
         int size = getAssociatedClique().getProbabilityFunction().variableCount();
         for (int i = 0; i < size; i++) {

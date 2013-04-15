@@ -323,7 +323,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		
 		// check if we can limit the scope of propagation (if only 1 clique is edited, then we can limit to that subtree if it's disconnected from others)
 		List<Clique> editCliques = this.getEditCliques();
-		if ((this.getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) && editCliques != null && editCliques.size() == 1) {
+		if (editCliques != null && editCliques.size() == 1) {
 			// if there is only 1 clique being updated, then limit the scope only to that portion of the junction tree (do not consider other disconnected portions)
 			Clique rootOfSubtree = editCliques.get(0);
 			// the clique to be passed must be of the same network (can be different network if we are trying to simulate or using a copied network)
@@ -337,7 +337,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 			while (rootOfSubtree.getParent() != null) {
 				// extract the separator
 				Separator separator = ((JunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).getJunctionTree().getSeparator(rootOfSubtree, rootOfSubtree.getParent());
-				if (separator == null || separator.getProbabilityFunction().tableSize() <= 0) {
+				if (separator == null || separator.getProbabilityFunction().tableSize() <= 1) {
 					// there is no more parent connected with non-empty separator
 					break;
 				}

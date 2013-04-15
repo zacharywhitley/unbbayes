@@ -32,6 +32,7 @@ import unbbayes.prs.bn.OneWayLogarithmicMinProductJunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.PotentialTable.ISumOperation;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.exception.InvalidParentException;
@@ -342,10 +343,103 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 	};
 
-	/** A property with this name is used in {@link #getAssetNetwork()} in order to store a flag which is true when {@link #runMinPropagation(Map)}
-	 * was executed already.
-	 * @see {@link unbbayes.prs.Network#getProperty(String)} */
-	public static final String MIN_PROPAGATION_FLAG_PROPERTY = AssetPropagationInferenceAlgorithm.class.getName()+".MIN_PROPAGATION_FLAG_PROPERTY";
+//	/** A property with this name is used in {@link #getAssetNetwork()} in order to store a flag which is true when {@link #runMinPropagation(Map)}
+//	 * was executed already.
+//	 * @see {@link unbbayes.prs.Network#getProperty(String)} */
+//	public static final String MIN_PROPAGATION_FLAG_PROPERTY = AssetPropagationInferenceAlgorithm.class.getName()+".MIN_PROPAGATION_FLAG_PROPERTY";
+
+	/** This is just a dummy utility table to be used when utility function will not be used by the algorithm. */
+	public static final PotentialTable DUMMY_UTILITY_TABLE = new PotentialTable() {
+		public void copyData() {}
+		public float getCopiedValue(int index) { return Float.NaN; }
+		public float getCopiedValue(int[] coordinate) { return Float.NaN;}
+		public void restoreData() {}
+		public void notifyModification() {}
+		public List<Node> cloneVariables() { return Collections.EMPTY_LIST; }
+		public  int indexOfVariable(Node node) { return -1; }
+		public  int indexOfVariable(String nodeName){ return -1; }
+		public int variableCount() { return 0; }
+		public void setVariableAt(int index, INode node) {}
+		public INode getVariableAt(int index) { return null; }
+		public  int getVariableIndex(Node variable){ return -1; }
+		public void addValueAt(int index, float value) { }
+		public  void removeValueAt(int index) { }
+		public int tableSize() { return 0; }
+		public void setTableSize(int size) { }
+		public Object clone() { return DUMMY_UTILITY_TABLE;}
+		public PotentialTable getTemporaryClone() {return DUMMY_UTILITY_TABLE; }
+		public Object clone(ProbabilisticNode newNode) {return DUMMY_UTILITY_TABLE; }
+		public void setValue(int[] coord, float value) { }
+		public  void setValue(int index, float value) {}
+		public  void setValues(float values[]) { }
+		public  float getValue(int index) { return Float.NaN; }
+		public float[] getValues() {return null;}
+		public  float getValue(int[] coordinate) { return Float.NaN; }
+		public void addVariable(INode newVariable) {}
+		public void moveVariableWithoutMoveData(int initialPosition, int destinationPosition){ }
+		public int getVariablesSize(){return 0; }
+		public void removeVariable(INode variable, boolean normalize){} 
+		public void purgeVariable(INode variable, boolean normalize){}; 
+		public void removeVariable(INode variable){};
+		public PotentialTable newInstance(){return DUMMY_UTILITY_TABLE;}
+		protected void sum(int index) {}
+		protected void finding(int control, int index, int coord[], int state) {}
+		public  int getLinearCoord(int multidimensionalCoord[]) {return 0;}
+		protected void computeFactors() {}
+		public  int[] getMultidimensionalCoord(int linearCoord) { return null; }
+		public  int getLinearCoordMarginal(int multidimensionalCoord[]) {return 0;}
+		protected void computeFactorsMarginal() {}
+		public  int[] getMultidimensionalCoordMarginal(int linearCoord) {return null; }
+		public  void directOpTab(PotentialTable tab, int operator) {}
+		public  void opTab(PotentialTable tab, int operator) {}
+		public void setSumOperation(ISumOperation sumOperation) {}
+		public ISumOperation getSumOperation() { return null; }
+		protected void updateRecursive(float[] marginalList, int c, int linear, int index, int state) { }
+		public void updateEvidences(float[] marginalList, int index) {}
+		public float normalize()  {return Float.NaN;}
+		protected boolean isModified() { return false; }
+		protected void setModified(boolean modified) {}
+		protected boolean[] isRemovedCellInDataPT() { return null; }
+		protected void setRemovedCellInDataPT(boolean[] isRemovedCellInDataPT) { }
+	};
+
+	/** This is a dummy list which is always empty, and methods for changing its content won't throw exception as in {@link Collections#EMPTY_LIST} */
+	public static final List<Node> DUMMY_UTILITY_NODE_LIST = new ArrayList(0) {
+		private static final long serialVersionUID = 6042820113698230539L;
+		public int size() { return 0; }
+		public boolean isEmpty() { return true; }
+		public boolean contains(Object o) { return false; }
+		public boolean add(Object e) { return false; }
+		public boolean remove(Object o) { return false; }
+		public boolean containsAll(Collection c) { return false; }
+		public boolean addAll(Collection c) { return false; }
+		public boolean addAll(int index, Collection c) { return false; }
+		public boolean removeAll(Collection c) { return false; }
+		public Object get(int index) { return null; }
+		public Object set(int index, Object element) { return null; }
+		public void add(int index, Object element) { }
+		public Object remove(int index) { return null; }
+		public int indexOf(Object o) {return -1; }
+		public int lastIndexOf(Object o) {return -1; }
+	};
+
+	/** This is a default listener in {@link #getInferenceAlgorithmListeners()} which simply logs assets after propagation */
+	public static final IInferenceAlgorithmListener DEFAULT_LOG_ASSET_INFERENCE_ALGORITHM_LISTENER = new IInferenceAlgorithmListener() {
+		public void onBeforeRun(IInferenceAlgorithm algorithm) {}
+		public void onBeforeReset(IInferenceAlgorithm algorithm) {}
+		public void onBeforePropagate(IInferenceAlgorithm algorithm) {}
+		public void onAfterRun(IInferenceAlgorithm algorithm) {}
+		public void onAfterReset(IInferenceAlgorithm algorithm) {}
+		public void onAfterPropagate(IInferenceAlgorithm algorithm) {
+			// I'm adding the log feature as a dynamic command, because it is not mandatory
+			// so, anyone can remove this feature dynamically
+			try {
+				((AssetPropagationInferenceAlgorithm)algorithm).logAssets();
+			} catch (Exception e) {
+				Debug.println(getClass(), "Failed to log assets: " + e.getMessage(), e);
+			}
+		}
+	};
 
 	private boolean isToAllowInfinite = false;
 
@@ -423,22 +517,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		
 		// initialize listener to be called after propagation, to log asset net
 		ret.getInferenceAlgorithmListeners().clear();
-		ret.addInferencceAlgorithmListener(new IInferenceAlgorithmListener() {
-			public void onBeforeRun(IInferenceAlgorithm algorithm) {}
-			public void onBeforeReset(IInferenceAlgorithm algorithm) {}
-			public void onBeforePropagate(IInferenceAlgorithm algorithm) {}
-			public void onAfterRun(IInferenceAlgorithm algorithm) {}
-			public void onAfterReset(IInferenceAlgorithm algorithm) {}
-			public void onAfterPropagate(IInferenceAlgorithm algorithm) {
-				// I'm adding the log feature as a dynamic command, because it is not mandatory
-				// so, anyone can remove this feature dynamically
-				try {
-					((AssetPropagationInferenceAlgorithm)algorithm).logAssets();
-				} catch (Exception e) {
-					Debug.println(getClass(), "Failed to log assets: " + e.getMessage(), e);
-				}
-			}
-		});
+		ret.addInferencceAlgorithmListener(DEFAULT_LOG_ASSET_INFERENCE_ALGORITHM_LISTENER);
 		return ret;
 	}
 
@@ -1006,9 +1085,9 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 			// copy cliques
 			for (Clique origClique : relatedProbabilisticNetwork.getJunctionTree().getCliques()) {
-				
-				Clique newClique = new Clique(AssetTable.getInstance());
+				Clique newClique = new Clique(AssetTable.getInstance(), DUMMY_UTILITY_TABLE); // use dummy utility table because we won't use utilities
 				newClique.setInternalIdentificator(origClique.getInternalIdentificator());
+				newClique.setAssociatedUtilityNodesList(DUMMY_UTILITY_NODE_LIST);
 				
 				boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in AssetNetwork.
 				for (Node node : origClique.getNodes()) {
@@ -1090,7 +1169,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 					continue;
 				}
 				
-				Separator newSeparator = new Separator(assetClique1, assetClique2, AssetTable.getInstance());
+				Separator newSeparator = new Separator(assetClique1, assetClique2, AssetTable.getInstance(), DUMMY_UTILITY_TABLE);
 				newSeparator.setInternalIdentificator(origSeparator.getInternalIdentificator());
 				
 				// fill the separator's node list
@@ -1196,9 +1275,10 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			IJunctionTree junctionTree = assetNet.getJunctionTree();
 			
 			// create clique for the virtual node and parents
-			Clique cliqueOfNewNode = new Clique(AssetTable.getInstance());
+			Clique cliqueOfNewNode = new Clique(AssetTable.getInstance(), DUMMY_UTILITY_TABLE);	// use a dummy utility table, because utility tables are not used
 			cliqueOfNewNode.getNodes().add(assetNode);
 			cliqueOfNewNode.getProbabilityFunction().addVariable(assetNode);
+			cliqueOfNewNode.setAssociatedUtilityNodesList(DUMMY_UTILITY_NODE_LIST);
 			
 			// extract probabilistic network
 			if (probNet != null && !(probNet instanceof ProbabilisticNetwork)) {
@@ -1263,7 +1343,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 				}
 				
 				// create separator between the clique of parent nodes and virtual node (the separator should contain all parents)
-				Separator separatorOfNewNode = new Separator(rootClique , cliqueOfNewNode, AssetTable.getInstance());
+				Separator separatorOfNewNode = new Separator(rootClique , cliqueOfNewNode, AssetTable.getInstance(), DUMMY_UTILITY_TABLE);
 				separatorOfNewNode.setInternalIdentificator(-(junctionTree.getSeparators().size()+1)); // internal identificator must be set before adding separator, because it is used as key
 				junctionTree.addSeparator(separatorOfNewNode);
 				
@@ -1414,15 +1494,20 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	
 	/**
 	 * It loads the property {@link #ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY} from
-	 * the network assetNet, which is supposedly a mapping from {@link IRandomVariable#getInternalIdentificator()} of cliques/separators of probabilities 
+	 * the network, which is supposedly a mapping from {@link IRandomVariable#getInternalIdentificator()} of cliques/separators of probabilities 
 	 * to cliques/separators of assets.
-	 * @param assetNet : the network where the mapping (property {@link #ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY}) is stored.
+	 * @param net : the network where the mapping (property {@link #ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY}) is stored.
+	 * If this is an instance of {@link AssetNetwork}, then it will be loaded from {@link AssetNetwork#getOriginalCliqueToAssetCliqueMap()}
 	 * @return the map linking cliques from {@link #getRelatedProbabilisticNetwork()} to
 	 * cliques in assetNet.
 	 */
-	protected Map<Integer, IRandomVariable> getOriginalCliqueToAssetCliqueMap(Network assetNet) {
+	protected Map<Integer, IRandomVariable> getOriginalCliqueToAssetCliqueMap(Network net) {
 		try {
-			return (Map<Integer, IRandomVariable>) assetNet.getProperty(ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY);
+			if (net instanceof AssetNetwork) {
+				return ((AssetNetwork) net).getOriginalCliqueToAssetCliqueMap();
+			} else {
+				return (Map<Integer, IRandomVariable>) net.getProperty(ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1440,15 +1525,20 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	}
 	
 	/**
-	 * This is a mapping from {@link IRandomVariable#getInternalIdentificator()} to
+	 * @param assetNet : network where the mapping will be stored. If it is an instance of
+	 * {@link AssetNetwork}, then will be retrieved from {@link AssetNetwork#getAssetCliqueToOriginalCliqueMap()}
+	 * @return a mapping from {@link IRandomVariable#getInternalIdentificator()} to
 	 * probabilistic clique/separator.
-	 * This can be used as the inverse mapping of {@link #getOriginalCliqueToAssetCliqueMap()}
-	 * @param assetNet
-	 * @return
+	 * This can be used as the inverse mapping of {@link #getOriginalCliqueToAssetCliqueMap()}.
+	 * If 
 	 */
 	protected Map<Integer, IRandomVariable> getAssetCliqueToOriginalCliqueMap(Network assetNet) {
 		try {
-			return (Map<Integer, IRandomVariable>) assetNet.getProperty(ASSETCLIQUE_TO_ORIGINALCLIQUE_MAP_PROPERTY);
+			if (assetNet instanceof AssetNetwork) {
+				return ((AssetNetwork) assetNet).getAssetCliqueToOriginalCliqueMap();
+			} else {
+				return (Map<Integer, IRandomVariable>) assetNet.getProperty(ASSETCLIQUE_TO_ORIGINALCLIQUE_MAP_PROPERTY);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1474,13 +1564,18 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 
 	/**
 	 * It stores originalCliqueToAssetCliqueMap into the property {@link #ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY} of
-	 * the network assetNet.
-	 * @param assetNet :  the network where the mapping is going to be stored.
+	 * the network.
+	 * @param net :  the network where the mapping is going to be stored.
+	 * If this is an instance of {@link AssetNetwork}, then it will be stored in {@link AssetNetwork#setOriginalCliqueToAssetCliqueMap(Map)}
 	 * @param originalCliqueToAssetCliqueMap : a mapping from cliques/separators of probabilities to cliques/separators of assetNet.
 	 */
-	protected void setOriginalCliqueToAssetCliqueMap(Network assetNet, Map<Integer, IRandomVariable> originalCliqueToAssetCliqueMap) {
-		if (assetNet != null) {
-			assetNet.addProperty(ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY, originalCliqueToAssetCliqueMap);
+	protected void setOriginalCliqueToAssetCliqueMap(Network net, Map<Integer, IRandomVariable> originalCliqueToAssetCliqueMap) {
+		if (net != null) {
+			if (net instanceof AssetNetwork) {
+				((AssetNetwork) net).setOriginalCliqueToAssetCliqueMap(originalCliqueToAssetCliqueMap);
+			} else {
+				net.addProperty(ORIGINALCLIQUE_TO_ASSETCLIQUE_MAP_PROPERTY, originalCliqueToAssetCliqueMap);
+			}
 		}
 	}
 	
@@ -1488,11 +1583,16 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * It stores a maping into the property {@link #ASSETCLIQUE_TO_ORIGINALCLIQUE_MAP_PROPERTY} of
 	 * the network assetNet, which is supposedly.
 	 * @param assetNet :  the network where the mapping is going to be stored.
+	 * If it is an instance of {@link AssetNetwork}, then will be stored in {@link AssetNetwork#setAssetCliqueToOriginalCliqueMap(Map)}
 	 * @param map : a mapping from {@link IRandomVariable#getInternalIdentificator()} to cliques/separators of probabilities.
 	 */
 	protected void setAssetCliqueToOriginalCliqueMap(Network assetNet, Map<Integer, IRandomVariable> map) {
 		if (assetNet != null) {
-			assetNet.addProperty(ASSETCLIQUE_TO_ORIGINALCLIQUE_MAP_PROPERTY, map);
+			if (assetNet instanceof AssetNetwork) {
+				((AssetNetwork) assetNet).setAssetCliqueToOriginalCliqueMap(map);
+			} else {
+				assetNet.addProperty(ASSETCLIQUE_TO_ORIGINALCLIQUE_MAP_PROPERTY, map);
+			}
 		}
 	}
 	
@@ -1680,7 +1780,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		}
 		
 		// check if runMinPropagation was really executed previously. If not, we may need to execute it now to get correct results
-		Boolean minPropagationWasExecuted = (Boolean) getAssetNetwork().getProperty(MIN_PROPAGATION_FLAG_PROPERTY);
+		Boolean minPropagationWasExecuted = getAssetNetwork().isPropagationExecuted();
 		if (minPropagationWasExecuted == null || !minPropagationWasExecuted) {
 			// ignore cache this time, in order to force propagation
 			// pass null as condition, because conditional min assets should be calculated running runMinPropagation explicitly
@@ -2126,7 +2226,7 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 		this.setInferenceAlgorithmListeners(backup);
 		
 		// tag this asset network as min-propagated
-		getAssetNetwork().addProperty(MIN_PROPAGATION_FLAG_PROPERTY, Boolean.TRUE);
+		getAssetNetwork().setPropagationExecuted(true);
 		
 		if ((conditions == null || conditions.isEmpty()) && isToCacheUnconditionalMinAssets()) {
 			// update cache
@@ -2160,8 +2260,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 			}
 		}
 		
-		// tag this asset network as min-propagated
-		getAssetNetwork().getProperties().remove(MIN_PROPAGATION_FLAG_PROPERTY);
+		// tag this asset network as not min-propagated
+		getAssetNetwork().setPropagationExecuted(false);
 	}
 	
 	/**
@@ -2574,7 +2674,8 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	public void setEmptySeparatorsDefaultContent(float emptySeparatorsContent) {
 		this.setEmptySeparatorsDefaultContent(getAssetNetwork(), emptySeparatorsContent);
-		this.setUnconditionalMinAssetCache(Float.NaN);
+//		this.setUnconditionalMinAssetCache(Float.NaN);
+		// the above line is called inside setEmptySeparatorsDefaultContent
 	}
 	
 	/**
@@ -2583,21 +2684,36 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#getEmptySeparatorsDefaultContent()
 	 */
 	protected float getEmptySeparatorsDefaultContent(Graph net) {
-		Float ret = (Float) net.getProperty(EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY);
-		if (ret == null) {
-			ret = getDefaultInitialAssetTableValue();
-			setEmptySeparatorsDefaultContent(ret);
+		if (net instanceof AssetNetwork) {
+			AssetNetwork assetNetwork = (AssetNetwork) net;
+			float ret = assetNetwork.getEmptySeparatorsDefaultContent();
+			if (Float.isNaN(ret) || Float.isInfinite(ret)) {
+				ret = getDefaultInitialAssetTableValue();
+				setEmptySeparatorsDefaultContent(ret);
+			}
+			return ret;
+		} else {
+			Float ret = (Float) net.getProperty(EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY);
+			if (ret == null) {
+				ret = getDefaultInitialAssetTableValue();
+				setEmptySeparatorsDefaultContent(ret);
+			}
+			return ret;
 		}
-		return ret;
 	}
 
 	/**
 	 * Uses the property {@link #EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY}
-	 * to access the default value in asset tables of empty separators.
+	 * to set the default value in asset tables of empty separators.
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setEmptySeparatorsDefaultContent(float)
 	 */
 	protected void setEmptySeparatorsDefaultContent(Network net, float emptySeparatorsContent) {
-		net.getProperties().put(EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY, emptySeparatorsContent);
+		if (net instanceof AssetNetwork) {
+			AssetNetwork assetNetwork = (AssetNetwork) net;
+			assetNetwork.setEmptySeparatorsDefaultContent(emptySeparatorsContent);
+		} else {
+			net.getProperties().put(EMPTY_SEPARATOR_DEFAULT_CONTENT_PROPERTY, emptySeparatorsContent);
+		}
 		this.setUnconditionalMinAssetCache(Float.NaN);
 	}
 

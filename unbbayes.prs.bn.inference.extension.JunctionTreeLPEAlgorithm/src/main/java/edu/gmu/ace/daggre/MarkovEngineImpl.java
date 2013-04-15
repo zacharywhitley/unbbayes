@@ -261,6 +261,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	/** This is a map which stores what was the user's cash before resolved questions. The mapping is: userId -> (questionId -> cash). */
 	private Map<Long, Map<Long,Float>> userIdToResolvedQuestionCashBeforeMap;
+
+	/** If true, {@link PrintNetStatisticsNetworkAction} will be inserted into the actions to be executed in {@link #commitNetworkActions(long, boolean)}
+	 * immediately after the last occurrence of {@link StructureChangeNetworkAction} */
+	private boolean isToPrintNetStatisticsAfterLastStructureChange = false;
+
+	/** If true, {@link #doBalanceTrade(Long, Date, String, long, long, List, List)} will just return for uninitialized 
+	 * users which has no position even after other (non-executed) actions the same transaction */
+	private boolean isToAddUninitializedUserInBalanceTradeOfHugeTransaction = true;
+
+	private Map<Long, Set<Long>> questionsToBeCreatedInTransaction = new HashMap<Long, Set<Long>>(); 
 	
 	
 	/**
@@ -467,6 +477,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// mapping of cash before resolved question
 		setUserIdToResolvedQuestionCashBeforeMap(new HashMap<Long, Map<Long,Float>>());
 		
+		// also reset the mapping of questions being created in transactions
+		synchronized (getQuestionsToBeCreatedInTransaction()) {
+			getQuestionsToBeCreatedInTransaction().clear();
+		}
+		
 		return true;
 	}
 
@@ -592,6 +607,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					rebuildNetworkAction = new RebuildNetworkAction(netChangeActions.get(0).getTransactionKey(), new Date(), null, null); // negative millisecond means rebuild filter not specified by date/time
 					actions.add(rebuildNetworkAction);	// <rebuild action> is inserted before addCashActions and otherActions
 				}
+				if (isToPrintNetStatisticsAfterLastStructureChange()) {
+					actions.add(new PrintNetStatisticsNetworkAction());
+				}
 				if (isToSortAddCashAction) {
 					// note: if isToSortAddCashAction() == true, addCashActions was supposedly initialized and filled, but let's just make sure and use try-catch
 					try {
@@ -709,6 +727,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// remove transaction before releasing the lock to actions
 			getNetworkActionsMap().remove(transactionKey);
 			
+			// remove from index of questions being created in transaction
+			synchronized (getQuestionsToBeCreatedInTransaction()) {
+				getQuestionsToBeCreatedInTransaction().remove(transactionKey);
+			}
+			
 		}	// release lock to actions
 		
 		return true;
@@ -748,6 +771,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		/** Rebuild the BN */
 		public void execute() {
+			long currentTimeMillis = System.currentTimeMillis();
 			
 			// we must re-run all executed history.
 			// CAUTION: it is expected that the commit method has also included the new changes in network structure here in this list
@@ -940,6 +964,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 			// recompile network and execute actionsToExecute (actions which does not change network structure) now
 			this.execute(actionsToExecute); 
+			
+			try {
+				Debug.println(getClass(), "Executed rebuild, " + ((System.currentTimeMillis()-currentTimeMillis)));
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
 		}
 		
 		/**
@@ -1308,6 +1338,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.commitNetworkActions(transactionKey);
 		} else {
 			this.addNetworkAction(transactionKey, new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs));
+			
+			// also add into index of questions being created in transaction
+			synchronized (getQuestionsToBeCreatedInTransaction()) {
+				Set<Long> set = getQuestionsToBeCreatedInTransaction().get(transactionKey);
+				if (set == null) {
+					set = new HashSet<Long>();
+				}
+				set.add(questionId);
+				getQuestionsToBeCreatedInTransaction().put(transactionKey, set);
+			}
 		}
 		
 		return true;
@@ -1371,7 +1411,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * @param net : the specified network
 		 */
 		public void execute(ProbabilisticNetwork net) {
+			long currentTimeMillis = System.currentTimeMillis();
 			this.execute(net, isToUpdateJunctionTreeAndAssetNets());
+			try {
+				Debug.println(getClass(), "Executed add question, " + ((System.currentTimeMillis()-currentTimeMillis)));
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
 		}
 		
 		/**
@@ -1676,7 +1722,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * @param net : the specified network
 		 */
 		public void execute(ProbabilisticNetwork network) {
-			
+			long currentTimeMillis = System.currentTimeMillis();
 			ProbabilisticNode child;	// this is the main node (the main question we are modifying)
 			
 			synchronized (network) {
@@ -1725,6 +1771,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// normalize table
 					new NormalizeTableFunction().applyFunction((ProbabilisticTable) potTable);
 				}
+			}
+			try {
+				Debug.println(getClass(), "Executed add assumption, " + ((System.currentTimeMillis()-currentTimeMillis)));
+			} catch (Throwable t) {
+				t.printStackTrace();
 			}
 		}
 		public void revert() throws UnsupportedOperationException {
@@ -1805,6 +1856,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.description = description;
 		}
 		public void execute() {
+			long currentTimeMillis = System.currentTimeMillis();
 			
 			// add cash to the mapping of lazily loaded users, if user was not initialized yet
 			synchronized (getUserToAssetAwareAlgorithmMap()) {
@@ -1821,6 +1873,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						getUninitializedUserToAssetMap().put(userId, assetOfLazyUser * ratio);
 					} else {
 						getUninitializedUserToAssetMap().put(userId, assetOfLazyUser + delta);
+					}
+					try {
+						Debug.println(getClass(), "Executed add cash, " + ((System.currentTimeMillis()-currentTimeMillis)));
+					} catch (Throwable t) {
+						t.printStackTrace();
 					}
 					return;
 				}
@@ -1840,6 +1897,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			
 			this.wasExecutedPreviously = true;
+			try {
+				Debug.println(getClass(), "Executed add cash, " + ((System.currentTimeMillis()-currentTimeMillis)));
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
 		}
 		public void revert() throws UnsupportedOperationException {
 			if (wasExecutedPreviously) {
@@ -2009,7 +2071,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		/** Calls {@link #execute(true)}
 		 * @see #execute(boolean) */
 		public void execute() {
+			long currentTimeMillis = System.currentTimeMillis();
 			this.execute(true);
+			try {
+				Debug.println(getClass(), "Executed trade, " + ((System.currentTimeMillis()-currentTimeMillis)));
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
 		}
 		/** Calls {@link #execute(boolean, true)}
 		 * @see #execute(boolean, boolean) */
@@ -2335,7 +2403,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see MarkovEngineImpl#addNetworkActionIntoQuestionMap(NetworkAction, Long)
 	 */
 	protected List<VirtualTradeAction> addVirtualTradeIntoMarginalHistory( NetworkAction parentAction, Map<Long, List<Float>> marginalsBefore) {
-		Debug.println(getClass(), "\n\n!!!Entered addVirtualTradeIntoMarginalHistory\n\n");
+//		Debug.println(getClass(), "\n\n!!!Entered addVirtualTradeIntoMarginalHistory\n\n");
 		List<VirtualTradeAction> ret = new ArrayList<VirtualTradeAction>();
 		// get the marginals after trade
 		Map<Long, List<Float>> marginalsAfter = getProbLists(null, null, null);
@@ -2389,7 +2457,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * This is the same of {@link #addVirtualTradeIntoMarginalHistory(NetworkAction, Map)}, but specialized for {@link ResolveQuestionNetworkAction}
 	 */
 	protected List<DummyTradeAction> addVirtualTradeIntoMarginalHistory( ResolveQuestionNetworkAction parentAction, Map<Long, List<Float>> marginalsBefore) {
-		Debug.println(getClass(), "\n\n!!!Entered addVirtualTradeIntoMarginalHistory for ResolveQuestionNetworkAction\n\n");
+//		Debug.println(getClass(), "\n\n!!!Entered addVirtualTradeIntoMarginalHistory for ResolveQuestionNetworkAction\n\n");
 		List<DummyTradeAction> ret = new ArrayList<MarkovEngineImpl.DummyTradeAction>();
 		// get the marginals after trade
 		Map<Long, List<Float>> marginalsAfter = getProbLists(null, null, null);
@@ -2443,7 +2511,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * be compared to the current clique tables.
 	 */
 	protected void addToLastNCliquePotentialMap(NetworkAction parentAction, Map<Clique, PotentialTable> previousCliquePotentials) {
-		Debug.println(getClass(), "\n\n!!!Entered addToLastNCliquePotentialMap\n\n");
+//		Debug.println(getClass(), "\n\n!!!Entered addToLastNCliquePotentialMap\n\n");
 		// iterate on all cliques and compare differences
 		for (Clique clique : previousCliquePotentials.keySet()) {
 			
@@ -2594,11 +2662,33 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		} catch (InexistingQuestionException e) {
 			// Perhaps the nodes are still going to be added within the context of this transaction.
 			boolean isNodeToBeCreatedWithinTransaction = false;
-			List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey); // getNetworkActionsMap() is supposedly a concurrent map
-			synchronized (actions) {	// actions is not a concurrent list, so must lock it
-				for (NetworkAction action : actions) {
-					if ((action instanceof AddQuestionNetworkAction) && (e.getQuestionId() != null) && (e.getQuestionId().equals(action.getQuestionId()))) {
-						// this action will create the question which was not found.
+//			List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey); // getNetworkActionsMap() is supposedly a concurrent map
+//			synchronized (actions) {	// actions is not a concurrent list, so must lock it
+//				for (NetworkAction action : actions) {
+//					if ((action instanceof AddQuestionNetworkAction) && (e.getQuestionId() != null) && (e.getQuestionId().equals(action.getQuestionId()))) {
+//						// this action will create the question which was not found.
+//						isNodeToBeCreatedWithinTransaction = true;
+//						break;
+//					}
+//				}
+//			}
+			Map<Long, Set<Long>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
+			
+			
+			if (mapTransactionQuestions == null || transactionKey == null) {
+				// desynchronized call detected. This is unlikely to happen, but subclasses may cause this
+				throw e;
+			}
+			
+			// use the mapping in order to check whether the parent will be created in the same transaction
+			synchronized (mapTransactionQuestions) {
+				Set<Long> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
+				if (questionsInSameTransaction == null) {
+					throw e;
+				}
+				// search for the assumption ID in questionsToBeCreatedInTransaction
+				for (Long idInMapping : questionsInSameTransaction) {
+					if (idInMapping.equals(e.getQuestionId())) {
 						isNodeToBeCreatedWithinTransaction = true;
 						break;
 					}
@@ -2695,6 +2785,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 		}
 		public void execute() {
+			long currentTimeMillis = System.currentTimeMillis();
 			TreeVariable probNode = null;
 			synchronized (getProbabilisticNetwork()) {
 				probNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(questionId));
@@ -2800,6 +2891,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			synchronized (getResolvedQuestions()) {
 				getResolvedQuestions().put(getQuestionId(), new StatePair(probNode.getStatesSize(), settledState));
+			}
+			try {
+				Debug.println(getClass(), "Executed resolve, " + ((System.currentTimeMillis()-currentTimeMillis)));
+			} catch (Throwable t) {
+				t.printStackTrace();
 			}
 		}
 		public void revert() throws UnsupportedOperationException {
@@ -2912,7 +3008,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 		/** @see edu.gmu.ace.daggre.MarkovEngineImpl.ResolveQuestionNetworkAction#execute() */
 		public void execute() {
-
+			long currentTimeMillis = System.currentTimeMillis();
 			// mapping to be used to update history of resolved nodes at the end of this action
 			Map<Long, StatePair> mapForHistory = new HashMap<Long, MarkovEngineImpl.StatePair>();
 			
@@ -3024,6 +3120,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			synchronized (getResolvedQuestions()) {
 				getResolvedQuestions().putAll(mapForHistory);
 			}
+			try {
+				Debug.println(getClass(), "Executed resolve set, " + ((System.currentTimeMillis()-currentTimeMillis)));
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
 		}
 		
 		/** The set of ResolveQuestionNetworkAction which this action integrates */
@@ -3065,18 +3166,40 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// check if node will be created in same transaction
 			boolean isOK = false;
 			if (transactionKey != null) {
-				List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey);
-				if (actions == null) {
-					throw new IllegalArgumentException("Transaction key " + transactionKey + " was not started or was concluded.");
+//				List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey);
+//				if (actions == null) {
+//					throw new IllegalArgumentException("Transaction key " + transactionKey + " was not started or was concluded.");
+//				}
+//				synchronized (actions) {
+//					for (NetworkAction networkAction : actions) {
+//						if (networkAction instanceof AddQuestionNetworkAction
+//								&& networkAction.getQuestionId() != null
+//								&& networkAction.getQuestionId().longValue() == questionId) {
+//							if (settledState >= ((AddQuestionNetworkAction)networkAction).getNumberStates()) {
+//								throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
+//							}
+//							isOK = true;
+//							break;
+//						}
+//					}
+//				}
+				Map<Long, Set<Long>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
+				
+				
+				if (mapTransactionQuestions == null) {
+					// desynchronized call detected. This is unlikely to happen, but subclasses may cause this
+					throw new NullPointerException("Desync detected in transaction " + transactionKey + ": the mapping which traces questions created in this transaction is null.");
 				}
-				synchronized (actions) {
-					for (NetworkAction networkAction : actions) {
-						if (networkAction instanceof AddQuestionNetworkAction
-								&& networkAction.getQuestionId() != null
-								&& networkAction.getQuestionId().longValue() == questionId) {
-							if (settledState >= ((AddQuestionNetworkAction)networkAction).getNumberStates()) {
-								throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
-							}
+				
+				// use the mapping in order to check whether the parent will be created in the same transaction
+				synchronized (mapTransactionQuestions) {
+					Set<Long> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
+					if (questionsInSameTransaction == null) {
+						throw new InexistingQuestionException("Question ID " + questionId + " does not exist and is not specified in transaction : " + transactionKey, questionId);
+					}
+					// search for the assumption ID in questionsToBeCreatedInTransaction
+					for (Long idInMapping : questionsInSameTransaction) {
+						if (idInMapping.longValue() == questionId) {
 							isOK = true;
 							break;
 						}
@@ -6358,6 +6481,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public BalanceTradeNetworkAction(long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) {
 			super(transactionKey, occurredWhen, tradeKey, userId, questionId, null, null, assumptionIds, assumedStates, true);
 		}
+		public void execute() {
+			long currentTimeMillis = System.currentTimeMillis();
+			this.execute(true);
+			try {
+				Debug.println(getClass(), "Executed balance, " + ((System.currentTimeMillis()-currentTimeMillis)));
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+		}
 		/** Virtually does {@link MarkovEngineImpl#previewBalancingTrade(long, long, List, List)} and then {@link AddTradeNetworkAction#execute()}.
 		 * it calls super's {@link #execute(boolean, false)} 
 		 * @see #execute(boolean, boolean)*/
@@ -6507,11 +6639,34 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		} catch (InexistingQuestionException e) {
 			// Perhaps the nodes are still going to be added within the context of this transaction.
 			boolean isNodeToBeCreatedWithinTransaction = false;
-			List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey); // getNetworkActionsMap() is supposedly a concurrent map
-			synchronized (actions) {	// actions is not a concurrent list, so must lock it
-				for (NetworkAction action : actions) {
-					if ((action instanceof AddQuestionNetworkAction) && (e.getQuestionId().equals(action.getQuestionId()))) {
-						// this action will create the question which was not found.
+//			List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey); // getNetworkActionsMap() is supposedly a concurrent map
+//			synchronized (actions) {	// actions is not a concurrent list, so must lock it
+//				for (NetworkAction action : actions) {
+//					if ((action instanceof AddQuestionNetworkAction) && (e.getQuestionId().equals(action.getQuestionId()))) {
+//						// this action will create the question which was not found.
+//						isNodeToBeCreatedWithinTransaction = true;
+//						break;
+//					}
+//				}
+//			}
+			// obtain the mapping of what questions are being created in transactions
+			Map<Long, Set<Long>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
+			
+			
+			if (mapTransactionQuestions == null || transactionKey == null) {
+				// desynchronized call detected. This is unlikely to happen, but subclasses may cause this
+				throw e;
+			}
+			
+			// use the mapping in order to check whether the parent will be created in the same transaction
+			synchronized (mapTransactionQuestions) {
+				Set<Long> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
+				if (questionsInSameTransaction == null) {
+					throw e;
+				}
+				// search for the assumption ID in questionsToBeCreatedInTransaction
+				for (Long idInMapping : questionsInSameTransaction) {
+					if (idInMapping.equals(e.getQuestionId())) {
 						isNodeToBeCreatedWithinTransaction = true;
 						break;
 					}
@@ -6567,20 +6722,43 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			boolean willCreateNodeOnCommit = false;	// if true, the node will be created in this transaction
 			
 			// iterate on the actions in the same transaction
-			List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
-			if (actions == null) {
+//			List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
+//			if (actions == null) {
+//				// desynchronized call detected. This is unlikely to happen, but subclasses may cause this
+//				// actions cannot be null, because we checked this condition before
+//				throw new IllegalStateException("Desync detected in transaction " + transactionKey + ": the transaction was deleted while doBalanceTrade was in execution.");
+//			}
+//			synchronized (actions) {
+//				for (NetworkAction networkAction : actions) {
+//					if (networkAction instanceof AddQuestionNetworkAction) {
+//						AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
+//						if (addQuestionNetworkAction.getQuestionId()!= null && addQuestionNetworkAction.getQuestionId().longValue() == questionId) {
+//							willCreateNodeOnCommit = true;
+//							break;
+//						}
+//					}
+//				}
+//			}
+			// obtain the mapping of what questions are being created in transactions
+			Map<Long, Set<Long>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
+			
+			
+			if (mapTransactionQuestions == null) {
 				// desynchronized call detected. This is unlikely to happen, but subclasses may cause this
-				// actions cannot be null, because we checked this condition before
-				throw new IllegalStateException("Desync detected in transaction " + transactionKey + ": the transaction was deleted while doBalanceTrade was in execution.");
+				throw new NullPointerException("Desync detected in transaction " + transactionKey + ": the mapping which traces questions created in this transaction is null.");
 			}
-			synchronized (actions) {
-				for (NetworkAction networkAction : actions) {
-					if (networkAction instanceof AddQuestionNetworkAction) {
-						AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
-						if (addQuestionNetworkAction.getQuestionId()!= null && addQuestionNetworkAction.getQuestionId().longValue() == questionId) {
-							willCreateNodeOnCommit = true;
-							break;
-						}
+			
+			// use the mapping in order to check whether the parent will be created in the same transaction
+			synchronized (mapTransactionQuestions) {
+				Set<Long> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
+				if (questionsInSameTransaction == null) {
+					throw new InexistingQuestionException("Question ID " + questionId + " does not exist and is not specified in transaction : " + transactionKey, questionId);
+				}
+				// search for the assumption ID in questionsToBeCreatedInTransaction
+				for (Long idInMapping : questionsInSameTransaction) {
+					if (idInMapping.longValue() == questionId) {
+						willCreateNodeOnCommit = true;
+						break;
 					}
 				}
 			}
@@ -6614,20 +6792,29 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 					boolean hasFound = false;
 					// iterate on the actions in the same transaction
-					List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey);
-					if (actions == null) {
+//					List<NetworkAction> actions = this.getNetworkActionsMap().get(transactionKey); 
+					
+					
+					// obtain the mapping of what questions are being created in transactions
+					Map<Long, Set<Long>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
+					
+					
+					if (mapTransactionQuestions == null) {
 						// desynchronized call detected. This is unlikely to happen, but subclasses may cause this
-						// actions cannot be null, because we checked this condition before
-						throw new IllegalStateException("Desync detected in transaction " + transactionKey + ": the transaction was deleted while doBalanceTrade was in execution.");
+						throw new NullPointerException("Desync detected in transaction " + transactionKey + ": the mapping which traces questions created in this transaction is null.");
 					}
-					synchronized (actions) {
-						for (NetworkAction networkAction : actions) {
-							if (networkAction instanceof AddQuestionNetworkAction) {
-								AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
-								if (addQuestionNetworkAction.getQuestionId().equals(assumptiveQuestionId)) {
-									hasFound = true;
-									break;
-								}
+					
+					// use the mapping in order to check whether the parent will be created in the same transaction
+					synchronized (mapTransactionQuestions) {
+						Set<Long> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
+						if (questionsInSameTransaction == null) {
+							throw new InexistingQuestionException("Question ID " + assumptiveQuestionId + " does not exist and is not specified in transaction : " + transactionKey, assumptiveQuestionId);
+						}
+						// search for the assumption ID in questionsToBeCreatedInTransaction
+						for (Long idInMapping : questionsInSameTransaction) {
+							if (idInMapping.equals(assumptiveQuestionId)) {
+								hasFound = true;
+								break;
 							}
 						}
 					}
@@ -6644,9 +6831,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			if (!getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
 				if (transactionKey == null) {
 					return true;
-				} else { // trades may be performed in same transaction, so user may become initialized within transaction
+				} else if (!isToAddUninitializedUserInBalanceTradeOfHugeTransaction) { // trades may be performed in same transaction, so user may become initialized within transaction
 					// extract the actions pertaining in the same transaction
-					List<NetworkAction> actionsInSameTransaction = getNetworkActionsMap().get(transactionKey);
+					List<NetworkAction> actionsInSameTransaction = getNetworkActionsMap().get(transactionKey); 
+					// TODO change this portion in order to use some index
 					if (actionsInSameTransaction == null) {
 						throw new IllegalArgumentException("Transaction with key " + transactionKey + " was not initialized or was already commited.");
 					}
@@ -7411,9 +7599,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			algorithm = getUserToAssetAwareAlgorithmMap().get(userID);
 			if (algorithm == null) {
 				// first time user is referenced. Prepare inference algorithm for the user
-				JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(getProbabilisticNetwork());
-				// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
-				junctionTreeAlgorithm.setLikelihoodExtractor(AssetAwareInferenceAlgorithm.DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR);
+//				JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(getProbabilisticNetwork());
+//				// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
+//				junctionTreeAlgorithm.setLikelihoodExtractor(AssetAwareInferenceAlgorithm.DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR);
+				// the above code was substituted by the following, because we want to reduce memory usage a little bit by also reusing instance of JunctionTreeAlgorithm (previously, it was only reusing the BN)
+				JunctionTreeAlgorithm junctionTreeAlgorithm = (JunctionTreeAlgorithm) getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();	// currently, no need to synchronize, because this wont be changing at all
 				// prepare default inference algorithm for asset network
 				if (!isToLazyInitializeUsers()) {
 					algorithm = getAssetAwareInferenceAlgorithmBuilder().build(junctionTreeAlgorithm, getDefaultInitialAssetTableValue());
@@ -9136,6 +9326,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.whenExecutedFirstTime = whenExecutedFirst;
 		}
 	}
+	
+	
 
 
 	/**
@@ -9267,6 +9459,46 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// extract statistics of parents of nodes
 		
 		return ret;
+	}
+	
+	/**
+	 * This is just a simple network action which prints out the current
+	 * network statistics after the last network change is committed in
+	 * {@link MarkovEngineImpl#commitNetworkActions(long, boolean)}.
+	 * @author Shou Matsumoto
+	 * @see MarkovEngineImpl#getNetStatistics()
+	 * @see MarkovEngineImpl#isToPrintNetStatisticsAfterLastStructureChange()
+	 */
+	public class PrintNetStatisticsNetworkAction implements NetworkAction {
+		private static final long serialVersionUID = -7620744234553916038L;
+		public Date getWhenCreated() { return new Date(); }
+		public Date getWhenExecutedFirstTime() {return new Date(); }
+		public List<Float> getOldValues() { return null; }
+		public List<Float> getNewValues() { return null; }
+		public String getTradeId() {return ""; }
+		public Integer getSettledState() { return null; }
+		public Boolean isCorrectiveTrade() { return null; }
+		public Long getUserId() { return null;}
+		/**
+		 * Just print to console the current network statistics
+		 * @see MarkovEngineImpl#getNetStatistics()
+		 */
+		public void execute() {
+			NetStatistics statistics = getNetStatistics();
+			System.out.println(statistics);
+		}
+		public void revert() throws UnsupportedOperationException {}
+		public boolean isStructureConstructionAction() { return false; }
+		public boolean isTriggerForRebuild() { return false; }
+		public boolean isHardEvidenceAction() { return false; }
+		public Long getTransactionKey() { return null; }
+		public Long getQuestionId() { return null; }
+		public List<Long> getAssumptionIds() { return null; }
+		public List<Integer> getAssumedStates() { return null; }
+		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { }
+		public NetworkAction getCorrectedTrade() { return null; }
+		public void setOldValues(List<Float> oldValues) { }
+		public void setNewValues(List<Float> newValues) { }
 	}
 
 	/**
@@ -9760,6 +9992,71 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	protected void setUserIdToResolvedQuestionCashBeforeMap(
 			Map<Long, Map<Long,Float>> userIdToResolvedQuestionCashBeforeMap) {
 		this.userIdToResolvedQuestionCashBeforeMap = userIdToResolvedQuestionCashBeforeMap;
+	}
+
+	/**
+	 * If true, {@link PrintNetStatisticsNetworkAction} will be inserted into the actions to be executed in {@link #commitNetworkActions(long, boolean)}
+	 * immediately after the last occurrence of {@link StructureChangeNetworkAction}
+	 * @return the isToPrintNetStatisticsAfterLastStructureChange
+	 */
+	public boolean isToPrintNetStatisticsAfterLastStructureChange() {
+		return isToPrintNetStatisticsAfterLastStructureChange;
+	}
+
+	/**
+	 * If true, {@link PrintNetStatisticsNetworkAction} will be inserted into the actions to be executed in {@link #commitNetworkActions(long, boolean)}
+	 * immediately after the last occurrence of {@link StructureChangeNetworkAction}
+	 * @param isToPrintNetStatisticsAfterLastStructureChange the isToPrintNetStatisticsAfterLastStructureChange to set
+	 */
+	public void setToPrintNetStatisticsAfterLastStructureChange(
+			boolean isToPrintNetStatisticsAfterLastStructureChange) {
+		this.isToPrintNetStatisticsAfterLastStructureChange = isToPrintNetStatisticsAfterLastStructureChange;
+	}
+
+	/**
+	 * If false, {@link #doBalanceTrade(Long, Date, String, long, long, List, List)} will just return for uninitialized 
+	 * users which has no position even after other (non-executed) actions the same transaction.
+	 * If true, {@link #doBalanceTrade(Long, Date, String, long, long, List, List)} will add an action into the transaction
+	 * even though it is an uninitialized user and no trade is registered before the balancing trade.
+	 * Setting this to true will make {@link #doBalanceTrade(Long, Date, String, long, long, List, List)} to run
+	 * a bit faster in huge transactions, because it won't check existence of trades before the {@link #doBalanceTrade(Long, Date, String, long, long, List, List)}
+	 * It is true by default.
+	 * @return the isToAddUninitializedUserInBalanceTradeOfHugeTransaction
+	 */
+	public boolean isToAddUninitializedUserInBalanceTradeOfHugeTransaction() {
+		return this.isToAddUninitializedUserInBalanceTradeOfHugeTransaction;
+	}
+
+	/**
+	 * If false, {@link #doBalanceTrade(Long, Date, String, long, long, List, List)} will just return for uninitialized 
+	 * users which has no position even after other (non-executed) actions the same transaction
+	 * If true, {@link #doBalanceTrade(Long, Date, String, long, long, List, List)} will add an action into the transaction
+	 * even though it is an uninitialized user and no trade is registered before the balancing trade.
+	 * Setting this to true will make {@link #doBalanceTrade(Long, Date, String, long, long, List, List)} to run
+	 * a bit faster in huge transactions, because it won't check existence of trades before the {@link #doBalanceTrade(Long, Date, String, long, long, List, List)}
+	 * It is true by default.
+	 * @param isToAddUninitializedUserInBalanceTradeOfHugeTransaction the isToAddUninitializedUserInBalanceTradeOfHugeTransaction to set
+	 */
+	public void setToAddUninitializedUserInBalanceTradeOfHugeTransaction(
+			boolean isToAddUninitializedUserInBalanceTradeOfHugeTransaction) {
+		this.isToAddUninitializedUserInBalanceTradeOfHugeTransaction = isToAddUninitializedUserInBalanceTradeOfHugeTransaction;
+	}
+
+	/**
+	 * This mapping is an index to efficiently search for questions which will be created
+	 * in the same transaction, in order to check consistency of presence of questions.
+	 * @return the questionsToBeCreatedInTransaction
+	 */
+	protected Map<Long, Set<Long>> getQuestionsToBeCreatedInTransaction() {
+		return questionsToBeCreatedInTransaction;
+	}
+
+	/**
+	 * @param questionsToBeCreatedInTransaction the questionsToBeCreatedInTransaction to set
+	 */
+	protected void setQuestionsToBeCreatedInTransaction(
+			Map<Long, Set<Long>> questionsToBeCreatedInTransaction) {
+		this.questionsToBeCreatedInTransaction = questionsToBeCreatedInTransaction;
 	}
 
 
