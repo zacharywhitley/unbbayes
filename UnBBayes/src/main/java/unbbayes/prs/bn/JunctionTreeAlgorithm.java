@@ -67,13 +67,13 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 
 	private List<IJunctionTreeCommand> verifyConsistencyCommandList;
   	
-	private List<INode> sortedDecisionNodes = new ArrayList<INode>();
+	private List<INode> sortedDecisionNodes = new ArrayList<INode>(0);
 
-	private List<Edge> markovArc = new ArrayList<Edge>();
+	private List<Edge> markovArc = new ArrayList<Edge>(0);
 
-	private List<Edge> markovArcCpy = new ArrayList<Edge>();
+	private List<Edge> markovArcCpy = new ArrayList<Edge>(0);
 
-	private List<IInferenceAlgorithmListener> inferenceAlgorithmListeners = new ArrayList<IInferenceAlgorithmListener>();
+	private List<IInferenceAlgorithmListener> inferenceAlgorithmListeners = new ArrayList<IInferenceAlgorithmListener>(0);
 
 	private String virtualNodePrefix = "V_";
 

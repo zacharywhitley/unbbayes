@@ -59,7 +59,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
     private Clique parent;
 
     /**
-     *  Lista de nos filhos.
+     *  Lista de nodes filhos.
      */
     private List<Clique> children;
 
@@ -76,17 +76,17 @@ public class Clique implements IRandomVariable, java.io.Serializable {
     /**
      *  Lista de Nos Clusterizados.
      */
-    private ArrayList<Node> nos;
+    private List<Node> nodes;
 
     /**
      * List of probabilistic nodes related to Clique.
      */
-    private ArrayList<Node> nosAssociados;
+    private List<Node> associatedNodes;
 
     /**
      *  Lista de Nos de Utilidade associados ao Clique.
      */
-    private ArrayList<Node> associatedUtilNodes;    
+    private List<Node> associatedUtilNodes;    
 
 
     /**
@@ -94,23 +94,39 @@ public class Clique implements IRandomVariable, java.io.Serializable {
      * nodes, and associated nodes. The association status is set to false.
      */
     public Clique() {
-      this(new ProbabilisticTable());
+      this(new ProbabilisticTable(), new UtilityTable());
     }
     
     /**
      * Constructor initializing fields.
-     * @param cliquePotential
+     * @param cliqueProb : potential table representing clique potentials (probability).
+     * Specify this parameter if you want to use special instance of clique potential for this clique.
+     * @see #Clique(PotentialTable, PotentialTable)
      */
-    public Clique(PotentialTable cliquePotential) {
-    	  children = new ArrayList<Clique>();
-          nos = new ArrayList<Node>();
-          nosAssociados = new ArrayList<Node>();
-          associatedUtilNodes = new ArrayList<Node>();
-          potentialTable = cliquePotential;
-          if (potentialTable == null) {
-        	  potentialTable = new ProbabilisticTable();
-          }
-          utilityTable = new UtilityTable();
+    public Clique(PotentialTable cliqueProb) {
+    	 this(cliqueProb, new UtilityTable());
+    }
+    
+    /**
+     * Constructor initializing fields.
+     * @param cliqueProb : potential table representing clique potentials (probability).
+     * Specify this parameter if you want to use special instance of clique potential for this clique.
+     * @param cliqueUtility : potential table representing clique utility values.
+     * Specify this parameter if you want to use special instance of utility table for this clique.
+     */
+    public Clique(PotentialTable cliqueProbability, PotentialTable cliqueUtility) {
+    	children = new ArrayList<Clique>(2);
+    	nodes = new ArrayList<Node>(2);
+    	associatedNodes = new ArrayList<Node>(0);
+    	associatedUtilNodes = new ArrayList<Node>(0);
+    	potentialTable = cliqueProbability;
+    	if (potentialTable == null) {
+    		potentialTable = new ProbabilisticTable();
+    	}
+    	utilityTable = cliqueUtility;
+    	if (utilityTable == null) {
+    		utilityTable = new UtilityTable();
+    	}
     }
     
 
@@ -120,11 +136,11 @@ public class Clique implements IRandomVariable, java.io.Serializable {
      *@return       normalization ratio
      */
     public float normalize() throws Exception {
-        boolean fixo[] = new boolean[nos.size()];
+        boolean fixo[] = new boolean[nodes.size()];
         ArrayList<Node> decisoes = new ArrayList<Node>();
-        for (int i = 0; i < nos.size(); i++) {        	
-            if (nos.get(i).getType() == Node.DECISION_NODE_TYPE) {
-                decisoes.add(nos.get(i));
+        for (int i = 0; i < nodes.size(); i++) {        	
+            if (nodes.get(i).getType() == Node.DECISION_NODE_TYPE) {
+                decisoes.add(nodes.get(i));
                 fixo[i] = true;
             }
         }
@@ -135,9 +151,9 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 
         int index[] = new int[decisoes.size()];
         for (int i = 0; i < index.length; i++) {
-            index[i] = nos.indexOf(decisoes.get(i));
+            index[i] = nodes.indexOf(decisoes.get(i));
         }
-        normalizeID(0, decisoes, fixo, index, new int[nos.size()]);
+        normalizeID(0, decisoes, fixo, index, new int[nodes.size()]);
         /** @todo retornar a constante de normalizacao correta */
         return 0;
     }
@@ -181,7 +197,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
     }
 
     private float sum(int control, boolean fixo[], int coord[]) {
-        if (control == nos.size()) {
+        if (control == nodes.size()) {
             return potentialTable.getValue(coord);
         }
 
@@ -189,7 +205,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
             return sum(control+1, fixo, coord);
         }
 
-        Node node = nos.get(control);
+        Node node = nodes.get(control);
         float retorno = 0;
         for (int i = 0; i < node.getStatesSize(); i++) {
             coord[control] = i;
@@ -199,7 +215,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
     }
 
     private void div(int control, boolean fixo[], int coord[], float soma) {
-        if (control == nos.size()) {
+        if (control == nodes.size()) {
             int cLinear = potentialTable.getLinearCoord(coord);
             potentialTable.setValue(cLinear, potentialTable.getValue(cLinear) / soma);
             return;
@@ -210,7 +226,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
             return;
         }
 
-        Node node = nos.get(control);
+        Node node = nodes.get(control);
         for (int i = 0; i < node.getStatesSize(); i++) {
             coord[control] = i;
             div(control+1, fixo, coord, soma);
@@ -283,24 +299,86 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 
     /**
      *@return    list of vetor cluster nodes.
+     *@deprecated use {@link #getNodesList()} instead
      */
+    @Deprecated
     public ArrayList<Node> getNodes() {
-        return nos;
+    	if (nodes instanceof ArrayList) {
+    		return (ArrayList) nodes;
+    	} else {
+    		return new ArrayList<Node>(nodes);
+    	}
+    }
+    
+    /**
+     * This method substitutes {@link #getNodes()}
+     *@return    list of vetor cluster nodes.
+     */
+    public List<Node> getNodesList() {
+    	return nodes;
+    }
+    
+    /**
+     * @param nodes: list of vetor cluster nodes.
+     */
+    public void setNodesList(List<Node> nodes){
+    	this.nodes = nodes;
     }
 
 
     /**
      *@return    list of associated probabilistic nodes (probabilistic nodes linked to this clique)
+     *@deprecated use {@link #getAssociatedProbabilisticNodesList()} instead
      */
-    public ArrayList<Node> getAssociatedProbabilisticNodes() {
-        return nosAssociados;
+    @Deprecated
+	public ArrayList<Node> getAssociatedProbabilisticNodes() {
+        if (associatedNodes instanceof ArrayList) {
+        	return (ArrayList) associatedNodes;
+        } else {
+        	return new ArrayList<Node>(associatedNodes);
+        }
+    }
+    
+	/**
+	 *@return    list of associated probabilistic nodes (probabilistic nodes linked to this clique)
+	 */
+    public List<Node> getAssociatedProbabilisticNodesList() {
+    	return associatedNodes;
+    }
+    
+    /**
+     * @param associatedNodes : list of associated probabilistic nodes (probabilistic nodes linked to this clique)
+     */
+    public void setAssociatedProbabilisticNodesList(List<Node> associatedNodes) {
+    	this.associatedNodes = associatedNodes;
     }
 
     /**
      *@return   list of associated utility nodes (utility nodes linked to this clique)
+     *@deprecated use {@link #getAssociatedUtilityNodesList()} instead
      */
+    @Deprecated
     public ArrayList<Node> getAssociatedUtilityNodes() {
-        return associatedUtilNodes;
+        if (associatedUtilNodes instanceof ArrayList) {
+        	return (ArrayList) associatedUtilNodes;
+        } else {
+        	return new ArrayList<Node>(associatedUtilNodes);
+        }
+    }
+    
+    /**
+     * Substitutes {@link #getAssociatedUtilityNodes()}
+     *@return   list of associated utility nodes (utility nodes linked to this clique)
+     */
+    public List<Node> getAssociatedUtilityNodesList() {
+    	return associatedUtilNodes;
+    }
+    
+    /**
+     * @param associatedUtilNodes : list of associated utility nodes (utility nodes linked to this clique)
+     */
+    public void setAssociatedUtilityNodesList(List<Node> associatedUtilNodes) {
+    	this.associatedUtilNodes = associatedUtilNodes;
     }
 
     /**
@@ -338,8 +416,8 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("C{");
-		for (int j = nos.size()-1; j>=0;j--) {
-			sb.append(nos.get(j) + " ");				
+		for (int j = nodes.size()-1; j>=0;j--) {
+			sb.append(nodes.get(j) + " ");				
 		}
 		sb.append("}");
 		return sb.toString();
@@ -376,5 +454,6 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 	public void setInternalIdentificator(int internalIdentificator) {
 		this.internalIdentificator = internalIdentificator;
 	}
+
 
 }

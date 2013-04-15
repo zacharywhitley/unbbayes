@@ -31,7 +31,6 @@ import java.util.Set;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.UtilityNode;
-import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -57,6 +56,12 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 */
 	private Collection<Separator> separators = new ArrayList<Separator>();
 	private Map<Clique, Set<Separator>> separatorsMap = new HashMap<Clique, Set<Separator>>();
+
+	/** If true, {@link #absorb(Clique, Clique)} will use singleton temporary lists in order to reduce garbage */
+	private static boolean isToUseSingletonListsInAbsorb = true;
+	
+	/** This is the singleton temporary list used by {@link #absorb(Clique, Clique)} when {@link #isToUseSingletonListsInAbsorb()} == true */
+	private static List<Node> singletonListForAbsorb = new ArrayList<Node>(7);
 
 //	/**
 //	 * Pre-calculated coordinates for optimizing the method absorb
@@ -168,7 +173,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 * @see #consistency(Clique)
 	 */
 	public void consistency() throws Exception {
-		this.consistency(cliques.get(0));
+		this.consistency(cliques.get(0),true);	// 2nd arg == true -> assume there are evidences in any clique - so call recursive even when separator is empty
 	}
 	
 	/**
@@ -183,32 +188,53 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 * disconnected from other portions, and no other evidence is expected in other
 	 * cliques disconnected from the current clique.
 	 * If null, then the 1st clique in {@link #getCliques()} will be used.
+	 * @param isToContinueOnEmptySep : if false, propagation will not recursively
+	 * guarantee global consistency to subtrees connected with empty separators.
+	 * If evidences are expected to be across several cliques, set this to true,
+	 * otherwise, if evidences are expected to be present only at the subtree
+	 * of rootClique, then set this as false.
 	 * @throws Exception
 	 * @see unbbayes.prs.bn.IJunctionTree#consistency()
 	 * @see {@link #consistency()}
 	 * @see #coleteEvidencia(Clique)
 	 * @see #distributeEvidences(Clique)
 	 */
-	public void consistency(Clique rootClique) throws Exception {
+	public void consistency(Clique rootClique, boolean isToContinueOnEmptySep) throws Exception {
 		if (rootClique == null) {
 			rootClique = cliques.get(0);
 		}
 		totalEstimatedProb = 1;
-		coleteEvidencia(rootClique);
-		distributeEvidences(rootClique);
+		collectEvidence(rootClique, isToContinueOnEmptySep);
+		distributeEvidences(rootClique, isToContinueOnEmptySep);
 	}
 
+	/**
+	 * Simply delegates to {@link #collectEvidence(Clique, boolean)} passing true in its second argument
+	 * @param clique
+	 * @throws Exception
+	 * @deprecated use {@link #collectEvidence(Clique, boolean)} instead
+	 */
+	@Deprecated
+	protected void coleteEvidencia(Clique clique) throws Exception {
+		this.collectEvidence(clique, true);
+	}
 	/**
 	 * Processes the collection of evidences.
 	 * It absorbs child cliques.
 	 *@param  clique  clique.
 	 */
-	protected void coleteEvidencia(Clique clique) throws Exception {
+	protected void collectEvidence(Clique clique, boolean isToContinueOnEmptySep) throws Exception {
 		for (Clique auxClique : clique.getChildren()) {
-			this.coleteEvidencia(auxClique);
-			
-//			Separator sep = getSeparator(clique, auxClique); 
-//			clique.absorb(auxClique, sep.getPotentialTable());
+			if (isToContinueOnEmptySep) {
+				// call recursive regardless of separator
+				this.collectEvidence(auxClique,isToContinueOnEmptySep);
+			} else {
+				// call recursive only if separator can propagate evidence (non-empty and more than 1 state)
+				Separator sep = getSeparator(clique, auxClique); 
+				if (sep.getProbabilityFunction().tableSize() > 1) {
+					this.collectEvidence(auxClique,isToContinueOnEmptySep);
+				}
+			}
 			absorb(clique, auxClique);
 		}
 
@@ -216,19 +242,34 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	}
 
 	/**
+	 * Simply delegates to {@link #distributeEvidences(Clique, boolean)}
+	 * @param clique
+	 * @deprecated use {@link #distributeEvidences(Clique, boolean)} instead
+	 */
+	@Deprecated
+	protected void distributeEvidences(Clique clique) {
+		this.distributeEvidences(clique, true);
+	}
+	/**
 	 * Processes the distribution of evidences.
 	 * It distributes potentials to child cliques
 	 *@param  clique  clique.
 	 */
-	protected void distributeEvidences(Clique clique) {
+	protected void distributeEvidences(Clique clique, boolean isToContinueOnEmptySep) {
 		for (Clique auxClique : clique.getChildren()) {
 			
-//			Separator sep = getSeparator(clique, auxClique); 
-//			auxClique.absorb(clique, sep.getPotentialTable());
 			absorb(auxClique, clique);
-//			if (!auxClique.getChildren().isEmpty()) {
-				distributeEvidences(auxClique);
-//			}
+			
+			if (isToContinueOnEmptySep) {
+				// call recursive regardless of separator
+				distributeEvidences(auxClique,isToContinueOnEmptySep);
+			} else {
+				// call recursive only if separator can propagate evidence (non-empty and more than 1 state)
+				Separator sep = getSeparator(clique, auxClique); 
+				if (sep.getProbabilityFunction().tableSize() > 1) {
+					distributeEvidences(auxClique,isToContinueOnEmptySep);
+				}
+			}
 		}
 	}
 	
@@ -248,20 +289,32 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 //			Debug.println(getClass(), clique1 + " and " + clique2 + " has empty separator.");
 			return;
 		}
-		ArrayList<Node> toDie = SetToolkit.clone(clique2.getNodes());
-		for (int i = 0; i < sepTab.variableCount(); i++) {
-			toDie.remove(sepTab.getVariableAt(i));			
+		
+		List<Node> nodesInClique2NotInSeparator = null;
+		if (isToUseSingletonListsInAbsorb) {
+			nodesInClique2NotInSeparator = singletonListForAbsorb;
+			nodesInClique2NotInSeparator.clear();
+			nodesInClique2NotInSeparator.addAll(clique2.getNodes());
+			nodesInClique2NotInSeparator.removeAll(sep.getNodes());
+		} else {
+			nodesInClique2NotInSeparator = new ArrayList<Node>(clique2.getNodes());
+			nodesInClique2NotInSeparator.removeAll(sep.getNodes());
 		}
 
+//		PotentialTable dummyTable =
+//			(PotentialTable) clique2.getProbabilityFunction().clone();
 		PotentialTable dummyTable =
-			(PotentialTable) clique2.getProbabilityFunction().clone();
-			
-		for (int i = 0; i < toDie.size(); i++) {
-			dummyTable.removeVariable(toDie.get(i));
+				(PotentialTable) clique2.getProbabilityFunction().getTemporaryClone();
+		
+		for (Node nodeToRemove : nodesInClique2NotInSeparator) {
+			dummyTable.removeVariable(nodeToRemove);
 		}
+		
 
+//		PotentialTable originalSeparatorTable =
+//			(PotentialTable) sepTab.clone();
 		PotentialTable originalSeparatorTable =
-			(PotentialTable) sepTab.clone();
+				(PotentialTable) sepTab.getTemporaryClone();
 
 		for (int i = sepTab.tableSize() - 1; i >= 0; i--) {
 			sepTab.setValue(i, dummyTable.getValue(i));
@@ -683,6 +736,25 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 */
 	protected void setSeparatorsMap(Map<Clique, Set<Separator>> separatorsMap) {
 		this.separatorsMap = separatorsMap;
+	}
+
+	/**
+	 * If true, {@link #absorb(Clique, Clique)} will use singleton temporary lists in order to reduce garbage
+	 * Turn this to false in concurrent calls of {@link #absorb(Clique, Clique)}
+	 * @return the isToUseSingletonListsInAbsorb
+	 */
+	public static boolean isToUseSingletonListsInAbsorb() {
+		return isToUseSingletonListsInAbsorb;
+	}
+
+	/**
+	 * If true, {@link #absorb(Clique, Clique)} will use singleton temporary lists in order to reduce garbage.
+	 * Turn this to false in concurrent calls of {@link #absorb(Clique, Clique)}
+	 * @param isToUseSingletonListsInAbsorb the isToUseSingletonListsInAbsorb to set
+	 */
+	public static void setToUseSingletonListsInAbsorb(
+			boolean isToUseSingletonListsInAbsorb) {
+		JunctionTree.isToUseSingletonListsInAbsorb = isToUseSingletonListsInAbsorb;
 	}
 
 //	/**

@@ -100,4 +100,13 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
         }
     }
 
+    /*
+     * (non-Javadoc)
+     * @see unbbayes.prs.bn.PotentialTable#getTemporaryClone()
+     */
+	public PotentialTable getTemporaryClone() {
+		// TODO Auto-generated method stub
+		return (PotentialTable) clone();
+	}
+
 }

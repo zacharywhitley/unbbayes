@@ -84,10 +84,15 @@ public interface IJunctionTree {
 	 *  It applies the "collect" (propagate messages from leaves to root clique) and then "distribute" (propagate
 	 *  messages from root clique to leaves). However, its scope is limited only to cliques below (i.e. descendants)
 	 *  of the clique passed as its argument.
+	 *  @param isToContinueOnEmptySep : if false, propagation will not recursively
+	 * guarantee global consistency to subtrees connected with empty separators.
+	 * If evidences are expected to be across several cliques, set this to true,
+	 * otherwise, if evidences are expected to be present only at the subtree
+	 * of rootClique, then set this as false.
 	 * @throws Exception
 	 * @see unbbayes.prs.bn.IJunctionTree#consistency()
 	 */
-	public void consistency(Clique rootClique) throws Exception;
+	public void consistency(Clique rootClique, boolean isToContinueOnEmptySep) throws Exception;
 
 	/**
 	 *  Initialize belief

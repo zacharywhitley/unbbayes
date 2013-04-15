@@ -196,7 +196,7 @@ public class InCliqueConditionalProbabilityExtractor implements
 		for (Integer[] evidenceIndexes : new SharedArrayParentStatesIndexIterator(parentNodes)) {
 			
 			// clone clique potential, so that it won't change the original potential
-			PotentialTable cloneCliqueTable = (PotentialTable) clique.getProbabilityFunction().clone();
+			PotentialTable cloneCliqueTable = (PotentialTable) clique.getProbabilityFunction().getTemporaryClone();
 			
 			// set parents as evidences. Note: stateIndexes.length == parentNodes.size()
 			for (int parentIndex = 0; parentIndex < evidenceIndexes.length; parentIndex++) {

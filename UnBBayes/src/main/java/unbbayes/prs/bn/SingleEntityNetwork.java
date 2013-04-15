@@ -1276,15 +1276,32 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 */
 	public void updateEvidences(Clique rootClique) throws Exception {
 			
+		// TODO search for evidences only in nodes reachable from rootClique
+		int numEvidences = 0;	// how many nodes with evidences
 		int sizeNos = this.getNodesCopy().size();
 		for (int c = 0; c < sizeNos; c++) {
 			TreeVariable node = (TreeVariable) copiaNos.get(c);
-			node.updateEvidences();
+			if (node.hasEvidence()) {
+				node.updateEvidences();
+				numEvidences++;
+			}
+			// TODO it is possible to check which cliques needs update at this point, so we can limit the scope further
 		}
 
+//		if (numEvidences < 1) {
+//			try {
+//				Debug.println(getClass(), "There is no evidence to propagate in network " + this + " for root clique " + rootClique);
+//			} catch (Throwable t) {
+//				t.printStackTrace();
+//			}
+//			return;
+//		}
+		
 		try {
 			if (rootClique != null) {
-				junctionTree.consistency(rootClique);
+				// if there is more than 1 node with evidence, then we must consider that they may be in disconnected sub-trees of the junction tree, 
+				// so need to continue even after we find empty separators
+				junctionTree.consistency(rootClique,numEvidences>1);
 			} else {
 				junctionTree.consistency();
 			}

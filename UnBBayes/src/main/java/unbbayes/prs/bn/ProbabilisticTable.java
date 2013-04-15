@@ -39,6 +39,14 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	/** Load resource file from this package */
   	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.prs.bn.resources.BnResources.class.getName());
+  	
+  	// TODO use multipleton instead of singleton, if performance is not a problem
+  	private static PotentialTable temporarySingletonClone1 = null;
+  	private static PotentialTable temporarySingletonClone2 = null;
+  	/** if true, will use {@link #temporarySingletonClone1}. If false, will use {@link #temporarySingletonClone2} */
+  	private static boolean temporarySingletonCloneSwitch = true;	
+
+	private static boolean isToUseSingletonInstanceAsTemporaryClone = true;
 
 	public ProbabilisticTable() {
 	}
@@ -164,6 +172,88 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	public PotentialTable newInstance() {
 		return new ProbabilisticTable();
 	}
+	
+	/**
+	 * CAUTION: this method is over fit to {@link unbbayes.prs.bn.JunctionTree#absorb(Clique, Clique)}
+	 * in order to reduce the ammount of garbage.
+	 * Returns a copy of the data from the table,
+	 * but some optimizations may be performed by implementations (subclasses), assuming that
+	 * the copy will only be alive temporary.
+	 * @return A copy of the data from the table.
+	 * CAUTION: by default, it will return a singleton instance if
+	 * {@link #isToUseSingletonInstanceAsTemporaryClone()} is true.
+	 * In the default case, this method is not thread safe (except of singleton instantiation).
+	 * @see unbbayes.prs.bn.PotentialTable#getTemporaryClone()
+	 * @see unbbayes.prs.bn.JunctionTree#absorb(Clique, Clique)
+	 */
+	public PotentialTable getTemporaryClone() {
+		if (isToUseSingletonInstanceAsTemporaryClone) {
+			// use lazily instantiated singleton object
+			
+			PotentialTable auxTab;
+			
+			// TODO stop leaving it overly fit to {@link unbbayes.prs.bn.JunctionTree#absorb(Clique, Clique)}.
+			// 2 consecutive calls will not return the same object, because {@link unbbayes.prs.bn.JunctionTree#absorb(Clique, Clique)} makes 2 calls assuming they are different objects
+			if (temporarySingletonCloneSwitch) {
+				if (temporarySingletonClone1 == null) {
+					// instantiate new object
+					synchronized(PotentialTable.class) {	// double checking avoids race condition
+						if (temporarySingletonClone1 == null) {
+							temporarySingletonClone1 = newInstance();
+						}
+					}
+				}
+				auxTab = temporarySingletonClone1;
+			} else {
+				if (temporarySingletonClone2 == null) {
+					// instantiate new object
+					synchronized(PotentialTable.class) {	// double checking avoids race condition
+						if (temporarySingletonClone2 == null) {
+							temporarySingletonClone2 = newInstance();
+						}
+					}
+				}
+				auxTab = temporarySingletonClone2;
+			}
+			// swap switch at each call
+			temporarySingletonCloneSwitch = !temporarySingletonCloneSwitch;
+			
+			// TODO see how much the synchronization methods would reduce performance. If small, then use synchronization
+			
+			
+			// TODO check which is faster - just do clear + addAll or to use set(index,value) if size is OK
+			auxTab.variableList.clear();
+			auxTab.variableList.addAll(variableList);
+			
+			// perform fast  copy of content
+			auxTab.dataPT.size = dataPT.size;
+			if (auxTab.dataPT.data.length < dataPT.size) {
+				// guarantee the size matches
+				auxTab.dataPT.data = new float[dataPT.size];
+			}
+			System.arraycopy(dataPT.data, 0, auxTab.dataPT.data, 0, dataPT.size);
+			
+			// also copy factors (which is used to calculate indexes when summing out variables)
+			if (factorsPT != null) {
+				if (auxTab.factorsPT == null || auxTab.factorsPT.length < factorsPT.length) {
+					// guarantee the size matches
+					auxTab.factorsPT = new int[factorsPT.length];
+				}
+				System.arraycopy(factorsPT, 0, auxTab.factorsPT, 0, factorsPT.length);
+			}
+			
+			// indicate that the singleton table was modified.
+			auxTab.notifyModification();
+			
+			auxTab.setSumOperation(this.getSumOperation());
+			
+			
+			return auxTab;
+		} else {
+			// TODO return from some kind of object pool
+			return (PotentialTable) this.clone();
+		}
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
@@ -186,6 +276,25 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 		float[] aux = dataPT.data;
 		dataPT.data = new float[dataPT.size];
 		System.arraycopy(aux, 0, dataPT.data, 0, dataPT.size);
+	}
+
+	/**
+	 * If true, {@link #getTemporaryClone()} will return singleton instances.
+	 * This is true by default.
+	 * @return the isToUseSingletonInstanceAsTemporaryClone
+	 */
+	public static boolean isToUseSingletonInstanceAsTemporaryClone() {
+		return isToUseSingletonInstanceAsTemporaryClone;
+	}
+
+	/**
+	 * If true, {@link #getTemporaryClone()} will return singleton instances
+	 * This is true by default.
+	 * @param isToUseSingletonInstanceAsTemporaryClone the isToUseSingletonInstanceAsTemporaryClone to set
+	 */
+	public static void setToUseSingletonInstanceAsTemporaryClone(
+			boolean isToUseSingletonInstanceAsTemporaryClone) {
+		ProbabilisticTable.isToUseSingletonInstanceAsTemporaryClone = isToUseSingletonInstanceAsTemporaryClone;
 	}
 	
 	

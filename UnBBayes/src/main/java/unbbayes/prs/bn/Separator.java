@@ -42,14 +42,14 @@ public class Separator implements IRandomVariable, java.io.Serializable {
     private int internalIdentificator = Integer.MIN_VALUE;
 
 	private PotentialTable utilityTable;
-    private ArrayList<Node> nos;
+    private ArrayList<Node> nodes;
 
     private Clique clique1;
 
     private Clique clique2;
     
     private Separator() {
-    	nos = new ArrayList<Node>();
+    	nodes = new ArrayList<Node>(1);
         tabelaPot = new ProbabilisticTable();
         utilityTable = new UtilityTable();
     }
@@ -90,10 +90,25 @@ public class Separator implements IRandomVariable, java.io.Serializable {
      * @param table : {@link #getProbabilityFunction()} will be initialized to this object
      */
     public Separator(Clique assetClique1, Clique assetClique2,
-			PotentialTable table) {
+    		PotentialTable table) {
+    	this(assetClique1, assetClique2, table, new UtilityTable());
+    }
+   
+    /**
+     * Constructor initializing fields
+     * @param assetClique1
+     * @param assetClique2
+     * @param probTable : probability table
+     * @param utilTable : utility table
+     */
+    public Separator(Clique assetClique1, Clique assetClique2,
+			PotentialTable probTable, PotentialTable utilTable) {
 		this(assetClique1, assetClique2);
-		if (table != null) {
-			tabelaPot = table;
+		if (probTable != null) {
+			tabelaPot = probTable;
+		}
+		if (utilTable != null) {
+			utilityTable = utilTable;
 		}
 	}
 
@@ -101,7 +116,7 @@ public class Separator implements IRandomVariable, java.io.Serializable {
      *@param  nodeList list of clusterized nodes
      */
     public void setNodes(ArrayList<Node> nodeList) {
-        this.nos = nodeList;
+        this.nodes = nodeList;
     }
 
 
@@ -131,7 +146,7 @@ public class Separator implements IRandomVariable, java.io.Serializable {
      *@return    List of clusterized nodes.
      */
     public ArrayList<Node> getNodes() {
-        return nos;
+        return nodes;
     }
 
 
@@ -172,8 +187,8 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("S{");
-		for (int j = nos.size()-1; j>=0;j--) {
-			sb.append(nos.get(j) + " ");				
+		for (int j = nodes.size()-1; j>=0;j--) {
+			sb.append(nodes.get(j) + " ");				
 		}
 		sb.append("}");
 		sb.append(this.getClique1());

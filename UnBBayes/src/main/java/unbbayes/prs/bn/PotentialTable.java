@@ -27,7 +27,6 @@ import java.util.ResourceBundle;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
-import unbbayes.util.Debug;
 import unbbayes.util.FloatCollection;
 import unbbayes.util.SetToolkit;
 
@@ -51,6 +50,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 			public void removeVariable(INode variable, boolean normalize) {}
 			public void purgeVariable(INode variable, boolean normalize) {}
 			public PotentialTable newInstance() { return null; }
+			public PotentialTable getTemporaryClone() { return null; }
 		}.new SumOperation();	// created an anonymous extension of PotentialTable just to instantiate inner class SumOperation
 
 	private boolean modified;
@@ -98,7 +98,13 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	protected int[] factorsMarginal;
 	
 	private ISumOperation sumOperation;
-
+	private boolean isRemovedCellInDataPT[] = null;
+	
+	/** This is the singleton value enabled when {@link #isToUseSingletonArrayOfRemovedCellInDataPT()} is true */
+	private boolean[] singletonArrayOfRemovedCellInDataPT;
+	
+	private static boolean isToUseSingletonArrayOfRemovedCellInDataPT = true;
+	
 	/**
 	 * Initialize data and variables.
 	 */
@@ -109,11 +115,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 //		dataMarginal = new FloatCollection();
 		variableList = new ArrayList<Node>();
 		
-		try{
-			this.setSumOperation(DEFAULT_MARGINALIZATION_OP);
-		} catch (Exception e) {
-			Debug.println(getClass(), e.getMessage(), e);
-		}
+		this.setSumOperation(DEFAULT_MARGINALIZATION_OP);
 	}
 	
 	/**
@@ -121,7 +123,9 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 */
 	public void copyData() {
 		dataCopy.size = dataPT.size;
-		dataCopy.data = new float[dataPT.size];
+		if (dataCopy.data.length < dataPT.size) {
+			dataCopy.data = new float[dataPT.size];
+		}
 		System.arraycopy(dataPT.data, 0, dataCopy.data, 0, dataPT.size);
 //		int dataSize = dataPT.size;
 //		dataCopy.ensureCapacity(dataSize);
@@ -266,6 +270,15 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		auxTab.setSumOperation(this.getSumOperation());
 		return auxTab;
 	}
+	
+	/**
+	 * Returns a copy of the data from the table,
+	 * but some optimizations may be performed by implementations (subclasses), assuming that
+	 * the copy will only be alive temporary.
+	 * @return A copy of the data from the table.
+	 * @see unbbayes.prs.bn.JunctionTree
+	 */
+	public abstract PotentialTable getTemporaryClone();
 	
 	/**
 	 * Returns a copy of the data from the table associated with the new 
@@ -467,17 +480,56 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 */
 	public abstract PotentialTable newInstance();
 
+	/**
+	 * Sum outs a variable from {@link #dataPT} (i.e. marginalizes out a variable from the CPT).
+	 * @param index : index of the variable to sum out
+	 * @see #variableList
+	 * @see #isRemovedCellInDataPT()
+	 * @see #getSumOperation()
+	 * @see #sumAux(int, int, int, int, boolean[])
+	 * @see #dataPT
+	 */
 	protected void sum(int index) {
-		boolean marked[]  = new boolean[dataPT.size];	
+		if (isToUseSingletonArrayOfRemovedCellInDataPT) {
+			// use singleton instance of isRemovedCellInDataPT to avoid garbage
+			if (singletonArrayOfRemovedCellInDataPT == null) {
+				// instantiate new object
+				synchronized(PotentialTable.class) {	// double checking avoids race condition
+					if (singletonArrayOfRemovedCellInDataPT == null) {
+						singletonArrayOfRemovedCellInDataPT = new boolean[dataPT.size];
+					}
+				}
+			} 
+			// check size (doble check - do not include in else clause of previous if - in case of race condition)
+			if (singletonArrayOfRemovedCellInDataPT.length < dataPT.size) {
+				singletonArrayOfRemovedCellInDataPT = new boolean[dataPT.size];	
+			} else {
+				// guarantee that all values starts from false
+				for (int i = 0; i < singletonArrayOfRemovedCellInDataPT.length; i++) {
+					singletonArrayOfRemovedCellInDataPT[i] = false;
+				}
+			}
+			isRemovedCellInDataPT = singletonArrayOfRemovedCellInDataPT;
+		} else {
+			// do not use singleton instance of isRemovedCellInDataPT
+			if (isRemovedCellInDataPT == null || isRemovedCellInDataPT.length < dataPT.size) {
+				isRemovedCellInDataPT = new boolean[dataPT.size];	
+			} else {
+				// guarantee that all values starts from false
+				for (int i = 0; i < isRemovedCellInDataPT.length; i++) {
+					isRemovedCellInDataPT[i] = false;
+				}
+			}
+		}
 		if ( sumOperation == null) {
 			// ensure the operation exists
 			sumOperation = DEFAULT_MARGINALIZATION_OP;
 		}
-		sumAux(variableList.size() - 1, index, 0, 0, marked);
+		sumAux(variableList.size() - 1, index, 0, 0, isRemovedCellInDataPT);
 		
 		int j = 0;
 		for (int i = 0; i < dataPT.size; i++) {
-			if (marked[i]) {
+			if (isRemovedCellInDataPT[i]) {
 				continue;				
 			}
 			dataPT.data[j++] = dataPT.data[i];
@@ -518,15 +570,17 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		}
 		
 		Node node = variableList.get(control);
+		int factorPTControl = factorsPT[control];
 		if (control == index) {
 			// if the current iterated variable is the one we want to delete, then iterate only until 1,
 			// because the position 0 will hold the sum. 
+			int factorPTIndex = factorsPT[index];
 			for (int i = node.getStatesSize()-1; i >= 1; i--) {
-				sumAux(control-1, index, coord + i*factorsPT[control], i*factorsPT[index], marked);
+				sumAux(control-1, index, coord + i*factorPTControl, i*factorPTIndex, marked);
 			}	
 		} else {
 			for (int i = node.getStatesSize()-1; i >= 0; i--) {
-				sumAux(control-1, index, coord + i*factorsPT[control], base, marked);
+				sumAux(control-1, index, coord + i*factorPTControl, base, marked);
 			}
 		}
 	}
@@ -851,13 +905,15 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 			dataPT.data[linearA] += tab.dataPT.data[linearB];
 			return;						
 		}
+		int currentFactor = factorsPT[c];
 		if (index[c] == -1) {
 			for (int i = variableList.get(c).getStatesSize() - 1; i >= 0; i--) {						
-				fastOpTabPlus(c+1, linearA + i*factorsPT[c] , linearB, index, tab);
+				fastOpTabPlus(c+1, linearA + i*currentFactor , linearB, index, tab);
 			}
 		} else {
+			int currentTableFactor = tab.factorsPT[index[c]];
 			for (int i = variableList.get(c).getStatesSize() - 1; i >= 0; i--) {						
-				fastOpTabPlus(c+1, linearA + i*factorsPT[c] , linearB + i*tab.factorsPT[index[c]], index, tab);
+				fastOpTabPlus(c+1, linearA + i*currentFactor , linearB + i*currentTableFactor, index, tab);
 			}
 		}
 	}
@@ -940,13 +996,14 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
     		return;    		    		
     	}
     	
+    	int currentFactor = this.factorsPT[c];
     	if (index == c) {
     		for (int i = this.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
-	    		updateRecursive(marginalList, c+1, linear + i*this.factorsPT[c] , index, i);
+	    		updateRecursive(marginalList, c+1, linear + i* currentFactor, index, i);
     		}
     	} else {
 	    	for (int i = this.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
-	    		updateRecursive(marginalList, c+1, linear + i*this.factorsPT[c] , index, state);
+	    		updateRecursive(marginalList, c+1, linear + i*currentFactor , index, state);
     		}
     	}
     }
@@ -1018,5 +1075,51 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	protected void setModified(boolean modified) {
 		this.modified = modified;
 	}
+
+	/**
+	 * This array is used in {@link #sum(int)} and {@link #sumAux(int, int, int, int, boolean[])} in order
+	 * to trace which cells in {@link #dataPT} were removed during the sum-out operations of
+	 * {@link #removeVariable(INode)}. This was modeled as an attribute instead of local variable 
+	 * in order to reduce garbage.
+	 * @return the isRemovedCellInDataPT
+	 */
+	protected boolean[] isRemovedCellInDataPT() {
+		return this.isRemovedCellInDataPT;
+	}
+
+	/**
+	 * This array is used in {@link #sum(int)} and {@link #sumAux(int, int, int, int, boolean[])} in order
+	 * to trace which cells in {@link #dataPT} were removed during the sum-out operations of
+	 * {@link #removeVariable(INode)}. This was modeled as an attribute instead of local variable 
+	 * in order to reduce garbage.
+	 * @param isRemovedCellInDataPT the isRemovedCellInDataPT to set
+	 */
+	protected void setRemovedCellInDataPT(boolean[] isRemovedCellInDataPT) {
+		this.isRemovedCellInDataPT = isRemovedCellInDataPT;
+	}
+
+	/**
+	 * If true, {@link #sum(int)} will use a singleton boolean array in order to trace
+	 * the cells in {@link #dataPT} removed during the marginalize-out operation.
+	 * This value is true, by default, so set this to false if parallel sum-out is necessary.
+	 * @return the isToUseSingletonArrayOfRemovedCellInDataPT
+	 * @see #isRemovedCellInDataPT()
+	 */
+	public static boolean isToUseSingletonArrayOfRemovedCellInDataPT() {
+		return isToUseSingletonArrayOfRemovedCellInDataPT;
+	}
+
+	/**
+	 * If true, {@link #sum(int)} will use a singleton boolean array in order to trace
+	 * the cells in {@link #dataPT} removed during the marginalize-out operation.
+	 * This value is true, by default, so set this to false if parallel sum-out is necessary.
+	 * @param isToUseSingletonArrayOfRemovedCellInDataPT the isToUseSingletonArrayOfRemovedCellInDataPT to set
+	 * @see #isRemovedCellInDataPT()
+	 */
+	public static void setToUseSingletonArrayOfRemovedCellInDataPT(
+			boolean isToUseSingletonArrayOfRemovedCellInDataPT) {
+		PotentialTable.isToUseSingletonArrayOfRemovedCellInDataPT = isToUseSingletonArrayOfRemovedCellInDataPT;
+	}
+
 	
 }
