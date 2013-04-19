@@ -228,14 +228,15 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			if (isToContinueOnEmptySep) {
 				// call recursive regardless of separator
 				this.collectEvidence(auxClique,isToContinueOnEmptySep);
+				absorb(clique, auxClique);
 			} else {
 				// call recursive only if separator can propagate evidence (non-empty and more than 1 state)
 				Separator sep = getSeparator(clique, auxClique); 
 				if (sep.getProbabilityFunction().tableSize() > 1) {
 					this.collectEvidence(auxClique,isToContinueOnEmptySep);
+					absorb(clique, auxClique);
 				}
 			}
-			absorb(clique, auxClique);
 		}
 
 		totalEstimatedProb *= clique.normalize();

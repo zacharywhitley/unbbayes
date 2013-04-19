@@ -982,10 +982,10 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * its behavior.
 	 * It assumes {@link #computeFactors()} was run prior to this method.
 	 * @param marginalList
-	 * @param c
-	 * @param linear
-	 * @param index
-	 * @param state
+	 * @param c : an internal counter which traces the call depth
+	 * @param linear : linear index of table being handled by the current recursive call
+	 * @param index : index of variable in table
+	 * @param state : state of variable identified by index, currently being treated.
 	 */
 	protected void updateRecursive(float[] marginalList, int c, int linear, int index, int state) {
 		if (index < 0) {
@@ -996,16 +996,27 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
     		return;    		    		
     	}
     	
-    	int currentFactor = this.factorsPT[c];
-    	if (index == c) {
-    		for (int i = this.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
-	    		updateRecursive(marginalList, c+1, linear + i* currentFactor, index, i);
-    		}
+    	if (c == 0 && linear == 0 && state == 0) {
+    		// this is a method critical for performance in huge tables. Calculate without using recursive calls, in order to make execution faster
+    		state = this.variableList.get(index).getStatesSize();
+    		c = factorsPT[index];
+    		for (linear = 0; linear < this.dataPT.size; linear++) {
+    			this.dataPT.data[linear] *= marginalList[(linear/c) % state];
+			}
     	} else {
-	    	for (int i = this.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
-	    		updateRecursive(marginalList, c+1, linear + i*currentFactor , index, state);
+    		// in this case, the caller may be really attempting to do things recursively. Call recursive, just for backward compatibility
+    		int currentFactor = this.factorsPT[c];
+    		if (index == c) {
+    			for (int i = this.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+    				updateRecursive(marginalList, c+1, linear + i* currentFactor, index, i);
+    			}
+    		} else {
+    			for (int i = this.variableList.get(c).getStatesSize() - 1; i >= 0; i--) {    		    		
+    				updateRecursive(marginalList, c+1, linear + i*currentFactor , index, state);
+    			}
     		}
     	}
+    	
     }
 
 	/**
@@ -1021,7 +1032,14 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 */
 	public void updateEvidences(float[] marginalList, int index) {
 		this.computeFactors();
-		this.updateRecursive(marginalList, 0, 0, index, 0);
+//		this.updateRecursive(marginalList, 0, 0, index, 0);
+		// this is a method critical for performance in huge tables. 
+		// Instead of calling the method recursively, just do it locally so that execution is faster.
+		int numStates = this.variableList.get(index).getStatesSize();
+		int factor = factorsPT[index];
+		for (int linear = 0; linear < this.dataPT.size; linear++) {
+			this.dataPT.data[linear] *= marginalList[(linear/factor) % numStates];
+		}
 	}
 	
 	/**
