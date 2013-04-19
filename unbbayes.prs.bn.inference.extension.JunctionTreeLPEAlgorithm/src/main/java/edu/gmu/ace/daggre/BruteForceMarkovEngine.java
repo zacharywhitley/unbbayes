@@ -18,6 +18,7 @@ import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.BruteForceAssetAwareInferenceAlgorithm;
@@ -100,9 +101,10 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineImpl#getProbLists(java.util.List, java.util.List, java.util.List, boolean)
+	 * @see edu.gmu.ace.daggre.MarkovEngineImpl#getProbLists(java.util.List, java.util.List, java.util.List, boolean, unbbayes.prs.bn.ProbabilisticNetwork, boolean)
 	 */
-	public Map<Long,List<Float>> getProbLists(List<Long> questionIds, List<Long>assumptionIds, List<Integer> assumedStates, boolean isToNormalize) throws IllegalArgumentException {
+	public Map<Long,List<Float>> getProbLists(List<Long> questionIds, List<Long>assumptionIds, List<Integer> assumedStates, 
+			boolean isToNormalize, ProbabilisticNetwork net, boolean canChangeNet) throws IllegalArgumentException {
 		if (!isToNormalize) {
 			throw new UnsupportedOperationException("Only normalized operation supported.");
 		}
@@ -165,7 +167,8 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 	 * (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineImpl#getAssetsIfStates(long, java.util.List, java.util.List, unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm, boolean, unbbayes.prs.bn.Clique)
 	 */
-	protected List getAssetsIfStates(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, AssetAwareInferenceAlgorithm alg, boolean isToReturnQValuesInsteadOfAssets, Clique clique)
+	protected List getAssetsIfStates(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, AssetAwareInferenceAlgorithm alg, boolean isToReturnQValuesInsteadOfAssets, Clique clique,
+			PotentialTable cptOfQuestionGivenAssumptionsObtainedFromClique)
 			throws IllegalArgumentException {
 		
 		if (assumptionIds != null && assumedStates != null && assumptionIds.size() != assumedStates.size()) {

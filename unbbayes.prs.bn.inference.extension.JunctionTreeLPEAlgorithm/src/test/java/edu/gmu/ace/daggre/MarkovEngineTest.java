@@ -14,7 +14,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import junit.framework.TestCase;
@@ -23924,6 +23926,116 @@ public class MarkovEngineTest extends TestCase {
 		scoreSummaryObject = engine.getScoreSummaryObject(user, resolvedQuestionID3, null, null);
 		assertEquals(0, scoreSummaryObject.getCashBeforeResolvedQuestion().size());
 		assertEquals(0, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
+		
+	}
+	
+	/**
+	 * Verifies the behavior of balancing trades when 10 variables are present in the same clique.
+	 * A network with 30 variables, comprised of 3 subnets of 10 variables with 2 states, fully connected (so, there will be
+	 * 3 Disconnected cliques with 10 variables).
+	 */
+	public final void testBalanceTrade10Vars() {
+		// set up engine
+		engine.setDefaultInitialAssetTableValue(1000f);
+		engine.initialize();
+		
+		// generate the 30 nodes
+		long transactionKey = engine.startNetworkActions();
+		for (int i = 0; i < 30; i++) {
+			engine.addQuestion(transactionKey, new Date(i), (long)i, 2, null);
+		}
+		// fully connect 10 by 10
+		for (int i = 0; i < 3; i++) {
+			for (int j = 10*i; j < 10*i+9; j++) {
+				List<Long> parentQuestionIds = Collections.singletonList((long)j);
+				for (int k = j+1; k < 10*i+10; k++) {
+					engine.addQuestionAssumption(transactionKey, new Date(), (long)k, parentQuestionIds, null);
+				}
+			}
+		}
+		
+		// commit the transaction
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that the generated network is correct
+		assertEquals(3, engine.getQuestionAssumptionGroups().size());
+		assertEquals(30, engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			for (Float prob : entry.getValue()) {
+				assertEquals(0.5f, prob, PROB_ERROR_MARGIN); 
+			}
+		}
+		// check low level consistency too
+		assertEquals(3, engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size());
+		for (Clique clique : engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
+			assertEquals(10, clique.getNodesList().size());
+		}
+		for (Separator sep : engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getJunctionTree().getSeparators()) {
+			assertEquals(0, sep.getNodes().size());
+		}
+		
+		// assert that initial asset is 1000
+		assertEquals(1000, engine.getCash(Long.MAX_VALUE, null, null), PROB_ERROR_MARGIN);
+		
+		long seed = new Date().getTime();
+		Random random = new Random(seed );
+		System.out.println("seed = " + seed);
+		
+		// make trades in all 3 cliques
+		for (int i = 0; i < 3; i++) {
+			for (int j = 10*i; j < 10*i+9; j++) {
+				List<Long> assumptionIds = Collections.singletonList((long)j);
+				for (int k = j+1; k < 10*i+10; k++) {
+					
+					// specify the assumptions of the trade
+					List<Integer> assumedStates = Collections.singletonList(0);
+					
+					// randomly generate trade value accordingly to trade limit
+					List<Float> limits = engine.getEditLimits(Long.MAX_VALUE, k, 0, assumptionIds, assumedStates);
+					float prob = limits.get(0) + (limits.get(1)-limits.get(0))*random.nextFloat(); // randomly pick a value between the edit limit
+					List<Float> newValues = new ArrayList<Float>();
+					newValues.add(prob); newValues.add(1-prob);	
+					if (Math.abs(limits.get(1) - limits.get(0)) > PROB_ERROR_MARGIN) {
+						// only make trade if there can be a trade
+						engine.addTrade(null, new Date(), "", Long.MAX_VALUE, k, newValues, assumptionIds, assumedStates, false);
+					}
+					
+					
+					// another trade on another state of the same assumption
+					assumedStates = Collections.singletonList(1);
+					limits = engine.getEditLimits(Long.MAX_VALUE, k, 0, assumptionIds, assumedStates);
+					prob = limits.get(0) + (limits.get(1)-limits.get(0))*random.nextFloat(); // randomly pick a value between the edit limit
+					newValues = new ArrayList<Float>();
+					newValues.add(prob); newValues.add(1-prob);	
+					if (Math.abs(limits.get(1) - limits.get(0)) > PROB_ERROR_MARGIN) {
+						// only make trade if there can be a trade
+						engine.addTrade(null, new Date(), "", Long.MAX_VALUE, k, newValues, assumptionIds, assumedStates, false);
+					}
+				}
+			}
+		}
+		
+		assertTrue(engine.getCash(Long.MAX_VALUE, null, null) > 0);
+		
+		// balance all questions
+		for (int i = 0; i < 30; i++) {
+			long before = System.currentTimeMillis();
+			engine.doBalanceTrade(null, new Date(), "Balance", Long.MAX_VALUE, i, null, null);
+			System.out.println("Time (ms) spent to balance question " + i + " = " + (System.currentTimeMillis() - before));
+			List<Float> assetsIfStates = engine.getAssetsIfStates(Long.MAX_VALUE, i, null, null);
+			for (Float asset : assetsIfStates) {
+				assertEquals(assetsIfStates.get(0), asset, 1);
+			}
+		}
+		
+		assertEquals(1000, engine.getCash(Long.MAX_VALUE, null, null), 1);
+		
+		for (int i = 0; i < 30; i++) {
+			List<Float> assetsIfStates = engine.getAssetsIfStates(Long.MAX_VALUE, i, null, null);
+			for (Float asset : assetsIfStates) {
+				assertEquals(assetsIfStates.get(0), asset, 1);
+			}
+		}
 		
 	}
 	
