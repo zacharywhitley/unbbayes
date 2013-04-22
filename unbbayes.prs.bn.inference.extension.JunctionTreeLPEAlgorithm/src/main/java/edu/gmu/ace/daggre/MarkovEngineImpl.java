@@ -2082,9 +2082,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		/** Calls {@link #execute(boolean, true)}
 		 * @see #execute(boolean, boolean) */
 		public void execute(boolean isToUpdateAssets) {
-			this.execute(isToUpdateAssets, !isToThrowExceptionOnInvalidAssumptions());
+			this.execute(isToUpdateAssets, !isToThrowExceptionOnInvalidAssumptions(), true);
 		}
-		public void execute(boolean isToUpdateAssets, boolean isToUpdateAssumptionIds) {
+		public void execute(boolean isToUpdateAssets, boolean isToUpdateAssumptionIds, boolean isToUpdateMarginals) {
 			// extract user's asset network from user ID
 			AssetAwareInferenceAlgorithm algorithm = null;
 			try {
@@ -2139,7 +2139,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							tradeSpecification.getAssumedStates(), 
 							allowNegative, algorithm, 
 							isToUpdateAssumptionIds, // if this boolean is true, then it will overwrite assumptionIds and assumedStates on out-of-clique edits
-							false, this
+							false, this,
+							isToUpdateMarginals
 						);
 					
 					// store what was the conditional probability before the trade, if it was not specified in the tradeSpecification
@@ -2286,7 +2287,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							getTradeSpecification().getProbabilities(), 
 							getAssumptionIds() , getAssumedStates() , true, 
 							getDefaultInferenceAlgorithm(), !isToThrowExceptionOnInvalidAssumptions(), 
-							false, getParentAction()
+							false, getParentAction(),
+							true	// is to update marginal probabilities too
 						)
 				);
 			setNewValues(getProbList(getTradeSpecification().getQuestionId(), null, null));
@@ -4844,7 +4846,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				algorithm, 
 				!isToThrowExceptionOnInvalidAssumptions(),  // whether do or don't overwrite assumptionIds and assumedStates
 				!isToDoFullPreview(), 
-				null // we are not interested in obtaining what other questions' marginals were affected by this trade
+				null, // we are not interested in obtaining what other questions' marginals were affected by this trade
+				true	// is to update marginal probabilities too
 			);	
 		
 		if (isToDoFullPreview()) {
@@ -4930,6 +4933,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * they will be only input arguments anyway.
 	 * @param parentTrade : (optional) points to the trade action executing this method. This will be used to fill
 	 * trade history of conditional probabilities.
+	 * @param isToUpdateMarginals : if this is false, then marginal probabilities of all nodes will not
+	 * be updated at the end of execution of this method. Otherwise, the marginal probabilities will be updated by default.
+	 * Use this feature in order to avoid marginal updating when several propagations are expected to be executed in a sequence, and
+	 * the marginals are not required to be updated at each propagation (so that we won't run the marginal updating several times
+	 * unnecessarily).
 	 * @return the probabilities before trade. This list will have the same structure of newValues, but its content will be filled
 	 * with the probabilities before applying the trade.
 	 * @see #addTrade(long, Date, String, long, long, List, List, List, boolean)
@@ -4940,7 +4948,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	protected List<Float> executeTrade(long questionId, List<Float> oldValues, List<Float> newValues, 
 			List<Long> assumptionIds, List<Integer> assumedStates, 
 			boolean isToAllowNegative, AssetAwareInferenceAlgorithm algorithm, boolean isToUpdateAssumptionIds, boolean isPreview, 
-			NetworkAction parentTrade) {
+			NetworkAction parentTrade, boolean isToUpdateMarginals) {
 		// basic assertions
 		if (algorithm == null) {
 			throw new NullPointerException("AssetAwareInferenceAlgorithm was not specified.");
@@ -5168,7 +5176,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 								oldValues,	// the trade shall set the current probability to oldValues
 								assumptionIds, assumedStates, 
 								isToAllowNegative, houseAccountAlgorithm, isToUpdateAssumptionIds, isPreview, 
-								new CorrectiveTradeAction(parentTrade, questionId, condProbBeforeTrade, oldValues) // intantiate a network action representing the corrective trade
+								new CorrectiveTradeAction(parentTrade, questionId, condProbBeforeTrade, oldValues), // intantiate a network action representing the corrective trade
+								isToUpdateMarginals
 						);
 						// restore config
 						houseAccountAlgorithm.setToUpdateAssets(backupConfig);
@@ -5237,7 +5246,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 					
 					// actually update the probabilities and assets
-					algorithm.propagate();
+					algorithm.propagate(isToUpdateMarginals);
 //					algorithm.setToAllowQValuesSmallerThan1(backup);
 					
 					// store marginal after trade, if the parent trade was not executed previously
@@ -5423,15 +5432,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// check if assumed state of resolved assumption is valid
 		if (originalAssumptionIds != null && originalAssumedStates != null) {
-			for (int i = 0; i < originalAssumptionIds.size(); i++) {
-				Long assumptionId = originalAssumptionIds.get(i);
-				StatePair statePair = this.getResolvedQuestions().get(assumptionId);
-				if (statePair != null) {
-					// this is a resolved assumption. Check if the specified state matches resolution
-					if (statePair.getResolvedState().intValue() != originalAssumedStates.get(i).intValue()) {
-						// there is no way to balance a resolved question assuming to a state different to the settled.
-						throw new IllegalArgumentException(assumptionId + " is a question resolved to state " + statePair.getResolvedState() 
-								+ ", but the argument assumes state " + originalAssumedStates.get(i));
+			Map<Long, StatePair> resolvedQuestions = this.getResolvedQuestions();
+			synchronized (resolvedQuestions) {
+				for (int i = 0; i < originalAssumptionIds.size(); i++) {
+					Long assumptionId = originalAssumptionIds.get(i);
+					StatePair statePair = resolvedQuestions.get(assumptionId);
+					if (statePair != null) {
+						// this is a resolved assumption. Check if the specified state matches resolution
+						if (statePair.getResolvedState().intValue() != originalAssumedStates.get(i).intValue()) {
+							// there is no way to balance a resolved question assuming to a state different to the settled.
+							throw new IllegalArgumentException(assumptionId + " is a question resolved to state " + statePair.getResolvedState() 
+									+ ", but the argument assumes state " + originalAssumedStates.get(i));
+						}
 					}
 				}
 			}
@@ -5497,6 +5509,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			mainNode.setToCalculateMarginal(backup);	// revert to previous config
 			mainNode.setAssociatedClique(cliqueSepBkp);	// revert to previous clique/separator
 		}
+		
 		// generate a table with mainNode as the 1st variable, so that we can easily iterate over all states of parents
 		// TODO use another way to iterate over parents
 		PotentialTable table = (PotentialTable) cliqueExtractor.buildCondicionalProbability(mainNode, fullParentNodes , userAssetAlgorithm.getAssetNetwork(), userAssetAlgorithm, ASSET_CLIQUE_EVIDENCE_UPDATER, clique);
@@ -6277,7 +6290,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							tradeSpecification.getProbabilities(), 
 							tradeSpecification.getAssumptionIds(), 
 							tradeSpecification.getAssumedStates(),
-							true, algorithm, true, false, null
+							true, algorithm, true, false, null, 
+							false	// do not need to update marginals at this point
 					);
 				}
 			}
@@ -6557,7 +6571,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * @see #execute(boolean, boolean)*/
 		public void execute(boolean isToUpdateAssets) {
 			// if ME is set not to re-calculate the balancing trades again, and if this action was executed previously, we shall re-run getExecutedTrades(), 
-			if (!isToRecalculateBalancingTradeOnRebuild() && this.getWhenExecutedFirstTimeMillis() > 0) {
+			if (!isToRecalculateBalancingTradeOnRebuild && this.getWhenExecutedFirstTimeMillis() > 0) {
 				// re-execute the same trades if getExecutedTrades() will contain something
 				if (getExecutedTrades() != null && !getExecutedTrades().isEmpty()) {
 					// backup original trade specification, because we will change it several times
@@ -6567,7 +6581,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						for (TradeSpecification tradeSpecification : getExecutedTrades() ) {
 							// execute the trade without releasing lock
 							this.setTradeSpecification(tradeSpecification);
-							super.execute(isToUpdateAssets);
+							super.execute(isToUpdateAssets,!isToThrowExceptionOnInvalidAssumptions(), false);	// do not update marginals at this point
 						}
 					} catch (Exception e) {
 						// restore original trade specification
@@ -6575,6 +6589,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						throw new RuntimeException(e);
 					}
 					this.setTradeSpecification(backup);
+				}
+				// update all marginals if everything went OK
+				synchronized (getDefaultInferenceAlgorithm()) {
+					for (Node node : getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNodesCopy()) {
+						((TreeVariable)node).updateMarginal();
+					}
 				}
 				return;
 			}
@@ -6585,7 +6605,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			
 			// prepare the list of trades actually executed by this balance operation
-			setExecutedTrades(new ArrayList<TradeSpecification>());
+			setExecutedTrades(new ArrayList<TradeSpecification>(1));
 			synchronized (getProbabilisticNetwork()) {
 				// backup original trade specification, because we will change it several times
 				TradeSpecification backup = this.getTradeSpecification();
@@ -6608,19 +6628,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// obtain trade values for exiting the user from a question given assumptions, for the current clique
 					List<TradeSpecification> balancingTrades = null;
 					if (isToForceBalanceQuestionEntirely()) {
-						balancingTrades = previewBalancingTrades(algorithm, getQuestionId(), null, null, clique, isToAllowNegativeInBalanceTrade());
+						balancingTrades = previewBalancingTrades(algorithm, getQuestionId(), null, null, clique, isToAllowNegativeInBalanceTrade);
 					} else {
 						balancingTrades = previewBalancingTrades(algorithm,
 								// preview shall use original (backup) configurations for questions/assumptions, instead of this.getAssumptionIds() and this.getAssumedStates(),
 								// because setTradeSpecification(tradeSpecification) is called in next block, so this.getAssumptionIds() and this.getAssumedStates() is referencing the clique in previuous loop
 								backup.getQuestionId(), backup.getAssumptionIds(), backup.getAssumedStates(), 
-								clique, isToAllowNegativeInBalanceTrade());
+								clique, isToAllowNegativeInBalanceTrade);
 					}
 					try {
 						for (TradeSpecification tradeSpecification : balancingTrades ) {
 							// execute the trade without releasing lock
 							this.setTradeSpecification(tradeSpecification);
-							super.execute(isToUpdateAssets);
+							super.execute(isToUpdateAssets,!isToThrowExceptionOnInvalidAssumptions(), false); //no need to update marginal at this point
 							// mark this trade as executed
 							if (isToKeepCliquesOfBalanceTradeInMemory()) {
 								// if tradeSpecification instanceof CliqueSensitiveTradeSpecification, then the clique will be kept in memory.
@@ -6650,6 +6670,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				
 				// restore trade specification, because it is probably containing the ones returned by the preview
 				this.setTradeSpecification(backup);
+				
+				// update all marginals if everything went OK
+				synchronized (getDefaultInferenceAlgorithm()) {
+					for (Node node : getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNodesCopy()) {
+						((TreeVariable)node).updateMarginal();
+					}
+				}
 				
 				if (this.getWhenExecutedFirstTime() == null) {
 					// overwrite the old marginals, because a call to super has changed this value.

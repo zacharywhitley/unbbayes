@@ -530,12 +530,19 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		return ret;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#propagate()
+	 */
+	public void propagate() {
+		this.propagate(isToUpdateAssets());
+	}
 	/**
 	 * Updates the content of joint tables
 	 * @param isToUpdateAssets : if false, it will not update the joint q table (i.e. updates only joint probability table)
 	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#propagate()
 	 */
-	public void propagate() {
+	public void propagate(boolean isToUpdateAssets) {
 		// backup old joint values
 		getJointProbabilityTable().copyData();	
 		getJointQTable().copyData();
@@ -549,14 +556,14 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		}
 		
 		// do not update assets on superclass' propagation
-		boolean backup = this.isToUpdateAssets();
+		boolean backup = isToUpdateAssets;
 		this.setToUpdateAssets(false);	
-		super.propagate();
+		super.propagate(false);
 		this.setToUpdateAssets(backup);
 		
 		// propagate assets on joint table
 		try {
-			this.updateJointProbability(this.isToUpdateAssets());
+			this.updateJointProbability(isToUpdateAssets);
 		} catch (ZeroAssetsException e) {
 			// undo propagation
 			getJointProbabilityTable().restoreData();

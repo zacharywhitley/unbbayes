@@ -298,6 +298,18 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#propagate()
 	 */
 	public void propagate() {
+		this.propagate(true);
+	}
+	
+	/**
+	 * @param isToUpdateMarginals : if this is false, then marginal probabilities of all nodes will not
+	 * be updated at the end of execution of this method. Otherwise, the marginal probabilities will be updated by default.
+	 * Use this feature in order to avoid marginal updating when several propagations are expected to be executed in a sequence, and
+	 * the marginals are not required to be updated at each propagation (so that we won't run the marginal updating several times
+	 * unnecessarily).
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#propagate()
+	 */
+	public void propagate(boolean isToUpdateMarginals) {
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListener()) {
 			listener.onBeforePropagate(this);
 		}
@@ -344,7 +356,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 				rootOfSubtree = rootOfSubtree.getParent();
 			}
 			// only propagate through the sub-tree rooted by rootOfSubtree
-			((JunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).propagate(rootOfSubtree);
+			((JunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).propagate(rootOfSubtree, isToUpdateMarginals);
 		} else {
 			// assume there are other potential evidences all over the junction tree
 			this.getProbabilityPropagationDelegator().propagate();

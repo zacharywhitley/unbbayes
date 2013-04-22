@@ -128,7 +128,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 						TreeVariable node = (TreeVariable) algorithm.getRelatedProbabilisticNetwork().getNode(String.valueOf(assumptionIds.get(i)));
 						node.addFinding(assumedStates.get(i));
 					}
-					algorithm.propagate();
+					algorithm.propagate(false);
 				}
 				if (questionIds != null) {
 					for (Long id : questionIds) {
