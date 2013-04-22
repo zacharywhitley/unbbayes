@@ -534,7 +534,11 @@ public abstract class Node implements Serializable,
 	 *            The adjacents to set
 	 */
 	public void setAdjacents(ArrayList<Node> adjacents) {
-		this.adjacents = new ArrayList<Node>(adjacents);
+		if (adjacents == null) {
+			this.adjacents = null;
+		} else {
+			this.adjacents = new ArrayList<Node>(adjacents);
+		}
 	}
 
 	/**

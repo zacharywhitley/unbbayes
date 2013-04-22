@@ -41,6 +41,8 @@ public class InCliqueConditionalProbabilityExtractor implements
 			cliqueTable.updateEvidences(marginalMultiplier, cliqueTable.indexOfVariable(nodeWithEvidence));
 		}
 	};
+	
+	private boolean isToOptimizeFullCliqueConditionalProbEvaluation = true;
 
 	/**
 	 * default constructor is made protected to at least allow inheritance.
@@ -93,6 +95,16 @@ public class InCliqueConditionalProbabilityExtractor implements
 	 * @throws NoCliqueException when there is no clique satisfying input conditions.
 	 */
 	public IProbabilityFunction buildCondicionalProbability(INode mainNode, List<INode> parentNodes, Graph net, IInferenceAlgorithm algorithm, CliqueEvidenceUpdater cliqueEvidenceUpdater) throws NoCliqueException {
+//		this.setToOptimizeFullCliqueConditionalProbEvaluation(false);
+//		PotentialTable ret2 = (PotentialTable) this.buildCondicionalProbability(mainNode, parentNodes, net, algorithm, cliqueEvidenceUpdater, null);
+//		this.setToOptimizeFullCliqueConditionalProbEvaluation(true);
+//		PotentialTable ret = (PotentialTable) this.buildCondicionalProbability(mainNode, parentNodes, net, algorithm, cliqueEvidenceUpdater, null);
+//		for (int i = 0; i < ret.tableSize(); i++) {
+//			if (Math.abs(ret.getValue(i) - ret2.getValue(i)) > 0.0001) {
+//				throw new RuntimeException("Optimization yielded different values");
+//			}
+//		}
+//		return ret;
 		return this.buildCondicionalProbability(mainNode, parentNodes, net, algorithm, cliqueEvidenceUpdater, null);
 	}
 	
@@ -176,69 +188,173 @@ public class InCliqueConditionalProbabilityExtractor implements
 			throw new NoCliqueException(message);
 		}
 		
-		int retIndex = 0;	// this index is used for filling values of ret (see following "for" loop)
-
-		/*
-		 * Iterate over states of parents.
-		 * E.G. given that mainNode (A) has 2 states (a1, a2), and there are 2 parents (B and C) both with 2 states ({b1,b2}, {c1,c2}), then:
-		 * -------------------------------------------------------------------------------------
-		 *|		|c1					| c1				| c2				| c2				|
-		 *|		|b1					| b2				| b1				| b2				|
-		 * -------------------------------------------------------------------------------------
-		 *|a1	|<P(A=a1|B=b1,C=c1)>|<P(A=a1|B=b2,C=c1)>|<P(A=a1|B=b1,C=c2)>|<P(A=a1|B=b2,C=c2)>|
-		 *|a2	|<P(A=a2|B=b1,C=c1)>|<P(A=a2|B=b2,C=c1)>|<P(A=a2|B=b1,C=c2)>|<P(A=a2|B=b2,C=c2)>|
-		 * -------------------------------------------------------------------------------------
-		 * 
-		 * The conditional probability <P(A=a2|B=b1,C=c1)> is the marginal of A=a2 after adding B=b1 and C=c1 as evidences.
-		 * 
-		 * If all variables are in a same clique, there is no need to propagate to other cliques.
-		 */
-		for (Integer[] evidenceIndexes : new SharedArrayParentStatesIndexIterator(parentNodes)) {
+		// note: at this point, clique contains mainNode and all parentNodes
+		
+		// check if we can use an optimization which is applicable when getting conditional probabilities in "normalized" context 
+		// (e.g. clique potentials contains normalized local joint prob) using all nodes within the same clique
+		if (isToOptimizeFullCliqueConditionalProbEvaluation && cliqueEvidenceUpdater == DEFAULT_CLIQUE_EVIDENCE_UPDATER && clique.getNodesList().size() == parentNodes.size() + 1
+				&& (algorithm == null || ( (algorithm instanceof JunctionTreeAlgorithm) && ((JunctionTreeAlgorithm)algorithm).isAlgorithmWithNormalization() ) ) ) {
+			// this is just an optimization we can do when we are using default evidence updater (for probabilities with normalization) 
+			// and the specified nodes (mainNode and parentNodes) comprises the clique entirely (i.e. clique has only the specified nodes).
+			// The condition (algorithm == null || ( (algorithm instanceof JunctionTreeAlgorithm) && ((JunctionTreeAlgorithm)algorithm).isAlgorithmWithNormalization() ) )
+			// indicates that the algorithm passed in the argument must use normalized values in clique tables
 			
-			// clone clique potential, so that it won't change the original potential
-			PotentialTable cloneCliqueTable = (PotentialTable) clique.getProbabilityFunction().getTemporaryClone();
+			// step 1: read clique table and re-organize the clique potentials accordingly to the new ordering of nodes (mainNode as pivot and regarding the ordering of nodes in parentNodes)
 			
-			// set parents as evidences. Note: stateIndexes.length == parentNodes.size()
-			for (int parentIndex = 0; parentIndex < evidenceIndexes.length; parentIndex++) {
-				
-				// prepare parameter of method cloneCliqueTable.updateEvidences
-				float evidenceMarginal[] = new float[parentNodes.get(parentIndex).getStatesSize()];
-				
-				// the marginal of a finding is 1 for the evidence state and 0 for all other states.
-				for (int i = 0; i < evidenceMarginal.length; i++) {
-					evidenceMarginal[i] = 0f;
+			//extract the clique potential to be read
+			PotentialTable cliqueTable = clique.getProbabilityFunction();	
+			
+			// assert that the size of the tables matches
+			if (cliqueTable.tableSize() != ret.tableSize()) {
+				throw new RuntimeException("Inconsistency: attempted to generate conditional table of variable " + ret.getVariableAt(0) + " given " + parentNodes 
+						+ " with table size = " + ret.tableSize() + ", but the clique table of associated clique " + clique + " had size = " + cliqueTable.tableSize()
+						+ ", although a table with same variables should have the same size.");
+			}
+			
+			// assert that the 1st variable is the main node
+			if (!ret.getVariableAt(0).equals(mainNode)) {
+				throw new RuntimeException("This class assumes that the 1st variable in the potential table is the main node (" + mainNode 
+						+ "). This is not happening, so you may be using an incompatible version.");
+			}
+			
+			// array which will map the index of a variable in ret to cliqueTable. 
+			int[] mappingOfIndexesOfRetToCliqueTable = new int[ret.variableCount()]; //mappingOfIndexesOfRetToCliqueTable[x] = y means that ret.getVariableAt(x) cliqueTable.getVariableAt(y)
+			for (int i = 0; i < mappingOfIndexesOfRetToCliqueTable.length; i++) {
+				mappingOfIndexesOfRetToCliqueTable[i] = cliqueTable.indexOfVariable((Node) ret.getVariableAt(i));
+			}
+			
+			// prepare variables
+			int[] statesInCliqueTable = new int[cliqueTable.variableCount()];	// array which will contain what are the states of the variables related to the current index in clique table
+			int[] statesInNewTable = new int[ret.variableCount()];				// array which will contain what are the states of the variables related to the current index in return table
+			
+			for (int i = 0; i < cliqueTable.tableSize(); i++) {
+				// obtain what are the states of the variables related to current index in clique table
+				statesInCliqueTable = cliqueTable.getMultidimensionalCoord(i,statesInCliqueTable);
+				// fill statesInNewTable with the indexes in ret (this will basically result in a reordered version of statesInCliqueTable)
+				for (int j = 0; j < statesInNewTable.length; j++) {
+					statesInNewTable[j] = statesInCliqueTable[mappingOfIndexesOfRetToCliqueTable[j]];
 				}
-				evidenceMarginal[evidenceIndexes[parentIndex]] = 1f;	// evidenceIndexes[parentIndex] has the index of the evidence state
+				// fill ret using statesInNewTable as the index
+				ret.setValue(statesInNewTable, cliqueTable.getValue(i));
+			}
+			
+			// we can now dispose the vectors, because won't use them anymore (let GC do the work)
+			statesInCliqueTable = null;
+			statesInNewTable = null;
+			mappingOfIndexesOfRetToCliqueTable  = null;
+			
+			// step 2 : normalize by "column" in order to become conditional probability instead of joint probability
+			
+			/*
+			 * E.G. given that mainNode (A) has 2 states (a1, a2), and there are 2 parents (B and C) both with 2 states ({b1,b2}, {c1,c2}), then:
+			 * -------------------------------------------------------------------------------------
+			 *|		|c1					| c1				| c2				| c2				|
+			 *|		|b1					| b2				| b1				| b2				|
+			 * -------------------------------------------------------------------------------------
+			 *|a1	|<P(A=a1,B=b1,C=c1)>|<P(A=a1,B=b2,C=c1)>|<P(A=a1,B=b1,C=c2)>|<P(A=a1,B=b2,C=c2)>|
+			 *|a2	|<P(A=a2,B=b1,C=c1)>|<P(A=a2,B=b2,C=c1)>|<P(A=a2,B=b1,C=c2)>|<P(A=a2,B=b2,C=c2)>|
+			 * -------------------------------------------------------------------------------------
+			 * 
+			 * Will be converted to
+			 * 
+			 * -------------------------------------------------------------------------------------
+			 *|		|c1					| c1				| c2				| c2				|
+			 *|		|b1					| b2				| b1				| b2				|
+			 * -------------------------------------------------------------------------------------
+			 *|a1	|<P(A=a1|B=b1,C=c1)>|<P(A=a1|B=b2,C=c1)>|<P(A=a1|B=b1,C=c2)>|<P(A=a1|B=b2,C=c2)>|
+			 *|a2	|<P(A=a2|B=b1,C=c1)>|<P(A=a2|B=b2,C=c1)>|<P(A=a2|B=b1,C=c2)>|<P(A=a2|B=b2,C=c2)>|
+			 * -------------------------------------------------------------------------------------
+			 * 
+			 * By doing: 
+			 * 		<P(A=a1|B=b1,C=c1)> = <P(A=a1,B=b1,C=c1)> / (<P(A=a1,B=b1,C=c1)> + <P(A=a2,B=b1,C=c1)>); (normalizing over column c1b1)
+			 * 		<P(A=a2|B=b1,C=c1)> = <P(A=a2,B=b1,C=c1)> / (<P(A=a1,B=b1,C=c1)> + <P(A=a2,B=b1,C=c1)>); (normalizing over column c1b1)
+			 * 		<P(A=a1|B=b2,C=c1)> = <P(A=a1,B=b2,C=c1)> / (<P(A=a1,B=b2,C=c1)> + <P(A=a2,B=b2,C=c1)>); (normalizing over column c1b2)
+			 * 		<P(A=a2|B=b2,C=c1)> = <P(A=a2,B=b2,C=c1)> / (<P(A=a1,B=b2,C=c1)> + <P(A=a2,B=b2,C=c1)>); (normalizing over column c1b2)
+			 * And so on...
+			 */
+			
+			int statesSizeOfMainNode = mainNode.getStatesSize();	// number of states of main node is the number of "lines" in the table
+			// tracks sum of the current column, so that the value is used during column-wise normalization
+			float sumOfColumn = 0;
+			for (int i = 0; i < ret.tableSize(); i++) {
+				sumOfColumn += ret.getValue(i);	
+				// check whether we reached the last element of the "column"
+				if ((i+1) % statesSizeOfMainNode == 0) {
+					// reached last element of column, so normalize current column
+					for (int indexWithinColumn = i - statesSizeOfMainNode + 1; indexWithinColumn <= i; indexWithinColumn++) {
+						ret.setValue(indexWithinColumn, ret.getValue(indexWithinColumn)/sumOfColumn); // normalize and put value
+					}
+					// reset sum of column, because we reached the end of column
+					sumOfColumn = 0;
+				}
+			}
+			
+		} else {
+			int retIndex = 0;	// this index is used for filling values of ret (see following "for" loop)
+			
+			/*
+			 * Iterate over states of parents.
+			 * E.G. given that mainNode (A) has 2 states (a1, a2), and there are 2 parents (B and C) both with 2 states ({b1,b2}, {c1,c2}), then:
+			 * -------------------------------------------------------------------------------------
+			 *|		|c1					| c1				| c2				| c2				|
+			 *|		|b1					| b2				| b1				| b2				|
+			 * -------------------------------------------------------------------------------------
+			 *|a1	|<P(A=a1|B=b1,C=c1)>|<P(A=a1|B=b2,C=c1)>|<P(A=a1|B=b1,C=c2)>|<P(A=a1|B=b2,C=c2)>|
+			 *|a2	|<P(A=a2|B=b1,C=c1)>|<P(A=a2|B=b2,C=c1)>|<P(A=a2|B=b1,C=c2)>|<P(A=a2|B=b2,C=c2)>|
+			 * -------------------------------------------------------------------------------------
+			 * 
+			 * The conditional probability <P(A=a2|B=b1,C=c1)> is the marginal of A=a2 after adding B=b1 and C=c1 as evidences.
+			 * 
+			 * If all variables are in a same clique, there is no need to propagate to other cliques.
+			 */
+			for (Integer[] evidenceIndexes : new SharedArrayParentStatesIndexIterator(parentNodes)) {
 				
-				// add evidence to clique potential. 
-				// We do not need to propagate to other cliques, because we assume all nodes (mainNode and parentNodes) are in the same clique
-				cliqueEvidenceUpdater.updateEvidenceWithinClique(clique, cloneCliqueTable, evidenceMarginal, (Node) parentNodes.get(parentIndex));
+				// clone clique potential, so that it won't change the original potential
+				PotentialTable cloneCliqueTable = (PotentialTable) clique.getProbabilityFunction().getTemporaryClone();
+				
+				// set parents as evidences. Note: stateIndexes.length == parentNodes.size()
+				for (int parentIndex = 0; parentIndex < evidenceIndexes.length; parentIndex++) {
+					
+					// prepare parameter of method cloneCliqueTable.updateEvidences
+					float evidenceMarginal[] = new float[parentNodes.get(parentIndex).getStatesSize()];
+					
+					// the marginal of a finding is 1 for the evidence state and 0 for all other states.
+					for (int i = 0; i < evidenceMarginal.length; i++) {
+						evidenceMarginal[i] = 0f;
+					}
+					evidenceMarginal[evidenceIndexes[parentIndex]] = 1f;	// evidenceIndexes[parentIndex] has the index of the evidence state
+					
+					// add evidence to clique potential. 
+					// We do not need to propagate to other cliques, because we assume all nodes (mainNode and parentNodes) are in the same clique
+					cliqueEvidenceUpdater.updateEvidenceWithinClique(clique, cloneCliqueTable, evidenceMarginal, (Node) parentNodes.get(parentIndex));
 //				cloneCliqueTable.updateEvidences(evidenceMarginal, cloneCliqueTable.indexOfVariable((Node) parentNodes.get(parentIndex)));
-			}
-			if (algorithm == null 
-					|| ( (algorithm instanceof JunctionTreeAlgorithm) && ((JunctionTreeAlgorithm)algorithm).isAlgorithmWithNormalization() ) ) {
-				// an algorithm was not specified, or it does not use normalized junction tree. 
-				// So by default we normalize, because we inserted evidences
-				cloneCliqueTable.normalize(); 
-			}
-			
-			// prepare index of mainNode in the clique potential, so that we can obtain its marginal
-			int indexOfMainNode =  cloneCliqueTable.indexOfVariable((Node) mainNode);
-			
-			// extract marginal of mainNode
-			for (int indForMarginal = 0; indForMarginal < clique.getProbabilityFunction().getVariablesSize(); indForMarginal++) {
-				if (indForMarginal != indexOfMainNode) {
-					cloneCliqueTable.removeVariable(clique.getProbabilityFunction().getVariableAt(indForMarginal));
 				}
-			}
-			
-			// fill ret with extracted marginal. Increment retIndex as well. 
-			// Note: ret.tableSize() % cloneCliqueTable.tableSize() = 0
-			// (i.e. we will never reach a condition where ret is filled completely before cloneCliqueTable is read completely)
-			for (int i = 0; (i < cloneCliqueTable.tableSize() ); retIndex++, i++) {
-				ret.setValue(retIndex, cloneCliqueTable.getValue(i));
+				if (algorithm == null 
+						|| ( (algorithm instanceof JunctionTreeAlgorithm) && ((JunctionTreeAlgorithm)algorithm).isAlgorithmWithNormalization() ) ) {
+					// an algorithm was not specified, or it does not use normalized junction tree. 
+					// So by default we normalize, because we inserted evidences
+					cloneCliqueTable.normalize(); 
+				}
+				
+				// prepare index of mainNode in the clique potential, so that we can obtain its marginal
+				int indexOfMainNode =  cloneCliqueTable.indexOfVariable((Node) mainNode);
+				
+				// extract marginal of mainNode
+				for (int indForMarginal = 0; indForMarginal < clique.getProbabilityFunction().getVariablesSize(); indForMarginal++) {
+					if (indForMarginal != indexOfMainNode) {
+						cloneCliqueTable.removeVariable(clique.getProbabilityFunction().getVariableAt(indForMarginal));
+					}
+				}
+				
+				// fill ret with extracted marginal. Increment retIndex as well. 
+				// Note: ret.tableSize() % cloneCliqueTable.tableSize() = 0
+				// (i.e. we will never reach a condition where ret is filled completely before cloneCliqueTable is read completely)
+				for (int i = 0; (i < cloneCliqueTable.tableSize() ); retIndex++, i++) {
+					ret.setValue(retIndex, cloneCliqueTable.getValue(i));
+				}
 			}
 		}
+		
 		
 		
 		return ret;
@@ -460,6 +576,29 @@ public class InCliqueConditionalProbabilityExtractor implements
 //			}
 //		}
 //		return ret;
+	}
+
+	/**
+	 * If true, {@link #buildCondicionalProbability(INode, List, Graph, IInferenceAlgorithm, CliqueEvidenceUpdater, Clique)}
+	 * will use a special optimization when {@link CliqueEvidenceUpdater} is the {@link #DEFAULT_CLIQUE_EVIDENCE_UPDATER}
+	 * and the {@link IInferenceAlgorithm} is a {@link JunctionTreeAlgorithm},  {@link JunctionTreeAlgorithm#isAlgorithmWithNormalization()} == true,
+	 * and all nodes in the clique are used in the conditional probability evaluation.
+	 * @return the isToOptimizeFullCliqueConditionalProbEvaluation
+	 */
+	public boolean isToOptimizeFullCliqueConditionalProbEvaluation() {
+		return this.isToOptimizeFullCliqueConditionalProbEvaluation;
+	}
+
+	/**
+	 * If true, {@link #buildCondicionalProbability(INode, List, Graph, IInferenceAlgorithm, CliqueEvidenceUpdater, Clique)}
+	 * will use a special optimization when {@link CliqueEvidenceUpdater} is the {@link #DEFAULT_CLIQUE_EVIDENCE_UPDATER}
+	 * and the {@link IInferenceAlgorithm} is a {@link JunctionTreeAlgorithm},  {@link JunctionTreeAlgorithm#isAlgorithmWithNormalization()} == true,
+	 * and all nodes in the clique are used in the conditional probability evaluation.
+	 * @param isToOptimizeFullCliqueConditionalProbEvaluation the isToOptimizeFullCliqueConditionalProbEvaluation to set
+	 */
+	public void setToOptimizeFullCliqueConditionalProbEvaluation(
+			boolean isToOptimizeFullCliqueConditionalProbEvaluation) {
+		this.isToOptimizeFullCliqueConditionalProbEvaluation = isToOptimizeFullCliqueConditionalProbEvaluation;
 	}
 
 }

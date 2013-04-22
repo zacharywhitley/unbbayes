@@ -725,11 +725,51 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * @return The corresponding multidimensional coordinate.
 	 */
 	public  int[] getMultidimensionalCoord(int linearCoord) {
-		computeFactors();
+		if (modified) {
+			// checking "modified" causes a redundant check (because computeFactors also does the same check), 
+			// but in most of cases it's faster to check prior to calling methods than checking after, due to context change overhead
+			computeFactors();
+		}
 		int fatorI;
 		int sizeVariaveis = variableList.size();
 		int coord[] = new int[sizeVariaveis];
 		int i = sizeVariaveis - 1;
+		// this assumes coord starts filled with 0
+		while (linearCoord != 0) {
+			fatorI = factorsPT[i];
+			coord[i--] = linearCoord / fatorI;
+			linearCoord %= fatorI;
+		}
+		return coord;
+	}
+	/**
+	 * This is basically the same of {@link #getMultidimensionalCoord(int)},
+	 * but it does not allocate new array (reuses array passed in its argument).
+	 * Get the multidimensional coordinate from the linear one.
+	 * <br/>
+	 * A multidimensional coordinate is an array representing 
+	 * the states of the variable {@link #getVariableAt(int)}.
+	 * for example, the coordinate [3,4,1] represents the cell in the table
+	 * in which {@link #getVariableAt(0)} is in state 3,
+	 * {@link #getVariableAt(1)} is in state 4,
+	 * and {@link #getVariableAt(2)} is in state 1.
+	 * @param linearCoord The linear coordinate.
+	 * @param coord : array of the corresponding multidimensional coordinate to be filled
+	 * @return coord
+	 */
+	public  int[] getMultidimensionalCoord(int linearCoord, int coord[]) {
+		if (modified) {
+			// avoid context changes if we can detect it soon
+			computeFactors();
+		}
+		int fatorI;
+		int sizeVariaveis = variableList.size();
+		// found out that simply calling a "for" loop is generally faster than most of array copy methods if coord is not too big 
+		// (coord won't be too big anyway, because such a big coord means exponentially huge CPT, which means the propagation algorithm
+		// itself will be too slow and we won't notice the difference in this method anyway)
+		for (int i = 0; i < coord.length; i++) { coord[i] = 0; }
+		int i = sizeVariaveis - 1;
+		// the following loop assumes that coord starts filled with zeros
 		while (linearCoord != 0) {
 			fatorI = factorsPT[i];
 			coord[i--] = linearCoord / fatorI;

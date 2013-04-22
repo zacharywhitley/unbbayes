@@ -6,6 +6,7 @@ package unbbayes.prs.bn.cpt.impl;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import junit.framework.TestCase;
 import unbbayes.gui.table.GUIPotentialTable;
@@ -75,10 +76,25 @@ public class InCliqueConditionalProbabilityExtractorTest extends TestCase {
 		super.tearDown();
 	}
 
+	public static void intfill(int[] array, int value) {
+	    int len = array.length;
+	    if (len > 0)
+	    array[0] = value;
+	    for (int i = 1; i < len; i += i)
+	        System.arraycopy( array, 0, array, i,
+	            ((len - i) < i) ? (len - i) : i);
+	}
+	
 	/**
 	 * Test method for {@link unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor#buildCondicionalProbability(unbbayes.prs.INode, java.util.List, unbbayes.prs.Graph, unbbayes.util.extension.bn.inference.IInferenceAlgorithm)}.
 	 */
 	public final void testBuildCondicionalProbability() {
+		int array[] = new int[10];
+		Random r = new Random();
+		long stamp1;
+		long stamp0;
+		
+		
 		// prepare parent nodes
 		List<INode> parents = new ArrayList<INode>();
 		// main node
