@@ -5421,6 +5421,22 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			originalAssumedStates = Collections.emptyList();
 		}
 		
+		// check if assumed state of resolved assumption is valid
+		if (originalAssumptionIds != null && originalAssumedStates != null) {
+			for (int i = 0; i < originalAssumptionIds.size(); i++) {
+				Long assumptionId = originalAssumptionIds.get(i);
+				StatePair statePair = this.getResolvedQuestions().get(assumptionId);
+				if (statePair != null) {
+					// this is a resolved assumption. Check if the specified state matches resolution
+					if (statePair.getResolvedState().intValue() != originalAssumedStates.get(i).intValue()) {
+						// there is no way to balance a resolved question assuming to a state different to the settled.
+						throw new IllegalArgumentException(assumptionId + " is a question resolved to state " + statePair.getResolvedState() 
+								+ ", but the argument assumes state " + originalAssumedStates.get(i));
+					}
+				}
+			}
+		}
+		
 		List<TradeSpecification> ret = new ArrayList<TradeSpecification>();
 		
 		// asset net algorithm of the user (this will be used to extract cliques and nodes)
@@ -5443,6 +5459,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// create a list of nodes in clique without the main node
 		List<INode> fullParentNodes = new ArrayList<INode>(clique.getNodes());
 		fullParentNodes.remove(mainNode);
+		// do not consider resolved nodes
+		for (int i = 0; i < fullParentNodes.size(); i++) {
+			INode node = fullParentNodes.get(i);
+			if (getResolvedQuestions().containsKey(Long.parseLong(node.getName()))) {
+				fullParentNodes.remove(i);
+				i--;
+			}
+		}
 		
 		// similarly, create a list of question IDs without the main node
 		List<Long> fullAssumptionIds = new ArrayList<Long>();
@@ -5541,7 +5565,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 				List<Float> balancingTrade = this.previewBalancingTrade(userAssetAlgorithm, questionId, fullAssumptionIds, fullAssumedStates, clique, table, isToAllowNegative);
 				// the name of the asset net is supposedly the user ID
-				ret.add(new CliqueSensitiveTradeSpecificationImpl(Long.parseLong(userAssetAlgorithm.getAssetNetwork().getName()), questionId, balancingTrade, fullAssumptionIds, fullAssumedStates, clique));
+				if (balancingTrade != null && !balancingTrade.isEmpty()) {
+					ret.add(new CliqueSensitiveTradeSpecificationImpl(Long.parseLong(userAssetAlgorithm.getAssetNetwork().getName()), questionId, balancingTrade, fullAssumptionIds, fullAssumedStates, clique));
+				}
 			}
 		}
 		
@@ -6354,6 +6380,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new IllegalArgumentException("This method does not allow assumptionIds and assumedStates with different sizes.");
 		}
 		
+		
+		if (this.getResolvedQuestions().containsKey(questionId)) {
+			// there is no way to balance a resolved question
+//			return Collections.EMPTY_LIST;
+			throw new IllegalArgumentException("Question " + questionId + " is resolved already and cannot be balanced anymore.");
+		}
+		
+		
 		if (assumptionIds != null && !assumptionIds.isEmpty() && this.getPossibleQuestionAssumptions(questionId, assumptionIds).isEmpty()) {
 			if (this.isToThrowExceptionOnInvalidAssumptions()) {
 				new InvalidAssumptionException(assumptionIds + " are invalid assumptions for question " + questionId);
@@ -6364,8 +6398,29 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			assumptionIds = this.getMaximumValidAssumptionsSublists(questionId, assumptionIds, 1).get(0);
 			// change assumedStates accordingly to new assumptionIds
 			assumedStates = this.convertAssumedStates(assumptionIds, oldAssumptionIds, assumedStates);
-
 		}
+		
+		// check if assumed state of resolved assumption is valid
+		if (assumptionIds != null && assumedStates != null) {
+			for (int i = 0; i < assumptionIds.size(); i++) {
+				Long assumptionId = assumptionIds.get(i);
+				StatePair statePair = this.getResolvedQuestions().get(assumptionId);
+				if (statePair != null) {
+					// this is a resolved assumption. Check if the specified state matches resolution
+					if (statePair.getResolvedState().intValue() == assumedStates.get(i).intValue()) {
+						// states matches, so we can simply ignore the assumption (remove from list of assumptions)
+						assumptionIds.remove(i);
+						assumedStates.remove(i);
+						i--;
+					} else {
+						// there is no way to balance a resolved question assuming to a state different to the settled.
+						throw new IllegalArgumentException(assumptionId + " is a question resolved to state " + statePair.getResolvedState() 
+								+ ", but the argument assumes state " + assumedStates.get(i));
+					}
+				}
+			}
+		}
+		
 		
 		// extract user's asset network from user ID
 //		AssetAwareInferenceAlgorithm algorithm = null;

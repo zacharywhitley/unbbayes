@@ -3,6 +3,9 @@
  */
 package unbbayes.prs.bn;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable.ISumOperation;
 import unbbayes.prs.bn.inference.extension.MinProductJunctionTree.MinOperation;
@@ -75,6 +78,12 @@ public class AssetNode extends DecisionNode implements IRandomVariable {
 		this.size = null;
 		this.sizeVariable = null;
 		this.nodeNameChangedListenerList.clear();
+		this.parents = null;
+		this.label = null;
+		this.nodeNameChangedListenerList = Collections.EMPTY_LIST;
+		this.setAdjacents(null);
+		this.setChildren(null);
+		states = new ArrayList<String>(0);
 	}
 	
 	
