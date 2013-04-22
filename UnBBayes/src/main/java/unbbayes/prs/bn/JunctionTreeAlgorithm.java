@@ -1159,11 +1159,11 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	}
 
 	/**
-	 * Just delegates to {@link #propagate()} passing null as its argument
+	 * Just delegates to {@link #propagate(Clique, boolean)} passing null and true as its argument
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#propagate()
 	 */
 	public void propagate() {
-		this.propagate(null);
+		this.propagate(null, true);
 	}
 	
 	/**
@@ -1172,14 +1172,19 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 * This is particularly useful if only 1 clique has evidence and such clique is part of a disconnected
 	 * subnet (thus, the nodes in the subnet are part of a sub-tree in the junction tree which is connected with some empty separator).
 	 * @param rootOfSubtree: only this clique and its descendants will be considered in the propagation.
+	 * @param isToUpdateMarginals : if this is false and rootOfSubtree != null, then marginal probabilities of all nodes will not
+	 * be updated at the end of execution of this method. Otherwise, the marginal probabilities will be updated with no problem.
+	 * Use this feature in order to avoid marginal updating when several propagations are expected to be executed in a sequence, and
+	 * the marginals are not required to be updated at each propagation (so that we won't run the marginal updating several times
+	 * unnecessarily).
 	 */
-	public void propagate(Clique rootOfSubtree) {
+	public void propagate(Clique rootOfSubtree, boolean isToUpdateMarginals) {
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onBeforePropagate(this);
 		}
 		try {
 			if (rootOfSubtree != null) {
-				this.getNet().updateEvidences(rootOfSubtree);
+				this.getNet().updateEvidences(rootOfSubtree, isToUpdateMarginals);
 			} else {
 				this.getNet().updateEvidences();
 			}
@@ -1385,8 +1390,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		separatorOfVirtualCliqueAndParents.getProbabilityFunction().copyData();
 		
 		// update the marginal values (we only updated clique/separator potentials, thus, the marginals still have the old values if we do not update)
-		virtualNode.updateMarginal();
-		virtualNode.copyMarginal();
+//		virtualNode.updateMarginal();
+//		virtualNode.copyMarginal();
 		
 		// set finding always to the first state (because the second state is just a dummy state)
 		virtualNode.addFinding(0);

@@ -427,7 +427,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			}
 		}
 	
-		updateMarginais();
+		updateMarginals();
 	
 		if (createLog) {
 			Thread t = new Thread(new Runnable() {
@@ -513,9 +513,21 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		return true;
 	}
 
+	/**
+	 * @deprecated use {@link #updateMarginals()} instead
+	 */
+	@Deprecated
 	protected void updateMarginais() {
-		for (int i = 0; i < copiaNos.size(); i++) {
-			TreeVariable node = (TreeVariable) copiaNos.get(i);
+		this.updateMarginals();
+	}
+	
+	/**
+	 * Substitutes {@link #updateMarginais()}.
+	 * This method iterates over {@link #copiaNos} and
+	 * runs {@link TreeVariable#marginal()} for all nodes.
+	 */
+	protected void updateMarginals() {
+		for (Node node : copiaNos) {
 			/* Check if the node represents a numeric attribute */
 			if (node.getStatesSize() == 0) {
 				/* 
@@ -524,7 +536,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 				 */
 				continue;
 			}
-			node.marginal();
+			((TreeVariable)node).marginal();
 		}
 	}
 
@@ -1259,7 +1271,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 *  @throws Exception : the message will contain any consistency error.
 	 */
 	public void updateEvidences() throws Exception {
-		this.updateEvidences(null);
+		this.updateEvidences(null, true);
 	}
 	
 	/**
@@ -1270,11 +1282,15 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 * then other disconnected portions will not be considered during the propagation, and the scope
 	 * will be limited - thus, the propagation may take less time).
 	 * If null, then it is equivalent to passing the top root clique as this argument.
+	 * @param isToUpdateMarginals : if true, {@link #updateMarginals()} will be called at the end of this method.
+	 * Use this feature in order to avoid marginal updating when several propagations are expected to be executed in a sequence, and
+	 * the marginals are not required to be updated at each propagation (so that we won't run the marginal updating several times
+	 * unnecessarily).
 	 *  @throws Exception : the message will contain any consistency error.
 	 *  @see IJunctionTree#consistency()
 	 *  @see IJunctionTree#consistency(Clique)
 	 */
-	public void updateEvidences(Clique rootClique) throws Exception {
+	public void updateEvidences(Clique rootClique, boolean isToUpdateMarginals) throws Exception {
 			
 		// TODO search for evidences only in nodes reachable from rootClique
 		int numEvidences = 0;	// how many nodes with evidences
@@ -1315,7 +1331,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			}
 			throw e;
 		}
-		updateMarginais();
+		if (isToUpdateMarginals) {
+			updateMarginals();
+		}
 		resetLikelihoods();
 	}
 	
@@ -1326,7 +1344,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 		resetEvidences();
 		junctionTree.initBeliefs();
 		if (firstInitialization) {
-			updateMarginais();
+			updateMarginals();
 			copyMarginal();
 			firstInitialization = false;
 		} else {

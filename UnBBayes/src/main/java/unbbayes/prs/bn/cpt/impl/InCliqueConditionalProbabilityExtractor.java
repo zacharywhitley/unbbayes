@@ -192,8 +192,9 @@ public class InCliqueConditionalProbabilityExtractor implements
 		
 		// check if we can use an optimization which is applicable when getting conditional probabilities in "normalized" context 
 		// (e.g. clique potentials contains normalized local joint prob) using all nodes within the same clique
-		if (isToOptimizeFullCliqueConditionalProbEvaluation && cliqueEvidenceUpdater == DEFAULT_CLIQUE_EVIDENCE_UPDATER && clique.getNodesList().size() == parentNodes.size() + 1
-				&& (algorithm == null || ( (algorithm instanceof JunctionTreeAlgorithm) && ((JunctionTreeAlgorithm)algorithm).isAlgorithmWithNormalization() ) ) ) {
+//		if (isToOptimizeFullCliqueConditionalProbEvaluation && cliqueEvidenceUpdater == DEFAULT_CLIQUE_EVIDENCE_UPDATER && clique.getNodesList().size() == parentNodes.size() + 1
+//				&& (algorithm == null || ( (algorithm instanceof JunctionTreeAlgorithm) && ((JunctionTreeAlgorithm)algorithm).isAlgorithmWithNormalization() ) ) ) {
+		if (isToOptimizeFullCliqueConditionalProbEvaluation && clique.getNodesList().size() == parentNodes.size() + 1 ) {
 			// this is just an optimization we can do when we are using default evidence updater (for probabilities with normalization) 
 			// and the specified nodes (mainNode and parentNodes) comprises the clique entirely (i.e. clique has only the specified nodes).
 			// The condition (algorithm == null || ( (algorithm instanceof JunctionTreeAlgorithm) && ((JunctionTreeAlgorithm)algorithm).isAlgorithmWithNormalization() ) )
@@ -272,20 +273,23 @@ public class InCliqueConditionalProbabilityExtractor implements
 			 * 		<P(A=a2|B=b2,C=c1)> = <P(A=a2,B=b2,C=c1)> / (<P(A=a1,B=b2,C=c1)> + <P(A=a2,B=b2,C=c1)>); (normalizing over column c1b2)
 			 * And so on...
 			 */
-			
-			int statesSizeOfMainNode = mainNode.getStatesSize();	// number of states of main node is the number of "lines" in the table
-			// tracks sum of the current column, so that the value is used during column-wise normalization
-			float sumOfColumn = 0;
-			for (int i = 0; i < ret.tableSize(); i++) {
-				sumOfColumn += ret.getValue(i);	
-				// check whether we reached the last element of the "column"
-				if ((i+1) % statesSizeOfMainNode == 0) {
-					// reached last element of column, so normalize current column
-					for (int indexWithinColumn = i - statesSizeOfMainNode + 1; indexWithinColumn <= i; indexWithinColumn++) {
-						ret.setValue(indexWithinColumn, ret.getValue(indexWithinColumn)/sumOfColumn); // normalize and put value
+			if (algorithm == null 
+					|| ( (algorithm instanceof JunctionTreeAlgorithm) && ((JunctionTreeAlgorithm)algorithm).isAlgorithmWithNormalization() ) ) {
+				
+				int statesSizeOfMainNode = mainNode.getStatesSize();	// number of states of main node is the number of "lines" in the table
+				// tracks sum of the current column, so that the value is used during column-wise normalization
+				float sumOfColumn = 0;
+				for (int i = 0; i < ret.tableSize(); i++) {
+					sumOfColumn += ret.getValue(i);	
+					// check whether we reached the last element of the "column"
+					if ((i+1) % statesSizeOfMainNode == 0) {
+						// reached last element of column, so normalize current column
+						for (int indexWithinColumn = i - statesSizeOfMainNode + 1; indexWithinColumn <= i; indexWithinColumn++) {
+							ret.setValue(indexWithinColumn, ret.getValue(indexWithinColumn)/sumOfColumn); // normalize and put value
+						}
+						// reset sum of column, because we reached the end of column
+						sumOfColumn = 0;
 					}
-					// reset sum of column, because we reached the end of column
-					sumOfColumn = 0;
 				}
 			}
 			
