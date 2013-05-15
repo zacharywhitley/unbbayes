@@ -284,11 +284,16 @@ public class InCliqueConditionalProbabilityExtractor implements
 					// check whether we reached the last element of the "column"
 					if ((i+1) % statesSizeOfMainNode == 0) {
 						// reached last element of column, so normalize current column
-						for (int indexWithinColumn = i - statesSizeOfMainNode + 1; indexWithinColumn <= i; indexWithinColumn++) {
-							ret.setValue(indexWithinColumn, ret.getValue(indexWithinColumn)/sumOfColumn); // normalize and put value
+						if (sumOfColumn <= 0f) {
+							// this is an impossible state, so normalization shall do nothing (the column is filled with zero anyway)
+						} else {
+							// normalize as usual
+							for (int indexWithinColumn = i - statesSizeOfMainNode + 1; indexWithinColumn <= i; indexWithinColumn++) {
+								ret.setValue(indexWithinColumn, ret.getValue(indexWithinColumn)/sumOfColumn); // normalize and put value
+							}
 						}
 						// reset sum of column, because we reached the end of column
-						sumOfColumn = 0;
+						sumOfColumn = 0f;
 					}
 				}
 			}
