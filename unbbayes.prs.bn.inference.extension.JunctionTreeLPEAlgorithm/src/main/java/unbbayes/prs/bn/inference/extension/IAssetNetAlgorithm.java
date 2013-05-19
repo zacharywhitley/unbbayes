@@ -364,4 +364,22 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	public INode addDisconnectedNodeIntoAssetNet(INode nodeInProbNet, Graph probNet, AssetNetwork assetNet);
 	
 	
+	/**
+	 * Finds the shortest path from a clique to another clique (regardless of direction of the connections
+	 * - parent or children) in a junction tree.
+	 * By default, the junction tree of {@link #getNetwork()} will be used for the search.
+	 * @param from : clique to start search from
+	 * @param to : clique to end search
+	 * @return - null: if there was no path (this is supposedly impossible in a consistent junction tree, but may happen if
+	 * tree is disconnected - with no empty separator connecting cliques - or the junction tree did not exist at all),
+	 * or when "from" is equal to "to".
+	 * <br/>
+	 * - Empty list: if the two cliques provided in the argument were directly connected.
+	 * <br/>
+	 * - Non-empty list: the list of cliques pertaining to the path between the cliques provided in the argument, but
+	 * not including the cliques in the arguments.
+	 * 
+	 */
+	public List<Clique> findShortestJunctionTreePath(Clique from, Clique to);
+	
 }

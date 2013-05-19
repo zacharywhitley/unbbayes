@@ -2294,6 +2294,7 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		return node;
 	}
 	
+	
 	/**
 	 * Just delegates to {@link #getAssetPropagationDelegator()}
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#addDisconnectedNodeIntoAssetNet(unbbayes.prs.INode, unbbayes.prs.Graph, unbbayes.prs.bn.AssetNetwork)
@@ -2315,18 +2316,92 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		return false;	// default value
 	}
 
+	/**
+	 * Finds the shortest path between two cliques in a probabilistic junction tree.
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#findShortestJunctionTreePath(unbbayes.prs.bn.Clique, unbbayes.prs.bn.Clique)
+	 */
+	public List<Clique> findShortestJunctionTreePath(Clique from, Clique to) {
+		// check presence of junction tree and cliques
+		if (getRelatedProbabilisticNetwork() == null || getRelatedProbabilisticNetwork().getJunctionTree() == null 
+				|| getRelatedProbabilisticNetwork().getJunctionTree().getCliques() == null
+				|| getRelatedProbabilisticNetwork().getJunctionTree().getCliques().isEmpty()) {
+			return null;
+		}
+		// if the argument has null, return null
+		if (from == null || to == null) {
+			return null;
+		}
+		
+		// the size of the path should be smaller than quantity of all cliques
+		int maxPathSize = getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size();
+		
+		// call recursive
+		return this.visitCliques(from, to, new ArrayList<Clique>(maxPathSize), new HashSet<Clique>(maxPathSize));
+		
+	}
 	
-
-//	/**
-//	 * Only delegates to {@link #getProbabilityPropagationDelegator()}
-//	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#initInternalIdentificators()
-//	 */
-//	public void initInternalIdentificators() {
-//		if (getProbabilityPropagationDelegator() instanceof IRandomVariableAwareInferenceAlgorithm) {
-//			((IRandomVariableAwareInferenceAlgorithm) getProbabilityPropagationDelegator()).initInternalIdentificators();
-//		}
-//	}
-
+	
+	/**
+	 * Recursive depth first search to visit cliques.
+	 * A depth first search should be enough, because in a tree structure only 1 path
+	 * is supposed to exist between two cliques.
+	 * TODO reduce temporary memory usage
+	 */
+	private List<Clique> visitCliques(Clique from, Clique to, List<Clique> processedPath, Set<Clique> deadCliques) {
+		
+		// if the arguments are the same, return immediately
+		if (from.equals(to) || from.getInternalIdentificator() == to.getInternalIdentificator()) {
+			return null;
+		}
+		
+		
+		
+		// mark the current clique as "evaluated", but don't use processedPath directly, since we don't want it to be an output parameter
+		List<Clique> processingPath = new ArrayList<Clique>(processedPath);
+		processingPath.add(from);
+		
+		// initialize the set of adjacent cliques = children + parent
+		Set<Clique> adjacentSet = new HashSet<Clique>();
+		if (from.getChildren() != null) {
+			adjacentSet.addAll(from.getChildren());
+		}
+		if (from.getParent() != null) {
+			adjacentSet.add(from.getParent());
+		}
+		
+		// initialize a set of "dead" (i.e. verified that there is no path) cliques for my scope
+		// note that if a clique is dead for my scope (currently processing path), it may not be dead for my upper scope (another path)
+		// that's why I must create deadCliques for my scope
+		Set<Clique> deadCliquesForMyScope = new HashSet<Clique>(deadCliques);
+		
+		for (Clique adjacent : adjacentSet) {
+			
+			if (deadCliques.contains(adjacent)) {
+				// we know dead nodes have no path to the setTo...
+				continue;
+			}
+			if (processingPath.contains(adjacent)) {
+				// this is a cicle. Ignore this sub-path
+				continue;
+			}
+			if (to.equals(adjacent) || to.getInternalIdentificator() == adjacent.getInternalIdentificator()) {
+				// path found!
+				return new ArrayList<Clique>(0);
+			}
+			
+			// recursive call
+			List<Clique> ret = visitCliques(adjacent, to, processingPath, deadCliquesForMyScope);
+			if (ret == null) {
+				// we recursively know that there is no path from adjacent to setTo, so, it is dead
+				deadCliquesForMyScope.add(adjacent);
+			} else {
+				ret.add(0,adjacent);
+				return ret;
+			}
+		}
+		
+		return null;
+	}
 
 	
 	

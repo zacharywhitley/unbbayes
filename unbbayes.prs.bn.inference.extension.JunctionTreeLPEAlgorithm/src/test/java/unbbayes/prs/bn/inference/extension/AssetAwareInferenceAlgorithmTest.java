@@ -4,6 +4,7 @@
 package unbbayes.prs.bn.inference.extension;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +14,7 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 import unbbayes.io.NetIO;
+import unbbayes.io.exception.LoadException;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
@@ -2432,6 +2434,164 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 
 	}
 	
+	/**
+	 * Test method for {@link AssetAwareInferenceAlgorithm#findShortestJunctionTreePath(Clique, Clique)}
+	 */
+	public final void testFindShortestJunctionTreePath() {
+		// test for DEF net first
+		Clique de = (Clique) ((TreeVariable)network.getNode("E")).getAssociatedClique();
+		Clique df = (Clique) ((TreeVariable)network.getNode("F")).getAssociatedClique();
+		
+		List<Clique> path = assetQAlgorithm.findShortestJunctionTreePath(de, de);
+		assertNull(path);
+		path = assetQAlgorithm.findShortestJunctionTreePath(df, df);
+		assertNull(path);
+		path = assetQAlgorithm.findShortestJunctionTreePath(de, df);
+		assertNotNull(path);
+		assertTrue(path.isEmpty());
+		path = assetQAlgorithm.findShortestJunctionTreePath(df, de);
+		assertNotNull(path);
+		assertTrue(path.isEmpty());
+		
+		
+		// test disconnected network
+		try {
+			network = (ProbabilisticNetwork) new NetIO().load(new File(getClass().getResource("/disconnected.net").toURI()));
+		} catch (LoadException e) {
+			e.printStackTrace();
+			fail();
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			fail();
+		}
+		
+		assetQAlgorithm.setNetwork(network);
+		assetQAlgorithm.run();
+		
+		// Cliques: [C{C1 (1) C0 (0) }, C{C4 (4) C3 (3) C2 (2) }, C{C8 (8) C6 (6) C5 (5) }, C{C8 (8) C7 (7) C5 (5) }, C{C9 (9) }]
+		
+		// check that path to itself is always null
+		for (int i = 0; i < network.getJunctionTree().getCliques().size(); i++) {
+			path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(i));
+			assertNull(path);	
+		}
+		
+		// check path to root
+		for (int i = 1; i < network.getJunctionTree().getCliques().size(); i++) {
+			if (i == 3) {
+				// clique of index 3 is the only clique connected to root through clique of index 2
+				path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(0), network.getJunctionTree().getCliques().get(i));
+				assertNotNull(path);	
+				assertEquals(1,path.size());
+				assertTrue(path.contains(network.getJunctionTree().getCliques().get(2)));
+				path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(0));
+				assertNotNull(path);	
+				assertEquals(1,path.size());
+				assertTrue(path.contains(network.getJunctionTree().getCliques().get(2)));
+			} else {
+				path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(0), network.getJunctionTree().getCliques().get(i));
+				assertNotNull(path);	// any disconnected clique is actually connected to the root clique by empty separator
+				assertTrue(path.isEmpty());
+				path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(0));
+				assertNotNull(path);	// any disconnected clique is actually connected to the root clique by empty separator
+				assertTrue(path.isEmpty());
+			}
+		}
+		
+		// check path between cliques other than root
+		for (int i = 1; i < network.getJunctionTree().getCliques().size()-1; i++) {
+			for (int j = i+1; j < network.getJunctionTree().getCliques().size(); j++) {
+				if (j == 3 || i == 3) {
+					// clique of index 3 is the only clique connected to root through clique of index 2
+					if (i == 2 || j == 2) {
+						// there is direct path from 2 to 3, so in this case, the path will be empty.
+						path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(j));
+						assertNotNull(path);	
+						assertEquals(0,path.size());
+					} else {
+						// connection from disconnected clique to another disconnected clique
+						path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(j));
+						assertNotNull(path);	
+						assertEquals(2,path.size());
+						assertTrue(path.contains(network.getJunctionTree().getCliques().get(0)));
+						assertTrue(path.contains(network.getJunctionTree().getCliques().get(2)));
+						path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(j), network.getJunctionTree().getCliques().get(i));
+						assertNotNull(path);	
+						assertEquals(2,path.size());
+						assertTrue(path.contains(network.getJunctionTree().getCliques().get(0)));
+						assertTrue(path.contains(network.getJunctionTree().getCliques().get(2)));
+					}
+				} else {
+					// all other nodes passes through root node
+					path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(j));
+					assertNotNull(path);	
+					assertEquals(1,path.size());
+					assertTrue(path.contains(network.getJunctionTree().getCliques().get(0)));
+					path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(j), network.getJunctionTree().getCliques().get(i));
+					assertNotNull(path);	
+					assertEquals(1,path.size());
+					assertTrue(path.contains(network.getJunctionTree().getCliques().get(0)));
+				}
+			}
+		}
+		
+		
+		
+		// test longer chain: 0->1->2->3->4->5->6->7->8->9->10
+		try {
+			network = (ProbabilisticNetwork) new NetIO().load(new File(getClass().getResource("/chain.net").toURI()));
+		} catch (LoadException e) {
+			e.printStackTrace();
+			fail();
+		} catch (IOException e) {
+			e.printStackTrace();
+			fail();
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+			fail();
+		}
+		assetQAlgorithm.setNetwork(network);
+		assetQAlgorithm.run();
+		
+		// Cliques: [C{C1 (1) C0 (0) }, C{C2 (2) C1 (1) }, C{C3 (3) C2 (2) }, C{C4 (4) C3 (3) }, C{C5 (5) C4 (4) }, C{C6 (6) C5 (5) }, C{C7 (7) C6 (6) }, C{C8 (8) C7 (7) }, C{C9 (9) C8 (8) }, C{C9 (9) C10 (10) }]
+		
+		// check that path to itself is always null
+		for (int i = 0; i < network.getJunctionTree().getCliques().size(); i++) {
+			path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(i));
+			assertNull(path);	
+		}
+		
+		// check that any path between two different cliques contains all cliques between the chain
+		for (int i = 1; i < network.getJunctionTree().getCliques().size()-1; i++) {
+			for (int j = i+1; j < network.getJunctionTree().getCliques().size(); j++) {
+				path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(j));
+				assertNotNull(path);	
+				assertEquals(j-i-1,path.size());
+				for (int k = i+1; k <= j-1; k++) {
+					// check that path contains cliques between i and j
+					assertTrue(path.contains(network.getJunctionTree().getCliques().get(k)));
+				}
+				// check inverse
+				path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(j), network.getJunctionTree().getCliques().get(i));
+				assertNotNull(path);	
+				assertEquals(j-i-1,path.size());
+				for (int k = i+1; k <= j-1; k++) {
+					// check that path contains cliques between i and j
+					assertTrue(path.contains(network.getJunctionTree().getCliques().get(k)));
+				}
+			}
+		}
+	}
 	
+	/**
+	 * Checks whether we can add arcs into a compiled junction tree
+	 * and still work as if the arcs were present from the beginning
+	 */
+	public final void testAddArcIncrementally() {
+		
+	}
 	
 }
