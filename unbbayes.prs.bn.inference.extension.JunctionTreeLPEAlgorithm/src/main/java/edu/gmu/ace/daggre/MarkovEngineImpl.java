@@ -10357,6 +10357,25 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		this.isToPrintRootClique = isToPrintRoot;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#exportCurrentSharedNetwork()
+	 */
+	public String exportCurrentSharedNetwork() {
+		// TODO Auto-generated method stub
+		return "";
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#importCurrentSharedNetwork(java.lang.String)
+	 */
+	public void importCurrentSharedNetwork(String netString)
+			throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		
+	}
+
 
 
 }
