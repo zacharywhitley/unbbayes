@@ -25,6 +25,7 @@ import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
@@ -2435,23 +2436,24 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	}
 	
 	/**
-	 * Test method for {@link AssetAwareInferenceAlgorithm#findShortestJunctionTreePath(Clique, Clique)}
+	 * Test method for {@link AssetAwareInferenceAlgorithm#findJunctionTreePath(Clique, Clique)
 	 */
 	public final void testFindShortestJunctionTreePath() {
 		// test for DEF net first
 		Clique de = (Clique) ((TreeVariable)network.getNode("E")).getAssociatedClique();
 		Clique df = (Clique) ((TreeVariable)network.getNode("F")).getAssociatedClique();
 		
-		List<Clique> path = assetQAlgorithm.findShortestJunctionTreePath(de, de);
+		List<Clique> path = assetQAlgorithm.findJunctionTreePath(de, de);
 		assertNull(path);
-		path = assetQAlgorithm.findShortestJunctionTreePath(df, df);
+		path = assetQAlgorithm.findJunctionTreePath(df, df);
 		assertNull(path);
-		path = assetQAlgorithm.findShortestJunctionTreePath(de, df);
+		path = assetQAlgorithm.findJunctionTreePath(de, df);
 		assertNotNull(path);
 		assertTrue(path.isEmpty());
-		path = assetQAlgorithm.findShortestJunctionTreePath(df, de);
+		path = assetQAlgorithm.findJunctionTreePath(df, de);
 		assertNotNull(path);
 		assertTrue(path.isEmpty());
+		
 		
 		
 		// test disconnected network
@@ -2475,7 +2477,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		
 		// check that path to itself is always null
 		for (int i = 0; i < network.getJunctionTree().getCliques().size(); i++) {
-			path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(i));
+			path = assetQAlgorithm.findJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(i));
 			assertNull(path);	
 		}
 		
@@ -2483,19 +2485,19 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		for (int i = 1; i < network.getJunctionTree().getCliques().size(); i++) {
 			if (i == 3) {
 				// clique of index 3 is the only clique connected to root through clique of index 2
-				path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(0), network.getJunctionTree().getCliques().get(i));
+				path = assetQAlgorithm.findJunctionTreePath(network.getJunctionTree().getCliques().get(0), network.getJunctionTree().getCliques().get(i));
 				assertNotNull(path);	
 				assertEquals(1,path.size());
 				assertTrue(path.contains(network.getJunctionTree().getCliques().get(2)));
-				path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(0));
+				path = assetQAlgorithm.findJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(0));
 				assertNotNull(path);	
 				assertEquals(1,path.size());
 				assertTrue(path.contains(network.getJunctionTree().getCliques().get(2)));
 			} else {
-				path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(0), network.getJunctionTree().getCliques().get(i));
+				path = assetQAlgorithm.findJunctionTreePath(network.getJunctionTree().getCliques().get(0), network.getJunctionTree().getCliques().get(i));
 				assertNotNull(path);	// any disconnected clique is actually connected to the root clique by empty separator
 				assertTrue(path.isEmpty());
-				path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(0));
+				path = assetQAlgorithm.findJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(0));
 				assertNotNull(path);	// any disconnected clique is actually connected to the root clique by empty separator
 				assertTrue(path.isEmpty());
 			}
@@ -2508,17 +2510,17 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 					// clique of index 3 is the only clique connected to root through clique of index 2
 					if (i == 2 || j == 2) {
 						// there is direct path from 2 to 3, so in this case, the path will be empty.
-						path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(j));
+						path = assetQAlgorithm.findJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(j));
 						assertNotNull(path);	
 						assertEquals(0,path.size());
 					} else {
 						// connection from disconnected clique to another disconnected clique
-						path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(j));
+						path = assetQAlgorithm.findJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(j));
 						assertNotNull(path);	
 						assertEquals(2,path.size());
 						assertTrue(path.contains(network.getJunctionTree().getCliques().get(0)));
 						assertTrue(path.contains(network.getJunctionTree().getCliques().get(2)));
-						path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(j), network.getJunctionTree().getCliques().get(i));
+						path = assetQAlgorithm.findJunctionTreePath(network.getJunctionTree().getCliques().get(j), network.getJunctionTree().getCliques().get(i));
 						assertNotNull(path);	
 						assertEquals(2,path.size());
 						assertTrue(path.contains(network.getJunctionTree().getCliques().get(0)));
@@ -2526,11 +2528,11 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 					}
 				} else {
 					// all other nodes passes through root node
-					path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(j));
+					path = assetQAlgorithm.findJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(j));
 					assertNotNull(path);	
 					assertEquals(1,path.size());
 					assertTrue(path.contains(network.getJunctionTree().getCliques().get(0)));
-					path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(j), network.getJunctionTree().getCliques().get(i));
+					path = assetQAlgorithm.findJunctionTreePath(network.getJunctionTree().getCliques().get(j), network.getJunctionTree().getCliques().get(i));
 					assertNotNull(path);	
 					assertEquals(1,path.size());
 					assertTrue(path.contains(network.getJunctionTree().getCliques().get(0)));
@@ -2560,14 +2562,14 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		
 		// check that path to itself is always null
 		for (int i = 0; i < network.getJunctionTree().getCliques().size(); i++) {
-			path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(i));
+			path = assetQAlgorithm.findJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(i));
 			assertNull(path);	
 		}
 		
 		// check that any path between two different cliques contains all cliques between the chain
 		for (int i = 1; i < network.getJunctionTree().getCliques().size()-1; i++) {
 			for (int j = i+1; j < network.getJunctionTree().getCliques().size(); j++) {
-				path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(j));
+				path = assetQAlgorithm.findJunctionTreePath(network.getJunctionTree().getCliques().get(i), network.getJunctionTree().getCliques().get(j));
 				assertNotNull(path);	
 				assertEquals(j-i-1,path.size());
 				for (int k = i+1; k <= j-1; k++) {
@@ -2575,7 +2577,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 					assertTrue(path.contains(network.getJunctionTree().getCliques().get(k)));
 				}
 				// check inverse
-				path = assetQAlgorithm.findShortestJunctionTreePath(network.getJunctionTree().getCliques().get(j), network.getJunctionTree().getCliques().get(i));
+				path = assetQAlgorithm.findJunctionTreePath(network.getJunctionTree().getCliques().get(j), network.getJunctionTree().getCliques().get(i));
 				assertNotNull(path);	
 				assertEquals(j-i-1,path.size());
 				for (int k = i+1; k <= j-1; k++) {

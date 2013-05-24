@@ -4,6 +4,7 @@
 package unbbayes.prs.bn.inference.extension;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,6 +17,7 @@ import javax.swing.JComponent;
 
 import unbbayes.controller.INetworkMediator;
 import unbbayes.gui.AssetCompilationPanelBuilder;
+import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -54,7 +56,7 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
  * @author Shou Matsumoto
  *
  */
-public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
+public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm implements IAssetNetAlgorithm {
 	
 	private List<IInferenceAlgorithmListener> inferenceAlgorithmListener = new ArrayList<IInferenceAlgorithmListener>();
 	
@@ -191,6 +193,10 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 
 	/**
 	 * This will set the probabilistic network (the one used in {@link #getProbabilityPropagationDelegator()}).
+	 * This also ensures that {@link #getNet()} will return the probabilistic network, which 
+	 * also ensures that {@link #addEdgesToNet(INode, List)}
+	 * and {@link #findShortestJunctionTreePath(Collection, Collection)}
+	 * will look at probabilistic network instead of asset network.
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#setNetwork(unbbayes.prs.Graph)
 	 */
 	public void setNetwork(Graph g) throws IllegalArgumentException {
@@ -204,12 +210,29 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	}
 
 	/**
-	 * this will return the probabilitstic network obtainable {@link #getProbabilityPropagationDelegator()}
+	 * This will return the probabilistic network obtainable from {@link #getProbabilityPropagationDelegator()}.
+	 * This also ensures that {@link #getNet()} will return the probabilistic network, which 
+	 * also ensures that {@link #addEdgesToNet(INode, List)}
+	 * and {@link #findShortestJunctionTreePath(Collection, Collection)}
+	 * will look at probabilistic network instead of asset network.
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getNetwork()
 	 */
 	public Graph getNetwork() {
 		return this.getProbabilityPropagationDelegator().getNetwork();
 	}
+	
+	/**
+	 * This will return the probabilistic network obtainable from {@link #getProbabilityPropagationDelegator()}.
+	 * This also ensures that {@link #getNet()} will return the probabilistic network, which 
+	 * also ensures that {@link #addEdgesToNet(INode, List)}
+	 * and {@link #findShortestJunctionTreePath(Collection, Collection)}
+	 * will look at probabilistic network instead of asset network.
+	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#getNet()
+	 */
+	public ProbabilisticNetwork getNet() {
+		return (ProbabilisticNetwork) this.getProbabilityPropagationDelegator().getNetwork();
+	}
+	
 
 	/* (non-Javadoc)
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#run()
@@ -240,10 +263,12 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 //		} catch (Exception e) {
 //			throw new IllegalArgumentException("Could not initialize asset network for " + this.getProbabilityPropagationDelegator().getNetwork(),e);
 //		}
-		try {
-			this.initializeAssets();
-		} catch (Exception e) {
-			throw new IllegalStateException(this + " was called with an illegal network.",e);
+		if (this.isToUpdateAssets()) {
+			try {
+				this.initializeAssets();
+			} catch (Exception e) {
+				throw new IllegalStateException(this + " was called with an illegal network.",e);
+			}
 		}
 		
 		// TODO migrate these GUI code to the plugin infrastructure
@@ -2302,6 +2327,8 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 	public INode addDisconnectedNodeIntoAssetNet(INode nodeInProbNet, Graph probNet, AssetNetwork assetNet) {
 		return this.getAssetPropagationDelegator().addDisconnectedNodeIntoAssetNet(nodeInProbNet, probNet, assetNet);
 	}
+	
+	
 
 
 	/*
@@ -2316,93 +2343,31 @@ public class AssetAwareInferenceAlgorithm implements IAssetNetAlgorithm {
 		return false;	// default value
 	}
 
-	/**
-	 * Finds the shortest path between two cliques in a probabilistic junction tree.
-	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#findShortestJunctionTreePath(unbbayes.prs.bn.Clique, unbbayes.prs.bn.Clique)
-	 */
-	public List<Clique> findShortestJunctionTreePath(Clique from, Clique to) {
-		// check presence of junction tree and cliques
-		if (getRelatedProbabilisticNetwork() == null || getRelatedProbabilisticNetwork().getJunctionTree() == null 
-				|| getRelatedProbabilisticNetwork().getJunctionTree().getCliques() == null
-				|| getRelatedProbabilisticNetwork().getJunctionTree().getCliques().isEmpty()) {
-			return null;
-		}
-		// if the argument has null, return null
-		if (from == null || to == null) {
-			return null;
-		}
-		
-		// the size of the path should be smaller than quantity of all cliques
-		int maxPathSize = getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size();
-		
-		// call recursive
-		return this.visitCliques(from, to, new ArrayList<Clique>(maxPathSize), new HashSet<Clique>(maxPathSize));
-		
-	}
 	
-	
-	/**
-	 * Recursive depth first search to visit cliques.
-	 * A depth first search should be enough, because in a tree structure only 1 path
-	 * is supposed to exist between two cliques.
-	 * TODO reduce temporary memory usage
-	 */
-	private List<Clique> visitCliques(Clique from, Clique to, List<Clique> processedPath, Set<Clique> deadCliques) {
-		
-		// if the arguments are the same, return immediately
-		if (from.equals(to) || from.getInternalIdentificator() == to.getInternalIdentificator()) {
-			return null;
-		}
-		
-		
-		
-		// mark the current clique as "evaluated", but don't use processedPath directly, since we don't want it to be an output parameter
-		List<Clique> processingPath = new ArrayList<Clique>(processedPath);
-		processingPath.add(from);
-		
-		// initialize the set of adjacent cliques = children + parent
-		Set<Clique> adjacentSet = new HashSet<Clique>();
-		if (from.getChildren() != null) {
-			adjacentSet.addAll(from.getChildren());
-		}
-		if (from.getParent() != null) {
-			adjacentSet.add(from.getParent());
-		}
-		
-		// initialize a set of "dead" (i.e. verified that there is no path) cliques for my scope
-		// note that if a clique is dead for my scope (currently processing path), it may not be dead for my upper scope (another path)
-		// that's why I must create deadCliques for my scope
-		Set<Clique> deadCliquesForMyScope = new HashSet<Clique>(deadCliques);
-		
-		for (Clique adjacent : adjacentSet) {
-			
-			if (deadCliques.contains(adjacent)) {
-				// we know dead nodes have no path to the setTo...
-				continue;
-			}
-			if (processingPath.contains(adjacent)) {
-				// this is a cicle. Ignore this sub-path
-				continue;
-			}
-			if (to.equals(adjacent) || to.getInternalIdentificator() == adjacent.getInternalIdentificator()) {
-				// path found!
-				return new ArrayList<Clique>(0);
-			}
-			
-			// recursive call
-			List<Clique> ret = visitCliques(adjacent, to, processingPath, deadCliquesForMyScope);
-			if (ret == null) {
-				// we recursively know that there is no path from adjacent to setTo, so, it is dead
-				deadCliquesForMyScope.add(adjacent);
-			} else {
-				ret.add(0,adjacent);
-				return ret;
-			}
-		}
-		
-		return null;
-	}
 
+//	/**
+//	 * Finds the shortest path between two cliques in a probabilistic junction tree.
+//	 */
+//	public List<Clique> findShortestJunctionTreePath(Clique from, Clique to) {
+//		// check presence of junction tree and cliques
+//		if (getRelatedProbabilisticNetwork() == null || getRelatedProbabilisticNetwork().getJunctionTree() == null 
+//				|| getRelatedProbabilisticNetwork().getJunctionTree().getCliques() == null
+//				|| getRelatedProbabilisticNetwork().getJunctionTree().getCliques().isEmpty()) {
+//			return null;
+//		}
+//		// if the argument has null, return null
+//		if (from == null || to == null) {
+//			return null;
+//		}
+//		
+//		// the size of the path should be smaller than quantity of all cliques
+//		int maxPathSize = getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size();
+//		
+//		// call recursive
+//		return this.visitCliques(from, to, new ArrayList<Clique>(maxPathSize), new HashSet<Clique>(maxPathSize));
+//		
+//	}
+	
 	
 	
 }

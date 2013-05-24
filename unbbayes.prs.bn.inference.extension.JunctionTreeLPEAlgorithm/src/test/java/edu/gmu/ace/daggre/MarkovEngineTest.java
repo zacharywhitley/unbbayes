@@ -13,10 +13,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import junit.framework.TestCase;
@@ -125,6 +125,7 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 	}
+	
 
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#addQuestion(long, java.util.Date, long, int, java.util.List)}.
@@ -5271,7 +5272,11 @@ public class MarkovEngineTest extends TestCase {
 		engine.commitNetworkActions(transactionKey);
 
 		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
-		assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.size());
+		if (engine.isToAddArcsWithoutReboot()) {
+			assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
+		} else {
+			assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.size());
+		}
 		assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.get(0).size());
 		
 		// check that probs and assets did not change
@@ -5571,7 +5576,11 @@ public class MarkovEngineTest extends TestCase {
 
 
 		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
-		assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.size());
+		if (engine.isToAddArcsWithoutReboot()) {
+			assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
+		} else {
+			assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.size());
+		}
 		assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.get(0).size());
 		
 		// create node F and edge D->F
@@ -5582,9 +5591,16 @@ public class MarkovEngineTest extends TestCase {
 		
 
 		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
-		assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
-		for (List<Long> group : questionAssumptionGroups) {
-			assertEquals(questionAssumptionGroups.toString(), 2, group.size());
+		if (engine.isToAddArcsWithoutReboot()) {
+			assertEquals(questionAssumptionGroups.toString(), 3, questionAssumptionGroups.size());
+			assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.get(0).size());
+			assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.get(1).size());
+			assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.get(2).size());
+		} else {
+			assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
+			for (List<Long> group : questionAssumptionGroups) {
+				assertEquals(questionAssumptionGroups.toString(), 2, group.size());
+			}
 		}
 		
 		// check that probs and assets did not change
@@ -6618,9 +6634,16 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue("Obtained unexpected cash = " + minCash, minCash <= 0);
 		
 		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
-		assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
-		for (List<Long> group : questionAssumptionGroups) {
-			assertEquals(questionAssumptionGroups.toString(), 2, group.size());
+		if (engine.isToAddArcsWithoutReboot()) {
+			assertEquals(questionAssumptionGroups.toString(), 3, questionAssumptionGroups.size());
+			assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.get(0).size());
+			assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.get(1).size());
+			assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.get(2).size());
+		} else {
+			assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
+			for (List<Long> group : questionAssumptionGroups) {
+				assertEquals(questionAssumptionGroups.toString(), 2, group.size());
+			}
 		}
 		
 	}
@@ -16151,6 +16174,13 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestionAssumption(transactionKey, new Date(), 3L, Collections.singletonList(4L), null);
 		engine.commitNetworkActions(transactionKey);
 		
+		// assert that everything are uniform before trade
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			for (Float prob : entry.getValue()) {
+				assertEquals(1f/entry.getValue().size(), prob,PROB_ERROR_MARGIN);
+			}
+		}
+		
 		assertEquals(1,engine.getProbabilisticNetwork().getNode("1").getParents().size());
 		assertTrue(engine.getProbabilisticNetwork().getNode("1").getParents().contains(engine.getProbabilisticNetwork().getNode("0")));
 		assertEquals(2,engine.getProbabilisticNetwork().getNode("3").getParents().size());
@@ -16173,15 +16203,19 @@ public class MarkovEngineTest extends TestCase {
 		
 		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
 		assertTrue(4 <= probLists.size());
-		assertEquals(0.3333f, probLists.get(5L).get(0),PROB_ERROR_MARGIN);
-		assertEquals(0.3333f, probLists.get(5L).get(1),PROB_ERROR_MARGIN);
-		assertEquals(0.3333f, probLists.get(5L).get(2),PROB_ERROR_MARGIN);
-		assertEquals(0.5f, probLists.get(6L).get(0),PROB_ERROR_MARGIN);
-		assertEquals(0.5f, probLists.get(6L).get(1),PROB_ERROR_MARGIN);
-		assertEquals(0.5f, probLists.get(7L).get(0),PROB_ERROR_MARGIN);
-		assertEquals(0.5f, probLists.get(7L).get(1),PROB_ERROR_MARGIN);
-		assertEquals(0.5085031f, probLists.get(8L).get(0),PROB_ERROR_MARGIN);
-		assertEquals(0.49149314f, probLists.get(8L).get(1),PROB_ERROR_MARGIN);
+		float precision = PROB_ERROR_MARGIN;
+		if (engine.isToAddArcsWithoutReboot()) {
+			precision = 0.01f;
+		}
+		assertEquals(0.5085031f, probLists.get(8L).get(0),precision);
+		assertEquals(0.49149314f, probLists.get(8L).get(1),precision);
+		assertEquals(0.5f, probLists.get(6L).get(0),precision);
+		assertEquals(0.5f, probLists.get(6L).get(1),precision);
+		assertEquals(0.5f, probLists.get(7L).get(0),precision);
+		assertEquals(0.5f, probLists.get(7L).get(1),precision);
+		assertEquals(0.3333f, probLists.get(5L).get(0),precision);
+		assertEquals(0.3333f, probLists.get(5L).get(1),precision);
+		assertEquals(0.3333f, probLists.get(5L).get(2),precision);
 		
 		assertEquals(84.4694808988f, engine.getCash(6L, null, null), PROB_ERROR_MARGIN);
 		assertEquals(100.1254412613f, engine.scoreUserEv(6L, null, null), PROB_ERROR_MARGIN);
@@ -16935,7 +16969,7 @@ public class MarkovEngineTest extends TestCase {
 											+ stateNode6+"," + stateNode5+","+ stateNode8+","+ stateNode7+","+ stateNode3+","+ stateNode4 + "]", 
 											jointIteration5[indexForJointProbability], 
 											jointProbability, 
-											0.00005
+											PROB_ERROR_MARGIN //0.00005
 										);
 									sum += jointProbability;
 									indexForJointProbability++;	// point to next item in jointBeforeIteration5
@@ -22265,9 +22299,18 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestionAssumption(null, new Date(), 3L , Collections.singletonList(2L), null);
 		
 		// check that 1 and 2 are explicitly connected
-		assertTrue( engine.getProbabilisticNetwork().getNode("1").getParents().contains(engine.getProbabilisticNetwork().getNode("2"))
-				 || engine.getProbabilisticNetwork().getNode("2").getParents().contains(engine.getProbabilisticNetwork().getNode("1")));
+		if (!engine.isToAddArcsWithoutReboot()) {
+			assertTrue( engine.getProbabilisticNetwork().getNode("1").getParents().contains(engine.getProbabilisticNetwork().getNode("2"))
+					|| engine.getProbabilisticNetwork().getNode("2").getParents().contains(engine.getProbabilisticNetwork().getNode("1")));
+		}
 		
+		// make sure that 1 and 2 are in same clique
+		Collection<INode> nodes = new ArrayList<INode>();
+		nodes.add(engine.getProbabilisticNetwork().getNode("1"));
+		nodes.add(engine.getProbabilisticNetwork().getNode("2"));
+		// simply check that there is a clique containing both nodes
+		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree().getCliquesContainingAllNodes(nodes, 1));
+		assertFalse(engine.getProbabilisticNetwork().getJunctionTree().getCliquesContainingAllNodes(nodes, 1).isEmpty());
 		
 		// restore old config
 		engine.setToFullyConnectNodesInCliquesOnRebuild(backup);

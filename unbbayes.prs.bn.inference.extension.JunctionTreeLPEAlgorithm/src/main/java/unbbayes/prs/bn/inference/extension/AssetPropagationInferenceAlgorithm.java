@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import unbbayes.controller.INetworkMediator;
+import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.Network;
@@ -45,7 +46,7 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
  * @author Shou Matsumoto
  *
  */
-public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm implements IAssetNetAlgorithm  {
+public class AssetPropagationInferenceAlgorithm extends AbstractAssetNetAlgorithm implements IAssetNetAlgorithm  {
 	
 	/** {@link #isToUseQValues()} is initialized to this value */
 	public static final boolean IS_TO_USE_Q_VALUES = false;
@@ -1620,8 +1621,12 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 //		this.randomVariableComparator = cliqueComparator;
 //	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * Calls {@link #setNetwork(Graph)}.
+	 * This also ensures that {@link #getNet()} will return the asset network, which 
+	 * also ensures that {@link #addEdgesToNet(INode, List)}
+	 * and {@link #findShortestJunctionTreePath(Collection, Collection)}
+	 * will look at asset network instead of probabilistic network.
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setAssetNetwork(unbbayes.prs.bn.AssetNetwork)
 	 */
 	public void setAssetNetwork(AssetNetwork assetNet)
@@ -3051,95 +3056,93 @@ public class AssetPropagationInferenceAlgorithm extends JunctionTreeLPEAlgorithm
 	}
 	
 	/**
-	 * Finds the shortest path between two cliques in a probabilistic junction tree.
-	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#findShortestJunctionTreePath(unbbayes.prs.bn.Clique, unbbayes.prs.bn.Clique)
+	 * Overwrites the super method by not adding new arcs (because arcs of asset nets are unnecessary and occupies space)
+	 * @see unbbayes.prs.bn.inference.extension.AbstractAssetNetAlgorithm#addEdgesToNet(unbbayes.prs.INode, java.util.List, boolean)
 	 */
-	public List<Clique> findShortestJunctionTreePath(Clique from, Clique to) {
-		// check presence of junction tree and cliques
-		if (getAssetNetwork() == null || getAssetNetwork().getJunctionTree() == null 
-				|| getAssetNetwork().getJunctionTree().getCliques() == null
-				|| getAssetNetwork().getJunctionTree().getCliques().isEmpty()) {
-			return null;
-		}
-		// if the argument has null, return null
-		if (from == null || to == null) {
-			return null;
-		}
-		// if the arguments are the same, return immediately
-		if (from.equals(to) || from.getInternalIdentificator() == to.getInternalIdentificator()) {
-			return null;
+	public List<Edge> addEdgesToNet(INode child, List<INode> parents, boolean isToOptimizeForProbNetwork) throws UnsupportedOperationException, IllegalArgumentException, InvalidParentException {
+		if (child == null || parents == null || parents.isEmpty()) {
+			return Collections.emptyList();
 		}
 		
-		// the size of the path should be smaller than quantity of all cliques
-		int maxPathSize = getAssetNetwork().getJunctionTree().getCliques().size();
+		// extract the network to work with
+		AssetNetwork assetNet = this.getAssetNetwork();
 		
-		// call recursive
-		return this.visitCliques(from, to, new ArrayList<Clique>(maxPathSize), new HashSet<Clique>(maxPathSize));
+		// needs to remove duplicates and make sure to use asset nodes instead of prob nodes
+		List<INode> assetParents = new ArrayList<INode>(parents.size());
+		for (INode parent : parents) {
+			Node node = assetNet.getNode(parent.getName());
+			if (!assetParents.contains(node)) {
+				// remove duplicates without changing original ordering
+				assetParents.add(node);
+			}
+		}
 		
+		if (isToOptimizeForProbNetwork) {
+			throw new UnsupportedOperationException("This is an algorithm specific for handling assets, so cannot use it with the flag of isToOptimizeForProbNetwork turned on.");
+		}
+		
+		// extract the cliques containing parents (if any)
+		List<Clique> parentCliques = assetNet.getJunctionTree().getCliquesContainingAllNodes(assetParents, Integer.MAX_VALUE);
+		if (parentCliques != null && !parentCliques.isEmpty()) { // case 0 or 1
+			// check if we can handle this case as case 0: both child and parents are in same clique
+			boolean hasAllNodesInSameClique = false;
+			// try to find child node in parentCliques (since parentCliques supposedly has all parent nodes, then if we find any with child, it contains all nodes)
+			for (Clique clique : parentCliques) {
+				if (clique.getNodesList().contains(child)) {
+					hasAllNodesInSameClique = true;
+					break;
+				}
+			}
+			if (!hasAllNodesInSameClique) {
+				// case 1: parents are in same clique, but child is not
+				this.addNodesToCliqueWhenAllParentsInSameClique(child, assetParents, parentCliques, assetNet);
+			}
+			// case 0: simply add the edge and return without changing junction tree -> will be handled outside this if-clause
+		} else {
+			// case 2: some of the parents are not in the same clique
+			this.addNodesToCliqueWhenParentsInDifferentClique(child, assetParents, assetNet);
+		}
+		
+		// do not add edges, because it only occupies space and does not have any numerical importance.
+		return Collections.EMPTY_LIST;
 	}
-	
 	
 	/**
-	 * Recursive depth first search to visit cliques.
-	 * A depth first search should be enough, because in a tree structure only 1 path
-	 * is supposed to exist between two cliques.
-	 * TODO reduce temporary memory usage
+	 * Overwrites super method just to guarantee that we are using asset nodes as child, because
+	 * the parents of the child node is accessed, and asset nodes don't store list of parents (to minimize memory)
+	 * @see unbbayes.prs.bn.inference.extension.AbstractAssetNetAlgorithm#addNodesToCliqueWhenAllParentsInSameClique(unbbayes.prs.INode, java.util.List, java.util.List, unbbayes.prs.bn.ProbabilisticNetwork)
 	 */
-	private List<Clique> visitCliques(Clique from, Clique to, List<Clique> processedPath, Set<Clique> deadCliques) {
-		
-		// if the arguments are the same, return immediately
-		if (from.equals(to) || from.getInternalIdentificator() == to.getInternalIdentificator()) {
-			return null;
-		}
-		
-		
-		
-		// mark the current clique as "evaluated", but don't use processedPath directly, since we don't want it to be an output parameter
-		List<Clique> processingPath = new ArrayList<Clique>(processedPath);
-		processingPath.add(from);
-		
-		// initialize the set of adjacent cliques = children + parent
-		Set<Clique> adjacentSet = new HashSet<Clique>();
-		if (from.getChildren() != null) {
-			adjacentSet.addAll(from.getChildren());
-		}
-		if (from.getParent() != null) {
-			adjacentSet.add(from.getParent());
-		}
-		
-		// initialize a set of "dead" (i.e. verified that there is no path) cliques for my scope
-		// note that if a clique is dead for my scope (currently processing path), it may not be dead for my upper scope (another path)
-		// that's why I must create deadCliques for my scope
-		Set<Clique> deadCliquesForMyScope = new HashSet<Clique>(deadCliques);
-		
-		for (Clique adjacent : adjacentSet) {
-			
-			if (deadCliques.contains(adjacent)) {
-				// we know dead nodes have no path to the setTo...
-				continue;
-			}
-			if (processingPath.contains(adjacent)) {
-				// this is a cicle. Ignore this sub-path
-				continue;
-			}
-			if (to.equals(adjacent) || to.getInternalIdentificator() == adjacent.getInternalIdentificator()) {
-				// path found!
-				return new ArrayList<Clique>(0);
-			}
-			
-			// recursive call
-			List<Clique> ret = visitCliques(adjacent, to, processingPath, deadCliquesForMyScope);
-			if (ret == null) {
-				// we recursively know that there is no path from adjacent to setTo, so, it is dead
-				deadCliquesForMyScope.add(adjacent);
-			} else {
-				ret.add(0,adjacent);
-				return ret;
-			}
-		}
-		
-		return null;
+	protected void addNodesToCliqueWhenAllParentsInSameClique(INode child, List<INode> parents, List<Clique> parentCliques, ProbabilisticNetwork net) {
+		child = net.getNode(child.getName());	// make sure child node is from the network provided in the argument.
+		super.addNodesToCliqueWhenAllParentsInSameClique(child, parents, parentCliques, net);
 	}
 	
-
+	/**
+	 * Finds the shortest path between two cliques in a probabilistic junction tree.
+	 */
+//	public List<Clique> findShortestJunctionTreePath(Clique from, Clique to) {
+//		// check presence of junction tree and cliques
+//		if (getAssetNetwork() == null || getAssetNetwork().getJunctionTree() == null 
+//				|| getAssetNetwork().getJunctionTree().getCliques() == null
+//				|| getAssetNetwork().getJunctionTree().getCliques().isEmpty()) {
+//			return null;
+//		}
+//		// if the argument has null, return null
+//		if (from == null || to == null) {
+//			return null;
+//		}
+//		// if the arguments are the same, return immediately
+//		if (from.equals(to) || from.getInternalIdentificator() == to.getInternalIdentificator()) {
+//			return null;
+//		}
+//		
+//		// the size of the path should be smaller than quantity of all cliques
+//		int maxPathSize = getAssetNetwork().getJunctionTree().getCliques().size();
+//		
+//		// call recursive
+//		return this.visitCliques(from, to, new ArrayList<Clique>(maxPathSize), new HashSet<Clique>(maxPathSize));
+//		
+//	}
+	
+	
 }

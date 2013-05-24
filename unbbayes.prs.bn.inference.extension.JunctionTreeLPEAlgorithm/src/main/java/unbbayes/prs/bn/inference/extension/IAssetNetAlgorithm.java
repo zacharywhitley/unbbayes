@@ -1,8 +1,10 @@
 package unbbayes.prs.bn.inference.extension;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.AssetNetwork;
@@ -363,23 +365,45 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 */
 	public INode addDisconnectedNodeIntoAssetNet(INode nodeInProbNet, Graph probNet, AssetNetwork assetNet);
 	
+	/**
+	 * This method will attempt to connect nodes without re-compiling the network (re-generating junction tree).
+	 * By default, the network obtainable from {@link #getNetwork()} will be updated.
+	 * @param child : the child node (whose new arcs/edges will be pointing to)
+	 * @param parents : the parent nodes (whose new arcs/edges will be pointing from)
+	 * @param isToOptimizeForProbNetwork: if true, this method will assume that only probabilistic networks are being
+	 * used, and optimizations will be performed assuming that cliques are globally consistent and normalized.
+	 * <br/>
+	 * <br/>
+	 * CAUTION: ALWAYS USE FALSE IF YOU NEED TO USE THIS ALGORITHM TOGETHER WITH ANY KIND OF ASSET NETWORKS, BECAUSE ASSET NETWORKS
+	 * ARE NEITHER GLOBALLY CONSISTENT NOR NORMALIZED. NOTE THAT PASSING TRUE IN PROBABILISTIC NETWORKS AND FALSE AT 
+	 * ASSET NETWORKS MAY CAUSE THE JUNCTION TREES OF PROBABILITIES AND ASSETS TO BECOME DIFFERENT, CAUSING ERRORS,
+	 * SO USE FALSE AT BOTH IF YOU ARE USING ASSETS ANYWHERE.
+	 * <br/>
+	 * @return : the list of new edges created as a result of the execution of this method. 
+	 * Implementations may return null or empty if this method only changes the junction tree, without updating the Bayes net.
+	 * @throws UnsupportedOperationException if the implementation is not able to connect the nodes
+	 * specified in its arguments, mainly due to complexity.
+	 * @throws IllegalArgumentException : if the nodes specified in the arguments are not managed by this algorithm.
+	 * @throws InvalidParentException : if the provided parent is not consistent. See {@link unbbayes.prs.Network#addEdge(Edge)}
+	 */
+	public List<Edge> addEdgesToNet(INode child, List<INode> parents, boolean isToOptimizeForProbNetwork) throws UnsupportedOperationException, IllegalArgumentException,InvalidParentException;
 	
 	/**
 	 * Finds the shortest path from a clique to another clique (regardless of direction of the connections
 	 * - parent or children) in a junction tree.
 	 * By default, the junction tree of {@link #getNetwork()} will be used for the search.
-	 * @param from : clique to start search from
-	 * @param to : clique to end search
-	 * @return - null: if there was no path (this is supposedly impossible in a consistent junction tree, but may happen if
+	 * @param from : set of nodes to be contained in the clique to start search from
+	 * @param to : set of nodes to be contained in the clique to end search
+	 * @return - empty: if there was no path (this is supposedly impossible in a consistent junction tree, but may happen if
 	 * tree is disconnected - with no empty separator connecting cliques - or the junction tree did not exist at all),
 	 * or when "from" is equal to "to".
 	 * <br/>
-	 * - Empty list: if the two cliques provided in the argument were directly connected.
+	 * - Non-empty list: the list of cliques pertaining to the path between the cliques provided in the argument.
+	 * If the list contains only 1 element, this means that all nodes were in the same clique.
 	 * <br/>
-	 * - Non-empty list: the list of cliques pertaining to the path between the cliques provided in the argument, but
-	 * not including the cliques in the arguments.
-	 * 
+	 * <br/>
+	 * This method shall not return null.  
 	 */
-	public List<Clique> findShortestJunctionTreePath(Clique from, Clique to);
+	public List<Clique> findShortestJunctionTreePath(Collection<INode> from, Collection<INode> to);
 	
 }

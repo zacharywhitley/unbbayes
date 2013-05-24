@@ -265,12 +265,26 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/** If true, {@link PrintNetStatisticsNetworkAction} will be inserted into the actions to be executed in {@link #commitNetworkActions(long, boolean)}
 	 * immediately after the last occurrence of {@link StructureChangeNetworkAction} */
 	private boolean isToPrintNetStatisticsAfterLastStructureChange = false;
+	
+	/** When true, {@link #addQuestionAssumption(Long, Date, long, List, List)} won't try to re-run the trades.
+	 * however, when {@link #isToAddArcsOnlyToProbabilisticNetwork()} is false, this may result in a non-optimal BN. */
+	private boolean isToAddArcsWithoutReboot = true;
+	
+	/** If this is true and {@link #isToAddArcsWithoutReboot()} is also true, then an algorithm for
+	 * adding arcs without re-running the history will be executed, and the resulting BN will be near optimal,
+	 * because for probabilistic networks it is easier to do such optimization. */
+	private boolean isToAddArcsOnlyToProbabilisticNetwork = false;
 
 	/** If true, {@link #doBalanceTrade(Long, Date, String, long, long, List, List)} will just return for uninitialized 
 	 * users which has no position even after other (non-executed) actions the same transaction */
 	private boolean isToAddUninitializedUserInBalanceTradeOfHugeTransaction = true;
 
-	private Map<Long, Set<Long>> questionsToBeCreatedInTransaction = new HashMap<Long, Set<Long>>(); 
+	private Map<Long, Set<Long>> questionsToBeCreatedInTransaction = new HashMap<Long, Set<Long>>();
+
+	/** If true, probabilities will be printed after execution of actions */
+	private boolean isToPrintProbs = false;
+
+	private boolean isToPrintRootClique = false;   
 	
 	
 	/**
@@ -662,47 +676,25 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				
 				// actually run action
 				try {
-//					if (action.getUserId() != null && action.getUserId().longValue() == 3487L && action.getQuestionId() != null && action.getQuestionId().longValue() == 208L) {
-//						try {
-//							AssetNetwork assetNetwork = getAlgorithmAndAssetNetFromUserID(action.getUserId()).getAssetNetwork();
-//							System.out.println(i+" [Before] User = " + assetNetwork);
-//							for (Clique clique : assetNetwork.getJunctionTree().getCliquesContainingAllNodes((List)Collections.singletonList(assetNetwork.getNode(action.getQuestionId().toString())), Integer.MAX_VALUE)) {
-//								System.out.println(i+" [Before] Clique = " + clique);
-//								System.out.print("[ ");
-//								for (float asset : clique.getProbabilityFunction().getValues()) {
-//									System.out.print( asset  + " , ");
-//								}
-//								System.out.print(" ]");
-//							}
-//							System.out.println(i+" [Before] Score = " + scoreUserEv(action.getUserId(), null, null));
-//							System.out.println(i+" [Before] Cash = " + getCash(action.getUserId(), null, null));
-//							System.out.println(i+" [Before] Score per state of Q" + action.getQuestionId() +  " = " + scoreUserQuestionEvStates(action.getUserId(), action.getQuestionId(), null, null));
-//						} catch (Exception e) {
-//							e.printStackTrace();
-//						}
-//						
-//					}
 					action.execute();
-//					if (action.getUserId() != null && action.getUserId().longValue() == 3487L && action.getQuestionId() != null && action.getQuestionId().longValue() == 208L) {
-//						try {
-//							AssetNetwork assetNetwork = getAlgorithmAndAssetNetFromUserID(action.getUserId()).getAssetNetwork();
-//							System.out.println(i+ "[After] User = " + assetNetwork);
-//							for (Clique clique : assetNetwork.getJunctionTree().getCliquesContainingAllNodes((List)Collections.singletonList(assetNetwork.getNode(action.getQuestionId().toString())), Integer.MAX_VALUE)) {
-//								System.out.println(i+ "[After] Clique = " + clique);
-//								System.out.print("[ ");
-//								for (float asset : clique.getProbabilityFunction().getValues()) {
-//									System.out.print( asset  + " , ");
-//								}
-//								System.out.print(" ]");
-//							}
-//							System.out.println(i+ "[After] Score = " + scoreUserEv(action.getUserId(), null, null));
-//							System.out.println(i+ "[After] Cash = " + getCash(action.getUserId(), null, null));
-//							System.out.println(i+ "[After] Score per state of Q" + action.getQuestionId() +  " = " + scoreUserQuestionEvStates(action.getUserId(), action.getQuestionId(), null, null));
-//						} catch (Exception e) {
-//							e.printStackTrace();
-//						}
-//						
-//					}
+					if (isToPrintProbs) {
+						// print date, isBalance, marginals
+						System.out.print(action.getWhenCreated().toString());
+						System.out.print(","+((action instanceof BalanceTradeNetworkAction)?"balance":((action instanceof ResolveQuestionNetworkAction)?"resolve":"trade")));
+						for (Node node : getProbabilisticNetwork().getNodes()) {
+							for (int j = 0; j < node.getStatesSize(); j++) {
+								System.out.print(","+((TreeVariable)node).getMarginalAt(j));
+							}
+						}
+						
+						if (isToPrintRootClique) {
+							PotentialTable table = getProbabilisticNetwork().getJunctionTree().getCliques().get(0).getProbabilityFunction();
+							for (int j = 0; j < table.tableSize(); j++) {
+								System.out.print("," + table.getValue(j));
+							}
+						}
+						System.out.println();
+					}
 				} catch (ZeroAssetsException z) {
 					// do not consider this action anymore
 					removeNetworkActionFromQuestionMap(action, action.getQuestionId());
@@ -1488,12 +1480,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public NetworkAction getCorrectedTrade() {return null; }
 		/** From Jan 2013, adding disconnected questions does not trigger another rebuild, unless network was not compiled yet */
 		public boolean isTriggerForRebuild() { 
+			// check whether network is initialized (junction tree was created) or not
 			synchronized (getProbabilisticNetwork()) {
 				if (getProbabilisticNetwork().getJunctionTree() == null || getProbabilisticNetwork().getJunctionTree().getCliques() == null
 						|| getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty()) {
+					// network was not initialized, so needs to rebuild net
 					return true;
 				}
 			}
+			// network was initialized, so no need to rebuild it from scratch, so do not return flag to rebuild
 			return false; 
 		}
 		/**
@@ -1520,8 +1515,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addQuestionAssumption(long, java.util.Date, long, long, java.util.List)
+	 * @see MarkovEngineImpl#isToAddArcsWithoutReboot()
 	 */
 	public boolean addQuestionAssumption(Long transactionKey, Date occurredWhen, long childQuestionId, List<Long> parentQuestionIds,  List<Float> cpd) throws IllegalArgumentException {
 		// initial assertions
@@ -1686,6 +1682,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * Represents a network action for adding a direct dependency (edge) into a BN.
 	 * @author Shou Matsumoto
 	 * @see MarkovEngineImpl#addQuestionAssumption(long, Date, long, long, List)
+	 * @see MarkovEngineImpl#isToAddArcsWithoutReboot()
 	 */
 	public class AddQuestionAssumptionNetworkAction extends StructureChangeNetworkAction {
 		private static final long serialVersionUID = -6698600239325323921L;
@@ -1723,6 +1720,88 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 */
 		public void execute(ProbabilisticNetwork network) {
 			long currentTimeMillis = System.currentTimeMillis();
+			
+			// the conditions that we need to reboot (re-run trades) are in the following if-clause. 
+			// The condition cpd == null indicates that we are not substituting any arc (if cpd != null, then we are trying to substitute arcs)
+			if (isToAddArcsWithoutReboot() && !isTriggerForRebuild()) {
+				// we need to change structure and junction tree without rebuilding and re-running trades
+				// extract the object responsible for managing the probabilistic network alone.
+				AssetAwareInferenceAlgorithm probAlgorithm = getDefaultInferenceAlgorithm();
+				
+				// extract child node and parent nodes to be used by probabilistic network
+				INode child = null;
+				List<INode> parents = new ArrayList<INode>(assumptiveQuestionIds.size());
+				synchronized (network) {
+					// the child node
+					child = network.getNode(Long.toString(sourceQuestionId));
+					// the parent nodes
+					for (Long assumptiveQuestionId : assumptiveQuestionIds) {
+						INode parent = network.getNode(Long.toString(assumptiveQuestionId));
+						parents.add(parent);
+					}
+				}
+				
+				if (isToAddArcsOnlyToProbabilisticNetwork()) {
+					// reset users, because changing probabilistic network without changing asset network will make the algorithm inconsistent anyway.
+					synchronized (getUserToAssetAwareAlgorithmMap()) {
+						getUserToAssetAwareAlgorithmMap().clear();
+					}
+					// run method that adds arcs assuming that we are only changing probabilistic network
+					synchronized (probAlgorithm) {
+						try {
+							// true means optimizations will be performed assuming that only prob net will be changed
+							probAlgorithm.addEdgesToNet(child, parents, true);
+						} catch (InvalidParentException e) {
+							// TODO do not use exception translation
+							throw new RuntimeException(e);
+						}	
+					}
+				} else {
+					// call AssetAwareInferenceAlgorithm#addEdgesToNet to update shared probabilistic net
+					synchronized (probAlgorithm) {
+						// call method not using assumption of global consistency and normalization (i.e. use false),
+						// so that it results in same junction tree of asset networks
+						try {
+							probAlgorithm.addEdgesToNet(child, parents, false);
+						} catch (InvalidParentException e) {
+							// TODO do not use exception translation
+							throw new RuntimeException(e);
+						}	
+					}
+					// call AssetPropagationInferenceAlgorithm#addEdgesToNet to update each user's asset net
+					synchronized (getUserToAssetAwareAlgorithmMap()) {
+						for (AssetAwareInferenceAlgorithm userAlgorithm : getUserToAssetAwareAlgorithmMap().values()) {
+							try {
+								// no need to use asset nodes in the arguments, because AssetPropagationInferenceAlgorithm automatically converts.
+								userAlgorithm.getAssetPropagationDelegator().addEdgesToNet(child, parents, false);
+							} catch (InvalidParentException e) {
+								// TODO do not use exception translation
+								throw new RuntimeException(e);
+							}	
+						}
+					}
+				}
+			} else {
+				// the network will be compiled and trades will be re-executed afterwards
+				this.addArcsAssumingReboot(network);
+			}
+			try {
+				Debug.println(getClass(), "Executed add assumption, " + ((System.currentTimeMillis()-currentTimeMillis)));
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			
+			
+		}
+		
+		/**
+		 * This template method implements the logic of {@link #execute(ProbabilisticNetwork)}
+		 * when {@link MarkovEngineImpl#isToAddArcsWithoutReboot()} == false.
+		 * Therefore, this method adds arcs to the Bayes net assuming that the caller
+		 * will reboot (rebuild the junction tree and re-run trades) afterwards.
+		 * @param network
+		 */
+		protected void addArcsAssumingReboot(ProbabilisticNetwork network) {
 			ProbabilisticNode child;	// this is the main node (the main question we are modifying)
 			
 			synchronized (network) {
@@ -1772,12 +1851,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					new NormalizeTableFunction().applyFunction((ProbabilisticTable) potTable);
 				}
 			}
-			try {
-				Debug.println(getClass(), "Executed add assumption, " + ((System.currentTimeMillis()-currentTimeMillis)));
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
 		}
+		
 		public void revert() throws UnsupportedOperationException {
 			throw new UnsupportedOperationException("Reverting an addQuestion operation is not supported yet.");
 		}
@@ -1815,8 +1890,40 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public Integer getSettledState() {return null;}
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
-		/** On Jan 2013, adding arcs is the only trigger for rebuild */
-		public boolean isTriggerForRebuild() { return true; }
+		/** Adding arcs will trigger a reboot if {@link MarkovEngineImpl} is configured to reboot after adding arcs or network is uninitialized */
+		public boolean isTriggerForRebuild() { 
+			// if it is configured not to add arcs without reboot, then immediately return that we shall rebuild net
+			if (!isToAddArcsWithoutReboot()) {
+				return true;
+			}
+			// if cpd was specified, then we need to replace arcs, but that's only possible in this implementation by rebooting and rerunning trades
+			if (cpd != null) {
+				return true;
+			}
+			
+			// if it is configured to delete resolved questions, then arcs may be involving deleted questions
+			if (isToDeleteResolvedNode()) {
+				// if arcs are being added to resolved questions, nodes may not be present anymore, and in this case we need to reboot
+				if (getResolvedQuestions().containsKey(sourceQuestionId)) {
+					return true;
+				}
+				for (Long assumptionId : assumptiveQuestionIds) {
+					if (getResolvedQuestions().containsKey(assumptionId)) {
+						return true;
+					}
+				}
+			}
+			// or else, check that network was initialized (junction tree was created) already.
+			synchronized (getProbabilisticNetwork()) {
+				if (getProbabilisticNetwork().getJunctionTree() == null || getProbabilisticNetwork().getJunctionTree().getCliques() == null
+						|| getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty()) {
+					// network not initialized yet, so need to rebuild
+					return true;
+				}
+			}
+			// network is initialized already, and engine is configured to add arcs without reboot, so do not return flag to rebuild
+			return false; 
+		}
 		public long getWhenCreatedMillis() {
 			return occurredWhen;
 		}
@@ -2513,6 +2620,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * be compared to the current clique tables.
 	 */
 	protected void addToLastNCliquePotentialMap(NetworkAction parentAction, Map<Clique, PotentialTable> previousCliquePotentials) {
+		if (getMaxConditionalProbHistorySize() <= 0) {
+			return;
+		}
 //		Debug.println(getClass(), "\n\n!!!Entered addToLastNCliquePotentialMap\n\n");
 		// iterate on all cliques and compare differences
 		for (Clique clique : previousCliquePotentials.keySet()) {
@@ -5158,6 +5268,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 			}
 			if (isDifferent) {	// must do a corrective trade
+				if (isToPrintProbs) {
+					System.err.println("Expected prob before trade is " + oldValues + ", but was "+ condProbBeforeTrade);
+				}
 				// use a house account (with infinite assets) in order to do the corrective trade
 				AssetAwareInferenceAlgorithm houseAccountAlgorithm = algorithm;
 				if (algorithm.getNetwork() == getProbabilisticNetwork()) {
@@ -5578,7 +5691,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 				List<Float> balancingTrade = this.previewBalancingTrade(userAssetAlgorithm, questionId, fullAssumptionIds, fullAssumedStates, clique, table, isToAllowNegative);
 				// the name of the asset net is supposedly the user ID
-				if (balancingTrade != null && !balancingTrade.isEmpty()) {
+				if (balancingTrade != null && !balancingTrade.isEmpty() && !balancingTrade.contains(Float.NaN)) {
 					ret.add(new CliqueSensitiveTradeSpecificationImpl(Long.parseLong(userAssetAlgorithm.getAssetNetwork().getName()), questionId, balancingTrade, fullAssumptionIds, fullAssumedStates, clique));
 				}
 			}
@@ -6457,8 +6570,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new RuntimeException("Could not obtain probability of question " + questionId + ", with assumptions = " + assumptionIds + ", states = " + assumedStates);
 		}
 		if (probList.contains(0f)) {
-			throw new IllegalArgumentException("Attempted to balance question " + questionId + " given assumptions " + assumptionIds
-					+ ". At least one of the questions was already resolved.");
+			return null;
+//			throw new IllegalArgumentException("Attempted to balance question " + questionId + " given assumptions " + assumptionIds
+//					+ ". At least one of the questions was already resolved.");
 		}
 		
 		// obtain q1, q1, ... , qn (the asset's q values)
@@ -10146,6 +10260,101 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	protected void setQuestionsToBeCreatedInTransaction(
 			Map<Long, Set<Long>> questionsToBeCreatedInTransaction) {
 		this.questionsToBeCreatedInTransaction = questionsToBeCreatedInTransaction;
+	}
+
+	/**
+	 * When true, {@link #addQuestionAssumption(Long, Date, long, List, List)} won't try to re-run the trades.
+	 * however, when {@link #isToAddArcsOnlyToProbabilisticNetwork()} is false, this may result in a non-optimal BN.
+	 * <br/>
+	 * <br/>
+	 * The following conditions are not supported entirely, so they may still require reboot:
+	 * <br/>
+	 * - non null cpd is provided in {@link #addQuestionAssumption(Long, Date, long, List, List)}: non null
+	 * cpd means that arcs will be substituted, but that's not supported by the algorithm which adds arcs
+	 * without rebooting. Therefore, this may reboot the engine.
+	 * <br/>
+	 * - arcs are added to resolved nodes: resolved nodes are usually removed from the shared Bayes net,
+	 * so the algorithm for adding arcs without rebooting may not be able to properly handle such request,
+	 * therefore, this may trigger a reboot.
+	 * @return the isToAddArcsWithoutReboot
+	 */
+	public boolean isToAddArcsWithoutReboot() {
+		return this.isToAddArcsWithoutReboot;
+	}
+
+	/**
+	 * When true, {@link #addQuestionAssumption(Long, Date, long, List, List)} won't try to re-run the trades.
+	 * however, when {@link #isToAddArcsOnlyToProbabilisticNetwork()} is false, this may result in a non-optimal BN.
+	 * <br/>
+	 * <br/>
+	 * The following conditions are not supported entirely, so they may still require reboot:
+	 * <br/>
+	 * - non null cpd is provided in {@link #addQuestionAssumption(Long, Date, long, List, List)}: non null
+	 * cpd means that arcs will be substituted, but that's not supported by the algorithm which adds arcs
+	 * without rebooting. Therefore, this may reboot the engine.
+	 * <br/>
+	 * - arcs are added to resolved nodes: resolved nodes are usually removed from the shared Bayes net,
+	 * so the algorithm for adding arcs without rebooting may not be able to properly handle such request,
+	 * therefore, this may trigger a reboot.
+	 * @param isToAddArcsWithoutReboot the isToAddArcsWithoutReboot to set
+	 */
+	public void setToAddArcsWithoutReboot(boolean isToAddArcsWithoutReboot) {
+		this.isToAddArcsWithoutReboot = isToAddArcsWithoutReboot;
+	}
+
+	/**
+	 * If this is true and {@link #isToAddArcsWithoutReboot()} is also true, then an algorithm for
+	 * adding arcs without re-running the history will be executed, and the resulting BN will be near optimal,
+	 * because for probabilistic networks it is easier to do such optimization.
+	 * @return the isToAddArcsOnlyToProbabilisticNetwork
+	 */
+	public boolean isToAddArcsOnlyToProbabilisticNetwork() {
+		return this.isToAddArcsOnlyToProbabilisticNetwork;
+	}
+
+	/**
+	 * If this is true and {@link #isToAddArcsWithoutReboot()} is also true, then an algorithm for
+	 * adding arcs without re-running the history will be executed, and the resulting BN will be near optimal,
+	 * because for probabilistic networks it is easier to do such optimization.
+	 * @param isToAddArcsOnlyToProbabilisticNetwork the isToAddArcsOnlyToProbabilisticNetwork to set
+	 */
+	public void setToAddArcsOnlyToProbabilisticNetwork(
+			boolean isToAddArcsOnlyToProbabilisticNetwork) {
+		this.isToAddArcsOnlyToProbabilisticNetwork = isToAddArcsOnlyToProbabilisticNetwork;
+	}
+
+	/**
+	 * If true, probabilities will be printed after execution of actions like a csv file
+	 * @return the isToPrintProbs
+	 */
+	protected boolean isToPrintProbs() {
+		return isToPrintProbs;
+	}
+
+	/**
+	 * If true, probabilities will be printed after execution of actions, like a csv
+	 * @param isToPrintProbs the isToPrintProbs to set
+	 */
+	protected void setToPrintProbs(boolean isToPrintProbs) {
+		this.isToPrintProbs = isToPrintProbs;
+	}
+
+	/**
+	 * If this is true and {@link #isToPrintProbs()} == true,
+	 * then clique potential of root clique will be printed as well.
+	 * @return the isToPrintRootClique
+	 */
+	protected boolean isToPrintRootClique() {
+		return isToPrintRootClique;
+	}
+
+	/**
+	 * If this is true and {@link #isToPrintProbs()} == true,
+	 * then clique potential of root clique will be printed as well.
+	 * @param isToPrintRootClique the isToPrintRootClique to set
+	 */
+	protected void setToPrintRootClique(boolean isToPrintRoot) {
+		this.isToPrintRootClique = isToPrintRoot;
 	}
 
 

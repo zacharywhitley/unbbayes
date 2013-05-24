@@ -110,7 +110,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static float probResolve = 0.03f;//0.1f;
 
 	/** probability to balance a trade */
-	private static float probToBalance = 0.3f;//0.1f;
+	private static float probToBalance = 0f;//0.3f;//0.1f;
 
 	/** probability to add cash */
 	private static float probToAddCash = 0.3f;//.2f;
@@ -752,6 +752,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		engines.add(BruteForceMarkovEngine.getInstance(2f, 100f, 100f));
 //		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 100f));
 //		engines.get(engines.size()-1).setToDeleteResolvedNode(false);
+		engines.get(engines.size()-1).setToAddArcsWithoutReboot(false);
 		
 		
 //		engines.add(CPTBruteForceMarkovEngine.getInstance(2f, 100f, 100f));
@@ -767,12 +768,15 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		engines.get(engines.size()-1).setToCompareProbOnRebuild(true);
 		engines.get(engines.size()-1).setToCollapseSimilarBalancingTrades(false);
 		engines.get(engines.size()-1).setToUseCorrectiveTrades(false);
+		engines.get(engines.size()-1).setToAddArcsWithoutReboot(false);
+		
 		
 		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 100f));
 		engines.get(engines.size()-1).setToThrowExceptionOnInvalidAssumptions(true);
 		engines.get(engines.size()-1).setToCompareProbOnRebuild(true);
 		engines.get(engines.size()-1).setToCollapseSimilarBalancingTrades(true);
 		engines.get(engines.size()-1).setToUseCorrectiveTrades(true);
+		engines.get(engines.size()-1).setToAddArcsWithoutReboot(true);
 		
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();
