@@ -284,7 +284,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/** If true, probabilities will be printed after execution of actions */
 	private boolean isToPrintProbs = false;
 
-	private boolean isToPrintRootClique = false;   
+	private boolean isToPrintRootClique = false;
+
+	private boolean isToTraceHistory = true;   
 	
 	
 	/**
@@ -722,6 +724,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// remove from index of questions being created in transaction
 			synchronized (getQuestionsToBeCreatedInTransaction()) {
 				getQuestionsToBeCreatedInTransaction().remove(transactionKey);
+			}
+			
+			// if it is configured not to use history, then clear it here.
+			// TODO fix strong dependencies of methods in NetworkAction to getExecutedActions(), so that they can work without it as well
+			if (!isToTraceHistory()) {
+				synchronized (getExecutedActions()) {
+					getExecutedActions().clear();
+				}
 			}
 			
 		}	// release lock to actions
@@ -1828,7 +1838,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// add edge into the network
 					try {
 						network.addEdge(edge);
-					} catch (InvalidParentException e) {
+					} catch (Exception e) {
 						throw new RuntimeException("Could not add edge from " + parent + " to " + child, e);
 					}
 				}
@@ -2179,7 +2189,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * @see #execute(boolean) */
 		public void execute() {
 			long currentTimeMillis = System.currentTimeMillis();
-			this.execute(true);
+			this.execute(!isToAddArcsOnlyToProbabilisticNetwork);	// only update assets if it is not configured to update only prob network
 			try {
 				Debug.println(getClass(), "Executed trade, " + ((System.currentTimeMillis()-currentTimeMillis)));
 			} catch (Throwable t) {
@@ -2512,6 +2522,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see MarkovEngineImpl#addNetworkActionIntoQuestionMap(NetworkAction, Long)
 	 */
 	protected List<VirtualTradeAction> addVirtualTradeIntoMarginalHistory( NetworkAction parentAction, Map<Long, List<Float>> marginalsBefore) {
+		if (!isToTraceHistory()) {
+			return Collections.emptyList();
+		}
 //		Debug.println(getClass(), "\n\n!!!Entered addVirtualTradeIntoMarginalHistory\n\n");
 		List<VirtualTradeAction> ret = new ArrayList<VirtualTradeAction>();
 		// get the marginals after trade
@@ -2566,6 +2579,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * This is the same of {@link #addVirtualTradeIntoMarginalHistory(NetworkAction, Map)}, but specialized for {@link ResolveQuestionNetworkAction}
 	 */
 	protected List<DummyTradeAction> addVirtualTradeIntoMarginalHistory( ResolveQuestionNetworkAction parentAction, Map<Long, List<Float>> marginalsBefore) {
+		if (!isToTraceHistory()) {
+			return Collections.emptyList();
+		}
 //		Debug.println(getClass(), "\n\n!!!Entered addVirtualTradeIntoMarginalHistory for ResolveQuestionNetworkAction\n\n");
 		List<DummyTradeAction> ret = new ArrayList<MarkovEngineImpl.DummyTradeAction>();
 		// get the marginals after trade
@@ -3890,10 +3906,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
 		
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			return null;
+		}
+		
 		// initial assertion
 		if (assumptionIds != null && assumptionIds.contains(questionId)) {
 			throw new IllegalArgumentException("Question " + questionId + " should not assume itself: " + assumptionIds);
 		}
+		
 		
 		// check that user was created (lazily or completely)
 		List<Float> unitializedAssets = getListOfAssetsOfLazyOrUnInitializedUser(userId, questionId, assumptionIds, assumedStates);
@@ -4182,6 +4203,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public List<Float> getEditLimits(long userId, long questionId,
 			int questionState, List<Long> assumptionIds,
 			List<Integer> assumedStates) throws IllegalArgumentException {
+		
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			// return a list indicating all possible probabilities are allowed (i.e. from 0 to 1)
+			List<Float> ret = new ArrayList<Float>(2);
+			ret.add(0f);
+			ret.add(1f);
+			return ret;
+		}
+		
 		// initial assertion: check consistency of assumptionIds and assumedStates
 		if (assumptionIds != null) {
 			if ( assumedStates == null) {
@@ -4327,6 +4357,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getCash(long, java.util.List, java.util.List)
 	 */
 	public float getCash(long userId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			return Float.NaN;
+		}
+		
 		// initial assertion: assert that the bayes net was compiled
 		if (getProbabilisticNetwork() == null || getProbabilisticNetwork().getJunctionTree() == null) {
 			throw new IllegalStateException("The Bayes net was not initialized. Nodes must be added.");
@@ -4415,6 +4449,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public float scoreUserQuestionEv(long userId, Long questionId,
 			List<Long> assumptionIds, List<Integer> assumedStates)
 			throws IllegalArgumentException {
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			return Float.NaN;
+		}
+		
 		/*
 		 * Note:
 		 * Expected[ Expected( Assets(X=x1|A) ) + ... + Expected( Assets(X=xn|A) ) ] 
@@ -4443,6 +4481,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUserQuestionEvStates(long, long, java.util.List, java.util.List)
 	 */
 	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			return null;
+		}
 		// do not compute expected score locally (i.e. compute globally)
 		return this.scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates, false);
 	}
@@ -4452,6 +4493,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public List<Float> scoreUserQuestionEvStates(long userId, long questionId, 
 			List<Long>assumptionIds, List<Integer> assumedStates, boolean isToComputeLocally) throws IllegalArgumentException {
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			return null;
+		}
 		// TODO not to recalculate values in disconnected cliques, because they are not likely to change
 		// initial assertion: if assumptions were specified and states were not specified
 		if (assumptionIds != null && assumedStates != null && assumedStates.size() != assumptionIds.size()) {
@@ -4617,6 +4661,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @throws IllegalArgumentException
 	 */
 	public List<Float> getCashPerStates(long userId, long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			return null;
+		}
+		
 		// initial assertion: if assumptions were specified and states were not specified
 		if (assumptionIds != null && assumedStates != null && assumedStates.size() != assumptionIds.size()) {
 			throw new IllegalArgumentException("Expected size of assumedStates is " + assumptionIds.size() + ", but was " + assumedStates.size());
@@ -4709,6 +4757,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#scoreUserEv(long, java.util.List, java.util.List)
 	 */
 	public float scoreUserEv(long userId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			return Float.NaN;
+		}
 		return this.scoreUserEv(userId, assumptionIds, assumedStates, null);
 	}
 	
@@ -4725,7 +4776,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see AssetAwareInferenceAlgorithm#calculateExpectedAssets()
 	 */
 	public float scoreUserEv(long userId, List<Long>assumptionIds, List<Integer> assumedStates, List<ExpectedAssetCellMultiplicationListener> assetCellListener) throws IllegalArgumentException {
-		
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			return Float.NaN;
+		}
 		// this map will contain names of nodes identified by assumptionIds and the respective states in assumedStates
 		Map<String, Integer> nodeNameToStateMap = new HashMap<String, Integer>();
 		
@@ -4857,6 +4910,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#previewTrade(edu.gmu.ace.daggre.TradeSpecification)
 	 */
 	public List<Float> previewTrade(TradeSpecification tradeSpecification) throws IllegalArgumentException {
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			return null;
+		}
 		return this.previewTrade(tradeSpecification.getUserId(), tradeSpecification.getQuestionId(), tradeSpecification.getProbabilities(), 
 				tradeSpecification.getAssumptionIds(), tradeSpecification.getAssumedStates());
 	}
@@ -4867,7 +4923,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Float> previewTrade(long userId, long questionId,List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
-		
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			return null;
+		}
 		// initial assertions
 		if (newValues == null || newValues.isEmpty()) {
 			throw new IllegalArgumentException("newValues cannot be empty or null");
@@ -6346,6 +6404,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public List<TradeSpecification> previewBalancingTrades(long userId, long questionId, List<Long> originalAssumptionIds, 
 			List<Integer> originalAssumedStates) throws IllegalArgumentException {
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			return Collections.emptyList();
+		}
 		// value to return
 		List<TradeSpecification> balancingTrades =  new ArrayList<TradeSpecification>();
 		
@@ -6469,7 +6530,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#previewBalancingTrade(long, long, java.util.List, java.util.List)
 	 */
 	public List<Float> previewBalancingTrade(long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
-		
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			return Collections.emptyList();
+		}
 		// if user was not initialized, then we do not need to balance (i.e. return a trade which does not change probability)
 		synchronized (getUserToAssetAwareAlgorithmMap()) {
 			if (isToLazyInitializeUsers() && !getUserToAssetAwareAlgorithmMap().containsKey(userId)) {
@@ -6816,7 +6879,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#doBalanceTrade(java.lang.Long, java.util.Date, java.lang.String, long, long, java.util.List, java.util.List)
 	 */
 	public boolean doBalanceTrade(Long transactionKey, Date occurredWhen, String tradeKey, long userId, long questionId, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException, InvalidAssumptionException, InexistingQuestionException {
-		
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			throw new UnsupportedOperationException("Balancing trades can only be performed when assets are managed by this engine. Please, turn the flag \"isToAddArcsOnlyToProbabilisticNetwork\" on to enable assets.");
+		}
 		// initial assertions
 		if (occurredWhen == null) {
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
@@ -7792,6 +7857,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			if (getProbabilisticNetwork() == null || getProbabilisticNetwork().getJunctionTree() == null) {
 				throw new IllegalStateException("Failed to initialize user " + userID + ", because the shared Bayesian Network was not properly initialized. Please, initialize network and commit transaction.");
 			}
+		}
+		
+		// if engine is configured to update only the probabilistic network, then we don't need to bother with user's asset algorithms
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			// simply return the default (house account) algorithm, because it won't use assets by default
+			return getDefaultInferenceAlgorithm();
 		}
 		
 		// value to be returned
@@ -10300,6 +10371,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public void setToAddArcsWithoutReboot(boolean isToAddArcsWithoutReboot) {
 		this.isToAddArcsWithoutReboot = isToAddArcsWithoutReboot;
+		if (!isToAddArcsWithoutReboot) {
+			// if we are setting not to add arcs without reboot, then the related flag toAddArcsOnlyToProbabilisticNetwork also needs to be turned off
+			this.setToAddArcsOnlyToProbabilisticNetwork(false);
+		}
 	}
 
 	/**
@@ -10321,6 +10396,29 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public void setToAddArcsOnlyToProbabilisticNetwork(
 			boolean isToAddArcsOnlyToProbabilisticNetwork) {
 		this.isToAddArcsOnlyToProbabilisticNetwork = isToAddArcsOnlyToProbabilisticNetwork;
+		if (isToAddArcsOnlyToProbabilisticNetwork == true) {
+			// setting this flag to true must also set isToAddArcsWithoutReboot to true
+			this.setToAddArcsWithoutReboot(true);
+			// reset all mappings and indexes related to user assets, because they won't be used anymore
+			synchronized (getUserToAssetAwareAlgorithmMap()) {
+				getUserToAssetAwareAlgorithmMap().clear();
+			}
+			
+			// map of users loaded lazily also needs to be reset, because users aren't important when we are only managing prob network
+			setUninitializedUserToAssetMap(new HashMap<Long, Float>());
+			
+			// mapping of cash gains per resolved questions are also unnecessary when users are not present
+			setUserIdToResolvedQuestionCashGainMap(new HashMap<Long, Map<Long,Float>>());
+			// same reason of the above mapping
+			setUserIdToResolvedQuestionCashBeforeMap(new HashMap<Long, Map<Long,Float>>());
+			
+			// if we are only handling prob network, then the requirements indicates that we won't be using history too.
+			this.setToTraceHistory(false);
+			
+			// do not update assets if isToAddArcsOnlyToProbabilisticNetwork == true
+			this.getDefaultInferenceAlgorithm().setToUpdateAssets(false);
+		}
+		
 	}
 
 	/**
@@ -10374,6 +10472,44 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	/**
+	 * If this flag is off, then history of trades will not be traced anymore.
+	 * In other words, methods like {@link #addVirtualTradeIntoMarginalHistory(ResolveQuestionNetworkAction, Map)}
+	 * or {@link #addVirtualTradeIntoMarginalHistory(NetworkAction, Map)} and
+	 * {@link #getQuestionHistory(Long, List, List)} or {@link #getExecutedActions()}
+	 * will return immediately.
+	 * @return the isToTraceHistory
+	 */
+	public boolean isToTraceHistory() {
+		return isToTraceHistory;
+	}
+
+	/**
+	 * If this flag is off, then history of trades will not be traced anymore.
+	 * In other words, methods like {@link #addVirtualTradeIntoMarginalHistory(ResolveQuestionNetworkAction, Map)}
+	 * or {@link #addVirtualTradeIntoMarginalHistory(NetworkAction, Map)} and
+	 * {@link #getQuestionHistory(Long, List, List)} or {@link #getExecutedActions()}
+	 * will return immediately.
+	 * @param isToTraceHistory the isToTraceHistory to set
+	 */
+	public void setToTraceHistory(boolean isToTraceHistory) {
+		this.isToTraceHistory = isToTraceHistory;
+		if (!isToTraceHistory) {
+			// if this flag is off, history shall not be stored anymore
+			setMaxConditionalProbHistorySize(0);
+			getExecutedActions().clear();
+			
+			// reset map which manages which questions have trades from a given user
+			setTradedQuestionsMap(new HashMap<Long, Set<Long>>());
+			
+			// if we are only using probabilistic network, we won't be storing history of trades (it is not required, so let's not use space)
+			setLastNCliquePotentialMap(new HashMap<Clique, List<ParentActionPotentialTablePair>>());
+			
+			// also stop tracing virtual trades, because storing history is not required
+			setVirtualTradeToAffectedQuestionsMap(new HashMap<VirtualTradeAction, Set<Long>>());
+		}
 	}
 
 

@@ -813,6 +813,10 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 		
 		// update new separators. This can be done simply by marginalizing out (sum) from neighbor cliques (because global consistency supposedly holds)
 		for (Separator sep : newJT.getSeparators()) {
+			if (sep.getNodes().size() <= 0) {
+				// there is no need to update empty separators
+				continue;
+			}
 			
 			// obtain one of the neighbor clique (any one will do the job)
 			Clique clique = sep.getClique1();
@@ -839,6 +843,14 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 			}
 			
 			// TODO check if global consistency still holds
+		}
+		
+		// update marginal probabilities
+		for (Node node : net.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				ProbabilisticNode pnode = (ProbabilisticNode) node;
+				pnode.setMarginalProbabilities(mapOldMarginal.get(pnode));
+			}
 		}
 		
 		// return the generated edges

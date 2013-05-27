@@ -63,7 +63,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** Error margin used when comparing 2 asset (score) values. {@link CPTBruteForceMarkovEngine} have less precision.*/
 	public static final float ASSET_ERROR_MARGIN_CPT_BRUTE_FORC = 5f;
 
-	private static final int MAX_USER_NUM = 10;
+	private static int maxUserNum = 10;
 
 	private static final double MAX_CASH_TO_ADD = 200;
 
@@ -130,6 +130,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If true, assets and probabilities before and after {@link #createNode(Long, Network, List, List, List, Collection)} will be compared */
 	private boolean isToCompareValuesBeforeAndAfterCreateNode = true;//false;
 
+	/** If false, values related to assets won't be checked */
+	private static boolean isToCheckAssests = true;
 
 	/** If true, {@link MarkovEngineImpl#doBalanceTrade(Long, Date, String, long, long, List, List)} of 
 	 * {@link #runRandomTestSingleEngine(Network, List)} will balance the question entirely (consider all possible assumptions) */
@@ -1302,43 +1304,46 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					}
 				}
 				// assert that minimum before trade are the same
-				if (uncommittedTransactionsKeyMap == null || !uncommittedTransactionsKeyMap.containsKey(engine)) {
-					if (Math.abs(minBeforeTrade - engine.getCash(userId, null, null)) >
-					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
-						engines.get(0).getCash(userId, null, null);
-						engine.getCash(userId, null, null);
-					}
-					assertEquals(engine.toString(), minBeforeTrade, engine.getCash(userId, null, null), 
-							((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
-					if (new ArrayList<Long>(resolvedQuestions).removeAll(assumptionIds)) {
-						if (engine.isToDeleteResolvedNode()) {
-							// if assumption was resolved and engine is set to delete resolved nodes, then it cannot find the assumption
-							try {
-								float cash = engine.getCash(userId, assumptionIds, assumedStates);
-								fail(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates + ", cash = "+cash);
-							} catch (InexistingQuestionException e) {
-								// OK
-							}
+				if (isToCheckAssests) {
+					if (uncommittedTransactionsKeyMap == null || !uncommittedTransactionsKeyMap.containsKey(engine)) {
+						if (Math.abs(minBeforeTrade - engine.getCash(userId, null, null)) >
+						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
+							engines.get(0).getCash(userId, null, null);
+							engine.getCash(userId, null, null);
 						}
-					} else {
-						if (Math.abs(conditionalMinBeforeTrade - engine.getCash(userId, assumptionIds, assumedStates))
-								> ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
-							engines.get(0).getCash(userId, assumptionIds, assumedStates);
-							engine.getCash(userId, assumptionIds, assumedStates);
-						}
-						assertEquals(
-								engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
-								conditionalMinBeforeTrade, 
-								engine.getCash(userId, assumptionIds, assumedStates), 
+						assertEquals(engine.toString(), minBeforeTrade, engine.getCash(userId, null, null), 
 								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
+						if (new ArrayList<Long>(resolvedQuestions).removeAll(assumptionIds)) {
+							if (engine.isToDeleteResolvedNode()) {
+								// if assumption was resolved and engine is set to delete resolved nodes, then it cannot find the assumption
+								try {
+									float cash = engine.getCash(userId, assumptionIds, assumedStates);
+									fail(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates + ", cash = "+cash);
+								} catch (InexistingQuestionException e) {
+									// OK
+								}
+							}
+						} else {
+							if (Math.abs(conditionalMinBeforeTrade - engine.getCash(userId, assumptionIds, assumedStates))
+									> ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
+								engines.get(0).getCash(userId, assumptionIds, assumedStates);
+								engine.getCash(userId, assumptionIds, assumedStates);
+							}
+							assertEquals(
+									engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+									conditionalMinBeforeTrade, 
+									engine.getCash(userId, assumptionIds, assumedStates), 
+									((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
+						}
+						
+						scoreUserQuestionEvStatesBeforeTrade = engine.scoreUserQuestionEvStates(userId, questionId, assumptionsOfTrade, statesOfAssumption);
+						assertEquals(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+								(int)questionsToNumberOfStatesMap.get(questionId), 
+								(int)scoreUserQuestionEvStatesBeforeTrade.size()
+								);
 					}
-					
-					scoreUserQuestionEvStatesBeforeTrade = engine.scoreUserQuestionEvStates(userId, questionId, assumptionsOfTrade, statesOfAssumption);
-					assertEquals(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
-							(int)questionsToNumberOfStatesMap.get(questionId), 
-							(int)scoreUserQuestionEvStatesBeforeTrade.size()
-					);
 				}
+				
 				// check if the addTrade will throw exception when a user's cash goes below 0
 				if (pointWithin5PointTest == FivePointTestType.ABOVE_LIMIT || pointWithin5PointTest == FivePointTestType.BELOW_LIMIT) {
 					try {
@@ -1351,7 +1356,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 								newValues, 
 								assumptionsOfTrade, 
 								statesOfAssumption, 
-								false	// do not allow negative assets
+								!isToCheckAssests	// do not allow negative assets if we are checking the assets
 						);
 						fail(engine.toString() + userId + ", question = " + questionId + " , assumption=" + assumptionIds+ "=" + assumedStates + ", newValues="+newValues);
 					} catch (ZeroAssetsException e) {
@@ -1425,7 +1430,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				// do not compare results of uncommitted engines here. They will be compared later when all trades are finished
 				continue;
 			} else {
-				if (isToAssertConsistencyIn5PointTest ) {
+				if (isToAssertConsistencyIn5PointTest && isToCheckAssests) {
 					if (!(resolvedQuestions.contains(questionId) || new ArrayList<Long>(resolvedQuestions).removeAll(assumptionsOfTrade))) {
 						assertFalse( engine.toString() ,  returnOfTrade.isEmpty());
 					}
@@ -1443,26 +1448,28 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			// do some consistency check after trade
 			if (isToAssertConsistencyIn5PointTest ) {
 				scoreUserQuestionEvStatesAfterTrade = engine.scoreUserQuestionEvStates(userId, questionId, assumptionsOfTrade, statesOfAssumption);
-				assertEquals(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
-						(int)questionsToNumberOfStatesMap.get(questionId), 
-						(int)scoreUserQuestionEvStatesAfterTrade.size()
-				);
-				if (hasChangedProb) {
-					boolean hasChangedScore = false;
-					for (int j = 0; j < scoreUserQuestionEvStatesAfterTrade.size(); j++) {
+				if (isToCheckAssests) {
+					assertEquals(engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+							(int)questionsToNumberOfStatesMap.get(questionId), 
+							(int)scoreUserQuestionEvStatesAfterTrade.size()
+							);
+					if (hasChangedProb) {
+						boolean hasChangedScore = false;
+						for (int j = 0; j < scoreUserQuestionEvStatesAfterTrade.size(); j++) {
 //				float errorMargin = ASSET_ERROR_MARGIN;
-						float errorMargin = PROB_ERROR_MARGIN;
-						if (pointWithin5PointTest == FivePointTestType.BETWEEN_LIMITS) {
-							errorMargin = 0f;
+							float errorMargin = PROB_ERROR_MARGIN;
+							if (pointWithin5PointTest == FivePointTestType.BETWEEN_LIMITS) {
+								errorMargin = 0f;
+							}
+							hasChangedScore = hasChangedScore 
+									|| scoreUserQuestionEvStatesBeforeTrade.get(j) - errorMargin > scoreUserQuestionEvStatesAfterTrade.get(j)
+									|| scoreUserQuestionEvStatesBeforeTrade.get(j) < scoreUserQuestionEvStatesAfterTrade.get(j)  - errorMargin;
 						}
-						hasChangedScore = hasChangedScore 
-						|| scoreUserQuestionEvStatesBeforeTrade.get(j) - errorMargin > scoreUserQuestionEvStatesAfterTrade.get(j)
-						|| scoreUserQuestionEvStatesBeforeTrade.get(j) < scoreUserQuestionEvStatesAfterTrade.get(j)  - errorMargin;
+						assertTrue("["+ engines.indexOf(engine) + "]" + engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates
+								+ ", old = " + scoreUserQuestionEvStatesBeforeTrade + ", new = " + scoreUserQuestionEvStatesAfterTrade, 
+								hasChangedScore
+								);
 					}
-					assertTrue("["+ engines.indexOf(engine) + "]" + engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates
-							+ ", old = " + scoreUserQuestionEvStatesBeforeTrade + ", new = " + scoreUserQuestionEvStatesAfterTrade, 
-							hasChangedScore
-					);
 				}
 				
 				ScoreSummary scoreSummaryOrig= engines.get(0).getScoreSummaryObject(userId, questionId, assumptionIds, assumedStates);
@@ -1471,55 +1478,57 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				}
 				
 				minimum = engines.get(0).getCash(userId, null, null);
-				switch (pointWithin5PointTest) {
-				case BELOW_LIMIT:
-					if (minBeforeTrade > 0f) {
-						if (minimum > 0) {
-							minimum = engines.get(0).getCash(userId, null, null);
+				if (isToCheckAssests) {
+					switch (pointWithin5PointTest) {
+					case BELOW_LIMIT:
+						if (minBeforeTrade > 0f) {
+							if (minimum > 0) {
+								minimum = engines.get(0).getCash(userId, null, null);
+							}
+							assertTrue("User=" + userId+"," + engine.toString()+ ", min = " + minimum, minimum < 0 + ASSET_ERROR_MARGIN);
 						}
-						assertTrue("User=" + userId+"," + engine.toString()+ ", min = " + minimum, minimum < 0 + ASSET_ERROR_MARGIN);
-					}
-					break;
-				case ON_LOWER_LIMIT:
-					if (!isToCheckAssetsPreciselyOnLimit) {
+						break;
+					case ON_LOWER_LIMIT:
+						if (!isToCheckAssetsPreciselyOnLimit) {
+							break;
+						}
+						if (minBeforeTrade > 0f) {
+							if (Math.abs(minimum) > ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
+								minimum = engines.get(0).getCash(userId, null, null);
+							}
+							assertEquals("User=" + userId+"," + engines.indexOf(engine) + "-" +engine.toString(), 0f, minimum, 
+									((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
+						}
+						break;
+					case BETWEEN_LIMITS:
+						if (minBeforeTrade > 0f && isToCalculateEditLimit) {
+							if (minimum+ASSET_ERROR_MARGIN < 0 || (isStrictlyNonNegativeCash && minimum < 0)) {
+								minimum = engines.get(1).getCash(userId, null, null);
+							}
+							assertTrue("User=" + userId+"," + engine.toString()+ ", min = " + minimum, minimum >= (isStrictlyNonNegativeCash ?0:-ASSET_ERROR_MARGIN));
+						}
+						break;
+					case ON_UPPER_LIMIT:
+						if (!isToCheckAssetsPreciselyOnLimit) {
+							break;
+						}
+						if (minBeforeTrade > 0f) {
+							if (Math.abs(minimum) > ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
+								minimum = engines.get(0).getCash(userId, null, null);//engines.get(0).addCash(null, new Date(), userId, -minimum, "")
+							}
+							assertEquals("User=" + userId+"," + engines.indexOf(engine) + "-" +engine.toString(), 0f, minimum, 
+									((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
+						}
+						break;
+					case ABOVE_LIMIT:
+						if (minBeforeTrade > 0f) {
+							if (minimum > 0) {
+								minimum = engines.get(0).getCash(userId, null, null);
+							}
+							assertTrue("User=" + userId+"," + engine.toString()+ ", min = " + minimum, minimum < 0+ASSET_ERROR_MARGIN);
+						}
 						break;
 					}
-					if (minBeforeTrade > 0f) {
-						if (Math.abs(minimum) > ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
-							minimum = engines.get(0).getCash(userId, null, null);
-						}
-						assertEquals("User=" + userId+"," + engines.indexOf(engine) + "-" +engine.toString(), 0f, minimum, 
-								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
-					}
-					break;
-				case BETWEEN_LIMITS:
-					if (minBeforeTrade > 0f && isToCalculateEditLimit) {
-						if (minimum+ASSET_ERROR_MARGIN < 0 || (isStrictlyNonNegativeCash && minimum < 0)) {
-							minimum = engines.get(1).getCash(userId, null, null);
-						}
-						assertTrue("User=" + userId+"," + engine.toString()+ ", min = " + minimum, minimum >= (isStrictlyNonNegativeCash ?0:-ASSET_ERROR_MARGIN));
-					}
-					break;
-				case ON_UPPER_LIMIT:
-					if (!isToCheckAssetsPreciselyOnLimit) {
-						break;
-					}
-					if (minBeforeTrade > 0f) {
-						if (Math.abs(minimum) > ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
-							minimum = engines.get(0).getCash(userId, null, null);//engines.get(0).addCash(null, new Date(), userId, -minimum, "")
-						}
-						assertEquals("User=" + userId+"," + engines.indexOf(engine) + "-" +engine.toString(), 0f, minimum, 
-								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
-					}
-					break;
-				case ABOVE_LIMIT:
-					if (minBeforeTrade > 0f) {
-						if (minimum > 0) {
-							minimum = engines.get(0).getCash(userId, null, null);
-						}
-						assertTrue("User=" + userId+"," + engine.toString()+ ", min = " + minimum, minimum < 0+ASSET_ERROR_MARGIN);
-					}
-					break;
 				}
 				
 				// b.) marginal probability on individual variable.
@@ -1549,62 +1558,63 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						fail(engine.toString() + ", question = " + id);
 					}
 				}
-				// c.) min-q values after a user confirms a trade.
-				if (Math.abs(minimum - engine.getCash(userId, null, null)) >
-				((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
-					engines.get(0).getCash(userId, null, null);//minimum=engine.getCash(userId, null, null)
-					engine.getCash(userId, null, null);//engine.addCash(null, new Date(), userId, -engine.getCash(userId, null, null), "")
-				}
-				assertEquals(engine.toString(), minimum, engine.getCash(userId, null, null), 
-						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
-				// e.) The expected score.
-				score = engine.scoreUserEv(userId, null, null);
-				float scoreME0 = engines.get(0).scoreUserEv(userId, null, null);
-				
-				if (!Float.isInfinite(scoreME0) || isToCompareInfiniteExpectedScore ) {
-					assertEquals(
-							engine.toString(),
-							scoreME0,
-							score, 
-							((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
-					);
-				} 
-				// f. ) conditional min-q and expected score on randomly given states. How many random given states depends on network size. We choose floor(0.3*numberOfVariablesInTheNet).
-				if (Math.abs(engines.get(0).getCash(userId, assumptionIds, assumedStates) - engine.getCash(userId, assumptionIds, assumedStates))
-						> ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
-					engines.get(0).getCash(userId, assumptionIds, assumedStates);
-					engine.getCash(userId, assumptionIds, assumedStates);
-				}
-				assertEquals("[" + engines.indexOf(engine) + "]" +
-						engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
-						engines.get(0).getCash(userId, assumptionIds, assumedStates), 
-						engine.getCash(userId, assumptionIds, assumedStates), 
-						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
-				);
-				assertEquals(
-						engine.toString() + userId + " , " + assumptionIds + assumedStates, 
-						engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates), 
-						engine.scoreUserEv(userId, assumptionIds, assumedStates), 
-						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
-				);
-				
-				// g.) An user�fs asset table is not changed when other user makes edit.
-				ProbabilityAndAssetTablesMemento posteriorMemento = engine.getMemento();	// get current status of the engine
-				for (AssetAwareInferenceAlgorithm algorithm : mementos.get(engine).getAssetTableMap().keySet()) {
-					if (algorithm.getAssetNetwork().getName().equals(Long.toString(userId))) {
-						continue;	// do not compare assets of user who made the trade
+				if (isToCheckAssests) {
+					// c.) min-q values after a user confirms a trade.
+					if (Math.abs(minimum - engine.getCash(userId, null, null)) >
+					((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
+						engines.get(0).getCash(userId, null, null);//minimum=engine.getCash(userId, null, null)
+						engine.getCash(userId, null, null);//engine.addCash(null, new Date(), userId, -engine.getCash(userId, null, null), "")
 					}
-					// extract the asset tables
-					Map<IRandomVariable, PotentialTable> previousAssets  = mementos.get(engine).getAssetTableMap().get(algorithm);
-					Map<IRandomVariable, PotentialTable> posteriorAssets = posteriorMemento.getAssetTableMap().get(algorithm);
-					// compare assets
-					assertEquals(engine.toString(), previousAssets.size(), posteriorAssets.size());
-					for (IRandomVariable key : previousAssets.keySet()) {
-						PotentialTable previousTable = previousAssets.get(key);
-						PotentialTable posteriorTable = posteriorAssets.get(key);
-						assertEquals(engine.toString(), previousTable.tableSize(), posteriorTable.tableSize());
-						for (int tableIndex = 0; tableIndex < previousTable.tableSize(); tableIndex++) {
-							assertEquals(engine.toString(), previousTable.getValue(tableIndex), posteriorTable.getValue(tableIndex));
+					assertEquals(engine.toString(), minimum, engine.getCash(userId, null, null), 
+							((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN));
+					// e.) The expected score.
+					score = engine.scoreUserEv(userId, null, null);
+					float scoreME0 = engines.get(0).scoreUserEv(userId, null, null);
+					
+					if (!Float.isInfinite(scoreME0) || isToCompareInfiniteExpectedScore ) {
+						assertEquals(
+								engine.toString(),
+								scoreME0,
+								score, 
+								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+								);
+					} 
+					// f. ) conditional min-q and expected score on randomly given states. How many random given states depends on network size. We choose floor(0.3*numberOfVariablesInTheNet).
+					if (Math.abs(engines.get(0).getCash(userId, assumptionIds, assumedStates) - engine.getCash(userId, assumptionIds, assumedStates))
+							> ((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)) {
+						engines.get(0).getCash(userId, assumptionIds, assumedStates);
+						engine.getCash(userId, assumptionIds, assumedStates);
+					}
+					assertEquals("[" + engines.indexOf(engine) + "]" +
+							engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+							engines.get(0).getCash(userId, assumptionIds, assumedStates), 
+							engine.getCash(userId, assumptionIds, assumedStates), 
+							((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+							);
+					assertEquals(
+							engine.toString() + userId + " , " + assumptionIds + assumedStates, 
+							engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates), 
+							engine.scoreUserEv(userId, assumptionIds, assumedStates), 
+							((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+							);
+					// g.) An user's asset table is not changed when other user makes edit.
+					ProbabilityAndAssetTablesMemento posteriorMemento = engine.getMemento();	// get current status of the engine
+					for (AssetAwareInferenceAlgorithm algorithm : mementos.get(engine).getAssetTableMap().keySet()) {
+						if (algorithm.getAssetNetwork().getName().equals(Long.toString(userId))) {
+							continue;	// do not compare assets of user who made the trade
+						}
+						// extract the asset tables
+						Map<IRandomVariable, PotentialTable> previousAssets  = mementos.get(engine).getAssetTableMap().get(algorithm);
+						Map<IRandomVariable, PotentialTable> posteriorAssets = posteriorMemento.getAssetTableMap().get(algorithm);
+						// compare assets
+						assertEquals(engine.toString(), previousAssets.size(), posteriorAssets.size());
+						for (IRandomVariable key : previousAssets.keySet()) {
+							PotentialTable previousTable = previousAssets.get(key);
+							PotentialTable posteriorTable = posteriorAssets.get(key);
+							assertEquals(engine.toString(), previousTable.tableSize(), posteriorTable.tableSize());
+							for (int tableIndex = 0; tableIndex < previousTable.tableSize(); tableIndex++) {
+								assertEquals(engine.toString(), previousTable.getValue(tableIndex), posteriorTable.getValue(tableIndex));
+							}
 						}
 					}
 				}
@@ -1637,134 +1647,136 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					}
 				}
 				
-				ScoreSummary scoreSummaryObject = engine.getScoreSummaryObject(userId, null, assumptionIds, assumedStates);
-				assertNotNull(scoreSummaryObject);
-				assertEquals(
-						engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
-						engines.get(0).getCash(userId, assumptionIds, assumedStates), 
-						scoreSummaryObject.getCash(), 
-						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
-				);
-				assertEquals(
-						engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
-						scoreSummaryOrig.getCash(), 
-						scoreSummaryObject.getCash(), 
-						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
-				);
-				assertEquals(
-						engine.toString() + userId + " , " + assumptionIds + assumedStates, 
-						engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates), 
-						scoreSummaryObject.getScoreEV(), 
-						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
-				);
-				assertEquals(
-						engine.toString() + userId + " , " + assumptionIds + assumedStates, 
-						scoreSummaryOrig.getScoreEV(), 
-						scoreSummaryObject.getScoreEV(), 
-						((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
-				);
-				float sumOfScoreComponents = 0f;
-				if (engine.isToReturnEVComponentsAsScoreSummary()) {
-					// the score summary contains clique potential * values in asset tables
-					for (SummaryContribution contribution : scoreSummaryObject.getScoreComponents()) {
-						sumOfScoreComponents += contribution.getContributionToScoreEV();
-					}
-					for (SummaryContribution contribution : scoreSummaryObject.getIntersectionScoreComponents()) {
-						sumOfScoreComponents += contribution.getContributionToScoreEV();
-					}
-					assertFalse(engine.toString() + userId + " , " + assumptionIds + assumedStates, Float.isNaN(sumOfScoreComponents));
-					assertEquals("["+ engines.indexOf(engine) + "]"+
-							engine.toString() + userId + " , " + assumptionIds + assumedStates, 
-							scoreSummaryObject.getScoreEV(), 
-							sumOfScoreComponents, 
+				if (isToCheckAssests) {
+					ScoreSummary scoreSummaryObject = engine.getScoreSummaryObject(userId, null, assumptionIds, assumedStates);
+					assertNotNull(scoreSummaryObject);
+					assertEquals(
+							engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+							engines.get(0).getCash(userId, assumptionIds, assumedStates), 
+							scoreSummaryObject.getCash(), 
 							((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
-					);
-				} else {
-					// the score summary contains expected score per state
-					List<Long> tradedQuestions = new ArrayList<Long>(engine.getTradedQuestions(userId)); // extract questions traded by the user
-					if (engine.isToDeleteResolvedNode()) {
-						tradedQuestions.removeAll(resolvedQuestions);	// ignore resolved questions, because they do not exist
-					}
-					for (int questionIndex = 0; questionIndex < tradedQuestions.size(); questionIndex++) {
-						
-						if (engine.isToDeleteResolvedNode() && resolvedQuestions.contains(tradedQuestions.get(questionIndex))) {
-							// ignore this question if it was resolved
-							continue;
+							);
+					assertEquals(
+							engine.toString() + userId + " , assumption=" + assumptionIds+ "=" + assumedStates, 
+							scoreSummaryOrig.getCash(), 
+							scoreSummaryObject.getCash(), 
+							((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+							);
+					assertEquals(
+							engine.toString() + userId + " , " + assumptionIds + assumedStates, 
+							engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates), 
+							scoreSummaryObject.getScoreEV(), 
+							((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+							);
+					assertEquals(
+							engine.toString() + userId + " , " + assumptionIds + assumedStates, 
+							scoreSummaryOrig.getScoreEV(), 
+							scoreSummaryObject.getScoreEV(), 
+							((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+							);
+					float sumOfScoreComponents = 0f;
+					if (engine.isToReturnEVComponentsAsScoreSummary()) {
+						// the score summary contains clique potential * values in asset tables
+						for (SummaryContribution contribution : scoreSummaryObject.getScoreComponents()) {
+							sumOfScoreComponents += contribution.getContributionToScoreEV();
 						}
-						
-						sumOfScoreComponents = 0f;	// prepare to calculate the sum of (<Expected score given state> * <marginal of state>)
-						
-						for (int stateIndex = 0; stateIndex < condProbabilities.get(tradedQuestions.get(questionIndex)).size(); stateIndex++) {
-							// assert that all questions in questionsInScoreComponent are in tradedQuestions, in the same ordering 
-							List<Long> questionsInScoreComponent = new ArrayList<Long>();
-							for (SummaryContribution contrib : scoreSummaryObject.getScoreComponents()) {
-								if (!questionsInScoreComponent.contains(contrib.getQuestions().get(0))) {
-									questionsInScoreComponent.add(contrib.getQuestions().get(0));
-								}
+						for (SummaryContribution contribution : scoreSummaryObject.getIntersectionScoreComponents()) {
+							sumOfScoreComponents += contribution.getContributionToScoreEV();
+						}
+						assertFalse(engine.toString() + userId + " , " + assumptionIds + assumedStates, Float.isNaN(sumOfScoreComponents));
+						assertEquals("["+ engines.indexOf(engine) + "]"+
+								engine.toString() + userId + " , " + assumptionIds + assumedStates, 
+								scoreSummaryObject.getScoreEV(), 
+								sumOfScoreComponents, 
+								((engine instanceof CPTBruteForceMarkovEngine)?ASSET_ERROR_MARGIN_CPT_BRUTE_FORC:ASSET_ERROR_MARGIN)
+								);
+					} else {
+						// the score summary contains expected score per state
+						List<Long> tradedQuestions = new ArrayList<Long>(engine.getTradedQuestions(userId)); // extract questions traded by the user
+						if (engine.isToDeleteResolvedNode()) {
+							tradedQuestions.removeAll(resolvedQuestions);	// ignore resolved questions, because they do not exist
+						}
+						for (int questionIndex = 0; questionIndex < tradedQuestions.size(); questionIndex++) {
+							
+							if (engine.isToDeleteResolvedNode() && resolvedQuestions.contains(tradedQuestions.get(questionIndex))) {
+								// ignore this question if it was resolved
+								continue;
 							}
-							assertEquals("["+ engines.indexOf(engine) + "]"
-									+ engine.toString()+ " , " + assumptionIds + assumedStates
-									+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex
-									+", tradedQuestions="+tradedQuestions
-									+", questionsInScoreComponent="+questionsInScoreComponent, 
-									tradedQuestions.size(), questionsInScoreComponent.size());
-							for (int j = 0; j < tradedQuestions.size(); j++) {
+							
+							sumOfScoreComponents = 0f;	// prepare to calculate the sum of (<Expected score given state> * <marginal of state>)
+							
+							for (int stateIndex = 0; stateIndex < condProbabilities.get(tradedQuestions.get(questionIndex)).size(); stateIndex++) {
+								// assert that all questions in questionsInScoreComponent are in tradedQuestions, in the same ordering 
+								List<Long> questionsInScoreComponent = new ArrayList<Long>();
+								for (SummaryContribution contrib : scoreSummaryObject.getScoreComponents()) {
+									if (!questionsInScoreComponent.contains(contrib.getQuestions().get(0))) {
+										questionsInScoreComponent.add(contrib.getQuestions().get(0));
+									}
+								}
 								assertEquals("["+ engines.indexOf(engine) + "]"
 										+ engine.toString()+ " , " + assumptionIds + assumedStates
-										+ ", user = " + userId + ", question = " + tradedQuestions.get(j), 
-										tradedQuestions.get(j), questionsInScoreComponent.get(j));
-							}
-							
-							// calculate the index in scoreComponent which is related to questionIndex and stateIndex.
-							// this is <number of questions handled so far> * <number of states of such questions> + stateIndex
-							int scoreComponentIndex = stateIndex;	
-							for (int j = 0; j < tradedQuestions.size(); j++) {
-								if (j == questionIndex) {
-									break;
+										+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex
+										+", tradedQuestions="+tradedQuestions
+										+", questionsInScoreComponent="+questionsInScoreComponent, 
+										tradedQuestions.size(), questionsInScoreComponent.size());
+								for (int j = 0; j < tradedQuestions.size(); j++) {
+									assertEquals("["+ engines.indexOf(engine) + "]"
+											+ engine.toString()+ " , " + assumptionIds + assumedStates
+											+ ", user = " + userId + ", question = " + tradedQuestions.get(j), 
+											tradedQuestions.get(j), questionsInScoreComponent.get(j));
 								}
-								// the number of states of a question can be retrieved from the size of an entry in engine.getProbLists
-								scoreComponentIndex += condProbabilities.get(tradedQuestions.get(j)).size();
+								
+								// calculate the index in scoreComponent which is related to questionIndex and stateIndex.
+								// this is <number of questions handled so far> * <number of states of such questions> + stateIndex
+								int scoreComponentIndex = stateIndex;	
+								for (int j = 0; j < tradedQuestions.size(); j++) {
+									if (j == questionIndex) {
+										break;
+									}
+									// the number of states of a question can be retrieved from the size of an entry in engine.getProbLists
+									scoreComponentIndex += condProbabilities.get(tradedQuestions.get(j)).size();
+								}
+								
+								// assert that getScoreComponents is related to current question
+								assertEquals("["+ engines.indexOf(engine) + "]"
+										+ engine.toString()+ " , " + assumptionIds + assumedStates
+										+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
+										1, scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getQuestions().size());
+								if (!tradedQuestions.get(questionIndex).equals(scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getQuestions().get(0))) {
+									engine.getTradedQuestions(userId);
+									engine.getScoreSummaryObject(userId, questionId, assumptionIds, assumedStates);
+								}
+								assertEquals("["+ engines.indexOf(engine) + "]"
+										+ engine.toString()+ " , " + assumptionIds + assumedStates
+										+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
+										tradedQuestions.get(questionIndex),
+										scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getQuestions().get(0)
+										);
+								
+								// assert that getScoreComponents is related to current state
+								assertEquals("["+ engines.indexOf(engine) + "]"
+										+ engine.toString()+ " , " + assumptionIds + assumedStates
+										+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
+										1, scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getStates().size() );
+								assertEquals("["+ engines.indexOf(engine) + "]"
+										+ engine.toString() + " , " + assumptionIds + assumedStates
+										+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
+										stateIndex,
+										scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getStates().get(0).intValue()
+										);
+								
+								// multiply marginal (of this state of this question) and expected score of this state of this question
+								sumOfScoreComponents += condProbabilities.get(tradedQuestions.get(questionIndex)).get(stateIndex) // marginal
+										* scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getContributionToScoreEV();	 // expected
 							}
 							
-							// assert that getScoreComponents is related to current question
+							// assert that, for each question, the sum of expected score per state multiplied by its marginal (w/ assumptions) will result in the total expected score
+							// i.e. scoreUserEV = Expected(D=d1)*P(D=d1) + Expected(D=d2)*P(D=d2) = Expected(E=e1)*P(E=e1) + Expected(E=e2)*P(E=e2) = Expected(F=f1)*P(F=f1) + Expected(F=f2)*P(F=f2)
 							assertEquals("["+ engines.indexOf(engine) + "]"
 									+ engine.toString()+ " , " + assumptionIds + assumedStates
-									+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
-									1, scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getQuestions().size());
-							if (!tradedQuestions.get(questionIndex).equals(scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getQuestions().get(0))) {
-								engine.getTradedQuestions(userId);
-								engine.getScoreSummaryObject(userId, questionId, assumptionIds, assumedStates);
-							}
-							assertEquals("["+ engines.indexOf(engine) + "]"
-									+ engine.toString()+ " , " + assumptionIds + assumedStates
-									+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
-									tradedQuestions.get(questionIndex),
-									scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getQuestions().get(0)
-							);
-							
-							// assert that getScoreComponents is related to current state
-							assertEquals("["+ engines.indexOf(engine) + "]"
-									+ engine.toString()+ " , " + assumptionIds + assumedStates
-									+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
-									1, scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getStates().size() );
-							assertEquals("["+ engines.indexOf(engine) + "]"
-									+ engine.toString() + " , " + assumptionIds + assumedStates
-									+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex) + ", state = " + stateIndex, 
-									stateIndex,
-									scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getStates().get(0).intValue()
-							);
-							
-							// multiply marginal (of this state of this question) and expected score of this state of this question
-							sumOfScoreComponents += condProbabilities.get(tradedQuestions.get(questionIndex)).get(stateIndex) // marginal
-							* scoreSummaryObject.getScoreComponents().get(scoreComponentIndex).getContributionToScoreEV();	 // expected
+									+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex), 
+									scoreSummaryObject.getScoreEV(), sumOfScoreComponents, ASSET_ERROR_MARGIN);
 						}
-						
-						// assert that, for each question, the sum of expected score per state multiplied by its marginal (w/ assumptions) will result in the total expected score
-						// i.e. scoreUserEV = Expected(D=d1)*P(D=d1) + Expected(D=d2)*P(D=d2) = Expected(E=e1)*P(E=e1) + Expected(E=e2)*P(E=e2) = Expected(F=f1)*P(F=f1) + Expected(F=f2)*P(F=f2)
-						assertEquals("["+ engines.indexOf(engine) + "]"
-								+ engine.toString()+ " , " + assumptionIds + assumedStates
-								+ ", user = " + userId + ", question = " + tradedQuestions.get(questionIndex), 
-								scoreSummaryObject.getScoreEV(), sumOfScoreComponents, ASSET_ERROR_MARGIN);
 					}
 				}
 			}	// end of consistency check after trade
@@ -4638,7 +4650,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			}
 			
 			// (1) Randomly choose one user; create new one if necessary
-			long userId = this.getRandomUser(userIDs, MAX_USER_NUM);
+			long userId = this.getRandomUser(userIDs, maxUserNum);
 			if (isToTrace()) {
 				tracer.setUserId(userId);
 			}
@@ -5172,14 +5184,16 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		Map<MarkovEngineImpl, Long> uncommittedTransactionKeyMap = new HashMap<MarkovEngineImpl, Long>();
 		
 		// make sure initial cash and expected score are 100
-		for (MarkovEngineInterface engine : engines) {
-			if (uncommittedTransactionKeyMap.containsKey(engine)) {
-				// do not test engines in transactionKeyMap, because they were not committed yet
-				continue;
-			}
-			for (Long userId : userIDs) {
-				assertEquals(engine.toString(), 100f, engine.getCash(userId, null, null), ASSET_ERROR_MARGIN);
-				assertEquals(engine.toString(), 100f, engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+		if (isToCheckAssests) {
+			for (MarkovEngineInterface engine : engines) {
+				if (uncommittedTransactionKeyMap.containsKey(engine)) {
+					// do not test engines in transactionKeyMap, because they were not committed yet
+					continue;
+				}
+				for (Long userId : userIDs) {
+					assertEquals(engine.toString(), 100f, engine.getCash(userId, null, null), ASSET_ERROR_MARGIN);
+					assertEquals(engine.toString(), 100f, engine.scoreUserEv(userId, null, null), ASSET_ERROR_MARGIN);
+				}
 			}
 		}
 		
@@ -5257,7 +5271,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			probabilities = engines.get(0).getProbLists(null, null, null);
 			
 			// (1) Randomly choose one user; create new one if necessary
-			long userId = this.getRandomUser(userIDs, MAX_USER_NUM);
+			long userId = this.getRandomUser(userIDs, maxUserNum);
 			if (isToTrace()) {
 				tracer.setUserId(userId);
 			}
@@ -5767,12 +5781,14 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					);
 				}
 				// make sure they match
-				for (int i = 0; i < engines.size()-1; i++) {
-					for (UserScoreAndCash scoreCash : tracer.getUserScoreAndCash()) {
-						assertEquals(scoreCash.userId.toString(), scoreCash.cash, engines.get(i).getCash(scoreCash.userId, null, null), ASSET_ERROR_MARGIN);
-						float scoreUserEv = engines.get(i).scoreUserEv(scoreCash.userId, null, null);
-						if (!Float.isInfinite(scoreUserEv) || isToCompareInfiniteExpectedScore) {
-							assertEquals(scoreCash.userId.toString(), scoreCash.score, scoreUserEv, ASSET_ERROR_MARGIN);
+				if (isToCheckAssests) {
+					for (int i = 0; i < engines.size()-1; i++) {
+						for (UserScoreAndCash scoreCash : tracer.getUserScoreAndCash()) {
+							assertEquals(scoreCash.userId.toString(), scoreCash.cash, engines.get(i).getCash(scoreCash.userId, null, null), ASSET_ERROR_MARGIN);
+							float scoreUserEv = engines.get(i).scoreUserEv(scoreCash.userId, null, null);
+							if (!Float.isInfinite(scoreUserEv) || isToCompareInfiniteExpectedScore) {
+								assertEquals(scoreCash.userId.toString(), scoreCash.score, scoreUserEv, ASSET_ERROR_MARGIN);
+							}
 						}
 					}
 				}
@@ -5795,38 +5811,41 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				assertFalse(resolvedQuestions.contains(questionId));
 				
 				// check gains of cash before resolution
-				for (Long user : userIDs) {
-					// extract the score summary to be used as pivot for comparison
-					ScoreSummary scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, null, null, null);
-					// check size of gains and cash before resolution
-					assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= resolvedQuestions.size()); // 0 gains are not included in the map
-					assertTrue(resolvedQuestions.size()>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); 
-					// compare gains and cash before resolution
-					for (int i = 1; i < engines.size(); i++) {
-						// extract the score summary to compare
-						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user, null, null, null);
-						// check gains of resolutions
-						assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
-						for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
-							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+				if (isToCheckAssests) {
+					for (Long user : userIDs) {
+						// extract the score summary to be used as pivot for comparison
+						ScoreSummary scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, null, null, null);
+						// check size of gains and cash before resolution
+						assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= resolvedQuestions.size()); // 0 gains are not included in the map
+						assertTrue(resolvedQuestions.size()>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); 
+						// compare gains and cash before resolution
+						for (int i = 1; i < engines.size(); i++) {
+							// extract the score summary to compare
+							ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user, null, null, null);
+							// check gains of resolutions
+							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
+							for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
+								assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+							}
+							// check cash before resolutions
+							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
+							for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
+								assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+							}
 						}
-						// check cash before resolutions
-						assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
-						for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
-							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						// do the same test, but with some filters
+						// if we filter by non-resolved node, then this should result in empty list
+						for (int i = 0; i < engines.size(); i++) {
+							// extract the score summary to compare
+							ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user,  questionId, assumptionIds, assumedStates);
+							assertEquals(0,scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size()); 
+							assertEquals(0,scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
 						}
-					}
-					// do the same test, but with some filters
-					// if we filter by non-resolved node, then this should result in empty list
-					for (int i = 0; i < engines.size(); i++) {
-						// extract the score summary to compare
-						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user,  questionId, assumptionIds, assumedStates);
-						assertEquals(0,scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size()); 
-						assertEquals(0,scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
 					}
 				}
 				
 				for (MarkovEngineImpl engine : engines) {
+					
 					// get the expected score per node to be resolved for each user
 					Map<Long, Float>  expectedScorePerUsers = new HashMap<Long, Float>();
 					for (Long id : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
@@ -5841,10 +5860,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 
 					engine.resolveQuestion(null, new Date(), questionId, settledState);
 					
-					
-					// check that the expected before resolve question is the current score
-					for (Long id : expectedScorePerUsers.keySet()) {
-						assertEquals("User=" + id, expectedScorePerUsers.get(id), engine.scoreUserEv(id, null, null), ASSET_ERROR_MARGIN);
+					if (isToCheckAssests) {
+						// check that the expected before resolve question is the current score
+						for (Long id : expectedScorePerUsers.keySet()) {
+							assertEquals("User=" + id, expectedScorePerUsers.get(id), engine.scoreUserEv(id, null, null), ASSET_ERROR_MARGIN);
+						}
 					}
 					// check that the resolved state is 100% and other states are 0%
 					List<Float> probListsToCompare = engine.getProbList(questionId, null, null);
@@ -5867,46 +5887,48 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				resolvedQuestions.add(questionId);
 				
 				// check gains of cash after resolution
-//				for (long user = 0; user < MAX_USER_NUM; user++) {
-				for (Long user : userIDs) {
-					// extract the score summary to be used as pivot for comparison
-					ScoreSummary scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, null, null, null);
-					// check size of gains and cash before resolution
-					assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= resolvedQuestions.size()); // 0 gains are not included in the map
-					assertTrue(resolvedQuestions.size()>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); 
-					// compare gains and cash before resolution
-					for (int i = 1; i < engines.size(); i++) {
-						// extract the score summary to compare
-						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user, null, null, null);
-						// check gains of resolutions
-						assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
-						for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
-							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+//				for (long user = 0; user < maxUserNum; user++) {
+				if (isToCheckAssests) {
+					for (Long user : userIDs) {
+						// extract the score summary to be used as pivot for comparison
+						ScoreSummary scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, null, null, null);
+						// check size of gains and cash before resolution
+						assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= resolvedQuestions.size()); // 0 gains are not included in the map
+						assertTrue(resolvedQuestions.size()>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); 
+						// compare gains and cash before resolution
+						for (int i = 1; i < engines.size(); i++) {
+							// extract the score summary to compare
+							ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user, null, null, null);
+							// check gains of resolutions
+							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
+							for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
+								assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+							}
+							// check cash before resolutions
+							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
+							for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
+								assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+							}
 						}
-						// check cash before resolutions
-						assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
-						for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
-							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
-						}
-					}
-					// do the same test, but with some filters
-					scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, questionId, assumptionIds, assumedStates);
-					// check size of gains and cash before resolution
-					assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= 1); // 0 gains are not included in the map
-					assertTrue(1>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); 
-					// compare gains and cash before resolution
-					for (int i = 1; i < engines.size(); i++) {
-						// extract the score summary to compare
-						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user,  questionId, assumptionIds, assumedStates);
-						// check gains of resolutions
-						assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
-						for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
-							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
-						}
-						// check cash before resolutions
-						assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
-						for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
-							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						// do the same test, but with some filters
+						scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, questionId, assumptionIds, assumedStates);
+						// check size of gains and cash before resolution
+						assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= 1); // 0 gains are not included in the map
+						assertTrue(1>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); 
+						// compare gains and cash before resolution
+						for (int i = 1; i < engines.size(); i++) {
+							// extract the score summary to compare
+							ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user,  questionId, assumptionIds, assumedStates);
+							// check gains of resolutions
+							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
+							for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
+								assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+							}
+							// check cash before resolutions
+							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
+							for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
+								assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+							}
 						}
 					}
 				}
@@ -5921,13 +5943,15 @@ public class MarkovEngineBruteForceTest extends TestCase {
 										engines.get(engines.size()-1).getCash(usr, null, null))
 						);
 					}
-					// make sure they match
-					for (int i = 0; i < engines.size()-1; i++) {
-						for (UserScoreAndCash scoreCash : tracer.getUserScoreAndCashAfterResolution()) {
-							assertEquals(scoreCash.userId.toString(), scoreCash.cash, engines.get(i).getCash(scoreCash.userId, null, null), ASSET_ERROR_MARGIN);
-							float scoreUserEv = engines.get(i).scoreUserEv(scoreCash.userId, null, null);
-							if (!Float.isInfinite(scoreUserEv) || isToCompareInfiniteExpectedScore) {
-								assertEquals(scoreCash.userId.toString(), scoreCash.score, scoreUserEv, ASSET_ERROR_MARGIN);
+					if (isToCheckAssests) {
+						// make sure they match
+						for (int i = 0; i < engines.size()-1; i++) {
+							for (UserScoreAndCash scoreCash : tracer.getUserScoreAndCashAfterResolution()) {
+								assertEquals(scoreCash.userId.toString(), scoreCash.cash, engines.get(i).getCash(scoreCash.userId, null, null), ASSET_ERROR_MARGIN);
+								float scoreUserEv = engines.get(i).scoreUserEv(scoreCash.userId, null, null);
+								if (!Float.isInfinite(scoreUserEv) || isToCompareInfiniteExpectedScore) {
+									assertEquals(scoreCash.userId.toString(), scoreCash.score, scoreUserEv, ASSET_ERROR_MARGIN);
+								}
 							}
 						}
 					}
@@ -5975,11 +5999,12 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					}
 				}
 				
-				// check values related to assets as well
-				float scoreUserEv = engines.get(0).scoreUserEv(userId, null, null);
-				float conditionalScoreUserEv = engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates);
-				float newCash = engines.get(0).getCash(userId, null, null);
-				float newConditionalCash = engines.get(0).getCash(userId, assumptionIds, assumedStates);
+				if (isToCheckAssests) {
+					// check values related to assets as well
+					float scoreUserEv = engines.get(0).scoreUserEv(userId, null, null);
+					float conditionalScoreUserEv = engines.get(0).scoreUserEv(userId, assumptionIds, assumedStates);
+					float newCash = engines.get(0).getCash(userId, null, null);
+					float newConditionalCash = engines.get(0).getCash(userId, assumptionIds, assumedStates);
 //				System.out.println("scoreUserEv(userId="+userId+",assumptionIds=null,assumedStates=null)="+scoreUserEv);
 //				System.out.println("scoreUserEv(userId="+userId+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+conditionalScoreUserEv);
 //				System.out.println("scoreUserQuestionEvStates(userId="+userId+",questionId="+questionId
@@ -5988,96 +6013,98 @@ public class MarkovEngineBruteForceTest extends TestCase {
 //						+",assumptionIds+"+assumptionIds+",assumedStates="+assumedStates+")="+cashPerStates);
 //				System.out.println("getCash(userId=" + userId+",assumptionIds=null,assumedStates=null)="+newCash);
 //				System.out.println("getCash(userId=" + userId+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+newConditionalCash);
-				for (int i = 1; i < engines.size(); i++) {
-					// extract the values related to assets, from current engine
-					float scoreUserEvToCompare = engines.get(i).scoreUserEv(userId, null, null);
-					float conditionalScoreUserEvToCompare = engines.get(i).scoreUserEv(userId, assumptionIds, assumedStates);
-					float newCashToCompare = engines.get(i).getCash(userId, null, null);
-					float newConditionalCashToCompare = engines.get(i).getCash(userId, assumptionIds, assumedStates);
-					
-					List<Float> scoreUserQuestionEvStatesToCompare = null;
-//					List<Float> cashPerStatesToCompare = null;
-					// the following shall throw exception if engine is configured to delete resolved nodes
-					if (engines.get(i).isToDeleteResolvedNode() || !engines.get(i).isToObtainProbabilityOfResolvedQuestions()) {
-						List<Float> assetsList = engines.get(i).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
-						assertNotNull(assetsList);
-						// From Jan 2013, assets/probs of resolved questions are NaN if it is not the settled state
-						for (int j = 0; j < assetsList.size(); j++) {
-							if (j == settledState) {
-								assertEquals(conditionalScoreUserEvToCompare, assetsList.get(j), ASSET_ERROR_MARGIN);
-							} else {
-								assertEquals(Float.NaN, assetsList.get(j));
-							}
-						}
-						assetsList = engines.get(i).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
-						// From Jan 2013, assets/probs of resolved questions are NaN if it is not the settled state
-						for (int j = 0; j < assetsList.size(); j++) {
-							if (j == settledState) {
-								assertEquals(newConditionalCashToCompare, assetsList.get(j), ASSET_ERROR_MARGIN);
-							} else {
-								assertEquals(Float.NaN, assetsList.get(j));
-							}
-						}
-					} else if (!engines.get(0).isToDeleteResolvedNode()) {
-						List<Float> scoreUserQuestionEvStates = engines.get(0).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
-						List<Float> cashPerStates = engines.get(0).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
-						// nodes are still present in the system
-						scoreUserQuestionEvStatesToCompare = engines.get(i).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
-//						cashPerStatesToCompare = engines.get(i).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+					for (int i = 1; i < engines.size(); i++) {
+						// extract the values related to assets, from current engine
+						float scoreUserEvToCompare = engines.get(i).scoreUserEv(userId, null, null);
+						float conditionalScoreUserEvToCompare = engines.get(i).scoreUserEv(userId, assumptionIds, assumedStates);
+						float newCashToCompare = engines.get(i).getCash(userId, null, null);
+						float newConditionalCashToCompare = engines.get(i).getCash(userId, assumptionIds, assumedStates);
 						
-						// check that the number of states is matching
-						assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
-								scoreUserQuestionEvStates.size(), scoreUserQuestionEvStatesToCompare.size());
+						List<Float> scoreUserQuestionEvStatesToCompare = null;
+//					List<Float> cashPerStatesToCompare = null;
+						// the following shall throw exception if engine is configured to delete resolved nodes
+						if (engines.get(i).isToDeleteResolvedNode() || !engines.get(i).isToObtainProbabilityOfResolvedQuestions()) {
+							List<Float> assetsList = engines.get(i).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
+							assertNotNull(assetsList);
+							// From Jan 2013, assets/probs of resolved questions are NaN if it is not the settled state
+							for (int j = 0; j < assetsList.size(); j++) {
+								if (j == settledState) {
+									assertEquals(conditionalScoreUserEvToCompare, assetsList.get(j), ASSET_ERROR_MARGIN);
+								} else {
+									assertEquals(Float.NaN, assetsList.get(j));
+								}
+							}
+							assetsList = engines.get(i).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+							// From Jan 2013, assets/probs of resolved questions are NaN if it is not the settled state
+							for (int j = 0; j < assetsList.size(); j++) {
+								if (j == settledState) {
+									assertEquals(newConditionalCashToCompare, assetsList.get(j), ASSET_ERROR_MARGIN);
+								} else {
+									assertEquals(Float.NaN, assetsList.get(j));
+								}
+							}
+						} else if (!engines.get(0).isToDeleteResolvedNode()) {
+							List<Float> scoreUserQuestionEvStates = engines.get(0).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
+							List<Float> cashPerStates = engines.get(0).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+							// nodes are still present in the system
+							scoreUserQuestionEvStatesToCompare = engines.get(i).scoreUserQuestionEvStates(userId, questionId, assumptionIds, assumedStates);
+//						cashPerStatesToCompare = engines.get(i).getCashPerStates(userId, questionId, assumptionIds, assumedStates);
+							
+							// check that the number of states is matching
+							assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+									scoreUserQuestionEvStates.size(), scoreUserQuestionEvStatesToCompare.size());
 //						assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
 //								cashPerStates.size(), cashPerStatesToCompare.size());
-						assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
-								cashPerStates.size(), scoreUserQuestionEvStates.size());
-						
-						// these lists will be used to simulate getCashPerStates.
-						List<Long> assumptionIdsIncludingResolved = new ArrayList<Long>(assumptionIds);
-						List<Integer> assumedStatesIncludingResolved = new ArrayList<Integer>(assumedStates);
-						assumptionIdsIncludingResolved.add(questionId);
-						assumedStatesIncludingResolved.add(0);
-						
-						// compare scores and min assets per state
-						for (int state = 0; state < scoreUserQuestionEvStates.size(); state++) {
 							assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
-									scoreUserQuestionEvStates.get(state), scoreUserQuestionEvStatesToCompare.get(state), ASSET_ERROR_MARGIN);
+									cashPerStates.size(), scoreUserQuestionEvStates.size());
+							
+							// these lists will be used to simulate getCashPerStates.
+							List<Long> assumptionIdsIncludingResolved = new ArrayList<Long>(assumptionIds);
+							List<Integer> assumedStatesIncludingResolved = new ArrayList<Integer>(assumedStates);
+							assumptionIdsIncludingResolved.add(questionId);
+							assumedStatesIncludingResolved.add(0);
+							
+							// compare scores and min assets per state
+							for (int state = 0; state < scoreUserQuestionEvStates.size(); state++) {
+								assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+										scoreUserQuestionEvStates.get(state), scoreUserQuestionEvStatesToCompare.get(state), ASSET_ERROR_MARGIN);
 //							assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
 //									cashPerStates.get(state), cashPerStatesToCompare.get(state), ASSET_ERROR_MARGIN);
-							
-							assumedStatesIncludingResolved.set(assumedStatesIncludingResolved.size()-1, state);
-							if (state != settledState) {
-								try {
-									float cash = engines.get(i).getCash(userId, assumptionIdsIncludingResolved, assumedStatesIncludingResolved);
-									fail(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates+ ", cash="+cash);
-								} catch (ZeroAssetsException e) {
-									// OK. Engine is supposed to throw this exception if infinite asset is found
+								
+								assumedStatesIncludingResolved.set(assumedStatesIncludingResolved.size()-1, state);
+								if (state != settledState) {
+									try {
+										float cash = engines.get(i).getCash(userId, assumptionIdsIncludingResolved, assumedStatesIncludingResolved);
+										fail(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates+ ", cash="+cash);
+									} catch (ZeroAssetsException e) {
+										// OK. Engine is supposed to throw this exception if infinite asset is found
+									}
+								} else {
+									assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+											cashPerStates.get(state), engines.get(i).getCash(userId, assumptionIdsIncludingResolved, assumedStatesIncludingResolved), ASSET_ERROR_MARGIN);
 								}
-							} else {
-								assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
-										cashPerStates.get(state), engines.get(i).getCash(userId, assumptionIdsIncludingResolved, assumedStatesIncludingResolved), ASSET_ERROR_MARGIN);
+								
 							}
-							
 						}
+						
+						// compare score and conditional score
+						assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+								scoreUserEv, scoreUserEvToCompare, ASSET_ERROR_MARGIN);
+						assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+								conditionalScoreUserEv, conditionalScoreUserEvToCompare, ASSET_ERROR_MARGIN);
+						// compare cash and conditional cash
+						assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+								newCash, newCashToCompare, ASSET_ERROR_MARGIN);
+						assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
+								newConditionalCash, newConditionalCashToCompare, ASSET_ERROR_MARGIN);
+						
 					}
-					
-					// compare score and conditional score
-					assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
-							scoreUserEv, scoreUserEvToCompare, ASSET_ERROR_MARGIN);
-					assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
-							conditionalScoreUserEv, conditionalScoreUserEvToCompare, ASSET_ERROR_MARGIN);
-					// compare cash and conditional cash
-					assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
-							newCash, newCashToCompare, ASSET_ERROR_MARGIN);
-					assertEquals(engines.get(i).toString() + ", user = "+ userId + ", question = " + questionId+ ", assumptions : " + assumptionIds+"="+assumedStates, 
-							newConditionalCash, newConditionalCashToCompare, ASSET_ERROR_MARGIN);
-					
 				}
 			}
 			
 			// revert trades occasionally
-			if (random.nextDouble() < probToRevert && (!hasResolved || !isToTrace())) {// TODO return back to .1 after we get response from Dr. Robin about the expected behavior of revert trade + add cash
+			if (random.nextDouble() < probToRevert && (!hasResolved || !isToTrace())) {
+				// TODO return back to .1 after we get response from Dr. Robin about the expected behavior of revert trade + add cash
 				
 				if (isToTrace()) {
 					tracer.setToRevertTrade(true);
@@ -7198,7 +7225,76 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			
 		} // end of iteration of file names
 		
-	}	
+	}
+	
+	/**
+	 * Test method of {@link MarkovEngineImpl#addQuestionAssumption(Long, Date, long, List, List)}
+	 * with {@link MarkovEngineImpl#isToAddArcsOnlyToProbabilisticNetwork()} == true
+	 */
+	public final void testAddQuestionAssumptionOnlyToProbabilisticNet() {
+		engines.clear();
+		
+		// engine with MarkovEngineImpl#isToAddArcsOnlyToProbabilisticNetwork() == false, and it reboots when arcs are added
+		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 100f));
+		engines.get(engines.size()-1).setToCompareProbOnRebuild(true);
+		engines.get(engines.size()-1).setToAddArcsWithoutReboot(false);
+		engines.get(engines.size()-1).setToAddArcsOnlyToProbabilisticNetwork(false);
+		engines.get(engines.size()-1).setDefaultInitialAssetTableValue(99999f);
+		
+		// engine with MarkovEngineImpl#isToAddArcsOnlyToProbabilisticNetwork() == true
+		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 100f));
+		engines.get(engines.size()-1).setToCompareProbOnRebuild(true);
+		engines.get(engines.size()-1).setToAddArcsWithoutReboot(true);
+		engines.get(engines.size()-1).setToAddArcsOnlyToProbabilisticNetwork(true);
+		engines.get(engines.size()-1).setDefaultInitialAssetTableValue(99999f);
+		
+		for (MarkovEngineInterface engine : engines) {
+			engine.initialize();
+		}
+		
+		// indicate that we are not interested in testing assets consistency, because 1 of the engines are not using assets anyway
+		boolean isToCheckAssestsBackup = isToCheckAssests;
+		isToCheckAssests = false;
+		
+		boolean isToCalculateEditLimitsBackup = isToCalculateEditLimit;
+		isToCalculateEditLimit = false;
+		
+		boolean isToRun5PointTestBackup = isToRun5PointTestInStructureTest;
+		isToRun5PointTestInStructureTest = false;
+		
+		boolean isStrictlyNonNegativeCashBackup = isStrictlyNonNegativeCash;
+		isStrictlyNonNegativeCash = false;
+		
+		// how many users the test shall create
+		int maxUserNumBackup = maxUserNum;
+		maxUserNum = 1;
+		
+		// adjust probability of special operations
+		float probToBalanceBackup = probToBalance;
+		probToBalance = 0f;
+		float probToAddCashBackup = probToAddCash;
+		probToAddCash = 0f;
+		float probToRevertBackup = probToRevert;
+		probToRevert = 0f;
+		float probNearEditLimitBiasBackup = probNearEditLimitBias;
+		probNearEditLimitBias = 0.05f;
+		
+		
+		// run tests
+		this.testFilesWithResolution();
+		
+		// restore backups
+		isToCheckAssests = isToCheckAssestsBackup;
+		probToBalance = probToBalanceBackup;
+		probToAddCash = probToAddCashBackup;
+		probToRevert = probToRevertBackup;
+		probNearEditLimitBias = probNearEditLimitBiasBackup;
+		maxUserNum = maxUserNumBackup;
+		isToCalculateEditLimit = isToCalculateEditLimitsBackup;
+		isToRun5PointTestInStructureTest = isToRun5PointTestBackup;
+		isStrictlyNonNegativeCash = isStrictlyNonNegativeCashBackup;
+	}
+	
 	
 	
 

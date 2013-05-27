@@ -50,7 +50,7 @@ import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
  */
 public class MarkovEngineTest extends TestCase {
 	
-	private static final int THREAD_NUM = 20; //75;	// quantity of threads to use in order to test multi-thread behavior
+	private static final int THREAD_NUM = 1; //75;	// quantity of threads to use in order to test multi-thread behavior
 
 	public static final int MAX_NETWIDTH = 3;
 	public static final int MAX_STATES = 5;
@@ -23971,6 +23971,8 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
 		
 	}
+	
+	
 	
 	/**
 	 * Verifies the behavior of balancing trades when 10 variables are present in the same clique.
