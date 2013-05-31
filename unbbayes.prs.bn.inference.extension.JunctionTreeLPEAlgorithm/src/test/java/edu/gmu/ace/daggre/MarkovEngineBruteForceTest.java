@@ -98,7 +98,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static final String NODE_NAME_PREFIX = "N";
 
 	/** This program will enter in a loop at this iteration number. Use with care. Set to negative if you don't want this program to stop at the iteration */
-	private static final int iterationToDebug = -8;
+	private static final int iterationToDebug = 1;
 
 	/** this object will group the data to be printed out in {@link #testFilesWithResolution()} */
 	private Tracer tracer = null;
@@ -188,7 +188,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If there are less than this number of questions, questions will not be resolved */
 	private static int minAliveQuestionNumber = -1;
 	
-	private static long seed = new Date().getTime(); // 1363964542586L; //1364947893820L; //1364966189144L; //1365123116683L; 1365173646728L; 1365743912639L; 1365882937277L
+	private static long seed = 1369948676350L;//new Date().getTime(); // 1363964542586L; //1364947893820L; //1364966189144L; //1365123116683L; 1365173646728L; 1365743912639L; 1365882937277L
 	
 	/** Random number generator, with seed */
 	private static Random random = new Random(seed);
@@ -7240,6 +7240,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		engines.get(engines.size()-1).setToAddArcsWithoutReboot(false);
 		engines.get(engines.size()-1).setToAddArcsOnlyToProbabilisticNetwork(false);
 		engines.get(engines.size()-1).setDefaultInitialAssetTableValue(99999f);
+		engines.get(engines.size()-1).setToTraceHistory(true);
 		
 		// engine with MarkovEngineImpl#isToAddArcsOnlyToProbabilisticNetwork() == true
 		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 100f));
@@ -7247,6 +7248,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		engines.get(engines.size()-1).setToAddArcsWithoutReboot(true);
 		engines.get(engines.size()-1).setToAddArcsOnlyToProbabilisticNetwork(true);
 		engines.get(engines.size()-1).setDefaultInitialAssetTableValue(99999f);
+		engines.get(engines.size()-1).setToTraceHistory(true);
+		
 		
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();

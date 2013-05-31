@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import unbbayes.prs.Edge;
@@ -237,6 +238,16 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 		return null;
 	}
 	
+//	/**
+//	 * Simply calls {@link #addEdgesToNet(Map, boolean)}
+//	 * @see unbbayes.prs.bn.inference.extension.AbstractAssetNetAlgorithm#addEdgesToNet(unbbayes.prs.INode, java.util.List, boolean)
+//	 */
+//	public List<Edge> addEdgesToNet(INode child, List<INode> parents, boolean isToOptimizeForProbNetwork) throws UnsupportedOperationException, IllegalArgumentException, InvalidParentException {
+//		if (child == null || parents == null || parents.isEmpty()) {
+//			return Collections.emptyList();
+//		}
+//		return this.addEdgesToNet(Collections.singletonMap(child, parents), isToOptimizeForProbNetwork);
+//	}
 
 	/**
 	 * This method will attempt to connect nodes in {@link #getNet()}.
@@ -261,64 +272,86 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 	 * @throws InvalidParentException 
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#addEdgesToNet(unbbayes.prs.INode, java.util.List)
 	 */
-	public List<Edge> addEdgesToNet(INode child, List<INode> parents, boolean isToOptimizeForProbNetwork) throws UnsupportedOperationException, IllegalArgumentException, InvalidParentException {
-		if (child == null || parents == null || parents.isEmpty()) {
+	public List<Edge> addEdgesToNet(Map<INode, List<INode>> nodeAndParents, boolean isToOptimizeForProbNetwork) 
+			throws UnsupportedOperationException, IllegalArgumentException,InvalidParentException {
+		
+		// if isToOptimizeForProbNetwork, then special treatment is necessary
+		if (isToOptimizeForProbNetwork) {
+			return this.addNodesToCliqueWhenNotConsideringAssets(nodeAndParents);
+		}
+		
+		// initial assertion
+		if (nodeAndParents == null || nodeAndParents.isEmpty()) {
 			return Collections.emptyList();
 		}
-			
+		
+		// prepare list to return (this list will be filled during the loop)
+		List<Edge> ret = new ArrayList<Edge>();	
+		
 		// extract the network to work with
 		ProbabilisticNetwork net = this.getNet();
 		
-		// needs to remove duplicates
-		if (parents.size() > 1) {
-			List<INode> nonDuplicateParents = new ArrayList<INode>(parents.size());
+		// if isToOptimizeForProbNetwork == false, then simply iterate over nodeAndParents.
+		for (Entry<INode, List<INode>> entry : nodeAndParents.entrySet()) {
+			// extract the nodes in the current iteration
+			INode child = entry.getKey();
+			List<INode> parents = entry.getValue();
+			
+			if (child == null 
+					|| parents == null
+					|| parents.isEmpty()) {
+				// it does not specify an arc, so we do not need to handle it
+				continue;
+			}
+			
+			// needs to remove duplicates
+			if (parents.size() > 1) {
+				List<INode> nonDuplicateParents = new ArrayList<INode>(parents.size());
+				for (INode parent : parents) {
+					if (!nonDuplicateParents.contains(parent)) {
+						// ignore duplicates, but do not ignore original ordering of nodes
+						nonDuplicateParents.add(parent);
+					}
+				}
+				parents = nonDuplicateParents;
+			}
+			
+			
+			// extract the cliques containing parents (if any)
+			List<Clique> parentCliques = net.getJunctionTree().getCliquesContainingAllNodes(parents, Integer.MAX_VALUE);
+			if (parentCliques != null && !parentCliques.isEmpty()) { // case 0 or 1
+				// check if we can handle this case as case 0: both child and parents are in same clique
+				boolean hasAllNodesInSameClique = false;
+				// try to find child node in parentCliques (since parentCliques supposedly has all parent nodes, then if we find any with child, it contains all nodes)
+				for (Clique clique : parentCliques) {
+					if (clique.getNodesList().contains(child)) {
+						hasAllNodesInSameClique = true;
+						break;
+					}
+				}
+				if (!hasAllNodesInSameClique) {
+					// case 1: parents are in same clique, but child is not
+					this.addNodesToCliqueWhenAllParentsInSameClique(child, parents, parentCliques, net);
+				}
+				// case 0: simply add the edge and return without changing junction tree -> will be handled outside this if-clause
+			} else {
+				// case 2: some of the parents are not in the same clique
+				this.addNodesToCliqueWhenParentsInDifferentClique(child, parents, net);
+			}
+			
+			// at this point, junction trees were properly handled (cases 0, 1, or 2). We now just need to add the edge objects into the Bayes net object.
 			for (INode parent : parents) {
-				if (!nonDuplicateParents.contains(parent)) {
-					// ignore duplicates, but do not ignore original ordering of nodes
-					nonDuplicateParents.add(parent);
-				}
+				Edge edge = new Edge((Node)parent, (Node)child);
+				net.addEdge(edge);
+				ret.add(edge);
 			}
-			parents = nonDuplicateParents;
-		}
-		
-		if (isToOptimizeForProbNetwork) {
-			return this.addNodesToCliqueWhenNotConsideringAssets(child, parents);
-		}
-		
-		// extract the cliques containing parents (if any)
-		List<Clique> parentCliques = net.getJunctionTree().getCliquesContainingAllNodes(parents, Integer.MAX_VALUE);
-		if (parentCliques != null && !parentCliques.isEmpty()) { // case 0 or 1
-			// check if we can handle this case as case 0: both child and parents are in same clique
-			boolean hasAllNodesInSameClique = false;
-			// try to find child node in parentCliques (since parentCliques supposedly has all parent nodes, then if we find any with child, it contains all nodes)
-			for (Clique clique : parentCliques) {
-				if (clique.getNodesList().contains(child)) {
-					hasAllNodesInSameClique = true;
-					break;
-				}
+			
+			// force CPT to become uniform
+			if (child instanceof ProbabilisticNode) {
+				new UniformTableFunction().applyFunction((ProbabilisticTable) ((ProbabilisticNode)child).getProbabilityFunction());
 			}
-			if (!hasAllNodesInSameClique) {
-				// case 1: parents are in same clique, but child is not
-				this.addNodesToCliqueWhenAllParentsInSameClique(child, parents, parentCliques, net);
-			}
-			// case 0: simply add the edge and return without changing junction tree -> will be handled outside this if-clause
-		} else {
-			// case 2: some of the parents are not in the same clique
-			this.addNodesToCliqueWhenParentsInDifferentClique(child, parents, net);
 		}
 		
-		// at this point, junction trees were properly handled (cases 0, 1, or 2). We now just need to add the edge objects into the Bayes net object.
-		List<Edge> ret = new ArrayList<Edge>(parents.size());	// prepare list to return (number of edges to create is the same of the number of parents provided)
-		for (INode parent : parents) {
-			Edge edge = new Edge((Node)parent, (Node)child);
-			net.addEdge(edge);
-			ret.add(edge);
-		}
-		
-		// force CPT to become uniform
-		if (child instanceof ProbabilisticNode) {
-			new UniformTableFunction().applyFunction((ProbabilisticTable) ((ProbabilisticNode)child).getProbabilityFunction());
-		}
 		
 		return ret;
 	}
@@ -419,9 +452,15 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 				if (parent instanceof AssetNode || net instanceof AssetNetwork) {
 					// asset separators are usually filled with a default value
 					for (int i = 0; i < table.tableSize(); i++) {
+						// this is supposedly asset separator
 						table.setValue(i, getDefaultInitialAssetTableValue());
 					}
-				} else {	// this is supposedly asset separator
+				} else {	
+					if (parent.getStatesSize() != table.tableSize()) {
+						throw new RuntimeException("Node " + parent + " has size " + parent.getStatesSize()
+								+ " and separator " + newSep + " has size " + table.tableSize()
+								+ ", but they were supposed to be the same, therefore with same size.");
+					}
 					// table supposedly contains only parent, so fill it with its current marginal
 					for (int i = 0; i < table.tableSize(); i++) {
 						table.setValue(i, ((TreeVariable)parent).getMarginalAt(i));
@@ -691,20 +730,22 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 	 * It will use {@link #getRelatedProbabilisticNetwork()} as the network to add edges.
 	 * <br/>
 	 * It will use {@link #run()} in order to compile the network.
-	 * @param child : the child node (whose new arcs/edges will be pointing to)
-	 * @param parents : the parent nodes (whose new arcs/edges will be pointing from)
-	 * @return list of edges created by this method.
+	 * @param nodeAndParents : a mapping from the child node (whose new arcs/edges will be pointing to)
+	 * to its parent nodes (whose new arcs/edges will be pointing from).
+s	 * @return list of edges created by this method.
 	 * @throws InvalidParentException : exception thrown inherently from {@link ProbabilisticNetwork#addEdge(Edge)}
 	 */
-	public List<Edge> addNodesToCliqueWhenNotConsideringAssets(INode child, List<INode> parents) throws InvalidParentException {
+	public List<Edge> addNodesToCliqueWhenNotConsideringAssets(Map<INode, List<INode>> nodeAndParents) throws InvalidParentException {
+		
+		// basic assertion
+		if (nodeAndParents == null 
+				|| nodeAndParents.isEmpty()) {
+			return Collections.emptyList();
+		}
+		
 		// extract the network to be used in this method
 		ProbabilisticNetwork net = getRelatedProbabilisticNetwork();
-		
-		// initial assertions
-		if (child == null 
-				|| parents == null
-				|| parents.isEmpty()
-				|| net == null) {
+		if ( net == null ) {
 			return Collections.emptyList();
 		}
 		
@@ -724,16 +765,36 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 			}
 		}
 		
-		// add the edges (arcs)
-		List<Edge> ret = new ArrayList<Edge>(parents.size());
-		for (INode parent : parents) {
-			Edge edge = new Edge((Node)parent, (Node)child);
-			net.addEdge(edge);	// this method supposedly avoids duplicates already
-			// TODO this will include the edge in ret even though net already contained it. Change it in order to include edge only when new edge is actually included to net
-			ret.add(edge);
+		// this is the list to be returned
+		List<Edge> ret = new ArrayList<Edge>();
+		
+		// iterate over the mapping
+		for (Entry<INode, List<INode>> entry : nodeAndParents.entrySet()) {
+			// extract the nodes in the mapping entry
+			INode child = entry.getKey();
+			List<INode> parents = entry.getValue();
+			
+			// assertions about content of map
+			if (child == null 
+					|| parents == null
+					|| parents.isEmpty() ) {
+				continue;
+			}
+			
+			// add the edges (arcs)
+			for (INode parent : parents) {
+				Edge edge = new Edge((Node)parent, (Node)child);
+				net.addEdge(edge);	// this method supposedly avoids duplicates already
+				// TODO this will include the edge in ret even though net already contained it. Change it in order to include edge only when new edge is actually included to net
+				ret.add(edge);
+			}
 		}
-		// make sure the CPT of child is kept normalized
-		new NormalizeTableFunction().applyFunction((ProbabilisticTable) ((ProbabilisticNode)child).getProbabilityFunction());
+		
+		// make sure all CPTs of the affected children are kept normalized after insertion of all edges
+		for (INode child : nodeAndParents.keySet()) {
+			new NormalizeTableFunction().applyFunction((ProbabilisticTable) ((ProbabilisticNode)child).getProbabilityFunction());
+		}
+		
 		
 		// compile junction tree, considering the new edges
 		run();
@@ -763,6 +824,8 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 						// it is assumed that cliques don't have duplicate nodes
 					}
 				}
+				
+				// TODO this is wrong, and will only work for independent nodes!
 				
 				// add nodes in old clique which are present in new clique but not in old clique
 				for (INode newCliqueNode : newClique.getNodesList()) {
@@ -795,9 +858,14 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 					}
 				}
 				
+				// make sure table is normalized
+				oldTable.normalize();
+				
 				// copy clique potential from old to new clique
 				PotentialTable newTable = newClique.getProbabilityFunction();
 				if (newTable.tableSize() == oldTable.tableSize()) {
+					// also make sure the variables are in same ordering
+					
 					newTable.setValues(oldTable.getValues());
 				} else {
 					// because we removed extra nodes from oldTable and added nodes of newTable to oldTable, they should have the same size

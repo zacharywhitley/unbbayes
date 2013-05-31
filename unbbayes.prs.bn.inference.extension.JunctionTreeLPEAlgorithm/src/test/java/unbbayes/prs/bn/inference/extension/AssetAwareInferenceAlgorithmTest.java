@@ -14,6 +14,8 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 import unbbayes.io.NetIO;
+import unbbayes.io.StringPrintStreamBuilder;
+import unbbayes.io.StringReaderBuilder;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -2053,11 +2055,21 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 			// save and reload file again
 			NetIO io = new NetIO();
 			File file = new File("DEF_newCPTs.net");
+			StringBuilder stringBuilder = new StringBuilder();
+			if (Math.random() < .5) {
+				// store to string instead of file
+				io.setPrintStreamBuilder(new StringPrintStreamBuilder(stringBuilder));
+			}
 			io.save(file, junctionTreeAlgorithm.getNetwork());
+			if (stringBuilder.length() > 0) {
+				io.setReaderBuilder(new StringReaderBuilder(stringBuilder.toString()));
+			}
 			junctionTreeAlgorithm.setNet((ProbabilisticNetwork) io.load(file));
 			junctionTreeAlgorithm.run();
 			network = junctionTreeAlgorithm.getNet();
-			assertTrue(file.delete());
+			if (stringBuilder.length() <= 0) {
+				assertTrue(file.delete());
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());
@@ -2101,11 +2113,21 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 			// save and reload file again
 			NetIO io = new NetIO();
 			File file = new File("DEF_newCPTs.net");
+			StringBuilder stringBuilder = new StringBuilder();
+			if (Math.random() < .5) {
+				// store to string instead of file
+				io.setPrintStreamBuilder(new StringPrintStreamBuilder(stringBuilder));
+			}
 			io.save(file, junctionTreeAlgorithm.getNetwork());
+			if (stringBuilder.length() > 0) {
+				io.setReaderBuilder(new StringReaderBuilder(stringBuilder.toString()));
+			}
 			junctionTreeAlgorithm.setNet((ProbabilisticNetwork) io.load(file));
 			junctionTreeAlgorithm.run();
 			network = junctionTreeAlgorithm.getNet();
-			assertTrue(file.delete());
+			if (stringBuilder.length() <= 0) {
+				assertTrue(file.delete());
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			fail(e.getMessage());

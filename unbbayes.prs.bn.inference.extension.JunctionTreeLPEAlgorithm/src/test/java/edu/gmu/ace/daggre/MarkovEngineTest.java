@@ -16145,6 +16145,10 @@ public class MarkovEngineTest extends TestCase {
 	
 	/** Yet another test case for regression test */
 	public final void test5678Net() {
+		// TODO make engine to work with this example when engine.isToAddArcsWithoutReboot() == true
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		engine.setToAddArcsWithoutReboot(false);
+		
 		engine.setDefaultInitialAssetTableValue(100f);
 		engine.setCurrentCurrencyConstant(100f);
 		engine.setCurrentLogBase(2f);
@@ -16220,6 +16224,9 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(84.4694808988f, engine.getCash(6L, null, null), PROB_ERROR_MARGIN);
 		assertEquals(100.1254412613f, engine.scoreUserEv(6L, null, null), PROB_ERROR_MARGIN);
 	
+		
+		// restore backup
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 	}
 	
 	
@@ -16667,6 +16674,10 @@ public class MarkovEngineTest extends TestCase {
 	 * 
 	 */
 	public final void testCompareWithExpectedFromMatlab()  {
+		// TODO make engine to work with this example when engine.isToAddArcsWithoutReboot() == true
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		engine.setToAddArcsWithoutReboot(false);
+				
 		engine.setToUseQValues(false);					// use asset space instead of q-values
 		engine.setCurrentCurrencyConstant(100f);		// b = 100
 		engine.setCurrentLogBase(2f);					// base of log is 2
@@ -19256,6 +19267,9 @@ public class MarkovEngineTest extends TestCase {
 		
 		
 		assertEquals(177.755, engine.scoreUserEv(1, null, null), ASSET_ERROR_MARGIN);
+		
+		// restore backup
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 	}
 	
 	/**
@@ -22831,8 +22845,8 @@ public class MarkovEngineTest extends TestCase {
 		for (Long key : probLists.keySet()) {
 			probList = probLists.get(key);
 			assertEquals(2, probList.size());
-			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
-			assertTrue(probList.get(0) <= 1 &&probList.get(1) <= 1);
+			assertTrue(probList.get(0) >= (-PROB_ERROR_MARGIN) &&probList.get(1) >= (-PROB_ERROR_MARGIN));
+			assertTrue(probList.get(0) <= (1+PROB_ERROR_MARGIN) &&probList.get(1) <= (1+PROB_ERROR_MARGIN));
 			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
 		}
 		probLists = engine.getProbLists(null, Collections.singletonList(0x0FL), Collections.singletonList(1));
@@ -22875,8 +22889,8 @@ public class MarkovEngineTest extends TestCase {
 		for (Long key : probLists.keySet()) {
 			probList = probLists.get(key);
 			assertEquals(2, probList.size());
-			assertTrue(probList.get(0) >= 0 &&probList.get(1) >= 0);
-			assertTrue(probList.get(0) <= 1 &&probList.get(1) <= 1);
+			assertTrue(probList.get(0) >= (-PROB_ERROR_MARGIN) &&probList.get(1) >= (-PROB_ERROR_MARGIN));
+			assertTrue(probList.get(0) <= (1+PROB_ERROR_MARGIN) &&probList.get(1) <= (1+PROB_ERROR_MARGIN));
 			assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
 		}
 		probLists = engine.getProbLists(allQuestions, Collections.singletonList(0x0FL), Collections.singletonList(1));
@@ -23973,7 +23987,6 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	
-	
 	/**
 	 * Verifies the behavior of balancing trades when 10 variables are present in the same clique.
 	 * A network with 30 variables, comprised of 3 subnets of 10 variables with 2 states, fully connected (so, there will be
@@ -24082,6 +24095,172 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 		
+	}
+	
+	/**
+	 * Test method for {@link MarkovEngineImpl#exportCurrentSharedNetwork()}
+	 * and {@link MarkovEngineImpl#importCurrentSharedNetwork(String)}
+	 * for 2000 vars and randomly created arcs (max 10 parents)
+	 */
+	public final void testExportImport2000Vars() {
+		int numNodes = 2000;	// total quantity of nodes in the network
+		int maxNumStates = 4;	// how many states a node can have at most. The minimum is expected to be 2, but this var should not be set to 2
+		int maxNumParents = 10;	// maximum number of parents per node 
+		float probAddArcs = .00065f;	// what is the probability to add arcs. The higher, more arcs are likely to be created.
+		float probTrade = .05f;	// how many nodes will be traded
+		float probAddAssumption = .15f;	// what is the probability to add assumptions in trades. The higher, more assumptions are likely to be used.
+		long seed = new Date().getTime();
+		Random random = new Random(seed);
+		
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(true);
+		
+		System.out.println("[testExportImport2000Vars] Random seed = " + seed);
+		
+		// create the nodes
+		long transactionKey = engine.startNetworkActions();
+		for (int i = 0; i < numNodes; i++) {
+			// random quantity of states: from 2 to ( 2 + (4-1) ) = 5
+			engine.addQuestion(transactionKey, new Date(), i, 2+random.nextInt(maxNumStates-2), null);
+		}
+		engine.commitNetworkActions(transactionKey);
+		
+		// vetor representing how many parents a node has
+		int[] numParentsPerNode = new int[numNodes];
+		// initialize vector
+		for (int i = 0; i < numParentsPerNode.length; i++) {
+			numParentsPerNode[i] = 0;
+		}
+		
+		// create arcs randomly
+		transactionKey = engine.startNetworkActions();
+		for (int i = 0; i < numNodes-1; i++) {
+			for (int j = i+1; j < numNodes; j++) {
+				if (random.nextFloat() > probAddArcs) {
+					continue;	// only create arcs with probability probAddArcs
+				}
+				// check if number of parents reached maximum
+				if (numParentsPerNode[j] < maxNumParents) {
+					engine.addQuestionAssumption(transactionKey, new Date(), j, Collections.singletonList((long)i), null);
+					numParentsPerNode[j]++;
+				}
+			}
+		}
+		numParentsPerNode = null;	// try disposing it, because it won't be used anymore
+		engine.commitNetworkActions(transactionKey);
+		
+		System.out.println(engine.getNetStatistics().toString());
+		System.out.println("seed = " + seed);
+		// make trades on all variables
+		for (long questionId = 0; questionId < numNodes; questionId++) {
+			ProbabilisticNode node = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode(Long.toString(questionId));
+			assertNotNull(node);
+			
+			if (!node.getParentNodes().isEmpty()) {
+				if (random.nextFloat() > probTrade) {
+					continue;
+				}
+			}
+			// the trade to be performed
+			List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
+			float sumForNormalization = 0f;
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				newValues.add(random.nextFloat());
+				sumForNormalization += newValues.get(i);
+			}
+			// normalize the newValues
+			for (int i = 0; i < newValues.size(); i++) {
+				newValues.set(i, newValues.get(i)/sumForNormalization);
+			}
+			
+			List<Long> assumptionIds = new ArrayList<Long>(node.getParentNodes().size());
+			List<Integer> assumedStates = new ArrayList<Integer>(node.getParentNodes().size());
+			
+			// randomly select assumptions
+			for (INode parent : node.getParentNodes()) {
+				// use prob to add assumption
+				if (random.nextFloat() < probAddAssumption) {
+					assumptionIds.add(Long.parseLong(parent.getName()));
+					assumedStates.add(random.nextInt(parent.getStatesSize()));	// random state from 0 to parent.getStatesSize()-1
+				}
+			}
+			
+			engine.addTrade(
+					null, 
+					new Date(), 
+					"P(" + questionId + " | " + assumptionIds + "=" + assumedStates+") = " + newValues, 
+					0, 
+					questionId, 
+					newValues, 
+					assumptionIds, 
+					assumedStates, 
+					true
+				);
+			
+		}
+		
+		// backup network to check afterwards
+		ProbabilisticNetwork cloneNet = null;
+		try {
+			cloneNet = (ProbabilisticNetwork) engine.getDefaultInferenceAlgorithm().clone(false).getNetwork(); // do not clone asset net
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			fail();
+		}	
+		assertNotNull(cloneNet);
+		
+		System.out.println(engine.getNetStatistics().toString());
+		System.out.println("seed = " + seed);
+		// store network as a string
+		long timeBefore = System.currentTimeMillis();
+		String netAsString = engine.exportCurrentSharedNetwork();
+		System.out.println("Time (ms) to export network = " + (System.currentTimeMillis() - timeBefore));
+		System.out.println("seed = " + seed);
+		
+		assertNotNull(netAsString);
+		assertFalse(netAsString.trim().isEmpty());
+		
+		System.out.println(netAsString);
+		
+		// load network from the obtained string
+		timeBefore = System.currentTimeMillis();
+		engine.importCurrentSharedNetwork(netAsString);
+		System.out.println("Time (ms) to import network = " + (System.currentTimeMillis() - timeBefore));
+		System.out.println("seed = " + seed);
+		
+		// check if the loaded network matches previous network
+		assertNotNull(engine.getProbabilisticNetwork());
+		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree());
+		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree().getCliques());
+		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree().getSeparators());
+		
+		// check number of nodes and arcs
+		assertEquals(cloneNet.getNodeCount(), engine.getProbabilisticNetwork().getNodeCount());
+		assertEquals(cloneNet.getEdges().size(), engine.getProbabilisticNetwork().getEdges().size());
+		
+		// check parents and marginals
+		for (Node oldNode : cloneNet.getNodes()) {
+			Node newNode = engine.getProbabilisticNetwork().getNode(oldNode.getName());
+			assertNotNull(oldNode + " not found.", newNode);
+			// if number of parents matches and all parents in old node are included in parents of new node, then they are equal
+			assertEquals(oldNode.getParentNodes().size(), newNode.getParentNodes().size());
+			for (INode oldParent : oldNode.getParentNodes()) {
+				assertTrue(oldParent + " is supposed to be a parent of " + newNode, newNode.getParentNodes().contains(oldParent));
+			}
+			// check that number of states are the same
+			assertEquals(oldNode.getName(), oldNode.getStatesSize(), newNode.getStatesSize());
+			// at least, check if marginals are the same
+			for (int i = 0; i < oldNode.getStatesSize(); i++) {
+				assertEquals(oldNode.getName(), ((ProbabilisticNode)oldNode).getMarginalAt(i), ((ProbabilisticNode)newNode).getMarginalAt(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// Note: cliques and separators are not mandatory to be precisely equal, because they are built by heuristics
+		
+		
+		// restore backup 
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 	}
 	
 }

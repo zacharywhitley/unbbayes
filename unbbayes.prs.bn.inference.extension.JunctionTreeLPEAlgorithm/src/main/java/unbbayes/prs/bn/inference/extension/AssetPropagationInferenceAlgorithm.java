@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import unbbayes.controller.INetworkMediator;
@@ -3055,55 +3056,83 @@ public class AssetPropagationInferenceAlgorithm extends AbstractAssetNetAlgorith
 		this.unconditionalMinAssetCache = unconditionalMinAssetCache;
 	}
 	
+//	/**
+//	 * Simply calls {@link #addEdgesToNet(Map, boolean)}
+//	 * @see unbbayes.prs.bn.inference.extension.AbstractAssetNetAlgorithm#addEdgesToNet(unbbayes.prs.INode, java.util.List, boolean)
+//	 */
+//	public List<Edge> addEdgesToNet(INode child, List<INode> parents, boolean isToOptimizeForProbNetwork) throws UnsupportedOperationException, IllegalArgumentException, InvalidParentException {
+//		if (child == null || parents == null || parents.isEmpty()) {
+//			return Collections.emptyList();
+//		}
+//		return this.addEdgesToNet(Collections.singletonMap(child, parents), isToOptimizeForProbNetwork);
+//	}
+	
 	/**
 	 * Overwrites the super method by not adding new arcs (because arcs of asset nets are unnecessary and occupies space)
-	 * @see unbbayes.prs.bn.inference.extension.AbstractAssetNetAlgorithm#addEdgesToNet(unbbayes.prs.INode, java.util.List, boolean)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#addEdgesToNet(java.util.Map, boolean)
 	 */
-	public List<Edge> addEdgesToNet(INode child, List<INode> parents, boolean isToOptimizeForProbNetwork) throws UnsupportedOperationException, IllegalArgumentException, InvalidParentException {
-		if (child == null || parents == null || parents.isEmpty()) {
+	public List<Edge> addEdgesToNet(Map<INode, List<INode>> nodeAndParents, boolean isToOptimizeForProbNetwork) 
+			throws UnsupportedOperationException, IllegalArgumentException,InvalidParentException {
+		// basic assertions
+		if (nodeAndParents == null || nodeAndParents.isEmpty()) {
 			return Collections.emptyList();
+		}
+		if (isToOptimizeForProbNetwork) {
+			throw new UnsupportedOperationException("This is an algorithm specific for handling assets, so cannot use it with the flag of isToOptimizeForProbNetwork turned on.");
 		}
 		
 		// extract the network to work with
 		AssetNetwork assetNet = this.getAssetNetwork();
 		
-		// needs to remove duplicates and make sure to use asset nodes instead of prob nodes
-		List<INode> assetParents = new ArrayList<INode>(parents.size());
-		for (INode parent : parents) {
-			Node node = assetNet.getNode(parent.getName());
-			if (!assetParents.contains(node)) {
-				// remove duplicates without changing original ordering
-				assetParents.add(node);
+		// iterate over nodeAndParents
+		for (Entry<INode, List<INode>> entry : nodeAndParents.entrySet()) {
+			// extract the nodes in the current iteration
+			INode child = entry.getKey();
+			List<INode> parents = entry.getValue();
+			
+			if (child == null 
+					|| parents == null
+					|| parents.isEmpty()) {
+				// it does not specify an arc, so we do not need to handle it
+				continue;
 			}
-		}
-		
-		if (isToOptimizeForProbNetwork) {
-			throw new UnsupportedOperationException("This is an algorithm specific for handling assets, so cannot use it with the flag of isToOptimizeForProbNetwork turned on.");
-		}
-		
-		// extract the cliques containing parents (if any)
-		List<Clique> parentCliques = assetNet.getJunctionTree().getCliquesContainingAllNodes(assetParents, Integer.MAX_VALUE);
-		if (parentCliques != null && !parentCliques.isEmpty()) { // case 0 or 1
-			// check if we can handle this case as case 0: both child and parents are in same clique
-			boolean hasAllNodesInSameClique = false;
-			// try to find child node in parentCliques (since parentCliques supposedly has all parent nodes, then if we find any with child, it contains all nodes)
-			for (Clique clique : parentCliques) {
-				if (clique.getNodesList().contains(child)) {
-					hasAllNodesInSameClique = true;
-					break;
+			
+			// needs to remove duplicates and make sure to use asset nodes instead of prob nodes
+			List<INode> assetParents = new ArrayList<INode>(parents.size());
+			for (INode parent : parents) {
+				Node node = assetNet.getNode(parent.getName());
+				if (!assetParents.contains(node)) {
+					// remove duplicates without changing original ordering
+					assetParents.add(node);
 				}
 			}
-			if (!hasAllNodesInSameClique) {
-				// case 1: parents are in same clique, but child is not
-				this.addNodesToCliqueWhenAllParentsInSameClique(child, assetParents, parentCliques, assetNet);
+			
+			
+			// extract the cliques containing parents (if any)
+			List<Clique> parentCliques = assetNet.getJunctionTree().getCliquesContainingAllNodes(assetParents, Integer.MAX_VALUE);
+			if (parentCliques != null && !parentCliques.isEmpty()) { // case 0 or 1
+				// check if we can handle this case as case 0: both child and parents are in same clique
+				boolean hasAllNodesInSameClique = false;
+				// try to find child node in parentCliques (since parentCliques supposedly has all parent nodes, then if we find any with child, it contains all nodes)
+				for (Clique clique : parentCliques) {
+					if (clique.getNodesList().contains(child)) {
+						hasAllNodesInSameClique = true;
+						break;
+					}
+				}
+				if (!hasAllNodesInSameClique) {
+					// case 1: parents are in same clique, but child is not
+					this.addNodesToCliqueWhenAllParentsInSameClique(child, assetParents, parentCliques, assetNet);
+				}
+				// case 0: simply add the edge and return without changing junction tree -> will be handled outside this if-clause
+			} else {
+				// case 2: some of the parents are not in the same clique
+				this.addNodesToCliqueWhenParentsInDifferentClique(child, assetParents, assetNet);
 			}
-			// case 0: simply add the edge and return without changing junction tree -> will be handled outside this if-clause
-		} else {
-			// case 2: some of the parents are not in the same clique
-			this.addNodesToCliqueWhenParentsInDifferentClique(child, assetParents, assetNet);
 		}
 		
-		// do not add edges, because it only occupies space and does not have any numerical importance.
+		
+		// do not add edges, because it only occupies space and does not have any numerical importance in asset nets.
 		return Collections.EMPTY_LIST;
 	}
 	

@@ -365,11 +365,36 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 */
 	public INode addDisconnectedNodeIntoAssetNet(INode nodeInProbNet, Graph probNet, AssetNetwork assetNet);
 	
+//	/**
+//	 * This method will attempt to connect nodes without re-compiling the network (re-generating junction tree).
+//	 * By default, the network obtainable from {@link #getNetwork()} will be updated.
+//	 * @param child : the child node (whose new arcs/edges will be pointing to)
+//	 * @param parents : the parent nodes (whose new arcs/edges will be pointing from)
+//	 * @param isToOptimizeForProbNetwork: if true, this method will assume that only probabilistic networks are being
+//	 * used, and optimizations will be performed assuming that cliques are globally consistent and normalized.
+//	 * <br/>
+//	 * <br/>
+//	 * CAUTION: ALWAYS USE FALSE IF YOU NEED TO USE THIS ALGORITHM TOGETHER WITH ANY KIND OF ASSET NETWORKS, BECAUSE ASSET NETWORKS
+//	 * ARE NEITHER GLOBALLY CONSISTENT NOR NORMALIZED. NOTE THAT PASSING TRUE IN PROBABILISTIC NETWORKS AND FALSE AT 
+//	 * ASSET NETWORKS MAY CAUSE THE JUNCTION TREES OF PROBABILITIES AND ASSETS TO BECOME DIFFERENT, CAUSING ERRORS,
+//	 * SO USE FALSE AT BOTH IF YOU ARE USING ASSETS ANYWHERE.
+//	 * <br/>
+//	 * @param isToUpdateJunctionTree: if false, the junction tree won't be updated. This is only useful when
+//	 * you expect more edges to be created, and only the last call must update the junction tree. Use true by default.
+//	 * @return : the list of new edges created as a result of the execution of this method. 
+//	 * Implementations may return null or empty if this method only changes the junction tree, without updating the Bayes net.
+//	 * @throws UnsupportedOperationException if the implementation is not able to connect the nodes
+//	 * specified in its arguments, mainly due to complexity.
+//	 * @throws IllegalArgumentException : if the nodes specified in the arguments are not managed by this algorithm.
+//	 * @throws InvalidParentException : if the provided parent is not consistent. See {@link unbbayes.prs.Network#addEdge(Edge)}
+//	 */
+//	public List<Edge> addEdgesToNet(INode child, List<INode> parents, boolean isToOptimizeForProbNetwork) throws UnsupportedOperationException, IllegalArgumentException,InvalidParentException;
+	
 	/**
 	 * This method will attempt to connect nodes without re-compiling the network (re-generating junction tree).
 	 * By default, the network obtainable from {@link #getNetwork()} will be updated.
-	 * @param child : the child node (whose new arcs/edges will be pointing to)
-	 * @param parents : the parent nodes (whose new arcs/edges will be pointing from)
+	 * @param nodeAndParents : a mapping from the child node (whose new arcs/edges will be pointing to)
+	 * to its parent nodes (whose new arcs/edges will be pointing from).
 	 * @param isToOptimizeForProbNetwork: if true, this method will assume that only probabilistic networks are being
 	 * used, and optimizations will be performed assuming that cliques are globally consistent and normalized.
 	 * <br/>
@@ -379,6 +404,8 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * ASSET NETWORKS MAY CAUSE THE JUNCTION TREES OF PROBABILITIES AND ASSETS TO BECOME DIFFERENT, CAUSING ERRORS,
 	 * SO USE FALSE AT BOTH IF YOU ARE USING ASSETS ANYWHERE.
 	 * <br/>
+	 * @param isToUpdateJunctionTree: if false, the junction tree won't be updated. This is only useful when
+	 * you expect more edges to be created, and only the last call must update the junction tree. Use true by default.
 	 * @return : the list of new edges created as a result of the execution of this method. 
 	 * Implementations may return null or empty if this method only changes the junction tree, without updating the Bayes net.
 	 * @throws UnsupportedOperationException if the implementation is not able to connect the nodes
@@ -386,7 +413,7 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * @throws IllegalArgumentException : if the nodes specified in the arguments are not managed by this algorithm.
 	 * @throws InvalidParentException : if the provided parent is not consistent. See {@link unbbayes.prs.Network#addEdge(Edge)}
 	 */
-	public List<Edge> addEdgesToNet(INode child, List<INode> parents, boolean isToOptimizeForProbNetwork) throws UnsupportedOperationException, IllegalArgumentException,InvalidParentException;
+	public List<Edge> addEdgesToNet(Map<INode, List<INode>> nodeAndParents, boolean isToOptimizeForProbNetwork) throws UnsupportedOperationException, IllegalArgumentException,InvalidParentException;
 	
 	/**
 	 * Finds the shortest path from a clique to another clique (regardless of direction of the connections

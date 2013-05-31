@@ -33,11 +33,16 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNetworkFilter;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
+import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
+import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
+import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
+import unbbayes.util.dseparation.impl.MSeparationUtility;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
 
@@ -70,6 +75,12 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	private boolean isToUpdateAssets = true;
 	
 	private boolean isToUseQValues = AssetPropagationInferenceAlgorithm.IS_TO_USE_Q_VALUES;
+	
+	private MSeparationUtility mseparationUtility = DEFAULT_MSEPARATION_UTILITY; 
+	
+	/** This is a default instance of {@link #getMSeparationUtility()} */
+	public static final MSeparationUtility DEFAULT_MSEPARATION_UTILITY = MSeparationUtility.newInstance();
+	
 
 	/** 
 	 * Name of the property in {@link Graph#getProperty(String)} which manages current assets. 
@@ -144,6 +155,8 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	private String name = null;
 
 	private boolean isToChangeGUI = true;
+
+	private boolean isToConnectParentsWhenAbsorbingNode = true;
 	
 
 	
@@ -201,12 +214,13 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	 */
 	public void setNetwork(Graph g) throws IllegalArgumentException {
 		this.getProbabilityPropagationDelegator().setNetwork(g);
-		// it should update the this.getAssetPropagationDelegator only on propagate
-//		try {
-//			this.getAssetPropagationDelegator().setRelatedProbabilisticNetwork((ProbabilisticNetwork) g);
-//		} catch (InvalidParentException e) {
-//			throw new IllegalArgumentException(e);
-//		}
+		if (this.getAssetPropagationDelegator() != null) {
+			try {
+				this.getAssetPropagationDelegator().setRelatedProbabilisticNetwork((ProbabilisticNetwork) g);
+			} catch (InvalidParentException e) {
+				throw new IllegalArgumentException(e);
+			}
+		}
 	}
 
 	/**
@@ -1719,6 +1733,47 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 		// delete resolved nodes
 		if (isToDeleteNode) {
 			for (INode node : evidences.keySet()) {
+				// connect the parents, because they shall be conditionally dependent even after resolution
+				if (isToConnectParentsWhenAbsorbingNode()) {
+					// iterate over all pairs of parent nodes
+					for (int i = 0; i < node.getParentNodes().size()-1; i++) {
+						for (int j = i+1; j < node.getParentNodes().size(); j++) {
+							// extract the pair of nodes
+							Node parent1 = (Node) node.getParentNodes().get(i);
+							Node parent2 = (Node) node.getParentNodes().get(j);
+							
+							// check if there is an arc between these 2 nodes
+							if (parent1.getParents().contains(parent2) || parent2.getParents().contains(parent1)){
+								// ignore this combination of nodes, because they are already connected
+								continue;
+							}
+							
+							if (getMSeparationUtility().getRoutes(parent1, parent2, null, null, 1).isEmpty()) {
+								// there is no route from node1 to node2, so we can create parent2->parent1 without generating cycle
+								Edge edge = new Edge(parent2,parent1);
+								// add edge into the network
+								try {
+									getRelatedProbabilisticNetwork().addEdge(edge);
+								} catch (Exception e) {
+									throw new RuntimeException("Could not add edge from " + parent2 + " to " + parent1 + " while absorbing " + node, e);
+								}
+								// normalize table
+								new NormalizeTableFunction().applyFunction((ProbabilisticTable) ((ProbabilisticNode)parent1).getProbabilityFunction());
+							} else { // supposedly, we can always add edges in one of the directions (i.e. there is no way we add arc in each direction and both result in cycle)
+								// there is a route from node1 to node2, so we cannot create parent2->parent1 (it will create a cycle if we do so), so create parent1->parent2
+								Edge edge = new Edge(parent1,parent2);
+								// add edge into the network
+								try {
+									getRelatedProbabilisticNetwork().addEdge(edge);
+								} catch (Exception e) {
+									throw new RuntimeException("Could not add edge from " + parent1 + " to " + parent2 + " while absorbing " + node, e);
+								}
+								// normalize table
+								new NormalizeTableFunction().applyFunction((ProbabilisticTable) ((ProbabilisticNode)parent2).getProbabilityFunction());
+							}
+						}
+					}
+				}
 				getRelatedProbabilisticNetwork().removeNode((Node) node); // this will supposedly delete the nodes from cliques as well
 			}
 			// special treatment if the node to remove makes the clique to become empty
@@ -2343,6 +2398,106 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 		return false;	// default value
 	}
 
+	/**
+	 * If this is true, then {@link #setAsPermanentEvidence(Map, boolean)} will attempt
+	 * to connect parent of resolved nodes when it is configured to remove/absorb resolved nodes.
+	 * @return the isToConnectParentsWhenAbsorbingNode
+	 */
+	public boolean isToConnectParentsWhenAbsorbingNode() {
+		return isToConnectParentsWhenAbsorbingNode;
+	}
+
+	/**
+	 * If this is true, then {@link #setAsPermanentEvidence(Map, boolean)} will attempt
+	 * to connect parent of resolved nodes when it is configured to remove/absorb resolved nodes.
+	 * @param isToConnectParentsWhenAbsorbingNode the isToConnectParentsWhenAbsorbingNode to set
+	 */
+	public void setToConnectParentsWhenAbsorbingNode(
+			boolean isToConnectParentsWhenAbsorbingNode) {
+		this.isToConnectParentsWhenAbsorbingNode = isToConnectParentsWhenAbsorbingNode;
+	}
+
+	/**
+	 * This is used in {@link #removeInferencceAlgorithmListener(IInferenceAlgorithmListener)} while
+	 * connecting parents of absorbed nodes, in order to check which direction of arcs will not cause
+	 * cycles.
+	 * @return the mseparationUtility
+	 */
+	public MSeparationUtility getMSeparationUtility() {
+		return mseparationUtility;
+	}
+
+	/**
+	 * This is used in {@link #removeInferencceAlgorithmListener(IInferenceAlgorithmListener)} while
+	 * connecting parents of absorbed nodes, in order to check which direction of arcs will not cause
+	 * cycles.
+	 * @param mseparationUtility the mseparationUtility to set
+	 */
+	public void setMSeparationUtility(MSeparationUtility mseparationUtility) {
+		this.mseparationUtility = mseparationUtility;
+	}
+
+	
+	/**
+	 * This method will update the CPT of all nodes in {@link #getNet()}
+	 * by using clique potentials available at {@link ProbabilisticNetwork#getJunctionTree()}
+	 * of {@link #getNet()}.
+	 */
+	public void updateCPTFromJT() {
+		// this probability extractor will enable us to get conditional probabilities from current state of junction tree.
+		IArbitraryConditionalProbabilityExtractor extractor = null;
+		if (getLikelihoodExtractor() instanceof JeffreyRuleLikelihoodExtractor) {
+			// attempt to re-use instances if possible
+			extractor = ((JeffreyRuleLikelihoodExtractor)getLikelihoodExtractor()).getConditionalProbabilityExtractor();
+		} else {
+			// if impossible, then we have to create new instance of probability extractor
+			extractor = InCliqueConditionalProbabilityExtractor.newInstance();
+		}
+		
+		// iterate over all nodes in the net
+		ProbabilisticNetwork net = this.getNet();
+		for (Node node : net.getNodes()) {
+			// only make changes if this is a probabilistic node
+			if (node instanceof ProbabilisticNode) {
+				ProbabilisticNode mainNode = (ProbabilisticNode) node;	// the node to set CPT
+				PotentialTable cpt = mainNode.getProbabilityFunction();	// the CPT to change
+				
+				// extract the conditional probability from the current state of network (i.e. current clique potentials)
+				PotentialTable condProb = (PotentialTable) extractor.buildCondicionalProbability(mainNode, node.getParentNodes(), net, this.getProbabilityPropagationDelegator());
+				
+				// check size consistency
+				if (cpt.tableSize() != condProb.tableSize()) {
+					throw new RuntimeException("The CPT of node " + node + " is supposedly with size " + cpt.tableSize() + ", but conditional probability extracted from Junction Tree had size " + condProb.tableSize());
+				}
+				
+				// use values in condProb to update cpt
+				cpt.setValues(condProb.getValues());
+			}
+		}
+	}
+	
+	/**
+	 * Attempts to delegate to {@link #getProbabilityPropagationDelegator()} if possible
+	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#getLikelihoodExtractor()
+	 */
+	public ILikelihoodExtractor getLikelihoodExtractor() {
+		if (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			return ((JunctionTreeAlgorithm) getProbabilityPropagationDelegator()).getLikelihoodExtractor();
+		} else {
+			return super.getLikelihoodExtractor();
+		}
+	}
+	
+	/**
+	 * Attempts to delegate to {@link #getProbabilityPropagationDelegator()} if possible
+	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#setLikelihoodExtractor(unbbayes.prs.bn.ILikelihoodExtractor)
+	 */
+	public void setLikelihoodExtractor(ILikelihoodExtractor likelihoodExtractor) {
+		if (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			((JunctionTreeAlgorithm) getProbabilityPropagationDelegator()).setLikelihoodExtractor(likelihoodExtractor);
+		}
+		super.setLikelihoodExtractor(likelihoodExtractor);
+	}
 	
 
 //	/**

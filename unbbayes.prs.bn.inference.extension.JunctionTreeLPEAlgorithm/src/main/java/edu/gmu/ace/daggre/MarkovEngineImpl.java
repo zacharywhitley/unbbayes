@@ -1,7 +1,11 @@
 package edu.gmu.ace.daggre;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,6 +24,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
+import unbbayes.io.StringPrintStreamBuilder;
+import unbbayes.io.StringReaderBuilder;
 import unbbayes.prs.Edge;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -180,8 +186,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private HashMap<Clique, List<ParentActionPotentialTablePair>> lastNCliquePotentialMap;
 
 
-	private BaseIO io;
-
+	private BaseIO io = new NetIO();
+	
 
 	private float nodePositionRandomRange = 800;
 	
@@ -286,7 +292,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private boolean isToPrintRootClique = false;
 
-	private boolean isToTraceHistory = true;   
+	private boolean isToTraceHistory = true;
+
+	private boolean isToExportOnlyCurrentSharedProbabilisticNet = false;
+
+	private NetIO netIOToExportSharedNetToSting = new NetIO(); 
 	
 	
 	/**
@@ -294,7 +304,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * Use {@link #getInstance()} to actually instantiate objects of this class.
 	 */
 	protected MarkovEngineImpl() {
-		setIO(new NetIO());
 		this.initialize();
 	}
 	
@@ -574,6 +583,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			List<NetworkAction> otherActions = new ArrayList<NetworkAction>();	// will store actions which does not change network structure
 			// collect all network change actions and other actions, regarding their original order
+			List<AddQuestionAssumptionNetworkAction> arcActions = new ArrayList<AddQuestionAssumptionNetworkAction>();	// will store actions which adds arcs (so that we can aggregate them if possible)
 			boolean isToRebuildFromHistory = false;	// if an action which is set as a trigger for rebuild is found, this flag will turn on
 			for (NetworkAction action : actions) {
 				if (action.isTriggerForRebuild()) {
@@ -581,13 +591,25 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					isToRebuildFromHistory = true;
 				}
 				if (action.isStructureConstructionAction()) {
-					netChangeActions.add(action);
+					if (!isToRebuildFromHistory 
+							&& isToAddArcsOnlyToProbabilisticNetwork()
+							&& (action instanceof AddQuestionAssumptionNetworkAction)) {
+						// currently, we can only aggregate AddQuestionAssumption under these conditions
+						arcActions.add((AddQuestionAssumptionNetworkAction) action);
+					} else {
+						netChangeActions.add(action);
+					}
 				} else if (isToSortAddCashAction && (action instanceof AddCashNetworkAction)) {
 					addCashActions.add(action);
 				} else {
 					// Note: if isToSortAddCashAction() == false, AddCashNetworkAction will be included here
 					otherActions.add(action);
 				}
+			}
+			
+			// if we aggregated arcs, then add aggregated action at the end of the list of actions storing those who will change net structure
+			if (!arcActions.isEmpty()) {
+				netChangeActions.add(new AggregatedQuestionAssumptionNetworkAction(arcActions));
 			}
 			
 			// this is the action which rebuilds the network if there is any action changing network structure
@@ -1689,6 +1711,133 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	}
 	
 	/**
+	 * This simply represents an aggregated set of {@link AddQuestionAssumptionNetworkAction}.
+	 * This may be useful for optimizing a sequence of {@link AddQuestionAssumptionNetworkAction}
+	 * when {@link MarkovEngineImpl#isToAddArcsOnlyToProbabilisticNetwork} == true.
+	 * @author Shou Matsumoto
+	 */
+	public class AggregatedQuestionAssumptionNetworkAction extends AddQuestionAssumptionNetworkAction {
+		private Map<Long, List<Long>> links;
+
+		/**
+		 * Constructor initializing fields
+		 * @param actions
+		 */
+		public AggregatedQuestionAssumptionNetworkAction(List<AddQuestionAssumptionNetworkAction> actions)  {
+			// simply use values from the 1st action being aggregated
+			super(actions.get(0).getTransactionKey(), actions.get(0).getWhenCreatedMillis(),  actions.get(0).getQuestionId(),  actions.get(0).getAssumptionIds(), null);
+			
+			if (!isToAddArcsOnlyToProbabilisticNetwork()) {
+				throw new UnsupportedOperationException("This version of Markov Engine can only aggregate requests for adding arcs when the flag isToAddArcsOnlyToProbabilisticNetwork == true.");
+			}
+			
+			// initialize mapping of links
+			Map<Long, List<Long>> mapping = new HashMap<Long, List<Long>>();
+			this.setLinks(mapping);
+			
+			// fill mapping of links accordingly to the actions in the provided list
+			for (AddQuestionAssumptionNetworkAction action : actions) {
+				// extract ID of child node
+				Long childID = action.getQuestionId();
+				if (childID == null) {
+					throw new IllegalArgumentException("An AddQuestionAssumptionNetworkAction specifying no child question ID was found.");
+				}
+				
+				// get the list of parents already mapped
+				List<Long> parentIDs = mapping.get(childID);
+				if (parentIDs == null) {
+					// 1st time to add mapping. Put list to map
+					parentIDs = new ArrayList<Long>(0);
+					mapping.put(childID, parentIDs);
+				}
+				
+				// add new parents to map
+				if (action.getAssumptionIds() != null) {
+					for (Long newParentID : action.getAssumptionIds()) {
+						// avoid redundancy
+						if (!parentIDs.contains(newParentID)) {
+							parentIDs.add(newParentID);
+						}
+					}
+				}
+				
+			}
+		}
+		
+		/**
+		 * Add set of arcs specified in the mapping
+		 */
+		public void execute(ProbabilisticNetwork network) {
+			long currentTimeMillis = System.currentTimeMillis();
+			
+			// the conditions that we need to reboot (re-run trades) are in the following if-clause. 
+			// The condition cpd == null indicates that we are not substituting any arc (if cpd != null, then we are trying to substitute arcs)
+			if (isToAddArcsWithoutReboot() && !isTriggerForRebuild()) {
+				// we need to change structure and junction tree without rebuilding and re-running trades
+				// extract the object responsible for managing the probabilistic network alone.
+				AssetAwareInferenceAlgorithm probAlgorithm = getDefaultInferenceAlgorithm();
+				
+				// extract child node and parent nodes to be used by probabilistic network
+				Map<INode, List<INode>> childrenAndParents = new HashMap<INode, List<INode>>(getLinks().size());
+				synchronized (network) {
+					for (Entry<Long, List<Long>> entry : getLinks().entrySet()) {
+						// the child node
+						INode child = network.getNode(Long.toString(entry.getKey()));
+						if (child == null) {
+							throw new RuntimeException("Question " + entry.getKey() + " was not found.");
+						}
+						// the parent nodes
+						List<INode> parents = new ArrayList<INode>(entry.getValue().size());
+						for (Long assumptiveQuestionId : entry.getValue()) {
+							INode parent = network.getNode(Long.toString(assumptiveQuestionId));
+							if (parent == null) {
+								throw new RuntimeException("Assumption " + assumptiveQuestionId + " was not found.");
+							}
+							parents.add(parent);
+						}
+						// update mapping
+						childrenAndParents.put(child, parents);
+					}
+				}
+				
+				if (isToAddArcsOnlyToProbabilisticNetwork()) {
+					// reset users, because changing probabilistic network without changing asset network will make the algorithm inconsistent anyway.
+					synchronized (getUserToAssetAwareAlgorithmMap()) {
+						getUserToAssetAwareAlgorithmMap().clear();
+					}
+					// run method that adds arcs assuming that we are only changing probabilistic network
+					synchronized (probAlgorithm) {
+						try {
+							// true means optimizations will be performed assuming that only prob net will be changed
+							probAlgorithm.addEdgesToNet(childrenAndParents, true);
+						} catch (InvalidParentException e) {
+							// TODO do not use exception translation
+							throw new RuntimeException(e);
+						}	
+					}
+				} else {
+					throw new UnsupportedOperationException("This version of Markov Engine can only aggregate requests for adding arcs when the flag isToAddArcsOnlyToProbabilisticNetwork == true.");
+				}
+			} else {
+				throw new UnsupportedOperationException("This version of Markov Engine can only aggregate requests for adding arcs when we shall not rebuild net.");
+			}
+			
+			try {
+				Debug.println(getClass(), "Executed add set of assumptions, " + ((System.currentTimeMillis()-currentTimeMillis)));
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+			
+			
+		}
+
+		/** @return mapping representing the links (from child to all its parents) */
+		public Map<Long, List<Long>> getLinks() { return links; }
+
+		/** @param links : mapping representing the links (from child to all its parents) */
+		public void setLinks(Map<Long, List<Long>> links) { this.links = links; }
+	}
+	/**
 	 * Represents a network action for adding a direct dependency (edge) into a BN.
 	 * @author Shou Matsumoto
 	 * @see MarkovEngineImpl#addQuestionAssumption(long, Date, long, long, List)
@@ -1760,7 +1909,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					synchronized (probAlgorithm) {
 						try {
 							// true means optimizations will be performed assuming that only prob net will be changed
-							probAlgorithm.addEdgesToNet(child, parents, true);
+							probAlgorithm.addEdgesToNet(Collections.singletonMap(child, parents), true);
 						} catch (InvalidParentException e) {
 							// TODO do not use exception translation
 							throw new RuntimeException(e);
@@ -1772,7 +1921,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						// call method not using assumption of global consistency and normalization (i.e. use false),
 						// so that it results in same junction tree of asset networks
 						try {
-							probAlgorithm.addEdgesToNet(child, parents, false);
+							probAlgorithm.addEdgesToNet(Collections.singletonMap(child, parents), false);
 						} catch (InvalidParentException e) {
 							// TODO do not use exception translation
 							throw new RuntimeException(e);
@@ -1783,7 +1932,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						for (AssetAwareInferenceAlgorithm userAlgorithm : getUserToAssetAwareAlgorithmMap().values()) {
 							try {
 								// no need to use asset nodes in the arguments, because AssetPropagationInferenceAlgorithm automatically converts.
-								userAlgorithm.getAssetPropagationDelegator().addEdgesToNet(child, parents, false);
+								userAlgorithm.getAssetPropagationDelegator().addEdgesToNet(Collections.singletonMap(child, parents), false);
 							} catch (InvalidParentException e) {
 								// TODO do not use exception translation
 								throw new RuntimeException(e);
@@ -9226,6 +9375,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public synchronized void exportNetwork(File file) throws IOException, IllegalStateException {
 		
+		if (isToExportOnlyCurrentSharedProbabilisticNet()) {
+			// simply call exportCurrentSharedNetwork
+			String stringRepresentationOfNet = this.exportCurrentSharedNetwork();
+			// store the returned string to a file
+			PrintStream stream = new PrintStream(file);
+			// TODO use an I/O class instead of using the file here
+			stream.print(stringRepresentationOfNet);
+			stream.flush();
+			stream.close();
+			return;
+		}
+		
 		// the exported net will have this name
 		String netName = "Exported_" + new Date().toString();
 		netName.replace(" ", "_");
@@ -9620,6 +9781,22 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#importNetwork(java.io.File)
 	 */
 	public synchronized void importNetwork(File file) throws IOException, IllegalStateException {
+		
+		if (isToExportOnlyCurrentSharedProbabilisticNet()) {
+			// TODO use an I/O class instead of handling I/O here
+			BufferedReader reader = new BufferedReader(new FileReader(file));
+			// read file and store to a string
+			String netString = "";	// string to be passed to importCurrentSharedNetwork
+			String line;	// line of file currently being read
+			// read file line-by-line
+			while ((line = reader.readLine()) != null) {
+				netString += line;
+			} ;
+			reader.close();
+			// simply delegate to importCurrentSharedNetwork
+			this.importCurrentSharedNetwork(netString);
+			return;
+		}
 		
 		ProbabilisticNetwork net = null;	// this will be the imported network
 		
@@ -10405,12 +10582,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			
 			// map of users loaded lazily also needs to be reset, because users aren't important when we are only managing prob network
-			setUninitializedUserToAssetMap(new HashMap<Long, Float>());
+			synchronized (getUninitializedUserToAssetMap()) {
+				getUninitializedUserToAssetMap().clear();
+			}
 			
 			// mapping of cash gains per resolved questions are also unnecessary when users are not present
-			setUserIdToResolvedQuestionCashGainMap(new HashMap<Long, Map<Long,Float>>());
+			synchronized (getUserIdToResolvedQuestionCashGainMap()) {
+				getUserIdToResolvedQuestionCashGainMap().clear();
+			}
 			// same reason of the above mapping
-			setUserIdToResolvedQuestionCashBeforeMap(new HashMap<Long, Map<Long,Float>>());
+			synchronized (getUserIdToResolvedQuestionCashBeforeMap()) {
+				getUserIdToResolvedQuestionCashBeforeMap().clear();
+			}
 			
 			// if we are only handling prob network, then the requirements indicates that we won't be using history too.
 			this.setToTraceHistory(false);
@@ -10455,23 +10638,89 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		this.isToPrintRootClique = isToPrintRoot;
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * This method uses {@link #getNetIOToExportSharedNetToSting()} and will call 
+	 * {@link NetIO#setPrintStreamBuilder(unbbayes.io.IPrintStreamBuilder)}
+	 * with {@link StringPrintStreamBuilder} in order to use {@link NetIO} for printing net files to string instead of
+	 * files. 
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#exportCurrentSharedNetwork()
 	 */
-	public String exportCurrentSharedNetwork() {
-		// TODO Auto-generated method stub
-		return "";
+	public synchronized String exportCurrentSharedNetwork() {	// TODO check if we can remove the synchronized
+		// TODO use a specific I/O class instead of handling I/O here 
+		
+		// prepare an I/O class which actually prints to string instead of file
+		StringBuilder stringBuilder = new StringBuilder();	// this string will be updated
+		
+		// this I/O class will print a network representation
+		
+		// this I/O class will print a network representation
+		NetIO io = getNetIOToExportSharedNetToSting();
+		
+		// By using StringPrintStreamBuilder, net will be printed to string instead of file
+		io.setPrintStreamBuilder(new StringPrintStreamBuilder(stringBuilder));
+		
+		synchronized (getDefaultInferenceAlgorithm()) {
+			// make sure the cpts of all nodes are consistent with the current status of junction trees.
+			getDefaultInferenceAlgorithm().updateCPTFromJT();
+			
+			if (getDefaultInferenceAlgorithm().getNet() != getProbabilisticNetwork()) {
+				throw new RuntimeException("Multiple instances of shared Bayes net was found");
+			}
+			// save to string. The file is ignored if we use StringPrintStreamBuilder.
+			try {
+				io.save(new File("If_you_see_this_file_then_there_is_bug_in_MarkovEngineImpl.exportCurrentSharedNetwork"), getDefaultInferenceAlgorithm().getNet());
+			} catch (FileNotFoundException e) {
+				throw new RuntimeException("StringPrintStreamBuilder was supposed to print to strings and ignore files, but a FileNotFoundException was thrown. This is probably a bug in a library being used by the Markov Engine. Please, check your version of UnBBayes.",e);
+			}
+		}
+		
+		return stringBuilder.toString();
 	}
 
-	/*
-	 * (non-Javadoc)
+	/**
+	 * This method uses {@link #getNetIOToExportSharedNetToSting()} and will call 
+	 * {@link NetIO#setReaderBuilder(unbbayes.io.IReaderBuilder)}
+	 * with {@link StringReaderBuilder} in order to use 
+	 * {@link NetIO} for printing net files to string instead of files. 
+	 * <br/>
+	 * Note: this will also set {@link #setToAddArcsOnlyToProbabilisticNetwork(boolean)} to true,
+	 * which is expected to reset users.
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#importCurrentSharedNetwork(java.lang.String)
 	 */
-	public void importCurrentSharedNetwork(String netString)
-			throws IllegalArgumentException {
-		// TODO Auto-generated method stub
+	public synchronized void importCurrentSharedNetwork(String netString) throws IllegalArgumentException {
+		// indicate that we are only using probabilistic net
+		this.setToAddArcsOnlyToProbabilisticNetwork(true);
+		// this shall also reset existing users
+
+		// this I/O class will read a network representation
+		NetIO io = getNetIOToExportSharedNetToSting();
+				
+		// By using StringReaderBuilder, net will be read from string instead of file
+		io.setReaderBuilder(new StringReaderBuilder(netString));
 		
+		// load the network
+		ProbabilisticNetwork probNet = null;
+		try {
+			probNet = (ProbabilisticNetwork) io.load(new File("This_File_Will_Be_Ignored_By_StringStreamTokenizerBuilder"));
+		} catch (IOException e) {
+			throw new RuntimeException("The file should have been ignored by a StringReaderBuilder, but it was not. This is probabily a bug in a library used by Markov Engine. Please, check your version of UnBBayes.",e);
+		}
+		if (probNet == null) {
+			throw new IllegalArgumentException("Could not load network from the provided string " + netString);
+		}
+		
+		// replace shared Bayes net
+		this.setProbabilisticNetwork(probNet);
+		synchronized (getDefaultInferenceAlgorithm()) {
+			try {
+				getDefaultInferenceAlgorithm().setRelatedProbabilisticNetwork(probNet);
+			} catch (InvalidParentException e) {
+				throw new IllegalArgumentException("The specified network is not consistent. Please, check its content again.",e);
+			}
+			
+			// compile the loaded bayes net
+			getDefaultInferenceAlgorithm().run();
+		}
 	}
 
 	/**
@@ -10511,6 +10760,101 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			setVirtualTradeToAffectedQuestionsMap(new HashMap<VirtualTradeAction, Set<Long>>());
 		}
 	}
+
+	/**
+	 * If true, then {@link #exportNetwork(File)} will simply call
+	 * {@link #exportCurrentSharedNetwork()} and store it to a file.
+	 * If false, then it will perform the normal export behavior, which
+	 * is to export all nodes and arcs including the resolved ones.
+	 * The {@link #importNetwork(File)} will also call {@link #importCurrentSharedNetwork(String)}
+	 * if this is true.
+	 * @return the isToExportOnlyCurrentSharedProbabilisticNet
+	 */
+	public boolean isToExportOnlyCurrentSharedProbabilisticNet() {
+		return isToExportOnlyCurrentSharedProbabilisticNet;
+	}
+
+	/**
+	 * If true, then {@link #exportNetwork(File)} will simply call
+	 * {@link #exportCurrentSharedNetwork()} and store it to a file.
+	 * If false, then it will perform the normal export behavior, which
+	 * is to export all nodes and arcs including the resolved ones.
+	 * The {@link #importNetwork(File)} will also call {@link #importCurrentSharedNetwork(String)}
+	 * if this is true.
+	 * @param isToExportOnlyCurrentSharedProbabilisticNet the isToExportOnlyCurrentSharedProbabilisticNet to set
+	 */
+	public void setToExportOnlyCurrentSharedProbabilisticNet(
+			boolean isToExportOnlyCurrentSharedProbabilisticNet) {
+		this.isToExportOnlyCurrentSharedProbabilisticNet = isToExportOnlyCurrentSharedProbabilisticNet;
+	}
+
+	/**
+	 * This {@link NetIO} is used in {@link #exportCurrentSharedNetwork()} and
+	 * {@link #importCurrentSharedNetwork(String)} in order to export/import
+	 * current shared net from file.
+	 * The {@link #exportCurrentSharedNetwork()} will call {@link NetIO#setPrintStreamBuilder(unbbayes.io.IPrintStreamBuilder)}
+	 * with {@link StringPrintStreamBuilder} in order to use {@link NetIO} for printing net files to string instead of
+	 * file. Similarly, {@link #importCurrentSharedNetwork(String)} will call
+	 * {@link NetIO#setReaderBuilder(unbbayes.io.IReaderBuilder)}
+	 * with {@link StringReaderBuilder}
+	 * in order to use {@link NetIO} for reading net files from string instead of from file.
+	 * <br/>
+	 * <br/>
+	 * This method is kept protected in order to allow access from subclasses,
+	 * but this shall be handled with care, since it will directly impact
+	 * where {@link #exportCurrentSharedNetwork()} and {@link #importCurrentSharedNetwork(String)}
+	 * will reference to.
+	 * @return the netIOToExportSharedNetToSting
+	 * @see #setNetIOToExportSharedNetToSting(NetIO)
+	 */
+	protected NetIO getNetIOToExportSharedNetToSting() {
+		return netIOToExportSharedNetToSting;
+	}
+
+	/**
+	 * This {@link NetIO} is used in {@link #exportCurrentSharedNetwork()} and
+	 * {@link #importCurrentSharedNetwork(String)} in order to export/import
+	 * current shared net from file.
+	 * The {@link #exportCurrentSharedNetwork()} will call {@link NetIO#setPrintStreamBuilder(unbbayes.io.IPrintStreamBuilder)}
+	 * with {@link StringPrintStreamBuilder} in order to use {@link NetIO} for printing net files to string instead of
+	 * file. Similarly, {@link #importCurrentSharedNetwork(String)} will call
+	 * {@link NetIO#setReaderBuilder(unbbayes.io.IReaderBuilder)}
+	 * with {@link StringReaderBuilder}
+	 * in order to use {@link NetIO} for reading net files from string instead of from file.
+	 * <br/>
+	 * <br/>
+	 * This method is kept protected in order to allow access from subclasses,
+	 * but this shall be handled with care, since it will directly impact
+	 * where {@link #exportCurrentSharedNetwork()} and {@link #importCurrentSharedNetwork(String)}
+	 * will reference to.
+	 * @param netIOToExportSharedNetToSting the netIOToExportSharedNetToSting to set
+	 * @see #getNetIOToExportSharedNetToSting()
+	 */
+	protected void setNetIOToExportSharedNetToSting( NetIO netIOToExportSharedNetToSting) {
+		this.netIOToExportSharedNetToSting = netIOToExportSharedNetToSting;
+	}
+
+//	/**
+//	 * This I/O class is used in {@link #exportCurrentSharedNetwork()}
+//	 * and {@link #importCurrentSharedNetwork(String)} in order
+//	 * to write/read the current network in a string format,
+//	 * but re-using I/O implementation in UnBBayes.
+//	 * @return the ioForStringOutput
+//	 */
+//	public NetIO getIoForStringOutput() {
+//		return ioForStringOutput;
+//	}
+//
+//	/**
+//	 * This I/O class is used in {@link #exportCurrentSharedNetwork()}
+//	 * and {@link #importCurrentSharedNetwork(String)} in order
+//	 * to write/read the current network in a string format,
+//	 * but re-using I/O implementation in UnBBayes.
+//	 * @param ioForStringOutput the ioForStringOutput to set
+//	 */
+//	public void setIoForStringOutput(NetIO ioForStringOutput) {
+//		this.ioForStringOutput = ioForStringOutput;
+//	}
 
 
 
