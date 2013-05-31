@@ -29,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -60,13 +61,16 @@ import unbbayes.util.Debug;
 
 /**
  * Manipulates input/output of NET files.
+ * This implements specification version 2 of .net file specification of Hugin.
+ * Therefore, do not make changes in the format and attributes written to the file,
+ * or else you may break compatibility with Hugin.
  * @author Rommel N. Carvalho
  * @author Michael S. Onishi
  * @author Mario Henrique Paes Vieira (mariohpv@bol.com.br)
  * @author Shou Matsumoto
  * @version 2.0
  */
-public class NetIO implements BaseIO {
+public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource =
@@ -82,6 +86,9 @@ public class NetIO implements BaseIO {
 	public static final String[] SUPPORTED_EXTENSIONS = {"net"};
 	
 	private String name = "NET";
+	
+	private IPrintStreamBuilder printStreamBuilder = this;
+	private IReaderBuilder readerBuilder = this;
 	
 	/**
 	 *  Loads a NET format file using default node/network builder.
@@ -112,7 +119,8 @@ public class NetIO implements BaseIO {
 	}
 	
 	/**
-	 *  Loads a NET format file using network builder
+	 *  Loads a NET format file using network builder.
+	 *  It calls {@link #load(File, SingleEntityNetwork, IProbabilisticNetworkBuilder)} internally.
 	 * @see IProbabilisticNetworkBuilder
 	 * @param  input  file to be read.
 	 * @param  networkBuilder: builder to be used in order to generate expected instances
@@ -120,9 +128,11 @@ public class NetIO implements BaseIO {
 	 * is useful if you want to reuse NetIO for networks/nodes which extends ProbabilisticNetwork,
 	 * ProbabilisticNode, DecisionNode and UtilityNode (or else NetIO will be bound to those 
 	 * superclasses only).
+	 * 
 	 * @return loaded net.
 	 * @throws LoadException when there were errors loading the network
 	 * @throws IOException in case there were errors when manipulating files.
+	 * @see #getReaderBuilder()
 	 */
 	public ProbabilisticNetwork load(File input, IProbabilisticNetworkBuilder networkBuilder)
 		throws LoadException, IOException {
@@ -136,15 +146,16 @@ public class NetIO implements BaseIO {
 
 	/**
 	 * Saves a network in basic NET file format.
-	 *
+	 * If you need to save it to a stream other than
+	 * a file, then change {@link #setPrintStreamBuilder(IPrintStreamBuilder)}
 	 * @param  output file where the net should be saved.
 	 * @param graph network to be saved.
+	 * @see #getPrintStreamBuilder()
 	 */
 	public void save(File output, Graph graph) throws FileNotFoundException {
 		
 		
-		
-		PrintStream stream = new PrintStream(new FileOutputStream(output));
+		PrintStream stream = getPrintStreamBuilder().getPrintStreamFromFile(output);
 		
 		SingleEntityNetwork net = (SingleEntityNetwork) graph;
 		
@@ -173,12 +184,25 @@ public class NetIO implements BaseIO {
 		stream.close();
 	}
 	
-	
+	/**
+	 * Loads a network from file, specifying what instance of {@link SingleEntityNetwork} to fill,
+	 * and what instance of {@link IProbabilisticNetworkBuilder} to use in order
+	 * to instantiate network components (e.g. nodes).
+	 * If you need to load network from tokenizable streams that are not files, then 
+	 * change {@link #setReaderBuilder(IReaderBuilder)}. 
+	 * @param input
+	 * @param net
+	 * @param networkBuilder
+	 * @throws IOException
+	 * @throws LoadException
+	 * @see #getReaderBuilder()
+	 */
 	protected void load(File input, SingleEntityNetwork net, IProbabilisticNetworkBuilder networkBuilder) 
 				throws IOException, LoadException {
 		
-		BufferedReader r = new BufferedReader(new FileReader(input));
-		StreamTokenizer st = new StreamTokenizer(r);
+		Reader reader = this.getReaderBuilder().getReaderFromFile(input);
+		StreamTokenizer st = new StreamTokenizer(reader);
+		
 		this.setUpStreamTokenizer(st);
 
 		// treat header
@@ -206,10 +230,18 @@ public class NetIO implements BaseIO {
 			// ignore other declarations
 		}
 		
-		r.close();
+		reader.close();
 		
 		this.setUpHierarchicTree(net);
 	}	
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.IReaderBuilder#getReaderFromFile(java.io.File)
+	 */
+	public Reader getReaderFromFile(File file)  throws FileNotFoundException {
+		return (new BufferedReader(new FileReader(file)));
+	}
 
 	protected int getNext(StreamTokenizer st) throws IOException {
 		do {
@@ -321,7 +353,10 @@ public class NetIO implements BaseIO {
 	
 	/**
 	 * Configures valid/invalid character ranges of stream tokenizer.
-	 * By setting up using protected method, it becomes easier to extend this class
+	 * By setting up using protected method, it becomes easier to extend this class.
+	 * The {@link StreamTokenizer} is instantiated in {@link #load(File, SingleEntityNetwork, IProbabilisticNetworkBuilder)},
+	 * and such method is likely to be using {@link #getReaderBuilder()} in order to instantiate
+	 * the {@link StreamTokenizer}.
 	 * @param st: StreamTokenizer to set up
 	 */
 	protected void setUpStreamTokenizer(StreamTokenizer st) throws IOException {
@@ -1131,6 +1166,74 @@ public class NetIO implements BaseIO {
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.IPrintStreamBuilder#getPrintStreamFromFile(java.io.File)
+	 */
+	public PrintStream getPrintStreamFromFile(File file) throws FileNotFoundException {
+		return new PrintStream(new FileOutputStream(file));
+	}
+
+	/**
+	 * This is used in {@link #save(File, Graph)}
+	 * in order to generate an instance of {@link PrintStream}
+	 * to be used in order to write to a {@link File}.
+	 * You may use {@link StringPrintStreamBuilder}
+	 * in order to write to a {@link String} instead
+	 * of a {@link File}.
+	 * @return the printStreamBuilder
+	 * @see #getPrintStreamFromFile(File)
+	 * @see StringPrintStreamBuilder
+	 */
+	public IPrintStreamBuilder getPrintStreamBuilder() {
+		return printStreamBuilder;
+	}
+
+	/**
+	 * This is used in {@link #save(File, Graph)}
+	 * in order to generate an instance of {@link PrintStream}
+	 * to be used in order to write to a {@link File}
+	 * You may use {@link StringPrintStreamBuilder}
+	 * in order to write to a {@link String} instead
+	 * of a {@link File}.
+	 * @param printStreamBuilder the printStreamBuilder to set
+	 * @see #getPrintStreamFromFile(File)
+	 * @see StringPrintStreamBuilder
+	 */
+	public void setPrintStreamBuilder(IPrintStreamBuilder printStreamBuilder) {
+		this.printStreamBuilder = printStreamBuilder;
+	}
+
+	/**
+	 * This is used in {@link #load(File, SingleEntityNetwork, IProbabilisticNetworkBuilder)} in order
+	 * to generate a {@link Reader} to be used to read a stream
+	 * and create new instance of network.
+	 * You may want to use {@link StringReaderBuilder}
+	 * if you want to read from {@link String} instead of 
+	 * from a {@link File}.
+	 * @return the readerBuilder
+	 * @see #getReaderFromFile(File)
+	 * @see StringReaderBuilder
+	 */
+	public IReaderBuilder getReaderBuilder() {
+		return readerBuilder;
+	}
+
+	/**
+	 * This is used in {@link #load(File, SingleEntityNetwork, IProbabilisticNetworkBuilder)} in order
+	 * to generate a {@link Reader} to be used to read a stream
+	 * and create new instance of network;
+	 * You may want to use {@link StringReaderBuilder}
+	 * if you want to read from {@link String} instead of 
+	 * from a {@link File}.
+	 * @param readerBuilder the readerBuilder to set
+	 * @see #getReaderFromFile(File)
+	 * @see StringReaderBuilder
+	 */
+	public void setReaderBuilder(IReaderBuilder readerBuilder) {
+		this.readerBuilder = readerBuilder;
 	}
 	
 }
