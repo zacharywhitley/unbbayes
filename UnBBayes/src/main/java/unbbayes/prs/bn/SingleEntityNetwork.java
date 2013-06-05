@@ -971,7 +971,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 					auxNo1.getAdjacents().add(auxNo2);
 					auxNo2.getAdjacents().add(auxNo1);			
 					
-					Debug.println(""+auxArco);
+					Debug.println(getClass(),""+auxArco);
 				}
 			}
 		}
