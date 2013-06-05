@@ -90,6 +90,8 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 	private IPrintStreamBuilder printStreamBuilder = this;
 	private IReaderBuilder readerBuilder = this;
 	
+	private String defaultNodeNamePrefix = "";
+	
 	/**
 	 *  Loads a NET format file using default node/network builder.
 	 *  In other words, this method returns exactly instances of ProbabilisticNetwork filled
@@ -491,7 +493,7 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 				}
 
 				getNext(st);
-				auxNode.setName(st.sval);
+				auxNode.setName(st.sval.startsWith(getDefaultNodeNamePrefix())?st.sval.substring(getDefaultNodeNamePrefix().length()):st.sval);
 				getNext(st);
 				if (st.sval.equals("{")) {
 					getNext(st);
@@ -531,7 +533,7 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 				Node continuousNode = networkBuilder.getContinuousNodeBuilder().buildNode();;
 				
 				getNext(st);
-				continuousNode.setName(st.sval);
+				continuousNode.setName(st.sval.startsWith(getDefaultNodeNamePrefix())?st.sval.substring(getDefaultNodeNamePrefix().length()):st.sval);
 				getNext(st);
 				if (st.sval.equals("{")) {
 					getNext(st);
@@ -570,7 +572,7 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 			PotentialTable auxPotentialTable = null;
 			
 			getNext(st);	// node name
-			Node auxNode1 = net.getNode(st.sval);
+			Node auxNode1 = net.getNode(st.sval.startsWith(getDefaultNodeNamePrefix())?st.sval.substring(getDefaultNodeNamePrefix().length()):st.sval);
 
 			if (auxNode1 instanceof IRandomVariable) {
 				auxTableVar = (IRandomVariable) auxNode1;
@@ -587,7 +589,7 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 			Node auxNo2;
 			Edge auxArco;
 			while (!st.sval.startsWith("{")) {
-				auxNo2 = net.getNode(st.sval);
+				auxNo2 = net.getNode(st.sval.startsWith(getDefaultNodeNamePrefix())?st.sval.substring(getDefaultNodeNamePrefix().length()):st.sval);
 				auxArco = new Edge(auxNo2, auxNode1);
 				try {
 					net.addEdge(auxArco);
@@ -856,7 +858,7 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 					+ " "
 					+ (int) (net.getRadius() * 2)
 					+ ");");
-		stream.println("     name = \"" + net.getName() + "\";");
+		stream.println("     name = \"" + getDefaultNodeNamePrefix() + net.getName() + "\";");
 		String tree = saveHierarchicTree(net.getHierarchicTree());
 		if (tree != null)
 			stream.println("     tree = \"" + tree + "\";");
@@ -890,7 +892,7 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 			stream.print("utility");
 		}
 
-		stream.println(" " + node.getName());
+		stream.println(" " + getDefaultNodeNamePrefix() + node.getName());
 		stream.println("{");
 		
 		this.saveNodeDeclarationBody(stream, node, net);
@@ -981,7 +983,7 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 	protected void savePotentialDeclaration(PrintStream stream, Node node, SingleEntityNetwork net) {
 		ArrayList<Node> auxParentList = node.getParents();
 
-		stream.print("potential (" + node.getName());
+		stream.print("potential (" + getDefaultNodeNamePrefix() + node.getName());
 
 		int sizeVa = auxParentList.size();
 		if (sizeVa > 0) {
@@ -998,7 +1000,7 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 				} else {
 					auxNo2 = (Node) auxParentList.get(c2);
 				}
-				stream.print(" " + auxNo2.getName());
+				stream.print(" " + getDefaultNodeNamePrefix() + auxNo2.getName());
 			}
 		}
 		
@@ -1022,16 +1024,21 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 		if (node instanceof ContinuousNode) {
 			// TODO stub!!
 			// TODO implement continuous node's potential treatment
-			Debug.println(this.getClass(), "TODO implement continuous node's potential treatment: " + node.getName());
+			Debug.println(this.getClass(), "TODO implement continuous node's potential treatment: " + node);
 			
 			ContinuousNode continuous = (ContinuousNode)node;
 			stream.print(" data = normal ( ");
 			stream.print(continuous.getCnNormalDistribution().getMean(0));
 			for (int i = 0; i < continuous.getParents().size(); i++) {
 				// TODO implement continuous node's parent treatment. This is stub
-				Debug.println(this.getClass(), "TODO implement continuous node's parent treatment: " + continuous.getParents().get(i).getName());
+				try {
+					Debug.println(this.getClass(), "TODO implement continuous node's parent treatment: " + continuous.getParents().get(i).getName());
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				
 				stream.print(" + " + continuous.getCnNormalDistribution().getConstantAt(i, 0));
-				stream.print(" * " + continuous.getParents().get(i).getName());
+				stream.print(" * " + getDefaultNodeNamePrefix() + continuous.getParents().get(i).getName());
 			}
 
 			stream.print(", " + continuous.getCnNormalDistribution().getVariance(0));
@@ -1234,6 +1241,24 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 	 */
 	public void setReaderBuilder(IReaderBuilder readerBuilder) {
 		this.readerBuilder = readerBuilder;
+	}
+
+	/**
+	 * This prefix will be automatically inserted to node names
+	 * if the node names do not start from a letter.
+	 * @return the defaultNodeNamePrefix
+	 */
+	public String getDefaultNodeNamePrefix() {
+		return defaultNodeNamePrefix;
+	}
+
+	/**
+	 * This prefix will be automatically inserted to node names
+	 * if the node names do not start from a letter.
+	 * @param defaultNodeNamePrefix the defaultNodeNamePrefix to set
+	 */
+	public void setDefaultNodeNamePrefix(String defaultNodeNamePrefix) {
+		this.defaultNodeNamePrefix = defaultNodeNamePrefix;
 	}
 	
 }
