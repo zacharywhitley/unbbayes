@@ -187,6 +187,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 
 	private BaseIO io = new NetIO();
+	{
+		((NetIO)io).setDefaultNodeNamePrefix("N");
+	}
 	
 
 	private float nodePositionRandomRange = 800;
@@ -297,6 +300,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToExportOnlyCurrentSharedProbabilisticNet = false;
 
 	private NetIO netIOToExportSharedNetToSting = new NetIO(); 
+	{
+		netIOToExportSharedNetToSting.setDefaultNodeNamePrefix("N");
+	}
 	
 	
 	/**
