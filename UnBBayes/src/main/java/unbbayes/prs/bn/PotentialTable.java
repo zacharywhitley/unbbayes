@@ -559,6 +559,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	 * TODO convert this to a non-recursive fast method.
 	 */
 	private void sumAux(int control, int index, int coord, int base, boolean[] marked) {
+		// TODO stop using slow, recursive methods
 		if (control == -1) {
 			// concentrate the sum on the first cell. 
 			int linearCoordDestination = coord - base;
@@ -569,17 +570,17 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 			return;
 		}
 		
-		Node node = variableList.get(control);
+		int controlNodeStateSize = variableList.get(control).getStatesSize();
 		int factorPTControl = factorsPT[control];
 		if (control == index) {
 			// if the current iterated variable is the one we want to delete, then iterate only until 1,
 			// because the position 0 will hold the sum. 
 			int factorPTIndex = factorsPT[index];
-			for (int i = node.getStatesSize()-1; i >= 1; i--) {
+			for (int i = controlNodeStateSize-1; i >= 1; i--) {
 				sumAux(control-1, index, coord + i*factorPTControl, i*factorPTIndex, marked);
 			}	
 		} else {
-			for (int i = node.getStatesSize()-1; i >= 0; i--) {
+			for (int i = controlNodeStateSize-1; i >= 0; i--) {
 				sumAux(control-1, index, coord + i*factorPTControl, base, marked);
 			}
 		}
