@@ -201,6 +201,7 @@ public abstract class Node implements Serializable,
 	public void setName(String name) {
 		NodeNameChangedEvent event = new NodeNameChangedEvent(this.name, name);
 		this.name = name;
+		this.nameHash = name.hashCode();
 		this.nameChanged(event);
 	}
 
@@ -560,24 +561,51 @@ public abstract class Node implements Serializable,
 	public String toString() {
 		return description + " (" + name + ")";
 	}
+	
+	
 
 	/**
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {
 		// immediate cases
-		if (obj == this) {
-			return true;
-		} else if (obj == null) {
-			return false;
-		}
-//		
-//		if((obj != null)&&(obj instanceof Node)){
-//		   Node node = (Node) obj;
-//		   return (node.name.equals(this.name));
+//		if (obj == this) {
+//			return true;
 //		}
+//		if (obj == null) {
+//			return false;
+//		}
+////		
+////		if((obj != null)&&(obj instanceof Node)){
+////		   Node node = (Node) obj;
+////		   return (node.name.equals(this.name));
+////		}
+//		
+//		// using if-then-else can be faster than using stack operation (lots of boolean operations) in most of machines using lookup program counter
+//		if (!(obj instanceof Node)) {
+//			return false;
+//		}
+//		// also make hash check, to reduce mean time for comparison
+//		if (nameHash != ((Node) obj).nameHash) {
+//			return false;
+//		}
+//		
+//		// the last check is the name (identificator) comparison
+//		return ((Node) obj).name.equals(this.name); //obj == null && this != null 
 		
-		return ((obj instanceof Node) && ((Node) obj).name.equals(this.name)); //obj == null && this != null 
+		// the above code can be faster than the below, if the VM uses techniques like program counter lookahead and when stack machine operations in boolean op is slower.
+		// However, in most of windows+intel architectures and Java 6, the following has shown to be faster in general
+		
+		// the following check is supposedly equivalent to the above.
+		// it will be faster in VM which uses fast operations in boolean operations
+		return (obj == this)
+				|| (
+						(obj != null) 
+						&& (obj instanceof Node)
+						&& (nameHash == ((Node) obj).nameHash)		// this is just to get better result in the mean case (most of nodes are different each other when there are lots of nodes)
+						&& (((Node) obj).name.equals(this.name))	// the last resort is to compare the id
+					)
+				;
 		
 	}
 
@@ -761,6 +789,9 @@ public abstract class Node implements Serializable,
 	}
 	
 	protected List<NodeNameChangedListener> nodeNameChangedListenerList = new ArrayList<NodeNameChangedListener>();
+
+	/** The hash of the name is stored for faster comparison in {@link #equals(Object)}. This is changed in {@link #setName(String)} */
+	private int nameHash = 0;
 	
 	public void addNodeNameChangedListener(NodeNameChangedListener listener) {
 		nodeNameChangedListenerList.add(listener);
@@ -931,6 +962,14 @@ public abstract class Node implements Serializable,
 			return true;
 		}
 		
+	}
+
+	/**
+	 * This is a hash of {@link Node#name}, which is changed in {@link Node#setName(String)}.
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode() {
+		return nameHash;
 	}
 
 }
