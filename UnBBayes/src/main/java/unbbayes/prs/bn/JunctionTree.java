@@ -463,16 +463,35 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 * @see unbbayes.prs.bn.IJunctionTree#getSeparator(unbbayes.prs.bn.Clique, unbbayes.prs.bn.Clique)
 	 */
 	public Separator getSeparator(Clique clique1, Clique clique2) {
-		Set<Separator> seps = separatorsMap.get(clique1);
+		Set<Separator> seps = separatorsMap.get(clique1);	// separators reachable from clique 1
+		Clique theOtherClique = clique2;	// the clique other that the one used to extract separator
+		
+		// compare with size of separators reachable from clique 2, because we will do linear search in case of multiple separators
+		Set<Separator> seps2 = separatorsMap.get(clique2);	// separators reachable from clique 2
+		if (seps2.size() < seps.size()) {
+			// use separators reachable from clique 2, because it's smaller, and set the other clique as clique 1
+			seps = seps2;
+			theOtherClique = clique1;	
+		}
+		
 		if (seps != null) {
 			for (Separator separator : seps) {
 //				if (separator.getClique2().equals(clique2) || separator.getClique1().equals(clique2)) {
-				if (separator.getClique2().getInternalIdentificator() == clique2.getInternalIdentificator()
-						|| separator.getClique1().getInternalIdentificator() == clique2.getInternalIdentificator()) {
+				if (separator.getClique2().getInternalIdentificator() == theOtherClique.getInternalIdentificator()
+						|| separator.getClique1().getInternalIdentificator() == theOtherClique.getInternalIdentificator()) {
 					return separator;
 				}
 			}
 		}
+//		if (seps != null) {
+//			for (Separator separator : seps) {
+////				if (separator.getClique2().equals(clique2) || separator.getClique1().equals(clique2)) {
+//				if (separator.getClique2().getInternalIdentificator() == clique2.getInternalIdentificator()
+//						|| separator.getClique1().getInternalIdentificator() == clique2.getInternalIdentificator()) {
+//					return separator;
+//				}
+//			}
+//		}
 //		seps = separatorsMap.get(clique2);
 //		if (seps != null) {
 //			for (Separator separator : seps) {
