@@ -6,7 +6,6 @@ package unbbayes.prs.bn.inference.extension;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,6 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.TreeVariable;
-import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.bn.cpt.impl.UniformTableFunction;
 import unbbayes.prs.exception.InvalidParentException;
 
@@ -38,6 +36,11 @@ import unbbayes.prs.exception.InvalidParentException;
  *
  */
 public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm implements IAssetNetAlgorithm {
+
+//	/** This is the default object for {@link #getCptNormalizer()} */
+//	public static final ITableFunction DEFAULT_CPT_NORMALIZER = new NormalizeTableFunction();
+//	
+//	private ITableFunction cptNormalizer = DEFAULT_CPT_NORMALIZER;
 
 	public AbstractAssetNetAlgorithm() {
 		super();
@@ -717,7 +720,19 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 	 * for the case when the boolean argument is true.
 	 * Basically, this method relies on UnBBayes' default junction tree generation algorithm
 	 * and creates a new junction tree, and then fills the new cliques with 
-	 * joint probabilities obtainable from the old junction tree.
+	 * joint probabilities obtainable from the old junction tree. 
+	 * The following steps are performed:
+	 * <br/>
+	 * <br/>
+	 * 1 - The cpts are updated based on current clique potentials;
+	 * <br/>
+	 * 2 - The edges are created;
+	 * <br/>
+	 * 3 - Because new edges would simply grow the CPTs, the new cpt is simply filled by copying existing columns into the new columns, so that
+	 * the child is initially independent to the new parent;
+	 * <br/>
+	 * 4 - the new network is compiled (the junction tree is re-generated) based on the new structure and cpts, so that
+	 * a near-optimal collection of cliques is guaranteed by using the same heuristics of a normal junction tree compilation;
 	 * <br/>
 	 * <br/>
 	 * CAUTION: this method does not perform any synchronization with asset networks
@@ -730,9 +745,12 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 	 * It will use {@link #getRelatedProbabilisticNetwork()} as the network to add edges.
 	 * <br/>
 	 * It will use {@link #run()} in order to compile the network.
+	 * <br/>
+	 * This method also assumes that if you absorbed a node by calling {@link #setAsPermanentEvidence(Map, boolean)} setting
+	 * to delete evidence nodes, then the parents are automatically connected.
 	 * @param nodeAndParents : a mapping from the child node (whose new arcs/edges will be pointing to)
 	 * to its parent nodes (whose new arcs/edges will be pointing from).
-s	 * @return list of edges created by this method.
+	 * @return list of edges created by this method.
 	 * @throws InvalidParentException : exception thrown inherently from {@link ProbabilisticNetwork#addEdge(Edge)}
 	 */
 	public List<Edge> addNodesToCliqueWhenNotConsideringAssets(Map<INode, List<INode>> nodeAndParents) throws InvalidParentException {
@@ -749,21 +767,26 @@ s	 * @return list of edges created by this method.
 			return Collections.emptyList();
 		}
 		
-		// extract old junction tree (JT) from network now (before compiling new JT), because we will use its clique potentials
-		IJunctionTree oldJT = net.getJunctionTree();
+		// update the CPTs of all nodes
+		this.updateCPTBasedOnCliques();
 		
-		// keep track of old marginals, because they will be lost if we recompile current net by calling "run()"
-		Map<INode, float[]> mapOldMarginal = new HashMap<INode, float[]>();
-		for (INode iNode : net.getNodes()) {
-			if (iNode instanceof TreeVariable) {
-				TreeVariable node = (TreeVariable) iNode;
-				float[] marginal = new float[node.getStatesSize()];
-				for (int i = 0; i < node.getStatesSize(); i++) {
-					marginal[i] = node.getMarginalAt(i);
-				}
-				mapOldMarginal.put(node, marginal);
-			}
-		}
+		// the following code was commented out because we won't need them if we are re-generating the clique potentials based on updated CPTs
+		
+//		// extract old junction tree (JT) from network now (before compiling new JT), because we will use its clique potentials
+//		IJunctionTree oldJT = net.getJunctionTree();
+//		
+//		// keep track of old marginals, because they will be lost if we recompile current net by calling "run()"
+//		Map<INode, float[]> mapOldMarginal = new HashMap<INode, float[]>();
+//		for (INode iNode : net.getNodes()) {
+//			if (iNode instanceof TreeVariable) {
+//				TreeVariable node = (TreeVariable) iNode;
+//				float[] marginal = new float[node.getStatesSize()];
+//				for (int i = 0; i < node.getStatesSize(); i++) {
+//					marginal[i] = node.getMarginalAt(i);
+//				}
+//				mapOldMarginal.put(node, marginal);
+//			}
+//		}
 		
 		// this is the list to be returned
 		List<Edge> ret = new ArrayList<Edge>();
@@ -791,139 +814,255 @@ s	 * @return list of edges created by this method.
 		}
 		
 		// make sure all CPTs of the affected children are kept normalized after insertion of all edges
-		for (INode child : nodeAndParents.keySet()) {
-			new NormalizeTableFunction().applyFunction((ProbabilisticTable) ((ProbabilisticNode)child).getProbabilityFunction());
-		}
+//		for (INode child : nodeAndParents.keySet()) {
+//			// TODO check if this is really necessary
+//			getCptNormalizer().applyFunction((ProbabilisticTable) ((ProbabilisticNode)child).getProbabilityFunction());
+//		}
 		
 		
 		// compile junction tree, considering the new edges
 		run();
 		
-		// this is the new junction tree, with new edges
-		IJunctionTree newJT = net.getJunctionTree();
-
-		if (oldJT != null && oldJT.getCliques() != null && !oldJT.getCliques().isEmpty()) { 
-			
-			// there is an old JT to be used in order to fill clique potentials of new JT
-			for (Clique newClique : newJT.getCliques()) {
-				
-				// for each clique in new JT, find most similar clique in old JT
-				Clique oldClique = getCliqueContainingMostOfNodes((Collection)newClique.getNodesList(), oldJT);
-				if (oldClique == null) {
-					throw new RuntimeException("The old junction tree does not contain any of the nodes " + newClique.getNodesList());
-				}
-				
-				// clone the old clique table, because we don't want to change originals at this point (other iterations may want to use the originals)
-				PotentialTable oldTable = (PotentialTable) oldClique.getProbabilityFunction().clone();
-				
-				// marginalize out (sum out) from old clique some nodes not used in new clique currently being evaluated
-				for (INode oldCliqueNode : oldClique.getNodesList()) {
-					if (!newClique.getNodesList().contains(oldCliqueNode)) {
-						// this node is in oldTable, but won't be used in new clique, so marginalize out
-						oldTable.removeVariable(oldCliqueNode);
-						// it is assumed that cliques don't have duplicate nodes
-					}
-				}
-				
-				// TODO this is wrong, and will only work for independent nodes!
-				
-				// add nodes in old clique which are present in new clique but not in old clique
-				for (INode newCliqueNode : newClique.getNodesList()) {
-					if (oldTable.getVariableIndex((Node) newCliqueNode) < 0) {
-						// this node is in new clique, but not in old clique, 
-						// so add into oldTable with proper transformation in order to get a clique potential of the variables in new clique
-						oldTable.addVariable(newCliqueNode);
-						
-						// by adding node, we shall multiply the clique table with the marginal of the node being added.
-						// So prepare temporary table to be used for multiplying cells of table by reusing code already available
-						ProbabilisticTable tableForMultiplication = new ProbabilisticTable();
-						tableForMultiplication.addVariable(newCliqueNode);
-						
-						// obtain what was the marginal of the node before run() 
-						float[] marginal = mapOldMarginal.get(newCliqueNode);
-						
-						// fill tableForMultiplication with the obtained marginal
-						if (marginal != null && marginal.length == tableForMultiplication.tableSize()) {
-							for (int i = 0; i < tableForMultiplication.tableSize(); i++) {
-								tableForMultiplication.setValue(i, marginal[i]);
-							}
-						} else {
-							throw new RuntimeException("Could not apply marginal probability " + marginal + " to unconditional table of node " + newCliqueNode);
-						}
-						
-						// multiply clique potential with marginal of node being added
-						oldTable.opTab(tableForMultiplication, PotentialTable.PRODUCT_OPERATOR);
-						// we supposedly don't need to normalize it, if it was normalized before the change
-
-					}
-				}
-				
-				// make sure table is normalized
-				oldTable.normalize();
-				
-				// copy clique potential from old to new clique
-				PotentialTable newTable = newClique.getProbabilityFunction();
-				if (newTable.tableSize() == oldTable.tableSize()) {
-					// also make sure the variables are in same ordering
-					
-					newTable.setValues(oldTable.getValues());
-				} else {
-					// because we removed extra nodes from oldTable and added nodes of newTable to oldTable, they should have the same size
-					throw new RuntimeException("A bug was found in the method for filling clique potentials of clique " + newClique 
-							+ " based on clique " + oldClique + ". The adjusted clique size were different, and respectively "
-							+ newTable.tableSize() + " and " + oldTable.tableSize());
-				}
-				
-			}
-			
-		} // else: network was not compiled yet, so we do not need to copy clique content from old JT
 		
+		// all the following code was commented out, because we don't need to udpate clique potentials, since we appended edges to cpts which were updated based on the old clique potentials
 		
-		// update new separators. This can be done simply by marginalizing out (sum) from neighbor cliques (because global consistency supposedly holds)
-		for (Separator sep : newJT.getSeparators()) {
-			if (sep.getNodes().size() <= 0) {
-				// there is no need to update empty separators
-				continue;
-			}
-			
-			// obtain one of the neighbor clique (any one will do the job)
-			Clique clique = sep.getClique1();
-			
-			// obtain a clone of the clique potential (so that we can marginalize out some variables without changing original)
-			PotentialTable cliqueTable = (PotentialTable) clique.getProbabilityFunction().clone();
-			
-			// marginalize out nodes not present in separator
-			for (Node nodeInClique : clique.getNodesList()) {
-				if (!sep.getNodes().contains(nodeInClique)) {
-					cliqueTable.removeVariable(nodeInClique);
-				}
-			}
-			
-			// fill separator table with the values in the marginalized table
-			PotentialTable sepTable = sep.getProbabilityFunction();
-			if (cliqueTable.tableSize() == sepTable.tableSize()) {
-				sepTable.setValues(cliqueTable.getValues());
-			} else {
-				// because we removed extra nodes from cliqueTable, they should have the same size
-				throw new RuntimeException("A bug was found in the method for marginalizing clique table of  " + clique 
-						+ " in order to get potentials of separator " + sep + ". The table size were different, and respectively "
-						+ cliqueTable.tableSize() + " and " + sepTable.tableSize());
-			}
-			
-			// TODO check if global consistency still holds
-		}
-		
-		// update marginal probabilities
-		for (Node node : net.getNodes()) {
-			if (node instanceof ProbabilisticNode) {
-				ProbabilisticNode pnode = (ProbabilisticNode) node;
-				pnode.setMarginalProbabilities(mapOldMarginal.get(pnode));
-			}
-		}
+//		// this is the new junction tree, with new edges
+//		IJunctionTree newJT = net.getJunctionTree();
+//
+//		if (oldJT != null && oldJT.getCliques() != null && !oldJT.getCliques().isEmpty()) { 
+//			
+//			// there is an old JT to be used in order to fill clique potentials of new JT
+//			for (Clique newClique : newJT.getCliques()) {
+//				
+//				// for each clique in new JT, find most similar clique in old JT
+//				Clique oldClique = getCliqueContainingMostOfNodes((Collection)newClique.getNodesList(), oldJT);
+//				if (oldClique == null) {
+//					throw new RuntimeException("The old junction tree does not contain any of the nodes " + newClique.getNodesList());
+//				}
+//				
+//				// clone the old clique table, because we don't want to change originals at this point (other iterations may want to use the originals)
+//				PotentialTable oldTable = (PotentialTable) oldClique.getProbabilityFunction().clone();
+//				
+//				// marginalize out (sum out) from old clique some nodes not used in new clique currently being evaluated
+//				for (INode oldCliqueNode : oldClique.getNodesList()) {
+//					if (!newClique.getNodesList().contains(oldCliqueNode)) {
+//						// this node is in oldTable, but won't be used in new clique, so marginalize out
+//						oldTable.removeVariable(oldCliqueNode);
+//						// it is assumed that cliques don't have duplicate nodes
+//					}
+//				}
+//				
+//				// TODO this is wrong, and will only work for independent nodes!
+//				
+//				// add nodes in old clique which are present in new clique but not in old clique
+//				for (INode newCliqueNode : newClique.getNodesList()) {
+//					if (oldTable.getVariableIndex((Node) newCliqueNode) < 0) {
+//						// this node is in new clique, but not in old clique, 
+//						// so add into oldTable with proper transformation in order to get a clique potential of the variables in new clique
+//						oldTable.addVariable(newCliqueNode);
+//						
+//						// by adding node, we shall multiply the clique table with the marginal of the node being added.
+//						// So prepare temporary table to be used for multiplying cells of table by reusing code already available
+//						ProbabilisticTable tableForMultiplication = new ProbabilisticTable();
+//						tableForMultiplication.addVariable(newCliqueNode);
+//						
+//						// obtain what was the marginal of the node before run() 
+//						float[] marginal = mapOldMarginal.get(newCliqueNode);
+//						
+//						// fill tableForMultiplication with the obtained marginal
+//						if (marginal != null && marginal.length == tableForMultiplication.tableSize()) {
+//							for (int i = 0; i < tableForMultiplication.tableSize(); i++) {
+//								tableForMultiplication.setValue(i, marginal[i]);
+//							}
+//						} else {
+//							throw new RuntimeException("Could not apply marginal probability " + marginal + " to unconditional table of node " + newCliqueNode);
+//						}
+//						
+//						// multiply clique potential with marginal of node being added
+//						oldTable.opTab(tableForMultiplication, PotentialTable.PRODUCT_OPERATOR);
+//						// we supposedly don't need to normalize it, if it was normalized before the change
+//
+//					}
+//				}
+//				
+//				// make sure table is normalized
+//				oldTable.normalize();
+//				
+//				// copy clique potential from old to new clique
+//				PotentialTable newTable = newClique.getProbabilityFunction();
+//				if (newTable.tableSize() == oldTable.tableSize()) {
+//					// also make sure the variables are in same ordering
+//					
+//					newTable.setValues(oldTable.getValues());
+//				} else {
+//					// because we removed extra nodes from oldTable and added nodes of newTable to oldTable, they should have the same size
+//					throw new RuntimeException("A bug was found in the method for filling clique potentials of clique " + newClique 
+//							+ " based on clique " + oldClique + ". The adjusted clique size were different, and respectively "
+//							+ newTable.tableSize() + " and " + oldTable.tableSize());
+//				}
+//				
+//			}
+//			
+//		} // else: network was not compiled yet, so we do not need to copy clique content from old JT
+//		
+//		
+//		// update new separators. This can be done simply by marginalizing out (sum) from neighbor cliques (because global consistency supposedly holds)
+//		for (Separator sep : newJT.getSeparators()) {
+//			if (sep.getNodes().size() <= 0) {
+//				// there is no need to update empty separators
+//				continue;
+//			}
+//			
+//			// obtain one of the neighbor clique (any one will do the job)
+//			Clique clique = sep.getClique1();
+//			
+//			// obtain a clone of the clique potential (so that we can marginalize out some variables without changing original)
+//			PotentialTable cliqueTable = (PotentialTable) clique.getProbabilityFunction().clone();
+//			
+//			// marginalize out nodes not present in separator
+//			for (Node nodeInClique : clique.getNodesList()) {
+//				if (!sep.getNodes().contains(nodeInClique)) {
+//					cliqueTable.removeVariable(nodeInClique);
+//				}
+//			}
+//			
+//			// fill separator table with the values in the marginalized table
+//			PotentialTable sepTable = sep.getProbabilityFunction();
+//			if (cliqueTable.tableSize() == sepTable.tableSize()) {
+//				sepTable.setValues(cliqueTable.getValues());
+//			} else {
+//				// because we removed extra nodes from cliqueTable, they should have the same size
+//				throw new RuntimeException("A bug was found in the method for marginalizing clique table of  " + clique 
+//						+ " in order to get potentials of separator " + sep + ". The table size were different, and respectively "
+//						+ cliqueTable.tableSize() + " and " + sepTable.tableSize());
+//			}
+//			
+//			// TODO check if global consistency still holds
+//		}
+//		
+//		// update marginal probabilities
+//		for (Node node : net.getNodes()) {
+//			if (node instanceof ProbabilisticNode) {
+//				ProbabilisticNode pnode = (ProbabilisticNode) node;
+//				pnode.setMarginalProbabilities(mapOldMarginal.get(pnode));
+//			}
+//		}
 		
 		// return the generated edges
 		return ret;
 	}
+
+//	/**
+//	 * This object is responsible for normalizing CPTs at {@link #addNodesToCliqueWhenNotConsideringAssets(Map)}
+//	 * @return the cptNormalizer
+//	 */
+//	public ITableFunction getCptNormalizer() {
+//		return cptNormalizer;
+//	}
+//
+//	/**
+//	 * This object is responsible for normalizing CPTs at {@link #addNodesToCliqueWhenNotConsideringAssets(Map)}
+//	 * @param cptNormalizer the cptNormalizer to set
+//	 */
+//	public void setCptNormalizer(ITableFunction cptNormalizer) {
+//		this.cptNormalizer = cptNormalizer;
+//	}
+	
+//	/**
+//	 * Uses {@link #joinCliqueTables(Clique, Clique, Separator)} 
+//	 * and {@link #findShortestJunctionTreePath(Collection, Collection)} in order
+//	 * to obtain potentials of a set of nodes which reflects the current
+//	 * junction tree.
+//	 * @param nodes : nodes to be included.
+//	 * @param junctionTree : the junction tree to obtain potentials (the clique tables).
+//	 * If null, the junction tree of {@link #getNet()} will be used
+//	 * @return
+//	 */
+//	public PotentialTable getPotentialTableFromNodes(List<INode> nodes, IJunctionTree junctionTree) {
+//		if (junctionTree == null) {
+//			if (this.getNet() == null || this.getNet().getJunctionTree() == null) {
+//				return null;
+//			}
+//			junctionTree = this.getNet().getJunctionTree();
+//		}
+//		
+//		Clique cliqueContainingMostOfNodes = this.getCliqueContainingMostOfNodes(nodes, junctionTree);
+//		
+//		this.findShortestJunctionTreePath(from, to);
+//	}
+	
+//	/**
+//	 * Merges : two clique potential tables.
+//	 * This can be used in {@link #addNodesToCliqueWhenNotConsideringAssets(Map)}
+//	 * in order to generate a potential table which contain all nodes of two cliques
+//	 * (and then, {@link PotentialTable#removeVariable(INode, boolean)} can be used
+//	 * to delete excess node) in order to create clique potential of desired nodes.
+//	 * @param to : basically, nodes in the other clique will be inserted to the clique table of this clique.
+//	 * @param from : basically, nodes in this clique will be inserted to the clique table of the other clique.
+//	 * @param sep: separator connecting the two cliques. Nodes in this separator are expected to
+//	 * be common to the 2 cliques, and they will be used in order to adjust conditional
+//	 * probabilities of the resulting table.
+//	 * @return : a potential table containing variables from both tables. It is not the same object of either "to" or "from" clique's tables.
+//	 */
+//	public PotentialTable joinCliqueTables(Clique to, Clique from, Separator sep) {
+//		// basic assertions
+//		if (to == null || from == null) {
+//			throw new NullPointerException("Two cliques must be specified");
+//		}
+//		if (sep != null
+//				&& !( (sep.getClique1().equals(from) && sep.getClique2().equals(to)) 
+//						|| (sep.getClique1().equals(to) && sep.getClique2().equals(from)) ) ) {
+//			throw new IllegalArgumentException("The specified separator "+ sep +" should connect the specified cliques " + to + " and " + from);
+//		}
+//		
+//		// extract the clique table from the "from" clique. Use clone because we'd not like to change the original
+//		PotentialTable fromTable = (PotentialTable) from.getProbabilityFunction().clone();
+//		
+//		// extract the clique table from the "to" clique. Use clone because we'd not like to change the original
+//		PotentialTable toTable = (PotentialTable) to.getProbabilityFunction().clone();
+//		
+//		// insert the variables of fromTable to the toTable
+//		for (int i = 0; i < fromTable.getVariablesSize(); i++) {
+//			if (!(fromTable.getVariableAt(i) instanceof ProbabilisticNode)) {
+//				continue; // ignore non-prob nodes
+//			}
+//			ProbabilisticNode node = (ProbabilisticNode) fromTable.getVariableAt(i);
+//			int indexOfVariable = toTable.indexOfVariable(node);
+//			if (indexOfVariable < 0) {
+//				// toTable does not have this variable, so add it
+//				toTable.addVariable(node);
+//				
+//				// if there is no common variable in separator, then the two nodes are supposedly independent, so we can simply multiply by marginal
+//				if (sep.getNodes().size() <= 0) {
+//					ProbabilisticTable tableForMultiplication = new ProbabilisticTable();
+//					tableForMultiplication.addVariable(node);
+//					
+//					// fill tableForMultiplication with the obtained marginal
+//					if (node.getStatesSize() == tableForMultiplication.tableSize()) {
+//						for (int j = 0; j < tableForMultiplication.tableSize(); j++) {
+//							tableForMultiplication.setValue(j, node.getMarginalAt(j));
+//						}
+//					} else {
+//						throw new RuntimeException("Probabilistic table containing only node  " + node + " should have size " + node.getStatesSize() 
+//								+ ", but was " + tableForMultiplication.tableSize());
+//					}
+//					
+//					// multiply clique potential with marginal of node being added
+//					toTable.opTab(tableForMultiplication, PotentialTable.PRODUCT_OPERATOR);
+//				}
+//			}
+//		}
+//		
+//		// multiply by fromTable and divide by separator, if nodes are dependent
+//		if (sep.getNodes().size() > 0) {
+//			toTable.opTab(fromTable, PotentialTable.PRODUCT_OPERATOR);
+//			toTable.opTab(sep.getProbabilityFunction(), PotentialTable.DIVISION_OPERATOR);
+//		}
+//		
+//		// TODO check if we need normalization
+//		
+//		return toTable;
+//	}
 
 
 }

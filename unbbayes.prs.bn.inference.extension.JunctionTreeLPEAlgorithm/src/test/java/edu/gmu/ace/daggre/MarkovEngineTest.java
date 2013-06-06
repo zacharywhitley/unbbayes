@@ -24104,19 +24104,23 @@ public class MarkovEngineTest extends TestCase {
 	 */
 	public final void testExportImport2000Vars() {
 		int numNodes = 2000;	// total quantity of nodes in the network
-		int maxNumStates = 4;	// how many states a node can have at most. The minimum is expected to be 2, but this var should not be set to 2
+		int maxNumStates = 5;	// how many states a node can have at most. The minimum is expected to be 2, but this var should not be set to 2
 		int maxNumParents = 10;	// maximum number of parents per node 
 		float probAddArcs = .00065f;	// what is the probability to add arcs. The higher, more arcs are likely to be created.
 		float probTrade = .05f;	// how many nodes will be traded
+		boolean isToMakeAllTrades = true;	// if false, trades will be cancelled if they are taking too much time
 		float probAddAssumption = .15f;	// what is the probability to add assumptions in trades. The higher, more assumptions are likely to be used.
-		long seed = new Date().getTime();
+		long seed = 1370447826016L;//new Date().getTime();
 		Random random = new Random(seed);
+		float probTradeBeforeArcs = 0.05f;
+		
 		
 		// backup config
 		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
 		engine.setToAddArcsOnlyToProbabilisticNetwork(true);
 		
 		System.out.println("[testExportImport2000Vars] Random seed = " + seed);
+		
 		
 		// create the nodes
 		long transactionKey = engine.startNetworkActions();
@@ -24133,9 +24137,41 @@ public class MarkovEngineTest extends TestCase {
 			numParentsPerNode[i] = 0;
 		}
 		
+		// this map will store what was traded before adding arcs, for later comparison
+		Map<Long, List<Float>> tradedProbs = new HashMap<Long, List<Float>>();
+		
 		// create arcs randomly
 		transactionKey = engine.startNetworkActions();
 		for (int i = 0; i < numNodes-1; i++) {
+			// generate trade before adding arcs
+			if (random.nextFloat() < probTradeBeforeArcs) {
+				ProbabilisticNode node = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode(Long.toString(i));
+				// the trade to be performed
+				List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
+				float sumForNormalization = 0f;
+				for (int j = 0; j < node.getStatesSize(); j++) {
+					newValues.add(random.nextFloat());
+					sumForNormalization += newValues.get(j);
+				}
+				// normalize the newValues
+				for (int j = 0; j < newValues.size(); j++) {
+					newValues.set(j, newValues.get(j)/sumForNormalization);
+				}
+				
+				// run trade
+				engine.addTrade(
+							null, 
+							new Date(), 
+							"P(" + i + ") = " + newValues, 
+							0, 
+							i, 
+							newValues, 
+							null, 
+							null, 
+							true
+						);
+				tradedProbs.put((long) i, newValues);
+			}
 			for (int j = i+1; j < numNodes; j++) {
 				if (random.nextFloat() > probAddArcs) {
 					continue;	// only create arcs with probability probAddArcs
@@ -24150,8 +24186,21 @@ public class MarkovEngineTest extends TestCase {
 		numParentsPerNode = null;	// try disposing it, because it won't be used anymore
 		engine.commitNetworkActions(transactionKey);
 		
+		
 		System.out.println(engine.getNetStatistics().toString());
 		System.out.println("seed = " + seed);
+		
+		// check that the marginals matches traded probs
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			List<Float> probBefore = tradedProbs.get(entry.getKey());
+			if (probBefore != null) {
+				assertEquals(probBefore.size(), entry.getValue().size());
+				for (int j = 0; j < probBefore.size(); j++) {
+					assertEquals(probBefore.get(j), entry.getValue().get(j), PROB_ERROR_MARGIN);
+				}
+			}
+		}
+		
 		// make trades on all variables
 		for (long questionId = 0; questionId < numNodes; questionId++) {
 			ProbabilisticNode node = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode(Long.toString(questionId));
@@ -24186,6 +24235,7 @@ public class MarkovEngineTest extends TestCase {
 				}
 			}
 			
+			long time = System.currentTimeMillis();
 			engine.addTrade(
 					null, 
 					new Date(), 
@@ -24197,7 +24247,14 @@ public class MarkovEngineTest extends TestCase {
 					assumedStates, 
 					true
 				);
-			
+			if (!isToMakeAllTrades && System.currentTimeMillis() - time >= 1000) {
+				// do not add more trades if it is more than 1s
+				break;
+			}
+			if (!isToMakeAllTrades && System.currentTimeMillis() - time >= 100) {
+				// trade on less questions if its more than half second
+				probTrade = probTrade/2;
+			}
 		}
 		
 		// backup network to check afterwards

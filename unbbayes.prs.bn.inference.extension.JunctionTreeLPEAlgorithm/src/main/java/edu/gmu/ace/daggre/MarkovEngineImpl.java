@@ -277,7 +277,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	/** When true, {@link #addQuestionAssumption(Long, Date, long, List, List)} won't try to re-run the trades.
 	 * however, when {@link #isToAddArcsOnlyToProbabilisticNetwork()} is false, this may result in a non-optimal BN. */
-	private boolean isToAddArcsWithoutReboot = true;
+	private boolean isToAddArcsWithoutReboot = false;
 	
 	/** If this is true and {@link #isToAddArcsWithoutReboot()} is also true, then an algorithm for
 	 * adding arcs without re-running the history will be executed, and the resulting BN will be near optimal,
