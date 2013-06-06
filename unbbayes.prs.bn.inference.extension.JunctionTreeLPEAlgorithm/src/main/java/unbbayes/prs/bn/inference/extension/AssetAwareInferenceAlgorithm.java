@@ -262,15 +262,15 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 			throw new IllegalStateException(this.getName() + " does not support Influence Diagrams.");
 		}
 		
-		// explicitly reset all evidences
-		if (isToResetEvidenceBeforeRun()) {
-			for (Node node : getNetwork().getNodes()) {
-				if (node instanceof TreeVariable) {
-					((TreeVariable) node).resetLikelihood();
-					((TreeVariable) node).resetEvidence();
-				}
-			}
-		}
+		// explicitly reset all evidences (this seems to be done already in ProbabilisticNetwork.compileJT)
+//		if (isToResetEvidenceBeforeRun()) {
+//			for (Node node : getNetwork().getNodes()) {
+//				if (node instanceof TreeVariable) {
+//					((TreeVariable) node).resetLikelihood();
+//					((TreeVariable) node).resetEvidence();
+//				}
+//			}
+//		}
 		this.getProbabilityPropagationDelegator().run();
 //		try {
 //			this.getAssetPropagationDelegator().setRelatedProbabilisticNetwork((ProbabilisticNetwork) this.getProbabilityPropagationDelegator().getNetwork());
@@ -2456,6 +2456,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 		
 		// iterate over all nodes in the net
 		ProbabilisticNetwork net = this.getNet();
+//		NormalizeTableFunction normalizer = new NormalizeTableFunction();	// this will be used to normalize table
 		for (Node node : net.getNodes()) {
 			// only make changes if this is a probabilistic node
 			if (node instanceof ProbabilisticNode) {
@@ -2472,6 +2473,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 				
 				// use values in condProb to update cpt
 				cpt.setValues(condProb.getValues());
+//				normalizer.applyFunction((ProbabilisticTable) cpt);	// normalize cpt
 			}
 		}
 	}
