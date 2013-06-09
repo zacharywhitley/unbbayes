@@ -2889,6 +2889,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addTrade(java.lang.Long, java.util.Date, java.lang.String, edu.gmu.ace.daggre.TradeSpecification, boolean)
 	 */
 	public List<Float> addTrade(Long transactionKey, Date occurredWhen, String tradeKey, TradeSpecification tradeSpecification, boolean allowNegative) throws IllegalArgumentException {
+		// automatically set allowNegative == true when isToAddArcsOnlyToProbabilisticNetwork().
+		allowNegative = allowNegative || isToAddArcsOnlyToProbabilisticNetwork();
 		
 		// initial assertions
 		if (occurredWhen == null) {
@@ -9383,7 +9385,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		if (isToExportOnlyCurrentSharedProbabilisticNet()) {
 			// simply call exportCurrentSharedNetwork
-			String stringRepresentationOfNet = this.exportCurrentSharedNetwork();
+			String stringRepresentationOfNet = this.exportState();
 			// store the returned string to a file
 			PrintStream stream = new PrintStream(file);
 			// TODO use an I/O class instead of using the file here
@@ -9800,7 +9802,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			} ;
 			reader.close();
 			// simply delegate to importCurrentSharedNetwork
-			this.importCurrentSharedNetwork(netString);
+			this.importState(netString);
 			return;
 		}
 		
@@ -10649,9 +10651,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * {@link NetIO#setPrintStreamBuilder(unbbayes.io.IPrintStreamBuilder)}
 	 * with {@link StringPrintStreamBuilder} in order to use {@link NetIO} for printing net files to string instead of
 	 * files. 
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#exportCurrentSharedNetwork()
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#exportState()
 	 */
-	public synchronized String exportCurrentSharedNetwork() {	// TODO check if we can remove the synchronized
+	public synchronized String exportState() {	// TODO check if we can remove the synchronized
 		// TODO use a specific I/O class instead of handling I/O here 
 		
 		// prepare an I/O class which actually prints to string instead of file
@@ -10691,9 +10693,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * <br/>
 	 * Note: this will also set {@link #setToAddArcsOnlyToProbabilisticNetwork(boolean)} to true,
 	 * which is expected to reset users.
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#importCurrentSharedNetwork(java.lang.String)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#importState(java.lang.String)
 	 */
-	public synchronized void importCurrentSharedNetwork(String netString) throws IllegalArgumentException {
+	public synchronized void importState(String netString) throws IllegalArgumentException {
 		// indicate that we are only using probabilistic net
 		this.setToAddArcsOnlyToProbabilisticNetwork(true);
 		// this shall also reset existing users
@@ -10769,10 +10771,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	/**
 	 * If true, then {@link #exportNetwork(File)} will simply call
-	 * {@link #exportCurrentSharedNetwork()} and store it to a file.
+	 * {@link #exportState()} and store it to a file.
 	 * If false, then it will perform the normal export behavior, which
 	 * is to export all nodes and arcs including the resolved ones.
-	 * The {@link #importNetwork(File)} will also call {@link #importCurrentSharedNetwork(String)}
+	 * The {@link #importNetwork(File)} will also call {@link #importState(String)}
 	 * if this is true.
 	 * @return the isToExportOnlyCurrentSharedProbabilisticNet
 	 */
@@ -10782,10 +10784,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	/**
 	 * If true, then {@link #exportNetwork(File)} will simply call
-	 * {@link #exportCurrentSharedNetwork()} and store it to a file.
+	 * {@link #exportState()} and store it to a file.
 	 * If false, then it will perform the normal export behavior, which
 	 * is to export all nodes and arcs including the resolved ones.
-	 * The {@link #importNetwork(File)} will also call {@link #importCurrentSharedNetwork(String)}
+	 * The {@link #importNetwork(File)} will also call {@link #importState(String)}
 	 * if this is true.
 	 * @param isToExportOnlyCurrentSharedProbabilisticNet the isToExportOnlyCurrentSharedProbabilisticNet to set
 	 */
@@ -10795,12 +10797,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	}
 
 	/**
-	 * This {@link NetIO} is used in {@link #exportCurrentSharedNetwork()} and
-	 * {@link #importCurrentSharedNetwork(String)} in order to export/import
+	 * This {@link NetIO} is used in {@link #exportState()} and
+	 * {@link #importState(String)} in order to export/import
 	 * current shared net from file.
-	 * The {@link #exportCurrentSharedNetwork()} will call {@link NetIO#setPrintStreamBuilder(unbbayes.io.IPrintStreamBuilder)}
+	 * The {@link #exportState()} will call {@link NetIO#setPrintStreamBuilder(unbbayes.io.IPrintStreamBuilder)}
 	 * with {@link StringPrintStreamBuilder} in order to use {@link NetIO} for printing net files to string instead of
-	 * file. Similarly, {@link #importCurrentSharedNetwork(String)} will call
+	 * file. Similarly, {@link #importState(String)} will call
 	 * {@link NetIO#setReaderBuilder(unbbayes.io.IReaderBuilder)}
 	 * with {@link StringReaderBuilder}
 	 * in order to use {@link NetIO} for reading net files from string instead of from file.
@@ -10808,7 +10810,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * <br/>
 	 * This method is kept protected in order to allow access from subclasses,
 	 * but this shall be handled with care, since it will directly impact
-	 * where {@link #exportCurrentSharedNetwork()} and {@link #importCurrentSharedNetwork(String)}
+	 * where {@link #exportState()} and {@link #importState(String)}
 	 * will reference to.
 	 * @return the netIOToExportSharedNetToSting
 	 * @see #setNetIOToExportSharedNetToSting(NetIO)
@@ -10818,12 +10820,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	}
 
 	/**
-	 * This {@link NetIO} is used in {@link #exportCurrentSharedNetwork()} and
-	 * {@link #importCurrentSharedNetwork(String)} in order to export/import
+	 * This {@link NetIO} is used in {@link #exportState()} and
+	 * {@link #importState(String)} in order to export/import
 	 * current shared net from file.
-	 * The {@link #exportCurrentSharedNetwork()} will call {@link NetIO#setPrintStreamBuilder(unbbayes.io.IPrintStreamBuilder)}
+	 * The {@link #exportState()} will call {@link NetIO#setPrintStreamBuilder(unbbayes.io.IPrintStreamBuilder)}
 	 * with {@link StringPrintStreamBuilder} in order to use {@link NetIO} for printing net files to string instead of
-	 * file. Similarly, {@link #importCurrentSharedNetwork(String)} will call
+	 * file. Similarly, {@link #importState(String)} will call
 	 * {@link NetIO#setReaderBuilder(unbbayes.io.IReaderBuilder)}
 	 * with {@link StringReaderBuilder}
 	 * in order to use {@link NetIO} for reading net files from string instead of from file.
@@ -10831,13 +10833,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * <br/>
 	 * This method is kept protected in order to allow access from subclasses,
 	 * but this shall be handled with care, since it will directly impact
-	 * where {@link #exportCurrentSharedNetwork()} and {@link #importCurrentSharedNetwork(String)}
+	 * where {@link #exportState()} and {@link #importState(String)}
 	 * will reference to.
 	 * @param netIOToExportSharedNetToSting the netIOToExportSharedNetToSting to set
 	 * @see #getNetIOToExportSharedNetToSting()
 	 */
 	protected void setNetIOToExportSharedNetToSting( NetIO netIOToExportSharedNetToSting) {
 		this.netIOToExportSharedNetToSting = netIOToExportSharedNetToSting;
+	}
+
+	public boolean resolveQuestionState(Long transactionKey, Date occurredWhen,
+			long questionId, int... statesToSettle)
+			throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 //	/**

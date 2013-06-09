@@ -24098,8 +24098,8 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	/**
-	 * Test method for {@link MarkovEngineImpl#exportCurrentSharedNetwork()}
-	 * and {@link MarkovEngineImpl#importCurrentSharedNetwork(String)}
+	 * Test method for {@link MarkovEngineImpl#exportState()}
+	 * and {@link MarkovEngineImpl#importState(String)}
 	 * for 2000 vars and randomly created arcs (max 10 parents)
 	 */
 	public final void testExportImport2000Vars() {
@@ -24271,7 +24271,7 @@ public class MarkovEngineTest extends TestCase {
 		System.out.println("seed = " + seed);
 		// store network as a string
 		long timeBefore = System.currentTimeMillis();
-		String netAsString = engine.exportCurrentSharedNetwork();
+		String netAsString = engine.exportState();
 		System.out.println("Time (ms) to export network = " + (System.currentTimeMillis() - timeBefore));
 		System.out.println("seed = " + seed);
 		
@@ -24282,7 +24282,7 @@ public class MarkovEngineTest extends TestCase {
 		
 		// load network from the obtained string
 		timeBefore = System.currentTimeMillis();
-		engine.importCurrentSharedNetwork(netAsString);
+		engine.importState(netAsString);
 		System.out.println("Time (ms) to import network = " + (System.currentTimeMillis() - timeBefore));
 		System.out.println("seed = " + seed);
 		
