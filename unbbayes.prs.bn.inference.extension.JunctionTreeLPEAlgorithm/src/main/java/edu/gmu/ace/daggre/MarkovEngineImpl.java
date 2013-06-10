@@ -3523,6 +3523,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return true;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#resolveQuestion(java.lang.Long, java.util.Date, long, java.util.List)
+	 */
+	public boolean resolveQuestion(Long transactionKey, Date occurredWhen, long questionId, List<Float> settlement ) throws IllegalArgumentException{
+		// TODO stub
+		return false;
+	}
+	
+	
 
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#revertTrade(Long, java.util.Date, java.lang.Long, java.lang.Long)
@@ -10842,12 +10852,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		this.netIOToExportSharedNetToSting = netIOToExportSharedNetToSting;
 	}
 
-	public boolean resolveQuestionState(Long transactionKey, Date occurredWhen,
-			long questionId, int... statesToSettle)
-			throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return false;
-	}
+	
 
 //	/**
 //	 * This I/O class is used in {@link #exportCurrentSharedNetwork()}

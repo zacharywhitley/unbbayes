@@ -387,30 +387,8 @@ public interface MarkovEngineInterface {
 	 */
 	public boolean resolveQuestion(Long transactionKey, Date occurredWhen, long questionId, int settledState) throws IllegalArgumentException;
 	
-	/**
-	 * This function will settle specific state(s) (choices) of a question to 0% 
-	 * and propagate the probabilities across other states and related questions, if applicable.
-	 * The points of ellipsis (...) in the argument ”...statesToSettle“ represent unlimited quantity of arguments, 
-	 * therefore more than 1 integer (i.e. more than 1 state, or choice) can be specified. 
-	 * The main differences compared to resolveQuestion are:
-	 * <br/>
-	 * <br/>
-	 * - The resolveQuestion sets the specified state (choice) to 100% and all other states to 0%, 
-	 * while resolveQuestionState sets the specified states to 0% and updates the probabilities of other states proportionally.
-	 * <br/>
-	 * <br/>
-	 * - The resolveQuestion virtually removes the question from the system scope, while resolveQuestionState doesn’t.
-	 * If transactionKey is null, then the action will be committed immediately.
-	 * @param transactionKey : key returned by {@link #startNetworkActions()}
-	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
-	 * @param questionId : the id of the question containing the state(s) to be settled.
-	 * @param statesToSettle : indexes of the states of the question (with ID questionID) to be settled to 0%.
-	 * Probabilities of other states will be updated proportionally.
-	 * @return true if successful.
-	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
-	 * @see #resolveQuestion(Long, Date, long, int)
-	 */
-	public boolean resolveQuestionState(Long transactionKey, Date occurredWhen, long questionId, int ...statesToSettle ) throws IllegalArgumentException;
+	
+	public boolean resolveQuestion(Long transactionKey, Date occurredWhen, long questionId, List<Float> settlement ) throws IllegalArgumentException;
 	
 	/**
 	 * This function will attempt to undo all trades >= the startingTradeId against this question. 
