@@ -257,7 +257,7 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable,
 				if (isInsertion) {
 					tabelaPot.addValueAt(d++, 0);
 				} else {
-					tabelaPot.removeValueAt(d);
+					tabelaPot.removeValueAt(--d);
 				}
 				d += getStatesSize();
 			}
@@ -272,8 +272,7 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable,
 			}
 
 			IRandomVariable randomVar = (IRandomVariable) getChildren().get(i);
-			PotentialTable auxTab = (PotentialTable) randomVar
-					.getProbabilityFunction();
+			PotentialTable auxTab = (PotentialTable) randomVar.getProbabilityFunction();
 
 			clones[i] = auxTab.cloneVariables();
 			indexes[i] = auxTab.indexOfVariable(this);
@@ -284,8 +283,7 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable,
 					|| getChildren().get(i).getType() == Node.CONTINUOUS_NODE_TYPE) {
 				continue;
 			}
-			PotentialTable auxTab = (PotentialTable) ((IRandomVariable) getChildren()
-					.get(i)).getProbabilityFunction();
+			PotentialTable auxTab = (PotentialTable) ((IRandomVariable) getChildren().get(i)).getProbabilityFunction();
 			int l = indexes[i];
 			List<Node> auxList = clones[i];
 			for (int k = auxList.size() - 1; k >= l; k--) {
@@ -320,7 +318,7 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable,
 				// remove var, so that it is added again after the state is
 				// updated
 				Node node = auxList.get(k);
-				auxTab.removeVariable(node);
+				auxTab.removeVariable(node,true);
 				// }
 			}
 		}
@@ -336,8 +334,7 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable,
 					|| getChildren().get(i).getType() == Node.CONTINUOUS_NODE_TYPE) {
 				continue;
 			}
-			IProbabilityFunction auxTab = ((IRandomVariable) getChildren().get(
-					i)).getProbabilityFunction();
+			IProbabilityFunction auxTab = ((IRandomVariable) getChildren().get(i)).getProbabilityFunction();
 			int l = indexes[i];
 			List<Node> auxList = clones[i];
 			for (int k = l; k < auxList.size(); k++) {
