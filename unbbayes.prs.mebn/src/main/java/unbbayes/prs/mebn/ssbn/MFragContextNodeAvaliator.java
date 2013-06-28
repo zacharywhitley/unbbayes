@@ -123,8 +123,10 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 				
 
 				if(avaliator.testContextNodeFormatRestriction(contextNode)){
-					logManager.printText(level5, false, 
-							"The uncertain reference is possible. ");
+					if (logManager != null) {
+						logManager.printText(level5, false, 
+								"The uncertain reference is possible. ");
+					}
 					possibleReferenceUncertainNodes.add(contextNode); 
 					continue; 
 				}
