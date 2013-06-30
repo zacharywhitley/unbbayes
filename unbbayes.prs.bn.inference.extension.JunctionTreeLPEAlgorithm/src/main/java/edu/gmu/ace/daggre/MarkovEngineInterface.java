@@ -665,6 +665,7 @@ public interface MarkovEngineInterface {
 	/**
 	 * This function will return the affect (assets per state) of this trade similar to the addTrade function,
 	 * but is a proposed what-if (non-binding) calculation only that does not impact the network.
+	 * If assets are not used by this engine, then this method may simply return changes in assets.
 	 * @param userID : the ID of the user (i.e. owner of the assets).
 	 * @param questionID : the id of the question to be edited (i.e. the random variable "T"  in the example)
 	 * @param newValues : this is a list (ordered collection) representing the probability values after the edit. 
@@ -700,6 +701,7 @@ public interface MarkovEngineInterface {
 	/**
 	 * This function will return the affect (assets per state) of this trade similar to the addTrade function,
 	 * but is a proposed what-if (non-binding) calculation only that does not impact the network.
+	 * If assets are not used by this engine, then this method may simply return changes in assets.
 	 * @param tradeSpecification : instance of {@link TradeSpecification} which specifies the user ID, question ID, 
 	 * the probability values, the IDs of assumed questions and the assumed states.
 	 * @return the assets per state changed, if the user has sufficient assets 

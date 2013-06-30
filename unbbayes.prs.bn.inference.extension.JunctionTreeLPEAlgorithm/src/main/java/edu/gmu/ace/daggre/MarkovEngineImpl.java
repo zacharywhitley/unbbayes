@@ -282,7 +282,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/** If this is true and {@link #isToAddArcsWithoutReboot()} is also true, then an algorithm for
 	 * adding arcs without re-running the history will be executed, and the resulting BN will be near optimal,
 	 * because for probabilistic networks it is easier to do such optimization. */
-	private boolean isToAddArcsOnlyToProbabilisticNetwork = false;
+	private boolean isToAddArcsOnlyToProbabilisticNetwork = true;//false;
 
 	/** If true, {@link #doBalanceTrade(Long, Date, String, long, long, List, List)} will just return for uninitialized 
 	 * users which has no position even after other (non-executed) actions the same transaction */
@@ -445,7 +445,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// prepare map storing network actions
 		setNetworkActionsMap(new ConcurrentHashMap<Long, List<NetworkAction>>());	// concurrent hash map is known to be thread safe yet fast.
-		setNetworkActionsIndexedByQuestions(new HashMap<Long, List<NetworkAction>>());	// HashMap allows null key.
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			setNetworkActionsIndexedByQuestions(null);	// do not trace actions
+		} else {
+			setNetworkActionsIndexedByQuestions(new HashMap<Long, List<NetworkAction>>());	// HashMap allows null key.
+		}
 		
 		setExecutedActions(new ArrayList<NetworkAction>());	// initialize list of network actions ordered by the moment of execution
 		
@@ -511,6 +515,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// also reset the mapping of questions being created in transactions
 		synchronized (getQuestionsToBeCreatedInTransaction()) {
 			getQuestionsToBeCreatedInTransaction().clear();
+		}
+		
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			// this method will make all other flags consistent each other
+			this.setToAddArcsOnlyToProbabilisticNetwork(true);
 		}
 		
 		return true;
@@ -590,7 +599,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			List<NetworkAction> otherActions = new ArrayList<NetworkAction>();	// will store actions which does not change network structure
 			// collect all network change actions and other actions, regarding their original order
 			List<AddQuestionAssumptionNetworkAction> arcActions = new ArrayList<AddQuestionAssumptionNetworkAction>();	// will store actions which adds arcs (so that we can aggregate them if possible)
-			boolean isToRebuildFromHistory = false;	// if an action which is set as a trigger for rebuild is found, this flag will turn on
+			boolean isToRebuildFromHistory = !isToAddArcsWithoutReboot;	// if an action which is set as a trigger for rebuild is found, this flag will turn on
 			for (NetworkAction action : actions) {
 				if (action.isTriggerForRebuild()) {
 					// there is at least one trigger for re-running history, so remember that and instantiate a RebuildNetworkAction afterwards.
@@ -1109,19 +1118,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// TODO instead of clearing and re-doing virtual trades, keep them and do not add them again
 			// clean record of virtual trades created before
 			synchronized (getVirtualTradeToAffectedQuestionsMap()) {
-				synchronized (getNetworkActionsIndexedByQuestions()) {
-					// getVirtualTradeToAffectedQuestionsMap() is a mapping from virtual trade to questions
-					for (VirtualTradeAction virtualTrade : getVirtualTradeToAffectedQuestionsMap().keySet()) {
-						// getNetworkActionsIndexedByQuestions() is a mapping from questions to actions (including virtual trades)
-						for (Long relatedQuestion : getVirtualTradeToAffectedQuestionsMap().get(virtualTrade)) {
-							// delete from the "normal" mapping
-//							getNetworkActionsIndexedByQuestions().get(relatedQuestion).remove(virtualTrade);
-							removeNetworkActionFromQuestionMap(virtualTrade, relatedQuestion);
-						}
+				// getVirtualTradeToAffectedQuestionsMap() is a mapping from virtual trade to questions
+				for (VirtualTradeAction virtualTrade : getVirtualTradeToAffectedQuestionsMap().keySet()) {
+					for (Long relatedQuestion : getVirtualTradeToAffectedQuestionsMap().get(virtualTrade)) {
+						// delete from the "normal" mapping
+						removeNetworkActionFromQuestionMap(virtualTrade, relatedQuestion);
 					}
-					// clean the "inverse" mapping
-					getVirtualTradeToAffectedQuestionsMap().clear();
 				}
+				// clean the "inverse" mapping
+				getVirtualTradeToAffectedQuestionsMap().clear();
 			}
 			
 			
@@ -1569,6 +1574,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			return false;
 		}
 		
+		if (isToAddArcsOnlyToProbabilisticNetwork() || isToAddArcsWithoutReboot()) {
+			if (cpd != null && !cpd.isEmpty()) {
+				throw new UnsupportedOperationException("The current version of the Markov Engine does not allow replacement of the arcs, so a null/empty cpd must be provided");
+			}
+		}
+		
 		// this is the list of actions in a same transaction.
 		List<NetworkAction> actions = null;
 		if (transactionKey != null) {
@@ -1885,6 +1896,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 */
 		public void execute(ProbabilisticNetwork network) {
 			long currentTimeMillis = System.currentTimeMillis();
+			if (isToAddArcsOnlyToProbabilisticNetwork() || isToAddArcsWithoutReboot()) {
+				if (this.cpd != null && !this.cpd.isEmpty()) {
+					throw new UnsupportedOperationException("The current version of the Markov Engine does not allow replacement of the arcs, so a null/empty cpd must be provided");
+				}
+			}
 			
 			// the conditions that we need to reboot (re-run trades) are in the following if-clause. 
 			// The condition cpd == null indicates that we are not substituting any arc (if cpd != null, then we are trying to substitute arcs)
@@ -2062,6 +2078,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				return true;
 			}
 			// if cpd was specified, then we need to replace arcs, but that's only possible in this implementation by rebooting and rerunning trades
+			// TODO the current commitNetworkActions assumes that the history is filled in order to rebuild network, so 
+			// cannot set cpt if it is set not to rebuild net.
 			if (cpd != null) {
 				return true;
 			}
@@ -2424,12 +2442,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// backup the previous delta so that we can revert this trade
 //					qTablesBeforeTrade = algorithm.getAssetTablesBeforeLastPropagation();
 					// add this question to the mapping of questions traded by the user
-					Set<Long> questions = getTradedQuestionsMap().get(tradeSpecification.getUserId());
-					if (questions == null) {
-						questions = new HashSet<Long>();
-						getTradedQuestionsMap().put(tradeSpecification.getUserId(), questions);
+					if (isToTraceHistory()) {
+						Set<Long> questions = getTradedQuestionsMap().get(tradeSpecification.getUserId());
+						if (questions == null) {
+							questions = new HashSet<Long>();
+							getTradedQuestionsMap().put(tradeSpecification.getUserId(), questions);
+						}
+						questions.add(tradeSpecification.getQuestionId());
 					}
-					questions.add(tradeSpecification.getQuestionId());
 				}
 			}
 			
@@ -2714,7 +2734,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					addNetworkActionIntoQuestionMap(virtualTrade, question);
 					
 					// add virtual trade to the inverse mapping (from virtual trade, find related questions)
-					synchronized (getNetworkActionsIndexedByQuestions()) {
+					synchronized (getVirtualTradeToAffectedQuestionsMap()) {
 						Set<Long> relatedQuestions = getVirtualTradeToAffectedQuestionsMap().get(virtualTrade);
 						if (relatedQuestions == null) {
 							relatedQuestions = new HashSet<Long>();
@@ -2765,7 +2785,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					addNetworkActionIntoQuestionMap(dummyTrade, question);
 					
 					// add virtual trade to the inverse mapping (from virtual trade, find related questions)
-					synchronized (getNetworkActionsIndexedByQuestions()) {
+					synchronized (getVirtualTradeToAffectedQuestionsMap()) {
 						Set<Long> relatedQuestions = getVirtualTradeToAffectedQuestionsMap().get(dummyTrade);
 						if (relatedQuestions == null) {
 							relatedQuestions = new HashSet<Long>();
@@ -5091,7 +5111,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	@SuppressWarnings("unchecked")
 	public List<Float> previewTrade(long userId, long questionId,List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
 		if (isToAddArcsOnlyToProbabilisticNetwork()) {
-			return null;
+			// if we are not using users, then this method should return the asset changes
+			List<Float> oldValues = getProbList(questionId, assumptionIds, assumedStates);
+			// this is the list to be returned
+			List<Float> ret = new ArrayList<Float>(newValues.size());
+			for (int i = 0; i < newValues.size(); i++) {
+				// probs and assets are all supposedly related by indexes
+				ret.add(this.getScoreFromQValues(newValues.get(i)/oldValues.get(i)));
+			}
+			return ret;
 		}
 		// initial assertions
 		if (newValues == null || newValues.isEmpty()) {
@@ -7385,15 +7413,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (questionId == null) { // We have to retrieve history of actions unrelated to any question.
 			// Supposedly, trades are always related to some question, so we do not need to retrieve trades
 			if (!isToRetriveOnlyTradeHistory()) {
-				synchronized (this.getNetworkActionsIndexedByQuestions()) {
-					ret.addAll(this.getNetworkActionsIndexedByQuestions().get(null));
+				if (getNetworkActionsIndexedByQuestions() != null) {
+					synchronized (this.getNetworkActionsIndexedByQuestions()) {
+						ret.addAll(this.getNetworkActionsIndexedByQuestions().get(null));
+					}
 				}
 			}
 		} else if (assumptionIds == null || assumptionIds.isEmpty()) {
 			// History of marginals. Retrieve from the network actions indexed by question ID
 			List<NetworkAction> list = null;
-			synchronized (this.getNetworkActionsIndexedByQuestions()) {
-				list = this.getNetworkActionsIndexedByQuestions().get(questionId);
+			if (this.getNetworkActionsIndexedByQuestions() != null) {
+				synchronized (this.getNetworkActionsIndexedByQuestions()) {
+					list = this.getNetworkActionsIndexedByQuestions().get(questionId);
+				}
 			}
 			if (list == null) {
 				return Collections.emptyList();
@@ -8455,6 +8487,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (networkAction == null) {
 			throw new NullPointerException("networkAction == null");
 		}
+		if (getNetworkActionsIndexedByQuestions() == null) {
+			return -1;
+		}
 		// get list of actions from getNetworkActionsIndexedByQuestions.
 		List<NetworkAction> list = null;
 		synchronized (getNetworkActionsIndexedByQuestions()) {
@@ -8521,11 +8556,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		// get list of actions from getNetworkActionsIndexedByQuestions.
 		List<NetworkAction> list = null;
-		synchronized (getNetworkActionsIndexedByQuestions()) {
-			if (questionId == null) {
-				questionId = networkAction.getQuestionId();
+		if (getNetworkActionsIndexedByQuestions() != null) {
+			synchronized (getNetworkActionsIndexedByQuestions()) {
+				if (questionId == null) {
+					questionId = networkAction.getQuestionId();
+				}
+				list = getNetworkActionsIndexedByQuestions().get(questionId);
 			}
-			list = getNetworkActionsIndexedByQuestions().get(questionId);
 		}
 		if (list == null || list.isEmpty()) {
 			// no entry to delete
@@ -10569,6 +10606,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (!isToAddArcsWithoutReboot) {
 			// if we are setting not to add arcs without reboot, then the related flag toAddArcsOnlyToProbabilisticNetwork also needs to be turned off
 			this.setToAddArcsOnlyToProbabilisticNetwork(false);
+			this.setToTraceHistory(true);	// we need to use history in order to reboot
 		}
 	}
 
