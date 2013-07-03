@@ -487,7 +487,7 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 								tableForMultiplication.setValue(i, ((ProbabilisticNode)parent).getMarginalAt(i));
 							}
 						} else {
-							throw new RuntimeException("Unconditional table of node" + parent + " should have size " + parent.getStatesSize() + ", but was " + table.tableSize());
+							throw new RuntimeException("Unconditional table of node" + parent + " should have size " + parent.getStatesSize() + ", but was " + tableForMultiplication.tableSize());
 						}
 						// multiply clique potential with marginal of node being added
 						table.opTab(tableForMultiplication, PotentialTable.PRODUCT_OPERATOR);
@@ -687,32 +687,14 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 	 */
 	protected Clique getCliqueContainingMostOfNodes(Collection<INode> nodes, IJunctionTree jt) {
 		// initial assertions
-		if (nodes == null || nodes.isEmpty() 	// no node was specified
-				|| jt == null || jt.getCliques() == null || jt.getCliques().isEmpty()) {	// no junction tree was specified
+		if (jt == null ) {	
 			return null;
 		}
 		
-		// the variable to return
-		Clique ret = null;			// start at null, because junction tree may not contain nodes in the argument (in such case, we shall return null)
-		int sizeOfIntersection = 0;	// try to find clique which maximizes this variable
+		List<Clique> cliquesContainingMostOfNodes = jt.getCliquesContainingMostOfNodes(nodes);
 		
-		// simply do a linear search on cliques and use the clique having the largest intersection
-		// TODO find if there is a more efficient way
-		for (Clique clique : jt.getCliques()) {
-			// extract intersection between argument and the nodes in current clique
-			List<INode> intersection = new ArrayList<INode>(nodes);
-			intersection.retainAll(clique.getNodesList());
-			
-			// check whether this has maximum size
-			if (intersection.size() > sizeOfIntersection) {
-				// NOTE: by starting sizeOfIntersection at zero, and by using ">" for comparison, we are ignoring empty intersections
-				ret = clique;
-				sizeOfIntersection = intersection.size(); 
-			}
-		}
-		
-		// NOTE: if ret is null at this point, then nodes were not present in the junction tree
-		return ret;
+		// return null if nothing was returned by jt, or else return the 1st clique
+		return (cliquesContainingMostOfNodes == null || cliquesContainingMostOfNodes.isEmpty())?null:cliquesContainingMostOfNodes.get(0);
 	}
 
 	/**

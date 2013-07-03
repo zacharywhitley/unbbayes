@@ -2445,14 +2445,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	 */
 	public void updateCPTFromJT() {
 		// this probability extractor will enable us to get conditional probabilities from current state of junction tree.
-		IArbitraryConditionalProbabilityExtractor extractor = null;
-		if (getLikelihoodExtractor() instanceof JeffreyRuleLikelihoodExtractor) {
-			// attempt to re-use instances if possible
-			extractor = ((JeffreyRuleLikelihoodExtractor)getLikelihoodExtractor()).getConditionalProbabilityExtractor();
-		} else {
-			// if impossible, then we have to create new instance of probability extractor
-			extractor = InCliqueConditionalProbabilityExtractor.newInstance();
-		}
+		IArbitraryConditionalProbabilityExtractor extractor = new JTConditionalProbabilityExtractor();
 		
 		// iterate over all nodes in the net
 		ProbabilisticNetwork net = this.getNet();
@@ -2525,6 +2518,227 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 //		
 //	}
 	
+	
+
+	/**
+	 * This extends {@link InCliqueConditionalProbabilityExtractor}
+	 * wo that it can work peacefully with changes caused in network structure
+	 * by {@link AssetAwareInferenceAlgorithm#setAsPermanentEvidence(Map, boolean)},
+	 * which may add additional arcs and break the condition that all parents
+	 * of a node are present in same clique.
+	 * This class is particularly used in {@link AssetAwareInferenceAlgorithm#updateCPTBasedOnCliques()}.
+	 * @author Shou Matsumoto
+	 */
+	public class JTConditionalProbabilityExtractor extends InCliqueConditionalProbabilityExtractor {
+
+		/**
+		 * default constructor
+		 */
+		public JTConditionalProbabilityExtractor() {}
+		
+
+		/**
+		 * This method will attempt to do the same procedure of the superclass, but if it fails to
+		 * find a clique with exact match, it will create a larger clique containing all the nodes.
+		 * The clique potentials of the new clique will be consistently filled.
+		 * @see unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor#getCliquesContainingAllNodes(unbbayes.prs.bn.SingleEntityNetwork, java.util.Collection, int)
+		 */
+		public Collection<Clique> getCliquesContainingAllNodes(
+				SingleEntityNetwork singleEntityNetwork, Collection<INode> nodes,
+				int maxCount) {
+			Collection<Clique> cliques = super.getCliquesContainingAllNodes(singleEntityNetwork, nodes, maxCount);
+			if (cliques != null && !cliques.isEmpty()) {
+				return cliques;
+			}
+			
+			// initial assertions
+			if (maxCount <= 0 || nodes == null || nodes.isEmpty()) {
+				// note: if nodes == null || nodes.isEmpty(), then superclass failed to return cliques containing a single node, so node is not present in JT
+				return Collections.emptyList();
+			}
+			
+			Clique newClique = null;	// the clique to return
+			
+			// obtain the clique containing most of the nodes, and add nodes one-by-one to the clique to return
+			List<Clique> cliquesWithMostOfNodes = singleEntityNetwork.getJunctionTree().getCliquesContainingMostOfNodes(nodes);
+			for (Clique cliqueWithMostOfNodes : cliquesWithMostOfNodes) {
+				// obtain nodes which are not in current new clique
+				List<INode> nodesNotInClique = new ArrayList<INode>(nodes);
+				nodesNotInClique.removeAll(cliqueWithMostOfNodes.getNodesList());
+				if (nodesNotInClique.isEmpty()) {
+					throw new RuntimeException("The set of cliques should have been discovered immetiately if all of the desired nodes are contained in " + cliqueWithMostOfNodes);
+				}
+				
+				// visit neighbor cliques in order to fill newClique with nodesNotInClique.
+				Collection<Clique> neighbors = getCliquesContainingAllNodes(singleEntityNetwork, nodesNotInClique,Integer.MAX_VALUE);	// call recursive to get clique with nodesNotInClique
+				for (Clique neighborClique : neighbors) {
+					// Assumption: arcs automatically added by absorbing nodes always has a node in common with cliqueWithMostOfNodes
+					List<Node> intersection = new ArrayList<Node>(neighborClique.getNodesList());
+					intersection.retainAll(cliqueWithMostOfNodes.getNodesList());
+					if (intersection.isEmpty()) {
+						continue;
+					}
+					
+					// create a new clique which contains all of the nodes (needs to be a different instance of cliqueWithMostOfNodes to avoid collateral effect)
+					newClique = new Clique((PotentialTable) cliqueWithMostOfNodes.getProbabilityFunction().clone());	// clone clique table at creation
+					
+					// copy other values of cliqueWithMostOfNodes to newClique
+					newClique.setAssociatedProbabilisticNodesList(new ArrayList<Node>(cliqueWithMostOfNodes.getAssociatedProbabilisticNodesList()));
+					newClique.setIndex(singleEntityNetwork.getJunctionTree().getCliques().size()+1);	// make sure the index is different
+					newClique.setInternalIdentificator(singleEntityNetwork.getJunctionTree().getCliques().size()+1); // make sure the identifier is different
+					newClique.setNodesList(new ArrayList<Node>(cliqueWithMostOfNodes.getNodesList()));
+					// however, do not change links to children and parent cliques, so that we don't connect it to the original JT
+					
+					for (int i = 0; i < nodesNotInClique.size(); i++) {
+						INode nodeToAdd = nodesNotInClique.get(i);
+						if (neighborClique.getNodesList().contains(nodeToAdd)) {
+							newClique.getNodesList().add((Node) nodeToAdd);
+							newClique.getProbabilityFunction().addVariable(nodeToAdd);
+							// remove the newly added node from list nodesNotInClique, or else it will be added more than once
+							nodesNotInClique.remove(i);
+							i--;
+						}
+						
+					}
+					// extract clique potential of neighbor clique
+					PotentialTable neighborTable = (PotentialTable) neighborClique.getProbabilityFunction().clone();	// use a clone, so that we won't touch the original
+					// remove undesired nodes (nodes which are not in the "nodes" argument)
+					for (int i = 0; i < neighborTable.getVariablesSize(); i++) {
+						if (!newClique.getNodesList().contains(neighborTable.getVariableAt(i))) {
+							neighborTable.removeVariable(neighborTable.getVariableAt(i));	// sum out the variable
+							i--;
+						}
+					}
+					// adjust (multiply) clique potential of newClique (which now has some new nodes present in neighbor clique)
+					newClique.getProbabilityFunction().opTab(neighborTable, neighborTable.PRODUCT_OPERATOR);
+					// remove variables from neighborTable so that we have only common (separator) variables in neighborTable
+					for (int i = 0; i < neighborTable.variableCount(); i++) {
+						if (!intersection.contains(neighborTable.getVariableAt(i))) {
+							neighborTable.removeVariable(neighborTable.getVariableAt(i));
+							i--;
+						}
+					}
+					// divide by the common variable, so that we don't double count (the result will be equivalent of doing product of clique potential divided by separator)
+					newClique.getProbabilityFunction().opTab(neighborTable, neighborTable.DIVISION_OPERATOR);
+					
+					if (nodesNotInClique.isEmpty()) {
+						// finish if there is no more node to add
+						break;
+					}
+				}
+			}
+			
+			// treat case when absortion connected nodes which are supposed to be independent due to other nodes being resolved
+			if (newClique == null) {
+				try {
+					Debug.println(getClass(), "Could not find cliques nearby for nodes " + nodes + ". This is probably due to disconnected net.");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				// simply create new clique based on cliquesWithMostOfNodes, and add nodes to it assuming independency
+				Clique cliqueWithMostOfNodes = cliquesWithMostOfNodes.get(0);	// use any, so use 1st
+				
+				// create a new clique which contains all of the nodes (needs to be a different instance of cliqueWithMostOfNodes to avoid collateral effect)
+				newClique = new Clique((PotentialTable) cliqueWithMostOfNodes.getProbabilityFunction().clone());	// clone clique table at creation
+				
+				// copy other values of cliqueWithMostOfNodes to newClique
+				newClique.setAssociatedProbabilisticNodesList(new ArrayList<Node>(cliqueWithMostOfNodes.getAssociatedProbabilisticNodesList()));
+				newClique.setIndex(singleEntityNetwork.getJunctionTree().getCliques().size()+1);	// make sure the index is different
+				newClique.setInternalIdentificator(singleEntityNetwork.getJunctionTree().getCliques().size()+1); // make sure the identifier is different
+				newClique.setNodesList(new ArrayList<Node>(cliqueWithMostOfNodes.getNodesList()));
+				// however, do not change links to children and parent cliques, so that we don't connect it to the original JT
+				
+				// obtain nodes which are not in current new clique
+				List<INode> nodesNotInClique = new ArrayList<INode>(nodes);
+				nodesNotInClique.removeAll(cliqueWithMostOfNodes.getNodesList());
+				if (nodesNotInClique.isEmpty()) {
+					throw new RuntimeException("The set of cliques should have been discovered immetiately if all of the desired nodes are contained in " + cliqueWithMostOfNodes);
+				}
+				
+				// add remaining nodes one by one
+				for (INode nodeToAdd : nodesNotInClique) {
+					newClique.getNodesList().add((Node) nodeToAdd);
+					newClique.getProbabilityFunction().addVariable(nodeToAdd);
+					// simply multiply clique potential with marginals, because of independency
+					ProbabilisticTable tableForMultiplication = new ProbabilisticTable();	// this table is created just in order to hold marginal temporary
+					tableForMultiplication.addVariable(nodeToAdd);
+					if (nodeToAdd.getStatesSize() == tableForMultiplication.tableSize()) {
+						for (int i = 0; i < tableForMultiplication.tableSize(); i++) {
+							tableForMultiplication.setValue(i, ((ProbabilisticNode)nodeToAdd).getMarginalAt(i));
+						}
+					} else {
+						throw new RuntimeException("Unconditional table of node" + nodeToAdd + " should have size " + nodeToAdd.getStatesSize() + ", but was " + tableForMultiplication.tableSize());
+					}
+					newClique.getProbabilityFunction().opTab(tableForMultiplication, PotentialTable.PRODUCT_OPERATOR);
+				}
+			}
+			
+			
+			// check basic consistency
+			if (newClique == null || !newClique.getNodesList().containsAll(nodes)) {
+				// finish if there is no more node to add
+				throw new RuntimeException("Could not find adjacent cliques containing some combination of nodes " + nodes 
+						+ ". This may indicate that when a node was absorbed a wrong arc was created.");
+			}
+			
+			// check that there is no repeated node
+			for (int i = 0; i < newClique.getNodesList().size()-1; i++) {
+				for (int j = i+1; j < newClique.getNodesList().size(); j++) {
+					if (newClique.getNodesList().get(i).equals(newClique.getNodesList().get(j))) {
+						throw new RuntimeException("Obtained duplicate node " + newClique.getNodesList().get(i) + " while trying to generate a clique containing " + nodes);
+					}
+				}
+			}
+			// check that it is normalized
+			float sum = 0f;
+			for (int i = 0; i < newClique.getProbabilityFunction().tableSize(); i++) {
+				sum += newClique.getProbabilityFunction().getValue(i);
+			}
+			if (Math.abs(sum - 1f) > ERROR_MARGIN) {
+				throw new RuntimeException("The resulting table of " + newClique + " is not normalized: sum is " + sum);
+			}
+			
+			// for each node not yet in the clique, find clique containing at least one of the cliques in current newClique
+//			while (!nodesNotInClique.isEmpty()) {
+////			for (INode absentNode : nodesNotInClique) {
+//				
+//				
+//				INode absentNode = nodesNotInClique.get(0);
+//				
+//				List<INode> pairOfNodes = new ArrayList<INode>(2);
+//				// fill with 2 nodes now, so that we can simply call pairOfNodes.set(0,presentNode) later to swap one of the values
+//				pairOfNodes.add(absentNode);
+//				pairOfNodes.add(absentNode);
+//				for (INode presentNode : newClique.getNodesList()) {
+//					pairOfNodes.set(0,presentNode);
+//					List<Clique> cliquesWithBothNodes = singleEntityNetwork.getJunctionTree().getCliquesContainingAllNodes(pairOfNodes, 1);
+//					if (cliquesWithBothNodes != null && !cliquesWithBothNodes.isEmpty()) {
+//						// found a clique which is common to newClique and the nodes not in newClique. Merge clique potentials of them
+//						newClique.getNodesList().add((Node) absentNode);
+//						newClique.getProbabilityFunction().addVariable(absentNode);		// this supposedly duplicates columns 
+//						PotentialTable cliqueTableWithBothNodes = (PotentialTable) cliquesWithBothNodes.get(0).getProbabilityFunction().clone(); // can use any of them, so use the 1st
+//						// determine unwanted nodes: nodes neither in newClique nor in list of nodes specified in argument but not found (i.e. nodesNotInClique)
+//						List<INode> unwantedNodes = new ArrayList<INode>(cliquesWithBothNodes.get(0).getNodesList());
+//						unwantedNodes.removeAll(nodesNotInClique);
+//						unwantedNodes.removeAll(newClique.getNodesList());
+//						// delete unwanted nodes from scope of cliqueTableWithBothNodes
+//						for (INode unwantedNode : unwantedNodes) {
+//							cliqueTableWithBothNodes.removeVariable(unwantedNode);
+//						}
+//						// at this point, cliqueTableWithBothNodes contains only 
+//						
+//						break;
+//					}
+//				}
+//			}
+			
+			return Collections.singletonList(newClique);
+		}
+		
+		
+
+	}
+
 	
 	
 }

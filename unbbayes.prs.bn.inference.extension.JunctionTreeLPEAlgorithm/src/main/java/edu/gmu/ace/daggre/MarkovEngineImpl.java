@@ -26,6 +26,7 @@ import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.StringPrintStreamBuilder;
 import unbbayes.io.StringReaderBuilder;
+import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -42,6 +43,7 @@ import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
+import unbbayes.prs.bn.cpt.ITableFunction;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor.CliqueEvidenceUpdater;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor.NoCliqueException;
@@ -10758,11 +10760,22 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		ProbabilisticNetwork probNet = null;
 		try {
 			probNet = (ProbabilisticNetwork) io.load(new File("This_File_Will_Be_Ignored_By_StringStreamTokenizerBuilder"));
+		} catch (LoadException e) {
+			throw new RuntimeException("The format of the string does not seem to be valid. Please check its content.",e);
 		} catch (IOException e) {
 			throw new RuntimeException("The file should have been ignored by a StringReaderBuilder, but it was not. This is probabily a bug in a library used by Markov Engine. Please, check your version of UnBBayes.",e);
 		}
 		if (probNet == null) {
 			throw new IllegalArgumentException("Could not load network from the provided string " + netString);
+		}
+		
+		// make sure all cpts are normalized
+		ITableFunction normalizer = new NormalizeTableFunction();
+		for (Node node : probNet.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				ProbabilisticNode probNode = (ProbabilisticNode) node;
+				normalizer.applyFunction((ProbabilisticTable) probNode.getProbabilityFunction());
+			}
 		}
 		
 		// replace shared Bayes net

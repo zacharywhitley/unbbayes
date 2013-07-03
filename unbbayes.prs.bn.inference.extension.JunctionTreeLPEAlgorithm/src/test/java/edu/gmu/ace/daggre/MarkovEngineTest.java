@@ -24262,6 +24262,15 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 		
+		// settle some question which has 2 or more parents
+		for (int i = 0; i < engine.getProbabilisticNetwork().getNodes().size();i++) {
+			Node node = engine.getProbabilisticNetwork().getNodes().get(i);
+			if (node.getParentNodes() != null && node.getParentNodes().size() >= 2) {
+				engine.resolveQuestion(null, new Date(), Long.parseLong(node.getName()), 0);
+				i--;
+			}
+		}
+		
 		// backup network to check afterwards
 		ProbabilisticNetwork cloneNet = null;
 		try {
@@ -24271,6 +24280,9 @@ public class MarkovEngineTest extends TestCase {
 			fail();
 		}	
 		assertNotNull(cloneNet);
+		
+		engine.addCash(null, new Date(), 1L, 10, "Shall be ignored");
+		
 		
 		System.out.println(engine.getNetStatistics().toString());
 		System.out.println("seed = " + seed);
