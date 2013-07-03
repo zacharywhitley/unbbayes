@@ -114,5 +114,16 @@ public interface IJunctionTree {
 	 * @param rv
 	 */
 	public void initBelief(IRandomVariable rv);
+	
+	/**
+	 * This method can be used to obtain a clique containing most of the nodes passed in its argument.
+	 * @param nodes: nodes that this method will use in order to attempt to find
+	 * a clique containing most of them.
+	 * @return a clique which may contain all the nodes. If it does not
+	 * contain all the nodes, it will contain nodes whose the size of the intersection with
+	 * the passed argument is as large as possible.
+	 * It will return null if no node or no network or no junction tree was specified, or when the junction tree does not contain the specified node.
+	 */
+	public List<Clique> getCliquesContainingMostOfNodes(Collection<INode> nodes);
 
 }

@@ -36,7 +36,12 @@ public class NormalizeTableFunction implements ITableFunction {
 		for (int i = 0; i < table.tableSize(); i++) {
 			coord = table.getMultidimensionalCoord(i);
 			coord[0] = 0;
-			value = table.getValue(i) / totalSum[table.getLinearCoord(coord)];
+			if (totalSum[table.getLinearCoord(coord)] == 0.0) {
+				// all values in the column was equal and was zero. Consider uniform in this case
+				value = 1f/table.getVariableAt(0).getStatesSize();
+			} else {
+				value = table.getValue(i) / totalSum[table.getLinearCoord(coord)];
+			}
 			table.setValue(i, value);
 		}
 	}

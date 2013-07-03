@@ -2233,7 +2233,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		for (Node node : getNet().getNodes()) {
 			if (node instanceof ProbabilisticNode) {
 				
-				PotentialTable newCPT = (PotentialTable) cptExtractor.buildCondicionalProbability(node, node.getParentNodes(), getNet(), this);
+				PotentialTable newCPT = (PotentialTable) cptExtractor.buildCondicionalProbability(node, node.getParentNodes(), getNet(), null);	// null as the algorithm forces the return to be conditional probabilities
 				PotentialTable oldCPT = ((ProbabilisticNode) node).getProbabilityFunction();
 				
 				// iterate over columns of the table, not over each cell

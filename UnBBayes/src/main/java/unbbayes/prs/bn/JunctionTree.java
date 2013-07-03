@@ -22,6 +22,7 @@ package unbbayes.prs.bn;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -775,6 +776,43 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	public static void setToUseSingletonListsInAbsorb(
 			boolean isToUseSingletonListsInAbsorb) {
 		JunctionTree.isToUseSingletonListsInAbsorb = isToUseSingletonListsInAbsorb;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#getCliquesContainingMostOfNodes(java.util.Collection)
+	 */
+	public List<Clique> getCliquesContainingMostOfNodes(Collection<INode> nodes) {
+		// initial assertions
+		if (nodes == null || nodes.isEmpty() || this.getCliques() == null ){	// no node was specified
+			return Collections.emptyList();
+		}
+		
+		// the variable to return
+		List<Clique> ret = new ArrayList<Clique>();	
+		int sizeOfIntersection = 0;	// try to find clique which maximizes this variable
+		
+		// simply do a linear search on cliques and use the clique having the largest intersection
+		// TODO find if there is a more efficient way
+		for (Clique clique : this.getCliques()) {
+			// extract intersection between argument and the nodes in current clique
+			List<INode> intersection = new ArrayList<INode>(nodes);
+			intersection.retainAll(clique.getNodesList());
+			
+			// check whether this has maximum size
+			if (intersection.size() >= sizeOfIntersection) {
+				if (intersection.size() > sizeOfIntersection) {
+					// strictly greater, so do not consider the cliques previously added to ret
+					ret.clear();
+				}
+				// NOTE: by starting sizeOfIntersection at zero, and by using ">" for comparison, we are ignoring empty intersections
+				ret.add(clique);
+				sizeOfIntersection = intersection.size(); 
+			}
+		}
+		
+		// NOTE: if ret is null at this point, then nodes were not present in the junction tree
+		return ret;
 	}
 
 //	/**
