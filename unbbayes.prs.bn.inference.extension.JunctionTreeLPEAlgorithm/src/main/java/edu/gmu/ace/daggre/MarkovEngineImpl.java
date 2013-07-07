@@ -2148,6 +2148,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.description = description;
 		}
 		public void execute() {
+			if (isToAddArcsOnlyToProbabilisticNetwork()) {
+				return;	// do nothing
+			}
 			long currentTimeMillis = System.currentTimeMillis();
 			
 			// add cash to the mapping of lazily loaded users, if user was not initialized yet
@@ -3551,7 +3554,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public boolean resolveQuestion(Long transactionKey, Date occurredWhen, long questionId, List<Float> settlement ) throws IllegalArgumentException{
 		// TODO stub
-		return false;
+		throw new UnsupportedOperationException("Not implemented yet");
+//		return false;
 	}
 	
 	
@@ -4393,14 +4397,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			int questionState, List<Long> assumptionIds,
 			List<Integer> assumedStates) throws IllegalArgumentException {
 		
-		if (isToAddArcsOnlyToProbabilisticNetwork()) {
-			// return a list indicating all possible probabilities are allowed (i.e. from 0 to 1)
-			List<Float> ret = new ArrayList<Float>(2);
-			ret.add(0f);
-			ret.add(1f);
-			return ret;
-		}
-		
 		// initial assertion: check consistency of assumptionIds and assumedStates
 		if (assumptionIds != null) {
 			if ( assumedStates == null) {
@@ -4418,11 +4414,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new IllegalArgumentException("assumedStates contains null state.");
 		}
 
-		// this object is going to be used to extract what nodes can become assumptions in a conditional soft evidence
-		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
-		if (conditionalProbabilityExtractor == null) {
-			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
-		}
 		
 		// extract main node
 		TreeVariable mainNode = null;
@@ -4461,6 +4452,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 				assumptions.add(node);
 			}
+		}
+		
+		// do not run algorithm related to assets if the engine is set not to use assets
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			// return a list indicating all possible probabilities are allowed (i.e. from 0 to 1)
+			List<Float> ret = new ArrayList<Float>(2);
+			ret.add(0f);
+			ret.add(1f);
+			return ret;
+		}
+		
+		// this object is going to be used to extract what nodes can become assumptions in a conditional soft evidence
+		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
+		if (conditionalProbabilityExtractor == null) {
+			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
 		}
 		
 		// if user was not initialized yet, try calculating the interval of edits without initializing user
@@ -5112,17 +5118,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	@SuppressWarnings("unchecked")
 	public List<Float> previewTrade(long userId, long questionId,List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
-		if (isToAddArcsOnlyToProbabilisticNetwork()) {
-			// if we are not using users, then this method should return the asset changes
-			List<Float> oldValues = getProbList(questionId, assumptionIds, assumedStates);
-			// this is the list to be returned
-			List<Float> ret = new ArrayList<Float>(newValues.size());
-			for (int i = 0; i < newValues.size(); i++) {
-				// probs and assets are all supposedly related by indexes
-				ret.add(this.getScoreFromQValues(newValues.get(i)/oldValues.get(i)));
-			}
-			return ret;
-		}
+		
 		// initial assertions
 		if (newValues == null || newValues.isEmpty()) {
 			throw new IllegalArgumentException("newValues cannot be empty or null");
@@ -5156,6 +5152,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			assumptionIds = this.getMaximumValidAssumptionsSublists(questionId, assumptionIds, 1).get(0);
 			// change assumedStates accordingly to new assumptionIds
 			assumedStates = this.convertAssumedStates(assumptionIds, oldAssumptionIds, assumedStates);
+		}
+		
+		if (isToAddArcsOnlyToProbabilisticNetwork()) {
+			// if we are not using users, then this method should return the asset changes
+			List<Float> oldValues = getProbList(questionId, assumptionIds, assumedStates);
+			// this is the list to be returned
+			List<Float> ret = new ArrayList<Float>(newValues.size());
+			for (int i = 0; i < newValues.size(); i++) {
+				if (oldValues.get(i).equals(0f) || oldValues.get(i) >= 1f) {
+					throw new IllegalArgumentException("Probability of question " + questionId + " given " + assumptionIds + "=" + assumedStates + " has probability " + oldValues + " (it's settled), thus cannot be changed.");
+				}
+				// probs and assets are all supposedly related by indexes
+				ret.add(this.getScoreFromQValues(newValues.get(i)/oldValues.get(i)));
+			}
+			return ret;
 		}
 		
 		// check if user was properly initialized. If not, we can just return stored or constant values

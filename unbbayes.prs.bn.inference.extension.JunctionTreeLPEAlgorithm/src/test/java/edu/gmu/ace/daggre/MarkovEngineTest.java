@@ -873,30 +873,53 @@ public class MarkovEngineTest extends TestCase {
 		} catch (IllegalArgumentException e) {
 			assertNotNull(e);
 		}
-		
+		// do not continue test if we are not using assets at all
+		if (engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			return;
+		}
 		// global cash should be 0 initially (i.e. q-values are initialized as 1)
-		assertEquals(0f, engine.getCash(1, null, null), ASSET_ERROR_MARGIN);
+		if (engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(Float.NaN, engine.getCash(1, null, null), ASSET_ERROR_MARGIN);
+		} else {
+			assertEquals(0f, engine.getCash(1, null, null), ASSET_ERROR_MARGIN);
+		}
 		List<Float> assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, null, null);
-		assertEquals(2, assetsIfStates.size());
-		assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
-		assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		if (engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertNull(assetsIfStates);
+		} else {
+			assertEquals(2, assetsIfStates.size());
+			assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+			assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		}
 		
 		// test some conditional cash as well
 		// non-null conditions
 		List<Long> assumptionIds = new ArrayList<Long>();
 		List<Integer> assumedStates = new ArrayList<Integer>();
-		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		if (engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(Float.NaN, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		} else {
+			assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		}
 		
 		// 1 = 0
 		assumptionIds = new ArrayList<Long>();
 		assumedStates = new ArrayList<Integer>();
 		assumptionIds.add((long) 1); assumedStates.add(0);	// node 1, state 0
-		assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		if (engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(Float.NaN, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		} else {
+			assertEquals(0f, engine.getCash(1, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
+		}
 		
 		assetsIfStates = engine.getAssetsIfStates((long)1, (long)0, Collections.singletonList((long)1), Collections.singletonList(0));
-		assertEquals(2, assetsIfStates.size());
-		assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
-		assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		if (engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertNull(assetsIfStates);
+		} else {
+			assertEquals(2, assetsIfStates.size());
+			assertEquals(0f, assetsIfStates.get(0), ASSET_ERROR_MARGIN);
+			assertEquals(0f, assetsIfStates.get(1), ASSET_ERROR_MARGIN);
+		}
 		try {
 			engine.getAssetsIfStates((long)1, (long)1, Collections.singletonList((long)1), Collections.singletonList(0));
 			fail("Should throw exception, because question = assumption");
@@ -1491,16 +1514,20 @@ public class MarkovEngineTest extends TestCase {
 		userNameToIDMap.put("Tom", (long)0);
 		
 		// By default, cash is initialized as 0 (i.e. min-q = 1)
-		assertEquals(0, engine.getCash(userNameToIDMap.get("Tom"), null, null), ASSET_ERROR_MARGIN);
-		assertEquals(1, engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0, engine.getCash(userNameToIDMap.get("Tom"), null, null), ASSET_ERROR_MARGIN);
+			assertEquals(1, engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+		} 
 		
 		// add 100 q-values to new users
 		transactionKey = engine.startNetworkActions();
 		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Tom"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
 		engine.commitNetworkActions(transactionKey);
 		// check that user's min-q value was changed to the correct value
-		assertEquals(100, engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
-		assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(100, engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+			assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+		}
 		
 		// Tom bets P(E=e1) = 0.5  to 0.55 (unconditional soft evidence in E)
 		
@@ -1514,14 +1541,18 @@ public class MarkovEngineTest extends TestCase {
 		List<Float> editInterval = engine.getEditLimits(userNameToIDMap.get("Tom"), 0x0E, 0, null, null);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.005f, editInterval.get(0), PROB_ERROR_MARGIN );
-		assertEquals(0.995f, editInterval.get(1), PROB_ERROR_MARGIN );
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.005f, editInterval.get(0), PROB_ERROR_MARGIN );
+			assertEquals(0.995f, editInterval.get(1), PROB_ERROR_MARGIN );
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets after edit
 		List<Float> cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		List<Float> cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// check that no one has made any trade on any question yet.
 		for (String user : userNameToIDMap.keySet()) {
@@ -1547,8 +1578,10 @@ public class MarkovEngineTest extends TestCase {
 		engine.commitNetworkActions(transactionKey);
 		
 		// check that the question can be retrieved from getTradedQuestions.
-		assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Tom")).size());
-		assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Tom")).contains(0x0El));
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Tom")).size());
+			assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Tom")).contains(0x0El));
+		}
 		
 		// cannot reuse same transaction key
 		try {
@@ -1564,14 +1597,16 @@ public class MarkovEngineTest extends TestCase {
 		List<Float> cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		List<Float> cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		
@@ -1588,8 +1623,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that Tom's min-q is 90 (and the cash is supposedly the log value of 90)
 		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);	 // null means unconditional cash, which is supposedly the global minimum
-		assertEquals((engine.getScoreFromQValues(90f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(90f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(90f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(90f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE contains e2 and any values for D and F, by asserting that cash conditioned to such states are equals to the min
 		// d, e, f are always going to be the assumption nodes in this test
@@ -1604,14 +1641,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// e1
 		assumedStates.add(0);	// f1
 		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2 (not min)
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -1632,14 +1673,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
@@ -1659,7 +1704,9 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Tom"), Collections.singletonList((long)0x0E), Collections.singletonList(1));
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 		cash = engine.getCash(userNameToIDMap.get("Tom"), Collections.singletonList((long)0x0E), Collections.singletonList(0));
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// Tom bets P(E=e1|D=d1) = .55 -> .9
 		
@@ -1680,14 +1727,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Tom"), 0x0E, 0, assumptionIds, assumedStates);	// (node == 0x0E && state == 0) == e1
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 
 		
 		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
@@ -1709,8 +1760,10 @@ public class MarkovEngineTest extends TestCase {
 		engine.commitNetworkActions(transactionKey);
 		
 		// check that the question can be retrieved from getTradedQuestions.
-		assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Tom")).size());
-		assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Tom")).contains(0x0El));
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Tom")).size());
+			assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Tom")).contains(0x0El));
+		}
 		
 		// cannot reuse same transaction key
 		try {
@@ -1726,14 +1779,16 @@ public class MarkovEngineTest extends TestCase {
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		// check that new marginal of E is [0.725 0.275] (this is expected value), and the others have not changed (remains 50%)
@@ -1749,8 +1804,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that min-q is 20
 		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE contains d1, e2 and any value F
 		assumptionIds = new ArrayList<Long>();
@@ -1764,14 +1821,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// e1
 		assumedStates.add(0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2 (not min)
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -1792,28 +1853,36 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check minimal condition of LPE: d1, e2
 		assumptionIds = new ArrayList<Long>();
@@ -1828,19 +1897,25 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(0,1);
 		assumedStates.set(1,0);
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumptionIds.clear();
 		assumptionIds.add((long)0x0D);
 		assumedStates.clear();
 		assumedStates.add(1);
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumptionIds.clear();
 		assumptionIds.add((long)0x0E);
 		assumedStates.clear();
 		assumedStates.add(0);
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// TODO assert getAssetsIf
 
@@ -1849,16 +1924,20 @@ public class MarkovEngineTest extends TestCase {
 		userNameToIDMap.put("Joe", (long) 1);
 		
 		// By default, cash is initialized as 0 (i.e. min-q = 1)
-		assertEquals(0, (engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
-		assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0, (engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
+			assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
+		}
 		
 		// add 100 q-values to new users
 		transactionKey = engine.startNetworkActions();
 		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Joe"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
 		engine.commitNetworkActions(transactionKey);
 		// check that user's min-q value was changed to the correct value
-		assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
-		assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
+			assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
+		}
 
 		// Joe bets P(E=e1|D=d2) = .55 -> .4
 		
@@ -1879,14 +1958,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Joe"), 0x0E, 0, assumptionIds, assumedStates);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.0055f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.9955f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.0055f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.9955f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// set P(E=e1|D=d2) = 0.4 and P(E=e2|D=d2) = 0.6
 		transactionKey = engine.startNetworkActions();
@@ -1908,8 +1991,10 @@ public class MarkovEngineTest extends TestCase {
 		
 
 		// check that the question can be retrieved from getTradedQuestions.
-		assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Joe")).size());
-		assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Joe")).contains(0x0El));
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Joe")).size());
+			assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Joe")).contains(0x0El));
+		}
 		
 		// cannot reuse same transaction key
 		try {
@@ -1925,14 +2010,16 @@ public class MarkovEngineTest extends TestCase {
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		// check that new marginal of E is [0.65 0.35] (this is expected value), and the others have not changed (remains 50%)
@@ -1948,8 +2035,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that min-q is 72.727272...
 		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
-		assertEquals((engine.getScoreFromQValues(72.727272f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(72.727272f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(72.727272f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(72.727272f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE contains d2, e1 and any value F
 		assumptionIds = new ArrayList<Long>();
@@ -1963,28 +2052,36 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// e1
 		assumedStates.add(0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
@@ -2005,14 +2102,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check minimal condition of LPE: d2, e1
 		assumptionIds = new ArrayList<Long>();
@@ -2027,19 +2128,25 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(0,0);
 		assumedStates.set(1,1);
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumptionIds.clear();
 		assumptionIds.add((long)0x0D);
 		assumedStates.clear();
 		assumedStates.add(0);
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumptionIds.clear();
 		assumptionIds.add((long)0x0E);
 		assumedStates.clear();
 		assumedStates.add(1);
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// TODO assert getAssetsIf
 		
@@ -2049,16 +2156,20 @@ public class MarkovEngineTest extends TestCase {
 		userNameToIDMap.put("Amy", (long) 2);
 		
 		// By default, cash is initialized as 0 (i.e. min-q = 1)
-		assertEquals(0, (engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
-		assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0, (engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
+			assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
+		}
 		
 		// add 100 q-values to new users
 		transactionKey = engine.startNetworkActions();
 		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Amy"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
 		engine.commitNetworkActions(transactionKey);
 		// check that user's min-q value was changed to the correct value
-		assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
-		assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
+			assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
+		}
 
 		// Amy bets P(F=f1|D=d1) = .5 -> .3
 		
@@ -2079,14 +2190,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Amy"), 0x0F, 0, assumptionIds, assumedStates);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// set P(F=f1|D=d1) = 0.3 and P(F=f2|D=d1) = 0.7  
 		transactionKey = engine.startNetworkActions();
@@ -2108,8 +2223,10 @@ public class MarkovEngineTest extends TestCase {
 		
 
 		// check that the question can be retrieved from getTradedQuestions.
-		assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Amy")).size());
-		assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Amy")).contains(0x0Fl));
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Amy")).size());
+			assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Amy")).contains(0x0Fl));
+		}
 		
 		// cannot reuse same transaction key
 		try {
@@ -2125,14 +2242,16 @@ public class MarkovEngineTest extends TestCase {
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.4 .6], and the others have not changed (remains 50%)
@@ -2148,8 +2267,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that min-q is 60...
 		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
-		assertEquals((engine.getScoreFromQValues(60f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(60f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(60f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(60f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE contains d1, f1 and any value E
 		assumptionIds = new ArrayList<Long>();
@@ -2170,7 +2291,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -2184,35 +2307,45 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check minimal condition of LPE: d1, f1
 		assumptionIds = new ArrayList<Long>();
@@ -2227,27 +2360,37 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(0,1);
 		assumedStates.set(1,1);
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumedStates.set(0,0);
 		assumedStates.set(1,1);
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumedStates.set(0,1);
 		assumedStates.set(1,0);
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumptionIds.clear();
 		assumptionIds.add((long)0x0D);
 		assumedStates.clear();
 		assumedStates.add(1);
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumptionIds.clear();
 		assumptionIds.add((long)0x0F);
 		assumedStates.clear();
 		assumedStates.add(1);
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// TODO assert getAssetsIf
 		
@@ -2271,14 +2414,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Joe"), 0x0F, 0, assumptionIds, assumedStates);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.006875f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.993125, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.006875f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.993125, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// set P(F=f1|D=d2) = 0.1 and P(F=f2|D=d2) = 0.9
 		transactionKey = engine.startNetworkActions();
@@ -2299,9 +2446,11 @@ public class MarkovEngineTest extends TestCase {
 		engine.commitNetworkActions(transactionKey);
 
 		// check that the question can be retrieved from getTradedQuestions.
-		assertEquals(2, engine.getTradedQuestions(userNameToIDMap.get("Joe")).size());
-		assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Joe")).contains(0x0El));
-		assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Joe")).contains(0x0Fl));
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(2, engine.getTradedQuestions(userNameToIDMap.get("Joe")).size());
+			assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Joe")).contains(0x0El));
+			assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Joe")).contains(0x0Fl));
+		}
 		
 		// cannot reuse same transaction key
 		try {
@@ -2317,14 +2466,16 @@ public class MarkovEngineTest extends TestCase {
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.2 .8], and the others have not changed (remains 50%)
@@ -2358,8 +2509,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that min-q is 14.5454545...
 		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
-		assertEquals((engine.getScoreFromQValues(14.5454545f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(14.5454545f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(14.5454545f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(14.5454545f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE contains d2, e1, f1
 		assumptionIds = new ArrayList<Long>();
@@ -2373,28 +2526,36 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// e1
 		assumedStates.add(0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
@@ -2408,21 +2569,27 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// TODO assert getAssetsIf
 		
@@ -2431,16 +2598,20 @@ public class MarkovEngineTest extends TestCase {
 		// create new user Eric
 		userNameToIDMap.put("Eric", (long) 3);
 		// By default, cash is initialized as 0 (i.e. min-q = 1)
-		assertEquals(0, (engine.getCash(userNameToIDMap.get("Eric"), null, null)), ASSET_ERROR_MARGIN);
-		assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Eric"), null, null))), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0, (engine.getCash(userNameToIDMap.get("Eric"), null, null)), ASSET_ERROR_MARGIN);
+			assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Eric"), null, null))), ASSET_ERROR_MARGIN);
+		}
 		
 		// add 100 q-values to new users
 		transactionKey = engine.startNetworkActions();
 		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Eric"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
 		engine.commitNetworkActions(transactionKey);
 		// check that user's min-q value was changed to the correct value
-		assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Eric"), null, null))), ASSET_ERROR_MARGIN);
-		assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Eric"), null, null)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Eric"), null, null))), ASSET_ERROR_MARGIN);
+			assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Eric"), null, null)), ASSET_ERROR_MARGIN);
+		}
 
 		
 		// Eric bets P(E=e1) = .65 -> .8
@@ -2458,14 +2629,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Eric"), 0x0E, 0, assumptionIds, assumedStates);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.0065f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.9965f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.0065f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.9965f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// set P(E=e1) = 0.8 and P(E=e2) = 0.2
 		transactionKey = engine.startNetworkActions();
@@ -2487,8 +2662,10 @@ public class MarkovEngineTest extends TestCase {
 		
 
 		// check that the question can be retrieved from getTradedQuestions.
-		assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Eric")).size());
-		assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Eric")).contains(0x0El));
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(1, engine.getTradedQuestions(userNameToIDMap.get("Eric")).size());
+			assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Eric")).contains(0x0El));
+		}
 		
 		// cannot reuse same transaction key
 		try {
@@ -2500,20 +2677,24 @@ public class MarkovEngineTest extends TestCase {
 			assertNotNull(e);
 		}
 		
-		assertEquals(10.1177, engine.scoreUserEv(userNameToIDMap.get("Eric"), null, null), PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(10.1177, engine.scoreUserEv(userNameToIDMap.get("Eric"), null, null), PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		// check that new marginal of E is [0.8 0.2] (this is expected value), F is [0.2165, 0.7835], and D is [0.5824, 0.4176]
@@ -2529,8 +2710,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that min-q is 57.142857...
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
-		assertEquals((engine.getScoreFromQValues(57.142857f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(57.142857f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(57.142857f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(57.142857f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE contains e2 and any D or F
 		assumptionIds = new ArrayList<Long>();
@@ -2544,14 +2727,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// e1
 		assumedStates.add(0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -2572,14 +2759,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
@@ -2614,14 +2805,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Eric"), 0x0D, 0, assumptionIds, assumedStates);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// set P(D=d1|F=f2) = 0.7 and P(D=d2|F=f2) = 0.3
 		transactionKey = engine.startNetworkActions();
@@ -2643,9 +2838,11 @@ public class MarkovEngineTest extends TestCase {
 		
 
 		// check that the question can be retrieved from getTradedQuestions.
-		assertEquals(2, engine.getTradedQuestions(userNameToIDMap.get("Eric")).size());
-		assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Eric")).contains(0x0Dl));
-		assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Eric")).contains(0x0El));
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(2, engine.getTradedQuestions(userNameToIDMap.get("Eric")).size());
+			assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Eric")).contains(0x0Dl));
+			assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Eric")).contains(0x0El));
+		}
 		
 		// cannot reuse same transaction key
 		try {
@@ -2657,20 +2854,24 @@ public class MarkovEngineTest extends TestCase {
 			assertNotNull(e);
 		}
 
-		assertEquals(10.31615, engine.scoreUserEv(userNameToIDMap.get("Eric"), null, null), PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(10.31615, engine.scoreUserEv(userNameToIDMap.get("Eric"), null, null), PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		// check that new marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
@@ -2687,8 +2888,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that min-q is 35.7393...
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
-		assertEquals((engine.getScoreFromQValues(35.7393f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(35.7393f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(35.7393f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(35.7393f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE is d2, e2 and f2
 		assumptionIds = new ArrayList<Long>();
@@ -2702,49 +2905,63 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// e1
 		assumedStates.add(0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
@@ -2764,14 +2981,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Eric"), 0x0D, 0, assumptionIds, assumedStates);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// get history before transaction, so that we can make sure new transaction is not added into history
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
@@ -2785,15 +3006,17 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that final min-q of Tom is 20
 		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
-		assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+			assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+		}
 		
 		// set P(D=d1|F=f2) to a value lower (1/10) than the lower bound of edit interval
 		transactionKey = engine.startNetworkActions();
 		newValues = new ArrayList<Float>();
 		newValues.add(editInterval.get(0)/10);
 		newValues.add(1-(editInterval.get(0)/10));
-		assertNull(engine.addTrade(
+		List<Float> tradeReturn = engine.addTrade(
 				transactionKey, 
 				new Date(), 
 				"Eric bets P(D=d1|F=f2) = 0.7", 
@@ -2803,7 +3026,14 @@ public class MarkovEngineTest extends TestCase {
 				assumptionIds, 
 				assumedStates, 
 				false	// do not allow negative assets
-			));
+			);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertNull(tradeReturn);
+		} else {
+			// do not test scenarios after this, because they all test conditions when trade was out of limit (which will not occur when engine.isToAddArcsOnlyToProbabilisticNetwork == true)
+			return;
+		}
+		
 		// this is supposedly going to commit empty transaction
 		engine.commitNetworkActions(transactionKey);
 		// make sure history was not changed
@@ -2811,14 +3041,18 @@ public class MarkovEngineTest extends TestCase {
 		
 
 		// check that the questions that can be retrieved from getTradedQuestions are still the same.
-		assertEquals(2, engine.getTradedQuestions(userNameToIDMap.get("Eric")).size());
-		assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Eric")).contains(0x0Dl));
-		assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Eric")).contains(0x0El));
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(2, engine.getTradedQuestions(userNameToIDMap.get("Eric")).size());
+			assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Eric")).contains(0x0Dl));
+			assertTrue(engine.getTradedQuestions(userNameToIDMap.get("Eric")).contains(0x0El));
+		}
 
 		// check that final min-q of Tom is 20
 		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
-		assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+			assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+		}
 		
 		// cannot reuse same transaction key
 		try {
@@ -2831,18 +3065,22 @@ public class MarkovEngineTest extends TestCase {
 		}
 		// check that final min-q of Tom is 20
 		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
-		assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+			assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		// check that assets and conditional probs did not change
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals( "Index = " + i, cliqueAssetsBeforeTrade.get(i), cliqueAssetsAfterTrade.get(i), ASSET_ERROR_MARGIN );
-			assertEquals( "Index = " + i, cliqueProbsBeforeTrade.get(i), cliqueProbsAfterTrade.get(i), PROB_ERROR_MARGIN );
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			// check that assets and conditional probs did not change
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals( "Index = " + i, cliqueAssetsBeforeTrade.get(i), cliqueAssetsAfterTrade.get(i), ASSET_ERROR_MARGIN );
+				assertEquals( "Index = " + i, cliqueProbsBeforeTrade.get(i), cliqueProbsAfterTrade.get(i), PROB_ERROR_MARGIN );
+			}
 		}
 		
 		
@@ -3758,10 +3996,17 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
 			engine.getCash(userNameToIDMap.get("Tom"), null, null);
-			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			}
 		} catch (IllegalStateException e) {
 			// OK. This is the expected
-			assertNotNull(e);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
 		}
 		
 		// add 100 q-values to new users
@@ -3809,10 +4054,17 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
 			engine.getCash(userNameToIDMap.get("Joe"), null, null);
-			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			}
 		} catch (IllegalStateException e) {
 			// OK. This is the expected
-			assertNotNull(e);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
 		}
 		
 		// add 100 q-values to new users
@@ -3841,10 +4093,17 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
 			engine.getCash(userNameToIDMap.get("Amy"), null, null);
-			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			}
 		} catch (IllegalStateException e) {
 			// OK. This is the expected
-			assertNotNull(e);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
 		}
 		
 		// add 100 q-values to new users
@@ -3890,10 +4149,17 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
 			engine.getCash(userNameToIDMap.get("Eric"), null, null);
-			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			}
 		} catch (IllegalStateException e) {
 			// OK. This is the expected
-			assertNotNull(e);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
 		}
 		
 		// add 100 q-values to new users
@@ -3944,30 +4210,39 @@ public class MarkovEngineTest extends TestCase {
 			assertNotNull(e);
 		}
 		
+		// make sure users were not created
+		if (engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue(engine.getUserToAssetAwareAlgorithmMap().isEmpty());
+		}
+		
 		// check that we can retrieve out-of-clique probs and expected scores
-		List<Float> probList = engine.getProbList(0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
-		assertNotNull(probList);
-		assertEquals(2, probList.size());
+		List<Float> floatList = engine.getProbList(0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		assertNotNull(floatList);
+		assertEquals(2, floatList.size());
 		
-		probList = engine.scoreUserQuestionEvStates(userNameToIDMap.get("Eric"),0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
-		assertNotNull(probList);
-		assertEquals(2, probList.size());
+		floatList = engine.scoreUserQuestionEvStates(userNameToIDMap.get("Eric"),0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertNotNull(floatList);
+			assertEquals(2, floatList.size());
+		}
 		
-		probList = engine.getCashPerStates(userNameToIDMap.get("Eric"),0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
-		assertNotNull(probList);
-		assertEquals(2, probList.size());
+		floatList = engine.getCashPerStates(userNameToIDMap.get("Eric"),0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertNotNull(floatList);
+			assertEquals(2, floatList.size());
+		}
 		
 		
 		// check that final marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
-		probList = engine.getProbList(0x0D, null, null);
-		assertEquals(0.7232f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.2768f, probList.get(1), PROB_ERROR_MARGIN);
-		probList = engine.getProbList(0x0E, null, null);
-		assertEquals(0.8509f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.1491f, probList.get(1), PROB_ERROR_MARGIN);
-		probList = engine.getProbList(0x0F, null, null);
-		assertEquals(0.2165f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.7835f, probList.get(1), PROB_ERROR_MARGIN);
+		floatList = engine.getProbList(0x0D, null, null);
+		assertEquals(0.7232f, floatList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.2768f, floatList.get(1), PROB_ERROR_MARGIN);
+		floatList = engine.getProbList(0x0E, null, null);
+		assertEquals(0.8509f, floatList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.1491f, floatList.get(1), PROB_ERROR_MARGIN);
+		floatList = engine.getProbList(0x0F, null, null);
+		assertEquals(0.2165f, floatList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.7835f, floatList.get(1), PROB_ERROR_MARGIN);
 		
 		// set assumptions to D,E,F, so that we can use it to calculate conditional min-q (in order to test consistency of LPE)
 		ArrayList<Long> assumptionIds = new ArrayList<Long>();
@@ -3982,8 +4257,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that final min-q of Tom is 20
 		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that final LPE of Tom contains d1, e2 and any value F
 		
@@ -3992,14 +4269,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2 (not min)
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -4020,34 +4301,44 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		
 		// check that min-q of Amy is 60...
 		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
-		assertEquals((engine.getScoreFromQValues(60f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(60f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(60f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(60f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE of Amy contains d1, f1 and any value E
 		
@@ -4063,7 +4354,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -4077,41 +4370,53 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		
 		// check that min-q of Joe is 14.5454545...
 		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
-		assertEquals((engine.getScoreFromQValues(14.5454545f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(14.5454545f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(14.5454545f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(14.5454545f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE of Joe contains d2, e1, f1
 		
@@ -4120,28 +4425,36 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
@@ -4155,26 +4468,34 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check that final min-q of Eric is 35.7393...
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
-		assertEquals((engine.getScoreFromQValues(35.7393f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(35.7393f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(35.7393f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(35.7393f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that final LPE of Eric is d2, e2 and f2
 		
@@ -4183,49 +4504,63 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
@@ -4403,7 +4738,17 @@ public class MarkovEngineTest extends TestCase {
 		newValues.add(0.9f);		
 		newValues.add(0.1f);		
 		engine.addTrade(transactionKey, new Date(2), "Trade to revert", 999L, 0x0EL, newValues, null, null, true);
-		engine.doBalanceTrade(transactionKey, new Date(3), "Undo the last trade", 999L, 0x0EL, null, null);
+		try {
+			engine.doBalanceTrade(transactionKey, new Date(3), "Undo the last trade", 999L, 0x0EL, null, null);
+			if (engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				fail("Should not allow balance operation when assets are not used.");
+			}
+		} catch(UnsupportedOperationException e) {
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
+		}
 		
 		// commit all trades (including the creation of network and user)
 		engine.commitNetworkActions(transactionKey);
@@ -4433,8 +4778,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that final min-q of Tom is 20
 		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that final LPE of Tom contains d1, e2 and any value F
 		
@@ -4443,14 +4790,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2 (not min)
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -4471,34 +4822,44 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f1 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		
 		// check that min-q of Amy is 60...
 		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
-		assertEquals((engine.getScoreFromQValues(60f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(60f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(60f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(60f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE of Amy contains d1, f1 and any value E
 		
@@ -4514,7 +4875,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -4528,41 +4891,53 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		
 		// check that min-q of Joe is 14.5454545...
 		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
-		assertEquals((engine.getScoreFromQValues(14.5454545f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(14.5454545f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(14.5454545f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(14.5454545f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE of Joe contains d2, e1, f1
 		
@@ -4571,28 +4946,36 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
@@ -4606,26 +4989,34 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check that final min-q of Eric is 35.7393...
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
-		assertEquals((engine.getScoreFromQValues(35.7393f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(35.7393f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(35.7393f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(35.7393f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that final LPE of Eric is d2, e2 and f2
 		
@@ -4634,49 +5025,63 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
@@ -4880,8 +5285,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that final min-q of Tom is 20
 		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals((engine.getScoreFromQValues(20*initialQ/100)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(20*initialQ/100, engine.getQValuesFromScore(minCash), ASSET_ERROR_MARGIN*initialQ/100);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(20*initialQ/100)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(20*initialQ/100, engine.getQValuesFromScore(minCash), ASSET_ERROR_MARGIN*initialQ/100);
+		}
 		
 		// check that final LPE of Tom contains d1, e2 and any value F
 		
@@ -4890,14 +5297,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2 (not min)
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -4918,34 +5329,44 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		
 		// check that min-q of Amy is 60...
 		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
-		assertEquals((engine.getScoreFromQValues(60*initialQ/100)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(60*initialQ/100, engine.getQValuesFromScore(minCash), ASSET_ERROR_MARGIN*initialQ/100);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(60*initialQ/100)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(60*initialQ/100, engine.getQValuesFromScore(minCash), ASSET_ERROR_MARGIN*initialQ/100);
+		}
 		
 		// check that LPE of Amy contains d1, f1 and any value E
 		
@@ -4961,7 +5382,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -4975,41 +5398,53 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		
 		// check that min-q of Joe is 14.5454545...
 		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
-		assertEquals((engine.getScoreFromQValues(14.5454545*initialQ/100)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(14.5454545*initialQ/100, engine.getQValuesFromScore(minCash), ASSET_ERROR_MARGIN*initialQ/100);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(14.5454545*initialQ/100)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(14.5454545*initialQ/100, engine.getQValuesFromScore(minCash), ASSET_ERROR_MARGIN*initialQ/100);
+		}
 		
 		// check that LPE of Joe contains d2, e1, f1
 		
@@ -5018,28 +5453,36 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
@@ -5053,26 +5496,34 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check that final min-q of Eric is 35.7393...
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
-		assertEquals(engine.getScoreFromQValues(35.7393*initialQ/100), minCash, ASSET_ERROR_MARGIN);
-		assertEquals(35.7393*initialQ/100, engine.getQValuesFromScore(minCash), ASSET_ERROR_MARGIN*initialQ/100);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(engine.getScoreFromQValues(35.7393*initialQ/100), minCash, ASSET_ERROR_MARGIN);
+			assertEquals(35.7393*initialQ/100, engine.getQValuesFromScore(minCash), ASSET_ERROR_MARGIN*initialQ/100);
+		}
 		
 		// check that final LPE of Eric is d2, e2 and f2
 		
@@ -5081,49 +5532,63 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
@@ -5161,16 +5626,20 @@ public class MarkovEngineTest extends TestCase {
 		userNameToIDMap.put("Tom", (long)0);
 		
 		// By default, cash is initialized as 0 (i.e. min-q = 1)
-		assertEquals(0, (engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
-		assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null))), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0, (engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+			assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null))), ASSET_ERROR_MARGIN);
+		}
 		
 		// add 100 q-values to new users
 		transactionKey = engine.startNetworkActions();
 		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Tom"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
 		engine.commitNetworkActions(transactionKey);
 		// check that user's min-q value was changed to the correct value
-		assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null))), ASSET_ERROR_MARGIN);
-		assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Tom"), null, null))), ASSET_ERROR_MARGIN);
+			assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Tom"), null, null)), ASSET_ERROR_MARGIN);
+		}
 		
 		// Tom bets P(E=e1) = 0.5  to 0.55 (unconditional soft evidence in E)
 		
@@ -5184,14 +5653,18 @@ public class MarkovEngineTest extends TestCase {
 		List<Float> editInterval = engine.getEditLimits(userNameToIDMap.get("Tom"), 0x0E, 0, null, null);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.005f, editInterval.get(0), PROB_ERROR_MARGIN );
-		assertEquals(0.995f, editInterval.get(1), PROB_ERROR_MARGIN );
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.005f, editInterval.get(0), PROB_ERROR_MARGIN );
+			assertEquals(0.995f, editInterval.get(1), PROB_ERROR_MARGIN );
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets after edit
 		List<Float> cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, null, null, false);
 		List<Float> cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, null, null);
 		assertEquals(2, cliqueProbsBeforeTrade.size());
-		assertEquals(2, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(2, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// do edit
 		transactionKey = engine.startNetworkActions();
@@ -5215,14 +5688,16 @@ public class MarkovEngineTest extends TestCase {
 		List<Float> cliqueProbsAfterTrade = engine.getProbList((long)0x0E, null, null, false);
 		List<Float> cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E,null, null);
 		assertEquals(2, cliqueProbsAfterTrade.size());
-		assertEquals(2, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(2, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		// check that new marginal of E is [0.55 0.45], and the others have not changed (remains 50%)
@@ -5244,8 +5719,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that Tom's min-q is 90 (and the cash is supposedly the log value of 90)
 		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);	 // null means unconditional cash, which is supposedly the global minimum
-		assertEquals((engine.getScoreFromQValues(90f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(90f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(90f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(90f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE contains e2 
 		// all nodes are always going to be the assumption nodes in this test
@@ -5256,7 +5733,9 @@ public class MarkovEngineTest extends TestCase {
 		List<Integer> assumedStates = new ArrayList<Integer>();
 		assumedStates.add(0);	// e1
 		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check e2
 		assumedStates.set(0, 1);	// e2
@@ -5275,8 +5754,12 @@ public class MarkovEngineTest extends TestCase {
 		engine.commitNetworkActions(transactionKey);
 
 		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
-		if (engine.isToAddArcsWithoutReboot()) {
-			assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			if (engine.isToAddArcsWithoutReboot()) {
+				assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
+			} else {
+				assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.size());
+			}
 		} else {
 			assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.size());
 		}
@@ -5300,8 +5783,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that Tom's min-q is 90 (and the cash is supposedly the log value of 90)
 		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);	 // null means unconditional cash, which is supposedly the global minimum
-		assertEquals((engine.getScoreFromQValues(90f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(90f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(90f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(90f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE contains e2 and any values for D, by asserting that cash conditioned to such states are equals to the min
 		// d, e are always going to be the assumption nodes in this test
@@ -5314,7 +5799,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// d1
 		assumedStates.add(0);	// e1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2
 		assumedStates.set(0, 0);	// d1
@@ -5326,7 +5813,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2
 		assumedStates.set(0, 1);	// d2
@@ -5338,7 +5827,9 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Tom"), Collections.singletonList((long)0x0E), Collections.singletonList(1));
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 		cash = engine.getCash(userNameToIDMap.get("Tom"), Collections.singletonList((long)0x0E), Collections.singletonList(0));
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		
 		
@@ -5361,14 +5852,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Tom"), 0x0E, 0, assumptionIds, assumedStates);	// (node == 0x0E && state == 0) == e1
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, prior to edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 
 		
 		// set P(E=e1|D=d1) = 0.9 and P(E=e2|D=d1) = 0.1
@@ -5393,14 +5888,16 @@ public class MarkovEngineTest extends TestCase {
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Tom"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		// check that new marginal of E is [0.725 0.275] (this is expected value), and the others have not changed (remains 50%)
@@ -5419,8 +5916,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that min-q is 20
 		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE contains d1, e2 
 		assumptionIds = new ArrayList<Long>();
@@ -5432,7 +5931,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// d1
 		assumedStates.add(0);	// e1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2
 		assumedStates.set(0, 0);	// d1
@@ -5444,29 +5945,37 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		
 		// Let's create user Joe, ID = 1.
 		userNameToIDMap.put("Joe", (long) 1);
 		
 		// By default, cash is initialized as 0 (i.e. min-q = 1)
-		assertEquals(0, (engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
-		assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0, (engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
+			assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
+		}
 		
 		// add 100 q-values to new users
 		transactionKey = engine.startNetworkActions();
 		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Joe"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
 		engine.commitNetworkActions(transactionKey);
 		// check that user's min-q value was changed to the correct value
-		assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
-		assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Joe"), null, null))), ASSET_ERROR_MARGIN);
+			assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Joe"), null, null)), ASSET_ERROR_MARGIN);
+		}
 
 		// Joe bets P(E=e1|D=d2) = .55 -> .4
 		
@@ -5487,14 +5996,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Joe"), 0x0E, 0, assumptionIds, assumedStates);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.0055f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.9955f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.0055f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.9955f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// set P(E=e1|D=d2) = 0.4 and P(E=e2|D=d2) = 0.6
 		transactionKey = engine.startNetworkActions();
@@ -5518,14 +6031,16 @@ public class MarkovEngineTest extends TestCase {
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		// check that new marginal of E is [0.65 0.35] (this is expected value), and the others have not changed (remains 50%)
@@ -5544,8 +6059,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that min-q is 72.727272...
 		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
-		assertEquals((engine.getScoreFromQValues(72.727272f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(72.727272f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(72.727272f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(72.727272f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE contains d2, e1 
 		assumptionIds = new ArrayList<Long>();
@@ -5557,13 +6074,17 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// d1
 		assumedStates.add(0);	// e1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d1, e2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e1
 		assumedStates.set(0, 1);	// d2
@@ -5575,12 +6096,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 
 		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
-		if (engine.isToAddArcsWithoutReboot()) {
-			assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			if (engine.isToAddArcsWithoutReboot()) {
+				assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
+			} else {
+				assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.size());
+			}
 		} else {
 			assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.size());
 		}
@@ -5594,11 +6121,18 @@ public class MarkovEngineTest extends TestCase {
 		
 
 		questionAssumptionGroups = engine.getQuestionAssumptionGroups();
-		if (engine.isToAddArcsWithoutReboot()) {
-			assertEquals(questionAssumptionGroups.toString(), 3, questionAssumptionGroups.size());
-			assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.get(0).size());
-			assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.get(1).size());
-			assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.get(2).size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			if (engine.isToAddArcsWithoutReboot()) {
+				assertEquals(questionAssumptionGroups.toString(), 3, questionAssumptionGroups.size());
+				assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.get(0).size());
+				assertEquals(questionAssumptionGroups.toString(), 1, questionAssumptionGroups.get(1).size());
+				assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.get(2).size());
+			} else {
+				assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
+				for (List<Long> group : questionAssumptionGroups) {
+					assertEquals(questionAssumptionGroups.toString(), 2, group.size());
+				}
+			}
 		} else {
 			assertEquals(questionAssumptionGroups.toString(), 2, questionAssumptionGroups.size());
 			for (List<Long> group : questionAssumptionGroups) {
@@ -5621,8 +6155,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that min-q of Joe is 72.727272...
 		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
-		assertEquals((engine.getScoreFromQValues(72.727272f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(72.727272f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(72.727272f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(72.727272f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE of Joe contains d2, e1 and any value F
 		assumptionIds = new ArrayList<Long>();
@@ -5636,28 +6172,36 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// e1
 		assumedStates.add(0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
@@ -5678,14 +6222,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check minimal condition of LPE: d2, e1
 		assumptionIds = new ArrayList<Long>();
@@ -5700,24 +6248,32 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(0,0);
 		assumedStates.set(1,1);
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumptionIds.clear();
 		assumptionIds.add((long)0x0D);
 		assumedStates.clear();
 		assumedStates.add(0);
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumptionIds.clear();
 		assumptionIds.add((long)0x0E);
 		assumedStates.clear();
 		assumedStates.add(1);
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check that min-q of Tom is still 20
 		minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE of Tom still contains d1, e2 and any value F
 		assumptionIds = new ArrayList<Long>();
@@ -5731,14 +6287,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// e1
 		assumedStates.add(0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2 (not min)
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -5759,28 +6319,36 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check minimal condition of LPE: d1, e2
 		assumptionIds = new ArrayList<Long>();
@@ -5795,35 +6363,45 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(0,1);
 		assumedStates.set(1,0);
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumptionIds.clear();
 		assumptionIds.add((long)0x0D);
 		assumedStates.clear();
 		assumedStates.add(1);
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumptionIds.clear();
 		assumptionIds.add((long)0x0E);
 		assumedStates.clear();
 		assumedStates.add(0);
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		
 		// Let's create user Amy, ID = 2.
 		userNameToIDMap.put("Amy", (long) 2);
 		
 		// By default, cash is initialized as 0 (i.e. min-q = 1)
-		assertEquals(0, (engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
-		assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0, (engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
+			assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
+		}
 		
 		// add 100 q-values to new users
 		transactionKey = engine.startNetworkActions();
 		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Amy"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
 		engine.commitNetworkActions(transactionKey);
 		// check that user's min-q value was changed to the correct value
-		assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
-		assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Amy"), null, null))), ASSET_ERROR_MARGIN);
+			assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Amy"), null, null)), ASSET_ERROR_MARGIN);
+		}
 
 		// Amy bets P(F=f1|D=d1) = .5 -> .3
 		
@@ -5844,14 +6422,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Amy"), 0x0F, 0, assumptionIds, assumedStates);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.005f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.995f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// set P(F=f1|D=d1) = 0.3 and P(F=f2|D=d1) = 0.7  
 		transactionKey = engine.startNetworkActions();
@@ -5875,14 +6457,16 @@ public class MarkovEngineTest extends TestCase {
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Amy"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.4 .6], and the others have not changed (remains 50%)
@@ -5898,8 +6482,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that min-q is 60...
 		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
-		assertEquals((engine.getScoreFromQValues(60f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(60f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(60f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(60f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE contains d1, f1 and any value E
 		assumptionIds = new ArrayList<Long>();
@@ -5920,7 +6506,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -5934,35 +6522,45 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check minimal condition of LPE: d1, f1
 		assumptionIds = new ArrayList<Long>();
@@ -5977,27 +6575,37 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(0,1);
 		assumedStates.set(1,1);
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumedStates.set(0,0);
 		assumedStates.set(1,1);
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumedStates.set(0,1);
 		assumedStates.set(1,0);
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumptionIds.clear();
 		assumptionIds.add((long)0x0D);
 		assumedStates.clear();
 		assumedStates.add(1);
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		assumptionIds.clear();
 		assumptionIds.add((long)0x0F);
 		assumedStates.clear();
 		assumedStates.add(1);
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// TODO assert getAssetsIf
 		
@@ -6021,14 +6629,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Joe"), 0x0F, 0, assumptionIds, assumedStates);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.006875f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.993125, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.006875f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.993125, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// set P(F=f1|D=d2) = 0.1 and P(F=f2|D=d2) = 0.9
 		transactionKey = engine.startNetworkActions();
@@ -6052,14 +6664,16 @@ public class MarkovEngineTest extends TestCase {
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Joe"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		// check that new marginal of E is still [0.65 0.35] (this is expected value), F is [.2 .8], and the others have not changed (remains 50%)
@@ -6075,8 +6689,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that min-q is 14.5454545...
 		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
-		assertEquals((engine.getScoreFromQValues(14.5454545f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(14.5454545f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(14.5454545f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(14.5454545f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE contains d2, e1, f1
 		assumptionIds = new ArrayList<Long>();
@@ -6090,28 +6706,36 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// e1
 		assumedStates.add(0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
@@ -6125,21 +6749,27 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// TODO assert getAssetsIf
 		
@@ -6148,16 +6778,20 @@ public class MarkovEngineTest extends TestCase {
 		// create new user Eric
 		userNameToIDMap.put("Eric", (long) 3);
 		// By default, cash is initialized as 0 (i.e. min-q = 1)
-		assertEquals(0, (engine.getCash(userNameToIDMap.get("Eric"), null, null)), ASSET_ERROR_MARGIN);
-		assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Eric"), null, null))), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0, (engine.getCash(userNameToIDMap.get("Eric"), null, null)), ASSET_ERROR_MARGIN);
+			assertEquals(1, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Eric"), null, null))), ASSET_ERROR_MARGIN);
+		}
 		
 		// add 100 q-values to new users
 		transactionKey = engine.startNetworkActions();
 		assertTrue(engine.addCash(transactionKey, new Date(), userNameToIDMap.get("Eric"), engine.getScoreFromQValues(100f), "Initialize User's asset to 100"));
 		engine.commitNetworkActions(transactionKey);
 		// check that user's min-q value was changed to the correct value
-		assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Eric"), null, null))), ASSET_ERROR_MARGIN);
-		assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Eric"), null, null)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(100, (engine.getQValuesFromScore(engine.getCash(userNameToIDMap.get("Eric"), null, null))), ASSET_ERROR_MARGIN);
+			assertEquals((engine.getScoreFromQValues(100)), (engine.getCash(userNameToIDMap.get("Eric"), null, null)), ASSET_ERROR_MARGIN);
+		}
 
 		
 		// Eric bets P(E=e1) = .65 -> .8
@@ -6175,14 +6809,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Eric"), 0x0E, 0, assumptionIds, assumedStates);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.0065f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.9965f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.0065f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.9965f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// set P(E=e1) = 0.8 and P(E=e2) = 0.2
 		transactionKey = engine.startNetworkActions();
@@ -6206,14 +6844,16 @@ public class MarkovEngineTest extends TestCase {
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0E, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0E, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		// check that new marginal of E is [0.8 0.2] (this is expected value), F is [0.2165, 0.7835], and D is [0.5824, 0.4176]
@@ -6229,8 +6869,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that min-q is 57.142857...
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
-		assertEquals((engine.getScoreFromQValues(57.142857f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(57.142857f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(57.142857f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(57.142857f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE contains e2 and any D or F
 		assumptionIds = new ArrayList<Long>();
@@ -6244,14 +6886,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// e1
 		assumedStates.add(0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -6272,14 +6918,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
@@ -6314,14 +6964,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Eric"), 0x0D, 0, assumptionIds, assumedStates);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// set P(D=d1|F=f2) = 0.7 and P(D=d2|F=f2) = 0.3
 		transactionKey = engine.startNetworkActions();
@@ -6345,14 +6999,16 @@ public class MarkovEngineTest extends TestCase {
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsAfterTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsAfterTrade.size());
-		assertEquals(4, cliqueAssetsAfterTrade.size());
-		for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
-			assertEquals(
-					"Index = " + i, 
-					cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
-					engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
-					ASSET_ERROR_MARGIN
-				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsAfterTrade.size());
+			for (int i = 0; i < cliqueAssetsAfterTrade.size(); i++) {
+				assertEquals(
+						"Index = " + i, 
+						cliqueProbsAfterTrade.get(i)/cliqueProbsBeforeTrade.get(i) * engine.getQValuesFromScore(cliqueAssetsBeforeTrade.get(i)), 
+						engine.getQValuesFromScore(cliqueAssetsAfterTrade.get(i)), 
+						ASSET_ERROR_MARGIN
+						);
+			}
 		}
 		
 		// check that new marginal of E is [0.8509, 0.1491], F is  [0.2165, 0.7835], and D is [0.7232, 0.2768]
@@ -6369,8 +7025,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that min-q is 35.7393...
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
-		assertEquals((engine.getScoreFromQValues(35.7393f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(35.7393f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(35.7393f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(35.7393f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE is d2, e2 and f2
 		assumptionIds = new ArrayList<Long>();
@@ -6384,49 +7042,63 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);	// e1
 		assumedStates.add(0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
@@ -6446,14 +7118,18 @@ public class MarkovEngineTest extends TestCase {
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Eric"), 0x0D, 0, assumptionIds, assumedStates);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
-		assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
-		assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(0.0091059f, editInterval.get(0) ,PROB_ERROR_MARGIN);
+			assertEquals(0.9916058f, editInterval.get(1) ,PROB_ERROR_MARGIN);
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, before the edit, so that we can use it to check assets
 		cliqueProbsBeforeTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
 		cliqueAssetsBeforeTrade = engine.getAssetsIfStates(userNameToIDMap.get("Eric"), (long)0x0F, Collections.singletonList((long)0x0D), null);
 		assertEquals(4, cliqueProbsBeforeTrade.size());
-		assertEquals(4, cliqueAssetsBeforeTrade.size());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(4, cliqueAssetsBeforeTrade.size());
+		}
 		
 		// get history before transaction, so that we can make sure new transaction is not added into history
 		List<QuestionEvent> questionHistory = engine.getQuestionHistory(0x0DL, null, null);
@@ -6469,23 +7145,29 @@ public class MarkovEngineTest extends TestCase {
 		newValues = new ArrayList<Float>();
 		newValues.add(editInterval.get(0)/10);
 		newValues.add(1-(editInterval.get(0)/10));
-		assertNull(
-				engine.addTrade(
-					transactionKey, 
-					new Date(), 
-					"Eric bets P(D=d1|F=f2) = 0.7", 
-					userNameToIDMap.get("Eric"), 
-					0x0D, 
-					newValues, 
-					assumptionIds, 
-					assumedStates, 
-					false	// do not allow negative assets
-				)
-			);
+		List<Float> tradeReturn = engine.addTrade(
+				transactionKey, 
+				new Date(), 
+				"Eric bets P(D=d1|F=f2) = 0.7", 
+				userNameToIDMap.get("Eric"), 
+				0x0D, 
+				newValues, 
+				assumptionIds, 
+				assumedStates, 
+				false	// do not allow negative assets
+				);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertNull( tradeReturn );
+		}
 		// this is supposedly going to commit empty transaction
 		engine.commitNetworkActions(transactionKey);
 		// make sure history was not changed
 		assertEquals(questionHistory, engine.getQuestionHistory(0x0DL, null, null));
+		
+		if (engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			// do not test anymore, because the following tests are for when user provided a trade outside the bound (which does not exist when isToAddArcsOnlyToProbabilisticNetwork == true)
+			return;
+		}
 		
 		// obtain conditional probabilities and assets of the edited clique, after the edit, so that we can use it to check assets
 		cliqueProbsAfterTrade = engine.getProbList((long)0x0F, Collections.singletonList((long)0x0D), null, false);
@@ -6677,10 +7359,17 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
 			engine.getCash(userNameToIDMap.get("Tom"), null, null);
-			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			}
 		} catch (IllegalStateException e) {
 			// OK. This is the expected
-			assertNotNull(e);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
 		}
 		
 		// add 100 q-values to new users
@@ -6732,10 +7421,17 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
 			engine.getCash(userNameToIDMap.get("Joe"), null, null);
-			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			}
 		} catch (IllegalStateException e) {
-			// OK. This is the expected
-			assertNotNull(e);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				// OK. This is the expected
+				assertNotNull(e);
+			} else {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
 		}
 		
 		// add 100 q-values to new users
@@ -6764,10 +7460,16 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
 			engine.getCash(userNameToIDMap.get("Amy"), null, null);
-			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			}
 		} catch (IllegalStateException e) {
-			// OK. This is the expected
-			assertNotNull(e);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				// OK. This is the expected
+				assertNotNull(e);
+			} else {
+				throw e;
+			}
 		}
 		
 		// add 100 q-values to new users
@@ -6817,10 +7519,16 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
 			engine.getCash(userNameToIDMap.get("Eric"), null, null);
-			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			}
 		} catch (IllegalStateException e) {
-			// OK. This is the expected
-			assertNotNull(e);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				// OK. This is the expected
+				assertNotNull(e);
+			}else {
+				throw e;
+			}
 		}
 		
 		// add 100 q-values to new users
@@ -6926,8 +7634,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that final min-q of Tom is 20
 		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
-		assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+			assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that final LPE of Tom contains d1, e2 and any value F
 		
@@ -6936,20 +7646,24 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		if (Float.isNaN(cash)) {
-			for (Node node : engine.getProbabilisticNetwork().getNodes()) {
-				System.out.println(node.getParents() + "->" + node);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			if (Float.isNaN(cash)) {
+				for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+					System.out.println(node.getParents() + "->" + node);
+				}
+				fail();
 			}
-			fail();
+			assertTrue("Obtained cash = " + cash, minCash < cash);
 		}
-		assertTrue("Obtained cash = " + cash, minCash < cash);
 		
 		// check combination d1, e1, f2 (not min)
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -6970,34 +7684,44 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2 (not min)
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		
 		// check that min-q of Amy is 60...
 		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
-		assertEquals((engine.getScoreFromQValues(60f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(60f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(60f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(60f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE of Amy contains d1, f1 and any value E
 		
@@ -7013,7 +7737,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
@@ -7027,41 +7753,53 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		
 		// check that min-q of Joe is 14.5454545...
 		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
-		assertEquals((engine.getScoreFromQValues(14.5454545f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(14.5454545f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(14.5454545f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(14.5454545f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that LPE of Joe contains d2, e1, f1
 		
@@ -7070,28 +7808,36 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
@@ -7105,26 +7851,34 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check that final min-q of Eric is 35.7393...
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
-		assertEquals(35.7393f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
-		assertEquals((engine.getScoreFromQValues(35.7393f)), (minCash), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(35.7393f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+			assertEquals((engine.getScoreFromQValues(35.7393f)), (minCash), ASSET_ERROR_MARGIN);
+		}
 		
 		// check that final LPE of Eric is d2, e2 and f2
 		
@@ -7133,49 +7887,63 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e1, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f1
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d1, e2, f2
 		assumedStates.set(0, 0);	// d1
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f1 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e1, f2 
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f1
 		assumedStates.set(0, 1);	// d2
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		
 		// check combination d2, e2, f2
 		assumedStates.set(0, 1);	// d2
@@ -7785,7 +8553,10 @@ public class MarkovEngineTest extends TestCase {
 	 * calls {@link MarkovEngineImpl#previewBalancingTrade(long, long, List, List)} internally.
 	 */
 	public final void testBalanceTrade() {
-		
+		if (engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			// no need to test balancing trades if we are not dealing with assets
+			return;
+		}
 		// perform the same sequence of trades of testAddTradeInOneTransaction
 		long transactionKey = engine.startNetworkActions();
 		
@@ -8223,8 +8994,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that final min-q of Tom is 20
 		float minCash = engine.getCash(userNameToIDMap.get("Tom"), null, null);
-		assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(20f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(20f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		mapOfConditionalCash.put("Tom", new ArrayList<Float>());
 		
 		// check that final LPE of Tom contains d1, e2 and any value F
@@ -8234,7 +9007,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		float cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Tom").add(cash);
 		
 		// check combination d1, e1, f2 (not min)
@@ -8242,7 +9017,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Tom").add(cash);
 		
 		// check combination d1, e2, f1
@@ -8266,7 +9043,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Tom").add(cash);
 		
 		// check combination d2, e1, f2 (not min)
@@ -8274,7 +9053,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Tom").add(cash);
 
 		// check combination d2, e2, f1 (not min)
@@ -8282,7 +9063,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Tom").add(cash);
 
 		// check combination d2, e2, f2 (not min)
@@ -8290,14 +9073,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Tom"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Tom").add(cash);
 
 		
 		// check that min-q of Amy is 60...
 		minCash = engine.getCash(userNameToIDMap.get("Amy"), null, null);
-		assertEquals((engine.getScoreFromQValues(60f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(60f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(60f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(60f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		mapOfConditionalCash.put("Amy", new ArrayList<Float>());
 		
 		// check that LPE of Amy contains d1, f1 and any value E
@@ -8315,7 +9102,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Amy").add(cash);
 		
 		// check combination d1, e2, f1
@@ -8331,7 +9120,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Amy").add(cash);
 
 		// check combination d2, e1, f1 
@@ -8339,7 +9130,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Amy").add(cash);
 		
 		// check combination d2, e1, f2 
@@ -8347,7 +9140,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Amy").add(cash);
 
 		// check combination d2, e2, f1
@@ -8355,7 +9150,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Amy").add(cash);
 
 		// check combination d2, e2, f2
@@ -8363,14 +9160,18 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Amy"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Amy").add(cash);
 		
 		
 		// check that min-q of Joe is 14.5454545...
 		minCash = engine.getCash(userNameToIDMap.get("Joe"), null, null);
-		assertEquals((engine.getScoreFromQValues(14.5454545f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(14.5454545f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(14.5454545f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(14.5454545f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		mapOfConditionalCash.put("Joe",new ArrayList<Float>());
 		
 		// check that LPE of Joe contains d2, e1, f1
@@ -8380,7 +9181,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Joe").add(cash);
 		
 		// check combination d1, e1, f2
@@ -8388,7 +9191,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Joe").add(cash);
 		
 		// check combination d1, e2, f1
@@ -8396,7 +9201,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Joe").add(cash);
 
 		// check combination d1, e2, f2
@@ -8404,7 +9211,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Joe").add(cash);
 
 		// check combination d2, e1, f1 
@@ -8420,7 +9229,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Joe").add(cash);
 
 		// check combination d2, e2, f1
@@ -8428,7 +9239,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Joe").add(cash);
 
 		// check combination d2, e2, f2
@@ -8436,13 +9249,17 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Joe"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Joe").add(cash);
 		
 		// check that final min-q of Eric is 35.7393...
 		minCash = engine.getCash(userNameToIDMap.get("Eric"), null, null);
-		assertEquals((engine.getScoreFromQValues(35.7393f)), (minCash), ASSET_ERROR_MARGIN);
-		assertEquals(35.7393f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals((engine.getScoreFromQValues(35.7393f)), (minCash), ASSET_ERROR_MARGIN);
+			assertEquals(35.7393f, (engine.getQValuesFromScore(minCash)), ASSET_ERROR_MARGIN);
+		}
 		mapOfConditionalCash.put("Eric",new ArrayList<Float>());
 		
 		// check that final LPE of Eric is d2, e2 and f2
@@ -8452,7 +9269,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Eric").add(cash);
 		
 		// check combination d1, e1, f2
@@ -8460,7 +9279,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Eric").add(cash);
 		
 		// check combination d1, e2, f1
@@ -8468,7 +9289,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Eric").add(cash);
 		
 		// check combination d1, e2, f2
@@ -8476,7 +9299,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Eric").add(cash);
 		
 		// check combination d2, e1, f1 
@@ -8484,7 +9309,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Eric").add(cash);
 		
 		// check combination d2, e1, f2 
@@ -8492,7 +9319,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 0);	// e1
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Eric").add(cash);
 		
 		// check combination d2, e2, f1
@@ -8500,7 +9329,9 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(1, 1);	// e2
 		assumedStates.set(2, 0);	// f1
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
-		assertTrue("Obtained cash = " + cash, minCash < cash);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertTrue("Obtained cash = " + cash, minCash < cash);
+		}
 		mapOfConditionalCash.get("Eric").add(cash);
 		
 		// check combination d2, e2, f2
@@ -8589,12 +9420,14 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
 			List<Float> assetsIfStates = engine.getAssetsIfStates(userId, (long)0x0D, null, null);
-			if (engine.isToDeleteResolvedNode()) {
-				fail("D should not be present anymore");
-			} else {
-				// make sure the impossible state has assets == 0
-				assertEquals(2, assetsIfStates.size());
-				assertTrue(Float.isInfinite(assetsIfStates.get(1)));	// 0 of q-value means -infinite assets
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				if (engine.isToDeleteResolvedNode()) {
+					fail("D should not be present anymore");
+				} else {
+					// make sure the impossible state has assets == 0
+					assertEquals(2, assetsIfStates.size());
+					assertTrue(Float.isInfinite(assetsIfStates.get(1)));	// 0 of q-value means -infinite assets
+				}
 			}
 		} catch (IllegalArgumentException e) {
 			if (engine.isToDeleteResolvedNode()) {
@@ -8611,11 +9444,13 @@ public class MarkovEngineTest extends TestCase {
 //				fail("D should not be present anymore");
 				// after 2013 Jan, resolved questions are ignored if it's in settled state, and NaN is returned if not in settled state
 				List<Float> assetsIfStatesWithoutAssumption = engine.getAssetsIfStates(userId, (long)0x0E, null, null);
-				assertEquals(assetsIfStatesWithoutAssumption.size(), assetsIfStates.size());
-				for (int i = 0; i < assetsIfStates.size(); i++) {
-					assertEquals(assetsIfStatesWithoutAssumption.get(i), assetsIfStates.get(i), ASSET_ERROR_MARGIN);
+				if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+					assertEquals(assetsIfStatesWithoutAssumption.size(), assetsIfStates.size());
+					for (int i = 0; i < assetsIfStates.size(); i++) {
+						assertEquals(assetsIfStatesWithoutAssumption.get(i), assetsIfStates.get(i), ASSET_ERROR_MARGIN);
+					}
 				}
-			} else {
+			} else if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
 				// make sure the impossible state has assets == 0
 				assertEquals(4, assetsIfStates.size());
 				assertTrue(Float.isInfinite(assetsIfStates.get(2)));	// 0 of q-value means -infinite assets
@@ -8655,19 +9490,21 @@ public class MarkovEngineTest extends TestCase {
 				fail(e.getMessage());
 			}
 		}
-		try {
-			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
-			List<Float> balancingTrade = engine.previewBalancingTrade(userId, (long)0x0D, null, null);
-			fail("D should not be resolvable anymore: " + balancingTrade);
-		} catch (IllegalArgumentException e) {
-			assertNotNull(e);
-		}
-		try {
-			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
-			List<Float> balancingTrade = engine.previewBalancingTrade(userId, (long)((Math.random() < .5)?0x0E:0x0F), Collections.singletonList((long)0x0D), Collections.singletonList(1));
-			fail("D should not be resolvable anymore: " + balancingTrade);
-		} catch (IllegalArgumentException e) {
-			assertNotNull(e);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			try {
+				Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+				List<Float> balancingTrade = engine.previewBalancingTrade(userId, (long)0x0D, null, null);
+				fail("D should not be resolvable anymore: " + balancingTrade);
+			} catch (IllegalArgumentException e) {
+				assertNotNull(e);
+			}
+			try {
+				Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+				List<Float> balancingTrade = engine.previewBalancingTrade(userId, (long)((Math.random() < .5)?0x0E:0x0F), Collections.singletonList((long)0x0D), Collections.singletonList(1));
+				fail("D should not be resolvable anymore: " + balancingTrade);
+			} catch (IllegalArgumentException e) {
+				assertNotNull(e);
+			}
 		}
 		try {
 			Long userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
@@ -8780,22 +9617,24 @@ public class MarkovEngineTest extends TestCase {
 				fail(e.getMessage());
 			}
 		}
-		try {
-			userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
-			List<Float> scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userId, (long)0x0D, null, null);
-			if (engine.isToDeleteResolvedNode()) {
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			try {
+				userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+				List<Float> scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userId, (long)0x0D, null, null);
+				if (engine.isToDeleteResolvedNode()) {
 //				fail("D should not be present anymore");
-				// from 2013 Jan, resolved questions are properly treated by using NaN in states other than the settled
-				assertEquals(2, scoreUserQuestionEvStates.size());
-				assertEquals(engine.scoreUserEv(userId, null, null), scoreUserQuestionEvStates.get(0), ASSET_ERROR_MARGIN);
-				assertEquals(Float.NaN, scoreUserQuestionEvStates.get(1));
-			}
-		} catch (IllegalArgumentException e) {
-			if (engine.isToDeleteResolvedNode()) {
-				assertNotNull(e);
-			} else {
-				e.printStackTrace();
-				fail(e.getMessage());
+					// from 2013 Jan, resolved questions are properly treated by using NaN in states other than the settled
+					assertEquals(2, scoreUserQuestionEvStates.size());
+					assertEquals(engine.scoreUserEv(userId, null, null), scoreUserQuestionEvStates.get(0), ASSET_ERROR_MARGIN);
+					assertEquals(Float.NaN, scoreUserQuestionEvStates.get(1));
+				}
+			} catch (IllegalArgumentException e) {
+				if (engine.isToDeleteResolvedNode()) {
+					assertNotNull(e);
+				} else {
+					e.printStackTrace();
+					fail(e.getMessage());
+				}
 			}
 		}
 		try {
@@ -8803,20 +9642,22 @@ public class MarkovEngineTest extends TestCase {
 			long questionId = (long)((Math.random() < .5)?0x0E:0x0F);
 			assumedStates = Collections.singletonList(((Math.random()<.5)?0:1));
 			List<Float> scoreUserQuestionEvStates = engine.scoreUserQuestionEvStates(userId, questionId, Collections.singletonList((long)0x0D), assumedStates);
-			if (engine.isToDeleteResolvedNode()) {
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				if (engine.isToDeleteResolvedNode()) {
 //				fail("D should not be present anymore");
-				// from 2013 Jan, resolved questions are properly handled by using NaN when state is other than the settled.
-				if (assumedStates.get(0).intValue() == 0 ) {
-					// assumption is in the settled state, so it's the same of ignoring such assumption
-					List<Float> scoreUserQuestionEvStatesIgnoringAssumptions = engine.scoreUserQuestionEvStates(userId, questionId, null, null);
-					assertEquals(scoreUserQuestionEvStatesIgnoringAssumptions.size(), scoreUserQuestionEvStates.size());
-					for (int i = 0; i < scoreUserQuestionEvStates.size(); i++) {
-						assertEquals(scoreUserQuestionEvStatesIgnoringAssumptions.get(i), scoreUserQuestionEvStates.get(i), ASSET_ERROR_MARGIN);
-					}
-				} else {
-					// the assumption is not in the settled state
-					for (Float score : scoreUserQuestionEvStates) {
-						assertEquals(Float.NaN, score);
+					// from 2013 Jan, resolved questions are properly handled by using NaN when state is other than the settled.
+					if (assumedStates.get(0).intValue() == 0 ) {
+						// assumption is in the settled state, so it's the same of ignoring such assumption
+						List<Float> scoreUserQuestionEvStatesIgnoringAssumptions = engine.scoreUserQuestionEvStates(userId, questionId, null, null);
+						assertEquals(scoreUserQuestionEvStatesIgnoringAssumptions.size(), scoreUserQuestionEvStates.size());
+						for (int i = 0; i < scoreUserQuestionEvStates.size(); i++) {
+							assertEquals(scoreUserQuestionEvStatesIgnoringAssumptions.get(i), scoreUserQuestionEvStates.get(i), ASSET_ERROR_MARGIN);
+						}
+					} else {
+						// the assumption is not in the settled state
+						for (Float score : scoreUserQuestionEvStates) {
+							assertEquals(Float.NaN, score);
+						}
 					}
 				}
 			}
@@ -8852,28 +9693,33 @@ public class MarkovEngineTest extends TestCase {
 			engine.commitNetworkActions(transactionKey);
 			assertNotNull(e);
 		}
-		try {
-			userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
-			transactionKey = engine.startNetworkActions();
-			engine.doBalanceTrade(transactionKey, new Date(), "To fail", userId, (long)0x0D, null, null );
-			fail("D should not be present anymore");
-		} catch (IllegalArgumentException e) {
-			engine.commitNetworkActions(transactionKey);
-			assertNotNull(e);
-		}
-		try {
-			userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
-			transactionKey = engine.startNetworkActions();
-			engine.doBalanceTrade(transactionKey, new Date(), "To fail", userId, (long)((Math.random()<.5)?0x0E:0x0F), Collections.singletonList((long)0x0D), Collections.singletonList(((Math.random()<.5)?0:1)));
-			fail("D should not be present anymore");
-		} catch (IllegalArgumentException e) {
-			engine.commitNetworkActions(transactionKey);
-			assertNotNull(e);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			try {
+				userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+				transactionKey = engine.startNetworkActions();
+				engine.doBalanceTrade(transactionKey, new Date(), "To fail", userId, (long)0x0D, null, null );
+				fail("D should not be present anymore");
+			} catch (IllegalArgumentException e) {
+				engine.commitNetworkActions(transactionKey);
+				assertNotNull(e);
+			}
+			
+			try {
+				userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
+				transactionKey = engine.startNetworkActions();
+				engine.doBalanceTrade(transactionKey, new Date(), "To fail", userId, (long)((Math.random()<.5)?0x0E:0x0F), Collections.singletonList((long)0x0D), Collections.singletonList(((Math.random()<.5)?0:1)));
+				fail("D should not be present anymore");
+			} catch (IllegalArgumentException e) {
+				engine.commitNetworkActions(transactionKey);
+				assertNotNull(e);
+			}
 		}
 		
 		
 		// history and score detail/summary can be accessed normally
-		assertFalse(engine.getQuestionHistory((long) 0x0D, null, null).isEmpty());
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertFalse(engine.getQuestionHistory((long) 0x0D, null, null).isEmpty());
+		}
 		for (QuestionEvent questionEvent : engine.getQuestionHistory(0x0DL, null, null)) {
 			if (!(questionEvent instanceof StructureChangeNetworkAction)
 					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
@@ -9006,11 +9852,17 @@ public class MarkovEngineTest extends TestCase {
 		
 		for (String user : userNameToIDMap.keySet()) {
 			float cash = engine.getCash(userNameToIDMap.get(user), null, null);
-			assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
+			}
 			float score = engine.scoreUserEv(userNameToIDMap.get(user), null, null);
-			assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
+			}
 			assertEquals("user="+user+", cash="+cash+", score="+score,cash, score, ASSET_ERROR_MARGIN);
-			assertTrue(cash > 0 && score > 0);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertTrue(cash > 0 && score > 0);
+			}
 			cashAndScoreMap.put(user, cash);
 		}
 		
@@ -9061,9 +9913,13 @@ public class MarkovEngineTest extends TestCase {
 		
 		for (String user : userNameToIDMap.keySet()) {
 			float cash = engine.getCash(userNameToIDMap.get(user), null, null);
-			assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
+			}
 			float score = engine.scoreUserEv(userNameToIDMap.get(user), null, null);
-			assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
+			}
 			assertEquals("User=" + user, cash, score, ASSET_ERROR_MARGIN);
 			assertEquals("User=" + user, cashAndScoreMap.get(user), cash, ASSET_ERROR_MARGIN);
 			assertEquals("User=" + user, cashAndScoreMap.get(user), score, ASSET_ERROR_MARGIN);
@@ -9115,9 +9971,13 @@ public class MarkovEngineTest extends TestCase {
 		
 		for (String user : userNameToIDMap.keySet()) {
 			float cash = engine.getCash(userNameToIDMap.get(user), null, null);
-			assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
+			}
 			float score = engine.scoreUserEv(userNameToIDMap.get(user), null, null);
-			assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
+			}
 			assertEquals("User=" + user, cash, score, ASSET_ERROR_MARGIN);
 			assertEquals("User=" + user, cashAndScoreMap.get(user), cash, ASSET_ERROR_MARGIN);
 			assertEquals("User=" + user, cashAndScoreMap.get(user), score, ASSET_ERROR_MARGIN);
@@ -9186,10 +10046,16 @@ public class MarkovEngineTest extends TestCase {
 		
 		for (String user : userNameToIDMap.keySet()) {
 			float cash = engine.getCash(userNameToIDMap.get(user), null, null);
-			assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
+			}
 			float score = engine.scoreUserEv(userNameToIDMap.get(user), null, null);
-			assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
-			assertTrue(cash > 0 && score > 0);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
+			}
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertTrue(cash > 0 && score > 0);
+			}
 			assertEquals(cash, score, ASSET_ERROR_MARGIN);
 			cashMap2.put(user, cash);
 			scoreMap2.put(user, score);
@@ -9238,11 +10104,17 @@ public class MarkovEngineTest extends TestCase {
 		
 		for (String user : userNameToIDMap.keySet()) {
 			float cash = engine.getCash(userNameToIDMap.get(user), null, null);
-			assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertFalse("Cash of " + user + " = " + cash,Float.isInfinite(cash) || Float.isNaN(cash));
+			}
 			float score = engine.scoreUserEv(userNameToIDMap.get(user), null, null);
-			assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertFalse("Score of " + user + " = " + score,Float.isInfinite(score) || Float.isNaN(score));
+			}
 			assertEquals("User = " + user, cash, score, ASSET_ERROR_MARGIN);
-			assertTrue("User = " + user, cash > 0 && score > 0);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				assertTrue("User = " + user, cash > 0 && score > 0);
+			}
 			assertFalse("User = " + user, engine.getScoreDetails(userNameToIDMap.get(user), null, null, null).isEmpty());
 			assertNotNull("User = " + user, engine.getScoreSummaryObject(userNameToIDMap.get(user), null, null, null));
 			assertEquals("User = " + user, engine.getScoreSummaryObject(userNameToIDMap.get(user), null, null, null).getCash(), cash);
@@ -9256,18 +10128,22 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		// check new user
-		assertEquals(12050.81f, engine.getCash(Long.MAX_VALUE, null, null), ASSET_ERROR_MARGIN);
-		assertEquals(12050.81f, engine.scoreUserEv(Long.MIN_VALUE, null, null), ASSET_ERROR_MARGIN);
-		assertEquals(12050.81f, engine.getCash(Long.MIN_VALUE, null, null), ASSET_ERROR_MARGIN);
-		assertEquals(12050.81f, engine.scoreUserEv(Long.MAX_VALUE, null, null), ASSET_ERROR_MARGIN);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(12050.81f, engine.getCash(Long.MAX_VALUE, null, null), ASSET_ERROR_MARGIN);
+			assertEquals(12050.81f, engine.scoreUserEv(Long.MIN_VALUE, null, null), ASSET_ERROR_MARGIN);
+			assertEquals(12050.81f, engine.getCash(Long.MIN_VALUE, null, null), ASSET_ERROR_MARGIN);
+			assertEquals(12050.81f, engine.scoreUserEv(Long.MAX_VALUE, null, null), ASSET_ERROR_MARGIN);
+		}
 		assertFalse(engine.getScoreDetails(Long.MAX_VALUE, null, null, null).isEmpty());
 		assertFalse(engine.getScoreDetails(Long.MIN_VALUE, null, null, null).isEmpty());
 		assertNotNull(engine.getScoreSummaryObject(Long.MAX_VALUE, null, null, null));
 		assertNotNull(engine.getScoreSummaryObject(Long.MIN_VALUE, null, null, null));
-		assertEquals(engine.getScoreSummaryObject(Long.MAX_VALUE, null, null, null).getCash(), 12050.81f);
-		assertEquals(engine.getScoreSummaryObject(Long.MAX_VALUE, null, null, null).getScoreEV(), 12050.81f);
-		assertEquals(engine.getScoreSummaryObject(Long.MIN_VALUE, null, null, null).getCash(), 12050.81f);
-		assertEquals(engine.getScoreSummaryObject(Long.MIN_VALUE, null, null, null).getScoreEV(), 12050.81f);
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			assertEquals(engine.getScoreSummaryObject(Long.MAX_VALUE, null, null, null).getCash(), 12050.81f);
+			assertEquals(engine.getScoreSummaryObject(Long.MAX_VALUE, null, null, null).getScoreEV(), 12050.81f);
+			assertEquals(engine.getScoreSummaryObject(Long.MIN_VALUE, null, null, null).getCash(), 12050.81f);
+			assertEquals(engine.getScoreSummaryObject(Long.MIN_VALUE, null, null, null).getScoreEV(), 12050.81f);
+		}
 	}
 
 	/**
@@ -9304,10 +10180,16 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
 			engine.getCash(userNameToIDMap.get("Tom"), null, null);
-			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			}
 		} catch (IllegalStateException e) {
-			// OK. This is the expected
-			assertNotNull(e);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				// OK. This is the expected
+				assertNotNull(e);
+			} else {
+				throw e;
+			}
 		}
 		
 		// add 100 q-values to new users
@@ -9342,10 +10224,16 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
 			engine.getCash(userNameToIDMap.get("Joe"), null, null);
-			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			}
 		} catch (IllegalStateException e) {
-			// OK. This is the expected
-			assertNotNull(e);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				// OK. This is the expected
+				assertNotNull(e);
+			} else {
+				throw e;
+			}
 		}
 		
 		// add 100 q-values to new users
@@ -9374,10 +10262,16 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
 			engine.getCash(userNameToIDMap.get("Amy"), null, null);
-			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			}
 		} catch (IllegalStateException e) {
-			// OK. This is the expected
-			assertNotNull(e);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				// OK. This is the expected
+				assertNotNull(e);
+			} else {
+				throw e;
+			}
 		}
 		
 		// add 100 q-values to new users
@@ -9423,10 +10317,16 @@ public class MarkovEngineTest extends TestCase {
 		try {
 			// Cannot obtain cash from user before network was initialized (Note: we did not commit the transaction yet, so the network is empty now)
 			engine.getCash(userNameToIDMap.get("Eric"), null, null);
-			fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				fail("Engine should not allow us to access any data without initializing Bayesian network properly.");
+			}
 		} catch (IllegalStateException e) {
-			// OK. This is the expected
-			assertNotNull(e);
+			if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+				// OK. This is the expected
+				assertNotNull(e);
+			} else {
+				throw e;
+			}
 		}
 		
 		// add 100 q-values to new users
