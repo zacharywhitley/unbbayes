@@ -10390,6 +10390,14 @@ public class MarkovEngineTest extends TestCase {
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#revertTrade(long, java.util.Date, java.lang.Long, java.lang.Long)}.
 	 */
 	public final void testRevertTrade() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		
 		// nothing to revert yet
 		assertFalse(engine.revertTrade(null, new Date(), new Date(0), null));
@@ -10811,11 +10819,11 @@ public class MarkovEngineTest extends TestCase {
 		Map<Long, Float> expectedScorePerUsers = new HashMap<Long, Float>();
 		for (Long userId : engine.getUserToAssetAwareAlgorithmMap().keySet()) {
 			// store the expected score of the state to be resolved
-			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(0));
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, null, null).get(0));
 		}
 		for (Long userId : engine.getUninitializedUserToAssetMap().keySet()) {
 			// store the expected score of the state to be resolved
-			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0EL, null, null).get(0));
+			expectedScorePerUsers.put(userId, engine.scoreUserQuestionEvStates(userId, 0x0DL, null, null).get(0));
 		}
 
 		// resolve to d1. Resolutions are not reverted (i.e. resolutions are supposedly re-done)
@@ -10964,6 +10972,12 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(userName ,mapOfConditionalAssetsE.get(userName), engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, null, null));
 			assertEquals(userName ,mapOfConditionalAssetsF.get(userName), engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0FL, null, null));
 		}
+		
+
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 
 	
@@ -10976,6 +10990,14 @@ public class MarkovEngineTest extends TestCase {
 	 * is equivalent to {@link MarkovEngineImpl#previewTrade(long, long, List, List, List)}.
 	 */
 	public final void testPreviewTrade() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		
 		// crate transaction for generating the DEF network
 		long transactionKey = engine.startNetworkActions();
@@ -11413,6 +11435,11 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(assetsIfBeforeNegativeTrade, assetsIfStates);
 		assertFalse("Preview = " + preview + ", returned = " + assetsIfStates, assetsIfStates.equals(preview));
 
+
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 
 
@@ -11421,6 +11448,16 @@ public class MarkovEngineTest extends TestCase {
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#scoreUserEV(java.util.List, java.util.List, java.util.List)}.
 	 */
 	public final void testScoreUserEV() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
+		
+		
 		// generate DEF net
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap );
@@ -11789,12 +11826,26 @@ public class MarkovEngineTest extends TestCase {
 		);
 		List<Float> evStates = engine.scoreUserQuestionEvStates(1L, 0x0EL, null, null);
 		assertFalse(evStates.toString(), Math.abs(evStates.get(0)-evStates.get(1))<ASSET_ERROR_MARGIN);
+		
+
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getScoreSummary(long, List, List)}
 	 */
 	public final void testGetScoreSummary() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		engine.setToReturnEVComponentsAsScoreSummary(true);
 		
 		// generate DEF net
@@ -12197,12 +12248,25 @@ public class MarkovEngineTest extends TestCase {
 		
 		
 		// TODO implement more test cases
+
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#getQuestionHistory(java.lang.Long, java.util.List, java.util.List)}.
 	 */
 	public final void testGetQuestionHistory() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		// temporary disable storage of cliques in the history
 		engine.setMaxConditionalProbHistorySize(0);
 		
@@ -13416,6 +13480,10 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals("Obtained size = " + history.size(), 0 , history.size());	// D is not present anymore
 		history = engine.getQuestionHistory(0x0El, Collections.singletonList(0x0DL), Collections.singletonList(1));
 		assertEquals("Obtained size = " + history.size(), 0 , history.size());	// D is not present anymore
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
@@ -13962,6 +14030,14 @@ public class MarkovEngineTest extends TestCase {
 	 * will use transactionKey == null
 	 */
 	public final void testAddTradeNullTransactionKey() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		
 		// create nodes D, E, F
 		engine.addQuestion(null, new Date(), 0x0D, 2, null);	// question D has ID = hexadecimal D. CPD == null -> linear distro
@@ -16195,7 +16271,11 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(engine.getPossibleQuestionAssumptions(0x0A, null).isEmpty());
 		assertNotNull(engine.getScoreDetails(userNameToIDMap.get("Tom"), 0x0AL, null, null));
 		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
+
 		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	
@@ -16203,6 +16283,14 @@ public class MarkovEngineTest extends TestCase {
 	 * Performs {@link #testAddTradeInOneTransaction()}, but with duplicated arcs (i.e. duplicate insertion of arcs)
 	 */
 	public final void testAddTradeInOneTransactionWithDuplicateArcs () {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		
 		// crate transaction
 		long transactionKey = engine.startNetworkActions();
@@ -16703,7 +16791,11 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 		
+
 		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
@@ -16712,6 +16804,14 @@ public class MarkovEngineTest extends TestCase {
 	 * not to copy empty cliques, causing inconsistency between probabilistic network and asset network.
 	 */
 	public final void testConditionalExpectedScoreWithEmptyCliques() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		engine.setDefaultInitialAssetTableValue(100);
 		engine.setToDeleteResolvedNode(true);
 		engine.addQuestion(null, new Date(), 1L, 3, null);
@@ -16763,6 +16863,10 @@ public class MarkovEngineTest extends TestCase {
 			e.printStackTrace();
 			fail(e.getMessage());
 		}
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
@@ -16772,6 +16876,14 @@ public class MarkovEngineTest extends TestCase {
 	 * in the asset table.
 	 */
 	public final void testConditional0OrNegativeAssets() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap );
 		
@@ -16781,7 +16893,11 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add(0x0FL); assumedStates.add(0);
 		assertEquals(0f,engine.getCash(Long.MAX_VALUE, assumptionIds, assumedStates), ASSET_ERROR_MARGIN);
 		assertNotNull(engine.getScoreSummaryObject(Long.MIN_VALUE, null, assumptionIds, assumedStates));
+
 		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
@@ -16798,6 +16914,14 @@ public class MarkovEngineTest extends TestCase {
 	 * This was created because engine was failing to redo trades when resolved questions are present.
 	 */
 	public final void testBalanceResolveRebuild() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		// test with an engine which does not delete resolved nodes
 		engine.setToDeleteResolvedNode(false);
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
@@ -16973,12 +17097,24 @@ public class MarkovEngineTest extends TestCase {
 		
 		// 3 - Perform any action which rebuilds the DEF network (e.g. {@link MarkovEngineImpl#addQuestion(Long, Date, long, int, List)})
 		assertTrue(engine.addQuestion(null, new Date(), Long.MAX_VALUE, 2, null));
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
 	 * Verify what happens when we revert a trade after resolving it
 	 */
 	public final void testResolveAndRevert() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap );
@@ -17044,6 +17180,10 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		assertTrue(engine.revertTrade(null, new Date(), new Date(0), (Math.random()<.5)?null:((Math.random()<.5)?0x0DL:((Math.random()<.5)?0x0EL:0X0F))));
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/** Yet another test case for regression test */
@@ -17138,6 +17278,15 @@ public class MarkovEngineTest extends TestCase {
 	 * and {@link MarkovEngineImpl#importNetwork(File)} 
 	 */
 	public final void testImportExportNetwork()  {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		engine.setToExportOnlyCurrentSharedProbabilisticNet(false);
+		
 		
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap);
@@ -17449,6 +17598,10 @@ public class MarkovEngineTest extends TestCase {
 		
 		// deleted tested file
 		fileToLoad.delete();
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
@@ -20180,6 +20333,14 @@ public class MarkovEngineTest extends TestCase {
 	 * with incomplete set of assumptions
 	 */
 	public final void testBalanceTradeIncompleteAssumptions()  {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		engine.setCurrentCurrencyConstant(100);
 		engine.setCurrentLogBase(2);
 		engine.setDefaultInitialAssetTableValue(1000f);
@@ -20582,7 +20743,11 @@ public class MarkovEngineTest extends TestCase {
 		for (int i = 1; i < cashPerState.size(); i++) {
 			assertEquals("["+i+"]"+cashPerState.toString(), cashPerState.get(i-1), cashPerState.get(i), ASSET_ERROR_MARGIN);
 		}
+
 		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
@@ -20660,6 +20825,14 @@ public class MarkovEngineTest extends TestCase {
 	 * The E<-D->F Bayes net is used
 	 */
 	public final void testBalanceSeparator()  {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		// initialize configuration of this test
 		engine.setDefaultInitialAssetTableValue(1000f);
 		engine.setCurrentCurrencyConstant(100f);
@@ -20945,6 +21118,10 @@ public class MarkovEngineTest extends TestCase {
 				assertEquals(probsBeforeEmptyBalance + " -> " + probsAfterEmptyBalance, before.get(i), after.get(i), PROB_ERROR_MARGIN);
 			}
 		}
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
@@ -20954,6 +21131,14 @@ public class MarkovEngineTest extends TestCase {
 	 * whether both cliques are balanced locally.
 	 */
 	public final void testLocallyAndGloballyBalanceSeparator() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		// make sure new users starts with 100 assets, and b=100 and base of log is 2
 		engine.setDefaultInitialAssetTableValue(1000);
 		engine.setCurrentCurrencyConstant(100);
@@ -21053,6 +21238,9 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(2, assetsIfStates.size());
 		assertEquals(assetsIfStates.get(0), assetsIfStates.get(1), ASSET_ERROR_MARGIN);
 		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 
 	
@@ -21062,6 +21250,14 @@ public class MarkovEngineTest extends TestCase {
 	 * and then attempt to balance the question.
 	 */
 	public final void testResolveWithoutDeletingNodeAndThenBalance()  {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		// set engine not to delete nodes when it resolves questions
 		engine.setToDeleteResolvedNode(false);
 		
@@ -21153,7 +21349,11 @@ public class MarkovEngineTest extends TestCase {
 		List<Float> cashPerStates = engine.getCashPerStates(666L, 0x0DL, null, null);
 		assertEquals(2, cashPerStates.size());
 		assertEquals(cashPerStates.get(0), cashPerStates.get(1), ASSET_ERROR_MARGIN);
+
 		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 
@@ -21161,6 +21361,14 @@ public class MarkovEngineTest extends TestCase {
 	 * This is a test case for {@link AssetAwareInferenceAlgorithm#calculateExpectedLocalAssets(Map)}
 	 */
 	public final void testDEFNetCalculateExpectedLocalAssets() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		// set up to the default values used in daggre market
 		engine.setCurrentCurrencyConstant(100);
 		engine.setCurrentLogBase(2);
@@ -21396,6 +21604,10 @@ public class MarkovEngineTest extends TestCase {
 			assertNotNull(e);
 			// OK
 		}
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 
 	}
 	
@@ -21409,6 +21621,14 @@ public class MarkovEngineTest extends TestCase {
 	 * only on first edit)
 	 */
 	public final void testLazyUserCreation()  {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		// force engine to lazy init users
 		engine.setToLazyInitializeUsers(true);
 		
@@ -22314,12 +22534,24 @@ public class MarkovEngineTest extends TestCase {
 				newValues,  assumptionIds, assumedStates,  false);
 		assertNotNull(engine.getUserToAssetAwareAlgorithmMap().get(1L));
 		assertNotNull(engine.getUserToAssetAwareAlgorithmMap().get(1L));
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
 	 * Check a condition which a trade should not update history
 	 */
 	public final void testHistoryOfCancelledTrades()  {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		
 		engine.setDefaultInitialAssetTableValue(100);
 		engine.setCurrentCurrencyConstant(100);
@@ -22498,7 +22730,11 @@ public class MarkovEngineTest extends TestCase {
 //		assertEquals(2, questionHistory.size());
 		
 		
+
 		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
@@ -22657,6 +22893,14 @@ public class MarkovEngineTest extends TestCase {
 	 * trades that do not consider all combination of parents whenever possible.
 	 */
 	public final void testIntegratedPreviewBalanceTrade()  {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		// set up default configuration
 		engine.setDefaultInitialAssetTableValue(1000);
 		engine.setCurrentCurrencyConstant(200);
@@ -22743,6 +22987,10 @@ public class MarkovEngineTest extends TestCase {
 		for (int i = 0; i < assetsIfStates.size()-1; i++) {
 			assertEquals("Index " + i + " of " + assetsIfStates, assetsIfStates.get(i), assetsIfStates.get(i+1), ASSET_ERROR_MARGIN);
 		}
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
@@ -22752,6 +23000,14 @@ public class MarkovEngineTest extends TestCase {
 	 * Trades will be executed in a single transaction
 	 */
 	public final void testCorrectiveTradeSingleTransaction()  {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		assertTrue(engine.isToUseCorrectiveTrades());
 		
 		engine.setDefaultInitialAssetTableValue(0f);
@@ -23173,7 +23429,11 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.set(2, 1);	// f2
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
+
 		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
@@ -23237,6 +23497,14 @@ public class MarkovEngineTest extends TestCase {
 	 * This method does the same test of {@link #testCliqueStability()}, but for a single transaction
 	 */
 	public final void testCliqueStabilitySingleTransaction() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		// backup old config
 		boolean backup = engine.isToFullyConnectNodesInCliquesOnRebuild();
 		// make sure the feature is on
@@ -23323,6 +23591,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// restore old config
 		engine.setToFullyConnectNodesInCliquesOnRebuild(backup);
+		
+
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
@@ -23824,89 +24098,90 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		// then, test methods which depends on users
-		
-		for (String userName : userNameToIDMap.keySet()) {
-			// {@link MarkovEngineInterface#getAssetsIfStates(long, long, List, List)}
-			// in this case, the node must be in the same clique
-			List<Float> assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
-			assertNotNull(assets);
-			assertEquals(2, assets.size());
-			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
-			assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
-			assertNotNull(assets);
-			assertEquals(2, assets.size());
-			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
-			assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
-			assertNotNull(assets);
-			assertEquals(2, assets.size());
-			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
-			assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
-			assertNotNull(assets);
-			assertEquals(2, assets.size());
-			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
-			
-			// {@link MarkovEngineInterface#scoreUserEv(long, List, List)}
-			float score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(0));
-			assertTrue(score > 0);
-			score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(1));
-			assertTrue(score > 0);
-			
-			// {@link MarkovEngineInterface#scoreUserQuestionEv(long, Long, List, List)}
-			// different cliques
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
-			assertTrue(score > 0);
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
-			assertTrue(score > 0);
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
-			assertTrue(score > 0);
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
-			assertTrue(score > 0);
-			// same clique
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
-			assertTrue(score > 0);
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
-			assertTrue(score > 0);
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
-			assertTrue(score > 0);
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
-			assertTrue(score > 0);
-					
-			// {@link MarkovEngineInterface#scoreUserQuestionEvStates(long, long, List, List)}
-			// different clique
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
-			assertNotNull(assets);
-			assertEquals(2, assets.size());
-			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
-			assertNotNull(assets);
-			assertEquals(2, assets.size());
-			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
-			assertNotNull(assets);
-			assertEquals(2, assets.size());
-			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
-			assertNotNull(assets);
-			assertEquals(2, assets.size());
-			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
-			// same clique
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
-			assertNotNull(assets);
-			assertEquals(2, assets.size());
-			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
-			assertNotNull(assets);
-			assertEquals(2, assets.size());
-			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
-			assertNotNull(assets);
-			assertEquals(2, assets.size());
-			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
-			assertNotNull(assets);
-			assertEquals(2, assets.size());
-			assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
-			
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			for (String userName : userNameToIDMap.keySet()) {
+				// {@link MarkovEngineInterface#getAssetsIfStates(long, long, List, List)}
+				// in this case, the node must be in the same clique
+				List<Float> assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+				assertNotNull(assets);
+				assertEquals(2, assets.size());
+				assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+				assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+				assertNotNull(assets);
+				assertEquals(2, assets.size());
+				assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+				assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+				assertNotNull(assets);
+				assertEquals(2, assets.size());
+				assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+				assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+				assertNotNull(assets);
+				assertEquals(2, assets.size());
+				assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+				
+				// {@link MarkovEngineInterface#scoreUserEv(long, List, List)}
+				float score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(0));
+				assertTrue(score > 0);
+				score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(1));
+				assertTrue(score > 0);
+				
+				// {@link MarkovEngineInterface#scoreUserQuestionEv(long, Long, List, List)}
+				// different cliques
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+				assertTrue(score > 0);
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+				assertTrue(score > 0);
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+				assertTrue(score > 0);
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+				assertTrue(score > 0);
+				// same clique
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+				assertTrue(score > 0);
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+				assertTrue(score > 0);
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+				assertTrue(score > 0);
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+				assertTrue(score > 0);
+				
+				// {@link MarkovEngineInterface#scoreUserQuestionEvStates(long, long, List, List)}
+				// different clique
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+				assertNotNull(assets);
+				assertEquals(2, assets.size());
+				assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+				assertNotNull(assets);
+				assertEquals(2, assets.size());
+				assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+				assertNotNull(assets);
+				assertEquals(2, assets.size());
+				assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+				assertNotNull(assets);
+				assertEquals(2, assets.size());
+				assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+				// same clique
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+				assertNotNull(assets);
+				assertEquals(2, assets.size());
+				assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+				assertNotNull(assets);
+				assertEquals(2, assets.size());
+				assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+				assertNotNull(assets);
+				assertEquals(2, assets.size());
+				assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+				assertNotNull(assets);
+				assertEquals(2, assets.size());
+				assertTrue(assets.get(0) > 0 && assets.get(1) > 0);
+				
+			}
 		}
 		
 		// get the expected score per node to be resolved for each user
@@ -24125,142 +24400,143 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(1 , probList.get(0) + probList.get(1), PROB_ERROR_MARGIN);
 		
 		// then, test methods which depends on users
-		
-		for (String userName : userNameToIDMap.keySet()) {
-			// {@link MarkovEngineInterface#getAssetsIfStates(long, long, List, List)}
-			// in this case, the node must be in the same clique
-			List<Float> assets = null;
-			try {
-				// assets of resolved node is not well defined
-				assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
-				fail();
-			} catch (RuntimeException e) {
-				// OK
+		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
+			for (String userName : userNameToIDMap.keySet()) {
+				// {@link MarkovEngineInterface#getAssetsIfStates(long, long, List, List)}
+				// in this case, the node must be in the same clique
+				List<Float> assets = null;
+				try {
+					// assets of resolved node is not well defined
+					assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+					fail();
+				} catch (RuntimeException e) {
+					// OK
+				}
+				try {
+					// assets of resolved node is not well defined
+					assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+					fail();
+				} catch (RuntimeException e) {
+					// OK
+				}
+				// assets with assumption incompatible with settlement is NaN
+				assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+				assertEquals(2, assets.size());
+				assertEquals(Float.NaN, assets.get(0));
+				assertEquals(Float.NaN, assets.get(1));
+				
+				// if assumption is compatible, then it must be the same as ignoring the resolved assumption
+				assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+				List<Float> assetsIgnoringAssumption = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, null, null);
+				assertEquals(assetsIgnoringAssumption.size(), assets.size());
+				for (int i = 0; i < assets.size(); i++) {
+					assertEquals(assetsIgnoringAssumption.get(i), assets.get(i), ASSET_ERROR_MARGIN);
+				}
+				
+				// {@link MarkovEngineInterface#scoreUserEv(long, List, List)}
+				float score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(0));
+				assertEquals(Float.NaN, score);
+				score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(1));
+				float scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName), null, null);
+				assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+				
+				// {@link MarkovEngineInterface#scoreUserQuestionEv(long, Long, List, List)}
+				// different cliques
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+				assertEquals(Float.NaN, score);
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+				scoreIgnoringIncompatibleState = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, null, null);
+				assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+				
+				// score question EV of resolved question should be equals to the conditional expected assets regardless of settled question
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+				scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0FL), Collections.singletonList(0));
+				assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+				scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0FL), Collections.singletonList(1));
+				assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+				
+				// same clique
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+				assertEquals(Float.NaN, score);
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+				scoreIgnoringIncompatibleState = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, null, null);
+				assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+				
+				// score question EV of resolved question should be equals to the conditional expected assets regardless of settled question
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+				scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName),  Collections.singletonList(0x0DL), Collections.singletonList(0));
+				assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+				score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+				scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0DL), Collections.singletonList(1));
+				assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+				
+				// {@link MarkovEngineInterface#scoreUserQuestionEvStates(long, long, List, List)}
+				
+				// different clique
+				
+				// assets with assumption incompatible with settlement is NaN
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+				assertEquals(2, assets.size());
+				assertEquals(Float.NaN, assets.get(0));
+				assertEquals(Float.NaN, assets.get(1));
+				
+				// if assumption is compatible, then it must be the same as ignoring the resolved assumption
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+				assetsIgnoringAssumption = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, null, null);
+				assertEquals(assetsIgnoringAssumption.size(), assets.size());
+				for (int i = 0; i < assets.size(); i++) {
+					assertEquals(assetsIgnoringAssumption.get(i), assets.get(i), ASSET_ERROR_MARGIN);
+				}
+				
+				// score of resolved question will be NaN for the incompatible state, and the global conditional expected assets for the compatible state
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+				score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0FL), Collections.singletonList(0));
+				assertEquals(2, assets.size());
+				assertEquals(Float.NaN, assets.get(0));
+				assertEquals(score, assets.get(1));
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
+				score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0FL), Collections.singletonList(1));
+				assertEquals(2, assets.size());
+				assertEquals(Float.NaN, assets.get(0));
+				assertEquals(score, assets.get(1));
+				
+				// same clique
+				
+				// assets with assumption incompatible with settlement is NaN
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
+				assertEquals(2, assets.size());
+				assertEquals(Float.NaN, assets.get(0));
+				assertEquals(Float.NaN, assets.get(1));
+				
+				// if assumption is compatible, then it must be the same as ignoring the resolved assumption
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
+				assetsIgnoringAssumption = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, null, null);
+				assertEquals(assetsIgnoringAssumption.size(), assets.size());
+				for (int i = 0; i < assets.size(); i++) {
+					assertEquals(assetsIgnoringAssumption.get(i), assets.get(i), ASSET_ERROR_MARGIN);
+				}
+				
+				// score of resolved question will be NaN for the incompatible state, and the global conditional expected assets for the compatible state
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+				score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0DL), Collections.singletonList(0));
+				assertEquals(2, assets.size());
+				assertEquals(Float.NaN, assets.get(0));
+				assertEquals(score, assets.get(1));
+				assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
+				score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0DL), Collections.singletonList(1));
+				assertEquals(2, assets.size());
+				assertEquals(Float.NaN, assets.get(0));
+				assertEquals(score, assets.get(1));
+				
+				// {@link MarkovEngineInterface#getCash(long, List, List)}
+				score = engine.getCash(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(0));
+				assertEquals(Float.NaN, score);
+				score = engine.getCash(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(1));
+				scoreIgnoringIncompatibleState = engine.getCash(userNameToIDMap.get(userName), null, null);
+				assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
+				
 			}
-			try {
-				// assets of resolved node is not well defined
-				assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
-				fail();
-			} catch (RuntimeException e) {
-				// OK
-			}
-			// assets with assumption incompatible with settlement is NaN
-			assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
-			assertEquals(2, assets.size());
-			assertEquals(Float.NaN, assets.get(0));
-			assertEquals(Float.NaN, assets.get(1));
-			
-			// if assumption is compatible, then it must be the same as ignoring the resolved assumption
-			assets = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
-			List<Float> assetsIgnoringAssumption = engine.getAssetsIfStates(userNameToIDMap.get(userName), 0x0DL, null, null);
-			assertEquals(assetsIgnoringAssumption.size(), assets.size());
-			for (int i = 0; i < assets.size(); i++) {
-				assertEquals(assetsIgnoringAssumption.get(i), assets.get(i), ASSET_ERROR_MARGIN);
-			}
-			
-			// {@link MarkovEngineInterface#scoreUserEv(long, List, List)}
-			float score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(0));
-			assertEquals(Float.NaN, score);
-			score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(1));
-			float scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName), null, null);
-			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
-			
-			// {@link MarkovEngineInterface#scoreUserQuestionEv(long, Long, List, List)}
-			// different cliques
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
-			assertEquals(Float.NaN, score);
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
-			scoreIgnoringIncompatibleState = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0FL, null, null);
-			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
-			
-			// score question EV of resolved question should be equals to the conditional expected assets regardless of settled question
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
-			scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0FL), Collections.singletonList(0));
-			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
-			scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0FL), Collections.singletonList(1));
-			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
-			
-			// same clique
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
-			assertEquals(Float.NaN, score);
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
-			scoreIgnoringIncompatibleState = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0DL, null, null);
-			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
-			
-			// score question EV of resolved question should be equals to the conditional expected assets regardless of settled question
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
-			scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName),  Collections.singletonList(0x0DL), Collections.singletonList(0));
-			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
-			score = engine.scoreUserQuestionEv(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
-			scoreIgnoringIncompatibleState = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0DL), Collections.singletonList(1));
-			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
-			
-			// {@link MarkovEngineInterface#scoreUserQuestionEvStates(long, long, List, List)}
-			
-			// different clique
-			
-			// assets with assumption incompatible with settlement is NaN
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(0));
-			assertEquals(2, assets.size());
-			assertEquals(Float.NaN, assets.get(0));
-			assertEquals(Float.NaN, assets.get(1));
-			
-			// if assumption is compatible, then it must be the same as ignoring the resolved assumption
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, Collections.singletonList(0x0EL), Collections.singletonList(1));
-			assetsIgnoringAssumption = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0FL, null, null);
-			assertEquals(assetsIgnoringAssumption.size(), assets.size());
-			for (int i = 0; i < assets.size(); i++) {
-				assertEquals(assetsIgnoringAssumption.get(i), assets.get(i), ASSET_ERROR_MARGIN);
-			}
-			
-			// score of resolved question will be NaN for the incompatible state, and the global conditional expected assets for the compatible state
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(0));
-			score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0FL), Collections.singletonList(0));
-			assertEquals(2, assets.size());
-			assertEquals(Float.NaN, assets.get(0));
-			assertEquals(score, assets.get(1));
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0FL), Collections.singletonList(1));
-			score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0FL), Collections.singletonList(1));
-			assertEquals(2, assets.size());
-			assertEquals(Float.NaN, assets.get(0));
-			assertEquals(score, assets.get(1));
-			
-			// same clique
-			
-			// assets with assumption incompatible with settlement is NaN
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(0));
-			assertEquals(2, assets.size());
-			assertEquals(Float.NaN, assets.get(0));
-			assertEquals(Float.NaN, assets.get(1));
-			
-			// if assumption is compatible, then it must be the same as ignoring the resolved assumption
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, Collections.singletonList(0x0EL), Collections.singletonList(1));
-			assetsIgnoringAssumption = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0DL, null, null);
-			assertEquals(assetsIgnoringAssumption.size(), assets.size());
-			for (int i = 0; i < assets.size(); i++) {
-				assertEquals(assetsIgnoringAssumption.get(i), assets.get(i), ASSET_ERROR_MARGIN);
-			}
-			
-			// score of resolved question will be NaN for the incompatible state, and the global conditional expected assets for the compatible state
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(0));
-			score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0DL), Collections.singletonList(0));
-			assertEquals(2, assets.size());
-			assertEquals(Float.NaN, assets.get(0));
-			assertEquals(score, assets.get(1));
-			assets = engine.scoreUserQuestionEvStates(userNameToIDMap.get(userName), 0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(1));
-			score = engine.scoreUserEv(userNameToIDMap.get(userName), Collections.singletonList(0x0DL), Collections.singletonList(1));
-			assertEquals(2, assets.size());
-			assertEquals(Float.NaN, assets.get(0));
-			assertEquals(score, assets.get(1));
-			
-			// {@link MarkovEngineInterface#getCash(long, List, List)}
-			score = engine.getCash(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(0));
-			assertEquals(Float.NaN, score);
-			score = engine.getCash(userNameToIDMap.get(userName), Collections.singletonList(0x0EL), Collections.singletonList(1));
-			scoreIgnoringIncompatibleState = engine.getCash(userNameToIDMap.get(userName), null, null);
-			assertEquals(scoreIgnoringIncompatibleState, score, ASSET_ERROR_MARGIN);
-			
 		}
 	}
 	
@@ -24276,15 +24552,17 @@ public class MarkovEngineTest extends TestCase {
 				assertNotNull(qe.getUserId());
 			}
 		}
-		assertTrue(questionHistory.size() > 1);
-		questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
-		for (QuestionEvent qe : questionHistory) {
-			if (!(qe instanceof StructureChangeNetworkAction)
-					&& !(qe.getQuestionId() != 0x0DL)) {
-				assertNotNull(qe.getUserId());
+		if (engine.isToTraceHistory()) {
+			assertTrue(questionHistory.size() > 1);
+			questionHistory = engine.getQuestionHistory(0x0DL, Collections.singletonList(0x0FL), Collections.singletonList(0));
+			for (QuestionEvent qe : questionHistory) {
+				if (!(qe instanceof StructureChangeNetworkAction)
+						&& !(qe.getQuestionId() != 0x0DL)) {
+					assertNotNull(qe.getUserId());
+				}
 			}
+			assertTrue(questionHistory.size() > 1);
 		}
-		assertTrue(questionHistory.size() > 1);
 	}
 	
 	/**
@@ -24293,6 +24571,14 @@ public class MarkovEngineTest extends TestCase {
 	 * and respective entry in {@link MarkovEngineImpl#getScoreSummary(long, Long, List, List)}
 	 */
 	public final void testScoreSummayGetCashContributionPerResolvedQuestion() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		engine.setToStoreCashBeforeResolveQuestion(true);
 		
 		// create DEF net and do some trades
@@ -24886,7 +25172,11 @@ public class MarkovEngineTest extends TestCase {
 		scoreSummaryObject = engine.getScoreSummaryObject(user, resolvedQuestionID3, null, null);
 		assertEquals(0, scoreSummaryObject.getCashBeforeResolvedQuestion().size());
 		assertEquals(0, scoreSummaryObject.getCashContributionPerResolvedQuestion().size());
+
 		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);	
 	}
 	
 	
@@ -24896,6 +25186,14 @@ public class MarkovEngineTest extends TestCase {
 	 * 3 Disconnected cliques with 10 variables).
 	 */
 	public final void testBalanceTrade10Vars() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
 		// set up engine
 		engine.setDefaultInitialAssetTableValue(1000f);
 		engine.initialize();
@@ -24997,7 +25295,11 @@ public class MarkovEngineTest extends TestCase {
 				assertEquals(assetsIfStates.get(0), asset, 1);
 			}
 		}
+
 		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
 	}
 	
 	/**
@@ -25165,7 +25467,7 @@ public class MarkovEngineTest extends TestCase {
 		// settle some question which has 2 or more parents
 		for (int i = 0; i < engine.getProbabilisticNetwork().getNodes().size();i++) {
 			Node node = engine.getProbabilisticNetwork().getNodes().get(i);
-			if (node.getParentNodes() != null && node.getParentNodes().size() >= 2) {
+			if (node.getParentNodes() != null && node.getParentNodes().size() >= 2 && !engine.getResolvedQuestions().containsKey(Long.parseLong(node.getName()))) {
 				engine.resolveQuestion(null, new Date(), Long.parseLong(node.getName()), 0);
 				i--;
 			}

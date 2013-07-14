@@ -409,10 +409,13 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 	
 	public class BruteForceResolveQuestionNetworkAction extends ResolveQuestionNetworkAction {
 		private ArrayList<Float> marginalWhenResolved;
+		private final int settledState;
 		/** Default constructor initializing fields */
 		public BruteForceResolveQuestionNetworkAction (Long transactionKey, Date occurredWhen, long questionId, int settledState) {
-			super(transactionKey, occurredWhen, questionId, settledState);
+			super(transactionKey, occurredWhen, questionId, null);
+			this.settledState = settledState;
 		}
+		
 		public void execute() {
 			synchronized (getProbabilisticNetwork()) {
 				TreeVariable probNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(getQuestionId()));
@@ -502,6 +505,7 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 			}
 		}
 		public List<Float> getPercent() { return marginalWhenResolved; }
+		public Integer getSettledState() { return settledState; }
 	}
 	
 	/*
@@ -773,14 +777,15 @@ public class BruteForceMarkovEngine extends MarkovEngineImpl {
 			this.addNetworkAction(transactionKey, new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs, false));
 			this.commitNetworkActions(transactionKey);
 		} else {
-			this.addNetworkAction(transactionKey, new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs, false));
+			AddQuestionNetworkAction questionAction = new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs, false);
+			this.addNetworkAction(transactionKey, questionAction);
 			// also add into index of questions being created in transaction
 			synchronized (getQuestionsToBeCreatedInTransaction()) {
-				Set<Long> set = getQuestionsToBeCreatedInTransaction().get(transactionKey);
+				Set<AddQuestionNetworkAction> set = getQuestionsToBeCreatedInTransaction().get(transactionKey);
 				if (set == null) {
-					set = new HashSet<Long>();
+					set = new HashSet<AddQuestionNetworkAction>();
 				}
-				set.add(questionId);
+				set.add(questionAction);
 				getQuestionsToBeCreatedInTransaction().put(transactionKey, set);
 			}
 		}

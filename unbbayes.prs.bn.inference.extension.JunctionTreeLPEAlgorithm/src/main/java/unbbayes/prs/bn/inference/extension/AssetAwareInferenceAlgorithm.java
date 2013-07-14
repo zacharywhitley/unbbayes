@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.swing.JComponent;
@@ -1687,52 +1688,177 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	 * This is equivalent to {@link #setAsPermanentEvidence(Map, boolean)}
 	 * with the map being {@link Collections#singletonMap(Object, Object)}
 	 * @param node : node to add hard evidence
-	 * @param state : state of hard evidence
+	 * @param settledState : state to be settled. If negative, then
+	 * a negative evidence to state -settledState-1 will be included.
 	 * @param isToDeleteNode : if true, the node will be deleted from the network.
+	 * @see #setAsPermanentEvidence(INode, List, boolean)
+	 * @deprecated use {@link #setAsPermanentEvidence(Map, boolean)} 
+	 * or {@link #setAsPermanentEvidence(INode, List, boolean)} instead.
 	 */
-	public void setAsPermanentEvidence(INode node, Integer state, boolean isToDeleteNode){
-		this.setAsPermanentEvidence(Collections.singletonMap(node, state), isToDeleteNode);
+	public void setAsPermanentEvidence(INode node, int settledState, boolean isToDeleteNode){
+		// check if this is a negative finding
+		boolean isNegativeEvidence = settledState < 0;
+		if (isNegativeEvidence) {
+			// make settledState to point to the state to be set to 0%
+			settledState = -settledState-1;
+		}
+		// prepare the list to be passed to setAsPermanentEvidence
+		List<Float> probs = new ArrayList<Float>(node.getStatesSize());
+		int statesSize = node.getStatesSize();
+		for (int i = 0; i < statesSize; i++) {
+			// if negative evidence, then set settledState to 0% and others to 100%. If not, then set settledState to 100% and others to 0%
+			probs.add((i==settledState)?(isNegativeEvidence?0f:1f):(isNegativeEvidence?1f:0f));
+		}
+		this.setAsPermanentEvidence(node, probs, isToDeleteNode);
 	}
 	
 	/**
-	 * This method will add evidences to nodes, propagate evidence in the probabilistic network, and
-	 * then delegate to {@link #getAssetPropagationDelegator()}
+	 * This is equivalent to {@link #setAsPermanentEvidence(Map, boolean)}
+	 * with the map being {@link Collections#singletonMap(Object, Object)}
+	 * @param node : node to add hard evidence
+	 * @param probs : probability distribution of the evidence.
+	 * See {@link #setAsPermanentEvidence(Map, boolean)} for actual behavior.
+	 * If invalid values (e.g. values smaller than 0, greater than 1, null, NaN, or infinite) is present,
+	 * then they will be considered as unspecified, but all other specified values must be either 1 or 0
+	 * if unspecified values are present. For example, by providing [0,null,null], a "negative" evidence
+	 * setting the 1st state to 0% will be included. Providing [1,null,null] is equivalent to [1,0,0].
+	 * @param isToDeleteNode : if true, the node will be deleted from the network.
 	 */
-	public void setAsPermanentEvidence(Map<INode, Integer> evidences, boolean isToDeleteNode){
+	public void setAsPermanentEvidence(INode node,  List<Float> probs, boolean isToDeleteNode){
+		this.setAsPermanentEvidence(Collections.singletonMap(node, probs), isToDeleteNode);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setAsPermanentEvidence(java.util.Map, boolean)
+	 */
+	public void setAsPermanentEvidence(Map<INode, List<Float>> evidences, boolean isToDeleteNode){
 		// initial assertion
 		if (evidences == null || evidences.isEmpty()) {
 			return;
 		}
 		
 		// fill the findings
-		for (INode node : evidences.keySet()) {
+		Map<INode, List<Float>> hardEvidenceEntry = new HashMap<INode, List<Float>>();	// will store elements in evidences which were hard evidences
+		Map<INode, List<Float>> entriesToBeDeleted = new HashMap<INode, List<Float>>();	// will store elements in evidences which were not negative hard evidences (because negative evidences will set states to 0%, and shall not be delete node from net)
+		for (Entry<INode, List<Float>> entry : evidences.entrySet()) {
+			INode node = entry.getKey();
 			ProbabilisticNode probNode = (ProbabilisticNode) getRelatedProbabilisticNetwork().getNode(node.getName());
 			// ignore nodes which we did not find
 			if (probNode == null) {
 				throw new IllegalArgumentException("Probabilistic node " + node + " was not found in probabilistic network.");
 			} 
 			// extract state of evidence
-			Integer state = evidences.get(node);
-			if (state == null) {
+			List<Float> prob = evidences.get(node);
+			if (prob == null) {
 				Debug.println(getClass(), "Evidence of node " + node + " was null");
 				// ignore this value
 				continue;
 			}
-			// set and propagate evidence in the probabilistic network
-			if (state < 0) {
-				// set finding as negative (i.e. finding setting a state to 0%)
-				probNode.addFinding(Math.abs(state+1), true);
-			} else {
-				probNode.addFinding(state);
+			//			// check if this contains unspecified values
+//			boolean hasUnspecifiedValues = false;	// becomes true if null, NaN, <0, >1, or infinite is found, and false if 
+//			for (Float value : prob) {
+//				if ( isUnspecifiedProb(value) ) {
+//					// invalid values are considered as "unspecified", and immediately implies that this is hard evidence
+//					hasUnspecifiedValues = true;
+//					break;
+//				}
+//			}
+//			// check if this is a specification of a hard evidence or not. By default, unspecified values are for hard evidences.
+//			boolean isHardEvidence = hasUnspecifiedValues;
+//			if (!hasUnspecifiedValues) {
+//				// this can still be hard evidence, if it contains only 0 and 1
+//				isHardEvidence = true;
+//				for (Float value : prob) {
+//					if (value > ERROR_MARGIN && value < 1-ERROR_MARGIN) {
+//						// this is between 0 and 1 (not inclusive) even when considered error margin, so this must be soft evidence
+//						isHardEvidence = false;
+//						break;
+//					}
+//				}
+//			}
+			// special treatment depending on type of evidence
+			boolean isNegativeHardEvidence = true;	// this will become false if getEvidenceType(prob) == HARD_EVIDENCE
+			// check if this is a soft evidence or hard evidence	
+			Integer resolvedState = getResolvedState(prob);
+			if (resolvedState == null) {
+				// soft evidence
+				// this method does not support "permanent" soft evidence. Must use trades instead.
+				if (isToUpdateAssets()) {
+					throw new UnsupportedOperationException("Resolving a question to a value other than 1 or 0 is not supported when assets are enabled. " +
+							"Please let a house account to make a trade instead.");
+				}
+				// check if it is normalized
+				float sum = 0f;
+				float[] likelihood = new float[prob.size()];	// also, use same loop to convert to an array of float instead of Float
+				for (int i = 0; i < prob.size(); i++) {
+					Float value = prob.get(i);
+					if (isUnspecifiedProb(value)) {
+						// unspecified values in soft evidence shall be considered as 0%
+						value = 0f;
+					}
+					sum += value;
+					likelihood[i] = value;	// use same loop to fill array of float instead of using list of Float
+				}
+				// check if it was normalized
+				if (Math.abs(sum - 1f) > ERROR_MARGIN) {
+					throw new IllegalArgumentException("Soft evidence of question " + node + " doesn't look normalized, because its sum was " + sum);
+				}
+				
+				// at this point, it is normalized.
+				
+				// TODO we may need to propagate before adding soft evidence, because soft evidence is sensitive to current state of network.
+				
+				probNode.addLikeliHood(likelihood);
+				
+				// soft evidences are to be deleted, so put in the mapping
+				entriesToBeDeleted.put(entry.getKey(), entry.getValue());
+			} else { 
+				// hard evidence (negative or positive)
+				if (resolvedState >= 0) {
+					// positive (i.e. "normal") hard evidence
+					isNegativeHardEvidence = false;
+					// also mark this entry as positive (actually, non-negative) hard evidence.
+					entriesToBeDeleted.put(entry.getKey(), entry.getValue());	// normal hard evidences will be deleted from net
+				} else {
+					isNegativeHardEvidence = true;
+					resolvedState = -resolvedState - 1;
+				}
+				
+				// the following code is common to both types of evidence, because they have similar treatment, differing only by isNegativeHardEvidence
+				
+				// modify unspecified values to 0 or 1 depending on whether caller was specifying negative hard evidences 
+				// (by indicating which states are 0%) or normal hard evidences (by indicating which states are 100%)
+				for (int i = 0; i < prob.size(); i++) {
+					if (isUnspecifiedProb(prob.get(i))) {
+						// change unspecified values to 1 if there were zeros, and 0 if there were no zeros.
+						prob.set(i, isNegativeHardEvidence?1f:0f);
+					}
+				}
+				
+				// by turning the flag of findings on and providing the desired marginal, we can add any type of hard evidence 
+				// (either those which sets specified state to 1 or those which sets specified states to 0)
+				probNode.addFinding(resolvedState,isNegativeHardEvidence);	// just to set the flag indicating presence of a finding
+				// set up the marginal which will set a specified state to 1 or some specified states to 0
+				float[] newMarginalToSet = new float[prob.size()];
+				for (int i = 0; i < prob.size(); i++) {
+					newMarginalToSet[i] = prob.get(i);
+				}
+				probNode.setMarginalProbabilities(newMarginalToSet);
+				
+				// mark this entry as a hard evidence
+				hardEvidenceEntry.put(entry.getKey(), entry.getValue());
 			}
+			
 		}
 		
-		// propagate only the probabilities
+		// propagate only the probabilities of hard evidences
 		getProbabilityPropagationDelegator().propagate();
+		
 		
 		// delete resolved nodes
 		if (isToDeleteNode) {
-			for (INode node : evidences.keySet()) {
+			for (INode node : entriesToBeDeleted.keySet()) {	// only delete nodes which are not negative hard evidence
 				// connect the parents, because they shall be conditionally dependent even after resolution
 				if (isToConnectParentsWhenAbsorbingNode()) {
 					// iterate over all pairs of parent nodes
@@ -1786,7 +1912,12 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 			}
 		}
 		if (isToUpdateAssets()) {
-			this.getAssetPropagationDelegator().setAsPermanentEvidence(evidences, isToDeleteNode);
+			// only consider hard evidences, because resolving to soft evidences are not supported for assets
+			if (hardEvidenceEntry.size() != evidences.size()) {
+				throw new UnsupportedOperationException("Resolving to a state other than 0 and 1 is not allowed when assets are managed by the Markov Engine." +
+						" Please, use house account to add trades instead.");
+			}
+			this.getAssetPropagationDelegator().setAsPermanentEvidence(hardEvidenceEntry, isToDeleteNode);
 		}
 		if (!isToDeleteNode) {
 			// copy all clique/separator potentials
@@ -1815,6 +1946,8 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 //		}
 //		return null;
 //	}
+
+	
 
 	/**
 	 * Only delegates to {@link #getAssetPropagationDelegator()}

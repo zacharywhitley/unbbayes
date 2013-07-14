@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 
 import unbbayes.prs.INode;
@@ -743,7 +744,11 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 		return true;
 	}
 	
-	public void setAsPermanentEvidence(Map<INode, Integer> evidences, boolean isToDeleteNode) {
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm#setAsPermanentEvidence(java.util.Map, boolean)
+	 */
+	public void setAsPermanentEvidence(Map<INode, List<Float>> evidences, boolean isToDeleteNode) {
 		super.setAsPermanentEvidence(evidences, isToDeleteNode);
 		this.updateJointProbability(false);
 		// copy joint probability
@@ -754,7 +759,15 @@ public class BruteForceAssetAwareInferenceAlgorithm extends
 				return o1.getName().compareTo(o2.getName());
 			}
 		});
-		conditions.putAll(evidences);
+		for (Entry<INode, List<Float>> entry : evidences.entrySet()) {
+			// extract index of hard evidence from list of probabilities (with potentially missing values too)
+			Integer index = getResolvedState(entry.getValue());
+			// check if it was hard evidence
+			if (index == null || index < 0) {
+				throw new IllegalArgumentException("Evidence of brute force algorithm is only allowed to be hard evidence, but found " + entry.getValue() + " for node " + entry.getKey());
+			}
+			conditions.put(entry.getKey(), index );
+		}
 		this.runMinPropagation(conditions);// this is equivalent to set finding node=state 
 		// copy joint assets
 		this.getJointQTable().copyData();

@@ -290,7 +290,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * users which has no position even after other (non-executed) actions the same transaction */
 	private boolean isToAddUninitializedUserInBalanceTradeOfHugeTransaction = true;
 
-	private Map<Long, Set<Long>> questionsToBeCreatedInTransaction = new HashMap<Long, Set<Long>>();
+	private Map<Long, Set<AddQuestionNetworkAction>> questionsToBeCreatedInTransaction = new HashMap<Long, Set<AddQuestionNetworkAction>>();
 
 	/** If true, probabilities will be printed after execution of actions */
 	private boolean isToPrintProbs = false;
@@ -447,10 +447,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// prepare map storing network actions
 		setNetworkActionsMap(new ConcurrentHashMap<Long, List<NetworkAction>>());	// concurrent hash map is known to be thread safe yet fast.
-		if (isToAddArcsOnlyToProbabilisticNetwork()) {
-			setNetworkActionsIndexedByQuestions(null);	// do not trace actions
-		} else {
-			setNetworkActionsIndexedByQuestions(new HashMap<Long, List<NetworkAction>>());	// HashMap allows null key.
+		
+		// reset map of history indexed by question
+		if (getNetworkActionsIndexedByQuestions() != null) {
+			getNetworkActionsIndexedByQuestions().clear();
 		}
 		
 		setExecutedActions(new ArrayList<NetworkAction>());	// initialize list of network actions ordered by the moment of execution
@@ -1374,15 +1374,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.addNetworkAction(transactionKey, new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs));
 			this.commitNetworkActions(transactionKey);
 		} else {
-			this.addNetworkAction(transactionKey, new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs));
+			AddQuestionNetworkAction questionAction = new AddQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs);
+			this.addNetworkAction(transactionKey, questionAction);
 			
 			// also add into index of questions being created in transaction
 			synchronized (getQuestionsToBeCreatedInTransaction()) {
-				Set<Long> set = getQuestionsToBeCreatedInTransaction().get(transactionKey);
+				Set<AddQuestionNetworkAction> set = getQuestionsToBeCreatedInTransaction().get(transactionKey);
 				if (set == null) {
-					set = new HashSet<Long>();
+					set = new HashSet<AddQuestionNetworkAction>();
 				}
-				set.add(questionId);
+				set.add(questionAction);
 				getQuestionsToBeCreatedInTransaction().put(transactionKey, set);
 			}
 		}
@@ -2982,7 +2983,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //					}
 //				}
 //			}
-			Map<Long, Set<Long>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
+			Map<Long, Set<AddQuestionNetworkAction>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
 			
 			
 			if (mapTransactionQuestions == null || transactionKey == null) {
@@ -2992,13 +2993,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 			// use the mapping in order to check whether the parent will be created in the same transaction
 			synchronized (mapTransactionQuestions) {
-				Set<Long> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
+				Set<AddQuestionNetworkAction> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
 				if (questionsInSameTransaction == null) {
 					throw e;
 				}
 				// search for the assumption ID in questionsToBeCreatedInTransaction
-				for (Long idInMapping : questionsInSameTransaction) {
-					if (idInMapping.equals(e.getQuestionId())) {
+				for (AddQuestionNetworkAction questionActInMapping : questionsInSameTransaction) {
+					if (questionActInMapping.getQuestionId().equals(e.getQuestionId())) {
 						isNodeToBeCreatedWithinTransaction = true;
 						break;
 					}
@@ -3083,15 +3084,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		private final long transactionKey;
 		private final long occurredWhen;
 		private final long questionId;
-		private final int settledState;
+		private final List<Float> settlement;
 		private List<Float> marginalWhenResolved;
 		private long whenExecutedFirst = -1;
 		/** Default constructor initializing fields */
-		public ResolveQuestionNetworkAction (long transactionKey, Date occurredWhen, long questionId, int settledState) {
+		public ResolveQuestionNetworkAction (long transactionKey, Date occurredWhen, long questionId, List<Float> settlement) {
 			this.transactionKey = transactionKey;
 			this.occurredWhen = (occurredWhen == null)?-1:occurredWhen.getTime();
 			this.questionId = questionId;
-			this.settledState = settledState;
+			this.settlement = settlement;
 			
 		}
 		public void execute() {
@@ -3101,17 +3102,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				probNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(questionId));
 				if (probNode != null) {	
 					// if probNode.hasEvidence(), then it was resolved already
-					if (probNode.hasEvidence() && probNode.getEvidence() != settledState) {
-						throw new RuntimeException("Attempted to resolve question " + questionId + " to state " + settledState + ", but it was already resolved to " + probNode.getEvidence());
+					if (probNode.hasEvidence() 
+//							&& probNode.getEvidence() != settledState
+							) {
+						throw new RuntimeException("Attempted to resolve question " + questionId + " to " + getSettlement() + ", but it was already resolved to " + probNode.getEvidence());
 					}
-					// do nothing if node is already settled at settledState
-					if (probNode.getEvidence() != settledState) {
-						
-						// extract marginal 
-						marginalWhenResolved = new ArrayList<Float>(probNode.getStatesSize());
-						for (int i = 0; i < probNode.getStatesSize(); i++) {
-							marginalWhenResolved.add(probNode.getMarginalAt(i));
-						}
+					// extract marginal 
+					marginalWhenResolved = new ArrayList<Float>(probNode.getStatesSize());
+					for (int i = 0; i < probNode.getStatesSize(); i++) {
+						marginalWhenResolved.add(probNode.getMarginalAt(i));
 					}
 				} else {
 					try {
@@ -3128,18 +3127,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					synchronized (getDefaultInferenceAlgorithm()) {
 						Node node = getProbabilisticNetwork().getNode(Long.toString(questionId));
 						if (node != null) {
-							// backup marginals, so that we can make comparison and add history of indirect changes in marginals
-							Map<Long, List<Float>> marginalsBeforeResolution = getProbLists(null, null, null);
-							// backup clique potentials
-							Map<Clique, PotentialTable> previousCliquePotentials = getCurrentCliquePotentials();
+							Map<Long, List<Float>> marginalsBeforeResolution = null;
+							Map<Clique, PotentialTable> previousCliquePotentials = null;
+							if (isToTraceHistory()) {
+								// backup marginals, so that we can make comparison and add history of indirect changes in marginals
+								marginalsBeforeResolution = getProbLists(null, null, null);
+								// backup clique potentials
+								previousCliquePotentials = getCurrentCliquePotentials();
+							}
 							
 							// actually add hard evidences and propagate (only on BN, because getDefaultInferenceAlgorithm().isToUpdateAssets() == false)
-							getDefaultInferenceAlgorithm().setAsPermanentEvidence(node, settledState, isToDeleteResolvedNode());
+							getDefaultInferenceAlgorithm().setAsPermanentEvidence(node, getSettlement(), isToDeleteResolvedNode());
 							
-							// store marginals in history
-							addVirtualTradeIntoMarginalHistory(this, marginalsBeforeResolution);	
-							// store cliques in history of conditional probability (w/ limited size)
-							addToLastNCliquePotentialMap(this, previousCliquePotentials);	
+							if (isToTraceHistory()) {
+								// store marginals in history
+								addVirtualTradeIntoMarginalHistory(this, marginalsBeforeResolution);	
+								// store cliques in history of conditional probability (w/ limited size)
+								addToLastNCliquePotentialMap(this, previousCliquePotentials);	
+							}
 						} else {
 							throw new InexistingQuestionException("Node " + questionId + " is not present in network.", questionId);
 						}
@@ -3173,7 +3178,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 											questionToCashBefore.put(questionId, cashBefore);
 											getUserIdToResolvedQuestionCashBeforeMap().put(userIdAndAlgorithm.getKey(), questionToCashBefore);
 											// resolve the question in the asset structure of this user
-											assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap(assetNode, settledState),isToDeleteResolvedNode());
+											assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap(assetNode, getSettlement()),isToDeleteResolvedNode());
 											// obtain the difference between cash before and after.
 											float gain = getCash(userIdAndAlgorithm.getKey(), null, null) - cashBefore;
 											// update the mapping if the difference was "large" enough
@@ -3186,7 +3191,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 									}
 								} else {
 									// just update assets in this case
-									assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap(assetNode, settledState),isToDeleteResolvedNode());
+									assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap(assetNode, getSettlement()),isToDeleteResolvedNode());
 								}
 							} else {
 								try {
@@ -3200,7 +3205,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 			}
 			synchronized (getResolvedQuestions()) {
-				getResolvedQuestions().put(getQuestionId(), new StatePair(probNode.getStatesSize(), settledState));
+				getResolvedQuestions().put(getQuestionId(), new StatePair(getSettlement()));
 			}
 			try {
 				Debug.println(getClass(), "Executed resolve, " + ((System.currentTimeMillis()-currentTimeMillis)));
@@ -3223,7 +3228,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		/** this is not an operation performed by a particular user */ 
 		public Long getUserId() { return null;}
 		public Long getQuestionId() { return questionId; }
-		public Integer getSettledState() { return settledState; }
 		public List<Float> getOldValues() { return marginalWhenResolved; }
 		public void setOldValues(List<Float> oldValues) { marginalWhenResolved = oldValues;}
 		/** Builds the list of new values (1 for the resolved state and 0 otherwise) under request */
@@ -3274,6 +3278,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void setWhenExecutedFirstTimeMillis(long whenExecutedFirst) {
 			this.whenExecutedFirst = whenExecutedFirst;
 		}
+
+		public Integer getSettledState() {
+			synchronized (getDefaultInferenceAlgorithm()) {
+				return getDefaultInferenceAlgorithm().getResolvedState(getSettlement());
+			}
+		}
+		public List<Float> getSettlement() { return settlement; }
 	}
 	
 	/**
@@ -3309,7 +3320,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		/** Default constructor using fields */
 		public ResolveSetOfQuestionsNetworkAction(long transactionKey, Date occurredWhen, Collection<ResolveQuestionNetworkAction> resolutions) {
-			super(transactionKey, occurredWhen, Long.MIN_VALUE, Integer.MIN_VALUE);
+			super(transactionKey, occurredWhen, Long.MIN_VALUE, null);
 			if (resolutions == null || resolutions.isEmpty()) {
 				throw new IllegalArgumentException("Invalid resolution: "+ resolutions);
 			}
@@ -3327,7 +3338,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// map of evidences to be passed to the algorithm in order to resolve all questions in 1 step
 				// A tree map with name comparator will allow me to use the same map in BN and asset net 
 				// (i.e. keys - nodes - with same name will be considered as same key, although they are different instances)
-				Map<INode, Integer> mapOfEvidences = new TreeMap<INode, Integer>(new Comparator<INode>() {
+				Map<INode, List<Float>> mapOfEvidences = new TreeMap<INode, List<Float>>(new Comparator<INode>() {
 					public int compare(INode o1, INode o2) {
 //						if (o1 instanceof IRandomVariable && o2 instanceof IRandomVariable) {
 //							return ((IRandomVariable)o1).getInternalIdentificator() - ((IRandomVariable)o2).getInternalIdentificator();
@@ -3358,9 +3369,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							action.setMarginalWhenResolved(marginalBeforeResolution);
 						}
 						// in the map which will be passed to the algorithm, mark that this node has an evidence at this state
-						mapOfEvidences.put(probNode, action.getSettledState());
+						mapOfEvidences.put(probNode, action.getSettlement());
 						// update the map to be used to update the history all at once at the end of this method
-						mapForHistory.put(action.getQuestionId(), new StatePair(probNode.getStatesSize(), action.getSettledState()));
+						mapForHistory.put(action.getQuestionId(), new StatePair(action.getSettlement()));
 					} else {
 						throw new InexistingQuestionException("Question " + action.getQuestionId() + " does not exist.", action.getQuestionId());
 					}
@@ -3405,7 +3416,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 											questionToCashBefore.put(resolution.getQuestionId(), cashBefore);
 											getUserIdToResolvedQuestionCashBeforeMap().put(userIdAndAlgorithm.getKey(), questionToCashBefore);
 											// resolve the question in the asset structure of this user
-											assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap((INode)assetAlgorithm.getAssetNetwork().getNode(resolution.getQuestionId().toString()), resolution.getSettledState()), isToDeleteResolvedNode());
+											assetAlgorithm.setAsPermanentEvidence(Collections.singletonMap((INode)assetAlgorithm.getAssetNetwork().getNode(resolution.getQuestionId().toString()), resolution.getSettlement()), isToDeleteResolvedNode());
 											// obtain the difference between cash before and after.
 											float gain = getCash(userIdAndAlgorithm.getKey(), null, null) - cashBefore;
 											// update the mapping if the difference was "large" enough
@@ -3453,15 +3464,94 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/* (non-Javadoc)
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#resolveQuestion(long, java.util.Date, long, int)
 	 */
-	public boolean resolveQuestion(Long transactionKey, Date occurredWhen,
-			long questionId, int settledState) throws IllegalArgumentException {
-
+	public boolean resolveQuestion(Long transactionKey, Date occurredWhen, long questionId, int settledState) throws IllegalArgumentException {
+		
+		// if settledState is negative, then it is specifying a negative finding (finding that sets state to 0% and does not delete the question)
+		boolean isNegativeFinding = settledState < 0;
+		if (isNegativeFinding) {
+			// make sure settledState points to the state to be settled, 
+			// because when this is a negative finding, the state to be set to 0% is -settledState - 1.
+			settledState = -settledState - 1;
+		}
+		
+		// extract the node identified by questionId, so that we can know how many states it has, 
+		// and from that generate a list of probability of settlement (which its size shall be equal to the number of states)
+		Node node = null;
+		synchronized (getProbabilisticNetwork()) {
+			node = getProbabilisticNetwork().getNode(Long.toString(questionId));
+		}
+		// this will store how many states the question have, so that we can create a list of floats with same size, to represent its probability
+		int stateSize = -1;
+		// node may be something yet to be created in the transaction. Check if that condition apply
+		if (node == null) {
+			// check if node will be created in same transaction
+			boolean isOK = false;
+			if (transactionKey != null) {
+				Map<Long, Set<AddQuestionNetworkAction>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
+				if (mapTransactionQuestions == null) {
+					// desynchronized call detected. This is unlikely to happen, but subclasses may cause this
+					throw new NullPointerException("Desync detected in transaction " + transactionKey + ": the mapping which traces questions created in this transaction is null.");
+				}
+				
+				// use the mapping in order to check whether the parent will be created in the same transaction
+				synchronized (mapTransactionQuestions) {
+					Set<AddQuestionNetworkAction> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
+					if (questionsInSameTransaction == null) {
+						throw new InexistingQuestionException("Question ID " + questionId + " does not exist and is not specified in transaction : " + transactionKey, questionId);
+					}
+					// search for the assumption ID in questionsToBeCreatedInTransaction
+					for (AddQuestionNetworkAction questionActionInMapping : questionsInSameTransaction) {
+						if (questionActionInMapping.getQuestionId().longValue() == questionId) {
+							stateSize = questionActionInMapping.getNumberStates();
+							isOK = true;
+							break;
+						}
+					}
+				}
+			}
+			if (!isOK) {
+				throw new InexistingQuestionException("Question ID " + questionId + " was not found.", questionId);
+			}
+		} else {
+			// node != null at this point. Check consistency of the argument "settledState"
+			if (settledState >= node.getStatesSize()) {
+				throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
+			}
+			if (node instanceof TreeVariable ) {
+				TreeVariable var = (TreeVariable) node;
+				if (var.hasEvidence()) {
+					int state = (settledState<0)?((-settledState)-1):settledState;
+					if (var.getEvidence() != state || var.getMarginalAt(state) <= 0f) {
+						throw new IllegalArgumentException("Question " + questionId + " is already resolved, hence it cannot be resolved to " + settledState);
+					}
+				}
+			}
+			// remember how many states question has
+			stateSize = node.getStatesSize();
+		}
+		
+		// create a list of floats containing 1 in settledState and 0 in all other states, so that we can pass it to the method responsible for creating a network action for resolving questions
+		List<Float> settlement = new ArrayList<Float>(stateSize);
+		for (int i = 0; i < stateSize; i++) {
+			// add 1 if this state is settledState (0 if negative finding). Add 0 (null if negative finding) otherwise.
+			settlement.add((settledState == i)?(isNegativeFinding?0f:1f):(isNegativeFinding?null:0f));
+		}
+		
+		// simply delegate to the method which accepts the list of settlement
+		return this.resolveQuestion(transactionKey, occurredWhen, questionId, settlement);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#resolveQuestion(java.lang.Long, java.util.Date, long, java.util.List)
+	 */
+	public boolean resolveQuestion(Long transactionKey, Date occurredWhen, long questionId, List<Float> settlement ) throws IllegalArgumentException{
 		// initial assertions
 		if (occurredWhen == null) {
 			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
 		}
-		if (settledState < 0) {
-			throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
+		if (settlement == null) {
+			throw new IllegalArgumentException("No settlement was specified for question " + questionId);
 		}
 		synchronized (this.getResolvedQuestions()) {
 			if (this.getResolvedQuestions().containsKey(questionId)) {
@@ -3476,24 +3566,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// check if node will be created in same transaction
 			boolean isOK = false;
 			if (transactionKey != null) {
-//				List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey);
-//				if (actions == null) {
-//					throw new IllegalArgumentException("Transaction key " + transactionKey + " was not started or was concluded.");
-//				}
-//				synchronized (actions) {
-//					for (NetworkAction networkAction : actions) {
-//						if (networkAction instanceof AddQuestionNetworkAction
-//								&& networkAction.getQuestionId() != null
-//								&& networkAction.getQuestionId().longValue() == questionId) {
-//							if (settledState >= ((AddQuestionNetworkAction)networkAction).getNumberStates()) {
-//								throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
-//							}
-//							isOK = true;
-//							break;
+//						List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey);
+//						if (actions == null) {
+//							throw new IllegalArgumentException("Transaction key " + transactionKey + " was not started or was concluded.");
 //						}
-//					}
-//				}
-				Map<Long, Set<Long>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
+//						synchronized (actions) {
+//							for (NetworkAction networkAction : actions) {
+//								if (networkAction instanceof AddQuestionNetworkAction
+//										&& networkAction.getQuestionId() != null
+//										&& networkAction.getQuestionId().longValue() == questionId) {
+//									if (settledState >= ((AddQuestionNetworkAction)networkAction).getNumberStates()) {
+//										throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
+//									}
+//									isOK = true;
+//									break;
+//								}
+//							}
+//						}
+				Map<Long, Set<AddQuestionNetworkAction>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
 				
 				
 				if (mapTransactionQuestions == null) {
@@ -3503,13 +3593,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				
 				// use the mapping in order to check whether the parent will be created in the same transaction
 				synchronized (mapTransactionQuestions) {
-					Set<Long> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
+					Set<AddQuestionNetworkAction> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
 					if (questionsInSameTransaction == null) {
 						throw new InexistingQuestionException("Question ID " + questionId + " does not exist and is not specified in transaction : " + transactionKey, questionId);
 					}
 					// search for the assumption ID in questionsToBeCreatedInTransaction
-					for (Long idInMapping : questionsInSameTransaction) {
-						if (idInMapping.longValue() == questionId) {
+					for (AddQuestionNetworkAction idInMapping : questionsInSameTransaction) {
+						if (idInMapping.getQuestionId().longValue() == questionId) {
 							isOK = true;
 							break;
 						}
@@ -3521,41 +3611,33 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		} else {
 			// node != null at this point. Check consistency
-			if (settledState >= node.getStatesSize()) {
-				throw new IllegalArgumentException("Question " + questionId + " has no state " + settledState);
+			if (settlement.size() != node.getStatesSize()) {
+				throw new IllegalArgumentException("The list of probability provided to question " + questionId + " had size " + settlement.size() 
+						+ ", but the question actually had " + node.getStatesSize() + " states.");
 			}
 			if (node instanceof TreeVariable ) {
 				TreeVariable var = (TreeVariable) node;
 				if (var.hasEvidence()) {
-					int state = (settledState<0)?((-settledState)-1):settledState;
-					if (var.getEvidence() != state || var.getMarginalAt(state) <= 0f) {
-						throw new IllegalArgumentException("Question " + questionId + " is already resolved, hence it cannot be resolved to " + settledState);
-					}
+//					int state = (settledState<0)?((-settledState)-1):settledState;
+//					if (var.getEvidence() != state || var.getMarginalAt(state) <= 0f) {
+						throw new IllegalArgumentException("Question " + questionId + " is already resolved.");
+//					}
 				}
 			}
 		}
-
+		
+		// create network actions
 		if (transactionKey == null) {
 			transactionKey = this.startNetworkActions();
 			// instantiate the action object for adding a question
-			this.addNetworkAction(transactionKey, new ResolveQuestionNetworkAction(transactionKey, occurredWhen, questionId, settledState));
+			this.addNetworkAction(transactionKey, new ResolveQuestionNetworkAction(transactionKey, occurredWhen, questionId, settlement));
 			this.commitNetworkActions(transactionKey);
 		} else {
 			// instantiate the action object for adding a question
-			this.addNetworkAction(transactionKey, new ResolveQuestionNetworkAction(transactionKey, occurredWhen, questionId, settledState));
+			this.addNetworkAction(transactionKey, new ResolveQuestionNetworkAction(transactionKey, occurredWhen, questionId, settlement));
 		}
 		
 		return true;
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#resolveQuestion(java.lang.Long, java.util.Date, long, java.util.List)
-	 */
-	public boolean resolveQuestion(Long transactionKey, Date occurredWhen, long questionId, List<Float> settlement ) throws IllegalArgumentException{
-		// TODO stub
-		throw new UnsupportedOperationException("Not implemented yet");
-//		return false;
 	}
 	
 	
@@ -7126,7 +7208,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //				}
 //			}
 			// obtain the mapping of what questions are being created in transactions
-			Map<Long, Set<Long>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
+			Map<Long, Set<AddQuestionNetworkAction>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
 			
 			
 			if (mapTransactionQuestions == null || transactionKey == null) {
@@ -7136,13 +7218,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 			// use the mapping in order to check whether the parent will be created in the same transaction
 			synchronized (mapTransactionQuestions) {
-				Set<Long> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
+				Set<AddQuestionNetworkAction> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
 				if (questionsInSameTransaction == null) {
 					throw e;
 				}
 				// search for the assumption ID in questionsToBeCreatedInTransaction
-				for (Long idInMapping : questionsInSameTransaction) {
-					if (idInMapping.equals(e.getQuestionId())) {
+				for (AddQuestionNetworkAction idInMapping : questionsInSameTransaction) {
+					if (idInMapping.getQuestionId().equals(e.getQuestionId())) {
 						isNodeToBeCreatedWithinTransaction = true;
 						break;
 					}
@@ -7216,7 +7298,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //				}
 //			}
 			// obtain the mapping of what questions are being created in transactions
-			Map<Long, Set<Long>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
+			Map<Long, Set<AddQuestionNetworkAction>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
 			
 			
 			if (mapTransactionQuestions == null) {
@@ -7226,13 +7308,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 			// use the mapping in order to check whether the parent will be created in the same transaction
 			synchronized (mapTransactionQuestions) {
-				Set<Long> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
+				Set<AddQuestionNetworkAction> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
 				if (questionsInSameTransaction == null) {
 					throw new InexistingQuestionException("Question ID " + questionId + " does not exist and is not specified in transaction : " + transactionKey, questionId);
 				}
 				// search for the assumption ID in questionsToBeCreatedInTransaction
-				for (Long idInMapping : questionsInSameTransaction) {
-					if (idInMapping.longValue() == questionId) {
+				for (AddQuestionNetworkAction actionInMapping : questionsInSameTransaction) {
+					if (actionInMapping.getQuestionId().longValue() == questionId) {
 						willCreateNodeOnCommit = true;
 						break;
 					}
@@ -7272,7 +7354,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					
 					
 					// obtain the mapping of what questions are being created in transactions
-					Map<Long, Set<Long>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
+					Map<Long, Set<AddQuestionNetworkAction>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
 					
 					
 					if (mapTransactionQuestions == null) {
@@ -7282,13 +7364,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					
 					// use the mapping in order to check whether the parent will be created in the same transaction
 					synchronized (mapTransactionQuestions) {
-						Set<Long> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
+						Set<AddQuestionNetworkAction> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
 						if (questionsInSameTransaction == null) {
 							throw new InexistingQuestionException("Question ID " + assumptiveQuestionId + " does not exist and is not specified in transaction : " + transactionKey, assumptiveQuestionId);
 						}
 						// search for the assumption ID in questionsToBeCreatedInTransaction
-						for (Long idInMapping : questionsInSameTransaction) {
-							if (idInMapping.equals(assumptiveQuestionId)) {
+						for (AddQuestionNetworkAction actInMapping : questionsInSameTransaction) {
+							if (actInMapping.getQuestionId().equals(assumptiveQuestionId)) {
 								hasFound = true;
 								break;
 							}
@@ -8124,10 +8206,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// if me is not configured to delete nodes on resolve, we need to resolve nodes in the new assetNet
 				if (!isToDeleteResolvedNode()) {
 					// convert getResolvedQuestions() to Map<INode, Integer>, so that we can call algorithm.setAsPermanentEvidence 
-					Map<INode, Integer> evidences = new HashMap<INode, Integer>();
+					Map<INode, List<Float>> evidences = new HashMap<INode, List<Float>>();
 					synchronized (getResolvedQuestions()) {
 						for (Long resolvedQuestionId : getResolvedQuestions().keySet()) {
-							evidences.put(algorithm.getAssetNetwork().getNode(resolvedQuestionId.toString()), getResolvedQuestions().get(resolvedQuestionId).getResolvedState());
+							evidences.put(algorithm.getAssetNetwork().getNode(resolvedQuestionId.toString()), getResolvedQuestions().get(resolvedQuestionId).getSettlement());
 						}
 					}
 					algorithm.setAsPermanentEvidence(evidences, isToDeleteResolvedNode());
@@ -9417,16 +9499,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @author Shou Matsumoto
 	 */
 	public class StatePair {
-		private final Integer statesSize;
-		private final Integer resolvedState;
-		public StatePair(Integer statesSize, Integer resolvedState) {
-			this.statesSize = statesSize;
-			this.resolvedState = resolvedState;
+//		private final Integer statesSize;
+		private final List<Float> settlement;
+		public StatePair(List<Float> settlement) {
+			this.settlement = settlement;
 		}
-		public Integer getStatesSize() { return statesSize; }
-		public Integer getResolvedState() { return resolvedState; }
-		public String toString() {return "["+ resolvedState +"/" + statesSize + "]";}
-		
+		public Integer getStatesSize() { return getSettlement().size(); /*statesSize;*/ }
+		public String toString() {return ""+getSettlement() ;}
+		/** This will return consisten value only if resolution is a hard evidence. Will return negative if negative evidence, and null if soft evidence. */
+		public Integer getResolvedState() { 
+			synchronized (getDefaultInferenceAlgorithm()) {
+				return getDefaultInferenceAlgorithm().getResolvedState(settlement);
+			}
+		}
+		public List<Float> getSettlement() { return settlement; }
 	}
 
 	/**
@@ -9442,7 +9528,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#exportNetwork(java.io.File)
 	 */
 	public synchronized void exportNetwork(File file) throws IOException, IllegalStateException {
-		
 		if (isToExportOnlyCurrentSharedProbabilisticNet()) {
 			// simply call exportCurrentSharedNetwork
 			String stringRepresentationOfNet = this.exportState();
@@ -9545,6 +9630,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		/** Substitutes the current network and re-run trades */
 		public void execute() {
+			if (!isToTraceHistory()) {
+				throw new IllegalStateException("This functionality cannot be used when isToTraceHistory == false");
+			}
 			// this is the network prior to import. Need to keep it, so that we can revert to it in case of exception
 			ProbabilisticNetwork previousNet = null;
 			
@@ -10566,7 +10654,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * in the same transaction, in order to check consistency of presence of questions.
 	 * @return the questionsToBeCreatedInTransaction
 	 */
-	protected Map<Long, Set<Long>> getQuestionsToBeCreatedInTransaction() {
+	protected Map<Long, Set<AddQuestionNetworkAction>> getQuestionsToBeCreatedInTransaction() {
 		return questionsToBeCreatedInTransaction;
 	}
 
@@ -10574,7 +10662,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @param questionsToBeCreatedInTransaction the questionsToBeCreatedInTransaction to set
 	 */
 	protected void setQuestionsToBeCreatedInTransaction(
-			Map<Long, Set<Long>> questionsToBeCreatedInTransaction) {
+			Map<Long, Set<AddQuestionNetworkAction>> questionsToBeCreatedInTransaction) {
 		this.questionsToBeCreatedInTransaction = questionsToBeCreatedInTransaction;
 	}
 
@@ -10669,7 +10757,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 			// do not update assets if isToAddArcsOnlyToProbabilisticNetwork == true
 			this.getDefaultInferenceAlgorithm().setToUpdateAssets(false);
-		}
+			
+		} 
 		
 	}
 
@@ -10838,6 +10927,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 			// also stop tracing virtual trades, because storing history is not required
 			setVirtualTradeToAffectedQuestionsMap(new HashMap<VirtualTradeAction, Set<Long>>());
+			
+			setNetworkActionsIndexedByQuestions(null);	// do not trace actions
+			
+			// if history is not used, we can only export current configuration of the network
+			setToExportOnlyCurrentSharedProbabilisticNet(true);
+			
+			// if we are not storing history, then there is no need to store cash before resolve question
+			setToStoreCashBeforeResolveQuestion(false);
+		} else {
+			setNetworkActionsIndexedByQuestions(new HashMap<Long, List<NetworkAction>>());	// HashMap allows null key.
+			setMaxConditionalProbHistorySize(DEFAULT_MAX_CONDITIONAL_PROB_HISTORY_SIZE);
 		}
 	}
 

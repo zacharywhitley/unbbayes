@@ -3,7 +3,9 @@
  */
 package unbbayes.gui.option.extension;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import unbbayes.gui.option.JunctionTreeOptionPanel;
@@ -48,12 +50,18 @@ public class AutomaticAbsortionJunctionTreeOptionPanel extends JunctionTreeOptio
 			public void onBeforePropagate(IInferenceAlgorithm algorithm) {
 				if (algorithm instanceof IAssetNetAlgorithm) {
 					IAssetNetAlgorithm assetNetAlgorithm = (IAssetNetAlgorithm) algorithm;
-					Map<INode, Integer> evidences = new HashMap<INode, Integer>();	// this map will store the evidences
+					Map<INode, List<Float>> evidences = new HashMap<INode, List<Float>>();	// this map will store the evidences
 					for (Node node : algorithm.getNetwork().getNodes()) {
 						if (node instanceof TreeVariable) {
 							TreeVariable variable = (TreeVariable) node;
 							if (!variable.hasLikelihood() && variable.hasEvidence()) {
-								evidences.put(variable,  variable.getEvidence());
+								List<Float> prob = new ArrayList<Float>(variable.getStatesSize());
+								// TODO suport negative evidence
+								int state = variable.getEvidence();
+								for (int i = 0; i < variable.getStatesSize(); i++) {
+									prob.add((state==i)?1f:0f);
+								}
+								evidences.put(variable, prob );
 								variable.resetEvidence();	// clear evidence
 							}
 						}

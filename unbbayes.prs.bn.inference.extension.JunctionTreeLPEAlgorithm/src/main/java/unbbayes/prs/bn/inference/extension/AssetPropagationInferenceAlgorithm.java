@@ -2393,11 +2393,11 @@ public class AssetPropagationInferenceAlgorithm extends AbstractAssetNetAlgorith
 	 * This is equivalent to {@link #setAsPermanentEvidence(Map, boolean)}
 	 * with the map being {@link Collections#singletonMap(Object, Object)}
 	 * @param node : node to add hard evidence
-	 * @param state : state of hard evidence
+	 * @param prob : distribution of hard evidence
 	 * @param isToDeleteNode : if true, the node will be deleted from the network.
 	 */
-	public void setAsPermanentEvidence(INode node, Integer state, boolean isToDeleteNode){
-		this.setAsPermanentEvidence(Collections.singletonMap(node, state), isToDeleteNode);
+	public void setAsPermanentEvidence(INode node, List<Float> prob, boolean isToDeleteNode){
+		this.setAsPermanentEvidence(Collections.singletonMap(node, prob), isToDeleteNode);
 	}
 
 	/**
@@ -2411,14 +2411,14 @@ public class AssetPropagationInferenceAlgorithm extends AbstractAssetNetAlgorith
 	 * algorithms based on junction tree (i.e. {@link unbbayes.prs.bn.JunctionTreeAlgorithm},
 	 * {@link unbbayes.prs.bn.inference.extension.JunctionTreeLPEAlgorithm}, {@link unbbayes.prs.bn.inference.extension.JunctionTreeMPEAlgorithm}).
 	 * This method will also attempt to delete the node from the network.
-	 * @param evidences : only assets related to states of this node will be changed. 
+	 * @param origEvidences : only assets related to states of this node will be changed. 
 	 * {@link AssetNetwork#removeNode(Node)} will be used in order to delete this node from the {@link #getAssetNetwork()}.
 	 * The q-values of states complementary to this state (i.e. states of "node" which are different
 	 * to "state") will be set to 0.
 	 * @param isToDeleteNode : if true, node will be deleted after propagation.
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setAsPermanentEvidence(unbbayes.prs.INode, int)
 	 */
-	public void setAsPermanentEvidence(Map<INode, Integer> evidences, boolean isToDeleteNode){
+	public void setAsPermanentEvidence(Map<INode, List<Float>> origEvidences, boolean isToDeleteNode){
 		// initial assertions
 		if (getAssetNetwork() == null) {
 			throw new IllegalStateException("This algorithm should be related to some AssetNetwork before calling this method. Please, call #setAssetNetwork(AssetNetwork).");
@@ -2428,24 +2428,63 @@ public class AssetPropagationInferenceAlgorithm extends AbstractAssetNetAlgorith
 				|| getAssetNetwork().getJunctionTree().getSeparators() == null ) {
 			throw new IllegalStateException("This algorithm cannot be used without a Junction Tree. Make sure getAssetNetwork().getJunctionTree() was correctly initialized.");
 		}
-		if (evidences == null || evidences.isEmpty()) {
+		if (origEvidences == null || origEvidences.isEmpty()) {
 			return;
 		}
+		
 		
 		this.setUnconditionalMinAssetCache(Float.NaN);
 		
 		Map<Clique, Float> resolvedAssetValues = new HashMap<Clique, Float>();
 		
-		// make sure evidences contains nodes from the asset net, not from the prob net
-		Map<INode, Integer> aux = new HashMap<INode, Integer>(evidences.size());
-		for (INode node : evidences.keySet()) {
+		// make sure evidences contains nodes from the asset net, not from the prob net.
+		// also, ensure that only hard evidences are provided here, and check whether this is specifying evidence or "negative" evidence (evidence specifying that some states need to be 0%)
+		Map<INode, List<Float>> aux = new HashMap<INode, List<Float>>(origEvidences.size());
+		for (Entry<INode, List<Float>> entry : origEvidences.entrySet()) {
+			// prepare to iterate on entry.getValue()
+			List<Float> prob = entry.getValue();	
+			// first, check if this is negative evidence (if there is any state specified to 100%, then it is not a negative evidence)
+			boolean isNegativeEvidence = true;	
+			switch (this.getEvidenceType(prob)) {
+//			case NEGATIVE_HARD_EVIDENCE:
+//				isNegativeEvidence = true;
+//				break;
+			case HARD_EVIDENCE:
+				isNegativeEvidence = false;
+				break;
+			case SOFT_EVIDENCE:
+				throw new UnsupportedOperationException(prob + " is a soft evidence for node " + entry.getKey() + ", but is not supported when assets are managed.");
+			default:
+				throw new IllegalArgumentException(prob + " is an unsupported evidence format for question " + entry.getKey());
+			}
+			// then, transform unspecified states to valid values
+			int size = prob.size();
+			for (int i = 0; i < size; i++) {
+				Float value = prob.get(i);
+				if (Math.abs(value) < ERROR_MARGIN && !isToUseQValues()) {
+					// if prob was set to zero, but we are not using q-values, then zeros shall be translated as infinite (so that it gets ignored in min assets calculation)
+					prob.set(i, Float.POSITIVE_INFINITY);
+				} else if (isUnspecifiedProb(value)) {
+					// this is an "unspecified" state which represents either 0% (if there is explicit settlement to 100% specified) or 100% (if only settlements to 0% were explicit)
+					if (isToUseQValues()) {
+						// invalid states has 0 assets in q-values
+						prob.set(i, isNegativeEvidence?1f:0f);
+					} else {
+						// invalid states has infinite assets, so that min propagation can ignore such values.
+						prob.set(i, isNegativeEvidence?1f:Float.POSITIVE_INFINITY);
+					}
+				}
+				// also, ensure that only hard evidences are provided here
+			}
 			// nodes are supposedly synchronized by name
-			aux.put(getAssetNetwork().getNode(node.getName()), evidences.get(node));
+			aux.put(getAssetNetwork().getNode(entry.getKey().getName()), prob);
 		}
-		evidences = aux;
+		origEvidences = aux;
+		
+		// at this point, origEvidences shall not contain unspecified values (null, <0, >1, NaN, Infinite)
 		
 		// extract the nodes containing findings
-		Set<INode> evidenceNodes = evidences.keySet();
+		Set<INode> evidenceNodes = origEvidences.keySet();
 		
 		// Set cells of clique tables to values which are ignored by the algorithm. 
 		
@@ -2478,27 +2517,34 @@ public class AssetPropagationInferenceAlgorithm extends AbstractAssetNetAlgorith
 				// only handle nodes with evidence
 				if (evidenceNodes.contains(nodeInCliqueTable)) {
 					// there is a node to be set as finding. extract state of finding
-					Integer state = evidences.get(nodeInCliqueTable);
+					List<Float> prob = origEvidences.get(nodeInCliqueTable);
 					// check consistency of findings
-					if (state == null) {
+					if (prob == null) {
 						Debug.println(getClass(), "Finding of node "+ nodeInCliqueTable + " was set to null");
 						continue;
 					}
-					if (state < 0 || state >= nodeInCliqueTable.getStatesSize()) {
-						throw new ArrayIndexOutOfBoundsException(state + " is not a valid index for a state of node " + nodeInCliqueTable);
-					}
+//					if (state < 0 || state >= nodeInCliqueTable.getStatesSize()) {
+//						throw new ArrayIndexOutOfBoundsException(state + " is not a valid index for a state of node " + nodeInCliqueTable);
+//					}
+					
+					// note: at this point, origEvidences shall not contain unspecified values (null, <0, >1, NaN, Infinite)
+					
 					// iterate over cells in the clique table
 					for (int i = 0; i < cliqueTable.tableSize(); i++) {
 						// using "multidimensionalCoord" is easier than "i" if our objective is to compare with "state"
 						int[] multidimensionalCoord = cliqueTable.getMultidimensionalCoord(i);
-						// set all cells unrelated to "state" to 0
-						if (multidimensionalCoord[cliqueTable.getVariableIndex((Node) nodeInCliqueTable)] != state) {
-							if (isToUseQValues()) {
-								cliqueTable.setValue(i,0f);
-							} else {
-								cliqueTable.setValue(i,Float.POSITIVE_INFINITY);
-							}
-						} else if (cliqueTable.getValue(i) != (isToUseQValues()?0f:Float.POSITIVE_INFINITY)) {
+						// cells of valid values will be multiplied by 1 (kept intact). Others will be either multiplied by 0 or infinite 
+						// (becomes "invalid" values which will be ignored by propagation algorithms)
+						cliqueTable.setValue(i,cliqueTable.getValue(i)*prob.get(multidimensionalCoord[cliqueTable.getVariableIndex((Node) nodeInCliqueTable)]));
+//						if (multidimensionalCoord[cliqueTable.getVariableIndex((Node) nodeInCliqueTable)] != state) {
+//							if (isToUseQValues()) {
+//								cliqueTable.setValue(i,0f);
+//							} else {
+//								cliqueTable.setValue(i,Float.POSITIVE_INFINITY);
+//							}
+//						} else 
+						if (cliqueTable.getValue(i) != (isToUseQValues()?0f:Float.POSITIVE_INFINITY)) {
+							// store last value which was known to be "valid", so that we can use it to fill the "empty" clique table when all nodes resolves.
 							resolvedAsset = cliqueTable.getValue(i);
 						}
 					}
@@ -2528,31 +2574,38 @@ public class AssetPropagationInferenceAlgorithm extends AbstractAssetNetAlgorith
 					// ignore, because there is nothing to resolve
 					continue;
 				}
+				
 				for (int indexOfNodeInSeparator = 0; indexOfNodeInSeparator < separatorTable.getVariablesSize(); indexOfNodeInSeparator++) {
-					INode node = separatorTable.getVariableAt(indexOfNodeInSeparator);
-					if (evidenceNodes.contains(node)) {
+					INode nodeInSepTable = separatorTable.getVariableAt(indexOfNodeInSeparator);
+					if (evidenceNodes.contains(nodeInSepTable)) {
 						// Extract state of finding
-						Integer state = evidences.get(node);
+						List<Float> prob = origEvidences.get(nodeInSepTable);
 						// check consistency of findings
-						if (state == null) {
-							Debug.println(getClass(), "Finding of node "+ node + " was set to null");
+						if (prob == null) {
+							Debug.println(getClass(), "Finding of node "+ nodeInSepTable + " was set to null");
 							continue;
 						}
-						if (state < 0 || state >= node.getStatesSize()) {
-							throw new ArrayIndexOutOfBoundsException(state + " is not a valid index for a state of node " + node);
-						}
+//						if (state < 0 || state >= node.getStatesSize()) {
+//							throw new ArrayIndexOutOfBoundsException(state + " is not a valid index for a state of node " + node);
+//						}
+						
+						// note: at this point, origEvidences shall not contain unspecified values (null, <0, >1, NaN, Infinite)
+						
 						// iterate over cells in the separator table
 						for (int i = 0; i < separatorTable.tableSize(); i++) {
 							// using "multidimensionalCoord" is easier than "i" if our objective is to compare with "state"
 							int[] multidimensionalCoord = separatorTable.getMultidimensionalCoord(i);
+							// cells of valid values will be multiplied by 1 (kept intact). Others will be either multiplied by 0 or infinite 
+							// (becomes "invalid" values which will be ignored by propagation algorithms)
+							separatorTable.setValue(i,separatorTable.getValue(i)*prob.get(multidimensionalCoord[separatorTable.getVariableIndex((Node) nodeInSepTable)]));
 							// set all cells unrelated to "state" to 0
-							if (multidimensionalCoord[separatorTable.getVariableIndex((Node) node)] != state) {
-								if (isToUseQValues()) {
-									separatorTable.setValue(i,0f);
-								} else {
-									separatorTable.setValue(i,Float.POSITIVE_INFINITY);
-								}
-							}
+//							if (multidimensionalCoord[separatorTable.getVariableIndex((Node) nodeInSepTable)] != state) {
+//								if (isToUseQValues()) {
+//									separatorTable.setValue(i,0f);
+//								} else {
+//									separatorTable.setValue(i,Float.POSITIVE_INFINITY);
+//								}
+//							}
 						}
 					}
 				}
@@ -2582,7 +2635,7 @@ public class AssetPropagationInferenceAlgorithm extends AbstractAssetNetAlgorith
 					resolvedClique.getProbabilityFunction().setValue(0, value);
 				} else {
 					// node resolved to an impossible state!
-					throw new IllegalStateException(evidences + " is resolving some node to an impossible state.");
+					throw new IllegalStateException("Some node in " + evidenceNodes + " seems to be resolved to an impossible state in clique " + resolvedClique);
 				}
 			}
 			

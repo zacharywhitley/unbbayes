@@ -933,6 +933,125 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 		// return the generated edges
 		return ret;
 	}
+	
+	/**
+	 * Indicates whether a given value must be considered as "unspecified" (so can assume either 0% or 100%)
+	 * @param value: value to check
+	 * @return value == null || Float.isInfinite(value) || Float.isNaN(value) || value < 0 || value > 1 
+	 */
+	public boolean isUnspecifiedProb(Float value) {
+		return value == null || Float.isInfinite(value) || Float.isNaN(value) || value < 0 || value > 1;
+	}
+	
+	/**
+	 * This enum specifies known types of evidence, which can be normal hard evidence ({@link #HARD_EVIDENCE}), which
+	 * sets some state to 100%, or "negative" hard evidence ({@link #NEGATIVE_HARD_EVIDENCE}), which 
+	 * sets some states to 0%, or soft evidence ({@link #SOFT_EVIDENCE}), which sets states to something in between 0% and 100%
+	 * @author Shou Matsumoto
+	 * @see AbstractAssetNetAlgorithm#getEvidenceType(List)
+	 */
+	public static enum EvidenceType {HARD_EVIDENCE, SOFT_EVIDENCE, NEGATIVE_HARD_EVIDENCE};
+	
+	/**
+	 * Verifies if the specified probability distribution indicates a "negative" hard evidence.
+	 * A "negative" hard evidence happens when states are explicitly indicated to become %, and other
+	 * states are either specified as {@link #isUnspecifiedProb(Float)} or 100%.
+	 * @param prob: the list of probabilities (or unspecified values which {@link #isUnspecifiedProb(Float)} == true).
+	 * @return: true if this is negative finding, false if this is positive finding, and null if this is soft evidence.
+	 * @see #isUnspecifiedProb(Float)
+	 * @throws IllegalArgumentException: if the input format is invalid (is none of the 3 possible types of evidence).
+	 * @see #getResolvedState(List)
+	 */
+	public EvidenceType getEvidenceType(List<Float> prob) {
+		Integer resolvedState = this.getResolvedState(prob);
+		if (resolvedState == null) {
+			return EvidenceType.SOFT_EVIDENCE;
+		} else if (resolvedState < 0) {
+			return EvidenceType.NEGATIVE_HARD_EVIDENCE;
+		} 
+		return EvidenceType.HARD_EVIDENCE;
+	}
+	
+	/**
+	 * Will attempt to obtain what is the index of hard evidence.
+	 * Will return negative or null if this is not a hard evidence
+	 * @param prob : list to check content.
+	 * @return : positive value if hard evidence (it will be the index of the state set to 100%), 
+	 * negative value if negative hard evidence, and null if soft evidence.
+	 * In case of negative hard evidence, then (-RETURNED_VALUE-1) will be the index of the 1st state
+	 * found to be set to 0%.
+	 * @see #getEvidenceType(List)
+	 */
+	public Integer getResolvedState(List<Float> prob) {
+		// initial assertion
+		if (prob == null || prob.isEmpty()) {
+			throw new IllegalArgumentException("Could not verify whether the specified probability is a hard evidence, soft evidence, or ; \"negative\" hard evidence; " +
+					"because nothing was provided.");
+		}
+		float sum = 0;	// if the sum of specified probs is 1, then it is either a positive hard evidence or a soft evidence. If not, then it is negative hard evidence 
+		boolean hasSpecifiedProb = false;	// if all probs were unspecified, then this is neither of these three
+		boolean hasSoftEvidence = false;	// if 0 < value < 1, then it is a soft evidence (not a hard evidence)
+		boolean hasZeros = false;	// if at least one state is specified as 0%, then this flag will be turned on
+		int index1stState0 = -1;	// will hold the first state settled with 0%. This will be used as a return if this is a hard evidence
+		int index1stState1 = -1;	// will hold the first state settled with 100%. This will be used as a return if this is a negative hard evidence.
+		for (int i = 0; i < prob.size(); i++) {
+			Float value = prob.get(i);
+			if (isUnspecifiedProb(value)) {
+				continue;	// ignore unspecified values for now
+			}
+			// at this point, value is supposedly between 0　and 1
+			sum += value;
+			if (value > ERROR_MARGIN && value < 1-ERROR_MARGIN) {
+				// 0 < value < 1 given error margin
+				hasSoftEvidence = true;
+			} else if (Math.abs(value) < ERROR_MARGIN) {
+				// there is a state explicitly at 0%
+				hasZeros =  true;
+				if (index1stState0 < 0) {
+					index1stState0 = i;
+				}
+			} else {
+				// this is a state explicitly at 100%
+				if (index1stState1 < 0) {
+					index1stState1 = i;
+				}
+			}
+			hasSpecifiedProb = true;	// turn on flag indicating that at least 1 prob was specified
+		}
+		if (!hasSpecifiedProb) {
+			throw new IllegalArgumentException("No probability was explicited in the argument. Please specify the probabability of at least 1 state");
+		}
+		// at this point, prob contains at least 1 state with valid probability value (i.e. not all states are "unspecified")
+		if (hasSoftEvidence) {
+			// check if the specified soft evidence is normalized
+			if (Math.abs(1f-sum) > ERROR_MARGIN) {
+				throw new IllegalArgumentException("The soft evidence " + prob +" does not seem to sum up to 1.");
+			}
+			// this is a valid soft evidence
+//			return EvidenceType.SOFT_EVIDENCE;
+			return null;
+		}
+		// at this point, can be considered as hard evidence. Check sum to see if this is negative or positive hard evidence
+		if (Math.abs(1f-sum) < ERROR_MARGIN) {
+			// sum was 1 and was not soft evidence, so it was specifying only 1 state explicitly with 100%
+			if (index1stState1 < 0) {
+				throw new RuntimeException(prob + " was detected to be a hard evidence, but no state settled to 1 was found.");
+			}
+//			return EvidenceType.HARD_EVIDENCE;
+			return index1stState1;
+		} 
+		// at this point, sum was not 1 and this is a hard evidence, so it was either only specifying zeros (if sum < 1) or specifying 1 multiple times (if sum > 1)
+		if (hasZeros) {
+			// at least one state was set at 0%, so this is a negative hard evidence
+			if (index1stState0 < 0) {
+				throw new RuntimeException(prob + " was detected to be a negative evidence, but no state settled to 0% was found.");
+			}
+//			return EvidenceType.NEGATIVE_HARD_EVIDENCE;
+			return -index1stState0-1;
+		}
+		// if every specified probability was 1, then it is a negative hard evidence, but we don't know which state to set to 0%
+		throw new IllegalArgumentException("The specified list " + prob + ", is likely to be specifying a negative finding, but could not infer from it which state to set to 0%.");
+	}
 
 //	/**
 //	 * This object is responsible for normalizing CPTs at {@link #addNodesToCliqueWhenNotConsideringAssets(Map)}
