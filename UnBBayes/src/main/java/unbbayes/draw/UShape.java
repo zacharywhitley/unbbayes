@@ -248,7 +248,7 @@ public class UShape extends JComponent implements ActionListener,
 		if (getNode() != null) {
 			setName(getNode().getName());
 
-			if (getNode().getLabel().equals(""))
+			if (getNode().getLabel() == null || getNode().getLabel().equals(""))
 				setLabel(getNode().getName());
 			else
 				setLabel(getNode().getLabel());
