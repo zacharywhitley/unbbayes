@@ -989,7 +989,8 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 					"because nothing was provided.");
 		}
 		float sum = 0;	// if the sum of specified probs is 1, then it is either a positive hard evidence or a soft evidence. If not, then it is negative hard evidence 
-		boolean hasSpecifiedProb = false;	// if all probs were unspecified, then this is neither of these three
+		boolean hasSpecifiedProb = false;	// if all probs were unspecified, then this is false, and neither of the three types of findings matches our case
+		boolean hasUnspecifiedProb = false;	// if there is any unspecified value, then this becomes true
 		boolean hasSoftEvidence = false;	// if 0 < value < 1, then it is a soft evidence (not a hard evidence)
 		boolean hasZeros = false;	// if at least one state is specified as 0%, then this flag will be turned on
 		int index1stState0 = -1;	// will hold the first state settled with 0%. This will be used as a return if this is a hard evidence
@@ -997,6 +998,7 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 		for (int i = 0; i < prob.size(); i++) {
 			Float value = prob.get(i);
 			if (isUnspecifiedProb(value)) {
+				hasUnspecifiedProb = true;
 				continue;	// ignore unspecified values for now
 			}
 			// at this point, value is supposedly between 0　and 1
@@ -1026,6 +1028,9 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 			// check if the specified soft evidence is normalized
 			if (Math.abs(1f-sum) > ERROR_MARGIN) {
 				throw new IllegalArgumentException("The soft evidence " + prob +" does not seem to sum up to 1.");
+			}
+			if (hasUnspecifiedProb) {
+				throw new IllegalArgumentException("In a soft evidence, all values must be explicitly specified.");
 			}
 			// this is a valid soft evidence
 //			return EvidenceType.SOFT_EVIDENCE;

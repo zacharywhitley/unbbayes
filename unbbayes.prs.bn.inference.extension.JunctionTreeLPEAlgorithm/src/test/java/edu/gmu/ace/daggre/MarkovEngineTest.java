@@ -131,6 +131,9 @@ public class MarkovEngineTest extends TestCase {
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#addQuestion(long, java.util.Date, long, int, java.util.List)}.
 	 */
 	public final void testAddQuestion() {
+		boolean isToObtainProbabilityOfResolvedQuestions = engine.isToObtainProbabilityOfResolvedQuestions();
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
+		
 		// initial assertion
 		assertNotNull(engine.getProbabilisticNetwork());
 		
@@ -274,6 +277,7 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		// same test with transactionKey == null
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
 		engine.resolveQuestion(null, new Date(), Long.parseLong(duplicateNode.getName()), (int)(Math.random()*duplicateNode.getStatesSize()));
 		try {
 			engine.addQuestion(null, new Date(), Long.parseLong(duplicateNode.getName()), (int)(Math.random()*5)+1, null);
@@ -281,6 +285,8 @@ public class MarkovEngineTest extends TestCase {
 		} catch (IllegalArgumentException e) {
 			//ok
 		}
+		
+		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
 	}
 
 	/**created just to represent a BN edge using only IDs*/
@@ -8960,6 +8966,8 @@ public class MarkovEngineTest extends TestCase {
 	 * Test method for {@link edu.gmu.ace.daggre.MarkovEngineImpl#resolveQuestion(long, java.util.Date, long, int)}.
 	 */
 	public final void testResolveQuestion() {
+		boolean isToObtainProbabilityOfResolvedQuestions = engine.isToObtainProbabilityOfResolvedQuestions();
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
 		
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap);
@@ -9795,9 +9803,13 @@ public class MarkovEngineTest extends TestCase {
 				}
 			} 
 		}
+		
+		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
 	}
 	
 	public final void testResolveAllQuestion() {
+		boolean isToObtainProbabilityOfResolvedQuestions = engine.isToObtainProbabilityOfResolvedQuestions();
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
 
 		engine.setToDeleteResolvedNode(false);
 		engine.setCurrentCurrencyConstant(100);
@@ -9870,6 +9882,7 @@ public class MarkovEngineTest extends TestCase {
 		
 		engine.setToDeleteResolvedNode(true);
 		engine.initialize();
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
 		this.createDEFNetIn1Transaction(userNameToIDMap);
 		
 		// get the expected score per D for each user
@@ -9927,6 +9940,7 @@ public class MarkovEngineTest extends TestCase {
 		
 		// run same test again, but 1 of the nodes will be resolved outside the trade
 		engine.initialize();
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
 		this.createDEFNetIn1Transaction(userNameToIDMap);
 		
 		// get the expected score per D for each user
@@ -9988,6 +10002,7 @@ public class MarkovEngineTest extends TestCase {
 		// run other configurations
 		
 		engine.initialize();
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
 		engine.setCurrentCurrencyConstant((float) (1000/(Math.log(10)/Math.log(2))));
 		engine.setCurrentLogBase(2);
 		engine.setDefaultInitialAssetTableValue(10);
@@ -10062,6 +10077,7 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		engine.initialize();
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
 		engine.setCurrentCurrencyConstant(1000);
 		engine.setCurrentLogBase(2);
 		if (engine.getDefaultInferenceAlgorithm().isToUseQValues()) {
@@ -10144,6 +10160,8 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(engine.getScoreSummaryObject(Long.MIN_VALUE, null, null, null).getCash(), 12050.81f);
 			assertEquals(engine.getScoreSummaryObject(Long.MIN_VALUE, null, null, null).getScoreEV(), 12050.81f);
 		}
+		
+		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
 	}
 
 	/**
@@ -10394,6 +10412,8 @@ public class MarkovEngineTest extends TestCase {
 		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
 		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
 		boolean isToTraceHistory = engine.isToTraceHistory();
+		boolean isToObtainProbabilityOfResolvedQuestions = engine.isToObtainProbabilityOfResolvedQuestions();
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
 		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
 		engine.setToAddArcsWithoutReboot(false);
 		engine.setToTraceHistory(true);
@@ -10978,6 +10998,8 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
+		
 	}
 
 	
@@ -16808,6 +16830,8 @@ public class MarkovEngineTest extends TestCase {
 		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
 		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
 		boolean isToTraceHistory = engine.isToTraceHistory();
+		boolean isToObtainProbabilityOfResolvedQuestions = engine.isToObtainProbabilityOfResolvedQuestions();
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
 		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
 		engine.setToAddArcsWithoutReboot(false);
 		engine.setToTraceHistory(true);
@@ -16867,6 +16891,8 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
+		
 	}
 	
 	/**
@@ -17281,7 +17307,8 @@ public class MarkovEngineTest extends TestCase {
 		// backup config
 		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
 		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
-		boolean isToTraceHistory = engine.isToTraceHistory();
+		boolean isToTraceHistory = engine.isToTraceHistory();boolean isToObtainProbabilityOfResolvedQuestions = engine.isToObtainProbabilityOfResolvedQuestions();
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
 		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
 		engine.setToAddArcsWithoutReboot(false);
 		engine.setToTraceHistory(true);
@@ -17602,6 +17629,8 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
+		
 	}
 	
 	/**
@@ -21254,6 +21283,8 @@ public class MarkovEngineTest extends TestCase {
 		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
 		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
 		boolean isToTraceHistory = engine.isToTraceHistory();
+		boolean isToObtainProbabilityOfResolvedQuestions = engine.isToObtainProbabilityOfResolvedQuestions();
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
 		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
 		engine.setToAddArcsWithoutReboot(false);
 		engine.setToTraceHistory(true);
@@ -21354,6 +21385,8 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
+		
 	}
 	
 
@@ -23603,6 +23636,8 @@ public class MarkovEngineTest extends TestCase {
 	 * Checks if we can add and resolve questions in a single transaction
 	 */
 	public final void testAddResolveQuestionSingleTransaction() {
+		boolean isToObtainProbabilityOfResolvedQuestions = engine.isToObtainProbabilityOfResolvedQuestions();
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
 		engine.setCurrentCurrencyConstant(100);
 		engine.setCurrentLogBase(2);
 		engine.setDefaultInitialAssetTableValue(1000);
@@ -23638,6 +23673,8 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(.1f, probList.get(0), PROB_ERROR_MARGIN);
 		assertEquals(.1f, probList.get(1), PROB_ERROR_MARGIN);
 		assertEquals(.8f, probList.get(2), PROB_ERROR_MARGIN);
+		
+		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
 		
 	}
 	
@@ -23941,6 +23978,9 @@ public class MarkovEngineTest extends TestCase {
 	 * {@link MarkovEngineInterface#getCash(long, List, List)}
 	 */
 	public final void testResolvedQuestionAsArgument() {
+		boolean isToObtainProbabilityOfResolvedQuestions = engine.isToObtainProbabilityOfResolvedQuestions();
+		engine.setToObtainProbabilityOfResolvedQuestions(true);
+		
 		// generate the DEF network
 		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
 		this.createDEFNetIn1Transaction(userNameToIDMap );
@@ -24538,6 +24578,9 @@ public class MarkovEngineTest extends TestCase {
 				
 			}
 		}
+		
+		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
+		
 	}
 	
 	public final void testConditionalHistorySingleTransaction() {
@@ -25300,6 +25343,609 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+	}
+	
+	/**
+	 * Test method for {@link MarkovEngineImpl#resolveQuestion(Long, Date, long, List)},
+	 * but this test will resolve a question to a state other than 100% (and 0%).
+	 */
+	public final void testResolveSoftEvidence() {
+		// Create following network:
+		// E<-D->F, but each node has 3 states
+		
+		long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0x0DL, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0EL, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0FL, 3, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		engine.commitNetworkActions(transactionKey);
+		
+		// make sure we started from uniform priors
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.keySet().contains(0x0DL));
+		assertTrue(probLists.keySet().contains(0x0EL));
+		assertTrue(probLists.keySet().contains(0x0FL));
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals("Question " + entry.getKey() + " = " + entry.getValue() , 3, entry.getValue().size());
+			for (Float prob : entry.getValue()) {
+				assertEquals("Question " + entry.getKey() + " = " + entry.getValue() , 1f/3f, prob, PROB_ERROR_MARGIN);
+			}
+		}
+		
+		/*
+		 * Make trades in order to set P(D|E) to:
+		 * 		e0	e1	e2
+		 * d0	.1	.9	.2
+		 * d1	.2	0	.6
+		 * d2	.7	.1	.2
+		 */
+		List<Float> newValues = new ArrayList<Float>(3);
+		newValues.add(.1f); newValues.add(.2f); newValues.add(.7f);
+		engine.addTrade(null, new Date(), "P(D|e0)=[.1,.2,.7]", (long)(Math.random()*Integer.MAX_VALUE), 0x0DL, newValues, 
+				Collections.singletonList(0x0EL), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.9f); newValues.add(0f); newValues.add(.1f);
+		engine.addTrade(null, new Date(), "P(D|e1)=[.9,0,.1]", (long)(Math.random()*Integer.MAX_VALUE), 0x0DL, newValues, 
+				Collections.singletonList(0x0EL), Collections.singletonList(1), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.2f); newValues.add(.6f); newValues.add(.2f);
+		engine.addTrade(null, new Date(), "P(D|e2)=[.2,.6,.2]", (long)(Math.random()*Integer.MAX_VALUE), 0x0DL, newValues, 
+				Collections.singletonList(0x0EL), Collections.singletonList(2), true);
+		
+		/*
+		 * Make trades in order to set P(F|D) to:
+		 * 		d0	d1	d2
+		 * f0	.25	.05	1
+		 * f1	.5	.05	0
+		 * f2	.25	.9	0
+		 */
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.25f); newValues.add(.5f); newValues.add(.25f);
+		engine.addTrade(null, new Date(), "P(F|d0)=[.25,.5,.25]", (long)(Math.random()*Integer.MAX_VALUE), 0x0FL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.05f); newValues.add(.05f); newValues.add(.9f);
+		engine.addTrade(null, new Date(), "P(F|d1)=[.05,.05,.9]", (long)(Math.random()*Integer.MAX_VALUE), 0x0FL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(1), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(1f); newValues.add(0f); newValues.add(0f);
+		engine.addTrade(null, new Date(), "P(F|d2)=[1,0,0]", (long)(Math.random()*Integer.MAX_VALUE), 0x0FL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(2), true);
+		
+		// assert probabilities before resolving questions
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(3, probLists.size());
+		// assert that D=[.4,.2667,.3333]
+		assertEquals(probLists.toString(), probLists.get(0x0DL).get(0), .4f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0DL).get(1), .2667f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0DL).get(2), .3333f, PROB_ERROR_MARGIN);
+		// assert that E=[.3333,.3333,.3333]
+		assertEquals(probLists.toString(), probLists.get(0x0EL).get(0), .3333f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0EL).get(1), .3333f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0EL).get(2), .3333f, PROB_ERROR_MARGIN);
+		// assert that F=[.4466, .2133, .34]
+		assertEquals(probLists.toString(), probLists.get(0x0FL).get(0), .4466f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0FL).get(1), .2133f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0FL).get(2), .34f, PROB_ERROR_MARGIN);
+		
+		// shall not allow soft evidence with unspecified values
+		try {
+			newValues = new ArrayList<Float>(3);
+			newValues.add(.1f); newValues.add(.2f); newValues.add(null);
+			engine.resolveQuestion(null, new Date(), 0x0DL, newValues);
+			fail("shall not allow soft evidence with unspecified values");
+		} catch (Exception e) {
+			// OK
+		}
+		try {
+			newValues = new ArrayList<Float>(3);
+			newValues.add(Float.NaN); newValues.add(.2f); newValues.add(666f);
+			engine.resolveQuestion(null, new Date(), 0x0EL, newValues);
+			fail("shall not allow soft evidence with unspecified values");
+		} catch (Exception e) {
+			// OK
+		}
+		try {
+			newValues = new ArrayList<Float>(3);
+			newValues.add(.1f); newValues.add(Float.POSITIVE_INFINITY); newValues.add(.9f);
+			engine.resolveQuestion(null, new Date(), 0x0FL, newValues);
+			fail("shall not allow soft evidence with unspecified values");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		
+		// resolve E to [.1, .2, .7]
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.1f); newValues.add(.2f); newValues.add(.7f);
+		engine.resolveQuestion(null, new Date(), 0x0EL, newValues);
+		
+		// make sure we cannot resolve question which is already resolved
+		try {
+			engine.resolveQuestion(null, new Date(), 0x0EL, newValues);
+			fail("Should throw exception indicating that we cannot resolve question which is resolved already");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		
+		// check remaining nodes and probabilities
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(probLists.toString(), engine.isToDeleteResolvedNode()?2:3, probLists.size());
+		
+		// D is [.33, .44, .23], 
+		assertEquals(probLists.toString(), probLists.get(0x0DL).get(0), .33f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0DL).get(1), .44f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0DL).get(2), .23f, PROB_ERROR_MARGIN);
+		// F is [.3345, .187, .4785]
+		assertEquals(probLists.toString(), probLists.get(0x0FL).get(0), .3345f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0FL).get(1), .187f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0FL).get(2), .4785f, PROB_ERROR_MARGIN);
+		
+		// resolve D to [.5,.5,0]
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.5f); newValues.add(.5f); newValues.add(0f);
+		engine.resolveQuestion(null, new Date(), 0x0DL, newValues);
+		
+		// make sure we cannot resolve question which is already resolved
+		try {
+			engine.resolveQuestion(null, new Date(), 0x0DL, newValues);
+			fail("Should throw exception indicating that we cannot resolve question which is resolved already");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		
+		// check remaining nodes and probabilities
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(probLists.toString(), engine.isToDeleteResolvedNode()?1:3, probLists.size());
+		
+		// F is  [.15, .275, .575]
+		assertEquals(probLists.toString(), probLists.get(0x0FL).get(0), .15f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0FL).get(1), .275f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0FL).get(2), .575f, PROB_ERROR_MARGIN);
+		
+		// resolve F to [.8,.15,.05]
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.8f); newValues.add(.15f); newValues.add(.05f);
+		engine.resolveQuestion(null, new Date(), 0x0FL, newValues);
+		
+		// make sure we cannot resolve question which is already resolved
+		try {
+			engine.resolveQuestion(null, new Date(), 0x0FL, newValues);
+			fail("Should throw exception indicating that we cannot resolve question which is resolved already");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		
+		// if configured to delete nodes, make sure all nodes were deleted
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(probLists.toString(), engine.isToDeleteResolvedNode()?0:3, probLists.size());
+	}
+	
+	/**
+	 * Test method for {@link MarkovEngineImpl#resolveQuestion(Long, Date, long, List)},
+	 * but this test will resolve a question to a state other than 100% (and 0%).
+	 * Only 1 transaction will be comitted.
+	 */
+	public final void testResolveSoftEvidenceSingleTransaction() {
+		// Create following network:
+		// E<-D->F, but each node has 3 states
+		
+		long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0x0DL, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0EL, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0FL, 3, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+
+		
+		/*
+		 * Make trades in order to set P(D|E) to:
+		 * 		e0	e1	e2
+		 * d0	.1	.9	.2
+		 * d1	.2	0	.6
+		 * d2	.7	.1	.2
+		 */
+		List<Float> newValues = new ArrayList<Float>(3);
+		newValues.add(.1f); newValues.add(.2f); newValues.add(.7f);
+		engine.addTrade(transactionKey, new Date(), "P(D|e0)=[.1,.2,.7]", (long)(Math.random()*Integer.MAX_VALUE), 0x0DL, newValues, 
+				Collections.singletonList(0x0EL), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.9f); newValues.add(0f); newValues.add(.1f);
+		engine.addTrade(transactionKey, new Date(), "P(D|e1)=[.9,0,.1]", (long)(Math.random()*Integer.MAX_VALUE), 0x0DL, newValues, 
+				Collections.singletonList(0x0EL), Collections.singletonList(1), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.2f); newValues.add(.6f); newValues.add(.2f);
+		engine.addTrade(transactionKey, new Date(), "P(D|e2)=[.2,.6,.2]", (long)(Math.random()*Integer.MAX_VALUE), 0x0DL, newValues, 
+				Collections.singletonList(0x0EL), Collections.singletonList(2), true);
+		
+		/*
+		 * Make trades in order to set P(F|D) to:
+		 * 		d0	d1	d2
+		 * f0	.25	.05	1
+		 * f1	.5	.05	0
+		 * f2	.25	.9	0
+		 */
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.25f); newValues.add(.5f); newValues.add(.25f);
+		engine.addTrade(transactionKey, new Date(), "P(F|d0)=[.25,.5,.25]", (long)(Math.random()*Integer.MAX_VALUE), 0x0FL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.05f); newValues.add(.05f); newValues.add(.9f);
+		engine.addTrade(transactionKey, new Date(), "P(F|d1)=[.05,.05,.9]", (long)(Math.random()*Integer.MAX_VALUE), 0x0FL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(1), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(1f); newValues.add(0f); newValues.add(0f);
+		engine.addTrade(transactionKey, new Date(), "P(F|d2)=[1,0,0]", (long)(Math.random()*Integer.MAX_VALUE), 0x0FL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(2), true);
+		
+		
+		// resolve E to [.1, .2, .7]
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.1f); newValues.add(.2f); newValues.add(.7f);
+		engine.resolveQuestion(transactionKey, new Date(), 0x0EL, newValues);
+		
+		// resolve D to [.5,.5,0]
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.5f); newValues.add(.5f); newValues.add(0f);
+		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, newValues);
+		
+		// finally, commit the transaction
+		engine.commitNetworkActions(transactionKey);
+		
+		// make sure we cannot resolve question which is already resolved
+		try {
+			engine.resolveQuestion(null, new Date(), 0x0EL, newValues);
+			fail("Should throw exception indicating that we cannot resolve question which is resolved already");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		try {
+			engine.resolveQuestion(null, new Date(), 0x0DL, newValues);
+			fail("Should throw exception indicating that we cannot resolve question which is resolved already");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		
+		// check remaining nodes and probabilities
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals(probLists.toString(), engine.isToDeleteResolvedNode()?1:3, probLists.size());
+		
+		// F is  [.15, .275, .575]
+		assertEquals(probLists.toString(), probLists.get(0x0FL).get(0), .15f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0FL).get(1), .275f, PROB_ERROR_MARGIN);
+		assertEquals(probLists.toString(), probLists.get(0x0FL).get(2), .575f, PROB_ERROR_MARGIN);
+		
+	}
+	
+	/**
+	 * Test method for {@link MarkovEngineImpl#resolveQuestion(Long, Date, long, List)},
+	 * but this test will resolve a state to 0% and not to delete the question.
+	 */
+	public final void testResolveNegativeEvidence() {
+		
+		long seed = System.currentTimeMillis();
+		Random r = new Random(seed );
+		
+		// Create following network:
+		// E<-D->F, but each node has 3 states
+		
+		long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0x0DL, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0EL, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0FL, 3, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		
+		/*
+		 * Make trades in order to set P(D|E) to:
+		 * 		e0	e1	e2
+		 * d0	.1	.9	.2
+		 * d1	.2	0	.6
+		 * d2	.7	.1	.2
+		 */
+		List<Float> newValues = new ArrayList<Float>(3);
+		newValues.add(.1f); newValues.add(.2f); newValues.add(.7f);
+		engine.addTrade(transactionKey, new Date(), "P(D|e0)=[.1,.2,.7]", r.nextLong(), 0x0DL, newValues, 
+				Collections.singletonList(0x0EL), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.9f); newValues.add(0f); newValues.add(.1f);
+		engine.addTrade(transactionKey, new Date(), "P(D|e1)=[.9,0,.1]", r.nextLong(), 0x0DL, newValues, 
+				Collections.singletonList(0x0EL), Collections.singletonList(1), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.2f); newValues.add(.6f); newValues.add(.2f);
+		engine.addTrade(transactionKey, new Date(), "P(D|e2)=[.2,.6,.2]", r.nextLong(), 0x0DL, newValues, 
+				Collections.singletonList(0x0EL), Collections.singletonList(2), true);
+		
+		/*
+		 * Make trades in order to set P(F|D) to:
+		 * 		d0	d1	d2
+		 * f0	.25	.05	1
+		 * f1	.5	.05	0
+		 * f2	.25	.9	0
+		 */
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.25f); newValues.add(.5f); newValues.add(.25f);
+		engine.addTrade(transactionKey, new Date(), "P(F|d0)=[.25,.5,.25]", r.nextLong(), 0x0FL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.05f); newValues.add(.05f); newValues.add(.9f);
+		engine.addTrade(transactionKey, new Date(), "P(F|d1)=[.05,.05,.9]",r.nextLong(), 0x0FL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(1), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(1f); newValues.add(0f); newValues.add(0f);
+		engine.addTrade(transactionKey, new Date(), "P(F|d2)=[1,0,0]", r.nextLong(), 0x0FL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(2), true);
+		
+		engine.commitNetworkActions(transactionKey);
+		
+		// assert probabilities before resolving questions
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), 3, probLists.size());
+		// assert that D=[.4,.2667,.3333]
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0DL).get(0), .4f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0DL).get(1), .2667f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0DL).get(2), .3333f, PROB_ERROR_MARGIN);
+		// assert that E=[.3333,.3333,.3333]
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(0), .3333f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(1), .3333f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(2), .3333f, PROB_ERROR_MARGIN);
+		// assert that F=[.4466, .2133, .34]
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(0), .4466f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(1), .2133f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(2), .34f, PROB_ERROR_MARGIN);
+		
+		// resolve f1 to 0%
+		newValues = new ArrayList<Float>(3);
+		newValues.add((r.nextFloat()<.5)?-666f:13f); newValues.add(0f); newValues.add(Float.NaN);
+		engine.resolveQuestion(null, new Date(), 0x0FL, newValues);
+		
+		// check nodes and probabilities
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), 3, probLists.size());
+		// check probability of D
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0DL).get(0), .2542f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0DL).get(1), .3221f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0DL).get(2), .4237f, PROB_ERROR_MARGIN);
+		// check probability of E
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(0), .3983f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(1), .233f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(2), .3687f, PROB_ERROR_MARGIN);
+		// check probability of F
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(0), .5678f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(1), .0f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(2), .4322f, PROB_ERROR_MARGIN);
+		
+		// resolve d0 and d2 to 0%
+		newValues = new ArrayList<Float>(3);
+		newValues.add(0f); newValues.add(Float.NEGATIVE_INFINITY); newValues.add(0f);
+		engine.resolveQuestion(null, new Date(), 0x0DL, newValues);
+				
+		// check nodes and probabilities
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), 3, probLists.size());
+		// check probability of D
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0DL).get(0), 0f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0DL).get(1), 1f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0DL).get(2), 0f, PROB_ERROR_MARGIN);
+		// check probability of E
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(0), .25f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(1), .0f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(2), .75f, PROB_ERROR_MARGIN);
+		// check probability of F
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(0), .0526f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(1), .0f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(2), .9474f, PROB_ERROR_MARGIN);
+		
+		
+		// make sure we can re-resolve question D
+		newValues = new ArrayList<Float>(3);
+		newValues.add((r.nextFloat()<.5)?-1f:5f); newValues.add(1f) ; newValues.add((r.nextFloat()<.5)?-1f:5f);
+		engine.resolveQuestion(null, new Date(), 0x0DL, newValues);
+		
+		// make sure we cannot resolve question which is already resolved
+		try {
+			engine.resolveQuestion(null, new Date(), 0x0DL, newValues);
+			fail("Seed=" + seed + ";" + " Should throw exception indicating that we cannot resolve question which is resolved already");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		
+		// check nodes and probabilities
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), engine.isToDeleteResolvedNode()?2:3, probLists.size());
+		// check probability of E
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(0), .25f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(1), .0f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(2), .75f, PROB_ERROR_MARGIN);
+		// check probability of F
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(0), .0526f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(1), .0f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(2), .9474f, PROB_ERROR_MARGIN);
+		
+		// resolve f2 to 0%
+		newValues = new ArrayList<Float>(3);
+		newValues.add(null); newValues.add(Float.NaN) ; newValues.add(0f);
+		engine.resolveQuestion(null, new Date(), 0x0FL, newValues);
+		
+		// check nodes and probabilities
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), engine.isToDeleteResolvedNode()?2:3, probLists.size());
+		// check probability of E
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(0), .25f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(1), .0f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(2), .75f, PROB_ERROR_MARGIN);
+		// check probability of F
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(0), 1f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(1), .0f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(2), .0f, PROB_ERROR_MARGIN);
+		
+		// make sure we can re-resolve question F
+		newValues = new ArrayList<Float>(3);
+		newValues.add(1f); newValues.add(0f) ; newValues.add(0f);
+		engine.resolveQuestion(null, new Date(), 0x0FL, newValues);
+		
+		// make sure we cannot resolve question which is already resolved
+		try {
+			engine.resolveQuestion(null, new Date(), 0x0FL, newValues);
+			fail("Seed=" + seed + ";" + " Should throw exception indicating that we cannot resolve question which is resolved already");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		
+		// check nodes and probabilities
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), engine.isToDeleteResolvedNode()?1:3, probLists.size());
+		// check probability of E
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(0), .25f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(1), .0f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(2), .75f, PROB_ERROR_MARGIN);
+		
+		
+		
+		// check that providing everything unspecified is invalid
+		
+		newValues = new ArrayList<Float>(3);
+		for (int i = 0; i < 3; i++) {
+			switch (r.nextInt(6)) {
+			case 0:
+				newValues.add((float) (-r.nextInt(Integer.MAX_VALUE-1) - 1L));
+				break;
+			case 1:
+				newValues.add((float) (r.nextInt(Integer.MAX_VALUE-1) + 1L));
+				break;
+			case 2:
+				newValues.add(Float.NaN);
+				break;
+			case 3:
+				newValues.add(Float.POSITIVE_INFINITY);
+				break;
+			case 4:
+				newValues.add(Float.NEGATIVE_INFINITY);
+				break;
+			default:
+				newValues.add(null);
+				break;
+			}
+		}
+		transactionKey = engine.startNetworkActions();
+		try {
+			engine.resolveQuestion(transactionKey, new Date(), (r.nextFloat()<.33)?0x0DL:((r.nextFloat()<.5)?0x0EL:0x0FL), newValues);
+			fail("Seed=" + seed + ";" + " Should not allow all values to be unspecified. Seed=" + seed + ", values=" + newValues);
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		try {
+			engine.resolveQuestion(null, new Date(), (r.nextFloat()<.33)?0x0DL:((r.nextFloat()<.5)?0x0EL:0x0FL), newValues);
+			fail("Seed=" + seed + ";" + " Should not allow all values to be unspecified. Seed=" + seed+ ", values=" + newValues);
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		
+	}
+	
+	/**
+	 * Test method for {@link MarkovEngineImpl#resolveQuestion(Long, Date, long, List)},
+	 * but this test will resolve a state to 0% and not to delete the question.
+	 * Only 1 transaction will be comitted.
+	 */
+	public final void testResolveNegativeEvidenceSingleTransaction() {
+		long seed = System.currentTimeMillis();
+		Random r = new Random(seed );
+		
+		// Create following network:
+		// E<-D->F, but each node has 3 states
+		
+		long transactionKey = engine.startNetworkActions();
+		
+		engine.addQuestion(transactionKey, new Date(), 0x0DL, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0EL, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0FL, 3, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		
+		/*
+		 * Make trades in order to set P(D|E) to:
+		 * 		e0	e1	e2
+		 * d0	.1	.9	.2
+		 * d1	.2	0	.6
+		 * d2	.7	.1	.2
+		 */
+		List<Float> newValues = new ArrayList<Float>(3);
+		newValues.add(.1f); newValues.add(.2f); newValues.add(.7f);
+		engine.addTrade(transactionKey, new Date(), "P(D|e0)=[.1,.2,.7]", r.nextLong(), 0x0DL, newValues, 
+				Collections.singletonList(0x0EL), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.9f); newValues.add(0f); newValues.add(.1f);
+		engine.addTrade(transactionKey, new Date(), "P(D|e1)=[.9,0,.1]", r.nextLong(), 0x0DL, newValues, 
+				Collections.singletonList(0x0EL), Collections.singletonList(1), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.2f); newValues.add(.6f); newValues.add(.2f);
+		engine.addTrade(transactionKey, new Date(), "P(D|e2)=[.2,.6,.2]", r.nextLong(), 0x0DL, newValues, 
+				Collections.singletonList(0x0EL), Collections.singletonList(2), true);
+		
+		/*
+		 * Make trades in order to set P(F|D) to:
+		 * 		d0	d1	d2
+		 * f0	.25	.05	1
+		 * f1	.5	.05	0
+		 * f2	.25	.9	0
+		 */
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.25f); newValues.add(.5f); newValues.add(.25f);
+		engine.addTrade(transactionKey, new Date(), "P(F|d0)=[.25,.5,.25]", r.nextLong(), 0x0FL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.05f); newValues.add(.05f); newValues.add(.9f);
+		engine.addTrade(transactionKey, new Date(), "P(F|d1)=[.05,.05,.9]",r.nextLong(), 0x0FL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(1), true);
+		newValues = new ArrayList<Float>(3);
+		newValues.add(1f); newValues.add(0f); newValues.add(0f);
+		engine.addTrade(transactionKey, new Date(), "P(F|d2)=[1,0,0]", r.nextLong(), 0x0FL, newValues, 
+				Collections.singletonList(0x0DL), Collections.singletonList(2), true);
+		
+		
+		
+		// resolve f1 to 0%
+		newValues = new ArrayList<Float>(3);
+		newValues.add((r.nextFloat()<.5)?-666f:13f); newValues.add(0f); newValues.add(Float.NaN);
+		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, newValues);
+		
+		
+		// resolve d0 and d2 to 0%
+		newValues = new ArrayList<Float>(3);
+		newValues.add(0f); newValues.add(Float.NEGATIVE_INFINITY); newValues.add(0f);
+		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, newValues);
+				
+		
+		
+		// make sure we can re-resolve question D
+		newValues = new ArrayList<Float>(3);
+		newValues.add((r.nextFloat()<.5)?-1f:5f); newValues.add(1f) ; newValues.add((r.nextFloat()<.5)?-1f:5f);
+		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, newValues);
+		
+		
+		
+		// resolve f2 to 0%
+		newValues = new ArrayList<Float>(3);
+		newValues.add(null); newValues.add(Float.NaN) ; newValues.add(0f);
+		engine.resolveQuestion(transactionKey, new Date(), 0x0FL, newValues);
+		
+		engine.commitNetworkActions(transactionKey);
+		
+		// check nodes and probabilities
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), engine.isToDeleteResolvedNode()?2:3, probLists.size());
+		// check probability of E
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(0), .25f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(1), .0f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0EL).get(2), .75f, PROB_ERROR_MARGIN);
+		// check probability of F
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(0), 1f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(1), .0f, PROB_ERROR_MARGIN);
+		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(2), .0f, PROB_ERROR_MARGIN);
+		
+		
 	}
 	
 	/**

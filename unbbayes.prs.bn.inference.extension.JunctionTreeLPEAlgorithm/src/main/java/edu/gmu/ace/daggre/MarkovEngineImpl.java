@@ -48,6 +48,7 @@ import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor.CliqueEvidenceUpdater;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor.NoCliqueException;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
+import unbbayes.prs.bn.inference.extension.AbstractAssetNetAlgorithm.EvidenceType;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm.ExpectedAssetCellMultiplicationListener;
 import unbbayes.prs.bn.inference.extension.AssetPropagationInferenceAlgorithm;
@@ -689,7 +690,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// check if we can integrate several resolutions into a single mass resolution (if there are resolutions in sequence)
 				if (isToIntegrateConsecutiveResolutions() && 
 						(action instanceof ResolveQuestionNetworkAction) 
-						&& (i+1 < actions.size()) && (actions.get(i+1) instanceof ResolveQuestionNetworkAction)) {
+						&& ((ResolveQuestionNetworkAction)action).isHardEvidenceAction()	// can only integrate hard evidence, because soft evidence must be executed in sequence) {
+						&& (i+1 < actions.size()) && (actions.get(i+1) instanceof ResolveQuestionNetworkAction)
+						&& ((ResolveQuestionNetworkAction)actions.get(i+1)).isHardEvidenceAction() // can only integrate hard evidence, because soft evidence must be executed in sequence) {
+						&& !action.getQuestionId().equals(actions.get(i+1).getQuestionId())) {	// do not aggregate consecutive settlements to same question (possible in negative hard evidence)
 					
 					// store the series of resolutions
 					List<ResolveQuestionNetworkAction> consecutiveResolutions = new ArrayList<MarkovEngineImpl.ResolveQuestionNetworkAction>();
@@ -697,10 +701,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					consecutiveResolutions.add((ResolveQuestionNetworkAction) action);
 					consecutiveResolutions.add((ResolveQuestionNetworkAction)actions.get(++i));
 					
+					// store what question Ids were already handled, so that we stop when there were 2 settlements to same question within same transaction
+					// (this can happen because settling a state to 0% won't settle the whole question)
+					Set<Long> questionIdsConsidered = new HashSet<Long>();
+					questionIdsConsidered.add(action.getQuestionId());
+					questionIdsConsidered.add(actions.get(i).getQuestionId());	// because we called ++i before, now i points to the second action
+					
 					// check if there are more resolutions following the above two
 					while (++i < actions.size()) {
-						if (actions.get(i) instanceof ResolveQuestionNetworkAction) {
+						if (actions.get(i) instanceof ResolveQuestionNetworkAction 
+								&& ((ResolveQuestionNetworkAction)actions.get(i)).isHardEvidenceAction() 	// can only integrate hard evidence, because soft evidence must be executed in sequence
+								&& !questionIdsConsidered.contains(actions.get(i).getQuestionId())) {		// do not aggregate if there is a settlement to this question already in the aggregated instance
 							consecutiveResolutions.add((ResolveQuestionNetworkAction) actions.get(i));
+							questionIdsConsidered.add(actions.get(i).getQuestionId());	// do not forget to update the set of question IDs handled already.
 						} else {
 							// the i should be pointing to the last instance of ResolveQuestionNetworkAction 
 							// (so that in next iteration of for it will point to an action which is not a ResolveQuestionNetworkAction)
@@ -3093,7 +3106,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.occurredWhen = (occurredWhen == null)?-1:occurredWhen.getTime();
 			this.questionId = questionId;
 			this.settlement = settlement;
-			
 		}
 		public void execute() {
 			long currentTimeMillis = System.currentTimeMillis();
@@ -3204,8 +3216,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 				}
 			}
-			synchronized (getResolvedQuestions()) {
-				getResolvedQuestions().put(getQuestionId(), new StatePair(getSettlement()));
+			if (isToObtainProbabilityOfResolvedQuestions()) {
+				// extract what is the settled state, so that we can use it to check whether this was a negative hard evidence
+				// (which shall not be considered actually as "resolved" - because we only resolved a state)
+				Integer settledState = this.getSettledState();
+				synchronized (getResolvedQuestions()) {
+					if (settledState == null || settledState >= 0) {
+						getResolvedQuestions().put(getQuestionId(), new StatePair(getSettlement()));
+					} // else, this is a negative finding, so shall not be considered as actually "resolved"
+				}
 			}
 			try {
 				Debug.println(getClass(), "Executed resolve, " + ((System.currentTimeMillis()-currentTimeMillis)));
@@ -3264,7 +3283,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				this.whenExecutedFirst = whenExecutedFirst.getTime(); 
 			}
 		}
-		public boolean isHardEvidenceAction() {return true; }
+		/**
+		 * Uses {@link AssetAwareInferenceAlgorithm#getEvidenceType(List)}
+		 * to determine whether {@link #getSettlement()} is a hard evidence.
+		 * @see edu.gmu.ace.daggre.NetworkAction#isHardEvidenceAction()
+		 */
+		public boolean isHardEvidenceAction() {
+			synchronized (getDefaultInferenceAlgorithm()) {
+				EvidenceType evidenceType = getDefaultInferenceAlgorithm().getEvidenceType(settlement);
+				return (evidenceType == EvidenceType.HARD_EVIDENCE || evidenceType == EvidenceType.NEGATIVE_HARD_EVIDENCE);
+			}
+		}
 		public Boolean isCorrectiveTrade() {return getCorrectedTrade() != null;}
 		public NetworkAction getCorrectedTrade() {return null; }
 		/** This action does not trigger another rebuild */
@@ -3360,14 +3389,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						} else {
 							// do nothing if node is already settled at settledState
 						}
-						if (probNode.getEvidence() != action.getSettledState()) {	// note: probNode.getEvidence() < 0 if there is no evidence
+//						if (probNode.getEvidence() != action.getSettledState()) {	// note: probNode.getEvidence() < 0 if there is no evidence
 							// store the marginal of this node before the resolution
 							ArrayList<Float> marginalBeforeResolution = new ArrayList<Float>(probNode.getStatesSize());
 							for (int i = 0; i < probNode.getStatesSize(); i++) {
 								marginalBeforeResolution.add(probNode.getMarginalAt(i));
 							}
 							action.setMarginalWhenResolved(marginalBeforeResolution);
-						}
+//						}
 						// in the map which will be passed to the algorithm, mark that this node has an evidence at this state
 						mapOfEvidences.put(probNode, action.getSettlement());
 						// update the map to be used to update the history all at once at the end of this method
@@ -3438,9 +3467,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			
 			// update the history of resolved questions
-			synchronized (getResolvedQuestions()) {
-				getResolvedQuestions().putAll(mapForHistory);
+			if (isToObtainProbabilityOfResolvedQuestions()) {
+				for (Entry<Long, StatePair> entry : mapForHistory.entrySet()) {
+					// extract what is the settled state, so that we can use it to check whether this was a negative hard evidence
+					Integer settledState = entry.getValue().getResolvedState();
+					synchronized (getResolvedQuestions()) {
+						if (settledState == null || settledState >= 0) {
+							// only include those which are not negative finding (in negative finding we are resolving states rather than questions)
+							getResolvedQuestions().put(entry.getKey(),entry.getValue());
+						} // else, this is a negative finding, so shall not be considered as actually "resolved"
+					}
+				}
 			}
+			
 			try {
 				Debug.println(getClass(), "Executed resolve set, " + ((System.currentTimeMillis()-currentTimeMillis)));
 			} catch (Throwable t) {
@@ -3625,6 +3664,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 			}
 		}
+		
+		// check if settlement can be categorized to a supported type of evidence
+		synchronized (getDefaultInferenceAlgorithm()) {
+			if (getDefaultInferenceAlgorithm().getEvidenceType(settlement) == null) {
+				throw new IllegalArgumentException(settlement + " could not be categorized into any supported type of settlement for question " + questionId);
+			}
+		}
+		
+		
 		
 		// create network actions
 		if (transactionKey == null) {
@@ -10758,6 +10806,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// do not update assets if isToAddArcsOnlyToProbabilisticNetwork == true
 			this.getDefaultInferenceAlgorithm().setToUpdateAssets(false);
 			
+			// in this mode, we won't need to obtain probability of resolved questions either.
+			this.setToObtainProbabilityOfResolvedQuestions(false);
 		} 
 		
 	}

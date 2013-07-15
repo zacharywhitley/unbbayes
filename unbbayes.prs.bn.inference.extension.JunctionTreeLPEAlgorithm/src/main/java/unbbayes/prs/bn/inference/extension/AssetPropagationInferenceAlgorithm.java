@@ -2658,6 +2658,13 @@ public class AssetPropagationInferenceAlgorithm extends AbstractAssetNetAlgorith
 				sep.getProbabilityFunction().copyData();
 			}
 		}
+		
+		// by default, reset evidence of all nodes handled in this method
+		for (INode node : origEvidences.keySet()) {
+			if (node instanceof TreeVariable) {
+				((TreeVariable) node).resetEvidence();
+			}
+		}
 	}
 
 //	/**
