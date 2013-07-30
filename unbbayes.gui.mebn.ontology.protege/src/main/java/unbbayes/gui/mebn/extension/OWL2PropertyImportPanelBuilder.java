@@ -27,6 +27,7 @@ import javax.swing.SwingConstants;
 import javax.swing.TransferHandler;
 
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLProperty;
 
 import unbbayes.controller.mebn.IMEBNMediator;
@@ -37,7 +38,9 @@ import unbbayes.gui.mebn.MEBNGraphPane;
 import unbbayes.gui.mebn.MEBNNetworkWindow;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
+import unbbayes.io.mebn.owlapi.DefaultPROWL2ModelUser;
 import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
+import unbbayes.io.mebn.owlapi.IPROWL2ModelUser;
 import unbbayes.prs.INode;
 import unbbayes.prs.mebn.IMEBNElementFactory;
 import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
@@ -58,6 +61,8 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 	private IMEBNElementFactory mebnFactory;
 	private JToggleButton btnTabOptionDefinesUncertaintyOf;
 	private String definesUncertaintyOfCardLayoutID = "DefinesUncertaintyOf";
+	
+	private IPROWL2ModelUser prowlModelUserDelegator = DefaultPROWL2ModelUser.getInstance();
 
 	/**
 	 * Default constructor with no arguments must be visible for plug-in compatibility.
@@ -406,16 +411,16 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 		if (property == null) {
 			return "null";
 		}
-		if (property instanceof OWLProperty) {
-			String name = ((OWLProperty)property).toStringID();
-			// use only what resides after '#'
-			try {
-				name = name.substring(name.lastIndexOf('#')+1);
-			} catch (Exception e) {
-				e.printStackTrace();
-				// It is OK. Use the available name though
-			}
-			return name;
+		if (property instanceof OWLObject) {
+//			String name = ((OWLObject)property).toStringID();
+//			// use only what resides after '#'
+//			try {
+//				name = name.substring(name.lastIndexOf('#')+1);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//				// It is OK. Use the available name though
+//			}
+			return this.getProwlModelUserDelegator().extractName((OWLObject) property);
 		}
 		return property.toString();
 	}
@@ -468,4 +473,23 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 	public void setDefinesUncertaintyOfCardLayoutID (String definesUncertaintyOfCardLayoutID) {
 		this.definesUncertaintyOfCardLayoutID = definesUncertaintyOfCardLayoutID;
 	}
+	
+	
+	/**
+	 * Calls to {@link IPROWL2ModelUser} will be delegated to this object.
+	 * @return the prowlModelUserDelegator
+	 */
+	public IPROWL2ModelUser getProwlModelUserDelegator() {
+		return prowlModelUserDelegator;
+	}
+
+	/**
+	 * Calls to {@link IPROWL2ModelUser} will be delegated to this object.
+	 * @param prowlModelUserDelegator the prowlModelUserDelegator to set
+	 */
+	public void setProwlModelUserDelegator(
+			IPROWL2ModelUser prowlModelUserDelegator) {
+		this.prowlModelUserDelegator = prowlModelUserDelegator;
+	}
+	
 }

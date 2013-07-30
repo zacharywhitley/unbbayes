@@ -114,9 +114,19 @@ public class DefaultPROWL2ModelUser implements IPROWL2ModelUser {
 		}
 		// if this entity has an ID, extract what is after '#'
 		if (owlObject instanceof OWLEntity) {
+			// consider that the name is the fragment portion of IRI
 			String name = ((OWLEntity)owlObject).getIRI().getFragment();
 			if (name == null) {
-				return ((OWLEntity)owlObject).toStringID();
+				// consider that the name is the portion of IRI without the "start" portion
+				name = ((OWLEntity)owlObject).getIRI().toString().substring(((OWLEntity)owlObject).getIRI().getStart().length());
+				if (name.trim().isEmpty() || name.contains("#") || name.contains("/")) {
+					// the IRI without the "start" portion has unexpected format, so try the next approach
+					name = null;
+				}
+			}
+			if (name == null) {
+				// default: simply call toString
+				name = ((OWLEntity)owlObject).toStringID();
 			}
 			return name;
 		}
