@@ -38,6 +38,7 @@ import unbbayes.gui.mebn.MEBNGraphPane;
 import unbbayes.gui.mebn.MEBNNetworkWindow;
 import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.extension.editor.IMEBNEditionPanelBuilder;
+import unbbayes.gui.mebn.ontology.protege.OWLPropertyViewerPanel;
 import unbbayes.io.mebn.owlapi.DefaultPROWL2ModelUser;
 import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.io.mebn.owlapi.IPROWL2ModelUser;
@@ -63,6 +64,7 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 	private String definesUncertaintyOfCardLayoutID = "DefinesUncertaintyOf";
 	
 	private IPROWL2ModelUser prowlModelUserDelegator = DefaultPROWL2ModelUser.getInstance();
+	private OWLPropertyViewerPanel propertyViewerPanel;
 
 	/**
 	 * Default constructor with no arguments must be visible for plug-in compatibility.
@@ -157,7 +159,12 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 		// add a panel to be displayed when the above button is toggled
 		if (this.getMebn() != null && this.getMebn().getStorageImplementor() != null && (this.getMebn().getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator)) {
 			// show OWL properties hold by MEBN as its storage implementor (usually, MEBN holds who is implementing his storage)
-			this.getNewWindow().getJpTabSelected().add(this.getOwlPropertyCardLayoutID(), OWL2PropertyViewerPanel.newInstance(this.getMebn()));
+			if (getPropertyViewerPanel() == null) {
+				setPropertyViewerPanel(OWL2PropertyViewerPanel.newInstance(this.getMebn()));
+			} else {
+				getPropertyViewerPanel().resetComponents();
+			}
+			this.getNewWindow().getJpTabSelected().add(this.getOwlPropertyCardLayoutID(), getPropertyViewerPanel());
 		} else {
 			// this MEBN is not holding an OWL model (this is a new model or it is not an PR-OWL project)
 			this.getNewWindow().getJpTabSelected().add(this.getOwlPropertyCardLayoutID(), new JScrollPane(new JLabel(this.getResource().getString("NoOWLModelFound"), SwingConstants.LEFT)));
@@ -490,6 +497,20 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 	public void setProwlModelUserDelegator(
 			IPROWL2ModelUser prowlModelUserDelegator) {
 		this.prowlModelUserDelegator = prowlModelUserDelegator;
+	}
+
+	/**
+	 * @return the propertyViewerPanel
+	 */
+	public OWLPropertyViewerPanel getPropertyViewerPanel() {
+		return propertyViewerPanel;
+	}
+
+	/**
+	 * @param propertyViewerPanel the propertyViewerPanel to set
+	 */
+	public void setPropertyViewerPanel(OWLPropertyViewerPanel propertyViewerPanel) {
+		this.propertyViewerPanel = propertyViewerPanel;
 	}
 	
 }

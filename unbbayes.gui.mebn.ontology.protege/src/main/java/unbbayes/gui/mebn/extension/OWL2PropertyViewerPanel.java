@@ -89,9 +89,45 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 	protected void initComponents() {
 		OWLOntology owlOntology = ((IOWLAPIStorageImplementorDecorator)this.getMebn().getStorageImplementor()).getAdaptee();
 		OWLOntologyManager ontologyManager = owlOntology.getOWLOntologyManager();
-		OWLDataFactory owlModel = ontologyManager.getOWLDataFactory();
 		
-		// create list data
+		// the list of object properties (including imports)
+		List<OWLProperty> objProperties = new ArrayList<OWLProperty>(owlOntology.getObjectPropertiesInSignature(true));
+		// extract data properties (including imports)
+		List<OWLProperty> dataProperties = new ArrayList<OWLProperty>(owlOntology.getDataPropertiesInSignature(true));
+		
+		// refill list if there was any change in size
+		if (getPropertyList() == null || getPropertyList().getModel().getSize() != objProperties.size() + dataProperties.size()) {
+			// fill value of this.getPropertyList()
+			this.setUpPropertyList(objProperties, dataProperties);
+		}
+		
+		
+		// wrap list with scroll pane
+		this.setPropertyListScrollPane(ComponentFactory.createScrollPane(this.getPropertyList()));
+		this.getPropertyListScrollPane().setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		
+		// Wrap the list together with a button bar
+//        this.setOwlLabeledComponent(new OWLLabeledComponent(this.getResource().getString("OWLProperties"), this.getPropertyListScrollPane()));
+
+		this.setLayout(new BorderLayout());
+		this.setBorder(MebnToolkit.getBorderForTabPanel(this.getResource().getString("DnDOWLProperty")));
+		this.add(this.getPropertyListScrollPane(), BorderLayout.CENTER);
+	}
+
+
+	/**
+	 * Fill {@link #getPropertyList()} with object properties and data properties provided in the argument.
+	 * The content of {@link #getPropertyListModel()} will be changed.
+	 * The content of {@link #getPropertyList()} will be also changed, because {@link #setPropertyList(JList)} is called
+	 * internally.
+	 * @param objProperties : the owl object properties to be inserted to the resulting JList.
+	 * @param dataProperties  : the owl data properties to be inserted to the resulting JList.
+	 * @return a JList to be inserted to {@link #setPropertyListScrollPane(JScrollPane)}
+	 * @see #initComponents()
+	 */
+	protected void setUpPropertyList(List<OWLProperty> objProperties, List<OWLProperty> dataProperties) {
+		
+		// create/initialize list data
 		this.setPropertyListModel(new DefaultListModel());
 		
 		// prepare comparator so that we can sort the properties by name
@@ -122,29 +158,35 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 			}
 		};
 		
-		// fill list data with object properties (including imports)
-		List<OWLProperty> properties = new ArrayList<OWLProperty>(owlOntology.getObjectPropertiesInSignature(true));
-		if (properties.size() < getPropertySizeToAllowSorting()) {
-			Collections.sort(properties, owlPropertyNameComparator);    // sort by name
+		if (objProperties.size() < getPropertySizeToAllowSorting()) {
+			Collections.sort(objProperties, owlPropertyNameComparator);    // sort by name
 		}
+		
 		// fill list model with sorted data
-		for (OWLObject property : properties) {
+		for (OWLObject property : objProperties) {
 			this.getPropertyListModel().addElement(property);
 		}
 		
 		
-		// fill list data with data properties (including imports)
-		properties = new ArrayList<OWLProperty>(owlOntology.getDataPropertiesInSignature(true));
-		if (properties.size() < getPropertySizeToAllowSorting()) {
-			Collections.sort(properties, owlPropertyNameComparator);	// sort by name
+		// sort data properties if list is smaller than certain limit
+		if (dataProperties.size() < getPropertySizeToAllowSorting()) {
+			Collections.sort(dataProperties, owlPropertyNameComparator);	// sort by name
 		}
 		// fill list model with sorted data
-		for (OWLObject property : properties) {
+		for (OWLObject property : dataProperties) {
 			this.getPropertyListModel().addElement(property);
 		}
 		
-		// create list on GUI
-		this.setPropertyList(new JList(this.getPropertyListModel()));
+		if (this.getPropertyList() == null) {
+			// create list on GUI
+			this.setPropertyList(new JList(this.getPropertyListModel()));
+		} else {
+			// reset the property list being filled
+			this.getPropertyList().removeAll();
+			this.getPropertyList().setModel(this.getPropertyListModel());
+			this.getPropertyList().updateUI();
+		}
+		
 		try {
 			// If Protege is loaded, make sure entries are shown up nicely, with icons
 			this.getPropertyList().setCellRenderer(new OWLCellRenderer(((IProtegeStorageImplementorDecorator)this.getMebn().getStorageImplementor()).getOWLEditorKit()));	
@@ -153,17 +195,6 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 		}
 		this.getPropertyList().setDragEnabled(true);	// enable drag and drop
 		this.getPropertyList().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		
-		// wrap list with scroll pane
-		this.setPropertyListScrollPane(ComponentFactory.createScrollPane(this.getPropertyList()));
-		this.getPropertyListScrollPane().setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		
-		// Wrap the list together with a button bar
-//        this.setOwlLabeledComponent(new OWLLabeledComponent(this.getResource().getString("OWLProperties"), this.getPropertyListScrollPane()));
-
-		this.setLayout(new BorderLayout());
-		this.setBorder(MebnToolkit.getBorderForTabPanel(this.getResource().getString("DnDOWLProperty")));
-		this.add(this.getPropertyListScrollPane(), BorderLayout.CENTER);
 	}
 
 
@@ -263,6 +294,7 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 			// OK, we may have a little memory leak, but the application should work with no much problem
 			e.printStackTrace();
 		}
+		
 		super.resetComponents();
 	}
 
