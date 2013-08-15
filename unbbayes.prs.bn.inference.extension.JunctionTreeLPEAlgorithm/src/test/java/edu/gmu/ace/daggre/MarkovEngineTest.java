@@ -25954,16 +25954,18 @@ public class MarkovEngineTest extends TestCase {
 	 * for 2000 vars and randomly created arcs (max 10 parents)
 	 */
 	public final void testExportImport2000Vars() {
-		int numNodes = 2000;	// total quantity of nodes in the network
-		int maxNumStates = 5;	// how many states a node can have at most. The minimum is expected to be 2, but this var should not be set to 2
+		int numNodes = 1000;//2000;	// total quantity of nodes in the network
+		int maxNumStates = 2;//5;	// how many states a node can have at most. The minimum is expected to be 2, but this var should not be set to 2
 		int maxNumParents = 10;	// maximum number of parents per node 
 		float probAddArcs = .00065f;	// what is the probability to add arcs. The higher, more arcs are likely to be created.
-		float probTrade = .05f;	// how many nodes will be traded
+		float probTrade = 1f;//.05f;	// how many nodes will be traded
 		boolean isToMakeAllTrades = true;	// if false, trades will be cancelled if they are taking too much time
-		float probAddAssumption = .15f;	// what is the probability to add assumptions in trades. The higher, more assumptions are likely to be used.
-		long seed = 1370447826016L;//new Date().getTime();
+		float probAddAssumption = 0.2f;//;.15f;	// what is the probability to add assumptions in trades. The higher, more assumptions are likely to be used.
+		long seed = new Date().getTime();
 		Random random = new Random(seed);
-		float probTradeBeforeArcs = 0.05f;
+		float probTradeBeforeArcs = 0f;//0.05f;
+		
+		Debug.setDebug(true);
 		
 		
 		// backup config
@@ -25979,11 +25981,15 @@ public class MarkovEngineTest extends TestCase {
 		long transactionKey = engine.startNetworkActions();
 		for (int i = 0; i < numNodes; i++) {
 			// random quantity of states: from 2 to ( 2 + (4-1) ) = 5
-			engine.addQuestion(transactionKey, new Date(), i, 2+random.nextInt(maxNumStates-2), null);
+			if (maxNumStates > 2) {
+				engine.addQuestion(transactionKey, new Date(), i, 2+random.nextInt(maxNumStates-2), null);
+			} else {
+				engine.addQuestion(transactionKey, new Date(), i, 2, null);
+			}
 		}
 		engine.commitNetworkActions(transactionKey);
 		
-		// vetor representing how many parents a node has
+		// vector representing how many parents a node has
 		int[] numParentsPerNode = new int[numNodes];
 		// initialize vector
 		for (int i = 0; i < numParentsPerNode.length; i++) {
@@ -26054,7 +26060,11 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 		
+		// store current time in order to see how long the trades took
+		long timeMillis = System.currentTimeMillis();
+		
 		// make trades on all variables
+		long numTrades = 0;	// how many trades were performed
 		for (long questionId = 0; questionId < numNodes; questionId++) {
 			ProbabilisticNode node = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode(Long.toString(questionId));
 			assertNotNull(node);
@@ -26100,6 +26110,7 @@ public class MarkovEngineTest extends TestCase {
 					assumedStates, 
 					true
 				);
+			numTrades++;
 			if (!isToMakeAllTrades && System.currentTimeMillis() - time >= 1000) {
 				// do not add more trades if it is more than 1s
 				break;
@@ -26109,6 +26120,9 @@ public class MarkovEngineTest extends TestCase {
 				probTrade = probTrade/2;
 			}
 		}
+		
+		System.out.println("Number of trades = " + numTrades);
+		System.out.println("Elapsed time for trades (ms) = " + (System.currentTimeMillis() - timeMillis));
 		
 		// settle some question which has 2 or more parents
 		for (int i = 0; i < engine.getProbabilisticNetwork().getNodes().size();i++) {
@@ -26134,6 +26148,208 @@ public class MarkovEngineTest extends TestCase {
 		
 		System.out.println(engine.getNetStatistics().toString());
 		System.out.println("seed = " + seed);
+		// store network as a string
+		long timeBefore = System.currentTimeMillis();
+		String netAsString = engine.exportState();
+		System.out.println("Time (ms) to export network = " + (System.currentTimeMillis() - timeBefore));
+		System.out.println("seed = " + seed);
+		
+		assertNotNull(netAsString);
+		assertFalse(netAsString.trim().isEmpty());
+		
+		System.out.println(netAsString);
+		
+		// load network from the obtained string
+		timeBefore = System.currentTimeMillis();
+		engine.importState(netAsString);
+		System.out.println("Time (ms) to import network = " + (System.currentTimeMillis() - timeBefore));
+		System.out.println("seed = " + seed);
+		
+		// check if the loaded network matches previous network
+		assertNotNull(engine.getProbabilisticNetwork());
+		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree());
+		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree().getCliques());
+		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree().getSeparators());
+		
+		// check number of nodes and arcs
+		assertEquals(cloneNet.getNodeCount(), engine.getProbabilisticNetwork().getNodeCount());
+		assertEquals(cloneNet.getEdges().size(), engine.getProbabilisticNetwork().getEdges().size());
+		
+		// check parents and marginals
+		for (Node oldNode : cloneNet.getNodes()) {
+			Node newNode = engine.getProbabilisticNetwork().getNode(oldNode.getName());
+			assertNotNull(oldNode + " not found.", newNode);
+			// if number of parents matches and all parents in old node are included in parents of new node, then they are equal
+			assertEquals(oldNode.getParentNodes().size(), newNode.getParentNodes().size());
+			for (INode oldParent : oldNode.getParentNodes()) {
+				assertTrue(oldParent + " is supposed to be a parent of " + newNode, newNode.getParentNodes().contains(oldParent));
+			}
+			// check that number of states are the same
+			assertEquals(oldNode.getName(), oldNode.getStatesSize(), newNode.getStatesSize());
+			// at least, check if marginals are the same
+			for (int i = 0; i < oldNode.getStatesSize(); i++) {
+				assertEquals(oldNode.getName(), ((ProbabilisticNode)oldNode).getMarginalAt(i), ((ProbabilisticNode)newNode).getMarginalAt(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// Note: cliques and separators are not mandatory to be precisely equal, because they are built by heuristics
+		
+		
+		// restore backup 
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+	}
+	
+	/**
+	 * Test method for {@link MarkovEngineImpl#exportState()}
+	 * and {@link MarkovEngineImpl#importState(String)}
+	 * for 1000 vars and randomly created arcs (max 10 parents)
+	 */
+	public final void testExportImport1000VarsTW10() {
+		int numNodes = 1000;//2000;	// total quantity of nodes in the network
+		int maxNumStates = 2;//5;	// how many states a node can have at most. The minimum is expected to be 2, but this var should not be set to 2
+		int maxNumParents = 10;	// maximum number of parents per node 
+		float probTrade = 1f;//.05f;	// how many nodes will be traded
+		boolean isToMakeAllTrades = true;	// if false, trades will be cancelled if they are taking too much time
+		float probAddAssumption = 0.2f;//;.15f;	// what is the probability to add assumptions in trades. The higher, more assumptions are likely to be used.
+		long seed = new Date().getTime();
+		Random random = new Random(seed);
+		
+		Debug.setDebug(true);
+		
+		
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		if (!isToAddArcsOnlyToProbabilisticNetwork) {
+			engine.setToAddArcsOnlyToProbabilisticNetwork(true);
+		}
+		
+		System.out.println("[testExportImport1000VarsTW10] Random seed = " + seed);
+		
+		
+		// create the nodes
+		long transactionKey = engine.startNetworkActions();
+		for (int i = 0; i < numNodes; i++) {
+			// random quantity of states: from 2 to ( 2 + (4-1) ) = 5
+			if (maxNumStates > 2) {
+				engine.addQuestion(transactionKey, new Date(), i, 2+random.nextInt(maxNumStates-2), null);
+			} else {
+				engine.addQuestion(transactionKey, new Date(), i, 2, null);
+			}
+		}
+//		engine.commitNetworkActions(transactionKey);
+		
+		// create arcs randomly
+//		transactionKey = engine.startNetworkActions();
+		for (int i = maxNumParents; i < numNodes; i+=maxNumParents) {
+			List<Long> parentIds = new ArrayList<Long>(maxNumParents);
+			for (int j = 0; j < maxNumParents; j++) {
+				parentIds.add((long) (i-(1+j)));
+			}
+			engine.addQuestionAssumption(transactionKey, new Date(), i, parentIds, null);
+		}
+		// connect the last few questions (the rest which did not complete maxNumParent nodes)
+		// there are (numNodes-1) % maxNumParents remaining unconnected nodes
+		if ((numNodes-1) % maxNumParents != 0) {
+			// there are remaining nodes
+			List<Long> remainingNodesIds = new ArrayList<Long>((numNodes-1) % maxNumParents);
+			for (long i = 0; i < ((numNodes-1) % maxNumParents); i++) {
+				remainingNodesIds.add(numNodes-(2+i));
+			}
+			engine.addQuestionAssumption(transactionKey, new Date(), (numNodes-1), remainingNodesIds, null);
+		}
+		
+		
+		engine.commitNetworkActions(transactionKey);
+		
+		
+		System.out.println(engine.getNetStatistics().toString());
+		System.out.println("seed = " + seed);
+		
+		// check that the marginals are initialized
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			for (int j = 0; j < entry.getValue().size(); j++) {
+				assertEquals(entry.toString(),1f/entry.getValue().size(), entry.getValue().get(j), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// store current time in order to see how long the trades took
+		long timeMillis = System.currentTimeMillis();
+		
+		// make trades on all variables
+		long numTrades = 0;	// how many trades were performed
+		for (long questionId = 0; questionId < numNodes; questionId++) {
+			ProbabilisticNode node = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode(Long.toString(questionId));
+			assertNotNull(node);
+			
+			if (!node.getParentNodes().isEmpty()) {
+				if (random.nextFloat() > probTrade) {
+					continue;
+				}
+			}
+			// the trade to be performed
+			List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
+			float sumForNormalization = 0f;
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				newValues.add(random.nextFloat());
+				sumForNormalization += newValues.get(i);
+			}
+			// normalize the newValues
+			for (int i = 0; i < newValues.size(); i++) {
+				newValues.set(i, newValues.get(i)/sumForNormalization);
+			}
+			
+			List<Long> assumptionIds = new ArrayList<Long>(node.getParentNodes().size());
+			List<Integer> assumedStates = new ArrayList<Integer>(node.getParentNodes().size());
+			
+			// randomly select assumptions
+			for (INode parent : node.getParentNodes()) {
+				// use prob to add assumption
+				if (random.nextFloat() < probAddAssumption) {
+					assumptionIds.add(Long.parseLong(parent.getName()));
+					assumedStates.add(random.nextInt(parent.getStatesSize()));	// random state from 0 to parent.getStatesSize()-1
+				}
+			}
+			
+			long time = System.currentTimeMillis();
+			engine.addTrade(
+					null, 
+					new Date(), 
+					"P(" + questionId + " | " + assumptionIds + "=" + assumedStates+") = " + newValues, 
+					0, 
+					questionId, 
+					newValues, 
+					assumptionIds, 
+					assumedStates, 
+					true
+					);
+			numTrades++;
+			if (!isToMakeAllTrades && System.currentTimeMillis() - time >= 1000) {
+				// do not add more trades if it is more than 1s
+				break;
+			}
+			if (!isToMakeAllTrades && System.currentTimeMillis() - time >= 100) {
+				// trade on less questions if its more than half second
+				probTrade = probTrade/2;
+			}
+		}
+		
+		System.out.println("Number of trades = " + numTrades);
+		System.out.println("Elapsed time for trades (ms) = " + (System.currentTimeMillis() - timeMillis));
+		
+		// backup network to check afterwards
+		ProbabilisticNetwork cloneNet = null;
+		try {
+			cloneNet = (ProbabilisticNetwork) engine.getDefaultInferenceAlgorithm().clone(false).getNetwork(); // do not clone asset net
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			fail();
+		}	
+		assertNotNull(cloneNet);
+		
+		
+		System.out.println(engine.getNetStatistics().toString());
+		System.out.println("seed = " + seed);
+		
 		// store network as a string
 		long timeBefore = System.currentTimeMillis();
 		String netAsString = engine.exportState();
