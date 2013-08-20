@@ -220,6 +220,10 @@ public class ValueTree implements IValueTree {
 //		if (anchor == null) {
 //			node.setProbCache(ret);
 //		}
+		if (node == null && anchor != null) {
+			// we reached root without passing though anchor. This means anchor is not in the path between node and root (so anchor is not ancestor of node)
+			throw new IllegalArgumentException("The anchor (reference) " + anchor + " is expected to be an ancestor of node " + node + ", but it was not.");
+		}
 		return ret;
 	}
 
@@ -241,43 +245,51 @@ public class ValueTree implements IValueTree {
 		float complementaryRatio = (1-prob)/(1-prevProb);
 		
 		// change the faction of the node by using the ratio
-		node.setFaction(node.getFaction()*prob*prevProb);
+		node.setFaction(node.getFaction()*(prob/prevProb));
 		
 		// iterate towards anchor (or root) to set factions of other nodes
 		float probCurrentNode = prob;	// this will hold probability of target initially, and then of its ancestors during the loop
+		List<IValueTreeNode> children = null;	//this will hold what are the siblings (of currently managed node) now. 
 		do {
 			IValueTreeNode parent = node.getParent();
 			
 			// 1 - adjust faction of siblings in the relative set by using a complementary ratio (1-prob)/(1-prevProb)
 			if (parent != null) {
-				// also extract sum of child probability, because it will be used to adjust the faction of ancestors
-				float sumProbChildren = 0f;		// this will hold the sum of child (conditional) probability, which will be the parent's new (conditional) probability
-				float sumFactionChildren = 0f;	// this will hold the sum of factions of children (so that we can normalize later).
-				for (IValueTreeNode child : parent.getChildren()) {
-					// note: at this point, parent.getChildren() cannot be null, because at least "node" is a child of "parent"
-					if (!child.equals(node)) {	
-						// only change siblings here, so not the node itself
-						child.setFaction(child.getFaction()*complementaryRatio);
-						sumProbChildren += getProb(child, anchor);
-					} else {
-						// this is either the target node or its ancestor. We don't need to call getProb(child, anchor) again
-						sumProbChildren += probCurrentNode;
-					}
-					sumFactionChildren += child.getFaction();
+				children = parent.getChildren();
+			} else {
+				children = get1stLevelNodes();	//Top level (children of root)
+			}
+			
+			// also extract sum of child probability, because it will be used to adjust the faction of ancestors
+			float sumProbChildren = 0f;		// this will hold the sum of child (conditional) probability, which will be the parent's new (conditional) probability
+			float sumFactionChildren = 0f;	// this will hold the sum of factions of children (so that we can normalize later).
+			for (IValueTreeNode child : children) {
+				// note: at this point, parent.getChildren() cannot be null, because at least "node" is a child of "parent"
+				if (!child.equals(node)) {	
+					// only change siblings here, so not the node itself
+					child.setFaction(child.getFaction()*complementaryRatio);
+					sumProbChildren += getProb(child, anchor);
+				} else {
+					// this is either the target node or its ancestor. We don't need to call getProb(child, anchor) again
+					sumProbChildren += probCurrentNode;
 				}
-				
-				// get the current probability of the ancestor, so that we can use its ratio with the sum of children to adjust faction
-				probCurrentNode = getProb(parent, anchor);	// parent will be handled in the next iteration, so set nodeProb to the probability of node of next iteration (i.e. parent) too
+				sumFactionChildren += child.getFaction();
+			}
+			
+			// get the current probability of the ancestor, so that we can use its ratio with the sum of children to adjust faction
+			if (parent != null && !parent.equals(anchor)) {
+				// parent will be handled in the next iteration, so set nodeProb to the probability of node of next iteration (i.e. parent) too
+				probCurrentNode = getProb(parent, anchor);	
 				
 				// 2 - adjust the faction of the ancestor in the path between anchor and node by using the prob of children
 				parent.setFaction(parent.getFaction()*(sumProbChildren/probCurrentNode));
-				
-				// 3 - normalize the factions of children (current node and siblings)
-				for (IValueTreeNode child : parent.getChildren()) {
-					// Note: I could not do this in the previous "for", because getProb was needed after the last "for", and getProb is sensitive to factions
-					child.setFaction(child.getFaction()/sumFactionChildren);
-				}
-				
+			}
+			
+			
+			// 3 - normalize the factions of children (current node and siblings)
+			for (IValueTreeNode child : children) {
+				// Note: I could not do this in the previous "for", because getProb was needed after the last "for", and getProb is sensitive to factions
+				child.setFaction(child.getFaction()/sumFactionChildren);
 			}
 
 			// parent will be the node to be handled in the next iteration.
@@ -400,7 +412,7 @@ public class ValueTree implements IValueTree {
 	 * @see unbbayes.prs.bn.valueTree.IValueTree#deleteNode(unbbayes.prs.bn.valueTree.IValueTreeNode)
 	 */
 	public int deleteNode(IValueTreeNode nodeToDelete) {
-		return this.deleteNode(nodeToDelete, true);
+		return this.deleteNode(nodeToDelete, true, true);
 	}
 	
 	/**
@@ -408,9 +420,13 @@ public class ValueTree implements IValueTree {
 	 * but here we can specify whether we want to rebuild mapping of names {@link #getNameIndex()}
 	 * @param nodeToDelete : node to be deleted
 	 * @param isToRebuildIndexMap : if true, then {@link #getNameIndex()} will be rebuild
+	 * @param isToNormalizeSiblingFaction : if true, factions of siblings of deleted node will be normalized.
 	 * @return index of nodeToDelete before it was deleted.
 	 */
-	protected int deleteNode(IValueTreeNode nodeToDelete, boolean isToRebuildIndexMap) {
+	protected int deleteNode(IValueTreeNode nodeToDelete, boolean isToRebuildIndexMap, boolean isToNormalizeSiblingFaction) {
+		if (nodeToDelete == null) {
+			return -1;
+		}
 		int ret = getIndex(nodeToDelete);
 		if (ret < 0) {
 			return ret;
@@ -418,10 +434,13 @@ public class ValueTree implements IValueTree {
 		
 		// delete from lists managed by this class
 		if (nodes != null) {
-			nodes.remove(ret);
+			nodes.remove(nodeToDelete);
 		}
 		if (shadowNodeList != null) {
-			shadowNodeList.remove(ret);
+			shadowNodeList.remove(nodeToDelete);
+		}
+		if (children != null) {
+			children.remove(nodeToDelete);
 		}
 		
 		// disconnect from parent
@@ -434,7 +453,7 @@ public class ValueTree implements IValueTree {
 		// also delete all descendants of the deleted node
 		if (nodeToDelete.getChildren() != null) {
 			for (IValueTreeNode child : nodeToDelete.getChildren()) {
-				this.deleteNode(child, false);	// do not rebuild mapping here, because we will rebuild it at once at the end of this method
+				this.deleteNode(child, false, false);	// do not rebuild mapping or normalize here, because we will rebuild it at once at the end of this method
 			}
 		}
 		
@@ -450,7 +469,31 @@ public class ValueTree implements IValueTree {
 				map.put(vtNode.getName(), i);
 				i++;
 			}
+			
 		}
+		
+		// also normalize factions of siblings
+		if (isToNormalizeSiblingFaction) {
+			// extract the list of siblings of the node which was deleted 
+			List<IValueTreeNode> listOfSiblings = null;
+			if (nodeToDelete.getParent() == null){
+				// parent is the root (the BN node), so siblings are in get1stLevelNodes
+				listOfSiblings = get1stLevelNodes();
+			} else if (nodeToDelete.getParent().getChildren() != null) {
+				// siblings are children of parent
+				listOfSiblings = nodeToDelete.getParent().getChildren();
+			}
+			// get the sum of factions of children, so that we can use it for normalization
+			float sum = 0f;
+			for (IValueTreeNode sibling : listOfSiblings) {
+				sum += sibling.getFaction();
+			}
+			// normalize now by dividing the factions with sum.
+			for (IValueTreeNode sibling : listOfSiblings) {
+				sibling.setFaction(sibling.getFaction()/sum);
+			}
+		}
+		
 		return ret;
 	}
 
