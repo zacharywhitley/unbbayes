@@ -205,6 +205,10 @@ public class ValueTree implements IValueTree {
 	 * @see unbbayes.prs.bn.IValueTree#getProb(unbbayes.prs.bn.IValueTreeNode, unbbayes.prs.bn.IValueTreeNode)
 	 */
 	public float getProb(IValueTreeNode node, IValueTreeNode anchor) {
+//		if (anchor == null && !Float.isNaN(node.getProbCache())) {
+//			// inconditional probability can be retrieved from cache
+//			return node.getProbCache();
+//		}
 		// the probability is the product of the factions in the path between anchor and node.
 		float ret = 1f;
 		while (node != null && !node.equals(anchor)) {
@@ -212,6 +216,10 @@ public class ValueTree implements IValueTree {
 			ret *= node.getFaction();
 			node = node.getParent();
 		}
+		// update cache if we calculated inconditional prob
+//		if (anchor == null) {
+//			node.setProbCache(ret);
+//		}
 		return ret;
 	}
 
@@ -219,8 +227,65 @@ public class ValueTree implements IValueTree {
 	 * @see unbbayes.prs.bn.IValueTree#changeProb(unbbayes.prs.bn.IValueTreeNode, unbbayes.prs.bn.IValueTreeNode, float)
 	 */
 	public float changeProb(IValueTreeNode node, IValueTreeNode anchor, float prob) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException("Not implemented yet");
+		if (node == null) {
+			throw new NullPointerException("Attempted to change the probability of a null node to " + prob + " given node " + anchor);
+		}
+		if (prob < 0 || prob > 1) {
+			throw new IllegalArgumentException(prob + " is not a valid probability for " + node + " given " + anchor);
+		}
+		
+		// Obtain the current probability, which will be used for probability ratio and to return
+		float prevProb = this.getProb(node, anchor);
+		
+		// the complementary ratio to be used for the relative sets (i.e. siblings of ancestors)
+		float complementaryRatio = (1-prob)/(1-prevProb);
+		
+		// change the faction of the node by using the ratio
+		node.setFaction(node.getFaction()*prob*prevProb);
+		
+		// iterate towards anchor (or root) to set factions of other nodes
+		float probCurrentNode = prob;	// this will hold probability of target initially, and then of its ancestors during the loop
+		do {
+			IValueTreeNode parent = node.getParent();
+			
+			// 1 - adjust faction of siblings in the relative set by using a complementary ratio (1-prob)/(1-prevProb)
+			if (parent != null) {
+				// also extract sum of child probability, because it will be used to adjust the faction of ancestors
+				float sumProbChildren = 0f;		// this will hold the sum of child (conditional) probability, which will be the parent's new (conditional) probability
+				float sumFactionChildren = 0f;	// this will hold the sum of factions of children (so that we can normalize later).
+				for (IValueTreeNode child : parent.getChildren()) {
+					// note: at this point, parent.getChildren() cannot be null, because at least "node" is a child of "parent"
+					if (!child.equals(node)) {	
+						// only change siblings here, so not the node itself
+						child.setFaction(child.getFaction()*complementaryRatio);
+						sumProbChildren += getProb(child, anchor);
+					} else {
+						// this is either the target node or its ancestor. We don't need to call getProb(child, anchor) again
+						sumProbChildren += probCurrentNode;
+					}
+					sumFactionChildren += child.getFaction();
+				}
+				
+				// get the current probability of the ancestor, so that we can use its ratio with the sum of children to adjust faction
+				probCurrentNode = getProb(parent, anchor);	// parent will be handled in the next iteration, so set nodeProb to the probability of node of next iteration (i.e. parent) too
+				
+				// 2 - adjust the faction of the ancestor in the path between anchor and node by using the prob of children
+				parent.setFaction(parent.getFaction()*(sumProbChildren/probCurrentNode));
+				
+				// 3 - normalize the factions of children (current node and siblings)
+				for (IValueTreeNode child : parent.getChildren()) {
+					// Note: I could not do this in the previous "for", because getProb was needed after the last "for", and getProb is sensitive to factions
+					child.setFaction(child.getFaction()/sumFactionChildren);
+				}
+				
+			}
+
+			// parent will be the node to be handled in the next iteration.
+			node = parent;
+		} while (node != null && !node.equals(anchor));
+		
+		// simply return what was the probability before edit
+		return prevProb;
 	}
 
 	/* (non-Javadoc)
@@ -442,6 +507,33 @@ public class ValueTree implements IValueTree {
 			return -1;
 		}
 		return this.shadowNodeList.indexOf(shadowNode);
+	}
+	
+	/**
+	 * @param index : the index (offset) of the shadow node.
+	 * @return : the shadow node identified by index
+	 * @see #getShadowNodeStateIndex(IValueTreeNode)
+	 * @see #setAsShadowNode(IValueTreeNode)
+	 */
+	public IValueTreeNode getShadowNode(int index) {
+		if (getShadowNodeList() == null) {
+			return null;
+		}
+		return getShadowNodeList().get(index);
+	}
+	
+	/**
+	 * @see unbbayes.prs.bn.valueTree.IValueTree#getShadowNodeSize()
+	 */
+	public int getShadowNodeSize() {
+		if (getRoot() == null || getShadowNodeList() == null) {
+			return 0;
+		}
+		int size = getRoot().getStatesSize();
+		if (size != getShadowNodeList().size()) {
+			throw new IllegalStateException("Shadow node is desynchronized with the BN node. The BN node has " + size + " states, but shadow nodes are " + getShadowNodeList());
+		}
+		return size;
 	}
 
 	/**

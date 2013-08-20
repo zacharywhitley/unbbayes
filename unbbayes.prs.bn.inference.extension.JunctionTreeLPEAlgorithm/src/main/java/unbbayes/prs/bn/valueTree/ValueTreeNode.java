@@ -27,6 +27,8 @@ public class ValueTreeNode implements IValueTreeNode {
 	
 	private float faction = Float.NaN;
 	
+//	private float prob = Float.NaN;
+	
 	private IValueTree valueTree;
 
 	private List<NodeNameChangedListener> nameChangeListeners;
@@ -125,6 +127,7 @@ public class ValueTreeNode implements IValueTreeNode {
 	public void setFaction(float faction) {
 		this.faction = faction;
 		this.setDateLastChange(new Date());
+//		this.setProbCache(Float.NaN);
 	}
 
 	/* (non-Javadoc)
@@ -175,6 +178,20 @@ public class ValueTreeNode implements IValueTreeNode {
 	public void setDateLastChange(Date dateLastChange) {
 		this.dateLastChange = dateLastChange;
 	}
+
+//	/**
+//	 * @see unbbayes.prs.bn.valueTree.IValueTreeNode#getProbCache()
+//	 */
+//	public float getProbCache() {
+//		return this.prob;
+//	}
+//
+//	/**
+//	 * @see unbbayes.prs.bn.valueTree.IValueTreeNode#setProbCache(float)
+//	 */
+//	public void setProbCache(float prob) {
+//		this.prob = prob;
+//	}
 	
 
 }

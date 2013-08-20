@@ -162,4 +162,17 @@ public interface IValueTree {
 	 */
 	public int getShadowNodeStateIndex(IValueTreeNode shadowNode);
 	
+	/**
+	 * @param index : the index (offset) of the shadow node.
+	 * @return : the shadow node identified by index
+	 * @see #getShadowNodeStateIndex(IValueTreeNode)
+	 * @see #setAsShadowNode(IValueTreeNode)
+	 */
+	public IValueTreeNode getShadowNode(int index);
+	
+	/**
+	 * @return : how many shadow nodes there are.
+	 */
+	public int getShadowNodeSize();
+	
 }

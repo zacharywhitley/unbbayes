@@ -72,9 +72,9 @@ public class ValueTreePanelBuilder implements IProbabilityFunctionPanelBuilder {
 		jTree.setEditable(false);
 		jTree.setDragEnabled(false);
 		jTree.setBackground(Color.WHITE);
-		jTree.setToolTipText("Click: changes prob; ctrl+click: set as anchor; left click: adds child; ctrl+left click: changes name; " +
-				"alt+click: check probability given anchor; shift+click: change shadow node; " +
-				"shift+left click: delete node.");
+		jTree.setToolTipText("2R: change prob; ctrlR: set anchor; L: child; ctrlL: name; " +
+				"altR: check prob; shiftR: shadow; " +
+				"shiftL: delete.");
 		
 		// set up the behavior of the jtree
 		jTree.addMouseListener(new MouseListener() {
@@ -114,6 +114,7 @@ public class ValueTreePanelBuilder implements IProbabilityFunctionPanelBuilder {
 						} else if (selectedObj instanceof ValueTreeProbabilisticNode) {
 							anchor = null;
 						} 
+						JOptionPane.showMessageDialog(null,  anchor + " was set as anchor.");
 					} else if (e.isAltDown()) {
 						Debug.println(this.getClass() , "Alt right click. Check probability of " + selectedObj + " given " + anchor);
 						
@@ -131,13 +132,29 @@ public class ValueTreePanelBuilder implements IProbabilityFunctionPanelBuilder {
 							Debug.println(this.getClass() , "Shift right click. Set " + selectedObj + " as shadow node.");
 							IValueTreeNode valueTreeNode = (IValueTreeNode) selectedObj;
 							valueTreeNode.getValueTree().setAsShadowNode(valueTreeNode);
+							// prepare to print content of shadow nodes
+							String shadowNodes = "";
+							int shadowNodeSize = valueTreeNode.getValueTree().getShadowNodeSize();
+							for (int i = 0; i < shadowNodeSize; i++) {
+								shadowNodes += "|" + valueTreeNode.getValueTree().getShadowNode(i) ;
+								shadowNodes += " (" + valueTreeNode.getValueTree().getRoot().getStateAt(i) + ")|";
+							}
+							JOptionPane.showMessageDialog(null, "Shadow node added: " + shadowNodes);
 						} else if (selectedObj instanceof ValueTreeProbabilisticNode) {
 							Debug.println(this.getClass() , "Shift right click. Remove last shadow node.");
 							ValueTreeProbabilisticNode node = (ValueTreeProbabilisticNode) selectedObj;
 							node.getValueTree().removeLastShadowNode();
+							// prepare to print content of shadow nodes
+							String shadowNodes = "";
+							int shadowNodeSize = node.getValueTree().getShadowNodeSize();
+							for (int i = 0; i < shadowNodeSize; i++) {
+								shadowNodes += "|" + node.getValueTree().getShadowNode(i) ;
+								shadowNodes += " (" + node.getValueTree().getRoot().getStateAt(i) + ")|";
+							}
+							JOptionPane.showMessageDialog(null, "Last shadow node removed: " + shadowNodes);
 						}
-					} else {
-						Debug.println(this.getClass() , "Right click. Change probability of " + selectedObj);
+					} else if (e.getClickCount() >= 2) {
+						Debug.println(this.getClass() , "Right double click. Change probability of " + selectedObj);
 						if (selectedObj instanceof IValueTreeNode) {
 							IValueTreeNode valueTreeNode = (IValueTreeNode) selectedObj;
 							Debug.println(this.getClass() , "Value tree node selected");
@@ -152,9 +169,9 @@ public class ValueTreePanelBuilder implements IProbabilityFunctionPanelBuilder {
 							// needs to refresh tree
 							jTree.updateUI();
 							jTree.repaint();
-						}  else {
-							JOptionPane.showMessageDialog(null,  "Click: changes prob;\nCtrl+click: set as anchor;\nLeft click: adds child;\nCtrl+left click: changes name;\nAlt+click: check probability given anchor;\nShift+click: set as shadow node (if root, then remove last shadow node);\nShift+left click: delete node.");
-							return;
+//						}  else {
+//							JOptionPane.showMessageDialog(null,  "Click: changes prob;\nCtrl+click: set as anchor;\nLeft click: adds child;\nCtrl+left click: changes name;\nAlt+click: check probability given anchor;\nShift+click: set as shadow node (if root, then remove last shadow node);\nShift+left click: delete node.");
+//							return;
 						}
 						
 					}
@@ -243,7 +260,7 @@ public class ValueTreePanelBuilder implements IProbabilityFunctionPanelBuilder {
 					jTree.getParent().repaint();
 				} else {
 					// unused button clicked
-					JOptionPane.showMessageDialog(null,  "Click: changes prob;\nCtrl+click: set as anchor;\nLeft click: adds child;\nCtrl+left click: changes name;\nAlt+click: check probability given anchor;\nShift+click: set as shadow node (if root, then remove last shadow node);\nShift+left click: delete node.");
+					JOptionPane.showMessageDialog(null,  "2-Click: changes prob;\nCtrl+click: set as anchor;\nLeft click: adds child;\nCtrl+left click: changes name;\nAlt+click: check probability given anchor;\nShift+click: set as shadow node (if root, then remove last shadow node);\nShift+left click: delete node.");
 				}
 			}
 		});

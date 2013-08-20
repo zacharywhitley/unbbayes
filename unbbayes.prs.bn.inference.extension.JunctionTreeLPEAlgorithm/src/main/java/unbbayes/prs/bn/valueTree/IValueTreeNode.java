@@ -1,5 +1,6 @@
 package unbbayes.prs.bn.valueTree;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -58,9 +59,28 @@ public interface IValueTreeNode {
 	 */
 	public void setFaction(float faction);
 	
+//	/**
+//	 * @return the cached probability value of this value tree node.
+//	 * {@link Float#NaN} means there is no cache yet,
+//	 * so {@link #setProbCache(float)} shall be called.
+//	 */
+//	public float getProbCache();
+//	
+//	/**
+//	 * @param cachedProb : the cached probability value of this value tree node.
+//	 *  {@link Float#NaN} means cache will be reset.
+//	 *  @see #getProbCache()
+//	 */
+//	public void setProbCache(float cachedProb);
+	
 	/**
 	 * @return the value tree where this node belongs.
 	 */
 	public IValueTree getValueTree();
+	
+	/**
+	 * @return the date when {@link #setFaction(float)} was changed last time.
+	 */
+	public Date getDateLastChange();
 	
 }
