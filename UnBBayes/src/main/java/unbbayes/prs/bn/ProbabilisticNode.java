@@ -261,6 +261,9 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable,
 				}
 				d += getStatesSize();
 			}
+		} else if (isInsertion && d == 0) {
+			// special case: the table started from 0 elements and we are adding a new state to node
+			tabelaPot.addValueAt(d++, 0);
 		}
 
 		List<Node> clones[] = new ArrayList[getChildren().size()];
