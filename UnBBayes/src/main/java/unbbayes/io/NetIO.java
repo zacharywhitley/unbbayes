@@ -764,13 +764,25 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 			// let's ignore it
 			Debug.println(this.getClass(), "Ignoring HR declaration: " + st.sval);
 			while (getNext(st) == '"');
+		} else if (st.sval.startsWith("%")) {
+			// ignore other types of comments which do not have special meaning
+			readTillEOL(st);
+			getNext(st);
 		} else {
-			throw new LoadException(
-				ERROR_NET
+//			throw new LoadException(
+//				ERROR_NET
+//					+ " l."
+//					+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
+//					+ resource.getString("LoadException2")
+//					+ st.sval);
+			// instead of throwing exception, try to ignore it
+			System.err.println(
+					ERROR_NET
 					+ " l."
 					+ ((st.lineno() < this.lineno)?this.lineno:st.lineno())
 					+ resource.getString("LoadException2")
 					+ st.sval);
+			while (getNext(st) == '"');
 		}
 	}
 	
