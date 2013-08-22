@@ -126,9 +126,20 @@ public class ValueTreeNetIO extends NetIO {
 						vtNode.setName(auxNode.getName());
 						vtNode.setDescription(auxNode.getDescription());
 						vtNode.setPosition(auxNode.getPosition().getX(), auxNode.getPosition().getY());
+						// copy the states too, but states will become new shadow nodes. 
+						Map<String, IValueTreeNode> map = (Map<String, IValueTreeNode>) net.getProperty(VALUE_TREE_MAP_PROPERTY_NAME);
+						if (map == null) {
+							// instantiate the mapping if it did not exist
+							map = new HashMap<String, IValueTreeNode>();
+							net.getProperties().put(VALUE_TREE_MAP_PROPERTY_NAME, map);
+						}
+						// build shadow nodes for each state of the node
 						for (int i = 0; i < auxNode.getStatesSize(); i++) {
-							// copy the states too
-							vtNode.appendState(auxNode.getStateAt(i));
+							// States of root of value tree are shadow nodes, so handle it properly here
+							IValueTreeNode shadowNode = ValueTreeNode.getInstance(auxNode.getStateAt(i), vtNode.getValueTree()); 
+							vtNode.getValueTree().setAsShadowNode(shadowNode);
+							// do not forget to store this node, so that we can re-use it when we will reconnect
+							map.put(shadowNode.getName(), shadowNode);
 						}
 						// vtNode will be the one to be added to network
 						auxNode = vtNode;
@@ -392,12 +403,13 @@ public class ValueTreeNetIO extends NetIO {
 				stream.println(" " + getDefaultNodeNamePrefix() + valueTreeNode.getName());
 				stream.println("{");
 				
+				// mark as %valueTreeNode
+				stream.println("     %valueTreeNode ");
+				
 				stream.println("     label = \"" + valueTreeNode.getName() +"\";");
 				stream.println("     position = (" + (int)node.getPosition().getX() + " " + (int)node.getPosition().getY()  + ");");
 				stream.println("     states = (\"faction\" \"stub\");");
 				
-				// mark as %valueTreeNode
-				stream.println("     %valueTreeNode ");
 				
 				stream.println("}");
 				stream.println();
@@ -412,12 +424,13 @@ public class ValueTreeNetIO extends NetIO {
 	 * @see unbbayes.io.NetIO#saveNodeDeclarationBody(java.io.PrintStream, unbbayes.prs.Node, unbbayes.prs.bn.SingleEntityNetwork)
 	 */
 	protected void saveNodeDeclarationBody(PrintStream stream, Node node, SingleEntityNetwork net) {
-		super.saveNodeDeclarationBody(stream, node, net);
-		
 		// also mark this node as %valueTreeRoot if this is a root of a value tree
 		if (node instanceof ValueTreeProbabilisticNode) {
-		      stream.println("     %valueTreeRoot ");
+			stream.println("     %valueTreeRoot ");
 		}
+		
+		super.saveNodeDeclarationBody(stream, node, net);
+		
 	
 	}
 	

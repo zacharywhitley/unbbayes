@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.Node.NodeNameChangedEvent;
 import unbbayes.prs.Node.NodeNameChangedListener;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.TreeVariable;
 
 /**
  * This is the default implementation of {@link IValueTree}
@@ -255,74 +255,102 @@ public class ValueTree implements IValueTree {
 		return ret;
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.bn.IValueTree#changeProb(unbbayes.prs.bn.IValueTreeNode, unbbayes.prs.bn.IValueTreeNode, float)
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.valueTree.IValueTree#changeProb(unbbayes.prs.bn.valueTree.IValueTreeNode, unbbayes.prs.bn.valueTree.IValueTreeNode, float, java.util.List)
 	 */
-	public float changeProb(IValueTreeNode node, IValueTreeNode anchor, float prob) {
+	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, List<IValueTreeNode> otherAnchors) {
 		if (node == null) {
-			throw new NullPointerException("Attempted to change the probability of a null node to " + prob + " given node " + anchor);
+			throw new NullPointerException("Attempted to change the probability of a null node to " + prob + " given node " + ancestorAnchor);
 		}
 		if (prob < 0 || prob > 1) {
-			throw new IllegalArgumentException(prob + " is not a valid probability for " + node + " given " + anchor);
+			throw new IllegalArgumentException(prob + " is not a valid probability for " + node + " given " + ancestorAnchor);
 		}
 		
 		// Obtain the current probability, which will be used for probability ratio and to return
-		float prevProb = this.getProb(node, anchor);
+		float prevProb = this.getProb(node, ancestorAnchor);
+		
+		// if the node itself is in the anchor list, then nothing will be changed...
+//		if (otherAnchors.contains(node)) {
+//			return prevProb;
+//		}
 		
 		// the complementary ratio to be used for the relative sets (i.e. siblings of ancestors)
 		float complementaryRatio = (1-prob)/(1-prevProb);
 		
-		// change the faction of the node by using the ratio
-		node.setFaction(node.getFaction()*(prob/prevProb));
+		// this map will store what were the factions before the edit, so that we can restore to it in case of any problem
+		Map<IValueTreeNode, Float> factionBackup = new HashMap<IValueTreeNode, Float>();
 		
-		// iterate towards anchor (or root) to set factions of other nodes
-		float probCurrentNode = prob;	// this will hold probability of target initially, and then of its ancestors during the loop
-		List<IValueTreeNode> children = null;	//this will hold what are the siblings (of currently managed node) now. 
-		do {
-			IValueTreeNode parent = node.getParent();
+		try {
+			// change the faction of the node by using the ratio
+			factionBackup.put(node, node.getFaction());	// backup faction before change
+			node.setFaction(node.getFaction()*(prob/prevProb));
 			
-			// 1 - adjust faction of siblings in the relative set by using a complementary ratio (1-prob)/(1-prevProb)
-			if (parent != null) {
-				children = parent.getChildren();
-			} else {
-				children = get1stLevelNodes();	//Top level (children of root)
-			}
-			
-			// also extract sum of child probability, because it will be used to adjust the faction of ancestors
-			float sumProbChildren = 0f;		// this will hold the sum of child (conditional) probability, which will be the parent's new (conditional) probability
-			float sumFactionChildren = 0f;	// this will hold the sum of factions of children (so that we can normalize later).
-			for (IValueTreeNode child : children) {
-				// note: at this point, parent.getChildren() cannot be null, because at least "node" is a child of "parent"
-				if (!child.equals(node)) {	
-					// only change siblings here, so not the node itself
-					child.setFaction(child.getFaction()*complementaryRatio);
-					sumProbChildren += getProb(child, anchor);
-				} else {
-					// this is either the target node or its ancestor. We don't need to call getProb(child, anchor) again
-					sumProbChildren += probCurrentNode;
-				}
-				sumFactionChildren += child.getFaction();
-			}
-			
-			// get the current probability of the ancestor, so that we can use its ratio with the sum of children to adjust faction
-			if (parent != null && !parent.equals(anchor)) {
-				// 2 - adjust the faction of the ancestor in the path between anchor and node by using the prob of children
-				parent.setFaction(parent.getFaction()*(sumProbChildren/getProb(parent, anchor)));
+			// iterate towards anchor (or root) to set factions of other nodes
+			float probCurrentNode = prob;	// this will hold probability of target initially, and then of its ancestors during the loop
+			List<IValueTreeNode> children = null;	//this will hold what are the siblings (of currently managed node) now. 
+			do {
+				IValueTreeNode parent = node.getParent();
 				
-				// parent will be handled in the next iteration, so set nodeProb to the probability of node of next iteration (i.e. parent) too
-				probCurrentNode = sumProbChildren;
-			}
-			
-			
-			// 3 - normalize the factions of children (current node and siblings)
-			for (IValueTreeNode child : children) {
-				// Note: I could not do this in the previous "for", because getProb was needed after the last "for", and getProb is sensitive to factions
-				child.setFaction(child.getFaction()/sumFactionChildren);
-			}
+				// 1 - adjust faction of siblings in the relative set by using a complementary ratio (1-prob)/(1-prevProb)
+				if (parent != null) {
+					children = parent.getChildren();
+				} else {
+					children = get1stLevelNodes();	//Top level (children of root)
+				}
+				
+				// also extract sum of child probability, because it will be used to adjust the faction of ancestors
+				float sumProbChildren = 0f;		// this will hold the sum of child (conditional) probability, which will be the parent's new (conditional) probability
+				float sumFactionChildren = 0f;	// this will hold the sum of factions of children (so that we can normalize later).
+				for (IValueTreeNode child : children) {
+					// note: at this point, parent.getChildren() cannot be null, because at least "node" is a child of "parent"
+					if (!child.equals(node)) {	
+						if (!otherAnchors.contains(child)) {
+							// only change siblings here, so not the node itself
+							factionBackup.put(child, child.getFaction());	// backup faction before change
+							child.setFaction(child.getFaction()*complementaryRatio);
+						}
+						sumProbChildren += getProb(child, ancestorAnchor);
+					} else {
+						// this is either the target node or its ancestor. We don't need to call getProb(child, anchor) again
+						sumProbChildren += probCurrentNode;
+					}
+					sumFactionChildren += child.getFaction();
+				}
+				
+				// get the current probability of the ancestor, so that we can use its ratio with the sum of children to adjust faction
+				if (parent != null && !parent.equals(ancestorAnchor)) {
+					if (!otherAnchors.contains(parent)) {
+						// 2 - adjust the faction of the ancestor in the path between anchor and node by using the prob of children
+						factionBackup.put(parent, parent.getFaction());	// backup faction before change
+						parent.setFaction(parent.getFaction()*(sumProbChildren/getProb(parent, ancestorAnchor)));
+					}
+					
+					// parent will be handled in the next iteration, so set nodeProb to the probability of node of next iteration (i.e. parent) too
+					probCurrentNode = sumProbChildren;
+				}
+				
+				
+				// 3 - normalize the factions of children (current node and siblings)
+				for (IValueTreeNode child : children) {
+					// Note: I could not do this in the previous "for", because getProb was needed after the last "for", and getProb is sensitive to factions
+					if (!otherAnchors.contains(child)) {
+						factionBackup.put(child, child.getFaction());	// backup faction before change
+						child.setFaction(child.getFaction()/sumFactionChildren);
+					}
+				}
 
-			// parent will be the node to be handled in the next iteration.
-			node = parent;
-		} while (node != null && !node.equals(anchor));
+				// parent will be the node to be handled in the next iteration.
+				node = parent;
+			} while (node != null && !node.equals(ancestorAnchor));
+		} catch (Throwable t) {
+			// restore factions of all affected nodes
+			for (Entry<IValueTreeNode, Float> entry : factionBackup.entrySet()) {
+				entry.getKey().setFaction(entry.getValue());
+			}
+			throw new RuntimeException(t);
+		}
+		
 		
 		// simply return what was the probability before edit
 		return prevProb;

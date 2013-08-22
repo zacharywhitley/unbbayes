@@ -128,11 +128,14 @@ public interface IValueTree {
 	 *  4.  output the probabilities of exposing state if there is any change, and signal the update for the whole network.
 	 *  <br/>
 	 * @param node : node to change probability
-	 * @param anchor : anchor (ancestor of node) not to change probability
+	 * @param ancestorAnchor : anchor (ancestor of node) not to change probability
 	 * @param prob : probability value to set
+	 * @param otherAnchors : other anchors (nodes not to change probability) which are not necessarily ancestor of node.
+	 * This value can be usually null for most of usages. If this list contains the node to be changed, the node
+	 * will not be considered as an anchor.
 	 * @return : the old probability.
 	 */
-	public float changeProb(IValueTreeNode node, IValueTreeNode anchor, float prob);
+	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, List<IValueTreeNode> otherAnchors);
 	
 	/**
 	 * Definition of highest relative set: Let a t be the set of all ancestors of a node t, i.e., the 

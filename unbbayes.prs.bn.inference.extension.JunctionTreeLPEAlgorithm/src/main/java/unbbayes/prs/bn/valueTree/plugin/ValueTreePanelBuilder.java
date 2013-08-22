@@ -3,12 +3,15 @@
  */
 package unbbayes.prs.bn.valueTree.plugin;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -78,6 +81,14 @@ public class ValueTreePanelBuilder implements IProbabilityFunctionPanelBuilder {
 				"altR: check prob; shiftR: shadow; " +
 				"shiftL: delete.");
 		
+		// add a label of marginals 
+		String marginals = "";
+		for (int i = 0; i < owner.getStatesSize(); i++) {
+			marginals += owner.getStateAt(i) + "=" + owner.getMarginalAt(i) + "; ";
+		}
+		final JLabel label = new JLabel(marginals);
+		
+		
 		// set up the behavior of the jtree
 		jTree.addMouseListener(new MouseListener() {
 			private IValueTreeNode anchor = null;
@@ -146,6 +157,14 @@ public class ValueTreePanelBuilder implements IProbabilityFunctionPanelBuilder {
 								shadowNodes += "|" + valueTreeNode.getValueTree().getShadowNode(i) ;
 								shadowNodes += " (" + valueTreeNode.getValueTree().getRoot().getStateAt(i) + ")|";
 							}
+							// update marginal
+							String marginals = "";
+							for (int i = 0; i < owner.getStatesSize(); i++) {
+								marginals += owner.getStateAt(i) + "=" + owner.getMarginalAt(i) + "; ";
+							}
+							label.setText(marginals);
+							label.updateUI();
+							label.repaint();
 							JOptionPane.showMessageDialog(null, "Shadow node added: " + shadowNodes);
 						} else if (selectedObj instanceof ValueTreeProbabilisticNode) {
 							Debug.println(this.getClass() , "Shift right click. Remove last shadow node.");
@@ -158,6 +177,14 @@ public class ValueTreePanelBuilder implements IProbabilityFunctionPanelBuilder {
 								shadowNodes += "|" + node.getValueTree().getShadowNode(i) ;
 								shadowNodes += " (" + node.getValueTree().getRoot().getStateAt(i) + ")|";
 							}
+							// update marginal
+							String marginals = "";
+							for (int i = 0; i < owner.getStatesSize(); i++) {
+								marginals += owner.getStateAt(i) + "=" + owner.getMarginalAt(i) + "; ";
+							}
+							label.setText(marginals);
+							label.updateUI();
+							label.repaint();
 							JOptionPane.showMessageDialog(null, "Last shadow node removed: " + shadowNodes);
 						}
 					} else if (e.getClickCount() >= 2) {
@@ -170,13 +197,21 @@ public class ValueTreePanelBuilder implements IProbabilityFunctionPanelBuilder {
 							// obtain prob from user
 							String input = JOptionPane.showInputDialog("Change probability", valueTreeNode.getValueTree().getProb(valueTreeNode, anchor));
 							if (input != null && input.trim().length() > 0) {
-								valueTreeNode.getValueTree().changeProb(valueTreeNode, anchor, Float.parseFloat(input));
+								valueTreeNode.getValueTree().changeProb(valueTreeNode, anchor, Float.parseFloat(input), null);
 							}
 							
 							// needs to refresh tree
 							jTree.updateUI();
 							jTree.repaint();
 							jTree.getParent().repaint();
+							// update marginal
+							String marginals = "";
+							for (int i = 0; i < owner.getStatesSize(); i++) {
+								marginals += owner.getStateAt(i) + "=" + owner.getMarginalAt(i) + "; ";
+							}
+							label.setText(marginals);
+							label.updateUI();
+							label.repaint();
 //						}  else {
 //							JOptionPane.showMessageDialog(null,  "Click: changes prob;\nCtrl+click: set as anchor;\nLeft click: adds child;\nCtrl+left click: changes name;\nAlt+click: check probability given anchor;\nShift+click: set as shadow node (if root, then remove last shadow node);\nShift+left click: delete node.");
 //							return;
@@ -267,6 +302,8 @@ public class ValueTreePanelBuilder implements IProbabilityFunctionPanelBuilder {
 					jTree.updateUI();
 					jTree.repaint();
 					jTree.getParent().repaint();
+					label.updateUI();
+					label.repaint();
 				} else {
 					// unused button clicked
 					JOptionPane.showMessageDialog(null,  "2-Click: changes prob;\nCtrl+click: set as anchor;\nLeft click: adds child;\nCtrl+left click: changes name;\nAlt+click: check probability given anchor;\nShift+click: set as shadow node (if root, then remove last shadow node);\nShift+left click: delete node.");
@@ -274,9 +311,14 @@ public class ValueTreePanelBuilder implements IProbabilityFunctionPanelBuilder {
 			}
 		});
 		
+//		ret.setLayout(new BorderLayout());
 		
 		// add the jtree to the panel to return
 		ret.add(jTree);
+//		ret.add(new JScrollPane(jTree), BorderLayout.CENTER);
+//		ret.add(new JScrollPane(label), BorderLayout.SOUTH);
+				
+		
 		return ret;
 	}
 	
