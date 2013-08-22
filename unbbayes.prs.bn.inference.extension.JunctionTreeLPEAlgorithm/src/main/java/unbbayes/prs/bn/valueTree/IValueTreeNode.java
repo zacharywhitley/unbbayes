@@ -3,6 +3,8 @@ package unbbayes.prs.bn.valueTree;
 import java.util.Date;
 import java.util.List;
 
+import unbbayes.prs.Node.NodeNameChangedListener;
+
 /**
  * Classes implementing this interface represent a tree data structure of value-tree algorithm, 
  * that has root node as the name of the value-tree node.  Each node in the tree can only
@@ -75,12 +77,23 @@ public interface IValueTreeNode {
 	
 	/**
 	 * @return the value tree where this node belongs.
+	 * @see #setValueTree(IValueTree)
 	 */
 	public IValueTree getValueTree();
+	
+	/**
+	 * @param valueTree : the value tree to set.
+	 * @see #getValueTree()
+	 */
+	public void setValueTree(IValueTree valueTree);
 	
 	/**
 	 * @return the date when {@link #setFaction(float)} was changed last time.
 	 */
 	public Date getDateLastChange();
 	
+	/**
+	 * @return the nameChangeListeners: listeners to be invoked when {@link #setName(String)} is called
+	 */
+	public List<NodeNameChangedListener> getNameChangeListeners();
 }

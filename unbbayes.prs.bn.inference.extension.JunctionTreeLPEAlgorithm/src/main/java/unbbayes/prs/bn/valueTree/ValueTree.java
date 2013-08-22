@@ -70,49 +70,65 @@ public class ValueTree implements IValueTree {
 		return this.root;
 	}
 
+	
+	
 	/**
 	 * @see unbbayes.prs.bn.valueTree.IValueTree#addNode(java.lang.String, unbbayes.prs.bn.valueTree.IValueTreeNode, float)
 	 */
-	public int addNode(String nameOfNodeToAdd, IValueTreeNode parent, float faction) {
-		if (faction < 0 || faction > 1) {
-			throw new IllegalArgumentException(faction + " is not a valid faction (conditional probability given parent).");
+	public IValueTreeNode addNode(String nameOfNodeToAdd, IValueTreeNode parent, float faction) {
+		// instantiate the new node
+		final IValueTreeNode newVTNode = ValueTreeNode.getInstance(nameOfNodeToAdd, this);
+		newVTNode.setFaction(faction);
+		newVTNode.setParent(parent);	// Note: parent == null means this node shall be connected to root.
+		this.addNode(newVTNode);
+		return newVTNode;
+	}
+	
+	/**
+	 * @see unbbayes.prs.bn.valueTree.IValueTree#addNode(unbbayes.prs.bn.valueTree.IValueTreeNode)
+	 */
+	public int addNode(final IValueTreeNode nodeToAdd){
+		if (nodeToAdd == null) {
+			throw new NullPointerException("Cannot add null to value tree.");
+		}
+			
+		if (nodeToAdd.getFaction() < 0 || nodeToAdd.getFaction() > 1) {
+			throw new IllegalArgumentException(nodeToAdd.getFaction() + " is not a valid faction (conditional probability given parent).");
 		}
 		
-		
+		nodeToAdd.setValueTree(this);
 		// listener which updates index of names when names are changed
-		List<NodeNameChangedListener> nameChangeListeners = new ArrayList();
-		nameChangeListeners.add(new NodeNameChangedListener() {
-			public void nodeNameChanged(NodeNameChangedEvent event) {
-				// extract index of names, so that we can reset it
-				Map<String, Integer> map = getNameIndex();
-				if ( map == null ) {
-					// instantiate if it was never instantiated previously
-					map = new HashMap<String, Integer>();
-					setNameIndex(map);
+		List<NodeNameChangedListener> nameChangeListeners = nodeToAdd.getNameChangeListeners();
+		if (nameChangeListeners != null) {
+//			nameChangeListeners.clear();
+			nameChangeListeners.add(new NodeNameChangedListener() {
+				public void nodeNameChanged(NodeNameChangedEvent event) {
+					// extract index of names, so that we can reset it
+					Map<String, Integer> map = getNameIndex();
+					if ( map == null ) {
+						// instantiate if it was never instantiated previously
+						map = new HashMap<String, Integer>();
+						setNameIndex(map);
 //				} else {
 //					// reset if instance already exists.
 //					map.clear();
+					}
+					
+					Integer index = map.remove(event.getOldName());
+					if (index != null) {
+						map.put(event.getNewName(), index);
+					} else {
+						throw new IllegalStateException("The index of the name of node " + event.getOldName() + " not found in " + this + ", so the name could not be changed to " + event.getNewName());
+					}
+					
 				}
-				
-				Integer index = map.remove(event.getOldName());
-				if (index != null) {
-					map.put(event.getNewName(), index);
-				} else {
-					throw new IllegalStateException("The index of the name of node " + event.getOldName() + " not found in " + this + ", so the name could not be changed to " + event.getNewName());
-				}
-				
-			}
-		});
-		
-		// instantiate the new node
-		final IValueTreeNode newVTNode = ValueTreeNode.getInstance(nameOfNodeToAdd, this, nameChangeListeners);
-		newVTNode.setFaction(faction);
-		newVTNode.setParent(parent);	// Note: parent == null means this node shall be connected to root.
+			});
+		}
 		
 		
 		// Set the new node as child of the specified parent (if null, then parent is the root). Also adjust the factions of other nodes proportionally
 		List<IValueTreeNode> whereToAddChild = null;
-		if (parent == null) {
+		if (nodeToAdd.getParent() == null) {
 			// make sure the list of children of root is initialized
 			if (get1stLevelNodes() == null) {
 				set1stLevelNodes(new ArrayList<IValueTreeNode>(1));
@@ -122,39 +138,43 @@ public class ValueTree implements IValueTree {
 			
 		} else {
 			// make sure the list of children of parent is initialized
-			if (parent.getChildren() == null) {
-				parent.setChildren(new ArrayList<IValueTreeNode>(1));
+			if (nodeToAdd.getParent().getChildren() == null) {
+				nodeToAdd.getParent().setChildren(new ArrayList<IValueTreeNode>(1));
 			}
-			whereToAddChild = parent.getChildren();
+			whereToAddChild = nodeToAdd.getParent().getChildren();
 			
 		}
 		// adapt faction
 		if (whereToAddChild.isEmpty()) {
 			// in this case, the new node is the only child, so its faction is actually 100%
-			newVTNode.setFaction(1f);
+			nodeToAdd.setFaction(1f);
 		} else {
 			// in this case, the faction of other children shall be adapted proportionally
-			float factionComplement = 1f-faction;
+			float factionComplement = 1f-nodeToAdd.getFaction();
 			for (IValueTreeNode child : whereToAddChild) {
 				// if faction of new node is 100%, then the other states will be set to 0%
 				// otherwise, adapt proportionally so that the sum of other states is 1-faction
-				child.setFaction((faction>=1f)?0f:(child.getFaction()*factionComplement));
+				child.setFaction((nodeToAdd.getFaction()>=1f)?0f:(child.getFaction()*factionComplement));
 			}
 		}
 		
-		whereToAddChild.add(newVTNode);
+		if (!whereToAddChild.contains(nodeToAdd)) {
+			whereToAddChild.add(nodeToAdd);
+		}
 		
 		// add to the end of the list of all nodes
 		if (nodes == null) {
 			nodes = new ArrayList<IValueTreeNode>();
 		}
-		nodes.add(newVTNode);
-		
-		// update index of names
-		if (getNameIndex() == null) {
-			setNameIndex(new HashMap<String, Integer>());
+		if (!nodes.contains(nodeToAdd)) {
+			nodes.add(nodeToAdd);
+			// update index of names
+			if (getNameIndex() == null) {
+				setNameIndex(new HashMap<String, Integer>());
+			}
+			getNameIndex().put(nodeToAdd.getName(), nodes.size()-1);
 		}
-		getNameIndex().put(newVTNode.getName(), nodes.size()-1);
+		
 		
 		return nodes.size()-1;
 	}
@@ -177,6 +197,7 @@ public class ValueTree implements IValueTree {
 	 */
 	public List<IValueTreeNode> getNodes() {
 		return new ArrayList<IValueTreeNode>(nodes);
+//		return (nodes);
 	}
 
 	/* (non-Javadoc)

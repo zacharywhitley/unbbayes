@@ -1,8 +1,10 @@
 package unbbayes.prs.bn.valueTree;
 
+import java.util.Collection;
 import java.util.List;
 
 import unbbayes.prs.INode;
+import unbbayes.prs.Node.NodeNameChangedListener;
 
 /**
  * Classes implementing this interface represents a tree of {@link IValueTreeNode},
@@ -29,14 +31,35 @@ public interface IValueTree {
 	public INode getRoot();
 	
 	/**
-	 *  Adds a state node as a child of a given parent node. 
+	 * Creates and adds a state node as a child of a given parent node. 
 	 * @param nameOfNodeToAdd : name of the state node to be included.
 	 * @param parent : the parent of nodeToAdd
 	 * @param faction: probability of nodeToAdd given parent.
-	 * @return negative if failed. Position index/offset if successful.
+	 * @return The node which was created.
 	 * @see #getNodes()
 	 */
-	public int addNode(String nameOfNodeToAdd, IValueTreeNode parent, float faction);
+	public IValueTreeNode addNode(String nameOfNodeToAdd, IValueTreeNode parent, float faction);
+	
+	/**
+	 * Adds a state node as a child of a given parent node.
+	 * It assumes 
+	 * {@link IValueTreeNode#getName()}
+	 * {@link IValueTreeNode#getParent()}
+	 * {@link IValueTreeNode#getFaction()}
+	 * are initialized.
+	 * @param valueTreeNodes: state node to be included
+	 * @return index where node was added in {@link #getNodes()}
+	 */
+	public int addNode(IValueTreeNode nodeToAdd);
+	
+//	/**
+//	 * Adds a state node to value tree, assuming that {@link IValueTreeNode#getParent()} and
+//	 * {@link IValueTreeNode#getFaction()} is already filled. 
+//	 * @param nodeToAdd : state node to be included.
+//	 * @return index of the node after insertion.
+//	 * @see #getNodes()
+//	 */
+//	public int addNode(IValueTreeNode nodeToAdd);
 	
 	/**
 	 * Deletes a value tree node from the value tree.
@@ -55,7 +78,7 @@ public interface IValueTree {
 	public int getIndex(String nodeName);
 	
 	/**
-	 * @return all value tree nodes in this tree. This is probably a copy of the original. Use {@link #addNode(String, IValueTreeNode, float)}
+	 * @return all value tree nodes in this tree. This can be a copy of the original. Use {@link #addNode(String, IValueTreeNode, float)}
 	 * to include new elements to it.
 	 */
 	public List<IValueTreeNode> getNodes();
@@ -174,5 +197,6 @@ public interface IValueTree {
 	 * @return : how many shadow nodes there are.
 	 */
 	public int getShadowNodeSize();
+	
 	
 }

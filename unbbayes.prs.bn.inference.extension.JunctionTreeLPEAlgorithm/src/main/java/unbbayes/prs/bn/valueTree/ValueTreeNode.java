@@ -1,5 +1,6 @@
 package unbbayes.prs.bn.valueTree;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -25,7 +26,7 @@ public class ValueTreeNode implements IValueTreeNode {
 
 	private IValueTreeNode parent = null;
 	
-	private float faction = Float.NaN;
+	private float faction = 1f;
 	
 //	private float prob = Float.NaN;
 	
@@ -44,6 +45,18 @@ public class ValueTreeNode implements IValueTreeNode {
 	 */
 	protected ValueTreeNode() {
 		// TODO Auto-generated constructor stub
+	}
+	
+	/**
+	 * This is the default constructor method for {@link ValueTreeNode}
+	 * @param name: the name of the value-tree node being exposed to external network 
+	 * @param valueTree : the value tree where this node belongs.
+	 * @return : a new instance of {@link IValueTreeNode}
+	 * @see #setName(String)
+	 * @see #setValueTree(IValueTree)
+	 */
+	public static IValueTreeNode getInstance(String name, IValueTree valueTree) {
+		return getInstance(name, valueTree, new ArrayList<NodeNameChangedListener>(1));
 	}
 	
 	/**
@@ -145,10 +158,15 @@ public class ValueTreeNode implements IValueTreeNode {
 	}
 
 	/**
-	 * @param valueTree the valueTree to set
+	 * @see unbbayes.prs.bn.valueTree.IValueTreeNode#setValueTree(unbbayes.prs.bn.valueTree.IValueTree)
 	 */
 	public void setValueTree(IValueTree valueTree) {
 		this.valueTree = valueTree;
+//		if (this.getChildren() != null) {
+//			for (IValueTreeNode child : this.getChildren()) {
+//				child.setValueTree(valueTree);
+//			}
+//		}
 	}
 
 	/**
