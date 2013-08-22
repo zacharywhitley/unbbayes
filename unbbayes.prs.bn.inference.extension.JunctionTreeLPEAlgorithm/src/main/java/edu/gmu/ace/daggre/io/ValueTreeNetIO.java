@@ -105,9 +105,13 @@ public class ValueTreeNetIO extends NetIO {
 					if (st.sval.equals("%valueTreeRoot")) {
 						// this is a root of the value tree
 						isValueTreeRoot = true;
+						readTillEOL(st);
+						getNext(st);
 					} else if (st.sval.equals("%valueTreeNode")) {
 						// this is a node in the value tree
 						isValueTreeNode = true;
+						readTillEOL(st);
+						getNext(st);
 					} else {
 						// this is another type of node
 						this.loadNodeDeclarationBody(st, auxNode);
@@ -157,9 +161,12 @@ public class ValueTreeNetIO extends NetIO {
 			String childNodeName = st.sval.startsWith(getDefaultNodeNamePrefix())?st.sval.substring(getDefaultNodeNamePrefix().length()):st.sval;
 			Node childNode = net.getNode(childNodeName);
 			if (childNode != null) {
-				if (childNode instanceof IRandomVariable) {
+				if ((childNode instanceof IRandomVariable)) {
 					auxPotentialTable = (PotentialTable)((IRandomVariable) childNode).getProbabilityFunction();
-					auxPotentialTable.addVariable(childNode);
+					if (!(childNode instanceof ValueTreeProbabilisticNode)) {
+						// do not re-add variable if this is a root of value tree, because the constructor already does it.
+						auxPotentialTable.addVariable(childNode);
+					}
 				}
 			}  // if node was not found in network, it is probably a member of some value tree, so include it as a child of some ValueTreeProbabilisticNode
 

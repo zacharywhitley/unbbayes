@@ -8,6 +8,9 @@ import java.util.Map;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node.NodeNameChangedEvent;
 import unbbayes.prs.Node.NodeNameChangedListener;
+import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.TreeVariable;
 
 /**
  * This is the default implementation of {@link IValueTree}
@@ -30,6 +33,8 @@ public class ValueTree implements IValueTree {
 	private Map<String, Integer> nameIndex = null;
 	
 	private List<IValueTreeNode> shadowNodeList = null;
+
+	private boolean isToAdaptFaction = false;
 
 	/**
 	 * Default constructor is made protected to restrict access and
@@ -145,16 +150,18 @@ public class ValueTree implements IValueTree {
 			
 		}
 		// adapt faction
-		if (whereToAddChild.isEmpty()) {
-			// in this case, the new node is the only child, so its faction is actually 100%
-			nodeToAdd.setFaction(1f);
-		} else {
-			// in this case, the faction of other children shall be adapted proportionally
-			float factionComplement = 1f-nodeToAdd.getFaction();
-			for (IValueTreeNode child : whereToAddChild) {
-				// if faction of new node is 100%, then the other states will be set to 0%
-				// otherwise, adapt proportionally so that the sum of other states is 1-faction
-				child.setFaction((nodeToAdd.getFaction()>=1f)?0f:(child.getFaction()*factionComplement));
+		if (isToAdaptFaction()) {
+			if (whereToAddChild.isEmpty()) {
+				// in this case, the new node is the only child, so its faction is actually 100%
+				nodeToAdd.setFaction(1f);
+			} else {
+				// in this case, the faction of other children shall be adapted proportionally
+				float factionComplement = 1f-nodeToAdd.getFaction();
+				for (IValueTreeNode child : whereToAddChild) {
+					// if faction of new node is 100%, then the other states will be set to 0%
+					// otherwise, adapt proportionally so that the sum of other states is 1-faction
+					child.setFaction((nodeToAdd.getFaction()>=1f)?0f:(child.getFaction()*factionComplement));
+				}
 			}
 		}
 		
@@ -299,11 +306,11 @@ public class ValueTree implements IValueTree {
 			
 			// get the current probability of the ancestor, so that we can use its ratio with the sum of children to adjust faction
 			if (parent != null && !parent.equals(anchor)) {
-				// parent will be handled in the next iteration, so set nodeProb to the probability of node of next iteration (i.e. parent) too
-				probCurrentNode = getProb(parent, anchor);	
-				
 				// 2 - adjust the faction of the ancestor in the path between anchor and node by using the prob of children
-				parent.setFaction(parent.getFaction()*(sumProbChildren/probCurrentNode));
+				parent.setFaction(parent.getFaction()*(sumProbChildren/getProb(parent, anchor)));
+				
+				// parent will be handled in the next iteration, so set nodeProb to the probability of node of next iteration (i.e. parent) too
+				probCurrentNode = sumProbChildren;
 			}
 			
 			
@@ -542,6 +549,32 @@ public class ValueTree implements IValueTree {
 		// At this point, root is non-null. Add node as state of the root node
 		this.getRoot().appendState(shadowNode.getName());
 		
+		if (this.getRoot().getStatesSize() != this.shadowNodeList.size()) {
+			throw new IllegalStateException("Desync of shadow nodes found. Shadow nodes expected to be " + shadowNode + ", but the actual number of states in the BN node was " + this.getRoot().getStatesSize());
+		}
+		
+		
+		// adjust the CPT and also adjust the marginal probability
+		if (this.getRoot() instanceof ProbabilisticNode) {
+			ProbabilisticNode probNode = (ProbabilisticNode) this.getRoot();
+			// adjust the cpt first
+			PotentialTable table = probNode.getProbabilityFunction();
+			// obtain the values to be used to fill CPT
+			List<Float> probShadowNodes = new ArrayList<Float>(shadowNodeList.size());
+			for (int i = 0; i < shadowNodeList.size(); i++) {
+				probShadowNodes.add(this.getProb(this.shadowNodeList.get(i),null));
+			}
+			// fill table
+			for (int i = 0; i < table.tableSize(); i++) {
+				table.setValue(i, probShadowNodes.get(i % shadowNodeList.size()));
+			}
+			// then adjust the marginal (not necessary if junction tree will be compiled next)
+			probNode.initMarginalList();
+			for (int i = 0; i < this.shadowNodeList.size(); i++) {
+				probNode.setMarginalAt(i, probShadowNodes.get(i));
+			}
+		}
+		
 		return this.shadowNodeList.size()-1;
 	}
 	
@@ -612,6 +645,22 @@ public class ValueTree implements IValueTree {
 	 */
 	protected void setShadowNodeList(List<IValueTreeNode> shadowNodeList) {
 		this.shadowNodeList = shadowNodeList;
+	}
+
+	/**
+	 * @return if true, then {@link #addNode(IValueTreeNode)} and {@link #addNode(String, IValueTreeNode, float)} will
+	 * adapt (normalize) the faction of siblings proportionally.
+	 */
+	public boolean isToAdaptFaction() {
+		return isToAdaptFaction;
+	}
+
+	/**
+	 * @param isToAdaptFaction : if true, then {@link #addNode(IValueTreeNode)} and {@link #addNode(String, IValueTreeNode, float)} will
+	 * adapt (normalize) the faction of siblings proportionally.
+	 */
+	public void setToAdaptFaction(boolean isToAdaptFaction) {
+		this.isToAdaptFaction = isToAdaptFaction;
 	}
 
 	

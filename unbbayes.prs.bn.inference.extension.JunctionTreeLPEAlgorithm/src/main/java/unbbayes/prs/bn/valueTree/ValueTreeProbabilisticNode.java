@@ -18,7 +18,8 @@ public class ValueTreeProbabilisticNode extends ProbabilisticNode implements IPl
 	 * Default constructor is kept public so that plugin infrastructure can instantiate it,
 	 */
 	public ValueTreeProbabilisticNode() {
-		// TODO Auto-generated constructor stub
+		super();
+		this.getProbabilityFunction().addVariable(this);
 	}
 
 	/* (non-Javadoc)

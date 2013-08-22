@@ -22,7 +22,7 @@ public class ValueTreeNode implements IValueTreeNode {
 	
 	private String name = "node";
 	
-	private List<IValueTreeNode> children = null;
+	private List<IValueTreeNode> children = new ArrayList<IValueTreeNode>(0);
 
 	private IValueTreeNode parent = null;
 	
