@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.extension.IPluginNode;
 import unbbayes.util.Debug;
+import unbbayes.util.SetToolkit;
 
 /**
  * This node works as the shadow node in value trees, so 
@@ -82,6 +84,73 @@ public class ValueTreeProbabilisticNode extends ProbabilisticNode implements IPl
 			// do not change probability of nodes which were already edited.
 			otherShadowNodes.add(valueTree.getShadowNode(i));
 		}
+	}
+
+	/**
+	 * Calls {@link #basicClone()} internally
+	 * @see unbbayes.prs.bn.ProbabilisticNode#clone()
+	 */
+	public Object clone() {
+		ValueTreeProbabilisticNode cloned = (ValueTreeProbabilisticNode) this.basicClone();
+		PotentialTable auxTab = cloned.getProbabilityFunction();
+		// copy variables
+		for (int i = 0; i < this.getProbabilityFunction().getVariablesSize(); i++) {
+			auxTab.addVariable(this.getProbabilityFunction().getVariableAt(i));
+		}
+		if (auxTab.getVariablesSize() != this.getProbabilityFunction().getVariablesSize()) {
+			throw new IllegalStateException("Cloned CPT of node " + this + " has " + auxTab.getVariablesSize() + " of size, while original has " + this.getProbabilityFunction().getVariablesSize());
+		}
+		
+		// perform fast array copy
+		auxTab.setValues(this.getProbabilityFunction().getValues());
+		auxTab.setSumOperation(((PotentialTable) this.getProbabilityFunction()).getSumOperation());
+		
+		
+		ProbabilisticNode.setDescriptionColor(ProbabilisticNode
+				.getDescriptionColor().getRGB());
+		ProbabilisticNode.setExplanationColor(ProbabilisticNode
+				.getExplanationColor().getRGB());
+		cloned.setPosition(this.getPosition().getX(), this.getPosition().getY());
+		cloned.setParents(SetToolkit.clone(parents));
+		cloned.setChildren(SetToolkit.clone(this.getChildren()));
+		cloned.setAdjacents(SetToolkit.clone(this.getAdjacents()));
+		cloned.setSelected(this.isSelected());
+		cloned.setExplanationDescription(this.getExplanationDescription());
+		cloned.setPhrasesMap(this.getPhrasesMap());
+		cloned.setInformationType(this.getInformationType());
+
+		return cloned;
+	}
+
+	/** 
+	 * Also clones {@link #getValueTree()}
+	 * @see unbbayes.prs.bn.ProbabilisticNode#basicClone()
+	 */
+	public ProbabilisticNode basicClone() {
+		ProbabilisticNode cloned = new ProbabilisticNode();
+		cloned.setDescription(this.getDescription());
+		cloned.setName(this.getName());
+		// cloned.setPosition(this.getPosition().getX(),
+		// this.getPosition().getY());
+		cloned.setStates(SetToolkit.clone(states));
+		if (super.marginalList != null) {
+			float[] marginais = new float[super.marginalList.length];
+			System.arraycopy(super.marginalList, 0, marginais, 0,
+					marginais.length);
+			cloned.setMarginalProbabilities(marginais);
+			cloned.copyMarginal();
+		}
+		if (this.hasEvidence()) {
+			cloned.addFinding(this.getEvidence());
+		}
+		cloned.setInternalIdentificator(this.getInternalIdentificator());
+		// clone value tree
+		try {
+			((ValueTreeProbabilisticNode) cloned).setValueTree((IValueTree) this.getValueTree().clone());
+		} catch (CloneNotSupportedException e) {
+			throw new RuntimeException(e);
+		}
+		return cloned;
 	}
 
 //	/* (non-Javadoc)

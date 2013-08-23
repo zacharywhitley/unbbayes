@@ -1,10 +1,8 @@
 package unbbayes.prs.bn.valueTree;
 
-import java.util.Collection;
 import java.util.List;
 
 import unbbayes.prs.INode;
-import unbbayes.prs.Node.NodeNameChangedListener;
 
 /**
  * Classes implementing this interface represents a tree of {@link IValueTreeNode},
@@ -161,11 +159,11 @@ public interface IValueTree {
 	 */
 	public float initAssets(IValueTreeNode node);
 	
-	/**
-	 * Changes the value of default initial assets to be used in {@link #initAssets(IValueTreeNode)}.
-	 * @param initialAssets: the assets to set
-	 */
-	public void setInitialAssets(float initialAssets);
+//	/**
+//	 * Changes the value of default initial assets to be used in {@link #initAssets(IValueTreeNode)}.
+//	 * @param initialAssets: the assets to set
+//	 */
+//	public void setInitialAssets(float initialAssets);
 	
 	/**
 	 * Converts a value tree node to a shadow node (a node visible to the rest of the Bayes net).
@@ -216,5 +214,11 @@ public interface IValueTree {
 	 * remove all listeners which were supposed to be executed at the end of {@link #changeProb(IValueTreeNode, IValueTreeNode, float, List)}
 	 */
 	public void removeAllFactionChangeListener();
+
+
+	/**
+	 * @return a copy of this value tree
+	 */
+	public Object clone() throws CloneNotSupportedException;
 	
 }

@@ -26,9 +26,9 @@ public class ValueTree implements IValueTree {
 	/** All nodes */
 	private List<IValueTreeNode> nodes = new ArrayList<IValueTreeNode>();
 	private INode root =null;
-	private float initialAssets;
+//	private float initialAssets;
 	
-	private boolean isToChangeAssets = false;
+//	private boolean isToChangeAssets = false;
 	
 	private Map<String, Integer> nameIndex = null;
 	
@@ -272,6 +272,8 @@ public class ValueTree implements IValueTree {
 			otherAnchors = Collections.emptyList();
 		}
 		
+		// TODO do not change child nodes if parent is 0%
+		
 		// Obtain the current probability, which will be used for probability ratio and to return
 		float prevProb = this.getProb(node, ancestorAnchor);
 		
@@ -412,12 +414,12 @@ public class ValueTree implements IValueTree {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.bn.IValueTree#setInitialAssets(float)
-	 */
-	public void setInitialAssets(float initialAssets) {
-		this.initialAssets = initialAssets;
-	}
+//	/* (non-Javadoc)
+//	 * @see unbbayes.prs.bn.IValueTree#setInitialAssets(float)
+//	 */
+//	public void setInitialAssets(float initialAssets) {
+//		this.initialAssets = initialAssets;
+//	}
 
 	/**
 	 * @param root the root to set
@@ -426,12 +428,12 @@ public class ValueTree implements IValueTree {
 		this.root = root;
 	}
 
-	/**
-	 * @return the initialAssets
-	 */
-	public float getInitialAssets() {
-		return this.initialAssets;
-	}
+//	/**
+//	 * @return the initialAssets
+//	 */
+//	public float getInitialAssets() {
+//		return this.initialAssets;
+//	}
 
 	/**
 	 * @param nodes the nodes to set
@@ -474,19 +476,19 @@ public class ValueTree implements IValueTree {
 		this.nameIndex = nameIndex;
 	}
 
-	/**
-	 * @return if true, then {@link #changeProb(IValueTreeNode, IValueTreeNode, float)} will also attempt to change assets
-	 */
-	public boolean isToChangeAssets() {
-		return isToChangeAssets;
-	}
-
-	/**
-	 * @param isToChangeAssets the isToChangeAssets to set
-	 */
-	public void setToChangeAssets(boolean isToChangeAssets) {
-		this.isToChangeAssets = isToChangeAssets;
-	}
+//	/**
+//	 * @return if true, then {@link #changeProb(IValueTreeNode, IValueTreeNode, float)} will also attempt to change assets
+//	 */
+//	public boolean isToChangeAssets() {
+//		return isToChangeAssets;
+//	}
+//
+//	/**
+//	 * @param isToChangeAssets the isToChangeAssets to set
+//	 */
+//	public void setToChangeAssets(boolean isToChangeAssets) {
+//		this.isToChangeAssets = isToChangeAssets;
+//	}
 
 	/**
 	 * @see unbbayes.prs.bn.valueTree.IValueTree#deleteNode(unbbayes.prs.bn.valueTree.IValueTreeNode)
@@ -760,6 +762,59 @@ public class ValueTree implements IValueTree {
 	 */
 	public void setFactionChangeListeners(ArrayList<IValueTreeFactionChangeListener> factionChangeListeners) {
 		this.factionChangeListeners = factionChangeListeners;
+	}
+
+	/**
+	 * this won't clone {@link #getFactionChangeListeners()}
+	 * @see java.lang.Object#clone()
+	 */
+	public Object clone() throws CloneNotSupportedException {
+		ValueTree clone = (ValueTree) ValueTree.getInstance(this.getRoot());
+		// index of nodes created already
+		Map<String, IValueTreeNode> clonedNodes = new HashMap<String, IValueTreeNode>();
+		// make sure factions are not modified during cloning
+		clone.setToAdaptFaction(false);
+		// build hierarchy
+		for (IValueTreeNode child : get1stLevelNodes()) {
+			// use null as parent, because their parents are the root
+			clonedNodes.putAll(this.cloneAndLinkValueSubTreeRecursive(clone, child, null));
+		}
+		
+		// set shadow nodes
+		for (int i = 0; i < this.getShadowNodeSize(); i++) {
+			IValueTreeNode originalShadowNode = this.getShadowNode(i);
+			IValueTreeNode cloneShadowNode = clonedNodes.get(originalShadowNode.getName());
+			clone.setAsShadowNode(cloneShadowNode);
+		}
+		
+		clone.setToAdaptFaction(this.isToAdaptFaction());
+		return clone;
+	}
+
+	/**
+	 * Recursively clones value tree nodes and inserts to clonedNodes
+	 * @param treeToAdd : value tree to insert cloned nodes
+	 * @param originalRoot : root of the sub-tree to clone
+	 * @param cloneParent : node which will be set as the parent of the new clone
+	 * @return map filled with nodes created by this method.
+	 */
+	protected Map<String, IValueTreeNode> cloneAndLinkValueSubTreeRecursive(ValueTree treeToAdd, IValueTreeNode originalRoot, IValueTreeNode cloneParent) {
+		if (treeToAdd == null || originalRoot == null) {
+			throw new NullPointerException("The value tree and the node to clone must be specified.");
+		}
+		// initialize the object to return
+		Map<String, IValueTreeNode> mapToReturn = new HashMap<String, IValueTreeNode>();
+		// clone the node of this level
+		IValueTreeNode clonedNode = treeToAdd.addNode(originalRoot.getName(), cloneParent, originalRoot.getFaction());
+		mapToReturn.put(clonedNode.getName(), clonedNode);
+		// recursively create descendants
+		if (originalRoot.getChildren() != null) {
+			for (IValueTreeNode originalChild : originalRoot.getChildren()) {
+				// the new node is the parent in next recursion
+				mapToReturn.putAll(this.cloneAndLinkValueSubTreeRecursive(treeToAdd, originalChild, clonedNode));
+			}
+		}
+		return mapToReturn;
 	}
 
 	
