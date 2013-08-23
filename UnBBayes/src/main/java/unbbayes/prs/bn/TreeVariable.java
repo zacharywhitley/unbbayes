@@ -107,9 +107,10 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     }
     
     public void setMarginalProbabilities(float marginalProbabilities[]) {
-        for (int i = 0; i < getStatesSize(); i++) {
-            setMarginalAt(i, marginalProbabilities[i]);
-        }
+    	System.arraycopy( marginalProbabilities, 0, marginalList, 0, marginalProbabilities.length);
+//        for (int i = 0; i < getStatesSize(); i++) {
+//            setMarginalAt(i, marginalProbabilities[i]);
+//        }
     }
 
     /**
