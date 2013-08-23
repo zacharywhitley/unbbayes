@@ -201,5 +201,20 @@ public interface IValueTree {
 	 */
 	public int getShadowNodeSize();
 	
+	/**
+	 * @param listener
+	 * A listener which will be executed at the end of {@link #changeProb(IValueTreeNode, IValueTreeNode, float, List)}
+	 */
+	public void addFactionChangeListener(IValueTreeFactionChangeListener listener);
+	
+	/**
+	 * @param listener : removes this listener which was supposed to be executed at the end of {@link #changeProb(IValueTreeNode, IValueTreeNode, float, List)}
+	 */
+	public void removeFactionChangeListener(IValueTreeFactionChangeListener listener);
+	
+	/**
+	 * remove all listeners which were supposed to be executed at the end of {@link #changeProb(IValueTreeNode, IValueTreeNode, float, List)}
+	 */
+	public void removeAllFactionChangeListener();
 	
 }

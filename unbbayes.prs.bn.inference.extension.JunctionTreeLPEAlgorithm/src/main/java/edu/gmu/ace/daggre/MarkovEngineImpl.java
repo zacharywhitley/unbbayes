@@ -63,6 +63,7 @@ import unbbayes.util.Debug;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import edu.gmu.ace.daggre.ScoreSummary.SummaryContribution;
+import edu.gmu.ace.daggre.io.ValueTreeNetIO;
 
 /**
  * This is the default implementation of {@link MarkovEngineInterface}.
@@ -302,7 +303,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private boolean isToExportOnlyCurrentSharedProbabilisticNet = false;
 
-	private NetIO netIOToExportSharedNetToSting = new NetIO(); 
+	private NetIO netIOToExportSharedNetToSting = new ValueTreeNetIO(); 
 	{
 		netIOToExportSharedNetToSting.setDefaultNodeNamePrefix("N");
 	}

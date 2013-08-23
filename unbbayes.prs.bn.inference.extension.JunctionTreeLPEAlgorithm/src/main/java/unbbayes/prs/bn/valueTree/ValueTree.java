@@ -1,10 +1,10 @@
 package unbbayes.prs.bn.valueTree;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.Node.NodeNameChangedEvent;
@@ -35,6 +35,8 @@ public class ValueTree implements IValueTree {
 	private List<IValueTreeNode> shadowNodeList = null;
 
 	private boolean isToAdaptFaction = false;
+
+	private ArrayList<IValueTreeFactionChangeListener> factionChangeListeners;
 
 	/**
 	 * Default constructor is made protected to restrict access and
@@ -266,6 +268,9 @@ public class ValueTree implements IValueTree {
 		if (prob < 0 || prob > 1) {
 			throw new IllegalArgumentException(prob + " is not a valid probability for " + node + " given " + ancestorAnchor);
 		}
+		if (otherAnchors == null) {
+			otherAnchors = Collections.emptyList();
+		}
 		
 		// Obtain the current probability, which will be used for probability ratio and to return
 		float prevProb = this.getProb(node, ancestorAnchor);
@@ -278,13 +283,18 @@ public class ValueTree implements IValueTree {
 		// the complementary ratio to be used for the relative sets (i.e. siblings of ancestors)
 		float complementaryRatio = (1-prob)/(1-prevProb);
 		
-		// this map will store what were the factions before the edit, so that we can restore to it in case of any problem
-		Map<IValueTreeNode, Float> factionBackup = new HashMap<IValueTreeNode, Float>();
+//		// this map will store what were the factions before the edit, so that we can restore to it in case of any problem
+//		Map<IValueTreeNode, Float> factionBackup = new HashMap<IValueTreeNode, Float>();
+		
+		// this list will hold what nodes have had factions changes, so that we can notify listeners afterwards
+		List<IValueTreeFactionChangeEvent> factionChanges = new ArrayList<IValueTreeFactionChangeEvent>();
 		
 		try {
 			// change the faction of the node by using the ratio
-			factionBackup.put(node, node.getFaction());	// backup faction before change
-			node.setFaction(node.getFaction()*(prob/prevProb));
+//			factionBackup.put(node, node.getFaction());	// backup faction before change
+			float oldFaction = node.getFaction();
+			node.setFaction(oldFaction*(prob/prevProb));
+			factionChanges.add(ValueTreeFactionChangeEvent.getInstance(node, oldFaction, node.getFaction()));
 			
 			// iterate towards anchor (or root) to set factions of other nodes
 			float probCurrentNode = prob;	// this will hold probability of target initially, and then of its ancestors during the loop
@@ -307,8 +317,10 @@ public class ValueTree implements IValueTree {
 					if (!child.equals(node)) {	
 						if (!otherAnchors.contains(child)) {
 							// only change siblings here, so not the node itself
-							factionBackup.put(child, child.getFaction());	// backup faction before change
-							child.setFaction(child.getFaction()*complementaryRatio);
+//							factionBackup.put(child, child.getFaction());	// backup faction before change
+							oldFaction = child.getFaction();
+							child.setFaction(oldFaction*complementaryRatio);
+							factionChanges.add(ValueTreeFactionChangeEvent.getInstance(child, oldFaction, child.getFaction()));
 						}
 						sumProbChildren += getProb(child, ancestorAnchor);
 					} else {
@@ -322,8 +334,10 @@ public class ValueTree implements IValueTree {
 				if (parent != null && !parent.equals(ancestorAnchor)) {
 					if (!otherAnchors.contains(parent)) {
 						// 2 - adjust the faction of the ancestor in the path between anchor and node by using the prob of children
-						factionBackup.put(parent, parent.getFaction());	// backup faction before change
-						parent.setFaction(parent.getFaction()*(sumProbChildren/getProb(parent, ancestorAnchor)));
+//						factionBackup.put(parent, parent.getFaction());	// backup faction before change
+						oldFaction = parent.getFaction();
+						parent.setFaction(oldFaction*(sumProbChildren/getProb(parent, ancestorAnchor)));
+						factionChanges.add(ValueTreeFactionChangeEvent.getInstance(parent, oldFaction, parent.getFaction()));
 					}
 					
 					// parent will be handled in the next iteration, so set nodeProb to the probability of node of next iteration (i.e. parent) too
@@ -335,8 +349,10 @@ public class ValueTree implements IValueTree {
 				for (IValueTreeNode child : children) {
 					// Note: I could not do this in the previous "for", because getProb was needed after the last "for", and getProb is sensitive to factions
 					if (!otherAnchors.contains(child)) {
-						factionBackup.put(child, child.getFaction());	// backup faction before change
-						child.setFaction(child.getFaction()/sumFactionChildren);
+//						factionBackup.put(child, child.getFaction());	// backup faction before change
+						oldFaction = child.getFaction();
+						child.setFaction(oldFaction/sumFactionChildren);
+						factionChanges.add(ValueTreeFactionChangeEvent.getInstance(child, oldFaction, child.getFaction()));
 					}
 				}
 
@@ -345,12 +361,20 @@ public class ValueTree implements IValueTree {
 			} while (node != null && !node.equals(ancestorAnchor));
 		} catch (Throwable t) {
 			// restore factions of all affected nodes
-			for (Entry<IValueTreeNode, Float> entry : factionBackup.entrySet()) {
-				entry.getKey().setFaction(entry.getValue());
+//			for (Entry<IValueTreeNode, Float> entry : factionBackup.entrySet()) {
+//				entry.getKey().setFaction(entry.getValue());
+//			}
+			for (IValueTreeFactionChangeEvent changeEvent : factionChanges) {
+				changeEvent.getNode().setFaction(changeEvent.getFactionBefore());
 			}
 			throw new RuntimeException(t);
 		}
 		
+		if (this.factionChangeListeners != null) {
+			for (IValueTreeFactionChangeListener listener : factionChangeListeners) {
+				listener.onFactionChange(factionChanges);
+			}
+		}
 		
 		// simply return what was the probability before edit
 		return prevProb;
@@ -689,6 +713,53 @@ public class ValueTree implements IValueTree {
 	 */
 	public void setToAdaptFaction(boolean isToAdaptFaction) {
 		this.isToAdaptFaction = isToAdaptFaction;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.valueTree.IValueTree#addFactionChangeListener(unbbayes.prs.bn.valueTree.IValueTreeFactionChangeListener)
+	 */
+	public void addFactionChangeListener(
+			IValueTreeFactionChangeListener listener) {
+		if (this.factionChangeListeners == null) {
+			this.factionChangeListeners = new ArrayList<IValueTreeFactionChangeListener>();
+		}
+		this.factionChangeListeners.add(listener);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.valueTree.IValueTree#removeFactionChangeListener(unbbayes.prs.bn.valueTree.IValueTreeFactionChangeListener)
+	 */
+	public void removeFactionChangeListener(
+			IValueTreeFactionChangeListener listener) {
+		if (this.factionChangeListeners != null) {
+			this.factionChangeListeners.remove(listener);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.valueTree.IValueTree#removeAllFactionChangeListener()
+	 */
+	public void removeAllFactionChangeListener() {
+		if (this.factionChangeListeners != null) {
+			this.factionChangeListeners.clear();
+		}
+	}
+
+	/**
+	 * @return the factionChangeListeners
+	 */
+	public ArrayList<IValueTreeFactionChangeListener> getFactionChangeListeners() {
+		return factionChangeListeners;
+	}
+
+	/**
+	 * @param factionChangeListeners the factionChangeListeners to set
+	 */
+	public void setFactionChangeListeners(ArrayList<IValueTreeFactionChangeListener> factionChangeListeners) {
+		this.factionChangeListeners = factionChangeListeners;
 	}
 
 	

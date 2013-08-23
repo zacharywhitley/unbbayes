@@ -71,13 +71,16 @@ public class ValueTreeProbabilisticNode extends ProbabilisticNode implements IPl
 		super.marginal();
 		// prepare list (copy) of shadow nodes, so that we can use them as anchors afterwards.
 		List<IValueTreeNode> otherShadowNodes = new ArrayList<IValueTreeNode>(getStatesSize());
-		for (int i = 0; i < getStatesSize(); i++) {
-			otherShadowNodes.add(valueTree.getShadowNode(i));
-		}
+//		for (int i = 0; i < getStatesSize(); i++) {
+//			otherShadowNodes.add(valueTree.getShadowNode(i));
+//		}
 		// change the probabilities in the shadow nodes as well
 		for (int i = 0; i < getStatesSize(); i++) {
+			// TODO change nodes closer to root nodes first
 			// note: otherShadowNodes can contain valueTree.getShadowNode(i) because it will not be considered as anchor if the node to change and anchor is the same.
 			valueTree.changeProb(valueTree.getShadowNode(i), null, getMarginalAt(i), otherShadowNodes);
+			// do not change probability of nodes which were already edited.
+			otherShadowNodes.add(valueTree.getShadowNode(i));
 		}
 	}
 
