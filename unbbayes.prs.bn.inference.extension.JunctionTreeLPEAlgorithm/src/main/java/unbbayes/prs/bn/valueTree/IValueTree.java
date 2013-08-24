@@ -1,5 +1,7 @@
 package unbbayes.prs.bn.valueTree;
 
+import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 
 import unbbayes.prs.INode;
@@ -11,7 +13,7 @@ import unbbayes.prs.INode;
  * @author Shou Matsumoto
  * @see IValueTreeNode
  */
-public interface IValueTree {
+public interface IValueTree extends Serializable {
 
 	/**
 	 * @return the name of the value tree as a whole.
@@ -125,15 +127,21 @@ public interface IValueTree {
 	 *  <br/>
 	 *  4.  output the probabilities of exposing state if there is any change, and signal the update for the whole network.
 	 *  <br/>
+	 *  <br/>
+	 *  Please, note that implementations will not necessarily change the CPT of {@link #getRoot()} after execution of 
+	 *  this method. You should use {@link #addFactionChangeListener(IValueTreeFactionChangeListener)}
+	 *  to add proper listeners in order to update {@link #getRoot()}.
 	 * @param node : node to change probability
 	 * @param ancestorAnchor : anchor (ancestor of node) not to change probability
 	 * @param prob : probability value to set
-	 * @param otherAnchors : other anchors (nodes not to change probability) which are not necessarily ancestor of node.
-	 * This value can be usually null for most of usages. If this list contains the node to be changed, the node
+	 * @param mutuallyExclusiveAnchors : other anchors (nodes not to change probability) which are not ancestor or descendants of node.
+	 * These anchors must contain nodes which does not have any overlap with the target node, so they must be
+	 * mutually exclusive each other (no need to be collectively exhaustive).
+	 * This list shall be usually null for most of calls. If this list contains the node to be changed, the node
 	 * will not be considered as an anchor.
 	 * @return : the old probability.
 	 */
-	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, List<IValueTreeNode> otherAnchors);
+	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, Collection<IValueTreeNode> mutuallyExclusiveAnchors);
 	
 	/**
 	 * Definition of highest relative set: Let a t be the set of all ancestors of a node t, i.e., the 

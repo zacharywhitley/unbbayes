@@ -1,5 +1,6 @@
 package unbbayes.prs.bn.valueTree;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
@@ -17,7 +18,7 @@ import unbbayes.prs.Node.NodeNameChangedListener;
  * @see ValueTreeNode
  * @see IValueTree
  */
-public interface IValueTreeNode {
+public interface IValueTreeNode extends Serializable  {
 
 	/**
 	 * @return the name of the current node.
@@ -96,4 +97,10 @@ public interface IValueTreeNode {
 	 * @return the nameChangeListeners: listeners to be invoked when {@link #setName(String)} is called
 	 */
 	public List<NodeNameChangedListener> getNameChangeListeners();
+	
+	/**
+	 * @param node : node to test.
+	 * @return true if the current node is an ancestor of the node provided in the argument.
+	 */
+	public boolean isAncestorOf(IValueTreeNode node);
 }

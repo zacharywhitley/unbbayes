@@ -20,6 +20,8 @@ import unbbayes.prs.bn.ProbabilisticNode;
  */
 public class ValueTreeNode implements IValueTreeNode {
 	
+	private static final long serialVersionUID = -8032546568179905329L;
+
 	private String name = "node";
 	
 	private List<IValueTreeNode> children = new ArrayList<IValueTreeNode>(0);
@@ -195,6 +197,23 @@ public class ValueTreeNode implements IValueTreeNode {
 	 */
 	public void setDateLastChange(Date dateLastChange) {
 		this.dateLastChange = dateLastChange;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.valueTree.IValueTreeNode#isAncestor(unbbayes.prs.bn.valueTree.IValueTreeNode)
+	 */
+	public boolean isAncestorOf(IValueTreeNode node) {
+		// iterate over parents of node
+		while (node != null) {
+			// Note: do not consider the node itself as ancestor
+			node = node.getParent();
+			if (this.equals(node)) {
+				// Note:  because this != null; if node == null (reached root), it won't enter in this if-clause
+				return true;
+			} 
+		}
+		return false;
 	}
 
 //	/**

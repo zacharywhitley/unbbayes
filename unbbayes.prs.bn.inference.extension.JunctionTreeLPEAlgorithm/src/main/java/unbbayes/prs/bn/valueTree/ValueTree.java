@@ -1,6 +1,7 @@
 package unbbayes.prs.bn.valueTree;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,12 +12,15 @@ import unbbayes.prs.Node.NodeNameChangedEvent;
 import unbbayes.prs.Node.NodeNameChangedListener;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.util.Debug;
 
 /**
  * This is the default implementation of {@link IValueTree}
  * @author Shou Matsumoto
  */
 public class ValueTree implements IValueTree {
+
+	private static final long serialVersionUID = 3357388425391909172L;
 
 	/** Error margin used in probability comparison */
 	public static final float PROB_ERROR_MARGIN = 0.00001f;
@@ -239,17 +243,38 @@ public class ValueTree implements IValueTree {
 //			// inconditional probability can be retrieved from cache
 //			return node.getProbCache();
 //		}
+		if (node == null) {
+			throw new NullPointerException("Attempted to obtain probability of a null value tree node.");
+		}
+		// the prob of node given itself is always 100%
+		if (node.equals(anchor)) {
+			return 1f;
+		}
 		// the probability is the product of the factions in the path between anchor and node.
 		float ret = 1f;
-		while (node != null && !node.equals(anchor)) {
+		IValueTreeNode nodeInIteration = node;
+		do {
 			// multiply the factions from node to anchor (anchor is supposedly null - root - or above node)
-			ret *= node.getFaction();
-			node = node.getParent();
+			ret *= nodeInIteration.getFaction();
+			nodeInIteration = nodeInIteration.getParent();
+		} while (nodeInIteration != null && !nodeInIteration.equals(anchor));
+		
+		// if reached root without reaching anchor, but anchor was non null, then check if anchor is descendant. If so, prob is 100%, else its 0%;
+		if (nodeInIteration == null && anchor != null) {
+			// note that at this point node != anchor, so we can check if it is ancestor and not to check whether they are the same node
+			if (node.isAncestorOf(anchor)) {
+				return 1f;
+			} else {
+				return 0f;
+			}
 		}
+		
+		
 		// update cache if we calculated inconditional prob
 //		if (anchor == null) {
 //			node.setProbCache(ret);
 //		}
+		
 		if (node == null && anchor != null) {
 			// we reached root without passing though anchor. This means anchor is not in the path between node and root (so anchor is not ancestor of node)
 			throw new IllegalArgumentException("The anchor (reference) " + anchor + " is expected to be an ancestor of node " + node + ", but it was not.");
@@ -259,31 +284,48 @@ public class ValueTree implements IValueTree {
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.prs.bn.valueTree.IValueTree#changeProb(unbbayes.prs.bn.valueTree.IValueTreeNode, unbbayes.prs.bn.valueTree.IValueTreeNode, float, java.util.List)
+	 * @see unbbayes.prs.bn.valueTree.IValueTree#changeProb(unbbayes.prs.bn.valueTree.IValueTreeNode, unbbayes.prs.bn.valueTree.IValueTreeNode, float, java.util.Collection)
 	 */
-	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, List<IValueTreeNode> otherAnchors) {
+	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, Collection<IValueTreeNode> mutuallyExclusiveAnchors) {
 		if (node == null) {
 			throw new NullPointerException("Attempted to change the probability of a null node to " + prob + " given node " + ancestorAnchor);
 		}
 		if (prob < 0 || prob > 1) {
 			throw new IllegalArgumentException(prob + " is not a valid probability for " + node + " given " + ancestorAnchor);
 		}
-		if (otherAnchors == null) {
-			otherAnchors = Collections.emptyList();
+		if (mutuallyExclusiveAnchors == null) {
+			mutuallyExclusiveAnchors = Collections.emptySet();
 		}
-		
-		// TODO do not change child nodes if parent is 0%
 		
 		// Obtain the current probability, which will be used for probability ratio and to return
 		float prevProb = this.getProb(node, ancestorAnchor);
 		
-		// if the node itself is in the anchor list, then nothing will be changed...
-//		if (otherAnchors.contains(node)) {
-//			return prevProb;
-//		}
 		
-		// the complementary ratio to be used for the relative sets (i.e. siblings of ancestors)
-		float complementaryRatio = (1-prob)/(1-prevProb);
+		// prepare variables to calculate complementary ratio - ratio to be used for the relative sets (i.e. siblings of ancestors)
+		// actually, the complementary ratio depends on the probability of node to change, and probability of its siblings not to change (anchors) too
+		float sumAnchoredSiblingProbs = 0f;
+		if (!mutuallyExclusiveAnchors.isEmpty()) {
+			for (IValueTreeNode mutualAnchor : mutuallyExclusiveAnchors) {
+				if (!mutualAnchor.equals(node)) { 	// do not consider the target node itself as the anchor
+					sumAnchoredSiblingProbs += getProb(mutualAnchor, ancestorAnchor);
+				}
+			}
+		}
+		// the following is the the complementary ratio considering the siblings. Note that if sumSiblingsProbs == 0, then this is simply the ratio of "other" nodes, that's why it is "complementary"
+		float complementaryRatio = ( 1f - (sumAnchoredSiblingProbs + prob) ) / ( 1f - (sumAnchoredSiblingProbs + prevProb) );
+			if (Float.isInfinite(complementaryRatio)		// denominator was 0
+					|| Float.isNaN(complementaryRatio)) {	// it was exactly 0/0
+			// this means that the anchors + target node sums up to 100%, so other nodes are 0% and cannot be changed.
+			if (Math.abs(prob - prevProb) >= PROB_ERROR_MARGIN) {
+				// this means prob of other changeable nodes were attempted to be taken out from 0%
+				throw new IllegalArgumentException("The probability of nodes other than " + node + " given anchors is 0%, so cannot be changed.");
+			} else {
+				// prob of changeable nodes were 0%, but remaining the same
+				Debug.println(getClass(), "No change in node " + node + " given " + ancestorAnchor + " and fixing " + mutuallyExclusiveAnchors);
+				return prevProb;
+			}
+		} 
+		
 		
 //		// this map will store what were the factions before the edit, so that we can restore to it in case of any problem
 //		Map<IValueTreeNode, Float> factionBackup = new HashMap<IValueTreeNode, Float>();
@@ -317,9 +359,10 @@ public class ValueTree implements IValueTree {
 				for (IValueTreeNode child : children) {
 					// note: at this point, parent.getChildren() cannot be null, because at least "node" is a child of "parent"
 					if (!child.equals(node)) {	
-						if (!otherAnchors.contains(child)) {
+						if (!mutuallyExclusiveAnchors.contains(child)) {
 							// only change siblings here, so not the node itself
 //							factionBackup.put(child, child.getFaction());	// backup faction before change
+							
 							oldFaction = child.getFaction();
 							child.setFaction(oldFaction*complementaryRatio);
 							factionChanges.add(ValueTreeFactionChangeEvent.getInstance(child, oldFaction, child.getFaction()));
@@ -334,12 +377,17 @@ public class ValueTree implements IValueTree {
 				
 				// get the current probability of the ancestor, so that we can use its ratio with the sum of children to adjust faction
 				if (parent != null && !parent.equals(ancestorAnchor)) {
-					if (!otherAnchors.contains(parent)) {
+					if (!mutuallyExclusiveAnchors.contains(parent)) {
 						// 2 - adjust the faction of the ancestor in the path between anchor and node by using the prob of children
-//						factionBackup.put(parent, parent.getFaction());	// backup faction before change
-						oldFaction = parent.getFaction();
-						parent.setFaction(oldFaction*(sumProbChildren/getProb(parent, ancestorAnchor)));
-						factionChanges.add(ValueTreeFactionChangeEvent.getInstance(parent, oldFaction, parent.getFaction()));
+						float currentProb = getProb(parent, ancestorAnchor);
+						if (currentProb != 0f) {
+//							factionBackup.put(parent, parent.getFaction());	// backup faction before change
+							oldFaction = parent.getFaction();
+							parent.setFaction(oldFaction*(sumProbChildren/currentProb));
+							factionChanges.add(ValueTreeFactionChangeEvent.getInstance(parent, oldFaction, parent.getFaction()));
+						} else if (sumProbChildren != 0f) {
+							throw new RuntimeException("Attempted to change probability of " + parent + " from 0% to " + sumProbChildren);
+						}
 					}
 					
 					// parent will be handled in the next iteration, so set nodeProb to the probability of node of next iteration (i.e. parent) too
@@ -350,9 +398,10 @@ public class ValueTree implements IValueTree {
 				// 3 - normalize the factions of children (current node and siblings)
 				for (IValueTreeNode child : children) {
 					// Note: I could not do this in the previous "for", because getProb was needed after the last "for", and getProb is sensitive to factions
-					if (!otherAnchors.contains(child)) {
-//						factionBackup.put(child, child.getFaction());	// backup faction before change
-						oldFaction = child.getFaction();
+					// Normalization shall be done regardless of the node being in siblingAnchors or not, so no need to check its content.
+//					factionBackup.put(child, child.getFaction());	// backup faction before change
+					oldFaction = child.getFaction();
+					if (sumFactionChildren != 0f) {
 						child.setFaction(oldFaction/sumFactionChildren);
 						factionChanges.add(ValueTreeFactionChangeEvent.getInstance(child, oldFaction, child.getFaction()));
 					}

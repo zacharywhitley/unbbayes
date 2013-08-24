@@ -1,7 +1,7 @@
 package unbbayes.prs.bn.valueTree;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
@@ -12,12 +12,15 @@ import unbbayes.util.SetToolkit;
 
 /**
  * This node works as the shadow node in value trees, so 
- * states of this node are the nodes in value trees visible in public
+ * states of this node are the nodes in value trees visible in public.
+ * Additionally, {@link #marginal()} will update
+ * the shadow nodes in {@link #getValueTree()}.
  * @author Shou Matsumoto
- *
+ * @see IValueTree#getShadowNode(int)
  */
 public class ValueTreeProbabilisticNode extends ProbabilisticNode implements IPluginNode {
-
+	private static final long serialVersionUID = -6246912182597230692L;
+	
 	private IValueTree valueTree = ValueTree.getInstance(this);
 	
 	/**
@@ -66,24 +69,26 @@ public class ValueTreeProbabilisticNode extends ProbabilisticNode implements IPl
 		return ret;
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * Also updates the value tree factions.
 	 * @see unbbayes.prs.bn.ProbabilisticNode#marginal()
 	 */
 	protected void marginal() {
 		super.marginal();
 		// prepare list (copy) of shadow nodes, so that we can use them as anchors afterwards.
-		List<IValueTreeNode> otherShadowNodes = new ArrayList<IValueTreeNode>(getStatesSize());
+		Set<IValueTreeNode> otherShadowNodes = new HashSet<IValueTreeNode>(getStatesSize());
 //		for (int i = 0; i < getStatesSize(); i++) {
 //			otherShadowNodes.add(valueTree.getShadowNode(i));
 //		}
 		// change the probabilities in the shadow nodes as well
 		for (int i = 0; i < getStatesSize(); i++) {
-			// TODO change nodes closer to root nodes first
 			// note: otherShadowNodes can contain valueTree.getShadowNode(i) because it will not be considered as anchor if the node to change and anchor is the same.
 			valueTree.changeProb(valueTree.getShadowNode(i), null, getMarginalAt(i), otherShadowNodes);
 			// do not change probability of nodes which were already edited.
 			otherShadowNodes.add(valueTree.getShadowNode(i));
 		}
+		
+		// TODO check if we need to update cpt
 	}
 
 	/**
