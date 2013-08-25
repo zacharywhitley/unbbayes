@@ -3,7 +3,7 @@
  */
 package unbbayes.prs.bn.valueTree;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Listener to be invoked when the
@@ -17,5 +17,5 @@ public interface IValueTreeFactionChangeListener {
 	 * @param changes : nodes which {@link IValueTreeNode#getFaction()} have changed, and values
 	 * before and after the changes.
 	 */
-	public void onFactionChange(List<IValueTreeFactionChangeEvent> changes);
+	public void onFactionChange(Collection<IValueTreeFactionChangeEvent> changes);
 }

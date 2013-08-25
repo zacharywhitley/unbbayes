@@ -15,11 +15,9 @@ public interface IValueTreeFactionChangeEvent {
 	
 	/**
 	 * @return value of {@link IValueTreeNode#getFaction()} before change
+	 * The faction after change must be obtained by
+	 * asking the {@link IValueTreeNode#getFaction()} of {@link #getNode()}
 	 */
 	public float getFactionBefore();
 	
-	/**
-	 * @return value of {@link IValueTreeNode#getFaction()} after change
-	 */
-	public float getFactionAfter();
 }

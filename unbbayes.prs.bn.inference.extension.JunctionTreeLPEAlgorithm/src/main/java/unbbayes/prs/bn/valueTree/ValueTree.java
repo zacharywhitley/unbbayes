@@ -24,6 +24,7 @@ public class ValueTree implements IValueTree {
 
 	/** Error margin used in probability comparison */
 	public static final float PROB_ERROR_MARGIN = 0.00001f;
+
 	
 	/** The children of root */
 	private List<IValueTreeNode> children = new ArrayList<IValueTreeNode>();
@@ -45,13 +46,75 @@ public class ValueTree implements IValueTree {
 	/**
 	 * Default constructor is made protected to restrict access and
 	 * yet allow inheritance.
+	 * By default, it will initialize {@link #getFactionChangeListeners()}
+	 * with a listener which will update CPT when a shadow node's faction changes.
 	 */
 	protected ValueTree() {
-		// TODO Auto-generated constructor stub
+		// add a listener which will change the cpt if necessary
+		this.addFactionChangeListener(new IValueTreeFactionChangeListener() {
+			public void onFactionChange(Collection<IValueTreeFactionChangeEvent> changes) {
+				if (getRoot() instanceof ProbabilisticNode) {
+					// extract the root node
+					ProbabilisticNode root = (ProbabilisticNode)getRoot();
+					// change marginal of root if faction of a shadow node has changed
+					List<IValueTreeNode> shadows = getShadowNodeList();
+					if (shadows == null) {
+						// there is nothing to do
+						Debug.println(getClass(), getRoot() + " has no shadow node, so changes in value tree won't change its CPT");
+						return;
+					}
+					if (!root.isMarginalList()) {
+						// isMarginalList returns false if marginal was not initialized
+						root.initMarginalList();	// initialize then
+					}
+					// at this point, there are shadow nodes. Check if shadow nodes are included in nodes which where changed
+					boolean hasChanged = false;
+					for (IValueTreeFactionChangeEvent change : changes) {
+						// only consider shadow nodes (nodes which represents the states present in root node)
+						if (shadows.contains(change.getNode())) {
+							// index of shadow node is supposedly the same of index of respective state in root node
+							int indexOfShadowNode = getShadowNodeStateIndex(change.getNode());
+							// obtain the previous marginal for comparison
+							float marginalBefore = root.getMarginalAt(indexOfShadowNode);
+							// obtain the current marginal from value tree
+							float marginalAfter = getProb(change.getNode(), null);
+							// check if marginals have changed
+							if (Math.abs(marginalAfter - marginalBefore) >= PROB_ERROR_MARGIN) {
+								// mark that something has changed
+								hasChanged = true;
+								break;
+							}
+						}
+					}
+					// if something has changed, then update the marginals & cpt accordingly to all shadow nodes
+					if (hasChanged) {
+						// index of shadow nodes and states of root are supposedly synchronized
+						int indexOfShadowNode = 0;
+						for (IValueTreeNode shadowNode : getShadowNodeList()) {
+							// store the new marginal in the list of marginals of node.
+							// the stored marginal will be used to fill CPT posteriorly
+							root.setMarginalAt(indexOfShadowNode, getProb(shadowNode, null));
+							indexOfShadowNode++;
+						}
+						// change cpt of root accordingly to the changes
+						PotentialTable table = root.getProbabilityFunction();
+						int tableSize = table.tableSize();		// to be used in the for loop
+						int stateSize = root.getStatesSize();	// to be used for mod operation on table to fit to state size
+						for (int i = 0; i < tableSize; i++) {
+							// because changes in value tree are changes in marginals, we can set CPT to "constant" probability (i.e. independent of parents)
+							table.setValue(i, root.getMarginalAt(i % stateSize));
+						}
+					}
+				}
+			}
+		});
 	}
 	
 	/**
 	 * This is the default constructor method.
+	 * As mentioned in {@link #ValueTree()},
+	 * the {@link #getFactionChangeListeners()} will be initialized with 1
+	 * listener which will update the CPT if a shadow node's faction has changed.
 	 * @param root : will represent the root of this value tree, which is the node in BN itself.
 	 * The states of this node are the states in this value tree which is exposed to other nodes in
 	 * the BN.
@@ -330,15 +393,17 @@ public class ValueTree implements IValueTree {
 //		// this map will store what were the factions before the edit, so that we can restore to it in case of any problem
 //		Map<IValueTreeNode, Float> factionBackup = new HashMap<IValueTreeNode, Float>();
 		
-		// this list will hold what nodes have had factions changes, so that we can notify listeners afterwards
-		List<IValueTreeFactionChangeEvent> factionChanges = new ArrayList<IValueTreeFactionChangeEvent>();
+		// this will hold what nodes have had factions changes, so that we can notify listeners afterwards
+		Map<IValueTreeNode, IValueTreeFactionChangeEvent> factionChanges = new HashMap<IValueTreeNode, IValueTreeFactionChangeEvent>();
 		
 		try {
 			// change the faction of the node by using the ratio
 //			factionBackup.put(node, node.getFaction());	// backup faction before change
 			float oldFaction = node.getFaction();
 			node.setFaction(oldFaction*(prob/prevProb));
-			factionChanges.add(ValueTreeFactionChangeEvent.getInstance(node, oldFaction, node.getFaction()));
+			if (!factionChanges.containsKey(node)) {
+				factionChanges.put(node, ValueTreeFactionChangeEvent.getInstance(node, oldFaction));
+			}
 			
 			// iterate towards anchor (or root) to set factions of other nodes
 			float probCurrentNode = prob;	// this will hold probability of target initially, and then of its ancestors during the loop
@@ -365,7 +430,9 @@ public class ValueTree implements IValueTree {
 							
 							oldFaction = child.getFaction();
 							child.setFaction(oldFaction*complementaryRatio);
-							factionChanges.add(ValueTreeFactionChangeEvent.getInstance(child, oldFaction, child.getFaction()));
+							if (!factionChanges.containsKey(child)) {
+								factionChanges.put(child,ValueTreeFactionChangeEvent.getInstance(child, oldFaction));
+							}
 						}
 						sumProbChildren += getProb(child, ancestorAnchor);
 					} else {
@@ -384,7 +451,9 @@ public class ValueTree implements IValueTree {
 //							factionBackup.put(parent, parent.getFaction());	// backup faction before change
 							oldFaction = parent.getFaction();
 							parent.setFaction(oldFaction*(sumProbChildren/currentProb));
-							factionChanges.add(ValueTreeFactionChangeEvent.getInstance(parent, oldFaction, parent.getFaction()));
+							if (!factionChanges.containsKey(parent)) {
+								factionChanges.put(parent,ValueTreeFactionChangeEvent.getInstance(parent, oldFaction));
+							}
 						} else if (sumProbChildren != 0f) {
 							throw new RuntimeException("Attempted to change probability of " + parent + " from 0% to " + sumProbChildren);
 						}
@@ -403,7 +472,9 @@ public class ValueTree implements IValueTree {
 					oldFaction = child.getFaction();
 					if (sumFactionChildren != 0f) {
 						child.setFaction(oldFaction/sumFactionChildren);
-						factionChanges.add(ValueTreeFactionChangeEvent.getInstance(child, oldFaction, child.getFaction()));
+						if (!factionChanges.containsKey(child)) {
+							factionChanges.put(child,ValueTreeFactionChangeEvent.getInstance(child, oldFaction));
+						}
 					}
 				}
 
@@ -415,15 +486,16 @@ public class ValueTree implements IValueTree {
 //			for (Entry<IValueTreeNode, Float> entry : factionBackup.entrySet()) {
 //				entry.getKey().setFaction(entry.getValue());
 //			}
-			for (IValueTreeFactionChangeEvent changeEvent : factionChanges) {
+			for (IValueTreeFactionChangeEvent changeEvent : factionChanges.values()) {
 				changeEvent.getNode().setFaction(changeEvent.getFactionBefore());
 			}
 			throw new RuntimeException(t);
 		}
 		
-		if (this.factionChangeListeners != null) {
+		// notify listeners if there are listeners registered, and there were changes in factions
+		if (this.factionChangeListeners != null && !factionChanges.isEmpty()) {
 			for (IValueTreeFactionChangeListener listener : factionChangeListeners) {
-				listener.onFactionChange(factionChanges);
+				listener.onFactionChange(factionChanges.values());
 			}
 		}
 		
@@ -793,13 +865,15 @@ public class ValueTree implements IValueTree {
 	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.valueTree.IValueTree#removeAllFactionChangeListener()
 	 */
-	public void removeAllFactionChangeListener() {
+	public void clearFactionChangeListener() {
 		if (this.factionChangeListeners != null) {
 			this.factionChangeListeners.clear();
 		}
 	}
 
 	/**
+	 * By default, this listener will be initialized with a listener which will
+	 * change CPT if shadow nodes were changed.
 	 * @return the factionChangeListeners
 	 */
 	public ArrayList<IValueTreeFactionChangeListener> getFactionChangeListeners() {
@@ -807,6 +881,8 @@ public class ValueTree implements IValueTree {
 	}
 
 	/**
+	 *  By default, this listener will be initialized with a listener which will
+	 * change CPT if shadow nodes were changed.
 	 * @param factionChangeListeners the factionChangeListeners to set
 	 */
 	public void setFactionChangeListeners(ArrayList<IValueTreeFactionChangeListener> factionChangeListeners) {

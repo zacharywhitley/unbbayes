@@ -210,18 +210,24 @@ public interface IValueTree extends Serializable {
 	/**
 	 * @param listener
 	 * A listener which will be executed at the end of {@link #changeProb(IValueTreeNode, IValueTreeNode, float, List)}
+	 * @see #removeFactionChangeListener(IValueTreeFactionChangeListener)
+	 * @see #clearFactionChangeListener()
 	 */
 	public void addFactionChangeListener(IValueTreeFactionChangeListener listener);
 	
 	/**
 	 * @param listener : removes this listener which was supposed to be executed at the end of {@link #changeProb(IValueTreeNode, IValueTreeNode, float, List)}
+	 * @see #addFactionChangeListener(IValueTreeFactionChangeListener)
+	 * @see #clearFactionChangeListener()
 	 */
 	public void removeFactionChangeListener(IValueTreeFactionChangeListener listener);
 	
 	/**
 	 * remove all listeners which were supposed to be executed at the end of {@link #changeProb(IValueTreeNode, IValueTreeNode, float, List)}
+	 * @see #addFactionChangeListener(IValueTreeFactionChangeListener)
+	 * @see #removeFactionChangeListener(IValueTreeFactionChangeListener)
 	 */
-	public void removeAllFactionChangeListener();
+	public void clearFactionChangeListener();
 
 
 	/**

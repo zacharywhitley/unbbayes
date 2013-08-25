@@ -13,7 +13,6 @@ public class ValueTreeFactionChangeEvent implements
 
 	private IValueTreeNode node = null;
 	private float factionBefore = Float.NaN;
-	private float factionAfter = Float.NaN;
 
 	/**
 	 * Default constructor is kept invisible for public, but
@@ -28,26 +27,23 @@ public class ValueTreeFactionChangeEvent implements
 	 * to allow inheritance.
 	 * @param node
 	 * @param factionBefore
-	 * @param factionAfter
 	 */
 	protected ValueTreeFactionChangeEvent(IValueTreeNode node,
-			float factionBefore, float factionAfter) {
+			float factionBefore ) {
 		this();
 		this.node = node;
 		this.factionBefore = factionBefore;
-		this.factionAfter = factionAfter;
 	}
 
 	/**
 	 * Default constructor method initializing fields
 	 * @param node : node whose faction has changed
 	 * @param factionBefore : faction before change
-	 * @param factionAfter : faction after change
 	 * @return : new instance of this class.
 	 */
 	public static IValueTreeFactionChangeEvent getInstance (IValueTreeNode node,
-			float factionBefore, float factionAfter) {
-		return new ValueTreeFactionChangeEvent(node, factionBefore, factionAfter);
+			float factionBefore ) {
+		return new ValueTreeFactionChangeEvent(node, factionBefore);
 	}
 
 
@@ -65,11 +61,5 @@ public class ValueTreeFactionChangeEvent implements
 		return this.factionBefore;
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.bn.valueTree.IValueTreeFactionChangeEvent#getFactionAfter()
-	 */
-	public float getFactionAfter() {
-		return this.factionAfter;
-	}
 
 }
