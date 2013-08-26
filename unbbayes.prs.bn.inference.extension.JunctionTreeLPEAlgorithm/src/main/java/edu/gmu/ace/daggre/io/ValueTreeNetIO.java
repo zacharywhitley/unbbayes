@@ -230,7 +230,7 @@ public class ValueTreeNetIO extends NetIO {
 //								map.remove(childNodeName);
 							}
 							// propagate to children that the value tree is this
-							this.setValueTreeRecursively(valueTreeChild,valueTree);
+							valueTreeChild.setValueTreeRecursively(valueTree);
 						} else {
 							throw new IOException(parentNode + " is a parent of " + childNodeName + ", but " + childNodeName + " is an unknown type of node.");
 						}
@@ -316,24 +316,7 @@ public class ValueTreeNetIO extends NetIO {
 		}
 	}
 	
-	/**
-	 * Recursively call {@link IValueTreeNode#setValueTree(IValueTree)} to the
-	 * provided node and its children
-	 * @param valueTreeNode
-	 * @param valueTreeToSet
-	 */
-	private void setValueTreeRecursively(IValueTreeNode valueTreeNode, IValueTree valueTreeToSet) {
-		if (valueTreeNode == null) {
-			return;
-		}
-		valueTreeNode.setValueTree(valueTreeToSet);
-		// do recursive call to children
-		if (valueTreeNode.getChildren() != null) {
-			for (IValueTreeNode child : valueTreeNode.getChildren()) {
-				setValueTreeRecursively(child, valueTreeToSet);
-			}
-		}
-	}
+	
 
 
 

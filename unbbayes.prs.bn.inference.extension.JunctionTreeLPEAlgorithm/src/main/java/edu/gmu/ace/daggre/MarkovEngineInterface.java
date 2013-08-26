@@ -144,6 +144,39 @@ public interface MarkovEngineInterface {
 	 */
 	public boolean addQuestion(Long transactionKey, Date occurredWhen, long questionId, int numberStates, List<Float> initProbs) throws IllegalArgumentException;
 	
+	/**
+	 * This method adds a new question (i.e. a new node in a bayesian network).
+	 * Implementations of this method must be synchronized.
+	 * This function creates a new question in the network. 
+	 * It is not required for the MarkovEngine to know the specific strings assigned to the states or question descriptions. 
+	 * Implementations may require reinitialization of the bayesian network in order to guarantee efficiency,
+	 * because uncontrolled inclusion of nodes in implementations based on junction trees may cause 
+	 * the tree to become either too huge, sparse, or generate huge cliques.
+	 * @param transactionKey : key returned by {@link #startNetworkActions()}
+	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
+	 * @param questionId : the ID of the new question.
+	 * @param numberStates : quantity of possible states (choices) for this question
+	 * @param initProbs : the prior probability of this node. If set to null, uniform distribution shall be used.
+	 * @param structure : will be Null in most cases but for special structure cases will be an encoding containing advanced rules for the inference engine.
+	 * For a ValueTree based structure (initially at least): 
+	 * <br/>
+	 * <br/>
+	 * 1 - The numberStates will be the number of exposed states in the underlying structure, that must be assumable.
+	 * <br/>
+	 * <br/>
+	 * 2 - The structure  will contain 3 parts,the kind (ValueTree), the physical structure of the network and the mappings to the exposed (shadow) states
+	 * <br/>
+	 * <br/>
+	 * The structure is likely to be a list of lists describing the network, for example : 
+	 * <br/>
+	 * [3 [ 4 [ 3 [ 31 28 30] [..... ].....    3 years, 4 q in first year, 3 m in first quarter, 31, 28 30 days by month , etc...
+	 * And then a list of mappings to the shadow nodes, for example if we exposed the quarters: 
+	 * [0,0 ], [0,1],[0,2],[0,3],[1,0], [1,1],[1,2],[1,3],[2,0], [2,1],[2,2],[2,3]
+	 * 
+	 * @return true if operation was successful.
+	 * @throws IllegalArgumentException when a key or Id is not found or a range of values or cpd�fs is not legal (i.e. newValues > 100%)
+	 */
+	public boolean addQuestion(Long transactionKey, Date occurredWhen, long questionId, int numberStates, List<Float> initProbs, String structure ) throws IllegalArgumentException;
 	
 	/**
 	 * This function creates a new assumptive link in the network between 2 questions. 
@@ -371,9 +404,100 @@ public interface MarkovEngineInterface {
 	 * If the result of the trade cannot be previewed now (e.g. it is adding a trade to a question which is still going to be created in the same transaction), 
 	 * it will return an empty list.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 * @see #addTrade(Long, Date, long, List, List, List, List, List)
 	 */
 	public List<Float> addTrade(Long transactionKey, Date occurredWhen, String tradeKey, TradeSpecification tradeSpecification,  boolean allowNegative) throws IllegalArgumentException;
 
+	
+	/**
+	 * This function will add a specific trade to the system. 
+	 * Implementations shall be synchronized.
+	 * This feature is also described in
+	 * <a href="https://docs.google.com/document/d/1p1TY-paqEmJNshQYThr6H3SyR2-e6xmoXrI9HleqiPM/edit">https://docs.google.com/document/d/1p1TY-paqEmJNshQYThr6H3SyR2-e6xmoXrI9HleqiPM/edit</a>
+	 * as follows:
+	 * <br/><br/>
+	 * We use a Bayesian network (BN) to represent the prediction market of our interest. 
+	 * And we use the BN inference algorithm (Junction tree) to incorporate whatever edit P*(T=t|A=a), which is viewed as conditional soft evidence for the BN. 
+	 * Our particular procedure is the following:
+	 * <br/><br/>
+	 * First, add a binary dummy node called Dummy to the network, with {T, A} as its parents. 
+	 * The CPT for Dummy can be calculated by the equation: P*(T=t|A=a)/P(T=t|A=a). For P*(T=state other than t|A=a), we change it proportionally based on the original probabilities.
+	 * <br/><br/>
+	 * Note that Dummy is always observed at state 1. Call inference engine on this new network to update consensus probabilities for all cliques and separators, and save them into engine. 
+	 * Note that implementations may also update all CPDs for the original network with the ones from the new network with dummy node to be observed at state 1
+	 * (i.e. implementations are free to keep the dummy node or remove it, making sure that its remotion will not revert the changes). 
+	 * <br/><br/>
+	 * Identify the cliques containing A and/or T, update the q-table for the clique by Equation (4). 
+	 * <br/><br/>
+	 * Calculate the overall expected score after the edit. 
+	 * <br/><br/>
+	 * Calculate the global min-q value after the edit by min-q-propagation.
+	 * 
+	 * @param transactionKey : key returned by {@link #startNetworkActions()}
+	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
+	 * @param tradeKey : revert and history functions can refer to specific trade actions easier, by referring to this key (identifier).
+	 * @param userId : the ID of the user (i.e. owner of the assets).
+	 * @param questionId : the id of the question to be edited (i.e. the random variable "T"  in the example)
+	 * 
+	 * @param oldValues : this is a list (ordered collection) representing the probability values before the edit. 
+	 * If the current probability is not this value, then a correction trade shall be made in order to set the current probability
+	 * to this value.
+	 * If null, the current probabilities will be used, as in {@link #addTrade(Long, Date, String, long, long, List, List, List, boolean)}.
+	 * @param newValues : this is a list (ordered collection) representing the probability values after the edit. 
+	 * For example, suppose T is the target question (i.e. a random variable) with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.
+	 * Then, the list must be filled as follows:<br/>
+	 * index 0 - P(T=t1 | A1=a11, A2=a21)<br/>
+	 * index 1 - P(T=t2 | A1=a11, A2=a21)<br/>
+	 * index 2 - P(T=t1 | A1=a12, A2=a21)<br/>
+	 * index 3 - P(T=t2 | A1=a12, A2=a21)<br/>
+	 * index 4 - P(T=t1 | A1=a11, A2=a22)<br/>
+	 * index 5 - P(T=t2 | A1=a11, A2=a22)<br/>
+	 * index 6 - P(T=t1 | A1=a12, A2=a22)<br/>
+	 * index 7 - P(T=t2 | A1=a12, A2=a22)<br/>
+	 * <br/>
+	 * If the states of the conditions are specified in assumedStates, then this list will only specify the conditional
+	 * probabilities of each states of questionID.
+	 * E.g. Again, suppose T is the target question with states t1 and t2, and A1 and A2 are assumptions with states (a11, a12), and (a21 , a22) respectively.]
+	 * Also suppose that assumedStates = (1,0). Then, the content of newValues must be: <br/>
+	 * index 0 - P(T=t1 | A1=a12, A2=a21)<br/>
+	 * index 1 - P(T=t2 | A1=a12, A2=a21)<br/>
+	 * <br/>
+	 * <br/>
+	 * In the case of a value Tree the newValues may be a specific probability (with other states being Null) or a full list of probabilities 
+	 * for the nodes. 
+	 * @param assumptionIds : list (ordered collection) representing the IDs of the questions to be assumed in this edit. The order is important,
+	 * because the ordering in this list will be used in order to identify the correct indexes in "newValues".
+	 * @param assumedStates : this shall be null if newValues contains full data (all cells of the conditional probability distribution).
+	 * If not null, this list indicates which states the nodes in assumptionIds are.
+	 * If negative, then "not" Math.abs(state + 1) will be considered as the state (i.e. the state Math.abs(state + 1) will be
+	 * considered as 0%).
+	 * @param allowNegative : If true (default is False), then checks for sufficient assets should be bypassed and we allow 
+	 * the user to go into the hole.
+	 * 
+	 * @param targetPath : the path to target value tree node to make the trade, indicating the path from the root. If [1,0,2], then
+	 * it is the child 2 of child 0 of child 1 of root (i.e. root->child1->child0->child2).
+	 * 
+	 * @param referencePath : the anchor value tree node to assume. the path (as a list of integer children to traverse the tree) 
+	 * that we are conditioning the target on. 
+	 * If [1,0,2], then it is the child 2 of child 0 of child 1 of root (i.e. root->child1->child0->child2).
+	 * If null then the target’s direct parent is used.
+	 * <br/>
+	 * <br/>
+	 * For a ValueTree based structure (initially at least):
+	 * targetPath specified the path (as a list of integer children to traverse the tree) that we are trading on or a specific element. 
+	 * In cases where the referencePath is not null, the newValues are a partial probability and the ME will calculate all other observations 
+	 * required. For example, in our common example, if we tell it in that Jan 2013 | 2013 which was 30% is now 40% it will calculate 
+	 * the change in other nodes to accommodate the decrease in the other nodes in the network.
+	 * For other types: targetPath and referencePath are unused (null).
+	 * @return the assets per state changed, if the user has sufficient assets 
+	 * (as the values returned by {@link #getAssetsIfStates(int, long, long, int, List, List, Properties)}).
+	 * If user doesn't have sufficient assets, it will return null.
+	 * If the result of the trade cannot be previewed now (e.g. it is adding a trade to a question which is still going to be created in the same transaction), 
+	 * it will return an empty list.
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 */
+	public List<Float> addTrade(Long transactionKey, Date occurredWhen, long questionId, List<Integer> targetPath, List<Integer> referencePath, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
+	
 	/**
 	 * This function will settle a specific question.
 	 * Implementations of this method shall be synchronized.
@@ -383,12 +507,58 @@ public interface MarkovEngineInterface {
 	 * @param settledState : index of the state of the question (with ID questionID) to be settled.
 	 * @return true if successful.
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
-	 * @see #resolveQuestionState(Long, Date, long, int...)
+	 * @see #resolveQuestion(Long, Date, long, List)
 	 */
 	public boolean resolveQuestion(Long transactionKey, Date occurredWhen, long questionId, int settledState) throws IllegalArgumentException;
 	
-	
+	/**
+	 * This method is similar to {@link #resolveQuestion(Long, Date, long, int)}, but
+	 * This function will settle a specific question (and its choices - states) to the probability specified in settlement, 
+	 * which specifies the value (probability) to settle. 
+	 * The indexes of the settlement list represents the choices (states) of the question. 
+	 * Therefore, the 1st value in settlement  represents the probability of the 1st choice (state), and so on.
+	 * Values in settlement outside the  [0.0 ; 1.0] interval (i.e. values like NaN, -1, null, Infinite, or 99, 
+	 * which are not valid probabilities) will be considered as “unspecified” and shall be updated accordingly to the underlying algorithm. 
+	 * A settlement using using only “unspecified” values is an invalid input.
+	 * If transactionKey is null, then the action will be committed immediately.
+	 * Settled questions will be virtually treated as nonexistent questions in posterior calls. 
+	 * One exception for the above rule shall happen when settlement contains only 0.0 and values outside the [0.0 ; 1.0] interval 
+	 * (i.e. “unspecified” choices). In such case, this function will settle the states marked with 0.0 to 0% and update the probabilities 
+	 * of the other states (marked with invalid probabilities) accordingly to the underlying algorithm. 
+	 * This is semantically equivalent to settling specific choices (states) of a question as “impossible to happen” and 
+	 * disabling posterior changes in that choice.
+	 * In the current specification, “unspecified” values cannot be used when settling the probability of some state to a value other than 
+	 * 0% or 100%. Therefore, the usage of “unspecified” values will be typically for settling states to 0% and automatically 
+	 * updating other states.
+	 * Other functionalities, such as addTrade shall be used in order to set the probabilities to values other than 0% or 100% 
+	 * and still guarantee that the questions will exist in posterior calls.
+	 * If settlement is normalized (i.e sums up to 1) and contains only 1 occurrence of 1.0, then it is equivalent to 
+	 * {@link #resolveQuestion(Long, Date, long, int)} whose the last argument is the index of the state to settle to 1.0.
+	 * 
+	 * @param transactionKey : key returned by {@link #startNetworkActions()}
+	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
+	 * @param questionId : the id of the question to be settled.
+	 * @param settlement
+	 * @return true if successful.
+	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
+	 * @see #resolveValueTreeQuestion(Long, Date, long, List, List, List)
+	 */
 	public boolean resolveQuestion(Long transactionKey, Date occurredWhen, long questionId, List<Float> settlement ) throws IllegalArgumentException;
+	
+	/**
+	 * This is virtually equivalent to calling {@link #addTrade(Long, Date, long, List, List, List, List, List)}
+	 * and then deleting (absorbing) the node.
+	 * @param transactionKey
+	 * @param occurredWhen
+	 * @param questionID
+	 * @param targetPaths
+	 * @param referencePaths
+	 * @param settlements
+	 * @return
+	 * @throws IllegalArgumentException
+	 * @see {@link #resolveQuestion(Long, Date, long, List)}
+	 */
+	public boolean resolveValueTreeQuestion(Long transactionKey, Date occurredWhen, long questionID, List<List<Integer>> targetPaths, List<List<Integer>> referencePaths,List<List<Float>> settlements) throws IllegalArgumentException;
 	
 	/**
 	 * This function will attempt to undo all trades >= the startingTradeId against this question. 
@@ -426,8 +596,24 @@ public interface MarkovEngineInterface {
 	 * The order is important for identifying the states (i.e. 1st value is for the 1st state, and so on).
 	 * @throws IllegalArgumentException when any argument was invalid (e.g. ids were invalid).
 	 * @throws IllegalStateException : if the shared Bayesian network was not created/initialized yet.
+	 * @see #getProbList(long, List, List)
 	 */
 	public List<Float> getProbList(long questionId, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException, IllegalStateException;
+
+	/**
+	 * This is equivalent to {@link #getProbList(long, List, List)}
+	 * but for nodes containing value trees.
+	 * If the question is a ValueTree node then targetPath specifies the specific node we are referring to and referencePath is either null 
+	 * (in which case it is assumed to be same as targetPath) or the specific ancestor of the target we are referring to.
+	 * @param questionId
+	 * @param targetPath
+	 * @param referencePath
+	 * @param assumptionIds
+	 * @param assumedStates
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
+	public List<Float> getProbList(long questionId, List<Integer> targetPath,  List<Integer> referencePath, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
 	 * Returns probability across a list of states for all questions given an assumption. 
@@ -459,10 +645,23 @@ public interface MarkovEngineInterface {
 	 * considered as 0%).
 	 * @return the joint probability value.
 	 * @throws IllegalArgumentException : if any invalid assumption or state is provided.
+	 * @see #getJointProbability(List, List, List, List)
 	 */
 	public float getJointProbability(List<Long>questionIds, List<Integer> states) throws IllegalArgumentException;
 	
-	
+	/**
+	 * This is the equivalent of {@link #getJointProbability(List, List)}, but including nodes containing value trees.
+	 *  If a ValueTree is used for a given question, then the relevant element in targetPaths and referencePaths will contain a 
+	 *  list referencing that object, otherwise it will contain null. If no questions are ValueTrees then the targetPaths and 
+	 *  referencePaths themselves may be null.
+	 * @param assumptionIds
+	 * @param assumedStates
+	 * @param targetPaths
+	 * @param referencePaths
+	 * @return
+	 * @throws IllegalArgumentException
+	 */
+	public float getJointProbability(List<Long>assumptionIds, List<Integer> assumedStates, List<List<Integer>> targetPaths, List<List<Integer>> referencePaths) throws IllegalArgumentException;
 	
 	/**
 	 * Obtains the ids of the questions that are potential assumptions of a given question. 

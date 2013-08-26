@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.StreamTokenizer;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -58,6 +60,13 @@ import unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm;
 import unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm.IAssetNetAlgorithmMemento;
 import unbbayes.prs.bn.inference.extension.IQValuesToAssetsConverter;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
+import unbbayes.prs.bn.valueTree.IValueTree;
+import unbbayes.prs.bn.valueTree.IValueTreeFactionChangeEvent;
+import unbbayes.prs.bn.valueTree.IValueTreeFactionChangeListener;
+import unbbayes.prs.bn.valueTree.IValueTreeNode;
+import unbbayes.prs.bn.valueTree.ValueTreeNode;
+import unbbayes.prs.bn.valueTree.ValueTreeProbabilisticNode;
+import unbbayes.prs.builder.INodeBuilder;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
@@ -110,6 +119,23 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					cliqueTable.setValue(i, Float.POSITIVE_INFINITY);
 				}
 			}
+		}
+	};
+
+	/** This is the default builder for creating instances of {@link ValueTreeProbabilisticNode} (i.e. nodes using value trees) */
+	public static final INodeBuilder DEFAULT_VALUE_TREE_PROB_NODE_BUILDER = new INodeBuilder() {
+		/**
+		 * @see unbbayes.prs.builder.INodeBuilder#getNodeClass()
+		 */
+		public Class getNodeClass() {
+			return ValueTreeProbabilisticNode.class;
+		}
+		
+		/**
+		 * @see unbbayes.prs.builder.INodeBuilder#buildNode()
+		 */
+		public Node buildNode() {
+			return new ValueTreeProbabilisticNode();
 		}
 	};
 
@@ -1405,6 +1431,354 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return true;
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addQuestion(java.lang.Long, java.util.Date, long, int, java.util.List, java.lang.String)
+	 */
+	public boolean addQuestion(Long transactionKey, Date occurredWhen, long questionId, int numberStates, List<Float> initProbs, String structure ) throws IllegalArgumentException {
+		// delegate to old method if no value tree structure was provided
+		if (structure == null || structure.trim().isEmpty()) {
+			return addQuestion(transactionKey, occurredWhen, questionId, numberStates, initProbs);
+		}
+		// TODO implement assets for value trees.
+		if (!isToAddArcsOnlyToProbabilisticNetwork()) {
+			throw new UnsupportedOperationException("Current implementation of value trees cannot be used with assets, so please turn on the flag \"isToAddArcsOnlyToProbabilisticNetwork\"");
+		}
+		if (occurredWhen == null) {
+			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
+		}
+		
+		synchronized (this.getResolvedQuestions()) {
+			if (this.getResolvedQuestions().containsKey(questionId)) {
+				throw new IllegalArgumentException("Question " + questionId + " was already resolved.");
+			}
+		}
+		synchronized (getProbabilisticNetwork()) {
+			if (getProbabilisticNetwork().getNode(Long.toString(questionId)) != null) {
+				// duplicate question
+				throw new IllegalArgumentException("Question ID " + questionId + " is already present.");
+			}
+		}
+//		if (initProbs != null && !initProbs.isEmpty()) {
+//			float sum = 0;
+//			for (Float prob : initProbs) {
+//				if (prob < 0 || prob > 1) {
+//					throw new IllegalArgumentException("Invalid probability declaration found: " + prob);
+//				}
+//				sum += prob;
+//			}
+//			// check if sum of initProbs is 1 (with error margin)
+//			if (!(((1 - getProbabilityErrorMargin()) < sum) && (sum < (1 + getProbabilityErrorMargin())))) {
+//				throw new IllegalArgumentException("Inconsistent prior probability: " + sum);
+//			}
+//		}
+
+		// parse the string of value tree structure and convert it to a tree of IValueTreeNode
+		List<IValueTreeNode> childrenOfRootOfValueTree = new ArrayList<IValueTreeNode>();	// these will be the 1st level children (children of root)
+		List<IValueTreeNode> shadowNodes = new ArrayList<IValueTreeNode>();					// these will be the shadow nodes in childrenOfRootOfValueTree or in its descendants
+		
+		// this method will fill the last two lists.
+		this.fillValueTreeFromString(structure, childrenOfRootOfValueTree, shadowNodes, questionId);
+		
+		
+		// instantiate the action object for adding a question
+		if (transactionKey == null) {
+			transactionKey = this.startNetworkActions();
+			this.addNetworkAction(transactionKey, new AddValueTreeQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs, childrenOfRootOfValueTree, shadowNodes));
+			this.commitNetworkActions(transactionKey);
+		} else {
+			AddQuestionNetworkAction questionAction = new AddValueTreeQuestionNetworkAction(transactionKey, occurredWhen, questionId, numberStates, initProbs, childrenOfRootOfValueTree, shadowNodes);
+			this.addNetworkAction(transactionKey, questionAction);
+			
+			// also add into index of questions being created in transaction
+			synchronized (getQuestionsToBeCreatedInTransaction()) {
+				Set<AddQuestionNetworkAction> set = getQuestionsToBeCreatedInTransaction().get(transactionKey);
+				if (set == null) {
+					set = new HashSet<AddQuestionNetworkAction>();
+				}
+				set.add(questionAction);
+				getQuestionsToBeCreatedInTransaction().put(transactionKey, set);
+			}
+		}
+		
+		return true;
+	}
+	
+	/**
+	 * 
+	 * @param structure
+	 * The format will probably be
+	 * [3 [ 4 [ 3 [ 31 28 30] [..... ].....    3 years, 4 q in first year, 3 m in first quarter, 31, 28 30 days by month , etc...
+	 * <br/>
+	 * And then a list of mappings to the shadow nodes, for example if we exposed the quarters: 
+	 * [0,0 ], [0,1],[0,2],[0,3],[1,0], [1,1],[1,2],[1,3],[2,0], [2,1],[2,2],[2,3]
+	 * @param childrenOfRootOfValueTree : output variable. Will be filled with the 1st level children of root (i.e.
+	 * the list itself will contain the immediate children of the root node), and each node will be filled
+	 * with the respective hierarchy of value tree nodes (i.e. children and parents also correctly filled).
+	 * @param shadowNodes : output variable. Will be filled with nodes in the hierarchy of childrenOfRootOfValueTree
+	 * which shall be considered as shadow nodes (i.e. the states which will be visible from other nodes in Bayes net).
+	 */
+	public void fillValueTreeFromString(String structure, List<IValueTreeNode> childrenOfRootOfValueTree, List<IValueTreeNode> shadowNodes, long rootId) {
+		if (structure == null || structure.trim().isEmpty()) {
+			// do nothing
+			return;
+		}
+		if (childrenOfRootOfValueTree == null) {
+			// this list will be ignored by caller, but instantiate it here just in order to unificate the code which will parse the string
+			childrenOfRootOfValueTree = new ArrayList<IValueTreeNode>();
+		}
+		if (shadowNodes == null) {
+			// this list will be ignored by caller, but instantiate it here just in order to unify the code which will parse the string
+			shadowNodes = new ArrayList<IValueTreeNode>();
+		}
+		// use a tokenizer to read
+		StreamTokenizer st = new StreamTokenizer(new StringReader(structure));
+		st.ordinaryChar('[');
+		st.ordinaryChar(']');
+		st.eolIsSignificant(false);
+		
+		try {
+			// read only the structure
+			this.readStructureRootBlock(st,childrenOfRootOfValueTree, rootId);
+			
+			// then, read the shadow node block
+			this.readShadowNodeBlock(st,childrenOfRootOfValueTree, shadowNodes);
+		} catch (IOException e) {
+			throw new IllegalArgumentException("Could not parse value tree structure",e);
+		}
+		
+	}
+
+
+	/**
+	 * Example of expected format: "[ 2 [ 3 [ 0 2 [ 0 2 ] 2 ] 2 ] ]"
+	 * <br/>
+	 * <br/>
+	 * This method reads the root_block statement in the BNF:
+	 * <pre>
+	 * <code>
+	 * root_block ::= "[" number [ "[" child_block "]" ] "]"
+	 * child_block ::=  number [ "[" child_block "]" ] child_block*    
+	 * </code>
+	 * </pre>
+	 * And number is simply a numeric value.
+	 * @param st : It is expected to be pointing at or before "[" before execution, and will be pointing after "]" at the end of execution.
+	 * @param childrenOfRootOfValueTree : input/output argument - the list where we can reach all the nodes currently created.
+	 * @param parent : parent in current recursion
+	 * @throws IOException : exceptions from the stream tokenizer
+	 */
+	private void readStructureRootBlock(StreamTokenizer st, List<IValueTreeNode> childrenOfRootOfValueTree, long rootId) throws IOException {
+		// check that structure starts with "["
+		if (st.sval == null ) {
+			if (st.nextToken() != st.TT_WORD || !st.sval.equals("[")) {
+				throw new IllegalArgumentException("The provided value tree structure definition block doesn't seem to start with an open square bracket \"[\"");
+			}
+		} else if (!st.sval.equals("[")) {
+			throw new IllegalArgumentException("The provided value tree structure definition block doesn't seem to start with an open square bracket \"[\"");
+		}
+		// assert number
+		if (st.nextToken() != st.TT_NUMBER) {
+			String suffixOfErrorMessage = "unknown token type "+st.ttype;
+			if (st.ttype == st.TT_EOF) {
+				suffixOfErrorMessage = "the end of string.";
+			} else if (st.ttype == st.TT_WORD) {
+				suffixOfErrorMessage = st.sval;
+			}
+			throw new IllegalArgumentException("Expected a number to be provided as quantity of children of root node, but found " + suffixOfErrorMessage);
+		}
+		// read the number of children
+		int numChildren = (int) st.nval;
+		// this list will hold the children created in this level
+		List<IValueTreeNode> childrenOfThisLevel = new ArrayList<IValueTreeNode>(numChildren);
+		// create children
+		for (int i = 0; i < numChildren; i++) {
+			IValueTreeNode node = ValueTreeNode.getInstance(rootId + "_" + i, null);
+			// use uniform faction initially
+			node.setFaction(1f/numChildren);
+			// set this node as the immediate child of root
+			node.setParent(null);
+			// children of root are inserted in this list
+			childrenOfRootOfValueTree.add(node);
+			// also, mark this node as the child created in this level
+			childrenOfThisLevel.add(node);
+		}
+		if (st.nextToken() == st.TT_WORD && st.sval.equals("[")) {
+			// go to next level
+			// make sure to put the cursor after "[" and check if string did not end
+			if (st.nextToken() == st.TT_EOF) {
+				throw new IllegalArgumentException("The block indicating " + numChildren + " children of root was not properly opened.");
+			}
+			st.pushBack();
+			// at this point, the cursor of st is before "[" and next element is not the end of string
+			this.readStructureChildBlock(st, childrenOfThisLevel);
+			// at this point, the cursor should be before "]"
+			if (st.nextToken() != st.TT_WORD || !st.sval.equals("]")) {
+				throw new IllegalArgumentException("The block indicating " + numChildren + " children of root was not properly closed.");
+			}
+			st.nextToken();
+		}
+		if (st.ttype != st.TT_WORD || !st.sval.equals("]")) {
+			throw new IllegalArgumentException("The provided value tree structure definition root block doesn't seem to end with an closed square bracket \"]\"");
+		}
+		// set cursor after "]"
+		st.nextToken();
+	}
+	
+	/**
+	 * <br/>
+	 * <br/>
+	 * This method reads the child_block statement in the BNF:
+	 * <pre>
+	 * <code>
+	 * root_block ::= "[" number [ "[" child_block "]" ] "]"
+	 * child_block ::=  number [ "[" child_block "]" ] child_block*  
+	 * </code>
+	 * </pre>
+	 * And number is simply a numeric value.
+	 * @param st : expected to have the cursor at "[" before execution, and to have it before "]" at the end of execution.
+	 * @param parents : they are the nodes created at the previous level. Nodes created in this level will be linked to some node in this list.
+	 * Nodes created in 1st child_block will become children of 1st node of this list, nodes created in 2nd child_block will
+	 * become children of the 2nd node of this list, and so on.
+	 * @throws IOException
+	 */
+	private void readStructureChildBlock(StreamTokenizer st, List<IValueTreeNode> parents) throws IOException {
+		// the quantity of number in child_block must match the number of parents.
+		for (IValueTreeNode parent : parents) {
+			if (st.nextToken() != st.TT_NUMBER) {
+				String suffixOfErrorMessage = "unknown token type "+st.ttype;
+				if (st.ttype == st.TT_EOF) {
+					suffixOfErrorMessage = "the end of string.";
+				} else if (st.ttype == st.TT_WORD) {
+					suffixOfErrorMessage = st.sval;
+				}
+				throw new IllegalArgumentException("Expected a number to be provided as quantity of children of non-root node " 
+						+ parent
+						+ ", but found " + suffixOfErrorMessage);
+			}
+			int numChildren = (int) st.nval;
+			
+			List<IValueTreeNode> childrenOfThisLevel = new ArrayList<IValueTreeNode>(numChildren);
+			// create children
+			for (int i = 0; i < numChildren; i++) {
+				IValueTreeNode node = ValueTreeNode.getInstance(parent.getName() + "_" + i, null);
+				// use uniform faction initially
+				node.setFaction(1f/numChildren);
+				// set this node as the immediate child of root
+				node.setParent(parent);
+				// children of root are inserted in this list
+				if (parent.getChildren() == null) {
+					parent.setChildren(new ArrayList<IValueTreeNode>(numChildren));
+				}
+				parent.getChildren().add(node);
+				// also, mark this node as the child created in this level
+				childrenOfThisLevel.add(node);
+			}
+			if (st.nextToken() == st.TT_EOF) {
+				throw new IllegalArgumentException("Unexpected end of string found when reading the next number of children of " + parent);
+			}
+			if (st.ttype == st.TT_WORD && st.sval.equals("[")) {
+				// go to next level
+				// make sure to put the cursor after "[" and check if string did not end
+				if (st.nextToken() == st.TT_EOF) {
+					throw new IllegalArgumentException("The block indicating " + numChildren + " children of root was not properly opened.");
+				}
+				st.pushBack();
+				// at this point, the cursor of st is before "[" and next element is not the end of string
+				this.readStructureChildBlock(st, childrenOfThisLevel);
+				// at this point, the cursor should be before "]"
+				if (st.nextToken() != st.TT_WORD || !st.sval.equals("]")) {
+					throw new IllegalArgumentException("The block indicating " + numChildren + " children of root was not properly closed.");
+				}
+			} else {
+				st.pushBack();
+			}
+		}
+		
+	}
+	
+	/**
+	 * Reads only the shadow node block.
+	 * Example of expected format: [1,0],[1,1],[1,2],[0,1]
+	 * @param st : expected to be at or before the first "[" of 
+	 * @param childrenOfRootOfValueTree
+	 * @param shadowNodes
+	 * @throws IOException : thrown by the tokenizer.
+	 */
+	private void readShadowNodeBlock(StreamTokenizer st, List<IValueTreeNode> childrenOfRootOfValueTree, List<IValueTreeNode> shadowNodes) throws IOException {
+		if (st == null || childrenOfRootOfValueTree == null) {
+			// cannot do anything
+			return;
+		}
+		// move the cursor until we reach the first "["
+		while (st.ttype != st.TT_WORD || !st.sval.equals("[")) {
+			if (st.ttype == st.TT_EOF) {
+				// there is nothing to do, because string has reached end before reaching the first block of shadow nodes.
+				return;
+			}
+			st.nextToken();
+		}
+		if (shadowNodes == null) {
+			// this won't be used by caller, but instantiate just in order to allow same code to work in both null and non-null cases
+			shadowNodes = new ArrayList<IValueTreeNode>();
+		}
+		
+		while (st.nextToken() != st.TT_EOF) {
+			// at this point, cursor shall be on a number (which represent index of children in the path to shadow node)
+			if (st.ttype != st.TT_NUMBER) {
+				throw new IllegalArgumentException("Expected a number after \"[\" in a shadow node block definition.");
+			}
+			// read string and step into the hierarchy of the value tree to obtain the shadow node
+			IValueTreeNode shadowNode = null;
+			List<IValueTreeNode> childrenOfThisIteration = childrenOfRootOfValueTree;	// initialize children of iteration to children of root
+			// go down from root to leaf
+			while (st.ttype == st.TT_NUMBER) {
+				// read the number
+				int childIndex = (int) st.nval;
+				if (childIndex < 0 || childrenOfThisIteration == null || childrenOfThisIteration.size() <= childIndex) {
+					throw new IllegalArgumentException(childIndex + " is not a valid index as a child of " + ((shadowNode != null)?shadowNode:"root"));
+				}
+				// extract the node of this step in the path
+				shadowNode = childrenOfThisIteration.get(childIndex);
+				// if "]", then stop
+				if (st.nextToken() == st.TT_WORD && st.sval.equals("]")) {
+					break;
+				}
+				
+				// at this point, the next token shall be ","
+				if (st.ttype != st.TT_WORD || !st.sval.equals(",")) {
+					throw new IllegalArgumentException("Expected \",\" or \"]\" after a number.");
+				}
+				
+				// children of the next iteration is the children of current node
+				childrenOfThisIteration = shadowNode.getChildren();
+				
+				// move cursor, so that in the next iteration the cursor is at the next number
+				st.nextToken();
+			}
+			if (st.nextToken() != st.TT_WORD || !st.sval.equals("]")) {
+				throw new IllegalArgumentException("A shadow node declaration is expected to end with \"]\". The last node reached from the declaration was " + shadowNode);
+			}
+				
+			// set the shadow node
+			if (shadowNode != null) {
+				shadowNodes.add(shadowNode);
+			} else {
+				throw new IllegalArgumentException("Could not find shadow node.");
+			}
+			
+			// move cursor until the next "[" (can expect "," too)
+			while (st.ttype != st.TT_WORD || !st.sval.equals("[")) {
+				if (st.ttype == st.TT_EOF) {
+					// there is nothing to do, because string has reached end before reaching the first block of shadow nodes.
+					return;
+				}
+				st.nextToken();
+			}
+			
+		}
+	}
+
+
 	/** Class of network actions which changes network structure */
 	public abstract class StructureChangeNetworkAction implements NetworkAction {
 		private static final long serialVersionUID = -3914118334576683558L;
@@ -1484,7 +1858,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 			INode node = null;	// the new node 
 			synchronized (getDefaultInferenceAlgorithm()) {
-				node = getDefaultInferenceAlgorithm().createNodeInProbabilisticNetwork(Long.toString(this.questionId), numberStates, initProbs, isToUpdateJunctionTreeAndAssetNets, net);
+				node = getDefaultInferenceAlgorithm().createNodeInProbabilisticNetwork(Long.toString(this.questionId), numberStates, initProbs, isToUpdateJunctionTreeAndAssetNets, net,null);
 			}
 			if (node == null) {
 				throw new RuntimeException("Failed to create question " + questionId + " in the shared Bayes net.");
@@ -1572,6 +1946,198 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		public void setWhenExecutedFirstTimeMillis(long whenExecutedFirst) {
 			this.whenExecutedFirst = whenExecutedFirst;
+		}
+	}
+	
+	/**
+	 * This is a network action which adds new node containing value trees.
+	 * @author Shou Matsumoto
+	 */
+	public class AddValueTreeQuestionNetworkAction extends AddQuestionNetworkAction {
+
+		private List<IValueTreeNode> childrenOfRootOfValueTree;
+		private List<IValueTreeNode> shadowNodes;
+
+		/**
+		 * Default constructor initializing fields
+		 * @param transactionKey
+		 * @param occurredWhen
+		 * @param questionId
+		 * @param numberStates
+		 * @param initProbs
+		 * @param childrenOfRootOfValueTree
+		 * @param shadowNodes
+		 */
+		public AddValueTreeQuestionNetworkAction(Long transactionKey,
+				Date occurredWhen, long questionId, int numberStates,
+				List<Float> initProbs,
+				List<IValueTreeNode> childrenOfRootOfValueTree,
+				List<IValueTreeNode> shadowNodes) {
+			super(transactionKey, occurredWhen, questionId, numberStates, initProbs);
+			this.childrenOfRootOfValueTree = childrenOfRootOfValueTree;
+			this.shadowNodes = shadowNodes;
+		}
+		
+
+		/**
+		 * Overwrites the method in the superclass just to make sure the new node is an instance of {@link ValueTreeProbabilisticNode},
+		 * it is filled with correct {@link IValueTree}, {@link IValueTree#getShadowNode(int)},
+		 * and with proper {@link IValueTree#addFactionChangeListener(unbbayes.prs.bn.valueTree.IValueTreeFactionChangeListener)}
+		 * being called.
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.AddQuestionNetworkAction#execute(unbbayes.prs.bn.ProbabilisticNetwork, boolean)
+		 */
+		public void execute(ProbabilisticNetwork net,
+				boolean isToUpdateJunctionTreeAndAssetNets) {
+			if (!isToAddArcsOnlyToProbabilisticNetwork()) {
+				throw new UnsupportedOperationException("Current implementation of value trees cannot be used with assets, so please turn on the flag \"isToAddArcsOnlyToProbabilisticNetwork\"");
+			}
+			INode node = null;	// the new node 
+			synchronized (getDefaultInferenceAlgorithm()) {
+				node = getDefaultInferenceAlgorithm().createNodeInProbabilisticNetwork(
+						Long.toString(this.getQuestionId()), 	// name
+						0, 										// no state initially (states will be automatically added when we set shadow nodes)
+						this.getNewValues(), 					// probably ignored
+						isToUpdateJunctionTreeAndAssetNets, 	// reuse config from caller
+						net, 									// reuse from caller
+						DEFAULT_VALUE_TREE_PROB_NODE_BUILDER	// instantiate ValueTreeProbabilityNode instead of other type of nodes
+					);
+			}
+			if (node == null) {
+				throw new RuntimeException("Failed to create question " + getQuestionId() + " in the shared Bayes net.");
+			}
+			
+			if (isToUpdateJunctionTreeAndAssetNets) {
+				// create node in all asset networks too
+				synchronized (getUserToAssetAwareAlgorithmMap()) {
+					for (AssetAwareInferenceAlgorithm userAlgorithm : getUserToAssetAwareAlgorithmMap().values()) {
+						userAlgorithm.addDisconnectedNodeIntoAssetNet(node, net, userAlgorithm.getAssetNetwork());
+					}
+				}
+			}
+			
+			// properly initialize value tree 
+			if (node instanceof ValueTreeProbabilisticNode) {
+				final ValueTreeProbabilisticNode root = (ValueTreeProbabilisticNode) node;
+				if (this.getChildrenOfRootOfValueTree() != null) {
+					for (IValueTreeNode child : this.getChildrenOfRootOfValueTree()) {
+						// add nodes to value tree recursively
+						this.addNodeAndDescendantToValueTreeRecursively(child,root.getValueTree());
+					}
+				}
+				
+				// properly set shadow nodes
+				if (this.getShadowNodes() != null) {
+					for (IValueTreeNode shadowNode : this.getShadowNodes()) {
+						root.getValueTree().setAsShadowNode(shadowNode);
+					}
+				}
+				
+				// set listener so that a normal trade is automatically performed if probability of shadow node (i.e. marginals) are changed by the value tree algorithm
+				root.getValueTree().addFactionChangeListener(new IValueTreeFactionChangeListener() {
+					/** this method assumes that it is executed after the default one (which updates marginal and cpt based on updates in value tree) */
+					public void onFactionChange(Collection<IValueTreeFactionChangeEvent> changes) {
+						// change marginal of root if faction of a shadow node has changed
+						List<IValueTreeNode> shadows = getShadowNodes();
+						if (shadows == null) {
+							// there is nothing to do
+							Debug.println(getClass(), root + " has no shadow node, so changes in value tree won't change its CPT");
+							return;
+						}
+						// at this point, there are shadow nodes. Check if shadow nodes are included in nodes which where changed
+						boolean hasChanged = false;
+						for (IValueTreeFactionChangeEvent change : changes) {
+							// only consider shadow nodes (nodes which represents the states present in root node)
+							if (shadows.contains(change.getNode())) {
+								// index of shadow node is supposedly the same of index of respective state in root node
+								int indexOfShadowNode = root.getValueTree().getShadowNodeStateIndex(change.getNode());
+								// obtain the previous marginal for comparison
+								float marginalBefore = root.getMarginalAt(indexOfShadowNode);
+								// obtain the current marginal from value tree
+								float marginalAfter = root.getValueTree().getProb(change.getNode(), null);
+								// check if marginals have changed
+								if (Math.abs(marginalAfter - marginalBefore) >= AssetAwareInferenceAlgorithm.ERROR_MARGIN) {
+									// mark that something has changed
+									hasChanged = true;
+									break;
+								}
+							}
+						}
+						// if something has changed, then update the marginals & cpt accordingly to all shadow nodes
+						if (hasChanged) {
+							// fill the probability of trade by using the marginal
+							int statesSize = root.getStatesSize();
+							// index of shadow nodes and states of root are supposedly synchronized
+							List<Float> newValues = new ArrayList<Float>(statesSize);
+							for (int i = 0; i < statesSize; i++) {
+								// we can supposedly use the marginal, because the default listener which will be executed before this 
+								// will set its marginal and CPT to correct values
+								newValues.add(root.getMarginalAt(i));
+							}
+							// do the trade in order to update the junction tree
+							addTrade(
+									null, 							// commit immediately
+									new Date(), 					// created now
+									"Adjust from VT of " + root, 	// just for identification
+									Long.MIN_VALUE, 				// user is ignored, so can be any user
+									getQuestionId(), 				
+									newValues, 
+									null, 
+									null, 
+									true
+								);
+						}
+					}
+				});
+			}
+			
+		}
+
+		/**
+		 * Recursively add node and its descendant to value tree
+		 * @param node : node to add
+		 * @param valueTree : value tree where node will be inserted
+		 */
+		private void addNodeAndDescendantToValueTreeRecursively(IValueTreeNode node, IValueTree valueTree) {
+			// make sure the node can reference the value tree
+			node.setValueTree(valueTree);
+			// add the child into the value tree
+			valueTree.addNode(node);
+			// make recursive calls to children
+			if (node.getChildren() != null) {
+				for (IValueTreeNode child : node.getChildren()) {
+					this.addNodeAndDescendantToValueTreeRecursively(child, valueTree);
+				}
+			}
+		}
+
+
+		/**
+		 * @return the childrenOfRootOfValueTree
+		 */
+		public List<IValueTreeNode> getChildrenOfRootOfValueTree() {
+			return childrenOfRootOfValueTree;
+		}
+
+		/**
+		 * @param childrenOfRootOfValueTree the childrenOfRootOfValueTree to set
+		 */
+		public void setChildrenOfRootOfValueTree(
+				List<IValueTreeNode> childrenOfRootOfValueTree) {
+			this.childrenOfRootOfValueTree = childrenOfRootOfValueTree;
+		}
+
+		/**
+		 * @return the shadowNodes
+		 */
+		public List<IValueTreeNode> getShadowNodes() {
+			return shadowNodes;
+		}
+
+		/**
+		 * @param shadowNodes the shadowNodes to set
+		 */
+		public void setShadowNodes(List<IValueTreeNode> shadowNodes) {
+			this.shadowNodes = shadowNodes;
 		}
 	}
 
@@ -11063,6 +11629,38 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	protected void setNetIOToExportSharedNetToSting( NetIO netIOToExportSharedNetToSting) {
 		this.netIOToExportSharedNetToSting = netIOToExportSharedNetToSting;
+	}
+
+	public List<Float> addTrade(Long transactionKey, Date occurredWhen,
+			long questionId, List<Integer> targetPath,
+			List<Integer> referencePath, List<Float> newValues,
+			List<Long> assumptionIds, List<Integer> assumedStates)
+			throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public boolean resolveValueTreeQuestion(Long transactionKey,
+			Date occurredWhen, long questionID,
+			List<List<Integer>> targetPaths,
+			List<List<Integer>> referencePaths, List<List<Float>> settlements)
+			throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public List<Float> getProbList(long questionId, List<Integer> targetPath,
+			List<Integer> referencePath, List<Long> assumptionIds,
+			List<Integer> assumedStates) throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public float getJointProbability(List<Long> assumptionIds,
+			List<Integer> assumedStates, List<List<Integer>> targetPaths,
+			List<List<Integer>> referencePaths) throws IllegalArgumentException {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 	

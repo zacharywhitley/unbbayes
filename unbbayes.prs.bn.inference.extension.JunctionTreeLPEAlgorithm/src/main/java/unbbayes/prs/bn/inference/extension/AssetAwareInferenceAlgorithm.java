@@ -41,6 +41,7 @@ import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
+import unbbayes.prs.builder.INodeBuilder;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
@@ -169,6 +170,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	
 	/**
 	 * Default instantiation method.
+	 * This will actually return an instance of {@link ValueTreeAssetAwareInferenceAlgorithm}
 	 */
 	public static IInferenceAlgorithm getInstance(IInferenceAlgorithm probabilityDelegator) {
 		AssetAwareInferenceAlgorithm ret = new AssetAwareInferenceAlgorithm();
@@ -2424,112 +2426,127 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	 * @param isToUpdateJunctionTree : if true, {@link ProbabilisticNetwork#getJunctionTree()} will be also updated
 	 * and a new clique containing only the new node will be connected to the root of the junction tree.
 	 * @param net network where new node will be inserted. If null, {@link #getRelatedProbabilisticNetwork()} will be used.
+	 * @param nodeBuilder : builder of node to be used to actually instantiate the new node.
+	 * It is desired that {@link INodeBuilder#buildNode()} will return an instance of {@link ProbabilisticNode}.
+	 * If set to null, a {@link ProbabilisticNode} will be created.
 	 * @return : the created node.
 	 */
-	public INode createNodeInProbabilisticNetwork(String nodeName, int numberStates, List<Float> initProbs, boolean isToUpdateJunctionTree, ProbabilisticNetwork net) {
-		// TODO use builders and create common method with addDisconnectedNodeIntoAssetNet
+	public INode createNodeInProbabilisticNetwork(String nodeName, int numberStates, List<Float> initProbs, boolean isToUpdateJunctionTree, 
+			ProbabilisticNetwork net, INodeBuilder nodeBuilder) {
+		// TODO create common method with addDisconnectedNodeIntoAssetNet
 		// create new node
-		ProbabilisticNode node = new ProbabilisticNode();
-		node.setName(nodeName);
+//		ProbabilisticNode node = new ProbabilisticNode();
+		Node newNode = null;
+		if (nodeBuilder == null) {
+			newNode = new ProbabilisticNode();
+		} else {
+			newNode = nodeBuilder.buildNode();
+		}
+		newNode.setName(nodeName);
 		// add states
 		for (int i = 0; i < numberStates; i++) {
-			node.appendState(Integer.toString(i));
-		}
-		// initialize CPT (actually, it is a prior probability, because we do not have parents yet).
-		PotentialTable potTable = node.getProbabilityFunction();
-		if (potTable.getVariablesSize() <= 0) {
-			potTable.addVariable(node);
+			newNode.appendState(Integer.toString(i));
 		}
 		
-		// fill cpt
-		if (initProbs == null) {
-			// prior probability was not set. Assume it to be uniform distribution
-			for (int i = 0; i < potTable.tableSize(); i++) {
-				potTable.setValue(i, 1f/numberStates);
-			}
-		} else {
-			for (int i = 0; i < potTable.tableSize(); i++) {
-				potTable.setValue(i, initProbs.get(i));
-			}
-		}
-		
-		// make sure marginal list is never null
-		node.initMarginalList();
-		
-		if (net == null) {
-			net = getRelatedProbabilisticNetwork();
-		}
-		synchronized (net){
-			// set the internal identificator
-			node.setInternalIdentificator(net.getNodeCount());
+		if (newNode instanceof ProbabilisticNode) {
+			ProbabilisticNode node = (ProbabilisticNode) newNode;
 			
-			// add node into the network
-			net.addNode(node);
-			net.resetNodesCopy();
+			// initialize CPT (actually, it is a prior probability, because we do not have parents yet).
+			PotentialTable potTable = node.getProbabilityFunction();
+			if (potTable.getVariablesSize() <= 0) {
+				potTable.addVariable(node);
+			}
 			
-			// treat junction tree
-			if (isToUpdateJunctionTree) {
-				// only update junction tree if isToUpdateJunctionTree was set to true, and there is a junction tree accessible from the network
-				if (net.getJunctionTree() != null) {
-					
-					// extract the junction tree of the net
-					IJunctionTree junctionTree = net.getJunctionTree();
-					
-					// create clique for the virtual node and parents
-					Clique cliqueOfNewNode = new Clique();
-					cliqueOfNewNode.getNodes().add(node);
-					cliqueOfNewNode.getProbabilityFunction().addVariable(node);
-					cliqueOfNewNode.setInternalIdentificator(junctionTree.getCliques().size());
-					
-					// extract the root junction tree node (clique with no parents)
-					Clique rootClique = null;
-					// do sequential search, but the root is likely to be the 1st clique
-					for (Clique clique : junctionTree.getCliques()) {
-						if (clique.getParent() == null) {
-							rootClique = clique;
-							break;
+			// fill cpt
+			if (initProbs == null) {
+				// prior probability was not set. Assume it to be uniform distribution
+				for (int i = 0; i < potTable.tableSize(); i++) {
+					potTable.setValue(i, 1f/numberStates);
+				}
+			} else {
+				for (int i = 0; i < potTable.tableSize(); i++) {
+					potTable.setValue(i, initProbs.get(i));
+				}
+			}
+			
+			// make sure marginal list is never null
+			node.initMarginalList();
+			
+			if (net == null) {
+				net = getRelatedProbabilisticNetwork();
+			}
+			synchronized (net){
+				// set the internal identificator
+				node.setInternalIdentificator(net.getNodeCount());
+				
+				// add node into the network
+				net.addNode(node);
+				net.resetNodesCopy();
+				
+				// treat junction tree
+				if (isToUpdateJunctionTree) {
+					// only update junction tree if isToUpdateJunctionTree was set to true, and there is a junction tree accessible from the network
+					if (net.getJunctionTree() != null) {
+						
+						// extract the junction tree of the net
+						IJunctionTree junctionTree = net.getJunctionTree();
+						
+						// create clique for the virtual node and parents
+						Clique cliqueOfNewNode = new Clique();
+						cliqueOfNewNode.getNodes().add(node);
+						cliqueOfNewNode.getProbabilityFunction().addVariable(node);
+						cliqueOfNewNode.setInternalIdentificator(junctionTree.getCliques().size());
+						
+						// extract the root junction tree node (clique with no parents)
+						Clique rootClique = null;
+						// do sequential search, but the root is likely to be the 1st clique
+						for (Clique clique : junctionTree.getCliques()) {
+							if (clique.getParent() == null) {
+								rootClique = clique;
+								break;
+							}
 						}
+						if (rootClique == null) {
+							throw new RuntimeException("Inconsistent junction tree structure: no root node was found.");
+						}
+						
+						// add clique to junction tree, so that the algorithm can handle the clique correctly
+						junctionTree.getCliques().add(cliqueOfNewNode);
+						
+						// create separator between the clique of parent nodes and virtual node (the separator should contain all parents)
+						Separator separatorOfNewNode = new Separator(rootClique , cliqueOfNewNode);
+						separatorOfNewNode.setInternalIdentificator(-(junctionTree.getSeparators().size()+1)); // internal identificator must be set before adding separator, because it is used as key
+						junctionTree.addSeparator(separatorOfNewNode);
+						
+						// just to guarantee that the network is fresh
+						net.resetNodesCopy();
+						
+						// now, let's link the nodes with the cliques
+						cliqueOfNewNode.getAssociatedProbabilisticNodes().add(node);
+						node.setAssociatedClique(cliqueOfNewNode);
+						
+						// this is not necessary for ProbabilisticNode, but other types of nodes may need explicit initialization of the marginals
+						node.initMarginalList();
+						
+						
+						// initialize the probabilities of clique and separator
+						net.getJunctionTree().initBelief(cliqueOfNewNode);
+						net.getJunctionTree().initBelief(separatorOfNewNode);	// this one sets all separator potentials to 1
+						
+						// store the potentials after propagation, so that the "reset" will restore these values
+						cliqueOfNewNode.getProbabilityFunction().copyData();	
+						separatorOfNewNode.getProbabilityFunction().copyData();
+						
+						// update the marginal values (we only updated clique/separator potentials, thus, the marginals still have the old values if we do not update)
+						node.updateMarginal();
+						node.copyMarginal();
 					}
-					if (rootClique == null) {
-						throw new RuntimeException("Inconsistent junction tree structure: no root node was found.");
-					}
-					
-					// add clique to junction tree, so that the algorithm can handle the clique correctly
-					junctionTree.getCliques().add(cliqueOfNewNode);
-					
-					// create separator between the clique of parent nodes and virtual node (the separator should contain all parents)
-					Separator separatorOfNewNode = new Separator(rootClique , cliqueOfNewNode);
-					separatorOfNewNode.setInternalIdentificator(-(junctionTree.getSeparators().size()+1)); // internal identificator must be set before adding separator, because it is used as key
-					junctionTree.addSeparator(separatorOfNewNode);
-					
-					// just to guarantee that the network is fresh
-					net.resetNodesCopy();
-					
-					// now, let's link the nodes with the cliques
-					cliqueOfNewNode.getAssociatedProbabilisticNodes().add(node);
-					node.setAssociatedClique(cliqueOfNewNode);
-					
-					// this is not necessary for ProbabilisticNode, but other types of nodes may need explicit initialization of the marginals
-					node.initMarginalList();
-					
-					
-					// initialize the probabilities of clique and separator
-					net.getJunctionTree().initBelief(cliqueOfNewNode);
-					net.getJunctionTree().initBelief(separatorOfNewNode);	// this one sets all separator potentials to 1
-					
-					// store the potentials after propagation, so that the "reset" will restore these values
-					cliqueOfNewNode.getProbabilityFunction().copyData();	
-					separatorOfNewNode.getProbabilityFunction().copyData();
-					
-					// update the marginal values (we only updated clique/separator potentials, thus, the marginals still have the old values if we do not update)
-					node.updateMarginal();
-					node.copyMarginal();
 				}
 			}
 		}
 		
 		
-		return node;
+		return newNode;
 	}
 	
 	

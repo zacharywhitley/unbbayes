@@ -231,4 +231,20 @@ public class ValueTreeNode implements IValueTreeNode {
 //	}
 	
 
+	
+	/**
+	 * Recursively call {@link IValueTreeNode#setValueTree(IValueTree)} to the
+	 * provided node and its children
+	 * @param valueTreeNode
+	 * @param valueTreeToSet
+	 */
+	public void setValueTreeRecursively(IValueTree valueTreeToSet) {
+		this.setValueTree(valueTreeToSet);
+		// do recursive call to children
+		if (this.getChildren() != null) {
+			for (IValueTreeNode child : this.getChildren()) {
+				child.setValueTreeRecursively(valueTreeToSet);
+			}
+		}
+	}
 }

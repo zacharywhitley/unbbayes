@@ -103,4 +103,11 @@ public interface IValueTreeNode extends Serializable  {
 	 * @return true if the current node is an ancestor of the node provided in the argument.
 	 */
 	public boolean isAncestorOf(IValueTreeNode node);
+
+	/**
+	 * Recursively call {@link IValueTreeNode#setValueTree(IValueTree)} to this
+	 * node and descendants.
+	 * @param valueTree
+	 */
+	public void setValueTreeRecursively(IValueTree valueTree);
 }
