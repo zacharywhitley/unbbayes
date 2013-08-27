@@ -25845,6 +25845,50 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	/**
+	 * Test method for {@link MarkovEngineImpl#addQuestion(Long, Date, long, int, List, String)}
+	 */
+	public final void testAddValueTreeQuestion() {
+		
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(true);
+		engine.initialize();
+		
+		
+		engine.addQuestion(
+				null, 
+				new Date(), 
+				666L, 
+				Integer.MAX_VALUE, 	// will be supposedly ignored.
+				null, 
+				"[ 2 [ 3 [ 0 2 [ 0 2 ] 0 ] 2 ] ] [ 0 , 0 ] , [ 0 , 1 ] , [ 0 , 2 ] , [ 1 ]"
+			);
+		
+		
+		
+		engine.addQuestion(
+				null, 
+				new Date(), 
+				1313L, 
+				0, 	// will be supposedly ignored.
+				null, 
+				"[2[3[0 2[0 2]0]2]][0,0],[0,1],[0,2],[1]"			
+			);
+				
+		// create DEF net.
+		
+		
+		// restore backups
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+	}
+	
+	/**
+	 * Performs the same of {@link #testAddValueTreeQuestion()}, but in a single transaction.
+	 */
+	public final void testAddValueTreeQuestionSingleTransaction() {
+		fail("Not implemented yet");
+	}
+	
+	/**
 	 * Test method for {@link MarkovEngineImpl#resolveQuestion(Long, Date, long, List)},
 	 * but this test will resolve a state to 0% and not to delete the question.
 	 * Only 1 transaction will be comitted.
