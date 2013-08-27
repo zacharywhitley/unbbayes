@@ -1569,13 +1569,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	private void readStructureRootBlock(StreamTokenizer st, List<IValueTreeNode> childrenOfRootOfValueTree, long rootId) throws IOException {
 		// check that structure starts with "["
-		if (st.sval == null ) {
-			if (st.nextToken() != st.TT_WORD || !st.sval.equals("[")) {
+		if (st.ttype != '[') {
+			if (st.nextToken() != '[') {
 				throw new IllegalArgumentException("The provided value tree structure definition block doesn't seem to start with an open square bracket \"[\"");
 			}
-		} else if (!st.sval.equals("[")) {
-			throw new IllegalArgumentException("The provided value tree structure definition block doesn't seem to start with an open square bracket \"[\"");
-		}
+		} 
+//		else if (st.ttype != ('[')) {
+//			throw new IllegalArgumentException("The provided value tree structure definition block doesn't seem to start with an open square bracket \"[\"");
+//		}
 		// assert number
 		if (st.nextToken() != st.TT_NUMBER) {
 			String suffixOfErrorMessage = "unknown token type "+st.ttype;
@@ -1602,7 +1603,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// also, mark this node as the child created in this level
 			childrenOfThisLevel.add(node);
 		}
-		if (st.nextToken() == st.TT_WORD && st.sval.equals("[")) {
+		if (st.nextToken() == '[') {
 			// go to next level
 			// make sure to put the cursor after "[" and check if string did not end
 			if (st.nextToken() == st.TT_EOF) {
@@ -1612,12 +1613,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// at this point, the cursor of st is before "[" and next element is not the end of string
 			this.readStructureChildBlock(st, childrenOfThisLevel);
 			// at this point, the cursor should be before "]"
-			if (st.nextToken() != st.TT_WORD || !st.sval.equals("]")) {
+			if (st.nextToken() != ']') {
 				throw new IllegalArgumentException("The block indicating " + numChildren + " children of root was not properly closed.");
 			}
 			st.nextToken();
 		}
-		if (st.ttype != st.TT_WORD || !st.sval.equals("]")) {
+		if (st.ttype != ']') {
 			throw new IllegalArgumentException("The provided value tree structure definition root block doesn't seem to end with an closed square bracket \"]\"");
 		}
 		// set cursor after "]"
@@ -1676,7 +1677,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			if (st.nextToken() == st.TT_EOF) {
 				throw new IllegalArgumentException("Unexpected end of string found when reading the next number of children of " + parent);
 			}
-			if (st.ttype == st.TT_WORD && st.sval.equals("[")) {
+			if (st.ttype == '[') {
 				// go to next level
 				// make sure to put the cursor after "[" and check if string did not end
 				if (st.nextToken() == st.TT_EOF) {
@@ -1686,7 +1687,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// at this point, the cursor of st is before "[" and next element is not the end of string
 				this.readStructureChildBlock(st, childrenOfThisLevel);
 				// at this point, the cursor should be before "]"
-				if (st.nextToken() != st.TT_WORD || !st.sval.equals("]")) {
+				if (st.nextToken() != ']') {
 					throw new IllegalArgumentException("The block indicating " + numChildren + " children of root was not properly closed.");
 				}
 			} else {
@@ -1710,7 +1711,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			return;
 		}
 		// move the cursor until we reach the first "["
-		while (st.ttype != st.TT_WORD || !st.sval.equals("[")) {
+		while (st.ttype != '[') {
 			if (st.ttype == st.TT_EOF) {
 				// there is nothing to do, because string has reached end before reaching the first block of shadow nodes.
 				return;
@@ -1740,12 +1741,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// extract the node of this step in the path
 				shadowNode = childrenOfThisIteration.get(childIndex);
 				// if "]", then stop
-				if (st.nextToken() == st.TT_WORD && st.sval.equals("]")) {
+				if (st.nextToken() == ']') {
 					break;
 				}
 				
 				// at this point, the next token shall be ","
-				if (st.ttype != st.TT_WORD || !st.sval.equals(",")) {
+				if (st.ttype != ',') {
 					throw new IllegalArgumentException("Expected \",\" or \"]\" after a number.");
 				}
 				
@@ -1755,7 +1756,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// move cursor, so that in the next iteration the cursor is at the next number
 				st.nextToken();
 			}
-			if (st.nextToken() != st.TT_WORD || !st.sval.equals("]")) {
+			if (st.ttype != ']') {
 				throw new IllegalArgumentException("A shadow node declaration is expected to end with \"]\". The last node reached from the declaration was " + shadowNode);
 			}
 				
@@ -1767,7 +1768,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			
 			// move cursor until the next "[" (can expect "," too)
-			while (st.ttype != st.TT_WORD || !st.sval.equals("[")) {
+			while (st.ttype != '[') {
 				if (st.ttype == st.TT_EOF) {
 					// there is nothing to do, because string has reached end before reaching the first block of shadow nodes.
 					return;
