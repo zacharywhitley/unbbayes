@@ -139,9 +139,44 @@ public interface IValueTree extends Serializable {
 	 * mutually exclusive each other (no need to be collectively exhaustive).
 	 * This list shall be usually null for most of calls. If this list contains the node to be changed, the node
 	 * will not be considered as an anchor.
+	 * {@link #addFactionChangeListener(IValueTreeFactionChangeListener)} will be notified about changes in faction.
+	 * If false, then they won't.
 	 * @return : the old probability.
 	 */
 	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, Collection<IValueTreeNode> mutuallyExclusiveAnchors);
+
+//	/**
+//	 *  Changes the probability of node from the current to the provided value, conditioning on reference node anchor (which
+//	 *  means the probability of anchor remains no change). We require to update the tree after the edit, in particular,
+//	 *  <br/>
+//	 *  <br/>
+//	 *  1.  ﬁnd the set of highest relatives according to node, anchor, and update their probabilities including the faction;
+//	 *  <br/>
+//	 *  2.  update probabilities and F for the set of parents of node.
+//	 *  <br/>
+//	 *  3.  update probabilities and F for all the descendant of node and descendant for the member node in the 
+//	 *  highest relatives set of (node,anchor).
+//	 *  <br/>
+//	 *  4.  output the probabilities of exposing state if there is any change, and signal the update for the whole network.
+//	 *  <br/>
+//	 *  <br/>
+//	 *  Please, note that implementations will not necessarily change the CPT of {@link #getRoot()} after execution of 
+//	 *  this method. You should use {@link #addFactionChangeListener(IValueTreeFactionChangeListener)}
+//	 *  to add proper listeners in order to update {@link #getRoot()}.
+//	 * @param node : node to change probability
+//	 * @param ancestorAnchor : anchor (ancestor of node) not to change probability
+//	 * @param prob : probability value to set
+//	 * @param mutuallyExclusiveAnchors : other anchors (nodes not to change probability) which are not ancestor or descendants of node.
+//	 * These anchors must contain nodes which does not have any overlap with the target node, so they must be
+//	 * mutually exclusive each other (no need to be collectively exhaustive).
+//	 * This list shall be usually null for most of calls. If this list contains the node to be changed, the node
+//	 * will not be considered as an anchor.
+//	 * @param isToNotifyFactionChangeListener : if true, listeners included by
+//	 * {@link #addFactionChangeListener(IValueTreeFactionChangeListener)} will be notified about changes in faction.
+//	 * If false, then they won't.
+//	 * @return : the old probability.
+//	 */
+//	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, Collection<IValueTreeNode> mutuallyExclusiveAnchors, boolean isToNotifyFactionChangeListener);
 	
 	/**
 	 * Definition of highest relative set: Let a t be the set of all ancestors of a node t, i.e., the 
@@ -190,7 +225,8 @@ public interface IValueTree extends Serializable {
 	
 	/**
 	 * @param shadowNode : the shadow node to find.
-	 * @return the index of state of {@link #getRoot()} where the shadow node was mapped
+	 * @return the index of state of {@link #getRoot()} where the shadow node was mapped.
+	 * Will return negative value if not found.
 	 */
 	public int getShadowNodeStateIndex(IValueTreeNode shadowNode);
 	

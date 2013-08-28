@@ -350,6 +350,7 @@ public class ValueTree implements IValueTree {
 	 * @see unbbayes.prs.bn.valueTree.IValueTree#changeProb(unbbayes.prs.bn.valueTree.IValueTreeNode, unbbayes.prs.bn.valueTree.IValueTreeNode, float, java.util.Collection)
 	 */
 	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, Collection<IValueTreeNode> mutuallyExclusiveAnchors) {
+//	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, Collection<IValueTreeNode> mutuallyExclusiveAnchors, boolean isToNotifyFactionChangeListener) {
 		if (node == null) {
 			throw new NullPointerException("Attempted to change the probability of a null node to " + prob + " given node " + ancestorAnchor);
 		}
@@ -393,7 +394,8 @@ public class ValueTree implements IValueTree {
 //		// this map will store what were the factions before the edit, so that we can restore to it in case of any problem
 //		Map<IValueTreeNode, Float> factionBackup = new HashMap<IValueTreeNode, Float>();
 		
-		// this will hold what nodes have had factions changes, so that we can notify listeners afterwards
+		// this will hold what nodes have had factions changes, so that we can notify listeners afterwards. 
+		// This is instantiated regardless of isToNotifyFactionChangeListener because it is also used to revert factions on errors.
 		Map<IValueTreeNode, IValueTreeFactionChangeEvent> factionChanges = new HashMap<IValueTreeNode, IValueTreeFactionChangeEvent>();
 		
 		try {
@@ -493,7 +495,9 @@ public class ValueTree implements IValueTree {
 		}
 		
 		// notify listeners if there are listeners registered, and there were changes in factions
-		if (this.factionChangeListeners != null && !factionChanges.isEmpty()) {
+		if (
+//				isToNotifyFactionChangeListener && 
+				this.factionChangeListeners != null && !factionChanges.isEmpty()) {
 			for (IValueTreeFactionChangeListener listener : factionChangeListeners) {
 				listener.onFactionChange(factionChanges.values());
 			}

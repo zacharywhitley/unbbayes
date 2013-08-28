@@ -197,7 +197,9 @@ public class ValueTreePanelBuilder implements IProbabilityFunctionPanelBuilder {
 							// obtain prob from user
 							String input = JOptionPane.showInputDialog("Change probability", valueTreeNode.getValueTree().getProb(valueTreeNode, anchor));
 							if (input != null && input.trim().length() > 0) {
-								valueTreeNode.getValueTree().changeProb(valueTreeNode, anchor, Float.parseFloat(input), null);
+								valueTreeNode.getValueTree().changeProb(valueTreeNode, anchor, Float.parseFloat(input), null 
+//										,true
+										);
 							}
 							
 							// needs to refresh tree

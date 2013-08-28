@@ -25876,6 +25876,9 @@ public class MarkovEngineTest extends TestCase {
 				
 		// create DEF net.
 		
+		// check if I can use null in newValues of normal nodes
+		
+		// check if I can use null in newValues of value tree nodes
 		
 		// restore backups
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);

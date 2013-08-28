@@ -1956,6 +1956,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public class AddValueTreeQuestionNetworkAction extends AddQuestionNetworkAction {
 
+		private static final long serialVersionUID = 7769963256881143458L;
 		private List<IValueTreeNode> childrenOfRootOfValueTree;
 		private List<IValueTreeNode> shadowNodes;
 
@@ -2110,6 +2111,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 			}
 		}
+		
+		
 
 
 		/**
@@ -2139,6 +2142,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 */
 		public void setShadowNodes(List<IValueTreeNode> shadowNodes) {
 			this.shadowNodes = shadowNodes;
+		}
+
+
+		/* (non-Javadoc)
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.AddQuestionNetworkAction#getNumberStates()
+		 */
+		public int getNumberStates() {
+			if (getShadowNodes() == null) {
+				return 0;
+			}
+			return getShadowNodes().size();
 		}
 	}
 
@@ -3134,6 +3148,158 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	}
 	
 	/**
+	 * This is the {@link NetworkAction} command
+	 * representing {@link MarkovEngineImpl#addTrade(Long, Date, long, List, List, List, List, List)},
+	 * more specifically for changing probabilities of value tree nodes.
+	 * It is expected that this type of trades only changes probability of the value tree, not
+	 * of other nodes in the external bayes net.
+	 * @author Shou Matsumoto
+	 */
+	public class AddTradeValueTreeNetworkAction extends AddTradeNetworkAction {
+
+		private static final long serialVersionUID = -5538538423172739941L;
+		private List<Integer> referencePath;
+		private List<Integer> targetPath;
+		
+		public AddTradeValueTreeNetworkAction(Long transactionKey, Date occurredWhen, long questionId, List<Float> newValues,
+				List<Integer> targetPath, List<Integer> referencePath) {
+			super(transactionKey, occurredWhen, "", Long.MIN_VALUE, questionId, null, newValues, Collections.EMPTY_LIST, Collections.EMPTY_LIST, true);
+			this.setTargetPath(targetPath);
+			this.setReferencePath(referencePath);
+		}
+		
+		/**
+		 * @see AddTradeNetworkAction#execute(boolean, boolean, boolean)
+		 */
+		public void execute(boolean isToUpdateAssets, boolean isToUpdateAssumptionIds, boolean isToUpdateMarginals) {
+			
+			synchronized (getProbabilisticNetwork()) {
+				ValueTreeProbabilisticNode root = null;
+				if (getWhenExecutedFirstTimeMillis() > 0) {
+					// for optimization, only update history if this is first execution.
+					// first, check that node exists
+					Node node = getProbabilisticNetwork().getNode(Long.toString(getQuestionId()));
+					if (node == null) {
+						throw new InexistingQuestionException("Question " + getQuestionId() + " not found.", getQuestionId());
+					}
+					if (node instanceof ValueTreeProbabilisticNode) {
+						root = (ValueTreeProbabilisticNode) node;
+					} else {
+						throw new IllegalStateException(node + " is supposed to have a value tree, but did not.");
+					}
+				}
+				
+				// if there are multiple values specified in newValues, then we are actually attempting to change the probability of parent
+				boolean isToTradeOnParent = false;	// this will become true if target path is actually pointing to parent
+				float lastNonNullProb = Float.NaN;	// will hold the last non-null probability specification found
+				if (getNewValues() != null) {
+					int counterOfNonNull = 0;
+					for (Float prob : getNewValues()) {
+						if (prob != null) {
+							lastNonNullProb = prob;
+							counterOfNonNull++;
+							if (counterOfNonNull > 1) {
+								isToTradeOnParent = true;
+								break;
+							}
+						}
+					}
+					if (counterOfNonNull == 0) {
+						// there is actually nothing to trade
+						Debug.println("All probabilities were set to null, so there is nothing to change.");
+						return;
+					}
+				} else {
+					// we are not changing probability
+					Debug.println("Probabilities were set to null, so there is nothing to change.");
+					return;
+				}
+				
+				// extract the value tree node to trade
+				IValueTreeNode target = null;
+				if (targetPath != null) {
+					List<IValueTreeNode> children = root.getValueTree().get1stLevelNodes();
+					for (Integer index : targetPath) {
+						if (children == null) {
+							throw new IllegalArgumentException(targetPath + " is not a valid target path for value tree of " + root);
+						}
+						target = children.get(index);
+						children = target.getChildren();
+					}
+				}
+				
+				// extract the reference node to trade
+				IValueTreeNode anchor = null;
+				if (referencePath != null) {
+					List<IValueTreeNode> children = root.getValueTree().get1stLevelNodes();
+					for (Integer index : referencePath) {
+						if (children == null) {
+							throw new IllegalArgumentException(referencePath + " is not a valid reference path for value tree of " + root);
+						}
+						anchor = children.get(index);
+						children = anchor.getChildren();
+					}
+				}
+				
+				
+				// do trade here, and also get the old probability
+				List<Float> oldConditionalProb = null;
+				if (isToTradeOnParent) {
+					// in this case, we are actually trading on children of target
+					if (target.getChildren() == null || target.getChildren().size() != getNewValues().size()) {
+						throw new IllegalArgumentException(getNewValues() + " is supposed to be new a probability distribution for children of target " + target 
+								+ ", but the target doesn't have that quantity of children.");
+					}
+					oldConditionalProb = new ArrayList<Float>(getNewValues().size());
+					// if newValues has more than 1 value, then do several trades changing the mutually exclusive anchors (the nodes not to change)
+					Collection<IValueTreeNode> nodesNotToChange = new ArrayList<IValueTreeNode>(getNewValues().size());	// do not change probability of nodes in this list
+					for (int i = 0; i < getNewValues().size(); i++) {
+						IValueTreeNode childOfTarget = target.getChildren().get(i);
+						Float prob = getNewValues().get(i);
+						if (prob != null) {
+							// change the probability of this child
+							oldConditionalProb.add(root.getValueTree().changeProb(childOfTarget, anchor, prob, nodesNotToChange));
+							// this node shall not be changed in next iteration.
+							nodesNotToChange.add(childOfTarget);
+						} else {
+//							oldConditionalProb.add(root.getValueTree().getProb(childOfTarget, anchor));
+							oldConditionalProb.add(null);
+						}
+					}
+					
+				} else {
+					// in this case, lastNonNullProb should have the only non-null probability specified
+					oldConditionalProb = Collections.singletonList(root.getValueTree().changeProb(target, anchor, lastNonNullProb, null));
+				}
+				
+				
+				// store what was the conditional probability before the trade, if it was not specified in the tradeSpecification
+				if (getTradeSpecification().getOldProbabilities() == null || getTradeSpecification().getOldProbabilities().isEmpty()) {
+					getTradeSpecification().setOldProbabilities(oldConditionalProb);
+				}
+				
+				// add this question to the mapping of questions traded by the user
+				if (isToTraceHistory()) {
+					Set<Long> questions = getTradedQuestionsMap().get(getUserId());
+					if (questions == null) {
+						questions = new HashSet<Long>();
+						getTradedQuestionsMap().put(getUserId(), questions);
+					}
+					questions.add(getQuestionId());
+				}
+			}
+			
+		}
+		
+
+		public List<Integer> getReferencePath() { return referencePath; }
+		public void setReferencePath(List<Integer> referencePath) { this.referencePath = referencePath; }
+		public List<Integer> getTargetPath() { return targetPath; }
+		public void setTargetPath(List<Integer> targetPath) { this.targetPath = targetPath; }
+		
+	}
+	
+	/**
 	 * This represents a trade caused by a {@link ImportNetworkAction}.
 	 * These "virtual" trades represents changes in the probability caused
 	 * when importing a network in which the CPT is not uniform 
@@ -3486,6 +3652,380 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			);
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#addTrade(java.lang.Long, java.util.Date, long, java.util.List, java.util.List, java.util.List, java.util.List, java.util.List)
+	 */
+	public List<Float> addTrade(Long transactionKey, Date occurredWhen, long questionId, List<Integer> targetPath, List<Integer> referencePath, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException{
+		
+		// if no value tree path was specified, then just handle it like the old trade
+		if (targetPath == null || targetPath.isEmpty()) {
+			return this.addTrade(
+					transactionKey, occurredWhen, "", 
+					new TradeSpecificationImpl(Long.MIN_VALUE, questionId, null, newValues, assumptionIds, assumedStates), 
+					true
+				);
+		}
+		
+		// at this point, targetPath != null
+		if (referencePath != null) {
+			// check that reference path is always an ancestor of target path
+			if (referencePath.size() >= targetPath.size()) {
+				throw new IllegalArgumentException("The reference path must point to an ancestor of target path.");
+			}
+			// check if beginning of targetPath is equal to referencePath (i.e. check if referencePath is pointing to ancestor of targetPath)
+			// note: at this point, the length of referencePath is strictly smaller than targetPath
+			for (int i = 0; i < referencePath.size(); i++) {
+				if (!referencePath.get(i).equals(targetPath.get(i))) {
+					throw new IllegalArgumentException("The reference path must point to an ancestor of target path. The step " + i  + " of the paths are pointing to different nodes in value trees.");
+				}
+			}
+		}
+		
+		// at this point, reference path is either null, empty, or pointing to ancestor of target path
+
+		// initial assertions
+		if (occurredWhen == null) {
+			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
+		}
+		if (transactionKey != null && this.getNetworkActionsMap().get(transactionKey) == null) {
+			// startNetworkAction should have been called.
+			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		}
+		
+		
+		// returned value is the same of preview trade
+		List<Float> ret = new ArrayList<Float>();
+		
+		if (getDefaultInferenceAlgorithm() == null) {
+			throw new IllegalStateException("Default algorithm not found.");
+		}
+		
+		// check whether question exists, and extract necessary nodes if possible
+		int shadowNodeIndex = -1;	// this will contain the index of the shadow node
+		int numStates = -1;			// this will hold the number of states that the node (root) shall have.
+		synchronized (getDefaultInferenceAlgorithm()) {
+			synchronized (getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork()) {
+				ProbabilisticNetwork net = getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork();
+				if (net == null) {
+					throw new IllegalStateException("Network was not properly initialized.");
+				}
+				Node node = net.getNode(""+questionId);
+				// this will be filled with the network action which will add the node if node was not found.
+				AddQuestionNetworkAction actionAddingNodeIfNodeIsNull = null;	
+				if (node == null) {
+					// Perhaps the nodes are still going to be added within the context of this transaction.
+					boolean isNodeToBeCreatedWithinTransaction = false;
+					Map<Long, Set<AddQuestionNetworkAction>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
+					
+					if (mapTransactionQuestions == null || transactionKey == null) {
+						// desynchronized call detected. This is unlikely to happen, but subclasses may cause this
+						throw new InexistingQuestionException("Question " + questionId + " not found.",questionId);
+					}
+					
+					// use the mapping in order to check whether the parent will be created in the same transaction
+					synchronized (mapTransactionQuestions) {
+						Set<AddQuestionNetworkAction> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
+						if (questionsInSameTransaction == null) {
+							throw new InexistingQuestionException("Question " + questionId + " not found.",questionId);
+						}
+						// search for the assumption ID in questionsToBeCreatedInTransaction
+						for (AddQuestionNetworkAction questionActInMapping : questionsInSameTransaction) {
+							if (questionActInMapping.getQuestionId().longValue() == questionId) {
+								isNodeToBeCreatedWithinTransaction = true;
+								actionAddingNodeIfNodeIsNull = questionActInMapping;
+								numStates = questionActInMapping.getNumberStates();
+								break;
+							}
+						}
+					}
+					if (!isNodeToBeCreatedWithinTransaction) {
+						throw new InexistingQuestionException("Question " + questionId + " not found.",questionId);
+					}
+					
+				} else {
+					numStates = node.getStatesSize();
+				}
+				
+				// if node exists, then target node must be in the value tree
+				if (node != null) {
+					if (!(node instanceof ValueTreeProbabilisticNode)) {
+						// note: at this point, the target was non-null and non-empty, so the caller is trying to do a trade on value tree
+						throw new IllegalArgumentException("Attempted to change probability of value tree, but question " + node + " does not have a value tree.");
+					}
+					ValueTreeProbabilisticNode root = (ValueTreeProbabilisticNode) node;
+					if (root.getValueTree() == null) {
+						throw new IllegalStateException(root + " is expected to have a value tree, but the value tree was null." +
+								" This is probably a bug in the engine, or an inconsistent version of the library." +
+								" Please, verify whether the version of UnBBayes and Markov Engine are compatible each other.");
+					}
+					// move along the path to identify the target
+					List<IValueTreeNode> children = root.getValueTree().get1stLevelNodes();
+					for (Integer index : targetPath) {
+						if (children == null || index == null || index < 0 || index >= children.size()) {
+							throw new IllegalArgumentException(index + " in path " + targetPath + " is an invalid index as a path in the value tree of question " + questionId);
+						}
+						children = children.get(index).getChildren();
+					}
+					// at this point, targetPath is pointing to an existing node in the value tree
+					// note: no need to check reference node, because at this point we know that reference node is either null, empty, or ancestor of target.
+				}
+				
+				// check presence of assumption
+				if (assumptionIds != null && !assumptionIds.isEmpty()) {
+					// try to convert the list of IDs of assumptions, to list of actual nodes. Also check if assumptions exist
+					List<INode> assumptionNodes = new ArrayList<INode>(assumptionIds.size()+1);	// allocate space sufficient for all assumptions + traded node
+					boolean hasNodes = true;	// this will become false if at least 1 node does not exist yet
+					for (Long assumptionId : assumptionIds) {
+						// check if node exist
+						Node assumptionNode = getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNode(""+assumptionId);
+						if (assumptionNode == null) {
+							hasNodes = false;
+							break;
+						}
+						assumptionNodes.add(assumptionNode);
+					}
+					
+					// check if there is a clique containing all assumptions and traded node (if we can check it now)
+					boolean hasClique = false;
+					if (hasNodes && node != null) {
+						// the clique to find must have traded node and all assumptions.
+						assumptionNodes.add(node);
+						List<Clique> cliquesContainingAllNodes = getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getJunctionTree().getCliquesContainingAllNodes(assumptionNodes, 1);
+						// if the returned collection is non-null and non-empty, then we have a clique.
+						hasClique = (cliquesContainingAllNodes != null && !cliquesContainingAllNodes.isEmpty());
+					}
+					
+					// handle both issues (inexisting node or clique) here at once
+					if (!hasNodes || !hasClique) {
+						// If new nodes/edges are added within the same transaction, there are still some chances for the assumptions to become valid.
+						// However, it is very hard to check such conditions right now. So, ignore this exception if such chance may occur.
+						if (transactionKey != null) {
+							boolean isToIgnoreThisException = false;
+							List<NetworkAction> actions = getNetworkActionsMap().get(transactionKey); // getNetworkActionsMap() is supposedly a concurrent map
+							synchronized (actions) {	// actions is not a concurrent list, so must lock it
+								for (NetworkAction action : actions) {
+									if (action instanceof AddQuestionNetworkAction || action instanceof AddQuestionAssumptionNetworkAction) {
+										// there is a small chance for the assumptions to become correct
+										isToIgnoreThisException = true;
+										break;
+										// TODO implement algorithm for anticipating what #getPossibleQuestionAssumptions will return after the commitment this transaction and never ignore InvalidAssumptionException
+									}
+								}
+							}
+							if (!isToIgnoreThisException && this.isToThrowExceptionOnInvalidAssumptions()) {
+								throw new InvalidAssumptionException("A problem was found when handling assumptions " + assumptionIds
+										+ "of question " + questionId
+										+ ((!hasNodes)?". Some questions were not found.":". No common clique was found."));
+							}
+						} else {
+							throw new InvalidAssumptionException("A problem was found when handling assumptions " + assumptionIds
+									+ "of question " + questionId
+									+ ((!hasNodes)?". Some questions were not found.":". No common clique was found."));
+						}
+					}
+				}
+				
+				// at this point, assumptions exist
+				// if we have assumptions, then the target node must be shadow node
+				// or a parent of a shadow node if newValues doesn't contain null or newValues.size() > 1.
+				if (node != null) {
+					if (!(node instanceof ValueTreeProbabilisticNode) || ((ValueTreeProbabilisticNode) node).getValueTree() == null) {
+						throw new IllegalArgumentException("Attempted to make a trade on path " + targetPath + " of node " + node
+								+ ", but the node doesn't seem to have a value tree.");
+					}
+					ValueTreeProbabilisticNode root = (ValueTreeProbabilisticNode) node;
+					// find the shadow node from the node itself
+					if (newValues.size() == 1) {
+						// check if target node itself is shadow node
+						List<IValueTreeNode> children = root.getValueTree().get1stLevelNodes();
+						IValueTreeNode shadow = null;
+						for (Integer index : targetPath) {
+							if (children == null || index == null || index < 0 || index >= children.size()) {
+								throw new IllegalArgumentException(index + " in path " + targetPath + " doesn't look like a path in the value tree of question " 
+											+ questionId);
+							}
+							shadow = children.get(index);
+							children = shadow.getChildren();
+						}
+						if (shadow != null) {
+							shadowNodeIndex = root.getValueTree().getShadowNodeStateIndex(shadow);
+						}
+						if (shadowNodeIndex < 0) {
+							// note: if shadow == null, then shadowNodeIndex is -1 anyway
+							throw new IllegalArgumentException("A trade to question "
+									+ questionId + " assuming " + assumptionIds 
+									+ " is expected to be targetted to a shadow node, but the path " + targetPath + " doesn't seem to be a shadow node.");
+						}
+					} else  {
+						// special case: check if this is a parent of all shadow nodes
+						// check if target node itself is shadow node
+						List<IValueTreeNode> children = root.getValueTree().get1stLevelNodes();
+						IValueTreeNode parentOfShadow = null;
+						for (Integer index : targetPath) {
+							if (children == null || index == null || index < 0 || index >= children.size()) {
+								throw new IllegalArgumentException(index + " in path " + targetPath + " doesn't look like a path in the value tree of question " 
+											+ questionId);
+							}
+							parentOfShadow = children.get(index);
+							children = parentOfShadow.getChildren();
+						}
+						if (parentOfShadow == null || parentOfShadow.getChildren() == null) {
+							throw new IllegalArgumentException("A trade to question "
+									+ questionId + " assuming " + assumptionIds 
+									+ " is expected to be targetted to a parent of all shadow nodes, but the path " + targetPath + " doesn't seem to be a parent of all shadow nodes.");
+						}
+						// at this point, parentOfShadow is non-null and parentOfShadow.getChildren() are non-null too
+						for (IValueTreeNode shadow : parentOfShadow.getChildren()) {
+							if (root.getValueTree().getShadowNodeStateIndex(shadow) < 0) {
+								throw new IllegalArgumentException("A trade to question "
+										+ questionId + " assuming " + assumptionIds 
+										+ " is expected to be targetted to a shadow node, but the path " + targetPath + " doesn't seem to be a shadow node.");
+							}
+						}
+					} 
+				} else {
+					// find the shadow node from the action which will create the node
+					if (actionAddingNodeIfNodeIsNull == null) {
+						throw new IllegalArgumentException("Attempting to trade on value tree, but the current transaction (ID=" 
+								+ transactionKey + ") is not creating question " + questionId 
+								+ " as a node with value trees.");
+					}
+					if (actionAddingNodeIfNodeIsNull instanceof AddValueTreeQuestionNetworkAction) {
+						AddValueTreeQuestionNetworkAction valueTreeAction = (AddValueTreeQuestionNetworkAction) actionAddingNodeIfNodeIsNull;
+						if (newValues.size() == 1) {
+							// check if target node itself is shadow node
+							List<IValueTreeNode> children = valueTreeAction.getChildrenOfRootOfValueTree();
+							IValueTreeNode shadow = null;
+							for (Integer index : targetPath) {
+								if (children == null || index == null || index < 0 || index >= children.size()) {
+									throw new IllegalArgumentException(index + " in path " + targetPath + " doesn't look like a path in the value tree of question " 
+												+ questionId + ", which is a question still to be created in transaction " + transactionKey);
+								}
+								shadow = children.get(index);
+								children = shadow.getChildren();
+							}
+							if (shadow != null) {
+								shadowNodeIndex = valueTreeAction.getShadowNodes().indexOf(shadow);
+							}
+							if (shadowNodeIndex < 0) {
+								// note: if shadow == null, then shadowNodeIndex is -1 anyway
+								throw new IllegalArgumentException("A trade to question "
+										+ questionId + " (yet to be created on transaction " + transactionKey + ") assuming " + assumptionIds 
+										+ " is expected to be targetted to a shadow node, but the path " + targetPath + " doesn't seem to be a shadow node.");
+							}
+						} else  {
+							// special case: check if this is a parent of all shadow nodes
+							// check if target node itself is shadow node
+							List<IValueTreeNode> children = valueTreeAction.getChildrenOfRootOfValueTree();
+							IValueTreeNode parentOfShadow = null;
+							for (Integer index : targetPath) {
+								if (children == null || index == null || index < 0 || index >= children.size()) {
+									throw new IllegalArgumentException(index + " in path " + targetPath + " doesn't look like a path in the value tree of question " 
+												+ questionId + ", which is a question still to be created in transaction " + transactionKey);
+								}
+								parentOfShadow = children.get(index);
+								children = parentOfShadow.getChildren();
+							}
+							if (parentOfShadow == null || parentOfShadow.getChildren() == null) {
+								throw new IllegalArgumentException("A trade to question "
+										+ questionId + " (yet to be created on transaction " + transactionKey + ") assuming " + assumptionIds 
+										+ " is expected to be targetted to a parent of all shadow nodes, but the path " + targetPath + " doesn't seem to be a parent of all shadow nodes.");
+							}
+							// at this point, parentOfShadow is non-null and parentOfShadow.getChildren() are non-null too
+							for (IValueTreeNode shadow : parentOfShadow.getChildren()) {
+								if (!valueTreeAction.getShadowNodes().contains(shadow)) {
+									throw new IllegalArgumentException("A trade to question "
+											+ questionId + " (yet to be created on transaction " + transactionKey + ") assuming " + assumptionIds 
+											+ " is expected to be targetted to a shadow node, but the path " + targetPath + " doesn't seem to be a shadow node.");
+								}
+							}
+						} 
+					} else {
+						throw new IllegalArgumentException("Attempting to trade on value tree, but the current transaction (ID=" 
+								+ transactionKey + ") is not creating question " + questionId 
+								+ " as a node with value trees.");
+					}
+				}
+				
+				
+			}
+		}
+		
+		// first, check that we could extract the number of states with no problem
+		if (numStates < 0) {
+			throw new RuntimeException("Could not extract the quantity of states/choices of question " + questionId);
+		}
+		
+		// note: at this point, if there are assumptions, then we are trading on shadow nodes. In such case, we can do normal trade.
+		if (assumptionIds != null && !assumptionIds.isEmpty()) {
+			
+			// we need to set newValues to full have same size of the states of the nodes (but can have null indicating "unspecified").
+			if (newValues.size() == 1 ) {
+				// change newValues so that it has all null and 1 value as the specified in newValues
+				if (shadowNodeIndex >= 0) {
+					// store old prob before filling list of new values with nulls
+					Float prob = newValues.get(0);
+					// use new instance, so that we don't change the original list (a list provided by the caller of this method)
+					newValues = new ArrayList<Float>(numStates);
+					for (int i = 0; i < numStates; i++) {
+						// fill non-specified states with nulls.
+						newValues.add((shadowNodeIndex == i)?prob:null);
+					}
+				} else {
+					throw new IllegalArgumentException("Question " + questionId + " has value tree, and this is a trade that has assumptions " + assumptionIds
+							+ ", but the shadow node was not found.");
+				}
+			} else if (newValues.size() != numStates) {
+				throw new IllegalArgumentException("Question " + questionId + " has " + numStates + " possible choices/shadow nodes, and the size of provided probability" 
+						+ newValues + " did not match with it.");
+			}
+		}
+		
+		if (assumptionIds != null && !assumptionIds.isEmpty()) {
+			// just trade as in old way
+			if (transactionKey == null) {
+				transactionKey = this.startNetworkActions();
+				AddTradeNetworkAction newAction = new AddTradeNetworkAction(
+						transactionKey, occurredWhen, "", Long.MIN_VALUE, questionId, 
+						null, newValues, 
+						assumptionIds, assumedStates, true
+					);
+				this.addNetworkAction(transactionKey, newAction);
+				this.commitNetworkActions(transactionKey);
+			} else {
+				// instantiate the action object for adding trade
+				AddTradeNetworkAction newAction = new AddTradeNetworkAction(
+						transactionKey, occurredWhen, "", Long.MIN_VALUE, questionId, 
+						null, newValues, 
+						assumptionIds, assumedStates, true
+					);
+				this.addNetworkAction(transactionKey, newAction);
+			}
+		} else {
+			// trade on value tree assuming nothing else
+			if (transactionKey == null) {
+				transactionKey = this.startNetworkActions();
+				AddTradeValueTreeNetworkAction newAction = new AddTradeValueTreeNetworkAction(
+						transactionKey, occurredWhen, questionId, newValues, 
+						targetPath, referencePath
+					);
+				this.addNetworkAction(transactionKey, newAction);
+				this.commitNetworkActions(transactionKey);
+			} else {
+				// instantiate the action object for adding trade
+				AddTradeValueTreeNetworkAction newAction = new AddTradeValueTreeNetworkAction(
+						transactionKey, occurredWhen, questionId, newValues, 
+						targetPath, referencePath
+					);
+				this.addNetworkAction(transactionKey, newAction);
+			}
+		}
+		
+		// return the previewed asset values
+		return ret;
+	
+	}
 	
 	/**
 	 * Just delegates to {@link #addTrade(Long, Date, String, long, long, List, List, List, boolean)}.
@@ -6140,24 +6680,39 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// check consistency of content of newValues
-		float sum = 0;
+		float localSum = 0;
+		float sumOfNonNullNewValues = 0;	// value of localSum at last iteration. Will be used to calculate non-specified probability
 		int counter = 0;	// counter in which possible values are mod childNodeStateSize
+		boolean hasUndefinedProb = false;	// will become true if there is null probability
 		for (Float probability : newValues) {
+			if (probability == null) {
+				// we need to adjust this value posteriorly proportionally to current prob
+				hasUndefinedProb = true;
+				counter++;
+				continue;
+			}
 			if (probability < (0-getProbabilityErrorMargin()) || probability > (1+getProbabilityErrorMargin())) {
 				throw new IllegalArgumentException("Invalid probability declaration found: " + probability);
 			}
-			sum += probability;
+			localSum += probability;
 			counter++;
 			if (counter >= child.getStatesSize()) {
 				// check if sum of conditional probability given current state of parents is 1
-				if (!(((1 - getProbabilityErrorMargin()) < sum) && (sum < (1 + getProbabilityErrorMargin())))) {
-					if (!(((1 - getProbabilityErrorMargin()*2) < sum) && (sum < (1 + getProbabilityErrorMargin()*2)))) {
-						throw new IllegalArgumentException("Inconsistent prior probability: " + sum);
+				if (!(((1 - getProbabilityErrorMargin()) < localSum) && (localSum < (1 + getProbabilityErrorMargin())))) {
+					if (!(((1 - getProbabilityErrorMargin()*2) < localSum) && (localSum < (1 + getProbabilityErrorMargin()*2)))) {
+						throw new IllegalArgumentException("Inconsistent prior probability: " + localSum);
 					}
 				}
 				counter = 0;
-				sum = 0;
+				sumOfNonNullNewValues = localSum;	// simply store the last local sum, because we will use this value only when there is no next iteration
+				localSum = 0;
 			}
+		}
+		
+		// TODO allow null in probability when states of parents are not specified
+		if (hasUndefinedProb && newValues.size() != child.getStatesSize()) {
+			throw new UnsupportedOperationException("Current version does not support null values in probabilities when specifying full conditional probability without specifying states of assumptions." +
+					" You'll either need to fully specify the states of the parents, or not to use null in the probability argument.");
 		}
 		
 		// note: at this point, newValues is consistent, so we can compare it to oldValues to see if oldValues is consistent
@@ -6199,11 +6754,37 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			for (int i = 1; i < multidimensionalCoord.length; i++) { // index 0 is for the main node (which is not specified in assumedStates), so it is not used.
 				multidimensionalCoord[i] = assumedStates.get(i-1);
 			}
+			// if there are unspecified new values, we need to know the sum of old probability of uspecified states, because such value will be used for proportional adjustment
+			float sumUnspecifiedOldValues = 0f;
+			if (hasUndefinedProb) {
+				for (int i = 0; i < newValues.size(); i++) {	// at this point, newValues.size() == child.statesSize()
+					multidimensionalCoord[0] = i; // only iterate over states of the main node (i.e. index 0 of multidimensionalCoord)
+					if (newValues.get(i) == null) {
+						sumUnspecifiedOldValues += potential.getValue(multidimensionalCoord);
+					} 
+				}
+			}
 			// modify content of potential table according to newValues 
 			for (int i = 0; i < newValues.size(); i++) {	// at this point, newValues.size() == child.statesSize()
 				multidimensionalCoord[0] = i; // only iterate over states of the main node (i.e. index 0 of multidimensionalCoord)
-				condProbBeforeTrade.add(potential.getValue(multidimensionalCoord));
-				potential.setValue(multidimensionalCoord, newValues.get(i));
+				float oldProb = potential.getValue(multidimensionalCoord);
+				condProbBeforeTrade.add(oldProb);
+				if (newValues.get(i) == null) {
+					if (sumUnspecifiedOldValues <= 0f) {
+						if (sumOfNonNullNewValues < 0f) {
+							// the old values were 0%, but the trade is trying to set to above 0, so this is mathematically impossible
+							throw new IllegalArgumentException(newValues + " is attempting to make a impossible state " + i + " to become possible. " +
+									"This is semantically incoherent.");
+						}
+						// in this case, the probability of specified states were already 0, and we are trying to set to 0, so don't change
+						potential.setValue(multidimensionalCoord, 0f);
+					} else {
+						// distribute the remaining probability (1-lastSum) to other states proportionally 
+						potential.setValue(multidimensionalCoord, oldProb*(1-sumOfNonNullNewValues)/sumUnspecifiedOldValues);
+					}
+				} else {
+					potential.setValue(multidimensionalCoord, newValues.get(i));
+				}
 			}
 		}
 		
@@ -11632,15 +12213,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		this.netIOToExportSharedNetToSting = netIOToExportSharedNetToSting;
 	}
 
-	public List<Float> addTrade(Long transactionKey, Date occurredWhen,
-			long questionId, List<Integer> targetPath,
-			List<Integer> referencePath, List<Float> newValues,
-			List<Long> assumptionIds, List<Integer> assumedStates)
-			throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public boolean resolveValueTreeQuestion(Long transactionKey,
 			Date occurredWhen, long questionID,
 			List<List<Integer>> targetPaths,
@@ -11665,29 +12237,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	}
 
 	
-
-//	/**
-//	 * This I/O class is used in {@link #exportCurrentSharedNetwork()}
-//	 * and {@link #importCurrentSharedNetwork(String)} in order
-//	 * to write/read the current network in a string format,
-//	 * but re-using I/O implementation in UnBBayes.
-//	 * @return the ioForStringOutput
-//	 */
-//	public NetIO getIoForStringOutput() {
-//		return ioForStringOutput;
-//	}
-//
-//	/**
-//	 * This I/O class is used in {@link #exportCurrentSharedNetwork()}
-//	 * and {@link #importCurrentSharedNetwork(String)} in order
-//	 * to write/read the current network in a string format,
-//	 * but re-using I/O implementation in UnBBayes.
-//	 * @param ioForStringOutput the ioForStringOutput to set
-//	 */
-//	public void setIoForStringOutput(NetIO ioForStringOutput) {
-//		this.ioForStringOutput = ioForStringOutput;
-//	}
-
 
 
 }
