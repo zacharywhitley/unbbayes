@@ -151,7 +151,7 @@ public class ValueTreeProbabilisticNode extends ProbabilisticNode implements IPl
 		cloned.setInternalIdentificator(this.getInternalIdentificator());
 		// clone value tree
 		try {
-			((ValueTreeProbabilisticNode) cloned).setValueTree((IValueTree) this.getValueTree().clone());
+			((ValueTreeProbabilisticNode) cloned).setValueTree((IValueTree) this.getValueTree().clone(cloned));
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
 		}

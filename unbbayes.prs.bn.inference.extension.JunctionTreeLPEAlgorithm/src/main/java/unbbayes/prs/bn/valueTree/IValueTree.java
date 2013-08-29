@@ -268,7 +268,20 @@ public interface IValueTree extends Serializable {
 
 	/**
 	 * @return a copy of this value tree
+	 * @see #clone(INode)
 	 */
 	public Object clone() throws CloneNotSupportedException;
 	
+	/**
+	 * @param root : this node will become the root of the value tree
+ 	 * @return a copy of this value tree
+	 * @throws CloneNotSupportedException
+	 */
+	public IValueTree clone(INode root) throws CloneNotSupportedException;
+	
+	/**
+	 * @param path : list of integer indicating the path from root.
+	 * @return the node in value tree identified by the path.
+	 */
+	public IValueTreeNode getNodeInPath(List<Integer> path);
 }

@@ -4874,6 +4874,122 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		return null;
 	}
+	
+	/*
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getProbList(long, java.util.List, java.util.List, java.util.List, java.util.List)
+	 */
+	public List<Float> getProbList(long questionId, List<Integer> targetPath,  List<Integer> referencePath, List<Long>assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException {
+		// if no path is provided, then handle it the same way as the old routine
+		if (targetPath == null || targetPath.isEmpty()) {
+			return this.getProbList(questionId, assumptionIds, assumedStates);
+		}
+		// check if reference is a sublist of target
+		if (referencePath != null) {
+			// check if beginning of targetPath is equal to referencePath (i.e. check if referencePath is pointing to ancestor of targetPath)
+			// note: at this point, the length of referencePath is strictly smaller than targetPath
+			for (int i = 0; i < Math.min(referencePath.size(),targetPath.size()); i++) {
+				if (!referencePath.get(i).equals(targetPath.get(i))) {
+					throw new IllegalArgumentException("The reference and target path must be along same path in value tree. The step " + i  + " of the paths are pointing to different nodes in value trees.");
+				}
+			}
+			// if reference is below or equal to target, then probability is 100% anyway
+			if (referencePath.size() >= targetPath.size()) {
+				return Collections.singletonList(1f);
+			}
+		}
+		
+		// extract the root and the target node of value tree
+		ValueTreeProbabilisticNode root = null;
+		IValueTreeNode target = null;
+		synchronized (getDefaultInferenceAlgorithm()) {
+			synchronized (getProbabilisticNetwork()) {
+				// the root
+				root = (ValueTreeProbabilisticNode) getProbabilisticNetwork().getNode(""+questionId);
+				if (root == null || root.getValueTree() == null) {
+					throw new IllegalArgumentException("Could not find root of value tree identified by the ID " + questionId);
+				}
+				// navigate along the target path
+				target = root.getValueTree().getNodeInPath(targetPath);
+			}
+		}
+		// note: at this point, root is non-null supposedly
+		if (target == null) {
+			throw new IllegalArgumentException("Could not find target path " + targetPath + " of question " + root);
+		}
+		
+		// check if this is a simple case of query to value tree assuming nothing external
+		// also extract the anchor
+		IValueTreeNode anchor = null;
+		synchronized (getDefaultInferenceAlgorithm()) {
+			synchronized (getProbabilisticNetwork()) {
+				anchor = root.getValueTree().getNodeInPath(referencePath);
+				if (assumptionIds == null || assumptionIds.isEmpty()) {
+					// simply query the value tree
+					// return the obtained value
+					return Collections.singletonList(root.getValueTree().getProb(target, anchor));
+				} 
+			}
+		}
+		
+		/* At this point, we are calculating the following prob:
+		 * If x is a non-shadow node in value tree, a,b,c are either normal states or shadow nodes of external network,
+		 * and s is a shadow node which is also an ancestor of x in same value tree, then:
+		 * P(x|a,b,c) = p(s|a,b,c)*p(x|s)
+		 */
+		
+		// obtain p(s|a,b,c) by using existing method, because shadow nodes are ordinal states of BN. This should also check whether assumptions are valid
+		List<Float> probShadowsGivenAssumptions = this.getProbList(questionId, assumptionIds, assumedStates);
+		
+		// check if target node is a shadow node itself
+		int targetNodeStateIndexIfShadow = root.getValueTree().getShadowNodeStateIndex(target);
+		if (targetNodeStateIndexIfShadow >= 0) {
+			// simply return from the list of prob of shadow nodes
+			probShadowsGivenAssumptions.get(targetNodeStateIndexIfShadow);
+		}
+		
+		// check which state is the s and also an ancestor of x
+		synchronized (getDefaultInferenceAlgorithm()) {
+			synchronized (getProbabilisticNetwork()) {
+				int indexOfShadowClosestToTarget = -1;	// this will hold the index of shadow node which is either ancestor or descendant of target node
+				IValueTreeNode shadow = null;			// this will hold the shadow node itself
+				boolean isAncestorShadow = true;		// this will become false if shadow node was a descendant of target node
+				for (int i = 0; i < root.getValueTree().getShadowNodeSize(); i++) {
+					// because value tree is a tree and shadow nodes are mutually exclusive, the first one to find is the one we want
+					shadow = root.getValueTree().getShadowNode(i);
+					if (shadow.isAncestorOf(target)) {
+						// shadow node is ancestor of target
+						indexOfShadowClosestToTarget = i;
+						break;
+					} else if (target.isAncestorOf(shadow)) {
+						// shadow node is descendant of target
+						isAncestorShadow = false;
+						indexOfShadowClosestToTarget = i;
+						break;
+					}
+				}
+				if (indexOfShadowClosestToTarget < 0 || shadow == null) {
+					throw new RuntimeException("Could not find any shadow node which is either descendant or ancestor of target node " + target
+							+ ". This indicates that target node is disconnected from value tree, so it is a potential inconsistency.");
+				}
+				
+				// note: if anchor is descendant of target, then it is immediately 100% (this was handled at the beginning of this method),
+				// but if anchor is ancestor of target and shadow is ancestor of anchor, then anchor is separating the shadow and target, 
+				if (anchor != null && anchor.isAncestorOf(target) && shadow.isAncestorOf(anchor)) {
+					// so the prob of shadow won't supposedly affect anchor.
+					return Collections.singletonList(root.getValueTree().getProb(target, anchor));
+				}
+				// otherwise... I'm assuming that the probability of shadow separates anchor, so anchor does not affect prob of target
+				// this is mainly because P(s|anchor,assumptions) is not well defined.
+				// TODO verify if when anchor->...->shadow->...->target, then the assumption of anchor is really ignored.
+				// retrieve p(x|s). If s is descendant, then p(x|s) = 100%
+				float probTargetGivenShadow = isAncestorShadow?root.getValueTree().getProb(target, shadow):1f;
+				
+				// return the value p(s|a,b,c)*p(x|s)
+				return Collections.singletonList(probShadowsGivenAssumptions.get(indexOfShadowClosestToTarget)*probTargetGivenShadow);
+			}
+		}
+	}
+	
 		
 			
 	/*
@@ -9915,6 +10031,223 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		return getDefaultInferenceAlgorithm().getJointProbability(nodesAndStatesToConsider);
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#getJointProbability(java.util.List, java.util.List, java.util.List, java.util.List)
+	 */
+	public float getJointProbability(List<Long>questionIds, List<Integer> questionStates, List<List<Integer>> targetPaths, List<List<Integer>> referencePaths) throws IllegalArgumentException{
+
+		if (questionIds == null || questionIds.isEmpty()) {
+			// no question was provided
+			return 0f;
+		}
+		
+		// if no path is provided, then handle it the same way as the old routine
+		if (targetPaths == null || targetPaths.isEmpty()) {
+			return this.getJointProbability(questionIds, questionStates);
+		}
+		
+		if (questionIds.size() < targetPaths.size()) {
+			throw new IllegalArgumentException("Some question IDs were not specified for value tress of paths " + targetPaths);
+		}
+		
+		// another simpler case: there is no other nodes from external network, and the target is pointing to only 1 value tree node
+		// TODO integrate with a more generic case
+		if (questionIds.size() == 1 && targetPaths.size() == 1) {
+			
+			// then, simply return marginal from value tree
+			synchronized (getDefaultInferenceAlgorithm()) {
+				synchronized (getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork()) {
+					
+					// make sure reference path is the prefix of the target path
+					List<Integer> targetPath = targetPaths.get(0);
+					if (targetPath == null) {
+						// then simply solve as there is no value tree at all
+						return getJointProbability(questionIds, questionStates);
+					}
+					
+					// if referencePaths is null/empty, use empty list anyway. Otherwise, use the 1st list (supposedly the only, because there is only 1 target anyway)
+					List<Integer> referencePath = ((referencePaths == null || referencePaths.isEmpty())?Collections.EMPTY_LIST:referencePaths.get(0));
+					
+					// pass along both paths. If we find divergence, then there is something wrong
+					int commonSizeTargetReference = Math.min(targetPath.size(), referencePath.size());
+					for (int i = 0; i < commonSizeTargetReference; i++) {
+						if (referencePath.get(i) != targetPath.get(i)) {
+							throw new IllegalArgumentException("Reference path " + referencePath + " and target path " + targetPath
+									+ " are diverging in step " + i + ". Reference/anchors are supposed to be null or ancestor of target.");
+						}
+					}
+					
+					// at this point, we are sure that the reference is ancestor or equal to target
+					if (referencePath != null && referencePath.size() >= targetPath.size()) {
+						// in this case, reference is descendant or equal to target path. Prob assuming descendant is supposedly 100%
+						return 1f;
+					}
+					
+					// find the root of the value tree
+					Node node = getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getNode(""+questionIds.get(0));
+					if (node == null || !(node instanceof ValueTreeProbabilisticNode)) {
+						throw new IllegalArgumentException(questionIds.get(0) + " was not found or not a root of a value tree.");
+					}
+					ValueTreeProbabilisticNode root = (ValueTreeProbabilisticNode) node;
+					
+					// find the target node
+					IValueTreeNode target = root.getValueTree().getNodeInPath(targetPath);
+					
+					// find the reference/anchor node
+					IValueTreeNode anchor = root.getValueTree().getNodeInPath(referencePath);	// this will remain null if referencePath is null or empty
+					
+					// simply return the probability of target given anchor
+					return root.getValueTree().getProb(target , anchor);
+				}
+			}
+		}
+		
+		/* This case is more complex, because uses external Bayes net.
+		 * Given that x,y are non-shadow nodes in different value trees, and a is a set of nodes in external net 
+		 * (which can be states of ordinal nodes or shadow nodes of different value trees), 
+		 * and also given that sx and sy are the shadow nodes close to x and y respectively then:
+		 * 
+		 * P(x|(...)) = P(sx|(...))P(x|sx)
+		 * P(y|(...)) = P(sy|(...))P(y|sy)
+		 * 
+		 * Therefore:
+		 * 
+		 * p(x,y,a) = p(x|y,a)p(y|a)p(a)  
+		 * = p(x|y,a)p(sy|a)p(y|sy)p(a) 
+		 * = p(sx|y,a)p(x|sx)p(sy|a)p(y|sy)p(a)
+		 * = p(sx,y,a)p(x|sx)p(sy|a)p(y|sy)p(a) / p(y,a)
+		 * = p(y|sx,a)p(sx,a)p(x|sx)p(sy|a)p(y|sy)p(a) / p(y|a)p(a)
+		 * = p(y|sx,a)p(sx,a)p(x|sx)p(sy|a)p(y|sy)p(a) / p(sy|a)p(y|sy)p(a)
+		 * = p(y|sx,a)p(sx,a)p(x|sx)
+		 * = p(sy|sx,a)p(y|sy)p(sx,a)p(x|sx)
+		 * = p(sy|sx,a)p(sx,a)p(y|sy)p(x|sx)
+		 * 
+		 * 		= p(sy,sx,a)p(y|sy)p(x|sx)
+		 * 
+		 * Therefore, we can calculate the joint probability P(sy,sx,a), the conditionals
+		 * P(y|sy) and P(x|sx), and then multiply them in order to get the joint.
+		 */
+		
+		// make the size of states and question IDs equal
+		if (questionStates != null) {
+			// do not change original list, because we don't want collateral effect on arguments of caller
+			List<Integer> states = new ArrayList<Integer>(questionIds.size());	
+			for (int i = 0; i < questionIds.size(); i++) {
+				if (i < questionStates.size()) {
+					states.add(questionStates.get(i));
+				} else {
+					states.add(null);
+				}
+			}
+			questionStates = states;
+		} else {
+			// simply instantiate a new list with same size of the list of questions.
+			int size = questionIds.size();
+			questionStates = new ArrayList<Integer>(size);
+			for (int i = 0; i < size; i++) {
+				// can fill with anything
+				questionStates.add(null);
+			}
+		}
+			
+		
+//		for (int i = 0; i < questionIds.size(); i++) {
+//			if (i >= targetPaths.size() || targetPaths.get(i) == null) {
+//				// this is a normal node
+//				questions.add(questionIds.get(i));
+//				states.add(questionStates.get(i));
+//			} else if (!targetPaths.get(i).isEmpty()) {
+//				// has valid path
+//				questions.add(questionIds.get(i));
+//				if (questionStates != null && (i < questionStates.size())) {
+//					if (questionStates.get(i) == null) {
+//						states.add(0);	// fill with anything. I use 0 because it is supposedly a valid state always.
+//					} else {
+//						states.add(questionStates.get(i));
+//					}
+//				} else {
+//					states.add(0);	// fill with anything. I use 0 because it is supposedly a valid state always.
+//				}
+//			} else {
+//				// do not add, because path exist, but was explicitly empty
+//			}
+//		}
+//		questionIds = questions;
+//		// note: at this point, states has the same size of questionIds.
+//		questionStates = states;
+		
+		// now, we need to calculate p(sy,sx,a), which is the joint prob only of shadow nodes or states in external Bayes net
+		
+		// fill questionStates (the new one) with correct states (of shadows). If question is a value tree, make sure to fill it with index of shadow node closest to the path
+		// the following map will be filled with a mapping from target node to closest shadow node, so that we can calculate P(x|sx) posteriory.
+		Map<IValueTreeNode, IValueTreeNode> targetNodeToClosestShadowNodeMap = new HashMap<IValueTreeNode, IValueTreeNode>();
+		for (int indexOfQuestion = 0; (indexOfQuestion < questionIds.size()) && (indexOfQuestion < targetPaths.size()); indexOfQuestion++) {
+			synchronized (getProbabilisticNetwork()) {
+				// extract the node
+				Node node = getProbabilisticNetwork().getNode("" + questionIds.get(indexOfQuestion));
+				if ((node instanceof ValueTreeProbabilisticNode) 
+						 && (targetPaths.get(indexOfQuestion) != null)
+						 && !targetPaths.get(indexOfQuestion).isEmpty()) {
+					// the root of the value tree
+					ValueTreeProbabilisticNode root = (ValueTreeProbabilisticNode) node;
+					// find the target node
+					IValueTreeNode target = root.getValueTree().getNodeInPath(targetPaths.get(indexOfQuestion));
+					if (target == null) {
+						throw new IllegalArgumentException(targetPaths.get(indexOfQuestion) +" is an invalid value tree path for node " + root);
+					}
+					
+					// this is a value tree question, and there is a target path defined, so find the shadow node closest to the target
+					int indexOfShadowClosestToTarget = -1;	// this will hold the index of shadow node which is either ancestor or descendant of target node
+					IValueTreeNode shadow = null;			// this will hold the shadow node itself
+					boolean isAncestorShadow = true;		// this will become false if shadow node was a descendant of target node
+					for (int i = 0; i < root.getValueTree().getShadowNodeSize(); i++) {
+						// because value tree is a tree and shadow nodes are mutually exclusive, the first one to find is the one we want
+						shadow = root.getValueTree().getShadowNode(i);
+						if (shadow.isAncestorOf(target)) {
+							// shadow node is ancestor of target
+							indexOfShadowClosestToTarget = i;
+							break;
+						} else if (target.isAncestorOf(shadow)) {
+							// shadow node is descendant of target
+							isAncestorShadow = false;
+							indexOfShadowClosestToTarget = i;
+							break;
+						}
+					}
+					// note: at this point, the list of question ids and list of question states have the same size, because we made such adjustments previously
+					if (indexOfShadowClosestToTarget >= 0) {
+						// set the question state to the shadow node
+						questionStates.set(indexOfQuestion, indexOfShadowClosestToTarget);
+					} else {
+						throw new IllegalArgumentException("The path " + targetPaths.get(indexOfQuestion)
+								+ " was specified to question "+ root + ", but no shadow node could be identified near the path.");
+					}
+					
+					targetNodeToClosestShadowNodeMap.put(target, shadow);
+				}
+			}
+		}
+		
+		// TODO merge the special case (only 1 node provided) to this case
+		
+		// get the shadows' and external network's joint prob P(sx,sy,a). Will throw exception if questionStates is not fully specified
+		float jointProb = this.getJointProbability(questionIds, questionStates);
+		
+		// for each node that has value tree and target path is pointing to some non-shadow node, get P(x|sx) and multiply with joint
+		for (Entry<IValueTreeNode, IValueTreeNode> entry : targetNodeToClosestShadowNodeMap.entrySet()) {
+			IValueTreeNode target = entry.getKey();
+			IValueTreeNode shadow = entry.getValue();
+			// multiply the probability P(x|sx)
+			if (shadow.isAncestorOf(target)) {
+				jointProb *= target.getValueTree().getProb(target, shadow);
+			} // else shadow is descendant, so P(x|sx) is 100%, so it won't change the value
+		}
+		
+		return jointProb;
+	}
+	
 
 //	/**
 //	 * If true, {@link #getAssetsIfStates(long, long, List, List)} will return
@@ -9937,6 +10270,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //		return isToReturnConditionalAssets;
 //	}
 	
+
 	/**
 	 * @param executedActions the executedActions to set
 	 */
@@ -12220,20 +12554,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throws IllegalArgumentException {
 		// TODO Auto-generated method stub
 		return false;
-	}
-
-	public List<Float> getProbList(long questionId, List<Integer> targetPath,
-			List<Integer> referencePath, List<Long> assumptionIds,
-			List<Integer> assumedStates) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public float getJointProbability(List<Long> assumptionIds,
-			List<Integer> assumedStates, List<List<Integer>> targetPaths,
-			List<List<Integer>> referencePaths) throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 	

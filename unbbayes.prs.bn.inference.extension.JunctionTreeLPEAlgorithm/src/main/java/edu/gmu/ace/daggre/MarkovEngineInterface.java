@@ -654,14 +654,14 @@ public interface MarkovEngineInterface {
 	 *  If a ValueTree is used for a given question, then the relevant element in targetPaths and referencePaths will contain a 
 	 *  list referencing that object, otherwise it will contain null. If no questions are ValueTrees then the targetPaths and 
 	 *  referencePaths themselves may be null.
-	 * @param assumptionIds
-	 * @param assumedStates
+	 * @param questionIds
+	 * @param questionStates
 	 * @param targetPaths
 	 * @param referencePaths
 	 * @return
 	 * @throws IllegalArgumentException
 	 */
-	public float getJointProbability(List<Long>assumptionIds, List<Integer> assumedStates, List<List<Integer>> targetPaths, List<List<Integer>> referencePaths) throws IllegalArgumentException;
+	public float getJointProbability(List<Long>questionIds, List<Integer> questionStates, List<List<Integer>> targetPaths, List<List<Integer>> referencePaths) throws IllegalArgumentException;
 	
 	/**
 	 * Obtains the ids of the questions that are potential assumptions of a given question. 

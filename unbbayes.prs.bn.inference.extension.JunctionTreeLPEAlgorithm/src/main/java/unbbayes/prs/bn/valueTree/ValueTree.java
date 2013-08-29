@@ -898,7 +898,16 @@ public class ValueTree implements IValueTree {
 	 * @see java.lang.Object#clone()
 	 */
 	public Object clone() throws CloneNotSupportedException {
-		ValueTree clone = (ValueTree) ValueTree.getInstance(this.getRoot());
+		return this.clone((INode) ((ProbabilisticNode)this.getRoot()).clone());
+	}
+	/**
+	 * this won't clone {@link #getFactionChangeListeners()}
+	 * @param root : this node will become the root
+	 * @see java.lang.Object#clone()
+	 * 
+	 */
+	public IValueTree clone(INode root) throws CloneNotSupportedException {
+		ValueTree clone = (ValueTree) ValueTree.getInstance(root);
 		// index of nodes created already
 		Map<String, IValueTreeNode> clonedNodes = new HashMap<String, IValueTreeNode>();
 		// make sure factions are not modified during cloning
@@ -946,7 +955,32 @@ public class ValueTree implements IValueTree {
 		return mapToReturn;
 	}
 
-	
+	/**
+	 * @param path : list of integer indicating the path from root.
+	 * @return the node in value tree identified by the path.
+	 * Null if path is null or empty.
+	 * @throws IllegalArgumentException : if path is invalid.
+	 */
+	public IValueTreeNode getNodeInPath(List<Integer> path) {
+		if (path == null) {
+			return null;
+		}
+		List<IValueTreeNode> children = this.get1stLevelNodes();
+		IValueTreeNode ret = null;
+		for (Integer index : path) {
+			if (children == null) {
+				throw new IllegalArgumentException("The path " + path + " is not valid for value tree of " + ret);
+			}
+			try {
+				ret = children.get(index);
+			} catch (ArrayIndexOutOfBoundsException e) {
+				throw new IllegalArgumentException("The value " + index + " in path " + path + " is not valid for value tree of " + ret
+						+ ", because the nodes at this level are " + children);
+			}
+			children = ret.getChildren();
+		}
+		return ret;
+	}
 	
 
 }
