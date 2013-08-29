@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import javax.swing.JOptionPane;
+
 import junit.framework.TestCase;
 import unbbayes.io.NetIO;
 import unbbayes.prs.Graph;
@@ -50,7 +52,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static final long PROB_FRACTIONAL_DIGITS = 4;
 	
 	/** If true, {@link #PROB_FRACTIONAL_DIGITS} will be used to round the edits. */
-	private static boolean isToRoundEdit = false; //true;
+	private static boolean isToRoundEdit = true;
+	/** If true, {@link #PROB_FRACTIONAL_DIGITS} will be used to round the edits in {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)}. */
+	private static boolean isToRoundEditOnEditGenerationBetweenLimits = false;
+	
+	
 
 	/** Error margin used when comparing 2 probability values. {@link CPTBruteForceMarkovEngine} have less precision. */
 	public static final float RELAXED_PROB_ERROR_MARGIN = 0.0005f;
@@ -77,7 +83,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private List<MarkovEngineImpl> engines;
 
 	/** This value indicates how many test iterations (5-point tests) will be performed by default*/
-	private static int howManyTradesToTest = 200;//3000;
+	private static int howManyTradesToTest = 3000;
 
 
 	private enum FivePointTestType {BELOW_LIMIT, ON_LOWER_LIMIT, BETWEEN_LIMITS, ON_UPPER_LIMIT, ABOVE_LIMIT}; 
@@ -92,13 +98,13 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static String fileNameToUseInTestFilesWithResolutionSingleEngine = "bn20_tw5_max41_bn20_tw10_max31.net";
 	
 	/** If true, the 4-points which causes 0 or negative assets in a 5-point test will be run. */
-	private static  boolean isToRun5PointTestInStructureTest = true;
+	private static  boolean isToRun5PointTestInStructureTest = false;
 
 	/** {@link #tracer} will pring node names starting with this prefix */
 	public static final String NODE_NAME_PREFIX = "N";
 
 	/** This program will enter in a loop at this iteration number. Use with care. Set to negative if you don't want this program to stop at the iteration */
-	private static final int iterationToDebug = 1;
+	private static int iterationToDebug = 44;
 
 	/** this object will group the data to be printed out in {@link #testFilesWithResolution()} */
 	private Tracer tracer = null;
@@ -110,16 +116,16 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	private static float probResolve = 0.03f;//0.1f;
 
 	/** probability to balance a trade */
-	private static float probToBalance = 0f;//0.3f;//0.1f;
+	private static float probToBalance = 0.01f;//0.3f;//0.1f;
 
 	/** probability to add cash */
-	private static float probToAddCash = 0.3f;//.2f;
+	private static float probToAddCash = .2f;
 
 	/** If true, some test results and test specifications will be printed out by {@link #tracer} */
-	private static boolean isToTrace = false;//true;
+	private static boolean isToTrace = true;
 
 	/** This is the probability that if trade is chosen to be {@link FivePointTestType#BETWEEN_LIMITS}, it is very close to the limits */
-	private static float probNearEditLimitBias = 0.03f;//0.6f;
+	private static float probNearEditLimitBias = 0.3f;//0.6f;
 
 	/** This is the probability that {@link #runRandomTest(Network, List, List)} will not choose {@link FivePointTestType#BETWEEN_LIMITS} to trade */
 	private static float probTradeOutsideLimit = 0.0f;
@@ -130,12 +136,16 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If true, assets and probabilities before and after {@link #createNode(Long, Network, List, List, List, Collection)} will be compared */
 	private boolean isToCompareValuesBeforeAndAfterCreateNode = true;//false;
 
+	/** if true, values without any complex adaptation will be used in {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)}
+	 * if the random number did not choose to set bias or generate big edit*/
+	private static boolean isToSetUnadaptedValueWhenNotBiasedOrBigEdit = false;
+
 	/** If false, values related to assets won't be checked */
-	private static boolean isToCheckAssests = true;
+	private static boolean isToCheckAssests = false;
 
 	/** If true, {@link MarkovEngineImpl#doBalanceTrade(Long, Date, String, long, long, List, List)} of 
 	 * {@link #runRandomTestSingleEngine(Network, List)} will balance the question entirely (consider all possible assumptions) */
-	private static boolean isToForceBalanceQuestionEntirely = false;
+	private static boolean isToForceBalanceQuestionEntirely = true;
 
 	/** If true, {@link #testFilesWithResolutionSingleEngine()} will call {@link #createNodesInMarkovBlanket(Long, Network, List, List, List, Collection)}
 	 * instead of {@link #createNode(Long, Network, List, List, List, Collection)} */
@@ -145,10 +155,10 @@ public class MarkovEngineBruteForceTest extends TestCase {
 //	private static long[] nodesToTraceCliquePotentials = null;//{26L,38L};	// null;
 
 	/** If false, consistency assertion in 5 point test will be skipped (this is useful if your objective is only to print test traces) */
-	private static boolean isToAssertConsistencyIn5PointTest = true;
+	private static boolean isToAssertConsistencyIn5PointTest = false;
 
 	/** Maximum quantity of nodes to be alive in this test. If the quantity of nods reaches this value, no new nodes will be created */
-	private static int maxLiveNodes = 10;//Integer.MAX_VALUE; 
+	private static int maxLiveNodes = 8;//Integer.MAX_VALUE; 
 
 	/** This is the index of {@link #engines} to be used as the sole engine to be run in {@link #testFilesWithResolutionSingleEngine()}.
 	 * Negative values will be interpreted as "the last element in the list" */
@@ -166,18 +176,18 @@ public class MarkovEngineBruteForceTest extends TestCase {
 
 	/** This value is considered to be a big change in probability
 	 * @see #probBigEdit */
-	private static float minProbDiffOfBigEdit = 0f;//.6f;
+	private static float minProbDiffOfBigEdit = .6f;
 
 	/** Prob of {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)} to make a change a big change in current prob
 	* @see #minProbDiffOfBigEdit */
-	private static float probBigEdit = 0f;//0.2f;//.4f;
+	private static float probBigEdit = 0.2f;//.4f;
 
 
 	/** If the program iterated more than this quantity in order to generate the edit, it considers that it could not generate a consistent edit */
-	private static int maxIterationToGenerateEdit = 500;
+	private static int maxIterationToGenerateEdit = 50;
 	
 	/** If the program iterated more than this quantity in order to choose the question to edit, the test will fail */
-	private static int maxIterationToSelectQuestion = 1000/maxLiveNodes; //howManyTradesToTest/maxLiveNodes;
+	private static int maxIterationToSelectQuestion = howManyTradesToTest/maxLiveNodes;
 
 	/** If true, the cash will be tested after a balance trade */
 	private static boolean isToCheckCashAfterBalance = false;
@@ -188,7 +198,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If there are less than this number of questions, questions will not be resolved */
 	private static int minAliveQuestionNumber = -1;
 	
-	private static long seed = 1369948676350L;//new Date().getTime(); // 1363964542586L; //1364947893820L; //1364966189144L; //1365123116683L; 1365173646728L; 1365743912639L; 1365882937277L
+	private static long seed = 1352944836518L;//new Date().getTime(); // 1363964542586L; //1364947893820L; //1364966189144L; //1365123116683L; 1365173646728L; 1365743912639L; 1365882937277L
 	
 	/** Random number generator, with seed */
 	private static Random random = new Random(seed);
@@ -205,7 +215,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 
 	/** {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)} will attempt to generate edits
 	 * which exceeds or equals to this value of difference compared to current probability */
-	private static float probDiffToConsiderSufficientChange = 0.0000001f;//0.01f;
+	private static float probDiffToConsiderSufficientChange = 0.01f;
 	
 	/** If false, edit limit will be set to the default [0, 1] */
 	private static boolean isToCalculateEditLimit = true;
@@ -221,6 +231,115 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 * respective sizes in {@link MarkovEngineInterface#getProbLists(List, List, List)}
 	 */
 	private static boolean isToCheckHistoryProbListSize = true;
+	
+	private static float[][] editLimitsArray = {
+		{0.1667f,0.6667f},		//0
+		{0.4594f , 0.5406f},	//1
+		{0.1456f,0.7088f},		//2
+		{0.25f, 0.75f},			//3
+		{0.125f, 0.625f},		//4
+		{0.1096f,0.7808f},		//5
+		{0.1813f, 0.4562f},
+		{0.32853466f, 0.3429308f, 0.0662f, 0.6701f},
+		{0.1029f, 0.6029f},
+		{0.219f, 0.719f},
+		{0.3376f, 0.7052f},		//10
+		{0.1692f, 0.5719f},
+		{0.2207f,0.7207f},
+		{0.5546f,0.731f},
+		{0.2942f, 0.4117f},
+		{0.0996f, 0.5996f},		//15
+		{0.2258f,0.4023f},
+		{0.3413f, 0.4196f},
+		{0.1539f, 0.6539f},
+		{0.5765f, 0.7238f},
+		{0.189f, 0.3654f},		//20
+		{0.2545f,0.4915f,},
+		{0.12785974f, 0.16723077f,0.3569f, 0.5074f},
+		{0.0761f, 0.8726f},
+		{0.19472727f, 0.23409832f,0.09532528f, 0.09819898f,0.3026f, 0.8988f},
+		{0.1323282f, 0.13812703f,0f, 1f},				//25
+		{0.0611f, 0.8215f},
+		{0.0836f, 0.4556f},
+		{0.094555885f, 0.10547768f,0.2674f, 0.5044f},
+		{0.22870511f, 0.25497162f,0.2067f, 0.4917f},
+		{0.3139f, 0.6398f},		//30
+		{0.4677f, 0.7694f},
+		{0.089f, 0.4535f},
+		{0.2689f, 0.6529f},
+		{0.09427198f, 0.108718306f,0.4616028f, 0.4725246f,0.42459798f, 0.463969f,0.7221f, 0.7615f},
+		{0.27162707f, 0.36529574f,0.1503f, 0.5344f},		//35
+		{0.27348012f, 0.28440192f,0.1913f, 0.3895f},
+		{0.09541565f, 0.09734407f,0.27619523f, 0.35132033f,0.0779f, 0.4511f},
+		{0.6638314f, 0.6747532f,0.2821f, 0.447f},
+		{0.16044688f, 0.39534858f,0.09040819f, 0.14471589f,0.27755818f, 0.3526857f,0.0638f, 0.6677f},
+		{0.059f, 0.7415f},		//40
+		{0.173f, 0.9339f},
+		{0.1084f, 0.8823f},
+		{0.4133f, 0.8849f},
+		{0.2298f, 0.3106f},
+		{0.094555885f, 0.10547768f,0.5694437f, 0.5801391f,0.23055209f, 0.23807652f,0.31524438f, 0.31858173f,0.25119743f, 0.39385703f,0.25245297f, 0.2633748f,0.34926978f, 0.35679418f,0.3758f, 0.5185f},		//45
+	};
+	
+	/** This forces {@link #isAllStatesWithinEditLimit(MarkovEngineImpl, List, Long, Long, List, List)} to return this sequence of values in a given iteration.
+	 * If null, then the value will not be used*/
+	private static final boolean[][] isAllStatesWithinEditLimitHardCoded = {
+		null,
+		null,
+		null,
+		null,
+		null,
+		null,		//5
+		null,
+		null,
+		null,
+		null,
+		null,		//10
+		null,
+		null,
+		null,
+		null,
+		null,		//15
+		null,
+		null,
+		null,
+		null,
+		null,		//20
+		null,
+		null,
+		null,
+		null,
+		null,		//25
+		null,
+		null,
+		null,
+		null,
+		null,		//30
+		null,
+		null,
+		null,
+		null,
+		{false, false, false, false, false, true, true, true, false, true, false, false, false, false, true, true, false, false, false, true, false, true, true, true, false, false, false, false, false, true, true, true, true, true, true, true, true, true},		//35
+		null,		
+		{false, false, true, true, true, false, false, false, true, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, true, true, false, true, false, false, true, true, true, true, true, true, true, false, false, false, false, false, false, false, true, true, false, false, false, false, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true},
+		null,
+		{false, false, true, true, false, false, false, false, false, true, false, true, true, true, true, false, false, true, true, true, true, true, true, false, false, false, false, false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false, false, false, false, false, false, false, false, false, false, false, false, true, true, true, true, true, true, true, false, true, true, true, true, true, true, true, true, true, false, false, false, false, true},
+		null,		//40
+		null,
+		null,
+		null,
+		null,
+		null,		//45
+	};
+	
+	/** Calls to balancing trades will be converted to a trade with this value */
+	private static Map<Integer, List<Float>> mapforcedBalancingTrades = new HashMap<Integer, List<Float>>();
+	static {
+		List<Float> val = new ArrayList<Float>(2);
+		val.add(0.76319516f);
+		val.add(0.23680486f);
+		mapforcedBalancingTrades.put(25, val);
+	};
 	
 	/** Class used to trace data which will be printed out */
 	protected class Tracer {
@@ -865,7 +984,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	}
 	
 	/** generate an edit which conforms with one of the 5-point test type 
-	 * @param editLimits : if null, [0,1] will be used.
+	 * @param editLimitsArray : if null, [0,1] will be used.
 	 * @return null if it iterated for {@value #maxIterationToGenerateEdit} and could not generate consistent edit*/
 	private List<Float> generateEdit(Long questionId, int totalNumStates, int stateToConsider, 
 			List<Float> editLimits, List<Float> priorProb, FivePointTestType type,
@@ -892,7 +1011,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				probOfStateToConsider = editLimits.get(0);
 				break;
 			case BETWEEN_LIMITS:
-				if (isToRoundEdit()) {
+				if (isToRoundEditOnEditGenerationBetweenLimits()) {
 					assertFalse(editLimits.toString() + " cannot have values between them when precision is " + PROB_FRACTIONAL_DIGITS + " fractional digits.", 
 							Math.round( (editLimits.get(1) - editLimits.get(0)) * Math.pow(10, PROB_FRACTIONAL_DIGITS) ) <= 1);
 				}
@@ -942,7 +1061,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 							// change is greater if we move towards 0
 							probOfStateToConsider = probList.get(stateToConsider) - minProbDiffOfBigEdit - (random.nextDouble()*(probList.get(stateToConsider)-minProbDiffOfBigEdit));
 						}
-					} else {
+					} else if (isToSetUnadaptedValueWhenNotBiasedOrBigEdit) {
 						// just set the value without any adaptation
 						probOfStateToConsider = editLimits.get(0) + delta;
 					}
@@ -1013,7 +1132,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			// guarantee that the produced values are consistent
 			if (!(Math.abs(sum - 1d) > 0.00005)) {
 //				if (type == FivePointTestType.BETWEEN_LIMITS
-//						&& (ret.get(stateToConsider) <= editLimits.get(0)|| ret.get(stateToConsider) >= editLimits.get(1)) ) {
+//						&& (ret.get(stateToConsider) <= editLimitsArray.get(0)|| ret.get(stateToConsider) >= editLimitsArray.get(1)) ) {
 //					// make sure the change did not make the new values to be come out of the limit
 //					continue;
 //				}
@@ -1028,7 +1147,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				}
 				// check consistency again
 //				if (type == FivePointTestType.BETWEEN_LIMITS
-//						&& (ret.get(stateToConsider) <= editLimits.get(0)|| ret.get(stateToConsider) >= editLimits.get(1)) ) {
+//						&& (ret.get(stateToConsider) <= editLimitsArray.get(0)|| ret.get(stateToConsider) >= editLimitsArray.get(1)) ) {
 //					// make sure the change did not make the new values to be come out of the limit
 //					continue;
 //				}
@@ -1166,6 +1285,14 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 */
 	protected boolean isAllStatesWithinEditLimit( MarkovEngineImpl me, List<Float> edit, Long questionId, Long userId,
 			List<Long> assumptionIds, List<Integer> assumedStates) {
+		// do not do anything if it is configured to return hard coded results
+		if (isAllStatesWithinEditLimitHardCoded[tracer.getIterationNumber()] != null) {
+			boolean ret = isAllStatesWithinEditLimitHardCoded[tracer.getIterationNumber()][0];
+			for (int i = 0; i < isAllStatesWithinEditLimitHardCoded[tracer.getIterationNumber()].length-1; i++) {
+				isAllStatesWithinEditLimitHardCoded[tracer.getIterationNumber()][i] = isAllStatesWithinEditLimitHardCoded[tracer.getIterationNumber()][i+1];
+			}
+			return ret;
+		}
 		List<Float> defaultEditLimits = new ArrayList<Float>(2);
 		defaultEditLimits.add(0f); defaultEditLimits.add(1f);
 		for (int i = 0; i < edit.size(); i++) {
@@ -4782,6 +4909,20 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			List<Float> editLimits = null;
 			if (isToCalculateEditLimit) {
 				editLimits = engines.get(engines.size()-1).getEditLimits(userId, questionId, stateOfEditLimit, assumptionIds, assumedStates);
+				if (!isToCheckAssests) {
+					if (editLimitsArray.length > iteration) {
+						editLimits.set(0, editLimitsArray[iteration][0]);
+						editLimits.set(1, editLimitsArray[iteration][1]);
+						for (int i = 0; i < editLimitsArray[iteration].length-2; i++) {
+							// dislocate the edit limit array
+							editLimitsArray[iteration][i] = editLimitsArray[iteration][i+2];
+						}
+					} else {
+						String limits = JOptionPane.showInputDialog("Space-sep edit limit of iteration " + iteration);
+						editLimits.set(0, Float.parseFloat(limits.split(" ")[0]));
+						editLimits.set(1, Float.parseFloat(limits.split(" ")[1]));
+					}
+				}
 			} else {
 				// use [0, 1] as default edit limit
 				editLimits = new ArrayList<Float>(2);
@@ -4820,10 +4961,28 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			if (random.nextDouble() < probToBalance ) {
 				
 				// actually balance
-				assertTrue(engines.get(0).doBalanceTrade(null, new Date(), 
-						"User "+userId + " exits question " + questionId + ", assumptions: " + assumptionIds+"="+assumedStates, 
-						userId, questionId, assumptionIds, assumedStates
-				));
+				if (isToCheckAssests) {
+					assertTrue(engines.get(0).doBalanceTrade(null, new Date(), 
+							"User "+userId + " exits question " + questionId + ", assumptions: " + assumptionIds+"="+assumedStates, 
+							userId, questionId, assumptionIds, assumedStates
+							));
+				} else {
+					List<Float> newValues = mapforcedBalancingTrades.get(tracer.getIterationNumber());
+					if (newValues == null) {
+						newValues = new ArrayList<Float>();
+						String input = JOptionPane.showInputDialog("Space-sep trade of iteration " + iteration + " on question " + questionId + " given " + assumptionIds);
+						for (String val : input.split(" ")) {
+							newValues.add(Float.parseFloat(val));
+						}
+					}
+					engines.get(0).addTrade(null, 
+							new Date(), 
+							"User "+userId + " exits question " + questionId + ", assumptions: " + assumptionIds+"="+assumedStates, 
+							userId, questionId, null, 
+							newValues, assumptionIds, assumedStates, true);
+					hasBalanced = true;
+					tracer.setTargetProb(newValues);
+				}
 				
 //				if (nodesToTraceCliquePotentials != null) {
 //					System.out.println("\nBalanced question " + questionId);
@@ -4988,45 +5147,47 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				}
 				
 				// check gains of cash before resolution, for all users, including those who was not created yet
-				for (Long user : userIDs) {
-					// extract the score summary to be used as pivot for comparison
-					ScoreSummary scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, null, null, null);
-					// check size of gains and cash before resolution
-					assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= resolvedQuestions.size()); // 0 gains are not included in the map
-					assertTrue(resolvedQuestions.size()>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); // cash before are always included
-					// compare gains and cash before resolution
-					for (int i = 1; i < engines.size(); i++) {
-						// extract the score summary to compare
-						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user, null, null, null);
-						// check gains of resolutions
-						assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
-						for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
-							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+				if (isToCheckAssests) {
+					for (Long user : userIDs) {
+						// extract the score summary to be used as pivot for comparison
+						ScoreSummary scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, null, null, null);
+						// check size of gains and cash before resolution
+						assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= resolvedQuestions.size()); // 0 gains are not included in the map
+						assertTrue(resolvedQuestions.size()>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); // cash before are always included
+						// compare gains and cash before resolution
+						for (int i = 1; i < engines.size(); i++) {
+							// extract the score summary to compare
+							ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user, null, null, null);
+							// check gains of resolutions
+							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
+							for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
+								assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+							}
+							// check cash before resolutions
+							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
+							for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
+								assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+							}
 						}
-						// check cash before resolutions
-						assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
-						for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
-							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
-						}
-					}
-					// do the same test, but with some filters
-					scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, questionId, assumptionIds, assumedStates);
-					// check size of gains and cash before resolution
-					assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= 1); // 0 gains are not included in the map
-					assertTrue(1>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); 
-					// compare gains and cash before resolution
-					for (int i = 1; i < engines.size(); i++) {
-						// extract the score summary to compare
-						ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user,  questionId, assumptionIds, assumedStates);
-						// check gains of resolutions
-						assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
-						for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
-							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
-						}
-						// check cash before resolutions
-						assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
-						for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
-							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+						// do the same test, but with some filters
+						scoreSummaryObject = engines.get(0).getScoreSummaryObject(user, questionId, assumptionIds, assumedStates);
+						// check size of gains and cash before resolution
+						assertTrue(scoreSummaryObject.getCashContributionPerResolvedQuestion().size() <= 1); // 0 gains are not included in the map
+						assertTrue(1>=scoreSummaryObject.getCashBeforeResolvedQuestion().size()); 
+						// compare gains and cash before resolution
+						for (int i = 1; i < engines.size(); i++) {
+							// extract the score summary to compare
+							ScoreSummary scoreSummaryToCompare = engines.get(i).getScoreSummaryObject(user,  questionId, assumptionIds, assumedStates);
+							// check gains of resolutions
+							assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().size(), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().size());
+							for (Long resolvedQuestion : scoreSummaryObject.getCashContributionPerResolvedQuestion().keySet()) {
+								assertEquals(scoreSummaryObject.getCashContributionPerResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashContributionPerResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+							}
+							// check cash before resolutions
+							assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().size(), scoreSummaryToCompare.getCashBeforeResolvedQuestion().size());
+							for (Long resolvedQuestion : scoreSummaryObject.getCashBeforeResolvedQuestion().keySet()) {
+								assertEquals(scoreSummaryObject.getCashBeforeResolvedQuestion().get(resolvedQuestion), scoreSummaryToCompare.getCashBeforeResolvedQuestion().get(resolvedQuestion), ASSET_ERROR_MARGIN);
+							}
 						}
 					}
 				}
@@ -5429,7 +5590,9 @@ public class MarkovEngineBruteForceTest extends TestCase {
 							// this engine may be using q-values. Convert everything to assets for a fair comparison.
 							newEmptySeparatorAssets = engine.getScoreFromQValues(newEmptySeparatorAssets);
 						}
-						assertEquals(engine.toString() + ", user=" + userId + ", added=" + ammountToAdd, oldEmptySeparatorAssets + ammountToAdd, newEmptySeparatorAssets , ASSET_ERROR_MARGIN);
+						if (isToCheckAssests) {
+							assertEquals(engine.toString() + ", user=" + userId + ", added=" + ammountToAdd, oldEmptySeparatorAssets + ammountToAdd, newEmptySeparatorAssets , ASSET_ERROR_MARGIN);
+						}
 					} catch (InvalidParentException e) {
 						e.printStackTrace();
 						fail(e.getMessage());
@@ -5485,7 +5648,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 					continue;
 				}
 				
-//			System.out.println("getEditLimits(userId="+userId+",questionId="+questionId+",questionState="+stateOfEditLimit+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+editLimits);
+//			System.out.println("getEditLimits(userId="+userId+",questionId="+questionId+",questionState="+stateOfEditLimit+",assumptionIds="+assumptionIds+",assumedStates="+assumedStates+")="+editLimitsArray);
 				for (int i = 0; i < engines.size()-1; i++) {
 					if (uncommittedTransactionKeyMap.containsKey(engines.get(i))) {
 						// do not test engines in transactionKeyMap, because they were not committed yet
@@ -5516,7 +5679,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			
 			
 //			System.out.println("Iteration " + iteration + ", question=" + questionId + ", state=" + stateOfEditLimit + 
-//					", limit="+ editLimits + ", user="  +userId + ", assumptions: " + assumptionIds + "=" + assumedStates);
+//					", limit="+ editLimitsArray + ", user="  +userId + ", assumptions: " + assumptionIds + "=" + assumedStates);
 			
 			// generate questionsToNumberOfStatesMap based on the list of probabilities
 			Map<Long, Integer> questionsToNumberOfStatesMap = new HashMap<Long, Integer>();
@@ -5668,7 +5831,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			
 			// if the edit limit is too small, then we cannot change probability
 			// edit limit is too small if the maximum amount we can move (i.e. half of the interval)
-//			if ((((editLimits.get(1) - editLimits.get(0)) / 2)) / (network.getNode(Long.toString(questionId)).getStatesSize()-1) < probDiffToConsiderSufficientChange) {
+//			if ((((editLimitsArray.get(1) - editLimitsArray.get(0)) / 2)) / (network.getNode(Long.toString(questionId)).getStatesSize()-1) < probDiffToConsiderSufficientChange) {
 //				iteration--;
 //				addedQuestionsInVoidIteration = tracer.getAddedQuestions();
 //				addedQuestionsStateSizeInVoidIteration = tracer.getAddedQuestionsStateSize();
@@ -7395,6 +7558,21 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	 */
 	public float getBias() {
 		return probNearEditLimitBias;
+	}
+
+	/**
+	 * @return the isToRoundEditOnEditGenerationBetweenLimits
+	 */
+	public static boolean isToRoundEditOnEditGenerationBetweenLimits() {
+		return isToRoundEditOnEditGenerationBetweenLimits;
+	}
+
+	/**
+	 * @param isToRoundEditOnEditGenerationBetweenLimits the isToRoundEditOnEditGenerationBetweenLimits to set
+	 */
+	public static void setToRoundEditOnEditGenerationBetweenLimits(
+			boolean isToRoundEditOnEditGenerationBetweenLimits) {
+		MarkovEngineBruteForceTest.isToRoundEditOnEditGenerationBetweenLimits = isToRoundEditOnEditGenerationBetweenLimits;
 	}
 	
 }
