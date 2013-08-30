@@ -329,11 +329,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private boolean isToExportOnlyCurrentSharedProbabilisticNet = false;
 
-	private NetIO netIOToExportSharedNetToSting = new ValueTreeNetIO(); 
+	private NetIO netIOToExportSharedNetToSting = new ValueTreeNetIO();
 	{
 		netIOToExportSharedNetToSting.setDefaultNodeNamePrefix("N");
 	}
 	
+	private boolean isToAddArcsOnAddTrade = true; 
 	
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -3021,6 +3022,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					boolean backup = algorithm.isToUpdateAssets();
 					algorithm.setToUpdateAssets(isToUpdateAssets);
 					
+
 					// do trade. The var "algorithm" has a reference to the network to be changed
 					List<Float> oldConditionalProb = executeTrade(	// this method returns what was the conditional prob before trade
 							tradeSpecification.getQuestionId(), 
@@ -3287,7 +3289,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 					questions.add(getQuestionId());
 				}
+				
+//				// connect the traded nodes if necessary
+//				if (isToAddArcsOnAddTrade()) {
+//					try {
+//						this.simpleAddEdge((List)assumptionNodes, child, net);
+//					} catch (InvalidParentException e) {
+//						throw new RuntimeException("Could not automatically add arc from " + assumptionNodes + " to "+child,e);
+//					}
+//				}
 			}
+			
 			
 		}
 		
@@ -6978,6 +6990,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// add likelihood ratio given (empty) parents (conditions assumed in the bet - empty now)
 		child.addLikeliHood(likelihood, assumptionNodes);
 		
+		
 		// propagate soft evidence
 		synchronized (algorithm) {
 			synchronized (algorithm.getRelatedProbabilisticNetwork()) {
@@ -7074,9 +7087,64 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			addVirtualTradeIntoMarginalHistory(parentTrade, marginalsBefore); // link from original trade to virtual trades
 		}
 		
+
+		// connect the traded nodes if necessary
+		if (isToAddArcsOnAddTrade() && !isPreview) {
+			try {
+				this.simpleAddEdge((List)assumptionNodes, child, net);
+			} catch (InvalidParentException e) {
+				throw new RuntimeException("Could not automatically add arc from " + assumptionNodes + " to "+child,e);
+			}
+		}
+	
+		
 		return condProbBeforeTrade;
 	}
 
+	/**
+	 * Add arcs from a set of nodes to another node if
+	 * they can be connected without generating cycles.
+	 * @param nodesFrom : nodes to add arc from
+	 * @param nodeTo : node to add arc to
+	 * @param net : network where arc will be included
+	 * @throws InvalidParentException : inherent from {@link ProbabilisticNetwork#addEdge(Edge)}
+	 * @see #getMSeparationUtility()
+	 */
+	protected void simpleAddEdge(List<Node> nodesFrom, Node nodeTo, ProbabilisticNetwork net) throws InvalidParentException {
+		if (nodeTo == null || nodesFrom == null || net == null) {
+			return;
+		}
+		for (Node assumption : nodesFrom) {
+			
+			// basic assertion
+			if (assumption == null || nodeTo.equals(assumption)) {
+				Debug.println(getClass(), 
+						"Some node in in " + nodesFrom + " was null, or they were the same node as the target.");
+				continue;	// ignore and try the best
+			}
+			
+			// check if there is an arc between these 2 nodes
+			if (nodeTo.getParentNodes().contains(assumption) || assumption.getParentNodes().contains(nodeTo)){
+				// ignore this combination of nodes, because they are already connected
+				continue;
+			}
+			
+			// we shall create an arc node1->node2 or node2->node1, but without creating cycles. 
+			// Supposedly, this will connect parents of children (which are dependencies but not connected directly)
+			
+			// use the m-separation utility component in order to find a path between node1 and node2
+			if (getMSeparationUtility().getRoutes(assumption, nodeTo, null, null, 1).isEmpty()) {
+				
+				// there is no route from assumption to child, so we can create assumption->child without generating cycle
+				net.addEdge(new Edge( assumption ,  nodeTo));
+			} else { // supposedly, we can always add edges in one of the directions (i.e. there is no way we add arc in each direction and both result in cycle)
+				
+				// there is a route from assumption to child, so we cannot create assumption->child (it will create a cycle if we do so), so create child->assumption
+				net.addEdge(new Edge(nodeTo, assumption));
+			}
+		}
+	
+	}
 
 	/**
 	 * Obtains a list of sublists of assumptionIds which makes the assumptions to become valid.
@@ -12545,6 +12613,26 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	protected void setNetIOToExportSharedNetToSting( NetIO netIOToExportSharedNetToSting) {
 		this.netIOToExportSharedNetToSting = netIOToExportSharedNetToSting;
+	}
+
+	/**
+	 * If true, then trades on P(X|Y) will cause Y and X to be connected by an arc,
+	 * so that the joint probability distribution can still be represented
+	 * in terms of CPTs of each node given only their parents..
+	 * @return the isToAddArcsOnAddTrade
+	 */
+	public boolean isToAddArcsOnAddTrade() {
+		return isToAddArcsOnAddTrade;
+	}
+
+	/**
+	 * If true, then trades on P(X|Y) will cause Y and X to be connected by an arc,
+	 * so that the joint probability distribution can still be represented
+	 * in terms of CPTs of each node given only their parents..
+	 * @param isToAddArcsOnAddTrade the isToAddArcsOnAddTrade to set
+	 */
+	public void setToAddArcsOnAddTrade(boolean isToAddArcsOnAddTrade) {
+		this.isToAddArcsOnAddTrade = isToAddArcsOnAddTrade;
 	}
 
 	public boolean resolveValueTreeQuestion(Long transactionKey,
