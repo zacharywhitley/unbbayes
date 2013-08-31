@@ -4205,7 +4205,63 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return ret;
 	}
 
-	
+	/**
+	 * Similar to {@link ResolveQuestionNetworkAction},
+	 * but it resolves a question having value trees.
+	 * @author Shou Matsumoto
+	 */
+	public class ResolveValueTreeNetworkAction extends ResolveQuestionNetworkAction {
+		private List<List<Integer>> targetPaths;
+		private List<List<Integer>> referencePaths;
+		private List<List<Float>> settlements;
+
+		/** Default constructor initializing fields */
+		public ResolveValueTreeNetworkAction(Long transactionKey,
+				Date occurredWhen, long questionId,
+				List<List<Integer>> targetPaths,
+				List<List<Integer>> referencePaths,
+				List<List<Float>> settlements) {
+			super(transactionKey, occurredWhen, questionId, null);
+			this.setTargetPaths(targetPaths);
+			this.setReferencePaths(referencePaths);
+			this.setSettlements(settlements);
+		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.ResolveQuestionNetworkAction#execute()
+		 */
+		public void execute() {
+//			change probability of each target, but not changing probability of targets already traded
+//			
+//			delete question if there is at least one node with 100%
+		}
+
+		/* (non-Javadoc)
+		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.ResolveQuestionNetworkAction#getSettlement()
+		 */
+		public List<Float> getSettlement() {
+			List<Float> ret = new ArrayList<Float>(getSettlements().size());
+			for (List<Float> probs : getSettlements()) {
+				if (probs.size() == 1) {
+					ret.add(probs.get(0));
+				} else {
+					// impossible to convert this setttlement as a list of single probabilities.
+					return null;
+				}
+			}
+			return ret;
+		}
+		/** Do not be detected as a hard evidence or else it will be integrated with other settlements (and we won't like it to happen). */
+		public boolean isHardEvidenceAction() { return false;  }
+		public List<List<Float>> getSettlements() { return settlements; }
+		public void setSettlements(List<List<Float>> settlements) { this.settlements = settlements; }
+		public List<List<Integer>> getReferencePaths() { return referencePaths; }
+		public void setReferencePaths(List<List<Integer>> referencePaths) { this.referencePaths = referencePaths; }
+		public List<List<Integer>> getTargetPaths() { return targetPaths; }
+		public void setTargetPaths(List<List<Integer>> targetPaths) { this.targetPaths = targetPaths; }
+		
+	}
 
 	/**
 	 * This is the {@link NetworkAction} command representing
@@ -4804,6 +4860,178 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// instantiate the action object for adding a question
 			this.addNetworkAction(transactionKey, new ResolveQuestionNetworkAction(transactionKey, occurredWhen, questionId, settlement));
 		}
+		
+		return true;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#resolveValueTreeQuestion(java.lang.Long, java.util.Date, long, java.util.List, java.util.List, java.util.List)
+	 */
+	public boolean resolveValueTreeQuestion(Long transactionKey,
+			Date occurredWhen, long questionId,
+			List<List<Integer>> targetPaths,
+			List<List<Integer>> referencePaths, List<List<Float>> settlements)
+			throws IllegalArgumentException {
+		
+		// basic assertions
+		if (settlements == null || settlements.isEmpty()
+				|| targetPaths == null || targetPaths.isEmpty()) {
+			return false;
+		}
+		if (transactionKey != null && this.getNetworkActionsMap().get(transactionKey) == null) {
+			// startNetworkAction should have been called.
+			throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+		}
+		
+		// if date was null, consider it as now
+		if (occurredWhen == null) {
+			occurredWhen = new Date();
+		}
+
+		// at this point, targetPath != null
+		if (referencePaths != null) {
+			int pathSize = Math.min(referencePaths.size(),targetPaths.size());
+			for (int i = 0; i < pathSize; i++) {
+				List<Integer> referencePath = referencePaths.get(i);
+				List<Integer> targetPath = targetPaths.get(i);
+				// check that reference path is always an ancestor of target path
+				if (referencePath.size() >= targetPath.size()) {
+					throw new IllegalArgumentException("The reference path must point to an ancestor of target path.");
+				}
+				// check if beginning of targetPath is equal to referencePath (i.e. check if referencePath is pointing to ancestor of targetPath)
+				// note: at this point, the length of referencePath is strictly smaller than targetPath
+				for (int pathStep = 0; pathStep < referencePath.size(); pathStep++) {
+					if (!referencePath.get(pathStep).equals(targetPath.get(pathStep))) {
+						throw new IllegalArgumentException("The reference path must point to an ancestor of target path. The step " + pathStep  + " of the paths are pointing to different nodes in value trees.");
+					}
+				}
+			}
+		}
+		
+		// at this point, reference path is either null, empty, or pointing to ancestor of target path
+		
+		
+		if (getDefaultInferenceAlgorithm() == null) {
+			throw new IllegalStateException("Default algorithm not found.");
+		}
+		
+		// check whether question/node exists, and extract necessary nodes if possible
+		synchronized (getDefaultInferenceAlgorithm()) {
+			synchronized (getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork()) {
+				ProbabilisticNetwork net = getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork();
+				if (net == null) {
+					throw new IllegalStateException("Network was not properly initialized.");
+				}
+				Node node = net.getNode(""+questionId);
+				// this will be filled with the network action which will add the node if node was not found.
+				AddValueTreeQuestionNetworkAction actionAddingNodeIfNodeIsNull = null;	
+				if (node == null) {
+					// Perhaps the nodes are still going to be added within the context of this transaction.
+					Map<Long, Set<AddQuestionNetworkAction>> mapTransactionQuestions = this.getQuestionsToBeCreatedInTransaction();
+					
+					if (mapTransactionQuestions == null || transactionKey == null) {
+						// desynchronized call detected. This is unlikely to happen, but subclasses may cause this
+						throw new InexistingQuestionException("Question " + questionId + " not found.",questionId);
+					}
+					
+					// use the mapping in order to check whether the parent will be created in the same transaction
+					synchronized (mapTransactionQuestions) {
+						Set<AddQuestionNetworkAction> questionsInSameTransaction = mapTransactionQuestions.get(transactionKey);
+						if (questionsInSameTransaction == null) {
+							throw new InexistingQuestionException("Question " + questionId + " not found.",questionId);
+						}
+						// search for the assumption ID in questionsToBeCreatedInTransaction
+						for (AddQuestionNetworkAction questionActInMapping : questionsInSameTransaction) {
+							if (questionActInMapping.getQuestionId().longValue() == questionId
+									&& questionActInMapping instanceof AddValueTreeQuestionNetworkAction) {
+								actionAddingNodeIfNodeIsNull = (AddValueTreeQuestionNetworkAction) questionActInMapping;
+								break;
+							}
+						}
+					}
+					if (actionAddingNodeIfNodeIsNull == null) {
+						throw new InexistingQuestionException("Question " + questionId + " not found.",questionId);
+					}
+					
+				}
+				
+				// this set will contain what target nodes were already checked, so that we can see if new target overlaps (is descendant or ancestor) with prevous ones 
+				Set<IValueTreeNode> checkedTargets = new HashSet<IValueTreeNode>();	
+				// check if target path is consistent with what the node is
+				for (List<Integer> targetPath : targetPaths) {
+					if (targetPath == null || targetPath.isEmpty()) {
+						throw new IllegalArgumentException("Provided target paths " + targetPaths + " contains null or empty path.");
+					}
+					List<IValueTreeNode> children = null;	// this will be used while navigating along the path of target
+					if (node != null) {
+						// if node exists, then target node must be in the value tree
+						if (!(node instanceof ValueTreeProbabilisticNode)) {
+							// note: at this point, the target was non-null and non-empty, so the caller is trying to do a trade on value tree
+							throw new IllegalArgumentException("Attempted to settle value tree, but question " + node + " does not have a value tree.");
+						}
+						
+						ValueTreeProbabilisticNode root = (ValueTreeProbabilisticNode) node;
+						if (root.getValueTree() == null) {
+							throw new IllegalStateException(root + " is expected to have a value tree, but the value tree was null." +
+									" This is probably a bug in the engine, or an inconsistent version of the library." +
+									" Please, verify whether the version of UnBBayes and Markov Engine are compatible each other.");
+						}
+						children = root.getValueTree().get1stLevelNodes();
+					} else {
+						// find the value tree nodes from the action which will be used to create the node
+						children = actionAddingNodeIfNodeIsNull.getChildrenOfRootOfValueTree();
+					}
+					// move along the path to identify the target. Cannot use ValueTree#.getNodeInPath(path) value tree may not be instantiated yet (due to transaction not committed yet)
+					IValueTreeNode target = null;
+					for (Integer index : targetPath) {
+						if (children == null || index == null || index < 0 || index >= children.size()) {
+							throw new IllegalArgumentException(index + " in path " + targetPath + " is an invalid index as a path in the value tree of question " + questionId);
+						}
+						target = children.get(index);
+						children = target.getChildren();
+					}
+					// note: at this point, target is non-null, because targetPath was non-null, non-empty, and if index was not in children, then it would have thrown exception
+					//check that there are no two target paths that have overlaps, because this version does not allow such construction
+					for (IValueTreeNode prevTarget : checkedTargets) {
+						if (prevTarget.isAncestorOf(target) || target.isAncestorOf(prevTarget)) {
+							throw new IllegalArgumentException("This version of ME cannot resolve multiple value tree nodes when specified nodes are descendant of another specified node in same value tree. " + prevTarget + " was detected to be a descendant/ancestor of " + target);
+						}
+					}
+					checkedTargets.add(target);
+				}
+				
+				// at this point, targetPath is pointing to an existing node in the value tree
+				// note: no need to check reference node, because at this point we know that reference node is either null, empty, or ancestor of target.
+				
+				
+				
+				
+				
+			}
+		}
+		
+		
+		// trade on value tree assuming nothing else
+		if (transactionKey == null) {
+			transactionKey = this.startNetworkActions();
+			ResolveValueTreeNetworkAction newAction = new ResolveValueTreeNetworkAction(
+					transactionKey, occurredWhen, questionId, targetPaths, referencePaths,
+					settlements
+					);
+			this.addNetworkAction(transactionKey, newAction);
+			this.commitNetworkActions(transactionKey);
+		} else {
+			// instantiate the action object for adding trade
+			ResolveValueTreeNetworkAction newAction = new ResolveValueTreeNetworkAction(
+					transactionKey, occurredWhen, questionId, targetPaths, referencePaths,
+					settlements
+					);
+			this.addNetworkAction(transactionKey, newAction);
+		}
+		
+		
+		
 		
 		return true;
 	}
@@ -12635,14 +12863,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		this.isToAddArcsOnAddTrade = isToAddArcsOnAddTrade;
 	}
 
-	public boolean resolveValueTreeQuestion(Long transactionKey,
-			Date occurredWhen, long questionID,
-			List<List<Integer>> targetPaths,
-			List<List<Integer>> referencePaths, List<List<Float>> settlements)
-			throws IllegalArgumentException {
-		// TODO Auto-generated method stub
-		return false;
-	}
+	
 
 	
 
