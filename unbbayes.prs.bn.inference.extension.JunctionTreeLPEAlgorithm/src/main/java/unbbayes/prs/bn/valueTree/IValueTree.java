@@ -284,4 +284,12 @@ public interface IValueTree extends Serializable {
 	 * @return the node in value tree identified by the path.
 	 */
 	public IValueTreeNode getNodeInPath(List<Integer> path);
+
+
+	/**
+	 * Performs {@link #addNode(IValueTreeNode)} to the provided node 
+	 * and all its connected descendants too.
+	 * @param node : root of the sbub-tree to be included. Null values will be ignored.
+	 */
+	public void addNodeAndDescendantsRecursively(IValueTreeNode node);
 }

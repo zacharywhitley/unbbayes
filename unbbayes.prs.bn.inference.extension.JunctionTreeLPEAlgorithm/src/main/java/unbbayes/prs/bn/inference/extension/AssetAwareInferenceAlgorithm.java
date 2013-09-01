@@ -1853,6 +1853,9 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 				// by turning the flag of findings on and providing the desired marginal, we can add any type of hard evidence 
 				// (either those which sets specified state to 1 or those which sets specified states to 0)
 				probNode.addFinding(resolvedState,isNegativeHardEvidence);	// just to set the flag indicating presence of a finding
+
+				hasProbChange = true;	// indicate that at least one node was marked for a change
+				
 				// set up the marginal which will set a specified state to 1 or some specified states to 0
 				float[] newMarginalToSet = new float[prob.size()];
 				for (int i = 0; i < prob.size(); i++) {

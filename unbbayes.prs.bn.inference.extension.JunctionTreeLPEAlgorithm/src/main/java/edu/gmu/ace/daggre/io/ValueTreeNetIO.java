@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StreamTokenizer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import unbbayes.io.NetIO;
@@ -34,9 +36,15 @@ import unbbayes.util.Debug;
 public class ValueTreeNetIO extends NetIO {
 
 	/**
-	 * Name of property in {@link Network#getProperty(String)} which stores instances of {@link IValueTreeNode} loded by this class
+	 * Name of property in {@link Network#getProperty(String)} which stores instances of {@link IValueTreeNode} loaded by this class
 	 */
 	public static final String VALUE_TREE_MAP_PROPERTY_NAME = ValueTreeNetIO.class.getName()+"_Map";
+	
+	/**
+	 * Subset of {@link #VALUE_TREE_MAP_PROPERTY_NAME} that will be included as immediate children of root node.
+	 * More specifically, this list will contain all {@link IValueTreeNode} which has null as its {@link IValueTreeNode#getParent()}.
+	 */
+	public static final String VALUE_TREE_ROOT_CHILD_LIST_PROPERTY_NAME = ValueTreeNetIO.class.getName()+"_RootChild";;
 
 //	/**
 //	 * This is a temporary representation for converting the NET representation (which specifies parents for each node)
@@ -136,7 +144,8 @@ public class ValueTreeNetIO extends NetIO {
 						// build shadow nodes for each state of the node
 						for (int i = 0; i < auxNode.getStatesSize(); i++) {
 							// States of root of value tree are shadow nodes, so handle it properly here
-							IValueTreeNode shadowNode = ValueTreeNode.getInstance(auxNode.getStateAt(i), vtNode.getValueTree()); 
+							String shadowNodeName = auxNode.getStateAt(i).startsWith(getDefaultNodeNamePrefix())?auxNode.getStateAt(i).substring(getDefaultNodeNamePrefix().length()):auxNode.getStateAt(i);
+							IValueTreeNode shadowNode = ValueTreeNode.getInstance(shadowNodeName, vtNode.getValueTree()); 
 							vtNode.getValueTree().setAsShadowNode(shadowNode);
 							// do not forget to store this node, so that we can re-use it when we will reconnect
 							map.put(shadowNode.getName(), shadowNode);
@@ -210,7 +219,6 @@ public class ValueTreeNetIO extends NetIO {
 							Map<String, IValueTreeNode> map = ((Map)net.getProperty(VALUE_TREE_MAP_PROPERTY_NAME));
 							if (map == null || !map.containsKey(childNodeName)) {
 								// create the new node and add as child of root (null)
-//								valueTreeChild = valueTree.addNode(childNodeName, null, 1f); 
 								valueTreeChild = ValueTreeNode.getInstance(childNodeName, valueTree); 
 								if (map == null) {
 									// instantiate map if it was not present yet
@@ -231,6 +239,11 @@ public class ValueTreeNetIO extends NetIO {
 							}
 							// propagate to children that the value tree is this
 							valueTreeChild.setValueTreeRecursively(valueTree);
+							// mark this node as a child of the root
+							if (((List)net.getProperty(VALUE_TREE_ROOT_CHILD_LIST_PROPERTY_NAME)) == null) {
+								net.addProperty(VALUE_TREE_ROOT_CHILD_LIST_PROPERTY_NAME,new ArrayList());
+							}
+							((List)net.getProperty(VALUE_TREE_ROOT_CHILD_LIST_PROPERTY_NAME)).add(valueTreeChild);
 						} else {
 							throw new IOException(parentNode + " is a parent of " + childNodeName + ", but " + childNodeName + " is an unknown type of node.");
 						}
@@ -358,16 +371,17 @@ public class ValueTreeNetIO extends NetIO {
 	protected void load(File input, SingleEntityNetwork net, IProbabilisticNetworkBuilder networkBuilder) throws IOException, LoadException {
 		super.load(input, net, networkBuilder);
 		// add all value tree nodes to its respective value trees
-		Map<String, IValueTreeNode> map = (Map<String, IValueTreeNode>) net.getProperty(VALUE_TREE_MAP_PROPERTY_NAME);
-		if (map != null) {
+		List<IValueTreeNode> childrenOfRoot = ((List)net.getProperty(VALUE_TREE_ROOT_CHILD_LIST_PROPERTY_NAME));
+		if (childrenOfRoot != null) {
 			// at this point, it is assumed that all values are pointing to the respective value tree
-			for (IValueTreeNode valueTreeNode : map.values()) {
+			for (IValueTreeNode childOfRoot : childrenOfRoot) {
 				// include it to the value tree, because at this point it is only pointing to a value tree, but the value tree is not pointing to it
-				valueTreeNode.getValueTree().addNode(valueTreeNode);
+				childOfRoot.getValueTree().addNodeAndDescendantsRecursively(childOfRoot);
 			}
 		}
 		// clear the mapping of value tree nodes after load is finished.
 		net.getProperties().remove(VALUE_TREE_MAP_PROPERTY_NAME);
+		net.getProperties().remove(VALUE_TREE_ROOT_CHILD_LIST_PROPERTY_NAME);
 	}
 	
 	
@@ -410,10 +424,19 @@ public class ValueTreeNetIO extends NetIO {
 		// also mark this node as %valueTreeRoot if this is a root of a value tree
 		if (node instanceof ValueTreeProbabilisticNode) {
 			stream.println("     %valueTreeRoot ");
+			/* the states are synchronized with name of nodes, so states also have to use the name prefix */
+			StringBuffer auxString =
+				new StringBuffer("\"" + getDefaultNodeNamePrefix() + node.getStateAt(0) + "\"");
+
+			int sizeEstados = node.getStatesSize();
+			for (int c2 = 1; c2 < sizeEstados; c2++) {
+				auxString.append(" \"" + getDefaultNodeNamePrefix() +node.getStateAt(c2) + "\"");
+			}
+			stream.println(
+				"     states = (" + auxString.toString() + ");");
+		} else {
+			super.saveNodeDeclarationBody(stream, node, net);
 		}
-		
-		super.saveNodeDeclarationBody(stream, node, net);
-		
 	
 	}
 	
@@ -484,6 +507,7 @@ public class ValueTreeNetIO extends NetIO {
 			}
 		}
 	}
+	
 	
 
 }

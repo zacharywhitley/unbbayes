@@ -981,6 +981,23 @@ public class ValueTree implements IValueTree {
 		}
 		return ret;
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.valueTree.IValueTree#addNodeAndDescendantsRecursively(unbbayes.prs.bn.valueTree.IValueTreeNode)
+	 */
+	public void addNodeAndDescendantsRecursively(IValueTreeNode node) {
+		// include this node
+		if (node != null) {
+			this.addNode(node);
+		}
+		// now, call for descendants recursively
+		if (node.getChildren() != null) {
+			for (IValueTreeNode child : node.getChildren()) {
+				this.addNodeAndDescendantsRecursively(child);
+			}
+		}
+	}
 	
 
 }
