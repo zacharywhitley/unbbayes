@@ -25845,9 +25845,9 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	/**
-	 * Test method for {@link MarkovEngineImpl#addQuestion(Long, Date, long, int, List, String)}
+	 * Test method for methods related to value treess
 	 */
-	public final void testAddValueTreeQuestion() {
+	public final void testValueTreeQuestion() {
 		
 		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
 		engine.setToAddArcsOnlyToProbabilisticNetwork(true);
@@ -25864,7 +25864,6 @@ public class MarkovEngineTest extends TestCase {
 			);
 		
 		
-		
 		engine.addQuestion(
 				null, 
 				new Date(), 
@@ -25874,11 +25873,27 @@ public class MarkovEngineTest extends TestCase {
 				"[2[3[0 2[0 2]0]2]][0,0],[0,1],[0,2],[1]"			
 			);
 				
+		// see if we can retrieve the marginal of shadow nodes by calling the getProbLists
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertNotNull(probLists);
+		assertEquals(2, probLists.size());
+		for (List<Float> probList : probLists.values()) {
+			assertEquals(4, probList.size());
+			assertEquals(0.166667f, probList.get(0), PROB_ERROR_MARGIN);
+			assertEquals(0.166667f, probList.get(1), PROB_ERROR_MARGIN);
+			assertEquals(0.166667f, probList.get(2), PROB_ERROR_MARGIN);
+			assertEquals(0.5f, probList.get(3), PROB_ERROR_MARGIN);
+		}
+		
 		// create DEF net.
 		
-		// check if I can use null in newValues of normal nodes
 		
-		// check if I can use null in newValues of value tree nodes
+		// export/import net
+		String exportedNet = engine.exportState();
+		assertNotNull(exportedNet);
+		assertFalse(exportedNet.trim().isEmpty());
+		System.out.println(exportedNet);
+		engine.importState(exportedNet);
 		
 		// restore backups
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
@@ -25887,7 +25902,7 @@ public class MarkovEngineTest extends TestCase {
 	/**
 	 * Performs the same of {@link #testAddValueTreeQuestion()}, but in a single transaction.
 	 */
-	public final void testAddValueTreeQuestionSingleTransaction() {
+	public final void testValueTreeQuestionSingleTransaction() {
 		fail("Not implemented yet");
 	}
 	
