@@ -3162,12 +3162,37 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		private static final long serialVersionUID = -5538538423172739941L;
 		private List<Integer> referencePath;
 		private List<Integer> targetPath;
-		
+		private Collection<IValueTreeNode> nodesNotToChange = null;
+		/**
+		 * Constructor not initializing only {@link #getNodesNotToChange()}
+		 * @param transactionKey
+		 * @param occurredWhen
+		 * @param questionId
+		 * @param newValues
+		 * @param targetPath
+		 * @param referencePath
+		 * @see #AddTradeValueTreeNetworkAction(Long, Date, long, List, List, List, Collection)
+		 */
 		public AddTradeValueTreeNetworkAction(Long transactionKey, Date occurredWhen, long questionId, List<Float> newValues,
 				List<Integer> targetPath, List<Integer> referencePath) {
 			super(transactionKey, occurredWhen, "", Long.MIN_VALUE, questionId, null, newValues, Collections.EMPTY_LIST, Collections.EMPTY_LIST, true);
 			this.setTargetPath(targetPath);
 			this.setReferencePath(referencePath);
+		}
+		/**
+		 * Default constructor initializing all the fields
+		 * @param transactionKey
+		 * @param occurredWhen
+		 * @param questionId
+		 * @param newValues
+		 * @param targetPath
+		 * @param referencePath
+		 * @param nodesNotToChange : if this is non-null, then best effort will be done not to change factions of these nodes
+		 */
+		public AddTradeValueTreeNetworkAction(Long transactionKey, Date occurredWhen, long questionId, List<Float> newValues,
+				List<Integer> targetPath, List<Integer> referencePath, Collection<IValueTreeNode> nodesNotToChange) {
+			this(transactionKey, occurredWhen, questionId, newValues, targetPath, referencePath);
+			this.nodesNotToChange = nodesNotToChange;
 		}
 		
 		/**
@@ -3253,14 +3278,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 								+ ", but the target doesn't have that quantity of children.");
 					}
 					oldConditionalProb = new ArrayList<Float>(getNewValues().size());
-					// if newValues has more than 1 value, then do several trades changing the mutually exclusive anchors (the nodes not to change)
-					Collection<IValueTreeNode> nodesNotToChange = new ArrayList<IValueTreeNode>(getNewValues().size());	// do not change probability of nodes in this list
+					// this list will hold nodes which probabilities shall not be changed. It usually starts from empty, but can be initialized by getNodesNotToChange().
+					// make sure we pre-allocate enough space for the list to hold both getNodesNotToChange() and the nodes to be changed in this routine
+					List<IValueTreeNode> nodesNotToChange = new ArrayList<IValueTreeNode>(getNewValues().size() + ((getNodesNotToChange()!=null)?getNodesNotToChange().size():0));
+					if (getNodesNotToChange() == null) {
+						nodesNotToChange.addAll(getNodesNotToChange());
+					}
 					for (int i = 0; i < getNewValues().size(); i++) {
 						IValueTreeNode childOfTarget = target.getChildren().get(i);
 						Float prob = getNewValues().get(i);
 						if (prob != null) {
 							// change the probability of this child
-							oldConditionalProb.add(root.getValueTree().changeProb(childOfTarget, anchor, prob, nodesNotToChange));
+							oldConditionalProb.add(root.getValueTree().changeProb(childOfTarget, anchor, prob, getNodesNotToChange()));
 							// this node shall not be changed in next iteration.
 							nodesNotToChange.add(childOfTarget);
 						} else {
@@ -3308,6 +3337,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void setReferencePath(List<Integer> referencePath) { this.referencePath = referencePath; }
 		public List<Integer> getTargetPath() { return targetPath; }
 		public void setTargetPath(List<Integer> targetPath) { this.targetPath = targetPath; }
+
+		/**
+		 * @return the nodesNotToChange
+		 */
+		public Collection<IValueTreeNode> getNodesNotToChange() {
+			return nodesNotToChange;
+		}
+
+		/**
+		 * @param nodesNotToChange the nodesNotToChange to set
+		 */
+		public void setNodesNotToChange(Collection<IValueTreeNode> nodesNotToChange) {
+			this.nodesNotToChange = nodesNotToChange;
+		}
 		
 	}
 	
@@ -4232,9 +4275,62 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * @see edu.gmu.ace.daggre.MarkovEngineImpl.ResolveQuestionNetworkAction#execute()
 		 */
 		public void execute() {
-//			change probability of each target, but not changing probability of targets already traded
-//			
-//			delete question if there is at least one node with 100%
+			
+			// change probability of each target, but not changing probability of targets already traded
+			Set<IValueTreeNode> targetsHandled = new HashSet<IValueTreeNode>(getTargetPaths().size());
+			
+			// keep value tree handy, so that we can use its code to extract nodes or to do other types of queries
+			IValueTree valueTree = null;
+			// before that, get the traded node
+			Node node = getProbabilisticNetwork().getNode(getQuestionId().toString());
+			if (node == null ) {
+				throw new NullPointerException("Question " + getQuestionId() + " doesn't seem to exist.");
+			}
+			if (!(node instanceof ValueTreeProbabilisticNode)) {
+				throw new ClassCastException("Question " + getQuestionId() + " doesn't seem to have a value tree.");
+			}
+			// finally, extract the value tree from the node we have.
+			valueTree = ((ValueTreeProbabilisticNode) node).getValueTree();
+			if (valueTree == null) {
+				// there is nothing to do
+				throw new NullPointerException("Attempted to perform a trade on null value tree in question " + getQuestionId());
+			}
+			
+			// for each specified target node, do the trade
+			for (int i = 0; i < getTargetPaths().size(); i++) {
+				List<Integer> targetPath = getTargetPaths().get(i);
+				List<Integer> referencePath = null;
+				if (getReferencePaths() != null && i < getReferencePaths().size()) {
+					// the reference path may be smaller than the target
+					// (i.e. some trades may be performed without specifying the reference - in such case, it is a trade which the anchor is the root of value tree)
+					referencePath = getReferencePaths().get(i);
+				}
+				// reuse the code in add trade action, because we are basically doing series of trades
+				new AddTradeValueTreeNetworkAction(
+						getTransactionKey(), 
+						getWhenCreated(), 
+						getQuestionId(), 
+						getSettlements().get(i), 	// the size of settlment is supposedly equal or larger than targets
+						targetPath, 
+						referencePath, 
+						targetsHandled
+					).execute();
+				// in the next iteration, the vt node we just changed shall not be changed.
+				targetsHandled.add(valueTree.getNodeInPath(targetPath));	// if the previous execution has passed without exception, then target node supposedly exist.
+			}
+			
+			// check if any value tree node has settled to 100%. If so, question is closed.
+			for (IValueTreeNode valueTreeNode : valueTree.getNodes()) {
+				if (valueTreeNode.getFaction() >= 1f) {
+					// Supposedly, 100% can only happen if a faction is 100%. Delete the question itself if so
+					getDefaultInferenceAlgorithm().setAsPermanentEvidence(
+							node, 	// this node will be deleted, because a state became 100%
+							null, 	// passing null indicates that probability won't be changed
+							true);	// true means node will be deleted (actually, absorbed).
+					break;	// no need to check other nodes, because supposedly only 1 node is settled to 100%.
+				}
+			}
+			
 		}
 
 		/* (non-Javadoc)
@@ -4888,6 +4984,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (occurredWhen == null) {
 			occurredWhen = new Date();
 		}
+		
+		// make sure all targets has respective settlement
+		if (settlements.size() < targetPaths.size()) {
+			throw new IllegalArgumentException(targetPaths.size() + " target nodes were specified, but there were only " + settlements.size() 
+					+ " settlements specified. They are supposed to have the same size.");
+		}
 
 		// at this point, targetPath != null
 		if (referencePaths != null) {
@@ -5003,11 +5105,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				
 				// at this point, targetPath is pointing to an existing node in the value tree
 				// note: no need to check reference node, because at this point we know that reference node is either null, empty, or ancestor of target.
-				
-				
-				
-				
-				
 			}
 		}
 		

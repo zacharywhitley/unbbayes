@@ -1744,6 +1744,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 		Map<INode, List<Float>> hardEvidenceEntry = new HashMap<INode, List<Float>>();	// will store elements in evidences which were hard evidences
 		Map<INode, List<Float>> entriesToBeDeleted = new HashMap<INode, List<Float>>();	// will store elements in evidences which were not negative hard evidences (because negative evidences will set states to 0%, and shall not be delete node from net)
 		List<TreeVariable> nodesToResetEvidenceAtTheEnd = new ArrayList<TreeVariable>(evidences.size());	// TreeVariable#resetEvidence() will be called for nodes in this list will 
+		boolean hasProbChange = false;	// this will become true if at least one node had its probability marked for change.
 		for (Entry<INode, List<Float>> entry : evidences.entrySet()) {
 			INode node = entry.getKey();
 			ProbabilisticNode probNode = (ProbabilisticNode) getRelatedProbabilisticNetwork().getNode(node.getName());
@@ -1756,7 +1757,8 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 			List<Float> prob = evidences.get(node);
 			if (prob == null) {
 				Debug.println(getClass(), "Evidence of node " + node + " was null");
-				// ignore this value
+				// ignore this value, but mark it to be deleted posteriorly
+				entriesToBeDeleted.put(entry.getKey(), entry.getValue());
 				continue;
 			}
 			//			// check if this contains unspecified values
@@ -1814,12 +1816,14 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 				// TODO we may need to propagate before adding soft evidence, because soft evidence is sensitive to current state of network.
 				
 				probNode.addLikeliHood(likelihood);
+				hasProbChange = true;	// indicate that at least one node was marked for a change
 				
 				// soft evidences are to be deleted, so put in the mapping
 				entriesToBeDeleted.put(entry.getKey(), entry.getValue());
 
 				// by default, reset evidences of soft evidences
 				nodesToResetEvidenceAtTheEnd.add(probNode);
+				
 			} else { 
 				// hard evidence (negative or positive)
 				if (resolvedState >= 0) {
@@ -1863,16 +1867,18 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 		}
 		
 		// propagate only the probabilities of hard evidences
-		try {
-			getProbabilityPropagationDelegator().propagate();
-		} catch (RuntimeException e) {
-			// reset evidences from all nodes, so that they are not re-inserted
-			for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
-				if (node instanceof TreeVariable) {
-					((TreeVariable)node).resetEvidence();
+		if (hasProbChange) {
+			try {
+				getProbabilityPropagationDelegator().propagate();
+			} catch (RuntimeException e) {
+				// reset evidences from all nodes, so that they are not re-inserted
+				for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+					if (node instanceof TreeVariable) {
+						((TreeVariable)node).resetEvidence();
+					}
 				}
+				throw e;
 			}
-			throw e;
 		}
 		
 		
