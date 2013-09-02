@@ -55,8 +55,8 @@ in your classpath.
 
 Note: some useful classes/interfaces in this plug-in (when used as library) are:
 
-Class - edu.gmu.ace.daggre.MarkovEngineImpl (main class of the Markov Engine backend in DAGGRE project <http://daggre.org/>)
-Interface - edu.gmu.ace.daggre.MarkovEngineInterface (interface of MarkovEngineImpl)
+Class - edu.gmu.ace.scicast.MarkovEngineImpl (main class of the Markov Engine backend in DAGGRE project <http://daggre.org/>)
+Interface - edu.gmu.ace.scicast.MarkovEngineInterface (interface of MarkovEngineImpl)
 
 Class - unbbayes.prs.bn.inference.extension.JunctionTreeMPEAlgorithm (UnBBayes' inference algorithm class for most probable explanation algorithm)
 Class - unbbayes.prs.bn.inference.extension.JunctionTreeLPEAlgorithm (UnBBayes' inference algorithm class for "least" probable explanation algorithm)

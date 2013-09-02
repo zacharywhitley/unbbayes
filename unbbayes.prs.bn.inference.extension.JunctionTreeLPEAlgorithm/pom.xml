@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>br.unb.cic</groupId>
-	<artifactId>unbbayes.prs.bn.inference.extension.MinProductJunctionTree</artifactId>
-	<name>Least and Most Probable Explanation Algorithms</name>
+	<groupId>edu.gmu.ace.scicast</groupId>
+	<artifactId>MarkovEngine</artifactId>
+	<name>Least and Most Probable Explanation Algorithms, Value Tree, and Markov Engine for Combo Trades</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->
-	<version>0.0.1</version>
+	<version>1.0.0</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
