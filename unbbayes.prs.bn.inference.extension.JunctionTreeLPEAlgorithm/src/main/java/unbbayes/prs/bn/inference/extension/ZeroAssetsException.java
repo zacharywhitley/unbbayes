@@ -3,7 +3,7 @@
  */
 package unbbayes.prs.bn.inference.extension;
 
-import edu.gmu.ace.daggre.MarkovEngineInterface;
+import edu.gmu.ace.scicast.MarkovEngineInterface;
 
 /**
  * This is an exception thrown mainly by {@link MarkovEngineInterface#commitNetworkActions(long)}
