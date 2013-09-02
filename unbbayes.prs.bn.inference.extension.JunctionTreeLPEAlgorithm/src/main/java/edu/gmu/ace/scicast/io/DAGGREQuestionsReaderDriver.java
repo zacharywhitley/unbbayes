@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.gmu.ace.daggre.io;
+package edu.gmu.ace.scicast.io;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -42,7 +42,7 @@ public class DAGGREQuestionsReaderDriver extends TestCase {
 	/**How many times to iterate test on the same file, in order to avoid background process to impact on time*/
 	private int maxIterations = 5;//5;
 	
-	/** If two probability values are within an interval of + or - this value, then it is considered to be equalÅ@*/
+	/** If two probability values are within an interval of + or - this value, then it is considered to be equalÔøΩ@*/
 	private float probPrecisionError = 0.0005f;
 
 	private boolean isToTestProbValues = true;

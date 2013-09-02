@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.gmu.ace.daggre.io;
+package edu.gmu.ace.scicast.io;
 
 import java.io.File;
 import java.io.FileReader;
