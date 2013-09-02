@@ -2036,6 +2036,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 				
 				// set listener so that a normal trade is automatically performed if probability of shadow node (i.e. marginals) are changed by the value tree algorithm
+				// do not execute the default listener (so delete it), because it updates marginals (marginal should be kept as old value, so that likelihood ratio is correctly calculated)
+				root.getValueTree().clearFactionChangeListener();	
 				root.getValueTree().addFactionChangeListener(new IValueTreeFactionChangeListener() {
 					/** this method assumes that it is executed after the default one (which updates marginal and cpt based on updates in value tree) */
 					public void onFactionChange(Collection<IValueTreeFactionChangeEvent> changes) {
@@ -2048,21 +2050,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						}
 						// at this point, there are shadow nodes. Check if shadow nodes are included in nodes which where changed
 						boolean hasChanged = false;
-						for (IValueTreeFactionChangeEvent change : changes) {
+						for (IValueTreeFactionChangeEvent change : changes) {	// assuming that changes only have nodes that actually changed
 							// only consider shadow nodes (nodes which represents the states present in root node)
-							if (shadows.contains(change.getNode())) {
-								// index of shadow node is supposedly the same of index of respective state in root node
-								int indexOfShadowNode = root.getValueTree().getShadowNodeStateIndex(change.getNode());
-								// obtain the previous marginal for comparison
-								float marginalBefore = root.getMarginalAt(indexOfShadowNode);
-								// obtain the current marginal from value tree
-								float marginalAfter = root.getValueTree().getProb(change.getNode(), null);
-								// check if marginals have changed
-								if (Math.abs(marginalAfter - marginalBefore) >= AssetAwareInferenceAlgorithm.ERROR_MARGIN) {
+							if (shadows.contains(change.getNode())) { 
+//								// index of shadow node is supposedly the same of index of respective state in root node
+//								int indexOfShadowNode = root.getValueTree().getShadowNodeStateIndex(change.getNode());
+//								// obtain the previous faction for comparison
+//								float factionBefore = root.getValueTree().getShadowNode(indexOfShadowNode).getFaction();
+//								// obtain the current faction
+//								float factionAfter = change.getNode().getFaction();
+//								// check if factions really have changed, just to make sure
+//								if (Math.abs(factionAfter - factionBefore) >= AssetAwareInferenceAlgorithm.ERROR_MARGIN) {
 									// mark that something has changed
 									hasChanged = true;
 									break;
-								}
+//								}
 							} else {
 								// check if ancestor of shadow has changed, because a change in ancestor will change probability of shadow
 								for (IValueTreeNode shadow : shadows) {
@@ -2073,18 +2075,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 								}
 							}
 						}
-						// if something has changed, then update the marginals & cpt accordingly to all shadow nodes
+						// if something has changed, then update the marginals accordingly to all shadow nodes
 						if (hasChanged) {
+							// extract the value tree and keep it handy, because we'll use it frequently.
+							IValueTree vt = root.getValueTree();
 							// fill the probability of trade by using the marginal
-							int statesSize = root.getStatesSize();
+							int statesSize = vt.getShadowNodeSize();
+							if (root.getStatesSize() != statesSize) {
+								throw new IllegalStateException("A desynchronization of shadow nodes found. There are " 
+										+ statesSize + " shadow nodes, but root has " + root.getStatesSize()
+										+ " possible states. This is an unexpected fatal problem, so it is suggested to roll back your system and check ME/UnBBayes version compatibility.");
+							}
 							// index of shadow nodes and states of root are supposedly synchronized
 							List<Float> newValues = new ArrayList<Float>(statesSize);
 							for (int i = 0; i < statesSize; i++) {
-								// we can supposedly use the marginal, because the default listener which will be executed before this 
-								// will set its marginal and CPT to correct values
-								newValues.add(root.getMarginalAt(i));
+								// calculate the correct marginal from the probability of shadow node
+								newValues.add(vt.getProb(vt.getShadowNode(i), null));
 							}
-							// do the trade in order to update the junction tree
+							// do the trade in order to update the junction tree and set marginal to correct value
 							addTrade(
 									null, 							// commit immediately
 									new Date(), 					// created now
@@ -2998,14 +3006,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 			synchronized (getProbabilisticNetwork()) {
 				Node node = null;
-				if (getWhenExecutedFirstTimeMillis() > 0) {
+//				if (getWhenExecutedFirstTimeMillis() > 0) {
 					// for optimization, only update history if this is first execution.
 					// first, check that node exists
 					node = getProbabilisticNetwork().getNode(Long.toString(tradeSpecification.getQuestionId()));
 					if (node == null) {
 						throw new InexistingQuestionException("Question " + tradeSpecification.getQuestionId() + " not found.", tradeSpecification.getQuestionId());
 					}
-				}
+//				}
 				synchronized (algorithm.getAssetNetwork()) {
 					if (!algorithm.getNetwork().equals(getProbabilisticNetwork())) {
 						throw new IllegalStateException("Asset net of user " + algorithm.getAssetNetwork() 
@@ -3251,30 +3259,30 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 				
 				// extract the value tree node to trade
-				IValueTreeNode target = null;
-				if (targetPath != null) {
-					List<IValueTreeNode> children = root.getValueTree().get1stLevelNodes();
-					for (Integer index : targetPath) {
-						if (children == null) {
-							throw new IllegalArgumentException(targetPath + " is not a valid target path for value tree of " + root);
-						}
-						target = children.get(index);
-						children = target.getChildren();
-					}
-				}
+				IValueTreeNode target = root.getValueTree().getNodeInPath(targetPath);
+//				if (targetPath != null) {
+//					List<IValueTreeNode> children = root.getValueTree().get1stLevelNodes();
+//					for (Integer index : targetPath) {
+//						if (children == null) {
+//							throw new IllegalArgumentException(targetPath + " is not a valid target path for value tree of " + root);
+//						}
+//						target = children.get(index);
+//						children = target.getChildren();
+//					}
+//				}
 				
 				// extract the reference node to trade
-				IValueTreeNode anchor = null;
-				if (referencePath != null) {
-					List<IValueTreeNode> children = root.getValueTree().get1stLevelNodes();
-					for (Integer index : referencePath) {
-						if (children == null) {
-							throw new IllegalArgumentException(referencePath + " is not a valid reference path for value tree of " + root);
-						}
-						anchor = children.get(index);
-						children = anchor.getChildren();
-					}
-				}
+				IValueTreeNode anchor = root.getValueTree().getNodeInPath(referencePath);
+//				if (referencePath != null) {
+//					List<IValueTreeNode> children = root.getValueTree().get1stLevelNodes();
+//					for (Integer index : referencePath) {
+//						if (children == null) {
+//							throw new IllegalArgumentException(referencePath + " is not a valid reference path for value tree of " + root);
+//						}
+//						anchor = children.get(index);
+//						children = anchor.getChildren();
+//					}
+//				}
 				
 				
 				// do trade here, and also get the old probability
