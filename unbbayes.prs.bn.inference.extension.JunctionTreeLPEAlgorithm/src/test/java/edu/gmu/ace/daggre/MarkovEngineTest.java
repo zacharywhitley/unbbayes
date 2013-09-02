@@ -32,6 +32,8 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
+import unbbayes.prs.bn.valueTree.IValueTreeNode;
+import unbbayes.prs.bn.valueTree.ValueTreeProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import edu.gmu.ace.daggre.MarkovEngineImpl.AddTradeNetworkAction;
@@ -26921,31 +26923,569 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(engine.getProbLists(null, null, null).containsKey(666L));
 		
 		// check probabilities and joint probabilities again
+
+		// check marginals
+		probLists = engine.getProbLists(null, null, null);
+		questionId = 0x0DL;
+		assertEquals(2, probLists.get(questionId).size());
+		assertEquals(.5683, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.4317, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		questionId = 0x0FL;
+		assertEquals(2, probLists.get(questionId).size());
+		assertEquals(.2024, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.7976, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		questionId = 666L;
+		assertEquals(4, probLists.get(questionId).size());
+		assertEquals(.0382, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.0297, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		assertEquals(.0213, probLists.get(questionId).get(2),PROB_ERROR_MARGIN);
+		assertEquals(.9108, probLists.get(questionId).get(3),PROB_ERROR_MARGIN);
+		questionId = 1313L;
+		assertEquals(4, probLists.get(questionId).size());
+		assertEquals(.1135, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.1933, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		assertEquals(.2730, probLists.get(questionId).get(2),PROB_ERROR_MARGIN);
+		assertEquals(.4202, probLists.get(questionId).get(3),PROB_ERROR_MARGIN);
 		
-		// resolve vt node to 0, but not to form 100% anywhere
+		// check factions question 666
+		questionId = 666L;
+		
+		// [X]
+		referencePath = new ArrayList<Integer>();
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(1-probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		// [0,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		// [0,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		// [0,1,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		// [1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(1f-0.9/probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.9/probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		
+		// check factions question 1313
+		questionId = 1313L;
+		// [X]
+		referencePath = new ArrayList<Integer>();
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(1-probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		// [0,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		// [0,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.333333334, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.6666667, probList.get(0), PROB_ERROR_MARGIN);
+		// [0,1,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.25, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.75, probList.get(0), PROB_ERROR_MARGIN);
+		// [1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		
+		// the joint
+		questionIds = new ArrayList<Long>();
+		questionIds.add(666L);
+		questionIds.add(1313L);
+		questionIds.add(0x0DL);
+		questionIds.add(0x0FL);
+		questionStates = new ArrayList<Integer>();
+		questionStates.add(null);
+		questionStates.add(null);
+		questionStates.add(1);
+		questionStates.add(1);
+		targetPaths = new ArrayList<List<Integer>>();
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		assertEquals(0.1194f, engine.getJointProbability(questionIds, questionStates, targetPaths, null), PROB_ERROR_MARGIN);
+		
+		// resolve children of vt node [0,1,1]|[0,1] of 1313 to [0.0,1.0] - it supposedly does not form 100% anywhere, because of anchor.
+		referencePaths = new ArrayList<List<Integer>>();
+		targetPaths = new ArrayList<List<Integer>>();
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		targetPath = new ArrayList<Integer>(referencePath);
+		targetPath.add(1);
+		referencePaths.add(referencePath);
+		targetPaths.add(targetPath);
+		settlements = new ArrayList<List<Float>>();
+		newValues = new ArrayList<Float>();
+		newValues.add(0f);
+		newValues.add(1f);
+		settlements.add(newValues);
+		// this should not change marginals
+		engine.resolveValueTreeQuestion(null, new Date(), 1313L, targetPaths, referencePaths, settlements);
+		
+		// check that the prob was settled to specified values
+		targetPaths.get(0).add(0);
+		assertEquals(newValues.get(0), engine.getProbList(questionId, targetPaths.get(0), referencePath, null, null).get(0), PROB_ERROR_MARGIN);
+		targetPaths.get(0).set(targetPaths.get(0).size()-1,1);
+		assertEquals(newValues.get(1), engine.getProbList(questionId, targetPaths.get(0), referencePath, null, null).get(0), PROB_ERROR_MARGIN);
 		
 		// check that vt node was not deleted
-		if (engine.isToDeleteResolvedNode()) {
-			
-		}
+		assertNotNull(engine.getProbabilisticNetwork().getNode("1313"));
+		assertTrue(engine.getProbLists(null, null, null).containsKey(1313L));
 		
 		// check probabilities and joint probabilities again
 
-		// resolve vt nodes to 100%
+		// check marginals
+		probLists = engine.getProbLists(null, null, null);
+		questionId = 0x0DL;
+		assertEquals(2, probLists.get(questionId).size());
+		assertEquals(.5683, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.4317, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		questionId = 0x0FL;
+		assertEquals(2, probLists.get(questionId).size());
+		assertEquals(.2024, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.7976, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		questionId = 666L;
+		assertEquals(4, probLists.get(questionId).size());
+		assertEquals(.0382, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.0297, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		assertEquals(.0213, probLists.get(questionId).get(2),PROB_ERROR_MARGIN);
+		assertEquals(.9108, probLists.get(questionId).get(3),PROB_ERROR_MARGIN);
+		questionId = 1313L;
+		assertEquals(4, probLists.get(questionId).size());
+		assertEquals(.1135, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.1933, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		assertEquals(.2730, probLists.get(questionId).get(2),PROB_ERROR_MARGIN);
+		assertEquals(.4202, probLists.get(questionId).get(3),PROB_ERROR_MARGIN);
+		
+		// check factions question 666
+		questionId = 666L;
+		// [X]
+		referencePath = new ArrayList<Integer>();
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(1-probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		// [0,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		// [0,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		// [0,1,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		// [1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(1f-0.9/probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.9/probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		
+		// check factions question 1313
+		questionId = 1313L;
+		// [X]
+		referencePath = new ArrayList<Integer>();
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(1-probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		// [0,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		// [0,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0f, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(1f, probList.get(0), PROB_ERROR_MARGIN);
+		// [0,1,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0f, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(1f, probList.get(0), PROB_ERROR_MARGIN);
+		// [1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		
+		// the joint
+		questionIds = new ArrayList<Long>();
+		questionIds.add(666L);
+		questionIds.add(1313L);
+		questionIds.add(0x0DL);
+		questionIds.add(0x0FL);
+		questionStates = new ArrayList<Integer>();
+		questionStates.add(null);
+		questionStates.add(null);
+		questionStates.add(1);
+		questionStates.add(1);
+		targetPaths = new ArrayList<List<Integer>>();
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		assertEquals(0.1194f, engine.getJointProbability(questionIds, questionStates, targetPaths, null), PROB_ERROR_MARGIN);
+		
+
+		// resolve a vt node [0,1,1,1] of 1313 to 100% (so that it is deleted)
+		targetPaths = new ArrayList<List<Integer>>();
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		settlements = new ArrayList<List<Float>>();
+		newValues = new ArrayList<Float>();
+		newValues.add(1f);
+		settlements.add(newValues);
+		engine.resolveValueTreeQuestion(null, new Date(), 1313L, targetPaths, null, settlements);
 		
 		// check that vt node was deleted
 		if (engine.isToDeleteResolvedNode()) {
-			
+			assertNull(engine.getProbabilisticNetwork().getNode("1313"));
+			assertFalse(engine.getProbLists(null, null, null).containsKey(1313L));
 		}
 		
-		//check probabilities and joint probabilities again
-		
+		//check probabilities again
 
-		//add a disconnected VT node
+		// check marginals
+		probLists = engine.getProbLists(null, null, null);
+		questionId = 0x0DL;
+		assertEquals(2, probLists.get(questionId).size());
+		assertEquals(.5645, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.4355, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		questionId = 0x0FL;
+		assertEquals(2, probLists.get(questionId).size());
+		assertEquals(.1746, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.8254, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		questionId = 666L;
+		assertEquals(4, probLists.get(questionId).size());
+		assertEquals(.03845, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.0299, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		assertEquals(.0214, probLists.get(questionId).get(2),PROB_ERROR_MARGIN);
+		assertEquals(.9102, probLists.get(questionId).get(3),PROB_ERROR_MARGIN);
+		
+		// check factions question 666
+		questionId = 666L;
+		// [X]
+		referencePath = new ArrayList<Integer>();
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(1-probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		// [0,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		// [0,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		// [0,1,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		// [1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.0119, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.9881, probList.get(0), PROB_ERROR_MARGIN);
+		
+		// keep list of previous marginals, for comparison
+		Map<Long,List<Float>> prevProbLists = probLists;
+		
+		// add a disconnected VT node
+		engine.addQuestion(null, new Date(), Long.MAX_VALUE, Integer.MAX_VALUE, null, 
+				"[3[1 1 1[0]]][0][1][2]");
+		
+		// check structure and faction of newly created node
+		ValueTreeProbabilisticNode root = (ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode(""+Long.MAX_VALUE);
+		assertNotNull(root);
+		assertEquals(3,root.getStatesSize());
+		assertEquals(3, root.getValueTree().get1stLevelNodes().size());
+		for (IValueTreeNode node : root.getValueTree().get1stLevelNodes()) {
+			// All nodes have 1 child
+			assertEquals(node + ":" +  node.getChildren(), 1, node.getChildren().size());
+			// their factions are linear/uniform
+			assertEquals(node + ":" +  node.getChildren(), 1f/root.getValueTree().get1stLevelNodes().size(), node.getFaction());
+			// faction of their only child is 1
+			assertEquals(node + ":" +  node.getChildren(), 1f, node.getChildren().get(0).getFaction());
+		}
+		// also check factions from API
+		for (int i = 0; i < root.getValueTree().get1stLevelNodes().size(); i++) {
+			referencePath = new ArrayList<Integer>();
+			targetPath = new ArrayList<Integer>();
+			targetPath.add(i);
+			for (Float faction : engine.getProbList(Long.MAX_VALUE, targetPath, referencePath, null, null)) {
+				assertEquals(targetPath+"|"+referencePath, 1f/root.getValueTree().get1stLevelNodes().size(), faction);
+			}
+			referencePath.add(i);
+			targetPath.add(0);
+			for (Float faction : engine.getProbList(Long.MAX_VALUE, targetPath, referencePath, null, null)) {
+				assertEquals(targetPath+"|"+referencePath, 1f, faction);
+			}
+		}
 		 
 		// check that probabilities of previous nodes did not change
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(prevProbLists.size()+1, probLists.size());
+		for (Entry<Long, List<Float>> prevEntry : prevProbLists.entrySet()) {
+			List<Float> newProb = probLists.get(prevEntry.getKey());
+			assertEquals(probLists.toString() + ";" + prevProbLists.toString(), newProb.size(), prevEntry.getValue().size());
+			for (int i = 0; i < newProb.size(); i++) {
+				assertEquals(probLists.toString() + ";" + prevProbLists.toString(), newProb.get(i), prevEntry.getValue().get(i),PROB_ERROR_MARGIN);
+			}
+		}
 		
-		// store probabilities (and VT factions) now
+		// keep probabilities again, before import/export net
+		prevProbLists = probLists;
+		
+		// also store the factions of all value tree nodes so that I can compare later
+		// I can store by name, because the names are all in the format <questionId>[_<path>]*
+		Map<String, Float> valueTreeNodeNameToFactionMap = new HashMap<String, Float>();
+		for (IValueTreeNode vtNode : ((ValueTreeProbabilisticNode)engine.getProbabilisticNetwork().getNode("666")).getValueTree().getNodes()) {
+			valueTreeNodeNameToFactionMap.put(vtNode.getName(), vtNode.getFaction());
+		}
+		for (IValueTreeNode vtNode : ((ValueTreeProbabilisticNode)engine.getProbabilisticNetwork().getNode(""+Long.MAX_VALUE)).getValueTree().getNodes()) {
+			valueTreeNodeNameToFactionMap.put(vtNode.getName(), vtNode.getFaction());
+		}
 		
 		// export/import net
 		String exportedNet = engine.exportState();
@@ -26955,14 +27495,99 @@ public class MarkovEngineTest extends TestCase {
 		engine.importState(exportedNet);
 		
 		// check that probabilities did not change
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(prevProbLists.size(), probLists.size());
+		for (Entry<Long, List<Float>> prevEntry : prevProbLists.entrySet()) {
+			List<Float> newProb = probLists.get(prevEntry.getKey());
+			assertEquals(probLists.toString() + ";" + prevProbLists.toString(), newProb.size(), prevEntry.getValue().size());
+			for (int i = 0; i < newProb.size(); i++) {
+				assertEquals(probLists.toString() + ";" + prevProbLists.toString(), newProb.get(i), prevEntry.getValue().get(i),PROB_ERROR_MARGIN);
+			}
+		}
 		
-		// check that vt probabilities did not change
+		// check that vt factions did not change
+		assertEquals(valueTreeNodeNameToFactionMap.size(), 
+				((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode("666")).getValueTree().getNodes().size()
+				+ ((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode(""+Long.MAX_VALUE)).getValueTree().getNodes().size());
+		for (IValueTreeNode vtNode : ((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode("666")).getValueTree().getNodes()) {
+			assertEquals(vtNode.toString(), valueTreeNodeNameToFactionMap.get(vtNode.getName()), vtNode.getFaction(), PROB_ERROR_MARGIN);
+		}
+		for (IValueTreeNode vtNode : ((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode(""+Long.MAX_VALUE)).getValueTree().getNodes()) {
+			assertEquals(vtNode.toString(), valueTreeNodeNameToFactionMap.get(vtNode.getName()), vtNode.getFaction(), PROB_ERROR_MARGIN);
+		}
 		
 		// add a new connected VT node representing a simple boolean node
+		engine.addQuestion(null, new Date(), 0xEEL, 0, null, 
+				"[2][0][1]");
+		
+		// check structure and faction of newly created node
+		root = (ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode(""+0xEEL);
+		assertNotNull(root);
+		assertEquals(2,root.getStatesSize());
+		assertEquals(2, root.getValueTree().get1stLevelNodes().size());
+		for (IValueTreeNode node : root.getValueTree().get1stLevelNodes()) {
+			// All nodes have no child
+			assertTrue(node + ":" +  node.getChildren(), node.getChildren() == null || node.getChildren().isEmpty());
+			// their factions are linear/uniform
+			assertEquals(node + ":" +  node.getChildren(), 1f/root.getValueTree().get1stLevelNodes().size(), node.getFaction());
+		}
+		// also check factions from API
+		for (int i = 0; i < root.getValueTree().get1stLevelNodes().size(); i++) {
+			referencePath = new ArrayList<Integer>();
+			targetPath = new ArrayList<Integer>();
+			targetPath.add(i);
+			for (Float faction : engine.getProbList(0xEEL, targetPath, referencePath, null, null)) {
+				assertEquals(targetPath+"|"+referencePath, 1f/root.getValueTree().get1stLevelNodes().size(), faction);
+			}
+			referencePath.add(i);
+			targetPath.add(0);
+			try {
+				engine.getProbList(0xEEL, targetPath, referencePath, null, null);
+				fail("Should not allow target and reference: " + targetPath + referencePath);
+			} catch  (IllegalArgumentException e) {
+				assertNotNull(e);
+			}
+			
+		}
+		
+		// create arc from D to new node
+		engine.addQuestionAssumption(null, new Date(), 0xEEL, Collections.singletonList(0x0DL), null);
+		assertTrue(engine.getProbabilisticNetwork().getNode(""+0xEEL).getParentNodes().contains(engine.getProbabilisticNetwork().getNode(""+0x0DL)));
+		
+		// change probability of new VT boolean node
+		newValues = new ArrayList<Float>();
+		newValues.add(.8f);
+		newValues.add(.2f);
+		engine.addTrade(null, new Date(), 0xEEL, null, null, newValues, null, null);
 
 		// check that probability of new VT node is OK
+		probList = engine.getProbList(0xEEL, null, null, null, null);
+		assertEquals(2, probList.size());
+		assertEquals(.8f, probList.get(0),PROB_ERROR_MARGIN);
+		assertEquals(.2f, probList.get(1),PROB_ERROR_MARGIN);
 		
 		// check that probability of other nodes did not change
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(prevProbLists.size()+1, probLists.size());
+		for (Entry<Long, List<Float>> prevEntry : prevProbLists.entrySet()) {
+			List<Float> newProb = probLists.get(prevEntry.getKey());
+			assertEquals(probLists.toString() + ";" + prevProbLists.toString(), newProb.size(), prevEntry.getValue().size());
+			for (int i = 0; i < newProb.size(); i++) {
+				assertEquals(probLists.toString() + ";" + prevProbLists.toString(), newProb.get(i), prevEntry.getValue().get(i),PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// check that vt factions of other vt nodes did not change
+		assertEquals(valueTreeNodeNameToFactionMap.size(), 
+				((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode("666")).getValueTree().getNodes().size()
+				+ ((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode(""+Long.MAX_VALUE)).getValueTree().getNodes().size());
+		for (IValueTreeNode vtNode : ((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode("666")).getValueTree().getNodes()) {
+			assertEquals(vtNode.toString(), valueTreeNodeNameToFactionMap.get(vtNode.getName()), vtNode.getFaction(), PROB_ERROR_MARGIN);
+		}
+		for (IValueTreeNode vtNode : ((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode(""+Long.MAX_VALUE)).getValueTree().getNodes()) {
+			assertEquals(vtNode.toString(), valueTreeNodeNameToFactionMap.get(vtNode.getName()), vtNode.getFaction(), PROB_ERROR_MARGIN);
+		}
+		
 		
 		// restore backups
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);

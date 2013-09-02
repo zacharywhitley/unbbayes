@@ -1003,7 +1003,7 @@ public class ValueTree implements IValueTree {
 			}
 			try {
 				ret = children.get(index);
-			} catch (ArrayIndexOutOfBoundsException e) {
+			} catch (IndexOutOfBoundsException e) {
 				throw new IllegalArgumentException("The value " + index + " in path " + path + " is not valid for value tree of " + ret
 						+ ", because the nodes at this level are " + children);
 			}

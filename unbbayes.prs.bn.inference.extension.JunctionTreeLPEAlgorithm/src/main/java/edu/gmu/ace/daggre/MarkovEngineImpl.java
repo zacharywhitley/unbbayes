@@ -4334,13 +4334,31 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			
 			// check if any value tree node has settled to 100%. If so, question is closed.
-			for (IValueTreeNode valueTreeNode : valueTree.getNodes()) {
-				if (valueTreeNode.getFaction() >= 1f) {
+			for (IValueTreeNode valueTreeNode : valueTree.getNodes()) {	// TODO only check nodes which had factions changed, perhaps by using the faction change listener
+				if (Math.abs(valueTree.getProb(valueTreeNode, null) - 1d) < getDefaultInferenceAlgorithm().ERROR_MARGIN) {
+					// this value was settled to approximately 100%, so needs to delete node.
+					List<Float> marginals = null;
+					if (isToObtainProbabilityOfResolvedQuestions()) {
+						// extract the root of value tree, because we'll access it a lot in order to get marginals
+						TreeVariable root = (TreeVariable) valueTree.getRoot();
+						// store the settlements (of shadow nodes) before we delete the node
+						marginals = new ArrayList<Float>(root.getStatesSize());
+						for (int i = 0; i < root.getStatesSize(); i++) {
+							marginals.add(root.getMarginalAt(i));
+						}
+					}
 					// Supposedly, 100% can only happen if a faction is 100%. Delete the question itself if so
 					getDefaultInferenceAlgorithm().setAsPermanentEvidence(
 							node, 	// this node will be deleted, because a state became 100%
 							null, 	// passing null indicates that probability won't be changed
 							true);	// true means node will be deleted (actually, absorbed).
+
+					if (isToObtainProbabilityOfResolvedQuestions() && marginals != null) {
+						synchronized (getResolvedQuestions()) {
+							// this mapping contains the questions which were deleted by settlement
+							getResolvedQuestions().put(getQuestionId(), new StatePair(marginals));
+						}
+					}
 					break;	// no need to check other nodes, because supposedly only 1 node is settled to 100%.
 				}
 			}
