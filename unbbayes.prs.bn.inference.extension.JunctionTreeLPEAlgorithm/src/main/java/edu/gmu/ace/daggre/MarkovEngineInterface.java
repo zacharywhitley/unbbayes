@@ -548,17 +548,30 @@ public interface MarkovEngineInterface {
 	/**
 	 * This is virtually equivalent to calling {@link #addTrade(Long, Date, long, List, List, List, List, List)}
 	 * and then deleting (absorbing) the node.
-	 * @param transactionKey
-	 * @param occurredWhen
-	 * @param questionID
-	 * @param targetPaths
-	 * @param referencePaths
-	 * @param settlements
-	 * @return
-	 * @throws IllegalArgumentException
+	 * @param transactionKey : if null, then this action will be committed immediately.
+	 * @param occurredWhen : when this action happened. It is used for the purpose of re-ordering actions if multiple actions are inserted in same transaction.
+	 * @param questionID : the id of the question to resolve. Must be a root of a value tree
+	 * @param targetPaths : path of value tree node to be settled. If content of settlements doesn't specify a single value, then children of this node will be affected,
+	 * instead of the node identified by this path
+	 * @param referencePaths : these nodes will be the anchor, so probabilities of these nodes won't be affected.
+	 * @param settlements : each element in this list will specify the probability of target. If each element in this list is not a single float value,
+	 * then children of target will have probabilities changed.
+	 * @return : true if successful.
+	 * @throws IllegalArgumentException : if any of the arguments were invalid. For example, paths are inconsistent.
 	 * @see {@link #resolveQuestion(Long, Date, long, List)}
+	 * @see #resolveValueTreeQuestion(Long, Date, long, List, List, List, boolean)
+	 * @see #addTrade(Long, Date, long, List, List, List, List, List)
 	 */
 	public boolean resolveValueTreeQuestion(Long transactionKey, Date occurredWhen, long questionID, List<List<Integer>> targetPaths, List<List<Integer>> referencePaths,List<List<Float>> settlements) throws IllegalArgumentException;
+	
+	/**
+	 * This does the same of {@link #resolveValueTreeQuestion(Long, Date, long, List, List, List)},
+	 * but we can force whether we shall or shall not 
+	 * @param isToForceQuestionRemoval : if true, node will be deleted for sure. If false, node will be deleted only if there is a node with 100% probability
+	 * (i.e. if the question cannot be edited anymore).
+	 * @see #resolveValueTreeQuestion(Long, Date, long, List, List, List)
+	 */
+	public boolean resolveValueTreeQuestion(Long transactionKey, Date occurredWhen, long questionID, List<List<Integer>> targetPaths, List<List<Integer>> referencePaths,List<List<Float>> settlements, boolean isToForceQuestionRemoval) throws IllegalArgumentException;
 	
 	/**
 	 * This function will attempt to undo all trades >= the startingTradeId against this question. 

@@ -4268,17 +4268,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @author Shou Matsumoto
 	 */
 	public class ResolveValueTreeNetworkAction extends ResolveQuestionNetworkAction {
+		private static final long serialVersionUID = 4931668616942760741L;
 		private List<List<Integer>> targetPaths;
 		private List<List<Integer>> referencePaths;
 		private List<List<Float>> settlements;
+		private boolean isToForceQuestionRemoval;
 
-		/** Default constructor initializing fields */
+		/** Default constructor initializing fields  */
 		public ResolveValueTreeNetworkAction(Long transactionKey,
 				Date occurredWhen, long questionId,
 				List<List<Integer>> targetPaths,
 				List<List<Integer>> referencePaths,
-				List<List<Float>> settlements) {
+				List<List<Float>> settlements, boolean isToForceQuestionRemoval) {
 			super(transactionKey, occurredWhen, questionId, null);
+			this.setToForceQuestionRemoval(isToForceQuestionRemoval);
 			this.setTargetPaths(targetPaths);
 			this.setReferencePaths(referencePaths);
 			this.setSettlements(settlements);
@@ -4334,8 +4337,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			
 			// check if any value tree node has settled to 100%. If so, question is closed.
-			for (IValueTreeNode valueTreeNode : valueTree.getNodes()) {	// TODO only check nodes which had factions changed, perhaps by using the faction change listener
-				if (Math.abs(valueTree.getProb(valueTreeNode, null) - 1d) < getDefaultInferenceAlgorithm().ERROR_MARGIN) {
+			for (IValueTreeNode valueTreeNode : valueTree.getNodes()) {	
+				if (isToForceQuestionRemoval()	// if it was set to force this node to be deleted, then delete it
+						|| Math.abs(valueTree.getProb(valueTreeNode, null) - 1d) < getDefaultInferenceAlgorithm().ERROR_MARGIN) { // or else, check if there is any node in 100%
+					// TODO only check nodes which had factions changed, perhaps by using the faction change listener
 					// this value was settled to approximately 100%, so needs to delete node.
 					List<Float> marginals = null;
 					if (isToObtainProbabilityOfResolvedQuestions()) {
@@ -4388,6 +4393,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		public void setReferencePaths(List<List<Integer>> referencePaths) { this.referencePaths = referencePaths; }
 		public List<List<Integer>> getTargetPaths() { return targetPaths; }
 		public void setTargetPaths(List<List<Integer>> targetPaths) { this.targetPaths = targetPaths; }
+
+		/**
+		 * @return the isToForceQuestionRemoval
+		 */
+		public boolean isToForceQuestionRemoval() {
+			return isToForceQuestionRemoval;
+		}
+
+		/**
+		 * @param isToForceQuestionRemoval the isToForceQuestionRemoval to set
+		 */
+		public void setToForceQuestionRemoval(boolean isToForceQuestionRemoval) {
+			this.isToForceQuestionRemoval = isToForceQuestionRemoval;
+		}
 		
 	}
 
@@ -5001,6 +5020,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			List<List<Integer>> targetPaths,
 			List<List<Integer>> referencePaths, List<List<Float>> settlements)
 			throws IllegalArgumentException {
+		return this.resolveValueTreeQuestion(transactionKey, occurredWhen, questionId, targetPaths, referencePaths, settlements, false);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.daggre.MarkovEngineInterface#resolveValueTreeQuestion(java.lang.Long, java.util.Date, long, java.util.List, java.util.List, java.util.List, boolean)
+	 */
+	public boolean resolveValueTreeQuestion(Long transactionKey, Date occurredWhen, long questionId, 
+			List<List<Integer>> targetPaths, List<List<Integer>> referencePaths,List<List<Float>> settlements, 
+			boolean isToForceQuestionRemoval) 
+			throws IllegalArgumentException {
 		
 		// basic assertions
 		if (settlements == null || settlements.isEmpty()
@@ -5016,6 +5046,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (occurredWhen == null) {
 			occurredWhen = new Date();
 		}
+		if (targetPaths == null || targetPaths.isEmpty()) {
+			throw new IllegalArgumentException("Path to value tree node to resolve was not provided. If you want to settle shadow nodes (i.e. exposed states), you may want to use resolveQuestion instead.");
+		}
 		
 		// make sure all targets has respective settlement
 		if (settlements.size() < targetPaths.size()) {
@@ -5023,7 +5056,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					+ " settlements specified. They are supposed to have the same size.");
 		}
 
-		// at this point, targetPath != null
 		if (referencePaths != null) {
 			int pathSize = Math.min(referencePaths.size(),targetPaths.size());
 			for (int i = 0; i < pathSize; i++) {
@@ -5146,7 +5178,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			transactionKey = this.startNetworkActions();
 			ResolveValueTreeNetworkAction newAction = new ResolveValueTreeNetworkAction(
 					transactionKey, occurredWhen, questionId, targetPaths, referencePaths,
-					settlements
+					settlements, isToForceQuestionRemoval
 					);
 			this.addNetworkAction(transactionKey, newAction);
 			this.commitNetworkActions(transactionKey);
@@ -5154,7 +5186,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// instantiate the action object for adding trade
 			ResolveValueTreeNetworkAction newAction = new ResolveValueTreeNetworkAction(
 					transactionKey, occurredWhen, questionId, targetPaths, referencePaths,
-					settlements
+					settlements, isToForceQuestionRemoval
 					);
 			this.addNetworkAction(transactionKey, newAction);
 		}

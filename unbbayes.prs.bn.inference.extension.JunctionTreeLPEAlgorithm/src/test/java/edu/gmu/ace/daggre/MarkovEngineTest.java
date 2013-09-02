@@ -59,7 +59,7 @@ public class MarkovEngineTest extends TestCase {
 	public static final int MIN_STATES = 2;
 	
 	/** Error margin used when comparing 2 probability values */
-	public static final float PROB_ERROR_MARGIN = 0.00005f;
+	public static final float PROB_ERROR_MARGIN = 0.0005f;
 
 	/** Error margin used when comparing 2 asset (score) values */
 	public static final float ASSET_ERROR_MARGIN = .5f;
@@ -2504,8 +2504,8 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.225f, probList.get(1), PROB_ERROR_MARGIN);
 		probList = engine.getProbList(0x0E, Collections.singletonList((long)0x0F), Collections.singletonList(1));
 		assertEquals(2, probList.size());
-		assertEquals(0.6188f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(0.3813f, probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(0.61875f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.38125f, probList.get(1), PROB_ERROR_MARGIN);
 		probList = engine.getProbList(0x0F, Collections.singletonList((long)0x0E), Collections.singletonList(0));
 		assertEquals(2, probList.size());
 		assertEquals(0.2385f, probList.get(0), PROB_ERROR_MARGIN);
@@ -2804,8 +2804,8 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add((long) 0x0F);	
 		probList = engine.getProbList(0x0D, assumptionIds, null);
 		assertEquals(4, probList.size());
-		assertEquals(0.52f , probList.get(2),PROB_ERROR_MARGIN );
-		assertEquals(0.48f , probList.get(3),PROB_ERROR_MARGIN );
+		assertEquals(0.5203f , probList.get(2),PROB_ERROR_MARGIN );
+		assertEquals(0.4796f , probList.get(3),PROB_ERROR_MARGIN );
 		
 		assumedStates.add(1);	// set f2 as assumed state
 		
@@ -27588,6 +27588,59 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(vtNode.toString(), valueTreeNodeNameToFactionMap.get(vtNode.getName()), vtNode.getFaction(), PROB_ERROR_MARGIN);
 		}
 		
+		// resolve the new node, forcing it to be deleted
+		engine.resolveValueTreeQuestion(null, new Date(), 0xEEL, Collections.singletonList(Collections.singletonList(0)), null, Collections.singletonList(Collections.singletonList(.1f)), true);
+		
+		// check that vt node was deleted
+		if (engine.isToDeleteResolvedNode()) {
+			assertNull(engine.getProbabilisticNetwork().getNode(""+0xEEL));
+			assertFalse(engine.getProbLists(null, null, null).containsKey(0xEEL));
+		}
+		
+		// check that probability of other nodes did not change
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(prevProbLists.size() + (engine.isToDeleteResolvedNode()?0:1), probLists.size());
+		for (Entry<Long, List<Float>> prevEntry : prevProbLists.entrySet()) {
+			List<Float> newProb = probLists.get(prevEntry.getKey());
+			assertEquals(probLists.toString() + ";" + prevProbLists.toString(), newProb.size(), prevEntry.getValue().size());
+			for (int i = 0; i < newProb.size(); i++) {
+				assertEquals(probLists.toString() + ";" + prevProbLists.toString(), newProb.get(i), prevEntry.getValue().get(i),PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// check that vt factions of other vt nodes did not change
+		assertEquals(valueTreeNodeNameToFactionMap.size(), 
+				((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode("666")).getValueTree().getNodes().size()
+				+ ((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode(""+Long.MAX_VALUE)).getValueTree().getNodes().size());
+		for (IValueTreeNode vtNode : ((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode("666")).getValueTree().getNodes()) {
+			assertEquals(vtNode.toString(), valueTreeNodeNameToFactionMap.get(vtNode.getName()), vtNode.getFaction(), PROB_ERROR_MARGIN);
+		}
+		for (IValueTreeNode vtNode : ((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode(""+Long.MAX_VALUE)).getValueTree().getNodes()) {
+			assertEquals(vtNode.toString(), valueTreeNodeNameToFactionMap.get(vtNode.getName()), vtNode.getFaction(), PROB_ERROR_MARGIN);
+		}
+		
+
+		// the joint
+		questionIds = new ArrayList<Long>();
+		questionIds.add(666L);
+		questionIds.add(1313L);
+		questionIds.add(0x0DL);
+		questionIds.add(0x0FL);
+		questionStates = new ArrayList<Integer>();
+		questionStates.add(null);
+		questionStates.add(null);
+		questionStates.add(1);
+		questionStates.add(1);
+		targetPaths = new ArrayList<List<Integer>>();
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		assertEquals(0.3088f, engine.getJointProbability(questionIds, questionStates, targetPaths, null), PROB_ERROR_MARGIN);
+		
 		
 		// restore backups
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
@@ -27597,7 +27650,417 @@ public class MarkovEngineTest extends TestCase {
 	 * Performs the same of {@link #testAddValueTreeQuestion()}, but in a single transaction.
 	 */
 	public final void testValueTreeQuestionSingleTransaction() {
-		fail("Not implemented yet");
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(true);
+		engine.initialize();
+		
+		// create DEF net.
+		createDEFNetIn1Transaction(new HashMap<String, Long>());
+		
+		long transactionKey = engine.startNetworkActions();
+		
+		engine.addQuestion(
+				transactionKey, 
+				new Date(), 
+				666L, 
+				Integer.MAX_VALUE, 	// will be supposedly ignored.
+				null, 
+				"[ 2 [ 3 [ 0 2 [ 0 2 ] 0 ] 2 ] ] [ 0 , 0 ] , [ 0 , 1 ] , [ 0 , 2 ] , [ 1 ]"
+			);
+		
+		
+		engine.addQuestion(
+				transactionKey, 
+				new Date(), 
+				1313L, 
+				0, 	// will be supposedly ignored.
+				null, 
+				"[2[3[0 2[0 2]0]2]][0,0],[0,1],[0,2],[1]"			
+			);
+				
+		
+		// declaring variables to be used as arguments of queries
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		List<Integer> targetPath = null;
+		List<Integer> referencePath = null;
+		List<Long> assumptionIds = null;
+		List<Integer> assumedStates = null;
+		List<Float> probList = null;
+		List<Float> newValues = null;
+		
+
+		// connect the value tree nodes to DEF: 666->D and F->1313
+		engine.addQuestionAssumption(transactionKey, new Date(), 
+				0x0DL, Collections.singletonList(666L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 
+				1313L, Collections.singletonList(0x0FL), null);
+		
+		
+		List<Long> questionIds = null;
+		List<Integer> questionStates = null;
+		List<List<Integer>> targetPaths = null;
+		List<List<Integer>> referencePaths = null;
+		float jointProb = 1f;
+		
+		// check that we cannot trade on invalid target
+		assumptionIds = Collections.singletonList(0x0DL);
+		assumedStates = Collections.singletonList(0);
+		newValues = Collections.singletonList(0.8f);
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPath.add(0);
+		targetPath.add(2);
+		targetPath.add(3);
+		targetPath.add(5);
+		try {
+			engine.addTrade(transactionKey, new Date(), 666L, targetPath, referencePath, newValues, assumptionIds, assumedStates);
+			fail("Should not allow trade on invalid target path");
+		} catch (RuntimeException e) {
+			assertNotNull(e);
+		}
+		// check that we cannot change conditional probability when they include non-exposed nodes
+		assumptionIds = Collections.singletonList(0x0DL);
+		assumedStates = Collections.singletonList(0);
+		newValues = Collections.singletonList(0.8f);
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPath.add(0);
+		try {
+			engine.addTrade(transactionKey, new Date(), 666L, targetPath, referencePath, newValues, assumptionIds, assumedStates);
+			fail("Should not allow trade changing conditional probability using non-exposed nodes");
+		} catch (RuntimeException e) {
+			assertNotNull(e);
+		}
+		assumptionIds = Collections.singletonList(0x0FL);
+		assumedStates = Collections.singletonList(1);
+		newValues = Collections.singletonList(0.8f);
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);
+		targetPath.add(1);
+		targetPath.add(1);
+		try {
+			engine.addTrade(transactionKey, new Date(), 1313L, targetPath, referencePath, newValues, assumptionIds, assumedStates);
+			fail("Should not allow trade changing conditional probability using non-exposed nodes");
+		} catch (RuntimeException e) {
+			assertNotNull(e);
+		}
+		
+		// change conditional probabilities P(666|D=1)  of shadow nodes
+		newValues = new ArrayList<Float>();
+		newValues.add(.4f);
+		newValues.add(.3f);
+		newValues.add(.2f);
+		newValues.add(.1f);
+		engine.addTrade(transactionKey, new Date(), 666, null, referencePath, newValues, Collections.singletonList(0x0DL), Collections.singletonList(1));
+		
+		// change conditional probabilities P(1313|F=1)  of shadow nodes, specifying target path
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(.2f);
+		newValues.add(.3f);
+		newValues.add(.4f);
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);
+		targetPath.add(0);
+		engine.addTrade(transactionKey, new Date(), 1313L, targetPath, Collections.EMPTY_LIST, newValues, Collections.singletonList(0x0FL), Collections.singletonList(1));
+		
+		// change conditional prob P([0,1,1,1]|[0,1]) = .5 of 1313. This should not change marginal
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		targetPath = new ArrayList<Integer>(referencePath);
+		targetPath.add(1);
+		targetPath.add(1);
+		newValues = new ArrayList<Float>();
+		newValues.add(.5f);
+		engine.addTrade(transactionKey, new Date(), 1313L, targetPath, referencePath, newValues, Collections.EMPTY_LIST, null);
+		
+		Long questionId = null;
+		
+		// resolve non vt nodes (E to 1, in this case)
+		engine.resolveQuestion(transactionKey, new Date(), 0x0EL, 1);
+		
+		
+		// resolve vt nodes not to 100%. Make sure it is not shadow
+		List<List<Float>> settlements;
+		settlements = new ArrayList<List<Float>>();
+		
+		questionId = 666L;
+		newValues = Collections.singletonList(.9f);
+		settlements.add(newValues);
+		targetPaths = new ArrayList<List<Integer>>();
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		engine.resolveValueTreeQuestion(transactionKey, new Date(), questionId, targetPaths, referencePaths, settlements);
+		
+		
+		// resolve children of vt node [0,1,1]|[0,1] of 1313 to [0.0,1.0] - it supposedly does not form 100% anywhere, because of anchor.
+		referencePaths = new ArrayList<List<Integer>>();
+		targetPaths = new ArrayList<List<Integer>>();
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		targetPath = new ArrayList<Integer>(referencePath);
+		targetPath.add(1);
+		referencePaths.add(referencePath);
+		targetPaths.add(targetPath);
+		settlements = new ArrayList<List<Float>>();
+		newValues = new ArrayList<Float>();
+		newValues.add(0f);
+		newValues.add(1f);
+		settlements.add(newValues);
+		// this should not change marginals
+		engine.resolveValueTreeQuestion(transactionKey, new Date(), 1313L, targetPaths, referencePaths, settlements);
+		
+
+		// resolve a vt node [0,1,1,1] of 1313 to 100% (so that it is deleted)
+		targetPaths = new ArrayList<List<Integer>>();
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		settlements = new ArrayList<List<Float>>();
+		newValues = new ArrayList<Float>();
+		newValues.add(1f);
+		settlements.add(newValues);
+		engine.resolveValueTreeQuestion(transactionKey, new Date(), 1313L, targetPaths, null, settlements);
+		
+		// add a disconnected VT node
+		engine.addQuestion(transactionKey, new Date(), Long.MAX_VALUE, Integer.MAX_VALUE, null, 
+				"[3[1 1 1[0]]][0][1][2]");
+		
+		// add a new connected VT node representing a simple boolean node
+		engine.addQuestion(transactionKey, new Date(), 0xEEL, 0, null, 
+				"[2][0][1]");
+		
+		
+		// create arc from D to new node
+		engine.addQuestionAssumption(transactionKey, new Date(), 0xEEL, Collections.singletonList(0x0DL), null);
+		
+		// change probability of new VT boolean node
+		newValues = new ArrayList<Float>();
+		newValues.add(.8f);
+		newValues.add(.2f);
+		engine.addTrade(transactionKey, new Date(), 0xEEL, null, null, newValues, null, null);
+
+		
+		
+		// resolve the new node, forcing it to be deleted
+		engine.resolveValueTreeQuestion(transactionKey, new Date(), 0xEEL, Collections.singletonList(Collections.singletonList(0)), null, Collections.singletonList(Collections.singletonList(.1f)), true);
+		
+
+		engine.commitNetworkActions(transactionKey);
+		
+		
+		// check that vt node was not deleted
+		assertNotNull(engine.getProbabilisticNetwork().getNode("666"));
+		assertTrue(engine.getProbLists(null, null, null).containsKey(666L));
+		
+		
+		// the joint
+		questionIds = new ArrayList<Long>();
+		questionIds.add(666L);
+		questionIds.add(1313L);
+		questionIds.add(0x0DL);
+		questionIds.add(0x0FL);
+		questionStates = new ArrayList<Integer>();
+		questionStates.add(null);
+		questionStates.add(null);
+		questionStates.add(1);
+		questionStates.add(1);
+		targetPaths = new ArrayList<List<Integer>>();
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		assertEquals(0.3088f, engine.getJointProbability(questionIds, questionStates, targetPaths, null), PROB_ERROR_MARGIN);
+		
+		
+
+		// check marginals
+		probLists = engine.getProbLists(null, null, null);
+		questionId = 0x0DL;
+		assertEquals(2, probLists.get(questionId).size());
+		assertEquals(.5645, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.4355, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		questionId = 0x0FL;
+		assertEquals(2, probLists.get(questionId).size());
+		assertEquals(.1746, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.8254, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		questionId = 666L;
+		assertEquals(4, probLists.get(questionId).size());
+		assertEquals(.03845, probLists.get(questionId).get(0),PROB_ERROR_MARGIN);
+		assertEquals(.0299, probLists.get(questionId).get(1),PROB_ERROR_MARGIN);
+		assertEquals(.0214, probLists.get(questionId).get(2),PROB_ERROR_MARGIN);
+		assertEquals(.9102, probLists.get(questionId).get(3),PROB_ERROR_MARGIN);
+		
+		// check factions question 666
+		questionId = 666L;
+		// [X]
+		referencePath = new ArrayList<Integer>();
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(1-probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		// [0,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, null, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(questionId).get(targetPath.get(targetPath.size()-1)), probList.get(0), PROB_ERROR_MARGIN);
+		// [0,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		// [0,1,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.5, probList.get(0), PROB_ERROR_MARGIN);
+		// [1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(1);
+		targetPath =new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.0119, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,targetPath.get(targetPath.size()-1)+1);
+		probList = engine.getProbList(questionId, targetPath, referencePath, null, null);
+		assertEquals(1, probList.size());
+		assertEquals(0.9881, probList.get(0), PROB_ERROR_MARGIN);
+		
+		// keep list of previous marginals, for comparison
+		Map<Long,List<Float>> prevProbLists = probLists;
+		
+
+		// check structure and faction of newly created node
+		ValueTreeProbabilisticNode root = (ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode(""+Long.MAX_VALUE);
+		assertNotNull(root);
+		assertEquals(3,root.getStatesSize());
+		assertEquals(3, root.getValueTree().get1stLevelNodes().size());
+		for (IValueTreeNode node : root.getValueTree().get1stLevelNodes()) {
+			// All nodes have 1 child
+			assertEquals(node + ":" +  node.getChildren(), 1, node.getChildren().size());
+			// their factions are linear/uniform
+			assertEquals(node + ":" +  node.getChildren(), 1f/root.getValueTree().get1stLevelNodes().size(), node.getFaction());
+			// faction of their only child is 1
+			assertEquals(node + ":" +  node.getChildren(), 1f, node.getChildren().get(0).getFaction());
+		}
+		// also check factions from API
+		for (int i = 0; i < root.getValueTree().get1stLevelNodes().size(); i++) {
+			referencePath = new ArrayList<Integer>();
+			targetPath = new ArrayList<Integer>();
+			targetPath.add(i);
+			for (Float faction : engine.getProbList(Long.MAX_VALUE, targetPath, referencePath, null, null)) {
+				assertEquals(targetPath+"|"+referencePath, 1f/root.getValueTree().get1stLevelNodes().size(), faction);
+			}
+			referencePath.add(i);
+			targetPath.add(0);
+			for (Float faction : engine.getProbList(Long.MAX_VALUE, targetPath, referencePath, null, null)) {
+				assertEquals(targetPath+"|"+referencePath, 1f, faction);
+			}
+		}
+
+		// check that vt node was deleted
+		if (engine.isToDeleteResolvedNode()) {
+			assertNull(engine.getProbabilisticNetwork().getNode("1313"));
+			assertFalse(engine.getProbLists(null, null, null).containsKey(1313L));
+		}
+		if (engine.isToDeleteResolvedNode()) {
+			assertNull(engine.getProbabilisticNetwork().getNode(""+0xEEL));
+			assertFalse(engine.getProbLists(null, null, null).containsKey(0xEEL));
+		}
+		
+		// check that probabilities of previous nodes did not change
+		probLists = engine.getProbLists(null, null, null);
+		prevProbLists = probLists;
+		
+		// also store the factions of all value tree nodes so that I can compare later
+		// I can store by name, because the names are all in the format <questionId>[_<path>]*
+		Map<String, Float> valueTreeNodeNameToFactionMap = new HashMap<String, Float>();
+		for (IValueTreeNode vtNode : ((ValueTreeProbabilisticNode)engine.getProbabilisticNetwork().getNode("666")).getValueTree().getNodes()) {
+			valueTreeNodeNameToFactionMap.put(vtNode.getName(), vtNode.getFaction());
+		}
+		for (IValueTreeNode vtNode : ((ValueTreeProbabilisticNode)engine.getProbabilisticNetwork().getNode(""+Long.MAX_VALUE)).getValueTree().getNodes()) {
+			valueTreeNodeNameToFactionMap.put(vtNode.getName(), vtNode.getFaction());
+		}
+		
+		
+		// export/import net
+		String exportedNet = engine.exportState();
+		assertNotNull(exportedNet);
+		assertFalse(exportedNet.trim().isEmpty());
+		System.out.println(exportedNet);
+		engine.importState(exportedNet);
+		
+		
+		// check that probability of other nodes did not change
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(prevProbLists.size() + (engine.isToDeleteResolvedNode()?0:1), probLists.size());
+		for (Entry<Long, List<Float>> prevEntry : prevProbLists.entrySet()) {
+			List<Float> newProb = probLists.get(prevEntry.getKey());
+			assertEquals(probLists.toString() + ";" + prevProbLists.toString(), newProb.size(), prevEntry.getValue().size());
+			for (int i = 0; i < newProb.size(); i++) {
+				assertEquals(probLists.toString() + ";" + prevProbLists.toString(), newProb.get(i), prevEntry.getValue().get(i),PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// check that vt factions of other vt nodes did not change
+		assertEquals(valueTreeNodeNameToFactionMap.size(), 
+				((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode("666")).getValueTree().getNodes().size()
+				+ ((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode(""+Long.MAX_VALUE)).getValueTree().getNodes().size());
+		for (IValueTreeNode vtNode : ((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode("666")).getValueTree().getNodes()) {
+			assertEquals(vtNode.toString(), valueTreeNodeNameToFactionMap.get(vtNode.getName()), vtNode.getFaction(), PROB_ERROR_MARGIN);
+		}
+		for (IValueTreeNode vtNode : ((ValueTreeProbabilisticNode) engine.getProbabilisticNetwork().getNode(""+Long.MAX_VALUE)).getValueTree().getNodes()) {
+			assertEquals(vtNode.toString(), valueTreeNodeNameToFactionMap.get(vtNode.getName()), vtNode.getFaction(), PROB_ERROR_MARGIN);
+		}
+		
+		
+		// restore backups
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+	
 	}
 	
 	/**
