@@ -25885,15 +25885,601 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(0.5f, probList.get(3), PROB_ERROR_MARGIN);
 		}
 		
-		// create DEF net.
+		// declaring variables to be used as arguments of queries
+		List<Integer> targetPath = null;
+		List<Integer> referencePath = null;
+		List<Long> assumptionIds = null;
+		List<Integer> assumedStates = null;
+		List<Float> probList = null;
+		List<Float> newValues = null;
 		
+		// check some probabilities
+		
+		// check that P(666=1) = P(666=shadow(1))
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(666L).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		
+		// P(666=1 | 1313=shadow(4))
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(666L).get(3), probList.get(0), PROB_ERROR_MARGIN);
+
+		// create DEF net.
+		createDEFNetIn1Transaction(new HashMap<String, Long>());
+		
+		// connect the value tree nodes to DEF: 666->D and F->1313
+		engine.addQuestionAssumption(null, new Date(), 
+				0x0DL, Collections.singletonList(666L), null);
+		engine.addQuestionAssumption(null, new Date(), 
+				1313L, Collections.singletonList(0x0FL), null);
+		
+		// check probability of value tree nodes
+		probLists = engine.getProbLists(null, assumptionIds, assumedStates);
+		assertNotNull(probLists);
+		assertEquals(5, probLists.size());
+		probList = probLists.get(666L);
+		assertEquals(4, probList.size());
+		assertEquals(0.166667f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.166667f, probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(0.166667f, probList.get(2), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(3), PROB_ERROR_MARGIN);
+		probList = probLists.get(1313L);
+		assertEquals(4, probList.size());
+		assertEquals(0.166667f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.166667f, probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(0.166667f, probList.get(2), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(3), PROB_ERROR_MARGIN);
+		
+		// check some probabilities
+		
+		// check that P(666=1) = P(666=shadow(1))
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(666L).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		
+		// P(666=1 | 1313=shadow(4))
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(666L).get(3), probList.get(0), PROB_ERROR_MARGIN);
+		
+		// check probability of shadow nodes are equal to queying marginals 
+		probList = engine.getProbList(666L, null, null, assumptionIds, assumedStates);
+		assertEquals(4, probList.size());
+		assertEquals(0.166667f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.166667f, probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(0.166667f, probList.get(2), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(3), PROB_ERROR_MARGIN);
+		probList = engine.getProbList(1313L, Collections.EMPTY_LIST, Collections.EMPTY_LIST, assumptionIds, assumedStates);
+		assertEquals(4, probList.size());
+		assertEquals(0.166667f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.166667f, probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(0.166667f, probList.get(2), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, probList.get(3), PROB_ERROR_MARGIN);
+		
+		// check factions
+		// faction of children of root
+		referencePath = new ArrayList<Integer>();
+		targetPath = new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(0,1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.5, probList.get(0), PROB_ERROR_MARGIN);
+		
+		// [0,X]
+		referencePath.add(0);
+		targetPath = new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.33333333, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.3333333333, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,2);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.3333333333, probList.get(0), PROB_ERROR_MARGIN);
+		
+		// [1,X]
+		referencePath.set(referencePath.size()-1,1);
+		targetPath = new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.5, probList.get(0), PROB_ERROR_MARGIN);
+		
+		// [0,0,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(0);
+		targetPath = new ArrayList<Integer>(referencePath);
+		targetPath.add((Math.random() < .5)?0:1);
+		try {
+			engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+			fail("[0,0,X] shall not exist");
+		} catch (RuntimeException e) {
+			assertNotNull(e);
+		}
+		// [1,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(1);
+		referencePath.add(1);
+		targetPath = new ArrayList<Integer>(referencePath);
+		targetPath.add((Math.random() < .5)?0:1);
+		try {
+			engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+			fail("[0,0,X] shall not exist");
+		} catch (RuntimeException e) {
+			assertNotNull(e);
+		}
+		// [0,1,0,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		referencePath.add(0);
+		targetPath = new ArrayList<Integer>(referencePath);
+		targetPath.add((Math.random() < .5)?0:1);
+		try {
+			engine.getProbList(1313L, targetPath, referencePath, assumptionIds, assumedStates);
+			fail("[0,1,0,X] shall not exist");
+		} catch (RuntimeException e) {
+			assertNotNull(e);
+		}
+		
+		// if anchor is descendant of target, must return 1
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);
+		targetPath.add(1);
+		targetPath.add(0);
+		referencePath = new ArrayList<Integer>(targetPath);
+		referencePath.add((Math.random() < .5)?0:1);
+		probList = engine.getProbList(1313L,targetPath, referencePath , assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(1, probList.get(0), PROB_ERROR_MARGIN);
+		
+		// must fail if target and reference is completely unrelated
+		try {
+			engine.getProbList(666L, Collections.singletonList(1), Collections.singletonList(0), assumptionIds, assumedStates);
+			fail("Anchor is unrelated to target, so shall fail");
+		} catch (RuntimeException e) {
+			assertNotNull(e);
+		}
+		try {
+			referencePath = new ArrayList<Integer>();
+			referencePath.add(1);
+			referencePath.add(1);
+			targetPath = new ArrayList<Integer>();
+			targetPath.add(0);
+			targetPath.add(1);
+			targetPath.add(1);
+			targetPath.add(1);
+			engine.getProbList(1313L, Collections.singletonList(0), Collections.singletonList(1), assumptionIds, assumedStates);
+			fail("Anchor is unrelated to target, so shall fail");
+		} catch (RuntimeException e) {
+			assertNotNull(e);
+		}
+		
+		// [0,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		targetPath = new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.5, probList.get(0), PROB_ERROR_MARGIN);
+		
+		// [0,1,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		referencePath.add(1);
+		targetPath = new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.5, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.5, probList.get(0), PROB_ERROR_MARGIN);
+		
+		
+		// check some conditional probability within value tree
+		// with anchor = [0]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		
+		// target = [0,1,0]
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);
+		targetPath.add(1);
+		targetPath.add(0);
+		probList = engine.getProbList(1313L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.1666666, probList.get(0), PROB_ERROR_MARGIN);
+		// target = [0,1,1,1]
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPath.add(1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.08333333, probList.get(0), PROB_ERROR_MARGIN);
+		
+		// check probability of vt nodes given non-vt nodes. 
+		// Assumptions: E = 1, and 1313 = 3
+		
+		assumptionIds = new ArrayList<Long>();
+		assumptionIds.add(0x0EL);	// assume one non-VT node
+		assumptionIds.add(1313L);	// assume one VT node
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(1);
+		assumedStates.add(3);
+		
+		// [0,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		targetPath = new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(666L, targetPath, null, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.08333333, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.5, probList.get(0), PROB_ERROR_MARGIN);	// conditional of target given reference = shadow is faction
+		
+		// [0,1,1,X]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		referencePath.add(1);
+		referencePath.add(1);
+		targetPath = new ArrayList<Integer>(referencePath);
+		targetPath.add(0);
+		probList = engine.getProbList(666L, targetPath, null, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.04166666, probList.get(0), PROB_ERROR_MARGIN);
+		targetPath.set(targetPath.size()-1,1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.5, probList.get(0), PROB_ERROR_MARGIN);	// prob of node given parent which is both below shadow is faction
+		
+		
+		// check some conditional probability within value tree
+		// with anchor = [0]
+		referencePath = new ArrayList<Integer>();
+		referencePath.add(0);
+		
+		// target = [0,1,0]
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);
+		targetPath.add(1);
+		targetPath.add(0);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(0.16666667, probList.get(0), PROB_ERROR_MARGIN);
+		// target = [0,1,1,1]
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPath.add(1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(.08333333, probList.get(0), PROB_ERROR_MARGIN);
+		
+		// check nodes D,E,F and also shadow nodes
+		probLists = engine.getProbLists(null, assumptionIds, assumedStates);
+		assertEquals(5, probLists.size());
+		// check D
+		probList = probLists.get(0x0DL);
+		assertEquals(2,probList.size());
+		assertEquals(.2379,probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(.7621,probList.get(1), PROB_ERROR_MARGIN);
+		// check E
+		probList = probLists.get(0x0EL);
+		assertEquals(2,probList.size());
+		assertEquals(.0,probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(1,probList.get(1), PROB_ERROR_MARGIN);
+		// check F
+		probList = probLists.get(0x0FL);
+		assertEquals(2,probList.size());
+		assertEquals(.1724,probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(.8276,probList.get(1), PROB_ERROR_MARGIN);
+		// check 666
+		probList = probLists.get(666L);
+		assertEquals(4,probList.size());
+		assertEquals(.1667,probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(.1667,probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(.1667,probList.get(2), PROB_ERROR_MARGIN);
+		assertEquals(.5,probList.get(3), PROB_ERROR_MARGIN);
+		// check 1313
+		probList = probLists.get(1313L);
+		assertEquals(4,probList.size());
+		assertEquals(.0,probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(.0,probList.get(1), PROB_ERROR_MARGIN);
+		assertEquals(.0,probList.get(2), PROB_ERROR_MARGIN);
+		assertEquals(1f,probList.get(3), PROB_ERROR_MARGIN);
+		
+		// check probability of shadow nodes given non-vt nodes is equal to marginal
+		referencePath = new ArrayList<Integer>();	// use arbitrary reference path
+		referencePath.add(0);
+		targetPath = new ArrayList<Integer>(referencePath);	// first 3 shadow nodes
+		targetPath.add(0);
+		assertEquals(4, probLists.get(666L).size());
+		for (int i = 0; i < probLists.get(666L).size() - 1; i++) {
+			// compare the first 3 conditional prob with what the query to shadow node returns
+			targetPath.set(targetPath.size()-1, i);
+			probList = engine.getProbList(666L, targetPath, null, assumptionIds, assumedStates);
+			assertEquals(1, probList.size());
+			assertEquals(probLists.get(666L).get(i), probList.get(0));
+		}
+		// compare the last shadow node
+		targetPath.clear();
+		referencePath.clear();
+		targetPath.add(1);
+		probList = engine.getProbList(666L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(666L).get(3), probList.get(0));
+		// do the same check to 1313
+		referencePath = new ArrayList<Integer>();	// use arbitrary reference path
+		referencePath.add(0);
+		targetPath = new ArrayList<Integer>(referencePath);	// first 3 shadow nodes
+		targetPath.add(0);
+		for (int i = 0; i < probLists.get(1313L).size() - 1; i++) {
+			// compare the first 3 conditional prob with what the query to shadow node returns
+			targetPath.set(targetPath.size()-1, i);
+			probList = engine.getProbList(1313L, targetPath, referencePath, assumptionIds, assumedStates);
+			assertEquals(1, probList.size());
+			assertEquals(probLists.get(1313L).get(i), probList.get(0));
+		}
+		// compare the last shadow node
+		targetPath.clear();
+		referencePath.clear();
+		targetPath.add(1);
+		probList = engine.getProbList(1313L, targetPath, referencePath, assumptionIds, assumedStates);
+		assertEquals(1, probList.size());
+		assertEquals(probLists.get(1313L).get(3), probList.get(0));
+		
+		// check joint probability
+		
+		// first, prepare the variables to be used for joint probabilities
+		List<Long> questionIds = null;
+		List<Integer> questionStates = null;
+		List<List<Integer>> targetPaths = null;
+		List<List<Integer>> referencePaths = null;
+		float jointProb = 1f;
+		
+		// check that the joint for 1 node is the same as the marginal
+		questionIds = new ArrayList<Long>();
+		questionIds.add(666L);
+		questionStates = new ArrayList<Integer>();
+		questionStates.add(0);
+		
+		// first, check shadow nodes by not specifying target paths
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(0.16666666665f, jointProb, PROB_ERROR_MARGIN);
+		questionStates.set(questionStates.size()-1, 1);
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(0.16666666665f, jointProb, PROB_ERROR_MARGIN);
+		questionStates.set(questionStates.size()-1, 2);
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(0.16666666665f, jointProb, PROB_ERROR_MARGIN);
+		questionStates.set(questionStates.size()-1, 3);
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(0.5f, jointProb, PROB_ERROR_MARGIN);
+		// the other node
+		questionIds = new ArrayList<Long>();
+		questionIds.add(1313L);
+		questionStates = new ArrayList<Integer>();
+		questionStates.add(0);
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(0.16666666665f, jointProb, PROB_ERROR_MARGIN);
+		questionStates.set(questionStates.size()-1, 1);
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(0.16666666665f, jointProb, PROB_ERROR_MARGIN);
+		questionStates.set(questionStates.size()-1, 2);
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(0.16666666665f, jointProb, PROB_ERROR_MARGIN);
+		questionStates.set(questionStates.size()-1, 3);
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(0.5f, jointProb, PROB_ERROR_MARGIN);
+		
+		// check for internal nodes too
+		questionIds = new ArrayList<Long>();
+		questionIds.add(1313L);
+		questionStates = new ArrayList<Integer>();
+		questionStates.add(Integer.MAX_VALUE);	// states should be ignored in this case
+		targetPaths = new ArrayList<List<Integer>>();
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(.5*.33333333*.5*.5, jointProb, PROB_ERROR_MARGIN);
+		questionIds = new ArrayList<Long>();
+		questionIds.add(666L);
+		targetPaths = new ArrayList<List<Integer>>();
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(.5, jointProb, PROB_ERROR_MARGIN);
+		targetPath.add(1);
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(.5*.5, jointProb, PROB_ERROR_MARGIN);
+		
+		
+		// check joint of two value tree nodes
+		
+		// one of them is shadow node without path specification
+		questionIds = new ArrayList<Long>();
+		questionIds.add(666L);
+		questionIds.add(1313L);
+		questionStates = new ArrayList<Integer>();
+		questionStates.add(null);	
+		questionStates.add(3);	
+		targetPaths = new ArrayList<List<Integer>>();
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);
+		targetPath.add(1);
+		targetPath.add(1);
+		targetPath.add(0);
+		targetPaths.add(targetPath);
+		if (Math.random() < .5) {
+			// the second target may be null or not exist at all, because we are specifying shadow node (without specifying path)
+			targetPaths.add(null);
+		}
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(.5*.33333333*.5*.5 * .5, jointProb, PROB_ERROR_MARGIN);
+		
+		// one of them is shadow node, but with path specification
+		questionIds = new ArrayList<Long>();
+		questionIds.add(1313L);
+		questionIds.add(666L);
+		questionStates = new ArrayList<Integer>();
+		questionStates.add(null);				// will be supposedly ignored
+		questionStates.add(Integer.MAX_VALUE);	// will be supposedly ignored
+		targetPaths = new ArrayList<List<Integer>>();
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);	// this is the shadow node
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);
+		targetPath.add(1);
+		targetPaths.add(targetPath);
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(.5*.33333333*.5*.5, jointProb, PROB_ERROR_MARGIN);
+		
+		// one of them is shadow node, and another is ancestor of shadow node
+		questionIds = new ArrayList<Long>();
+		questionIds.add(1313L);
+		questionIds.add(666L);
+		questionStates = new ArrayList<Integer>();
+		questionStates.add(3);				
+		targetPaths = new ArrayList<List<Integer>>();
+		targetPaths.add(null);
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);	// this is an ancestor of shadow node
+		targetPaths.add(targetPath);
+		jointProb = engine.getJointProbability(questionIds, questionStates, targetPaths, referencePaths);
+		assertEquals(.5*.5, jointProb, PROB_ERROR_MARGIN);
+		
+		// both are non-shadow nodes
+		
+		
+		// check joint probability with external nodes
+		
+		// check that we cannot trade on invalid target
+		assumptionIds = Collections.singletonList(0x0DL);
+		assumedStates = Collections.singletonList(0);
+		newValues = Collections.singletonList(0.8f);
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPath.add(0);
+		targetPath.add(2);
+		targetPath.add(3);
+		targetPath.add(5);
+		try {
+			engine.addTrade(null, new Date(), 666L, targetPath, referencePath, newValues, assumptionIds, assumedStates);
+			fail("Should not allow trade on invalid target path");
+		} catch (RuntimeException e) {
+			assertNotNull(e);
+		}
+		// check that we cannot change conditional probability when they include non-exposed nodes
+		assumptionIds = Collections.singletonList(0x0DL);
+		assumedStates = Collections.singletonList(0);
+		newValues = Collections.singletonList(0.8f);
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(1);
+		targetPath.add(0);
+		try {
+			engine.addTrade(null, new Date(), 666L, targetPath, referencePath, newValues, assumptionIds, assumedStates);
+			fail("Should not allow trade changing conditional probability using non-exposed nodes");
+		} catch (RuntimeException e) {
+			assertNotNull(e);
+		}
+		assumptionIds = Collections.singletonList(0x0FL);
+		assumedStates = Collections.singletonList(1);
+		newValues = Collections.singletonList(0.8f);
+		targetPath = new ArrayList<Integer>();
+		targetPath.add(0);
+		targetPath.add(1);
+		targetPath.add(1);
+		try {
+			engine.addTrade(null, new Date(), 1313L, targetPath, referencePath, newValues, assumptionIds, assumedStates);
+			fail("Should not allow trade changing conditional probability using non-exposed nodes");
+		} catch (RuntimeException e) {
+			assertNotNull(e);
+		}
+		
+		// change conditional probabilities P(666|D) and P(1313|F) of shadow nodes
+		
+		// resolve non vt nodes
+		
+		// check probabilities and joint probabilities again
+		
+		// resolve vt nodes not to 100%
+		
+		// check that vt node was not deleted
+		
+		// check probabilities and joint probabilities again
+
+		// resolve vt nodes to 100%
+		
+		// check that vt node was deleted
+		
+		//check probabilities and joint probabilities again
+		
+
+		//add a disconnected VT node
+		 
+		// check that probabilities did not change
 		
 		// export/import net
 		String exportedNet = engine.exportState();
 		assertNotNull(exportedNet);
 		assertFalse(exportedNet.trim().isEmpty());
-		System.out.println(exportedNet);
+//		System.out.println(exportedNet);
 		engine.importState(exportedNet);
+		
+		// check that probabilities did not change
+		
+		// check that vt probabilities did not change
+		
+		// add a new connected VT node representing a simple boolean node
+
+		// check that probability of new VT node is OK
+		
+		// check that probability of other nodes did not change
 		
 		// restore backups
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);

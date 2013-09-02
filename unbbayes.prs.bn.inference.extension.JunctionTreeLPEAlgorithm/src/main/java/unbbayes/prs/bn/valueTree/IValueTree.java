@@ -144,6 +144,17 @@ public interface IValueTree extends Serializable {
 	 * @return : the old probability.
 	 */
 	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, Collection<IValueTreeNode> mutuallyExclusiveAnchors);
+	
+	/**
+	 * This method has the same specification of {@link #changeProb(IValueTreeNode, IValueTreeNode, float, Collection)},
+	 * but it allows us to specify whether routines included by {@link #addFactionChangeListener(IValueTreeFactionChangeListener)}
+	 * shall be called.
+	 * @param isToNotifyFactionChangeListener : if true, routines included by  {@link #addFactionChangeListener(IValueTreeFactionChangeListener)} if changes in faction happened.
+	 * If false, they won't be called.
+	 * @see unbbayes.prs.bn.valueTree.IValueTree#changeProb(unbbayes.prs.bn.valueTree.IValueTreeNode, unbbayes.prs.bn.valueTree.IValueTreeNode, float, java.util.Collection)
+	 */
+	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, Collection<IValueTreeNode> mutuallyExclusiveAnchors, boolean isToNotifyFactionChangeListener);
+	
 
 //	/**
 //	 *  Changes the probability of node from the current to the provided value, conditioning on reference node anchor (which

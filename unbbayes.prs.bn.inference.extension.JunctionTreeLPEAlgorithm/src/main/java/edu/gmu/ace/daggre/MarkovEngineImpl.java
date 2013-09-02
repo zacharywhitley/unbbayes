@@ -2063,6 +2063,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 									hasChanged = true;
 									break;
 								}
+							} else {
+								// check if ancestor of shadow has changed, because a change in ancestor will change probability of shadow
+								for (IValueTreeNode shadow : shadows) {
+									if (change.getNode().isAncestorOf(shadow)) {
+										hasChanged = true;
+										break;
+									}
+								}
 							}
 						}
 						// if something has changed, then update the marginals & cpt accordingly to all shadow nodes
@@ -5277,11 +5285,22 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// obtain p(s|a,b,c) by using existing method, because shadow nodes are ordinal states of BN. This should also check whether assumptions are valid
 		List<Float> probShadowsGivenAssumptions = this.getProbList(questionId, assumptionIds, assumedStates);
 		
+		// this will hold the probability of the reference node, so that we'll divide this from the target and we'll get a proper result
+		float referenceProb = 1f;
+		if (referencePath != null && !referencePath.isEmpty()) {
+			List<Float> referenceProbList = this.getProbList(questionId, referencePath, null, assumptionIds, assumedStates);
+			if (referenceProbList == null || referenceProbList.size() != 1) {
+				throw new IllegalArgumentException("Probability of reference " + referencePath + " is not defined for question " + questionId);
+			}
+			// at this point, the list has 1 element
+			referenceProb = referenceProbList.get(0);
+		}
+		
 		// check if target node is a shadow node itself
 		int targetNodeStateIndexIfShadow = root.getValueTree().getShadowNodeStateIndex(target);
 		if (targetNodeStateIndexIfShadow >= 0) {
 			// simply return from the list of prob of shadow nodes
-			probShadowsGivenAssumptions.get(targetNodeStateIndexIfShadow);
+			return Collections.singletonList(probShadowsGivenAssumptions.get(targetNodeStateIndexIfShadow) / referenceProb);
 		}
 		
 		// check which state is the s and also an ancestor of x
@@ -5315,14 +5334,34 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// so the prob of shadow won't supposedly affect anchor.
 					return Collections.singletonList(root.getValueTree().getProb(target, anchor));
 				}
-				// otherwise... I'm assuming that the probability of shadow separates anchor, so anchor does not affect prob of target
-				// this is mainly because P(s|anchor,assumptions) is not well defined.
-				// TODO verify if when anchor->...->shadow->...->target, then the assumption of anchor is really ignored.
-				// retrieve p(x|s). If s is descendant, then p(x|s) = 100%
-				float probTargetGivenShadow = isAncestorShadow?root.getValueTree().getProb(target, shadow):1f;
 				
-				// return the value p(s|a,b,c)*p(x|s)
-				return Collections.singletonList(probShadowsGivenAssumptions.get(indexOfShadowClosestToTarget)*probTargetGivenShadow);
+				if (isAncestorShadow) {
+					// otherwise... I'm assuming that the probability of shadow separates anchor, so anchor does not affect prob of target
+					// this is mainly because P(s|anchor,assumptions) is not well defined.
+					// TODO verify if when anchor->...->shadow->...->target, then the assumption of anchor is really ignored.
+					// retrieve p(x|s). If s is descendant, then p(x|s) = 100%
+					float probTargetGivenShadow = isAncestorShadow?root.getValueTree().getProb(target, shadow):1f;
+					
+					// return the value p(s|a,b,c)*p(x|s)
+					return Collections.singletonList(probShadowsGivenAssumptions.get(indexOfShadowClosestToTarget)*probTargetGivenShadow  / referenceProb) ;
+				}
+				
+				// at this point, shadow node is descendant. Simulate the probability of ancestor (target) if descendant (shadow) were at the probability given external nodes
+				// use a clone so that we won't break the original
+				ValueTreeProbabilisticNode clone = (ValueTreeProbabilisticNode) root.basicClone();
+				
+				// first, extract the node from cloned value tree
+				IValueTreeNode cloneShadow = clone.getValueTree().getNode(shadow.getName());	
+				IValueTreeNode cloneAnchor = null;
+				if (anchor != null) {
+					cloneAnchor = clone.getValueTree().getNode(anchor.getName());
+				}
+				
+				// change probability of shadow node of clone to the value we have assuming the other assumptions
+				clone.getValueTree().changeProb(cloneShadow, cloneAnchor, probShadowsGivenAssumptions.get(indexOfShadowClosestToTarget), null);
+				
+				// extract the probability of target after the propagation and return it
+				return Collections.singletonList(clone.getValueTree().getProb(clone.getValueTree().getNode(target.getName()), anchor));
 			}
 		}
 	}
@@ -10521,6 +10560,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * 
 		 * Therefore, we can calculate the joint probability P(sy,sx,a), the conditionals
 		 * P(y|sy) and P(x|sx), and then multiply them in order to get the joint.
+		 * 
+		 * TODO check if we can divide by P(sy|y) instead of multiplying by P(y|sy)=1 if y is ancestor of sy
 		 */
 		
 		// make the size of states and question IDs equal
@@ -10544,38 +10585,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				questionStates.add(null);
 			}
 		}
-			
 		
-//		for (int i = 0; i < questionIds.size(); i++) {
-//			if (i >= targetPaths.size() || targetPaths.get(i) == null) {
-//				// this is a normal node
-//				questions.add(questionIds.get(i));
-//				states.add(questionStates.get(i));
-//			} else if (!targetPaths.get(i).isEmpty()) {
-//				// has valid path
-//				questions.add(questionIds.get(i));
-//				if (questionStates != null && (i < questionStates.size())) {
-//					if (questionStates.get(i) == null) {
-//						states.add(0);	// fill with anything. I use 0 because it is supposedly a valid state always.
-//					} else {
-//						states.add(questionStates.get(i));
-//					}
-//				} else {
-//					states.add(0);	// fill with anything. I use 0 because it is supposedly a valid state always.
-//				}
-//			} else {
-//				// do not add, because path exist, but was explicitly empty
-//			}
-//		}
-//		questionIds = questions;
-//		// note: at this point, states has the same size of questionIds.
-//		questionStates = states;
 		
 		// now, we need to calculate p(sy,sx,a), which is the joint prob only of shadow nodes or states in external Bayes net
 		
 		// fill questionStates (the new one) with correct states (of shadows). If question is a value tree, make sure to fill it with index of shadow node closest to the path
 		// the following map will be filled with a mapping from target node to closest shadow node, so that we can calculate P(x|sx) posteriory.
 		Map<IValueTreeNode, IValueTreeNode> targetNodeToClosestShadowNodeMap = new HashMap<IValueTreeNode, IValueTreeNode>();
+		// the following map traces what target nodes were generated from the same root. Can be used to detect following cases:
+		// If X is ancestor of Y, then P(X,Y) = P(X|Y)P(Y) = P(Y). Therefore, in this case the ancestor can be ignored.
+		// If neither ones are ancestors of the other, then P(X,Y) = P(X|Y)P(Y) = 0*P(Y) = 0, therefore in this case we can immediately return zero
+		Map<INode, IValueTreeNode> rootToRelevantTargetMapping = new HashMap<INode, IValueTreeNode>();	
+        boolean hasDescendantShadow = false;		// this will become true if shadow node was a descendant of target node
 		for (int indexOfQuestion = 0; (indexOfQuestion < questionIds.size()) && (indexOfQuestion < targetPaths.size()); indexOfQuestion++) {
 			synchronized (getProbabilisticNetwork()) {
 				// extract the node
@@ -10594,7 +10615,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// this is a value tree question, and there is a target path defined, so find the shadow node closest to the target
 					int indexOfShadowClosestToTarget = -1;	// this will hold the index of shadow node which is either ancestor or descendant of target node
 					IValueTreeNode shadow = null;			// this will hold the shadow node itself
-					boolean isAncestorShadow = true;		// this will become false if shadow node was a descendant of target node
 					for (int i = 0; i < root.getValueTree().getShadowNodeSize(); i++) {
 						// because value tree is a tree and shadow nodes are mutually exclusive, the first one to find is the one we want
 						shadow = root.getValueTree().getShadowNode(i);
@@ -10604,7 +10624,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							break;
 						} else if (target.isAncestorOf(shadow)) {
 							// shadow node is descendant of target
-							isAncestorShadow = false;
+							hasDescendantShadow = true;
+							indexOfShadowClosestToTarget = i;
+							break;
+						} else if (target.equals(shadow)) {
+							// the node is the shadow node itself
 							indexOfShadowClosestToTarget = i;
 							break;
 						}
@@ -10618,12 +10642,42 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 								+ " was specified to question "+ root + ", but no shadow node could be identified near the path.");
 					}
 					
+					
+					// check if there is no node with same root
+					IValueTreeNode targetSharingRoot = rootToRelevantTargetMapping.get(root);
+					if (targetSharingRoot == null || targetSharingRoot.isAncestorOf(target)) {
+						// put new entry. If old one is ancestor, then this will also delete the ancestor and put the descendant
+						targetNodeToClosestShadowNodeMap.remove(targetSharingRoot);
+						rootToRelevantTargetMapping.put(root,target);	// replace the old
+					} else {
+						// there is a node which shares the same root, and the new one may be an ancestor or not
+						if (target.isAncestorOf(targetSharingRoot)) {
+							// always use the descendants, because P(X,Y) when X is descendant of Y is P(X)
+							// delete the old target, if there were.
+							targetNodeToClosestShadowNodeMap.remove(target);
+							target = targetSharingRoot;
+							// no need to update the other mapping, because targetSharingRoot is already there
+						} else {
+							// if they are in independent branches, then joint is always zero, because P(X,Y,(...)) when X and Y can never happen together is 0%
+							return 0f;
+						}
+					}
+					
+					// repetitions will be automatically replaced (because P(X,X) = P(X), it's OK to replace old entry and not to double count)
 					targetNodeToClosestShadowNodeMap.put(target, shadow);
 				}
 			}
 		}
 		
-		// TODO merge the special case (only 1 node provided) to this case
+		// TODO merge the special case (only 1 node provided) to the following cases
+		
+//		if (hasDescendantShadow) {
+//			// Don't know how to efficiently calculate. 
+//			// May use P(x,y,z,a) = P(x|y,z,a)*P(y,z,a) = P(x|y,z,a)*P(y|z,a)P(z,a) = P(x|y,z,a)*P(y|z,a)P(z|a)P(a)
+//			throw new UnsupportedOperationException("The current version of ME cannot calculate joint probability when at least one hidden node in a value tree is an ancestor of shadow node.");
+//			// TODO can we use the following prop? p(x,sx) = p(x|sx)p(sx); if x->sx, then p(x|sx)p(sx) = 1*p(sx); if sx->x, then p(x|sx)p(sx) = p(x)p(sx)/p(sx) = p(x)
+//		}
+		
 		
 		// get the shadows' and external network's joint prob P(sx,sy,a). Will throw exception if questionStates is not fully specified
 		float jointProb = this.getJointProbability(questionIds, questionStates);
@@ -10635,8 +10689,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// multiply the probability P(x|sx)
 			if (shadow.isAncestorOf(target)) {
 				jointProb *= target.getValueTree().getProb(target, shadow);
-			} // else shadow is descendant, so P(x|sx) is 100%, so it won't change the value
+			} else if (target.isAncestorOf(shadow)) {
+				// TODO check if it is OK to divide by P(sx|x) when x is ancestor of sx
+				jointProb /= target.getValueTree().getProb(shadow, target);
+			} else {
+				// Note: the situation if (target.isAncestorOf(shadow)) was already solved, so no need to handle here
+				// shadow and target are the same, so don't need to multiply, because P(X|X) = 1 and 1 is null value in multiplications.
+				// supposedly, P(x|sx) is also 1 if x is ancestor of sx.
+			} 
 		}
+		
+		// If x is antecessor of sx: 
+		// P(x) = .5, P(sx|x) = .8 -> p(x|sx)p(sx)/p(x) = .8 -> p(x|sx) = .8*p(x)/p(sx) = .8*.5/(.5*.8) = 1
+		// P(x,a) = p(x|a)p(a) ?=? p(sx|a)p(sx|x)p(a) = p(sx,a)p(x|sx) = p(sx,a)p(sx|x)p(x)/p(sx) = p(sx,a)p(sx)p(x)/p(sx)p(x) = p(sx,a)
+		// p(x|a) = 1 - ( 1 - p(x) ) ( (1-p(sx|a)/p(sx)) / (1-) ) 
 		
 		return jointProb;
 	}

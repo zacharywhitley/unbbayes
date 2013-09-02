@@ -83,7 +83,15 @@ public class ValueTreeProbabilisticNode extends ProbabilisticNode implements IPl
 		// change the probabilities in the shadow nodes as well
 		for (int i = 0; i < getStatesSize(); i++) {
 			// note: otherShadowNodes can contain valueTree.getShadowNode(i) because it will not be considered as anchor if the node to change and anchor is the same.
-			valueTree.changeProb(valueTree.getShadowNode(i), null, getMarginalAt(i), otherShadowNodes);
+			float marginal = getMarginalAt(i);
+			if (marginal < 0f) {
+				marginal = 0f;
+			}
+			if (marginal > 1f) {
+				marginal = 1f;
+			}
+			// change probability, but do not trigger listener of changes of faction
+			valueTree.changeProb(valueTree.getShadowNode(i), null, marginal, otherShadowNodes, false);
 			// do not change probability of nodes which were already edited.
 			otherShadowNodes.add(valueTree.getShadowNode(i));
 		}
@@ -132,28 +140,33 @@ public class ValueTreeProbabilisticNode extends ProbabilisticNode implements IPl
 	 * @see unbbayes.prs.bn.ProbabilisticNode#basicClone()
 	 */
 	public ProbabilisticNode basicClone() {
-		ProbabilisticNode cloned = new ProbabilisticNode();
+		ProbabilisticNode cloned = new ValueTreeProbabilisticNode();
 		cloned.setDescription(this.getDescription());
 		cloned.setName(this.getName());
+		// TODO check if it is important to clone positions
 		// cloned.setPosition(this.getPosition().getX(),
 		// this.getPosition().getY());
-		cloned.setStates(SetToolkit.clone(states));
-		if (super.marginalList != null) {
-			float[] marginais = new float[super.marginalList.length];
-			System.arraycopy(super.marginalList, 0, marginais, 0,
-					marginais.length);
-			cloned.setMarginalProbabilities(marginais);
-			cloned.copyMarginal();
-		}
+		
 		if (this.hasEvidence()) {
 			cloned.addFinding(this.getEvidence());
 		}
 		cloned.setInternalIdentificator(this.getInternalIdentificator());
-		// clone value tree
+		// NOTE do not clone states in this method, because states will be automatically appended when we add shadow nodes while we clone the value tree
 		try {
+			// clone value tree
 			((ValueTreeProbabilisticNode) cloned).setValueTree((IValueTree) this.getValueTree().clone(cloned));
 		} catch (CloneNotSupportedException e) {
 			throw new RuntimeException(e);
+		}
+		
+		// set up the marginal list after the states becomes ready (if we clone the value tree, the states - shadow nodes - gets ready)
+		if (super.marginalList != null) {
+			float[] marginais = new float[super.marginalList.length];
+			System.arraycopy(super.marginalList, 0, marginais, 0,
+					marginais.length);
+			cloned.initMarginalList();
+			cloned.setMarginalProbabilities(marginais);
+			cloned.copyMarginal();
 		}
 		return cloned;
 	}

@@ -43,6 +43,8 @@ public class ValueTree implements IValueTree {
 
 	private ArrayList<IValueTreeFactionChangeListener> factionChangeListeners;
 
+	private boolean isToNotifyFactionChangeListener = true;
+
 	/**
 	 * Default constructor is made protected to restrict access and
 	 * yet allow inheritance.
@@ -350,7 +352,17 @@ public class ValueTree implements IValueTree {
 	 * @see unbbayes.prs.bn.valueTree.IValueTree#changeProb(unbbayes.prs.bn.valueTree.IValueTreeNode, unbbayes.prs.bn.valueTree.IValueTreeNode, float, java.util.Collection)
 	 */
 	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, Collection<IValueTreeNode> mutuallyExclusiveAnchors) {
-//	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, Collection<IValueTreeNode> mutuallyExclusiveAnchors, boolean isToNotifyFactionChangeListener) {
+		return this.changeProb(node, ancestorAnchor, prob, mutuallyExclusiveAnchors, isToNotifyFactionChangeListener());
+	}
+	/**
+	 * This method has the same specification of {@link #changeProb(IValueTreeNode, IValueTreeNode, float, Collection)},
+	 * but it allows us to specify whether routines in {@link #getFactionChangeListeners()}
+	 * shall be called.
+	 * @param isToNotifyFactionChangeListener : if true, routines in {@link #getFactionChangeListeners()} if changes in faction happened.
+	 * If false, they won't be called.
+	 * @see unbbayes.prs.bn.valueTree.IValueTree#changeProb(unbbayes.prs.bn.valueTree.IValueTreeNode, unbbayes.prs.bn.valueTree.IValueTreeNode, float, java.util.Collection)
+	 */
+	public float changeProb(IValueTreeNode node, IValueTreeNode ancestorAnchor, float prob, Collection<IValueTreeNode> mutuallyExclusiveAnchors, boolean isToNotifyFactionChangeListener) {
 		if (node == null) {
 			throw new NullPointerException("Attempted to change the probability of a null node to " + prob + " given node " + ancestorAnchor);
 		}
@@ -364,7 +376,12 @@ public class ValueTree implements IValueTree {
 		// Obtain the current probability, which will be used for probability ratio and to return
 		float prevProb = this.getProb(node, ancestorAnchor);
 		
-		
+		if (Math.abs(((double)prob)/prevProb - 1d) < PROB_ERROR_MARGIN 
+				|| (prevProb == 0f && prob == 0f)) {
+			// prob is not going to change
+			Debug.println(getClass(), "No change in node " + node + " given " + ancestorAnchor + " and fixing " + mutuallyExclusiveAnchors);
+			return prevProb;
+		}
 		// prepare variables to calculate complementary ratio - ratio to be used for the relative sets (i.e. siblings of ancestors)
 		// actually, the complementary ratio depends on the probability of node to change, and probability of its siblings not to change (anchors) too
 		float sumAnchoredSiblingProbs = 0f;
@@ -377,8 +394,8 @@ public class ValueTree implements IValueTree {
 		}
 		// the following is the the complementary ratio considering the siblings. Note that if sumSiblingsProbs == 0, then this is simply the ratio of "other" nodes, that's why it is "complementary"
 		float complementaryRatio = ( 1f - (sumAnchoredSiblingProbs + prob) ) / ( 1f - (sumAnchoredSiblingProbs + prevProb) );
-			if (Float.isInfinite(complementaryRatio)		// denominator was 0
-					|| Float.isNaN(complementaryRatio)) {	// it was exactly 0/0
+		if (Float.isInfinite(complementaryRatio)		// denominator was 0
+				|| Float.isNaN(complementaryRatio)) {	// it was exactly 0/0
 			// this means that the anchors + target node sums up to 100%, so other nodes are 0% and cannot be changed.
 			if (Math.abs(prob - prevProb) >= PROB_ERROR_MARGIN) {
 				// this means prob of other changeable nodes were attempted to be taken out from 0%
@@ -404,7 +421,9 @@ public class ValueTree implements IValueTree {
 			float oldFaction = node.getFaction();
 			node.setFaction(oldFaction*(prob/prevProb));
 			if (!factionChanges.containsKey(node)) {
-				factionChanges.put(node, ValueTreeFactionChangeEvent.getInstance(node, oldFaction));
+				if (Math.abs((oldFaction/node.getFaction()) - 1f) > PROB_ERROR_MARGIN) {
+					factionChanges.put(node, ValueTreeFactionChangeEvent.getInstance(node, oldFaction));
+				}
 			}
 			
 			// iterate towards anchor (or root) to set factions of other nodes
@@ -424,6 +443,10 @@ public class ValueTree implements IValueTree {
 				float sumProbChildren = 0f;		// this will hold the sum of child (conditional) probability, which will be the parent's new (conditional) probability
 				float sumFactionChildren = 0f;	// this will hold the sum of factions of children (so that we can normalize later).
 				for (IValueTreeNode child : children) {
+					if (child.getFaction() <= 0f) {
+						// do not change faction of nodes which are settled
+						continue;
+					}
 					// note: at this point, parent.getChildren() cannot be null, because at least "node" is a child of "parent"
 					if (!child.equals(node)) {	
 						if (!mutuallyExclusiveAnchors.contains(child)) {
@@ -433,7 +456,9 @@ public class ValueTree implements IValueTree {
 							oldFaction = child.getFaction();
 							child.setFaction(oldFaction*complementaryRatio);
 							if (!factionChanges.containsKey(child)) {
-								factionChanges.put(child,ValueTreeFactionChangeEvent.getInstance(child, oldFaction));
+								if (Math.abs((oldFaction/child.getFaction()) - 1f) > PROB_ERROR_MARGIN) {
+									factionChanges.put(child,ValueTreeFactionChangeEvent.getInstance(child, oldFaction));
+								}
 							}
 						}
 						sumProbChildren += getProb(child, ancestorAnchor);
@@ -446,7 +471,8 @@ public class ValueTree implements IValueTree {
 				
 				// get the current probability of the ancestor, so that we can use its ratio with the sum of children to adjust faction
 				if (parent != null && !parent.equals(ancestorAnchor)) {
-					if (!mutuallyExclusiveAnchors.contains(parent)) {
+					if (!mutuallyExclusiveAnchors.contains(parent) 	// if parent is set to be changed
+							&& parent.getFaction() > 0) {			// if parent was no settled (to zero)
 						// 2 - adjust the faction of the ancestor in the path between anchor and node by using the prob of children
 						float currentProb = getProb(parent, ancestorAnchor);
 						if (currentProb != 0f) {
@@ -454,7 +480,9 @@ public class ValueTree implements IValueTree {
 							oldFaction = parent.getFaction();
 							parent.setFaction(oldFaction*(sumProbChildren/currentProb));
 							if (!factionChanges.containsKey(parent)) {
-								factionChanges.put(parent,ValueTreeFactionChangeEvent.getInstance(parent, oldFaction));
+								if (Math.abs((oldFaction/parent.getFaction()) - 1f) > PROB_ERROR_MARGIN) {
+									factionChanges.put(parent,ValueTreeFactionChangeEvent.getInstance(parent, oldFaction));
+								}
 							}
 						} else if (sumProbChildren != 0f) {
 							throw new RuntimeException("Attempted to change probability of " + parent + " from 0% to " + sumProbChildren);
@@ -475,7 +503,9 @@ public class ValueTree implements IValueTree {
 					if (sumFactionChildren != 0f) {
 						child.setFaction(oldFaction/sumFactionChildren);
 						if (!factionChanges.containsKey(child)) {
-							factionChanges.put(child,ValueTreeFactionChangeEvent.getInstance(child, oldFaction));
+							if (Math.abs((oldFaction/child.getFaction()) - 1f) > PROB_ERROR_MARGIN) {
+								factionChanges.put(child,ValueTreeFactionChangeEvent.getInstance(child, oldFaction));
+							}
 						}
 					}
 				}
@@ -496,7 +526,7 @@ public class ValueTree implements IValueTree {
 		
 		// notify listeners if there are listeners registered, and there were changes in factions
 		if (
-//				isToNotifyFactionChangeListener && 
+				isToNotifyFactionChangeListener && 
 				this.factionChangeListeners != null && !factionChanges.isEmpty()) {
 			for (IValueTreeFactionChangeListener listener : factionChangeListeners) {
 				listener.onFactionChange(factionChanges.values());
@@ -997,6 +1027,29 @@ public class ValueTree implements IValueTree {
 				this.addNodeAndDescendantsRecursively(child);
 			}
 		}
+	}
+
+	/**
+	 * Default value to be passed to {@link #changeProb(IValueTreeNode, IValueTreeNode, float, Collection, boolean)}
+	 * when {@link #changeProb(IValueTreeNode, IValueTreeNode, float, Collection)} is called.
+	 * If true, then {@link #changeProb(IValueTreeNode, IValueTreeNode, float, Collection)} will call routines
+	 * in {@link #getFactionChangeListeners()} (if false, then they won't be called).
+	 * @return the isToNotifyFactionChangeListener
+	 */
+	public boolean isToNotifyFactionChangeListener() {
+		return isToNotifyFactionChangeListener;
+	}
+
+	/**
+	 * Default value to be passed to {@link #changeProb(IValueTreeNode, IValueTreeNode, float, Collection, boolean)}
+	 * when {@link #changeProb(IValueTreeNode, IValueTreeNode, float, Collection)} is called.
+	 * If true, then {@link #changeProb(IValueTreeNode, IValueTreeNode, float, Collection)} will call routines
+	 * in {@link #getFactionChangeListeners()} (if false, then they won't be called).
+	 * @param isToNotifyFactionChangeListener the isToNotifyFactionChangeListener to set
+	 */
+	public void setToNotifyFactionChangeListener(
+			boolean isToNotifyFactionChangeListener) {
+		this.isToNotifyFactionChangeListener = isToNotifyFactionChangeListener;
 	}
 	
 
