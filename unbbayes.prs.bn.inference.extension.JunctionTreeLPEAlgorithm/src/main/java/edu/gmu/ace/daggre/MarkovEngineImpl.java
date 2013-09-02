@@ -3210,7 +3210,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 			synchronized (getProbabilisticNetwork()) {
 				ValueTreeProbabilisticNode root = null;
-				if (getWhenExecutedFirstTimeMillis() > 0) {
+				if (getWhenExecutedFirstTimeMillis() <= 0) {
 					// for optimization, only update history if this is first execution.
 					// first, check that node exists
 					Node node = getProbabilisticNetwork().getNode(Long.toString(getQuestionId()));
@@ -3887,133 +3887,131 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 									+ ((!hasNodes)?". Some questions were not found.":". No common clique was found."));
 						}
 					}
-				}
-				
-				// at this point, assumptions exist
-				// if we have assumptions, then the target node must be shadow node
-				// or a parent of a shadow node if newValues doesn't contain null or newValues.size() > 1.
-				if (node != null) {
-					if (!(node instanceof ValueTreeProbabilisticNode) || ((ValueTreeProbabilisticNode) node).getValueTree() == null) {
-						throw new IllegalArgumentException("Attempted to make a trade on path " + targetPath + " of node " + node
-								+ ", but the node doesn't seem to have a value tree.");
-					}
-					ValueTreeProbabilisticNode root = (ValueTreeProbabilisticNode) node;
-					// find the shadow node from the node itself
-					if (newValues.size() == 1) {
-						// check if target node itself is shadow node
-						List<IValueTreeNode> children = root.getValueTree().get1stLevelNodes();
-						IValueTreeNode shadow = null;
-						for (Integer index : targetPath) {
-							if (children == null || index == null || index < 0 || index >= children.size()) {
-								throw new IllegalArgumentException(index + " in path " + targetPath + " doesn't look like a path in the value tree of question " 
-											+ questionId);
-							}
-							shadow = children.get(index);
-							children = shadow.getChildren();
+					
+					// at this point, assumptions exist
+					// if we have assumptions, then the target node must be shadow node
+					// or a parent of a shadow node if newValues doesn't contain null or newValues.size() > 1.
+					if (node != null) {
+						if (!(node instanceof ValueTreeProbabilisticNode) || ((ValueTreeProbabilisticNode) node).getValueTree() == null) {
+							throw new IllegalArgumentException("Attempted to make a trade on path " + targetPath + " of node " + node
+									+ ", but the node doesn't seem to have a value tree.");
 						}
-						if (shadow != null) {
-							shadowNodeIndex = root.getValueTree().getShadowNodeStateIndex(shadow);
-						}
-						if (shadowNodeIndex < 0) {
-							// note: if shadow == null, then shadowNodeIndex is -1 anyway
-							throw new IllegalArgumentException("A trade to question "
-									+ questionId + " assuming " + assumptionIds 
-									+ " is expected to be targetted to a shadow node, but the path " + targetPath + " doesn't seem to be a shadow node.");
-						}
-					} else  {
-						// special case: check if this is a parent of all shadow nodes
-						// check if target node itself is shadow node
-						List<IValueTreeNode> children = root.getValueTree().get1stLevelNodes();
-						IValueTreeNode parentOfShadow = null;
-						for (Integer index : targetPath) {
-							if (children == null || index == null || index < 0 || index >= children.size()) {
-								throw new IllegalArgumentException(index + " in path " + targetPath + " doesn't look like a path in the value tree of question " 
-											+ questionId);
-							}
-							parentOfShadow = children.get(index);
-							children = parentOfShadow.getChildren();
-						}
-						if (parentOfShadow == null || parentOfShadow.getChildren() == null) {
-							throw new IllegalArgumentException("A trade to question "
-									+ questionId + " assuming " + assumptionIds 
-									+ " is expected to be targetted to a parent of all shadow nodes, but the path " + targetPath + " doesn't seem to be a parent of all shadow nodes.");
-						}
-						// at this point, parentOfShadow is non-null and parentOfShadow.getChildren() are non-null too
-						for (IValueTreeNode shadow : parentOfShadow.getChildren()) {
-							if (root.getValueTree().getShadowNodeStateIndex(shadow) < 0) {
-								throw new IllegalArgumentException("A trade to question "
-										+ questionId + " assuming " + assumptionIds 
-										+ " is expected to be targetted to a shadow node, but the path " + targetPath + " doesn't seem to be a shadow node.");
-							}
-						}
-					} 
-				} else {
-					// find the shadow node from the action which will create the node
-					if (actionAddingNodeIfNodeIsNull == null) {
-						throw new IllegalArgumentException("Attempting to trade on value tree, but the current transaction (ID=" 
-								+ transactionKey + ") is not creating question " + questionId 
-								+ " as a node with value trees.");
-					}
-					if (actionAddingNodeIfNodeIsNull instanceof AddValueTreeQuestionNetworkAction) {
-						AddValueTreeQuestionNetworkAction valueTreeAction = (AddValueTreeQuestionNetworkAction) actionAddingNodeIfNodeIsNull;
+						ValueTreeProbabilisticNode root = (ValueTreeProbabilisticNode) node;
+						// find the shadow node from the node itself
 						if (newValues.size() == 1) {
 							// check if target node itself is shadow node
-							List<IValueTreeNode> children = valueTreeAction.getChildrenOfRootOfValueTree();
+							List<IValueTreeNode> children = root.getValueTree().get1stLevelNodes();
 							IValueTreeNode shadow = null;
 							for (Integer index : targetPath) {
 								if (children == null || index == null || index < 0 || index >= children.size()) {
 									throw new IllegalArgumentException(index + " in path " + targetPath + " doesn't look like a path in the value tree of question " 
-												+ questionId + ", which is a question still to be created in transaction " + transactionKey);
+											+ questionId);
 								}
 								shadow = children.get(index);
 								children = shadow.getChildren();
 							}
 							if (shadow != null) {
-								shadowNodeIndex = valueTreeAction.getShadowNodes().indexOf(shadow);
+								shadowNodeIndex = root.getValueTree().getShadowNodeStateIndex(shadow);
 							}
 							if (shadowNodeIndex < 0) {
 								// note: if shadow == null, then shadowNodeIndex is -1 anyway
 								throw new IllegalArgumentException("A trade to question "
-										+ questionId + " (yet to be created on transaction " + transactionKey + ") assuming " + assumptionIds 
+										+ questionId + " assuming " + assumptionIds 
 										+ " is expected to be targetted to a shadow node, but the path " + targetPath + " doesn't seem to be a shadow node.");
 							}
 						} else  {
 							// special case: check if this is a parent of all shadow nodes
 							// check if target node itself is shadow node
-							List<IValueTreeNode> children = valueTreeAction.getChildrenOfRootOfValueTree();
+							List<IValueTreeNode> children = root.getValueTree().get1stLevelNodes();
 							IValueTreeNode parentOfShadow = null;
 							for (Integer index : targetPath) {
 								if (children == null || index == null || index < 0 || index >= children.size()) {
 									throw new IllegalArgumentException(index + " in path " + targetPath + " doesn't look like a path in the value tree of question " 
-												+ questionId + ", which is a question still to be created in transaction " + transactionKey);
+											+ questionId);
 								}
 								parentOfShadow = children.get(index);
 								children = parentOfShadow.getChildren();
 							}
 							if (parentOfShadow == null || parentOfShadow.getChildren() == null) {
 								throw new IllegalArgumentException("A trade to question "
-										+ questionId + " (yet to be created on transaction " + transactionKey + ") assuming " + assumptionIds 
+										+ questionId + " assuming " + assumptionIds 
 										+ " is expected to be targetted to a parent of all shadow nodes, but the path " + targetPath + " doesn't seem to be a parent of all shadow nodes.");
 							}
 							// at this point, parentOfShadow is non-null and parentOfShadow.getChildren() are non-null too
 							for (IValueTreeNode shadow : parentOfShadow.getChildren()) {
-								if (!valueTreeAction.getShadowNodes().contains(shadow)) {
+								if (root.getValueTree().getShadowNodeStateIndex(shadow) < 0) {
 									throw new IllegalArgumentException("A trade to question "
-											+ questionId + " (yet to be created on transaction " + transactionKey + ") assuming " + assumptionIds 
+											+ questionId + " assuming " + assumptionIds 
 											+ " is expected to be targetted to a shadow node, but the path " + targetPath + " doesn't seem to be a shadow node.");
 								}
 							}
 						} 
-					} else {
-						throw new IllegalArgumentException("Attempting to trade on value tree, but the current transaction (ID=" 
-								+ transactionKey + ") is not creating question " + questionId 
-								+ " as a node with value trees.");
-					}
-				}
-				
-				
-			}
-		}
+					} else {	// node is null
+						// find the shadow node from the action which will create the node
+						if (actionAddingNodeIfNodeIsNull == null) {
+							throw new IllegalArgumentException("Attempting to trade on value tree, but the current transaction (ID=" 
+									+ transactionKey + ") is not creating question " + questionId 
+									+ " as a node with value trees.");
+						}
+						if (actionAddingNodeIfNodeIsNull instanceof AddValueTreeQuestionNetworkAction) {
+							AddValueTreeQuestionNetworkAction valueTreeAction = (AddValueTreeQuestionNetworkAction) actionAddingNodeIfNodeIsNull;
+							if (newValues.size() == 1) {
+								// check if target node itself is shadow node
+								List<IValueTreeNode> children = valueTreeAction.getChildrenOfRootOfValueTree();
+								IValueTreeNode shadow = null;
+								for (Integer index : targetPath) {
+									if (children == null || index == null || index < 0 || index >= children.size()) {
+										throw new IllegalArgumentException(index + " in path " + targetPath + " doesn't look like a path in the value tree of question " 
+												+ questionId + ", which is a question still to be created in transaction " + transactionKey);
+									}
+									shadow = children.get(index);
+									children = shadow.getChildren();
+								}
+								if (shadow != null) {
+									shadowNodeIndex = valueTreeAction.getShadowNodes().indexOf(shadow);
+								}
+								if (shadowNodeIndex < 0) {
+									// note: if shadow == null, then shadowNodeIndex is -1 anyway
+									throw new IllegalArgumentException("A trade to question "
+											+ questionId + " (yet to be created on transaction " + transactionKey + ") assuming " + assumptionIds 
+											+ " is expected to be targetted to a shadow node, but the path " + targetPath + " doesn't seem to be a shadow node.");
+								}
+							} else  {
+								// special case: check if this is a parent of all shadow nodes
+								// check if target node itself is shadow node
+								List<IValueTreeNode> children = valueTreeAction.getChildrenOfRootOfValueTree();
+								IValueTreeNode parentOfShadow = null;
+								for (Integer index : targetPath) {
+									if (children == null || index == null || index < 0 || index >= children.size()) {
+										throw new IllegalArgumentException(index + " in path " + targetPath + " doesn't look like a path in the value tree of question " 
+												+ questionId + ", which is a question still to be created in transaction " + transactionKey);
+									}
+									parentOfShadow = children.get(index);
+									children = parentOfShadow.getChildren();
+								}
+								if (parentOfShadow == null || parentOfShadow.getChildren() == null) {
+									throw new IllegalArgumentException("A trade to question "
+											+ questionId + " (yet to be created on transaction " + transactionKey + ") assuming " + assumptionIds 
+											+ " is expected to be targetted to a parent of all shadow nodes, but the path " + targetPath + " doesn't seem to be a parent of all shadow nodes.");
+								}
+								// at this point, parentOfShadow is non-null and parentOfShadow.getChildren() are non-null too
+								for (IValueTreeNode shadow : parentOfShadow.getChildren()) {
+									if (!valueTreeAction.getShadowNodes().contains(shadow)) {
+										throw new IllegalArgumentException("A trade to question "
+												+ questionId + " (yet to be created on transaction " + transactionKey + ") assuming " + assumptionIds 
+												+ " is expected to be targetted to a shadow node, but the path " + targetPath + " doesn't seem to be a shadow node.");
+									}
+								}
+							} 
+						} else {
+							throw new IllegalArgumentException("Attempting to trade on value tree, but the current transaction (ID=" 
+									+ transactionKey + ") is not creating question " + questionId 
+									+ " as a node with value trees.");
+						}
+					} // end if (node != null) else
+				}	// end if there are assumptions
+			}	// end sync
+		}	// end sync
 		
 		// first, check that we could extract the number of states with no problem
 		if (numStates < 0) {
