@@ -1,6 +1,6 @@
 /*
  *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
+ *  Copyright (C) 2002, 2013 Universidade de Brasilia - http://www.unb.br
  *
  *  This file is part of UnBBayes.
  *
@@ -25,10 +25,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.swing.JOptionPane;
@@ -39,7 +37,6 @@ import javax.swing.event.TableModelListener;
 import unbbayes.gui.ExplanationProperties;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.continuous.ContinuousNormalDistributionPane;
-import unbbayes.gui.table.ExcelAdapter;
 import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.gui.table.ReplaceTextCellEditor;
 import unbbayes.prs.Edge;
@@ -54,10 +51,8 @@ import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.hybridbn.CNNormalDistribution;
 import unbbayes.prs.hybridbn.ContinuousNode;
-import unbbayes.prs.hybridbn.GaussianMixture;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
-import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 public class SENController {
@@ -98,12 +93,35 @@ public class SENController {
 	 */
 	public SENController(SingleEntityNetwork singleEntityNetwork,
 			NetworkWindow screen) {
+		
 		this.singleEntityNetwork = singleEntityNetwork;
 		this.screen = screen;
 		df = NumberFormat.getInstance(Locale.getDefault());
 		df.setMaximumFractionDigits(4);
+		
+		counterForNodeName = getMaxCounterForNodeName() + 1; 
+	
 	}
 
+	private int getMaxCounterForNodeName(){
+		
+		ArrayList<Node> nodes = this.singleEntityNetwork.getNodesCopy();
+		
+		int max = 0;
+		int aux = 0;
+		for (int i = 0; i < nodes.size(); i++)
+		
+		{
+		    String nome = nodes.get(i).getName();
+		    if (nome.matches("[A-Z][0-9]*"))
+		         aux = Integer.parseInt(nome.substring(1));
+		    if (aux > max)
+		        max = aux;
+		}
+
+		return max; 
+	}
+	
 	/**
 	 * Inserts a new state for a selected node
 	 * @param node
