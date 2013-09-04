@@ -112,7 +112,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static final String NODE_NAME_PREFIX = "N";
 
 	/** This program will enter in a loop at this iteration number. Use with care. Set to negative if you don't want this program to stop at the iteration */
-	private static int iterationToDebug = 44;
+	private static int iterationToDebug = 46;
 
 	/** this object will group the data to be printed out in {@link #testFilesWithResolution()} */
 	private Tracer tracer = null;
@@ -287,6 +287,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		{0.4133f, 0.8849f},
 		{0.2298f, 0.3106f},
 		{0.094555885f, 0.10547768f,0.5694437f, 0.5801391f,0.23055209f, 0.23807652f,0.31524438f, 0.31858173f,0.25119743f, 0.39385703f,0.25245297f, 0.2633748f,0.34926978f, 0.35679418f,0.3758f, 0.5185f},		//45
+		{0.3092084f, 0.6026256f},
 	};
 	
 	/** This forces {@link #isAllStatesWithinEditLimit(MarkovEngineImpl, List, Long, Long, List, List)} to return this sequence of values in a given iteration.
@@ -338,6 +339,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		null,
 		null,
 		null,		//45
+		{true},
 	};
 	
 	/** Calls to balancing trades will be converted to a trade with this value */
@@ -901,11 +903,11 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		
 		
 		engines.add((MarkovEngineImpl) MarkovEngineImpl.getInstance(2f, 100f, 100f));
-		engines.get(engines.size()-1).setToThrowExceptionOnInvalidAssumptions(true);
-		engines.get(engines.size()-1).setToCompareProbOnRebuild(true);
-		engines.get(engines.size()-1).setToCollapseSimilarBalancingTrades(true);
-		engines.get(engines.size()-1).setToUseCorrectiveTrades(true);
-		engines.get(engines.size()-1).setToAddArcsWithoutReboot(true);
+//		engines.get(engines.size()-1).setToThrowExceptionOnInvalidAssumptions(true);
+//		engines.get(engines.size()-1).setToCompareProbOnRebuild(true);
+//		engines.get(engines.size()-1).setToCollapseSimilarBalancingTrades(true);
+//		engines.get(engines.size()-1).setToUseCorrectiveTrades(true);
+//		engines.get(engines.size()-1).setToAddArcsWithoutReboot(true);
 		
 		for (MarkovEngineInterface engine : engines) {
 			engine.initialize();
@@ -1294,7 +1296,7 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	protected boolean isAllStatesWithinEditLimit( MarkovEngineImpl me, List<Float> edit, Long questionId, Long userId,
 			List<Long> assumptionIds, List<Integer> assumedStates) {
 		// do not do anything if it is configured to return hard coded results
-		if (isAllStatesWithinEditLimitHardCoded[tracer.getIterationNumber()] != null) {
+		if (isAllStatesWithinEditLimitHardCoded.length > tracer.getIterationNumber() && isAllStatesWithinEditLimitHardCoded[tracer.getIterationNumber()] != null) {
 			boolean ret = isAllStatesWithinEditLimitHardCoded[tracer.getIterationNumber()][0];
 			for (int i = 0; i < isAllStatesWithinEditLimitHardCoded[tracer.getIterationNumber()].length-1; i++) {
 				isAllStatesWithinEditLimitHardCoded[tracer.getIterationNumber()][i] = isAllStatesWithinEditLimitHardCoded[tracer.getIterationNumber()][i+1];
@@ -4686,7 +4688,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 		if (indexOfEngineToUseInTestFilesWithResolutionSingleEngine >= 0) {
 			engineToUse = engines.get(indexOfEngineToUseInTestFilesWithResolutionSingleEngine);
 		} else {
-			engineToUse = engines.get(engines.size()-1);
+//			engineToUse = engines.get(engines.size()-1);
+			engineToUse = (MarkovEngineImpl) MarkovEngineImpl.getInstance(2, 100, 1000);
 		}
 		assertNotNull(engineToUse);
 		engines.clear();
