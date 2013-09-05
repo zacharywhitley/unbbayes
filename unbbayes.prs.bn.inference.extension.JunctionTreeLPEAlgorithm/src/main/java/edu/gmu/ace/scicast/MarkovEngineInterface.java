@@ -1191,5 +1191,8 @@ public interface MarkovEngineInterface {
 //	 */
 //	public void importNetwork(InputStream stream)  throws IOException, IllegalStateException;
 	
-	
+	/**
+	 * @return simply a text containing versioning information.
+	 */
+	public String getVersionInfo();
 }

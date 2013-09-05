@@ -13082,6 +13082,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		this.isToAddArcsOnAddTrade = isToAddArcsOnAddTrade;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getVersionInfo()
+	 */
+	public String getVersionInfo() {
+		return "UnBBayes SciCast Markov Engine 1.0.0";
+	}
+
 	
 
 	
