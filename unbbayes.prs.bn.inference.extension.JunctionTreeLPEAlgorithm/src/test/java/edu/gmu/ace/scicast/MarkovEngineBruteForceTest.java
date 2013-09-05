@@ -144,6 +144,8 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	/** If true, assets and probabilities before and after {@link #createNode(Long, Network, List, List, List, Collection)} will be compared */
 	private boolean isToCompareValuesBeforeAndAfterCreateNode = true;//false;
 
+	private boolean isToForceValueTree = true;
+
 	/** if true, values without any complex adaptation will be used in {@link #generateEdit(Long, int, int, List, List, FivePointTestType, Long, List, List)}
 	 * if the random number did not choose to set bias or generate big edit*/
 	private static boolean isToSetUnadaptedValueWhenNotBiasedOrBigEdit = false;
@@ -1541,17 +1543,30 @@ public class MarkovEngineBruteForceTest extends TestCase {
 			}
 			List<Float> returnOfTrade = null;
 			try {
-				returnOfTrade = engine.addTrade(
-						transactionKey, 
-						tradeOccurredWhen, 
-						"User " + userId + " trades on P(" + questionId + " | " + assumptionsOfTrade + " = " + statesOfAssumption + ") = " + newValues , 
-						userId, 
-						questionId, 
-						newValues, 
-						assumptionsOfTrade, 
-						statesOfAssumption, 
-						true		// allow negative, so that we can see that min went to negative
-				);
+				if (isToForceValueTree()) {
+					returnOfTrade = engine.addTrade(
+							transactionKey, 
+							tradeOccurredWhen, 
+							questionId, 
+							null, 
+							null, 
+							newValues, 
+							assumptionIds, 
+							assumedStates
+						);
+				} else {
+					returnOfTrade = engine.addTrade(
+							transactionKey, 
+							tradeOccurredWhen, 
+							"User " + userId + " trades on P(" + questionId + " | " + assumptionsOfTrade + " = " + statesOfAssumption + ") = " + newValues , 
+							userId, 
+							questionId, 
+							newValues, 
+							assumptionsOfTrade, 
+							statesOfAssumption, 
+							true		// allow negative, so that we can see that min went to negative
+							);
+				}
 				
 			} catch (IllegalArgumentException e) {
 				if (resolvedQuestions.contains(questionId) || new ArrayList<Long>(resolvedQuestions).removeAll(assumptionsOfTrade)) {
@@ -6692,7 +6707,15 @@ public class MarkovEngineBruteForceTest extends TestCase {
 				}
 			}
 			if (nodesNotPresent.contains(nodeToCreate)) {
-				engine.addQuestion(null, new Date(), questionId, nodeToCreate.getStatesSize(), null);
+				if (isToForceValueTree()) {
+					String structure = "["+nodeToCreate.getStatesSize()+"]";
+					for (int i = 0; i < nodeToCreate.getStatesSize(); i++) {
+						structure += "["+i+"]";
+					}
+					engine.addQuestion(null, new Date(), questionId, nodeToCreate.getStatesSize(), null, structure);
+				} else {
+					engine.addQuestion(null, new Date(), questionId, nodeToCreate.getStatesSize(), null);
+				}
 				// make sure creation of the node did not reappear the resolved nodes
 				if (engine.isToDeleteResolvedNode()) {
 					Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
@@ -6786,7 +6809,15 @@ public class MarkovEngineBruteForceTest extends TestCase {
 						continue;
 					}
 					if (nodesNotPresent.contains(child)) {
-						engine.addQuestion(null, new Date(), Long.parseLong(child.getName()), child.getStatesSize(), null);
+						if (isToForceValueTree()) {
+							String structure = "["+child.getStatesSize()+"]";
+							for (int i = 0; i < child.getStatesSize(); i++) {
+								structure += "["+i+"]";
+							}
+							engine.addQuestion(null, new Date(), Long.parseLong(child.getName()), child.getStatesSize(), null,structure);
+						} else {
+							engine.addQuestion(null, new Date(), Long.parseLong(child.getName()), child.getStatesSize(), null);
+						}
 						// make sure creation of the node did not reappear the resolved nodes
 						if (engine.isToDeleteResolvedNode()) {
 							Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
@@ -7584,6 +7615,20 @@ public class MarkovEngineBruteForceTest extends TestCase {
 	public static void setToRoundEditOnEditGenerationBetweenLimits(
 			boolean isToRoundEditOnEditGenerationBetweenLimits) {
 		MarkovEngineBruteForceTest.isToRoundEditOnEditGenerationBetweenLimits = isToRoundEditOnEditGenerationBetweenLimits;
+	}
+
+	/**
+	 * @return the isToForceValueTree
+	 */
+	public boolean isToForceValueTree() {
+		return isToForceValueTree;
+	}
+
+	/**
+	 * @param isToForceValueTree the isToForceValueTree to set
+	 */
+	public void setToForceValueTree(boolean isToForceValueTree) {
+		this.isToForceValueTree = isToForceValueTree;
 	}
 	
 }

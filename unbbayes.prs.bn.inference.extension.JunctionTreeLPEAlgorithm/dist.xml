@@ -1,9 +1,26 @@
 <assembly>
+  <!-- 
   <id>dist</id>
+   -->
+  <id>jar-with-dependencies</id>
   <formats>
+  <!-- 
     <format>zip</format>
+   -->
+    <format>jar</format>
   </formats>
+  <!-- 
   <includeBaseDirectory>true</includeBaseDirectory>
+   -->
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <dependencySets>
+    <dependencySet>
+      <outputDirectory>/</outputDirectory>
+      <useProjectArtifact>true</useProjectArtifact>
+      <unpack>true</unpack>
+      <scope>runtime</scope>
+    </dependencySet>
+  </dependencySets>
   <fileSets>
   <fileSet>
       <directory>plugins/unbbayes.prs.bn.inference.extension.MinProductJunctionTree/icons/</directory>
@@ -26,6 +43,7 @@
         <include>README.txt</include>
       </includes>
     </fileSet>
+    <!-- 
     <fileSet>
       <directory>target/</directory>
       <outputDirectory></outputDirectory>
@@ -33,6 +51,7 @@
         <include>*.jar</include>
       </includes>
     </fileSet>
+     -->
   </fileSets>
 </assembly>
 
