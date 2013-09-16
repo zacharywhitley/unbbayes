@@ -870,7 +870,7 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 					+ " "
 					+ (int) (net.getRadius() * 2)
 					+ ");");
-		stream.println("     name = \"" + getDefaultNodeNamePrefix() + net.getName() + "\";");
+		stream.println("     name = \"" + net.getName() + "\";");
 		String tree = saveHierarchicTree(net.getHierarchicTree());
 		if (tree != null)
 			stream.println("     tree = \"" + tree + "\";");
