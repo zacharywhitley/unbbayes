@@ -139,6 +139,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 	};
 
+	/** This object will be used in order to initialize {@link #getDefaultCPTNormalizer()} */
+	public static final ITableFunction DEFAULT_CPT_NORMALIZER = new NormalizeTableFunction();
+
 	private IAssetAwareInferenceAlgorithmBuilder assetAwareInferenceAlgorithmBuilder = new IAssetAwareInferenceAlgorithmBuilder() {
 		public AssetAwareInferenceAlgorithm build( IInferenceAlgorithm probDelegator, float initQValue) {
 			AssetAwareInferenceAlgorithm ret = (AssetAwareInferenceAlgorithm) AssetAwareInferenceAlgorithm.getInstance(probDelegator);
@@ -334,7 +337,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		netIOToExportSharedNetToSting.setDefaultNodeNamePrefix("N");
 	}
 	
-	private boolean isToAddArcsOnAddTrade = true; 
+	private boolean isToAddArcsOnAddTrade = true;
+
+	private ITableFunction defaultCPTNormalizer = DEFAULT_CPT_NORMALIZER;
+
 	
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -2644,7 +2650,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						potTable.setValue(i, this.cpd.get(i));
 					}
 					// normalize table
-					new NormalizeTableFunction().applyFunction((ProbabilisticTable) potTable);
+					getDefaultCPTNormalizer().applyFunction((ProbabilisticTable) potTable);
 				}
 			}
 		}
@@ -2959,7 +2965,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.transactionKey = transactionKey;
 			this.whenCreated = (occurredWhen==null)?-1:occurredWhen.getTime();
 			this.tradeKey = tradeKey;
-			this.newValues = newValues;
+			if (newValues != null) {
+				newValues = new ArrayList<Float>(newValues);	// do not use original, to reduce side effects
+			}
+			this.newValues = newValues;	
 			this.allowNegative = allowNegative;
 			if (assumptionIds != null) {
 				// fill trade specification with an instance that we are sure that is mutable, because executeTrade may change its content
@@ -12918,7 +12927,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// make sure all cpts are normalized
-		ITableFunction normalizer = new NormalizeTableFunction();
+		ITableFunction normalizer = getDefaultCPTNormalizer();
 		for (Node node : probNet.getNodes()) {
 			if (node instanceof ProbabilisticNode) {
 				ProbabilisticNode probNode = (ProbabilisticNode) node;
@@ -12938,6 +12947,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// compile the loaded bayes net
 			getDefaultInferenceAlgorithm().run();
 		}
+	}
+
+	/**
+	 * @return : default object to be used in order to normalize cpt tables.
+	 * @see #importState(String)
+	 * @see AddQuestionAssumptionNetworkAction#addArcsAssumingReboot(ProbabilisticNetwork)O
+	 */
+	public ITableFunction getDefaultCPTNormalizer() {
+		return defaultCPTNormalizer;
 	}
 
 	/**
@@ -13087,12 +13105,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getVersionInfo()
 	 */
 	public String getVersionInfo() {
-		return "UnBBayes SciCast Markov Engine 1.0.0";
+		return "UnBBayes SciCast Markov Engine 1.0.1";
 	}
-
-	
-
-	
 
 
 }

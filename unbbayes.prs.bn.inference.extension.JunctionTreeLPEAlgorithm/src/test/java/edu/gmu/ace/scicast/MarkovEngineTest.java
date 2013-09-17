@@ -3520,7 +3520,7 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.5f , probList.get(0),PROB_ERROR_MARGIN );
 		assertEquals(0.5f , probList.get(1),PROB_ERROR_MARGIN );
 		
-		// edit interval of P(C=c1) should be [0.005, 0.995]
+		// edit interval of P(C=c1) should be [.0083, .9916667]
 		editInterval = engine.getEditLimits(userNameToIDMap.get("Amy"), 0x0C, 0, null, null);
 		assertNotNull(editInterval);
 		assertEquals(2, editInterval.size());
@@ -28424,6 +28424,484 @@ public class MarkovEngineTest extends TestCase {
 			}
 			
 		}
+	}
+	
+	/**
+	 * Checks that {@link MarkovEngineImpl#addTrade(Long, Date, String, long, long, List, List, List, boolean)},
+	 * {@link MarkovEngineImpl#addQuestionAssumption(Long, Date, long, List, List)},
+	 * and {@link MarkovEngineImpl#exportState()} (and its counterpart, which is
+	 * {@link MarkovEngineImpl#importState(String)}) can work when there are extreme conditions
+	 * (presence of probability 0).
+	 */
+	public final void testTradeAddQuestionAssumptionExportImportOnExtremeProb() {
+		// create a fully connected net with 3 nodes, 3 states each: 
+		long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0L, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 1L, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 2L, 3, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0L, Collections.singletonList(1L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0L, Collections.singletonList(2L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 1L, Collections.singletonList(2L), null);
+		engine.commitNetworkActions(transactionKey);
+		// arcs: 1->0; 2->0; 2->1
+		
+		// make sure the marginals starts uniform
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals(probLists.toString(), 3, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(probLists.toString(), 3, entry.getValue().size());
+			for (Float value : entry.getValue()) {
+				assertEquals(probLists.toString(), 1f/3f, value, PROB_ERROR_MARGIN);
+			}
+		}
+		
+		transactionKey = engine.startNetworkActions();
+		// insert a hard conditional evidence setting P(2|1=state0) = [0,1,0], 
+		List<Float> newValues = new ArrayList<Float>(2);
+		newValues.add(0f);
+		newValues.add(1f);
+		newValues.add(0f);
+		engine.addTrade(transactionKey, new Date(), "", Long.MAX_VALUE, 2L, newValues, Collections.singletonList(1L), Collections.singletonList(0), true);
+		// and P(2|1=state1) = [1,0,0]
+		newValues.set(0, 1f);
+		newValues.set(1, 0f);
+		newValues.set(2, 0f);
+		engine.addTrade(transactionKey, new Date(), "", Long.MAX_VALUE, 2L, newValues, Collections.singletonList(1L), Collections.singletonList(1), true);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check marginals
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(probLists.toString(), 3, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(probLists.toString(), 3, entry.getValue().size());
+			if (entry.getKey().longValue() == 2L) {
+				assertEquals(probLists.toString(), .444444f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), .444444f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), .111111f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else {
+				for (Float value : entry.getValue()) {
+					assertEquals(probLists.toString(), 1f/3f, value, PROB_ERROR_MARGIN);
+				}
+			}
+		}
+		
+		// check that the conditional P(2|1=0) is [0,1,0] (and conditional of other nodes remains consistent)
+		probLists = engine.getProbLists(null, Collections.singletonList(1L), Collections.singletonList(0));
+		assertEquals(probLists.toString(), 3, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(probLists.toString(), 3, entry.getValue().size());
+			if (entry.getKey().longValue() == 2L) {
+				// check that it is [0,1,0]
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else if (entry.getKey().longValue() == 1L) {
+				// this is the assumption, so must have the value of the assumption
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else {
+				// the other values should be in [0,1] interval
+				for (Float value : entry.getValue()) {
+					// make sure probs are consistent
+					assertFalse(probLists.toString(), Float.isInfinite(value));
+					assertFalse(probLists.toString(), Float.isNaN(value));
+					assertTrue(probLists.toString(), 0f < value);
+					assertTrue(probLists.toString(), value < 1f);
+				}
+			}
+		}
+		
+		// check that the conditional P(2|1=1) is [1,0,0]
+		probLists = engine.getProbLists(null, Collections.singletonList(1L), Collections.singletonList(1));
+		assertEquals(probLists.toString(), 3, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(probLists.toString(), 3, entry.getValue().size());
+			if (entry.getKey().longValue() == 2L) {
+				// check that it is [1,0,0]
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else if (entry.getKey().longValue() == 1L) {
+				// this is the assumption, so must have the value of the assumption
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else {
+				// the other values should be in [0,1] interval
+				for (Float value : entry.getValue()) {
+					// make sure probs are consistent
+					assertFalse(probLists.toString(), Float.isInfinite(value));
+					assertFalse(probLists.toString(), Float.isNaN(value));
+					assertTrue(probLists.toString(), 0f < value);
+					assertTrue(probLists.toString(), value < 1f);
+				}
+			}
+		}
+		
+
+		// backup marginals before adding trade, for later comparison
+		probLists = engine.getProbLists(null, null, null);
+		
+
+		// prepare probability of trade to be made
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.15f);
+		newValues.add(.05f);
+		newValues.add(.8f);
+		
+		// check that we cannot trade on P(0 | 1=0, 2=0), because it is impossible assumption
+		List<Long> assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add(1L);
+		assumptionIds.add(2L);
+		List<Integer> assumedStates = new ArrayList<Integer>(2);
+		assumedStates.add(0);
+		assumedStates.add(0);
+		try {
+			engine.addTrade(null, new Date(), "", 666L, 0, newValues, assumptionIds, assumedStates, true);
+			fail("Should not be able to trade on P(0 | 1=1, 2=1), because of impossible (0%) assumptions.");
+		} catch (IllegalArgumentException e) {
+			// OK
+			assertTrue(e.getMessage().contains("cannot be changed"));
+		}
+		// check that marginals did not change
+		assertEquals(probLists.toString(), probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			// compare to old probabilities, which are in probLists
+			assertTrue(probLists.toString() + ";" + entry.toString(), probLists.containsKey(entry.getKey()));
+			assertEquals(probLists.toString() + ";" + entry.toString(), 3, entry.getValue().size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(probLists.toString(), probLists.get(entry.getKey()).get(i), entry.getValue().get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// check that we can trade on P(0 | 1=0,2=1)
+		assumedStates.set(0, 0);
+		assumedStates.set(1, 1);
+		engine.addTrade(null, new Date(), "", 13L, 0, newValues, assumptionIds, assumedStates, true);
+		
+
+		// check that conditional  P(0 | 1=0,2=1) have changed
+		assertEquals(newValues.size(), engine.getProbList(0, assumptionIds, assumedStates).size());
+		for (int i = 0; i < newValues.size(); i++) {
+			assertEquals(probLists.toString(), newValues.get(i), engine.getProbList(0, assumptionIds, assumedStates).get(i), PROB_ERROR_MARGIN);
+		}
+
+		// check that the conditional P(2|1=0) is [0,1,0] (and conditional of other nodes remains consistent)
+		probLists = engine.getProbLists(null, Collections.singletonList(1L), Collections.singletonList(0));
+		assertEquals(probLists.toString(), 3, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(probLists.toString(), 3, entry.getValue().size());
+			if (entry.getKey().longValue() == 2L) {
+				// check that it is [0,1,0]
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else if (entry.getKey().longValue() == 1L) {
+				// this is the assumption, so must have the value of the assumption
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else {
+				// the other values should be in [0,1] interval
+				for (Float value : entry.getValue()) {
+					// make sure probs are consistent
+					assertFalse(probLists.toString(), Float.isInfinite(value));
+					assertFalse(probLists.toString(), Float.isNaN(value));
+					assertTrue(probLists.toString(), 0f < value);
+					assertTrue(probLists.toString(), value < 1f);
+				}
+			}
+		}
+		
+		// check that the conditional P(2|1=1) is [1,0,0]
+		probLists = engine.getProbLists(null, Collections.singletonList(1L), Collections.singletonList(1));
+		assertEquals(probLists.toString(), 3, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(probLists.toString(), 3, entry.getValue().size());
+			if (entry.getKey().longValue() == 2L) {
+				// check that it is [1,0,0]
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else if (entry.getKey().longValue() == 1L) {
+				// this is the assumption, so must have the value of the assumption
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else {
+				// the other values should be in [0,1] interval
+				for (Float value : entry.getValue()) {
+					// make sure probs are consistent
+					assertFalse(probLists.toString(), Float.isInfinite(value));
+					assertFalse(probLists.toString(), Float.isNaN(value));
+					assertTrue(probLists.toString(), 0f < value);
+					assertTrue(probLists.toString(), value < 1f);
+				}
+			}
+		}
+		
+		
+		// backup marginals before adding new arc, for later comparison
+		probLists = engine.getProbLists(null, null, null);
+		
+		// check that we can add new node 3 (with 3 states) and new arc from 3 to 2 and 1 and 0 (in order to keep them fully connected)
+		transactionKey = engine.startNetworkActions();
+		engine.addQuestion(null, new Date(), 3L, 3, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 2L, Collections.singletonList(3L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 1L, Collections.singletonList(3L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0L, Collections.singletonList(3L), null);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that marginal of new node is uniform, and marginals of old nodes remained unchanged
+		assertEquals(probLists.toString(), 4, engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			assertEquals(probLists.toString() + ";" + entry.toString(), 3, entry.getValue().size());
+			if (entry.getKey().longValue() == 3L) {
+				// check that it is uniform
+				for (Float value : entry.getValue()) {
+					assertEquals(probLists.toString(), 1f/3f, value, PROB_ERROR_MARGIN);
+				}
+			} else {
+				// compare to old probabilities, which are in probLists
+				assertTrue(probLists.toString() + ";" + entry.toString(), probLists.containsKey(entry.getKey()));
+				for (int i = 0; i < entry.getValue().size(); i++) {
+					assertEquals(probLists.toString(), probLists.get(entry.getKey()).get(i), entry.getValue().get(i), PROB_ERROR_MARGIN);
+				}
+			}
+		}
+
+		// check that the conditional P(2|1=0) is [0,1,0] (and conditional of other nodes remains consistent)
+		probLists = engine.getProbLists(null, Collections.singletonList(1L), Collections.singletonList(0));
+		assertEquals(probLists.toString(), 4, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(probLists.toString(), 3, entry.getValue().size());
+			if (entry.getKey().longValue() == 2L) {
+				// check that it is [0,1,0]
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else if (entry.getKey().longValue() == 1L) {
+				// this is the assumption, so must have the value of the assumption
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else {
+				// the other values should be in [0,1] interval
+				for (Float value : entry.getValue()) {
+					// make sure probs are consistent
+					assertFalse(probLists.toString(), Float.isInfinite(value));
+					assertFalse(probLists.toString(), Float.isNaN(value));
+					assertTrue(probLists.toString(), 0f < value);
+					assertTrue(probLists.toString(), value < 1f);
+				}
+			}
+		}
+		
+		// check that the conditional P(2|1=1) is [1,0,0]
+		probLists = engine.getProbLists(null, Collections.singletonList(1L), Collections.singletonList(1));
+		assertEquals(probLists.toString(), 4, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(probLists.toString(), 3, entry.getValue().size());
+			if (entry.getKey().longValue() == 2L) {
+				// check that it is [1,0,0]
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else if (entry.getKey().longValue() == 1L) {
+				// this is the assumption, so must have the value of the assumption
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else {
+				// the other values should be in [0,1] interval
+				for (Float value : entry.getValue()) {
+					// make sure probs are consistent
+					assertFalse(probLists.toString(), Float.isInfinite(value));
+					assertFalse(probLists.toString(), Float.isNaN(value));
+					assertTrue(probLists.toString(), 0f < value);
+					assertTrue(probLists.toString(), value < 1f);
+				}
+			}
+		}
+		
+		
+		// backup marginals before exporting/importing net, for later comparison
+		probLists = engine.getProbLists(null, null, null);
+		
+		// check that we can export and import net state
+		assertEquals(engine.exportState(), engine.exportState());	// check that exporting several times won't change the output
+		System.out.println("-------------------------------------------------------------------------");
+		System.out.println(engine.exportState());
+		engine.importState(engine.exportState());
+		System.out.println("-------------------------------------------------------------------------");
+		System.out.println(engine.exportState());
+		engine.importState(engine.exportState());
+		assertEquals(engine.exportState(), engine.exportState());	// check that exporting several times won't change the output
+		
+		// check that marginals did not change
+		assertEquals(probLists.toString(), probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			// compare to old probabilities, which are in probLists
+			assertTrue(probLists.toString() + ";" + entry.toString(), probLists.containsKey(entry.getKey()));
+			assertEquals(probLists.toString() + ";" + entry.toString(), 3, entry.getValue().size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(probLists.toString(), probLists.get(entry.getKey()).get(i), entry.getValue().get(i), PROB_ERROR_MARGIN);
+			}
+		}
+
+		// check that the conditional P(2|1=0) is [0,1,0] (and conditional of other nodes remains consistent)
+		probLists = engine.getProbLists(null, Collections.singletonList(1L), Collections.singletonList(0));
+		assertEquals(probLists.toString(), 4, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(probLists.toString(), 3, entry.getValue().size());
+			if (entry.getKey().longValue() == 2L) {
+				// check that it is [0,1,0]
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else if (entry.getKey().longValue() == 1L) {
+				// this is the assumption, so must have the value of the assumption
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else {
+				// the other values should be in [0,1] interval
+				for (Float value : entry.getValue()) {
+					// make sure probs are consistent
+					assertFalse(probLists.toString(), Float.isInfinite(value));
+					assertFalse(probLists.toString(), Float.isNaN(value));
+					assertTrue(probLists.toString(), 0f < value);
+					assertTrue(probLists.toString(), value < 1f);
+				}
+			}
+		}
+		
+		// check that the conditional P(2|1=1) is [1,0,0]
+		probLists = engine.getProbLists(null, Collections.singletonList(1L), Collections.singletonList(1));
+		assertEquals(probLists.toString(), 4, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(probLists.toString(), 3, entry.getValue().size());
+			if (entry.getKey().longValue() == 2L) {
+				// check that it is [1,0,0]
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else if (entry.getKey().longValue() == 1L) {
+				// this is the assumption, so must have the value of the assumption
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else {
+				// the other values should be in [0,1] interval
+				for (Float value : entry.getValue()) {
+					// make sure probs are consistent
+					assertFalse(probLists.toString(), Float.isInfinite(value));
+					assertFalse(probLists.toString(), Float.isNaN(value));
+					assertTrue(probLists.toString(), 0f < value);
+					assertTrue(probLists.toString(), value < 1f);
+				}
+			}
+		}
+		
+		// backup marginals before adding trade, for later comparison
+		probLists = engine.getProbLists(null, null, null);
+		
+		// prepare probability of trade to be made
+		newValues = new ArrayList<Float>(3);
+		newValues.add(.7f);
+		newValues.add(.2f);
+		newValues.add(.1f);
+		
+		// check that we cannot trade on P(0 | 1=1, 2=1), because it is impossible assumption
+		assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add(1L);
+		assumptionIds.add(2L);
+		assumedStates = new ArrayList<Integer>(2);
+		assumedStates.add(1);
+		assumedStates.add(1);
+		try {
+			engine.addTrade(null, new Date(), "", 666L, 0, newValues, assumptionIds, assumedStates, true);
+			fail("Should not be able to trade on P(0 | 1=1, 2=1), because of impossible (0%) assumptions.");
+		} catch (IllegalArgumentException e) {
+			// OK
+			assertTrue(e.getMessage().contains("cannot be changed"));
+		}
+		// check that marginals did not change
+		assertEquals(probLists.toString(), probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			// compare to old probabilities, which are in probLists
+			assertTrue(probLists.toString() + ";" + entry.toString(), probLists.containsKey(entry.getKey()));
+			assertEquals(probLists.toString() + ";" + entry.toString(), 3, entry.getValue().size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(probLists.toString(), probLists.get(entry.getKey()).get(i), entry.getValue().get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// check that we can trade on P(0 | 1=2,2=2)
+		assumedStates.set(0, 2);
+		assumedStates.set(1, 2);
+		engine.addTrade(null, new Date(), "", 13L, 0, newValues, assumptionIds, assumedStates, true);
+		
+		// check that conditional  P(0 | 1=2,2=2) have changed
+		assertEquals(newValues.size(), engine.getProbList(0, assumptionIds, assumedStates).size());
+		for (int i = 0; i < newValues.size(); i++) {
+			assertEquals(probLists.toString(), newValues.get(i), engine.getProbList(0, assumptionIds, assumedStates).get(i), PROB_ERROR_MARGIN);
+		}
+
+		// check that the conditional P(2|1=0) is [0,1,0] (and conditional of other nodes remains consistent)
+		probLists = engine.getProbLists(null, Collections.singletonList(1L), Collections.singletonList(0));
+		assertEquals(probLists.toString(), 4, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(probLists.toString(), 3, entry.getValue().size());
+			if (entry.getKey().longValue() == 2L) {
+				// check that it is [0,1,0]
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else if (entry.getKey().longValue() == 1L) {
+				// this is the assumption, so must have the value of the assumption
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else {
+				// the other values should be in [0,1] interval
+				for (Float value : entry.getValue()) {
+					// make sure probs are consistent
+					assertFalse(probLists.toString(), Float.isInfinite(value));
+					assertFalse(probLists.toString(), Float.isNaN(value));
+					assertTrue(probLists.toString(), 0f < value);
+					assertTrue(probLists.toString(), value < 1f);
+				}
+			}
+		}
+		
+		// check that the conditional P(2|1=1) is [1,0,0]
+		probLists = engine.getProbLists(null, Collections.singletonList(1L), Collections.singletonList(1));
+		assertEquals(probLists.toString(), 4, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(probLists.toString(), 3, entry.getValue().size());
+			if (entry.getKey().longValue() == 2L) {
+				// check that it is [1,0,0]
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else if (entry.getKey().longValue() == 1L) {
+				// this is the assumption, so must have the value of the assumption
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(0), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 1f, entry.getValue().get(1), PROB_ERROR_MARGIN);
+				assertEquals(probLists.toString(), 0f, entry.getValue().get(2), PROB_ERROR_MARGIN);
+			} else {
+				// the other values should be in [0,1] interval
+				for (Float value : entry.getValue()) {
+					// make sure probs are consistent
+					assertFalse(probLists.toString(), Float.isInfinite(value));
+					assertFalse(probLists.toString(), Float.isNaN(value));
+					assertTrue(probLists.toString(), 0f < value);
+					assertTrue(probLists.toString(), value < 1f);
+				}
+			}
+		}
+		
 	}
 	
 	

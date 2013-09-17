@@ -2640,15 +2640,21 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 				ProbabilisticNode mainNode = (ProbabilisticNode) node;	// the node to set CPT
 				PotentialTable cpt = mainNode.getProbabilityFunction();	// the CPT to change
 				
+				// create a list containing the dependencies of cpt, but taking care not to change ordering
+				List<INode> parentNodesSortedForCPT = new ArrayList<INode>(cpt.getVariablesSize()-1);
+				for (int i = 1; i < cpt.getVariablesSize(); i++) {	// index 0 is always the current node, so do not include here, because here we want its parents
+					parentNodesSortedForCPT.add(cpt.getVariableAt(i));
+				}
+				
 				// extract the conditional probability from the current state of network (i.e. current clique potentials)
-				PotentialTable condProb = (PotentialTable) extractor.buildCondicionalProbability(mainNode, node.getParentNodes(), net, this.getProbabilityPropagationDelegator());
+				PotentialTable condProb = (PotentialTable) extractor.buildCondicionalProbability(mainNode, parentNodesSortedForCPT, net, this.getProbabilityPropagationDelegator());
 				
 				// check size consistency
 				if (cpt.tableSize() != condProb.tableSize()) {
 					throw new RuntimeException("The CPT of node " + node + " is supposedly with size " + cpt.tableSize() + ", but conditional probability extracted from Junction Tree had size " + condProb.tableSize());
 				}
 				
-				// use values in condProb to update cpt
+				// use values in condProb to update cpt. We can do array copy, because we were cautious not to change the ordering of the variables.
 				cpt.setValues(condProb.getValues());
 //				normalizer.applyFunction((ProbabilisticTable) cpt);	// normalize cpt
 			}
