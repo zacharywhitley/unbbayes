@@ -4,7 +4,7 @@
 	<groupId>br.unb.cic</groupId>
 	<artifactId>unbbayes</artifactId>
 	<name>UnBBayes</name>
-	<version>4.13.6</version>
+	<version>4.13.7</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>

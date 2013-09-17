@@ -1,4 +1,4 @@
-UNBBAYES VERSION 4.13.6
+UNBBAYES VERSION 4.13.7
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
@@ -7,8 +7,9 @@ Number	Request ID	Summary
 
 BUG LIST		
 Number	Request ID	Summary
-6       155     Error with the numeration of automatic node names in BNs
-5		136		Tooltip text "compile junction tree" has been changed by "Compile Bayesian Network".
+7       156         NetIO adding prefixes of nodes to name of net too. Fixed.
+6       155         Error with the numeration of automatic node names in BNs
+5		136		    Tooltip text "compile junction tree" has been changed by "Compile Bayesian Network".
 
 
 
