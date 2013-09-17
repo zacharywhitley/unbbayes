@@ -132,11 +132,11 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	 *				   given parent's states.
 	 */
 	public void verifyConsistency() throws Exception {
-		Node auxNo = variableList.get(0);
-		int noLin = auxNo.getStatesSize();
+		Node currentNode = variableList.get(0);
+		int numerOfLinesInCPT = currentNode.getStatesSize();
 
 		/* Check if the node represents a numeric attribute */
-		if (noLin == 0) {
+		if (numerOfLinesInCPT == 0) {
 			/* 
 			 * The node represents a numeric attribute which has no potential
 			 * table. Just Return.
@@ -144,22 +144,21 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 			return;
 		}
 		
-		int noCol = 1;
-		int sizeVariaveis = variableList.size();
-		for (int k = 1; k < sizeVariaveis; k++) {
-			auxNo = variableList.get(k);
-			noCol *= auxNo.getStatesSize();
+		int numberOfColumnsInCPT = 1;
+		int numberOfVariables = variableList.size();
+		for (int k = 1; k < numberOfVariables; k++) {
+			currentNode = variableList.get(k);
+			numberOfColumnsInCPT *= currentNode.getStatesSize();
 		}
 
-		float soma;
-		for (int j = 0; j < noCol; j++) {
-			soma = 0;
-			for (int i = 0; i < noLin; i++) {
-				soma += dataPT.data[j * noLin + i] * 100;
+		float sum;
+		for (int j = 0; j < numberOfColumnsInCPT; j++) {
+			sum = 0f;
+			for (int i = 0; i < numerOfLinesInCPT; i++) {
+				sum += dataPT.data[j * numerOfLinesInCPT + i] * 100;
 			}
-
-			if (Math.abs(soma - 100.0) > 0.01) {
-				throw new Exception(resource.getString("variableTableName") + variableList.get(0) + resource.getString("inconsistencyName") + soma + "%\n");
+			if (Math.abs(sum - 100.0) > 0.01) {
+				throw new Exception(resource.getString("variableTableName") + variableList.get(0) + resource.getString("inconsistencyName") + sum + "%\n");
 			}
 		}
 	}

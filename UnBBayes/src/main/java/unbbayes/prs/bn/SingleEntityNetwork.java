@@ -1056,21 +1056,29 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 				nodeIndexes.put(nodeList.get(i).getName(), new Integer(i));				
 			}
 			
-			boolean erro = false;
+			boolean hasError = false;
+			
+			Exception firstException = null;
 
 			StringBuffer sb = new StringBuffer();
 
 			try {
 				verifyUtility();
 			} catch (Exception e) {
-				erro = true;
+				hasError = true;
 				sb.append(e.getMessage());
+				if (firstException == null) {
+					firstException = e;
+				}
 			}
 			try {
 				verifyCycles();
 			} catch (Exception e) {
-				erro = true;
+				hasError = true;
 				sb.append('\n' + e.getMessage());
+				if (firstException == null) {
+					firstException = e;
+				}
 			}
 			// disconnected networks should be OK now if we are using instances of JunctionTreeAlgorithm (because it normalizes each disconnected clique after propagation)
 //			try {
@@ -1082,18 +1090,24 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			try {
 				verifyPotentialTables();
 			} catch (Exception e) {
-				erro = true;
+				hasError = true;
 				sb.append('\n' + e.getMessage());
+				if (firstException == null) {
+					firstException = e;
+				}
 			}
 			try {
 				sortDecisions();
 			} catch (Exception e) {
-				erro = true;
+				hasError = true;
 				sb.append('\n' + e.getMessage());
+				if (firstException == null) {
+					firstException = e;
+				}
 			}
 
-			if (erro) {
-				throw new Exception(sb.toString());
+			if (hasError) {
+				throw new Exception(sb.toString(),firstException);
 			}
 		}
 	}
