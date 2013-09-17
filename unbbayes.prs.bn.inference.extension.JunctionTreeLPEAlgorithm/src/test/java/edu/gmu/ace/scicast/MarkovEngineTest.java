@@ -28904,6 +28904,93 @@ public class MarkovEngineTest extends TestCase {
 		
 	}
 	
+	/**
+	 * Check that we can change probability by specifying something like
+	 * P(A | B, C) = [.2, .8, 0 ;  1, 0, 0 ; 0, 1, 0 ; .7, .1, .2 ; .9, .1, 0 ; 0, 0, 1 ; .5, .2, .3 ; .1, .2, .7 ; 0, 1, 0; ]
+	 * instead of P(X | Y=y0,Z=z0) = [.2, .8, 0] for each combination of assumptions,
+	 * by setting the list of assumed states to null.
+	 */
+	public final void testAddTradeAssumptionStateNull() {
+		// generate a network B->A<-C
+		engine.addQuestion(null, new Date(), 0x0A, 3, null);
+		engine.addQuestion(null, new Date(), 0x0B, 3, null);
+		engine.addQuestion(null, new Date(), 0x0C, 3, null);
+		engine.addQuestionAssumption(null, new Date(), 0x0A, Collections.singletonList(0x0BL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0A, Collections.singletonList(0x0CL), null);
+		
+		// assert that all three questions are in same clique
+		assertEquals(1, engine.getQuestionAssumptionGroups().size());
+		assertEquals(3, engine.getQuestionAssumptionGroups().get(0).size());
+		
+		// assert that all nodes starts with uniform marginal
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(probLists.toString(), 3, entry.getValue().size());
+			for (Float value : entry.getValue()) {
+				assertEquals(probLists.toString(), 1f/3f, value, PROB_ERROR_MARGIN);
+			}
+		}
+		// check that the questions are really A, B, and C
+		assertEquals(probLists.toString(), 3, probLists.size());
+		assertTrue(probLists.containsKey(0x0AL));
+		assertTrue(probLists.containsKey(0x0BL));
+		assertTrue(probLists.containsKey(0x0CL));
+		
+		// make the trade P(A | B, C) = [.2, .8, 0 ;  1, 0, 0 ; 0, 1, 0 ; .7, .1, .2 ; .9, .1, 0 ; 0, 0, 1 ; .5, .2, .3 ; .1, .2, .7 ; 0, 1, 0; ]
+		List<Long> assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add(0x0BL);
+		assumptionIds.add(0x0CL);
+		List<Integer> assumedStates = null;
+		// declaring array at once and adding to a list in a loop is easier than calling List#add(Long) 27 times
+		double[] values = {.2, .8, 0 ,  1, 0, 0 , 0, 1, 0 , .7, .1, .2 , .9, .1, 0 , 0, 0, 1 , .5, .2, .3 , .1, .2, .7 , 0, 1, 0};
+		List<Float> newValues = new ArrayList<Float>(27);
+		for (double value : values) {
+			newValues.add((float) value);
+		}
+		engine.addTrade(null, new Date(), "P(A | B, C) = [.2, .8, 0,  1, 0, 0, 0, 1, 0, .7, .1, .2]", 
+				Long.MIN_VALUE, 0x0A, newValues, assumptionIds, assumedStates, true);
+		
+		// assert that conditional probability has changed
+		
+		// retrieve conditional probabilities one-by-one
+		assumedStates = new ArrayList<Integer>(2);
+		assumedStates.add(0);
+		assumedStates.add(0);
+		// we have 9 total combinations of assumptions' states (3 states each -> 3*3=9)
+		for (int indexOfAssumptions = 0; indexOfAssumptions < 9; indexOfAssumptions++) {
+			// iterate like: [0,0], [1,0], [2,0], [0,1] by using divisions and mod to indexOfAssumptions
+			assumedStates.set(0, indexOfAssumptions%3);			// this one changes more frequently
+			assumedStates.set(1, (int)(indexOfAssumptions/3));	// this one changes less frequently
+			List<Float> probList = engine.getProbList(0x0AL, assumptionIds, assumedStates);
+			assertEquals(3, probList.size());
+			// compare to values in newValues (the traded value)
+			for (int i = 0; i < probList.size(); i++) {
+				// newValues contains all conditional probabilities. The current one being tested is 
+				assertEquals(newValues.get(i + indexOfAssumptions*3), probList.get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// retrieve conditional probabilities at once
+		List<Float> probList = engine.getProbList(0x0AL, assumptionIds, null);
+		assertEquals(newValues.size(), probList.size());
+		for (int i = 0; i < newValues.size(); i++) {
+			assertEquals(newValues.get(i), probList.get(i), PROB_ERROR_MARGIN);
+		}
+		
+		// assert that marginals of B remains uniform
+		probList = engine.getProbList(0x0B, null, null);
+		assertEquals(3, probList.size());
+		for (Float value : probList) {
+			assertEquals(1f/3f, value, PROB_ERROR_MARGIN);
+		}
+		// assert that marginals of C remains uniform
+		probList = engine.getProbList(0x0C, null, null);
+		assertEquals(3, probList.size());
+		for (Float value : probList) {
+			assertEquals(1f/3f, value, PROB_ERROR_MARGIN);
+		}
+	}
+	
 	
 	/**
 	 * Test method for {@link MarkovEngineImpl#exportState()}
