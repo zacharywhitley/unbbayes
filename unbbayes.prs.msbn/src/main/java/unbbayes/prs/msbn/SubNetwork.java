@@ -25,6 +25,7 @@ import java.util.List;
 
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.IJunctionTree;
 import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
@@ -113,14 +114,14 @@ public class SubNetwork extends ProbabilisticNetwork {
 	 * Returns the junctiontree.
 	 * @return the junctiontree.
 	 */
-	protected JunctionTree getJunctionTree() {
+	public IJunctionTree getJunctionTree() {
 		return junctionTree;
 	}
 	
 	protected void initTriangulation() {
 		copiaNos = SetToolkit.clone(nodeList);
-		oe = new ArrayList<Node>();
-		oe.ensureCapacity(copiaNos.size()); 
+		nodeEliminationOrder = new ArrayList<Node>();
+		nodeEliminationOrder.ensureCapacity(copiaNos.size()); 
 	}
 
 	/**
@@ -178,7 +179,7 @@ public class SubNetwork extends ProbabilisticNetwork {
 	protected boolean elimine(SubNetwork adj) {
 		System.out.println("Elimine");
 		
-		oe.clear();
+		nodeEliminationOrder.clear();
 		ArrayList<Node> inter = SetToolkit.intersection(copiaNos, adj.copiaNos);				
 		ArrayList<Node> auxNos = SetToolkit.clone(copiaNos);
 		

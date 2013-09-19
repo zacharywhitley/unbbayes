@@ -62,7 +62,13 @@ public class DefaultMSBNIO extends NetIO implements IMSBNIO {
 	 */
 	public Graph load(File input) throws LoadException,
 			IOException {
-		return this.loadMSBN(input);
+		if (input.isDirectory()) {
+			// This is a directory. Load set of BN as MSBN
+			return this.loadMSBN(input);
+		} else {
+			// This is a single file. Load single BN
+			return super.load(input);
+		}
 	}
 
 	/**

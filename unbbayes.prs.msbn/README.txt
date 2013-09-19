@@ -4,17 +4,11 @@ CONFIGURING MAVEN
 The first thing needed is to install the maven project in your computer.
 
 After that, it is necessary to install the maven plugin for your IDE, in this case, the Eclipse IDE.
-The update site for this plugin is: http://q4e.googlecode.com/svn/trunk/updatesite/.
+Current distributions comes with m2e plugin already, but please, make sure your Eclipse distribution comes with maven plugin.
 
-Before using this new Maven project, it is necessary to install the following libraries in
-the local repository. These jars were not found in common remote repositories.
-
-In the near future, these files shall be in unbbayes's remote project.
-
-<If you do not have UnBBayes in your local mvn repository, then execute the below command>
-Go to \mvn_lib\unbbayes>
-mvn install:install-file -DgroupId=guess -DartifactId=jpf -Dversion=1.5 -Dpackaging=jar -Dfile=jpf-1.5.jar
-mvn install:install-file -DpomFile=pom.xml -Dpackaging=jar -Dfile=unbbayes-4.0.0.jar
+This project depends on UnBBayes, so you should also checkout UnBBayes folder from trunk and
+enable m2e workspace resolution, so that this project automatically points to classes in the same workspace.
+Or else, you'll need to obtain UnBBayes' jar file and either include it in your local maven repository, or include it in your classpath.
 
 
 CREATING A RELEASE
