@@ -815,6 +815,49 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		return ret;
 	}
 
+	/**
+	 * This is here only for backward compatibility.
+	 * @see unbbayes.prs.bn.IJunctionTree#getSeparatorsSize()
+	 * @deprecated use {@link #getSeparators()} and then {@link Collection#size()} instead.
+	 */
+	public int getSeparatorsSize() {
+		return this.getSeparators().size();
+	}
+
+	/**
+	 * This is here only for backward compatibility.
+	 * @see unbbayes.prs.bn.IJunctionTree#getSeparatorAt(int)
+	 * @deprecated use {@link #getSeparator(Clique, Clique)}, {@link #getSeparatorsContainingAllNodes(Collection, int)}, or 
+	 * {@link #getSeparators()} (the latter is for iteration).
+	 */
+	public Separator getSeparatorAt(int index) {
+		if (separators instanceof List) {
+			return (Separator) ((List)separators).get(index);
+		}
+		// Treat index as if it were the internal id to find. Find separator whose internal id is index
+		for (Separator separator : separators) {
+			int id = separator.getInternalIdentificator();
+			if (id >= 0 && id == index) {
+				// in this case, ids of the separators start from 0, and then goes 1, 2, 3...
+				return separator;
+			}
+			if (id < 0 && -(id+1) == index) {
+				// in this case, ids of the separators start from -1, and then goes -2, -3, -4...
+				// so, if id == -1, then -(id+1) ==0. If id == -2, then -(id+1) == 1, and so on. By doing this, we can compare with index.
+				return separator;
+			}
+		}
+		// iterate to index, if this is a non-indexed collection.
+		int i = 0;
+		for (Separator separator : separators) {
+			if (i == index) {
+				return separator;
+			}
+			i++;
+		}
+		return null;
+	}
+
 //	/**
 //	 * @param separatorsMap the separatorsMap to set
 //	 */

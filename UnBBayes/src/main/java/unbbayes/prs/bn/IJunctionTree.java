@@ -125,5 +125,21 @@ public interface IJunctionTree {
 	 * It will return null if no node or no network or no junction tree was specified, or when the junction tree does not contain the specified node.
 	 */
 	public List<Clique> getCliquesContainingMostOfNodes(Collection<INode> nodes);
+	
+	/**
+	 * @return : the total quantity of separators in this junction tre.
+	 * @deprecated you can use {@link #getSeparators()} and thenm {@link Collection#size()} instead.
+	 */
+	public int getSeparatorsSize();
+	
+	/**
+	 * @param index : an index for the separator
+	 * @return the separator identified by the index.
+	 * @deprecated separators are not identified by indexes anymore. They can be retrieved from what cliques or nodes do use them.
+	 * In case you need to iterate over them, use {@link #getSeparators()} instead.
+	 * @see #getSeparator(Clique, Clique)
+	 * @see #getSeparatorsContainingAllNodes(Collection, int)
+	 */
+	public Separator getSeparatorAt(int index);
 
 }

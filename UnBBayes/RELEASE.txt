@@ -1,9 +1,10 @@
-UNBBAYES VERSION 4.13.7
+UNBBAYES VERSION 4.14.7
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
 12		129			Added a new menu "save as"
 13		85			Copy paste feature is working for probabilistic, utility and decision nodes.
+14		119 		Changed Junction tree to contain getSeparatorSize and getSeparatorAt(int) for some backward compatibility with UnBBayes 4.0.0.
 
 BUG LIST		
 Number	Request ID	Summary
