@@ -113,8 +113,9 @@ public class SENController {
 		
 		{
 		    String nome = nodes.get(i).getName();
-		    if (nome.matches("[A-Z][0-9]*"))
-		         aux = Integer.parseInt(nome.substring(1));
+		    if (nome.matches("[A-Z][0-9]+")){
+		    	aux = Integer.parseInt(nome.substring(1));
+		    }
 		    if (aux > max)
 		        max = aux;
 		}
