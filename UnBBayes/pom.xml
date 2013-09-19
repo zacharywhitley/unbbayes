@@ -542,7 +542,7 @@
 				available plug-ins and the functions they provide (via extension
 				points and extensions). http://jpf.sourceforge.net/index.html
 			-->
-			<groupId>guess</groupId>
+			<groupId>net.sf.jpf</groupId>
 			<artifactId>jpf</artifactId>
 			<version>1.5</version>
 		</dependency>

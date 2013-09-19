@@ -2,17 +2,19 @@ CONFIGURING MAVEN
 ------------------
 
 The first thing needed is to install the maven project in your computer.
+The newest version should work, but UnBBayes was built using maven 2, so you may want to download version 2 for compatibility.
 
-After that, it is necessary to install the maven plugin for your IDE, in this case, the Eclipse IDE.
-The update site for this plugin is: http://q4e.googlecode.com/svn/trunk/updatesite/.
 
-Before using this new Maven project, it is necessary to install the following libraries in
-the local repository. These jars were not found in common remote repositories.
+You will also need to install a maven plugin for your Eclipse, so that
+dependencies are automatically solved for projects in your workspace.
+Newer versions of eclipse already comes with a maven plugin. Please, make sure you have
+downloaded an eclipse version which comes with the "m2e" plugin.
 
-In the near future, these files shall be in unbbayes's remote project.
+Sometimes, your maven plugin may not understand that UnBBayes is a maven project.
+In such case, please right click the project's root folder, and
+choose "Configure > Convert to Maven Project".
 
-Go to \lib\jpf>
-mvn install:install-file -DgroupId=guess -DartifactId=jpf -Dversion=1.5 -Dpackaging=jar -Dfile=jpf.jar
+
 
 CREATING A RELEASE
 -------------------
