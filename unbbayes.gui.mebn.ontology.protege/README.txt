@@ -27,10 +27,10 @@ mvn install:install-file -DgroupId=guess -DartifactId=protege-owl -Dversion=3.2 
 
 The following JARs are dependencies of protege 4.1
 
-Go to \src\main\resources\protege\bin>
+Go to \src\test\resources\protege\bin>
 mvn install:install-file -DgroupId=org.apache.felix -DartifactId=org.apache.felix.main -Dversion=2.0.4 -Dpackaging=jar -Dfile=felix.jar
 
-Go to \src\main\resources\protege\bundles>
+Go to \src\test\resources\protege\bundles>
 mvn install:install-file -DgroupId=org.apache.felix -DartifactId=org.apache.felix.bundlerepository -Dversion=1.4.2 -Dpackaging=jar -Dfile=org.apache.felix.bundlerepository-1.4.2.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.eclipse.equinox.common -Dversion=3.5.0.v20090520-1800 -Dpackaging=jar -Dfile=org.eclipse.equinox.common.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.eclipse.equinox.registry -Dversion=3.4.100.v20090520-1800 -Dpackaging=jar -Dfile=org.eclipse.equinox.registry.jar
@@ -39,7 +39,7 @@ mvn install:install-file -DgroupId=guess -DartifactId=org.protege.common -Dversi
 mvn install:install-file -DgroupId=guess -DartifactId=org.protege.editor.core.application -Dversion=4.1 -Dpackaging=jar -Dfile=org.protege.editor.core.application.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.protege.jaxb -Dversion=1.0.0.2010_10_26_0330 -Dpackaging=jar -Dfile=org.protege.jaxb.jar
 
-Go to \src\main\resources\protege\plugins>
+Go to \src\test\resources\protege\plugins>
 mvn install:install-file -DgroupId=guess -DartifactId=org.coode.dlquery -Dversion=1.1.0.2010_09_03_0304 -Dpackaging=jar -Dfile=org.coode.dlquery.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.protege.editor.owl -Dversion=4.1.0.b209_2010_09_03_0303 -Dpackaging=jar -Dfile=org.protege.editor.owl.jar
 mvn install:install-file -DgroupId=guess -DartifactId=org.semanticweb.HermiT -Dversion=1.2.5.927 -Dpackaging=jar -Dfile=org.semanticweb.HermiT.jar
