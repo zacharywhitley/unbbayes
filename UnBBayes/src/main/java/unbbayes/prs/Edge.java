@@ -125,7 +125,8 @@ public class Edge implements java.io.Serializable {
     }
  
  	/**
- 	 *  Muda a dire��o do arco. O pai vira filho e o filho vira pai
+ 	 *  Swaps the direction of this arc. 
+ 	 *  The parent becomes a child, and the child becomes the parent
  	 */   
     public void changeDirection() {
     	// Faz a troca na lista de pais e filhos de node1 e node2
