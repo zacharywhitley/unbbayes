@@ -198,7 +198,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
      */
     public void verifyCycles() throws Exception {
     	int nodeSize = nodeList.size();
-    	char[] visited = new char[nodeSize];
+    	byte[] visited = new byte[nodeSize];
     	int[] pi = new int[nodeSize];
     	
     	for (int i = 0; i < nodeSize; i++) {
@@ -223,7 +223,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
     /**
      * Depth first search to verify cycle.
      */
-    private void dfsCycle(int nodeIndex, char[] visited, int[] pi) throws Exception {
+    private void dfsCycle(int nodeIndex, byte[] visited, int[] pi) throws Exception {
     	if (visited[nodeIndex] != 0) { 			
  			// Back edge. Has cycle!
     		if (visited[nodeIndex] == 1) {
