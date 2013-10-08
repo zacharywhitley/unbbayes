@@ -622,12 +622,23 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 				getNext(st);
 			}
 			
+			if (st.sval.startsWith("%")) {
+				// ignore other types of comments which do not have special meaning
+				readTillEOL(st);
+				getNext(st);
+			}
+			
 			if (st.sval.endsWith("}")) {
 				// there were nothing declared
 				Debug.println(this.getClass(), "Empty potential declaration found for " + auxNode1.getName());
 			}
 
 			while (!st.sval.endsWith("}")) {
+				if (st.sval.startsWith("%")) {
+					// ignore other types of comments which do not have special meaning
+					readTillEOL(st);
+					getNext(st);
+				}
 				if (st.sval.equals("data")) {
 					getNext(st);	// extract "normal"
 					if (st.sval.equals("normal")) {
