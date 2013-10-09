@@ -23,8 +23,9 @@ package unbbayes.prs;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ResourceBundle;
 
 import unbbayes.prs.Node.NodeNameChangedEvent;
 import unbbayes.prs.Node.NodeNameChangedListener;
@@ -35,6 +36,9 @@ import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 
 public class Network implements Graph{
+	
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
+  			unbbayes.prs.bn.resources.BnResources.class.getName(), Locale.getDefault(), Network.class.getClassLoader());
 
 	private Map<String, Object> properties = new HashMap<String, Object>();
 	
@@ -64,6 +68,10 @@ public class Network implements Graph{
         // Event responsible for updating the index for the node that just changed its name.
         nodeNameChangedListener = new NodeNameChangedListener() {
         	public void nodeNameChanged(NodeNameChangedEvent event) {
+        		// TODO do not allow names to be changed to existing node name
+//        		if (nodeIndexes.containsKey(event.getNewName())) {
+//        			throw new IllegalArgumentException(resource.getString("duplicateNodeName")+": " + event.getNewName());
+//        		}
         		Integer index = nodeIndexes.get(event.getOldName());
         		
         		if(index!=null){
@@ -153,6 +161,13 @@ public class Network implements Graph{
 	 *@param  node  node to be added.
 	 */
 	public void addNode(Node node) {
+		// basic assertions
+		if (node.getName() == null || node.getName().trim().isEmpty()) {
+			throw new IllegalArgumentException(resource.getString("mandatoryNodeName")+": " + node.getName());
+		}
+		if (nodeIndexes.containsKey(node.getName())) {
+			throw new IllegalArgumentException(resource.getString("duplicateNodeName")+": " + node.getName());
+		}
 	    nodeList.add(node);
 	    // Set its index and add the listener to make sure it is always updated.
 	    nodeIndexes.put(node.getName(), new Integer(nodeList.size()-1));
