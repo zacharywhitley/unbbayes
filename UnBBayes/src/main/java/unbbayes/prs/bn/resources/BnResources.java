@@ -51,9 +51,9 @@ public class BnResources extends ListResourceBundle {
 	 * The resources
 	 */
 	static final Object[][] contents =
-	{	{"CicleNetException","Net with cicle:"},
-		{"DisconectedNetException","Net disconected"},
-		{"TableSizeException","Table size's differs"},
+	{	{"CicleNetException","Network with cicle:"},
+		{"DisconectedNetException","Disconected network"},
+		{"TableSizeException","Table size does not match with expected"},
 		{"OperatorException","Unknown operator"},
 		{"moralizeLabel","Moralized with arcs:\n"},
 		{"triangulateLabel","\nTriangulation and Elimination Order (links):\n"},
@@ -66,6 +66,8 @@ public class BnResources extends ListResourceBundle {
 		{"variableTableName","Variable Table "},
 		{"inconsistencyName"," inconsistency -> "},
 		{"utilityName","Utility"},
-		{"InconsistencyUnderflowException","Inconsistency or Underflow found."}
+		{"InconsistencyUnderflowException","Inconsistency or Underflow found."},
+		{"mandatoryNodeName","Name is mandatory"},
+		{"duplicateNodeName","This name is already present"},
 	};
 }

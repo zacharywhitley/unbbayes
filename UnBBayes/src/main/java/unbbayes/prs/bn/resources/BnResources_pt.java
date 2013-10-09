@@ -36,11 +36,11 @@ import java.util.ListResourceBundle;
 public class BnResources_pt extends ListResourceBundle {
 
     /**
-	 *  Sobrescreve getContents e retorna um array, onde cada item no array �
-	 *	um par de objetos. O primeiro elemento do par � uma String chave, e o
-	 *	segundo � o valor associado a essa chave.
+	 *  Sobrescreve getContents e retorna um array, onde cada item no array é
+	 *	um par de objetos. O primeiro elemento do par é uma String chave, e o
+	 *	segundo é o valor associado a essa chave.
 	 *
-	 * @return O conte�do dos recursos
+	 * @return O conteúdo dos recursos
 	 */
 	public Object[][] getContents() {
 		return contents;
@@ -65,6 +65,8 @@ public class BnResources_pt extends ListResourceBundle {
 		{"variableTableName","Tabela da variável "},
 		{"inconsistencyName"," inconsistente -> "},
 		{"utilityName","Utilidade"},
-		{"InconsistencyUnderflowException","Encontrado erro numérico ou inconsistência."}
+		{"InconsistencyUnderflowException","Encontrado erro numérico ou inconsistência."},
+		{"mandatoryNodeName","O nome é obrigatório"},
+		{"duplicateNodeName","Esse nome já existe"},
 	};
 }
