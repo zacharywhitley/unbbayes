@@ -435,6 +435,65 @@ public class MarkovEngineTest extends TestCase {
 		}
 	}
 	
+	/**
+	 * Check that we cannot add the same question twice
+	 */
+	public final void testAddQuestionTwice() {
+		long seed = System.currentTimeMillis();
+		Random r = new Random(seed);
+		Debug.println("Seed=" +seed);
+		engine.initialize();
+		// in separate transactions
+		engine.addQuestion(null, new Date(), 666, (int)(r.nextFloat()*10)+1, null);
+		try {
+			engine.addQuestion(null, new Date(), 666, (int)(r.nextFloat()*10)+1, null);
+			fail("Should not allow question to be included twice");
+		} catch (RuntimeException e) {
+			assertTrue(e.getMessage().contains("already present"));
+		}
+		
+		// in same transaction
+		long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 13, (int)(r.nextFloat()*10)+1, null);
+		try {
+			engine.addQuestion(transactionKey, new Date(), 13, (int)(r.nextFloat()*10)+1, null);
+			fail("Should not allow question to be included twice");
+		} catch (RuntimeException e) {
+			assertTrue(e.getMessage().contains("already present"));
+		}
+		engine.commitNetworkActions(transactionKey);
+		
+		// in different, non-committed transactions
+		transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 1313, (int)(r.nextFloat()*10)+1, null);
+		long transactionKey2 = engine.startNetworkActions();
+		engine.addQuestion(transactionKey2, new Date(), 1313, (int)(r.nextFloat()*10)+1, null);
+		engine.commitNetworkActions(transactionKey);
+		try {
+			engine.commitNetworkActions(transactionKey2);
+			fail("Should not allow question to be included twice");
+		} catch (RuntimeException e) {
+			assertTrue(e.getMessage().contains("already present"));
+		}
+		
+		// check that nodes exist, and they were initialized with uniform distribution
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertNotNull(probLists);
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(666L));
+		assertTrue(probLists.containsKey(13L));
+		// check uniform distro
+		for (Float prob : probLists.get(666L)) {
+			assertEquals(1f/probLists.get(666L).size(), prob, PROB_ERROR_MARGIN);
+		}
+		for (Float prob : probLists.get(13L)) {
+			assertEquals(1f/probLists.get(13L).size(), prob, PROB_ERROR_MARGIN);
+		}
+		for (Float prob : probLists.get(1313L)) {
+			assertEquals(1f/probLists.get(1313L).size(), prob, PROB_ERROR_MARGIN);
+		}
+	}
+	
 	
 	/**
 	 * Test method for {@link edu.gmu.ace.scicast.MarkovEngineImpl#addQuestionAssumption(long, java.util.Date, long, long, java.util.List)}.
@@ -28989,6 +29048,283 @@ public class MarkovEngineTest extends TestCase {
 		for (Float value : probList) {
 			assertEquals(1f/3f, value, PROB_ERROR_MARGIN);
 		}
+	}
+	
+	/**
+	 * Create Q1 (3 states);
+	 * Create Q3 (2 states);
+	 * Add arc Q1 -> Q2;
+	 * Trade on P(Q1|Q3=0) = [0,1,0];
+	 * Trade on P(Q1|Q3=1) = [1,0,0];
+	 * Check that conditional probabilities have changed.
+	 */
+	public final void testDeterministicCPT() {
+		engine.addQuestion(null, new Date(), 1, 3, null);
+		engine.addQuestion(null, new Date(), 3, 2, null);
+		engine.addQuestionAssumption(null, new Date(), 3, Collections.singletonList(1L), null);
+		
+		// assert that marginals start uniform
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals(2, probLists.size());
+		assertTrue(probLists.containsKey(1L));
+		assertTrue(probLists.containsKey(3L));
+		assertEquals(3, probLists.get(1L).size());
+		assertEquals(2, probLists.get(3L).size());
+		for (Float prob : probLists.get(1L)) {
+			assertEquals(probLists.toString(),1f/3f, prob);
+		}
+		for (Float prob : probLists.get(3L)) {
+			assertEquals(probLists.toString(),1f/2f, prob, PROB_ERROR_MARGIN);
+		}
+		
+		// assert that conditionals start uniform
+		probLists = engine.getProbLists(null, Collections.singletonList(3L), Collections.singletonList(0));
+		assertEquals(2, probLists.size());
+		assertTrue(probLists.containsKey(1L));
+		assertTrue(probLists.containsKey(3L));
+		assertEquals(3, probLists.get(1L).size());
+		assertEquals(2, probLists.get(3L).size());
+		for (Float prob : probLists.get(1L)) {
+			assertEquals(probLists.toString(),1f/3f, prob, PROB_ERROR_MARGIN);
+		}
+		probLists = engine.getProbLists(null, Collections.singletonList(3L), Collections.singletonList(1));
+		assertEquals(2, probLists.size());
+		assertTrue(probLists.containsKey(1L));
+		assertTrue(probLists.containsKey(3L));
+		assertEquals(3, probLists.get(1L).size());
+		assertEquals(2, probLists.get(3L).size());
+		for (Float prob : probLists.get(1L)) {
+			assertEquals(probLists.toString(),1f/3f, prob, PROB_ERROR_MARGIN);
+		}
+		
+		// Trade on P(Q1|Q3=0) = [0,1,0];
+		List<Float> newValues = new ArrayList<Float>(3);
+		newValues.add(0f);
+		newValues.add(1f);
+		newValues.add(0f);
+		engine.addTrade(null, new Date(), "P(Q1|Q3=0) = [0,1,0]", 1L, 1, newValues, Collections.singletonList(3L), Collections.singletonList(0), true);
+		
+		// Trade on P(Q1|Q3=1) = [1,0,0];
+		newValues = new ArrayList<Float>(3);
+		newValues.add(1f);
+		newValues.add(0f);
+		newValues.add(0f);
+		engine.addTrade(null, new Date(), "P(Q1|Q3=0) = P(Q1|Q3=1) = [1,0,0]", 1L, 1, newValues, Collections.singletonList(3L), Collections.singletonList(1), true);
+		
+		// assert that marginal of Q3 is still uniform
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(2, probLists.size());
+		assertTrue(probLists.containsKey(1L));
+		assertTrue(probLists.containsKey(3L));
+		assertEquals(3, probLists.get(1L).size());
+		assertEquals(2, probLists.get(3L).size());
+		for (Float prob : probLists.get(3L)) {
+			assertEquals(probLists.toString(),1f/2f, prob, PROB_ERROR_MARGIN);
+		}
+		
+		// assert conditionals have changed
+		probLists = engine.getProbLists(null, Collections.singletonList(3L), Collections.singletonList(0));
+		assertEquals(2, probLists.size());
+		assertTrue(probLists.containsKey(1L));
+		assertTrue(probLists.containsKey(3L));
+		assertEquals(3, probLists.get(1L).size());
+		assertEquals(2, probLists.get(3L).size());
+		assertEquals(probLists.toString(),0f, probLists.get(1L).get(0));
+		assertEquals(probLists.toString(),1f, probLists.get(1L).get(1));
+		assertEquals(probLists.toString(),0f, probLists.get(1L).get(2));
+		probLists = engine.getProbLists(null, Collections.singletonList(3L), Collections.singletonList(1));
+		assertEquals(2, probLists.size());
+		assertTrue(probLists.containsKey(1L));
+		assertTrue(probLists.containsKey(3L));
+		assertEquals(3, probLists.get(1L).size());
+		assertEquals(2, probLists.get(3L).size());
+		assertEquals(probLists.toString(),1f, probLists.get(1L).get(0));
+		assertEquals(probLists.toString(),0f, probLists.get(1L).get(1));
+		assertEquals(probLists.toString(),0f, probLists.get(1L).get(2));
+	}
+	
+	/**
+	 * Does the same of {@link #testDeterministicCPT()},
+	 * but trades will not be normalized (e.g. [0, 0.01, 0])
+	 */
+	public final void testDeterministicCPTUnspecifiedValues() {
+		engine.addQuestion(null, new Date(), 1, 3, null);
+		engine.addQuestion(null, new Date(), 3, 2, null);
+		engine.addQuestionAssumption(null, new Date(), 3, Collections.singletonList(1L), null);
+		
+		// assert that marginals start uniform
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals(2, probLists.size());
+		assertTrue(probLists.containsKey(1L));
+		assertTrue(probLists.containsKey(3L));
+		assertEquals(3, probLists.get(1L).size());
+		assertEquals(2, probLists.get(3L).size());
+		for (Float prob : probLists.get(1L)) {
+			assertEquals(probLists.toString(),1f/3f, prob);
+		}
+		for (Float prob : probLists.get(3L)) {
+			assertEquals(probLists.toString(),1f/2f, prob, PROB_ERROR_MARGIN);
+		}
+		
+		// assert that conditionals start uniform
+		probLists = engine.getProbLists(null, Collections.singletonList(3L), Collections.singletonList(0));
+		assertEquals(2, probLists.size());
+		assertTrue(probLists.containsKey(1L));
+		assertTrue(probLists.containsKey(3L));
+		assertEquals(3, probLists.get(1L).size());
+		assertEquals(2, probLists.get(3L).size());
+		for (Float prob : probLists.get(1L)) {
+			assertEquals(probLists.toString(),1f/3f, prob, PROB_ERROR_MARGIN);
+		}
+		probLists = engine.getProbLists(null, Collections.singletonList(3L), Collections.singletonList(1));
+		assertEquals(2, probLists.size());
+		assertTrue(probLists.containsKey(1L));
+		assertTrue(probLists.containsKey(3L));
+		assertEquals(3, probLists.get(1L).size());
+		assertEquals(2, probLists.get(3L).size());
+		for (Float prob : probLists.get(1L)) {
+			assertEquals(probLists.toString(),1f/3f, prob, PROB_ERROR_MARGIN);
+		}
+		
+		// Trade on P(Q1|Q3=0) = [0,0.01,0];
+		List<Float> newValues = new ArrayList<Float>(3);
+		newValues.add(0f);
+		newValues.add(0.01f);
+		newValues.add(0f);
+		try {
+			engine.addTrade(null, new Date(), "P(Q1|Q3=0) = [0,0.01,0]", 1L, 1, newValues, Collections.singletonList(3L), Collections.singletonList(0), true);
+			fail("Should indicate that the probability was not normalized, or something");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		
+		// Trade on P(Q1|Q3=1) = [0.01,0,0];
+		newValues = new ArrayList<Float>(3);
+		newValues.add(0.01f);
+		newValues.add(0f);
+		newValues.add(0f);
+		try {
+			engine.addTrade(null, new Date(), "P(Q1|Q3=0) = P(Q1|Q3=1) = [0.01,0,0]", 1L, 1, newValues, Collections.singletonList(3L), Collections.singletonList(1), true);
+			fail("Should indicate that the probability was not normalized, or something");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+
+		// assert that marginals remain the same
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(2, probLists.size());
+		assertTrue(probLists.containsKey(1L));
+		assertTrue(probLists.containsKey(3L));
+		assertEquals(3, probLists.get(1L).size());
+		assertEquals(2, probLists.get(3L).size());
+		for (Float prob : probLists.get(1L)) {
+			assertEquals(probLists.toString(),1f/3f, prob);
+		}
+		for (Float prob : probLists.get(3L)) {
+			assertEquals(probLists.toString(),1f/2f, prob, PROB_ERROR_MARGIN);
+		}
+		
+		// assert that conditionals remain the same
+		probLists = engine.getProbLists(null, Collections.singletonList(3L), Collections.singletonList(0));
+		assertEquals(2, probLists.size());
+		assertTrue(probLists.containsKey(1L));
+		assertTrue(probLists.containsKey(3L));
+		assertEquals(3, probLists.get(1L).size());
+		assertEquals(2, probLists.get(3L).size());
+		for (Float prob : probLists.get(1L)) {
+			assertEquals(probLists.toString(),1f/3f, prob, PROB_ERROR_MARGIN);
+		}
+		probLists = engine.getProbLists(null, Collections.singletonList(3L), Collections.singletonList(1));
+		assertEquals(2, probLists.size());
+		assertTrue(probLists.containsKey(1L));
+		assertTrue(probLists.containsKey(3L));
+		assertEquals(3, probLists.get(1L).size());
+		assertEquals(2, probLists.get(3L).size());
+		for (Float prob : probLists.get(1L)) {
+			assertEquals(probLists.toString(),1f/3f, prob, PROB_ERROR_MARGIN);
+		}
+	}
+	
+	/**
+	 * Check that operations assuming yourself does throw correct exceptions
+	 */
+	public final void testAssumeYourself() {
+		// just create DEF net
+		this.createDEFNetIn1Transaction(new HashMap<String, Long>());
+		
+		List<Float> probList = engine.getProbList(0x0DL, Collections.singletonList(0x0DL), Collections.singletonList(0));
+		assertNotNull(probList);
+		assertEquals(2, probList.size());
+		assertEquals(1f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		List<Long> questions = new ArrayList<Long>(2);
+		questions.add(0x0DL);
+		questions.add(0x0DL);
+		List<Integer> states = new ArrayList<Integer>(2);
+		states.add(0);
+		states.add(1);
+		float jointProbability = engine.getJointProbability(questions, states);
+		assertEquals(engine.getProbList(0x0DL, null, null).get(states.get(states.size()-1)), jointProbability, PROB_ERROR_MARGIN);
+		
+		probList = engine.getProbList(0x0DL, questions, states);
+		assertNotNull(probList);
+		assertEquals(2, probList.size());
+		assertEquals(1f, probList.get(0), PROB_ERROR_MARGIN);
+		assertEquals(0f, probList.get(1), PROB_ERROR_MARGIN);
+		
+		try {
+			List<Float> newValues = new ArrayList<Float>(2);
+			newValues.add(.999f);
+			newValues.add(.001f);
+			engine.addTrade(null, new Date(), "D given D", 1, 0x0DL, newValues , Collections.singletonList(0x0DL), Collections.singletonList(0), true);
+			fail("Should not allow the node itself as assumption");
+		} catch (RuntimeException e) {
+			assertFalse(e.getMessage().contains("0"));
+		}
+		try {
+			List<Float> newValues = new ArrayList<Float>(2);
+			newValues.add(.999f);
+			newValues.add(.001f);
+			engine.addTrade(null, new Date(), "E given W", 1, 0x0EL, newValues , Collections.singletonList(0x0EL), Collections.singletonList(1), true);
+			fail("Should not allow the node itself as assumption");
+		} catch (RuntimeException e) {
+			assertFalse(e.getMessage().contains("0"));
+		}
+		try {
+			List<Float> newValues = new ArrayList<Float>(2);
+			newValues.add(.999f);
+			newValues.add(.001f);
+			engine.addTrade(null, new Date(), "F given F", 1, 0x0FL, newValues , Collections.singletonList(0x0FL), Collections.singletonList(1), true);
+			fail("Should not allow the node itself as assumption");
+		} catch (RuntimeException e) {
+			assertFalse(e.getMessage().contains("0"));
+		}
+	}
+	
+	/**
+	 * Check that adding an assumption which causes cycles will
+	 * throw exception and keep the probabilities intact.
+	 * This test shall also check the same condition when the cycle is caused
+	 * because there are virtual arcs.
+	 */
+	public final void testProbabilityAddQuestionAssumptionCycleWithVirtualArcs() {
+//		create network
+//		
+//		make conditional trades in order to generate virtual arcs
+//		
+//		store all marginals
+//		
+//		store conditional probabilities given parents
+//		
+//		create cycle
+//		
+//		see that it has thrown exception
+//		
+//		compare marginals
+//		
+//		compare conditional probabilities given parents
+		fail("Not implemented yet");
 	}
 	
 	
