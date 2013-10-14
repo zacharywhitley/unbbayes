@@ -21,6 +21,7 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import unbbayes.controller.umpst.IconController;
 import unbbayes.io.umpst.FileLoad;
 import unbbayes.io.umpst.FileSave;
 import unbbayes.model.umpst.project.UMPSTProject;
@@ -57,12 +58,12 @@ public class MainPanel extends IUMPSTPanel{
 	    public MainPanel(UmpstModule janelaPai,UMPSTProject umpstProject) {	    	
 	        super(new GridLayout(1, 1),janelaPai);
 	        
+	        IconController iconController = IconController.getInstance(); 
+	        
 	    	this.setUmpstProject(umpstProject);
-	    	
-
 	        
 	        JTabbedPane tabbedPane = new JTabbedPane();
-	        ImageIcon icon = createImageIcon("images/middle.gif");
+	        ImageIcon icon = iconController.getUmpstIcon(); 
 	        
 	        requirementsPane = new Goals(getFatherPanel(),umpstProject);
 	        requirementsPane.setPreferredSize(new Dimension(1000, 500));

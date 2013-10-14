@@ -15,6 +15,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import unbbayes.controller.umpst.IconController;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.rules.RulesModel;
 
@@ -27,17 +28,11 @@ public class TableRules extends IUMPSTPanel{
 	private JTable table;
 	private JScrollPane scrollpanePergunta;
 	
-	
-	
+	private IconController iconController = IconController.getInstance(); 
 	
 	Object[] dataAux = new Object[4];
 	Integer i = 0;
 
-	
-	ImageIcon iconAdd = createImageIcon("images/add.gif");
-	ImageIcon iconDel = createImageIcon("images/del.gif");
-
-	
 	String[] columnNames = {"ID","Rule","",""};
 
 	Object[][] data = {};
@@ -80,7 +75,7 @@ public class TableRules extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/edit.gif") );
+				button.setIcon(iconController.getEditIcon());
 
 			}
 		});
@@ -105,7 +100,7 @@ public class TableRules extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/del.gif") );
+				button.setIcon(iconController.getDeleteIcon());
 
 			}
 		});

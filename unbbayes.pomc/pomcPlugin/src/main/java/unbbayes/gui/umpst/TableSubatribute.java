@@ -13,6 +13,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import unbbayes.controller.umpst.IconController;
 import unbbayes.model.umpst.entities.AtributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
@@ -30,11 +31,8 @@ public class TableSubatribute extends IUMPSTPanel{
 	private EntityModel entityRelated;
 	private AtributeModel atributeRelated;
 	
+	private IconController iconController = IconController.getInstance(); 
 	
-	ImageIcon iconAdd = createImageIcon("images/add.gif");
-	ImageIcon iconDel = createImageIcon("images/del.gif");
-	ImageIcon iconEdit = createImageIcon("images/edit.gif");
-
 	
 	String[] columnNames = {"id","Hypothesis","","",""};
 	Object[][] data = {};
@@ -106,7 +104,7 @@ public class TableSubatribute extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/edit.gif") );
+				button.setIcon(iconController.getEditIcon());
 
 			}
 		});
@@ -132,7 +130,7 @@ public class TableSubatribute extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/add.gif") );
+				button.setIcon(iconController.getAddIcon());
 
 			}
 		});
@@ -157,7 +155,7 @@ public class TableSubatribute extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/del.gif") );
+				button.setIcon(iconController.getDeleteIcon());
 
 			}
 		});

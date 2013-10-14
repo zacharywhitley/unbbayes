@@ -17,6 +17,7 @@ import javax.swing.table.TableColumn;
 
 
 
+import unbbayes.controller.umpst.IconController;
 import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
@@ -31,25 +32,14 @@ public class TableGoals extends IUMPSTPanel{
 	private JTable table;
 	private JScrollPane scrollpanePergunta;
 	
+	private IconController iconController = IconController.getInstance(); 
 	
-	
-	
-	//Object[] dataAux = new Object[5];
 	Integer i = 0;
-
-	
-	ImageIcon iconAdd = createImageIcon("images/add.gif");
-	ImageIcon iconDel = createImageIcon("images/del.gif");
-	ImageIcon iconEdit = createImageIcon("images/edit.gif");
-
 	
 	String[] columnNames = {"ID","Goal","","",""};
 
 	Object[][] data = {};
-	
-	
 
- 
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
     	  public TableGoals(UmpstModule janelaPai, UMPSTProject umpstProject) {
@@ -89,7 +79,7 @@ public class TableGoals extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/edit.gif") );
+				button.setIcon(iconController.getEditIcon());
 
 			}
 		});
@@ -114,8 +104,8 @@ public class TableGoals extends IUMPSTPanel{
 		TableButton buttonAdd = new TableButton( new TableButton.TableButtonCustomizer()
 		{
 			public void customize(JButton button, int row, int column)
-			{
-				button.setIcon(new ImageIcon("images/add.gif") );
+			{                               
+				button.setIcon(iconController.getAddIcon());
 
 			}
 		});
@@ -139,7 +129,7 @@ public class TableGoals extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/del.gif") );
+				button.setIcon(iconController.getDeleteIcon());
 
 			}
 		});

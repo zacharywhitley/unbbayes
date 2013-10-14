@@ -14,6 +14,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import unbbayes.controller.umpst.IconController;
 import unbbayes.model.umpst.entities.AtributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
@@ -30,6 +31,8 @@ public class TableAtribute extends IUMPSTPanel{
 	private UmpstModule janelaPaiAux; 
 	private EntityModel entityRelated;
 
+	private IconController iconController = IconController.getInstance(); 
+	
 	private Set<String> keys = new HashSet<String>();
 	private TreeSet<String> sortedKeys = new TreeSet<String>();
 	private Set<AtributeModel> set = new HashSet<AtributeModel>();
@@ -39,18 +42,8 @@ public class TableAtribute extends IUMPSTPanel{
 	Object[][] data = {};
 	
 	AtributeModel atribute;
-	
-	ImageIcon iconAdd = createImageIcon("images/add.gif");
-	ImageIcon iconDel = createImageIcon("images/del.gif");
-	ImageIcon iconEdit = createImageIcon("images/edit.gif");
-
-	
 
 
-	
-	
-
- 
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
     	  protected TableAtribute(UmpstModule janelaPai,UMPSTProject umpstProject, EntityModel entityRelated) {
@@ -208,7 +201,7 @@ public class TableAtribute extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/edit.gif") );
+				button.setIcon(iconController.getEditIcon());
 
 			}
 		});
@@ -234,7 +227,7 @@ public class TableAtribute extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/add.gif") );
+				button.setIcon(iconController.getAddIcon());
 
 			}
 		});
@@ -259,7 +252,7 @@ public class TableAtribute extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/del.gif") );
+				button.setIcon(iconController.getDeleteIcon());
 
 			}
 		});

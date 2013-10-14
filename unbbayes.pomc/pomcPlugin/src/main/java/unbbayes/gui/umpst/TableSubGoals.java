@@ -14,6 +14,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+
+import unbbayes.controller.umpst.IconController;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
@@ -28,12 +30,7 @@ public class TableSubGoals extends IUMPSTPanel{
 	private UmpstModule janelaPaiAux; 
 	private GoalModel goalRelated;
 
-	
-	
-	ImageIcon iconAdd = createImageIcon("images/add.gif");
-	ImageIcon iconDel = createImageIcon("images/del.gif");
-	ImageIcon iconEdit = createImageIcon("images/edit.gif");
-
+	private IconController iconController = IconController.getInstance(); 
 	
 	String[] columnNames = {"id","Hypothesis","","",""};
 	Object[][] data = {};
@@ -106,7 +103,7 @@ public class TableSubGoals extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/edit.gif") );
+				button.setIcon(iconController.getEditIcon() );
 
 			}
 		});
@@ -132,7 +129,7 @@ public class TableSubGoals extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/add.gif") );
+				button.setIcon(iconController.getAddIcon() );
 
 			}
 		});
@@ -155,7 +152,7 @@ public class TableSubGoals extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/del.gif") );
+				button.setIcon(iconController.getDeleteIcon());
 
 			}
 		});
