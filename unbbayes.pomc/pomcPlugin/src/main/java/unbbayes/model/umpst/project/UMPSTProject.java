@@ -361,4 +361,24 @@ public class UMPSTProject implements Graph {
 
 	}
 
+	public void addProperty(String name, Object value) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void removeProperty(String name) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void clearProperty() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Object getProperty(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
