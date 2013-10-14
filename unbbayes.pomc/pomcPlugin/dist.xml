@@ -24,8 +24,11 @@
       <outputDirectory></outputDirectory>
       <includes>
         <include>README.txt</include>
+        <include>RELEASE.txt</include>
+        <include>configuration.properties</include>
+        <include>parameters.txt</include>
       </includes>
-    </fileSet>
+    </fileSet>    
     <fileSet>
       <directory>target/</directory>
       <outputDirectory></outputDirectory>
