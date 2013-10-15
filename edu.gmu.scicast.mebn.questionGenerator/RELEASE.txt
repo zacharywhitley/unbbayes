@@ -1,0 +1,6 @@
+UNBBAYES PR-OWL 2 PLUGIN - VERSION 1.1.1
+----------------------------
+This is the initial release of PR-OWL 2. The version number is 1.1.1 because
+it is based on version 0.1.1 of an alpha-version plug-in which added the protege
+ontology editor to UnBBayes. 
+It needs unbbayes.prs.mebn version 1.13.10 to run.
