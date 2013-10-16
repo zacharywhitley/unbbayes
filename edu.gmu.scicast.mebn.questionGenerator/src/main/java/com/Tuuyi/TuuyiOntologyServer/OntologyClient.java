@@ -52,6 +52,19 @@ import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.Relati
 import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.Term;
 
 public class OntologyClient {
+	
+  /** 
+   * This is the name of JSON parameter that holds a json object which is a map with known inverse relationships and most relevant concepts related with such relationship.
+   * This can be used, for example, in order to obtain less broader (inverse of core#broader) concepts. 
+   */
+  public static final String INVERSE_RELATION_JSON_PARAMETER = "inverseRelations";
+  
+  /** 
+   * This is the name of JSON parameter that holds a json object which is a map with known relationships and most relevant concepts related with such relationship.
+   * This can be used, for example, in order to obtain broader (core#broader) concepts. 
+   */
+  public static final String RELATION_JSON_PARAMETER = "relations";
+
   protected Logger logWriter = Logger.getLogger(OntologyClient.class.getClass());
   
   /* set the serverURL to one of the global constants in the client object constructor call */
@@ -71,6 +84,9 @@ public class OntologyClient {
   protected HashMap <Integer, Integer> termDescendantCountCache = new HashMap<Integer, Integer> ();
   protected HashMap <Integer, Integer> termDepthCache = new HashMap<Integer, Integer> ();
   protected HashMap <Integer, ArrayIntList> termAncestorsCache = new HashMap<Integer, ArrayIntList> ();
+  
+  /** Cache of inverse mapping of core#broader relationship */
+  private HashMap <Integer, ArrayIntList> termInverseCoreBroaderCache = new HashMap<Integer, ArrayIntList> ();
   
   /* termIds for the key relational terms, these will be initialized at startup */
   public int subjectRelationId = -1;
@@ -344,11 +360,26 @@ public class OntologyClient {
       termSimpleNameCache.put(term.getSimpleName(), term);
       termDescendantCountCache.put(termId, json.getInt("descendantCount")); // updateFromJSON is auto-generated and doesn't do this!
       termDepthCache.put(termId, json.getInt("depth")); // updateFromJSON is auto-generated and doesn't do this!
+      
+      // check descendants (concepts related by the inverse of core#broader)
+      JSONArray ancestorsArray = json.optJSONArray(INVERSE_RELATION_JSON_PARAMETER);
+	  if (ancestorsArray != null) {
+		  ArrayIntList descendants = new ArrayIntList();
+		  for (int i = 0; i < ancestorsArray.length(); i++) {
+			  descendants.add(ancestorsArray.getInt(i));
+		  }
+		  // fill the cache, because all methods in this client access concepts through cached objects
+		  getTermInverseCoreBroaderCache().put(termId, descendants);
+	  }
+	  
+	  // TODO fill cache of core#broader (not its inverse) too
+      
       return term;
     } catch (JSONException je) {
       logWriter.error("bad response to getTermBySimpleName request", je);
       return null;
     }
+
   }
 
   /**
@@ -472,6 +503,28 @@ public class OntologyClient {
       logWriter.error("bad response to getTermAncestors request", je);
       return null;
     }
+  }
+  
+  /**
+   * @param id - the term whose descendants (related with the inverse relationship "core#broader") are being requested
+   * @return - the set of terms reachable through a simple search up a (directed)loop-free subset of the core#broader relation, 
+   * initialized/supplemented by one step of subject relation traversal
+   */
+  public ArrayIntList getTermDescendants(int id) {
+	  // check cache first
+	  ArrayIntList descendants = getTermInverseCoreBroaderCache().get(id);
+	  if (descendants != null) {
+		  // found descendants in cache
+		  return descendants;
+	  }
+	  // calling a query should update cache
+	  getTermById(id);
+	  descendants = getTermInverseCoreBroaderCache().get(id);
+	  if (descendants == null) {
+		  // if cache was not updated, there is a problem in implementation
+		  throw new UnsupportedOperationException("Could not initialize cache of descendants when term " + id + " was queried. This may be a bug in the ontology client. Please, check jar version.");
+	  }
+	  return descendants;
   }
   
   /** 
@@ -744,6 +797,26 @@ public class OntologyClient {
       client.logWriter.error("error processing json", e);
     }
   }
+
+	/**
+	 * @return the termInverseCoreBroaderCache: cache of 
+	 * concepts inversely related to this concept by core#broader.
+	 * The key is the ID of a concept, and the value is a list
+	 * of IDs of concepts inversely related.
+	 */
+	protected HashMap <Integer, ArrayIntList> getTermInverseCoreBroaderCache() {
+		return termInverseCoreBroaderCache;
+	}
+	
+	/**
+	 * @param termInverseCoreBroaderCache the termInverseCoreBroaderCache to set: cache of 
+	 * concepts inversely related to this concept by core#broader.
+	 * The key is the ID of a concept, and the value is a list
+	 * of IDs of concepts inversely related.
+	 */
+	protected void setTermInverseCoreBroaderCache(HashMap <Integer, ArrayIntList> termDescendantsCache) {
+		this.termInverseCoreBroaderCache = termDescendantsCache;
+	}
 
 
 }
