@@ -146,7 +146,12 @@ public class RulesAdd extends IUMPSTPanel {
 			
 		ruleText = new JTextField(20);
 		typeText = new JTextField(20);
+		
 		commentsText = new JTextArea(5,21);
+		commentsText.setLineWrap(true); 
+		commentsText.setWrapStyleWord(true);
+		commentsText.setBorder(BorderFactory.createEtchedBorder());
+		
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
  
@@ -176,7 +181,7 @@ public class RulesAdd extends IUMPSTPanel {
 		panel.add( buttonAdd, c);
 		
 		
-		panel.setBorder(BorderFactory.createTitledBorder("Rule's Details"));
+		panel.setBorder(BorderFactory.createTitledBorder("Rule Details"));
 		add(panel,constraints);
 	}
 	

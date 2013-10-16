@@ -73,7 +73,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 	
 	private JTextField dateText,authorText;
 	private JTextField entityText;
-	private JTextField commentsText;
+	private JTextArea commentsText;
 	private EntityModel entity;
 
 	private static final long serialVersionUID = 1L;
@@ -96,9 +96,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 		this.setLayout(new GridBagLayout());
 		constraint.fill = GridBagConstraints.BOTH;
 		constraint.gridx=0;constraint.gridy=0;constraint.weightx=0.4;constraint.weighty=0.4;
-		panelText();
-		
-		
+		createPanelText();
 		
 		GridBagConstraints c     = new GridBagConstraints();
 		JPanel panelBacktracking = new JPanel();
@@ -111,8 +109,6 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 		constraint.gridx=0;constraint.gridy=1;constraint.weightx=0.5;constraint.weighty=0.6;
 		add(panelBacktracking,constraint);
-		
-		
 		
 		constraint.gridx=1;constraint.gridy=1;constraint.weightx=0.5;constraint.weighty=0.6;
 		createAtributeTable();
@@ -134,7 +130,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 	}
 
-	public void panelText(){
+	public void createPanelText(){
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
@@ -159,7 +155,12 @@ public class EntitiesAdd extends IUMPSTPanel {
 		panel.add( titulo, d);
 				
 		entityText = new JTextField(20);
-		commentsText = new JTextField(20);
+		
+		commentsText = new JTextArea(5,21);
+		commentsText.setLineWrap(true); 
+		commentsText.setWrapStyleWord(true);
+		commentsText.setBorder(BorderFactory.createEtchedBorder());
+		
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
  
@@ -196,7 +197,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 		c.gridx = 2; c.gridy = 6; c.gridwidth = 1;
 		panel.add(buttonAdd,c);*/
 		
-		panel.setBorder(BorderFactory.createTitledBorder("Rule's details"));
+		panel.setBorder(BorderFactory.createTitledBorder("Entity details"));
 		
 		add(panel,constraint);
 	
@@ -746,6 +747,7 @@ public JPanel getBacktrackingHypothesis(){
 		
 		DefaultTableModel model = new DefaultTableModel(data, columns);
 		JTable table = new JTable(model);
+		table.setEnabled(false); 
 		
 		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setBorder(BorderFactory.createTitledBorder("This entity traceability"));

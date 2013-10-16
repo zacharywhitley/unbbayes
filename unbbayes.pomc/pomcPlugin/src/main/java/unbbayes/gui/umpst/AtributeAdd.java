@@ -126,7 +126,12 @@ public class AtributeAdd extends IUMPSTPanel {
 	
 		
 		AtributeText = new JTextField(20);
+		
 		commentsText = new JTextArea(5,21);
+		commentsText.setLineWrap(true); 
+		commentsText.setWrapStyleWord(true);
+		commentsText.setBorder(BorderFactory.createEtchedBorder());
+		
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
  

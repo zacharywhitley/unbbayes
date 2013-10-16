@@ -129,6 +129,9 @@ public class GroupsAdd extends IUMPSTPanel {
 				
 		groupText = new JTextField(20);
 		commentsText = new JTextArea(5,21);
+		commentsText.setLineWrap(true); 
+		commentsText.setWrapStyleWord(true);
+		commentsText.setBorder(BorderFactory.createEtchedBorder());
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
  
@@ -152,7 +155,7 @@ public class GroupsAdd extends IUMPSTPanel {
 		c.gridx = 1; c.gridy = 6; c.gridwidth = 1;
 		panel.add(buttonAdd,c);
 		
-		panel.setBorder(BorderFactory.createTitledBorder("group's details"));
+		panel.setBorder(BorderFactory.createTitledBorder("Group details"));
 		
 		add(panel,constraint);
 	

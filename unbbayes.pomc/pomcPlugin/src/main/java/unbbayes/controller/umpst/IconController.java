@@ -19,6 +19,9 @@ public class IconController extends unbbayes.controller.IconController {
 	protected ImageIcon addIcon; 
 	protected ImageIcon deleteIcon; 
 	protected ImageIcon editIcon; 
+
+	protected ImageIcon addAttribute; 
+	protected ImageIcon reuseAttribute; 
 	
 	public static IconController getInstance() {
 		if (singleton == null) {
@@ -66,4 +69,25 @@ public class IconController extends unbbayes.controller.IconController {
 			return editIcon;
 		}
 	}	
+	
+	public ImageIcon getAddAttribute() {
+		if (addAttribute != null) {
+			return addAttribute;
+		} else {
+			addAttribute = new ImageIcon(getClass().getResource(
+					"/icons/addAtribute.gif"));
+			return addAttribute;
+		}
+	}
+
+	public ImageIcon getReuseAttribute() {
+		if (reuseAttribute != null) {
+			return reuseAttribute;
+		} else {
+			reuseAttribute = new ImageIcon(getClass().getResource(
+					"/icons/recicleAttribute.gif"));
+			return reuseAttribute;
+		}
+	}
+
 }
