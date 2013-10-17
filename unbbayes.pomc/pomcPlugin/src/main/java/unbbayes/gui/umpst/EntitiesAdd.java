@@ -2,14 +2,11 @@ package unbbayes.gui.umpst;
 
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
@@ -19,37 +16,30 @@ import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
-import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import unbbayes.controller.umpst.IconController;
 import unbbayes.model.umpst.entities.AtributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.project.SearchModelEntity;
-import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
 import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.util.CommonDataUtil;
 
 
 public class EntitiesAdd extends IUMPSTPanel {
@@ -137,10 +127,13 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 		c.gridx = 0; c.gridy = 2;c.gridwidth = 1;
 		panel.add( new JLabel("Entity Description: "), c);
+		
 		c.gridx = 0; c.gridy = 3;c.gridwidth = 1;
 		panel.add( new JLabel("Author Name: "), c);
+		
 		c.gridx = 0; c.gridy = 4;c.gridwidth = 1;
 		panel.add( new JLabel("Date: "), c);
+		
 		c.gridx = 0; c.gridy = 5;c.gridwidth = 1;
 		panel.add( new JLabel("Comments: "), c);
 		
@@ -163,6 +156,9 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
+		
+		authorText.setText(CommonDataUtil.getInstance().getAuthorName()); 
+		dateText.setText(CommonDataUtil.getInstance().getActualDate()); 
  
 
 		c.gridx = 1; c.gridy = 2;c.gridwidth = 2;
@@ -382,6 +378,9 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 	    getUmpstProject().getMapEntity().put(entityAdd.getId(), entityAdd);	
 	    
+	    CommonDataUtil.getInstance().setAuthorName(authorText.getText()); 
+	    
+	    
 	    return entityAdd;
     }
     
@@ -469,7 +468,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 			{
 				public void customize(JButton button, int row, int column)
 				{
-					button.setIcon(new ImageIcon("images/del.gif") );
+					button.setIcon(IconController.getInstance().getDeleteIcon() );
 
 				}
 			});
@@ -543,7 +542,7 @@ public JPanel getBacktrackingHypothesis(){
 			{
 				public void customize(JButton button, int row, int column)
 				{
-					button.setIcon(new ImageIcon("images/del.gif") );
+					button.setIcon(IconController.getInstance().getDeleteIcon() );
 
 				}
 			});
@@ -704,6 +703,11 @@ public JPanel getBacktrackingHypothesis(){
 		}
 		
 		Object[][] data = new Object[i+1][2];
+		
+		if (i < 30){
+			data = new Object[30][3];
+		}
+		
 		i=0;
 		
 		if ( (entity!=null) && (entity.getMapAtributes()!=null) ){
@@ -747,6 +751,7 @@ public JPanel getBacktrackingHypothesis(){
 		
 		DefaultTableModel model = new DefaultTableModel(data, columns);
 		JTable table = new JTable(model);
+		table.setGridColor(Color.WHITE); 
 		table.setEnabled(false); 
 		
 		JScrollPane scrollPane = new JScrollPane(table);
@@ -914,7 +919,7 @@ public JPanel getBacktrackingHypothesis(){
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/add.gif") );
+				button.setIcon(IconController.getInstance().getEditIcon());
 
 			}
 		});
@@ -1022,7 +1027,7 @@ public void createFrameHypo(){
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/add.gif") );
+				button.setIcon(IconController.getInstance().getAddIcon());
 
 			}
 		});

@@ -27,6 +27,7 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.project.UMPSTProject;
+import unbbayes.util.CommonDataUtil;
 
 
 public class RelationshipAdd extends IUMPSTPanel {
@@ -129,10 +130,6 @@ public class RelationshipAdd extends IUMPSTPanel {
 		titulo.setBackground(new Color(0x4169AA));
 		panel.add( titulo, d);
 		
-	
-	
-	
-		
 		RelationshipText = new JTextField(20);
 		commentsText = new JTextArea(5,21);
 		commentsText.setLineWrap(true); 
@@ -140,6 +137,9 @@ public class RelationshipAdd extends IUMPSTPanel {
 		commentsText.setBorder(BorderFactory.createEtchedBorder());
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
+		
+		authorText.setText(CommonDataUtil.getInstance().getAuthorName()); 
+		dateText.setText(CommonDataUtil.getInstance().getActualDate()); 
  
 
 		c.gridx = 1; c.gridy = 2;
@@ -272,6 +272,8 @@ public class RelationshipAdd extends IUMPSTPanel {
 			RelationshipModel relatiionshipAdd = new RelationshipModel(idAux,RelationshipText.getText(),commentsText.getText(), 
 					authorText.getText(), dateText.getText(),null,null,null, null,null,null);
 			
+		    CommonDataUtil.getInstance().setAuthorName(authorText.getText()); 
+		    
 			
 		    getUmpstProject().getMapRelationship().put(relatiionshipAdd.getId(), relatiionshipAdd);	
 		    

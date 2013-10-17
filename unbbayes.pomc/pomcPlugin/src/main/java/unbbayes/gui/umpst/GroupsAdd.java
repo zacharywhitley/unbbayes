@@ -43,6 +43,7 @@ import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.SearchModelGroup;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
+import unbbayes.util.CommonDataUtil;
 
 
 public class GroupsAdd extends IUMPSTPanel {
@@ -135,6 +136,8 @@ public class GroupsAdd extends IUMPSTPanel {
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
  
+		authorText.setText(CommonDataUtil.getInstance().getAuthorName()); 
+		dateText.setText(CommonDataUtil.getInstance().getActualDate()); 
 
 		c.gridx = 1; c.gridy = 2;c.gridwidth = 2;
 		panel.add( groupText, c);
@@ -318,6 +321,7 @@ public class GroupsAdd extends IUMPSTPanel {
 		GroupsModel groupAdd = new GroupsModel(idAux,groupText.getText(),commentsText.getText(), authorText.getText(), 
 				dateText.getText(),null,null, null, null, null, null);
 		
+	    CommonDataUtil.getInstance().setAuthorName(authorText.getText()); 
 		
 	    getUmpstProject().getMapGroups().put(groupAdd.getId(), groupAdd);	
 	    

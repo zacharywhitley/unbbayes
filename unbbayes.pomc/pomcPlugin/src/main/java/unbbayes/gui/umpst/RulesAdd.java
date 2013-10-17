@@ -44,6 +44,7 @@ import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.project.SearchModelRules;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.util.CommonDataUtil;
 
 
 public class RulesAdd extends IUMPSTPanel {
@@ -154,6 +155,9 @@ public class RulesAdd extends IUMPSTPanel {
 		
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
+		
+		authorText.setText(CommonDataUtil.getInstance().getAuthorName()); 
+		dateText.setText(CommonDataUtil.getInstance().getActualDate()); 
  
 		//String[] rulesTypes = {"","Deterministic","Stochastic"};
 		//ruleTypeText = new JComboBox(rulesTypes);
@@ -367,7 +371,7 @@ public class RulesAdd extends IUMPSTPanel {
 		RulesModel rulesAdd = new RulesModel(idAux,ruleText.getText(),typeText.getText(), 
 				commentsText.getText(), authorText.getText(), dateText.getText(),null,null, null, null);
 		
-		
+	    CommonDataUtil.getInstance().setAuthorName(authorText.getText()); 
 		
 	    getUmpstProject().getMapRules().put(rulesAdd.getId(), rulesAdd);	
 	    

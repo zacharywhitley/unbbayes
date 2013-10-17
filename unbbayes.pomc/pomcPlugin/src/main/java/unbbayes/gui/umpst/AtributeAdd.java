@@ -27,6 +27,7 @@ import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.AtributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
+import unbbayes.util.CommonDataUtil;
 
 
 public class AtributeAdd extends IUMPSTPanel {
@@ -134,6 +135,9 @@ public class AtributeAdd extends IUMPSTPanel {
 		
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
+		
+		authorText.setText(CommonDataUtil.getInstance().getAuthorName()); 
+		dateText.setText(CommonDataUtil.getInstance().getActualDate()); 
  
 
 		c.gridx = 1; c.gridy = 2;
@@ -346,6 +350,9 @@ public class AtributeAdd extends IUMPSTPanel {
 		if (atributeFather!=null){
 			atributeFather.getMapSubAtributes().put(atributeAdd.getId(), atributeAdd);
 		}
+		
+		CommonDataUtil.getInstance().setAuthorName(authorText.getText()); 
+		
 		entityRelated.getMapAtributes().put(atributeAdd.getId(), atributeAdd);
 		getUmpstProject().getMapAtribute().put(atributeAdd.getId(), atributeAdd);
 		

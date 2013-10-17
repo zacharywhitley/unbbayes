@@ -36,6 +36,7 @@ import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
+import unbbayes.util.CommonDataUtil;
 
 
 public class SubgoalsAdd extends IUMPSTPanel {
@@ -143,6 +144,8 @@ public class SubgoalsAdd extends IUMPSTPanel {
 		authorText = new JTextField(20);
 		dateText = new JTextField(20);
  
+		authorText.setText(CommonDataUtil.getInstance().getAuthorName()); 
+		dateText.setText(CommonDataUtil.getInstance().getActualDate()); 
 
 		c.gridx = 1; c.gridy = 2;c.gridwidth=2;
 		panel.add( goalText, c);
@@ -564,7 +567,9 @@ public class SubgoalsAdd extends IUMPSTPanel {
     
     public void  createTraceabilityTable() {
 		Object[][] data = new Object[30][2];
+		
 		String[] columnNames = {"Name","Type"};
+		
 		int i = 0;
 		
 		if ( (goal!=null)&&(goal.getFowardTrackingEntity() !=null) ){
@@ -615,7 +620,10 @@ public class SubgoalsAdd extends IUMPSTPanel {
 
 		
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
+	
 		JTable table = new JTable(tableModel);
+		table.setEnabled(false); 
+		table.setGridColor(Color.WHITE);
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		

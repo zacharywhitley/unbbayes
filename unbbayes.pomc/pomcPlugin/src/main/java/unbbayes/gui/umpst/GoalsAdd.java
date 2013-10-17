@@ -41,6 +41,7 @@ import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
 import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.util.CommonDataUtil;
 
 
 public class GoalsAdd extends IUMPSTPanel {
@@ -172,6 +173,8 @@ public class GoalsAdd extends IUMPSTPanel {
 		dateText = new JFormattedTextField(maskFormatter);
 		dateText.setColumns(20);
 
+		authorText.setText(CommonDataUtil.getInstance().getAuthorName()); 
+		dateText.setText(CommonDataUtil.getInstance().getActualDate()); 
 
 		c.gridx = 1; c.gridy = 4;c.gridwidth=2;
 		panel.add( dateText, c);c.gridwidth=2;
@@ -424,6 +427,9 @@ public class GoalsAdd extends IUMPSTPanel {
 			//goalFather.getSubgoals().put(goalAdd.getId(), goalAdd);
 		}
 
+		
+	    CommonDataUtil.getInstance().setAuthorName(authorText.getText()); 
+	    
 		getUmpstProject().getMapGoal().put(goalAdd.getId(), goalAdd);	
 
 		return goalAdd;
@@ -468,6 +474,7 @@ public class GoalsAdd extends IUMPSTPanel {
 		TableHypothesis hypoTable = new TableHypothesis(getFatherPanel(),getUmpstProject(),goal);
 		JTable table = hypoTable.createTable();
 		JScrollPane scrollPane = new JScrollPane(table);
+		
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
 		panel.setBorder(BorderFactory.createTitledBorder("List of Hypothesis"));
@@ -630,6 +637,10 @@ public class GoalsAdd extends IUMPSTPanel {
 
 
 		Object[][] data = new Object[i+1][3];
+		
+		if (i < 30){
+			data = new Object[30][3];
+		}
 
 		String[] columnNames = {"Name","Type","Traceability"};
 		i=0;
@@ -737,6 +748,8 @@ public class GoalsAdd extends IUMPSTPanel {
 
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
 		JTable table = new JTable(tableModel);
+		table.setGridColor(Color.WHITE); 
+		table.setEnabled(false); 
 
 		JScrollPane scrollPane = new JScrollPane(table);
 

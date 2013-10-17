@@ -35,6 +35,7 @@ import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
+import unbbayes.util.CommonDataUtil;
 
 
 public class HypothesisAdd extends IUMPSTPanel {
@@ -135,6 +136,9 @@ public class HypothesisAdd extends IUMPSTPanel {
 		commentsText.setBorder(BorderFactory.createEtchedBorder());
 		authorText     = new JTextField(20);
 		dateText       = new JTextField(20);
+		
+		authorText.setText(CommonDataUtil.getInstance().getAuthorName()); 
+		dateText.setText(CommonDataUtil.getInstance().getActualDate()); 
  
 
 		c.gridx = 1; c.gridy = 2;
@@ -370,6 +374,10 @@ public class HypothesisAdd extends IUMPSTPanel {
 			}
 			//hypothesisFather.getSubHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
 		}
+		
+	    CommonDataUtil.getInstance().setAuthorName(authorText.getText()); 
+	    
+	    
 		/**TALVEZ AQUI DE PAU POIS ELE CRIOU O HYPOTHESISADD COM O O GOALREALTED ACIMA.
 		 *  POREM SO AGORA ELE ADICIONA NO GOALRELATE.HYPOTHESES ESSA HIPOSES*/
 		goalRelated.getMapHypothesis().put(hypothesisAdd.getId(), hypothesisAdd);
@@ -448,6 +456,10 @@ public class HypothesisAdd extends IUMPSTPanel {
  	
 		Object[][] data = new Object[i+1][2];
  	
+		if (i < 30){
+			data = new Object[30][3];
+		}
+		
 		String[] columnNames = {"Name","Type"};
 		i=0;
 		
@@ -490,6 +502,8 @@ public class HypothesisAdd extends IUMPSTPanel {
 		
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
 		JTable table = new JTable(tableModel);
+		table.setEnabled(false);
+		table.setGridColor(Color.WHITE); 
 
 		JScrollPane scrollPane = new JScrollPane(table);
 		
