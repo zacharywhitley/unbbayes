@@ -64,7 +64,8 @@ public class ContextNode extends MultiEntityNode {
 	
 	private boolean isValidFormula = false; //Tell if the formula is valid for this implementation 
 	 
-	private Set<OrdinaryVariable> variableSet; //Variables of the formula
+	// I'm accessing this variable set directly from formulaTree instead of having my own copy.
+//	private Set<OrdinaryVariable> variableSet; //Variables of the formula
 	
 	private Set<OrdinaryVariable> exemplarSet; // Variables used in quantifiers  
 	
@@ -125,7 +126,8 @@ public class ContextNode extends MultiEntityNode {
 		
 		this.formulaTree = formulaTree; 
 		
-		this.variableSet = formulaTree.getVariableList(); 
+		// instead of having my own copy, access directly from formulaTree
+//		this.variableSet = formulaTree.getVariableList(); 
 		this.exemplarSet = formulaTree.getExemplarList();
 		this.isValidFormula = formulaTree.isFormulaValida(); 
 		
@@ -155,8 +157,10 @@ public class ContextNode extends MultiEntityNode {
      * @return
      */
     public boolean isAvaliableForOVInstanceSet(Collection<OVInstance> ovInstanceSet){
-    	
-    	for(OrdinaryVariable ov: variableSet){
+    	if (formulaTree == null) {
+			return true;
+		}
+    	for(OrdinaryVariable ov: formulaTree.getVariableList()){
     		
     		boolean found = false; 
     		for(OVInstance ovInstance: ovInstanceSet){
@@ -181,8 +185,10 @@ public class ContextNode extends MultiEntityNode {
     public List<OrdinaryVariable> getOVFaultForOVInstanceSet(Collection<OVInstance> ovInstanceSet){
         
     	List<OrdinaryVariable> ret = new ArrayList<OrdinaryVariable>(); 
-    	
-    	for(OrdinaryVariable ov: variableSet){
+    	if (formulaTree == null) {
+			return ret;
+		}
+    	for(OrdinaryVariable ov: formulaTree.getVariableList()){
     		if (ov == null) {
     			// unfortunatelly, variableSet was containing null values sometimes (the set is non-null, but it contains null)
     			continue;
@@ -421,7 +427,10 @@ public class ContextNode extends MultiEntityNode {
 	}
 
 	public Set<OrdinaryVariable> getVariableList() {
-		return variableSet;
+		if (formulaTree == null) {
+			return null;
+		}
+		return formulaTree.getVariableList();
 	}
 
 }

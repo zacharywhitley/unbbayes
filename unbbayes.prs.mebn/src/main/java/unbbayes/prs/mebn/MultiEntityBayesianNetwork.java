@@ -22,9 +22,11 @@ package unbbayes.prs.mebn;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import unbbayes.prs.Edge;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.BooleanStatesEntityContainer;
@@ -517,8 +519,48 @@ public class MultiEntityBayesianNetwork extends Network {
 	public void setUseStorageImplementor(boolean useStorageImplementor) {
 		this.useStorageImplementor = useStorageImplementor;
 	}
-	
-	
-	
+
+
+	/** 
+	 * This method overwrites {@link unbbayes.prs.Network#addNode(Node)} just in order
+	 * to be able to add nodes with duplicate names.
+	 * TODO check whether we shall really allow nodes to have duplicate names in MEBN.
+	 * @see unbbayes.prs.Network#addNode(unbbayes.prs.Node)
+	 */
+	public void addNode(Node node) {
+		if (node.getName() == null || node.getName().trim().isEmpty() || !nodeIndexes.containsKey(node.getName())) { 
+			// Note: if node.getName() == null || node.getName().trim().isEmpty(), the superclass will supposedly throw the correct exception, with multi-language support for error messages
+			super.addNode(node);
+		} else {
+			// just add it without updating the index of names
+			nodeList.add(node);
+			// do not forget to add listener to be called when name is changed.
+			// TODO check if this listener is useful in MEBN or not
+			node.addNodeNameChangedListener(nodeNameChangedListener);
+		}
+	}
+
+	/**
+	 * This method overwrites {@link unbbayes.prs.Network#removeNode(Node)} just in order
+	 * to be able to remove nodes from a network when there are duplicate names.
+	 * TODO check whether we shall really allow nodes to have duplicate names in MEBN.
+	 * @see unbbayes.prs.Network#removeNode(unbbayes.prs.Node)
+	 */
+	public void removeNode(Node element) {
+		if (element.getName() != null) {
+			int index = this.getNodeIndex(element.getName());
+			if (index >= 0) {
+				super.removeNode(element);
+				return;
+			}
+		}
+		// at this point, node is not indexed, or its name is null (which is also not indexed). No need to update index then.
+		nodeList.remove(element);
+	    
+		// TODO check if we need to remove edge containing node, if there is
+	    
+	}
+
+
 
 }
