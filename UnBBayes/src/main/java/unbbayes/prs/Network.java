@@ -211,32 +211,33 @@ public class Network implements Graph{
 	    Integer index = nodeIndexes.get(element.getName());
 	    if (index != null && index.intValue() >= 0) {
 	    	nodeList.remove(index.intValue());
+	    	//nodeIndexes.remove(elemento.getName());
+	    	nodeIndexes.clear();
+	    	for (c = 0; c < nodeList.size(); c++) {
+	    		node = nodeList.get(c);
+	    		node.removeParent(element);
+	    		node.removeChild(element);
+	    		nodeIndexes.put(node.getName(), new Integer(c));
+	    	}
 	    }
 	    
-	    //nodeIndexes.remove(elemento.getName());
-	    nodeIndexes.clear();
-	    for (c = 0; c < nodeList.size(); c++) {
-	        node = nodeList.get(c);
-	        node.removeParent(element);
-	        node.removeChild(element);
-	        nodeIndexes.put(node.getName(), new Integer(c));
-	    }
 	    if (!edgeList.isEmpty()) {
-	        edge = edgeList.get(0);
-	        c = 0;
-	        while (edge != edgeList.get(edgeList.size() - 1)) {
-	            if ((edge.getOriginNode() == element) || (edge.getDestinationNode() == element)) {
-	                removeArc(edge);
-	            }
-	            else {
-	                c++;
-	            }
-	            edge = edgeList.get(c);
-	        }
-	        if ((edge.getOriginNode() == element) || (edge.getDestinationNode() == element)) {
-	            removeArc(edge);
-	        }
+	    	edge = edgeList.get(0);
+	    	c = 0;
+	    	while (edge != edgeList.get(edgeList.size() - 1)) {
+	    		if ((edge.getOriginNode() == element) || (edge.getDestinationNode() == element)) {
+	    			removeArc(edge);
+	    		}
+	    		else {
+	    			c++;
+	    		}
+	    		edge = edgeList.get(c);
+	    	}
+	    	if ((edge.getOriginNode() == element) || (edge.getDestinationNode() == element)) {
+	    		removeArc(edge);
+	    	}
 	    }
+	    
 	    
 	    
 	}
