@@ -275,9 +275,13 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 	 * @throws InvalidParentException 
 	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#addEdgesToNet(unbbayes.prs.INode, java.util.List)
 	 */
-	public List<Edge> addEdgesToNet(Map<INode, List<INode>> nodeAndParents, boolean isToOptimizeForProbNetwork) 
+	public List<Edge> addEdgesToNet(Map<INode, List<INode>> nodeAndParents, boolean isToOptimizeForProbNetwork, List<Edge> virtualArcs)
 			throws UnsupportedOperationException, IllegalArgumentException,InvalidParentException {
 		
+		if (virtualArcs != null && !virtualArcs.isEmpty()) {
+			// TODO handle virtualArcs
+			throw new UnsupportedOperationException("Virtual arcs are not supported yet.");
+		}
 		// if isToOptimizeForProbNetwork, then special treatment is necessary
 		if (isToOptimizeForProbNetwork) {
 			return this.addNodesToCliqueWhenNotConsideringAssets(nodeAndParents);
@@ -803,7 +807,17 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 		
 		
 		// compile junction tree, considering the new edges
-		run();
+		try {
+			run();
+		} catch (Throwable e) {
+			// undo all changes in arcs
+			for (Edge edge : ret) {
+				net.removeEdge(edge);
+			}
+			// return JT back to its original stage
+//			run();
+			throw new RuntimeException(e);
+		}
 		
 		
 		// all the following code was commented out, because we don't need to udpate clique potentials, since we appended edges to cpts which were updated based on the old clique potentials

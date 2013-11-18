@@ -401,6 +401,11 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * By default, the network obtainable from {@link #getNetwork()} will be updated.
 	 * @param nodeAndParents : a mapping from the child node (whose new arcs/edges will be pointing to)
 	 * to its parent nodes (whose new arcs/edges will be pointing from).
+	 * @param virtualArcs : these are arcs may not be actually present in the managed network, but this algorithm must behave
+	 * like if they were present. Some implementations may require that these arcs do exist in the system already,
+	 * and this method may change the direction of these arcs if the new arcs to be included causes cycles
+	 * because of these virtual arcs. It depends on the implementation, but the second approach is suggested.
+	 * In normal cases, just set this argument to null.
 	 * @param isToOptimizeForProbNetwork: if true, this method will assume that only probabilistic networks are being
 	 * used, and optimizations will be performed assuming that cliques are globally consistent and normalized.
 	 * <br/>
@@ -419,7 +424,7 @@ public interface IAssetNetAlgorithm extends IInferenceAlgorithm {
 	 * @throws IllegalArgumentException : if the nodes specified in the arguments are not managed by this algorithm.
 	 * @throws InvalidParentException : if the provided parent is not consistent. See {@link unbbayes.prs.Network#addEdge(Edge)}
 	 */
-	public List<Edge> addEdgesToNet(Map<INode, List<INode>> nodeAndParents, boolean isToOptimizeForProbNetwork) throws UnsupportedOperationException, IllegalArgumentException,InvalidParentException;
+	public List<Edge> addEdgesToNet(Map<INode, List<INode>> nodeAndParents, boolean isToOptimizeForProbNetwork, List<Edge> virtualArcs) throws UnsupportedOperationException, IllegalArgumentException,InvalidParentException;
 	
 	/**
 	 * Finds the shortest path from a clique to another clique (regardless of direction of the connections

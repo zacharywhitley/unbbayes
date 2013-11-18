@@ -4,6 +4,7 @@
 package edu.gmu.ace.scicast;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17284,7 +17285,8 @@ public class MarkovEngineTest extends TestCase {
 		engine.setCurrentLogBase(2f);
 		
 		engine.initialize();
-		
+		  
+		// 5<-6->8->7
 		engine.addQuestion(null, new Date(), 8L	, 2, null);
 		engine.addQuestion(null, new Date(), 5L	, 3, null);
 		engine.addQuestion(null, new Date(), 7L	, 2, null);
@@ -28327,6 +28329,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup marginals for later comparison
 		Map<Long, List<Float>> oldProbLists = engine.getProbLists(null, null, null);
 		
+		
 		// export/import net
 		engine.importState(engine.exportState());
 		
@@ -28350,6 +28353,153 @@ public class MarkovEngineTest extends TestCase {
 			
 		}
 	}
+	
+	/**
+	 * This does the same test of {@link #testExportImportAfterTradeOnDisconnectedParents()},
+	 * but assumes that virtual arcs are created, instead of real arcs.
+	 */
+//	public final void testExportImportAfterTradeOnDisconnectedParentsWithVirtualArcs() {
+//		long seed = System.currentTimeMillis();
+//		Random random = new Random(seed );
+//		
+//		boolean isToAddVirtualArcsOnAddTrade = engine.isToAddVirtualArcsOnAddTrade();
+//		engine.setToAddVirtualArcsOnAddTrade(true);
+//		boolean isToAddArcsOnAddTrade = engine.isToAddArcsOnAddTrade();
+//		engine.setToAddArcsOnAddTrade(false);
+//		
+//		// generate ABC
+//		long transactionKey = engine.startNetworkActions();
+//		if (random.nextBoolean()) {
+//			// node is root of value tree
+//			engine.addQuestion(transactionKey, new Date(), 0x0AL, 2, null, "[2][0][1]");
+//		} else {
+//			// node is ordinal node
+//			engine.addQuestion(transactionKey,  new Date(), 0x0AL, 2, null);
+//		}
+//		if (random.nextBoolean()) {
+//			// node is root of value tree
+//			engine.addQuestion(transactionKey, new Date(), 0x0BL, 2, null, "[2][0][1]");
+//		} else {
+//			// node is ordinal node
+//			engine.addQuestion(transactionKey,  new Date(), 0x0BL, 2, null);
+//		}
+//		if (random.nextBoolean()) {
+//			// node is root of value tree
+//			engine.addQuestion(transactionKey, new Date(), 0x0CL, 2, null, "[2][0][1]");
+//		} else {
+//			// node is ordinal node
+//			engine.addQuestion(transactionKey,  new Date(), 0x0CL, 2, null);
+//		}
+//		if (random.nextBoolean()) {
+//			// insert parents at once
+//			List<Long> parentQuestionIds = new ArrayList<Long>(2);
+//			parentQuestionIds.add(0x0AL);
+//			parentQuestionIds.add(0x0CL);
+//			engine.addQuestionAssumption(transactionKey, new Date()	, 0x0BL, parentQuestionIds, null);
+//		} else {
+//			// insert one-by-one
+//			engine.addQuestionAssumption(transactionKey, new Date()	, 0x0BL, Collections.singletonList(0x0AL), null);
+//			engine.addQuestionAssumption(transactionKey, new Date()	, 0x0BL, Collections.singletonList(0x0CL), null);
+//		}
+//		// commit transaction
+//		engine.commitNetworkActions(transactionKey);
+//		
+//		// check that node exists
+//		assertNotNull("seed="+seed,engine.getProbabilisticNetwork().getNode(""+0x0AL));
+//		assertNotNull("seed="+seed,engine.getProbabilisticNetwork().getNode(""+0x0BL));
+//		assertNotNull("seed="+seed,engine.getProbabilisticNetwork().getNode(""+0x0CL));
+//		// check that they all have 2 states
+//		assertEquals("seed="+seed,2,engine.getProbabilisticNetwork().getNode(""+0x0AL).getStatesSize());
+//		assertEquals("seed="+seed,2,engine.getProbabilisticNetwork().getNode(""+0x0BL).getStatesSize());
+//		assertEquals("seed="+seed,2,engine.getProbabilisticNetwork().getNode(""+0x0CL).getStatesSize());
+//		// check that number of parents are consistent
+//		assertEquals("seed="+seed,0,engine.getProbabilisticNetwork().getNode(""+0xAL).getParentNodes().size());
+//		assertEquals("seed="+seed,2,engine.getProbabilisticNetwork().getNode(""+0xBL).getParentNodes().size());
+//		assertEquals("seed="+seed,0,engine.getProbabilisticNetwork().getNode(""+0xCL).getParentNodes().size());
+//		// check that structure is A->B<-C
+//		assertTrue("seed="+seed,engine.getProbabilisticNetwork().getNode(""+0xBL).getParentNodes().contains(engine.getProbabilisticNetwork().getNode(""+0xAL)));
+//		assertTrue("seed="+seed,engine.getProbabilisticNetwork().getNode(""+0xBL).getParentNodes().contains(engine.getProbabilisticNetwork().getNode(""+0xCL)));
+//		
+//		// change probability of P(B|A)
+//		List<Float> newValues = new ArrayList<Float>(2);
+//		newValues.add(.8f);
+//		newValues.add(.2f);
+//		engine.addTrade(null, new Date(), "", Long.MAX_VALUE, 0x0BL, newValues, 
+//				Collections.singletonList(0x0AL), Collections.singletonList(0), true);
+//		newValues = new ArrayList<Float>(2);
+//		newValues.add(.1f);
+//		newValues.add(.9f);
+//		engine.addTrade(null, new Date(), "", Long.MAX_VALUE, 0x0BL, newValues, 
+//				Collections.singletonList(0x0AL), Collections.singletonList(1), true);
+//		
+//		// change probability of P(B|C)
+//		newValues = new ArrayList<Float>(2);
+//		newValues.add(.1f);
+//		newValues.add(.9f);
+//		engine.addTrade(null, new Date(), "", Long.MAX_VALUE, 0x0BL, newValues, 
+//				Collections.singletonList(0x0CL), Collections.singletonList(0), true);
+//		newValues = new ArrayList<Float>(2);
+//		newValues.add(.7f);
+//		newValues.add(.3f);
+//		engine.addTrade(null, new Date(), "", Long.MAX_VALUE, 0x0BL, newValues, 
+//				Collections.singletonList(0x0CL), Collections.singletonList(1), true);
+//		
+//		// change probability of P(A|C)
+//		newValues = new ArrayList<Float>(2);
+//		newValues.add(.2f);
+//		newValues.add(.8f);
+//		engine.addTrade(null, new Date(), "", Long.MAX_VALUE, 0x0AL, newValues, 
+//				Collections.singletonList(0x0CL), Collections.singletonList(0), true);
+//		newValues = new ArrayList<Float>(2);
+//		newValues.add(.9999f);
+//		newValues.add(.0001f);
+//		engine.addTrade(null, new Date(), "", Long.MAX_VALUE, 0x0AL, newValues, 
+//				Collections.singletonList(0x0CL), Collections.singletonList(1), true);
+//		
+//		// backup marginals for later comparison
+//		Map<Long, List<Float>> oldProbLists = engine.getProbLists(null, null, null);
+//		
+//		// assure some arcs were set as virtual
+//		List<Edge> virtualArcs = engine.getVirtualArcs();
+//		assertNotNull(virtualArcs);
+//		assertFalse(virtualArcs.isEmpty());
+//		assertEquals(1, virtualArcs.size());
+//		assertTrue(virtualArcs.get(0).getOriginNode().getName().equals(""+0x0C));
+//		assertTrue(virtualArcs.get(0).getDestinationNode().getName().equals(""+0x0A));
+//		
+//		// export/import net
+//		engine.importState(engine.exportState());
+//		
+//		virtualArcs = engine.getVirtualArcs();
+//		assertNotNull(virtualArcs);
+//		assertFalse(virtualArcs.isEmpty());
+//		assertEquals(1, virtualArcs.size());
+//		assertTrue(virtualArcs.get(0).getOriginNode().getName().equals("C"));
+//		assertTrue(virtualArcs.get(0).getDestinationNode().getName().equals("A"));
+//		
+//		// check that all marginals did not change
+//		// extract the probabilities after import
+//		Map<Long, List<Float>> newProbLists = engine.getProbLists(null, null, null);
+//		// check that quantity of nodes is the same
+//		assertEquals("seed="+seed + "; old=" +oldProbLists + "; new="+newProbLists, oldProbLists.size(), newProbLists.size());
+//		for (Entry<Long, List<Float>> oldEntry : oldProbLists.entrySet()) {
+//			// extract old and new probabilities
+//			List<Float> oldValues = oldEntry.getValue();
+//			newValues = newProbLists.get(oldEntry.getKey());
+//			// check that node still exits
+//			assertNotNull("seed="+seed + "; old=" +oldProbLists + "; new="+newProbLists, newValues);
+//			// check that number of states are the same
+//			assertEquals("seed="+seed + "; old=" +oldProbLists + "; new="+newProbLists, oldValues.size(), newValues.size());
+//			for (int i = 0; i < oldValues.size(); i++) {
+//				// check marginal
+//				assertEquals("seed="+seed + "; old=" +oldProbLists + "; new="+newProbLists, oldValues.get(i), newValues.get(i),PROB_ERROR_MARGIN);
+//			}
+//			
+//		}
+//		
+//		engine.setToAddArcsOnAddTrade(isToAddArcsOnAddTrade);
+//		engine.setToAddVirtualArcsOnAddTrade(isToAddVirtualArcsOnAddTrade);
+//	}
 	
 	/**
 	 * Checks if adding arcs works fine when there are trades on parents of a node which are not directly connected.
@@ -29302,13 +29452,14 @@ public class MarkovEngineTest extends TestCase {
 		}
 	}
 	
+	
 	/**
 	 * Check that adding an assumption which causes cycles will
 	 * throw exception and keep the probabilities intact.
 	 * This test shall also check the same condition when the cycle is caused
 	 * because there are virtual arcs.
 	 */
-	public final void testProbabilityAddQuestionAssumptionCycleWithVirtualArcs() {
+//	public final void testProbabilityAddQuestionAssumptionCycleWithVirtualArcs() {
 //		create network
 //		
 //		make conditional trades in order to generate virtual arcs
@@ -29324,8 +29475,8 @@ public class MarkovEngineTest extends TestCase {
 //		compare marginals
 //		
 //		compare conditional probabilities given parents
-		fail("Not implemented yet");
-	}
+//		fail("Not implemented yet");
+//	}
 	
 	
 	/**
@@ -29779,6 +29930,88 @@ public class MarkovEngineTest extends TestCase {
 		
 		// restore backup 
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+	}
+	
+	/**
+	 * Checs if the {@link MarkovEngineImpl#importState(String)} and
+	 * {@link MarkovEngineImpl#exportState()} are correctly loading nodes.
+	 */
+	public final void testExportImportRPCQueue() {
+		// files to read string of  {@link MarkovEngineImpl#importState(String)}
+		String files[] = {
+				"./examples/export_states/rpc_queue_138323988490.state",
+				"./examples/export_states/rpc_queue_138326760196.state",
+				"./examples/export_states/rpc_queue_138335400179.state",
+				"./examples/export_states/rpc_queue_138344040160.state",
+				"./examples/export_states/rpc_queue_138353040160.state",
+				"./examples/export_states/rpc_queue_138361680134.state",
+				"./examples/export_states/rpc_queue_138370320211.state",
+				"./examples/export_states/rpc_queue_138378960189.state",
+				"./examples/export_states/rpc_queue_138387600235.state",
+				"./examples/export_states/rpc_queue_138396240232.state",
+				"./examples/export_states/rpc_queue_138404880216.state",
+				"./examples/export_states/rpc_queue_138413520148.state",
+				"./examples/export_states/rpc_queue_138422160216.state",
+				"./examples/export_states/rpc_queue_138430800197.state",
+			}; 
+		// for each file in files[], check if the following questions are present
+		long nodesPerFile[][] = {
+				{1,2,3},
+				{1,2,3},
+				{1,2,3},
+				{1,2,3},
+				{1,2,3},
+				{1,2,3},
+				{1,2,3,4},
+				{1,2,3},
+				{1,2,3},
+				{1,2,3,5},
+				{1,2,3,5,6,8},
+				{1,2,3,5,6,8},
+				{1,2,3,5},
+				{1,2,3,5},
+		};
+		
+		// do test for each file
+		for (int i = 0; i < files.length; i++) {
+			String netString = "";
+			FileInputStream stream = null;
+			try {
+				// read file
+				stream = new FileInputStream(files[i]);
+				int content;
+				while ((content = stream.read()) != -1) {
+					// convert to char and display it
+					netString += (char) content;
+				}
+				
+				// import the network
+				engine.importState(netString);
+				
+				// check if number of nodes matches
+				long[] nodes = nodesPerFile[i];
+				Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+				assertEquals(nodes.length, probLists.size());
+				for (long node : nodes) {
+					assertTrue(files[i] + ", node="+node,probLists.containsKey(node));
+				}
+				
+				// export/import again
+				engine.importState(engine.exportState());
+				
+				// check if number of nodes matches again
+				probLists = engine.getProbLists(null, null, null);
+				assertEquals(nodes.length, probLists.size());
+				for (long node : nodes) {
+					assertTrue(files[i] + ", node="+node,probLists.containsKey(node));
+				}
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+				fail(files[i] + ": " +e.getMessage());
+			}
+		}
+		
 	}
 	
 }

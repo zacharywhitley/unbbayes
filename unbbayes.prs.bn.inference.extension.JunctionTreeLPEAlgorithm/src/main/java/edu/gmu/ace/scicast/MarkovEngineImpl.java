@@ -338,9 +338,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	}
 	
 	private boolean isToAddArcsOnAddTrade = true;
+	private boolean isToAddVirtualArcsOnAddTrade = false;
 
 	private ITableFunction defaultCPTNormalizer = DEFAULT_CPT_NORMALIZER;
+	
+	/** This collection will hold what edges are tagged as virtual. This mapping is from child to parent */
+//	private Map<INode,List<INode>> virtualParentMapping = new HashMap<INode,List<INode>>();
+	private List<Edge> virtualArcs = null;//new ArrayList<Edge>();
 
+
+	/** If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction, boolean)}
+	 * will call {@link #addQuestionAssumption(Long, Date, long, List, List)} in order to connect nodes that are not connected, but was used in trades*/
+	private boolean isToAddArcsOnAddTradeAndUpdateJT = true;
 	
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -2447,7 +2456,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					synchronized (probAlgorithm) {
 						try {
 							// true means optimizations will be performed assuming that only prob net will be changed
-							probAlgorithm.addEdgesToNet(childrenAndParents, true);
+							probAlgorithm.addEdgesToNet(childrenAndParents, true, getVirtualArcs());
 						} catch (InvalidParentException e) {
 							// TODO do not use exception translation
 							throw new RuntimeException(e);
@@ -2552,7 +2561,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					synchronized (probAlgorithm) {
 						try {
 							// true means optimizations will be performed assuming that only prob net will be changed
-							probAlgorithm.addEdgesToNet(Collections.singletonMap(child, parents), true);
+							probAlgorithm.addEdgesToNet(Collections.singletonMap(child, parents), true, getVirtualArcs());
 						} catch (InvalidParentException e) {
 							// TODO do not use exception translation
 							throw new RuntimeException(e);
@@ -2564,7 +2573,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						// call method not using assumption of global consistency and normalization (i.e. use false),
 						// so that it results in same junction tree of asset networks
 						try {
-							probAlgorithm.addEdgesToNet(Collections.singletonMap(child, parents), false);
+							probAlgorithm.addEdgesToNet(Collections.singletonMap(child, parents), false, getVirtualArcs());
 						} catch (InvalidParentException e) {
 							// TODO do not use exception translation
 							throw new RuntimeException(e);
@@ -2575,7 +2584,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						for (AssetAwareInferenceAlgorithm userAlgorithm : getUserToAssetAwareAlgorithmMap().values()) {
 							try {
 								// no need to use asset nodes in the arguments, because AssetPropagationInferenceAlgorithm automatically converts.
-								userAlgorithm.getAssetPropagationDelegator().addEdgesToNet(Collections.singletonMap(child, parents), false);
+								userAlgorithm.getAssetPropagationDelegator().addEdgesToNet(Collections.singletonMap(child, parents), false, getVirtualArcs());
 							} catch (InvalidParentException e) {
 								// TODO do not use exception translation
 								throw new RuntimeException(e);
@@ -6959,7 +6968,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					throw new IllegalArgumentException("Probability of question " + questionId + " given " + assumptionIds + "=" + assumedStates + " has probability " + oldValues + " (it's settled), thus cannot be changed.");
 				}
 				// probs and assets are all supposedly related by indexes
-				ret.add(this.getScoreFromQValues(newValues.get(i)/oldValues.get(i)));
+				if (newValues.get(i) == null) {
+					ret.add(0f);
+				} else {
+					ret.add(this.getScoreFromQValues(newValues.get(i)/oldValues.get(i)));
+				}
 			}
 			return ret;
 		}
@@ -7116,6 +7129,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see #getProbabilityErrorMargin()
 	 * @see #isToUseCorrectiveTrades()
 	 */
+	@SuppressWarnings("unchecked")
 	protected List<Float> executeTrade(long questionId, List<Float> oldValues, List<Float> newValues, 
 			List<Long> assumptionIds, List<Integer> assumedStates, 
 			boolean isToAllowNegative, AssetAwareInferenceAlgorithm algorithm, boolean isToUpdateAssumptionIds, boolean isPreview, 
@@ -7257,7 +7271,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// check if sum of conditional probability given current state of parents is 1
 				if (!(((1 - getProbabilityErrorMargin()) < localSum) && (localSum < (1 + getProbabilityErrorMargin())))) {
 					if (!(((1 - getProbabilityErrorMargin()*2) < localSum) && (localSum < (1 + getProbabilityErrorMargin()*2)))) {
-						throw new IllegalArgumentException("Inconsistent prior probability: " + localSum);
+						throw new IllegalArgumentException("Inconsistent or not normalized probability specification: " + localSum);
 					}
 				}
 				counter = 0;
@@ -7356,6 +7370,27 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (isPreview) {
 			// don't actually propagate if we only need to preview
 			return condProbBeforeTrade;
+		}
+		
+		// connect the nodes used in trade if there is no clique containing all nodes simultaneously
+		if (!isPreview && isToAddArcsOnAddTradeAndUpdateJT()) {
+			// make connection only if the flag isToAddArcsOnAddTradeAndUpdateJT is turned on
+			synchronized (getDefaultInferenceAlgorithm()) {
+				// check if there is a clique containing all nodes
+				Collection<INode> nodes = new ArrayList<INode>(assumptionNodes);
+				nodes.add(child);
+				if (getDefaultInferenceAlgorithm().getJunctionTree().getCliquesContainingAllNodes(nodes , 1).isEmpty()) {
+					try {
+						// if there is no clique containing all nodes, we need to connect them.
+						if (isToAddArcsOnAddTrade()) {	// only add connection if flag is turned on
+							// actually attempts to add arc
+							this.simpleAddEdge((List)assumptionNodes, child, net, false);
+						} 
+					} catch (InvalidParentException e) {
+						throw new RuntimeException("Could not automatically add arc from " + assumptionNodes + " to "+child,e);
+					}
+				}
+			}
 		}
 		
 		// if the oldValues was specified by the caller, then we have to check whether it matches with current probability. If not, we must do correction
@@ -7518,9 +7553,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 
 		// connect the traded nodes if necessary
-		if (isToAddArcsOnAddTrade() && !isPreview) {
+		if (!isPreview) {
 			try {
-				this.simpleAddEdge((List)assumptionNodes, child, net);
+				if (isToAddArcsOnAddTrade()) {
+					// actually attempts to add arc
+					this.simpleAddEdge((List)assumptionNodes, child, net, false);
+				} else if (isToAddVirtualArcsOnAddTrade()) {
+					this.simpleAddEdge((List)assumptionNodes, child, net, true);
+				}
 			} catch (InvalidParentException e) {
 				throw new RuntimeException("Could not automatically add arc from " + assumptionNodes + " to "+child,e);
 			}
@@ -7536,13 +7576,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @param nodesFrom : nodes to add arc from
 	 * @param nodeTo : node to add arc to
 	 * @param net : network where arc will be included
+	 * @param isVirtual : if true, the edges created in this method will be actually considered as
+	 * virtual and will be included in {@link #getVirtualParentMapping()} instead of net.
 	 * @throws InvalidParentException : inherent from {@link ProbabilisticNetwork#addEdge(Edge)}
 	 * @see #getMSeparationUtility()
+	 * @return the arcs created by this method
 	 */
-	protected void simpleAddEdge(List<Node> nodesFrom, Node nodeTo, ProbabilisticNetwork net) throws InvalidParentException {
+	protected List<Edge> simpleAddEdge(List<Node> nodesFrom, Node nodeTo, ProbabilisticNetwork net, boolean isVirtual) throws InvalidParentException {
 		if (nodeTo == null || nodesFrom == null || net == null) {
-			return;
+			return Collections.EMPTY_LIST;
 		}
+		// the list to be returned by this method
+		List<Edge> ret = new ArrayList<Edge>(nodesFrom.size());
+		// fill ret
 		for (Node assumption : nodesFrom) {
 			
 			// basic assertion
@@ -7561,18 +7607,48 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// we shall create an arc node1->node2 or node2->node1, but without creating cycles. 
 			// Supposedly, this will connect parents of children (which are dependencies but not connected directly)
 			
+			Edge createdEdge = null;	// prepare the variable to hold the new edge being created
+			
 			// use the m-separation utility component in order to find a path between node1 and node2
-			if (getMSeparationUtility().getRoutes(assumption, nodeTo, null, null, 1).isEmpty()) {
-				
+			if (!isVirtual 	// getMSeparationUtility().getRoutes shall be called only when we are actually including the edge. 
+					&& getMSeparationUtility().getRoutes(nodeTo, assumption, null, null, 1).isEmpty()) {
 				// there is no route from assumption to child, so we can create assumption->child without generating cycle
-				net.addEdge(new Edge( assumption ,  nodeTo));
+				createdEdge = new Edge(nodeTo, assumption);
 			} else { // supposedly, we can always add edges in one of the directions (i.e. there is no way we add arc in each direction and both result in cycle)
-				
+				// if this is virtual edge, then the direction doesn't matter here, because direction will be tested again and occasionally inverted when other actual arcs are included
 				// there is a route from assumption to child, so we cannot create assumption->child (it will create a cycle if we do so), so create child->assumption
-				net.addEdge(new Edge(nodeTo, assumption));
+				createdEdge = new Edge( assumption ,  nodeTo);
 			}
+			
+			if (!isVirtual) {
+//				// use heavy weight add arc operation if 
+//				if (isToAddArcsOnAddTradeAndUpdateJT() && getDefaultInferenceAlgorithm().getNetwork().equals(net)) {
+//					// heavy weight add arc operation.
+//					addQuestionAssumption(null , new Date(), Long.parseLong(createdEdge.getDestinationNode().getName()), Collections.singletonList(Long.parseLong(createdEdge.getOriginNode().getName())), null);
+//				} else {
+					// add the new arc/edge to the network 
+					net.addEdge(createdEdge);
+//				}
+			} else if (this.getVirtualArcs() != null) {
+				// TODO do not add duplicate arcs
+				if (!this.getVirtualArcs().contains(createdEdge)) {
+					this.getVirtualArcs().add(createdEdge);
+				}
+//				// add arcs to the list of edges to be tagged as virtual (which will be used only when net structure changes - and cpts are used to store BN temporary)
+//				List<INode> virtualParents = this.getVirtualArcs().get(createdEdge.getDestinationNode());
+//				if (virtualParents == null) {
+//					// make sure the mapping is initialized
+//					virtualParents = new ArrayList<INode>();
+//					this.getVirtualArcs().put(createdEdge.getDestinationNode(), virtualParents);
+//				}
+//				// add parent to the mapping
+//				virtualParents.add(createdEdge.getOriginNode());
+				// the edge shall not be actually created, in this case
+			}
+			// and add it to the list to be returned.
+			ret.add(createdEdge);
 		}
-	
+		return ret;
 	}
 
 	/**
@@ -11643,11 +11719,39 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		//		1. Export the BN in a ".net" format (which can supposedly be opened in Hugin, UnBBayes and Netica). 
 		//		1.1. It will be exported to a file in this iteration
 		BaseIO io = this.getIO();
-		synchronized (io) {
-			io.save(file, netToSave);
+		if (io instanceof ValueTreeNetIO) {
+			// make sure to save the virtual arcs
+			((ValueTreeNetIO) io).setVirtualParents(this.convertArcsToParentMapping(getVirtualArcs()));
 		}
+		io.save(file, netToSave);
 	}
 	
+
+	/**
+	 * As the name suggests, it creates a new map which represents the arcs.
+	 * @param arcs : list of {@link Edge} to be converted to a map
+	 * @return : a mapping from child to its parents
+	 * @see #convertParentMappingToArcs(Map)
+	 * @see ValueTreeNetIO#getVirtualParents()
+	 * @see #getVirtualParentMapping()
+	 */
+	protected Map<INode, List<INode>> convertArcsToParentMapping( List<Edge> arcs) {
+		Map<INode, List<INode>> ret = new HashMap<INode, List<INode>>();
+		if (arcs != null) {
+			for (Edge edge : arcs) {
+				List<INode> parentList = ret.get(edge.getDestinationNode());
+				if (parentList == null) {
+					// make sure the value of the mapping (which is a list) is initialized
+					parentList = new ArrayList<INode>();
+					ret.put(edge.getDestinationNode(), parentList);
+				}
+				// include the parent in this edge in the list (value mapped)
+				parentList.add(edge.getOriginNode());
+			}
+		}
+		return ret;
+	}
+
 
 	/**
 	 * This class represents a network action for substituting the current network
@@ -12875,6 +12979,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		io.setPrintStreamBuilder(new StringPrintStreamBuilder(stringBuilder));
 		
 		synchronized (getDefaultInferenceAlgorithm()) {
+			// TODO create the virtual arcs
+			if (isToAddVirtualArcsOnAddTrade()) {
+				throw new UnsupportedOperationException("Virtual arcs are not implmented yet.");
+			}
 			// make sure the cpts of all nodes are consistent with the current status of junction trees.
 			getDefaultInferenceAlgorithm().updateCPTFromJT();
 			
@@ -12886,6 +12994,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				io.save(new File("If_you_see_this_file_then_there_is_bug_in_MarkovEngineImpl.exportCurrentSharedNetwork"), getDefaultInferenceAlgorithm().getNet());
 			} catch (FileNotFoundException e) {
 				throw new RuntimeException("StringPrintStreamBuilder was supposed to print to strings and ignore files, but a FileNotFoundException was thrown. This is probably a bug in a library being used by the Markov Engine. Please, check your version of UnBBayes.",e);
+			}
+			// remove the virtual arcs
+			if (isToAddVirtualArcsOnAddTrade()) {
+				throw new UnsupportedOperationException("Virtual arcs are not implmented yet.");
 			}
 		}
 		
@@ -12909,6 +13021,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 		// this I/O class will read a network representation
 		NetIO io = getNetIOToExportSharedNetToSting();
+		
+		// reset/initialize and specify the mapping of what arcs are tagged as virtual. This will be filled posteriory when we load the network from this IO
+		if (io instanceof ValueTreeNetIO) {
+			((ValueTreeNetIO) io).setVirtualParents(new HashMap<INode, List<INode>>());
+		}
 				
 		// By using StringReaderBuilder, net will be read from string instead of file
 		io.setReaderBuilder(new StringReaderBuilder(netString));
@@ -12947,6 +13064,37 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// compile the loaded bayes net
 			getDefaultInferenceAlgorithm().run();
 		}
+		
+		// update the mapping of 
+		if (io instanceof ValueTreeNetIO) {
+			this.setVirtualArcs(this.convertParentMappingToArcs(((ValueTreeNetIO) io).getVirtualParents()));
+			// ((ValueTreeNetIO) io).getVirtualParents() is not necessary anymore
+			((ValueTreeNetIO) io).setVirtualParents(null);
+		}
+	}
+
+	/**
+	 * @param virtualParents : a mapping from child (key) to its parents (value)
+	 * @return as the name suggests, it creates a new list of new edges (not present in {@link #getProbabilisticNetwork()}) from
+	 * the mapping which maps children (keys) to their parents (value).
+	 * @see #convertArcsToParentMapping(List)
+	 * @see ValueTreeNetIO#getVirtualParents()
+	 * @see #getVirtualParentMapping()
+	 */
+	protected List<Edge> convertParentMappingToArcs( Map<INode, List<INode>> virtualParents) {
+		List<Edge> ret = new ArrayList<Edge>();
+		if (virtualParents != null) {
+			// each child(key)-parent(a node in the mapped list) pair becomes a new instance of Edge
+			for (Entry<INode, List<INode>> entry : virtualParents.entrySet()) {
+				if (entry.getValue() != null) {
+					for (INode parent : entry.getValue()) {
+						// TODO use INode instead of casting them to Node
+						ret.add(new Edge((Node)parent, (Node)entry.getKey()));
+					}
+				}
+			}
+		}
+		return ret;
 	}
 
 	/**
@@ -13105,7 +13253,117 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getVersionInfo()
 	 */
 	public String getVersionInfo() {
-		return "UnBBayes SciCast Markov Engine 1.0.1";
+		return "UnBBayes SciCast Markov Engine 1.0.2";
+	}
+
+	/**
+	 * @return the virtualArcs : these arcs will be tagged as "virtual", so arcs will be temporary created
+	 * during structure changes, so that cycles are not created because of the presence of such virtual arcs (when creating new "normal" arcs); 
+	 * or conditional probabilities of nodes not directly connected becomes
+	 * fully specifyable by only specifying nodes and their cpts given parents when probabilities are needed to be stored temporary.
+	 * By setting this to null, virtual parents will be disabled.
+	 * @see #exportState()
+	 * @see #importState(String)
+	 * @see AddQuestionAssumptionNetworkAction
+	 * @see ValueTreeNetIO#getVirtualParents()
+	 * @see #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction, boolean)
+	 * @see #simpleAddEdge(List, Node, ProbabilisticNetwork)
+	 * 
+	 */
+	public List<Edge> getVirtualArcs() {
+		return this.virtualArcs;
+	}
+	
+//	/**
+//	 * @return the virtualArcs : these arcs will (mapping which specifies parents = values of a child = key) be tagged as "virtual", so arcs will be temporary created
+//	 * during structure changes, so that conditional probabilities of nodes not directly connected becomes
+//	 * fully specifyable by only specifying nodes and their cpts given parents.
+//	 * By setting this to null, virtual parents will be disabled.
+//	 * @see #exportState()
+//	 * @see #importState(String)
+//	 * @see AddQuestionAssumptionNetworkAction
+//	 * @see ValueTreeNetIO#getVirtualParents()
+//	 * @see #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction, boolean)
+//	 * @see #simpleAddEdge(List, Node, ProbabilisticNetwork)
+//	 * 
+//	 */
+//	public Map<INode,List<INode>> getVirtualParentMapping() {
+//		return this.virtualParentMapping;
+//	}
+
+	/**
+	 * @param virtualArcs : these arcs are tagged as "virtual", so arcs will only be temporary created
+	 * during structure changes, so that cycles are not created because of the presence of such virtual arcs (when creating new "normal" arcs); 
+	 * or conditional probabilities of nodes not directly connected becomes
+	 * fully specifyable by only specifying nodes and their cpts given parents when probabilities are needed to be stored temporary.
+	 * By setting this to null, virtual parents will be disabled.
+	 * @see #exportState()
+	 * @see #importState(String)
+	 * @see AddQuestionAssumptionNetworkAction
+	 * @see ValueTreeNetIO#setVirtualParents(Map)
+	 * @see #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction, boolean)
+	 * @see #simpleAddEdge(List, Node, ProbabilisticNetwork)
+	 */
+	public void setVirtualArcs(List<Edge> virtualArcs) {
+		this.virtualArcs = virtualArcs;
+	}
+	
+//	/**
+//	 * @param virtualParents : these arcs (mapping which specifies parents = values of a child = key) are tagged as "virtual", so arcs will only be temporary created
+//	 * during structure changes, so that conditional probabilities of nodes not directly connected becomes
+//	 * fully specifyable by only specifying nodes and their cpts given parents.
+//	 * By setting this to null, virtual parents will be disabled.
+//	 * @see #exportState()
+//	 * @see #importState(String)
+//	 * @see AddQuestionAssumptionNetworkAction
+//	 * @see ValueTreeNetIO#setVirtualParents(Map)
+//	 * @see #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction, boolean)
+//	 * @see #simpleAddEdge(List, Node, ProbabilisticNetwork)
+//	 */
+//	public void setVirtualParentMapping(Map<INode,List<INode>> virtualParents) {
+//		this.virtualParentMapping = virtualParents;
+//	}
+
+	/**
+	 * @return the isToAddVirtualArcsOnAddTrade
+	 */
+	public boolean isToAddVirtualArcsOnAddTrade() {
+		return isToAddVirtualArcsOnAddTrade;
+	}
+
+	/**
+	 * @param isToAddVirtualArcsOnAddTrade the isToAddVirtualArcsOnAddTrade to set
+	 */
+	public void setToAddVirtualArcsOnAddTrade(boolean isToAddVirtualArcsOnAddTrade) {
+		if (isToAddVirtualArcsOnAddTrade) {
+			if (!this.isToAddVirtualArcsOnAddTrade) {
+				setVirtualArcs(new ArrayList<Edge>());
+			}
+		} else {
+			setVirtualArcs(null);
+		}
+		this.isToAddVirtualArcsOnAddTrade = isToAddVirtualArcsOnAddTrade;
+	}
+
+	/**
+	 *  If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction, boolean)}
+	 * will call {@link #addQuestionAssumption(Long, Date, long, List, List)} in order to force connection of nodes
+	 * that participates in the trade.
+	 * @return the isToAddArcsOnAddTradeAndUpdateJT
+	 */
+	public boolean isToAddArcsOnAddTradeAndUpdateJT() {
+		return isToAddArcsOnAddTradeAndUpdateJT;
+	}
+
+	/**
+	 *  If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction, boolean)}
+	 * will call {@link #addQuestionAssumption(Long, Date, long, List, List)} in order to force connection of nodes
+	 * that participates in the trade.
+	 * @param isToAddArcsOnAddTradeAndUpdateJT the isToAddArcsOnAddTradeAndUpdateJT to set
+	 */
+	public void setToAddArcsOnAddTradeAndUpdateJT(
+			boolean isToAddArcsOnAddTradeAndUpdateJT) {
+		this.isToAddArcsOnAddTradeAndUpdateJT = isToAddArcsOnAddTradeAndUpdateJT;
 	}
 
 

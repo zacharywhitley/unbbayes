@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StreamTokenizer;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import java.util.Map;
 import unbbayes.io.NetIO;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Edge;
+import unbbayes.prs.INode;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.IRandomVariable;
@@ -34,6 +36,9 @@ import unbbayes.util.Debug;
  * @see IValueTree
  */
 public class ValueTreeNetIO extends NetIO {
+	
+	/** This collection will hold what edges are tagged as virtual. */
+	private Map<INode,List<INode>> virtualParents = null;
 
 	/**
 	 * Name of property in {@link Network#getProperty(String)} which stores instances of {@link IValueTreeNode} loaded by this class
@@ -307,6 +312,35 @@ public class ValueTreeNetIO extends NetIO {
 			}
 
 			while (!st.sval.endsWith("}")) {
+				if (st.sval.equals("%virtual")) {	// handling virtual parents
+					// check that virtual parents are to be used
+					if (this.getVirtualParents() == null) {
+						// null means that virtual parents shall be ignored
+						readTillEOL(st);
+						getNext(st);
+					}
+					
+					// at this point, virtual parent mapping should be non-null. Prepare collection of virtual parents, so that we can register which parents are tagged as virtual
+					List<INode> virtualParents = this.getVirtualParents().get(childNode);
+					// make sure the collection is initialized
+					if (virtualParents == null) {
+						virtualParents = new ArrayList<INode>();
+						this.getVirtualParents().put(childNode, virtualParents);
+					}
+					// this is indicating that some parents of this node are virtual (were linked just in order to keep CPT consistent, but they are not strictly necessary for most of purposes)
+					while (st.nextToken() != StreamTokenizer.TT_EOL) {
+						// extract the name of the parent (potentially with prefixes, so remove such prefixes if so)
+						String parentNodeName = st.sval.startsWith(getDefaultNodeNamePrefix())?st.sval.substring(getDefaultNodeNamePrefix().length()):st.sval;
+						// get the parent node
+						Node parent = net.getNode(parentNodeName);
+						if (parent == null) {
+							throw new NullPointerException(parentNodeName + " was specified as virtual parent of node " + childNode + ", but was not found in the network.");
+						}
+						// add the mapping
+						virtualParents.add(parent);
+					}
+				}	// end of virtual parent handling
+				
 				if (st.sval.equals("data")) {
 					getNext(st);	// extract "normal"
 					if (st.sval.equals("normal")) {
@@ -440,12 +474,67 @@ public class ValueTreeNetIO extends NetIO {
 	
 	}
 	
+
+	
+	
+	
 	/*
 	 * (non-Javadoc)
 	 * @see unbbayes.io.NetIO#savePotentialDeclaration(java.io.PrintStream, unbbayes.prs.Node, unbbayes.prs.bn.SingleEntityNetwork)
 	 */
 	protected void savePotentialDeclaration(PrintStream stream, Node node, SingleEntityNetwork net) {
-		super.savePotentialDeclaration(stream, node, net);
+		
+		// this portion is equal to the superclass
+		// print the CPT
+		ArrayList<Node> auxParentList = node.getParents();
+
+		stream.print("potential (" + getDefaultNodeNamePrefix() + node.getName());
+
+		int sizeVa = auxParentList.size();
+		if (sizeVa > 0) {
+			stream.print(" |");
+			for (int c2 = 0; c2 < sizeVa; c2++) {
+				Node auxNo2 = null;
+				// If this is a random variable, the order of the parents 
+				// has to follow (be consistent) the order in the CPT
+				if (node instanceof IRandomVariable) {
+					PotentialTable auxTabPot =
+						(PotentialTable)((IRandomVariable) node).getProbabilityFunction();
+					// The order of the parents in the CPT is the inverse of the order it is added
+					auxNo2 = (Node) auxTabPot.getVariableAt(sizeVa - c2);
+				} else {
+					auxNo2 = (Node) auxParentList.get(c2);
+				}
+				stream.print(" " + getDefaultNodeNamePrefix() + auxNo2.getName());
+			}
+		}
+		
+		stream.println(")");
+		stream.println("{");
+		
+		// the following portion is not equal to what the superclass does 
+		
+		// tag nodes marked as virtual parents. Make sure the caller has filled the mapping of virtual parents.
+		if (getVirtualParents() != null && !getVirtualParents().isEmpty() && getVirtualParents().containsKey(node)) {
+			Collection<INode> virtualParents = getVirtualParents().get(node);
+			if (virtualParents != null && !virtualParents.isEmpty()) {
+				stream.print("%virtual ");
+				for (INode parent : virtualParents) {
+					stream.print(getDefaultNodeNamePrefix() + parent.getName() + " ");
+				}
+				stream.println();
+			}
+		}
+		
+		// the following portion is equal to the superclass again
+		
+		// print the data (probabilities) inside the CPT
+		this.savePotentialDeclarationBody(stream, node, net);
+
+		stream.println("}");
+		stream.println();
+		
+		// the following portion is not equal to the superclass again
 		
 		// also print dummy potentials containing faction of value tree nodes
 		if (node instanceof ValueTreeProbabilisticNode) {
@@ -506,6 +595,31 @@ public class ValueTreeNetIO extends NetIO {
 				this.saveValueTreeDummyPotentialRecursively(stream, child);
 			}
 		}
+	}
+
+
+
+	/**
+	 * @return the virtualParents : these parents (which will be declared in "potential" portion of the NET file) will be tagged as "virtual" when saved,
+	 * and when loaded this collection will be filled with parents tagged as "virtual" (in the "potential" portion of NET file).
+	 * The key is the child, and value is the parent.
+	 * By setting this to null, virtual parents will be disabled.
+	 * 
+	 */
+	public Map<INode,List<INode>> getVirtualParents() {
+		return virtualParents;
+	}
+
+
+
+	/**
+	 * @param virtualParents : these parents (which will be declared in "potential" portion of the NET file) will be tagged as "virtual" when saved,
+	 * and when loaded this collection will be filled with parents tagged as "virtual" (in the "potential" portion of NET file).
+	 * The key is the child, and value is the parent.
+	 * By setting this to null, virtual parents will be disabled.
+	 */
+	public void setVirtualParents(Map<INode,List<INode>> virtualParents) {
+		this.virtualParents = virtualParents;
 	}
 	
 	
