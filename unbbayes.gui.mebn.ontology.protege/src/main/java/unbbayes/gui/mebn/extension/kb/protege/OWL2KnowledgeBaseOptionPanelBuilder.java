@@ -44,6 +44,8 @@ import unbbayes.util.Debug;
  */
 public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements IKBOptionPanelBuilder {
 
+	private static final long serialVersionUID = 472990477185584431L;
+	
 	private KnowledgeBase kb;
 	private ButtonGroup reasonerButtonGroup;
 	private JPanel owlAPIReasonerOptionPanel;

@@ -5,6 +5,7 @@ package unbbayes.io.mebn.protege;
 
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.OWLModelManager;
+import org.protege.editor.owl.model.inference.NoOpReasoner;
 import org.protege.editor.owl.model.inference.OWLReasonerManager;
 import org.protege.editor.owl.model.inference.ReasonerStatus;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -107,36 +108,40 @@ public class ProtegeStorageImplementorDecorator extends OWLAPIStorageImplementor
 	public void setOWLReasoner(OWLReasoner owlReasoner) {
 		OWLReasonerManager owlReasonerManager = this.getOWLEditorKit().getOWLModelManager().getOWLReasonerManager();
 		owlReasonerManager.setCurrentReasonerFactoryId(owlReasoner.getReasonerName());
-		try {
-			owlReasonerManager.classifyAsynchronously(owlReasonerManager.getReasonerPreferences().getPrecomputedInferences());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		// I need the owlReasonerManager to return the correct reasoner, but it will return the old reasoner if the new one is not initialized.
-		// So, do polling and wait until the new reasoner is initialized
-		// TODO find out how to stop using polling.
-		for (int i = 0; i < 120; i++) {
-			if (ReasonerStatus.INITIALIZED.equals(owlReasonerManager.getReasonerStatus())) {
-				// stop polling if reasoner has initialized
-				break;
-			}
-				
+		// synchronize reasoner if this is a valid reasoner.
+		// We assume that instances of NoOpReasoner are invalid.
+		if (!(owlReasoner instanceof NoOpReasoner)) {
 			try {
-				Debug.println(this.getClass(), "Waiting for " + owlReasoner.getReasonerName() + " to initialize");
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
-			
-			System.gc();
-			try {
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
+				owlReasonerManager.classifyAsynchronously(owlReasonerManager.getReasonerPreferences().getPrecomputedInferences());
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
-		if (!ReasonerStatus.INITIALIZED.equals(owlReasonerManager.getReasonerStatus())) {
-			throw new RuntimeException("Failed to initialize reasoner " + owlReasoner.getReasonerName() + ", this reasoner may be incompatible with current version.");
+			// I need the owlReasonerManager to return the correct reasoner, but it will return the old reasoner if the new one is not initialized.
+			// So, do polling and wait until the new reasoner is initialized
+			// TODO find out how to stop using polling.
+			for (int i = 0; i < 120; i++) {
+				if (ReasonerStatus.INITIALIZED.equals(owlReasonerManager.getReasonerStatus())) {
+					// stop polling if reasoner has initialized
+					break;
+				}
+				
+				try {
+					Debug.println(this.getClass(), "Waiting for " + owlReasoner.getReasonerName() + " to initialize");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				
+				System.gc();
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			if (!ReasonerStatus.INITIALIZED.equals(owlReasonerManager.getReasonerStatus())) {
+				throw new RuntimeException("Failed to initialize reasoner " + owlReasoner.getReasonerName() + ", this reasoner may be incompatible with current version.");
+			}
 		}
 		super.setOWLReasoner(owlReasonerManager.getCurrentReasoner());
 	}
