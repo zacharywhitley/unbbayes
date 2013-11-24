@@ -28,6 +28,15 @@ public interface IPROWL2IndividualsExtractor {
 	 */
 	public Collection<OWLIndividual> getPROWL2Individuals(OWLOntology ontology, OWLReasoner reasoner);
 	
+//	/**
+//	 * This is the opposite of {@link #getPROWL2Individuals(OWLOntology, OWLReasoner)}.
+//	 * It returns individuals that are not part of PR-OWL 2 specification.
+//	 * @param ontology : ontology to be searched
+//	 * @param reasoner : if set to non-null, this reasoner will be used in order to extract prowl2 individuals.
+//	 * @return
+//	 */
+//	public Collection<OWLIndividual> getNonPROWL2Individuals(OWLOntology ontology, OWLReasoner reasoner);
+	
 	/**
 	 * This method will reset objects of this interface (e.g. clear caches).
 	 */

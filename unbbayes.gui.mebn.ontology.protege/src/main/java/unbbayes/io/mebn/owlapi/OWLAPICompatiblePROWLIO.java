@@ -166,6 +166,9 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 
 	private Map<OWLOntology, PrefixManager> ontologyPrefixCache;
 	
+
+	private boolean initializeReasoner = false;
+	
 	
 	/**
 	 * The default constructor is public only because
@@ -232,9 +235,14 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		
 		// specify reasoner if it is not set
 		try {
-			if (this.getLastOWLReasoner() == null && this.getLastOWLOntology() != null) {
-				this.setLastOWLReasoner(new Reasoner.ReasonerFactory().createReasoner(this.getLastOWLOntology()));
-				this.getLastOWLReasoner().precomputeInferences();	// initialize
+			if (isToInitializeReasoner()) {
+				if (this.getLastOWLReasoner() == null && this.getLastOWLOntology() != null) {
+					this.setLastOWLReasoner(new Reasoner.ReasonerFactory().createReasoner(this.getLastOWLOntology()));
+					this.getLastOWLReasoner().precomputeInferences();	// initialize
+				}
+			} else {
+				// explicitly indicate that we don't want to use reasoners
+				this.setLastOWLReasoner(null);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -3200,5 +3208,22 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		this.hasArgumentPropertyName = hasArgumentPropertyName;
 	}
 	
+
+	/**
+	 * If true, it will initialize and use the reasoner in order to extract PR-OWL elements from the ontology
+	 * @return the initializeReasoner
+	 */
+	public boolean isToInitializeReasoner() {
+		return initializeReasoner;
+	}
+
+	/**
+	 * If true, it will initialize and use the reasoner in order to extract PR-OWL elements from the ontology
+	 * @param initializeReasoner the initializeReasoner to set
+	 */
+	public void setToInitializeReasoner(boolean initializeReasoner) {
+		this.initializeReasoner = initializeReasoner;
+	}
+
 	
 }

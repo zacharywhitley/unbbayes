@@ -36,6 +36,7 @@ import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
@@ -43,6 +44,7 @@ import org.semanticweb.owlapi.model.OWLOntologyID;
 import org.semanticweb.owlapi.model.OWLOntologyIRIMapper;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
+import org.semanticweb.owlapi.model.OWLRuntimeException;
 import org.semanticweb.owlapi.model.PrefixManager;
 import org.semanticweb.owlapi.model.SetOntologyID;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
@@ -504,7 +506,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 	 */
 	protected Map<String, Entity> loadObjectEntity(OWLOntology ontology, MultiEntityBayesianNetwork mebn){
 		
-		PrefixManager prefixManager = this.getDefaultPrefixManager();
+//		PrefixManager prefixManager = this.getDefaultPrefixManager();
 		
 		// this map will be returned by this method
 		Map<String, Entity> mapObjectEntityLabels = new HashMap<String, Entity>();
@@ -575,11 +577,39 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		}
 		
 		// iterate on individuals that are direct instances of owl:Thing
-		for (OWLNamedIndividual individualOfThing : this.getLastOWLReasoner().getInstances(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing(), true).getFlattened()) {
-			if (this.getLastOWLReasoner().getTypes(individualOfThing, true).getFlattened().size() > 1) {
-				// this is an owl:Thing and "something else". We want to extract individuals that are only owl:Thing (because the other cases will be treated by other methods)
-				continue;
+		Set<OWLNamedIndividual> individuals = new HashSet<OWLNamedIndividual>();
+		// use reasoner to load instances, if possible
+		if (this.getLastOWLReasoner() != null) {
+			for (OWLNamedIndividual owlNamedIndividual : this.getLastOWLReasoner().getInstances(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing(), true).getFlattened()) {
+				//We want to extract individuals that are only owl:Thing (because the other cases will be treated by other methods)
+				if (this.getLastOWLReasoner().getTypes(owlNamedIndividual, true).getFlattened().size() <= 1) {
+					// this is an owl:Thing and not "something else". 
+					individuals.add(owlNamedIndividual);
+				}
 			}
+		} else {
+			// no reasoner is specified, so load explicit instances of owl:Thing
+			OWLClass owlThing = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing();	// just for comparison
+			OWLOntologyManager manager = ontology.getOWLOntologyManager();	// just to check what other classes an instance belongs to
+			for (OWLIndividual individual : owlThing.getIndividuals(ontology)) {
+				// how many classes this individual explicitly belongs to
+				int howManyClassesItBelongs = individual.getTypes(manager.getOntologies()).size();	
+				if (howManyClassesItBelongs== 0		// nothing explicitly stated, so this is owl:Thing
+						|| ( howManyClassesItBelongs == 1 && individual.getTypes(manager.getOntologies()).contains(owlThing) )) {	//  this is only owl:Thing and nothing else
+					try {
+						individuals.add(individual.asOWLNamedIndividual());
+					} catch (OWLRuntimeException e) {
+						Debug.println(getClass(), "Anonymous non-prowl2 individual found", e);
+					}
+				}
+			}
+		}
+		if (individuals == null) {
+			// there is nothing to add
+			return ret;
+		}
+		for (OWLNamedIndividual individualOfThing : individuals) {
+			
 			// creates a object entity instance and adds it into the mebn entity container
 			try {
 				String individualName = this.extractName(ontology, individualOfThing.asOWLNamedIndividual());
@@ -631,7 +661,8 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				}
 			} 
 		} else {
-			throw new IllegalStateException("Reasoner is not initialized");
+//			throw new IllegalStateException("Reasoner is not initialized");
+			ret.addAll(this.getObjectPropertyValues((OWLIndividual)mTheoryObject, ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(getHasMFragObjectProperty(), getDefaultPrefixManager()), ontology));
 		}
 		
 		return ret;
@@ -786,15 +817,8 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		// return value
 		Map<String, BuiltInRV> ret = new HashMap<String, BuiltInRV>();
 		
-		// extract built in random variables (we assume they are only boolean random variables)
-		OWLClass builtInOWLClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.BOOLEANRANDOMVARIABLE, prefixManager); 
-		if (!ontology.containsClassInSignature(builtInOWLClass.getIRI(),true)) {
-			// use the old PR-OWL definition
-			builtInOWLClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(BUILTIN_RV, prefixManager); 
-		}
-		
 		// iterate on individuals
-		for (OWLIndividual builtInRVIndividual : this.getOWLIndividuals(builtInOWLClass, ontology)){
+		for (OWLIndividual builtInRVIndividual : this.getBuiltInRVIndividuals(ontology)){
 			if (!builtInRVIndividual.isNamed()) {
 				// ignore anonymous
 				try{
@@ -837,7 +861,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				}
 				
 				// extract links to nodes (-> isTypeOfMExpression)
-				OWLObjectProperty isTypeOfMExpression = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("isTypeOfMExpression", prefixManager); 
+				OWLObjectProperty isTypeOfMExpression = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(ISTYPEOFMEXPRESSION, prefixManager); 
 				for (OWLIndividual mExpressionIndividual : this.getObjectPropertyValues(builtInRVIndividual,isTypeOfMExpression, ontology)){
 					// extract the node related to MExpression (-> isMExpressionOf)
 					OWLObjectProperty isMExpressionOf = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(this.getIsMExpressionOfPropertyName(), prefixManager);
@@ -901,6 +925,47 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		}		
 		return ret;
 	}
+
+
+	/**
+	 * @param ontology : ontology to be used to find individuals. If {@link #getLastOWLReasoner()} is non-null, then
+	 * the reasoner will be used instead.
+	 * @return : OWL individuals representing Random variables that are built-in in the PR-OWL 2 definition. 
+	 * For example, boolean operators, like "and", "or", "not", "ForAll", "equals", etc.
+	 * @see #getLastOWLReasoner()
+	 */
+	protected Collection<OWLIndividual> getBuiltInRVIndividuals(OWLOntology ontology) {
+		
+		PrefixManager prefixManager = this.getDefaultPrefixManager();	// PR-OWL2 prefix
+		
+		// return value
+		Collection<OWLIndividual> ret = new HashSet<OWLIndividual>();
+		
+		// extract built in random variables (we assume they are only boolean random variables)
+		OWLClass builtInOWLClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.BOOLEANRANDOMVARIABLE, prefixManager); 
+		if (!ontology.containsClassInSignature(builtInOWLClass.getIRI(),true)) {
+			// use the old PR-OWL definition
+			builtInOWLClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(BUILTIN_RV, prefixManager); 
+		}
+		
+		// TODO Auto-generated method stub
+		if (getLastOWLReasoner() != null) {
+			// if the reasoner is on, then getOWLIndividuals can return all possible individuals of the built-in RV.
+			return this.getOWLIndividuals(builtInOWLClass, ontology);
+		}
+		
+		// at this point, there is no DL reasoner, so we need to include instances of subclasses too, and for all ontologies being loaded
+		for (OWLOntology currentOntology : ontology.getOWLOntologyManager().getOntologies()) {
+			ret.addAll(this.getOWLIndividuals(builtInOWLClass, currentOntology));
+			for (OWLClassExpression subClass : builtInOWLClass.getSubClasses(currentOntology)) {
+				// the subclasses are supposedly LogicalOperator and Quantifier
+				ret.addAll(this.getOWLIndividuals(subClass, currentOntology));
+			}
+		}
+		
+		return ret;
+	}
+
 
 
 	/*
@@ -1013,9 +1078,18 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 						// This code was added because reasoners like Hermit could not retrieve OWL literals from individuals by solving class axioms
 						// (it requires that an individual to be explicitly linked to such OWL literal, instead of solving data property axioms in its types)
 						OWLClass booleanRandomVariable = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.BOOLEANRANDOMVARIABLE, prefixManager);
-						
+
+						// check if this is boolean variable
+						Boolean isBooleanRandomVariable = null;
+						if (this.getLastOWLReasoner() != null) {
+							// use reasoner to decide whether this is a boolean variable
+							isBooleanRandomVariable = this.getLastOWLReasoner().getTypes(randomVariableIndividual.asOWLNamedIndividual(), false).containsEntity(booleanRandomVariable);
+						} else {
+							// only use explicit info to see if this is boolean variable
+							isBooleanRandomVariable = randomVariableIndividual.getTypes(ontology.getOWLOntologyManager().getOntologies()).contains(booleanRandomVariable);
+						}
 						// special case: if BOOLEANRANDOMVARIABLE, then force boolean values for node
-						if (this.getLastOWLReasoner().getTypes(randomVariableIndividual.asOWLNamedIndividual(), false).containsEntity(booleanRandomVariable)) {
+						if (isBooleanRandomVariable ) {
 							try {
 								Debug.println(this.getClass(), randomVariableIndividual + " is " + IPROWL2ModelUser.BOOLEANRANDOMVARIABLE + " and will be forced as boolean RV.");
 							} catch (Throwable t) {
@@ -1348,10 +1422,10 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			return;
 		}
 		
-		// this method only works if a reasoner is available
-		if (this.getLastOWLReasoner() == null) {
-			throw new NullPointerException("Reasoner == null");
-		}
+//		// this method only works if a reasoner is available
+//		if (this.getLastOWLReasoner() == null) {
+//			throw new NullPointerException("Reasoner == null");
+//		}
 		
 		// extract MEBN
 		MultiEntityBayesianNetwork mebn = null;
@@ -1707,7 +1781,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				contextNode.setDescription(this.getDescription(ontology, contextNodeIndividual)); 
 				
 				// load MExpression -> hasMExpression
-				OWLObjectProperty hasMExpression = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasMExpression", prefixManager);
+				OWLObjectProperty hasMExpression = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(HASMEXPRESSION, prefixManager);
 				
 				// extract MExpressions
 				Collection<OWLIndividual> mExpressions = this.getObjectPropertyValues(contextNodeIndividual , hasMExpression , ontology);
@@ -1726,7 +1800,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				OWLIndividual mExpressionIndividual = mExpressions.iterator().next();
 				
 				/* mExpression -> hasArgument */
-				OWLObjectProperty hasArgument = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty("hasArgument", prefixManager); 
+				OWLObjectProperty hasArgument = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(HASARGUMENT, prefixManager); 
 				for (OWLIndividual argumentIndividual : this.getObjectPropertyValues(mExpressionIndividual , hasArgument , ontology) ){
 					Argument argument = this.getMEBNFactory().createArgument(this.extractName(ontology, argumentIndividual.asOWLNamedIndividual()), contextNode); 
 					contextNode.addArgument(argument); 
@@ -1938,100 +2012,173 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			argument.setOVariable(oVariable);
 			argument.setType(Argument.ORDINARY_VARIABLE); 		
 			ret.put(nameOfTypeOfArgument, argument);
-		} else if (this.getLastOWLReasoner().getTypes(typeOfArgument.asOWLNamedIndividual(), false).containsEntity(
-							ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.MEXPRESSION, prefixManager))) {
-			// this is an MExpression. Create arguments recursively
-			// assure this is an argument for a context node
-			if (argument.getMultiEntityNode() != null 
-					&& (argument.getMultiEntityNode() instanceof ContextNode)) {
-				
-				// extract typeOfMExpression so that we can use it to fill inner node/argument (i.e. the argumentTerm of argument)
-				OWLObjectProperty typeOfMExpression = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(TYPEOFMEXPRESSION, prefixManager);
-				
-				// extract the type of mexpression
-				Collection<OWLIndividual> typeOfMExpressionIndividuals = this.getObjectPropertyValues(typeOfArgument, typeOfMExpression, ontology);
-				
-				// we assume mexpression to have only 1 type
-				if (!typeOfMExpressionIndividuals.isEmpty()) {
+		} else {
+			// check if this is an MExpression
+			Boolean isMExpression = null;
+			if (this.getLastOWLReasoner() != null) {
+				isMExpression = this.getLastOWLReasoner().getTypes(typeOfArgument.asOWLNamedIndividual(), false).containsEntity(
+						ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.MEXPRESSION, prefixManager));
+			} else {
+				isMExpression = typeOfArgument.getTypes(ontology.getOWLOntologyManager().getOntologies()).contains(
+						ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.MEXPRESSION, prefixManager));
+			}
+			if (isMExpression) {
+				// this is an MExpression. Create arguments recursively
+				// assure this is an argument for a context node
+				if (argument.getMultiEntityNode() != null 
+						&& (argument.getMultiEntityNode() instanceof ContextNode)) {
 					
-					// extract individual and its name
-					OWLIndividual typeOfMExpressionIndividual = typeOfMExpressionIndividuals.iterator().next();
-					String nameOfType = this.extractName(typeOfMExpressionIndividual);
+					// extract typeOfMExpression so that we can use it to fill inner node/argument (i.e. the argumentTerm of argument)
+					OWLObjectProperty typeOfMExpression = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(TYPEOFMEXPRESSION, prefixManager);
 					
-					// instantiate inner context node
-					ContextNode innerNode = this.getMEBNFactory().createContextNode("CX_" + ((int)(Math.random()*10000)) + this.extractName(typeOfArgument.asOWLNamedIndividual()),argument.getMultiEntityNode().getMFrag());
+					// extract the type of mexpression
+					Collection<OWLIndividual> typeOfMExpressionIndividuals = this.getObjectPropertyValues(typeOfArgument, typeOfMExpression, ontology);
 					
-					// the type of mexpression may be a RandomVariable (resident node) or a LogicalOperator (BuiltInRV)
-					// TODO check by type instead of name
-					BuiltInRV builtInRV = this.getMapBuiltInRV().get(nameOfType);
-					if (builtInRV != null) {
-						// the argument is a built in RV
+					// we assume mexpression to have only 1 type
+					if (!typeOfMExpressionIndividuals.isEmpty()) {
 						
-						// set the content of inner node in a map, so that it can be updated in buildFormulaTrees
-						this.getMapIsContextInstanceOf().put(innerNode, builtInRV);
+						// extract individual and its name
+						OWLIndividual typeOfMExpressionIndividual = typeOfMExpressionIndividuals.iterator().next();
+						String nameOfType = this.extractName(typeOfMExpressionIndividual);
 						
-						argument.setArgumentTerm(innerNode); 
-						argument.setType(Argument.CONTEXT_NODE); 
+						// instantiate inner context node
+						ContextNode innerNode = this.getMEBNFactory().createContextNode("CX_" + ((int)(Math.random()*10000)) + this.extractName(typeOfArgument.asOWLNamedIndividual()),argument.getMultiEntityNode().getMFrag());
 						
-					} else {
-						// the typeOfMExpressionIndividual is a RandomVariable (usually connected to a resident node)
-						
-						// extract the resident node from a random variable 
-						// RandomVariable -[isTypeOfMExpression]-> MExpression -[isMExpressionOf]-> ResidentNode
-						// the query is DomainResidentNode that hasMExpression some (typeOfMExpression value <typeOfMExpressionIndividual>)
-						Collection<OWLIndividual> residentNodeIndividuals = this.getOWLIndividuals(this.parseExpression("DomainResidentNode that hasMExpression some (typeOfMExpression value " + nameOfType + ")"), ontology);
-						if (!residentNodeIndividuals.isEmpty()) {
-							// use the first resident node
-							INode auxNode = this.getMapLoadedNodes().get(this.extractName(ontology, residentNodeIndividuals.iterator().next().asOWLNamedIndividual()));
-							if(auxNode != null && (auxNode instanceof ResidentNode)){
-								this.getMapIsContextInstanceOf().put(innerNode, auxNode); 
-								argument.setArgumentTerm(innerNode); 
-								argument.setType(Argument.RESIDENT_NODE);  
-							}
-						}
-						
-					}
-					
-					// solve arguments recursively
-					/* mExpression -> hasArgument */
-					OWLObjectProperty hasArgument = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(HASARGUMENT, prefixManager); 
-					for (OWLIndividual argumentIndividual : this.getObjectPropertyValues(typeOfArgument , hasArgument , ontology) ){
-						Argument innerArgument = this.getMEBNFactory().createArgument(this.extractName(ontology, argumentIndividual.asOWLNamedIndividual()), innerNode); 
-						innerNode.addArgument(innerArgument); 
-						this.getMapArgument().put(this.extractName(ontology, argumentIndividual.asOWLNamedIndividual()), innerArgument); 
-						try {
-							Debug.println(this.getClass(), "-> " + typeOfArgument + ": " + hasArgument + " = " + argumentIndividual); 
-						} catch (Throwable t) {
-							t.printStackTrace();
-						}
-						
-						try {
-							IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, innerArgument, argumentIndividual.asOWLNamedIndividual().getIRI());
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						
-						// extract type of inner argument
-						OWLObjectProperty typeOfArgumentProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(TYPEOFARGUMENT, prefixManager);
-						Collection<OWLIndividual> typesOfInnerArgument = this.getObjectPropertyValues(argumentIndividual, typeOfArgumentProperty, ontology);
-						// assume there is only 1 type
-						if (!typesOfInnerArgument.isEmpty()) {
-							// solve arguments recursively
-							ret.putAll(this.fillTypeOfArgumentRecursivelly(typesOfInnerArgument.iterator().next(), innerArgument, ontology, mebn));
+						// the type of mexpression may be a RandomVariable (resident node) or a LogicalOperator (BuiltInRV)
+						// TODO check by type instead of name
+						BuiltInRV builtInRV = this.getMapBuiltInRV().get(nameOfType);
+						if (builtInRV != null) {
+							// the argument is a built in RV
+							
+							// set the content of inner node in a map, so that it can be updated in buildFormulaTrees
+							this.getMapIsContextInstanceOf().put(innerNode, builtInRV);
+							
+							argument.setArgumentTerm(innerNode); 
+							argument.setType(Argument.CONTEXT_NODE); 
+							
 						} else {
-							System.err.println("There is an argument with no type: " + argumentIndividual);
+							// the typeOfMExpressionIndividual is a RandomVariable (usually connected to a resident node)
+							
+							// extract the resident node from a random variable (assumed to be only 1)
+							// TODO implement polymorphism (stop assuming that there is only 1 resident node for a random variable)
+							Collection<OWLIndividual> residentNodeIndividuals = this.getResidentNodeIndividualsFromRandomVariable(nameOfType, ontology, 1);
+							if (residentNodeIndividuals != null && !residentNodeIndividuals.isEmpty()) {
+								// use the first resident node
+								INode auxNode = this.getMapLoadedNodes().get(this.extractName(ontology, residentNodeIndividuals.iterator().next().asOWLNamedIndividual()));
+								if(auxNode != null && (auxNode instanceof ResidentNode)){
+									this.getMapIsContextInstanceOf().put(innerNode, auxNode); 
+									argument.setArgumentTerm(innerNode); 
+									argument.setType(Argument.RESIDENT_NODE);  
+								}
+							}
+							
+						}
+						
+						// solve arguments recursively
+						/* mExpression -> hasArgument */
+						OWLObjectProperty hasArgument = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(HASARGUMENT, prefixManager); 
+						for (OWLIndividual argumentIndividual : this.getObjectPropertyValues(typeOfArgument , hasArgument , ontology) ){
+							Argument innerArgument = this.getMEBNFactory().createArgument(this.extractName(ontology, argumentIndividual.asOWLNamedIndividual()), innerNode); 
+							innerNode.addArgument(innerArgument); 
+							this.getMapArgument().put(this.extractName(ontology, argumentIndividual.asOWLNamedIndividual()), innerArgument); 
+							try {
+								Debug.println(this.getClass(), "-> " + typeOfArgument + ": " + hasArgument + " = " + argumentIndividual); 
+							} catch (Throwable t) {
+								t.printStackTrace();
+							}
+							
+							try {
+								IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, innerArgument, argumentIndividual.asOWLNamedIndividual().getIRI());
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							
+							// extract type of inner argument
+							OWLObjectProperty typeOfArgumentProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(TYPEOFARGUMENT, prefixManager);
+							Collection<OWLIndividual> typesOfInnerArgument = this.getObjectPropertyValues(argumentIndividual, typeOfArgumentProperty, ontology);
+							// assume there is only 1 type
+							if (!typesOfInnerArgument.isEmpty()) {
+								// solve arguments recursively
+								ret.putAll(this.fillTypeOfArgumentRecursivelly(typesOfInnerArgument.iterator().next(), innerArgument, ontology, mebn));
+							} else {
+								System.err.println("There is an argument with no type: " + argumentIndividual);
+							}
 						}
 					}
 				}
+			} else {
+				System.err.println("This type of argument is not supported yet: " + typeOfArgument);
 			}
-		} else {
-			System.err.println("This type of argument is not supported yet: " + typeOfArgument);
-		}
+		}	// end of else of if(oVariable != null)
 		
 		
 		return ret;
 	}
 	
+	/**
+	 * Uses the relationship "RandomVariable -[isTypeOfMExpression]-> MExpression -[isMExpressionOf]-> ResidentNode"
+	 * in order to find a list of resident nodes from the name of a random variable.
+	 * In Manchester OWL Syntax, this query is "DomainResidentNode that hasMExpression some (typeOfMExpression value [nameOfRandomVariable])".
+	 * It will attempt to use a reasoner if {@link #getLastOWLReasoner()} is not null.
+	 * @param nameOfRandomVariable : name of the random variable
+	 * @param ontology : ontology to search
+	 * @param countToStop : for optimization, this method will stop looking for more individuals if this number is reached.
+	 * This is not a hard limit on the size of the list to be returned, because implementations may ignore this number.
+	 * @return list of OWL individuals representing the resident nodes related to the specified random variable
+	 * @see #getLastOWLReasoner()
+	 */
+	protected Collection<OWLIndividual> getResidentNodeIndividualsFromRandomVariable( String nameOfRandomVariable, OWLOntology ontology, int countToStop) {
+		if (getLastOWLReasoner() != null) {
+			// search for resident node by using a reasoner
+			return this.getOWLIndividuals(this.parseExpression("DomainResidentNode that hasMExpression some (typeOfMExpression value " + nameOfRandomVariable + ")"), ontology);
+		} else {
+			if (countToStop <= 0) {
+				return Collections.emptySet();
+			}
+			// if we did never use a reasoner, then the expression parser would not be able to correctly parse the above expression anyway, so we need to search manually.
+			
+			// Prepare objects of OWL API so that we can manually search for the resident node
+			OWLOntologyManager manager = ontology.getOWLOntologyManager();
+			OWLDataFactory factory = manager.getOWLDataFactory();
+			
+			// extract the owl properties that will connects RandomVariables to ResidentNodes
+			OWLObjectPropertyExpression typeOfMExpression = factory.getOWLObjectProperty(TYPEOFMEXPRESSION, getDefaultPrefixManager());	// MExpression to RandomVariable
+			OWLObjectPropertyExpression isMExpresionOf = factory.getOWLObjectProperty(ISMEXPRESSIONOF, getDefaultPrefixManager());	// MExpression to ResidentNode
+			
+			// obtain the owl individual that represents the random variable that we are looking for
+			OWLIndividual randomVariable = factory.getOWLNamedIndividual(nameOfRandomVariable, getOntologyPrefixManager(ontology));
+			
+			// we need instances of MExpression. Additionally, all its direct subclasses are also needed, for backward compatibility.
+			Set<OWLClassExpression> mExpressionClasses = new HashSet<OWLClassExpression>();	// OWLClassExpression is a super-interface of OWLClass
+			OWLClass mExpressionClass = factory.getOWLClass(MEXPRESSION, getDefaultPrefixManager()); // the MExpresion class
+			mExpressionClasses.add(mExpressionClass);	
+			mExpressionClasses.addAll(mExpressionClass.getSubClasses(manager.getOntologies()));	// all direct subclasses of MExpression. This is probably SimpleMExpression and BooleanMExpression
+			
+			// get all individuals of resident node that has MExpressions that has hasTypeOfMExpression == <name of the type>.
+			Set<OWLIndividual> residentNodeIndividuals = new HashSet<OWLIndividual>();	// this will hold the individuals of resident node
+			for (OWLClassExpression owlClass : mExpressionClasses) {
+				if (!owlClass.isAnonymous()) {	// only consider named classes
+					// find individuals that matches with the criteria 
+					for (OWLIndividual mExpressionIndividual : this.getOWLIndividuals(owlClass, ontology)) {
+						// if this individual satisfies [mExpressionIndividual] -> typeOfMExpression -> [randomVariable], then it satisfies constraint
+						if (this.getObjectPropertyValues(mExpressionIndividual, typeOfMExpression, ontology).contains(randomVariable) ) {
+							residentNodeIndividuals.addAll(this.getObjectPropertyValues(mExpressionIndividual, isMExpresionOf, ontology));
+							if (residentNodeIndividuals.size() >= countToStop) {
+								return residentNodeIndividuals;
+							}
+						}
+					}
+				}
+			}
+			return residentNodeIndividuals;
+		}	// end of the case when we don't have any reasoner to use
+		
+		// unreachable code
+//		return null;
+	}
+
+
+
 	/* (non-Javadoc)
 	 * @see unbbayes.io.mebn.MebnIO#saveMebn(java.io.File, unbbayes.prs.mebn.MultiEntityBayesianNetwork)
 	 */
@@ -4882,6 +5029,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			Map<ResidentNode, OWLIndividual> mappingArgumentCache) {
 		this.mappingArgumentCache = mappingArgumentCache;
 	}
+
 
 
 	

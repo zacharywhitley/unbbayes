@@ -56,6 +56,7 @@ public class DefaultNonPROWL2ClassExtractor extends DefaultNonPROWLClassExtracto
 			// remove owl:Thing
 			ret.remove(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing());
 			
+			// remove all classes that are part of PR-OWL 2 specification
 			Collection<OWLClassExpression> classesToRemove = new HashSet<OWLClassExpression>();
 			classesToRemove.add(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing());
 			for (OWLClassExpression classToRemove : ret) {

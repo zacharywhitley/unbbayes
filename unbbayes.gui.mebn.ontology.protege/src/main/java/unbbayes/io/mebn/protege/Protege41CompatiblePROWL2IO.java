@@ -34,7 +34,6 @@ import unbbayes.util.Debug;
  */
 public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 
-	private boolean initializeReasoner = true;
 	
 	private long maximumBuzyWaitingCount = 300;
 	private long sleepTimeWaitingReasonerInitialization = 8000;
@@ -46,6 +45,8 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	 * @deprecated
 	 */
 	protected Protege41CompatiblePROWL2IO() {
+		// ontologies loaded with this class are expected to contain complex DL formulas, and such inferred knowledge must be reused by IO
+		this.setToInitializeReasoner(true);
 	}
 	
 	/**
@@ -76,10 +77,15 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 			// indicate the super class to use the ontology loaded by protege
 			this.setLastOWLOntology(kit.getOWLModelManager().getActiveOntology());
 
-			// Check if reasoner is set up. Set it as the reasoner to use for I/O operation
-			OWLReasoner reasoner = this.setupOWLReasoner(kit.getOWLModelManager());
-			if (reasoner != null) {
-				this.setLastOWLReasoner(reasoner);
+			if (isToInitializeReasoner()) {
+				// Check if reasoner is set up. Set it as the reasoner to use for I/O operation
+				OWLReasoner reasoner = this.setupOWLReasoner(kit.getOWLModelManager());
+				if (reasoner != null) {
+					this.setLastOWLReasoner(reasoner);
+				}
+			} else {
+				// explicitly indicate that we don't want to use reasoners
+				this.setLastOWLReasoner(null);
 			}
 			
 			try {
@@ -291,22 +297,6 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	 */
 	public void setProtegeBundleLauncher(IBundleLauncher protegeBundleLauncher) {
 		this.protegeBundleLauncher = protegeBundleLauncher;
-	}
-
-	/**
-	 * If true, it will initialize and use the reasoner in order to extract PR-OWL elements from the ontology
-	 * @return the initializeReasoner
-	 */
-	public boolean isToInitializeReasoner() {
-		return initializeReasoner;
-	}
-
-	/**
-	 * If true, it will initialize and use the reasoner in order to extract PR-OWL elements from the ontology
-	 * @param initializeReasoner the initializeReasoner to set
-	 */
-	public void setIsToInitializeReasoner(boolean initializeReasoner) {
-		this.initializeReasoner = initializeReasoner;
 	}
 
 	/**

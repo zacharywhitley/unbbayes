@@ -174,6 +174,8 @@ public class Protege41CompatiblePROWLIO extends OWLAPICompatiblePROWLIO {
 					}
 				}
 			} else {
+				// explicitly indicate that we don't want to use reasoners
+				this.setLastOWLReasoner(null);
 				try {
 					Debug.println(this.getClass(), "This I/O is configured not to use reasoners to load ontology");
 				} catch (Throwable t) {
