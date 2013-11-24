@@ -1,3 +1,13 @@
+UNBBAYES PR-OWL 2 PLUGIN - VERSION 2.0.0
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+					Created a light-weight I/O class that does not use inferred DL info.
+
+BUG LIST		
+Number	Request ID	Summary
+					Fixed a bug that freezes the option panel when non-DL reasoner is chosen.
+
 UNBBAYES PR-OWL 2 PLUGIN - VERSION 1.1.1
 ----------------------------
 This is the initial release of PR-OWL 2. The version number is 1.1.1 because
