@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -44,7 +45,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.Tuuyi.TuuyiOntologyServer.TextMap.DescendantComparator;
 import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.LexicalForm;
 import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.LexicalForm.Context;
 import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.LexicalForm.LexicalFormCacheEntry;
@@ -68,7 +68,7 @@ public class OntologyClient {
   protected Logger logWriter = Logger.getLogger(OntologyClient.class.getClass());
   
   /* set the serverURL to one of the global constants in the client object constructor call */
-  protected URL serverURL = null; //"http://localhost:8080/TuuyiOntologyServlet/api/";
+  private URL serverURL = null; //"http://localhost:8080/TuuyiOntologyServlet/api/";
   public static String LOCAL_SERVLET_URL = "http://localhost:8080/TuuyiOntologyServlet/api/";
   public static String TUUYI_SERVLET_URL = "http://q.tuuyi.net:8080/TuuyiOntologyServlet/api/";
   
@@ -86,7 +86,7 @@ public class OntologyClient {
   protected HashMap <Integer, ArrayIntList> termAncestorsCache = new HashMap<Integer, ArrayIntList> ();
   
   /** Cache of inverse mapping of core#broader relationship */
-  private HashMap <Integer, ArrayIntList> termInverseCoreBroaderCache = new HashMap<Integer, ArrayIntList> ();
+  private HashMap <Integer, List<Integer>> termInverseCoreBroaderCache = new HashMap<Integer, List<Integer>> ();
   
   /* termIds for the key relational terms, these will be initialized at startup */
   public int subjectRelationId = -1;
@@ -100,12 +100,25 @@ public class OntologyClient {
    * @throws MalformedURLException
    */
   public OntologyClient(String  a_serverURL) throws MalformedURLException {
-    serverURL = new URL(a_serverURL);
+    setServerURL(new URL(a_serverURL));
     initialize();
     workspaceClient = this;
   }
 
   /**
+   * Default constructor, which connects to default URL: {@link #TUUYI_SERVLET_URL}
+   */
+  public OntologyClient() {
+	try {
+		setServerURL(new URL(TUUYI_SERVLET_URL));
+	} catch (MalformedURLException e) {
+		throw new RuntimeException("Could not connect to TUUYI server from " + TUUYI_SERVLET_URL,e);
+	}
+	initialize();
+	workspaceClient = this;
+  }
+
+/**
    * This should probably be private, no need to ever call it, called by constructor
    */
   public void initialize() {
@@ -152,7 +165,7 @@ public class OntologyClient {
     HttpURLConnection connection = null;  
     try {
       //Create connection
-      url = new URL(serverURL+parameters);
+      url = new URL(getServerURL()+parameters);
       BufferedReader rd = new BufferedReader(new InputStreamReader(url.openStream()));
       String line;
       StringBuffer response = new StringBuffer(); 
@@ -362,17 +375,28 @@ public class OntologyClient {
       termDepthCache.put(termId, json.getInt("depth")); // updateFromJSON is auto-generated and doesn't do this!
       
       // check descendants (concepts related by the inverse of core#broader)
-      JSONArray ancestorsArray = json.optJSONArray(INVERSE_RELATION_JSON_PARAMETER);
-	  if (ancestorsArray != null) {
-		  ArrayIntList descendants = new ArrayIntList();
-		  for (int i = 0; i < ancestorsArray.length(); i++) {
-			  descendants.add(ancestorsArray.getInt(i));
-		  }
-		  // fill the cache, because all methods in this client access concepts through cached objects
-		  getTermInverseCoreBroaderCache().put(termId, descendants);
+      try {
+    	// first, extract the inverse of core#broader
+          JSONObject inverseRelations = json.optJSONObject(INVERSE_RELATION_JSON_PARAMETER);
+    	  if (inverseRelations != null) {
+    		  // extract the core#broader relationship from the inverse relations
+    		  JSONArray inverseBroader = inverseRelations.getJSONArray(""+broaderRelationId);
+    		  if (inverseBroader != null) {
+    			  // prepare array to be used in order to fill cache
+    			  List<Integer> descendants = new ArrayList(inverseBroader.length());
+    			  for (int i = 0; i < inverseBroader.length(); i++) {
+    				  descendants.add(inverseBroader.getInt(i));
+    			  }
+    			  // fill the cache, because all methods in this client access concepts through cached objects
+    			  getTermInverseCoreBroaderCache().put(termId, descendants);
+    		  }
+    	  }
+    	  
+    	  // TODO fill cache of core#broader (not its inverse) too
+	  } catch (JSONException e) {
+		  logWriter.error("Was not able to load inverse core#broader of " + termId, e);
 	  }
-	  
-	  // TODO fill cache of core#broader (not its inverse) too
+      
       
       return term;
     } catch (JSONException je) {
@@ -510,15 +534,16 @@ public class OntologyClient {
    * @return - the set of terms reachable through a simple search up a (directed)loop-free subset of the core#broader relation, 
    * initialized/supplemented by one step of subject relation traversal
    */
-  public ArrayIntList getTermDescendants(int id) {
+  public List<Integer> getTermDescendants(int id) {
 	  // check cache first
-	  ArrayIntList descendants = getTermInverseCoreBroaderCache().get(id);
+	  List<Integer> descendants = getTermInverseCoreBroaderCache().get(id);
 	  if (descendants != null) {
 		  // found descendants in cache
 		  return descendants;
 	  }
 	  // calling a query should update cache
 	  getTermById(id);
+	  // extract descendants again
 	  descendants = getTermInverseCoreBroaderCache().get(id);
 	  if (descendants == null) {
 		  // if cache was not updated, there is a problem in implementation
@@ -804,7 +829,7 @@ public class OntologyClient {
 	 * The key is the ID of a concept, and the value is a list
 	 * of IDs of concepts inversely related.
 	 */
-	protected HashMap <Integer, ArrayIntList> getTermInverseCoreBroaderCache() {
+	protected HashMap <Integer, List<Integer>> getTermInverseCoreBroaderCache() {
 		return termInverseCoreBroaderCache;
 	}
 	
@@ -814,8 +839,22 @@ public class OntologyClient {
 	 * The key is the ID of a concept, and the value is a list
 	 * of IDs of concepts inversely related.
 	 */
-	protected void setTermInverseCoreBroaderCache(HashMap <Integer, ArrayIntList> termDescendantsCache) {
+	protected void setTermInverseCoreBroaderCache(HashMap <Integer, List<Integer>> termDescendantsCache) {
 		this.termInverseCoreBroaderCache = termDescendantsCache;
+	}
+
+	/**
+	 * @return the serverURL
+	 */
+	public URL getServerURL() {
+		return serverURL;
+	}
+
+	/**
+	 * @param serverURL the serverURL to set
+	 */
+	public void setServerURL(URL serverURL) {
+		this.serverURL = serverURL;
 	}
 
 
