@@ -348,7 +348,10 @@ public class OptionsDialog extends JDialog {
 	            new ActionListener() {
 	                public void actionPerformed(ActionEvent e) {
 	                    
-	                    // commit changes (made at each option panel) on KB
+	                	IKBOptionPanelBuilder selectedKBOptionPanel = getSelectedKBOptionPanel();
+	                	// commit changes, only on currently selected KB
+//	                	selectedKBOptionPanel.commitChanges();
+	                	// the following code commits all panels instead.
 	                	for (IKBOptionPanelBuilder builder : getKbToOptionMap().values()) {
 	                		if (builder != null) {
 	                			builder.commitChanges();
@@ -359,8 +362,7 @@ public class OptionsDialog extends JDialog {
 	                    lastConfirmedKBOption = lastSelectedKBOption;
 	                	
 	                	// updating the inference kb referenced by controller
-	                    IKBOptionPanelBuilder currentPanel = getSelectedKBOptionPanel();
-	                    controller.setKnowledgeBase(currentPanel.getKB());
+	                    controller.setKnowledgeBase(selectedKBOptionPanel.getKB());
 	                    
 	                }
 	            });

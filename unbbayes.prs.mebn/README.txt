@@ -25,8 +25,10 @@ mvn install:install-file -DgroupId=guess -DartifactId=protege-owl -Dversion=3.2 
 
 
 <If you do not have UnBBayes in your local mvn repository, then execute the below command>
-Go to \mvn_lib\unbbayes>
+Go to \mvn_lib\unbbayes\jpf>
 mvn install:install-file -DgroupId=guess -DartifactId=jpf -Dversion=1.5 -Dpackaging=jar -Dfile=jpf-1.5.jar
+
+Go to \mvn_lib\unbbayes\unbbayes>
 mvn install:install-file -DpomFile=pom.xml -Dpackaging=jar -Dfile=unbbayes-4.1.0.jar
 
 
