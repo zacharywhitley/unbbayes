@@ -5,7 +5,7 @@
 <plugin id="unbbayes.gui.featuremodel" version="0.0.1">
     <requires>
         <import plugin-id="unbbayes.util.extension.core"/>
-        <import plugin-id="unbbayes.gui.mebn.ontology.protege" plugin-version="1.0.1"/>
+        <import plugin-id="unbbayes.gui.mebn.ontology.protege"/>
     </requires>
      
      <extension plugin-id="unbbayes.util.extension.core" point-id="Module" id="FM">
