@@ -22,7 +22,7 @@
         here <parameter id="builder" value="PomcModuleBuilder">  -->
         
 		<parameter id="description" value="Uncertainity Modeling Process for Semantic Technologies " />
-		<parameter id="icon" value="new-msbn.png" />
+		<parameter id="icon" value="ump.gif" />
 		<parameter id="category" value="tool" />
     </extension>
 </plugin>
