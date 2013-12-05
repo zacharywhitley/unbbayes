@@ -33,6 +33,7 @@ public class TableHypothesis extends IUMPSTPanel{
 
 	private HypothesisModel hypothesis;
 
+
 	
 	private UmpstModule janelaPaiAux; 
 	private GoalModel goalRelated;
@@ -42,13 +43,19 @@ public class TableHypothesis extends IUMPSTPanel{
 	
 	private IconController iconController = IconController.getInstance(); 
 	
-	String[] columnNames = {"id","Hypothesis","","",""};
+	private static final int COLUMN_IDTF = 3; 
+	private static final int COLUMN_DESC = 4; 
+	private static final int COLUMN_BTN1 = 0; 
+	private static final int COLUMN_BTN2 = 1; 
+	private static final int COLUMN_BTN3 = 2; 
+	
+	private static int WIDTH_COLUMN_ID = 50; 
+	private static int WIDTH_COLUMN_EDIT = 25; 
+	
+	String[] columnNames = {"","","","id","Hypothesis"};
 	Object[][] data = {};
 
-	
-	
 
- 
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
     	  protected TableHypothesis(UmpstModule janelaPai,UMPSTProject umpstProject, GoalModel goalRelated) {
@@ -82,7 +89,6 @@ public class TableHypothesis extends IUMPSTPanel{
 	 * @return the table
 	 */
 	public JTable createTable() {
-		
 		
 		Integer i=0;
 
@@ -131,12 +137,12 @@ public class TableHypothesis extends IUMPSTPanel{
 				hypothesis = getUmpstProject().getMapHypothesis().get(key);
 				if (hypothesis.getGoalRelated().contains(goalRelated)){
 					if (!setAux.contains(hypothesis)){
-						data[i][0] = hypothesis.getId();
-						data[i][1] = hypothesis.getHypothesisName();
+						data[i][COLUMN_IDTF] = hypothesis.getId();
+						data[i][COLUMN_DESC] = hypothesis.getHypothesisName();
 
-						data[i][2] = "";
-						data[i][3] = "";
-						data[i][4] = "";
+						data[i][COLUMN_BTN1] = "";
+						data[i][COLUMN_BTN2] = "";
+						data[i][COLUMN_BTN3] = "";
 						i++;
 						
 					}
@@ -153,11 +159,11 @@ public class TableHypothesis extends IUMPSTPanel{
 							if (hypoSub.getGoalRelated().contains(goalRelated)){
 
 								if (!setAux.contains(hypoSub)){
-									data[i][0] = hypoSub.getId();
-									data[i][1] = hypoSub.getHypothesisName();
-									data[i][2] = "";
-									data[i][3] = "";
-									data[i][4] = "";
+									data[i][COLUMN_IDTF] = hypoSub.getId();
+									data[i][COLUMN_DESC] = hypoSub.getHypothesisName();
+									data[i][COLUMN_BTN1] = "";
+									data[i][COLUMN_BTN2] = "";
+									data[i][COLUMN_BTN3] = "";
 									i++;
 								}
 								setAux.add(hypoSub);
@@ -176,6 +182,8 @@ public class TableHypothesis extends IUMPSTPanel{
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
 		table = new JTable(tableModel);
 		
+		TableColumn columnId = table.getColumnModel().getColumn(COLUMN_IDTF);
+		columnId.setMaxWidth(WIDTH_COLUMN_ID);
 	
 		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
 		{
@@ -186,15 +194,20 @@ public class TableHypothesis extends IUMPSTPanel{
 			}
 		});
 
-		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-3);
-		buttonColumn1.setMaxWidth(28);
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(COLUMN_BTN1);
+		buttonColumn1.setMaxWidth(WIDTH_COLUMN_EDIT);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
+		
+		
+		TableColumn buttonColumnDesc = table.getColumnModel().getColumn(COLUMN_DESC);
+		buttonColumnDesc.setMinWidth(1000);
+		
 		
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				
-				String hypothesisAdd = data[row][0].toString();
+				String hypothesisAdd = data[row][COLUMN_IDTF].toString();
 				HypothesisModel hypothesisAux = goalRelated.getMapHypothesis().get(hypothesisAdd);
 				changePanel(new HypothesisAdd(getFatherPanel(),getUmpstProject(), goalRelated,hypothesisAux, hypothesisAux.getFather() )   );
 			}
@@ -212,14 +225,14 @@ public class TableHypothesis extends IUMPSTPanel{
 			}
 		});
 
-		TableColumn buttonColumn2 = table.getColumnModel().getColumn(columnNames.length-2);
-		buttonColumn2.setMaxWidth(22);
+		TableColumn buttonColumn2 = table.getColumnModel().getColumn(COLUMN_BTN2);
+		buttonColumn2.setMaxWidth(WIDTH_COLUMN_EDIT);
 		buttonColumn2.setCellRenderer(buttonAdd);
 		buttonColumn2.setCellEditor(buttonAdd);
 		
 		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
-				String key = data[row][0].toString();
+				String key = data[row][COLUMN_IDTF].toString();
 				HypothesisModel hypothesisRelated =  goalRelated.getMapHypothesis().get(key);
 				changePanel(new HypothesisAdd(getFatherPanel(),getUmpstProject(),goalRelated,null,hypothesisRelated));
 			
@@ -236,8 +249,8 @@ public class TableHypothesis extends IUMPSTPanel{
 
 			}
 		});
-		TableColumn buttonColumn3 = table.getColumnModel().getColumn(columnNames.length-1);
-		buttonColumn3.setMaxWidth(25);
+		TableColumn buttonColumn3 = table.getColumnModel().getColumn(COLUMN_BTN3);
+		buttonColumn3.setMaxWidth(WIDTH_COLUMN_EDIT);
 		buttonColumn3.setCellRenderer(buttonDel);
 		buttonColumn3.setCellEditor(buttonDel);
 		
@@ -249,7 +262,7 @@ public class TableHypothesis extends IUMPSTPanel{
 				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete Hypothesis "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							
-							String key = data[row][0].toString();
+							String key = data[row][COLUMN_IDTF].toString();
 							//System.out.println("No mapa goal: "+getUmpstProject().getMapGoal().get(goalRelated.getId()).getMapHypothesis().get(key).getHypothesisName());
 							
 							if (goalRelated.getMapHypothesis().get(key).getMapSubHypothesis().size()>0){

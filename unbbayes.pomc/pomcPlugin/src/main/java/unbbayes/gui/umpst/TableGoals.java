@@ -52,9 +52,6 @@ public class TableGoals extends IUMPSTPanel{
     	    	this.add(createScrolltableGoals(columnNames,data));
     		    
     	  }
-    	 
-    	  
-    	  
     	
     	  public void setJanelaPai(UmpstModule janelaPai,String[] columnNames, Object[][] data){
     		// super(janelaPai);
@@ -75,6 +72,12 @@ public class TableGoals extends IUMPSTPanel{
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
 		table = new JTable(tableModel);
 
+		
+		TableColumn indexColumn = table.getColumnModel().getColumn(0);
+		indexColumn.setMaxWidth(50);
+		
+		//---------------------- Edit Button ------------------------------------------------
+		
 		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
 		{
 			public void customize(JButton button, int row, int column)
@@ -99,7 +102,8 @@ public class TableGoals extends IUMPSTPanel{
 		});
 		
 		
-
+		//---------------------- Add Button ------------------------------------------------
+		
 		
 		TableButton buttonAdd = new TableButton( new TableButton.TableButtonCustomizer()
 		{
@@ -125,6 +129,8 @@ public class TableGoals extends IUMPSTPanel{
 		});
 		
 		
+		//---------------------- Del Button ------------------------------------------------
+		
 		TableButton buttonDel = new TableButton( new TableButton.TableButtonCustomizer()
 		{
 			public void customize(JButton button, int row, int column)
@@ -133,6 +139,7 @@ public class TableGoals extends IUMPSTPanel{
 
 			}
 		});
+		
 		TableColumn buttonColumn3 = table.getColumnModel().getColumn(columnNames.length-1);
 		buttonColumn3.setMaxWidth(25);
 		buttonColumn3.setCellRenderer(buttonDel);
@@ -154,10 +161,7 @@ public class TableGoals extends IUMPSTPanel{
 
 							/*Updating MapSearch*/
 							deleteFromSearchMap(goalToBeDeleted);
-
-							
-							
-							
+				
 							if(goalToBeDeleted.getSubgoals() !=null){
 								int numberSubgoal = goalToBeDeleted.getSubgoals().size();
 								for (int i = 1; i < numberSubgoal; i++) {
@@ -209,9 +213,16 @@ public class TableGoals extends IUMPSTPanel{
 			}
 		});
 		
+		
+		TableColumn buttonindex = table.getColumnModel().getColumn(0);
+		TableColumn buttontext = table.getColumnModel().getColumn(1);
+		
 		return table;
        }
 	
+	public JTable getTable(){
+		return table; 
+	}
 	
 	public JScrollPane createScrolltableGoals(String[] columnNames, Object[][] data){
 		if(scrollpanePergunta == null){

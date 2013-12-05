@@ -13,6 +13,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 
 import unbbayes.controller.umpst.IconController;
@@ -29,19 +30,27 @@ public class TableSubGoals extends IUMPSTPanel{
 	private JScrollPane scrollpanePergunta;
 	private UmpstModule janelaPaiAux; 
 	private GoalModel goalRelated;
+	
+	private static int WIDTH_COLUMN_ID = 50; 
+	private static int WIDTH_COLUMN_EDIT = 25; 
 
 	private IconController iconController = IconController.getInstance(); 
 	
-	String[] columnNames = {"id","Hypothesis","","",""};
+	private static final int COLUMN_IDTF = 3; 
+	private static final int COLUMN_DESC = 4; 
+	private static final int COLUMN_BTN1 = 0; 
+	private static final int COLUMN_BTN2 = 1; 
+	private static final int COLUMN_BTN3 = 2; 
+	
+	String[] columnNames = {"","","","Id","Hypothesis"};
 	Object[][] data = {};
-
 	
-	
-
  
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
-    	  protected TableSubGoals(UmpstModule janelaPai,UMPSTProject umpstProject, GoalModel goalRelated) {
+    	  protected TableSubGoals(UmpstModule janelaPai,
+    			  UMPSTProject umpstProject, 
+    			  GoalModel goalRelated) {
     		  
     		    super(janelaPai);
     		    
@@ -54,8 +63,6 @@ public class TableSubGoals extends IUMPSTPanel{
     	    	this.add(createScrolltableHypothesis());
     		    
     	  }
-    	
-    	  
     	  
     	  public void setJanelaPai(UmpstModule janelaPai){
     		// super(janelaPai);
@@ -64,14 +71,12 @@ public class TableSubGoals extends IUMPSTPanel{
   	          this.add(createScrolltableHypothesis());
     		  
     	  }
-    
    
 	
 	/**
 	 * @return the table
 	 */
 	public JTable createTable() {
-
 		
 		Integer i=0;
 
@@ -86,18 +91,26 @@ public class TableSubGoals extends IUMPSTPanel{
 			
 			for (String key: sortedKeys){
 		
-				data[i][0] = goalRelated.getSubgoals().get(key).getId();
-				data[i][1] = goalRelated.getSubgoals().get(key).getGoalName();
-				data[i][2] = "";
-				data[i][3] = "";
-				data[i][4] = "";
+				data[i][COLUMN_IDTF] = goalRelated.getSubgoals().get(key).getId();
+				data[i][COLUMN_DESC] = goalRelated.getSubgoals().get(key).getGoalName();
+				data[i][COLUMN_BTN1] = "";
+				data[i][COLUMN_BTN2] = "";
+				data[i][COLUMN_BTN3] = "";
 				i++;
 			}
 		}
 		
+
 		
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
 		table = new JTable(tableModel);
+		
+		TableColumn columnId = table.getColumnModel().getColumn(COLUMN_IDTF);
+		table.getTableHeader().setAlignmentX(JTableHeader.LEFT_ALIGNMENT);
+		columnId.setMaxWidth(WIDTH_COLUMN_ID);
+		
+		TableColumn columnHypothesis = table.getColumnModel().getColumn(COLUMN_DESC);
+		columnHypothesis.setMinWidth(1000);
 
 		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
 		{
@@ -108,21 +121,19 @@ public class TableSubGoals extends IUMPSTPanel{
 			}
 		});
 
-		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-3);
-		buttonColumn1.setMaxWidth(28);
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(COLUMN_BTN1);
+		buttonColumn1.setMaxWidth(WIDTH_COLUMN_EDIT);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
 		
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				
-				String key = data[row][0].toString();
+				String key = data[row][COLUMN_IDTF].toString();
 				GoalModel goalAux = getUmpstProject().getMapGoal().get(key);
 				changePanel(new SubgoalsAdd(getFatherPanel(),getUmpstProject(), goalAux, goalAux.getGoalFather() )   );
 			}
 		});
-		
-		
 
 		
 		TableButton buttonAdd = new TableButton( new TableButton.TableButtonCustomizer()
@@ -134,14 +145,14 @@ public class TableSubGoals extends IUMPSTPanel{
 			}
 		});
 
-		TableColumn buttonColumn2 = table.getColumnModel().getColumn(columnNames.length-2);
-		buttonColumn2.setMaxWidth(22);
+		TableColumn buttonColumn2 = table.getColumnModel().getColumn(COLUMN_BTN2);
+		buttonColumn2.setMaxWidth(WIDTH_COLUMN_EDIT);
 		buttonColumn2.setCellRenderer(buttonAdd);
 		buttonColumn2.setCellEditor(buttonAdd);
 		
 		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
-				String key = data[row][0].toString();
+				String key = data[row][COLUMN_IDTF].toString();
 				GoalModel goalAux = getUmpstProject().getMapGoal().get(key);
 				changePanel(new SubgoalsAdd(getFatherPanel(),getUmpstProject(),null,goalAux));	
 			}
@@ -156,8 +167,8 @@ public class TableSubGoals extends IUMPSTPanel{
 
 			}
 		});
-		TableColumn buttonColumn3 = table.getColumnModel().getColumn(columnNames.length-1);
-		buttonColumn3.setMaxWidth(25);
+		TableColumn buttonColumn3 = table.getColumnModel().getColumn(COLUMN_BTN3);
+		buttonColumn3.setMaxWidth(WIDTH_COLUMN_EDIT);
 		buttonColumn3.setCellRenderer(buttonDel);
 		buttonColumn3.setCellEditor(buttonDel);
 		
@@ -169,7 +180,7 @@ public class TableSubGoals extends IUMPSTPanel{
 				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete the goal: "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							
-						String key = data[row][0].toString();
+						String key = data[row][COLUMN_IDTF].toString();
 						GoalModel goalToBeDeleted = getUmpstProject().getMapGoal().get(key);
 
 						goalRelated.getSubgoals().remove(key);

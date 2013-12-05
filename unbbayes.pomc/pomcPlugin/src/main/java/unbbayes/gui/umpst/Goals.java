@@ -25,14 +25,14 @@ public class Goals extends IUMPSTPanel{
 		
 		
 		this.setLayout(new FlowLayout());
-		this.add(getSplitPane());
+		this.add(createSplitPane());
 
 	}
 
 	/**
 	 * @return the splitPane
 	 */
-	public JSplitPane getSplitPane() {
+	public JSplitPane createSplitPane() {
 		if(splitPane == null){
 			splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 					getGoalsPanel(),getGoalsTable());

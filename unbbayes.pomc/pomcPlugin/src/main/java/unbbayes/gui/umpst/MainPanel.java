@@ -5,27 +5,6 @@ package unbbayes.gui.umpst;
  *   images/middle.gif.
  */
 
-import javax.swing.JFileChooser;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JFrame;
-import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-
-import unbbayes.controller.umpst.IconController;
-import unbbayes.io.umpst.FileLoad;
-import unbbayes.io.umpst.FileSave;
-import unbbayes.model.umpst.project.UMPSTProject;
-
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -34,8 +13,30 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
+import java.util.ResourceBundle;
+
+import javax.help.HelpSet;
+import javax.help.JHelp;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+
+import unbbayes.controller.umpst.IconController;
+import unbbayes.io.umpst.FileLoad;
+import unbbayes.io.umpst.FileSave;
+import unbbayes.model.umpst.project.UMPSTProject;
 
 public class MainPanel extends IUMPSTPanel{
 	
@@ -46,14 +47,20 @@ public class MainPanel extends IUMPSTPanel{
 	
 		//private UMPSTProject umpstProject;
 	
-		private Goals requirementsPane;
+	    private static final String  FILE_EXTENSION = "ump";
+	
+		private Goals goalsPane;
 		private Entities entitiesPane;
 		private Rules rulesPane;
 		private Groups groupsPane;
 		private File loadedFile;
 		private File newFile;
-		private static final String  FILE_EXTENSION = "ump";
+
 		private String fileExtension;
+		
+	  	private ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
+	  			unbbayes.gui.umpst.resources.Resources.class.getName());
+	  	
 
 	    public MainPanel(UmpstModule janelaPai,UMPSTProject umpstProject) {	    	
 	        super(new GridLayout(1, 1),janelaPai);
@@ -63,40 +70,51 @@ public class MainPanel extends IUMPSTPanel{
 	    	this.setUmpstProject(umpstProject);
 	        
 	        JTabbedPane tabbedPane = new JTabbedPane();
-	        ImageIcon icon = iconController.getUmpstIcon(); 
 	        
-	        requirementsPane = new Goals(getFatherPanel(),umpstProject);
-	        requirementsPane.setPreferredSize(new Dimension(1000, 500));
+	        goalsPane = new Goals(getFatherPanel(),umpstProject);
+	        goalsPane.setPreferredSize(new Dimension(1000, 500));
 	        
-	        tabbedPane.addTab("Requirement", icon, new JScrollPane(requirementsPane),
-	                "goals,queries and envidences");
+	        tabbedPane.addTab(resource.getString("ttGoals"), 
+	        		iconController.getRequirementsIcon(), 
+	        		new JScrollPane(goalsPane),
+	                resource.getString("hpGoalsTab"));
+	        
 	        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 	        
 	        entitiesPane = new Entities(getFatherPanel(),getUmpstProject());
 	        entitiesPane.setPreferredSize(new Dimension(1000,500));
-	        tabbedPane.addTab("Entity", icon, entitiesPane,
-	                "entities, atributtes and relationships");
+	        
+	        tabbedPane.addTab(resource.getString("ttEntities"), 
+	        		iconController.getAnalysisDesignIcon(), 
+	        		entitiesPane,
+	                resource.getString("hpEntitiesTab"));
 	        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
 	        rulesPane = new Rules(getFatherPanel(),umpstProject);
 	        rulesPane.setPreferredSize(new Dimension(1000,500));	        
-	        tabbedPane.addTab("Rules", icon, rulesPane,
-	                "Deterministic or Stochastic");
+	        tabbedPane.addTab(resource.getString("ttRules"), 
+	        		iconController.getAnalysisDesignIcon(), 
+	        		rulesPane,
+	                resource.getString("hpRulesTab"));
 	        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 	        
 	        groupsPane = new Groups(getFatherPanel(),umpstProject);
 	        groupsPane.setPreferredSize(new Dimension(1000,500));
-	        tabbedPane.addTab("Group", icon, groupsPane,
-	                "Grouping");
+	        tabbedPane.addTab(resource.getString("ttGroups"), 
+	        		iconController.getAnalysisDesignIcon(), 
+	        		groupsPane,
+	                resource.getString("hpGroupsTab"));
 	        tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 	        
 	        
-	        JMenu fileMenu = new JMenu("File");
-	        fileMenu.setMnemonic('f');
+	        //------------------------ File ------------------------------------
 	        
+	        JMenu fileMenu = new JMenu(resource.getString("mnFile"));
+	        fileMenu.setMnemonic(resource.getString("mnFileMnemonic").charAt(0));
 	        
-	        JMenuItem loadItem = new JMenuItem("Open existent");
-	        loadItem.setMnemonic('o');
+	        JMenuItem loadItem = new JMenuItem(resource.getString("mnOpen"));
+	        loadItem.setMnemonic(resource.getString("mnOpenMnemonic").charAt(0));
+	        
 	        fileMenu.add(loadItem);
 	        
 	        loadItem.addActionListener(new ActionListener() {
@@ -115,6 +133,7 @@ public class MainPanel extends IUMPSTPanel{
                     }
                  
                     int index = loadedFile.getName().lastIndexOf(".");
+                    
         			if (index >= 0) {
         				fileExtension = loadedFile.getName().substring(index + 1);
         			}
@@ -134,11 +153,6 @@ public class MainPanel extends IUMPSTPanel{
 	        JMenuItem saveItem = new JMenuItem("Save");
 	        saveItem.setMnemonic('s');
 	        fileMenu.add(saveItem);
-	        
-	  
-	        
-	        JMenuBar bar = new JMenuBar();
-	        bar.add(fileMenu);
 	        
 	        saveItem.addActionListener(new ActionListener() {
 				
@@ -162,7 +176,7 @@ public class MainPanel extends IUMPSTPanel{
 					if (newFile!=null)	{
 						try {
 							io.saveUbf(newFile,getUmpstProject());
-							JOptionPane.showMessageDialog(null, "file saved");
+							JOptionPane.showMessageDialog(null, "File saved");
 						} catch (FileNotFoundException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
@@ -175,8 +189,59 @@ public class MainPanel extends IUMPSTPanel{
 				}
 			});
 	        
+	        //------------------------ Help ------------------------------------
+	        JMenu helpMenu = new JMenu(resource.getString("mnHelp"));
+	        helpMenu.setMnemonic(resource.getString("mnHelpMnemonic").charAt(0));
+	        
+	        JMenuItem helpContentsItem = new JMenuItem(resource.getString("mnHelpContents"));
+	        helpContentsItem.setMnemonic(resource.getString("mnHelpContentsMnemonic").charAt(0));
+	        
+	        JMenuItem aboutItem = new JMenuItem(resource.getString("mnAbout"));
+	        aboutItem.setMnemonic(resource.getString("mnAboutMnemonic").charAt(0));
+	        
+	        helpMenu.add(helpContentsItem);
+//	        helpMenu.add(aboutItem);
+	        
+	        helpContentsItem.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent ae) {
+					try {
+						HelpSet set =  new HelpSet(null, getClass().getResource("/help/UMPHelp/ump.hs"));
+//						set.setHomeID("UMP_Example");
+
+//						HelpBroker hb = set.createHelpBroker();
+//						DisplayHelpFromSource display = new CSH.DisplayHelpFromSource( hb );
+
+						JHelp help = new JHelp(set);
+						JFrame f = new JFrame();
+						f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+						f.setContentPane(help);
+						f.pack();
+						f.setLocationRelativeTo(getFatherPanel()); 
+//						f.setTitle(resource.getString("helperDialogTitle"));
+						f.setVisible(true);
+					} catch (Exception evt) {
+						evt.printStackTrace();
+					}
+				}
+			});
+	        
+	        aboutItem.addActionListener(new ActionListener() {
+				
+				public void actionPerformed(ActionEvent e) {
+									
+				}
+			});
+	        
+	        
+	        
+	        
+	        JMenuBar bar = new JMenuBar();
+	        bar.add(fileMenu);
+	        bar.add(helpMenu); 
+	        
 	        JPanel panel = new JPanel();
 	        panel.setLayout(new BorderLayout());
+	        
 	        panel.add(bar,BorderLayout.PAGE_START);
 	        panel.add(tabbedPane,BorderLayout.CENTER);
 	        
@@ -200,18 +265,12 @@ public class MainPanel extends IUMPSTPanel{
 			return groupsPane;
 		}
 
-
-
-
 		/**
 		 * @param groupsPane the groupsPane to set
 		 */
 		public void setGroupsPane(Groups groupsPane) {
 			this.groupsPane = groupsPane;
 		}
-
-
-
 
 		/**
 		 * @return the rulesPane
@@ -221,8 +280,6 @@ public class MainPanel extends IUMPSTPanel{
 		}
 
 
-
-
 		/**
 		 * @param rulesPane the rulesPane to set
 		 */
@@ -230,25 +287,19 @@ public class MainPanel extends IUMPSTPanel{
 			this.rulesPane = rulesPane;
 		}
 
-
-
-
 		/**
 		 * @return the requirementsPane
 		 */
 		public Goals getRequirementsPane() {
-			return requirementsPane;
+			return goalsPane;
 		}
-		
 
 		/**
 		 * @param requirementsPane the requirementsPane to set
 		 */
 		public void setRequirementsPane(Goals requirementsPane) {
-			this.requirementsPane = requirementsPane;
+			this.goalsPane = requirementsPane;
 		}
-		
-		
 
 		/**
 		 * @return the entitiesPane
