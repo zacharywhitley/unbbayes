@@ -112,6 +112,17 @@
 			<timezone>-3</timezone>
 		</developer>
 		
+		<developer>
+			<id>laeciosantos</id>
+			<name>Laecio Santos</name>
+			<email>laecio@gmail.com</email>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<organization>University of Brasilia - UnB</organization>
+			<organizationUrl>www.unb.br</organizationUrl>
+			<timezone>-3</timezone>
+		</developer>
 		
 	
 	
