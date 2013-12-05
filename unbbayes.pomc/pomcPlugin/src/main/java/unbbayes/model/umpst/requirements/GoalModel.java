@@ -11,10 +11,12 @@ import unbbayes.model.umpst.groups.GroupsModel;
 public class GoalModel {
 	
 	private String id;
+	
 	private String goalName;
 	private String comments;
 	private String author;
 	private String date;
+	
 	private GoalModel goalFather;
 	private Map<String, GoalModel> subgoals ;
 	private Map<String,HypothesisModel> mapHypothesis;
@@ -22,9 +24,17 @@ public class GoalModel {
 	private Set<GroupsModel> fowardTrackingGroups;
 	private Set<GoalModel> goalsRelated;
 	
-	public GoalModel(String id,String goalName, String comments,String author, 
-			String date, GoalModel father,Map<String,GoalModel> children,Map<String,HypothesisModel> hypothesis,
-			Set<EntityModel> fowardTrackingEntity,Set<GroupsModel> fowardTrackingGroups,Set<GoalModel> goalsRelated) {
+	public GoalModel(String id,
+			String goalName, 
+			String comments,
+			String author, 
+			String date, 
+			GoalModel father,
+			Map<String,GoalModel> children,
+			Map<String,HypothesisModel> hypothesis,
+			Set<EntityModel> fowardTrackingEntity,
+			Set<GroupsModel> fowardTrackingGroups,
+			Set<GoalModel> goalsRelated) {
 		
 		this.id=id;
 		this.goalName = goalName;
@@ -33,34 +43,37 @@ public class GoalModel {
 		this.date = date;
 		this.goalFather = father;
 		this.subgoals = children;
+		
 		if (children==null){
 			this.setSubgoals(new HashMap<String, GoalModel>());
 		}
+		
 		this.mapHypothesis=hypothesis;
+		
 		if ( hypothesis==null ){
 			this.setMapHypothesis(new HashMap<String, HypothesisModel>());
 
 		}
+		
 		this.fowardTrackingEntity = fowardTrackingEntity;
+		
 		if (fowardTrackingEntity==null){
 			this.setFowardTrackingEntity(new HashSet<EntityModel>());
 		}
+		
 		this.fowardTrackingGroups = fowardTrackingGroups;
+		
 		if (fowardTrackingGroups==null){
 			this.setFowardTrackingGroups(new HashSet<GroupsModel>());
 		}
 		
 		this.goalsRelated=goalsRelated;
+		
 		if (goalsRelated==null){
 			this.setGoalsRelated(new HashSet<GoalModel>());
 		}
-	
 		
 	}
-	
-
-
-
 
 	/**
 	 * @return the goalsRelated
@@ -68,10 +81,6 @@ public class GoalModel {
 	public Set<GoalModel> getGoalsRelated() {
 		return goalsRelated;
 	}
-
-
-
-
 
 
 	/**
@@ -82,10 +91,6 @@ public class GoalModel {
 	}
 
 
-
-
-
-
 	/**
 	 * @return the fowardTrackingGroups
 	 */
@@ -93,21 +98,12 @@ public class GoalModel {
 		return fowardTrackingGroups;
 	}
 
-
-
-
-
-
 	/**
 	 * @param fowardTrackingGroups the fowardTrackingGroups to set
 	 */
 	public void setFowardTrackingGroups(Set<GroupsModel> fowardTrackingGroups) {
 		this.fowardTrackingGroups = fowardTrackingGroups;
 	}
-
-
-
-
 
 
 	/**
@@ -118,10 +114,6 @@ public class GoalModel {
 	}
 
 
-
-
-
-
 	/**
 	 * @param fowardTrackingEntity the fowardTrackingEntity to set
 	 */
@@ -129,21 +121,12 @@ public class GoalModel {
 		this.fowardTrackingEntity = fowardTrackingEntity;
 	}
 
-
-
-
-
-
 	/**
 	 * @return the id
 	 */
 	public String getId() {
 		return id;
 	}
-
-
-
-
 
 
 	/**
@@ -154,20 +137,12 @@ public class GoalModel {
 	}
 
 
-
-
-
-
 	/**
 	 * @return the goalFather
 	 */
 	public GoalModel getGoalFather() {
 		return goalFather;
 	}
-
-
-
-
 
 
 	/**
@@ -177,11 +152,6 @@ public class GoalModel {
 		this.goalFather = goalFather;
 	}
 
-
-
-
-
-
 	/**
 	 * @return the subgoals
 	 */
@@ -189,29 +159,12 @@ public class GoalModel {
 		return subgoals;
 	}
 
-
-
-
-
-
 	/**
 	 * @param subgoals the subgoals to set
 	 */
 	public void setSubgoals(Map<String,GoalModel> subgoals) {
 		this.subgoals = subgoals;
 	}
-
-
-
-
-
-
-
-
-
-
-
-
 
 	/**
 	 * @return the mapHypothesis
@@ -221,20 +174,12 @@ public class GoalModel {
 	}
 
 
-
-
-
-
 	/**
 	 * @param mapHypothesis the mapHypothesis to set
 	 */
 	public void setMapHypothesis(Map<String, HypothesisModel> mapHypothesis) {
 		this.mapHypothesis = mapHypothesis;
 	}
-
-
-
-
 
 
 	/**
