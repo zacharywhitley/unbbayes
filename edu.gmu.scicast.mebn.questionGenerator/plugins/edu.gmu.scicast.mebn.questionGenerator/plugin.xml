@@ -22,11 +22,18 @@
         </library>
     </runtime>
     
-    <!-- DL reasoner for PR-OWL2 in OWL2 -->
+    <!-- DL reasoner which accesses Tuuyi database -->
     <extension plugin-id="unbbayes.prs.mebn" point-id="KnowledgeBase" id="TuuyiPROWL2">
         <parameter id="class" value="edu.gmu.scicast.mebn.kb.TuuyiDataBaseBuilder"/>
         <parameter id="name" value="Tuuyi Server"/>
         <parameter id="optionPanel" value="edu.gmu.scicast.mebn.gui.TuuyiServerOptionPanelBuilder"/>
     </extension>
+    
+    <!-- SSBN generator that does not delete barren/d-sep nodes -->
+    <extension plugin-id="unbbayes.prs.mebn" point-id="SSBN" id="FullSSBNGenerator">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.ssbn.FullSSBNGeneratorBuilder"/>
+        <parameter id="name" value="SciCast question generator"/>
+    </extension>
+    
     
 </plugin>
