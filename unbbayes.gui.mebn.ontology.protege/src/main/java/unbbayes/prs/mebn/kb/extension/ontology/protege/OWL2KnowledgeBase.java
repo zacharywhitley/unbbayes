@@ -36,7 +36,6 @@ import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.OWLProperty;
 import org.semanticweb.owlapi.model.PrefixManager;
-import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import unbbayes.controller.mebn.IMEBNMediator;
@@ -962,9 +961,9 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				String expression = "inverse " + this.extractName(property) + " value " + listArguments.iterator().next().getEntity().getInstanceName();
 				Debug.println(this.getClass(), "Expression: " + expression);
 				
-				NodeSet<OWLNamedIndividual> nodeSet = reasoner.getInstances(this.parseExpression(expression), false);
+				Collection<OWLIndividual> nodeSet = getOWLIndividuals(expression, reasoner,reasoner.getRootOntology());
 				if (nodeSet != null) {
-					for (OWLNamedIndividual individual: nodeSet.getFlattened()) {
+					for (OWLIndividual individual: nodeSet) {
 						try {
 							// use only the first valid individual. Multiple-valued properties should be resolved in another method
 							StateLink link = resident.getPossibleValueByName(this.extractName(individual));
@@ -1033,7 +1032,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			Debug.println(this.getClass(), "Expression: " + expressionToParse);
 			
 			// because we are in open-world assumption, we must check if individuals "are" related, "never" related or "unknown"
-			if (!reasoner.getInstances(this.parseExpression(expressionToParse), false).isEmpty()) {
+			if (!getOWLIndividuals((expressionToParse), reasoner,reasoner.getRootOntology()).isEmpty()) {
 				// they are related
 				StateLink link = resident.getPossibleValueByName("true"); 
 				if (link != null) {
@@ -1062,7 +1061,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			expressionToParse = "{" +  subjectName + "}" + " that not ( " + this.extractName(property) + " value " + objectName + " )" ;
 			Debug.println(this.getClass(), "Expression: " + expressionToParse);
 			
-			if (!reasoner.getInstances(this.parseExpression(expressionToParse), false).isEmpty()) {
+			if (!getOWLIndividuals((expressionToParse), reasoner,reasoner.getRootOntology()).isEmpty()) {
 				// they are NEVER related
 				StateLink link = resident.getPossibleValueByName("false"); 
 				if (link != null) {
@@ -1202,7 +1201,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			
 			// do the query if expression exists
 			if (expression != null && expression.trim().length() > 0) {
-				for (OWLNamedIndividual individual : reasoner.getInstances(this.parseExpression(expression), false).getFlattened()) {
+				for (OWLIndividual individual : getOWLIndividuals(expression, reasoner,reasoner.getRootOntology())) {
 					ret.add(this.extractName(individual));	// add the name of instance to ret
 				}
 			}
@@ -1223,6 +1222,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		}
 		
 		return listToReturn;
+	}
+
+	/**
+	 * Obtains OWL individuals from ontology.
+	 * @param classExpression : filter for the search.
+	 * @param reasoner : reasoner to be used
+	 * @param rootOntology : ontology to search for
+	 * @return collection of individuals satisfying class expression.
+	 */
+	protected Collection<OWLIndividual> getOWLIndividuals(String expression, OWLReasoner reasoner, OWLOntology rootOntology) {
+		return (Collection)reasoner.getInstances(this.parseExpression(expression), false).getFlattened();
 	}
 
 	/**
@@ -1300,7 +1310,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				String expression = this.extractName(property) + " value true";
 				
 				// execute query to obtain all individuals using that property as true
-				for (OWLNamedIndividual individual : reasoner.getInstances(this.parseExpression(expression), false).getFlattened()) {
+				for (OWLIndividual individual : getOWLIndividuals(expression, reasoner,reasoner.getRootOntology())) {
 					try {
 						// generate arguments (it should have only 1 argument if code reaches this point)...
 						ObjectEntityInstance argument = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(this.extractName(individual));
@@ -1335,7 +1345,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				expression = this.extractName(property) + " value false";
 				
 				// execute query to obtain all individuals using that property as false
-				for (OWLNamedIndividual individual : reasoner.getInstances(this.parseExpression(expression), false).getFlattened()) {
+				for (OWLIndividual individual : getOWLIndividuals(expression, reasoner,reasoner.getRootOntology())) {
 					try {
 						// generate arguments (it should have only 1 argument if code reaches this point)...
 						ObjectEntityInstance argument = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(this.extractName(individual));
@@ -1374,14 +1384,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				String expression = this.extractName(property) + " some Thing";
 				
 				// execute query to obtain all individuals using that property
-				for (OWLNamedIndividual subject : reasoner.getInstances(this.parseExpression(expression), false).getFlattened()) {
+				for (OWLIndividual subject : getOWLIndividuals(expression, reasoner,reasoner.getRootOntology())) {
 					try {
-						
+						if (!subject.isNamed()) {
+							Debug.println(getClass(), "This version cannot use anonymous OWL individuals to fill findings.");
+							continue;
+						}
 						// generate argument (it should have only 1 argument if code reaches this point)...
 						ObjectEntityInstance argument = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(this.extractName(subject));
 						
 						// for each individual, extract the associated value and create resident node's finding
-						for (OWLNamedIndividual object : reasoner.getObjectPropertyValues(subject, property).getFlattened()) {
+						for (OWLNamedIndividual object : reasoner.getObjectPropertyValues(subject.asOWLNamedIndividual(), property).getFlattened()) {
 							try {
 								// generate finding
 								RandomVariableFinding finding = new RandomVariableFinding(
@@ -1423,14 +1436,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				String expression = this.extractName(property) + " some Literal";	// we assume Literal is the top data value
 				
 				// execute query to obtain all individuals using that property
-				for (OWLNamedIndividual subject : reasoner.getInstances(this.parseExpression(expression), false).getFlattened()) {
+				for (OWLIndividual subject : getOWLIndividuals(expression, reasoner,reasoner.getRootOntology())) {
 					try {
+						if (!subject.isNamed()) {
+							Debug.println(getClass(), "This version cannot use anonymous OWL individuals in order to fill findings.");
+							continue;
+						}
 						
 						// generate argument (it should have only 1 argument if code reaches this point)...
 						ObjectEntityInstance argument = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(this.extractName(subject));
-						
 						// for each individual, extract the associated value and create resident node's finding
-						for (OWLLiteral literal : reasoner.getDataPropertyValues(subject, property)) {
+						for (OWLLiteral literal : reasoner.getDataPropertyValues(subject.asOWLNamedIndividual(), property)) {
 							try {
 								// generate finding
 								RandomVariableFinding finding = new RandomVariableFinding(
@@ -1473,14 +1489,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			String expression = this.extractName(property) + " some Thing";
 			
 			// execute query to obtain all positive individuals using that property
-			for (OWLNamedIndividual subject : reasoner.getInstances(this.parseExpression(expression), false).getFlattened()) {
+			for (OWLIndividual subject : getOWLIndividuals(expression, reasoner,reasoner.getRootOntology())) {
 				try {
-					
+					if (!subject.isNamed()) {
+						Debug.println(getClass(), "This version cannot use anonymous OWL individuals in order to fill findings.");
+						continue;
+					}
 					// generate 1st argument 
 					ObjectEntityInstance argument1 = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(this.extractName(subject));
 					
 					// for each individual, extract the associated value and create resident node's finding
-					for (OWLNamedIndividual object : reasoner.getObjectPropertyValues(subject, property).getFlattened()) {
+					for (OWLNamedIndividual object : reasoner.getObjectPropertyValues(subject.asOWLNamedIndividual(), property).getFlattened()) {
 						try {
 							// generate the set of arguments to be added
 							HashSet<ObjectEntityInstance> arguments = new HashSet<ObjectEntityInstance>();
@@ -2074,7 +2093,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// case 5. argument1OV is known and argument2OV is unknown;
 			
 			// extract the possible values of OV if it is unknown
-			Collection<OWLNamedIndividual> resultOfQuery = new HashSet<OWLNamedIndividual>();
+			Collection<OWLIndividual> resultOfQuery = new HashSet<OWLIndividual>();
 			
 			// ov to be queried
 			OrdinaryVariable queryOV = null; // this value may be either argument1OV or argument2OV
@@ -2126,7 +2145,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 								+ (isToSolveAsPositiveOperation?"true":"false");
 					
 					// just check if there is a data property assertion. If no, return null. If yes, return knownSearchResults as is
-					if (reasoner.getInstances(this.parseExpression(expression), false).isEmpty()) {
+					if (getOWLIndividuals(expression, reasoner,reasoner.getRootOntology()).isEmpty()) {
 						return null;	// context node must fail
 					} else {
 						// fill knownSearchResults with known values
@@ -2182,7 +2201,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				+ " ) ";
 				
 				// do query
-				resultOfQuery = reasoner.getInstances(this.parseExpression(expression), false).getFlattened();
+				resultOfQuery = getOWLIndividuals(expression, reasoner,reasoner.getRootOntology());
 				
 				// Basically, we do recursive call to this method 
 				// adding the resultOfQuery to the known values and then concatenate the results of the recursive calls
@@ -2195,7 +2214,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					// perform multiple recursive queries after adding the returned individual as a known value, 
 					// and then concatenate results to this SearchResult
 					SearchResult concatenatedSearchResult = null;
-					for (OWLNamedIndividual individualOfOV : resultOfQuery) {
+					for (OWLIndividual individualOfOV : resultOfQuery) {
 						// extract name
 						String name = this.extractName(individualOfOV);
 						
@@ -2341,7 +2360,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		OrdinaryVariable knownOV = ((knownValue == null)?null:(knownValue.getOv()));
 		
 		// do query
-		Set<OWLNamedIndividual> resultOfQuery = reasoner.getInstances(this.parseExpression(expression), false).getFlattened();
+		Collection<OWLIndividual> resultOfQuery = getOWLIndividuals(expression, reasoner,reasoner.getRootOntology());
 		
 		// add the query results of ov's possible values to knownSearchResults if the query has returned something
 		if (resultOfQuery != null && !resultOfQuery.isEmpty()) {
@@ -2350,7 +2369,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			
 			// extract the names of the returned individuals
 			List<String> returnedIndividualNames = new ArrayList<String>();
-			for (OWLNamedIndividual individualOfOV : resultOfQuery) {
+			for (OWLIndividual individualOfOV : resultOfQuery) {
 				returnedIndividualNames.add(this.extractName(individualOfOV));
 			}
 			
@@ -2475,7 +2494,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			String expression = "";
 			
 			// extract the possible values of OV if it is unknown
-			Collection<OWLNamedIndividual> resultOfQuery = new HashSet<OWLNamedIndividual>();
+			Collection<OWLIndividual> resultOfQuery = new HashSet<OWLIndividual>();
 			
 			// ov to be queried
 			OrdinaryVariable queryOV = null; // this value may be either ov1 or ov2
@@ -2498,7 +2517,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				+ ov2Entity.getName();
 				
 				// do query
-				resultOfQuery = reasoner.getInstances(this.parseExpression(expression), false).getFlattened();
+				resultOfQuery = getOWLIndividuals(expression, reasoner,reasoner.getRootOntology());
 				
 				// Basically, we do recursive call to this method (solveFormulaTreeOV1EqualsOV2)
 				// adding the resultOfQuery to the known values and then concatenate the results of the recursive calls
@@ -2507,7 +2526,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				if (resultOfQuery != null && !resultOfQuery.isEmpty()) {
 					SearchResult ret = null;	// this variable will contain all results of the iterative recursive queries
 					// iterate on results
-					for (OWLNamedIndividual individualOfOV : resultOfQuery) {
+					for (OWLIndividual individualOfOV : resultOfQuery) {
 						// extract the name of the returned individual
 						String name = this.extractName(individualOfOV);
 						// create the updated known value's list (which is the all original known values + the result of the query)
@@ -2578,14 +2597,14 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				+ " } ";
 				
 				// do query
-				resultOfQuery = reasoner.getInstances(this.parseExpression(expression), false).getFlattened();
+				resultOfQuery = getOWLIndividuals(expression, reasoner,reasoner.getRootOntology());
 				
 				// add the query results of ov's possible values to knownSearchResults if the query has returned something
 				if (resultOfQuery != null && !resultOfQuery.isEmpty()) {
 					
 					// extract the names of the returned individuals
 					List<String> returnedIndividualNames = new ArrayList<String>();
-					for (OWLNamedIndividual individualOfOV : resultOfQuery) {
+					for (OWLIndividual individualOfOV : resultOfQuery) {
 						returnedIndividualNames.add(this.extractName(individualOfOV));
 					}
 					
@@ -2744,7 +2763,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// case 3. only argumentOV is unknown;
 			
 			// extract the possible values of OV if it is unknown
-			Collection<OWLNamedIndividual> resultOfQuery = new HashSet<OWLNamedIndividual>();
+			Collection<OWLIndividual> resultOfQuery = new HashSet<OWLIndividual>();
 			
 			// ov to be queried
 			OrdinaryVariable queryOV = null; // this value may be either ov or argumentOV
@@ -2765,7 +2784,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				+ " ) ";
 				
 				// do query
-				resultOfQuery = reasoner.getInstances(this.parseExpression(expression), false).getFlattened();
+				resultOfQuery = getOWLIndividuals(expression, reasoner,reasoner.getRootOntology());
 				
 				// Basically, we do recursive call to this method (solveFormulaTreeOVEqualsToNonBooleanNode1Argument)
 				// adding the resultOfQuery to the known values and then concatenate the results of the recursive calls
@@ -2779,7 +2798,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					// perform multiple recursive queries after adding the returned individual as a known value, 
 					// and then concatenate results to this SearchResult
 					SearchResult concatenatedSearchResult = null;
-					for (OWLNamedIndividual individualOfOV : resultOfQuery) {
+					for (OWLIndividual individualOfOV : resultOfQuery) {
 						
 //						returnedIndividualNames.add(this.extractName(individualOfOV));
 						String name = this.extractName(individualOfOV);
@@ -2872,14 +2891,14 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				+ " ) ";
 				
 				// do query
-				resultOfQuery = reasoner.getInstances(this.parseExpression(expression), false).getFlattened();
+				resultOfQuery = getOWLIndividuals(expression, reasoner,reasoner.getRootOntology());
 				
 				// add the query results of ov's possible values to knownSearchResults if the query has returned something
 				if (resultOfQuery != null && !resultOfQuery.isEmpty()) {
 					
 					// extract the names of the returned individuals
 					List<String> returnedIndividualNames = new ArrayList<String>();
-					for (OWLNamedIndividual individualOfOV : resultOfQuery) {
+					for (OWLIndividual individualOfOV : resultOfQuery) {
 						returnedIndividualNames.add(this.extractName(individualOfOV));
 					}
 					
