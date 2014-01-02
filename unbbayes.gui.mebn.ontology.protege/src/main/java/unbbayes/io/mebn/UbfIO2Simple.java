@@ -3,7 +3,13 @@
  */
 package unbbayes.io.mebn;
 
+import java.io.File;
+import java.io.IOException;
+
+import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWL2IO;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.util.Debug;
 
 
 /**
@@ -28,5 +34,20 @@ public class UbfIO2Simple extends UbfIO2 {
 			e.printStackTrace();
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.UbfIO2#loadMebn(java.io.File)
+	 */
+	public MultiEntityBayesianNetwork loadMebn(File file) throws IOException,
+			IOMebnException {
+		boolean debugMode = Debug.isDebugMode();	// backup previous config
+		Debug.setDebug(false);						// disable trace
+		MultiEntityBayesianNetwork mebn = super.loadMebn(file);
+		mebn.setStorageImplementor(null);
+		Debug.setDebug(debugMode);					// restore
+		return mebn;
+	}
+	
+	
 
 }
