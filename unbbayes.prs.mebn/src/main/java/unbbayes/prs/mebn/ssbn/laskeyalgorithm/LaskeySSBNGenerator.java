@@ -192,7 +192,7 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 		}
 		
 		try {
-			ssbn.compileAndInitializeSSBN();
+			this.compileAndInitializeSSBN(ssbn);;
 		} catch (Exception e) {
 			throw new MEBNException(e);
 		}
@@ -201,6 +201,16 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 		this.showSSBN(ssbn);
 		
 		return ssbn;
+	}
+	
+	/**
+	 * Compiles SSBN, fill findings, and propagate findings.
+	 * @param ssbn : the SSBN to be compiled and whose findings will be propagated.
+	 * @throws Exception : when compilation/propagation fails.
+	 * @see SSBN#compileAndInitializeSSBN()
+	 */
+	protected void compileAndInitializeSSBN(SSBN ssbn) throws Exception {
+		ssbn.compileAndInitializeSSBN();
 	}
 	
 	/**
