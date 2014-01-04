@@ -6,8 +6,6 @@ package edu.gmu.scicast.mebn;
 import org.semanticweb.owlapi.model.PrefixManager;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
 
-import unbbayes.io.mebn.owlapi.IPROWL2ModelUser;
-
 import com.Tuuyi.TuuyiOntologyServer.OntologyClient;
 
 /**
@@ -40,7 +38,7 @@ public interface TuuyiOntologyUser {
 	public static final String EXTERNAL_ONTOLOGY_NAMESPACE_URI =  "http://www.scicast.org/questionGen/scicast.owl";
 	
 	/** This is a prefix manager for {@link #EXTERNAL_ONTOLOGY_NAMESPACE_URI} */
-	public static final PrefixManager EXTERNAL_ONTOLOGY_DEFAULT_PREFIX_MANAGER = new DefaultPrefixManager(IPROWL2ModelUser.PROWL2_NAMESPACEURI + '#');
+	public static final PrefixManager EXTERNAL_ONTOLOGY_DEFAULT_PREFIX_MANAGER = new DefaultPrefixManager(EXTERNAL_ONTOLOGY_NAMESPACE_URI + '#');
 	
 	/**
 	 * @return the {@link OntologyClient} to be used to access Tuuyi ontology servlet.

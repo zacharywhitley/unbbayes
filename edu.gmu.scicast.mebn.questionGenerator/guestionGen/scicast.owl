@@ -74,8 +74,29 @@
         </DataHasValue>
     </EquivalentClasses>
     <SubClassOf>
+        <Class IRI="#RemoteClass"/>
+        <DataMaxCardinality cardinality="1">
+            <DataProperty IRI="#hasMaxDepth"/>
+            <Datatype abbreviatedIRI="xsd:integer"/>
+        </DataMaxCardinality>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#RemoteClass"/>
+        <DataMaxCardinality cardinality="1">
+            <DataProperty IRI="#isToExclude"/>
+            <Datatype abbreviatedIRI="xsd:boolean"/>
+        </DataMaxCardinality>
+    </SubClassOf>
+    <SubClassOf>
         <Class IRI="#TuuyiClass"/>
         <Class IRI="#RemoteClass"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#TuuyiClass"/>
+        <DataMaxCardinality cardinality="1">
+            <DataProperty IRI="#hasUID"/>
+            <Datatype abbreviatedIRI="xsd:int"/>
+        </DataMaxCardinality>
     </SubClassOf>
     <SubObjectPropertyOf>
         <ObjectProperty IRI="#tuuyiObjectProperty"/>
@@ -101,6 +122,10 @@
         <DataProperty IRI="#tuuyiDataProperty"/>
         <DataProperty IRI="#servletDataProperty"/>
     </SubDataPropertyOf>
+    <DataPropertyDomain>
+        <DataProperty IRI="#hasMaxDepth"/>
+        <Class IRI="#RemoteClass"/>
+    </DataPropertyDomain>
     <DataPropertyDomain>
         <DataProperty IRI="#tuuyiDataProperty"/>
         <Class IRI="#TuuyiClass"/>

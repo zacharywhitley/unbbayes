@@ -7,14 +7,18 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.protege.editor.owl.model.OWLModelManager;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.PrefixManager;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
+import uk.ac.manchester.cs.owl.owlapi.OWLClassImpl;
 import uk.ac.manchester.cs.owl.owlapi.OWLNamedIndividualImpl;
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -82,7 +86,7 @@ public class TuuyiKnowledgeBase extends PROWL2KnowledgeBase implements TuuyiOnto
 		Collection<OWLIndividual> matchingIndividuals = (super.getOWLIndividuals(expression, reasoner, rootOntology));
 		
 		// collection of individuals that matches DL query and also matches condition to trigger search on remote server (i.e. consider individual as if they were classes in remote server, and get individuals in remote server -- expand)
-		Collection<OWLIndividual> toExpand = super.getOWLIndividuals("(" + expression + ") and " + REMOTE_CLASS_NAME, reasoner, rootOntology);
+		Collection<OWLIndividual> toExpand = super.getOWLIndividuals("(" + expression + ") that " + REMOTE_CLASS_NAME, reasoner, rootOntology);
 		
 		// extract owl data property that indicates how deep in hierarchy we shall query the remote server ontology
 		OWLDataProperty hasMaxDepth = rootOntology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(HAS_MAX_DEPTH_PROPERTY_NAME, getQuestionGeneratorOntologyPrefixManager());
@@ -135,13 +139,33 @@ public class TuuyiKnowledgeBase extends PROWL2KnowledgeBase implements TuuyiOnto
 		}
 		
 		// collection of individuals that were tagged to be excluded from queries
-		Collection<OWLIndividual> toExclude = super.getOWLIndividuals("(" + expression + ") and " + IS_TO_EXCLUDE_DATA_PROPERTY_NAME + " value true", reasoner, rootOntology);
+		Collection<OWLIndividual> toExclude = super.getOWLIndividuals("(" + expression + ") that " + IS_TO_EXCLUDE_DATA_PROPERTY_NAME + " value true", reasoner, rootOntology);
 		// removing from an array list will remove all individuals that matches with Object#equal, so they will check for IRI (since Object#equal is overwritten by OWLNamedIndividual to check for IRIs).
 		matchingIndividuals.removeAll(toExclude); 
 		
 		return matchingIndividuals;
 	}
 	
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBase#parseExpression(java.lang.String)
+	 */
+	public OWLClassExpression parseExpression(String expression) {
+		OWLClassExpression ret = null;
+		try {
+			ret = super.parseExpression(expression);
+		} catch (Exception e) {
+			e.printStackTrace();
+			// return owl:Nothing
+			OWLModelManager owlModelManager = getOWLModelManager();
+			if (owlModelManager != null) {
+				return owlModelManager.getOWLDataFactory().getOWLNothing();
+			} else {
+				return new OWLClassImpl(null, OWLRDFVocabulary.OWL_NOTHING.getIRI());
+			}
+		}
+		return ret;
+	}
 
 	/**
 	 * Obtains the manager of prefixes related to external ontology.
@@ -172,4 +196,5 @@ public class TuuyiKnowledgeBase extends PROWL2KnowledgeBase implements TuuyiOnto
 			PrefixManager questionGeneratorOntologyPrefixManager) {
 		this.questionGeneratorOntologyPrefixManager = questionGeneratorOntologyPrefixManager;
 	}
+
 }
