@@ -373,18 +373,43 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 		
 	}
 	
-	//Build Structure
-	private void buildStructure(SSBN ssbn) throws ImplementationRestrictionException, SSBNNodeGeneralException{
+	/**
+	 * This method builds the SSBN structure (nodes and arcs) by using the {@link SimpleSSBNNode}, which are
+	 * nodes created especially in order to use small amount of memory (e.g. by not using space for huge CPTs or other
+	 * complementary classes). The actual BN and its probability distribution are generated at {@link #buildLocalDistribution(SSBN)}.
+	 * @param ssbn
+	 * @throws ImplementationRestrictionException
+	 * @throws SSBNNodeGeneralException
+	 * @see #getBuilderStructure()
+	 */
+	protected void buildStructure(SSBN ssbn) throws ImplementationRestrictionException, SSBNNodeGeneralException{
 		getBuilderStructure().buildStructure(ssbn); 
 	}
 	
-	//Prune Structure
-	private void pruneStruture(SSBN ssbn){
+	/**
+	 * Runs commands so that the generated SSBN are pruned (i.e. nodes that are independent to
+	 * query nodes are not included in SSBN).
+	 * {@link #getPruneStructure()} is used in order to prune.
+	 * @param ssbn
+	 * @see #getPruneStructure()
+	 */
+	protected void pruneStruture(SSBN ssbn){
 		getPruneStructure().pruneStructure(ssbn); 
 	}
 	
-	//Build Local Distribution
-	private void buildLocalDistribution(SSBN ssbn) throws MEBNException, SSBNNodeGeneralException{
+	/**
+	 * Builds an instance of {@link ProbabilisticNetwork} and
+	 * initializes the probability distribution (e.g. initializes CPT).
+	 * Subclasses may extend this method in order to personalize how the actual BN will be built.
+	 * For example, if there are too many parents per node and CPT is occupying too much space,
+	 * this method may be overwritten so that the CPT is initialized in another format, or
+	 * to write the BN into a file, instead of initializing an instance of {@link ProbabilisticNetwork}.
+	 * @param ssbn
+	 * @throws MEBNException
+	 * @throws SSBNNodeGeneralException
+	 * @see #getBuildLocalDistribution()
+	 */
+	protected void buildLocalDistribution(SSBN ssbn) throws MEBNException, SSBNNodeGeneralException{
 		getBuildLocalDistribution().buildLocalDistribution(ssbn); 
 	}
 
