@@ -3,18 +3,21 @@
  */
 package edu.gmu.scicast.mebn.kb;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 import org.protege.editor.owl.model.OWLModelManager;
 import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLDataProperty;
 import org.semanticweb.owlapi.model.OWLIndividual;
 import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.PrefixManager;
+import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
@@ -42,6 +45,7 @@ public class TuuyiKnowledgeBase extends PROWL2KnowledgeBase implements TuuyiOnto
 	
 	private OntologyClient ontologyClient = null;
 	private PrefixManager questionGeneratorOntologyPrefixManager = EXTERNAL_ONTOLOGY_DEFAULT_PREFIX_MANAGER;
+	private boolean isToUseExpressionsToQueryExpandableIndividuals = false;
 
 	/**
 	 * @deprecated use {@link #getInstance(MultiEntityBayesianNetwork, IMEBNMediator)} instead
@@ -86,7 +90,11 @@ public class TuuyiKnowledgeBase extends PROWL2KnowledgeBase implements TuuyiOnto
 		Collection<OWLIndividual> matchingIndividuals = (super.getOWLIndividuals(expression, reasoner, rootOntology));
 		
 		// collection of individuals that matches DL query and also matches condition to trigger search on remote server (i.e. consider individual as if they were classes in remote server, and get individuals in remote server -- expand)
-		Collection<OWLIndividual> toExpand = super.getOWLIndividuals("(" + expression + ") that " + REMOTE_CLASS_NAME, reasoner, rootOntology);
+		Collection<OWLIndividual> toExpand = null;
+		if (isToUseExpressionsToQueryRemoteIndividuals()) {
+			// this is a slow operation, so only execute it if the flag is set
+			toExpand = super.getOWLIndividuals("(" + expression + ") that " + REMOTE_CLASS_NAME, reasoner, rootOntology);
+		}
 		
 		// extract owl data property that indicates how deep in hierarchy we shall query the remote server ontology
 		OWLDataProperty hasMaxDepth = rootOntology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(HAS_MAX_DEPTH_PROPERTY_NAME, getQuestionGeneratorOntologyPrefixManager());
@@ -95,8 +103,20 @@ public class TuuyiKnowledgeBase extends PROWL2KnowledgeBase implements TuuyiOnto
 		
 		// current implementation assumes that we are using DL reasoner
 		if (reasoner != null) {
+			Collection<OWLIndividual> toIterate = toExpand;
+			if (!isToUseExpressionsToQueryRemoteIndividuals()) {
+				// only consider individuals which isToExpand == true
+				toIterate = new ArrayList<OWLIndividual>(matchingIndividuals.size());
+				// this iteration may not be so fast for huge ontologies, but in most of cases it's faster than querying an expression (to fill the list "toExpand")
+				for (OWLIndividual owlIndividual : matchingIndividuals) {
+					if (this.isToExpand(owlIndividual,reasoner,rootOntology)) {
+						toIterate.add(owlIndividual);
+					}
+				}
+			}
+			
 			// query server so that we can get less broader instances (inverse of skol:broader) of individuals to expand
-			for (OWLIndividual expandable : toExpand) {
+			for (OWLIndividual expandable : toIterate) {
 				if (!expandable.isNamed()) {
 					// ignore anonymous individuals
 					continue;
@@ -138,14 +158,64 @@ public class TuuyiKnowledgeBase extends PROWL2KnowledgeBase implements TuuyiOnto
 			throw new RuntimeException("Current implementation requires usage of a valid DL reasoner.");
 		}
 		
-		// collection of individuals that were tagged to be excluded from queries
-		Collection<OWLIndividual> toExclude = super.getOWLIndividuals("(" + expression + ") that " + IS_TO_EXCLUDE_DATA_PROPERTY_NAME + " value true", reasoner, rootOntology);
-		// removing from an array list will remove all individuals that matches with Object#equal, so they will check for IRI (since Object#equal is overwritten by OWLNamedIndividual to check for IRIs).
-		matchingIndividuals.removeAll(toExclude); 
+		if (isToUseExpressionsToQueryRemoteIndividuals()) {
+			// collection of individuals that were tagged to be excluded from queries
+			Collection<OWLIndividual> toExclude = super.getOWLIndividuals("(" + expression + ") that " + IS_TO_EXCLUDE_DATA_PROPERTY_NAME + " value true", reasoner, rootOntology);
+			// removing from an array list will remove all individuals that matches with Object#equal, so they will check for IRI (since Object#equal is overwritten by OWLNamedIndividual to check for IRIs).
+			matchingIndividuals.removeAll(toExclude); 
+		} else {
+//			if (reasoner == null) {
+//				throw new UnsupportedOperationException("Current implementation expects that a DL reasoner is being used.");
+//			}
+			// check one-by-one if the property IS_TO_EXCLUDE_DATA_PROPERTY_NAME is true, and remove them
+			OWLDataProperty isToExclude = rootOntology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(IS_TO_EXCLUDE_DATA_PROPERTY_NAME, getQuestionGeneratorOntologyPrefixManager());
+			// this may look slower, but in most of cases it is still faster than using OWLClassExpression to query for individuals.
+			Collection<OWLIndividual> toDelete = new ArrayList<OWLIndividual>(matchingIndividuals.size());
+			for (OWLIndividual owlIndividual : matchingIndividuals) {
+				Set<OWLLiteral> values = null;
+				try {
+					values = reasoner.getDataPropertyValues(owlIndividual.asOWLNamedIndividual(), isToExclude);
+				} catch (Exception e) {
+					Debug.println(getClass(), "Could not use reasoner to resolve " + owlIndividual 
+							+ ". All exceptions in reasoner will be considered as non-existing individual/assertion.", e);
+					continue;
+				}
+				
+				if (values != null && !values.isEmpty() && values.iterator().next().parseBoolean()) {	// only check 1st value, because this OWL property is expected to happen only once.
+					toDelete.add(owlIndividual);
+				}
+			}
+			matchingIndividuals.removeAll(toDelete);
+		}
 		
 		return matchingIndividuals;
 	}
 	
+
+	/**
+	 * This method returns true if this individual is defined in remote ontology accessible at {@link #getOntologyClient()}
+	 * @param expandable : individual to be considered
+	 * @param reasoner : if non-null, this reasoner will be used to check for type and properties
+	 * @param rootOntology : if resoner is not specified, then this ontology will be used in order to check for types and properties.
+	 * @return If type of individual is {@link TuuyiOntologyUser#REMOTE_CLASS_NAME}, then this method will return true.
+	 * @see #getQuestionGeneratorOntologyPrefixManager()
+	 */
+	protected boolean isToExpand(OWLIndividual expandable, OWLReasoner reasoner, OWLOntology rootOntology) {
+		if (reasoner == null) {
+			throw new UnsupportedOperationException("Current version requires presence of DL reasoner.");
+		}
+		// prepare the OWL class to compare with. If the types of the individual contains this class, then we shall return true
+		OWLClass remoteClass = rootOntology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(REMOTE_CLASS_NAME, getQuestionGeneratorOntologyPrefixManager());
+		
+		// obtain what are the types of this individual
+		NodeSet<OWLClass> types = reasoner.getTypes(expandable.asOWLNamedIndividual(), false);
+		for (OWLClass owlClass : types.getFlattened()) {
+			if (owlClass.equals(remoteClass)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBase#parseExpression(java.lang.String)
@@ -195,6 +265,24 @@ public class TuuyiKnowledgeBase extends PROWL2KnowledgeBase implements TuuyiOnto
 	public void setQuestionGeneratorOntologyPrefixManager(
 			PrefixManager questionGeneratorOntologyPrefixManager) {
 		this.questionGeneratorOntologyPrefixManager = questionGeneratorOntologyPrefixManager;
+	}
+
+	/**
+	 * @return the isToUseExpressionsToQueryExpandableIndividuals: if false, then {@link #getOWLIndividuals(String, OWLReasoner, OWLOntology)} will
+	 * avoid using {@link OWLClassExpression} to query for individuals related to the ontology {@link TuuyiOntologyUser#EXTERNAL_ONTOLOGY_NAMESPACE_URI}.
+	 */
+	public boolean isToUseExpressionsToQueryRemoteIndividuals() {
+		return isToUseExpressionsToQueryExpandableIndividuals;
+	}
+
+	/**
+	 * @param isToUseExpressionsToQueryExpandableIndividuals the isToUseExpressionsToQueryExpandableIndividuals to set. 
+	 * If false, then {@link #getOWLIndividuals(String, OWLReasoner, OWLOntology)} will
+	 * avoid using {@link OWLClassExpression} to query for individuals related to the ontology {@link TuuyiOntologyUser#EXTERNAL_ONTOLOGY_NAMESPACE_URI}.
+	 */
+	public void setToUseExpressionsToQueryExpandableIndividuals(
+			boolean isToUseExpressionsToQueryExpandableIndividuals) {
+		this.isToUseExpressionsToQueryExpandableIndividuals = isToUseExpressionsToQueryExpandableIndividuals;
 	}
 
 }
