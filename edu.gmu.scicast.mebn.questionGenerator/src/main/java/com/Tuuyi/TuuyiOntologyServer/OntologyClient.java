@@ -1,30 +1,6 @@
 package com.Tuuyi.TuuyiOntologyServer;
 
-/** 
- * A Simple Java remote client for the Tuuyi Ontology Servlet
- * Primary external API (see each method for details):
 
- * OntologyClient
-
- * getTermById
- * getTermBySimpleName
- * getTermAncestors
- * getTermDescendantCount
- * getTermDepth
- * getLfe
- * getLfes
- * getRelation
- * 
- * createTerm
- * createLexicalForm
- * createRelation
-
- * inContext
- * mapText
- *
- */
-
-import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -49,8 +25,34 @@ import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.Lexica
 import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.LexicalForm.Context;
 import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.LexicalForm.LexicalFormCacheEntry;
 import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.Relation;
-import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.Term;
+import java.io.BufferedReader;
 
+/** 
+ * A Simple Java remote client for the Tuuyi Ontology Servlet.
+ * The HTML web interface can be accessed at (http://q.tuuyi.net:8080/TuuyiOntologyServlet/ontology.html).
+ * The web servlet API can be accessed for example at (http://q.tuuyi.net:8080/TuuyiOntologyServlet/api/term/read/?name=Science&relations=true).
+ * Primary external API (see each method for details):
+
+ * OntologyClient
+
+ * getTermById
+ * getTermBySimpleName
+ * getTermAncestors
+ * getTermDescendantCount
+ * getTermDepth
+ * getLfe
+ * getLfes
+ * getRelation
+ * 
+ * createTerm
+ * createLexicalForm
+ * createRelation
+
+ * inContext
+ * mapText
+ *
+ */
+import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.Term;
 public class OntologyClient {
 	
   /** 
