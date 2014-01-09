@@ -1,6 +1,7 @@
 package com.Tuuyi.TuuyiOntologyServer;
 
 
+import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -10,7 +11,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -25,8 +28,6 @@ import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.Lexica
 import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.LexicalForm.Context;
 import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.LexicalForm.LexicalFormCacheEntry;
 import com.Tuuyi.TuuyiOntologyServer.generatedClasses.TuuyiOntologyServer.Relation;
-import java.io.BufferedReader;
-
 /** 
  * A Simple Java remote client for the Tuuyi Ontology Servlet.
  * The HTML web interface can be accessed at (http://q.tuuyi.net:8080/TuuyiOntologyServlet/ontology.html).
@@ -87,8 +88,20 @@ public class OntologyClient {
   protected HashMap <Integer, Integer> termDepthCache = new HashMap<Integer, Integer> ();
   protected HashMap <Integer, ArrayIntList> termAncestorsCache = new HashMap<Integer, ArrayIntList> ();
   
-  /** Cache of inverse mapping of core#broader relationship */
-  private HashMap <Integer, List<Integer>> termInverseCoreBroaderCache = new HashMap<Integer, List<Integer>> ();
+  /** 
+   * Cache of mappings from term ID to a mapping from property ID to related terms.
+   * For example, if ids of term A, B, C are respectively 1, 2, and 3; and the properties
+   * skol:broader and (core:subject) are respectively 10,11, and
+   * A->skol:broader->B; A->core:subject->C; 
+   * B->skol:broader->C; B->core:subject->C; 
+   * then the mapping will be
+   * 1->{10->2, 11->3},
+   * 2->{10->3, 11->3}.
+   */
+  private Map<Integer, Map<Integer,List<Integer>>> termToPropertyIdCache = new HashMap<Integer, Map<Integer,List<Integer>>>();
+  
+  /**This is similar to {@link #termToPropertyIdCache}, but it stores inverse properties.*/
+  private Map<Integer, Map<Integer,List<Integer>>> termToInversePropertyIdCache = new HashMap<Integer, Map<Integer,List<Integer>>>();
   
   /* termIds for the key relational terms, these will be initialized at startup */
   public int subjectRelationId = -1;
@@ -376,28 +389,75 @@ public class OntologyClient {
       termDescendantCountCache.put(termId, json.getInt("descendantCount")); // updateFromJSON is auto-generated and doesn't do this!
       termDepthCache.put(termId, json.getInt("depth")); // updateFromJSON is auto-generated and doesn't do this!
       
-      // check descendants (concepts related by the inverse of core#broader)
+      // check relationships (e.g. concepts related by core#broader)
       try {
-    	// first, extract the inverse of core#broader
-          JSONObject inverseRelations = json.optJSONObject(INVERSE_RELATION_JSON_PARAMETER);
+    	// first, extract all normal (non-inverse) relations
+          JSONObject inverseRelations = json.optJSONObject(RELATION_JSON_PARAMETER);
     	  if (inverseRelations != null) {
-    		  // extract the core#broader relationship from the inverse relations
-    		  JSONArray inverseBroader = inverseRelations.getJSONArray(""+broaderRelationId);
-    		  if (inverseBroader != null) {
-    			  // prepare array to be used in order to fill cache
-    			  List<Integer> descendants = new ArrayList(inverseBroader.length());
-    			  for (int i = 0; i < inverseBroader.length(); i++) {
-    				  descendants.add(inverseBroader.getInt(i));
+    		  Iterator iterator = inverseRelations.keys();
+    		  while (iterator.hasNext()) {
+    			  // extract the relationship from the inverse relations
+    			  Object relationshipId = iterator.next();
+    			  Integer relationshipIdAsInteger = null;
+				  try {
+					  relationshipIdAsInteger = Integer.parseInt((String) relationshipId);
+				  } catch (NumberFormatException e) {
+					  logWriter.error("Was not able to load relationship " + relationshipId + " of term " + termId, e);
+				  }
+    			  JSONArray jsonValues = inverseRelations.getJSONArray(relationshipIdAsInteger.toString());
+    			  if (jsonValues != null) {
+    				  // prepare array to be used in order to fill cache
+    				  List<Integer> valueList = new ArrayList(jsonValues.length());
+    				  for (int i = 0; i < jsonValues.length(); i++) {
+    					  valueList.add(jsonValues.getInt(i));
+    				  }
+    				  // fill the cache, because all methods in this client access concepts through cached objects
+    				  Map<Integer, List<Integer>> properties = getTermToPropertyIdCache().get(termId);
+    				  if (properties == null) {
+    					  properties = new HashMap<Integer, List<Integer>>();
+    				  }
+    				  properties.put(relationshipIdAsInteger, valueList);
+    				  getTermToPropertyIdCache().put(termId, properties);
     			  }
-    			  // fill the cache, because all methods in this client access concepts through cached objects
-    			  getTermInverseCoreBroaderCache().put(termId, descendants);
     		  }
     	  }
-    	  
-    	  // TODO fill cache of core#broader (not its inverse) too
-	  } catch (JSONException e) {
-		  logWriter.error("Was not able to load inverse core#broader of " + termId, e);
+	  } catch (Exception e) {
+		  logWriter.error("Was not able to load relationships of " + termId, e);
 	  }
+      try {
+    	  // then, extract all inverse relations
+    	  JSONObject inverseRelations = json.optJSONObject(INVERSE_RELATION_JSON_PARAMETER);
+    	  if (inverseRelations != null) {
+    		  Iterator iterator = inverseRelations.keys();
+    		  while (iterator.hasNext()) {
+    			  // extract the relationship from the inverse relations
+    			  Object relationshipId = iterator.next();
+    			  Integer relationshipIdAsInteger = null;
+    			  try {
+    				  relationshipIdAsInteger = Integer.parseInt((String) relationshipId);
+    			  } catch (NumberFormatException e) {
+    				  logWriter.error("Was not able to load relationship " + relationshipId + " of term " + termId, e);
+    			  }
+    			  JSONArray jsonValues = inverseRelations.getJSONArray(relationshipIdAsInteger.toString());
+    			  if (jsonValues != null) {
+    				  // prepare array to be used in order to fill cache
+    				  List<Integer> valueList = new ArrayList(jsonValues.length());
+    				  for (int i = 0; i < jsonValues.length(); i++) {
+    					  valueList.add(jsonValues.getInt(i));
+    				  }
+    				  // fill the cache, because all methods in this client access concepts through cached objects
+    				  Map<Integer, List<Integer>> properties = getTermToInversePropertyIdCache().get(termId);
+    				  if (properties == null) {
+    					  properties = new HashMap<Integer, List<Integer>>();
+    				  }
+    				  properties.put(relationshipIdAsInteger, valueList);
+    				  getTermToInversePropertyIdCache().put(termId, properties);
+    			  }
+    		  }
+    	  }
+      } catch (Exception e) {
+    	  logWriter.error("Was not able to load inverse relationships of " + termId, e);
+      }
       
       
       return term;
@@ -538,7 +598,13 @@ public class OntologyClient {
    */
   public List<Integer> getTermDescendants(int id) {
 	  // check cache first
-	  List<Integer> descendants = getTermInverseCoreBroaderCache().get(id);
+//	  List<Integer> descendants = getTermInverseCoreBroaderCache().get(id);
+	  List<Integer> descendants = null;
+	  try {
+		  // inverse of "broader" holds descendants
+		  descendants = getTermToInversePropertyIdCache().get(id).get(broaderRelationId);
+	  } catch (Throwable t) {}
+	  
 	  if (descendants != null) {
 		  // found descendants in cache
 		  return descendants;
@@ -546,10 +612,15 @@ public class OntologyClient {
 	  // calling a query should update cache
 	  getTermById(id);
 	  // extract descendants again
-	  descendants = getTermInverseCoreBroaderCache().get(id);
-	  if (descendants == null) {
+//	  descendants = getTermInverseCoreBroaderCache().get(id);
+	  try {
+		  // inverse of "broader" holds descendants
+		  descendants = getTermToInversePropertyIdCache().get(id).get(broaderRelationId);
+	  } catch (Throwable t) {}
+	  if (descendants == null || descendants.isEmpty()) {
 		  // if cache was not updated, there is a problem in implementation
-		  throw new UnsupportedOperationException("Could not initialize cache of descendants when term " + id + " was queried. This may be a bug in the ontology client. Please, check jar version.");
+//		  throw new UnsupportedOperationException("Could not initialize cache of descendants when term " + id + " was queried. This may be a bug in the ontology client. Please, check jar version.");
+		  return Collections.emptyList();
 	  }
 	  return descendants;
   }
@@ -776,6 +847,11 @@ public class OntologyClient {
 		client.logWriter.info("Testing get term by id: " + term.asJSON().toString());
 //		Relation relation = client.getRelation(term.getId(), client.relatedRelationId, 0);
 	  }
+      for (Integer descendants : client.getTermDescendants(52354)) {
+    	  term = client.getTermById(descendants);
+  		  client.logWriter.info("Testing descendants: " + term.asJSON().toString());
+	  }
+      
       term = client.getTermBySimpleName(term.getSimpleName());
       client.logWriter.info("Testing get term by simpleName: " + term.asJSON().toString());
       	try {
@@ -825,25 +901,25 @@ public class OntologyClient {
     }
   }
 
-	/**
-	 * @return the termInverseCoreBroaderCache: cache of 
-	 * concepts inversely related to this concept by core#broader.
-	 * The key is the ID of a concept, and the value is a list
-	 * of IDs of concepts inversely related.
-	 */
-	protected HashMap <Integer, List<Integer>> getTermInverseCoreBroaderCache() {
-		return termInverseCoreBroaderCache;
-	}
-	
-	/**
-	 * @param termInverseCoreBroaderCache the termInverseCoreBroaderCache to set: cache of 
-	 * concepts inversely related to this concept by core#broader.
-	 * The key is the ID of a concept, and the value is a list
-	 * of IDs of concepts inversely related.
-	 */
-	protected void setTermInverseCoreBroaderCache(HashMap <Integer, List<Integer>> termDescendantsCache) {
-		this.termInverseCoreBroaderCache = termDescendantsCache;
-	}
+//	/**
+//	 * @return the termInverseCoreBroaderCache: cache of 
+//	 * concepts inversely related to this concept by core#broader.
+//	 * The key is the ID of a concept, and the value is a list
+//	 * of IDs of concepts inversely related.
+//	 */
+//	protected Map <Integer, List<Integer>> getTermInverseCoreBroaderCache() {
+//		return termInverseCoreBroaderCache;
+//	}
+//	
+//	/**
+//	 * @param termInverseCoreBroaderCache the termInverseCoreBroaderCache to set: cache of 
+//	 * concepts inversely related to this concept by core#broader.
+//	 * The key is the ID of a concept, and the value is a list
+//	 * of IDs of concepts inversely related.
+//	 */
+//	protected void setTermInverseCoreBroaderCache(Map <Integer, List<Integer>> termDescendantsCache) {
+//		this.termInverseCoreBroaderCache = termDescendantsCache;
+//	}
 
 	/**
 	 * @return the serverURL
@@ -857,6 +933,53 @@ public class OntologyClient {
 	 */
 	public void setServerURL(URL serverURL) {
 		this.serverURL = serverURL;
+	}
+
+	/**
+	 *  Cache of mappings from term ID to a mapping from property ID to related terms.
+     * For example, if ids of term A, B, C are respectively 1, 2, and 3; and the properties
+     * skol:broader and (core:subject) are respectively 10,11, and
+     * A->skol:broader->B; A->core:subject->C; 
+     * B->skol:broader->C; B->core:subject->C; 
+     * then the mapping will be
+     * 1->{10->2, 11->3},
+     * 2->{10->3, 11->3}.
+	 * @return the termToPropertyIdCache
+	 */
+	public Map<Integer, Map<Integer,List<Integer>>> getTermToPropertyIdCache() {
+		return termToPropertyIdCache;
+	}
+
+	/**
+	 * Cache of mappings from term ID to a mapping from property ID to related terms.
+     * For example, if ids of term A, B, C are respectively 1, 2, and 3; and the properties
+     * skol:broader and (core:subject) are respectively 10,11, and
+     * A->skol:broader->B; A->core:subject->C; 
+     * B->skol:broader->C; B->core:subject->C; 
+     * then the mapping will be
+     * 1->{10->2, 11->3},
+     * 2->{10->3, 11->3}.
+	 * @param termToPropertyIdCache the termToPropertyIdCache to set
+	 */
+	public void setTermToPropertyIdCache(Map<Integer, Map<Integer,List<Integer>>> termToPropertyIdCache) {
+		this.termToPropertyIdCache = termToPropertyIdCache;
+	}
+
+	/**
+	 * This is similar to {@link #getTermToPropertyIdCache()}, but it stores inverse properties.
+	 * @return the termToInversePropertyIdCache
+	 */
+	public Map<Integer, Map<Integer,List<Integer>>> getTermToInversePropertyIdCache() {
+		return termToInversePropertyIdCache;
+	}
+
+	/**
+	 * This is similar to {@link #setTermToPropertyIdCache(Map)}, but it stores inverse properties.
+	 * @param termToInversePropertyIdCache the termToInversePropertyIdCache to set
+	 */
+	public void setTermToInversePropertyIdCache(
+			Map<Integer, Map<Integer,List<Integer>>> termToInversePropertyIdCache) {
+		this.termToInversePropertyIdCache = termToInversePropertyIdCache;
 	}
 
 
