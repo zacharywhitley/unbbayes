@@ -51,6 +51,9 @@
         <DataProperty IRI="#hasUID"/>
     </Declaration>
     <Declaration>
+        <DataProperty IRI="#hierarchyPropertyID"/>
+    </Declaration>
+    <Declaration>
         <DataProperty IRI="#isToExclude"/>
     </Declaration>
     <Declaration>
@@ -90,6 +93,13 @@
     <SubClassOf>
         <Class IRI="#TuuyiClass"/>
         <Class IRI="#RemoteClass"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#TuuyiClass"/>
+        <DataAllValuesFrom>
+            <DataProperty IRI="#hierarchyPropertyID"/>
+            <Datatype abbreviatedIRI="xsd:integer"/>
+        </DataAllValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#TuuyiClass"/>
@@ -167,6 +177,12 @@ By default, it is assumed to be 0 if nothing is specified.</Literal>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
         <IRI>#hasUID</IRI>
         <Literal datatypeIRI="&xsd;string">This data property can be used if a remote server uses something other than URI to identify an individual of an ontology. This data property will then hold what is the ID of the individual used in the remote server.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#hierarchyPropertyID</IRI>
+        <Literal datatypeIRI="&xsd;string">This property indicates what is the ID of the OWL property that shall be used in the remote ontology in order to represent a type hierarchy. For example, if we use associated ID of skol:broader, then we have an hierarchy of RDF individuals. If we use associated ID of core:subject, we have a hierarchy of only 2 levels (the top level is a category, and the lower/leaf level is the concept categorized in that category). 
+This property can be used in order to simulate hierarchy of classes by using only RDF individuals. The property identified by this symbolic link does then work as if we were using rdf:subclass to individuals. This can enable Scicast question reasoner to hack remote ontology.</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
