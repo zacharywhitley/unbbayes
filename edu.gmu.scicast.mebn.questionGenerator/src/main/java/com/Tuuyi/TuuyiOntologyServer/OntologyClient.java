@@ -592,37 +592,88 @@ public class OntologyClient {
   }
   
   /**
+   * @param id : ID of the term
+   * @return : obtains a mapping of ids of relationships to ids of related terms.
+   * For example, if in the ontology the term 1 is related to
+   * term 2 with relationship 100, and with term 3 with relationship 200,
+   * then {@link #getTermRelationships(1)} will return the following mapping:
+   * {100->2 , 200->3}
+   * @see #getTermById(int)
+   * @see #getTermToPropertyIdCache()
+   */
+  public Map<Integer, List<Integer>> getTermRelationships(int id) {
+	  Map<Integer, List<Integer>> ret = null;	// map to be returned
+	  try {
+		  // check cache first
+		  ret = getTermToPropertyIdCache().get(id);
+	  } catch (Throwable t) {/*ignore exceptions here*/}
+	  
+	  if (ret != null) {
+		  // found relationships in cache
+		  return ret;
+	  }
+	  // calling getTermById should automatically update cache too
+	  getTermById(id);
+	  // extract cache again
+	  try {
+		  ret = getTermToPropertyIdCache().get(id);
+	  } catch (Throwable t) {}
+	  if (ret != null) {
+		  return ret;
+	  }
+	  // do not return null. Return empty map instead
+	  return Collections.emptyMap();
+  }
+  
+  /**
+   * This is identical to {@link #getTermRelationships(int)}, but
+   * it returns inverse relationships.
+   * @see #getTermRelationships(int)
+   * @see #getTermById(int)
+   * @see #getTermToInversePropertyIdCache()
+   */
+  public Map<Integer, List<Integer>> getTermInverseRelationships(int id) {
+	  Map<Integer, List<Integer>> ret = null;	// map to be returned
+	  try {
+		  // check cache first
+		  ret = getTermToInversePropertyIdCache().get(id);
+	  } catch (Throwable t) {/*ignore exceptions here*/}
+	  
+	  if (ret != null) {
+		  // found relationships in cache
+		  return ret;
+	  }
+	  // calling getTermById should automatically update cache too
+	  getTermById(id);
+	  // extract cache again
+	  try {
+		  ret = getTermToInversePropertyIdCache().get(id);
+	  } catch (Throwable t) {}
+	  if (ret != null) {
+		  return ret;
+	  }
+	  // do not return null. Return empty map instead
+	  return Collections.emptyMap();
+  }
+  
+  /**
+   * This is just a wrapper for {@link #getTermInverseRelationships(int)},
+   * returning only the terms related with {@link #broaderRelationId}.
    * @param id - the term whose descendants (related with the inverse relationship "core#broader") are being requested
    * @return - the set of terms reachable through a simple search up a (directed)loop-free subset of the core#broader relation, 
-   * initialized/supplemented by one step of subject relation traversal
+   * initialized/supplemented by one step of subject relation traversal.
+   * @see #getTermInverseRelationships(int)
    */
   public List<Integer> getTermDescendants(int id) {
-	  // check cache first
-//	  List<Integer> descendants = getTermInverseCoreBroaderCache().get(id);
-	  List<Integer> descendants = null;
-	  try {
-		  // inverse of "broader" holds descendants
-		  descendants = getTermToInversePropertyIdCache().get(id).get(broaderRelationId);
-	  } catch (Throwable t) {}
-	  
-	  if (descendants != null) {
-		  // found descendants in cache
-		  return descendants;
+	  // simply return the list of term IDs related with property broaderRelationId
+	  Map<Integer, List<Integer>> properties = getTermInverseRelationships(id);
+	  if (properties != null) {
+		  List<Integer> ret = properties.get(broaderRelationId);
+		  if (ret != null) {
+			  return ret;
+		  }
 	  }
-	  // calling a query should update cache
-	  getTermById(id);
-	  // extract descendants again
-//	  descendants = getTermInverseCoreBroaderCache().get(id);
-	  try {
-		  // inverse of "broader" holds descendants
-		  descendants = getTermToInversePropertyIdCache().get(id).get(broaderRelationId);
-	  } catch (Throwable t) {}
-	  if (descendants == null || descendants.isEmpty()) {
-		  // if cache was not updated, there is a problem in implementation
-//		  throw new UnsupportedOperationException("Could not initialize cache of descendants when term " + id + " was queried. This may be a bug in the ontology client. Please, check jar version.");
-		  return Collections.emptyList();
-	  }
-	  return descendants;
+	  return Collections.emptyList();
   }
   
   /** 
