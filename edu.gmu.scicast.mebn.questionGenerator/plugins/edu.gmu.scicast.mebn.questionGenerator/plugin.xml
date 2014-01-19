@@ -31,7 +31,7 @@
     
     <!-- SSBN generator that does not delete barren/d-sep nodes -->
     <extension plugin-id="unbbayes.prs.mebn" point-id="SSBN" id="FullSSBNGenerator">
-        <parameter id="class" value="unbbayes.gui.mebn.extension.ssbn.FullSSBNGeneratorBuilder"/>
+        <parameter id="class" value="unbbayes.prs.mebn.ssbn.FullSSBNGeneratorBuilder"/>
         <parameter id="name" value="SciCast question generator"/>
     </extension>
     
