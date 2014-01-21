@@ -6964,7 +6964,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// this is the list to be returned
 			List<Float> ret = new ArrayList<Float>(newValues.size());
 			for (int i = 0; i < newValues.size(); i++) {
-				if (oldValues.get(i).equals(0f) || oldValues.get(i) >= 1f) {
+				if (oldValues.get(i).equals(0f) && newValues.get(i)> 0f) {
+					throw new IllegalArgumentException("Probability of question " + questionId + " given " + assumptionIds + "=" + assumedStates + " has probability " + oldValues + " (it's settled), thus cannot be changed.");
+				}
+				if (oldValues.get(i) >= 1f) {
 					throw new IllegalArgumentException("Probability of question " + questionId + " given " + assumptionIds + "=" + assumedStates + " has probability " + oldValues + " (it's settled), thus cannot be changed.");
 				}
 				// probs and assets are all supposedly related by indexes
@@ -13253,7 +13256,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getVersionInfo()
 	 */
 	public String getVersionInfo() {
-		return "UnBBayes SciCast Markov Engine 1.0.2";
+		return "UnBBayes SciCast Markov Engine 1.0.3";
 	}
 
 	/**

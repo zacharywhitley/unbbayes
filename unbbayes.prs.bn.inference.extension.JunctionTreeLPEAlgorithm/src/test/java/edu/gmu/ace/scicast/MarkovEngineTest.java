@@ -17286,7 +17286,7 @@ public class MarkovEngineTest extends TestCase {
 		
 		engine.initialize();
 		  
-		// 5<-6->8->7
+		// 5<-6->8->7<-5
 		engine.addQuestion(null, new Date(), 8L	, 2, null);
 		engine.addQuestion(null, new Date(), 5L	, 3, null);
 		engine.addQuestion(null, new Date(), 7L	, 2, null);
@@ -29450,6 +29450,69 @@ public class MarkovEngineTest extends TestCase {
 		} catch (RuntimeException e) {
 			assertFalse(e.getMessage().contains("0"));
 		}
+	}
+	
+
+	/**
+	 * Let us say a binary node 'Q1' has a child node called 'M' that has 4 states (None, Jan, Feb, Mar). And the CPT of 'M' is the following:
+	 * Given Q1=no, P(M) = [100, 0, 0, 0]
+	 * Given Q1=yes, P(M) = [0, 1/3, 1/3, 1/3].
+	 * Now suppose a combo trade, P(M|Q1=yes) = [0, .1, .8, .1], we know ME will refuse to run this trade because one of states has zero probability. 
+	 * And I tested in Robot, it thrown 'division by 0' exception.
+	 */
+	public final void testPartiallyDeterministic() {
+		engine.initialize();
+		
+		engine.addQuestion(null, new Date(), 1, 2, null);
+		engine.addQuestion(null, new Date(), 'M', 4, null);
+		
+		engine.addQuestionAssumption(null, new Date(), 'M', Collections.singletonList(1L),null);
+		
+		assertEquals(engine.getProbabilisticNetwork().getNodeCount(),2);
+		assertNotNull(engine.getProbabilisticNetwork().getNode("1"));
+		assertNotNull(engine.getProbabilisticNetwork().getNode(""+((long)'M')));
+		
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(1f);
+		newValues.add(0f);
+		newValues.add(0f);
+		newValues.add(0f);
+		engine.addTrade(null, new Date(), "", 0, 'M', newValues , Collections.singletonList(1L), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>();
+		newValues.add(0f);
+		newValues.add(1f/3f);
+		newValues.add(1f/3f);
+		newValues.add(1f/3f);
+		engine.addTrade(null, new Date(), "", 0, 'M', newValues , Collections.singletonList(1L), Collections.singletonList(1), true);
+		
+		List<Float> probList = engine.getProbList(1, null, null);
+		assertEquals(2,probList.size());
+		assertEquals(.5f,probList.get(0),.0001);
+		assertEquals(.5f,probList.get(1),.0001);
+		probList = engine.getProbList('M', null, null);
+		assertEquals(4,probList.size());
+		assertEquals(.5f,probList.get(0),.0001);
+		assertEquals(0.16666666666666666666666666666667f,probList.get(1),.0001);
+		assertEquals(0.16666666666666666666666666666667f,probList.get(2),.0001);
+		assertEquals(0.16666666666666666666666666666667f,probList.get(3),.0001);
+		
+		newValues = new ArrayList<Float>();
+		newValues.add(0f);
+		newValues.add(.1f);
+		newValues.add(.8f);
+		newValues.add(.1f);
+		engine.addTrade(null, new Date(), "", 0, 'M', newValues , Collections.singletonList(1L), Collections.singletonList(1), true);
+		
+		probList = engine.getProbList(1, null, null);
+		assertEquals(2,probList.size());
+		assertEquals(.5f,probList.get(0),.0001);
+		assertEquals(.5f,probList.get(1),.0001);
+		probList = engine.getProbList('M', null, null);
+		assertEquals(4,probList.size());
+		assertEquals(.5f,probList.get(0),.0001);
+		assertEquals(0.05f,probList.get(1),.0001);
+		assertEquals(0.4f,probList.get(2),.0001);
+		assertEquals(0.05f,probList.get(3),.0001);
 	}
 	
 	
