@@ -62,6 +62,11 @@ public class OntologyClient {
    */
   public static final String INVERSE_RELATION_JSON_PARAMETER = "inverseRelations";
   
+  /**
+   * This is a list of parameters to be appended to HTTP requests regarding queries related to SciCast. The parameters shall be separated by a "&"
+   */
+  private String projectSpecificParameter = "relations=true&reqdCats=Category%3AScience%2CCategory%3ATechnology%2CCategory%3AEngineering%2CCategory%3AMedicine&excludedTypes=MusicalWork%2C%234534568%2C%234534569%2C%234534924%2C%234534609%2C%234534610";
+  
   /** 
    * This is the name of JSON parameter that holds a json object which is a map with known relationships and most relevant concepts related with such relationship.
    * This can be used, for example, in order to obtain broader (core#broader) concepts. 
@@ -164,6 +169,11 @@ public class OntologyClient {
   }
 
   public JSONObject remoteJSONRequest(String parameters) {
+	// append some parameters that are specific to this project, if there are.
+	String projectSpecificParam = getProjectSpecificParameter();
+	if (projectSpecificParam != null && projectSpecificParam.trim().length() > 0) {
+		parameters += "&" + projectSpecificParam;
+	}
     String response = remoteRequest(parameters);
     if (response != null) {
       try {
@@ -237,7 +247,8 @@ public class OntologyClient {
       return term;
     }
     
-    JSONObject json = remoteJSONRequest("term/read/?name="+URLEncoder.encode(name)+"&relations=true");
+    JSONObject json = remoteJSONRequest("term/read/?name="+URLEncoder.encode(name));
+//    JSONObject json = remoteJSONRequest("term/read/?name="+URLEncoder.encode(name)+"&relations=true");
     try {
       term = localCloneTerm(json);
       term.setId(json.getInt("id"));
@@ -369,7 +380,7 @@ public class OntologyClient {
    */
   public Term matchTermByName(String name) { 
 //    JSONObject json = remoteJSONRequest("term/read/?match="+URLEncoder.encode(name));
-    JSONObject json = remoteJSONRequest("term/read/?match="+URLEncoder.encode(name));
+    JSONObject json = remoteJSONRequest("term/match/?name="+URLEncoder.encode(name));
       Term term = localCloneTerm(json);
       return term;
   }
@@ -392,9 +403,9 @@ public class OntologyClient {
       // check relationships (e.g. concepts related by core#broader)
       try {
     	// first, extract all normal (non-inverse) relations
-          JSONObject inverseRelations = json.optJSONObject(RELATION_JSON_PARAMETER);
-    	  if (inverseRelations != null) {
-    		  Iterator iterator = inverseRelations.keys();
+          JSONObject relations = json.optJSONObject(RELATION_JSON_PARAMETER);
+    	  if (relations != null) {
+    		  Iterator iterator = relations.keys();
     		  while (iterator.hasNext()) {
     			  // extract the relationship from the inverse relations
     			  Object relationshipId = iterator.next();
@@ -404,7 +415,7 @@ public class OntologyClient {
 				  } catch (NumberFormatException e) {
 					  logWriter.error("Was not able to load relationship " + relationshipId + " of term " + termId, e);
 				  }
-    			  JSONArray jsonValues = inverseRelations.getJSONArray(relationshipIdAsInteger.toString());
+    			  JSONArray jsonValues = relations.getJSONArray(relationshipIdAsInteger.toString());
     			  if (jsonValues != null) {
     				  // prepare array to be used in order to fill cache
     				  List<Integer> valueList = new ArrayList(jsonValues.length());
@@ -555,7 +566,8 @@ public class OntologyClient {
       return term;
     }
    
-    JSONObject json = remoteJSONRequest("term/read/?id="+id+"&relations=true");
+    JSONObject json = remoteJSONRequest("term/read/?id="+id);
+//    JSONObject json = remoteJSONRequest("term/read/?id="+id+"&relations=true");
       term = localCloneTerm(json);
       return term;
   }
@@ -657,18 +669,35 @@ public class OntologyClient {
   }
   
   /**
+   * It calls {@link #getTermDescendants(int, int, boolean)} and uses
+   * null as the property id and as inverse by default.
+   * @see #broaderRelationId
+   */
+  public List<Integer> getTermDescendants(int id) {
+	  return getTermDescendants(id, null, true);
+  }
+  
+  /**
    * This is just a wrapper for {@link #getTermInverseRelationships(int)},
    * returning only the terms related with {@link #broaderRelationId}.
-   * @param id - the term whose descendants (related with the inverse relationship "core#broader") are being requested
+   * @param termId - the term whose descendants (related with the inverse relationship "core#broader") are being requested
+   * @param propertyId - the id of the remote property .to be used in order to search for descendant.
+   * If null, then {@link #broaderRelationId} will be used.
+   * @param isInverse : if true, {@link #getTermInverseRelationships(int)} will be queried. If false,
+   * {@link #getTermRelationships(int)} will be queried.
+   * If null, it will be assumed to be true.
    * @return - the set of terms reachable through a simple search up a (directed)loop-free subset of the core#broader relation, 
    * initialized/supplemented by one step of subject relation traversal.
    * @see #getTermInverseRelationships(int)
    */
-  public List<Integer> getTermDescendants(int id) {
+  public List<Integer> getTermDescendants(int termId, Integer propertyId, boolean isInverse) {
+	  if (propertyId == null) {
+		  propertyId = broaderRelationId;
+	  }
 	  // simply return the list of term IDs related with property broaderRelationId
-	  Map<Integer, List<Integer>> properties = getTermInverseRelationships(id);
+	  Map<Integer, List<Integer>> properties = isInverse?getTermInverseRelationships(termId):getTermRelationships(termId);
 	  if (properties != null) {
-		  List<Integer> ret = properties.get(broaderRelationId);
+		  List<Integer> ret = properties.get(propertyId);
 		  if (ret != null) {
 			  return ret;
 		  }
@@ -1031,6 +1060,24 @@ public class OntologyClient {
 	public void setTermToInversePropertyIdCache(
 			Map<Integer, Map<Integer,List<Integer>>> termToInversePropertyIdCache) {
 		this.termToInversePropertyIdCache = termToInversePropertyIdCache;
+	}
+
+	/**
+	 * This is a list of parameters to be appended to HTTP requests regarding queries related to the current project. The parameters shall be separated by a "&".
+	 * They will be used in {@link #remoteJSONRequest(String)}.
+	 * @return the projectSpecificParameter
+	 */
+	public String getProjectSpecificParameter() {
+		return projectSpecificParameter;
+	}
+
+	/**
+	 * This is a list of parameters to be appended to HTTP requests regarding queries related to the current project. The parameters shall be separated by a "&".
+	 * They will be used in {@link #remoteJSONRequest(String)}.
+	 * @param projectSpecificParameter the projectSpecificParameter to set
+	 */
+	public void setProjectSpecificParameter(String scicastRequestParameter) {
+		this.projectSpecificParameter = scicastRequestParameter;
 	}
 
 

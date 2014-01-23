@@ -28,6 +28,12 @@ public interface TuuyiOntologyUser {
 	/** Name of the OWL data property that stores the numeric ID of the individual in Tuuyi server */
 	public static final String HAS_UID_PROPERTY_NAME = "hasUID";
 	
+	/** Name of the OWL data property that stores the numeric ID of a property at Tuuyi server */
+	public static final String HIERARCHY_PROPERTY_ID = "hierarchyPropertyID";
+	
+	/** Name of the OWL data property that stores whether the inverse of {@link #HIERARCHY_PROPERTY_ID} shal be used */
+	public static final String IS_INVERSE_HIERARCHY_PROPERTY_ID = "isInverseHierarchyPropertyID";
+	
 	/** 
 	 * Name of the OWL data property that indicates how deep in skol:broader property at Tuuyi server shall be considered. 
 	 * Zero means that the hierarchy shall not be considered, and negative numbers have implementation-specific meanings. 

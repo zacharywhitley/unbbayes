@@ -54,6 +54,9 @@
         <DataProperty IRI="#hierarchyPropertyID"/>
     </Declaration>
     <Declaration>
+        <DataProperty IRI="#isInverseHierarchyPropertyID"/>
+    </Declaration>
+    <Declaration>
         <DataProperty IRI="#isToExclude"/>
     </Declaration>
     <Declaration>
@@ -62,51 +65,9 @@
     <Declaration>
         <DataProperty IRI="#tuuyiDataProperty"/>
     </Declaration>
-    <EquivalentClasses>
-        <Class IRI="#RemoteClass"/>
-        <DataSomeValuesFrom>
-            <DataProperty IRI="#hasServletURL"/>
-            <Datatype abbreviatedIRI="xsd:anyURI"/>
-        </DataSomeValuesFrom>
-    </EquivalentClasses>
-    <EquivalentClasses>
-        <Class IRI="#TuuyiClass"/>
-        <DataHasValue>
-            <DataProperty IRI="#hasServletURL"/>
-            <Literal datatypeIRI="&xsd;anyURI">http://q.tuuyi.net:8080/TuuyiOntologyServlet/api/</Literal>
-        </DataHasValue>
-    </EquivalentClasses>
-    <SubClassOf>
-        <Class IRI="#RemoteClass"/>
-        <DataMaxCardinality cardinality="1">
-            <DataProperty IRI="#hasMaxDepth"/>
-            <Datatype abbreviatedIRI="xsd:integer"/>
-        </DataMaxCardinality>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#RemoteClass"/>
-        <DataMaxCardinality cardinality="1">
-            <DataProperty IRI="#isToExclude"/>
-            <Datatype abbreviatedIRI="xsd:boolean"/>
-        </DataMaxCardinality>
-    </SubClassOf>
     <SubClassOf>
         <Class IRI="#TuuyiClass"/>
         <Class IRI="#RemoteClass"/>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#TuuyiClass"/>
-        <DataAllValuesFrom>
-            <DataProperty IRI="#hierarchyPropertyID"/>
-            <Datatype abbreviatedIRI="xsd:integer"/>
-        </DataAllValuesFrom>
-    </SubClassOf>
-    <SubClassOf>
-        <Class IRI="#TuuyiClass"/>
-        <DataMaxCardinality cardinality="1">
-            <DataProperty IRI="#hasUID"/>
-            <Datatype abbreviatedIRI="xsd:int"/>
-        </DataMaxCardinality>
     </SubClassOf>
     <SubObjectPropertyOf>
         <ObjectProperty IRI="#tuuyiObjectProperty"/>
@@ -128,6 +89,10 @@
         <ObjectProperty IRI="#tuuyiObjectProperty"/>
         <Class IRI="#TuuyiClass"/>
     </ObjectPropertyRange>
+    <SubDataPropertyOf>
+        <DataProperty IRI="#hierarchyPropertyID"/>
+        <DataProperty IRI="#servletDataProperty"/>
+    </SubDataPropertyOf>
     <SubDataPropertyOf>
         <DataProperty IRI="#tuuyiDataProperty"/>
         <DataProperty IRI="#servletDataProperty"/>
@@ -183,6 +148,11 @@ By default, it is assumed to be 0 if nothing is specified.</Literal>
         <IRI>#hierarchyPropertyID</IRI>
         <Literal datatypeIRI="&xsd;string">This property indicates what is the ID of the OWL property that shall be used in the remote ontology in order to represent a type hierarchy. For example, if we use associated ID of skol:broader, then we have an hierarchy of RDF individuals. If we use associated ID of core:subject, we have a hierarchy of only 2 levels (the top level is a category, and the lower/leaf level is the concept categorized in that category). 
 This property can be used in order to simulate hierarchy of classes by using only RDF individuals. The property identified by this symbolic link does then work as if we were using rdf:subclass to individuals. This can enable Scicast question reasoner to hack remote ontology.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#isInverseHierarchyPropertyID</IRI>
+        <Literal datatypeIRI="&xsd;string">This is used together with the hierarchyPropertyID. If this is set to true, the inverse of the property specified in hierarchyPropertyID will be used. If false, then  it will be used normally. IF UNSPECIFIED, THEN IT WILL BE CONSIDERED AS BEING TRUE (I.E. INVERSE OF hierarchyPropertyID WILL BE USED TO GET CHILDREN OF THE PROVIDED INDIVIDUAL).</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
