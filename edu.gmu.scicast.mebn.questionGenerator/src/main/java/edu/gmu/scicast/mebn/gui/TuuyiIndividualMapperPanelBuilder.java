@@ -58,9 +58,11 @@ import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.PrefixManager;
 import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.util.DefaultPrefixManager;
 import org.semanticweb.owlapi.util.OWLEntityRemover;
 
 import unbbayes.controller.mebn.IMEBNMediator;
@@ -1301,6 +1303,185 @@ public class TuuyiIndividualMapperPanelBuilder extends JPanel implements IMEBNEd
 			}
 		});
 		
+		
+		getTuuyiConsiderIndividualIncludeButton().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// extract class where individual will be created
+				OWLClass selectedClass = (OWLClass)getTuuyiClassList().getSelectedValue();
+				if (selectedClass == null) {
+					JOptionPane.showMessageDialog(null, "Please, select a custom class (at the left panel)",  "ERROR", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				String selectedClassName = getPROWL2modelUser().extractName(selectedClass);
+				int id = -1;
+				
+				OWLOntology ontology = getOWLOntology(getMEBN(), getMediator());
+				
+				PrefixManager prefixManager = new DefaultPrefixManager(ontology.getOntologyID().getOntologyIRI() + "#");
+						
+				TermWrapper root = ((TermWrapper)((DefaultMutableTreeNode)getTuuyiSearchResultTree().getModel().getRoot()).getUserObject());
+				
+				OWLDataProperty isInverseHierarchy = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(IS_INVERSE_HIERARCHY_PROPERTY_ID, getPrefixManager());
+				OWLDataProperty hierarchyPropertyID = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(HIERARCHY_PROPERTY_ID, getPrefixManager());
+				OWLDataProperty hasUID = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(HAS_UID_PROPERTY_NAME, getPrefixManager());
+				
+				for (TreePath path : getTuuyiSearchResultTree().getSelectionPaths()) {
+					TermWrapper selected = ((TermWrapper)((DefaultMutableTreeNode)path.getLastPathComponent()).getUserObject());
+					
+					OWLNamedIndividual individual = null;
+					switch (selected.getType()) {
+					case TermWrapper.PROPERTY:
+						id = root.getTerm().getId();	// if included a property, then use id of the root term
+						// name of individual is class_root_property
+						individual = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNamedIndividual(
+								selectedClassName + "_" + root.getTerm().getSimpleName() + "_" + selected.getTerm().getSimpleName(), 
+								prefixManager
+						);
+						// indicate property
+						ontology.getOWLOntologyManager().applyChanges(
+								ontology.getOWLOntologyManager().addAxiom(
+										ontology, 
+										ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataPropertyAssertionAxiom(hierarchyPropertyID, individual, selected.getTerm().getId())
+								)
+						);
+						break;
+					case TermWrapper.INVERSE_PROPERTY:
+						id = root.getTerm().getId();		// if included a property, then use id of the root term
+						// name of individual is class_root_INV_property
+						individual = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNamedIndividual(
+								selectedClassName + "_" + root.getTerm().getSimpleName() + "_INV_" + selected.getTerm().getSimpleName(), 
+								prefixManager
+						);
+						// indicate property
+						ontology.getOWLOntologyManager().applyChanges(
+								ontology.getOWLOntologyManager().addAxiom(
+										ontology, 
+										ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataPropertyAssertionAxiom(hierarchyPropertyID, individual, selected.getTerm().getId())
+								)
+						);
+						// mark as inverse
+						ontology.getOWLOntologyManager().applyChanges(
+								ontology.getOWLOntologyManager().addAxiom(
+										ontology, 
+										ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataPropertyAssertionAxiom(isInverseHierarchy, individual, true)
+								)
+						);
+						break;
+					case TermWrapper.TERM:
+						id = selected.getTerm().getId();	// if selected a term, use its id
+						// name of the individual is class_selected
+						individual = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNamedIndividual(
+								selectedClassName + "_" + selected.getTerm().getSimpleName(), 
+								prefixManager
+						);
+						break;
+
+					default:
+						// do not create individual
+						continue;
+					}
+					boolean isOfSelectedClassAlready = false;
+					for (OWLClassExpression type : individual.getTypes(ontology.getImportsClosure())) {
+						if (selectedClass.equals(type)) {
+							isOfSelectedClassAlready = true;
+							break;
+						}
+					};
+					if (!isOfSelectedClassAlready) {
+						// specify class
+						List<OWLOntologyChange> changes = ontology.getOWLOntologyManager().addAxiom(
+							ontology, 
+							ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClassAssertionAxiom(selectedClass, individual)
+						);
+						// specify ID
+						
+						changes.addAll(
+							ontology.getOWLOntologyManager().addAxiom(
+								ontology, 
+								ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataPropertyAssertionAxiom(hasUID, individual, id)
+							)	
+						);
+						ontology.getOWLOntologyManager().applyChanges(changes);
+					}
+				}
+				rebuildConsideredIndividualsList();
+			}
+		});
+		
+		getTuuyiIgnoreIndividualIncludeButton().addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// extract class where individual will be created
+				OWLClass selectedClass = (OWLClass)getTuuyiClassList().getSelectedValue();
+				if (selectedClass == null) {
+					JOptionPane.showMessageDialog(null, "Please, select a custom class (at the left panel)",  "ERROR", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				String selectedClassName = getPROWL2modelUser().extractName(selectedClass);
+				
+				OWLOntology ontology = getOWLOntology(getMEBN(), getMediator());
+				
+				PrefixManager prefixManager = new DefaultPrefixManager(ontology.getOntologyID().getOntologyIRI() + "#");
+				
+				OWLDataProperty isToExclude = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(IS_TO_EXCLUDE_DATA_PROPERTY_NAME, getPrefixManager());
+				OWLDataProperty hasUID = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(HAS_UID_PROPERTY_NAME, getPrefixManager());
+				
+				for (TreePath path : getTuuyiSearchResultTree().getSelectionPaths()) {
+					TermWrapper selected = ((TermWrapper)((DefaultMutableTreeNode)path.getLastPathComponent()).getUserObject());
+					
+					OWLNamedIndividual individual = null;
+					switch (selected.getType()) {
+					case TermWrapper.TERM:
+						// name of the individual is class_selected
+						individual = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNamedIndividual(
+								selectedClassName + "_" + selected.getTerm().getSimpleName(), 
+								prefixManager
+								);
+						break;
+					default:
+						// do not create individual
+						continue;
+					}
+					
+					ontology.getOWLOntologyManager().applyChanges(
+						ontology.getOWLOntologyManager().addAxiom(
+							ontology, 
+							ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataPropertyAssertionAxiom(isToExclude, individual, true)
+						)	
+					);
+					
+					boolean isOfSelectedClassAlready = false;
+					for (OWLClassExpression type : individual.getTypes(ontology.getImportsClosure())) {
+						if (selectedClass.equals(type)) {
+							isOfSelectedClassAlready = true;
+							break;
+						}
+					};
+					
+					if (!isOfSelectedClassAlready) {
+						// specify class
+						List<OWLOntologyChange> changes = ontology.getOWLOntologyManager().addAxiom(
+								ontology, 
+								ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClassAssertionAxiom(selectedClass, individual)
+						);
+						
+						// specify ID
+						changes.addAll(
+							ontology.getOWLOntologyManager().addAxiom(
+								ontology, 
+								ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataPropertyAssertionAxiom(hasUID, individual, selected.getTerm().getId())
+							)	
+						);
+						// indicate that it is to ignore when questions are generating
+						
+						ontology.getOWLOntologyManager().applyChanges(changes);
+					}
+				}
+				rebuildIgnoredIndividualsList();
+				rebuildConsideredIndividualsList();
+			}
+		});
 		
 		
 		
