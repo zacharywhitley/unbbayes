@@ -2353,9 +2353,9 @@ public class UnBBayesFrame extends JFrame {
 					UnBBayesModule mod = controller.loadNet(currentFile,
 							selectedModule);
 					// Set current file
-					mod.setFile(currentFile);
 
 					if (mod != null) {
+						mod.setFile(currentFile);
 						addWindow(mod);
 					}
 				} catch (Throwable e) {
