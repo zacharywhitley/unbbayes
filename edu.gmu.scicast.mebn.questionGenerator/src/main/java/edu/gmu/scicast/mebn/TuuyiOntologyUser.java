@@ -16,6 +16,9 @@ import com.Tuuyi.TuuyiOntologyServer.OntologyClient;
  */
 public interface TuuyiOntologyUser {
 	
+//	/** Default static/singleton instance of {@link OntologyClient} that can be used by implementations if they are not personalizing execution. */
+//	public static final OntologyClient DEFAULT_ONTOLOGY_CLIENT = new OntologyClient();
+	
 	/** Name of the OWL data property that indicates that the instance shall not be considered */
 	public static final String IS_TO_EXCLUDE_DATA_PROPERTY_NAME = "isToExclude";
 	
