@@ -523,10 +523,19 @@ public class DneIO implements BaseIO {
 				getNext(st);
 				// If discrete
 			} else if (st.sval.equals("states")) {
+				int numStates = 0;
 				while (getNext(st) != ';') {
 					node.appendState(st.sval);
+					numStates++;
 				}
-				if (isToUseAbsurdState()) {
+				if (numStates <= 0) {
+					throw new IOException("Found node with 0 states: " + node);
+				}
+				if (numStates == 1) {
+					// nodes with only 1 state is actually a constant
+					isConstantNode = true;
+				}
+				if (numStates > 1 && isToUseAbsurdState()) {
 					// all nodes should have the absurd state
 					String absurdState = "absurd";
 					// guarantee uniqueness of the name of the state
@@ -591,7 +600,7 @@ public class DneIO implements BaseIO {
 				}
 			} else if (st.sval.equals("kind")) {
 				this.getNext(st);// read "=" and then the kind of node (e.g. CONSTANT, NATURE, etc.)
-				isConstantNode = st.sval.equalsIgnoreCase("CONSTANT");
+				isConstantNode = isConstantNode || st.sval.equalsIgnoreCase("CONSTANT");
 				this.getNext(st);
 			} else {
 				// Ignore for now...
@@ -599,14 +608,32 @@ public class DneIO implements BaseIO {
 				getNext(st);
 			}
 		}
-		if (!isConstantNode) {
-			// add only random variables ("constants" are not handled by the GUI anyway)
-			// UnBBayes can represent "constants" by creating random variables with only 1 possible value, 
-			// but it is still radically considered as a "variable".
-			net.addNode(node);
+		if (isConstantNode) {
+			// set the CPT of the node to 1
+			this.setConstantCPT(node);
 		}
+		net.addNode(node);
 	}
 	
+	/**
+	 * Forces the CPT of a node to constant. It assumes that the node has only 1 state
+	 * @param node
+	 */
+	protected void setConstantCPT(Node node) {
+		// remove all states if there are more than 1
+		while (node.getStatesSize() > 1) {
+			Debug.println(getClass(), "Found constant node " + node + " with more than 1 state.");
+			node.removeLastState();
+		}
+		// force the CPT of the node to 1
+		if (node instanceof ProbabilisticNode) {
+			PotentialTable table = ((ProbabilisticNode) node).getProbabilityFunction();
+			for (int i = 0; i < table.tableSize(); i++) {
+				table.setValue(i, 1f);
+			}
+		} 
+	}
+
 	/**
 	 * Loads potential declaration's content assuming it is declaring
 	 * ordinal "stateful" probability declaration
