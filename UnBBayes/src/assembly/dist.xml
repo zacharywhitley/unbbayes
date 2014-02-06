@@ -49,6 +49,7 @@
         <include>unbbayes.core/*.*</include>
         <include>unbbayes.io.NetIO/*.*</include>
         <include>unbbayes.io.XMLBIFIO/*.*</include>
+        <include>unbbayes.io.DneIO/*.*</include>
       </includes>
     </fileSet>
   </fileSets>

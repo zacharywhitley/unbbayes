@@ -1,16 +1,20 @@
-UNBBAYES VERSION 4.14.7
+UNBBAYES VERSION 4.17.8
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
 12		129			Added a new menu "save as"
 13		85			Copy paste feature is working for probabilistic, utility and decision nodes.
-14		119 		Changed Junction tree to contain getSeparatorSize and getSeparatorAt(int) for some backward compatibility with UnBBayes 4.0.0.
+14		119 		Considered some backward compatibility with UnBBayes 4.0.0.
+15		144			Total probability is displayed at bottom when propagating evidences.
+16		147			Implemented likelihood evidence as virtual nodes.
+17		114,116		Support for soft evidences
 
 BUG LIST		
 Number	Request ID	Summary
-7       156         NetIO adding prefixes of nodes to name of net too. Fixed.
-6       155         Error with the numeration of automatic node names in BNs
-5		136		    Tooltip text "compile junction tree" has been changed by "Compile Bayesian Network".
+5		136			Tooltip text "compile junction tree" has been changed by "Compile Bayesian Network".
+6       155         Error with the numeration of automatic node names in BNs.
+7       156         NetIO adding prefixes of nodes to name of net too. Fixed. 
+8		157			Fixed bug in DneIO, which is now able to load deterministic and constant nodes.
 
 
 
