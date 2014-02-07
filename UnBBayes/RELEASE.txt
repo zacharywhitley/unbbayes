@@ -6,8 +6,8 @@ Number	Request ID	Summary
 13		85			Copy paste feature is working for probabilistic, utility and decision nodes.
 14		119 		Considered some backward compatibility with UnBBayes 4.0.0.
 15		144			Total probability is displayed at bottom when propagating evidences.
-16		147			Implemented likelihood evidence as virtual nodes.
-17		114,116		Support for soft evidences
+16		147.114,116	Implemented likelihood evidence and soft evidences as virtual nodes.
+17		112			Compile disconnected network
 
 BUG LIST		
 Number	Request ID	Summary
