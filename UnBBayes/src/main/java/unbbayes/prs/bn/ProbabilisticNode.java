@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.cpt.IProbabilityFunctionAdapter;
 import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 
@@ -35,7 +37,7 @@ import unbbayes.util.SetToolkit;
  * @author Michael Onishi
  * @author Rommel Carvalho
  */
-public class ProbabilisticNode extends TreeVariable implements IRandomVariable,
+public class ProbabilisticNode extends TreeVariable implements IRandomVariable, IProbabilityFunctionAdapter,
 		java.io.Serializable {
 
 	/**
@@ -229,7 +231,7 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable,
 			removeLastState();
 		}
 	}
-
+	
 	/**
 	 * Removes the newest state and updates the affected tables. Overwrites a
 	 * Node's superclass method.
@@ -397,6 +399,75 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable,
 	 */
 	public void setInternalIdentificator(int internalIdentificator) {
 		this.internalIdentificator = internalIdentificator;
+	}
+
+	/**
+	 * Removes literally all states.
+	 * This is different from {@link #removeAllStates()}, because {@link #removeAllStates()} keeps at least 1 state active.
+	 * @see unbbayes.prs.Node#removeStates()
+	 */
+	public void removeStates() {
+		while (states.size() > 0) {
+			removeStateAt(0);
+		}
+	}
+
+	/**
+	 * This will remove all states that are at and after the given index.
+	 * TODO implement a version that removes 1 state, shifts posterior states, and
+	 * still keeps CPT consistent.
+	 * @see unbbayes.prs.Node#removeStateAt(int)
+	 * @deprecated use {@link #removeLastState()} or {@link #removeStates()}
+	 */
+	public void removeStateAt(int index) {
+		while (getStatesSize() > index) {
+			updateState(null, false);
+			states.remove(index);
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.cpt.IProbabilityFunctionAdapter#loadProbabilityFunction(unbbayes.prs.bn.IProbabilityFunction)
+	 */
+	public void loadProbabilityFunction(IProbabilityFunction probabilityFunction) {
+		if (probabilityFunction instanceof PotentialTable) {
+			// use a clone, because we are going to use cpt.removeVariable(variable) to marginalize out
+			PotentialTable cpt = ((PotentialTable) probabilityFunction).getTemporaryClone();	// cpt to read
+			// the cpt to be overwritten
+			PotentialTable myCPT = this.getProbabilityFunction();
+			
+			// the table must specify the conditional probability of the same variable
+			if (this.equals(cpt.getVariableAt(0))) {	// the 1st variable of CPT indicates who the CPT specifies
+				// check which variables to marginalize out: they are the ones present in my table, but not in 
+				for (int i = 0; i < cpt.getVariablesSize(); i++) {
+					Node var = (Node) cpt.getVariableAt(i);
+					if (this.getProbabilityFunction().getVariableIndex(var) < 0) {
+						// not found. Remove and marginalize
+						cpt.removeVariable(var, true);
+						i--;
+					}
+				}
+				
+				
+				// if I can do a quick copy, just do it
+				if (cpt.tableSize() == myCPT.tableSize()) {
+					// fast copy of values
+					myCPT.setValues(cpt.getValues());
+				} else {
+					// reset content of my cpt to 1 (identity number in multiplication), and then do a matrix multiplication
+					for (int i = 0; i < myCPT.tableSize(); i++) {
+						myCPT.setValue(i, 1f);
+					}
+					myCPT.opTab(cpt, PotentialTable.PRODUCT_OPERATOR);
+				}
+				
+			} else {
+				// truncate the values of the argument (so that it fits to myCPT.tableSize())
+				System.arraycopy(cpt.getValues(), 0, myCPT.dataPT.data, 0, myCPT.tableSize());
+			}
+			
+		}
 	}
 
 }

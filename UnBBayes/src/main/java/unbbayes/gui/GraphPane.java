@@ -26,18 +26,16 @@ import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 
 import javax.swing.JDialog;
@@ -61,11 +59,12 @@ import unbbayes.draw.UShapeUtilityNode;
 import unbbayes.draw.extension.IPluginUShape;
 import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.prs.Edge;
-import unbbayes.prs.INode;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.bn.cpt.IProbabilityFunctionAdapter;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.extension.IPluginNode;
 import unbbayes.prs.hybridbn.ContinuousNode;
@@ -211,7 +210,8 @@ public class GraphPane extends UCanvas {
 	 *            node to copy
 	 * @param sharedNodes
 	 *            this attribute is created in order to not duplicate nodes with
-	 *            some network topologies.
+	 *            some network topologies. This is an input/output argument which is filled (will be filled)
+	 *            with key = original node, and value = generated nodes.
 	 * @return a new cloned node.
 	 */
 	private Node addClonedNode(final Node originalNode,
@@ -1345,6 +1345,17 @@ public class GraphPane extends UCanvas {
 
 				// Clone the root and their children recursively
 				addClonedNode(rootNode, sharedNodes);
+			}
+			
+			// note: at this point, values at sharedNodes stores all nodes that were cloned 
+			// copy cpt for each node
+			for (Entry<Node, Node> entry : sharedNodes.entrySet()) {
+				Node original = entry.getKey();
+				Node cloned = entry.getValue();
+				if (cloned instanceof IProbabilityFunctionAdapter && original instanceof IRandomVariable) {
+					// adapt and clone the probability function (which stores probability for probabilistic nodes, and utility for utility nodes)
+					((IProbabilityFunctionAdapter) cloned).loadProbabilityFunction(((IRandomVariable)original).getProbabilityFunction());
+				}
 			}
 
 		}

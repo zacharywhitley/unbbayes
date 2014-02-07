@@ -52,6 +52,9 @@ public class UtilityTable extends PotentialTable implements java.io.Serializable
     public void removeVariable(INode variavel) {
     	computeFactors();
         int index = variableList.indexOf(variavel);
+        if (index < 0) {
+        	return;	// do not attempt to remove something that does not exist.
+        }
         if (variavel.getType() == Node.PROBABILISTIC_NODE_TYPE) {
 //			sum(variaveis.size()-1, index, 0, 0);			
 			sum(index);

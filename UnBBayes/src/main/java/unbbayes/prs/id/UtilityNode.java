@@ -21,12 +21,13 @@
 package unbbayes.prs.id;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
 import java.util.ResourceBundle;
 
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.IProbabilityFunction;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.cpt.IProbabilityFunctionAdapter;
 
 /**
  *  This class represents the utility node.
@@ -34,7 +35,7 @@ import unbbayes.prs.bn.PotentialTable;
  *@author Michael Onishi 
  *@author Rommel Carvalho
  */
-public class UtilityNode extends Node implements IRandomVariable, java.io.Serializable {
+public class UtilityNode extends Node implements IRandomVariable, IProbabilityFunctionAdapter, java.io.Serializable {
 
 	/** Serialization runtime version number */
 	private static final long serialVersionUID = 0;
@@ -71,7 +72,11 @@ public class UtilityNode extends Node implements IRandomVariable, java.io.Serial
      * N�o faz nada ao se tentar inserir um estado, pois
      * vari�veis de utilidade s� aceitam 1 estado.
      */
-    public void appendState(String state) { }
+    public void appendState(String state) { 
+    	if (getStatesSize() < 1) {
+    		super.appendState(state);
+    	}
+    }
 
     /**
      * N�o faz nada ao se tentar inserir um estado, pois
@@ -124,6 +129,27 @@ public class UtilityNode extends Node implements IRandomVariable, java.io.Serial
 	 */
 	public void setInternalIdentificator(int internalIdentificator) {
 		this.internalIdentificator = internalIdentificator;
+	}
+	
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.cpt.IProbabilityFunctionAdapter#loadProbabilityFunction(unbbayes.prs.bn.IProbabilityFunction)
+	 */
+	public void loadProbabilityFunction(IProbabilityFunction probabilityFunction) {
+		if (probabilityFunction instanceof UtilityTable) {
+			// use a clone, because we are going to use cpt.removeVariable(variable) to marginalize out
+			PotentialTable util = ((UtilityTable) probabilityFunction).getTemporaryClone();	// cpt to read
+			// the cpt to be overwritten
+			PotentialTable myTable = this.getProbabilityFunction();
+			
+			// copy the content of util to a temporary vector, but trim size to myTable.tableSize()
+			float[] temp = new float[myTable.tableSize()];
+			System.arraycopy(util.getValues(), 0, temp, 0, myTable.tableSize());
+			
+			// overwrite my table
+			myTable.setValues(temp);	
+		}
 	}
     
 }
