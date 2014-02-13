@@ -40,6 +40,15 @@
         <include>**/*</include>
       </includes>
     </fileSet>
+    <!-- The following resources were included in test in order to stop being included in the main JAR -->
+    <!-- without reconfiguring eclipse's classpath or maven's default folder's behaviors  -->
+  	<fileSet>
+      <directory>src/test/resources</directory>
+      <outputDirectory>resources</outputDirectory>
+      <includes>
+        <include>tuuyi.png</include>
+      </includes>
+    </fileSet>
   </fileSets>
   <dependencySets>
     <dependencySet>

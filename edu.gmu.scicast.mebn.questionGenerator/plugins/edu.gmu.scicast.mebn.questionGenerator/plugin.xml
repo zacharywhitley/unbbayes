@@ -38,8 +38,8 @@
     <!-- Panel to consider/disconsider individuals present -->
     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="TuuyiIndividualMapper">
         <parameter id="class" value="edu.gmu.scicast.mebn.gui.TuuyiIndividualMapperPanelBuilder" />
-        <parameter id="name" value="Tuuyi" />
-<!--         <parameter id="icon" value="properties2node.png" /> -->
+        <parameter id="name" value="Tuuyi Filter Ontology" />
+        <parameter id="icon" value="properties.png" />
         <parameter id="description" value="Map Tuuyi individuals" />
     </extension>
     
