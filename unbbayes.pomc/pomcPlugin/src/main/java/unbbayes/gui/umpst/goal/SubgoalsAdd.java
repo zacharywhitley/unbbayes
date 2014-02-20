@@ -1,11 +1,9 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.goal;
 
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
@@ -14,23 +12,22 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.MainPropertiesEditionPane;
+import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.util.CommonDataUtil;
 
 
 public class SubgoalsAdd extends IUMPSTPanel {
@@ -114,10 +111,15 @@ public class SubgoalsAdd extends IUMPSTPanel {
 		
 		// CREATE FORM 
 		mainPropertiesEditionPane = 
-				new MainPropertiesEditionPane(buttonBack, buttonAdd, title, "Subgoals Details"); 
+				new MainPropertiesEditionPane(buttonBack, 
+						buttonAdd, 
+						title, 
+						"Subgoals Details",
+						null,
+						null); 
 
 		if (goal != null){
-			mainPropertiesEditionPane.setGoalText(goal.getGoalName());
+			mainPropertiesEditionPane.setTitleText(goal.getGoalName());
 			mainPropertiesEditionPane.setCommentsText(goal.getComments());
 			mainPropertiesEditionPane.setAuthorText(goal.getAuthor());
 			mainPropertiesEditionPane.setDateText(goal.getDate());
@@ -141,7 +143,7 @@ public class SubgoalsAdd extends IUMPSTPanel {
 				if( goal == null){
 
 					try {
-						if (mainPropertiesEditionPane.getGoalText().equals("")){
+						if (mainPropertiesEditionPane.getTitleText().equals("")){
 							JOptionPane.showMessageDialog(null, "Subgoals details are empty!");
 						}
 						else{
@@ -178,7 +180,7 @@ public class SubgoalsAdd extends IUMPSTPanel {
 							}
 							/************/
 
-							goal.setGoalName(mainPropertiesEditionPane.getGoalText());
+							goal.setGoalName(mainPropertiesEditionPane.getTitleText());
 							goal.setComments(mainPropertiesEditionPane.getCommentsText());
 							goal.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							goal.setDate(mainPropertiesEditionPane.getDateText());
@@ -281,7 +283,7 @@ public class SubgoalsAdd extends IUMPSTPanel {
 
 
 		GoalModel goalAdd = new GoalModel(idAux,
-				mainPropertiesEditionPane.getGoalText(),
+				mainPropertiesEditionPane.getTitleText(),
 				mainPropertiesEditionPane.getCommentsText(), 
 				mainPropertiesEditionPane.getAuthorText(), 
 				mainPropertiesEditionPane.getDateText(),

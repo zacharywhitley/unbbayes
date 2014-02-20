@@ -1,4 +1,4 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.goal;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -20,6 +21,8 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 
 import unbbayes.controller.umpst.IconController;
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 
@@ -34,6 +37,11 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	private JButton buttonSearch;
 	private JButton buttonAddGoal,buttonCancel;
 	private JTextField textGoal;
+	
+	/** Load resource file from this package */
+	private static ResourceBundle resource = 
+			unbbayes.util.ResourceController.newInstance().getBundle(
+					unbbayes.gui.umpst.resources.Resources.class.getName());
 
 	public GoalsSearchPanel(UmpstModule janelaPai, UMPSTProject umpstProject){
 		super(janelaPai);
@@ -77,6 +85,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 
 		if (buttonCancel == null){
 			buttonCancel = new JButton (IconController.getInstance().getEditClear());
+			buttonCancel.setToolTipText(resource.getString("hpCleanSearch"));
 			buttonCancel.setForeground(Color.blue);
 			buttonCancel.addActionListener(new ActionListener() {
 
@@ -97,6 +106,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 
 		if (buttonAddGoal == null){
 			buttonAddGoal = new JButton (IconController.getInstance().getAddIconP());
+			buttonAddGoal.setToolTipText(resource.getString("hpAddGoal"));
 			buttonAddGoal.setForeground(Color.blue);
 			buttonAddGoal.addActionListener(new ActionListener() {
 
@@ -109,14 +119,13 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		return buttonAddGoal;
 	} 
 
-	public GoalsAdd getGoalsAdd(GoalModel goal){
+	public GoalsEditionPanel getGoalsAdd(GoalModel goal){
 
-		GoalsAdd ret = new GoalsAdd(getFatherPanel(),getUmpstProject(),goal,null);
+		GoalsEditionPanel ret = new GoalsEditionPanel(getFatherPanel(),getUmpstProject(),goal,null);
 
 		return ret;
 
 	}
-
 
 	/**
 	 * @return the labelGoal
@@ -140,6 +149,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 
 		if(buttonSearch == null){
 			buttonSearch = new JButton(IconController.getInstance().getSearch());
+			buttonSearch.setToolTipText(resource.getString("hpSearchGoal"));
 			buttonSearch.setForeground(Color.blue);
 		}
 
@@ -147,14 +157,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 
 			public void actionPerformed(ActionEvent e) {
 				if (!textGoal.getText().equals("")){
-					if( getUmpstProject().getMapSearchGoal().get(textGoal.getText()) == null) {
-						JOptionPane.showMessageDialog(null,"Goal "+textGoal.getText()+" not found!!");
-
-					}
-					else{
-						JOptionPane.showMessageDialog(null,"Goal "+textGoal.getText()+" found! Updating table: ");
-						updateTableGoals();
-					}
+					updateTableGoals();
 				}
 				else{
 					JOptionPane.showMessageDialog(null, "Search is empty!");
@@ -173,6 +176,18 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 
 		if (textGoal == null){
 			textGoal = new JTextField(10);
+			
+			textGoal.addActionListener(new ActionListener() {
+
+				public void actionPerformed(ActionEvent e) {
+					if (!textGoal.getText().equals("")){
+						updateTableGoals();
+					}
+					else{
+						JOptionPane.showMessageDialog(null, "Search is empty!");
+					}
+				}
+			});
 		}
 
 		return textGoal;
@@ -180,7 +195,6 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 
 	public void updateTableGoals(){
 		String[] columnNames = {"ID","Goal","","",""};
-
 
 		Set<GoalModel> aux = getUmpstProject().getMapSearchGoal().get(textGoal.getText()).getGoalsRelated();
 		GoalModel goal;

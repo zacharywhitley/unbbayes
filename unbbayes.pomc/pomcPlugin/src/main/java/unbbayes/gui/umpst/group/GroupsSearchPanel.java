@@ -1,4 +1,4 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.group;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -19,10 +20,13 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 
+import unbbayes.controller.umpst.IconController;
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 
-public class GroupsSearch extends IUMPSTPanel {
+public class GroupsSearchPanel extends IUMPSTPanel {
 	
 	/**
 	 * 
@@ -35,11 +39,12 @@ public class GroupsSearch extends IUMPSTPanel {
 
 	private JTextField textGroup;
 	
-
+	/** Load resource file from this package */
+	private static ResourceBundle resource = 
+			unbbayes.util.ResourceController.newInstance().getBundle(
+					unbbayes.gui.umpst.resources.Resources.class.getName());
 	
-	
-	
-	public GroupsSearch(UmpstModule janelaPai,UMPSTProject umpstProject){
+	public GroupsSearchPanel(UmpstModule janelaPai,UMPSTProject umpstProject){
 		super(janelaPai);
 		
 		this.setUmpstProject(umpstProject);
@@ -63,8 +68,8 @@ public class GroupsSearch extends IUMPSTPanel {
 		buttonPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 		buttonPane.add(Box.createHorizontalGlue());
 		buttonPane.add(getButtonSearch());
-		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonPane.add(getButtonCancel());
+		
 		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonPane.add(getButtonAddGroup());
 
@@ -83,7 +88,8 @@ public class GroupsSearch extends IUMPSTPanel {
 	public JButton getButtonAddGroup() {
 		
 		if (buttonAddGroup == null){
-			buttonAddGroup = new JButton ("add new group");
+			buttonAddGroup = new JButton (IconController.getInstance().getAddIconP());
+			buttonAddGroup.setToolTipText(resource.getString("hpAddGroup"));
 			buttonAddGroup.setForeground(Color.blue);
 			buttonAddGroup.addActionListener(new ActionListener() {
 				
@@ -103,7 +109,8 @@ public class GroupsSearch extends IUMPSTPanel {
 	public JButton getButtonCancel() {
 		
 		if (buttonCancel == null){
-			buttonCancel = new JButton ("cancel search");
+			buttonCancel = new JButton (IconController.getInstance().getEditClear());
+			buttonCancel.setToolTipText(resource.getString("hpCleanSearch"));
 			buttonCancel.setForeground(Color.blue);
 			buttonCancel.addActionListener(new ActionListener() {
 				
@@ -118,9 +125,9 @@ public class GroupsSearch extends IUMPSTPanel {
 	}
 	
 	
-	public GroupsAdd getGroupsAdd(GroupsModel group){
+	public GroupsEditionPanel getGroupsAdd(GroupsModel group){
 		
-		GroupsAdd ret = new GroupsAdd(getFatherPanel(),getUmpstProject(),group);
+		GroupsEditionPanel ret = new GroupsEditionPanel(getFatherPanel(),getUmpstProject(),group);
 		
 		return ret;
 		
@@ -147,7 +154,8 @@ public class GroupsSearch extends IUMPSTPanel {
 	public JButton getButtonSearch() {
 		
 		if(buttonSearch == null){
-			buttonSearch = new JButton("Search: ");
+			buttonSearch = new JButton(IconController.getInstance().getSearch());
+			buttonSearch.setToolTipText(resource.getString("hpSearchGroup"));
 			buttonSearch.setForeground(Color.blue);
 		}
 	
@@ -177,6 +185,19 @@ public class GroupsSearch extends IUMPSTPanel {
 		if (textGroup == null){
 			textGroup = new JTextField(10);
 		}
+		
+		textGroup.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				if(!textGroup.getText().equals("")){
+					updateTableGroups();
+				}
+				else{
+					JOptionPane.showMessageDialog(null, "Seach is empty!");
+				}
+
+			}
+		});
 		
 		return textGroup;
 	}

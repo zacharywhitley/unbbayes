@@ -1,51 +1,62 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.entity;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 
-import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.table.DefaultTableModel;
 
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.project.UMPSTProject;
+import unbbayes.util.GuiUtils;
 
-public class Entities extends IUMPSTPanel{
+public class EntitiesMainPanel extends IUMPSTPanel{
 	
 	private JSplitPane splitPane;
-	private TableEntities menuPanel;
+	private EntitiesTable menuPanel;
 	private EntitiesSearchPanel requirementsPanel;
 	
-	public Entities(UmpstModule janelaPai, UMPSTProject umpstProject) {
-		super(janelaPai);
+	public EntitiesMainPanel(UmpstModule parentPanel, 
+			UMPSTProject umpstProject) {
+		
+		super(parentPanel);
+		
 		this.setUmpstProject(umpstProject);
+		
 		this.setLayout(new FlowLayout());
-		this.add(getSplitPane());
+		this.add(createSplitPane());
 
 	}
 
 	/**
 	 * @return the splitPane
 	 */
-	public JSplitPane getSplitPane() {
+	public JSplitPane createSplitPane() {
 		if(splitPane == null){
+			
 			splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-					getEntitiesPanel(),getEntitiesTable());
+					getEntitiesPanel(),
+					getEntitiesTable());
+			
 			splitPane.setDividerLocation(100);
 			splitPane.setPreferredSize(new Dimension(800,600));
-			splitPane.setBackground(new Color(0x4169AA));
+			splitPane.setBackground(GuiUtils.getSearchPanelColor());
+		
 		}
+		
 		return splitPane;
 	}
 
 	/**
 	 * @return the menuPanel
 	 */
-	public TableEntities getEntitiesTable() {
+	public EntitiesTable getEntitiesTable() {
 		if(menuPanel == null ){
 			DefaultTableModel model = new DefaultTableModel();
 
-			menuPanel = new TableEntities(getFatherPanel(),getUmpstProject());
+			menuPanel = new EntitiesTable(getFatherPanel(),getUmpstProject());
 		}
 		return menuPanel;
 	}

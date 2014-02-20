@@ -1,4 +1,4 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.entity;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -15,7 +15,13 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
 import unbbayes.controller.umpst.IconController;
-import unbbayes.model.umpst.entities.AtributeModel;
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.MainPanel;
+import unbbayes.gui.umpst.TableButton;
+import unbbayes.gui.umpst.UmpstModule;
+import unbbayes.gui.umpst.TableButton.TableButtonCustomizer;
+import unbbayes.gui.umpst.TableButton.TableButtonPressedHandler;
+import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
@@ -35,18 +41,18 @@ public class TableAtribute extends IUMPSTPanel{
 	
 	private Set<String> keys = new HashSet<String>();
 	private TreeSet<String> sortedKeys = new TreeSet<String>();
-	private Set<AtributeModel> set = new HashSet<AtributeModel>();
-	private Set<AtributeModel> setAux = new HashSet<AtributeModel>();
+	private Set<AttributeModel> set = new HashSet<AttributeModel>();
+	private Set<AttributeModel> setAux = new HashSet<AttributeModel>();
 	
 	String[] columnNames = {"id","Atribute","","",""};
 	Object[][] data = {};
 	
-	AtributeModel atribute;
+	AttributeModel atribute;
 
 
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
-    	  protected TableAtribute(UmpstModule janelaPai,UMPSTProject umpstProject, EntityModel entityRelated) {
+    	  public TableAtribute(UmpstModule janelaPai,UMPSTProject umpstProject, EntityModel entityRelated) {
     		  
     		    super(janelaPai);
     		    this.setUmpstProject(umpstProject);
@@ -81,7 +87,7 @@ public class TableAtribute extends IUMPSTPanel{
 		if (entityRelated!=null){			
 			keys = getUmpstProject().getMapAtribute().keySet();
 			sortedKeys = new TreeSet<String>(keys);
-			set = new HashSet<AtributeModel>();
+			set = new HashSet<AttributeModel>();
 			
 			for (String key: sortedKeys){
 				atribute = getUmpstProject().getMapAtribute().get(key);
@@ -95,7 +101,7 @@ public class TableAtribute extends IUMPSTPanel{
 					if (atribute.getMapSubAtributes().size()>0){
 						Set<String> keysSub = atribute.getMapSubAtributes().keySet();
 						TreeSet<String> sortedKeysSub = new TreeSet<String>(keysSub);
-						AtributeModel atributeSub;
+						AttributeModel atributeSub;
 						
 						for (String keySub : sortedKeysSub){
 							atributeSub = atribute.getMapSubAtributes().get(keySub);
@@ -120,12 +126,12 @@ public class TableAtribute extends IUMPSTPanel{
 		keys = getUmpstProject().getMapAtribute().keySet();
 		sortedKeys = new TreeSet<String>(keys);
 		i=0;
-		setAux = new HashSet<AtributeModel>();
+		setAux = new HashSet<AttributeModel>();
 		
 		if (entityRelated!=null){			
 			keys = getUmpstProject().getMapAtribute().keySet();
 			sortedKeys = new TreeSet<String>(keys);
-			set = new HashSet<AtributeModel>();
+			set = new HashSet<AttributeModel>();
 			
 			for (String key: sortedKeys){
 				atribute = getUmpstProject().getMapAtribute().get(key);
@@ -145,7 +151,7 @@ public class TableAtribute extends IUMPSTPanel{
 					if (atribute.getMapSubAtributes().size()>0){
 						Set<String> keysSub = atribute.getMapSubAtributes().keySet();
 						TreeSet<String> sortedKeysSub = new TreeSet<String>(keysSub);
-						AtributeModel atributeSub;
+						AttributeModel atributeSub;
 						
 						for (String keySub : sortedKeysSub){
 							atributeSub = atribute.getMapSubAtributes().get(keySub);
@@ -215,8 +221,8 @@ public class TableAtribute extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				
 				String atributeAdd = data[row][0].toString();
-				AtributeModel atributeAux = entityRelated.getMapAtributes().get(atributeAdd);
-				changePanel(new AtributeAdd(getFatherPanel(),getUmpstProject(), entityRelated,atributeAux, atributeAux.getFather() )   );
+				AttributeModel atributeAux = entityRelated.getMapAtributes().get(atributeAdd);
+				changePanel(new AtributeEditionPanel(getFatherPanel(),getUmpstProject(), entityRelated,atributeAux, atributeAux.getFather() )   );
 			}
 		});
 		
@@ -240,8 +246,8 @@ public class TableAtribute extends IUMPSTPanel{
 		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
-				AtributeModel atributeRelated =  entityRelated.getMapAtributes().get(key);
-				changePanel(new AtributeAdd(getFatherPanel(),getUmpstProject(),entityRelated,null,atributeRelated));
+				AttributeModel atributeRelated =  entityRelated.getMapAtributes().get(key);
+				changePanel(new AtributeEditionPanel(getFatherPanel(),getUmpstProject(),entityRelated,null,atributeRelated));
 			
 				
 			}

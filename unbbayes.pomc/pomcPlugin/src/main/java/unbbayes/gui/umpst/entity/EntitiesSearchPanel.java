@@ -1,68 +1,49 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.entity;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.peer.ScrollPanePeer;
-import java.util.EventObject;
 import java.util.Iterator;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.DefaultCellEditor;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
-import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JToolBar;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-import javax.swing.SpringLayout.Constraints;
-import javax.swing.border.Border;
-import javax.swing.event.CellEditorListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableColumn;
 
+import unbbayes.controller.umpst.IconController;
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.GoalModel;
-
-import com.ibm.icu.impl.duration.impl.YMDDateFormatter;
 
 public class EntitiesSearchPanel extends IUMPSTPanel {
 		
 	private JLabel labelEntity;
 	private JButton buttonSearch;
-	private JButton buttonAddEntity,buttonCancel;
+	private JButton buttonAddEntity,
+	                buttonCancel;
 	private JButton buttonAddRelationship;
 	private JTextField textEntity;
 	
+	/** Load resource file from this package */
+	private static ResourceBundle resource = 
+			unbbayes.util.ResourceController.newInstance().getBundle(
+					unbbayes.gui.umpst.resources.Resources.class.getName());
 
-	
-	
-	
-	public EntitiesSearchPanel(UmpstModule janelaPai,UMPSTProject umpstProject){
+	public EntitiesSearchPanel(UmpstModule janelaPai,
+			UMPSTProject umpstProject){
+		
 		super(janelaPai);
 		
 		this.setUmpstProject(umpstProject);
@@ -81,19 +62,18 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		panel.add(Box.createRigidArea(new Dimension(0,5)));
 		panel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
+		//------------------- Button Pane --------------------------------------
 		JPanel buttonPane = new JPanel ();
 		buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
 		buttonPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 		buttonPane.add(Box.createHorizontalGlue());
+		
 		buttonPane.add(getButtonSearch());
-		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonPane.add(getButtonCancel());
 		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
-		buttonPane.add(getButtonRelationship());
-		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
 		buttonPane.add(getButtonAddEntity());
-		
-
+		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
+		buttonPane.add(getButtonRelationship());
 		
 		this.add(panel, BorderLayout.CENTER);
 		this.add(buttonPane, BorderLayout.PAGE_END);
@@ -104,12 +84,13 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 
 	private Component getButtonRelationship() {
 		if (buttonAddRelationship == null){
-			buttonAddRelationship = new JButton ("Relationship panel");
+			buttonAddRelationship = new JButton (IconController.getInstance().getRelationship());
+			buttonAddRelationship.setToolTipText(resource.getString("hpAddRelationship"));
 			buttonAddRelationship.setForeground(Color.blue);
 			buttonAddRelationship.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					changePanel(new RelationshipAdd(getFatherPanel(),getUmpstProject(), null));
+					changePanel(new RelationshipEditionPanel(getFatherPanel(),getUmpstProject(), null));
 				}
 			});			
 		}
@@ -124,7 +105,8 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	public JButton getButtonAddEntity() {
 		
 		if (buttonAddEntity == null){
-			buttonAddEntity = new JButton ("add new entity");
+			buttonAddEntity = new JButton (IconController.getInstance().getAddIconP());
+			buttonAddEntity.setToolTipText(resource.getString("hpAddEntity"));
 			buttonAddEntity.setForeground(Color.blue);
 			buttonAddEntity.addActionListener(new ActionListener() {
 				
@@ -143,8 +125,10 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	public JButton getButtonCancel() {
 		
 		if (buttonCancel == null){
-			buttonCancel = new JButton ("cancel search");
+			buttonCancel = new JButton (IconController.getInstance().getEditClear());
+			buttonCancel.setToolTipText(resource.getString("hpCleanSearch"));
 			buttonCancel.setForeground(Color.blue);
+			
 			buttonCancel.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
@@ -178,7 +162,8 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	public JButton getButtonSearch() {
 		
 		if(buttonSearch == null){
-			buttonSearch = new JButton("Search: ");
+			buttonSearch = new JButton(IconController.getInstance().getSearch());
+			buttonSearch.setToolTipText(resource.getString("hpSearchEntity"));
 			buttonSearch.setForeground(Color.blue);
 		}
 		buttonSearch.addActionListener(new ActionListener() {
@@ -206,6 +191,18 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 			textEntity = new JTextField(10);
 		}
 		
+		textEntity.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				if (!textEntity.getText().equals("")){
+					updateTableEntities();
+				}
+				else{
+					JOptionPane.showMessageDialog(null, "Seach is empty!");
+				}
+			}
+		});
+		
 		return textEntity;
 	}
 	
@@ -232,7 +229,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	    UmpstModule pai = getFatherPanel();
 	    changePanel(pai.getMenuPanel());
 	    
-	    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
+	    EntitiesTable entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
 	    JTable table = entitiesTable.createTable(columnNames,data);
 	    
 	    entitiesTable.getScrollPanePergunta().setViewportView(table);
@@ -263,7 +260,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		    UmpstModule pai = getFatherPanel();
 		    changePanel(pai.getMenuPanel());
 		    
-		    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
+		    EntitiesTable entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
 		    JTable table = entitiesTable.createTable(columnNames,data);
 		    
 		    entitiesTable.getScrollPanePergunta().setViewportView(table);
@@ -273,9 +270,9 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		    entitiesTable.repaint();
 	    }
 	
-	public EntitiesAdd getEntitiesPanel(EntityModel entity){
+	public EntitiesEditionPanel getEntitiesPanel(EntityModel entity){
 		
-		EntitiesAdd ret = new EntitiesAdd(getFatherPanel(),getUmpstProject(),entity);
+		EntitiesEditionPanel ret = new EntitiesEditionPanel(getFatherPanel(),getUmpstProject(),entity);
 		
 		return ret;
 		

@@ -1,13 +1,15 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.group;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import javax.swing.JSplitPane;
 
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.project.UMPSTProject;
 
-public class Groups extends IUMPSTPanel{
+public class GroupsMainPanel extends IUMPSTPanel{
 	
 	/**
 	 * 
@@ -16,9 +18,9 @@ public class Groups extends IUMPSTPanel{
 		
 	private JSplitPane splitPane;
 	private TableGroups groupsPanel;
-	private GroupsSearch groupsSearch;
+	private GroupsSearchPanel groupsSearch;
 	
-	public Groups(UmpstModule janelaPai,UMPSTProject umpstProject) {
+	public GroupsMainPanel(UmpstModule janelaPai,UMPSTProject umpstProject) {
 		super(janelaPai);
 		
 		this.setUmpstProject(umpstProject);
@@ -56,9 +58,9 @@ public class Groups extends IUMPSTPanel{
 	/**
 	 * @return the groupsSearch
 	 */
-	public GroupsSearch getGroupsPanel() {
+	public GroupsSearchPanel getGroupsPanel() {
 		if(groupsSearch == null ){
-			groupsSearch = new GroupsSearch(getFatherPanel(),getUmpstProject());
+			groupsSearch = new GroupsSearchPanel(getFatherPanel(),getUmpstProject());
 			groupsSearch.setBackground(new Color(0xffffff));
 		}
 		return groupsSearch;

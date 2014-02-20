@@ -1,13 +1,15 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.goal;
 
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import javax.swing.JSplitPane;
 
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.project.UMPSTProject;
 
-public class Goals extends IUMPSTPanel{
+public class GoalsMainPanel extends IUMPSTPanel{
 	
 	/**
 	 * 
@@ -18,11 +20,12 @@ public class Goals extends IUMPSTPanel{
 	private TableGoals menuPanel;
 	private GoalsSearchPanel requirementsPanel;
 	
-	public Goals(UmpstModule janelaPai,UMPSTProject umpstProject) {
+	public GoalsMainPanel(UmpstModule janelaPai,
+			UMPSTProject umpstProject) {
+		
 		super(janelaPai);
 		
 		this.setUmpstProject(umpstProject);
-		
 		
 		this.setLayout(new FlowLayout());
 		this.add(createSplitPane());

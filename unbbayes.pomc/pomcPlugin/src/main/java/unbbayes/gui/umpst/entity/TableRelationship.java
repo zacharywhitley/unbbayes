@@ -1,6 +1,7 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.entity;
 
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.util.Set;
 import java.util.TreeSet;
@@ -14,13 +15,18 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
 import unbbayes.controller.umpst.IconController;
-import unbbayes.model.umpst.entities.AtributeModel;
-import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.MainPanel;
+import unbbayes.gui.umpst.TableButton;
+import unbbayes.gui.umpst.UmpstModule;
+import unbbayes.gui.umpst.TableButton.TableButtonCustomizer;
+import unbbayes.gui.umpst.TableButton.TableButtonPressedHandler;
+import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
 
-public class TableSubatribute extends IUMPSTPanel{
+public class TableRelationship extends IUMPSTPanel{
 	
 
 	private static final long serialVersionUID = 1L;
@@ -28,13 +34,10 @@ public class TableSubatribute extends IUMPSTPanel{
 	private JScrollPane scrollpanePergunta;
 	
 	private UmpstModule janelaPaiAux; 
-	private EntityModel entityRelated;
-	private AtributeModel atributeRelated;
 	
 	private IconController iconController = IconController.getInstance(); 
 	
-	
-	String[] columnNames = {"id","Hypothesis","","",""};
+	String[] columnNames = {"id","Hypothesis","",""};
 	Object[][] data = {};
 
 	
@@ -43,14 +46,13 @@ public class TableSubatribute extends IUMPSTPanel{
  
     	  /**private constructors make class extension almost impossible,
     	that's why this is protected*/
-    	  protected TableSubatribute(UmpstModule janelaPai, EntityModel entityRelated,AtributeModel atributeRelated) {
+    	  protected TableRelationship(UmpstModule janelaPai,UMPSTProject umpstProject) {
     		  
     		    super(janelaPai);
+    		    this.setUmpstProject(umpstProject);
     	    	this.setLayout(new GridLayout(1,0));
     	    	
     	    	this.janelaPaiAux = janelaPai;
-    	    	this.entityRelated=entityRelated;
-    	    	this.atributeRelated=atributeRelated;
     	    	
     	    	this.add(createScrolltableHypothesis());
     		    
@@ -76,22 +78,21 @@ public class TableSubatribute extends IUMPSTPanel{
 		
 		Integer i=0;
 
-		if (atributeRelated!=null){			
-			data = new Object[atributeRelated.getMapSubAtributes().size()][5];
+		if (getUmpstProject().getMapRelationship()!=null){			
+			data = new Object[getUmpstProject().getMapRelationship().size()][5];
 
 			
-			Set<String> keys = atributeRelated.getMapSubAtributes().keySet();
+			Set<String> keys = getUmpstProject().getMapRelationship().keySet();
 			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 			
 			
 			
 			for (String key: sortedKeys){
 		
-				data[i][0] = atributeRelated.getMapSubAtributes().get(key).getId();
-				data[i][1] = atributeRelated.getMapSubAtributes().get(key).getAtributeName();
+				data[i][0] =getUmpstProject().getMapRelationship().get(key).getId();
+				data[i][1] = getUmpstProject().getMapRelationship().get(key).getRelationshipName();
 				data[i][2] = "";
 				data[i][3] = "";
-				data[i][4] = "";
 				i++;
 			}
 		}
@@ -104,12 +105,12 @@ public class TableSubatribute extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(iconController.getEditIcon());
+				button.setIcon(iconController.getEditIcon() );
 
 			}
 		});
 
-		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-3);
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-2);
 		buttonColumn1.setMaxWidth(28);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
@@ -117,20 +118,20 @@ public class TableSubatribute extends IUMPSTPanel{
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				
-				String atributeAdd = data[row][0].toString();
-				AtributeModel atributeAux = atributeRelated.getMapSubAtributes().get(atributeAdd);
-				changePanel(new AtributeAdd(getFatherPanel(),getUmpstProject(), entityRelated,atributeAux, atributeAux.getFather() )   );
+				String relationshipAdd = data[row][0].toString();
+				RelationshipModel relationshipAux = getUmpstProject().getMapRelationship().get(relationshipAdd);
+				changePanel(new RelationshipEditionPanel(getFatherPanel(),getUmpstProject(), relationshipAux )   );
 			}
 		});
 		
 		
 
-		
+		/*
 		TableButton buttonAdd = new TableButton( new TableButton.TableButtonCustomizer()
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(iconController.getAddIcon());
+				button.setIcon(new ImageIcon("images/add.gif") );
 
 			}
 		});
@@ -143,12 +144,12 @@ public class TableSubatribute extends IUMPSTPanel{
 		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				String key = data[row][0].toString();
-				AtributeModel atribute =  atributeRelated.getMapSubAtributes().get(key);
-				changePanel(new AtributeAdd(getFatherPanel(),getUmpstProject(),entityRelated,null,atribute));
+				HypothesisModel hypothesis =  hypothesisRelated.getMapSubHypothesis().get(key);
+				alterarJanelaAtual(new HypothesisAdd(getFatherPanel(),goalRelated,null,hypothesis));
 			
 				
 			}
-		});
+		});*/
 		
 		
 		TableButton buttonDel = new TableButton( new TableButton.TableButtonCustomizer()
@@ -169,16 +170,14 @@ public class TableSubatribute extends IUMPSTPanel{
 			
 			public void onButtonPress(int row, int column) {
 				
-				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete atribute "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
+				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete Relationship "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							
 							String key = data[row][0].toString();
-							entityRelated.getMapAtributes().remove(key);
-							atributeRelated.getMapSubAtributes().remove(key);
-							//UMPSTProject.getInstance().getMapHypothesis().remove(key);
+							getUmpstProject().getMapRelationship().remove(key);
 
 							UmpstModule pai = getFatherPanel();
-						    changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entityRelated) );
+						    changePanel(pai.getMenuPanel().getEntitiesPane());
 							 
 							 JTable table = createTable();
 							 

@@ -16,6 +16,7 @@ import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -28,7 +29,7 @@ import unbbayes.util.CommonDataUtil;
 
 public class MainPropertiesEditionPane {
 
-	private JLabel titulo            = new JLabel();
+	private JLabel titleLabel = new JLabel();
 
 	private JTextField authorText;
 	private JTextField dateText;
@@ -44,7 +45,12 @@ public class MainPropertiesEditionPane {
   			unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.gui.umpst.resources.Resources.class.getName());
 	
-	public MainPropertiesEditionPane(JButton btn1, JButton btn2, String _title, String panelName){
+	public MainPropertiesEditionPane(JButton btn1, 
+			JButton btn2, 
+			String _title, 
+			String panelName, 
+			JLabel extraLabel,
+			JComponent extraPanel){
 		
 		GridBagConstraints c = new GridBagConstraints();
 		c.anchor =  GridBagConstraints.FIRST_LINE_START; 
@@ -53,44 +59,63 @@ public class MainPropertiesEditionPane {
 		panel.setLayout(new GridBagLayout());
 
 		GridBagConstraints d = new GridBagConstraints();
-		d.gridx = 0; d.gridy = 0; d.gridwidth = 3;
+	
+		//----------------------------------------------------------------------
+		//                      |                   |                          |
+		//                            TITLE TEXT                               |
+		//  LABEL               |   TEXT BOX                                   |
+		//  LABEL               |   TEXT BOX                                   |
+		//  LABEL               |   TEXT BOX                                   |
+		//  LABEL               |   TEXT BOX                                   |
+		//  LABEL               |   TEXT BOX                                   |
+		//  LABEL               |   TEXT BOX                                   |
+		//  LABEL               |   TEXT BOX                                   |
+		//                            EXTRA PANEL                              |
+		//----------------------------------------------------------------------
+
+		titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+		titleLabel.setForeground(Color.white);
+		titleLabel.setHorizontalAlignment(JLabel.CENTER);
+
+		JPanel panelTitle = new JPanel(new FlowLayout()); 
+		panelTitle.add(titleLabel);
+		panelTitle.setBackground(new Color(0x4169AA)); 
+
+		d.gridx = 0; 
+		d.gridy = 0; 
+		d.gridwidth = 3;
 		d.fill = GridBagConstraints.BOTH;
 		d.insets = new Insets(0, 0, 0, 0);
-
-		titulo.setFont(new Font("Arial", Font.BOLD, 24));
-		titulo.setForeground(Color.white);
-		titulo.setHorizontalAlignment(JLabel.CENTER);
-
-		JPanel panelTitulo = new JPanel(new FlowLayout()); 
-		panelTitulo.add(titulo);
-		panelTitulo.setBackground(new Color(0x4169AA)); 
-
-		panel.add( panelTitulo, d);
-
 		
-		c.gridx = 0; c.gridy = 2;c.gridwidth=3;
+		panel.add( panelTitle, d);
+		
+		c.gridx = 0; 
+		c.gridy = 2;
+		c.gridwidth=3;
 		panel.add( Box.createRigidArea(new Dimension(0,5)), c);
 
-		c.gridx = 0; c.gridy = 3; c.gridwidth=1;
+		c.gridx    = 0; 
+		c.gridy    = 3; 
+		c.gridwidth= 1;
 		panel.add( new JLabel("Description: "), c);
 
-		c.gridx = 0; c.gridy = 4;c.gridwidth=1;
+		c.gridx = 0; 
+		c.gridy = 4;
+		c.gridwidth=1;
 
 		JLabel jlAuthorName = new JLabel("Author Name: "); 
+		
 		panel.add(jlAuthorName, c);
 
-		c.gridx = 0; c.gridy = 5;c.gridwidth=1;
+		c.gridx = 0; 
+		c.gridy = 5;
+		c.gridwidth=1;
 		panel.add( new JLabel("Date: "), c);
 
-		c.gridx = 0; c.gridy = 6;c.gridwidth=1;
+		c.gridx = 0; 
+		c.gridy = 6;
+		c.gridwidth=1;
 		panel.add( new JLabel("Comments: "), c);
-		
-//		if (goalFather!=null){
-//			c.gridx = 0; c.gridy = 7;c.gridwidth=1;
-//			panel.add( new JLabel("Father Name: "), c);
-//			c.gridx = 1; c.gridy = 7;c.gridwidth=2;
-//			panel.add( new JLabel(goalFather.getGoalName()), c);
-//		}
 
 		goalText = new JTextArea(2,20);
 		goalText.setLineWrap(true); 
@@ -98,21 +123,17 @@ public class MainPropertiesEditionPane {
 		goalText.setBorder(BorderFactory.createEtchedBorder());
 		goalText.setText(""); 
 
-		commentsText = new JTextArea(4,20);
-		commentsText.setLineWrap(true); 
-		commentsText.setWrapStyleWord(true);
-		commentsText.setBorder(BorderFactory.createEtchedBorder());
-		commentsText.setText(""); 
-
-		authorText = new JTextField(20);
-
 		c.gridx = 1; 
 		c.gridy = 3;
 		c.gridwidth=2;
 
 		panel.add( goalText, c);
 
-		c.gridx = 1; c.gridy = 4;c.gridwidth=2;
+		authorText = new JTextField(20);
+		
+		c.gridx = 1; 
+		c.gridy = 4;
+		c.gridwidth=2;
 		panel.add( authorText, c);c.gridwidth=2;
 
 		try {
@@ -125,15 +146,23 @@ public class MainPropertiesEditionPane {
 		dateText = new JFormattedTextField(maskFormatter);
 		dateText.setColumns(20);
 
-		authorText.setText(CommonDataUtil.getInstance().getAuthorName()); 
-		dateText.setText(CommonDataUtil.getInstance().getActualDate()); 
-
-		c.gridx = 1; c.gridy = 5;c.gridwidth=2;
+		c.gridx    = 1; 
+		c.gridy    = 5;
+		c.gridwidth= 2;
 		panel.add( dateText, c);c.gridwidth=2;
 
 
-		c.gridx = 1; c.gridy = 6;c.gridwidth=2;
+		commentsText = new JTextArea(4,20);
+		commentsText.setLineWrap(true); 
+		commentsText.setWrapStyleWord(true);
+		commentsText.setBorder(BorderFactory.createEtchedBorder());
+		commentsText.setText(""); 
+		
 		JScrollPane scroolComments  = new JScrollPane(commentsText); 
+		
+		c.gridx = 1; 
+		c.gridy = 6;
+		c.gridwidth=2;
 		panel.add( scroolComments, c);
 
 		JPanel jpanelButtons = new JPanel(new GridLayout(1,4));
@@ -142,15 +171,44 @@ public class MainPropertiesEditionPane {
 		jpanelButtons.add(btn2, 2); 
 		jpanelButtons.add(new JPanel(), 3); 
 
-		c.gridx = 0; c.gridy = 9;c.gridwidth=3;
-		panel.add( Box.createRigidArea(new Dimension(0,5)), c);
-
-		c.gridx = 0; c.gridy = 10;c.gridwidth=3;
-		panel.add( jpanelButtons, c);
-
+		if (extraPanel != null){
+			c.gridx = 0; 
+			c.gridy = 10;
+			c.gridwidth=1;
+			c.fill = GridBagConstraints.BOTH;
+			panel.add( extraLabel, c);
+			
+			c.gridx = 1; 
+			c.gridy = 10;
+			c.gridwidth=2;
+			c.fill = GridBagConstraints.BOTH;
+			panel.add( extraPanel, c);
+			
+			c.gridx = 0; 
+			c.gridy = 11;
+			c.gridwidth=3;
+			panel.add( Box.createRigidArea(new Dimension(0,5)), c);
+			
+			c.gridx = 0; 
+			c.gridy = 12;
+			c.gridwidth=3;
+			c.fill = GridBagConstraints.BOTH;
+			panel.add( jpanelButtons, c);
+			
+		}else{
+			c.gridx = 0; 
+			c.gridy = 10;
+			c.gridwidth=3;
+			c.fill = GridBagConstraints.BOTH;
+			panel.add( jpanelButtons, c);
+			
+		}
+		
 		panel.setBorder(BorderFactory.createTitledBorder(panelName));
 		
-		titulo.setText(_title);
+		titleLabel.setText(_title);
+		authorText.setText(CommonDataUtil.getInstance().getAuthorName()); 
+		dateText.setText(CommonDataUtil.getInstance().getActualDate()); 
 		
 		authorText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -186,11 +244,11 @@ public class MainPropertiesEditionPane {
 		this.dateText.setText(dateText);
 	}
 
-	public String getGoalText() {
+	public String getTitleText() {
 		return goalText.getText();
 	}
 
-	public void setGoalText(String goalText) {
+	public void setTitleText(String goalText) {
 		this.goalText.setText(goalText);
 	}
 

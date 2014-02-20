@@ -1,4 +1,4 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.goal;
 
 
 import java.awt.BorderLayout;
@@ -30,6 +30,10 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.table.DefaultTableModel;
 
 import unbbayes.controller.umpst.IconController;
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.MainPanel;
+import unbbayes.gui.umpst.MainPropertiesEditionPane;
+import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.gui.umpst.selection.SubHipotheseSelectionPane;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.groups.GroupsModel;
@@ -150,10 +154,15 @@ public class HypothesisAdd extends IUMPSTPanel {
 
 		// CREATE FORM 
 		mainPropertiesEditionPane = 
-				new MainPropertiesEditionPane(buttonCancel, buttonAdd, title, "Hypothesis Details"); 
+				new MainPropertiesEditionPane(buttonCancel, 
+						buttonAdd, 
+						title, 
+						"Hypothesis Details",
+						null,
+						null); 
 
 		if (hypothesis != null){
-			mainPropertiesEditionPane.setGoalText(hypothesis.getHypothesisName());
+			mainPropertiesEditionPane.setTitleText(hypothesis.getHypothesisName());
 			mainPropertiesEditionPane.setCommentsText(hypothesis.getComments());
 			mainPropertiesEditionPane.setAuthorText(hypothesis.getAuthor());
 			mainPropertiesEditionPane.setDateText(hypothesis.getDate());
@@ -173,7 +182,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 
 					try {
 
-						if (mainPropertiesEditionPane.getGoalText()==null){
+						if (mainPropertiesEditionPane.getTitleText()==null){
 							JOptionPane.showMessageDialog(null, resource.getString("erHypothesisDescriptionEmpty"));
 						}
 						else{
@@ -199,7 +208,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 //					if( JOptionPane.showConfirmDialog(null, "Do you want to update this hypothesis?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 
 						try{
-							hypothesis.setHypothesisName(mainPropertiesEditionPane.getGoalText());
+							hypothesis.setHypothesisName(mainPropertiesEditionPane.getTitleText());
 							hypothesis.setComments(mainPropertiesEditionPane.getCommentsText());
 							hypothesis.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							hypothesis.setDate(mainPropertiesEditionPane.getDateText());
@@ -340,7 +349,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 
 		HypothesisModel hypothesisAdd = new HypothesisModel(
 				idAux,
-				mainPropertiesEditionPane.getGoalText(),
+				mainPropertiesEditionPane.getTitleText(),
 				mainPropertiesEditionPane.getCommentsText(), 
 				mainPropertiesEditionPane.getAuthorText(), 
 				mainPropertiesEditionPane.getDateText(),

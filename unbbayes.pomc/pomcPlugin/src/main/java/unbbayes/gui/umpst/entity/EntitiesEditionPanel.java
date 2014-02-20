@@ -1,4 +1,4 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.entity;
 
 
 import java.awt.Color;
@@ -6,11 +6,13 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -26,6 +28,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -33,17 +36,34 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
 import unbbayes.controller.umpst.IconController;
-import unbbayes.model.umpst.entities.AtributeModel;
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.MainPanel;
+import unbbayes.gui.umpst.MainPropertiesEditionPane;
+import unbbayes.gui.umpst.TableButton;
+import unbbayes.gui.umpst.UmpstModule;
+import unbbayes.gui.umpst.TableButton.TableButtonCustomizer;
+import unbbayes.gui.umpst.TableButton.TableButtonPressedHandler;
+import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.project.SearchModelEntity;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.prs.bn.cpt.impl.resources.Resources;
 import unbbayes.util.CommonDataUtil;
 
 
-public class EntitiesAdd extends IUMPSTPanel {
+/**
+ * Panel for Entities Edition
+ * 
+ * @author Laecio Santos (laecio@gmail.com)
+ * @author Rafael Mezzomo 
+ * @author Shou Matusumoto
+ *
+ */
+public class EntitiesEditionPanel extends IUMPSTPanel {
 	
+	private static final long serialVersionUID = 1L;
 	
 	private Object[][] dataFrame ;
 	private Object[][] dataFrameHypo ;
@@ -53,7 +73,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 	private JComboBox atributeVinculationList = new JComboBox();
 	
 	private GridBagConstraints constraint     = new GridBagConstraints();
-	private JLabel titulo            = new JLabel();
+
 	
 	private JButton buttonAdd 	     = new JButton();
 	private JButton buttonCancel     = new JButton("Cancel");
@@ -61,12 +81,9 @@ public class EntitiesAdd extends IUMPSTPanel {
 	private JButton buttonFrame	= new JButton ("backtracking goal");
 	private JButton buttonFrameHypo = new JButton("backtracking hypothesis");
 	
-	private JTextField dateText,authorText;
-	private JTextField entityText;
-	private JTextArea commentsText;
 	private EntityModel entity;
-
-	private static final long serialVersionUID = 1L;
+	
+	private MainPropertiesEditionPane mainPropertiesEditionPane ; 
 	
 	private JList list,listAux; 
     private DefaultListModel listModel = new DefaultListModel();
@@ -76,156 +93,123 @@ public class EntitiesAdd extends IUMPSTPanel {
     private DefaultListModel listHypothesisModel = new DefaultListModel();
 	private DefaultListModel listHypothesisModelAux = new DefaultListModel();
 	
+	/** Load resource file from this package */
+  	private static ResourceBundle resource = 
+  			unbbayes.util.ResourceController.newInstance().getBundle(
+  			unbbayes.gui.umpst.resources.Resources.class.getName());
 	
-	public EntitiesAdd(UmpstModule janelaPai,UMPSTProject umpstProject, EntityModel entity){
-		super(janelaPai);
+	public EntitiesEditionPanel(UmpstModule _fatherModule,
+			UMPSTProject _umpstProject, 
+			EntityModel _entity){
 		
-		this.setUmpstProject(umpstProject);
+		super(_fatherModule);
 		
-		this.entity = entity;
-		this.setLayout(new GridBagLayout());
-		constraint.fill = GridBagConstraints.BOTH;
-		constraint.gridx=0;constraint.gridy=0;constraint.weightx=0.4;constraint.weighty=0.4;
+		this.setUmpstProject(_umpstProject);
+		
+		this.entity = _entity;
+		
+		this.setLayout(new GridLayout(1,1));
+		
 		createPanelText();
 		
-		GridBagConstraints c     = new GridBagConstraints();
-		JPanel panelBacktracking = new JPanel();
-		panelBacktracking.setLayout(new GridBagLayout());
-		c.fill = GridBagConstraints.BOTH;
-		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;
-		panelBacktracking.add(getBacktrackingPanel(),c);
-		c.gridx=0;c.gridy=1;c.weightx=0.5;c.weighty=0.5;
-		panelBacktracking.add(getBacktrackingHypothesis(),c);
-		
-		constraint.gridx=0;constraint.gridy=1;constraint.weightx=0.5;constraint.weighty=0.6;
-		add(panelBacktracking,constraint);
-		
-		constraint.gridx=1;constraint.gridy=1;constraint.weightx=0.5;constraint.weighty=0.6;
-		createAtributeTable();
-		constraint.gridx=1;constraint.gridy=0;constraint.weightx=0.6;constraint.weighty=0.6;
-		createTraceabilityTable();
-		listeners();
+		JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+				createPanelText(),
+				createBacktrackingPanel()); 
 
-		if( entity == null){
-			titulo.setText("Add new entity");
+		JSplitPane rightPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+				createTraceabilityTable(),
+				createAtributeTable()); 
+
+
+		JSplitPane mainPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+				leftPane,
+				rightPane);
+
+		this.add(mainPane);
+
+		leftPane.setDividerLocation(280); 
+		rightPane.setDividerLocation(280); 
+		mainPane.setDividerLocation(500); 
+	
+		
+		createListeners();
+
+		if( _entity == null){
 			buttonAdd.setText(" Add ");
 		} else {
-			titulo.setText("Update Entity");
 			buttonAdd.setText(" Update ");
-			entityText.setText(entity.getEntityName());
-			commentsText.setText(entity.getComments());
-			authorText.setText(entity.getAuthor());
-			dateText.setText(entity.getDate());
+			mainPropertiesEditionPane.setTitleText(_entity.getEntityName());
+			mainPropertiesEditionPane.setCommentsText(_entity.getComments());
+			mainPropertiesEditionPane.setAuthorText(_entity.getAuthor());
+			mainPropertiesEditionPane.setDateText(_entity.getDate());
 		}
 		
 	}
 
-	public void createPanelText(){
+	public JSplitPane createBacktrackingPanel(){
+
+		JSplitPane panel = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+				getBacktrackingPanel(),
+				getBacktrackingHypothesis());
+		
+		return panel; 
+		
+	}
+	
+	public JPanel createPanelText(){
+		
 		JPanel panel = new JPanel();
+		
+		String title            = resource.getString("ttEntity");
+		
 		panel.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		
-		c.gridx = 0; c.gridy = 2;c.gridwidth = 1;
-		panel.add( new JLabel("Entity Description: "), c);
-		
-		c.gridx = 0; c.gridy = 3;c.gridwidth = 1;
-		panel.add( new JLabel("Author Name: "), c);
-		
-		c.gridx = 0; c.gridy = 4;c.gridwidth = 1;
-		panel.add( new JLabel("Date: "), c);
-		
-		c.gridx = 0; c.gridy = 5;c.gridwidth = 1;
-		panel.add( new JLabel("Comments: "), c);
-		
+		mainPropertiesEditionPane = 
+				new MainPropertiesEditionPane(buttonCancel, 
+						buttonAdd, 
+						title, 
+						"Goals Details",
+						null,
+						null); 
 
-		GridBagConstraints d = new GridBagConstraints();
-		d.gridx = 0; d.gridy = 0;
-		d.fill = GridBagConstraints.PAGE_START;
-		d.gridwidth = 3;
-		d.insets = new Insets(0, 0, 0, 0);
-		titulo.setFont(new Font("Arial", Font.BOLD, 32));
-		titulo.setBackground(new Color(0x4169AA));
-		panel.add( titulo, d);
-				
-		entityText = new JTextField(20);
-		
-		commentsText = new JTextArea(5,21);
-		commentsText.setLineWrap(true); 
-		commentsText.setWrapStyleWord(true);
-		commentsText.setBorder(BorderFactory.createEtchedBorder());
-		
-		authorText = new JTextField(20);
-		dateText = new JTextField(20);
-		
-		authorText.setText(CommonDataUtil.getInstance().getAuthorName()); 
-		dateText.setText(CommonDataUtil.getInstance().getActualDate()); 
- 
+		if (entity != null){
+			mainPropertiesEditionPane.setTitleText(entity.getEntityName());
+			mainPropertiesEditionPane.setCommentsText(entity.getComments());
+			mainPropertiesEditionPane.setAuthorText(entity.getAuthor());
+			mainPropertiesEditionPane.setDateText(entity.getDate());
+		}
 
-		c.gridx = 1; c.gridy = 2;c.gridwidth = 2;
-		panel.add( entityText, c);
-		
-		c.gridx = 1; c.gridy = 3;c.gridwidth = 2;
-		panel.add( authorText, c);
-		
-		c.gridx = 1; c.gridy = 4;c.gridwidth = 2;
-		panel.add( dateText, c);
-		
-		c.gridx = 1; c.gridy = 5;c.gridwidth = 2;
-		panel.add( commentsText, c);
-		
-		Box box = Box.createHorizontalBox();
-		box.add(buttonCancel);
-		//box.add(buttonAtribute);
-		//box.add(buttonFrame);
-		//box.add(buttonFrameHypo);
-		box.add(buttonAdd);
-		
-		buttonAdd.setToolTipText("Save this entity");
-		buttonCancel.setToolTipText("Cancel and return to main panel");
-		
-		c.gridx = 2; c.gridy = 6; c.gridwidth = 2;
-		panel.add(box,c);
-		/*
-		panel.add( buttonCancel, c);
-		c.gridx = 1; c.gridy = 6; c.gridwidth = 1;
-		panel.add( buttonAtribute, c);
-		buttonAtribute.setToolTipText("Add new Atribute");
-		c.gridx = 2; c.gridy = 6; c.gridwidth = 1;
-		panel.add(buttonAdd,c);*/
-		
-		panel.setBorder(BorderFactory.createTitledBorder("Entity details"));
-		
-		add(panel,constraint);
+		return mainPropertiesEditionPane.getPanel(); 
 	
 	}
 	
 	
-	
-	
-	public void listeners(){
+	public void createListeners(){
 		
 		buttonAdd.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if( entity == null){
 					try {
 						
-						if (entityText.getText().equals("")){
-							JOptionPane.showMessageDialog(null, "Entity details are empty!");
+						if (mainPropertiesEditionPane.getTitleText().equals("")){
+							JOptionPane.showMessageDialog(null, resource.getString("erEntityDescriptionEmpty"));
 						}
 						else{
-						
-						
 							EntityModel entityAdd = updateMaEntity();					    
 						    updateMapSearch(entityAdd);
 						    //updateBacktracking(entityAdd);
 							updateTableEntities();
-							JOptionPane.showMessageDialog(null, "entity successfully added",null, JOptionPane.INFORMATION_MESSAGE);
+							
+							UmpstModule pai = getFatherPanel();
+							changePanel(new EntitiesEditionPanel(getFatherPanel(),getUmpstProject(),entityAdd));	
 						}
 					
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating entity", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getFatherPanel();
 						changePanel(pai.getMenuPanel());	
+						e1.printStackTrace();
 					
 					}
 				}
@@ -233,10 +217,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 					if( JOptionPane.showConfirmDialog(null, "Do you want to update this entity?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 						//EntityModel entity = new EntityModel(entityText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
 						
-						
-						
 						try{
-							
 
 							/**Cleaning Search Map*/
 							Set<EntityModel> aux = new HashSet<EntityModel>();
@@ -251,17 +232,15 @@ public class EntitiesAdd extends IUMPSTPanel {
 					    	    		entityBeta = it.next();
 					    	   		}
 					    		}
-					    		
-						    	
 						    }
 						    
 						    
 						    /************/
 							
-							entity.setEntityName(entityText.getText());
-							entity.setComments(commentsText.getText());
-							entity.setAuthor(authorText.getText());
-							entity.setDate(dateText.getText());
+							entity.setEntityName(mainPropertiesEditionPane.getTitleText());
+							entity.setComments(mainPropertiesEditionPane.getCommentsText());
+							entity.setAuthor(mainPropertiesEditionPane.getAuthorText());
+							entity.setDate(mainPropertiesEditionPane.getDateText());
 							
 							updateMapSearch(entity);
 							//updateBacktracking(entity);
@@ -313,35 +292,12 @@ public class EntitiesAdd extends IUMPSTPanel {
 		
 		buttonAtribute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				changePanel(new AtributeAdd(getFatherPanel(),getUmpstProject(), entity, null, null));
+				changePanel(new AtributeEditionPanel(getFatherPanel(),getUmpstProject(), entity, null, null));
 
 			}
 		});
 		
 		
-		entityText.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				commentsText.requestFocus();
-			}
-		});
-		
-		/*commentsText.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				authorText.requestFocus();
-			}
-		});*/
-		
-		authorText.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				dateText.requestFocus();
-			}
-		});
-		
-		dateText.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				buttonAdd.requestFocus();
-			}
-		});
 		
 	}
 	
@@ -359,29 +315,31 @@ public class EntitiesAdd extends IUMPSTPanel {
     
     public EntityModel updateMaEntity(){
     	String idAux = "";
-		int intAux = 0;
-		int tamanho = getUmpstProject().getMapEntity().size()+1;
-		
-		
-					
-			if ( getUmpstProject().getMapEntity().size()!=0){
-				idAux = tamanho+"";
-			}
-			else{
-				idAux = "1";
-			}
-	
-		
-		EntityModel entityAdd = new EntityModel(idAux,entityText.getText(),commentsText.getText(), authorText.getText(), 
-				dateText.getText(),null,null,null,null,null,null);
-		
-		
-	    getUmpstProject().getMapEntity().put(entityAdd.getId(), entityAdd);	
-	    
-	    CommonDataUtil.getInstance().setAuthorName(authorText.getText()); 
-	    
-	    
-	    return entityAdd;
+    	int intAux = 0;
+
+    	int tamanho = getUmpstProject().getMapEntity().size()+1;
+
+    	if ( getUmpstProject().getMapEntity().size()!=0){
+    		idAux = tamanho+"";
+    	}
+    	else{
+    		idAux = "1";
+    	}
+
+
+    	EntityModel newEntity = new EntityModel(
+    			idAux,
+    			mainPropertiesEditionPane.getTitleText(),
+    			mainPropertiesEditionPane.getCommentsText(), 
+    			mainPropertiesEditionPane.getAuthorText(), 
+    			mainPropertiesEditionPane.getDateText());
+
+
+    	getUmpstProject().getMapEntity().put(newEntity.getId(), newEntity);	
+
+    	CommonDataUtil.getInstance().setAuthorName(mainPropertiesEditionPane.getAuthorText()); 
+
+    	return newEntity;
     }
     
     
@@ -405,7 +363,7 @@ public class EntitiesAdd extends IUMPSTPanel {
 	    UmpstModule pai = getFatherPanel();
 	    changePanel(pai.getMenuPanel());
 	    
-	    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
+	    EntitiesTable entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
 	    JTable table = entitiesTable.createTable(columnNames,data);
 	    
 	    entitiesTable.getScrollPanePergunta().setViewportView(table);
@@ -422,7 +380,6 @@ public class EntitiesAdd extends IUMPSTPanel {
 	    strAux = entityAdd.getEntityName().split(" ");
 	    Set<EntityModel> entitySetSearch = new HashSet<EntityModel>();
 
-	    
 	    for (int i = 0; i < strAux.length; i++) {
 	    	if(!strAux[i].equals(" ")){
 	    		if(getUmpstProject().getMapSearchEntity().get(strAux[i])==null){
@@ -631,7 +588,7 @@ public JPanel getBacktrackingHypothesis(){
 		
 	}*/
 	
-	public void createAtributeTable(){
+	public JPanel createAtributeTable(){
     	
 	    TableAtribute atributesTable = new TableAtribute(getFatherPanel(),getUmpstProject(),entity);
 	    JTable table = atributesTable.createTable();
@@ -660,12 +617,12 @@ public JPanel getBacktrackingHypothesis(){
 	    panel.setBorder(BorderFactory.createTitledBorder("List of Atributes"));
 
 	   
-	    add(panel,constraint);
+	    return panel; 
 
     }
 	
 	
-	public void createTraceabilityTable(){
+	public JScrollPane createTraceabilityTable(){
 		
 		int i = 0;
 		String[] columns = {"Name", "Type"};
@@ -757,9 +714,7 @@ public JPanel getBacktrackingHypothesis(){
 		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setBorder(BorderFactory.createTitledBorder("This entity traceability"));
 		
-		add(scrollPane,constraint);
-		
-		
+		return scrollPane;
 		
 	}
 	
@@ -860,7 +815,7 @@ public JPanel getBacktrackingHypothesis(){
 		
 	}
 	
-	 public void updateMapAtribute(AtributeModel atributeVinculated){
+	 public void updateMapAtribute(AttributeModel atributeVinculated){
 	    	
 		 	/**Toda vez deve atualizar que agora essa hipotese tem outro pai e o goal relacionado agora tem outra hipotese*/
 		 	getUmpstProject().getMapAtribute().get(atributeVinculated.getId()).getEntityRelated().add(entity);
@@ -869,7 +824,7 @@ public JPanel getBacktrackingHypothesis(){
 			if (atributeVinculated.getMapSubAtributes()!=null){
 				 Set<String> keys = atributeVinculated.getMapSubAtributes().keySet();
 		 		 TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
-		 		 AtributeModel atribute;
+		 		 AttributeModel atribute;
 	 			for (String key: sortedKeys){
 	 				atribute = atributeVinculated.getMapSubAtributes().get(key);
 	 				

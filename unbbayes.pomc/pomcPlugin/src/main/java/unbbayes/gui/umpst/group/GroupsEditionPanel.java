@@ -1,4 +1,4 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.group;
 
 
 import java.awt.Color;
@@ -8,11 +8,13 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -22,12 +24,14 @@ import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -36,6 +40,13 @@ import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.MainPanel;
+import unbbayes.gui.umpst.MainPropertiesEditionPane;
+import unbbayes.gui.umpst.TableButton;
+import unbbayes.gui.umpst.UmpstModule;
+import unbbayes.gui.umpst.TableButton.TableButtonCustomizer;
+import unbbayes.gui.umpst.TableButton.TableButtonPressedHandler;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.project.SearchModelEntity;
@@ -46,7 +57,7 @@ import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.util.CommonDataUtil;
 
 
-public class GroupsAdd extends IUMPSTPanel {
+public class GroupsEditionPanel extends IUMPSTPanel {
 		
 	private GridBagConstraints constraint     = new GridBagConstraints();
 	private JLabel titulo            = new JLabel();
@@ -57,10 +68,6 @@ public class GroupsAdd extends IUMPSTPanel {
 	private JButton buttonBackAtributes = new JButton("Add atribute backtracking");
 	private JButton buttonBackRelationship = new JButton("Add relationship backtracking");
  
-	
-	private JTextField dateText,authorText;
-	private JTextField groupText;
-	private JTextArea commentsText;
 	private GroupsModel group;
 
 	private static final long serialVersionUID = 1L;
@@ -74,19 +81,31 @@ public class GroupsAdd extends IUMPSTPanel {
 	private Object[][] dataBacktracking = {};
 	private Object[][] dataFrame = {};
 	
+	private MainPropertiesEditionPane mainPropertiesEditionPane ; 
+
+	/** Load resource file from this package */
+	private static ResourceBundle resource = 
+			unbbayes.util.ResourceController.newInstance().getBundle(
+					unbbayes.gui.umpst.resources.Resources.class.getName());
 	
-	public GroupsAdd(UmpstModule janelaPai,UMPSTProject umpstProject, GroupsModel group){
+	public GroupsEditionPanel(UmpstModule janelaPai,
+			UMPSTProject umpstProject, 
+			GroupsModel group){
 		super(janelaPai);
 		
 		this.setUmpstProject(umpstProject);
 		
 		this.group = group;
-		this.setLayout(new GridBagLayout());
-		constraint.fill = GridBagConstraints.BOTH;
-		constraint.gridx=0;constraint.gridy=0;constraint.weightx=0.5;constraint.weighty=0.3;
-		panelText();
-		constraint.gridx=0;constraint.gridy=1;constraint.weightx=0.5;constraint.weighty=0.7;
-		add(getBacktrackingPanel(),constraint);
+		
+		this.setLayout(new GridLayout(1,1));
+		
+		JSplitPane splitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+				createPanelText(),
+				getBacktrackingPanel()); 
+		
+		splitPanel.setDividerLocation(300); 
+		
+		this.add(splitPanel); 
 		
 		listeners();
 
@@ -96,74 +115,36 @@ public class GroupsAdd extends IUMPSTPanel {
 		} else {
 			titulo.setText("Update Group");
 			buttonAdd.setText(" Update ");
-			groupText.setText(group.getGroupName());
-			commentsText.setText(group.getComments());
-			authorText.setText(group.getAuthor());
-			dateText.setText(group.getDate());
+			mainPropertiesEditionPane.setTitleText(group.getGroupName());
+			mainPropertiesEditionPane.setCommentsText(group.getComments());
+			mainPropertiesEditionPane.setAuthorText(group.getAuthor());
+			mainPropertiesEditionPane.setDateText(group.getDate());
 		}
 		
 	}
 
-	public void panelText(){
-		JPanel panel = new JPanel();
-		panel.setLayout(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
+	public JPanel createPanelText(){
 		
-		c.gridx = 0; c.gridy = 2;c.gridwidth = 1;
-		panel.add( new JLabel("Entity Description: "), c);
-		c.gridx = 0; c.gridy = 3;c.gridwidth = 1;
-		panel.add( new JLabel("Author Name: "), c);
-		c.gridx = 0; c.gridy = 4;c.gridwidth = 1;
-		panel.add( new JLabel("Date: "), c);
-		c.gridx = 0; c.gridy = 5;c.gridwidth = 1;
-		panel.add( new JLabel("Comments: "), c);
+		String title            = resource.getString("ttGroup");
 		
+		mainPropertiesEditionPane = 
+				new MainPropertiesEditionPane(
+						buttonCancel, 
+						buttonAdd, 
+						title, 
+						resource.getString("ttGroupDetails"),
+						null,
+						null); 
 
-		GridBagConstraints d = new GridBagConstraints();
-		d.gridx = 0; d.gridy = 0;
-		d.fill = GridBagConstraints.PAGE_START;
-		d.gridwidth = 3;
-		d.insets = new Insets(0, 0, 0, 0);
-		titulo.setFont(new Font("Arial", Font.BOLD, 32));
-		titulo.setBackground(new Color(0x4169AA));
-		panel.add( titulo, d);
-				
-		groupText = new JTextField(20);
-		commentsText = new JTextArea(5,21);
-		commentsText.setLineWrap(true); 
-		commentsText.setWrapStyleWord(true);
-		commentsText.setBorder(BorderFactory.createEtchedBorder());
-		authorText = new JTextField(20);
-		dateText = new JTextField(20);
- 
-		authorText.setText(CommonDataUtil.getInstance().getAuthorName()); 
-		dateText.setText(CommonDataUtil.getInstance().getActualDate()); 
+		if (group != null){
+			mainPropertiesEditionPane.setTitleText(group.getGroupName());
+			mainPropertiesEditionPane.setCommentsText(group.getComments());
+			mainPropertiesEditionPane.setAuthorText(group.getAuthor());
+			mainPropertiesEditionPane.setDateText(group.getDate());
+		}
 
-		c.gridx = 1; c.gridy = 2;c.gridwidth = 2;
-		panel.add( groupText, c);
-		
-		c.gridx = 1; c.gridy = 3;c.gridwidth = 2;
-		panel.add( authorText, c);
-		
-		c.gridx = 1; c.gridy = 4;c.gridwidth = 2;
-		panel.add( dateText, c);
-		
-		c.gridx = 1; c.gridy = 5;c.gridwidth = 2;
-		panel.add( commentsText, c);
-		
-		c.gridx = 0; c.gridy = 6; c.gridwidth = 1;
-		panel.add( buttonCancel, c);
-	
-		
-		c.gridx = 1; c.gridy = 6; c.gridwidth = 1;
-		panel.add(buttonAdd,c);
-		
-		panel.setBorder(BorderFactory.createTitledBorder("Group details"));
-		
-		add(panel,constraint);
-	
+		return mainPropertiesEditionPane.getPanel();
 	}
-	
 	
 	
 	
@@ -173,14 +154,17 @@ public class GroupsAdd extends IUMPSTPanel {
 			public void actionPerformed(ActionEvent e) {
 				if( group == null){
 					try {
-						if (groupText.getText().equals("")){
+						if (mainPropertiesEditionPane.getTitleText().equals("")){
 							JOptionPane.showMessageDialog(null, "Group's name is empty!");
 						}
 						else{
 						GroupsModel groupAdd = updateMapGroups();					    
 					    updateMapSearch(groupAdd);
 						updateTableGroups();
-						JOptionPane.showMessageDialog(null, "group successfully added",null, JOptionPane.INFORMATION_MESSAGE);
+						JOptionPane.showMessageDialog(null, 
+								"group successfully added",
+								null, 
+								JOptionPane.INFORMATION_MESSAGE);
 						}
 					
 					} catch (Exception e1) {
@@ -213,10 +197,10 @@ public class GroupsAdd extends IUMPSTPanel {
 						    }
 						    /************/
 							
-							group.setGroupName(groupText.getText());
-							group.setComments(commentsText.getText());
-							group.setAuthor(authorText.getText());
-							group.setDate(dateText.getText());
+							group.setGroupName(mainPropertiesEditionPane.getTitleText());
+							group.setComments(mainPropertiesEditionPane.getCommentsText());
+							group.setAuthor(mainPropertiesEditionPane.getAuthorText());
+							group.setDate(mainPropertiesEditionPane.getDateText());
 							
 							updateMapSearch(group);
 							updateTableGroups();
@@ -262,33 +246,7 @@ public class GroupsAdd extends IUMPSTPanel {
 				changePanel(pai.getMenuPanel());	
 			}
 		});
-		
 	
-		
-		
-		groupText.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				commentsText.requestFocus();
-			}
-		});
-		
-	/*	commentsText.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				authorText.requestFocus();
-			}
-		});*/
-		
-		authorText.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				dateText.requestFocus();
-			}
-		});
-		
-		dateText.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				buttonAdd.requestFocus();
-			}
-		});
 		
 	}
 	
@@ -318,10 +276,14 @@ public class GroupsAdd extends IUMPSTPanel {
 			}
 	
 		
-		GroupsModel groupAdd = new GroupsModel(idAux,groupText.getText(),commentsText.getText(), authorText.getText(), 
-				dateText.getText(),null,null, null, null, null, null);
+		GroupsModel groupAdd = new GroupsModel(idAux,
+				mainPropertiesEditionPane.getTitleText(),
+				mainPropertiesEditionPane.getCommentsText(), 
+				mainPropertiesEditionPane.getAuthorText(), 
+				mainPropertiesEditionPane.getDateText(),
+				null,null, null, null, null, null);
 		
-	    CommonDataUtil.getInstance().setAuthorName(authorText.getText()); 
+	    CommonDataUtil.getInstance().setAuthorName(mainPropertiesEditionPane.getAuthorText()); 
 		
 	    getUmpstProject().getMapGroups().put(groupAdd.getId(), groupAdd);	
 	    

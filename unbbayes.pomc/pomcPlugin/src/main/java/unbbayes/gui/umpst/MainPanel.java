@@ -34,6 +34,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import unbbayes.controller.umpst.IconController;
+import unbbayes.gui.umpst.entity.EntitiesMainPanel;
+import unbbayes.gui.umpst.goal.GoalsEditionPanel;
+import unbbayes.gui.umpst.goal.GoalsMainPanel;
+import unbbayes.gui.umpst.goal.GoalsSearchPanel;
+import unbbayes.gui.umpst.group.GroupsMainPanel;
+import unbbayes.gui.umpst.rules.RulesMainPanel;
 import unbbayes.io.umpst.FileLoad;
 import unbbayes.io.umpst.FileSave;
 import unbbayes.model.umpst.project.UMPSTProject;
@@ -49,10 +55,10 @@ public class MainPanel extends IUMPSTPanel{
 	
 	    private static final String  FILE_EXTENSION = "ump";
 	
-		private Goals goalsPane;
-		private Entities entitiesPane;
-		private Rules rulesPane;
-		private Groups groupsPane;
+		private GoalsMainPanel goalsPane;
+		private EntitiesMainPanel entitiesPane;
+		private RulesMainPanel rulesPane;
+		private GroupsMainPanel groupsPane;
 		private File loadedFile;
 		private File newFile;
 
@@ -71,7 +77,7 @@ public class MainPanel extends IUMPSTPanel{
 	        
 	        JTabbedPane tabbedPane = new JTabbedPane();
 	        
-	        goalsPane = new Goals(getFatherPanel(),umpstProject);
+	        goalsPane = new GoalsMainPanel(getFatherPanel(),umpstProject);
 	        goalsPane.setPreferredSize(new Dimension(1000, 500));
 	        
 	        tabbedPane.addTab(resource.getString("ttGoals"), 
@@ -81,7 +87,7 @@ public class MainPanel extends IUMPSTPanel{
 	        
 	        tabbedPane.setMnemonicAt(0, KeyEvent.VK_1);
 	        
-	        entitiesPane = new Entities(getFatherPanel(),getUmpstProject());
+	        entitiesPane = new EntitiesMainPanel(getFatherPanel(),getUmpstProject());
 	        entitiesPane.setPreferredSize(new Dimension(1000,500));
 	        
 	        tabbedPane.addTab(resource.getString("ttEntities"), 
@@ -90,7 +96,7 @@ public class MainPanel extends IUMPSTPanel{
 	                resource.getString("hpEntitiesTab"));
 	        tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
-	        rulesPane = new Rules(getFatherPanel(),umpstProject);
+	        rulesPane = new RulesMainPanel(getFatherPanel(),umpstProject);
 	        rulesPane.setPreferredSize(new Dimension(1000,500));	        
 	        tabbedPane.addTab(resource.getString("ttRules"), 
 	        		iconController.getAnalysisDesignIcon(), 
@@ -98,7 +104,7 @@ public class MainPanel extends IUMPSTPanel{
 	                resource.getString("hpRulesTab"));
 	        tabbedPane.setMnemonicAt(2, KeyEvent.VK_3);
 	        
-	        groupsPane = new Groups(getFatherPanel(),umpstProject);
+	        groupsPane = new GroupsMainPanel(getFatherPanel(),umpstProject);
 	        groupsPane.setPreferredSize(new Dimension(1000,500));
 	        tabbedPane.addTab(resource.getString("ttGroups"), 
 	        		iconController.getAnalysisDesignIcon(), 
@@ -261,21 +267,21 @@ public class MainPanel extends IUMPSTPanel{
 	    /**
 		 * @return the groupsPane
 		 */
-		public Groups getGroupsPane() {
+		public GroupsMainPanel getGroupsPane() {
 			return groupsPane;
 		}
 
 		/**
 		 * @param groupsPane the groupsPane to set
 		 */
-		public void setGroupsPane(Groups groupsPane) {
+		public void setGroupsPane(GroupsMainPanel groupsPane) {
 			this.groupsPane = groupsPane;
 		}
 
 		/**
 		 * @return the rulesPane
 		 */
-		public Rules getRulesPane() {
+		public RulesMainPanel getRulesPane() {
 			return rulesPane;
 		}
 
@@ -283,42 +289,42 @@ public class MainPanel extends IUMPSTPanel{
 		/**
 		 * @param rulesPane the rulesPane to set
 		 */
-		public void setRulesPane(Rules rulesPane) {
+		public void setRulesPane(RulesMainPanel rulesPane) {
 			this.rulesPane = rulesPane;
 		}
 
 		/**
 		 * @return the requirementsPane
 		 */
-		public Goals getRequirementsPane() {
+		public GoalsMainPanel getRequirementsPane() {
 			return goalsPane;
 		}
 
 		/**
 		 * @param requirementsPane the requirementsPane to set
 		 */
-		public void setRequirementsPane(Goals requirementsPane) {
+		public void setRequirementsPane(GoalsMainPanel requirementsPane) {
 			this.goalsPane = requirementsPane;
 		}
 
 		/**
 		 * @return the entitiesPane
 		 */
-		public Entities getEntitiesPane() {
+		public EntitiesMainPanel getEntitiesPane() {
 			return entitiesPane;
 		}
 
 		/**
 		 * @param entitiesPane the entitiesPane to set
 		 */
-		public void setEntitiesPane(Entities entitiesPane) {
+		public void setEntitiesPane(EntitiesMainPanel entitiesPane) {
 			this.entitiesPane = entitiesPane;
 		}
 
 		protected JPanel  createInternalPane (JPanel pane){
 	    	
 	    	this.setLayout(new FlowLayout());
-			this.add(new GoalsAdd(getFatherPanel(),getUmpstProject(),null,null));
+			this.add(new GoalsEditionPanel(getFatherPanel(),getUmpstProject(),null,null));
 	    	
 			return pane;
 	    }

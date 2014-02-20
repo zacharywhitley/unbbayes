@@ -1,4 +1,4 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.goal;
 
 
 import java.awt.BorderLayout;
@@ -29,9 +29,12 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.text.MaskFormatter;
 
 import unbbayes.controller.umpst.IconController;
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.MainPropertiesEditionPane;
+import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.gui.umpst.selection.HypothesisSelectionPane;
 import unbbayes.gui.umpst.selection.SubGoalSelectionPane;
-import unbbayes.model.umpst.entities.AtributeModel;
+import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.groups.GroupsModel;
@@ -42,12 +45,11 @@ import unbbayes.model.umpst.requirements.HypothesisModel;
 import unbbayes.model.umpst.rules.RulesModel;
 import unbbayes.util.CommonDataUtil;
 
+/**
+ * Panel for Goals Edition
+ */
+public class GoalsEditionPanel extends IUMPSTPanel {
 
-public class GoalsAdd extends IUMPSTPanel {
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	private JButton buttonAdd 	     ;
@@ -83,12 +85,12 @@ public class GoalsAdd extends IUMPSTPanel {
 	private IconController iconController = IconController.getInstance();
 
 
-	public GoalsAdd(UmpstModule janelaPai, 
+	public GoalsEditionPanel(UmpstModule fatherModule, 
 			UMPSTProject umpstProject, 
 			GoalModel goal, 
 			GoalModel goalFather){
 
-		super(janelaPai);
+		super(fatherModule);
 
 		setUmpstProject(umpstProject);
 		
@@ -102,7 +104,7 @@ public class GoalsAdd extends IUMPSTPanel {
 			}
 		}
 		
-		this.janelaPai = janelaPai; 
+		this.janelaPai = fatherModule; 
 
 		this.setLayout(new GridLayout(1,1));
 
@@ -147,10 +149,15 @@ public class GoalsAdd extends IUMPSTPanel {
 
 		// CREATE FORM 
 		mainPropertiesEditionPane = 
-				new MainPropertiesEditionPane(buttonCancel, buttonAdd, title, "Goals Details"); 
+				new MainPropertiesEditionPane(buttonCancel, 
+						buttonAdd, 
+						title, 
+						"Goals Details",
+						null,
+						null); 
 
 		if (goal != null){
-			mainPropertiesEditionPane.setGoalText(goal.getGoalName());
+			mainPropertiesEditionPane.setTitleText(goal.getGoalName());
 			mainPropertiesEditionPane.setCommentsText(goal.getComments());
 			mainPropertiesEditionPane.setAuthorText(goal.getAuthor());
 			mainPropertiesEditionPane.setDateText(goal.getDate());
@@ -200,7 +207,7 @@ public class GoalsAdd extends IUMPSTPanel {
 
 				// -> New Goal
 				if( goal == null){
-					if (mainPropertiesEditionPane.getGoalText().equals("")){
+					if (mainPropertiesEditionPane.getTitleText().equals("")){
 						JOptionPane.showMessageDialog(null, resource.getString("ErGoalDescriptionEmpty"));
 					}
 					else{
@@ -235,7 +242,7 @@ public class GoalsAdd extends IUMPSTPanel {
 							}
 							/************/
 
-							goal.setGoalName(mainPropertiesEditionPane.getGoalText());
+							goal.setGoalName(mainPropertiesEditionPane.getTitleText());
 							goal.setComments(mainPropertiesEditionPane.getCommentsText());
 							goal.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							goal.setDate(mainPropertiesEditionPane.getDateText());
@@ -299,7 +306,7 @@ public class GoalsAdd extends IUMPSTPanel {
 		buttonSubgoal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				//				changePanel(new SubgoalsAdd(getFatherPanel(),getUmpstProject(),null,goal));
-				changePanel(new GoalsAdd(getFatherPanel(),getUmpstProject(),null,goal));
+				changePanel(new GoalsEditionPanel(getFatherPanel(),getUmpstProject(),null,goal));
 			}
 		});
 
@@ -370,7 +377,7 @@ public class GoalsAdd extends IUMPSTPanel {
 
 
 		GoalModel goalAdd = new GoalModel(idAux,
-				mainPropertiesEditionPane.getGoalText(),
+				mainPropertiesEditionPane.getTitleText(),
 				mainPropertiesEditionPane.getCommentsText(), 
 				mainPropertiesEditionPane.getAuthorText(), 
 				mainPropertiesEditionPane.getDateText(),
@@ -596,7 +603,7 @@ public class GoalsAdd extends IUMPSTPanel {
 				if (entity.getMapAtributes()!=null){
 					Set<String> keysAtribute = entity.getMapAtributes().keySet();
 					TreeSet<String> sortedKeysAtribute = new TreeSet<String>(keysAtribute);
-					AtributeModel atribute;
+					AttributeModel atribute;
 					for(String keyAtribute : sortedKeysAtribute){
 						i++;
 					}
@@ -696,7 +703,7 @@ public class GoalsAdd extends IUMPSTPanel {
 				if (entity.getMapAtributes()!=null){
 					Set<String> keysAtribute = entity.getMapAtributes().keySet();
 					TreeSet<String> sortedKeysAtribute = new TreeSet<String>(keysAtribute);
-					AtributeModel atribute;
+					AttributeModel atribute;
 					for(String keyAtribute : sortedKeysAtribute){
 
 						data[i][0] = "Atribute";

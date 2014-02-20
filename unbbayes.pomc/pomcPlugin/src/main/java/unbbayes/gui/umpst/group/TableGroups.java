@@ -1,4 +1,4 @@
-package unbbayes.gui.umpst;
+package unbbayes.gui.umpst.group;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -16,15 +16,23 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
 import unbbayes.controller.umpst.IconController;
+import unbbayes.gui.umpst.IUMPSTPanel;
+import unbbayes.gui.umpst.MainPanel;
+import unbbayes.gui.umpst.TableButton;
+import unbbayes.gui.umpst.UmpstModule;
+import unbbayes.gui.umpst.TableButton.TableButtonCustomizer;
+import unbbayes.gui.umpst.TableButton.TableButtonPressedHandler;
+import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.rules.RulesModel;
 
-public class TableRules extends IUMPSTPanel{
+public class TableGroups extends IUMPSTPanel{
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+		
 	private JTable table;
 	private JScrollPane scrollpanePergunta;
 	
@@ -33,12 +41,12 @@ public class TableRules extends IUMPSTPanel{
 	Object[] dataAux = new Object[4];
 	Integer i = 0;
 
-	String[] columnNames = {"ID","Rule","",""};
+	String[] columnNames = {"ID","Group","",""};
 
 	Object[][] data = {};
 	
 	
-    	  public TableRules(UmpstModule janelaPai,UMPSTProject umpstProject) {
+    	  public TableGroups(UmpstModule janelaPai,UMPSTProject umpstProject) {
     		  
     		    super(janelaPai);
     		    this.setUmpstProject(umpstProject);
@@ -89,8 +97,8 @@ public class TableRules extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				
 				String key = data[row][0].toString();
-				RulesModel ruleAux = getUmpstProject().getMapRules().get(key);
-				changePanel(new RulesAdd(getFatherPanel(),getUmpstProject(), ruleAux )   );
+				GroupsModel groupAux = getUmpstProject().getMapGroups().get(key);
+				changePanel(new GroupsEditionPanel(getFatherPanel(),getUmpstProject(), groupAux )   );
 			}
 		});
 		
@@ -114,29 +122,29 @@ public class TableRules extends IUMPSTPanel{
 			
 			public void onButtonPress(int row, int column) {
 				
-				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete rule "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
+				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete Group "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							String key = data[row][0].toString();
-							RulesModel ruleToBeDeleted = getUmpstProject().getMapRules().get(key);
+							GroupsModel groupToBeDeleted = getUmpstProject().getMapGroups().get(key);
 							
 							/*Updating MapSearch*/
-							deleteFromSearchMap(ruleToBeDeleted);
+							deleteFromSearchMap(groupToBeDeleted);
 	
 							
 							
-							getUmpstProject().getMapRules().remove(ruleToBeDeleted.getId());
+							getUmpstProject().getMapRules().remove(groupToBeDeleted.getId());
 							
 							
 							 
-							Object[][] dataDel = new Object[getUmpstProject().getMapRules().size()][4];
+							Object[][] dataDel = new Object[getUmpstProject().getMapGroups().size()][4];
 							Integer i=0;
 						    
-							Set<String> keys = getUmpstProject().getMapRules().keySet();
+							Set<String> keys = getUmpstProject().getMapGroups().keySet();
 							TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 							
 							for (String chave: sortedKeys){
-								dataDel[i][0] = getUmpstProject().getMapRules().get(chave).getId();						
-								dataDel[i][1] = getUmpstProject().getMapRules().get(chave).getRulesName();
+								dataDel[i][0] = getUmpstProject().getMapGroups().get(chave).getId();						
+								dataDel[i][1] = getUmpstProject().getMapGroups().get(chave).getGroupName();
 								dataDel[i][2] = "";
 								dataDel[i][3] = "";
 								i++;
@@ -146,7 +154,7 @@ public class TableRules extends IUMPSTPanel{
 							UmpstModule pai = getFatherPanel();
 							 changePanel(pai.getMenuPanel());
 							 
-							 String[] colunas = {"ID","Rule","",""};
+							 String[] colunas = {"ID","Group","",""};
 							 JTable table = createTable(colunas,dataDel);
 							 
 							 getScrollPanePergunta().setViewportView(table);
@@ -193,17 +201,17 @@ public class TableRules extends IUMPSTPanel{
     }
     
   
-    public void deleteFromSearchMap(RulesModel ruleToBeDeleted){
-    	Set<RulesModel> aux = new HashSet<RulesModel>();
-		RulesModel rulesBeta;
-		String[] strAux= ruleToBeDeleted.getRulesName().split(" ");
+    public void deleteFromSearchMap(GroupsModel groupToBeDeleted){
+    	Set<GroupsModel> aux = new HashSet<GroupsModel>();
+		GroupsModel groupBeta;
+		String[] strAux= groupToBeDeleted.getGroupName().split(" ");
 
 	    for (int i = 0; i < strAux.length; i++) {
-    		if(getUmpstProject().getMapSearchRules().get(strAux[i])!=null){
-    			getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated().remove(ruleToBeDeleted);
-    			aux = getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated();   
-    	    	for (Iterator<RulesModel> it = aux.iterator(); it.hasNext(); ) {
-    	    		rulesBeta = it.next();
+    		if(getUmpstProject().getMapSearchGroups().get(strAux[i])!=null){
+    			getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups().remove(groupToBeDeleted);
+    			aux = getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups();   
+    	    	for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
+    	    		groupBeta = it.next();
     	   		}
     		}
     		
