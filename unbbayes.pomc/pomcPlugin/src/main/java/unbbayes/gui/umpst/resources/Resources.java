@@ -59,12 +59,19 @@ public class Resources extends GuiResources {
 	{	
 		
 		//##############       Help Messages         ###################//
-		{"HpAddHyphotesis" , "Add new Hyphotesis"},
-		{"HpAddSubgoal" , "Add new Subgoal"},
+		{"HpAddHyphotesis" , "Add new hyphotesis"},
+		{"HpAddSubgoal" , "Add new subgoal"},
+		{"hpAddGoal" , "Add new goal"},
+		{"hpAddEntity" , "Add new entity"}, 
+		{"hpAddRelationship" , "Edit relationships"},
+		{"hpAddRule" , "Add new rule"},
+		{"hpAddGroup" , "Add new group"},
+		
 		{"HpReuseSubgoal" , "Add existent Subgoal"},
 		{"HpReturnMainPanel" , "Return to main panel"},
 		{"HpReuseHypothesis" , "Add existent Hypothesis"},
 		{"HpReturnPreviousPanel" , "Return to previous goal"},
+		
 		{"HpSaveGoal" , "Save this goal"},
 		{"HpUpdateGoal" , "Update this goal"},
 		{"hpSaveHypothesis" , "Save this hypothesis"},
@@ -73,11 +80,19 @@ public class Resources extends GuiResources {
 		{"HpSelectSubHipothesis" , "Select one sub hipothesis"},
 		{"HpSelectHipothesis" , "Select one hipothesis"},
 		{"hpSelectSubGoals" , "Select one sub goal"},
+		
 		{"hpGoalsTab" , "Edit goals,queries and envidences"},
 		{"hpEntitiesTab" , "Edit entities, atributtes and relationships"},
 		{"hpRulesTab" , "Edit deterministic and stochastic rules"},
 		{"hpGroupsTab" , "Edit groups"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
+		
+		{"hpSearchGoal" , "Search for a goal"},
+		{"hpSearchEntity" , "Search for a entity"},
+		{"hpSearchRule" , "Search for a rule"},
+		{"hpSearchGroup" , "Search for a group"},
+		
+		{"hpCleanSearch" , "Clean previous search results"},
+		
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
@@ -87,6 +102,7 @@ public class Resources extends GuiResources {
 		//##############       Error Messages        ###################//
 		
 		{"ErGoalDescriptionEmpty" , "Goal description empty!"},
+		{"erEntityDescriptionEmpty" , "Entity description empty!"},
 		{"erHypothesisDescriptionEmpty" , "Hypothesis description empty!"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
@@ -107,6 +123,20 @@ public class Resources extends GuiResources {
 		{"ttEntities" , "Entities"},
 		{"ttRules" , "Rules"},
 		{"ttGroups" , "Groups"},
+		
+		{"ttEntity" , "Entity"},
+		{"ttAtribute" , "Atribute"},
+		{"ttRelationship" , "Relationship"},
+		{"ttRule" , "Rule"},
+		{"ttGroup" , "Group"},
+		
+		{"ttType" , "Type: "},
+		
+		{"ttRuleDetails" , "Rule Details"},
+		{"ttGroupDetails" , "Group Details"},
+		
+		{"tpDeterministic" , "Deterministic"},
+		{"tpNoDeterministic" , "Not Deterministic"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
@@ -121,6 +151,8 @@ public class Resources extends GuiResources {
 		{"btnReturn" , "Return"},
 		{"btnAdd" , "Add"},
 		{"btnUpdate" , "Update"},
+		{"btnCopy" , "Copy"},
+		{"btnRemove" , "Remove"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
