@@ -1,3 +1,10 @@
+UNBBAYES MEBN PLUGIN - VERSION 1.13.11
+----------------------------
+
+BUG LIST		
+Number	Request ID	Summary
+11					Some owl files were failing to load due to duplicate ids.
+
 UNBBAYES MEBN PLUGIN - VERSION 1.13.10
 ----------------------------
 FEATURE LIST		
@@ -9,7 +16,7 @@ Also performed some minor refactoring.
 
 BUG LIST		
 Number	Request ID	Summary
-10		3435816	MEBN Nullpointer exception when application.properties is invalid.
+10		3435816		MEBN Nullpointer exception when application.properties is invalid.
 
 UNBBAYES MEBN PLUGIN - VERSION 1.11.9
 ----------------------------
