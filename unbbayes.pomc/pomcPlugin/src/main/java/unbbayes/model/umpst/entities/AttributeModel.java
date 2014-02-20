@@ -9,22 +9,22 @@ import unbbayes.model.umpst.groups.GroupsModel;
 import unbbayes.model.umpst.rules.RulesModel;
 
 
-public class AtributeModel {
+public class AttributeModel {
 	
 	private String id;
 	private String atributeName;
 	private String comments;
 	private String author;
 	private String date;
-	private AtributeModel father;
+	private AttributeModel father;
 	private Set<EntityModel> entityRelated;
-	private Map<String, AtributeModel> mapSubAtributes;
+	private Map<String, AttributeModel> mapSubAtributes;
 	private Set<RelationshipModel> fowardTrackingRelationship;
 	private Set<RulesModel> fowardTrackingRules;
 	private Set<GroupsModel> fowardTrackingGroups;
 	
-	public AtributeModel(String id,String atributeName, String comments,String author, String date,Set<EntityModel> entityRelated,
-			AtributeModel father,Map<String,AtributeModel> mapSubAtributes,Set<RelationshipModel> fowardTrackingRelationship,
+	public AttributeModel(String id,String atributeName, String comments,String author, String date,Set<EntityModel> entityRelated,
+			AttributeModel father,Map<String,AttributeModel> mapSubAtributes,Set<RelationshipModel> fowardTrackingRelationship,
 			Set<RulesModel> fowardTrackingRules , Set<GroupsModel> fowardTrackingGroups) {
 		
 		this.id=id;
@@ -39,7 +39,7 @@ public class AtributeModel {
 		}
 		this.mapSubAtributes=mapSubAtributes;
 		if (mapSubAtributes==null){
-			this.setMapSubAtributes(new HashMap<String, AtributeModel>());
+			this.setMapSubAtributes(new HashMap<String, AttributeModel>());
 		}
 		this.fowardTrackingRelationship=fowardTrackingRelationship;
 		if(fowardTrackingRelationship==null){
@@ -142,7 +142,7 @@ public class AtributeModel {
 	/**
 	 * @return the mapSubAtributes
 	 */
-	public Map<String, AtributeModel> getMapSubAtributes() {
+	public Map<String, AttributeModel> getMapSubAtributes() {
 		return mapSubAtributes;
 	}
 
@@ -150,7 +150,7 @@ public class AtributeModel {
 	/**
 	 * @param mapSubAtributes the mapSubAtributes to set
 	 */
-	public void setMapSubAtributes(Map<String, AtributeModel> mapSubAtributes) {
+	public void setMapSubAtributes(Map<String, AttributeModel> mapSubAtributes) {
 		this.mapSubAtributes = mapSubAtributes;
 	}
 
@@ -238,7 +238,7 @@ public class AtributeModel {
 	/**
 	 * @return the father
 	 */
-	public AtributeModel getFather() {
+	public AttributeModel getFather() {
 		return father;
 	}
 
@@ -246,7 +246,7 @@ public class AtributeModel {
 	/**
 	 * @param father the father to set
 	 */
-	public void setFather(AtributeModel father) {
+	public void setFather(AttributeModel father) {
 		this.father = father;
 	}
 	

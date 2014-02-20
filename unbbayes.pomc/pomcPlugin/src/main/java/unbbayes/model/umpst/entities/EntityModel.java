@@ -1,26 +1,13 @@
 package unbbayes.model.umpst.entities;
 
-import java.awt.Dimension;
-import java.awt.List;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 
-import javax.swing.Box;
-import javax.swing.DefaultListModel;
-import javax.swing.JButton;
 import javax.swing.JList;
-import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
 
-import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.groups.GroupsModel;
-import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.rules.RulesModel;
 
 public class EntityModel {
@@ -30,53 +17,32 @@ public class EntityModel {
 	private String author;
 	private String date;
 	private String comments;
-	private Map<String,AtributeModel> mapAtributes;
-	private JList backtracking;
-	private JList backtrackingHypothesis;
-	private Set<RulesModel> fowardTrackingRules;
-	private Set<GroupsModel> fowardTrackingGroups;
-	private Set<RelationshipModel> fowardTrackingRelationship;
-
 	
-	public EntityModel(String id,String entityName, String comments,String author, String date, 
-			Map<String,AtributeModel> mapAtributes, JList backtracking,JList backtrackingHypothesis, 
-			Set<RulesModel> fowardTrackingRules, Set<GroupsModel> fowardTrackingGroups,Set<RelationshipModel> fowardTrackingRelationship) {
+	private Map<String,AttributeModel> mapAtributes  = new HashMap<String, AttributeModel>();
+	private JList backtrackingGoalsList = new JList();
+	private JList backtrackingHypothesisList = new JList();
+	private Set<RulesModel> fowardTrackingRules = new HashSet<RulesModel>();
+	private Set<GroupsModel> fowardTrackingGroups = new HashSet<GroupsModel>();
+	private Set<RelationshipModel> fowardTrackingRelationship = new HashSet<RelationshipModel>();
+	
+	public EntityModel(String id,
+			String entityName, 
+			String comments,
+			String author, 
+			String date) {
 		
 		this.id           = id;
 		this.entityName   = entityName;
 		this.comments     = comments;
 		this.author       = author;
 		this.date         = date;
-		this.mapAtributes = mapAtributes;
-		if (mapAtributes==null){
-			this.setMapAtributes(new HashMap<String, AtributeModel>());
-		}
-		this.backtracking = backtracking;
-		if (backtracking == null){
-			this.setBacktracking(new JList());
-		}
-		this.backtrackingHypothesis=backtrackingHypothesis;
-		if(backtrackingHypothesis==null){
-			this.setBacktrackingHypothesis(new JList());
-		}
-
-		this.fowardTrackingRules=fowardTrackingRules;
-		if(fowardTrackingRules==null){
-			this.setFowardTrackingRules(new HashSet<RulesModel>());
-		}
-		this.fowardTrackingGroups=fowardTrackingGroups;
-		if (fowardTrackingGroups==null){
-			this.setFowardTrackingGroups(new HashSet<GroupsModel>());
-		}
-		
-		this.fowardTrackingRelationship=fowardTrackingRelationship;
-		if(fowardTrackingRelationship==null){
-			this.setFowardTrackingRelationship(new HashSet<RelationshipModel>());
-		}
 	}
-
-
 	
+	public EntityModel(String id) {
+		
+		this(id,"","","","");
+		
+	}
 
 
 	/**
@@ -85,11 +51,6 @@ public class EntityModel {
 	public Set<RelationshipModel> getFowardTrackingRelationship() {
 		return fowardTrackingRelationship;
 	}
-
-
-
-
-
 
 	/**
 	 * @param fowardTrackingRelationship the fowardTrackingRelationship to set
@@ -100,17 +61,12 @@ public class EntityModel {
 	}
 
 
-
-
-
-
 	/**
 	 * @return the fowardTrackingGroups
 	 */
 	public Set<GroupsModel> getFowardTrackingGroups() {
 		return fowardTrackingGroups;
 	}
-
 
 
 	/**
@@ -121,23 +77,20 @@ public class EntityModel {
 	}
 
 
-
 	/**
 	 * @return the backtrackingHypothesis
 	 */
 	public JList getBacktrackingHypothesis() {
-		return backtrackingHypothesis;
+		return backtrackingHypothesisList;
 	}
-
 
 
 	/**
 	 * @param backtrackingHypothesis the backtrackingHypothesis to set
 	 */
 	public void setBacktrackingHypothesis(JList backtrackingHypothesis) {
-		this.backtrackingHypothesis = backtrackingHypothesis;
+		this.backtrackingHypothesisList = backtrackingHypothesis;
 	}
-
 
 
 	/**
@@ -148,7 +101,6 @@ public class EntityModel {
 	}
 
 
-
 	/**
 	 * @param fowardTrackingRules the fowardTrackingRules to set
 	 */
@@ -157,32 +109,27 @@ public class EntityModel {
 	}
 
 
-
 	/**
 	 * @return the mapAtributes
 	 */
-	public Map<String, AtributeModel> getMapAtributes() {
+	public Map<String, AttributeModel> getMapAtributes() {
 		return mapAtributes;
 	}
-
 
 
 	/**
 	 * @param mapAtributes the mapAtributes to set
 	 */
-	public void setMapAtributes(Map<String, AtributeModel> mapAtributes) {
+	public void setMapAtributes(Map<String, AttributeModel> mapAtributes) {
 		this.mapAtributes = mapAtributes;
 	}
-
-
-
 
 
 	/**
 	 * @return the backtracking
 	 */
 	public JList getBacktracking() {
-		return backtracking;
+		return backtrackingGoalsList;
 	}
 
 
@@ -190,7 +137,7 @@ public class EntityModel {
 	 * @param backtracking the backtracking to set
 	 */
 	public void setBacktracking(JList backtracking) {
-		this.backtracking = backtracking;
+		this.backtrackingGoalsList = backtracking;
 	}
 
 
@@ -271,10 +218,12 @@ public class EntityModel {
 	 */
 	public void setDate(String date) {
 		this.date = date;
+		
 	}
 
-
-	
+	public String toString(){
+		return this.entityName; 
+	}
 	
 	
 }

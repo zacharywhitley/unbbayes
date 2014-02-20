@@ -17,7 +17,7 @@ import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 
 import unbbayes.controller.IconController;
-import unbbayes.gui.umpst.GoalsAdd;
+import unbbayes.gui.umpst.goal.GoalsEditionPanel;
 
 public class SubGoalSelectionPane extends JDialog{
 
@@ -31,12 +31,12 @@ public class SubGoalSelectionPane extends JDialog{
 
 	private final JDialog dialog; 
 	
-	private final GoalsAdd goalsAdd;
+	private final GoalsEditionPanel goalsAdd;
 	
 	JButton btnSelect;
 	JButton btnClose; 
 	
-	public SubGoalSelectionPane(String[] _goals, GoalsAdd _goalsAdd){
+	public SubGoalSelectionPane(String[] _goals, GoalsEditionPanel _goalsAdd){
 		
 		super();
 		

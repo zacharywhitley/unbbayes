@@ -29,6 +29,14 @@ public class IconController extends unbbayes.controller.IconController {
 	protected ImageIcon requirementsIcon; 
 	protected ImageIcon analysisIcon; 
 	
+	protected ImageIcon saveObjectIcon; 
+	protected ImageIcon returnWithoutSaveIcon; 
+	
+	protected ImageIcon leftDoubleArrowIcon; 
+	protected ImageIcon rigthDoubleArrowIcon; 
+	
+	protected ImageIcon relationshipIcon; 
+	
 	public static IconController getInstance() {
 		if (singleton == null) {
 			singleton = new IconController();
@@ -159,6 +167,55 @@ public class IconController extends unbbayes.controller.IconController {
 		}
 	}
 	
+	public ImageIcon getSaveObject() {
+		if (saveObjectIcon != null) {
+			return saveObjectIcon;
+		} else {
+			saveObjectIcon = new ImageIcon(getClass().getResource(
+					"/icons/document-save-2.png"));
+			return saveObjectIcon;
+		}
+	}
+	
+	public ImageIcon getReturnWithoutSave() {
+		if (returnWithoutSaveIcon != null) {
+			return returnWithoutSaveIcon;
+		} else {
+			returnWithoutSaveIcon = new ImageIcon(getClass().getResource(
+					"/icons/document-revert-3.png"));
+			return returnWithoutSaveIcon;
+		}
+	}
+	
+	public ImageIcon getLeftDoubleArrow() {
+		if (leftDoubleArrowIcon != null) {
+			return leftDoubleArrowIcon;
+		} else {
+			leftDoubleArrowIcon = new ImageIcon(getClass().getResource(
+					"/icons/arrow-left-double-3.png"));
+			return leftDoubleArrowIcon;
+		}
+	}
+	
+	public ImageIcon getRigthDoubleArrow() {
+		if (rigthDoubleArrowIcon != null) {
+			return rigthDoubleArrowIcon;
+		} else {
+			rigthDoubleArrowIcon = new ImageIcon(getClass().getResource(
+					"/icons/arrow-right-double-3.png"));
+			return rigthDoubleArrowIcon;
+		}
+	}
+	
+	public ImageIcon getRelationship() {
+		if (relationshipIcon != null) {
+			return relationshipIcon;
+		} else {
+			relationshipIcon = new ImageIcon(getClass().getResource(
+					"/icons/layer-lower.png"));
+			return relationshipIcon;
+		}
+	}
 	
 
 }

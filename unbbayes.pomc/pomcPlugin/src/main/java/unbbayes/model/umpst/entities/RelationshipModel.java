@@ -1,12 +1,13 @@
 package unbbayes.model.umpst.entities;
 
-
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import javax.swing.JList;
-
 import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.requirements.GoalModel;
+import unbbayes.model.umpst.requirements.HypothesisModel;
 import unbbayes.model.umpst.rules.RulesModel;
 
 
@@ -16,140 +17,116 @@ public class RelationshipModel {
 	private String comments;
 	private String author;
 	private String date;
-	private JList backtrackingEntity;
-	private JList backtrackingAtribute;
-	private JList backtrackingGoal;
-	private JList backtrackingHypothesis;
-	private Set<RulesModel> fowardtrackingRules;
-	private Set<GroupsModel> fowardtrackingGroups;
+	
+	private List<EntityModel>     entityList;
+	private List<AttributeModel>  atributeList;
+	private List<GoalModel>       goalList;
+	private List<HypothesisModel> hypothesisList;
+	
+	private Set<RulesModel> fowardtrackingRulesSet;
+	private Set<GroupsModel> fowardtrackingGroupsSet;
 
 	
-	public RelationshipModel(String id,String relationshipName, String comments,String author, String date,
-			JList backtrackingEntity, JList backtrackingAtribute,JList backtrackingGoal,JList backtrackingHypothesis,
-			Set<RulesModel> fowardtrackingRules,Set<GroupsModel> fowardtrackingGroups) {
+	public RelationshipModel(String id,
+			String relationshipName, 
+			String comments,
+			String author, 
+			String date,
+			List<EntityModel> backtrackingEntity, 
+			List<AttributeModel> backtrackingAtribute,
+			List<GoalModel> backtrackingGoal,
+			List<HypothesisModel> backtrackingHypothesis,
+			Set<RulesModel> fowardtrackingRules,
+			Set<GroupsModel> fowardtrackingGroups) {
 		
 		this.id=id;
 		this.relationshipName = relationshipName;
 		this.comments = comments;
 		this.author = author;
 		this.date = date;
-		this.backtrackingAtribute=backtrackingAtribute;
+		this.atributeList=backtrackingAtribute;
+		
 		if(backtrackingAtribute==null){
-			this.setBacktrackingAtribute(new JList());
+			this.setBacktrackingAtribute(new ArrayList<AttributeModel>());
 		}
-		this.backtrackingEntity=backtrackingEntity;
+		this.entityList=backtrackingEntity;
 		if(backtrackingEntity==null){
-			this.setBacktrackingEntity(new JList());
+			this.setBacktrackingEntity(new ArrayList<EntityModel>());
 		}
-		this.backtrackingGoal=backtrackingGoal;
+		this.goalList=backtrackingGoal;
 		if(backtrackingGoal==null){
-			this.setBacktrackingGoal(new JList());
+			this.setBacktrackingGoal(new ArrayList<GoalModel>());
 		}
-		this.backtrackingHypothesis=backtrackingHypothesis;
+		this.hypothesisList=backtrackingHypothesis;
 		if(backtrackingHypothesis==null){
-			this.setBacktrackingHypothesis(new JList());
+			this.setBacktrackingHypothesis(new ArrayList<HypothesisModel>());
 		}
-		this.fowardtrackingRules=fowardtrackingRules;
+		this.fowardtrackingRulesSet=fowardtrackingRules;
 		if(fowardtrackingRules==null){
 			this.setFowardtrackingRules(new HashSet<RulesModel>());
 		}
-		this.fowardtrackingGroups=fowardtrackingGroups;
+		this.fowardtrackingGroupsSet=fowardtrackingGroups;
 		if(fowardtrackingGroups==null){
 			this.setFowardtrackingGroups(new HashSet<GroupsModel>());
 		}
 	}
-	
-	
-	
 
 
 	/**
 	 * @return the fowardtrackingRules
 	 */
 	public Set<RulesModel> getFowardtrackingRules() {
-		return fowardtrackingRules;
+		return fowardtrackingRulesSet;
 	}
-
-
-
-
 
 	/**
 	 * @param fowardtrackingRules the fowardtrackingRules to set
 	 */
 	public void setFowardtrackingRules(Set<RulesModel> fowardtrackingRules) {
-		this.fowardtrackingRules = fowardtrackingRules;
+		this.fowardtrackingRulesSet = fowardtrackingRules;
 	}
-
-
-
-
 
 	/**
 	 * @return the fowardtrackingGroups
 	 */
 	public Set<GroupsModel> getFowardtrackingGroups() {
-		return fowardtrackingGroups;
+		return fowardtrackingGroupsSet;
 	}
-
-
-
-
 
 	/**
 	 * @param fowardtrackingGroups the fowardtrackingGroups to set
 	 */
 	public void setFowardtrackingGroups(Set<GroupsModel> fowardtrackingGroups) {
-		this.fowardtrackingGroups = fowardtrackingGroups;
+		this.fowardtrackingGroupsSet = fowardtrackingGroups;
 	}
-
-
-
-
 
 	/**
 	 * @return the backtrackingGoal
 	 */
-	public JList getBacktrackingGoal() {
-		return backtrackingGoal;
+	public List<GoalModel> getBacktrackingGoal() {
+		return goalList;
 	}
-
-
-
-
 
 	/**
 	 * @param backtrackingGoal the backtrackingGoal to set
 	 */
-	public void setBacktrackingGoal(JList backtrackingGoal) {
-		this.backtrackingGoal = backtrackingGoal;
+	public void setBacktrackingGoal(List<GoalModel> backtrackingGoal) {
+		this.goalList = backtrackingGoal;
 	}
-
-
-
-
 
 	/**
 	 * @return the backtrackingHypothesis
 	 */
-	public JList getBacktrackingHypothesis() {
-		return backtrackingHypothesis;
+	public List<HypothesisModel> getBacktrackingHypothesis() {
+		return hypothesisList;
 	}
-
-
-
-
 
 	/**
 	 * @param backtrackingHypothesis the backtrackingHypothesis to set
 	 */
-	public void setBacktrackingHypothesis(JList backtrackingHypothesis) {
-		this.backtrackingHypothesis = backtrackingHypothesis;
+	public void setBacktrackingHypothesis(List<HypothesisModel> backtrackingHypothesis) {
+		this.hypothesisList = backtrackingHypothesis;
 	}
-
-
-
-
 
 	/**
 	 * @return the id
@@ -158,10 +135,6 @@ public class RelationshipModel {
 		return id;
 	}
 
-
-
-
-
 	/**
 	 * @param id the id to set
 	 */
@@ -169,44 +142,34 @@ public class RelationshipModel {
 		this.id = id;
 	}
 
-
-
-
-
 	/**
 	 * @return the backtrackingEntity
 	 */
-	public JList getBacktrackingEntity() {
-		return backtrackingEntity;
+	public List<EntityModel> getBacktrackingEntityList() {
+		return entityList;
 	}
-
 
 	/**
 	 * @param backtrackingEntity the backtrackingEntity to set
 	 */
-	public void setBacktrackingEntity(JList backtrackingEntity) {
-		this.backtrackingEntity = backtrackingEntity;
+	public void setBacktrackingEntity(List<EntityModel> backtrackingEntity) {
+		this.entityList = backtrackingEntity;
 	}
-
 
 	/**
 	 * @return the backtrackingAtribute
 	 */
-	public JList getBacktrackingAtribute() {
-		return backtrackingAtribute;
+	public List<AttributeModel> getBacktrackingAtribute() {
+		return atributeList;
 	}
 
 
 	/**
 	 * @param backtrackingAtribute the backtrackingAtribute to set
 	 */
-	public void setBacktrackingAtribute(JList backtrackingAtribute) {
-		this.backtrackingAtribute = backtrackingAtribute;
+	public void setBacktrackingAtribute(List<AttributeModel> backtrackingAtribute) {
+		this.atributeList = backtrackingAtribute;
 	}
-
-
-
-
 
 	private String relationshipName;
 	/**
@@ -215,7 +178,6 @@ public class RelationshipModel {
 	public String getRelationshipName() {
 		return relationshipName;
 	}
-
 
 	/**
 	 * @param relationshipName the relationshipName to set
@@ -272,9 +234,8 @@ public class RelationshipModel {
 		this.date = date;
 	}
 
-
-	
-
-	
+	public String toString(){
+		return this.relationshipName; 
+	}
 	
 }

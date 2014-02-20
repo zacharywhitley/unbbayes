@@ -17,8 +17,8 @@ import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 
 import unbbayes.controller.IconController;
-import unbbayes.gui.umpst.GoalsAdd;
-import unbbayes.gui.umpst.HypothesisAdd;
+import unbbayes.gui.umpst.goal.GoalsEditionPanel;
+import unbbayes.gui.umpst.goal.HypothesisAdd;
 
 public class HypothesisSelectionPane extends JDialog{
 
@@ -32,12 +32,12 @@ public class HypothesisSelectionPane extends JDialog{
 
 	private final JDialog dialog; 
 	
-	private final GoalsAdd goalsAdd;
+	private final GoalsEditionPanel goalsAdd;
 	
 	JButton btnSelect;
 	JButton btnClose; 
 	
-	public HypothesisSelectionPane(String[] _hypothesisArray, GoalsAdd _goalsAdd){
+	public HypothesisSelectionPane(String[] _hypothesisArray, GoalsEditionPanel _goalsAdd){
 		
 		super();
 		

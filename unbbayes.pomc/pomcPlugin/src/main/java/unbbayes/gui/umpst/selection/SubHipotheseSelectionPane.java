@@ -16,7 +16,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
 import unbbayes.controller.IconController;
-import unbbayes.gui.umpst.HypothesisAdd;
+import unbbayes.gui.umpst.goal.HypothesisAdd;
 
 public class SubHipotheseSelectionPane extends JDialog{
 

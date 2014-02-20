@@ -1,6 +1,5 @@
 package unbbayes.io.umpst;
 
-import java.awt.GridBagConstraints;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -8,6 +7,7 @@ import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.groups.GroupsModel;
@@ -29,7 +29,8 @@ public class FileSave {
 	private GoalModel goal;
 	private UMPSTProject umpstProject;
 	
-	 public void saveUbf(File file,UMPSTProject umpstProject) throws FileNotFoundException{
+	 public void saveUbf(File file,
+			 UMPSTProject umpstProject) throws FileNotFoundException{
 			
 		 
 		 	this.umpstProject = umpstProject;
@@ -287,44 +288,45 @@ public class FileSave {
 	/*--Backtacking from entities--*/	
 				
 				printStream.println("Number of entities related");
-				printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingEntity().getModel().getSize());
-				if(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingEntity().getModel().getSize()>0){
+				printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingEntityList().size());
+				if(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingEntityList().size() > 0){
 					printStream.println("IDs of entities related");
-					for (int i = 0; i < umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingEntity().getModel().getSize(); i++) {
-						printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingEntity().getModel().getElementAt(i));
+					for (int i = 0; i < umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingEntityList().size(); i++) {
+						printStream.println(
+								umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingEntityList().get(i));
 					}
 				}
 				
     /*--Backtacking from atribute--*/	
 				
 				printStream.println("Number of atribute related");
-				printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingAtribute().getModel().getSize());
-				if(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingAtribute().getModel().getSize()>0){
+				printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingAtribute().size());
+				if(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingAtribute().size() > 0){
 					printStream.println("IDs of atribute related");
-					for (int i = 0; i < umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingAtribute().getModel().getSize(); i++) {
-						printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingAtribute().getModel().getElementAt(i));
+					for (int i = 0; i < umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingAtribute().size(); i++) {
+						printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingAtribute().get(i));
 					}
 				}
 				
     /*--Backtacking from goals--*/	
 				
 				printStream.println("Number of goals related");
-				printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingGoal().getModel().getSize());
-				if(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingGoal().getModel().getSize()>0){
+				printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingGoal().size());
+				if(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingGoal().size()>0){
 					printStream.println("IDs of goals related");
-					for (int i = 0; i < umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingGoal().getModel().getSize(); i++) {
-						printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingGoal().getModel().getElementAt(i));
+					for (int i = 0; i < umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingGoal().size(); i++) {
+						printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingGoal().get(i));
 					}
 				}
 				
     /*--Backtacking from hypothesis--*/	
 				
 				printStream.println("Number of hypothesis related");
-				printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingHypothesis().getModel().getSize());
-				if(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingHypothesis().getModel().getSize()>0){
+				printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingHypothesis().size());
+				if(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingHypothesis().size() > 0){
 					printStream.println("IDs of hypothesis related");
-					for (int i = 0; i < umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingHypothesis().getModel().getSize(); i++) {
-						printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingHypothesis().getModel().getElementAt(i));
+					for (int i = 0; i < umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingHypothesis().size(); i++) {
+						printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getBacktrackingHypothesis().get(i));
 					}
 				}
 		/*--Fowardtracking rules--*/		

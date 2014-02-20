@@ -11,7 +11,7 @@ import java.io.InputStreamReader;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 
-import unbbayes.model.umpst.entities.AtributeModel;
+import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.groups.GroupsModel;
@@ -26,7 +26,7 @@ public class FileLoad {
 	private HypothesisModel hypothesis;
 	private EntityModel entity;
 	private GroupsModel group;
-	private AtributeModel atribute;
+	private AttributeModel atribute;
 	private RelationshipModel relationship;
 	private RulesModel rule;
 
@@ -77,7 +77,7 @@ public class FileLoad {
 
 			for (int i = 0; i < numberEntities; i++) {
 				id = bufferReader.readLine();
-				entity = new EntityModel(id, "", "", "", "", null, null, null, null, null, null);
+				entity = new EntityModel(id);
 				umpstProject.getMapEntity().put(entity.getId(), entity);
 
 			}
@@ -89,7 +89,7 @@ public class FileLoad {
 
 			for (int i = 0; i < numberAtributes; i++) {
 				id = bufferReader.readLine();
-				atribute = new AtributeModel(id, "", "", "", "", null, null, null, null,null,null);
+				atribute = new AttributeModel(id, "", "", "", "", null, null, null, null,null,null);
 				umpstProject.getMapAtribute().put(atribute.getId(), atribute);
 
 			}
@@ -336,27 +336,29 @@ public class FileLoad {
 				bufferReader.readLine();//Number of backtracking from entities
 				int numberBackEnt =Integer.parseInt(bufferReader.readLine());
 				if (numberBackEnt>0){
-					bufferReader.readLine();//Backtracking from entities of this rule
-					DefaultListModel listModel = new DefaultListModel();
-					for (int j = 0; j < numberBackEnt; j++) {
-						listModel.addElement(bufferReader.readLine());
-					}
-					JList list = new JList(listModel);
-					relationship.setBacktrackingEntity(list);
+					//TODO
+//					bufferReader.readLine();//Backtracking from entities of this rule
+//					DefaultListModel listModel = new DefaultListModel();
+//					for (int j = 0; j < numberBackEnt; j++) {
+//						listModel.addElement(bufferReader.readLine());
+//					}
+//					JList list = new JList(listModel);
+//					relationship.setBacktrackingEntity(list);
 				}
 
 				/*--Backtacking from atributes--*/
 
 				bufferReader.readLine();//Number of backtracking from atributes
 				int numberBackAtr =Integer.parseInt(bufferReader.readLine());
-				if (numberBackAtr>0){
-					bufferReader.readLine();//Backtracking atributes names
-					DefaultListModel listModel = new DefaultListModel();
-					for (int j = 0; j < numberBackAtr; j++) {
-						listModel.addElement(bufferReader.readLine());
-					}
-					JList list = new JList(listModel);
-					relationship.setBacktrackingAtribute(list);
+				if (numberBackAtr > 0){
+					//TODO
+//					bufferReader.readLine();//Backtracking atributes names
+//					DefaultListModel listModel = new DefaultListModel();
+//					for (int j = 0; j < numberBackAtr; j++) {
+//						listModel.addElement(bufferReader.readLine());
+//					}
+//					JList list = new JList(listModel);
+//					relationship.setBacktrackingAtribute(list);
 				}
 
 				/*--Backtacking from Goals--*/
@@ -364,13 +366,14 @@ public class FileLoad {
 				bufferReader.readLine();//Number of backtracking from goals
 				int numberBackGoal =Integer.parseInt(bufferReader.readLine());
 				if (numberBackGoal>0){
-					bufferReader.readLine();//Backtracking goals names
-					DefaultListModel listModel = new DefaultListModel();
-					for (int j = 0; j < numberBackGoal; j++) {
-						listModel.addElement(bufferReader.readLine());
-					}
-					JList list = new JList(listModel);
-					relationship.setBacktrackingGoal(list);
+					//TODO
+//					bufferReader.readLine();//Backtracking goals names
+//					DefaultListModel listModel = new DefaultListModel();
+//					for (int j = 0; j < numberBackGoal; j++) {
+//						listModel.addElement(bufferReader.readLine());
+//					}
+//					JList list = new JList(listModel);
+//					relationship.setBacktrackingGoal(list);
 				}
 
 				/*--Backtacking from Hypothesis--*/
@@ -378,13 +381,14 @@ public class FileLoad {
 				bufferReader.readLine();//Number of backtracking from hypothesis
 				int numberBackHypo =Integer.parseInt(bufferReader.readLine());
 				if (numberBackHypo>0){
-					bufferReader.readLine();//Backtracking hypothesis names
-					DefaultListModel listModel = new DefaultListModel();
-					for (int j = 0; j < numberBackHypo; j++) {
-						listModel.addElement(bufferReader.readLine());
-					}
-					JList list = new JList(listModel);
-					relationship.setBacktrackingGoal(list);
+					//TODO
+//					bufferReader.readLine();//Backtracking hypothesis names
+//					DefaultListModel listModel = new DefaultListModel();
+//					for (int j = 0; j < numberBackHypo; j++) {
+//						listModel.addElement(bufferReader.readLine());
+//					}
+//					JList list = new JList(listModel);
+//					relationship.setBacktrackingGoal(list);
 				}
 
 				/*--Fowardtracking rules--*/	  	

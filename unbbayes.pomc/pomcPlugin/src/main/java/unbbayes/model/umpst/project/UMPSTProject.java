@@ -17,7 +17,7 @@ import java.util.List;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
-import unbbayes.model.umpst.entities.AtributeModel;
+import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.groups.GroupsModel;
@@ -31,7 +31,7 @@ public class UMPSTProject implements Graph {
 	private java.util.Map<String,GoalModel> mapGoal;
 	private java.util.Map<String,HypothesisModel> mapHypothesis;
 	private java.util.Map<String,EntityModel> mapEntity;
-	private java.util.Map<String,AtributeModel> mapAtribute;
+	private java.util.Map<String,AttributeModel> mapAtribute;
 	private java.util.Map<String,RelationshipModel> mapRelationship;
 	private java.util.Map<String, RulesModel> mapRules;
 	private java.util.Map<String, GroupsModel> mapGroups;
@@ -50,7 +50,7 @@ public class UMPSTProject implements Graph {
 		this.setMapGoal(new HashMap<String,GoalModel>());
 		this.setMapHypothesis(new HashMap<String, HypothesisModel>());
 		this.setMapEntity(new HashMap<String, EntityModel>());
-		this.setMapAtribute(new HashMap<String, AtributeModel>());
+		this.setMapAtribute(new HashMap<String, AttributeModel>());
 		this.setMapRelationship(new HashMap<String, RelationshipModel>());
 		this.setMapRules(new HashMap<String, RulesModel>());
 		this.setMapGroups(new HashMap<String, GroupsModel>());
@@ -183,13 +183,6 @@ public class UMPSTProject implements Graph {
 
 
 
-
-
-
-
-
-
-
 	/**
 	 * @return the mapSearchEntity
 	 */
@@ -279,7 +272,7 @@ public class UMPSTProject implements Graph {
 	/**
 	 * @return the mapAtribute
 	 */
-	public java.util.Map<String, AtributeModel> getMapAtribute() {
+	public java.util.Map<String, AttributeModel> getMapAtribute() {
 		return mapAtribute;
 	}
 
@@ -290,7 +283,7 @@ public class UMPSTProject implements Graph {
 	/**
 	 * @param mapAtribute the mapAtribute to set
 	 */
-	public void setMapAtribute(java.util.Map<String, AtributeModel> mapAtribute) {
+	public void setMapAtribute(java.util.Map<String, AttributeModel> mapAtribute) {
 		this.mapAtribute = mapAtribute;
 	}
 
