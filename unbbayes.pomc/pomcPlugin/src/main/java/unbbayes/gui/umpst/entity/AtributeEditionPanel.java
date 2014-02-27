@@ -18,6 +18,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 
+import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.MainPropertiesEditionPane;
@@ -30,15 +31,12 @@ import unbbayes.util.CommonDataUtil;
 
 public class AtributeEditionPanel extends IUMPSTPanel {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	private GridBagConstraints constraints     = new GridBagConstraints();
 
-	private JButton buttonAdd 	     = new JButton();
-	private JButton buttonCancel     = new JButton("Cancel");
-	private JButton buttonSubatribute = new JButton("Add Sub-Atribute");
+	private JButton buttonSave 	     ;
+	private JButton buttonBack     ;
+	private JButton buttonSubatribute;
 
 	private AttributeModel atribute,atributeFather;
 
@@ -50,20 +48,26 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 	private static ResourceBundle resource = 
 			unbbayes.util.ResourceController.newInstance().getBundle(
 					unbbayes.gui.umpst.resources.Resources.class.getName());
-
+  	
+	private IconController iconController = IconController.getInstance();
+	
 	public AtributeEditionPanel(UmpstModule fatherWindow,
-			UMPSTProject umpstProject,
-			EntityModel entityRelated, 
-			AttributeModel atribute, 
-			AttributeModel atributeFather){
+			UMPSTProject _umpstProject,
+			EntityModel _entityRelated, 
+			AttributeModel _atribute, 
+			AttributeModel _atributeFather){
 
 		super(fatherWindow);
-		this.setUmpstProject(umpstProject);
-		this.entityRelated=entityRelated;
-		this.atribute = atribute;
-		this.atributeFather=atributeFather;
+		
+		this.setUmpstProject(_umpstProject);
+		
+		this.entityRelated=   _entityRelated;
+		this.atribute =       _atribute;
+		this.atributeFather=  _atributeFather;
 		
 		this.setLayout(new GridLayout(1,1));
+		
+		createButtons(); 
 		
 		JSplitPane splitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 				createTextPanel(),
@@ -71,15 +75,9 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 		
 		splitPanel.setDividerLocation(300); 
 		
-		listeners();
+		createListeners();
 		
 		this.add(splitPanel); 
-
-		if( atribute == null){
-			buttonAdd.setText(" Add ");
-		} else {
-			buttonAdd.setText(" Update ");
-		}
 		
 	}
 
@@ -88,8 +86,8 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 		String title            = resource.getString("ttAtribute");
 
 		mainPropertiesEditionPane = 
-				new MainPropertiesEditionPane(buttonCancel, 
-						buttonAdd, 
+				new MainPropertiesEditionPane(buttonBack, 
+						buttonSave, 
 						title, 
 						"Atribute Details", 
 						null,
@@ -106,10 +104,31 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 
 	}
 
+	public void createButtons(){
 
-	public void listeners(){
+		buttonSave 	    = new JButton(iconController.getSaveObjectIcon());
+		
+		buttonSave.setText(resource.getString("btnSave"));
+		
+		if( atribute == null){
+			buttonSave.setToolTipText(resource.getString("hpSaveEntity"));
 
-		buttonAdd.addActionListener(new ActionListener() {
+		} else {
+			buttonSave.setToolTipText(resource.getString("hpUpdateEntity"));
+		}
+		
+		buttonBack     = new JButton(iconController.getReturnIcon());
+		buttonBack.setText(resource.getString("btnReturn")); 
+		buttonBack.setToolTipText(resource.getString("hpReturnMainPanel"));
+		
+		buttonSubatribute = new JButton(iconController.getListAddIcon());
+		buttonSubatribute.setToolTipText(resource.getString("hpAddSubAttribute")); 
+
+	}
+
+	public void createListeners(){
+
+		buttonSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if( atribute == null){
 					try {
@@ -123,14 +142,20 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 						}
 
 					} catch (Exception e1) {
-						JOptionPane.showMessageDialog(null, "Error while creating atribute", "UnBBayes", JOptionPane.WARNING_MESSAGE);
+						JOptionPane.showMessageDialog(null, 
+								"Error while creating atribute", 
+								"UnBBayes", 
+								JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getFatherPanel();
 						changePanel(pai.getMenuPanel());	
 
 					}
 				}
 				else{
-					if( JOptionPane.showConfirmDialog(null, "Do you want to update this atribute?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
+					if( JOptionPane.showConfirmDialog(null, 
+							"Do you want to update this atribute?", 
+							"UnBBayes", 
+							JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 						try{
 
 							atribute.setAtributeName(mainPropertiesEditionPane.getTitleText());
@@ -139,11 +164,17 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 							atribute.setDate(mainPropertiesEditionPane.getDateText());
 
 							updateTable(atribute);
-							JOptionPane.showMessageDialog(null, "atribute successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
+							JOptionPane.showMessageDialog(null, 
+									"atribute successfully updated", 
+									"UnBBayes", 
+									JOptionPane.INFORMATION_MESSAGE);
 
 						}
 						catch (Exception e2) {
-							JOptionPane.showMessageDialog(null,"Error while ulpating atribute", "UnBBayes", JOptionPane.WARNING_MESSAGE);
+							JOptionPane.showMessageDialog(null,
+									"Error while ulpating atribute", 
+									"UnBBayes", 
+									JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getFatherPanel();
 							changePanel(pai.getMenuPanel());	
 						}
@@ -152,13 +183,17 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 			}
 		});
 
-		buttonCancel.addActionListener(new ActionListener() {
+		buttonBack.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-				if(atribute.getFather() == null){
-					changePanel(new EntitiesEditionPanel(getFatherPanel(),getUmpstProject(),entityRelated));	
+				if((atribute == null) || (atribute.getFather() == null)){
+					changePanel(new EntitiesEditionPanel(
+							getFatherPanel(),getUmpstProject(),entityRelated));	
 				}else{
-					changePanel(new AtributeEditionPanel(getFatherPanel(),getUmpstProject(), entityRelated,atribute.getFather(),null));
+					changePanel(new AtributeEditionPanel(
+							getFatherPanel(),getUmpstProject(), 
+							entityRelated,atribute.getFather(),
+							null));
 				}
 
 			}
@@ -166,23 +201,15 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 
 		buttonSubatribute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				changePanel(new AtributeEditionPanel(getFatherPanel(),getUmpstProject(), entityRelated,null,atribute));
+				changePanel(new AtributeEditionPanel(getFatherPanel(),
+						getUmpstProject(), 
+						entityRelated,
+						null,
+						atribute));
 			}
 		});
 
 
-	}
-
-
-	/** Returns an ImageIcon, or null if the path was invalid. */
-	protected static ImageIcon createImageIcon(String path) {
-		java.net.URL imgURL = MainPanel.class.getResource(path);
-		if (imgURL != null) {
-			return new ImageIcon(imgURL);
-		} else {
-			System.err.println("Couldn't find file: " + path);
-			return null;
-		}
 	}
 
 	public void updateTable(AttributeModel atributeUpdade){
@@ -195,19 +222,6 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 			atributeUpdade, 
 			atributeUpdade.getFather())); 
 		
-//		changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entityRelated));
-
-		/*
-	    TableAtribute atributeTable     = pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated).getAtributeTable(entityRelated);
-	    JTable table = atributeTable.createTable();
-
-	    alterarJanelaAtual(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesMainPanel(entityRelated));
-
-	    atributeTable.getScrollPanePergunta().setViewportView(table);
-	    atributeTable.getScrollPanePergunta().updateUI();
-	    atributeTable.getScrollPanePergunta().repaint();
-	    atributeTable.updateUI();
-	    atributeTable.repaint();*/
 	}	
 
 	public AttributeModel updateMapAtribute(){
@@ -246,8 +260,9 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 
 		}
 		else{
-			if (atributeFather.getMapSubAtributes()!=null){
-				idAux = atributeFather.getId()+"."+ (atributeFather.getMapSubAtributes().size()+1);
+			if (atributeFather.getMapSubAtributes() != null){
+				idAux = atributeFather.getId()+"." + 
+			   (atributeFather.getMapSubAtributes().size() + 1);
 
 			}
 			else{
@@ -258,7 +273,6 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 
 		Set<EntityModel> setEntityRelated = new HashSet<EntityModel>();
 		setEntityRelated.add(entityRelated);
-
 
 		AttributeModel atributeAdd = new AttributeModel(idAux,
 				mainPropertiesEditionPane.getTitleText(),
@@ -290,7 +304,6 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 		TableSubatribute subatributeTable = new TableSubatribute(getFatherPanel(),entityRelated,atribute);
 		JTable table = subatributeTable.createTable();
 		JScrollPane scrollPane = new JScrollPane(table);
-
 
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridBagLayout());

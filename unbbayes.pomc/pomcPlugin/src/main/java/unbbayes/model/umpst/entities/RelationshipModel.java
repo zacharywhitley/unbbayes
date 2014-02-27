@@ -5,10 +5,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.groups.GroupModel;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
-import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.model.umpst.rules.RuleModel;
 
 
 public class RelationshipModel {
@@ -23,8 +23,8 @@ public class RelationshipModel {
 	private List<GoalModel>       goalList;
 	private List<HypothesisModel> hypothesisList;
 	
-	private Set<RulesModel> fowardtrackingRulesSet;
-	private Set<GroupsModel> fowardtrackingGroupsSet;
+	private Set<RuleModel> fowardtrackingRulesSet;
+	private Set<GroupModel> fowardtrackingGroupsSet;
 
 	
 	public RelationshipModel(String id,
@@ -36,8 +36,8 @@ public class RelationshipModel {
 			List<AttributeModel> backtrackingAtribute,
 			List<GoalModel> backtrackingGoal,
 			List<HypothesisModel> backtrackingHypothesis,
-			Set<RulesModel> fowardtrackingRules,
-			Set<GroupsModel> fowardtrackingGroups) {
+			Set<RuleModel> fowardtrackingRules,
+			Set<GroupModel> fowardtrackingGroups) {
 		
 		this.id=id;
 		this.relationshipName = relationshipName;
@@ -63,11 +63,11 @@ public class RelationshipModel {
 		}
 		this.fowardtrackingRulesSet=fowardtrackingRules;
 		if(fowardtrackingRules==null){
-			this.setFowardtrackingRules(new HashSet<RulesModel>());
+			this.setFowardtrackingRules(new HashSet<RuleModel>());
 		}
 		this.fowardtrackingGroupsSet=fowardtrackingGroups;
 		if(fowardtrackingGroups==null){
-			this.setFowardtrackingGroups(new HashSet<GroupsModel>());
+			this.setFowardtrackingGroups(new HashSet<GroupModel>());
 		}
 	}
 
@@ -75,28 +75,28 @@ public class RelationshipModel {
 	/**
 	 * @return the fowardtrackingRules
 	 */
-	public Set<RulesModel> getFowardtrackingRules() {
+	public Set<RuleModel> getFowardtrackingRules() {
 		return fowardtrackingRulesSet;
 	}
 
 	/**
 	 * @param fowardtrackingRules the fowardtrackingRules to set
 	 */
-	public void setFowardtrackingRules(Set<RulesModel> fowardtrackingRules) {
+	public void setFowardtrackingRules(Set<RuleModel> fowardtrackingRules) {
 		this.fowardtrackingRulesSet = fowardtrackingRules;
 	}
 
 	/**
 	 * @return the fowardtrackingGroups
 	 */
-	public Set<GroupsModel> getFowardtrackingGroups() {
+	public Set<GroupModel> getFowardtrackingGroups() {
 		return fowardtrackingGroupsSet;
 	}
 
 	/**
 	 * @param fowardtrackingGroups the fowardtrackingGroups to set
 	 */
-	public void setFowardtrackingGroups(Set<GroupsModel> fowardtrackingGroups) {
+	public void setFowardtrackingGroups(Set<GroupModel> fowardtrackingGroups) {
 		this.fowardtrackingGroupsSet = fowardtrackingGroups;
 	}
 

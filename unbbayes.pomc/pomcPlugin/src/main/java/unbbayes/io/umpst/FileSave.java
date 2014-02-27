@@ -10,10 +10,10 @@ import java.util.TreeSet;
 
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
-import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.groups.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.model.umpst.rules.RuleModel;
 
 public class FileSave {
 	
@@ -21,8 +21,8 @@ public class FileSave {
 	public static final String NULL = "null";
 	
 	private EntityModel entity;
-	private RulesModel rule;
-	private GroupsModel group;
+	private RuleModel rule;
+	private GroupModel group;
 	private Set<String> keys;
 	private TreeSet<String> sortedKeys;
 	private RelationshipModel relationship;
@@ -225,11 +225,11 @@ public class FileSave {
 	/*--Backtacking from entities--*/	
 				
 				printStream.println("Number of entities related");
-				printStream.println(umpstProject.getMapRules().get(keyRule).getBacktracking().getModel().getSize());
-				if(umpstProject.getMapRules().get(keyRule).getBacktracking().getModel().getSize()>0){
+				printStream.println(umpstProject.getMapRules().get(keyRule).getBacktrackingGoalList().getModel().getSize());
+				if(umpstProject.getMapRules().get(keyRule).getBacktrackingGoalList().getModel().getSize()>0){
 					printStream.println("IDs of entities related");
-					for (int i = 0; i < umpstProject.getMapRules().get(keyRule).getBacktracking().getModel().getSize(); i++) {
-						printStream.println(umpstProject.getMapRules().get(keyRule).getBacktracking().getModel().getElementAt(i));
+					for (int i = 0; i < umpstProject.getMapRules().get(keyRule).getBacktrackingGoalList().getModel().getSize(); i++) {
+						printStream.println(umpstProject.getMapRules().get(keyRule).getBacktrackingGoalList().getModel().getElementAt(i));
 					}
 				}
 			
@@ -261,8 +261,8 @@ public class FileSave {
 			printStream.println(umpstProject.getMapRules().get(keyRule).getFowardTrackingGroups().size());
 			if(umpstProject.getMapRules().get(keyRule).getFowardTrackingGroups().size()>0){
 				printStream.println("Fowardtracking groups of this atribute");
-				Set<GroupsModel> setAux = umpstProject.getMapAtribute().get(keyRule).getFowardTrackingGroups();
-				for (Iterator<GroupsModel> it = setAux.iterator();it.hasNext();){
+				Set<GroupModel> setAux = umpstProject.getMapAtribute().get(keyRule).getFowardTrackingGroups();
+				for (Iterator<GroupModel> it = setAux.iterator();it.hasNext();){
 					group = it.next();
 					printStream.println(group.getId());
 				}
@@ -335,8 +335,8 @@ public class FileSave {
 				printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getFowardtrackingRules().size());
 				if(umpstProject.getMapRelationship().get(keyRelationship).getFowardtrackingRules().size()>0){
 					printStream.println("Fowardtracking rules of this atribute");
-					Set<RulesModel> setAux = umpstProject.getMapRelationship().get(keyRelationship).getFowardtrackingRules();
-					for (Iterator<RulesModel> it = setAux.iterator();it.hasNext();){
+					Set<RuleModel> setAux = umpstProject.getMapRelationship().get(keyRelationship).getFowardtrackingRules();
+					for (Iterator<RuleModel> it = setAux.iterator();it.hasNext();){
 						rule = it.next();
 						printStream.println(rule.getId());
 					}
@@ -347,8 +347,8 @@ public class FileSave {
 				printStream.println(umpstProject.getMapRelationship().get(keyRelationship).getFowardtrackingGroups().size());
 				if(umpstProject.getMapRelationship().get(keyRelationship).getFowardtrackingGroups().size()>0){
 					printStream.println("Fowardtracking groups of this atribute");
-					Set<GroupsModel> setAux = umpstProject.getMapRelationship().get(keyRelationship).getFowardtrackingGroups();
-					for (Iterator<GroupsModel> it = setAux.iterator();it.hasNext();){
+					Set<GroupModel> setAux = umpstProject.getMapRelationship().get(keyRelationship).getFowardtrackingGroups();
+					for (Iterator<GroupModel> it = setAux.iterator();it.hasNext();){
 						group = it.next();
 						printStream.println(group.getId());
 					}
@@ -418,8 +418,8 @@ public class FileSave {
 				printStream.println(umpstProject.getMapAtribute().get(keyAtribute).getFowardTrackingRules().size());
 				if(umpstProject.getMapAtribute().get(keyAtribute).getFowardTrackingRules().size()>0){
 					printStream.println("Fowardtracking rules of this atribute");
-					Set<RulesModel> setAux = umpstProject.getMapAtribute().get(keyAtribute).getFowardTrackingRules();
-					for (Iterator<RulesModel> it = setAux.iterator();it.hasNext();){
+					Set<RuleModel> setAux = umpstProject.getMapAtribute().get(keyAtribute).getFowardTrackingRules();
+					for (Iterator<RuleModel> it = setAux.iterator();it.hasNext();){
 						rule = it.next();
 						printStream.println(rule.getId());
 					}
@@ -430,8 +430,8 @@ public class FileSave {
 				printStream.println(umpstProject.getMapAtribute().get(keyAtribute).getFowardTrackingGroups().size());
 				if(umpstProject.getMapAtribute().get(keyAtribute).getFowardTrackingGroups().size()>0){
 					printStream.println("Fowardtracking groups of this atribute");
-					Set<GroupsModel> setAux = umpstProject.getMapAtribute().get(keyAtribute).getFowardTrackingGroups();
-					for (Iterator<GroupsModel> it = setAux.iterator();it.hasNext();){
+					Set<GroupModel> setAux = umpstProject.getMapAtribute().get(keyAtribute).getFowardTrackingGroups();
+					for (Iterator<GroupModel> it = setAux.iterator();it.hasNext();){
 						group = it.next();
 						printStream.println(group.getId());
 					}
@@ -469,11 +469,11 @@ public class FileSave {
 				}
 	/*--Listing backtracking from goals of each entity--*/				
 				printStream.println("Number of backtracking from goals");
-				printStream.println(umpstProject.getMapEntity().get(keyEntity).getBacktracking().getModel().getSize());
-				if (umpstProject.getMapEntity().get(keyEntity).getBacktracking().getModel().getSize()>0){
+				printStream.println(umpstProject.getMapEntity().get(keyEntity).getBacktrackingGoalList().getModel().getSize());
+				if (umpstProject.getMapEntity().get(keyEntity).getBacktrackingGoalList().getModel().getSize()>0){
 					printStream.println("Backtracking from goals of this entity");
-					for (int i = 0; i < umpstProject.getMapEntity().get(keyEntity).getBacktracking().getModel().getSize(); i++) {
-						printStream.println(umpstProject.getMapEntity().get(keyEntity).getBacktracking().getModel().getElementAt(i));
+					for (int i = 0; i < umpstProject.getMapEntity().get(keyEntity).getBacktrackingGoalList().getModel().getSize(); i++) {
+						printStream.println(umpstProject.getMapEntity().get(keyEntity).getBacktrackingGoalList().getModel().getElementAt(i));
 					}
 						
 					
@@ -494,8 +494,8 @@ public class FileSave {
 				printStream.println(umpstProject.getMapEntity().get(keyEntity).getFowardTrackingRules().size());
 				if (umpstProject.getMapEntity().get(keyEntity).getFowardTrackingRules().size()>0){
 					printStream.println("Fowartracking from rules of this entity");
-					Set<RulesModel> setAux = umpstProject.getMapEntity().get(keyEntity).getFowardTrackingRules(); 
-					for (Iterator<RulesModel> it = setAux.iterator() ; it.hasNext();){
+					Set<RuleModel> setAux = umpstProject.getMapEntity().get(keyEntity).getFowardTrackingRules(); 
+					for (Iterator<RuleModel> it = setAux.iterator() ; it.hasNext();){
 						rule = it.next();
 						printStream.println(rule.getId());
 					}
@@ -507,8 +507,8 @@ public class FileSave {
 				printStream.println(umpstProject.getMapEntity().get(keyEntity).getFowardTrackingGroups().size());
 				if(umpstProject.getMapEntity().get(keyEntity).getFowardTrackingGroups().size()>0){
 					printStream.println("Fowardtracking from groups of this entity");
-					Set<GroupsModel> setAux = umpstProject.getMapEntity().get(keyEntity).getFowardTrackingGroups();
-					for(Iterator<GroupsModel> it = setAux.iterator();it.hasNext();){
+					Set<GroupModel> setAux = umpstProject.getMapEntity().get(keyEntity).getFowardTrackingGroups();
+					for(Iterator<GroupModel> it = setAux.iterator();it.hasNext();){
 						group = it.next();
 						printStream.println(group.getId());
 					}
@@ -595,8 +595,8 @@ public class FileSave {
 				printStream.println(umpstProject.getMapHypothesis().get(keyHypothesis).getFowardTrackingGroups().size());
 				if (umpstProject.getMapHypothesis().get(keyHypothesis).getFowardTrackingGroups().size()>0){
 					printStream.println("Foward tracking groups of this hypohtesis");
-					Set<GroupsModel> setAux = umpstProject.getMapHypothesis().get(keyHypothesis).getFowardTrackingGroups();
-					for (Iterator<GroupsModel> it=setAux.iterator();it.hasNext();){
+					Set<GroupModel> setAux = umpstProject.getMapHypothesis().get(keyHypothesis).getFowardTrackingGroups();
+					for (Iterator<GroupModel> it=setAux.iterator();it.hasNext();){
 						group = it.next();
 						printStream.println(group.getId());
 					}
@@ -681,8 +681,8 @@ public class FileSave {
 				
 				if (umpstProject.getMapGoal().get(key).getFowardTrackingGroups().size()>0){
 					printStream.println("group's traceability of this goal");
-					Set<GroupsModel> setAux = umpstProject.getMapGoal().get(key).getFowardTrackingGroups();
-					for(Iterator<GroupsModel> it = setAux.iterator() ; it.hasNext(); ){
+					Set<GroupModel> setAux = umpstProject.getMapGoal().get(key).getFowardTrackingGroups();
+					for(Iterator<GroupModel> it = setAux.iterator() ; it.hasNext(); ){
 						group = it.next();
 						printStream.println(group.getId());
 					}

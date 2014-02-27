@@ -3,19 +3,19 @@ package unbbayes.model.umpst.project;
 import java.util.HashSet;
 import java.util.Set;
 
-import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.model.umpst.rules.RuleModel;
 
 public class SearchModelRules {
 	
 	private String keyWord;
-	private Set<RulesModel> rulesRelated;
+	private Set<RuleModel> rulesRelated;
 	
-	public SearchModelRules(String key, Set<RulesModel> rulesRealted){
+	public SearchModelRules(String key, Set<RuleModel> rulesRealted){
 		
 		this.keyWord = key;
 		this.rulesRelated = rulesRealted;
 		if (rulesRealted==null){
-			this.setRulesRelated(new HashSet<RulesModel>());
+			this.setRulesRelated(new HashSet<RuleModel>());
 		}
 		
 	}
@@ -37,14 +37,14 @@ public class SearchModelRules {
 	/**
 	 * @return the rulesRelated
 	 */
-	public Set<RulesModel> getRulesRelated() {
+	public Set<RuleModel> getRulesRelated() {
 		return rulesRelated;
 	}
 
 	/**
 	 * @param rulesRelated the rulesRelated to set
 	 */
-	public void setRulesRelated(Set<RulesModel> rulesRelated) {
+	public void setRulesRelated(Set<RuleModel> rulesRelated) {
 		this.rulesRelated = rulesRelated;
 	}
 	

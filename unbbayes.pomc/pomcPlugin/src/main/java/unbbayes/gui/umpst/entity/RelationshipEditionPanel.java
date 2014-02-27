@@ -16,7 +16,6 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -42,10 +41,10 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 	private static final long serialVersionUID = 1L;
 	
 	private GridBagConstraints constraint     = new GridBagConstraints();
-	private JLabel titulo            = new JLabel();
+	private JLabel titulo                     = new JLabel();
 
-	private JButton buttonAdd 	     = new JButton();
-	private JButton buttonCancel     = new JButton("Cancel");
+	private JButton buttonSave 	     ;
+	private JButton buttonCancel     ;
 
 	private RelationshipModel relationshipModel;
 
@@ -68,6 +67,8 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 			unbbayes.util.ResourceController.newInstance().getBundle(
 					unbbayes.gui.umpst.resources.Resources.class.getName());
 
+	private IconController iconController = IconController.getInstance();
+
 
 	public RelationshipEditionPanel(UmpstModule fatherWindow,
 			UMPSTProject umpstProject, 
@@ -83,6 +84,8 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 
 		this.setLayout(new GridLayout(1,1));
 
+		createButtons(); 
+		
 		JSplitPane leftPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, 
 				createTextPanel(),
 				createBacktrackingEntity()); 
@@ -99,13 +102,7 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 
 		createListeners();
 
-		if( relationship == null){
-			titulo.setText("Add new relationship");
-			buttonAdd.setText(" Add ");
-		} else {
-			titulo.setText(" Update relationship");
-			buttonAdd.setText(" Update ");
-		}
+		titulo.setText("Relationship");
 
 	}
 
@@ -113,15 +110,14 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 
 		String title            = resource.getString("ttRelationship");
 
-		JComboBox combo = new JComboBox();
-
 		mainPropertiesEditionPane = 
-				new MainPropertiesEditionPane(buttonCancel, 
-						buttonAdd, 
+				new MainPropertiesEditionPane(
+						buttonCancel, 
+						buttonSave, 
 						title, 
 						"Atribute Details",
-						new JLabel("Type: "),
-						combo); 
+						null,
+						null); 
 
 		if (relationshipModel != null){
 			mainPropertiesEditionPane.setTitleText(relationshipModel.getRelationshipName());
@@ -135,9 +131,29 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 	}
 
 
+	public void createButtons(){
+		buttonSave 	     = new JButton(iconController.getSaveObjectIcon());
+		buttonSave.setText(resource.getString("btnSave"));
+		
+		if( relationshipModel == null){
+			buttonSave.setToolTipText(
+					resource.getString("hpSaveRelationship"));
+
+		} else {
+			buttonSave.setToolTipText(
+					resource.getString("hpUpdateRelationship"));
+		}
+		
+		buttonCancel     = new JButton(iconController.getReturnIcon());
+		buttonCancel.setText(resource.getString("btnReturn")); 
+		
+		buttonCancel.setToolTipText(resource.getString("hpReturnMainPanel"));
+		
+	}
+	
 	public void createListeners(){
 
-		buttonAdd.addActionListener(new ActionListener() {
+		buttonSave.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
 				
@@ -294,7 +310,7 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 		panelButtons.add(new JLabel()); 
 
 		buttonCopy = new JButton(resource.getString("btnCopy"));
-		buttonCopy.setIcon(IconController.getInstance().getRigthDoubleArrow());
+		buttonCopy.setIcon(IconController.getInstance().getRigthDoubleArrowIcon());
 		buttonCopy.setBackground(Color.WHITE); 
 
 		panelButtons.add(buttonCopy);
@@ -311,7 +327,7 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 				);
 
 		buttonDelete = new JButton(resource.getString("btnRemove"));
-		buttonDelete.setIcon(IconController.getInstance().getLeftDoubleArrow());
+		buttonDelete.setIcon(IconController.getInstance().getLeftDoubleArrowIcon());
 		buttonDelete.setBackground(Color.WHITE); 
 
 		panelButtons.add(buttonDelete);
@@ -481,9 +497,6 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 
 				}
 			}
-//			for(AttibuteModel attribute: (AttibuteModel[])listUsedAtributeModel.toArray()){
-//				relationship.getBacktrackingEntityList().add(attribute); 
-//			}
 
 		}
 

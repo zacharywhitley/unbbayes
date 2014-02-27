@@ -23,7 +23,7 @@ public class IconController extends unbbayes.controller.IconController {
 	protected ImageIcon cancelSearchIcon; 
 	protected ImageIcon addIconP; 
 
-	protected ImageIcon addAttribute; 
+	protected ImageIcon listAdd; 
 	protected ImageIcon reuseAttribute; 
 	
 	protected ImageIcon requirementsIcon; 
@@ -36,6 +36,14 @@ public class IconController extends unbbayes.controller.IconController {
 	protected ImageIcon rigthDoubleArrowIcon; 
 	
 	protected ImageIcon relationshipIcon; 
+	
+	protected ImageIcon returnIcon; 
+	
+	protected ImageIcon cicleGoalIcon; 
+	protected ImageIcon cicleHypothesisIcon; 
+	protected ImageIcon cicleEntityIcon; 
+	protected ImageIcon cicleAttributeIcon; 
+	protected ImageIcon cicleRelationshipIcon; 
 	
 	public static IconController getInstance() {
 		if (singleton == null) {
@@ -125,18 +133,20 @@ public class IconController extends unbbayes.controller.IconController {
 //	}
 //}	
 	
-	public ImageIcon getAddAttribute() {
-		if (addAttribute != null) {
-			return addAttribute;
+	public ImageIcon getListAddIcon() {
+		if (listAdd != null) {
+			return listAdd;
 		} else {
-			addAttribute = new ImageIcon(getClass().getResource(
+			listAdd = new ImageIcon(getClass().getResource(
 //					"/icons/addAtribute.gif"));
 					"/icons/list-add-5.png"));
-			return addAttribute;
+			return listAdd;
 		}
 	}
+	
+	
 
-	public ImageIcon getReuseAttribute() {
+	public ImageIcon getReuseAttributeIcon() {
 		if (reuseAttribute != null) {
 			return reuseAttribute;
 		} else {
@@ -147,7 +157,7 @@ public class IconController extends unbbayes.controller.IconController {
 		}
 	}
 	
-	public ImageIcon getSearch() {
+	public ImageIcon getSearchIcon() {
 		if (searchIcon != null) {
 			return searchIcon;
 		} else {
@@ -157,7 +167,7 @@ public class IconController extends unbbayes.controller.IconController {
 		}
 	}
 	
-	public ImageIcon getCancelSearch() {
+	public ImageIcon getCancelSearchIcon() {
 		if (cancelSearchIcon != null) {
 			return cancelSearchIcon;
 		} else {
@@ -167,7 +177,7 @@ public class IconController extends unbbayes.controller.IconController {
 		}
 	}
 	
-	public ImageIcon getSaveObject() {
+	public ImageIcon getSaveObjectIcon() {
 		if (saveObjectIcon != null) {
 			return saveObjectIcon;
 		} else {
@@ -177,7 +187,7 @@ public class IconController extends unbbayes.controller.IconController {
 		}
 	}
 	
-	public ImageIcon getReturnWithoutSave() {
+	public ImageIcon getReturnWithoutSaveIcon() {
 		if (returnWithoutSaveIcon != null) {
 			return returnWithoutSaveIcon;
 		} else {
@@ -187,7 +197,7 @@ public class IconController extends unbbayes.controller.IconController {
 		}
 	}
 	
-	public ImageIcon getLeftDoubleArrow() {
+	public ImageIcon getLeftDoubleArrowIcon() {
 		if (leftDoubleArrowIcon != null) {
 			return leftDoubleArrowIcon;
 		} else {
@@ -197,7 +207,7 @@ public class IconController extends unbbayes.controller.IconController {
 		}
 	}
 	
-	public ImageIcon getRigthDoubleArrow() {
+	public ImageIcon getRigthDoubleArrowIcon() {
 		if (rigthDoubleArrowIcon != null) {
 			return rigthDoubleArrowIcon;
 		} else {
@@ -207,7 +217,7 @@ public class IconController extends unbbayes.controller.IconController {
 		}
 	}
 	
-	public ImageIcon getRelationship() {
+	public ImageIcon getRelationshipIcon() {
 		if (relationshipIcon != null) {
 			return relationshipIcon;
 		} else {
@@ -216,6 +226,75 @@ public class IconController extends unbbayes.controller.IconController {
 			return relationshipIcon;
 		}
 	}
+	
+	public ImageIcon getReturnIcon() {
+		if (returnIcon != null) {
+			return returnIcon;
+		} else {
+			returnIcon = new ImageIcon(getClass().getResource(
+					"/icons/edit-undo-3.png"));
+			return returnIcon;
+		}
+	}
+	
+//	protected ImageIcon cicleGoalIcon; 
+//	protected ImageIcon cicleHypothesisIcon; 
+//	protected ImageIcon cicleEntityIcon; 
+//	protected ImageIcon cicleAttributeIcon; 
+//	protected ImageIcon cicleRelationshipIcon; 
+	
+	
+	public ImageIcon getCicleGoalIcon() {
+		if (cicleGoalIcon != null) {
+			return cicleGoalIcon;
+		} else {
+			cicleGoalIcon = new ImageIcon(getClass().getResource(
+					"/icons/circle_blue_goal.png"));
+			return cicleGoalIcon;
+		}
+	}
+	
+	public ImageIcon getCicleHypothesisIcon() {
+		if (cicleHypothesisIcon != null) {
+			return cicleHypothesisIcon;
+		} else {
+			cicleHypothesisIcon = new ImageIcon(getClass().getResource(
+					"/icons/circle_grey_hypothesis.png"));
+			return cicleHypothesisIcon;
+		}
+	}
+	
+	public ImageIcon getCicleEntityIcon() {
+		if (cicleEntityIcon != null) {
+			return cicleEntityIcon;
+		} else {
+			cicleEntityIcon = new ImageIcon(getClass().getResource(
+					"/icons/circle_green_entity.png"));
+			return cicleEntityIcon;
+		}
+	}
+	
+	public ImageIcon getCicleAttributeIcon() {
+		if (cicleAttributeIcon != null) {
+			return cicleAttributeIcon;
+		} else {
+			cicleAttributeIcon = new ImageIcon(getClass().getResource(
+					"/icons/circle_yellow_attribute.png"));
+			return cicleAttributeIcon;
+		}
+	}
+	
+	public ImageIcon getCicleRelationshipIcon() {
+		if (cicleRelationshipIcon != null) {
+			return cicleRelationshipIcon;
+		} else {
+			cicleRelationshipIcon = new ImageIcon(getClass().getResource(
+					"/icons/circle_orange_relationship.png"));
+			return cicleRelationshipIcon;
+		}
+	}
+	
+	
 	
 
 }

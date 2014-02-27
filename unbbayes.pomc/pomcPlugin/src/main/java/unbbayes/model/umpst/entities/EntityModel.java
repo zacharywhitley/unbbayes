@@ -1,14 +1,18 @@
 package unbbayes.model.umpst.entities;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JList;
 
-import unbbayes.model.umpst.groups.GroupsModel;
-import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.model.umpst.groups.GroupModel;
+import unbbayes.model.umpst.requirements.GoalModel;
+import unbbayes.model.umpst.requirements.HypothesisModel;
+import unbbayes.model.umpst.rules.RuleModel;
 
 public class EntityModel {
 	
@@ -19,11 +23,11 @@ public class EntityModel {
 	private String comments;
 	
 	private Map<String,AttributeModel> mapAtributes  = new HashMap<String, AttributeModel>();
-	private JList backtrackingGoalsList = new JList();
-	private JList backtrackingHypothesisList = new JList();
-	private Set<RulesModel> fowardTrackingRules = new HashSet<RulesModel>();
-	private Set<GroupsModel> fowardTrackingGroups = new HashSet<GroupsModel>();
-	private Set<RelationshipModel> fowardTrackingRelationship = new HashSet<RelationshipModel>();
+	private List<GoalModel> backtrackingGoalsList;
+	private List<HypothesisModel> backtrackingHypothesisList;
+	private Set<RuleModel> fowardTrackingRules;
+	private Set<GroupModel> fowardTrackingGroups;
+	private Set<RelationshipModel> fowardTrackingRelationship;
 	
 	public EntityModel(String id,
 			String entityName, 
@@ -36,6 +40,12 @@ public class EntityModel {
 		this.comments     = comments;
 		this.author       = author;
 		this.date         = date;
+		
+		backtrackingGoalsList = new ArrayList<GoalModel>();
+		backtrackingHypothesisList = new ArrayList<HypothesisModel>();
+		fowardTrackingRules = new HashSet<RuleModel>();
+		fowardTrackingGroups = new HashSet<GroupModel>();
+		fowardTrackingRelationship = new HashSet<RelationshipModel>();
 	}
 	
 	public EntityModel(String id) {
@@ -64,7 +74,7 @@ public class EntityModel {
 	/**
 	 * @return the fowardTrackingGroups
 	 */
-	public Set<GroupsModel> getFowardTrackingGroups() {
+	public Set<GroupModel> getFowardTrackingGroups() {
 		return fowardTrackingGroups;
 	}
 
@@ -72,7 +82,7 @@ public class EntityModel {
 	/**
 	 * @param fowardTrackingGroups the fowardTrackingGroups to set
 	 */
-	public void setFowardTrackingGroups(Set<GroupsModel> fowardTrackingGroups) {
+	public void setFowardTrackingGroups(Set<GroupModel> fowardTrackingGroups) {
 		this.fowardTrackingGroups = fowardTrackingGroups;
 	}
 
@@ -80,23 +90,23 @@ public class EntityModel {
 	/**
 	 * @return the backtrackingHypothesis
 	 */
-	public JList getBacktrackingHypothesis() {
+	public List<HypothesisModel> getBacktrackingHypothesis() {
 		return backtrackingHypothesisList;
 	}
 
 
-	/**
-	 * @param backtrackingHypothesis the backtrackingHypothesis to set
-	 */
-	public void setBacktrackingHypothesis(JList backtrackingHypothesis) {
-		this.backtrackingHypothesisList = backtrackingHypothesis;
-	}
+//	/**
+//	 * @param backtrackingHypothesis the backtrackingHypothesis to set
+//	 */
+//	public void setBacktrackingHypothesis(JList backtrackingHypothesis) {
+//		this.backtrackingHypothesisList = backtrackingHypothesis;
+//	}
 
 
 	/**
 	 * @return the fowardTrackingRules
 	 */
-	public Set<RulesModel> getFowardTrackingRules() {
+	public Set<RuleModel> getFowardTrackingRules() {
 		return fowardTrackingRules;
 	}
 
@@ -104,7 +114,7 @@ public class EntityModel {
 	/**
 	 * @param fowardTrackingRules the fowardTrackingRules to set
 	 */
-	public void setFowardTrackingRules(Set<RulesModel> fowardTrackingRules) {
+	public void setFowardTrackingRules(Set<RuleModel> fowardTrackingRules) {
 		this.fowardTrackingRules = fowardTrackingRules;
 	}
 
@@ -128,17 +138,17 @@ public class EntityModel {
 	/**
 	 * @return the backtracking
 	 */
-	public JList getBacktracking() {
+	public List<GoalModel> getBacktrackingGoalList() {
 		return backtrackingGoalsList;
 	}
 
 
-	/**
-	 * @param backtracking the backtracking to set
-	 */
-	public void setBacktracking(JList backtracking) {
-		this.backtrackingGoalsList = backtracking;
-	}
+//	/**
+//	 * @param backtracking the backtracking to set
+//	 */
+//	public void setBacktracking(JList backtracking) {
+//		this.backtrackingGoalsList = backtracking;
+//	}
 
 
 	/**

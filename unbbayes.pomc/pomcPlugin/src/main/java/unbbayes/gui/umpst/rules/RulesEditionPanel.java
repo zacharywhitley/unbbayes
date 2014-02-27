@@ -1,27 +1,19 @@
 package unbbayes.gui.umpst.rules;
 
 
-import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -34,26 +26,22 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.border.Border;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
+import unbbayes.controller.umpst.Controller;
+import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.gui.umpst.TableButton;
 import unbbayes.gui.umpst.UmpstModule;
-import unbbayes.gui.umpst.TableButton.TableButtonCustomizer;
-import unbbayes.gui.umpst.TableButton.TableButtonPressedHandler;
+import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.project.SearchModelRules;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.model.umpst.rules.RuleModel;
 import unbbayes.util.CommonDataUtil;
 
 
@@ -65,40 +53,48 @@ public class RulesEditionPanel extends IUMPSTPanel {
 	private static final long serialVersionUID = 1L;
 		
 	private GridBagConstraints constraints     = new GridBagConstraints();
-	private JLabel titulo            = new JLabel();
 	
-	private JButton buttonAdd 	     = new JButton();
-	private JButton buttonCancel     = new JButton("Cancel");
-	private JButton buttonBackEntities = new JButton("Add entity backtracking ");
-	private JButton buttonBackAtributes = new JButton("Add atribute backtracking");
-	private JButton buttonBackRelationship = new JButton("Add relationship backtracking");
+	private JButton buttonSave 	          ;
+	private JButton buttonCancel          ;
+	private JButton buttonBackEntities    ;
+	private JButton buttonBackAtributes   ;
+	private JButton buttonBackRelationship;
 
 	
-	private RulesModel rule;
+	private RuleModel rule;
 	
-	private JButton buttonCopy, buttonDelete;
+	private JButton buttonCopy, 
+	                buttonDelete;
 	
 	private JComboBox ruleTypeText;
 	
-	private JList list,listAux, listAtributeAux, listRelationshipAux; 
-	private DefaultListModel listModel = new DefaultListModel();
-	private DefaultListModel listModelAux = new DefaultListModel();
-	private DefaultListModel listModelAtrAux = new DefaultListModel();
-	private DefaultListModel listModelRltAux = new DefaultListModel();
+	private JList list;
+	private JList listEntity; 
+	private JList listAtribute; 
+	private JList listRelationship;
+	
+//	private DefaultListModel listModel = new DefaultListModel();
+	private DefaultListModel<EntityModel> listModelEntity            = new DefaultListModel<EntityModel>();
+	private DefaultListModel<AttributeModel> listModelAttribute      = new DefaultListModel<AttributeModel>();
+	private DefaultListModel<RelationshipModel> listModelRelationhip = new DefaultListModel<RelationshipModel>();
 
 	private Object[][] dataBacktracking = {};
 	private Object[][] dataFrame = {};
 
 	private MainPropertiesEditionPane mainPropertiesEditionPane ; 
+	
+	private Controller controller; 
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource = 
 			unbbayes.util.ResourceController.newInstance().getBundle(
 					unbbayes.gui.umpst.resources.Resources.class.getName());
 	
+	private IconController iconController = IconController.getInstance();
+	
 	public RulesEditionPanel(UmpstModule fatherWindow,
 			UMPSTProject umpstProject, 
-			RulesModel rule){
+			RuleModel rule){
 		
 		super(fatherWindow);
 		
@@ -108,32 +104,19 @@ public class RulesEditionPanel extends IUMPSTPanel {
 
 		this.setLayout(new GridLayout(1,1));
 		
+		controller = Controller.getInstance(umpstProject); 
+		
+		createButtons(); 
+		
 		JSplitPane splitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 				createPanelText(),
 				createBacktrackingPanel()); 
 		
 		splitPanel.setDividerLocation(300); 
 		
-		listeners();
+		createListeners();
 		
 		this.add(splitPanel); 
-		
-		
-		listeners();
-
-		if( rule == null){
-			titulo.setText("Add new Rule");
-			buttonAdd.setText(" Add ");
-		} else {
-			titulo.setText("Update Rule");
-			buttonAdd.setText(" Update ");
-			mainPropertiesEditionPane.setTitleText(rule.getRulesName());
-			ruleTypeText.setSelectedItem((String)rule.getRuleType());
-			mainPropertiesEditionPane.setCommentsText(rule.getComments());
-			mainPropertiesEditionPane.setAuthorText(rule.getAuthor());
-			mainPropertiesEditionPane.setDateText(rule.getDate());
-			
-		}
 		
 	}
 
@@ -148,11 +131,10 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		
 		ruleTypeText = new JComboBox(possibleStates); 
 		
-		
 		mainPropertiesEditionPane = 
 				new MainPropertiesEditionPane(
 						buttonCancel, 
-						buttonAdd, 
+						buttonSave, 
 						title, 
 						resource.getString("ttRuleDetails"),
 						new JLabel(resource.getString("ttType")),
@@ -163,32 +145,65 @@ public class RulesEditionPanel extends IUMPSTPanel {
 			mainPropertiesEditionPane.setCommentsText(rule.getComments());
 			mainPropertiesEditionPane.setAuthorText(rule.getAuthor());
 			mainPropertiesEditionPane.setDateText(rule.getDate());
+			ruleTypeText.setSelectedItem((String)rule.getRuleType());
 		}
 
 		return mainPropertiesEditionPane.getPanel();
 	}
 	
-	
-	public void listeners(){
+	private void createButtons(){
 		
-		buttonAdd.addActionListener(new ActionListener() {
+		buttonSave 	           = new JButton(iconController.getSaveObjectIcon());
+		buttonSave.setText(resource.getString("btnSave"));
+		
+		if( rule == null){
+			buttonSave.setToolTipText(resource.getString("hpSaveRule"));
+
+		} else {
+			buttonSave.setToolTipText(resource.getString("hpUpdateRule"));
+		}
+		
+		buttonCancel     = new JButton(iconController.getReturnIcon());
+		buttonCancel.setText(resource.getString("btnReturn")); 
+		
+		buttonCancel.setToolTipText(resource.getString("hpReturnMainPanel"));
+		
+//		buttonBackEntities     = new JButton("Add entity backtracking ");
+//		buttonBackAtributes    = new JButton("Add atribute backtracking");
+//		buttonBackRelationship = new JButton("Add relationship backtracking");
+		
+		buttonBackEntities     = new JButton(iconController.getCicleEntityIcon());
+		buttonBackAtributes    = new JButton(iconController.getCicleAttributeIcon());
+		buttonBackRelationship = new JButton(iconController.getCicleRelationshipIcon());
+		
+	}
+	
+	private void createListeners(){
+		
+		buttonSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if( rule == null){
 					
 					try {
 						if (mainPropertiesEditionPane.getTitleText().equals("")){
-							JOptionPane.showMessageDialog(null, "Rule's name is empty");
+							JOptionPane.showMessageDialog(null, 
+									"Rule's name is empty");
 						}
 						else{
-						    RulesModel ruleAdd = updateMapRules();					    
+						    RuleModel ruleAdd = updateMapRules();					    
 						    updateMapSearch(ruleAdd);
-						    //updateBacktracking(ruleAdd);
 							updateTableRules();
-						  	JOptionPane.showMessageDialog(null, "Rule successfully added",null, JOptionPane.INFORMATION_MESSAGE);
+						  	JOptionPane.showMessageDialog(null, 
+						  			"Rule successfully added",
+						  			null, 
+						  			JOptionPane.INFORMATION_MESSAGE);
 						}
 						
 					} catch (Exception e1) {
-						JOptionPane.showMessageDialog(null, "Error while creating rule", "UnBBayes", JOptionPane.WARNING_MESSAGE);
+						JOptionPane.showMessageDialog(null, 
+								"Error while creating rule", 
+								"UnBBayes", 
+								JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getFatherPanel();
 						changePanel(pai.getMenuPanel());	
 						e1.printStackTrace();
@@ -196,19 +211,21 @@ public class RulesEditionPanel extends IUMPSTPanel {
 					}
 				}
 				else{
-					if( JOptionPane.showConfirmDialog(null, "Do you want to update this Rule?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
+					if( JOptionPane.showConfirmDialog(null, 
+							"Do you want to update this Rule?", 
+							"UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 						
 						try{
 							/**Cleaning Search Map*/
-							Set<RulesModel> aux = new HashSet<RulesModel>();
-							RulesModel rulesBeta;
+							Set<RuleModel> aux = new HashSet<RuleModel>();
+							RuleModel rulesBeta;
 							String[] strAux=rule.getRulesName().split(" ");
 
 						    for (int i = 0; i < strAux.length; i++) {
 					    		if(getUmpstProject().getMapSearchRules().get(strAux[i])!=null){
 					    			getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated().remove(rule);
 					    			aux = getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated();
-					    	    	for (Iterator<RulesModel> it = aux.iterator(); it.hasNext(); ) {
+					    	    	for (Iterator<RuleModel> it = aux.iterator(); it.hasNext(); ) {
 					    	    		rulesBeta = it.next();
 					    	   		}
 					    		}
@@ -229,11 +246,17 @@ public class RulesEditionPanel extends IUMPSTPanel {
 							updateTableRules();
 					
 							
-							JOptionPane.showMessageDialog(null, "Rule successfully updated",null, JOptionPane.INFORMATION_MESSAGE);	
+							JOptionPane.showMessageDialog(null, 
+									"Rule successfully updated",
+									null, 
+									JOptionPane.INFORMATION_MESSAGE);	
 						
 						}
 						catch (Exception e2) {
-							JOptionPane.showMessageDialog(null,"Error while updating rule", "UnBBayes", JOptionPane.WARNING_MESSAGE);
+							JOptionPane.showMessageDialog(null,
+									"Error while updating rule", 
+									"UnBBayes", 
+									JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getFatherPanel();
 							changePanel(pai.getMenuPanel());
 							e2.printStackTrace();
@@ -253,7 +276,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		buttonBackEntities.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				createFrame();				
+				createFrameEntities();				
 			}
 		});
 		
@@ -285,7 +308,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
         }
     }
     
-    public RulesModel updateMapRules(){
+    public RuleModel updateMapRules(){
     	String idAux = "";
     	Set<String> keys = getUmpstProject().getMapRules().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
@@ -317,16 +340,12 @@ public class RulesEditionPanel extends IUMPSTPanel {
 			idAux = 1+"";
 		}
 		
-		RulesModel rulesAdd = new RulesModel(idAux,
+		RuleModel rulesAdd = new RuleModel(idAux,
 				mainPropertiesEditionPane.getTitleText(),
 				(String)ruleTypeText.getSelectedItem(), 
 				mainPropertiesEditionPane.getCommentsText(), 
 				mainPropertiesEditionPane.getAuthorText(), 
-				mainPropertiesEditionPane.getDateText(),
-				null,
-				null, 
-				null, 
-				null);
+				mainPropertiesEditionPane.getDateText());
 		
 	    CommonDataUtil.getInstance().setAuthorName(mainPropertiesEditionPane.getAuthorText()); 
 		
@@ -366,12 +385,12 @@ public class RulesEditionPanel extends IUMPSTPanel {
 	    rulesTable.repaint();
     }
 
-    public void updateMapSearch(RulesModel ruleAdd){
+    public void updateMapSearch(RuleModel ruleAdd){
 	    /**Upating searchPanel*/
 	    
 	    String[] strAux = {};
 	    strAux = ruleAdd.getRulesName().split(" ");
-	    Set<RulesModel> ruleSetSearch = new HashSet<RulesModel>();
+	    Set<RuleModel> ruleSetSearch = new HashSet<RuleModel>();
 
 	    
 	    for (int i = 0; i < strAux.length; i++) {
@@ -389,126 +408,125 @@ public class RulesEditionPanel extends IUMPSTPanel {
 
     }
     
-    public void getTrackingPanel(){
-		Box box = Box.createHorizontalBox();
-		Set<String> keys = getUmpstProject().getMapEntity().keySet();
-		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-		
-		for (String key: sortedKeys){
-			listModel.addElement(getUmpstProject().getMapEntity().get(key).getEntityName());
-		}
-		
-		/**This IF is responsable to update the first JList with all requirements elemente MINUS those 
-		 * who are already registred as backtracking.
-		 * */
-		if (rule!=null){
-			listAux = rule.getBacktracking();
-			for (int i = 0; i < listAux.getModel().getSize();i++) {
-				listModelAux.addElement((listAux.getModel().getElementAt(i)));
-				if (listModel.contains(listAux.getModel().getElementAt(i))){
-					listModel.remove(listModel.indexOf(listAux.getModel().getElementAt(i)));
-				}
-			}
-			
-		}
-		
-		list = new JList(listModel); //data has type Object[]
-		list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		list.setLayoutOrientation(JList.VERTICAL_WRAP);
-		list.setVisibleRowCount(-1);
-
-		JScrollPane listScroller = new JScrollPane(list);
-		listScroller.setMinimumSize(new Dimension(300,200));
-				
-		box.add(listScroller);
-		
-		buttonCopy = new JButton("copy >>");
-		box.add(buttonCopy);
-		buttonCopy.addActionListener(
-				new ActionListener() {
-					
-					public void actionPerformed(ActionEvent e) {
-						listModelAux.addElement(list.getSelectedValue());	
-						listModel.removeElement(list.getSelectedValue());
-
-					}
-				}
-		
-		);
-		
-		buttonDelete = new JButton("<< delete");
-		box.add(buttonDelete);
-		buttonDelete.addActionListener(
-				new ActionListener() {
-					
-					public void actionPerformed(ActionEvent e) {
-						listModel.addElement(listAux.getSelectedValue());	
-						listModelAux.removeElement(listAux.getSelectedValue());
-					}
-				}
-		
-		);	
-		
-		listAux = new JList(listModelAux);
-
-		listAux.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		listAux.setLayoutOrientation(JList.VERTICAL_WRAP);
-		listAux.setVisibleRowCount(-1);
-	
-		JScrollPane listScrollerAux = new JScrollPane(listAux);
-		listScrollerAux.setMinimumSize(new Dimension(300,200));
-		box.add(listScrollerAux);
-
-		box.setBorder(BorderFactory.createTitledBorder("Adding backtracking(Entity)"));
-		add(box,constraints);
-		
-	}
+//    public void createTrackingPanel(){
+//		Box box = Box.createHorizontalBox();
+//		Set<String> keys = getUmpstProject().getMapEntity().keySet();
+//		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+//		
+//		for (String key: sortedKeys){
+//			listModel.addElement(getUmpstProject().getMapEntity().get(key).getEntityName());
+//		}
+//		
+//		/**This IF is responsable to update the first JList with all requirements elemente MINUS those 
+//		 * who are already registred as backtracking.
+//		 * */
+//		if (rule!=null){
+//			listAux = rule.getBacktracking();
+//			for (int i = 0; i < listAux.getModel().getSize();i++) {
+//				listModelAux.addElement((listAux.getModel().getElementAt(i)));
+//				if (listModel.contains(listAux.getModel().getElementAt(i))){
+//					listModel.remove(listModel.indexOf(listAux.getModel().getElementAt(i)));
+//				}
+//			}
+//			
+//		}
+//		
+//		list = new JList(listModel); //data has type Object[]
+//		list.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+//		list.setLayoutOrientation(JList.VERTICAL_WRAP);
+//		list.setVisibleRowCount(-1);
+//
+//		JScrollPane listScroller = new JScrollPane(list);
+//		listScroller.setMinimumSize(new Dimension(300,200));
+//				
+//		box.add(listScroller);
+//		
+//		buttonCopy = new JButton("copy >>");
+//		box.add(buttonCopy);
+//		buttonCopy.addActionListener(
+//				new ActionListener() {
+//					
+//					public void actionPerformed(ActionEvent e) {
+//						listModelAux.addElement(list.getSelectedValue());	
+//						listModel.removeElement(list.getSelectedValue());
+//
+//					}
+//				}
+//		
+//		);
+//		
+//		buttonDelete = new JButton("<< delete");
+//		box.add(buttonDelete);
+//		buttonDelete.addActionListener(
+//				new ActionListener() {
+//					
+//					public void actionPerformed(ActionEvent e) {
+//						listModel.addElement(listAux.getSelectedValue());	
+//						listModelAux.removeElement(listAux.getSelectedValue());
+//					}
+//				}
+//		
+//		);	
+//		
+//		listAux = new JList(listModelAux);
+//
+//		listAux.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+//		listAux.setLayoutOrientation(JList.VERTICAL_WRAP);
+//		listAux.setVisibleRowCount(-1);
+//	
+//		JScrollPane listScrollerAux = new JScrollPane(listAux);
+//		listScrollerAux.setMinimumSize(new Dimension(300,200));
+//		box.add(listScrollerAux);
+//
+//		box.setBorder(BorderFactory.createTitledBorder("Adding backtracking(Entity)"));
+//		add(box,constraints);
+//		
+//	}
     
     public JPanel createBacktrackingPanel(){
 		
 		JPanel panel = new JPanel();
 		JScrollPane scrollPane = new JScrollPane();
+		
 		if(rule!=null){
-			listAux = rule.getBacktracking();
-			for (int i = 0; i < listAux.getModel().getSize();i++) {
-				listModelAux.addElement((listAux.getModel().getElementAt(i)));
-			}
 			
-			listAtributeAux = rule.getBacktrackingAtribute();
+			for (EntityModel entity: rule.getEntityList()) {
+				listModelEntity.addElement(entity);
+			}
 
-			for (int i = 0; i < listAtributeAux.getModel().getSize();i++) {
-				listModelAtrAux.addElement((listAtributeAux.getModel().getElementAt(i)));
+			for (AttributeModel attribute: rule.getAttributeList()) {
+				listModelAttribute.addElement(attribute);
 			}
-			
-			listRelationshipAux = rule.getBacktrackingRelationship();
 
-			for (int i = 0; i < listRelationshipAux.getModel().getSize();i++) {
-				listModelRltAux.addElement((listRelationshipAux.getModel().getElementAt(i)));
+			for (RelationshipModel relationship: rule.getRelationshipList()) {
+				listModelRelationhip.addElement(relationship);
 			}
 			
-			listAux = new JList(listModelAux);
-			listAtributeAux= new JList(listModelAtrAux);
-			listRelationshipAux = new JList(listModelRltAux);
+			listEntity             = new JList(listModelEntity);
+			listAtribute           = new JList(listModelAttribute);
+			listRelationship       = new JList(listModelRelationhip);
 			
-			dataBacktracking = new Object[listAux.getModel().getSize()+listAtributeAux.getModel().getSize()+listRelationshipAux.getModel().getSize()][3];
+			dataBacktracking = new Object[listEntity.getModel().getSize() + 
+			                              listAtribute.getModel().getSize() + 
+			                              listRelationship.getModel().getSize()][3];
 			
 			int i;
-			for (i = 0; i < listAux.getModel().getSize(); i++) {
-				dataBacktracking[i][0] = listAux.getModel().getElementAt(i);
+			for (i = 0; i < listEntity.getModel().getSize(); i++) {
+				dataBacktracking[i][0] = listEntity.getModel().getElementAt(i);
 				dataBacktracking[i][1] = "Entity";
 				dataBacktracking[i][2] = "";
 	
 			}
 			int j;
-			for (j = 0; j < listAtributeAux.getModel().getSize(); j++) {
-				dataBacktracking[j+i][0] = listAtributeAux.getModel().getElementAt(j);
+			for (j = 0; j < listAtribute.getModel().getSize(); j++) {
+				dataBacktracking[j+i][0] = listAtribute.getModel().getElementAt(j);
 				dataBacktracking[j+i][1] = "Atribute";
 				dataBacktracking[j+i][2] = "";
 	
 			}
 			int k;
-			for (k = 0; k < listRelationshipAux.getModel().getSize(); k++) {
-				dataBacktracking[k+j+i][0] = listRelationshipAux.getModel().getElementAt(k);
+			for (k = 0; k < listRelationship.getModel().getSize(); k++) {
+				dataBacktracking[k+j+i][0] = listRelationship.getModel().getElementAt(k);
 				dataBacktracking[k+j+i][1] = "Relationship";
 				dataBacktracking[k+j+i][2] = "";
 	
@@ -537,24 +555,24 @@ public class RulesEditionPanel extends IUMPSTPanel {
 			
 			buttonDel.addHandler(new TableButton.TableButtonPressedHandler() {	
 				public void onButtonPress(int row, int column) {
-					if (row<listAux.getModel().getSize()){
+					if (row<listEntity.getModel().getSize()){
 						String key = dataBacktracking[row][0].toString();
-						listModelAux.remove(listModelAux.indexOf(key));
-						listAux = new JList(listModelAux);
-						rule.setBacktracking(listAux);
+						EntityModel entityRemoved = 
+								listModelEntity.remove(listModelEntity.indexOf(key));
+						rule.removeBacktrackingEntity(entityRemoved);
 					}
 					else{
-						if (row<(listAux.getModel().getSize()+listAtributeAux.getModel().getSize())){
+						if (row<(listEntity.getModel().getSize()+listAtribute.getModel().getSize())){
 							String keyAtr = dataBacktracking[row][0].toString();
-							listModelAtrAux.remove(listModelAtrAux.indexOf(keyAtr));
-							listAtributeAux = new JList(listModelAtrAux);
-							rule.setBacktrackingAtribute(listAtributeAux);
+							AttributeModel attributeRemoved = 
+									listModelAttribute.remove(listModelAttribute.indexOf(keyAtr));
+							rule.removeBacktrackingAttibute(attributeRemoved);
 						}
 						else{
 							String keyAtr = dataBacktracking[row][0].toString();
-							listModelRltAux.remove(listModelRltAux.indexOf(keyAtr));
-							listRelationshipAux = new JList(listModelRltAux);
-							rule.setBacktrackingRelationship(listRelationshipAux);
+							RelationshipModel relationshipRemoved = 
+									listModelRelationhip.remove(listModelRelationhip.indexOf(keyAtr));
+							rule.removeBacktrackingRelationship(relationshipRemoved);
 						}
 					}
 					UmpstModule father = getFatherPanel();
@@ -589,6 +607,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 			 panel.add(scrollPane,c);
 		}
 		
+		panel.setBorder(BorderFactory.createTitledBorder("List of backtrackings"));
 		return panel;
 		//add(box,constraint);
 		
@@ -617,18 +636,17 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		
 	}*/
 	
-    public void createFrame(){
+    public void createFrameEntities(){
 		
 		JFrame frame = new JFrame("Adding Backtracking from entities");
 		JPanel panel = new JPanel();
+		
 		panel.setLayout(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
-		
 		
 		String[] columnNames = {"ID","Entity",""};
     	
 		dataFrame = new Object[getUmpstProject().getMapEntity().size()][3];
-
 	    
 		Integer i=0;
 	    
@@ -642,8 +660,6 @@ public class RulesEditionPanel extends IUMPSTPanel {
 			i++;
 		}
 		
-		
-		
 		DefaultTableModel model = new DefaultTableModel(dataFrame,columnNames);
 		JTable table = new JTable(model);
 		
@@ -651,7 +667,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/add.gif") );
+				button.setIcon(iconController.getAddIconP());
 
 			}
 		});
@@ -664,21 +680,11 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				
-				String key = dataFrame[row][1].toString();
-				list = rule.getBacktracking();
+				String key = dataFrame[row][0].toString();
 				
-				listModel.addElement(key);
-				list = new JList(listModel);
-				rule.setBacktracking(list);
+				EntityModel entity = getUmpstProject().getMapEntity().get(key); 
 				
-				Set<String> keys = getUmpstProject().getMapEntity().keySet();
-				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-				for (String keyAux : sortedKeys){
-					if (getUmpstProject().getMapEntity().get(keyAux).getEntityName().equals(key)){
-						getUmpstProject().getMapEntity().get(keyAux).getFowardTrackingRules().add(rule);
-					}
-				}
-					
+				controller.addEntityToRuleBackTrackingList(entity, rule); 
 				
 				UmpstModule father = getFatherPanel();
 			    changePanel(father.getMenuPanel().getRulesPane().getRulesPanel().getRulesAdd(rule));
@@ -749,21 +755,11 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				
-				String key = dataFrame[row][1].toString();
-				list = rule.getBacktrackingAtribute();
+				String key = dataFrame[row][0].toString();
 				
-				listModel.addElement(key);
-				list = new JList(listModel);
-				rule.setBacktrackingAtribute(list);
+				AttributeModel attribute = getUmpstProject().getMapAtribute().get(key); 
 				
-				Set<String> keys = getUmpstProject().getMapAtribute().keySet();
-				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-				for (String keyAux : sortedKeys){
-					if (getUmpstProject().getMapAtribute().get(keyAux).getAtributeName().equals(key)){
-						getUmpstProject().getMapAtribute().get(keyAux).getFowardTrackingRules().add(rule);
-					}
-				}
-					
+				controller.addAttributeToRuleBackTrackingList(attribute, rule); 
 				
 				UmpstModule father = getFatherPanel();
 			    changePanel(father.getMenuPanel().getRulesPane().getRulesPanel().getRulesAdd(rule));
@@ -834,21 +830,11 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 				
-				String key = dataFrame[row][1].toString();
-				list = rule.getBacktrackingRelationship();
+				String key = dataFrame[row][0].toString();
 				
-				listModel.addElement(key);
-				list = new JList(listModel);
-				rule.setBacktrackingRelationship(list);
+				RelationshipModel relationship = getUmpstProject().getMapRelationship().get(key); 
 				
-				Set<String> keys = getUmpstProject().getMapRelationship().keySet();
-				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-				for (String keyAux : sortedKeys){
-					if (getUmpstProject().getMapRelationship().get(keyAux).getRelationshipName().equals(key)){
-						getUmpstProject().getMapRelationship().get(keyAux).getFowardtrackingRules().add(rule);
-					}
-				}
-					
+				controller.addRelationshipToRuleBackTrackingList(relationship, rule); 
 				
 				UmpstModule father = getFatherPanel();
 			    changePanel(father.getMenuPanel().getRulesPane().getRulesPanel().getRulesAdd(rule));

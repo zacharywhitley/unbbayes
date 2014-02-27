@@ -3,7 +3,6 @@ package unbbayes.gui.umpst.goal;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,12 +36,12 @@ import unbbayes.gui.umpst.selection.SubGoalSelectionPane;
 import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
-import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.groups.GroupModel;
 import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
-import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.model.umpst.rules.RuleModel;
 import unbbayes.util.CommonDataUtil;
 
 /**
@@ -52,7 +51,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 	private static final long serialVersionUID = 1L;
 
-	private JButton buttonAdd 	     ;
+	private JButton buttonSave 	     ;
 	private JButton buttonCancel     ;
 
 	private JButton buttonHypothesis ;
@@ -63,8 +62,6 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 	private JButton buttonReuseHipothesis;
 
 	private MainPropertiesEditionPane mainPropertiesEditionPane ; 
-
-	private JButton buttonBack		 ;
 
 	private GoalModel goal;
 	private GoalModel goalFather;
@@ -150,7 +147,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 		// CREATE FORM 
 		mainPropertiesEditionPane = 
 				new MainPropertiesEditionPane(buttonCancel, 
-						buttonAdd, 
+						buttonSave, 
 						title, 
 						"Goals Details",
 						null,
@@ -169,40 +166,38 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 	private void createButtons() {
 
-		buttonCancel     = new JButton(resource.getString("btnReturn"));
-		buttonHypothesis = new JButton(iconController.getAddAttribute());
-		buttonBack		 = new JButton(resource.getString("btnReturn"));
-
-		buttonHypothesis.setToolTipText(resource.getString("HpAddHyphotesis"));
-		buttonCancel.setToolTipText(resource.getString("HpReturnMainPanel"));
-		buttonBack.setToolTipText(resource.getString("HpReturnPreviousPanel"));
-
-		buttonSubgoal    = new JButton(iconController.getAddAttribute());
-		buttonSubgoal.setToolTipText(resource.getString("HpAddSubgoal"));
-
-		buttonReuseSubgoal = new JButton(iconController.getReuseAttribute());
-		buttonReuseSubgoal.setToolTipText(resource.getString("HpReuseSubgoal"));
-
-		buttonReuseHipothesis = new JButton(iconController.getReuseAttribute()); 
-		buttonReuseSubgoal.setToolTipText(resource.getString("HpReuseHypothesis"));
-
-		buttonAdd 	     = new JButton();
-
+		buttonSave 	     = new JButton(iconController.getSaveObjectIcon());
+		buttonSave.setText(resource.getString("btnSave"));
+		
 		if( goal == null){
-			buttonAdd.setText(" Add ");
-			buttonAdd.setToolTipText(resource.getString("HpSaveGoal"));
+			buttonSave.setToolTipText(resource.getString("HpSaveGoal"));
 
 		} else {
-			buttonAdd.setText(" Update ");
-			buttonAdd.setToolTipText(resource.getString("HpUpdateGoal"));
+			buttonSave.setToolTipText(resource.getString("HpUpdateGoal"));
 		}
+		
+		buttonCancel     = new JButton(iconController.getReturnIcon());
+		buttonCancel.setText(resource.getString("btnReturn")); 
+		buttonCancel.setToolTipText(resource.getString("HpReturnMainPanel"));
+		
+		buttonHypothesis = new JButton(iconController.getListAddIcon());
+		buttonHypothesis.setToolTipText(resource.getString("HpAddHyphotesis"));
+
+		buttonSubgoal    = new JButton(iconController.getListAddIcon());
+		buttonSubgoal.setToolTipText(resource.getString("HpAddSubgoal"));
+
+		buttonReuseSubgoal = new JButton(iconController.getReuseAttributeIcon());
+		buttonReuseSubgoal.setToolTipText(resource.getString("HpReuseSubgoal"));
+
+		buttonReuseHipothesis = new JButton(iconController.getReuseAttributeIcon()); 
+		buttonReuseSubgoal.setToolTipText(resource.getString("HpReuseHypothesis"));
 
 	}
 
 
 	public void createListeners(){
 
-		buttonAdd.addActionListener(new ActionListener() {
+		buttonSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
 				// -> New Goal
@@ -288,17 +283,10 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 				}
 			}
 		});
-		buttonBack.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				UmpstModule pai = getFatherPanel();
-				changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalFather)	);	
-
-			}
-		});
 
 		buttonHypothesis.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				changePanel(new HypothesisAdd(getFatherPanel(),getUmpstProject(),goal,null,null));
+				changePanel(new HypothesisEditionPanel(getFatherPanel(),getUmpstProject(),goal,null,null));
 
 			}
 		});
@@ -313,7 +301,6 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 	}
 
 	private void createReutilizeGoalPanel() {
-
 		subgoalSelectionPane = new SubGoalSelectionPane(getOthersGoalsList(), this); 
 		subgoalSelectionPane.setLocationRelativeTo(janelaPai); 
 		subgoalSelectionPane.pack();
@@ -321,7 +308,6 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 	}
 
 	private void createReutilizeHipothesysPanel() {
-
 		hypothesisSelectionPane = new HypothesisSelectionPane(getOthersHypothesisList(), this); 
 		hypothesisSelectionPane.setLocationRelativeTo(janelaPai); 
 		hypothesisSelectionPane.pack();
@@ -329,10 +315,11 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 	}
 
 	public GoalModel updateMapGoal(){
+		
 		String idAux = "";
 		Set<String> keys = getUmpstProject().getMapGoal().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-		int tamanho = getUmpstProject().getMapGoal().size()+1;
+		int tamanho = getUmpstProject().getMapGoal().size() + 1;
 		int maior = 0;
 		String idAux2 = "";
 		int intAux;
@@ -342,11 +329,13 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 			if ( getUmpstProject().getMapGoal().size()!=0){
 				for (String key: sortedKeys){
 					//tamanho = tamanho - getUmpstProject().getMapGoal().get(key).getSubgoals().size();
+					
 					idAux= getUmpstProject().getMapGoal().get(key).getId();
+					
 					if (idAux.contains(".")){
 						intAux = idAux.indexOf(".");
 						idAux2 = idAux.substring(0, intAux);
-						if (maior<Integer.parseInt(idAux2)){
+						if (maior < Integer.parseInt(idAux2)){
 							maior = Integer.parseInt(idAux2);
 						}
 					}
@@ -355,6 +344,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 							maior = Integer.parseInt(idAux);
 						}
 					}
+					
 				}
 				maior++;
 				idAux = maior+"";
@@ -559,9 +549,10 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 		/**Upating searchPanel*/
 
 		String[] strAux = {};
+		
 		strAux = goalAdd.getGoalName().split(" ");
+		
 		Set<GoalModel> goalSetSearch = new HashSet<GoalModel>();
-
 
 		for (int i = 0; i < strAux.length; i++) {
 			if(!strAux[i].equals(" ")){
@@ -592,9 +583,9 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 				entity = it.next();
 				if (entity.getFowardTrackingRules()!=null){
-					Set<RulesModel> auxRules = entity.getFowardTrackingRules();
-					RulesModel rule;
-					for (Iterator<RulesModel> itRules = auxRules.iterator(); itRules.hasNext(); ) {
+					Set<RuleModel> auxRules = entity.getFowardTrackingRules();
+					RuleModel rule;
+					for (Iterator<RuleModel> itRules = auxRules.iterator(); itRules.hasNext(); ) {
 						rule = itRules.next();
 						i++;
 					}
@@ -619,9 +610,9 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 				}
 
 				if (entity.getFowardTrackingGroups()!=null){
-					Set<GroupsModel> auxGroups = entity.getFowardTrackingGroups();
-					GroupsModel group;
-					for (Iterator<GroupsModel> itGroups = auxGroups.iterator(); itGroups.hasNext(); ) {
+					Set<GroupModel> auxGroups = entity.getFowardTrackingGroups();
+					GroupModel group;
+					for (Iterator<GroupModel> itGroups = auxGroups.iterator(); itGroups.hasNext(); ) {
 						group = itGroups.next();
 						i++;
 					}
@@ -650,10 +641,10 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 		}
 
 		if ( (goal!=null)&&(goal.getFowardTrackingGroups() !=null) ){
-			GroupsModel group;
-			Set<GroupsModel> aux = goal.getFowardTrackingGroups();
+			GroupModel group;
+			Set<GroupModel> aux = goal.getFowardTrackingGroups();
 
-			for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
+			for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
 				group = it.next();
 
 				i++;
@@ -688,9 +679,9 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 				i++;
 				if (entity.getFowardTrackingRules()!=null){
-					Set<RulesModel> auxRules = entity.getFowardTrackingRules();
-					RulesModel rule;
-					for (Iterator<RulesModel> itRules = auxRules.iterator(); itRules.hasNext(); ) {
+					Set<RuleModel> auxRules = entity.getFowardTrackingRules();
+					RuleModel rule;
+					for (Iterator<RuleModel> itRules = auxRules.iterator(); itRules.hasNext(); ) {
 						rule = itRules.next();
 
 						data[i][0] = "Rule";
@@ -726,9 +717,9 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 					}
 				}
 				if (entity.getFowardTrackingGroups()!=null){
-					Set<GroupsModel> auxGroups = entity.getFowardTrackingGroups();
-					GroupsModel group;
-					for (Iterator<GroupsModel> itGroups = auxGroups.iterator(); itGroups.hasNext(); ) {
+					Set<GroupModel> auxGroups = entity.getFowardTrackingGroups();
+					GroupModel group;
+					for (Iterator<GroupModel> itGroups = auxGroups.iterator(); itGroups.hasNext(); ) {
 						group = itGroups.next();
 
 						data[i][0] = "Group";
@@ -768,10 +759,10 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 		}
 
 		if ( (goal!=null)&&(goal.getFowardTrackingGroups() !=null) ){
-			GroupsModel group;
-			Set<GroupsModel> aux = goal.getFowardTrackingGroups();
+			GroupModel group;
+			Set<GroupModel> aux = goal.getFowardTrackingGroups();
 
-			for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
+			for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
 				group = it.next();
 
 				data[i][0] = "Group";

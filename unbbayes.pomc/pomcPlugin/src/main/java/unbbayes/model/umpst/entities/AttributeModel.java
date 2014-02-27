@@ -5,8 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import unbbayes.model.umpst.groups.GroupsModel;
-import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.model.umpst.groups.GroupModel;
+import unbbayes.model.umpst.rules.RuleModel;
 
 
 public class AttributeModel {
@@ -20,12 +20,12 @@ public class AttributeModel {
 	private Set<EntityModel> entityRelated;
 	private Map<String, AttributeModel> mapSubAtributes;
 	private Set<RelationshipModel> fowardTrackingRelationship;
-	private Set<RulesModel> fowardTrackingRules;
-	private Set<GroupsModel> fowardTrackingGroups;
+	private Set<RuleModel> fowardTrackingRules;
+	private Set<GroupModel> fowardTrackingGroups;
 	
 	public AttributeModel(String id,String atributeName, String comments,String author, String date,Set<EntityModel> entityRelated,
 			AttributeModel father,Map<String,AttributeModel> mapSubAtributes,Set<RelationshipModel> fowardTrackingRelationship,
-			Set<RulesModel> fowardTrackingRules , Set<GroupsModel> fowardTrackingGroups) {
+			Set<RuleModel> fowardTrackingRules , Set<GroupModel> fowardTrackingGroups) {
 		
 		this.id=id;
 		this.atributeName = atributeName;
@@ -47,11 +47,11 @@ public class AttributeModel {
 		}
 		this.fowardTrackingRules=fowardTrackingRules;
 		if(fowardTrackingRules==null){
-			this.setFowardTrackingRules(new HashSet<RulesModel>());
+			this.setFowardTrackingRules(new HashSet<RuleModel>());
 		}
 		this.fowardTrackingGroups=fowardTrackingGroups;
 		if(fowardTrackingGroups==null){
-			this.setFowardTrackingGroups(new HashSet<GroupsModel>());
+			this.setFowardTrackingGroups(new HashSet<GroupModel>());
 		}
 	}
 
@@ -61,7 +61,7 @@ public class AttributeModel {
 	/**
 	 * @return the fowardTrackingRules
 	 */
-	public Set<RulesModel> getFowardTrackingRules() {
+	public Set<RuleModel> getFowardTrackingRules() {
 		return fowardTrackingRules;
 	}
 
@@ -71,7 +71,7 @@ public class AttributeModel {
 	/**
 	 * @param fowardTrackingRules the fowardTrackingRules to set
 	 */
-	public void setFowardTrackingRules(Set<RulesModel> fowardTrackingRules) {
+	public void setFowardTrackingRules(Set<RuleModel> fowardTrackingRules) {
 		this.fowardTrackingRules = fowardTrackingRules;
 	}
 
@@ -81,7 +81,7 @@ public class AttributeModel {
 	/**
 	 * @return the fowardTrackingGroups
 	 */
-	public Set<GroupsModel> getFowardTrackingGroups() {
+	public Set<GroupModel> getFowardTrackingGroups() {
 		return fowardTrackingGroups;
 	}
 
@@ -91,7 +91,7 @@ public class AttributeModel {
 	/**
 	 * @param fowardTrackingGroups the fowardTrackingGroups to set
 	 */
-	public void setFowardTrackingGroups(Set<GroupsModel> fowardTrackingGroups) {
+	public void setFowardTrackingGroups(Set<GroupModel> fowardTrackingGroups) {
 		this.fowardTrackingGroups = fowardTrackingGroups;
 	}
 

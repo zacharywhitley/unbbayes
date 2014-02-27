@@ -137,10 +137,8 @@ public class TableGoals extends IUMPSTPanel{
 		
 		//---------------------- Del Button ------------------------------------------------
 		
-		TableButton buttonDel = new TableButton( new TableButton.TableButtonCustomizer()
-		{
-			public void customize(JButton button, int row, int column)
-			{
+		TableButton buttonDel = new TableButton( new TableButton.TableButtonCustomizer(){
+			public void customize(JButton button, int row, int column){
 				button.setIcon(iconController.getDeleteIcon());
 
 			}
@@ -158,9 +156,11 @@ public class TableGoals extends IUMPSTPanel{
 				
 				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete goal "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
+					
 							String key = data[row][0].toString();
 							GoalModel goalToBeDeleted = getUmpstProject().getMapGoal().get(key);
 							
+							//Remove external references. 
 							if (goalToBeDeleted.getGoalFather()!=null){
 								goalToBeDeleted.getGoalFather().getSubgoals().remove(goalToBeDeleted.getId());
 							}
@@ -260,21 +260,26 @@ public class TableGoals extends IUMPSTPanel{
     
   
     public void deleteFromSearchMap(GoalModel goalToBeDeleted){
+    	
     	Set<GoalModel> aux = new HashSet<GoalModel>();
 		GoalModel goalBeta;
+		
+		//Quebra o nome do goal em diversos pedaços??? 
 		String[] strAux = goalToBeDeleted.getGoalName().split(" ");
 
 	    for (int i = 0; i < strAux.length; i++) {
-    		if(getUmpstProject().getMapSearchGoal().get(strAux[i])!=null){
+    		if(getUmpstProject().getMapSearchGoal().get(strAux[i]) != null){
 
+    			//Deleta dos goals relacionados!!! (isto com uma palavra so... esquisito) 
+    			
     			getUmpstProject().getMapSearchGoal().get(strAux[i]).getGoalsRelated().remove(goalToBeDeleted);
     			aux = getUmpstProject().getMapSearchGoal().get(strAux[i]).getGoalsRelated();
+    			
+    			//????? Isto nao esta fazendo nada!!! 
     	    	for (Iterator<GoalModel> it = aux.iterator(); it.hasNext(); ) {
     	    		goalBeta = it.next();
     	   		}
     		}
-    		
-	    	
 	    }
     }
 	    

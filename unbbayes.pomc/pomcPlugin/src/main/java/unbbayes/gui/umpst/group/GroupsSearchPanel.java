@@ -23,7 +23,7 @@ import javax.swing.JTextField;
 import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.UmpstModule;
-import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.groups.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 
 public class GroupsSearchPanel extends IUMPSTPanel {
@@ -125,7 +125,7 @@ public class GroupsSearchPanel extends IUMPSTPanel {
 	}
 	
 	
-	public GroupsEditionPanel getGroupsAdd(GroupsModel group){
+	public GroupsEditionPanel getGroupsAdd(GroupModel group){
 		
 		GroupsEditionPanel ret = new GroupsEditionPanel(getFatherPanel(),getUmpstProject(),group);
 		
@@ -154,7 +154,7 @@ public class GroupsSearchPanel extends IUMPSTPanel {
 	public JButton getButtonSearch() {
 		
 		if(buttonSearch == null){
-			buttonSearch = new JButton(IconController.getInstance().getSearch());
+			buttonSearch = new JButton(IconController.getInstance().getSearchIcon());
 			buttonSearch.setToolTipText(resource.getString("hpSearchGroup"));
 			buttonSearch.setForeground(Color.blue);
 		}
@@ -207,14 +207,14 @@ public class GroupsSearchPanel extends IUMPSTPanel {
     	
     	
     	
-		Set<GroupsModel> aux = getUmpstProject().getMapSearchGroups().get(textGroup.getText()).getRelatedGroups();
-		GroupsModel group;
+		Set<GroupModel> aux = getUmpstProject().getMapSearchGroups().get(textGroup.getText()).getRelatedGroups();
+		GroupModel group;
 		Object[][] data = new Object[getUmpstProject().getMapSearchGroups().get(textGroup.getText()).getRelatedGroups().size()][4];
 
 		Integer i=0;
 		
 	   
-    	for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
+    	for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
     	     group = it.next();  // No downcasting required.
     	     
     	 	data[i][0] = group.getId();

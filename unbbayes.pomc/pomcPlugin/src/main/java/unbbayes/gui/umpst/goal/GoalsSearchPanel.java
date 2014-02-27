@@ -148,7 +148,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	public JButton getButtonSearch() {
 
 		if(buttonSearch == null){
-			buttonSearch = new JButton(IconController.getInstance().getSearch());
+			buttonSearch = new JButton(IconController.getInstance().getSearchIcon());
 			buttonSearch.setToolTipText(resource.getString("hpSearchGoal"));
 			buttonSearch.setForeground(Color.blue);
 		}

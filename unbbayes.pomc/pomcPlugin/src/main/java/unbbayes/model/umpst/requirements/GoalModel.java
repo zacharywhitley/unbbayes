@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.groups.GroupModel;
 
 public class GoalModel {
 	
@@ -17,12 +17,12 @@ public class GoalModel {
 	private String author;
 	private String date;
 	
-	private GoalModel goalFather;
-	private Map<String, GoalModel> subgoals ;
+	private GoalModel                   goalFather;
+	private Map<String, GoalModel>      subgoals ;
 	private Map<String,HypothesisModel> mapHypothesis;
-	private Set<EntityModel> fowardTrackingEntity;
-	private Set<GroupsModel> fowardTrackingGroups;
-	private Set<GoalModel> goalsRelated;
+	private Set<EntityModel>            fowardTrackingEntity;
+	private Set<GroupModel>             fowardTrackingGroups;
+	private Set<GoalModel>              goalsRelated;
 	
 	public GoalModel(String id,
 			String goalName, 
@@ -33,7 +33,7 @@ public class GoalModel {
 			Map<String,GoalModel> children,
 			Map<String,HypothesisModel> hypothesis,
 			Set<EntityModel> fowardTrackingEntity,
-			Set<GroupsModel> fowardTrackingGroups,
+			Set<GroupModel> fowardTrackingGroups,
 			Set<GoalModel> goalsRelated) {
 		
 		this.id=id;
@@ -64,7 +64,7 @@ public class GoalModel {
 		this.fowardTrackingGroups = fowardTrackingGroups;
 		
 		if (fowardTrackingGroups==null){
-			this.setFowardTrackingGroups(new HashSet<GroupsModel>());
+			this.setFowardTrackingGroups(new HashSet<GroupModel>());
 		}
 		
 		this.goalsRelated=goalsRelated;
@@ -94,14 +94,14 @@ public class GoalModel {
 	/**
 	 * @return the fowardTrackingGroups
 	 */
-	public Set<GroupsModel> getFowardTrackingGroups() {
+	public Set<GroupModel> getFowardTrackingGroups() {
 		return fowardTrackingGroups;
 	}
 
 	/**
 	 * @param fowardTrackingGroups the fowardTrackingGroups to set
 	 */
-	public void setFowardTrackingGroups(Set<GroupsModel> fowardTrackingGroups) {
+	public void setFowardTrackingGroups(Set<GroupModel> fowardTrackingGroups) {
 		this.fowardTrackingGroups = fowardTrackingGroups;
 	}
 
@@ -246,5 +246,8 @@ public class GoalModel {
 	}
 
 
+	public String toString(){
+		return getGoalName(); 
+	}
 
 }

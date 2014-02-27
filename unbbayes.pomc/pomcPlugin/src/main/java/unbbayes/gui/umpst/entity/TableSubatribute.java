@@ -40,7 +40,7 @@ public class TableSubatribute extends IUMPSTPanel{
 	private IconController iconController = IconController.getInstance(); 
 
 
-	String[] columnNames = {"id","Hypothesis","","",""};
+	String[] columnNames = {"id","Attribute","","",""};
 	Object[][] data = {};
 
 	/**private constructors make class extension almost impossible,

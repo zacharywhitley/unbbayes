@@ -14,9 +14,10 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.ListSelectionModel;
 
 import unbbayes.controller.IconController;
-import unbbayes.gui.umpst.goal.HypothesisAdd;
+import unbbayes.gui.umpst.goal.HypothesisEditionPanel;
 
 public class SubHipotheseSelectionPane extends JDialog{
 
@@ -30,32 +31,34 @@ public class SubHipotheseSelectionPane extends JDialog{
 
 	private final JDialog dialog; 
 	
-	private final HypothesisAdd hypothesisAdd;
+	private final HypothesisEditionPanel hypothesisEditionPanel;
 	
 	JButton btnSelect;
 	JButton btnClose; 
 	
-	public SubHipotheseSelectionPane(JList _jlist, HypothesisAdd _hypothesisAdd){
+	public SubHipotheseSelectionPane(String[] _hypothesisList, 
+			HypothesisEditionPanel _hypothesisEditionPanel){
 		
 		super();
 		
 		dialog = this;
-		this.hypothesisAdd = _hypothesisAdd; 
+		this.hypothesisEditionPanel = _hypothesisEditionPanel; 
 		this.setTitle(resource.getString("TtSubhypothesis")); 
 		this.setModal(true); 
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
 		this.setLayout(new BorderLayout()); 
 		
-		this.jlist = _jlist; 
+		jlist = new JList(_hypothesisList);
+		jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); 
 		
 		scrollListObjectEntity = new JScrollPane(jlist);
 
-		btnSelect = new JButton(resource.getString("queryBtnSelect"));
+		btnSelect = new JButton(resource.getString("btnSelect"));
 		btnSelect.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				if(jlist.getSelectedValue() != null){
-					hypothesisAdd.addVinculateHypothesis((String) jlist.getSelectedValue());
+					hypothesisEditionPanel.addVinculateHypothesis((String) jlist.getSelectedValue());
 					dialog.dispose();
 				}
 			}

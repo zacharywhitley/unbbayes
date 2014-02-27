@@ -6,7 +6,6 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
@@ -84,7 +83,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 
 	private Component getButtonRelationship() {
 		if (buttonAddRelationship == null){
-			buttonAddRelationship = new JButton (IconController.getInstance().getRelationship());
+			buttonAddRelationship = new JButton (IconController.getInstance().getRelationshipIcon());
 			buttonAddRelationship.setToolTipText(resource.getString("hpAddRelationship"));
 			buttonAddRelationship.setForeground(Color.blue);
 			buttonAddRelationship.addActionListener(new ActionListener() {
@@ -162,7 +161,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	public JButton getButtonSearch() {
 		
 		if(buttonSearch == null){
-			buttonSearch = new JButton(IconController.getInstance().getSearch());
+			buttonSearch = new JButton(IconController.getInstance().getSearchIcon());
 			buttonSearch.setToolTipText(resource.getString("hpSearchEntity"));
 			buttonSearch.setForeground(Color.blue);
 		}
@@ -207,36 +206,38 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	}
 	
 	public void updateTableEntities(){
-    	String[] columnNames = {"ID","Entity","",""};
-		Set<EntityModel> aux = getUmpstProject().getMapSearchEntity().get(textEntity.getText()).getEntitiesRelated();
-		EntityModel entity;
-		Object[][] data = new Object[getUmpstProject().getMapSearchEntity().get(textEntity.getText()).getEntitiesRelated().size()][4];
-		Integer i=0;
 		
-	    
-    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
-    	     entity = it.next();  // No downcasting required.
-    	     
-    	 	data[i][0] = entity.getId();
-			data[i][1] = entity.getEntityName();			
-			data[i][2] = "";
-			data[i][3] = "";
-			i++;
-    	}
-    	
-	    
-   
-	    UmpstModule pai = getFatherPanel();
-	    changePanel(pai.getMenuPanel());
-	    
-	    EntitiesTable entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
-	    JTable table = entitiesTable.createTable(columnNames,data);
-	    
-	    entitiesTable.getScrollPanePergunta().setViewportView(table);
-	    entitiesTable.getScrollPanePergunta().updateUI();
-	    entitiesTable.getScrollPanePergunta().repaint();
-	    entitiesTable.updateUI();
-	    entitiesTable.repaint();
+		//TODO Refazer
+//    	String[] columnNames = {"ID","Entity","",""};
+//		Set<EntityModel> aux = getUmpstProject().getMapSearchEntity().get(textEntity.getText()).getEntitiesRelated();
+//		EntityModel entity;
+//		Object[][] data = new Object[getUmpstProject().getMapSearchEntity().get(textEntity.getText()).getEntitiesRelated().size()][4];
+//		Integer i=0;
+//		
+//	    
+//    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
+//    	     entity = it.next();  // No downcasting required.
+//    	     
+//    	 	data[i][0] = entity.getId();
+//			data[i][1] = entity.getEntityName();			
+//			data[i][2] = "";
+//			data[i][3] = "";
+//			i++;
+//    	}
+//    	
+//	    
+//   
+//	    UmpstModule pai = getFatherPanel();
+//	    changePanel(pai.getMenuPanel());
+//	    
+//	    EntitiesTable entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
+//	    JTable table = entitiesTable.createTable(columnNames,data);
+//	    
+//	    entitiesTable.getScrollPanePergunta().setViewportView(table);
+//	    entitiesTable.getScrollPanePergunta().updateUI();
+//	    entitiesTable.getScrollPanePergunta().repaint();
+//	    entitiesTable.updateUI();
+//	    entitiesTable.repaint();
     }
 	
 	

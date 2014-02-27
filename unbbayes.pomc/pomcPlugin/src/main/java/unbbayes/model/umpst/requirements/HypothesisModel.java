@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.groups.GroupModel;
 
 public class HypothesisModel {
 	
@@ -19,12 +19,12 @@ public class HypothesisModel {
 	private Set<GoalModel> goalRelated;
 	private Map<String,HypothesisModel> mapSubHypothesis;
 	private Set<EntityModel> fowardTrackingEntity;
-	private Set<GroupsModel> fowardTrackingGroups;
+	private Set<GroupModel> fowardTrackingGroups;
 
 	
 	public HypothesisModel(String id,String hypothesisName, String comments,String author, String date,Set<GoalModel> goalRelated, 
 			HypothesisModel father,Map<String,HypothesisModel> subHypothesis,Set<EntityModel> fowardTrackingEntity,
-			 Set<GroupsModel> fowardTrackingGroups) {
+			 Set<GroupModel> fowardTrackingGroups) {
 		
 		this.id=id;
 		this.hypothesisName = hypothesisName;
@@ -46,7 +46,7 @@ public class HypothesisModel {
 		}
 		this.fowardTrackingGroups = fowardTrackingGroups;
 		if (fowardTrackingGroups==null){
-			this.setFowardTrackingGroups(new HashSet<GroupsModel>());
+			this.setFowardTrackingGroups(new HashSet<GroupModel>());
 		}
 	}
 
@@ -55,7 +55,7 @@ public class HypothesisModel {
 	/**
 	 * @return the fowardTrackingGroups
 	 */
-	public Set<GroupsModel> getFowardTrackingGroups() {
+	public Set<GroupModel> getFowardTrackingGroups() {
 		return fowardTrackingGroups;
 	}
 
@@ -64,7 +64,7 @@ public class HypothesisModel {
 	/**
 	 * @param fowardTrackingGroups the fowardTrackingGroups to set
 	 */
-	public void setFowardTrackingGroups(Set<GroupsModel> fowardTrackingGroups) {
+	public void setFowardTrackingGroups(Set<GroupModel> fowardTrackingGroups) {
 		this.fowardTrackingGroups = fowardTrackingGroups;
 	}
 
@@ -227,6 +227,10 @@ public class HypothesisModel {
 	 */
 	public void setFather(HypothesisModel father) {
 		this.father = father;
+	}
+	
+	public String toString(){
+		return this.getHypothesisName(); 
 	}
 	
 }

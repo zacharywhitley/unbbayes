@@ -165,11 +165,15 @@ public class MainPropertiesEditionPane {
 		c.gridwidth=2;
 		panel.add( scroolComments, c);
 
-		JPanel jpanelButtons = new JPanel(new GridLayout(1,4));
-		jpanelButtons.add(new JPanel(), 0); 
-		jpanelButtons.add(btn1, 1); 
-		jpanelButtons.add(btn2, 2); 
-		jpanelButtons.add(new JPanel(), 3); 
+		JPanel jpanelButtons = new JPanel(new FlowLayout());
+		
+		btn1.setPreferredSize(new Dimension(100,35));
+		btn2.setPreferredSize(new Dimension(100,35));
+		
+		jpanelButtons.add(new JPanel()); 
+		jpanelButtons.add(btn1); 
+		jpanelButtons.add(btn2); 
+		jpanelButtons.add(new JPanel()); 
 
 		if (extraPanel != null){
 			c.gridx = 0; 

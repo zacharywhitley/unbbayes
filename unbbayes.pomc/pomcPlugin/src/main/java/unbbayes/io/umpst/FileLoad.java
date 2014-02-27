@@ -14,21 +14,21 @@ import javax.swing.JList;
 import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
-import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.groups.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
-import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.model.umpst.rules.RuleModel;
 
 public class FileLoad {
 
 	private GoalModel goal;
 	private HypothesisModel hypothesis;
 	private EntityModel entity;
-	private GroupsModel group;
+	private GroupModel group;
 	private AttributeModel atribute;
 	private RelationshipModel relationship;
-	private RulesModel rule;
+	private RuleModel rule;
 
 	public  UMPSTProject loadUbf(File file,UMPSTProject umpstProject) {
 
@@ -113,7 +113,7 @@ public class FileLoad {
 
 			for (int i = 0; i < numberRules; i++) {
 				id = bufferReader.readLine();
-				rule = new RulesModel(id, "", "", "", "","", null, null, null, null);
+				rule = new RuleModel(id, "", "", "", "","", null, null, null, null);
 				umpstProject.getMapRules().put(rule.getId(), rule);
 
 			}
@@ -125,7 +125,7 @@ public class FileLoad {
 
 			for (int i = 0; i < numberGroups; i++) {
 				id = bufferReader.readLine(); 
-				group = new GroupsModel(id, "", "", "", "", null, null, null, null, null, null);
+				group = new GroupModel(id, "", "", "", "", null, null, null, null, null, null);
 				umpstProject.getMapGroups().put(group.getId(), group);
 			}
 
@@ -720,7 +720,7 @@ public class FileLoad {
 				int numberGroupGoal = Integer.parseInt(bufferReader.readLine());//
 				if (numberGroupGoal>0){
 					bufferReader.readLine();//Groups related IDs: 
-					GroupsModel groupRelated;
+					GroupModel groupRelated;
 					for (int j = 0; j < numberGroupGoal; j++) {
 						id = bufferReader.readLine();
 						groupRelated = umpstProject.getMapGroups().get(id);

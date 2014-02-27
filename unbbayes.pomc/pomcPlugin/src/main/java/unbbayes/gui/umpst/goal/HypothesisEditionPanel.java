@@ -3,7 +3,6 @@ package unbbayes.gui.umpst.goal;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -25,7 +24,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.table.DefaultTableModel;
 
@@ -36,14 +34,14 @@ import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.gui.umpst.selection.SubHipotheseSelectionPane;
 import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.groups.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
 import unbbayes.util.CommonDataUtil;
 
 
-public class HypothesisAdd extends IUMPSTPanel {
+public class HypothesisEditionPanel extends IUMPSTPanel {
 
 	/**
 	 * 
@@ -53,7 +51,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 	private  JList hypothesisVinculationList;
 
 
-	private JButton buttonAdd 	           ;
+	private JButton buttonSave 	           ;
 	private JButton buttonCancel           ;
 	private JButton buttonSubhypothesis    ;
 	private JButton buttonReutilize        ;
@@ -76,7 +74,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 
 	private IconController iconController = IconController.getInstance();
 	
-	public HypothesisAdd(UmpstModule janelaPai,
+	public HypothesisEditionPanel(UmpstModule janelaPai,
 			UMPSTProject umpstProject,
 			GoalModel goalRelated, 
 			HypothesisModel hypothesis, 
@@ -118,21 +116,27 @@ public class HypothesisAdd extends IUMPSTPanel {
 
 	private void createButtons() {
 		
-		buttonAdd 	           = new JButton();
-		buttonAdd.setToolTipText(resource.getString("hpSaveHypothesis"));
+		buttonSave 	     = new JButton(iconController.getSaveObjectIcon());
+		buttonSave.setText(resource.getString("btnSave"));
 		
-		buttonCancel           = new JButton(resource.getString("btnReturn"));
-		buttonCancel.setToolTipText(resource.getString("HpReturnPreviousPanel"));
+		if( hypothesis == null){
+			buttonSave.setToolTipText(resource.getString("hpSaveHypothesis"));
+
+		} else {
+			buttonSave.setToolTipText(resource.getString("hpUpdateHypothesis"));
+		}
 		
-		buttonSubhypothesis    = new JButton(iconController.getAddAttribute());
+		buttonCancel     = new JButton(iconController.getReturnIcon());
+		buttonCancel.setText(resource.getString("btnReturn")); 
+		
+		buttonCancel.setToolTipText(resource.getString("hpReturnMainPanel"));
+		
+		
+		buttonSubhypothesis    = new JButton(iconController.getListAddIcon());
 		buttonSubhypothesis.setToolTipText(resource.getString("hpSaveSubHypothesis"));
 		
-		buttonReutilize = new JButton(iconController.getReuseAttribute());
+		buttonReutilize = new JButton(iconController.getReuseAttributeIcon());
 		
-		
-
-
-	
 	}
 
 	public JPanel textPanel(){
@@ -141,21 +145,19 @@ public class HypothesisAdd extends IUMPSTPanel {
 
 		if( hypothesis == null){
 			if (hypothesisFather!=null){
-				title = "Add Sub Hypothesis";
+				title = "Sub Hypothesis";
 			}
 			else{
-				title = "Add Hypothesis";
+				title = "Hypothesis";
 			}
-			buttonAdd.setText(" Add ");
 		} else {
-			title =  " Update Hypothesis";
-			buttonAdd.setText(" Update ");		
+			title =  "Hypothesis";	
 		}
 
 		// CREATE FORM 
 		mainPropertiesEditionPane = 
 				new MainPropertiesEditionPane(buttonCancel, 
-						buttonAdd, 
+						buttonSave, 
 						title, 
 						"Hypothesis Details",
 						null,
@@ -176,7 +178,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 
 	public void listeners(){
 
-		buttonAdd.addActionListener(new ActionListener() {
+		buttonSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if( hypothesis == null){
 
@@ -189,7 +191,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 							HypothesisModel hypothesisAdd = updateMapHypothesis();
 //							updateTable(hypothesisAdd);
 
-							changePanel(new HypothesisAdd(
+							changePanel(new HypothesisEditionPanel(
 									getFatherPanel(),
 									getUmpstProject(),goalRelated,
 									hypothesisAdd,
@@ -243,7 +245,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 		buttonSubhypothesis.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
-				changePanel(new HypothesisAdd(getFatherPanel(),getUmpstProject(), goalRelated, null, hypothesis));				
+				changePanel(new HypothesisEditionPanel(getFatherPanel(),getUmpstProject(), goalRelated, null, hypothesis));				
 			}
 		});
 
@@ -456,10 +458,10 @@ public class HypothesisAdd extends IUMPSTPanel {
 		}
 
 		if ( (hypothesis!=null)&&(hypothesis.getFowardTrackingGroups() !=null) ){
-			GroupsModel group;
-			Set<GroupsModel> aux = hypothesis.getFowardTrackingGroups();
+			GroupModel group;
+			Set<GroupModel> aux = hypothesis.getFowardTrackingGroups();
 
-			for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
+			for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
 				group = it.next();
 
 				i++;
@@ -502,10 +504,10 @@ public class HypothesisAdd extends IUMPSTPanel {
 
 
 		if ( (hypothesis!=null)&&(hypothesis.getFowardTrackingGroups() !=null) ){
-			GroupsModel group;
-			Set<GroupsModel> aux = hypothesis.getFowardTrackingGroups();
+			GroupModel group;
+			Set<GroupModel> aux = hypothesis.getFowardTrackingGroups();
 
-			for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
+			for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
 				group = it.next();
 				data[i][0] = "Group";
 				data[i][1] = group.getGroupName();
@@ -532,7 +534,7 @@ public class HypothesisAdd extends IUMPSTPanel {
 		return scrollPane;
 	}
 
-	public JList createHypothesisList(){
+	public String[] createHypothesisList(){
 
 		Set<String> keys = getUmpstProject().getMapHypothesis().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
@@ -540,7 +542,6 @@ public class HypothesisAdd extends IUMPSTPanel {
 		Set<String> keysHypo;
 		TreeSet<String> sortedKeysHypo;
 		int i=0;
-
 
 		// Only calculate the i value! 
 		/**This is only to found the number of other hypothesis existents in order to create 
@@ -599,17 +600,11 @@ public class HypothesisAdd extends IUMPSTPanel {
 			}
 		}
 
-
-		hypothesisVinculationList = new JList(allOtherHypothesis);
-		hypothesisVinculationList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); 
-
-		return hypothesisVinculationList;
+		return allOtherHypothesis;
 
 	}	
 
 	public void addVinculateHypothesis(String hypothesisRelated){
-
-		System.out.println("Add Vinculate Hypothesis");
 
 		Set<String> keys = getUmpstProject().getMapGoal().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
@@ -617,9 +612,12 @@ public class HypothesisAdd extends IUMPSTPanel {
 		Boolean achou = false;
 
 		for (String key: sortedKeys){
-			if(getUmpstProject().getMapHypothesis().get(key) !=null){	
+			
+			HypothesisModel hypothesisModel = getUmpstProject().getMapHypothesis().get(key); 
+			
+			if(hypothesisModel !=null){	
 
-				if (getUmpstProject().getMapHypothesis().get(key).getHypothesisName().equals(hypothesisRelated)){
+				if (hypothesisModel.getHypothesisName().equals(hypothesisRelated)){
 					updateMapHypothesis(getUmpstProject().getMapHypothesis().get(key));
 					achou=true;
 					break;

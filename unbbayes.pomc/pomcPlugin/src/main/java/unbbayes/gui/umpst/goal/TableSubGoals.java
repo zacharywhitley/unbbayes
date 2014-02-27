@@ -137,7 +137,7 @@ public class TableSubGoals extends IUMPSTPanel{
 				
 				String key = data[row][COLUMN_IDTF].toString();
 				GoalModel goalAux = getUmpstProject().getMapGoal().get(key);
-				changePanel(new SubgoalsAdd(getFatherPanel(),getUmpstProject(), goalAux, goalAux.getGoalFather() )   );
+				changePanel(new SubgoalsEditionPanel(getFatherPanel(),getUmpstProject(), goalAux, goalAux.getGoalFather() )   );
 			}
 		});
 
@@ -160,7 +160,7 @@ public class TableSubGoals extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				String key = data[row][COLUMN_IDTF].toString();
 				GoalModel goalAux = getUmpstProject().getMapGoal().get(key);
-				changePanel(new SubgoalsAdd(getFatherPanel(),getUmpstProject(),null,goalAux));	
+				changePanel(new SubgoalsEditionPanel(getFatherPanel(),getUmpstProject(),null,goalAux));	
 			}
 		});
 		

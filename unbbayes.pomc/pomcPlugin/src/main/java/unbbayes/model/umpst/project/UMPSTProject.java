@@ -14,58 +14,48 @@ package unbbayes.model.umpst.project;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import unbbayes.prs.Edge;
-import unbbayes.prs.Graph;
-import unbbayes.prs.Node;
+
 import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
-import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.groups.GroupModel;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
-import unbbayes.model.umpst.rules.RulesModel;
- 
+import unbbayes.model.umpst.rules.RuleModel;
+import unbbayes.prs.Edge;
+import unbbayes.prs.Graph;
+import unbbayes.prs.Node;
 
 public class UMPSTProject implements Graph {
 	
-	private java.util.Map<String,GoalModel> mapGoal;
-	private java.util.Map<String,HypothesisModel> mapHypothesis;
-	private java.util.Map<String,EntityModel> mapEntity;
-	private java.util.Map<String,AttributeModel> mapAtribute;
-	private java.util.Map<String,RelationshipModel> mapRelationship;
-	private java.util.Map<String, RulesModel> mapRules;
-	private java.util.Map<String, GroupsModel> mapGroups;
-	private java.util.Map<String, SearchModelGoal> mapSearchGoal;
-	private java.util.Map<String, SearchModelEntity> mapSearchEntity;
-	private java.util.Map<String, SearchModelRules> mapSearchRules;
-	private java.util.Map<String, SearchModelGroup> mapSearchGroups;
-
+	private java.util.Map<String,GoalModel>          mapGoal;
+	private java.util.Map<String,HypothesisModel>    mapHypothesis;
+	private java.util.Map<String,EntityModel>        mapEntity;
+	private java.util.Map<String,AttributeModel>     mapAtribute;
+	private java.util.Map<String,RelationshipModel>  mapRelationship;
+	private java.util.Map<String, RuleModel>         mapRules;
+	private java.util.Map<String, GroupModel>        mapGroups;
+	private java.util.Map<String, SearchModelGoal>   mapSearchGoal;
+	private java.util.Map<String, SearchModelRules>  mapSearchRules;
+	private java.util.Map<String, SearchModelGroup>  mapSearchGroups;	
 	
-	
-//private static UMPSTProject instance = new UMPSTProject();
-
-	
+	private static UMPSTProject umpstProject;
 	
 	protected UMPSTProject() {
+		
 		this.setMapGoal(new HashMap<String,GoalModel>());
 		this.setMapHypothesis(new HashMap<String, HypothesisModel>());
 		this.setMapEntity(new HashMap<String, EntityModel>());
 		this.setMapAtribute(new HashMap<String, AttributeModel>());
 		this.setMapRelationship(new HashMap<String, RelationshipModel>());
-		this.setMapRules(new HashMap<String, RulesModel>());
-		this.setMapGroups(new HashMap<String, GroupsModel>());
+		this.setMapRules(new HashMap<String, RuleModel>());
+		this.setMapGroups(new HashMap<String, GroupModel>());
 		this.setMapSearchGoal(new HashMap<String, SearchModelGoal>());
-		this.setMapSearchEntity(new HashMap<String, SearchModelEntity>());
 		this.setMapSearchRules(new HashMap<String, SearchModelRules>());
 		this.setMapSearchGroups(new HashMap<String, SearchModelGroup>());
 		
-		
 	}
 	
-
-	
-	  
-	static UMPSTProject umpstProject;
 	public static UMPSTProject  newInstance() {
 		  
 		  return (new UMPSTProject());
@@ -78,22 +68,12 @@ public class UMPSTProject implements Graph {
 	public UMPSTProject getUMPSTProject() {
 		return UMPSTProject.umpstProject;
 	}
-	
-	
-	/*public static  UMPSTProject getInstance(){
-	
-		return instance;
-		
-	}*/
-	
-	
-
 
 
 	/**
 	 * @return the mapGroups
 	 */
-	public java.util.Map<String, GroupsModel> getMapGroups() {
+	public java.util.Map<String, GroupModel> getMapGroups() {
 		return mapGroups;
 	}
 
@@ -102,7 +82,7 @@ public class UMPSTProject implements Graph {
 	/**
 	 * @param mapGroups the mapGroups to set
 	 */
-	public void setMapGroups(java.util.Map<String, GroupsModel> mapGroups) {
+	public void setMapGroups(java.util.Map<String, GroupModel> mapGroups) {
 		this.mapGroups = mapGroups;
 	}
 
@@ -130,7 +110,7 @@ public class UMPSTProject implements Graph {
 	/**
 	 * @return the mapRules
 	 */
-	public java.util.Map<String, RulesModel> getMapRules() {
+	public java.util.Map<String, RuleModel> getMapRules() {
 		return mapRules;
 	}
 
@@ -139,7 +119,7 @@ public class UMPSTProject implements Graph {
 	/**
 	 * @param mapRules the mapRules to set
 	 */
-	public void setMapRules(java.util.Map<String, RulesModel> mapRules) {
+	public void setMapRules(java.util.Map<String, RuleModel> mapRules) {
 		this.mapRules = mapRules;
 	}
 
@@ -182,36 +162,12 @@ public class UMPSTProject implements Graph {
 	}
 
 
-
-	/**
-	 * @return the mapSearchEntity
-	 */
-	public java.util.Map<String, SearchModelEntity> getMapSearchEntity() {
-		return mapSearchEntity;
-	}
-
-
-
-	/**
-	 * @param mapSearchEntity the mapSearchEntity to set
-	 */
-	public void setMapSearchEntity(
-			java.util.Map<String, SearchModelEntity> mapSearchEntity) {
-		this.mapSearchEntity = mapSearchEntity;
-	}
-
-
-
 	/**
 	 * @return the mapGoal
 	 */
 	public java.util.Map<String, GoalModel> getMapGoal() {
 		return mapGoal;
 	}
-
-
-
-
 
 	/**
 	 * @param mapGoal the mapGoal to set
@@ -220,20 +176,12 @@ public class UMPSTProject implements Graph {
 		this.mapGoal = mapGoal;
 	}
 
-
-
-
-
 	/**
 	 * @return the mapHypothesis
 	 */
 	public java.util.Map<String, HypothesisModel> getMapHypothesis() {
 		return mapHypothesis;
 	}
-
-
-
-
 
 	/**
 	 * @param mapHypothesis the mapHypothesis to set
@@ -243,20 +191,12 @@ public class UMPSTProject implements Graph {
 		this.mapHypothesis = mapHypothesis;
 	}
 
-
-
-
-
 	/**
 	 * @return the mapEntity
 	 */
 	public java.util.Map<String, EntityModel> getMapEntity() {
 		return mapEntity;
 	}
-
-
-
-
 
 	/**
 	 * @param mapEntity the mapEntity to set
@@ -265,20 +205,12 @@ public class UMPSTProject implements Graph {
 		this.mapEntity = mapEntity;
 	}
 
-
-
-
-
 	/**
 	 * @return the mapAtribute
 	 */
 	public java.util.Map<String, AttributeModel> getMapAtribute() {
 		return mapAtribute;
 	}
-
-
-
-
 
 	/**
 	 * @param mapAtribute the mapAtribute to set
@@ -287,20 +219,12 @@ public class UMPSTProject implements Graph {
 		this.mapAtribute = mapAtribute;
 	}
 
-
-
-
-
 	/**
 	 * @return the mapRelationship
 	 */
 	public java.util.Map<String, RelationshipModel> getMapRelationship() {
 		return mapRelationship;
 	}
-
-
-
-
 
 	/**
 	 * @param mapRelationship the mapRelationship to set
@@ -309,10 +233,6 @@ public class UMPSTProject implements Graph {
 			java.util.Map<String, RelationshipModel> mapRelationship) {
 		this.mapRelationship = mapRelationship;
 	}
-
-
-
-
 
 	public void addEdge(Edge arco) throws Exception {
 		// TODO Auto-generated method stub

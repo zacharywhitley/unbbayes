@@ -22,9 +22,9 @@ import unbbayes.gui.umpst.TableButton;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.gui.umpst.TableButton.TableButtonCustomizer;
 import unbbayes.gui.umpst.TableButton.TableButtonPressedHandler;
-import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.groups.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.model.umpst.rules.RuleModel;
 
 public class TableGroups extends IUMPSTPanel{
 	
@@ -97,7 +97,7 @@ public class TableGroups extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				
 				String key = data[row][0].toString();
-				GroupsModel groupAux = getUmpstProject().getMapGroups().get(key);
+				GroupModel groupAux = getUmpstProject().getMapGroups().get(key);
 				changePanel(new GroupsEditionPanel(getFatherPanel(),getUmpstProject(), groupAux )   );
 			}
 		});
@@ -125,7 +125,7 @@ public class TableGroups extends IUMPSTPanel{
 				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete Group "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							String key = data[row][0].toString();
-							GroupsModel groupToBeDeleted = getUmpstProject().getMapGroups().get(key);
+							GroupModel groupToBeDeleted = getUmpstProject().getMapGroups().get(key);
 							
 							/*Updating MapSearch*/
 							deleteFromSearchMap(groupToBeDeleted);
@@ -201,16 +201,16 @@ public class TableGroups extends IUMPSTPanel{
     }
     
   
-    public void deleteFromSearchMap(GroupsModel groupToBeDeleted){
-    	Set<GroupsModel> aux = new HashSet<GroupsModel>();
-		GroupsModel groupBeta;
+    public void deleteFromSearchMap(GroupModel groupToBeDeleted){
+    	Set<GroupModel> aux = new HashSet<GroupModel>();
+		GroupModel groupBeta;
 		String[] strAux= groupToBeDeleted.getGroupName().split(" ");
 
 	    for (int i = 0; i < strAux.length; i++) {
     		if(getUmpstProject().getMapSearchGroups().get(strAux[i])!=null){
     			getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups().remove(groupToBeDeleted);
     			aux = getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups();   
-    	    	for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
+    	    	for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
     	    		groupBeta = it.next();
     	   		}
     		}

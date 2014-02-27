@@ -3,18 +3,18 @@ package unbbayes.model.umpst.project;
 import java.util.HashSet;
 import java.util.Set;
 
-import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.groups.GroupModel;
 
 public class SearchModelGroup {
 	
 	String keyWord;
-	Set<GroupsModel> relatedGroups;
+	Set<GroupModel> relatedGroups;
 	
-	public SearchModelGroup(String keyWord,Set<GroupsModel> relatedGroups){
+	public SearchModelGroup(String keyWord,Set<GroupModel> relatedGroups){
 		this.keyWord=keyWord;
 		this.relatedGroups=relatedGroups;
 		if (relatedGroups==null){
-			this.setRelatedGroups(new HashSet<GroupsModel>());
+			this.setRelatedGroups(new HashSet<GroupModel>());
 		}
 		
 	}
@@ -36,14 +36,14 @@ public class SearchModelGroup {
 	/**
 	 * @return the relatedGroups
 	 */
-	public Set<GroupsModel> getRelatedGroups() {
+	public Set<GroupModel> getRelatedGroups() {
 		return relatedGroups;
 	}
 
 	/**
 	 * @param relatedGroups the relatedGroups to set
 	 */
-	public void setRelatedGroups(Set<GroupsModel> relatedGroups) {
+	public void setRelatedGroups(Set<GroupModel> relatedGroups) {
 		this.relatedGroups = relatedGroups;
 	}
 

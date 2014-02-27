@@ -23,7 +23,7 @@ import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.gui.umpst.TableButton.TableButtonCustomizer;
 import unbbayes.gui.umpst.TableButton.TableButtonPressedHandler;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.model.umpst.rules.RuleModel;
 
 public class TableRules extends IUMPSTPanel{
 	
@@ -95,7 +95,7 @@ public class TableRules extends IUMPSTPanel{
 			public void onButtonPress(int row, int column) {
 				
 				String key = data[row][0].toString();
-				RulesModel ruleAux = getUmpstProject().getMapRules().get(key);
+				RuleModel ruleAux = getUmpstProject().getMapRules().get(key);
 				changePanel(new RulesEditionPanel(getFatherPanel(),getUmpstProject(), ruleAux )   );
 			}
 		});
@@ -123,7 +123,7 @@ public class TableRules extends IUMPSTPanel{
 				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete rule "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 							String key = data[row][0].toString();
-							RulesModel ruleToBeDeleted = getUmpstProject().getMapRules().get(key);
+							RuleModel ruleToBeDeleted = getUmpstProject().getMapRules().get(key);
 							
 							/*Updating MapSearch*/
 							deleteFromSearchMap(ruleToBeDeleted);
@@ -199,16 +199,16 @@ public class TableRules extends IUMPSTPanel{
     }
     
   
-    public void deleteFromSearchMap(RulesModel ruleToBeDeleted){
-    	Set<RulesModel> aux = new HashSet<RulesModel>();
-		RulesModel rulesBeta;
+    public void deleteFromSearchMap(RuleModel ruleToBeDeleted){
+    	Set<RuleModel> aux = new HashSet<RuleModel>();
+		RuleModel rulesBeta;
 		String[] strAux= ruleToBeDeleted.getRulesName().split(" ");
 
 	    for (int i = 0; i < strAux.length; i++) {
     		if(getUmpstProject().getMapSearchRules().get(strAux[i])!=null){
     			getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated().remove(ruleToBeDeleted);
     			aux = getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated();   
-    	    	for (Iterator<RulesModel> it = aux.iterator(); it.hasNext(); ) {
+    	    	for (Iterator<RuleModel> it = aux.iterator(); it.hasNext(); ) {
     	    		rulesBeta = it.next();
     	   		}
     		}

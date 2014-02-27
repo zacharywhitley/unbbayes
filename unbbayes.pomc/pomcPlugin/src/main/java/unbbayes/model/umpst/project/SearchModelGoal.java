@@ -6,12 +6,15 @@ import unbbayes.model.umpst.requirements.GoalModel;
 
 public class SearchModelGoal {
 	
-	private String keyWord;
+	private String         keyWord;
 	private Set<GoalModel> goalsRelated;
 	
-	public SearchModelGoal(String keyWord, Set<GoalModel> goalsRelated){
+	public SearchModelGoal(String keyWord, 
+			Set<GoalModel> goalsRelated){
+		
 		this.keyWord = keyWord;
 		this.goalsRelated = goalsRelated;
+	
 	}
 
 	/**

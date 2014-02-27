@@ -17,10 +17,9 @@ import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 
 import unbbayes.controller.IconController;
-import unbbayes.gui.umpst.goal.GoalsEditionPanel;
-import unbbayes.gui.umpst.goal.HypothesisEditionPanel;
+import unbbayes.gui.umpst.entity.EntitiesEditionPanel;
 
-public class HypothesisSelectionPane extends JDialog{
+public class EntitySelectionPanel extends JDialog{
 
 	private IconController iconController = IconController.getInstance();
 	
@@ -32,34 +31,35 @@ public class HypothesisSelectionPane extends JDialog{
 
 	private final JDialog dialog; 
 	
-	private final GoalsEditionPanel goalsEditionPanel;
+	private final EntitiesEditionPanel entitiesEditionPanel;
 	
 	JButton btnSelect;
 	JButton btnClose; 
 	
-	public HypothesisSelectionPane(String[] _hypothesisArray, 
-			GoalsEditionPanel _goalsEditionPanel){
+	public EntitySelectionPanel(String[] _attributeList, 
+			EntitiesEditionPanel _entitiesEditionPanel){
 		
 		super();
 		
 		dialog = this;
-		this.goalsEditionPanel = _goalsEditionPanel; 
-		this.setTitle(resource.getString("TtHypothesis")); 
+		
+		this.entitiesEditionPanel = _entitiesEditionPanel; 
+		this.setTitle(resource.getString("ttAttributes")); 
 		this.setModal(true); 
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
 		this.setLayout(new BorderLayout()); 
 		
-		this.jlist = new JList(_hypothesisArray); 
+		jlist = new JList(_attributeList);
 		jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); 
 		
 		scrollListObjectEntity = new JScrollPane(jlist);
 
-		btnSelect = new JButton(resource.getString("queryBtnSelect"));
+		btnSelect = new JButton(resource.getString("btnSelect"));
 		btnSelect.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				if(jlist.getSelectedValue() != null){
-					goalsEditionPanel.addVinculateHypothesis((String) jlist.getSelectedValue());
+					entitiesEditionPanel.addVinculateAtribute((String) jlist.getSelectedValue());
 					dialog.dispose();
 				}
 			}
@@ -79,7 +79,7 @@ public class HypothesisSelectionPane extends JDialog{
 		toolBar.add(btnSelect);
 		toolBar.add(btnClose);
 
-		JLabel label = new JLabel(resource.getString("HpSelectHipothesis") + "               ");
+		JLabel label = new JLabel(resource.getString("hpSelectAttribute") + "               ");
 		
 		//TODO put options of the algorithm here. 
 		
@@ -92,4 +92,5 @@ public class HypothesisSelectionPane extends JDialog{
 		validate(); 
 		pack(); 
 	}
+	
 }

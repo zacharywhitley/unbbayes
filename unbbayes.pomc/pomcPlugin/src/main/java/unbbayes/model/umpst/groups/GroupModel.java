@@ -6,7 +6,7 @@ import javax.swing.JList;
 
 import unbbayes.model.umpst.requirements.GoalModel;
 
-public class GroupsModel {
+public class GroupModel {
 	String id;
 	String groupName;
 	String comments;
@@ -19,7 +19,7 @@ public class GroupsModel {
 	JList backtrackingRelationship;
 	JList backtrackingRules;
 	
-	public GroupsModel(String id,String groupName,String comments,String author,String date, JList backtrackingGoal,
+	public GroupModel(String id,String groupName,String comments,String author,String date, JList backtrackingGoal,
 			JList backtrackingHypothesis,JList backtrackingEntities,JList backtrackingAtributes,JList backtrackingRelationship,
 			JList backtrackingRules ){
 		this.id=id;

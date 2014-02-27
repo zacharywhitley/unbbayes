@@ -24,13 +24,13 @@ import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.groups.GroupsModel;
+import unbbayes.model.umpst.groups.GroupModel;
 import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 
 
-public class SubgoalsAdd extends IUMPSTPanel {
+public class SubgoalsEditionPanel extends IUMPSTPanel {
 
 	/**
 	 * 
@@ -52,7 +52,7 @@ public class SubgoalsAdd extends IUMPSTPanel {
 
 	private GridBagConstraints constraints     = new GridBagConstraints();
 
-	public SubgoalsAdd(UmpstModule janelaPai,
+	public SubgoalsEditionPanel(UmpstModule janelaPai,
 			UMPSTProject umpstProject, 
 			GoalModel goal, 
 			GoalModel goalFather){
@@ -220,14 +220,14 @@ public class SubgoalsAdd extends IUMPSTPanel {
 
 		buttonHypothesis.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				changePanel(new HypothesisAdd(getFatherPanel(),getUmpstProject(),goal,null,null));
+				changePanel(new HypothesisEditionPanel(getFatherPanel(),getUmpstProject(),goal,null,null));
 
 			}
 		});
 
 		buttonSubgoal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				changePanel(new SubgoalsAdd(getFatherPanel(),getUmpstProject(),null,goal));
+				changePanel(new SubgoalsEditionPanel(getFatherPanel(),getUmpstProject(),null,goal));
 
 			}
 		});
@@ -471,10 +471,10 @@ public class SubgoalsAdd extends IUMPSTPanel {
 		}
 
 		if ( (goal!=null)&&(goal.getFowardTrackingGroups() !=null) ){
-			GroupsModel group;
-			Set<GroupsModel> aux = goal.getFowardTrackingGroups();
+			GroupModel group;
+			Set<GroupModel> aux = goal.getFowardTrackingGroups();
 
-			for (Iterator<GroupsModel> it = aux.iterator(); it.hasNext(); ) {
+			for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
 				group = it.next();
 				data[i][0] = group.getGroupName();
 				data[i][1] = "Group";

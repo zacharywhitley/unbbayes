@@ -25,7 +25,7 @@ import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.rules.RulesModel;
+import unbbayes.model.umpst.rules.RuleModel;
 
 public class RulesSearchPanel extends IUMPSTPanel {
 	
@@ -102,7 +102,7 @@ public class RulesSearchPanel extends IUMPSTPanel {
 	} 
 	
 	
-	public RulesEditionPanel getRulesAdd(RulesModel rule){
+	public RulesEditionPanel getRulesAdd(RuleModel rule){
 		
 		RulesEditionPanel ret = new RulesEditionPanel(getFatherPanel(),getUmpstProject(),rule);
 		
@@ -131,7 +131,7 @@ public class RulesSearchPanel extends IUMPSTPanel {
 	public JButton getButtonSearch() {
 		
 		if(buttonSearch == null){
-			buttonSearch = new JButton(IconController.getInstance().getSearch());
+			buttonSearch = new JButton(IconController.getInstance().getSearchIcon());
 			buttonSearch.setToolTipText(resource.getString("hpSearchRule"));
 			buttonSearch.setForeground(Color.blue);
 		}
@@ -204,14 +204,14 @@ public class RulesSearchPanel extends IUMPSTPanel {
     	
     	
     	
-		Set<RulesModel> aux = getUmpstProject().getMapSearchRules().get(textRule.getText()).getRulesRelated();
-		RulesModel rule;
+		Set<RuleModel> aux = getUmpstProject().getMapSearchRules().get(textRule.getText()).getRulesRelated();
+		RuleModel rule;
 		Object[][] data = new Object[getUmpstProject().getMapSearchRules().get(textRule.getText()).getRulesRelated().size()][4];
 
 		Integer i=0;
 		
 	   
-    	for (Iterator<RulesModel> it = aux.iterator(); it.hasNext(); ) {
+    	for (Iterator<RuleModel> it = aux.iterator(); it.hasNext(); ) {
     	     rule = it.next();  // No downcasting required.
     	     
     	 	data[i][0] = rule.getId();
