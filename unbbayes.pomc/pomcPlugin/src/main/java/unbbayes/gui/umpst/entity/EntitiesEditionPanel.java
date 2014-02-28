@@ -170,7 +170,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 						null); 
 
 		if (entity != null){
-			mainPropertiesEditionPane.setTitleText(entity.getEntityName());
+			mainPropertiesEditionPane.setTitleText(entity.getName());
 			mainPropertiesEditionPane.setCommentsText(entity.getComments());
 			mainPropertiesEditionPane.setAuthorText(entity.getAuthor());
 			mainPropertiesEditionPane.setDateText(entity.getDate());
@@ -274,7 +274,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 
 							/************/
 
-							entity.setEntityName(mainPropertiesEditionPane.getTitleText());
+							entity.setName(mainPropertiesEditionPane.getTitleText());
 							entity.setComments(mainPropertiesEditionPane.getCommentsText());
 							entity.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							entity.setDate(mainPropertiesEditionPane.getDateText());
@@ -368,7 +368,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 
 		for (String key: sortedKeys){
 			data[i][0] = getUmpstProject().getMapEntity().get(key).getId();
-			data[i][1] = getUmpstProject().getMapEntity().get(key).getEntityName();			
+			data[i][1] = getUmpstProject().getMapEntity().get(key).getName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			i++;
@@ -694,7 +694,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 			TreeSet<String> sortedString = new TreeSet<String>(keys);
 
 			for (String key : sortedString){
-				data[i][0] = entity.getMapAtributes().get(key).getAtributeName();
+				data[i][0] = entity.getMapAtributes().get(key).getName();
 				data[i][1] = "Atribute";
 				i++;
 			}
@@ -706,7 +706,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 			RuleModel rule;
 			for (Iterator<RuleModel> it = aux.iterator(); it.hasNext(); ) {
 				rule = it.next();
-				data[i][0] = rule.getRulesName();
+				data[i][0] = rule.getName();
 				data[i][1] = "Rule";
 				i++;
 			}
@@ -718,7 +718,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 			RelationshipModel relationship;
 			for (Iterator<RelationshipModel> it = aux.iterator(); it.hasNext(); ) {
 				relationship = it.next();
-				data[i][0] = relationship.getRelationshipName();
+				data[i][0] = relationship.getName();
 				data[i][1] = "Relationship";
 				i++;
 			}
@@ -786,7 +786,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 					for (String keyAtribute : sortedKeysAtribute){
 						/**Testing if the hypothesis is already in this goal*/
 						if ( entity.getMapAtributes().get(entityAux.getMapAtributes().get(keyAtribute).getId())==null ){
-							allOtherAtributes[i] = entityAux.getMapAtributes().get(keyAtribute).getAtributeName();
+							allOtherAtributes[i] = entityAux.getMapAtributes().get(keyAtribute).getName();
 							i++;
 						}
 					}
@@ -815,7 +815,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 				keysAtribute = getUmpstProject().getMapEntity().get(key).getMapAtributes().keySet();
 				sortedKeysAtribute = new TreeSet<String>(keysAtribute);
 				for(String keyAux : sortedKeysAtribute){
-					if (getUmpstProject().getMapEntity().get(key).getMapAtributes().get(keyAux).getAtributeName().equals(atributeRelated)){
+					if (getUmpstProject().getMapEntity().get(key).getMapAtributes().get(keyAux).getName().equals(atributeRelated)){
 						updateMapAtribute(getUmpstProject().getMapEntity().get(key).getMapAtributes().get(keyAux));
 						achou=true;
 						break;
@@ -873,7 +873,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 
 		for (String key: sortedKeys){
 			dataFrame[i][0] = getUmpstProject().getMapGoal().get(key).getId();
-			dataFrame[i][1] = getUmpstProject().getMapGoal().get(key).getGoalName();			
+			dataFrame[i][1] = getUmpstProject().getMapGoal().get(key).getName();			
 			dataFrame[i][2] = "";
 			i++;
 		}

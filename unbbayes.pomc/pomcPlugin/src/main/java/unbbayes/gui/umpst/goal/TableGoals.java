@@ -192,7 +192,7 @@ public class TableGoals extends IUMPSTPanel{
 							
 							for (String chave: sortedKeys){
 								dataDel[i][0] = getUmpstProject().getMapGoal().get(chave).getId();						
-								dataDel[i][1] = getUmpstProject().getMapGoal().get(chave).getGoalName();
+								dataDel[i][1] = getUmpstProject().getMapGoal().get(chave).getName();
 								dataDel[i][2] = "";
 								dataDel[i][3] = "";
 								dataDel[i][4] = "";
@@ -265,7 +265,7 @@ public class TableGoals extends IUMPSTPanel{
 		GoalModel goalBeta;
 		
 		//Quebra o nome do goal em diversos pedaços??? 
-		String[] strAux = goalToBeDeleted.getGoalName().split(" ");
+		String[] strAux = goalToBeDeleted.getName().split(" ");
 
 	    for (int i = 0; i < strAux.length; i++) {
     		if(getUmpstProject().getMapSearchGoal().get(strAux[i]) != null){

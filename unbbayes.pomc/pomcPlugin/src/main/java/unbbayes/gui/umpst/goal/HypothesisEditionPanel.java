@@ -164,7 +164,7 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 						null); 
 
 		if (hypothesis != null){
-			mainPropertiesEditionPane.setTitleText(hypothesis.getHypothesisName());
+			mainPropertiesEditionPane.setTitleText(hypothesis.getName());
 			mainPropertiesEditionPane.setCommentsText(hypothesis.getComments());
 			mainPropertiesEditionPane.setAuthorText(hypothesis.getAuthor());
 			mainPropertiesEditionPane.setDateText(hypothesis.getDate());
@@ -210,13 +210,13 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 //					if( JOptionPane.showConfirmDialog(null, "Do you want to update this hypothesis?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 
 						try{
-							hypothesis.setHypothesisName(mainPropertiesEditionPane.getTitleText());
+							hypothesis.setName(mainPropertiesEditionPane.getTitleText());
 							hypothesis.setComments(mainPropertiesEditionPane.getCommentsText());
 							hypothesis.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							hypothesis.setDate(mainPropertiesEditionPane.getDateText());
 
 							/**Updating this hypothesis in MapHypothesis*/
-							getUmpstProject().getMapHypothesis().get(hypothesis.getId()).setHypothesisName(hypothesis.getHypothesisName());
+							getUmpstProject().getMapHypothesis().get(hypothesis.getId()).setName(hypothesis.getName());
 							getUmpstProject().getMapHypothesis().get(hypothesis.getId()).setComments(hypothesis.getComments());
 							getUmpstProject().getMapHypothesis().get(hypothesis.getId()).setAuthor(hypothesis.getAuthor());
 							getUmpstProject().getMapHypothesis().get(hypothesis.getId()).setDate(hypothesis.getDate());
@@ -486,7 +486,7 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 			for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
 				entity = it.next();
 				data[i][0] = "Entity";
-				data[i][1] = entity.getEntityName();
+				data[i][1] = entity.getName();
 				i++;
 			}
 		}
@@ -497,7 +497,7 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 
 			for (String key: sortedKeys){
 				data[i][0] = "Hypothesis";
-				data[i][1] = hypothesis.getMapSubHypothesis().get(key).getHypothesisName();
+				data[i][1] = hypothesis.getMapSubHypothesis().get(key).getName();
 				i++;
 			}
 		}
@@ -587,14 +587,14 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 								hypothesis.getMapSubHypothesis().get(keyHypo).getId()) ) == null ){
 
 							allOtherHypothesis[i] = 
-									hipothesisModel.getMapSubHypothesis().get(keyHypo).getHypothesisName();
+									hipothesisModel.getMapSubHypothesis().get(keyHypo).getName();
 							i++;
 						}
 					}
 
 				}
 
-				allOtherHypothesis[i] = getUmpstProject().getMapHypothesis().get(key).getHypothesisName();
+				allOtherHypothesis[i] = getUmpstProject().getMapHypothesis().get(key).getName();
 				i++;
 
 			}
@@ -617,7 +617,7 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 			
 			if(hypothesisModel !=null){	
 
-				if (hypothesisModel.getHypothesisName().equals(hypothesisRelated)){
+				if (hypothesisModel.getName().equals(hypothesisRelated)){
 					updateMapHypothesis(getUmpstProject().getMapHypothesis().get(key));
 					achou=true;
 					break;

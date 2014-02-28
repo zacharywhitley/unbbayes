@@ -252,7 +252,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 			
 			for (String key: sortedKeys){
 				data[i][0] = getUmpstProject().getMapEntity().get(key).getId();
-				data[i][1] = getUmpstProject().getMapEntity().get(key).getEntityName();			
+				data[i][1] = getUmpstProject().getMapEntity().get(key).getName();			
 				data[i][2] = "";
 				data[i][3] = "";
 				i++;

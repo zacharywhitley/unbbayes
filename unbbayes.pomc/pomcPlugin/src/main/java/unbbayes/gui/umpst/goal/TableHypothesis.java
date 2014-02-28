@@ -144,7 +144,7 @@ public class TableHypothesis extends IUMPSTPanel{
 				if (hypothesis.getGoalRelated().contains(goalRelated)){
 					if (!setAux.contains(hypothesis)){
 						data[i][COLUMN_IDTF] = hypothesis.getId();
-						data[i][COLUMN_DESC] = hypothesis.getHypothesisName();
+						data[i][COLUMN_DESC] = hypothesis.getName();
 
 						data[i][COLUMN_BTN1] = "";
 						data[i][COLUMN_BTN2] = "";
@@ -166,7 +166,7 @@ public class TableHypothesis extends IUMPSTPanel{
 
 								if (!setAux.contains(hypoSub)){
 									data[i][COLUMN_IDTF] = hypoSub.getId();
-									data[i][COLUMN_DESC] = hypoSub.getHypothesisName();
+									data[i][COLUMN_DESC] = hypoSub.getName();
 									data[i][COLUMN_BTN1] = "";
 									data[i][COLUMN_BTN2] = "";
 									data[i][COLUMN_BTN3] = "";

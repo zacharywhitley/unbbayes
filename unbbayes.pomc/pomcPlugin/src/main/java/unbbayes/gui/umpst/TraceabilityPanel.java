@@ -82,7 +82,7 @@ public class TraceabilityPanel extends IUMPSTPanel{
 			
 	    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
 	    		entity = it.next();
-	    		data[i][0] = entity.getEntityName();
+	    		data[i][0] = entity.getName();
 	    		data[i][1] = "Entity";
 	    	}
 

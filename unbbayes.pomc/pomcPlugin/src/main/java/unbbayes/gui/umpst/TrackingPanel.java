@@ -47,7 +47,7 @@ public class TrackingPanel extends IUMPSTPanel{
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 		
 		for (String key: sortedKeys){
-			listModel.addElement(getUmpstProject().getMapGoal().get(key).getGoalName());
+			listModel.addElement(getUmpstProject().getMapGoal().get(key).getName());
 		}
 		
 		

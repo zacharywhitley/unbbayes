@@ -93,7 +93,7 @@ public class TableSubhypothesis extends IUMPSTPanel{
 			for (String key: sortedKeys){
 
 				data[i][COLUMN_IDTF] = hypothesisRelated.getMapSubHypothesis().get(key).getId();
-				data[i][COLUMN_DESC] = hypothesisRelated.getMapSubHypothesis().get(key).getHypothesisName();
+				data[i][COLUMN_DESC] = hypothesisRelated.getMapSubHypothesis().get(key).getName();
 				data[i][COLUMN_BTN1] = "";
 				data[i][COLUMN_BTN2] = "";
 				data[i][COLUMN_BTN3] = "";

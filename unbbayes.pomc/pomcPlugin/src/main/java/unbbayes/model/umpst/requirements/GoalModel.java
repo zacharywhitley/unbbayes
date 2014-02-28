@@ -5,17 +5,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import unbbayes.model.umpst.ObjectModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.groups.GroupModel;
 
-public class GoalModel {
-	
-	private String id;
-	
-	private String goalName;
-	private String comments;
-	private String author;
-	private String date;
+public class GoalModel extends ObjectModel{
 	
 	private GoalModel                   goalFather;
 	private Map<String, GoalModel>      subgoals ;
@@ -36,11 +30,8 @@ public class GoalModel {
 			Set<GroupModel> fowardTrackingGroups,
 			Set<GoalModel> goalsRelated) {
 		
-		this.id=id;
-		this.goalName = goalName;
-		this.comments = comments;
-		this.author = author;
-		this.date = date;
+		super(id, goalName, comments, author, date);
+		
 		this.goalFather = father;
 		this.subgoals = children;
 		
@@ -121,21 +112,6 @@ public class GoalModel {
 		this.fowardTrackingEntity = fowardTrackingEntity;
 	}
 
-	/**
-	 * @return the id
-	 */
-	public String getId() {
-		return id;
-	}
-
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(String id) {
-		this.id = id;
-	}
-
 
 	/**
 	 * @return the goalFather
@@ -181,73 +157,8 @@ public class GoalModel {
 		this.mapHypothesis = mapHypothesis;
 	}
 
-
-	/**
-	 * @return the author
-	 */
-	public String getAuthor() {
-		return author;
-	}
-
-
-	/**
-	 * @param author the author to set
-	 */
-	public void setAuthor(String author) {
-		this.author = author;
-	}
-
-
-	/**
-	 * @return the date
-	 */
-	public String getDate() {
-		return date;
-	}
-
-
-	/**
-	 * @param date the date to set
-	 */
-	public void setDate(String date) {
-		this.date = date;
-	}
-
-
-	/**
-	 * @return the name
-	 */
-	public String getGoalName() {
-		return goalName;
-	}
-
-
-	/**
-	 * @param name the name to set
-	 */
-	public void setGoalName(String goalName) {
-		this.goalName = goalName;
-	}
-
-
-	/**
-	 * @return the comments
-	 */
-	public String getComments() {
-		return comments;
-	}
-
-
-	/**
-	 * @param comments the comments to set
-	 */
-	public void setComments(String comments) {
-		this.comments = comments;
-	}
-
-
 	public String toString(){
-		return getGoalName(); 
+		return getName(); 
 	}
 
 }

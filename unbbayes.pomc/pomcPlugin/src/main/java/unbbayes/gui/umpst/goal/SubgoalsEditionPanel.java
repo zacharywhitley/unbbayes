@@ -119,7 +119,7 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 						null); 
 
 		if (goal != null){
-			mainPropertiesEditionPane.setTitleText(goal.getGoalName());
+			mainPropertiesEditionPane.setTitleText(goal.getName());
 			mainPropertiesEditionPane.setCommentsText(goal.getComments());
 			mainPropertiesEditionPane.setAuthorText(goal.getAuthor());
 			mainPropertiesEditionPane.setDateText(goal.getDate());
@@ -165,7 +165,7 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 							/**Cleaning Search Map*/
 							Set<GoalModel> aux = new HashSet<GoalModel>();
 							GoalModel goalBeta;
-							String[] strAux = goal.getGoalName().split(" ");
+							String[] strAux = goal.getName().split(" ");
 
 							for (int i = 0; i < strAux.length; i++) {
 								if(getUmpstProject().getMapSearchGoal().get(strAux[i])!=null){
@@ -180,7 +180,7 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 							}
 							/************/
 
-							goal.setGoalName(mainPropertiesEditionPane.getTitleText());
+							goal.setName(mainPropertiesEditionPane.getTitleText());
 							goal.setComments(mainPropertiesEditionPane.getCommentsText());
 							goal.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							goal.setDate(mainPropertiesEditionPane.getDateText());
@@ -329,7 +329,7 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 
 		for (String key: sortedKeys){
 			data[i][0] = getUmpstProject().getMapGoal().get(key).getId();
-			data[i][1] = getUmpstProject().getMapGoal().get(key).getGoalName();			
+			data[i][1] = getUmpstProject().getMapGoal().get(key).getName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			data[i][4] = "";
@@ -409,7 +409,7 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 		/**Upating searchPanel*/
 
 		String[] strAux = {};
-		strAux = goalAdd.getGoalName().split(" ");
+		strAux = goalAdd.getName().split(" ");
 		Set<GoalModel> goalSetSearch = new HashSet<GoalModel>();
 
 
@@ -443,7 +443,7 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 
 			for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
 				entity = it.next();
-				data[i][0] = entity.getEntityName();
+				data[i][0] = entity.getName();
 				data[i][1] = "Entity";
 				i++;
 			}
@@ -454,7 +454,7 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 			TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 
 			for (String key: sortedKeys){
-				data[i][0] = goal.getSubgoals().get(key).getGoalName();
+				data[i][0] = goal.getSubgoals().get(key).getName();
 				data[i][1] = "Goals";
 				i++;
 			}
@@ -464,7 +464,7 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 			TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
 
 			for (String key: sortedKeys){
-				data[i][0] = goal.getMapHypothesis().get(key).getHypothesisName();
+				data[i][0] = goal.getMapHypothesis().get(key).getName();
 				data[i][1] = "Hypothesis";
 				i++;
 			}    	

@@ -94,7 +94,7 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 						null); 
 
 		if (atribute != null){
-			mainPropertiesEditionPane.setTitleText(atribute.getAtributeName());
+			mainPropertiesEditionPane.setTitleText(atribute.getName());
 			mainPropertiesEditionPane.setCommentsText(atribute.getComments());
 			mainPropertiesEditionPane.setAuthorText(atribute.getAuthor());
 			mainPropertiesEditionPane.setDateText(atribute.getDate());
@@ -158,7 +158,7 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 							JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 						try{
 
-							atribute.setAtributeName(mainPropertiesEditionPane.getTitleText());
+							atribute.setName(mainPropertiesEditionPane.getTitleText());
 							atribute.setComments(mainPropertiesEditionPane.getCommentsText());
 							atribute.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							atribute.setDate(mainPropertiesEditionPane.getDateText());

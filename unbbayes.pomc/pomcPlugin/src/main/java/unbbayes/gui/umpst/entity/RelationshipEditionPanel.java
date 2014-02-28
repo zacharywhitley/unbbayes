@@ -120,7 +120,7 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 						null); 
 
 		if (relationshipModel != null){
-			mainPropertiesEditionPane.setTitleText(relationshipModel.getRelationshipName());
+			mainPropertiesEditionPane.setTitleText(relationshipModel.getName());
 			mainPropertiesEditionPane.setCommentsText(relationshipModel.getComments());
 			mainPropertiesEditionPane.setAuthorText(relationshipModel.getAuthor());
 			mainPropertiesEditionPane.setDateText(relationshipModel.getDate());
@@ -193,7 +193,7 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 					if( JOptionPane.showConfirmDialog(null, "Do you want to update this relationship?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 						//RelationshipText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null,null,null);
 						try{
-							relationshipModel.setRelationshipName(mainPropertiesEditionPane.getTitleText());
+							relationshipModel.setName(mainPropertiesEditionPane.getTitleText());
 							relationshipModel.setComments(mainPropertiesEditionPane.getCommentsText());
 							relationshipModel.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							relationshipModel.setDate(mainPropertiesEditionPane.getDateText());
@@ -472,7 +472,7 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 					System.out.println("Key = " + key);
 					EntityModel entityModel = getUmpstProject().getMapEntity().get(key); 
 					if(entityModel == null) System.out.println("Entidade igual a null");
-					if (keyWord.equals( entityModel.getEntityName()) ){
+					if (keyWord.equals( entityModel.getName()) ){
 						getUmpstProject().getMapEntity().get(key).getFowardTrackingRelationship().add(relationship);
 					}			
 
@@ -490,7 +490,7 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 				keyWord = listUsedAttributes.getModel().getElementAt(i).toString();
 				for (String key: sortedKeysMapEntity){
 					if ( getUmpstProject().getMapHypothesis().get(key)!=null){
-						if (keyWord.equals( getUmpstProject().getMapHypothesis().get(key).getHypothesisName()) ){
+						if (keyWord.equals( getUmpstProject().getMapHypothesis().get(key).getName()) ){
 							getUmpstProject().getMapAtribute().get(key).getFowardTrackingRelationship().add(relationship);
 						}	
 					}

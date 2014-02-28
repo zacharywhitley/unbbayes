@@ -154,7 +154,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 						null); 
 
 		if (goal != null){
-			mainPropertiesEditionPane.setTitleText(goal.getGoalName());
+			mainPropertiesEditionPane.setTitleText(goal.getName());
 			mainPropertiesEditionPane.setCommentsText(goal.getComments());
 			mainPropertiesEditionPane.setAuthorText(goal.getAuthor());
 			mainPropertiesEditionPane.setDateText(goal.getDate());
@@ -227,7 +227,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 							/**Cleaning Search Map*/
 							Set<GoalModel> aux = new HashSet<GoalModel>();
 							GoalModel goalBeta;
-							String[] strAux=goal.getGoalName().split(" ");
+							String[] strAux=goal.getName().split(" ");
 
 							for (int i = 0; i < strAux.length; i++) {
 								if(getUmpstProject().getMapSearchGoal().get(strAux[i])!=null){
@@ -240,7 +240,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 							}
 							/************/
 
-							goal.setGoalName(mainPropertiesEditionPane.getTitleText());
+							goal.setName(mainPropertiesEditionPane.getTitleText());
 							goal.setComments(mainPropertiesEditionPane.getCommentsText());
 							goal.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							goal.setDate(mainPropertiesEditionPane.getDateText());
@@ -417,7 +417,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 		for (String key: sortedKeys){
 			data[i][0] = getUmpstProject().getMapGoal().get(key).getId();
-			data[i][1] = getUmpstProject().getMapGoal().get(key).getGoalName();			
+			data[i][1] = getUmpstProject().getMapGoal().get(key).getName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			data[i][4] = "";
@@ -553,7 +553,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 		String[] strAux = {};
 		
-		strAux = goalAdd.getGoalName().split(" ");
+		strAux = goalAdd.getName().split(" ");
 		
 		Set<GoalModel> goalSetSearch = new HashSet<GoalModel>();
 
@@ -678,7 +678,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 				data[i][0] = "Entity";
 				data[i][1] = "Direct";
-				data[i][2] = entity.getEntityName();
+				data[i][2] = entity.getName();
 
 				i++;
 				if (entity.getFowardTrackingRules()!=null){
@@ -689,7 +689,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 						data[i][0] = "Rule";
 						data[i][1] = "Indirect";
-						data[i][2] = rule.getRulesName();
+						data[i][2] = rule.getName();
 						i++;
 					}
 				}
@@ -702,7 +702,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 						data[i][0] = "Atribute";
 						data[i][1] = "Indirect";
-						data[i][2] = entity.getMapAtributes().get(keyAtribute).getAtributeName();
+						data[i][2] = entity.getMapAtributes().get(keyAtribute).getName();
 						i++;
 					}
 				}
@@ -715,7 +715,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 						data[i][0] = "Relationship";
 						data[i][1] = "Indirect";
-						data[i][2] = relationship.getRelationshipName();
+						data[i][2] = relationship.getName();
 						i++;
 					}
 				}
@@ -744,7 +744,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 				data[i][0] = "Goals";
 				data[i][1] = "Direct";
-				data[i][2] = goal.getSubgoals().get(key).getGoalName();
+				data[i][2] = goal.getSubgoals().get(key).getName();
 				i++;
 			}
 		}
@@ -756,7 +756,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 				data[i][0] = "Hypothesis";
 				data[i][1] = "Direct";
-				data[i][2] = goal.getMapHypothesis().get(key).getHypothesisName();
+				data[i][2] = goal.getMapHypothesis().get(key).getName();
 				i++;
 			}    	
 		}
@@ -840,7 +840,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 					for (String keyHypo : sortedKeysHypo){
 						if ( goal.getMapHypothesis().get(goalAux.getMapHypothesis().get(keyHypo).getId()) == null ){
-							allOtherHypothesis[i] = goalAux.getMapHypothesis().get(keyHypo).getHypothesisName();
+							allOtherHypothesis[i] = goalAux.getMapHypothesis().get(keyHypo).getName();
 							i++;
 						}
 					}
@@ -868,7 +868,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 				keysHypo = getUmpstProject().getMapGoal().get(key).getMapHypothesis().keySet();
 				sortedKeysHypo = new TreeSet<String>(keysHypo);
 				for(String keyAux : sortedKeysHypo){
-					if (getUmpstProject().getMapGoal().get(key).getMapHypothesis().get(keyAux).getHypothesisName()==hypothesisRelated){
+					if (getUmpstProject().getMapGoal().get(key).getMapHypothesis().get(keyAux).getName()==hypothesisRelated){
 						updateMapHypothesis(getUmpstProject().getMapGoal().get(key).getMapHypothesis().get(keyAux));
 						achou=true;
 						break;
@@ -944,12 +944,12 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 				if(goal.getSubgoals().size()>0){
 					if (goal.getSubgoals().get(getUmpstProject().getMapGoal().get(key).getId())==null){
-						allOtherGoals[i] = getUmpstProject().getMapGoal().get(key).getGoalName();
+						allOtherGoals[i] = getUmpstProject().getMapGoal().get(key).getName();
 						i++;
 					}
 				}
 				else{
-					allOtherGoals[i] = getUmpstProject().getMapGoal().get(key).getGoalName();
+					allOtherGoals[i] = getUmpstProject().getMapGoal().get(key).getName();
 					i++;
 				}
 			}
@@ -965,7 +965,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
 
 		for (String key: sortedKeys){
-			if(getUmpstProject().getMapGoal().get(key).getGoalName().equals(goalRelated)){	
+			if(getUmpstProject().getMapGoal().get(key).getName().equals(goalRelated)){	
 				updateMapGoalVinculate(getUmpstProject().getMapGoal().get(key));
 				break;
 			}

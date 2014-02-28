@@ -141,7 +141,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 						ruleTypeText); 
 
 		if (rule != null){
-			mainPropertiesEditionPane.setTitleText(rule.getRulesName());
+			mainPropertiesEditionPane.setTitleText(rule.getName());
 			mainPropertiesEditionPane.setCommentsText(rule.getComments());
 			mainPropertiesEditionPane.setAuthorText(rule.getAuthor());
 			mainPropertiesEditionPane.setDateText(rule.getDate());
@@ -217,7 +217,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 							/**Cleaning Search Map*/
 							Set<RuleModel> aux = new HashSet<RuleModel>();
 							RuleModel rulesBeta;
-							String[] strAux=rule.getRulesName().split(" ");
+							String[] strAux=rule.getName().split(" ");
 
 						    for (int i = 0; i < strAux.length; i++) {
 					    		if(getUmpstProject().getMapSearchRules().get(strAux[i])!=null){
@@ -232,7 +232,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 						    }
 						    /************/
 							
-							rule.setRulesName(mainPropertiesEditionPane.getTitleText());
+							rule.setName(mainPropertiesEditionPane.getTitleText());
 //							rule.setRuleType(typeText.getText());
 							rule.setComments(mainPropertiesEditionPane.getCommentsText());
 							rule.setAuthor(mainPropertiesEditionPane.getAuthorText());
@@ -364,7 +364,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		
 		for (String key: sortedKeys){
 			data[i][0] = getUmpstProject().getMapRules().get(key).getId();
-			data[i][1] = getUmpstProject().getMapRules().get(key).getRulesName();			
+			data[i][1] = getUmpstProject().getMapRules().get(key).getName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			i++;
@@ -387,7 +387,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 	    /**Upating searchPanel*/
 	    
 	    String[] strAux = {};
-	    strAux = ruleAdd.getRulesName().split(" ");
+	    strAux = ruleAdd.getName().split(" ");
 	    Set<RuleModel> ruleSetSearch = new HashSet<RuleModel>();
 
 	    
@@ -653,7 +653,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		
 		for (String key: sortedKeys){
 			dataFrame[i][0] = getUmpstProject().getMapEntity().get(key).getId();
-			dataFrame[i][1] = getUmpstProject().getMapEntity().get(key).getEntityName();			
+			dataFrame[i][1] = getUmpstProject().getMapEntity().get(key).getName();			
 			dataFrame[i][2] = "";
 			i++;
 		}
@@ -726,7 +726,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		
 		for (String key: sortedKeys){
 			dataFrame[i][0] = getUmpstProject().getMapAtribute().get(key).getId();
-			dataFrame[i][1] = getUmpstProject().getMapAtribute().get(key).getAtributeName();			
+			dataFrame[i][1] = getUmpstProject().getMapAtribute().get(key).getName();			
 			dataFrame[i][2] = "";
 			i++;
 		}
@@ -801,7 +801,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		
 		for (String key: sortedKeys){
 			dataFrame[i][0] = getUmpstProject().getMapRelationship().get(key).getId();
-			dataFrame[i][1] = getUmpstProject().getMapRelationship().get(key).getRelationshipName();			
+			dataFrame[i][1] = getUmpstProject().getMapRelationship().get(key).getName();			
 			dataFrame[i][2] = "";
 			i++;
 		}

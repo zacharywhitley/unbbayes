@@ -131,7 +131,7 @@ public class EntitiesTable extends IUMPSTPanel{
 
 					for (String chave: sortedKeys){
 						dataDel[i][0] = getUmpstProject().getMapEntity().get(chave).getId();						
-						dataDel[i][1] = getUmpstProject().getMapEntity().get(chave).getEntityName();
+						dataDel[i][1] = getUmpstProject().getMapEntity().get(chave).getName();
 						dataDel[i][2] = "";
 						dataDel[i][3] = "";
 						i++;

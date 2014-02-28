@@ -142,7 +142,7 @@ public class FileLoad {
 				comments =bufferReader.readLine();
 
 				group = umpstProject.getMapGroups().get(id);
-				group.setGroupName(groupName);
+				group.setName(groupName);
 				group.setAuthor(author);
 				group.setDate(date);
 				group.setComments(comments);
@@ -252,7 +252,7 @@ public class FileLoad {
 				comments =bufferReader.readLine();
 
 				rule = umpstProject.getMapRules().get(id);
-				rule.setRulesName(ruleName);
+				rule.setName(ruleName);
 				rule.setRuleType(ruleType);
 				rule.setAuthor(author);
 				rule.setDate(date);
@@ -337,13 +337,13 @@ public class FileLoad {
 				int numberBackEnt =Integer.parseInt(bufferReader.readLine());
 				if (numberBackEnt>0){
 					//TODO
-//					bufferReader.readLine();//Backtracking from entities of this rule
-//					DefaultListModel listModel = new DefaultListModel();
-//					for (int j = 0; j < numberBackEnt; j++) {
-//						listModel.addElement(bufferReader.readLine());
-//					}
-//					JList list = new JList(listModel);
-//					relationship.setBacktrackingEntity(list);
+					//					bufferReader.readLine();//Backtracking from entities of this rule
+					//					DefaultListModel listModel = new DefaultListModel();
+					//					for (int j = 0; j < numberBackEnt; j++) {
+					//						listModel.addElement(bufferReader.readLine());
+					//					}
+					//					JList list = new JList(listModel);
+					//					relationship.setBacktrackingEntity(list);
 				}
 
 				/*--Backtacking from atributes--*/
@@ -352,13 +352,13 @@ public class FileLoad {
 				int numberBackAtr =Integer.parseInt(bufferReader.readLine());
 				if (numberBackAtr > 0){
 					//TODO
-//					bufferReader.readLine();//Backtracking atributes names
-//					DefaultListModel listModel = new DefaultListModel();
-//					for (int j = 0; j < numberBackAtr; j++) {
-//						listModel.addElement(bufferReader.readLine());
-//					}
-//					JList list = new JList(listModel);
-//					relationship.setBacktrackingAtribute(list);
+					//					bufferReader.readLine();//Backtracking atributes names
+					//					DefaultListModel listModel = new DefaultListModel();
+					//					for (int j = 0; j < numberBackAtr; j++) {
+					//						listModel.addElement(bufferReader.readLine());
+					//					}
+					//					JList list = new JList(listModel);
+					//					relationship.setBacktrackingAtribute(list);
 				}
 
 				/*--Backtacking from Goals--*/
@@ -367,13 +367,13 @@ public class FileLoad {
 				int numberBackGoal =Integer.parseInt(bufferReader.readLine());
 				if (numberBackGoal>0){
 					//TODO
-//					bufferReader.readLine();//Backtracking goals names
-//					DefaultListModel listModel = new DefaultListModel();
-//					for (int j = 0; j < numberBackGoal; j++) {
-//						listModel.addElement(bufferReader.readLine());
-//					}
-//					JList list = new JList(listModel);
-//					relationship.setBacktrackingGoal(list);
+					//					bufferReader.readLine();//Backtracking goals names
+					//					DefaultListModel listModel = new DefaultListModel();
+					//					for (int j = 0; j < numberBackGoal; j++) {
+					//						listModel.addElement(bufferReader.readLine());
+					//					}
+					//					JList list = new JList(listModel);
+					//					relationship.setBacktrackingGoal(list);
 				}
 
 				/*--Backtacking from Hypothesis--*/
@@ -382,13 +382,13 @@ public class FileLoad {
 				int numberBackHypo =Integer.parseInt(bufferReader.readLine());
 				if (numberBackHypo>0){
 					//TODO
-//					bufferReader.readLine();//Backtracking hypothesis names
-//					DefaultListModel listModel = new DefaultListModel();
-//					for (int j = 0; j < numberBackHypo; j++) {
-//						listModel.addElement(bufferReader.readLine());
-//					}
-//					JList list = new JList(listModel);
-//					relationship.setBacktrackingGoal(list);
+					//					bufferReader.readLine();//Backtracking hypothesis names
+					//					DefaultListModel listModel = new DefaultListModel();
+					//					for (int j = 0; j < numberBackHypo; j++) {
+					//						listModel.addElement(bufferReader.readLine());
+					//					}
+					//					JList list = new JList(listModel);
+					//					relationship.setBacktrackingGoal(list);
 				}
 
 				/*--Fowardtracking rules--*/	  	
@@ -510,7 +510,7 @@ public class FileLoad {
 				comments =bufferReader.readLine();
 
 				entity = umpstProject.getMapEntity().get(id);
-				entity.setEntityName(entityName);
+				entity.setName(entityName);
 				entity.setAuthor(author);
 				entity.setDate(date);
 				entity.setComments(comments);
@@ -599,7 +599,7 @@ public class FileLoad {
 				idFather = bufferReader.readLine();
 
 				hypothesis = umpstProject.getMapHypothesis().get(id);
-				hypothesis.setHypothesisName(hypothesisName);
+				hypothesis.setName(hypothesisName);
 				hypothesis.setAuthor(author);
 				hypothesis.setDate(date);
 				hypothesis.setComments(comments);
@@ -666,7 +666,7 @@ public class FileLoad {
 				idFather = bufferReader.readLine();
 
 				goal = umpstProject.getMapGoal().get(id);
-				goal.setGoalName(goalName);
+				goal.setName(goalName);
 				goal.setAuthor(author);
 				goal.setDate(date);
 				goal.setComments(comments);

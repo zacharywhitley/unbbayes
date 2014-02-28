@@ -215,7 +215,7 @@ public class RulesSearchPanel extends IUMPSTPanel {
     	     rule = it.next();  // No downcasting required.
     	     
     	 	data[i][0] = rule.getId();
-			data[i][1] = rule.getRulesName();			
+			data[i][1] = rule.getName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			i++;
@@ -249,7 +249,7 @@ public class RulesSearchPanel extends IUMPSTPanel {
 			
 			for (String key: sortedKeys){
 				data[i][0] = getUmpstProject().getMapRules().get(key).getId();
-				data[i][1] = getUmpstProject().getMapRules().get(key).getRulesName();			
+				data[i][1] = getUmpstProject().getMapRules().get(key).getName();			
 				data[i][2] = "";
 				data[i][3] = "";
 				i++;

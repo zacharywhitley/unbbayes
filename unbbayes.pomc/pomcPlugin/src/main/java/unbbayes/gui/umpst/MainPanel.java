@@ -14,6 +14,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ResourceBundle;
 
 import javax.help.HelpSet;
@@ -40,8 +41,8 @@ import unbbayes.gui.umpst.goal.GoalsMainPanel;
 import unbbayes.gui.umpst.goal.GoalsSearchPanel;
 import unbbayes.gui.umpst.group.GroupsMainPanel;
 import unbbayes.gui.umpst.rules.RulesMainPanel;
-import unbbayes.io.umpst.FileLoad;
-import unbbayes.io.umpst.FileSave;
+import unbbayes.io.umpst.FileLoadObject;
+import unbbayes.io.umpst.FileSaveObject;
 import unbbayes.model.umpst.project.UMPSTProject;
 
 public class MainPanel extends IUMPSTPanel{
@@ -60,7 +61,7 @@ public class MainPanel extends IUMPSTPanel{
 		private RulesMainPanel rulesPane;
 		private GroupsMainPanel groupsPane;
 		
-		private File loadedFile;
+		private File loadFile;
 		private File newFile;
 
 		private String fileExtension;
@@ -136,18 +137,27 @@ public class MainPanel extends IUMPSTPanel{
                     int res = fc.showOpenDialog(null);
                     
                     if(res == JFileChooser.APPROVE_OPTION){
-                        loadedFile = fc.getSelectedFile();
+                        loadFile = fc.getSelectedFile();
                     }
                  
-                    int index = loadedFile.getName().lastIndexOf(".");
+                    int index = loadFile.getName().lastIndexOf(".");
                     
         			if (index >= 0) {
-        				fileExtension = loadedFile.getName().substring(index + 1);
+        				fileExtension = loadFile.getName().substring(index + 1);
         			}
 					
         			if (fileExtension.equals(FILE_EXTENSION)){
-        				FileLoad io = new FileLoad();
-						setUmpstProject(io.loadUbf(loadedFile,getUmpstProject())) ;
+//        				FileLoad io = new FileLoad();
+        				FileLoadObject io = new FileLoadObject();
+						try {
+							setUmpstProject(io.loadUbf(loadFile,getUmpstProject())) ;
+						} catch (ClassNotFoundException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 						GoalsSearchPanel goalPanel = new GoalsSearchPanel(getFatherPanel(),getUmpstProject());
 						goalPanel.returnTableGoals();
                     }
@@ -164,7 +174,10 @@ public class MainPanel extends IUMPSTPanel{
 	        saveItem.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					FileSave io = new FileSave();
+					
+//					FileSave file = new FileSave();
+					FileSaveObject file = new FileSaveObject();
+					
 					JFileChooser fc =  new JFileChooser();  
 				    fc.setCurrentDirectory (new File ("."));
 				   // fc.setSelectedFile (newFile);
@@ -182,11 +195,14 @@ public class MainPanel extends IUMPSTPanel{
 				    
 					if (newFile!=null)	{
 						try {
-							io.saveUbf(newFile,getUmpstProject());
+							file.saveUbf(newFile,getUmpstProject());
 							JOptionPane.showMessageDialog(null, "File saved");
 						} catch (FileNotFoundException e1) {
 							// TODO Auto-generated catch block
 							e1.printStackTrace();
+						} catch (IOException e2) {
+							// TODO Auto-generated catch block
+							e2.printStackTrace();
 						}
 					}
 					else {

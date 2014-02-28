@@ -11,6 +11,7 @@
 
 package unbbayes.model.umpst.project;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +27,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 
-public class UMPSTProject implements Graph {
+public class UMPSTProject implements Graph, Serializable {
 	
 	private java.util.Map<String,GoalModel>          mapGoal;
 	private java.util.Map<String,HypothesisModel>    mapHypothesis;
@@ -35,9 +36,10 @@ public class UMPSTProject implements Graph {
 	private java.util.Map<String,RelationshipModel>  mapRelationship;
 	private java.util.Map<String, RuleModel>         mapRules;
 	private java.util.Map<String, GroupModel>        mapGroups;
-	private java.util.Map<String, SearchModelGoal>   mapSearchGoal;
-	private java.util.Map<String, SearchModelRules>  mapSearchRules;
-	private java.util.Map<String, SearchModelGroup>  mapSearchGroups;	
+	
+	private transient java.util.Map<String, SearchModelGoal>   mapSearchGoal;
+	private transient java.util.Map<String, SearchModelRules>  mapSearchRules;
+	private transient java.util.Map<String, SearchModelGroup>  mapSearchGroups;	
 	
 	private static UMPSTProject umpstProject;
 	

@@ -7,20 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JList;
-
+import unbbayes.model.umpst.ObjectModel;
 import unbbayes.model.umpst.groups.GroupModel;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
 import unbbayes.model.umpst.rules.RuleModel;
 
-public class EntityModel {
-	
-	private String id;
-	private String entityName;
-	private String author;
-	private String date;
-	private String comments;
+public class EntityModel extends ObjectModel{
 	
 	private Map<String,AttributeModel> mapAtributes  = new HashMap<String, AttributeModel>();
 	private List<GoalModel> backtrackingGoalsList;
@@ -35,11 +28,7 @@ public class EntityModel {
 			String author, 
 			String date) {
 		
-		this.id           = id;
-		this.entityName   = entityName;
-		this.comments     = comments;
-		this.author       = author;
-		this.date         = date;
+		super(id, entityName, comments, author, date); 
 		
 		backtrackingGoalsList = new ArrayList<GoalModel>();
 		backtrackingHypothesisList = new ArrayList<HypothesisModel>();
@@ -150,89 +139,8 @@ public class EntityModel {
 //		this.backtrackingGoalsList = backtracking;
 //	}
 
-
-	/**
-	 * @return the id
-	 */
-	public String getId() {
-		return id;
-	}
-
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(String id) {
-		this.id = id;
-	}
-
-
-	/**
-	 * @return the entityName
-	 */
-	public String getEntityName() {
-		return entityName;
-	}
-
-
-	/**
-	 * @param entityName the entityName to set
-	 */
-	public void setEntityName(String entityName) {
-		this.entityName = entityName;
-	}
-
-
-	/**
-	 * @return the comments
-	 */
-	public String getComments() {
-		return comments;
-	}
-
-
-	/**
-	 * @param comments the comments to set
-	 */
-	public void setComments(String comments) {
-		this.comments = comments;
-	}
-
-
-	/**
-	 * @return the author
-	 */
-	public String getAuthor() {
-		return author;
-	}
-
-
-	/**
-	 * @param author the author to set
-	 */
-	public void setAuthor(String author) {
-		this.author = author;
-	}
-
-
-	/**
-	 * @return the date
-	 */
-	public String getDate() {
-		return date;
-	}
-
-
-	/**
-	 * @param date the date to set
-	 */
-	public void setDate(String date) {
-		this.date = date;
-		
-	}
-
 	public String toString(){
-		return this.entityName; 
+		return getName(); 
 	}
 	
 	

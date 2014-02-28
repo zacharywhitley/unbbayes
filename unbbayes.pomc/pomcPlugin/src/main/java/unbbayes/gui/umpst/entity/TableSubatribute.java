@@ -90,7 +90,7 @@ public class TableSubatribute extends IUMPSTPanel{
 			for (String key: sortedKeys){
 
 				data[i][0] = atributeRelated.getMapSubAtributes().get(key).getId();
-				data[i][1] = atributeRelated.getMapSubAtributes().get(key).getAtributeName();
+				data[i][1] = atributeRelated.getMapSubAtributes().get(key).getName();
 				data[i][2] = "";
 				data[i][3] = "";
 				data[i][4] = "";

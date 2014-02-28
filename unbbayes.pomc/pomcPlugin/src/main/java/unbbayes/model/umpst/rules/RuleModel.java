@@ -5,22 +5,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import unbbayes.model.umpst.ObjectModel;
 import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.groups.GroupModel;
 
 
-public class RuleModel {
+public class RuleModel extends ObjectModel{
 	
-	private String id;
-	private String rulesName;
 	private String ruleType;
-	private String author;
-	private String date;
-	private String comments;
-
-
+	
 	private List<EntityModel>       entityList;
 	private List<AttributeModel>    attributeList;
 	private List<RelationshipModel> relationshipList;	
@@ -33,12 +28,9 @@ public class RuleModel {
 			String author, 
 			String date) {
 		
-		this.id=id;
-		this.rulesName = rulesName;
+		super(id, rulesName, comments, author, date); 
+		
 		this.ruleType = ruleType;
-		this.comments = comments;
-		this.author = author;
-		this.date = date;
 		
 		entityList       = new ArrayList<EntityModel>(); 
 		attributeList    = new ArrayList<AttributeModel>(); 
@@ -93,35 +85,6 @@ public class RuleModel {
     public void removeGroup(GroupModel group){
     	this.groupSet.remove(group); 
     }
-    
-    
-	/**
-	 * @return the id
-	 */
-	public String getId() {
-		return id;
-	}
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	/**
-	 * @return the rulesName
-	 */
-	public String getRulesName() {
-		return rulesName;
-	}
-
-	/**
-	 * @param rulesName the rulesName to set
-	 */
-	public void setRulesName(String rulesName) {
-		this.rulesName = rulesName;
-	}
 
 	/**
 	 * @return the ruleType
@@ -136,51 +99,5 @@ public class RuleModel {
 	public void setRuleType(String ruleType) {
 		this.ruleType = ruleType;
 	}
-
-	/**
-	 * @return the comments
-	 */
-	public String getComments() {
-		return comments;
-	}
-
-	/**
-	 * @param comments the comments to set
-	 */
-	public void setComments(String comments) {
-		this.comments = comments;
-	}
-
-	/**
-	 * @return the author
-	 */
-	public String getAuthor() {
-		return author;
-	}
-
-	/**
-	 * @param author the author to set
-	 */
-	public void setAuthor(String author) {
-		this.author = author;
-	}
-
-	/**
-	 * @return the date
-	 */
-	public String getDate() {
-		return date;
-	}
-
-	/**
-	 * @param date the date to set
-	 */
-	public void setDate(String date) {
-		this.date = date;
-	}
-	
-	
-	
-
 
 }

@@ -90,7 +90,7 @@ public class TableRelationship extends IUMPSTPanel{
 			for (String key: sortedKeys){
 		
 				data[i][0] =getUmpstProject().getMapRelationship().get(key).getId();
-				data[i][1] = getUmpstProject().getMapRelationship().get(key).getRelationshipName();
+				data[i][1] = getUmpstProject().getMapRelationship().get(key).getName();
 				data[i][2] = "";
 				data[i][3] = "";
 				i++;

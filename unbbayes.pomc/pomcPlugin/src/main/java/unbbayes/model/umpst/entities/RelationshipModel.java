@@ -5,18 +5,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import unbbayes.model.umpst.ObjectModel;
 import unbbayes.model.umpst.groups.GroupModel;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
 import unbbayes.model.umpst.rules.RuleModel;
 
 
-public class RelationshipModel {
-	
-	private String id;
-	private String comments;
-	private String author;
-	private String date;
+public class RelationshipModel extends ObjectModel{
 	
 	private List<EntityModel>     entityList;
 	private List<AttributeModel>  atributeList;
@@ -26,7 +22,6 @@ public class RelationshipModel {
 	private Set<RuleModel> fowardtrackingRulesSet;
 	private Set<GroupModel> fowardtrackingGroupsSet;
 
-	
 	public RelationshipModel(String id,
 			String relationshipName, 
 			String comments,
@@ -39,11 +34,8 @@ public class RelationshipModel {
 			Set<RuleModel> fowardtrackingRules,
 			Set<GroupModel> fowardtrackingGroups) {
 		
-		this.id=id;
-		this.relationshipName = relationshipName;
-		this.comments = comments;
-		this.author = author;
-		this.date = date;
+		super(id, relationshipName, comments, author, date); 
+		
 		this.atributeList=backtrackingAtribute;
 		
 		if(backtrackingAtribute==null){
@@ -129,20 +121,6 @@ public class RelationshipModel {
 	}
 
 	/**
-	 * @return the id
-	 */
-	public String getId() {
-		return id;
-	}
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(String id) {
-		this.id = id;
-	}
-
-	/**
 	 * @return the backtrackingEntity
 	 */
 	public List<EntityModel> getBacktrackingEntityList() {
@@ -171,71 +149,8 @@ public class RelationshipModel {
 		this.atributeList = backtrackingAtribute;
 	}
 
-	private String relationshipName;
-	/**
-	 * @return the relationshipName
-	 */
-	public String getRelationshipName() {
-		return relationshipName;
-	}
-
-	/**
-	 * @param relationshipName the relationshipName to set
-	 */
-	public void setRelationshipName(String relationshipName) {
-		this.relationshipName = relationshipName;
-	}
-
-
-	/**
-	 * @return the comments
-	 */
-	public String getComments() {
-		return comments;
-	}
-
-
-	/**
-	 * @param comments the comments to set
-	 */
-	public void setComments(String comments) {
-		this.comments = comments;
-	}
-
-
-	/**
-	 * @return the author
-	 */
-	public String getAuthor() {
-		return author;
-	}
-
-
-	/**
-	 * @param author the author to set
-	 */
-	public void setAuthor(String author) {
-		this.author = author;
-	}
-
-
-	/**
-	 * @return the date
-	 */
-	public String getDate() {
-		return date;
-	}
-
-
-	/**
-	 * @param date the date to set
-	 */
-	public void setDate(String date) {
-		this.date = date;
-	}
-
 	public String toString(){
-		return this.relationshipName; 
+		return getName();
 	}
 	
 }

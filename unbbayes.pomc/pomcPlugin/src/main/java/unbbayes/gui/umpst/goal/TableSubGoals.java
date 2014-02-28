@@ -98,7 +98,7 @@ public class TableSubGoals extends IUMPSTPanel{
 			for (String key: sortedKeys){
 		
 				data[i][COLUMN_IDTF] = goalRelated.getSubgoals().get(key).getId();
-				data[i][COLUMN_DESC] = goalRelated.getSubgoals().get(key).getGoalName();
+				data[i][COLUMN_DESC] = goalRelated.getSubgoals().get(key).getName();
 				data[i][COLUMN_BTN1] = "";
 				data[i][COLUMN_BTN2] = "";
 				data[i][COLUMN_BTN3] = "";
@@ -274,7 +274,7 @@ public class TableSubGoals extends IUMPSTPanel{
     public void deleteFromSearchMap(GoalModel goalToBeDeleted){
     	Set<GoalModel> aux = new HashSet<GoalModel>();
 		GoalModel goalBeta;
-		String[] strAux = goalToBeDeleted.getGoalName().split(" ");
+		String[] strAux = goalToBeDeleted.getName().split(" ");
 
 	    for (int i = 0; i < strAux.length; i++) {
     		if(getUmpstProject().getMapSearchGoal().get(strAux[i])!=null){

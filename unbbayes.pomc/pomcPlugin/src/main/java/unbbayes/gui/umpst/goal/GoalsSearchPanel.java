@@ -208,7 +208,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 			goal = it.next();  // No downcasting required.
 
 			data[i][0] = goal.getId();
-			data[i][1] = goal.getGoalName();			
+			data[i][1] = goal.getName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			data[i][4] = "";
@@ -241,7 +241,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 
 		for (String key: sortedKeys){
 			data[i][0] = getUmpstProject().getMapGoal().get(key).getId();
-			data[i][1] = getUmpstProject().getMapGoal().get(key).getGoalName();			
+			data[i][1] = getUmpstProject().getMapGoal().get(key).getName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			data[i][4] = "";

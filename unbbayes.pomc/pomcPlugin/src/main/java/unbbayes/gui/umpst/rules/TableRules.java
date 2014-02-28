@@ -142,7 +142,7 @@ public class TableRules extends IUMPSTPanel{
 							
 							for (String chave: sortedKeys){
 								dataDel[i][0] = getUmpstProject().getMapRules().get(chave).getId();						
-								dataDel[i][1] = getUmpstProject().getMapRules().get(chave).getRulesName();
+								dataDel[i][1] = getUmpstProject().getMapRules().get(chave).getName();
 								dataDel[i][2] = "";
 								dataDel[i][3] = "";
 								i++;
@@ -202,7 +202,7 @@ public class TableRules extends IUMPSTPanel{
     public void deleteFromSearchMap(RuleModel ruleToBeDeleted){
     	Set<RuleModel> aux = new HashSet<RuleModel>();
 		RuleModel rulesBeta;
-		String[] strAux= ruleToBeDeleted.getRulesName().split(" ");
+		String[] strAux= ruleToBeDeleted.getName().split(" ");
 
 	    for (int i = 0; i < strAux.length; i++) {
     		if(getUmpstProject().getMapSearchRules().get(strAux[i])!=null){

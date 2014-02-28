@@ -198,7 +198,7 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 							}
 							/************/
 
-							group.setNameName(mainPropertiesEditionPane.getTitleText());
+							group.setName(mainPropertiesEditionPane.getTitleText());
 							group.setComments(mainPropertiesEditionPane.getCommentsText());
 							group.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							group.setDate(mainPropertiesEditionPane.getDateText());
@@ -494,7 +494,7 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 
 		for (String key: sortedKeys){
 			dataFrame[i][0] = getUmpstProject().getMapEntity().get(key).getId();
-			dataFrame[i][1] = getUmpstProject().getMapEntity().get(key).getEntityName();			
+			dataFrame[i][1] = getUmpstProject().getMapEntity().get(key).getName();			
 			dataFrame[i][2] = "";
 			i++;
 		}
@@ -528,7 +528,7 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 				Set<String> keys = getUmpstProject().getMapEntity().keySet();
 				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				for (String keyAux : sortedKeys){
-					if (getUmpstProject().getMapEntity().get(keyAux).getEntityName().equals(key)){
+					if (getUmpstProject().getMapEntity().get(keyAux).getName().equals(key)){
 						getUmpstProject().getMapEntity().get(keyAux).getFowardTrackingGroups().add(group);
 					}
 				}
@@ -574,7 +574,7 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 
 		for (String key: sortedKeys){
 			dataFrame[i][0] = getUmpstProject().getMapAtribute().get(key).getId();
-			dataFrame[i][1] = getUmpstProject().getMapAtribute().get(key).getAtributeName();			
+			dataFrame[i][1] = getUmpstProject().getMapAtribute().get(key).getName();			
 			dataFrame[i][2] = "";
 			i++;
 		}
@@ -605,7 +605,7 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 				Set<String> keys = getUmpstProject().getMapAtribute().keySet();
 				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				for (String keyAux : sortedKeys){
-					if (getUmpstProject().getMapAtribute().get(keyAux).getAtributeName().equals(key)){
+					if (getUmpstProject().getMapAtribute().get(keyAux).getName().equals(key)){
 						getUmpstProject().getMapAtribute().get(keyAux).getFowardTrackingGroups().add(group);
 					}
 				}
@@ -651,7 +651,7 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 
 		for (String key: sortedKeys){
 			dataFrame[i][0] = getUmpstProject().getMapRelationship().get(key).getId();
-			dataFrame[i][1] = getUmpstProject().getMapRelationship().get(key).getRelationshipName();			
+			dataFrame[i][1] = getUmpstProject().getMapRelationship().get(key).getName();			
 			dataFrame[i][2] = "";
 			i++;
 		}
@@ -685,7 +685,7 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 				Set<String> keys = getUmpstProject().getMapRelationship().keySet();
 				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				for (String keyAux : sortedKeys){
-					if (getUmpstProject().getMapRelationship().get(keyAux).getRelationshipName().equals(key)){
+					if (getUmpstProject().getMapRelationship().get(keyAux).getName().equals(key)){
 						getUmpstProject().getMapRelationship().get(keyAux).getFowardtrackingGroups().add(group);
 					}
 				}

@@ -138,7 +138,7 @@ public class TableAtribute extends IUMPSTPanel{
 				if (atribute.getEntityRelated().contains(entityRelated)){
 					if (!set.contains(atribute)){
 						data[i][0] = atribute.getId();
-						data[i][1] = atribute.getAtributeName();
+						data[i][1] = atribute.getName();
 
 						data[i][2] = "";
 						data[i][3] = "";
@@ -159,7 +159,7 @@ public class TableAtribute extends IUMPSTPanel{
 
 								if (!set.contains(atributeSub)){
 									data[i][0] = atributeSub.getId();
-									data[i][1] = atributeSub.getAtributeName();
+									data[i][1] = atributeSub.getName();
 
 									data[i][2] = "";
 									data[i][3] = "";
