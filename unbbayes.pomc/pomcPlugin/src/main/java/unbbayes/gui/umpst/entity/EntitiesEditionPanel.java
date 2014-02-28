@@ -459,7 +459,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 					controller.removeGoalFromEntityBackTrackingList(entity, goal); 
 					
 					UmpstModule pai = getFatherPanel();
-					changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entity));
+					changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().createEntitiesPanel(entity));
 				}
 			});
 			
@@ -538,7 +538,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 					controller.removeHypothesisFromEntityBackTrackingList(entity, hypothesis); 
 					
 					UmpstModule pai = getFatherPanel();
-					changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entity));
+					changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().createEntitiesPanel(entity));
 				}
 			});
 			
@@ -851,7 +851,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 		//PRECISO ATUALIZAR O GOAL RELATED DA HIPOTESE QUE ESTA NO MAPA GERAL
 
 		UmpstModule pai = getFatherPanel();
-		changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entity));    			
+		changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().createEntitiesPanel(entity));    			
 	}
 
 	public void createFrameGoal(){
@@ -906,7 +906,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 				controller.addGoalToEntityBackTrackingList(entity, goal);
 				
 				UmpstModule pai = getFatherPanel();
-				changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entity));
+				changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().createEntitiesPanel(entity));
 
 			}
 		});
@@ -975,7 +975,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 				
 				controller.addHypothesisToEntityBackTrackingList(entity, hypothesis);
 								UmpstModule pai = getFatherPanel();
-				changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().getEntitiesPanel(entity));
+				changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().createEntitiesPanel(entity));
 
 			}
 		});

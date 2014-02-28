@@ -33,7 +33,7 @@ public class MainPropertiesEditionPane {
 
 	private JTextField authorText;
 	private JTextField dateText;
-	private JTextArea goalText;
+	private JTextArea nameText;
 	private JTextArea commentsText;
 	
 	private MaskFormatter maskFormatter;
@@ -102,10 +102,8 @@ public class MainPropertiesEditionPane {
 		c.gridx = 0; 
 		c.gridy = 4;
 		c.gridwidth=1;
-
-		JLabel jlAuthorName = new JLabel("Author Name: "); 
 		
-		panel.add(jlAuthorName, c);
+		panel.add(new JLabel("Author Name: "), c);
 
 		c.gridx = 0; 
 		c.gridy = 5;
@@ -117,24 +115,28 @@ public class MainPropertiesEditionPane {
 		c.gridwidth=1;
 		panel.add( new JLabel("Comments: "), c);
 
-		goalText = new JTextArea(2,20);
-		goalText.setLineWrap(true); 
-		goalText.setWrapStyleWord(true);
-		goalText.setBorder(BorderFactory.createEtchedBorder());
-		goalText.setText(""); 
+		nameText = new JTextArea(2,20);
+		nameText.setLineWrap(true); 
+		nameText.setWrapStyleWord(true);
+		nameText.setBorder(BorderFactory.createEtchedBorder());
+		nameText.setText(""); 
 
+		JScrollPane scroolName  = new JScrollPane(nameText); 
+		
 		c.gridx = 1; 
 		c.gridy = 3;
 		c.gridwidth=2;
 
-		panel.add( goalText, c);
+		panel.add( scroolName, c);
 
 		authorText = new JTextField(20);
+		
 		
 		c.gridx = 1; 
 		c.gridy = 4;
 		c.gridwidth=2;
-		panel.add( authorText, c);c.gridwidth=2;
+		
+		panel.add( authorText, c);
 
 		try {
 			maskFormatter = new MaskFormatter ("##/##/####");
@@ -149,7 +151,7 @@ public class MainPropertiesEditionPane {
 		c.gridx    = 1; 
 		c.gridy    = 5;
 		c.gridwidth= 2;
-		panel.add( dateText, c);c.gridwidth=2;
+		panel.add( dateText, c);
 
 
 		commentsText = new JTextArea(4,20);
@@ -249,11 +251,11 @@ public class MainPropertiesEditionPane {
 	}
 
 	public String getTitleText() {
-		return goalText.getText();
+		return nameText.getText();
 	}
 
 	public void setTitleText(String goalText) {
-		this.goalText.setText(goalText);
+		this.nameText.setText(goalText);
 	}
 
 	public String getCommentsText() {

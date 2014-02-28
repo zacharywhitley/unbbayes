@@ -55,9 +55,9 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
 		panel.setBackground(new Color(0x4169AA));
 		
-		panel.add(getLabelEntity());
+		panel.add(createLabelEntity());
 		panel.add(Box.createRigidArea(new Dimension(0,5)));
-		panel.add(getTextEntity());
+		panel.add(createTextEntity());
 		panel.add(Box.createRigidArea(new Dimension(0,5)));
 		panel.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
 
@@ -67,12 +67,12 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		buttonPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 10, 10));
 		buttonPane.add(Box.createHorizontalGlue());
 		
-		buttonPane.add(getButtonSearch());
-		buttonPane.add(getButtonCancel());
+		buttonPane.add(createButtonSearch());
+		buttonPane.add(createButtonCancel());
 		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
-		buttonPane.add(getButtonAddEntity());
+		buttonPane.add(createButtonAddEntity());
 		buttonPane.add(Box.createRigidArea(new Dimension(10, 0)));
-		buttonPane.add(getButtonRelationship());
+		buttonPane.add(createButtonRelationship());
 		
 		this.add(panel, BorderLayout.CENTER);
 		this.add(buttonPane, BorderLayout.PAGE_END);
@@ -81,7 +81,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		
 		}
 
-	private Component getButtonRelationship() {
+	private Component createButtonRelationship() {
 		if (buttonAddRelationship == null){
 			buttonAddRelationship = new JButton (IconController.getInstance().getRelationshipIcon());
 			buttonAddRelationship.setToolTipText(resource.getString("hpAddRelationship"));
@@ -101,7 +101,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	/**
 	 * @return the buttonAddEntity
 	 */
-	public JButton getButtonAddEntity() {
+	public JButton createButtonAddEntity() {
 		
 		if (buttonAddEntity == null){
 			buttonAddEntity = new JButton (IconController.getInstance().getAddIconP());
@@ -110,7 +110,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 			buttonAddEntity.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					changePanel(getEntitiesPanel(null));
+					changePanel(createEntitiesPanel(null));
 				}
 			});			
 		}
@@ -121,7 +121,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	/**
 	 * @return the buttonCancel
 	 */
-	public JButton getButtonCancel() {
+	public JButton createButtonCancel() {
 		
 		if (buttonCancel == null){
 			buttonCancel = new JButton (IconController.getInstance().getEditClear());
@@ -144,7 +144,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	/**
 	 * @return the labelEntity
 	 */
-	public JLabel getLabelEntity() {
+	public JLabel createLabelEntity() {
 		
 		if(labelEntity == null){
 			labelEntity = new JLabel("Search for a entity: ");
@@ -158,7 +158,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	/**
 	 * @return the buttonSearch
 	 */
-	public JButton getButtonSearch() {
+	public JButton createButtonSearch() {
 		
 		if(buttonSearch == null){
 			buttonSearch = new JButton(IconController.getInstance().getSearchIcon());
@@ -184,7 +184,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	/**
 	 * @return the textEntity
 	 */
-	public JTextField getTextEntity() {
+	public JTextField createTextEntity() {
 		
 		if (textEntity == null){
 			textEntity = new JTextField(10);
@@ -271,7 +271,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		    entitiesTable.repaint();
 	    }
 	
-	public EntitiesEditionPanel getEntitiesPanel(EntityModel entity){
+	public EntitiesEditionPanel createEntitiesPanel(EntityModel entity){
 		
 		EntitiesEditionPanel ret = new EntitiesEditionPanel(getFatherPanel(),getUmpstProject(),entity);
 		

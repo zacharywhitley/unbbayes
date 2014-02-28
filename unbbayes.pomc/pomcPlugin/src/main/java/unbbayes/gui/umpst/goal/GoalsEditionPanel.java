@@ -218,7 +218,10 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 				}
 				// -> Update Goal
 				else{
-					if( JOptionPane.showConfirmDialog(null, "Do you want to update this Goal?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
+					if( JOptionPane.showConfirmDialog(null, 
+							"Do you want to update this Goal?", 
+							"UnBBayes", 
+							JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 
 						try{
 							/**Cleaning Search Map*/
@@ -724,7 +727,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 						data[i][0] = "Group";
 						data[i][1] = "Indirect";
-						data[i][2] = group.getGroupName();
+						data[i][2] = group.getName();
 						i++;
 					}
 				}
@@ -767,7 +770,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 				data[i][0] = "Group";
 				data[i][1] = "Direct";
-				data[i][2] = group.getGroupName();
+				data[i][2] = group.getName();
 
 				i++;
 			}

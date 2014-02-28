@@ -190,13 +190,11 @@ public class RulesEditionPanel extends IUMPSTPanel {
 									"Rule's name is empty");
 						}
 						else{
-						    RuleModel ruleAdd = updateMapRules();					    
-						    updateMapSearch(ruleAdd);
+						    RuleModel newRule = updateMapRules();					    
+						    updateMapSearch(newRule);
 							updateTableRules();
-						  	JOptionPane.showMessageDialog(null, 
-						  			"Rule successfully added",
-						  			null, 
-						  			JOptionPane.INFORMATION_MESSAGE);
+							
+							changePanel(new RulesEditionPanel(getFatherPanel(),getUmpstProject(),newRule));
 						}
 						
 					} catch (Exception e1) {
@@ -373,7 +371,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		}
    
 	    UmpstModule pai = getFatherPanel();
-	    changePanel(pai.getMenuPanel());
+//	    changePanel(pai.getMenuPanel());
 	    
 	    TableRules rulesTable = pai.getMenuPanel().getRulesPane().getRulesTable();
 	    JTable table = rulesTable.createTable(columnNames,data);
@@ -742,7 +740,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/add.gif") );
+				button.setIcon(iconController.getAddIconP());
 	
 			}
 		});
@@ -808,8 +806,6 @@ public class RulesEditionPanel extends IUMPSTPanel {
 			i++;
 		}
 		
-		
-		
 		DefaultTableModel model = new DefaultTableModel(dataFrame,columnNames);
 		JTable table = new JTable(model);
 		
@@ -817,7 +813,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(new ImageIcon("images/add.gif") );
+				button.setIcon(iconController.getAddIconP());
 	
 			}
 		});

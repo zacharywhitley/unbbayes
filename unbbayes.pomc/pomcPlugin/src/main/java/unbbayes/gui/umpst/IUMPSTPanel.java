@@ -27,7 +27,6 @@ public abstract class IUMPSTPanel extends JPanel {
 	}
 	
 	public IUMPSTPanel(UmpstModule fatherPanel) {
-		// TODO Auto-generated constructor stub
 		this.fatherPanel = fatherPanel;
 	}
 
@@ -35,7 +34,6 @@ public abstract class IUMPSTPanel extends JPanel {
 		super(gridLayout);
 		this.fatherPanel = fatherPanel;
 	}
-		
 
 	/**
 	 * @return the umpstProject

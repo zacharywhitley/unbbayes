@@ -250,6 +250,8 @@ public class AttributeModel {
 		this.father = father;
 	}
 	
-	
+	public String toString(){
+		return this.getAtributeName(); 
+	}
 	
 }

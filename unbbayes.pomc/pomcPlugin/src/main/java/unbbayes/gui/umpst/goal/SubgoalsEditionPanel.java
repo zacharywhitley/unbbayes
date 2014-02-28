@@ -476,7 +476,7 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 
 			for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
 				group = it.next();
-				data[i][0] = group.getGroupName();
+				data[i][0] = group.getName();
 				data[i][1] = "Group";
 				data[i][2] = "Direct";
 				i++;

@@ -218,7 +218,7 @@ public class GroupsSearchPanel extends IUMPSTPanel {
     	     group = it.next();  // No downcasting required.
     	     
     	 	data[i][0] = group.getId();
-			data[i][1] = group.getGroupName();			
+			data[i][1] = group.getName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			i++;
@@ -252,7 +252,7 @@ public class GroupsSearchPanel extends IUMPSTPanel {
 		
 		for (String key: sortedKeys){
 			data[i][0] = getUmpstProject().getMapGroups().get(key).getId();
-			data[i][1] = getUmpstProject().getMapGroups().get(key).getGroupName();			
+			data[i][1] = getUmpstProject().getMapGroups().get(key).getName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			i++;

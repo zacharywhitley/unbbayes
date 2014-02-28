@@ -144,7 +144,7 @@ public class TableGroups extends IUMPSTPanel{
 							
 							for (String chave: sortedKeys){
 								dataDel[i][0] = getUmpstProject().getMapGroups().get(chave).getId();						
-								dataDel[i][1] = getUmpstProject().getMapGroups().get(chave).getGroupName();
+								dataDel[i][1] = getUmpstProject().getMapGroups().get(chave).getName();
 								dataDel[i][2] = "";
 								dataDel[i][3] = "";
 								i++;
@@ -204,7 +204,7 @@ public class TableGroups extends IUMPSTPanel{
     public void deleteFromSearchMap(GroupModel groupToBeDeleted){
     	Set<GroupModel> aux = new HashSet<GroupModel>();
 		GroupModel groupBeta;
-		String[] strAux= groupToBeDeleted.getGroupName().split(" ");
+		String[] strAux= groupToBeDeleted.getName().split(" ");
 
 	    for (int i = 0; i < strAux.length; i++) {
     		if(getUmpstProject().getMapSearchGroups().get(strAux[i])!=null){

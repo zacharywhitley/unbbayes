@@ -59,6 +59,7 @@ public class MainPanel extends IUMPSTPanel{
 		private EntitiesMainPanel entitiesPane;
 		private RulesMainPanel rulesPane;
 		private GroupsMainPanel groupsPane;
+		
 		private File loadedFile;
 		private File newFile;
 

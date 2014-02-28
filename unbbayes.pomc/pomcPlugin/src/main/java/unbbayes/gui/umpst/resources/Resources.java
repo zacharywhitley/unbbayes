@@ -83,14 +83,23 @@ public class Resources extends GuiResources {
 		
 		{"hpSaveEntity" , "Save entity"},
 		{"hpUpdateEntity" , "Update entity"},
-		{"hpAddAttribute" , "Add atribute"},
-		{"hpAddSubAttribute" , "Add sub atribute"},
-		{"hpReuseAttribute" , "Add existent attribute"},
+		
 		{"hpSaveAttribute" , "Save attribute"},
 		{"hpUpdateAttribute" , "Update attribute"},
 		
 		{"hpSaveRule" , "Save rule"},
 		{"hpUpdateRule" , "Update rule"},
+		
+		{"hpSaveGroup" , "Save group"},
+		{"hpUpdateGroup" , "Update group"},
+		
+		{"hpAddAttribute" , "Add atribute"},
+		{"hpAddSubAttribute" , "Add sub atribute"},
+		{"hpReuseAttribute" , "Add existent attribute"},
+		
+		{"hpAddBackEntity" , "Add backtracking entity"},
+		{"hpAddBackAttribute" , "Add backtracking attribute"},
+		{"hpAddBackRelationship" , "Add backtracking relationship"},
 		
 		{"HpSelectSubHipothesis" , "Select one sub hipothesis"},
 		{"HpSelectHipothesis" , "Select one hipothesis"},
