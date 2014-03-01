@@ -25,7 +25,6 @@ import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.groups.GroupModel;
-import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 
@@ -147,8 +146,7 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 							JOptionPane.showMessageDialog(null, "Subgoals details are empty!");
 						}
 						else{
-							GoalModel goalAdd = updateMapGoal();					    
-							updateMapSearch(goalAdd);
+							GoalModel goalAdd = updateMapGoal();		
 							updateTableGoals(goalAdd);
 //							JOptionPane.showMessageDialog(null, "Subgoal successfully added",null, JOptionPane.INFORMATION_MESSAGE);
 						}
@@ -167,17 +165,6 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 							GoalModel goalBeta;
 							String[] strAux = goal.getName().split(" ");
 
-							for (int i = 0; i < strAux.length; i++) {
-								if(getUmpstProject().getMapSearchGoal().get(strAux[i])!=null){
-									getUmpstProject().getMapSearchGoal().get(strAux[i]).getGoalsRelated().remove(goal);
-									aux = getUmpstProject().getMapSearchGoal().get(strAux[i]).getGoalsRelated();
-									for (Iterator<GoalModel> it = aux.iterator(); it.hasNext(); ) {
-										goalBeta = it.next();
-									}
-								}
-
-
-							}
 							/************/
 
 							goal.setName(mainPropertiesEditionPane.getTitleText());
@@ -185,8 +172,6 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 							goal.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							goal.setDate(mainPropertiesEditionPane.getDateText());
 
-
-							updateMapSearch(goal);
 							updateTableGoals(goal);
 
 //							JOptionPane.showMessageDialog(null, "Goal successfully updated",null, JOptionPane.INFORMATION_MESSAGE);	
@@ -205,7 +190,7 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 		buttonBack.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-				changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalFather));	
+				changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalFather));	
 
 			}
 		});
@@ -337,9 +322,9 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 		}
 
 		UmpstModule pai = getFatherPanel();
-		changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalFather));
+		changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalFather));
 
-		TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
+		TableGoals goalsTable = pai.getMenuPanel().getGoalsPane().getGoalsTable();
 		JTable table = goalsTable.createTable(columnNames,data);
 
 		goalsTable.getScrollPanePergunta().setViewportView(table);
@@ -402,31 +387,6 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 		add(panel,constraints);
 		
 		return panel; 
-
-	}
-
-	public void updateMapSearch(GoalModel goalAdd){
-		/**Upating searchPanel*/
-
-		String[] strAux = {};
-		strAux = goalAdd.getName().split(" ");
-		Set<GoalModel> goalSetSearch = new HashSet<GoalModel>();
-
-
-		for (int i = 0; i < strAux.length; i++) {
-			if(!strAux[i].equals(" ")){
-				if(getUmpstProject().getMapSearchGoal().get(strAux[i])==null){
-					goalSetSearch.add(goalAdd);
-					SearchModelGoal searchModel = new SearchModelGoal(strAux[i], goalSetSearch);
-					getUmpstProject().getMapSearchGoal().put(searchModel.getKeyWord(), searchModel);
-				}
-				else{
-					getUmpstProject().getMapSearchGoal().get(strAux[i]).getGoalsRelated().add(goalAdd);
-				}
-			}
-		}
-
-		/************/		    
 
 	}
 

@@ -8,7 +8,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
@@ -39,7 +38,6 @@ import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
-import unbbayes.model.umpst.project.SearchModelRules;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.rules.RuleModel;
 import unbbayes.util.CommonDataUtil;
@@ -190,8 +188,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 									"Rule's name is empty");
 						}
 						else{
-						    RuleModel newRule = updateMapRules();					    
-						    updateMapSearch(newRule);
+						    RuleModel newRule = updateMapRules();		
 							updateTableRules();
 							
 							changePanel(new RulesEditionPanel(getFatherPanel(),getUmpstProject(),newRule));
@@ -219,17 +216,6 @@ public class RulesEditionPanel extends IUMPSTPanel {
 							RuleModel rulesBeta;
 							String[] strAux=rule.getName().split(" ");
 
-						    for (int i = 0; i < strAux.length; i++) {
-					    		if(getUmpstProject().getMapSearchRules().get(strAux[i])!=null){
-					    			getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated().remove(rule);
-					    			aux = getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated();
-					    	    	for (Iterator<RuleModel> it = aux.iterator(); it.hasNext(); ) {
-					    	    		rulesBeta = it.next();
-					    	   		}
-					    		}
-					    		
-						    	
-						    }
 						    /************/
 							
 							rule.setName(mainPropertiesEditionPane.getTitleText());
@@ -238,11 +224,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 							rule.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							rule.setDate(mainPropertiesEditionPane.getDateText());
 							
-						
-							updateMapSearch(rule);
-							//updateBacktracking(rule);
 							updateTableRules();
-					
 							
 							JOptionPane.showMessageDialog(null, 
 									"Rule successfully updated",
@@ -381,29 +363,6 @@ public class RulesEditionPanel extends IUMPSTPanel {
 	    rulesTable.getScrollPanePergunta().repaint();
 	    rulesTable.updateUI();
 	    rulesTable.repaint();
-    }
-
-    public void updateMapSearch(RuleModel ruleAdd){
-	    /**Upating searchPanel*/
-	    
-	    String[] strAux = {};
-	    strAux = ruleAdd.getName().split(" ");
-	    Set<RuleModel> ruleSetSearch = new HashSet<RuleModel>();
-
-	    
-	    for (int i = 0; i < strAux.length; i++) {
-	    	if(!strAux[i].equals(" ")){
-	    		if(getUmpstProject().getMapSearchRules().get(strAux[i])==null){
-	    			ruleSetSearch.add(ruleAdd);
-	    			SearchModelRules searchModel = new SearchModelRules(strAux[i], ruleSetSearch);
-	    			getUmpstProject().getMapSearchRules().put(searchModel.getKeyWord(), searchModel);
-	    		}
-	    		else{
-	    			getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated().add(ruleAdd);
-	    		}
-	    	}
-	    }    
-
     }
     
 //    public void createTrackingPanel(){

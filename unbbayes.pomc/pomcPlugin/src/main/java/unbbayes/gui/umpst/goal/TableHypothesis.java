@@ -309,7 +309,7 @@ public class TableHypothesis extends IUMPSTPanel{
 
 							
 							UmpstModule pai = getFatherPanel();
-						    changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
+						    changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
 							 
 							 JTable table = createTable();
 							 

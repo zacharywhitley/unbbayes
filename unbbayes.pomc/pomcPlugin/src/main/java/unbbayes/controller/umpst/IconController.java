@@ -45,6 +45,8 @@ public class IconController extends unbbayes.controller.IconController {
 	protected ImageIcon cicleAttributeIcon; 
 	protected ImageIcon cicleRelationshipIcon; 
 	
+	protected ImageIcon cicleGoalPIcon; 
+	
 	public static IconController getInstance() {
 		if (singleton == null) {
 			singleton = new IconController();
@@ -253,6 +255,19 @@ public class IconController extends unbbayes.controller.IconController {
 			return cicleGoalIcon;
 		}
 	}
+	
+	public ImageIcon getCicleGoalPIcon() {
+		if (cicleGoalPIcon != null) {
+			return cicleGoalPIcon;
+		} else {
+			cicleGoalPIcon = new ImageIcon(getClass().getResource(
+					"/icons/circle_blue_goal-P.png"));
+			return cicleGoalPIcon;
+		}
+	}
+	
+	
+	
 	
 	public ImageIcon getCicleHypothesisIcon() {
 		if (cicleHypothesisIcon != null) {

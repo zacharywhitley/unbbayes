@@ -37,7 +37,6 @@ import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.groups.GroupModel;
-import unbbayes.model.umpst.project.SearchModelGoal;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.requirements.HypothesisModel;
@@ -206,13 +205,12 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 						JOptionPane.showMessageDialog(null, resource.getString("ErGoalDescriptionEmpty"));
 					}
 					else{
-						GoalModel goalAdd = updateMapGoal();					    
-						updateMapSearch(goalAdd);
+						GoalModel goalAdd = updateMapGoal();		
 						
 						TableGoals tableGoals = updateTableGoals(goalAdd);
 						
 						UmpstModule pai = getFatherPanel();
-						changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalAdd));	
+						changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalAdd));	
 						//						JOptionPane.showMessageDialog(null, "Goal successfully added",null, JOptionPane.INFORMATION_MESSAGE);
 					}
 				}
@@ -229,15 +227,6 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 							GoalModel goalBeta;
 							String[] strAux=goal.getName().split(" ");
 
-							for (int i = 0; i < strAux.length; i++) {
-								if(getUmpstProject().getMapSearchGoal().get(strAux[i])!=null){
-									getUmpstProject().getMapSearchGoal().get(strAux[i]).getGoalsRelated().remove(goal);
-									aux = getUmpstProject().getMapSearchGoal().get(strAux[i]).getGoalsRelated();
-									for (Iterator<GoalModel> it = aux.iterator(); it.hasNext(); ) {
-										goalBeta = it.next();
-									}
-								}
-							}
 							/************/
 
 							goal.setName(mainPropertiesEditionPane.getTitleText());
@@ -245,8 +234,6 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 							goal.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							goal.setDate(mainPropertiesEditionPane.getDateText());
 
-
-							updateMapSearch(goal);
 							updateTableGoals(goal);
 
 							//							JOptionPane.showMessageDialog(null, "Goal successfully updated",null, JOptionPane.INFORMATION_MESSAGE);	
@@ -282,7 +269,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 					TableGoals tableGoals = updateTableGoals(goal);
 					changeToTableGoals(tableGoals); 
 				} else{
-					changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalFather));	
+					changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalFather));	
 				}
 			}
 		});
@@ -425,7 +412,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 		}
 
 		UmpstModule pai = getFatherPanel();
-		TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
+		TableGoals goalsTable = pai.getMenuPanel().getGoalsPane().getGoalsTable();
 		goalsTable.createTable(columnNames,data);
 		
 		return goalsTable; 
@@ -548,34 +535,21 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 	}
 
-	public void updateMapSearch(GoalModel goalAdd){
-		/**Upating searchPanel*/
-
-		String[] strAux = {};
-		
-		strAux = goalAdd.getName().split(" ");
-		
-		Set<GoalModel> goalSetSearch = new HashSet<GoalModel>();
-
-		for (int i = 0; i < strAux.length; i++) {
-			if(!strAux[i].equals(" ")){
-				if(getUmpstProject().getMapSearchGoal().get(strAux[i])==null){
-					goalSetSearch.add(goalAdd);
-					SearchModelGoal searchModel = new SearchModelGoal(strAux[i], goalSetSearch);
-					getUmpstProject().getMapSearchGoal().put(searchModel.getKeyWord(), searchModel);
-				}
-				else{
-					getUmpstProject().getMapSearchGoal().get(strAux[i]).getGoalsRelated().add(goalAdd);
-				}
-			}
-		}	    
-	}
-
 	public JScrollPane  createTraceabilityTable() {
 
 		int i = 0;
 
 		//All this magic only for calculate the number of lines... 
+		
+		//--------- Traceability table --------------
+		//Entities (F) 
+		//   Rules
+		//   Atributes
+		//   Relationship
+		//   Groups
+		//Subgoals
+		//Hypothesis
+		//Groups
 
 		if ( (goal != null ) && (goal.getFowardTrackingEntity() !=null) ){
 
@@ -654,20 +628,22 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 			}
 		}
 
-
 		//Allocate the array for table
-		Object[][] data = new Object[i+1][3];
+		final Object[][] data;
 
 		if (i < 30){
 			data = new Object[30][3];
+		}else{
+			data = new Object[i+1][3];
 		}
 
 		String[] columnNames = {
-				"Type",
-				"Traceability",
+				" ",
+				" ",
 				"Name"};
+		
+		//Agora sim... vai comecar a inserir os elementos... 
 		i=0;
-
 
 		if ( (goal!=null)&&(goal.getFowardTrackingEntity() !=null) ){
 			EntityModel entity;
@@ -678,7 +654,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 				data[i][0] = "Entity";
 				data[i][1] = "Direct";
-				data[i][2] = entity.getName();
+				data[i][2] = entity;
 
 				i++;
 				if (entity.getFowardTrackingRules()!=null){
@@ -689,7 +665,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 						data[i][0] = "Rule";
 						data[i][1] = "Indirect";
-						data[i][2] = rule.getName();
+						data[i][2] = rule;
 						i++;
 					}
 				}
@@ -702,7 +678,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 						data[i][0] = "Atribute";
 						data[i][1] = "Indirect";
-						data[i][2] = entity.getMapAtributes().get(keyAtribute).getName();
+						data[i][2] = entity.getMapAtributes().get(keyAtribute);
 						i++;
 					}
 				}
@@ -715,7 +691,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 						data[i][0] = "Relationship";
 						data[i][1] = "Indirect";
-						data[i][2] = relationship.getName();
+						data[i][2] = relationship;
 						i++;
 					}
 				}
@@ -727,7 +703,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 						data[i][0] = "Group";
 						data[i][1] = "Indirect";
-						data[i][2] = group.getName();
+						data[i][2] = group;
 						i++;
 					}
 				}
@@ -744,7 +720,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 				data[i][0] = "Goals";
 				data[i][1] = "Direct";
-				data[i][2] = goal.getSubgoals().get(key).getName();
+				data[i][2] = goal.getSubgoals().get(key);
 				i++;
 			}
 		}
@@ -756,7 +732,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 				data[i][0] = "Hypothesis";
 				data[i][1] = "Direct";
-				data[i][2] = goal.getMapHypothesis().get(key).getName();
+				data[i][2] = goal.getMapHypothesis().get(key);
 				i++;
 			}    	
 		}
@@ -770,12 +746,11 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 				data[i][0] = "Group";
 				data[i][1] = "Direct";
-				data[i][2] = group.getName();
+				data[i][2] = group;
 
 				i++;
 			}
 		}
-
 
 		DefaultTableModel tableModel = new DefaultTableModel(data, columnNames);
 		JTable table = new JTable(tableModel);
@@ -785,12 +760,35 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 		table.getColumnModel().getColumn(0).setMaxWidth(100); 
 		table.getColumnModel().getColumn(1).setMaxWidth(50); 
 		table.getColumnModel().getColumn(2).setMinWidth(1000); 
-
+		
+		
+//		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
+//		{
+//			public void customize(JButton button, int row, int column)
+//			{
+//				if(data[row][2] instanceof EntityModel){
+//					button.setIcon(iconController.getCicleGoalPIcon());
+//					button.setBackground(Color.WHITE); 
+//					button.setBorder(null); 
+//				}else{
+//					button.setBackground(Color.WHITE); 
+//					button.setBorder(null); 
+//				}
+//
+//			}
+//		});
+//
+//		TableColumn buttonColumn1 = table.getColumnModel().getColumn(0);
+//		buttonColumn1.setMaxWidth(28);
+//		buttonColumn1.setCellRenderer(buttonEdit);
+//		buttonColumn1.setCellEditor(buttonEdit);
+//		
+		table.setBackground(Color.WHITE); 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); 
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 
-		scrollPane.setBorder(BorderFactory.createTitledBorder("This Goal Traceability"));
+		scrollPane.setBorder(BorderFactory.createTitledBorder("Goal Traceability"));
 
 		return scrollPane; 
 
@@ -904,7 +902,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 		//PRECISO ATUALIZAR O GOAL RELATED DA HIPOTESE QUE ESTA NO MAPA GERAL
 
 		UmpstModule pai = getFatherPanel();
-		changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goal));    			
+		changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goal));    			
 	}
 
 
@@ -981,7 +979,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 		goal.getSubgoals().put(goalVinculated.getId(), goalVinculated);
 
 		UmpstModule pai = getFatherPanel();
-		changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goal));    			
+		changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goal));    			
 	}
 
 

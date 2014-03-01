@@ -125,14 +125,7 @@ public class TableRules extends IUMPSTPanel{
 							String key = data[row][0].toString();
 							RuleModel ruleToBeDeleted = getUmpstProject().getMapRules().get(key);
 							
-							/*Updating MapSearch*/
-							deleteFromSearchMap(ruleToBeDeleted);
-	
-							
-							
 							getUmpstProject().getMapRules().remove(ruleToBeDeleted.getId());
-							
-							
 							 
 							Object[][] dataDel = new Object[getUmpstProject().getMapRules().size()][4];
 							Integer i=0;
@@ -196,25 +189,6 @@ public class TableRules extends IUMPSTPanel{
             System.err.println("Couldn't find file: " + path);
             return null;
         }
-    }
-    
-  
-    public void deleteFromSearchMap(RuleModel ruleToBeDeleted){
-    	Set<RuleModel> aux = new HashSet<RuleModel>();
-		RuleModel rulesBeta;
-		String[] strAux= ruleToBeDeleted.getName().split(" ");
-
-	    for (int i = 0; i < strAux.length; i++) {
-    		if(getUmpstProject().getMapSearchRules().get(strAux[i])!=null){
-    			getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated().remove(ruleToBeDeleted);
-    			aux = getUmpstProject().getMapSearchRules().get(strAux[i]).getRulesRelated();   
-    	    	for (Iterator<RuleModel> it = aux.iterator(); it.hasNext(); ) {
-    	    		rulesBeta = it.next();
-    	   		}
-    		}
-    		
-	    	
-	    }
     }
 	    
 		/************/

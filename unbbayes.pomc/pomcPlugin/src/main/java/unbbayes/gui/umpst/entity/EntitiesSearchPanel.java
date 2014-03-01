@@ -6,9 +6,13 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -25,6 +29,7 @@ import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
+import unbbayes.model.umpst.rules.RuleModel;
 
 public class EntitiesSearchPanel extends IUMPSTPanel {
 		
@@ -207,37 +212,44 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	
 	public void updateTableEntities(){
 		
-		//TODO Refazer
-//    	String[] columnNames = {"ID","Entity","",""};
-//		Set<EntityModel> aux = getUmpstProject().getMapSearchEntity().get(textEntity.getText()).getEntitiesRelated();
-//		EntityModel entity;
-//		Object[][] data = new Object[getUmpstProject().getMapSearchEntity().get(textEntity.getText()).getEntitiesRelated().size()][4];
-//		Integer i=0;
-//		
-//	    
-//    	for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
-//    	     entity = it.next();  // No downcasting required.
-//    	     
-//    	 	data[i][0] = entity.getId();
-//			data[i][1] = entity.getEntityName();			
-//			data[i][2] = "";
-//			data[i][3] = "";
-//			i++;
-//    	}
-//    	
-//	    
-//   
-//	    UmpstModule pai = getFatherPanel();
-//	    changePanel(pai.getMenuPanel());
-//	    
-//	    EntitiesTable entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
-//	    JTable table = entitiesTable.createTable(columnNames,data);
-//	    
-//	    entitiesTable.getScrollPanePergunta().setViewportView(table);
-//	    entitiesTable.getScrollPanePergunta().updateUI();
-//	    entitiesTable.getScrollPanePergunta().repaint();
-//	    entitiesTable.updateUI();
-//	    entitiesTable.repaint();
+    	String[] columnNames = {"ID","Entity","",""};
+
+		Pattern pattern = Pattern.compile(textEntity.getText()); 
+		Matcher m; 
+		
+		List<EntityModel> result = new ArrayList<EntityModel>(); 
+		
+		for(EntityModel entity: getUmpstProject().getMapEntity().values()){
+			m = pattern.matcher(entity.getName()); 
+			if (m.find()){
+				result.add(entity); 
+			}
+		}
+		
+		Object[][] data = new Object[result.size()][5];
+	
+		Integer i=0;
+	
+    	for (EntityModel entity: result) {
+    	     
+    	 	data[i][0] = entity.getId();
+			data[i][1] = entity.getName();			
+			data[i][2] = "";
+			data[i][3] = "";
+			i++;
+    	}
+   
+	    UmpstModule pai = getFatherPanel();
+	    changePanel(pai.getMenuPanel());
+	    
+	    EntitiesTable entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
+	    JTable table = entitiesTable.createTable(columnNames,data);
+	    
+	    entitiesTable.getScrollPanePergunta().setViewportView(table);
+	    entitiesTable.getScrollPanePergunta().updateUI();
+	    entitiesTable.getScrollPanePergunta().repaint();
+	    entitiesTable.updateUI();
+	    entitiesTable.repaint();
     }
 	
 	

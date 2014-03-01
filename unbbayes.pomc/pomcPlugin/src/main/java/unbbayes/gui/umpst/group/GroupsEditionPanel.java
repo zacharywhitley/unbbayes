@@ -8,7 +8,6 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
@@ -37,7 +36,6 @@ import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
 import unbbayes.model.umpst.groups.GroupModel;
-import unbbayes.model.umpst.project.SearchModelGroup;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.util.CommonDataUtil;
 
@@ -162,8 +160,7 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 							JOptionPane.showMessageDialog(null, "Group's name is empty!");
 						}
 						else{
-							GroupModel newGroup = updateMapGroups();					    
-							updateMapSearch(newGroup);
+							GroupModel newGroup = updateMapGroups();		
 							updateTableGroups();
 							changePanel(new GroupsEditionPanel(getFatherPanel(),getUmpstProject(),newGroup));
 						}
@@ -185,17 +182,6 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 							GroupModel groupBeta;
 							String[] strAux = group.getName().split(" ");
 
-							for (int i = 0; i < strAux.length; i++) {
-								if(getUmpstProject().getMapSearchGroups().get(strAux[i])!=null){
-									getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups().remove(group);
-									aux = getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups();
-									for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
-										groupBeta = it.next();
-									}
-								}
-
-
-							}
 							/************/
 
 							group.setName(mainPropertiesEditionPane.getTitleText());
@@ -203,7 +189,6 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 							group.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							group.setDate(mainPropertiesEditionPane.getDateText());
 
-							updateMapSearch(group);
 							updateTableGroups();
 
 							JOptionPane.showMessageDialog(null, "group successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
@@ -317,31 +302,6 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 		groupTable.getScrollPanePergunta().repaint();
 		groupTable.updateUI();
 		groupTable.repaint();
-	}
-
-	public void updateMapSearch(GroupModel groupAdd){
-		/**Upating searchPanel*/
-
-		String[] strAux = {};
-		strAux = groupAdd.getName().split(" ");
-		Set<GroupModel> groupSetSearch = new HashSet<GroupModel>();
-
-
-		for (int i = 0; i < strAux.length; i++) {
-			if(!strAux[i].equals(" ")){
-				if(getUmpstProject().getMapSearchGroups().get(strAux[i])==null){
-					groupSetSearch.add(groupAdd);
-					SearchModelGroup searchModel = new SearchModelGroup(strAux[i], groupSetSearch);
-					getUmpstProject().getMapSearchGroups().put(searchModel.getKeyWord(), searchModel);
-				}
-				else{
-					getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups().add(groupAdd);
-				}
-			}
-		}
-
-		/************/		    
-
 	}
 
 	public JPanel getBacktrackingPanel(){

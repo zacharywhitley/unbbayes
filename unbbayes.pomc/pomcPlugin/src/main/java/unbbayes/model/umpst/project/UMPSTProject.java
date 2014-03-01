@@ -37,10 +37,6 @@ public class UMPSTProject implements Graph, Serializable {
 	private java.util.Map<String, RuleModel>         mapRules;
 	private java.util.Map<String, GroupModel>        mapGroups;
 	
-	private transient java.util.Map<String, SearchModelGoal>   mapSearchGoal;
-	private transient java.util.Map<String, SearchModelRules>  mapSearchRules;
-	private transient java.util.Map<String, SearchModelGroup>  mapSearchGroups;	
-	
 	private static UMPSTProject umpstProject;
 	
 	protected UMPSTProject() {
@@ -52,9 +48,7 @@ public class UMPSTProject implements Graph, Serializable {
 		this.setMapRelationship(new HashMap<String, RelationshipModel>());
 		this.setMapRules(new HashMap<String, RuleModel>());
 		this.setMapGroups(new HashMap<String, GroupModel>());
-		this.setMapSearchGoal(new HashMap<String, SearchModelGoal>());
-		this.setMapSearchRules(new HashMap<String, SearchModelRules>());
-		this.setMapSearchGroups(new HashMap<String, SearchModelGroup>());
+		
 		
 	}
 	
@@ -88,27 +82,6 @@ public class UMPSTProject implements Graph, Serializable {
 		this.mapGroups = mapGroups;
 	}
 
-
-
-	/**
-	 * @return the mapSearchGroups
-	 */
-	public java.util.Map<String, SearchModelGroup> getMapSearchGroups() {
-		return mapSearchGroups;
-	}
-
-
-
-	/**
-	 * @param mapSearchGroups the mapSearchGroups to set
-	 */
-	public void setMapSearchGroups(
-			java.util.Map<String, SearchModelGroup> mapSearchGroups) {
-		this.mapSearchGroups = mapSearchGroups;
-	}
-
-
-
 	/**
 	 * @return the mapRules
 	 */
@@ -124,45 +97,6 @@ public class UMPSTProject implements Graph, Serializable {
 	public void setMapRules(java.util.Map<String, RuleModel> mapRules) {
 		this.mapRules = mapRules;
 	}
-
-
-
-	/**
-	 * @return the mapSearchRules
-	 */
-	public java.util.Map<String, SearchModelRules> getMapSearchRules() {
-		return mapSearchRules;
-	}
-
-
-
-	/**
-	 * @param mapSearchRules the mapSearchRules to set
-	 */
-	public void setMapSearchRules(
-			java.util.Map<String, SearchModelRules> mapSearchRules) {
-		this.mapSearchRules = mapSearchRules;
-	}
-
-
-
-	/**
-	 * @return the mapSearchGoal
-	 */
-	public java.util.Map<String, SearchModelGoal> getMapSearchGoal() {
-		return mapSearchGoal;
-	}
-
-
-
-	/**
-	 * @param mapSearchGoal the mapSearchGoal to set
-	 */
-	public void setMapSearchGoal(
-			java.util.Map<String, SearchModelGoal> mapSearchGoal) {
-		this.mapSearchGoal = mapSearchGoal;
-	}
-
 
 	/**
 	 * @return the mapGoal

@@ -5,11 +5,15 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -25,6 +29,7 @@ import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.project.UMPSTProject;
+import unbbayes.model.umpst.requirements.GoalModel;
 import unbbayes.model.umpst.rules.RuleModel;
 
 public class RulesSearchPanel extends IUMPSTPanel {
@@ -202,18 +207,24 @@ public class RulesSearchPanel extends IUMPSTPanel {
 	public void updateTableRules(){
     	String[] columnNames = {"ID","Rule","",""};
     	
+		Pattern pattern = Pattern.compile(textRule.getText()); 
+		Matcher m; 
+		
+		List<RuleModel> result = new ArrayList<RuleModel>(); 
+		
+		for(RuleModel rule: getUmpstProject().getMapRules().values()){
+			m = pattern.matcher(rule.getName()); 
+			if (m.find()){
+				result.add(rule); 
+			}
+		}
+		
+		Object[][] data = new Object[result.size()][5];
     	
-    	
-		Set<RuleModel> aux = getUmpstProject().getMapSearchRules().get(textRule.getText()).getRulesRelated();
-		RuleModel rule;
-		Object[][] data = new Object[getUmpstProject().getMapSearchRules().get(textRule.getText()).getRulesRelated().size()][4];
-
 		Integer i=0;
 		
-	   
-    	for (Iterator<RuleModel> it = aux.iterator(); it.hasNext(); ) {
-    	     rule = it.next();  // No downcasting required.
-    	     
+    	for (RuleModel rule : result ) {
+    	  
     	 	data[i][0] = rule.getId();
 			data[i][1] = rule.getName();			
 			data[i][2] = "";

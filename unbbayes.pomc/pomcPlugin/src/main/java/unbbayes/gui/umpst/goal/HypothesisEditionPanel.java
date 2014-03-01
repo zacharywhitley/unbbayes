@@ -238,7 +238,7 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-				changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
+				changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
 			}
 		});
 
@@ -280,7 +280,7 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 	public void updateTable(HypothesisModel hypothesisUpdate){
 
 		UmpstModule pai = getFatherPanel();
-		changePanel(getFatherPanel().getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated));
+		changePanel(getFatherPanel().getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalRelated));
 
 
 		/* TableHypothesis hypothesisTable = pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsMainPanel(goalRelated).getHypothesisTable(goalRelated);
@@ -653,7 +653,7 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 		//PRECISO ATUALIZAR O GOAL RELATED DA HIPOTESE QUE ESTA NO MAPA GERAL
 
 		UmpstModule pai = getFatherPanel();
-		changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated));    			
+		changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalRelated));    			
 	}
 
 

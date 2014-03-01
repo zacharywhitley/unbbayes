@@ -5,10 +5,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -25,6 +29,7 @@ import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.groups.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
+import unbbayes.model.umpst.requirements.GoalModel;
 
 public class GroupsSearchPanel extends IUMPSTPanel {
 	
@@ -205,18 +210,25 @@ public class GroupsSearchPanel extends IUMPSTPanel {
 	public void updateTableGroups(){
     	String[] columnNames = {"ID","Group","",""};
     	
-    	
-    	
-		Set<GroupModel> aux = getUmpstProject().getMapSearchGroups().get(textGroup.getText()).getRelatedGroups();
-		GroupModel group;
-		Object[][] data = new Object[getUmpstProject().getMapSearchGroups().get(textGroup.getText()).getRelatedGroups().size()][4];
-
+		Pattern pattern = Pattern.compile(textGroup.getText()); 
+		Matcher m; 
+		
+		List<GroupModel> result = new ArrayList<GroupModel>(); 
+		
+		for(GroupModel g: getUmpstProject().getMapGroups().values()){
+			m = pattern.matcher(g.getName()); 
+			if (m.find()){
+				result.add(g); 
+			}
+		}
+		
+		Object[][] data = new Object[result.size()][5];
+		
 		Integer i=0;
 		
 	   
-    	for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
-    	     group = it.next();  // No downcasting required.
-    	     
+    	for (GroupModel group: result) {
+    	      
     	 	data[i][0] = group.getId();
 			data[i][1] = group.getName();			
 			data[i][2] = "";

@@ -5,10 +5,14 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -75,6 +79,8 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 
 		this.add(searchPanel, BorderLayout.CENTER);
 		this.add(buttonPane, BorderLayout.PAGE_END);
+		
+//		createTableGoals(); 
 
 	}
 
@@ -91,7 +97,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 
 				public void actionPerformed(ActionEvent e) {
 					textGoal.setText("");
-					returnTableGoals();
+					createTableGoals();
 				}
 			});
 		}
@@ -196,17 +202,23 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	public void updateTableGoals(){
 		String[] columnNames = {"ID","Goal","","",""};
 
-		Set<GoalModel> aux = getUmpstProject().getMapSearchGoal().get(textGoal.getText()).getGoalsRelated();
-		GoalModel goal;
-		Object[][] data = new Object[getUmpstProject().getMapSearchGoal().get(textGoal.getText()).getGoalsRelated().size()][5];
-		//Object[][] data = new Object[setGoal2.size()][5];
+		Pattern pattern = Pattern.compile(textGoal.getText()); 
+		Matcher m; 
+		
+		List<GoalModel> result = new ArrayList<GoalModel>(); 
+		
+		for(GoalModel goal: getUmpstProject().getMapGoal().values()){
+			m = pattern.matcher(goal.getName()); 
+			if (m.find()){
+				result.add(goal); 
+			}
+		}
+		
+		Object[][] data = new Object[result.size()][5];
 
 		Integer i=0;
 
-
-		for (Iterator<GoalModel> it = aux.iterator(); it.hasNext(); ) {
-			goal = it.next();  // No downcasting required.
-
+		for (GoalModel goal: result) {
 			data[i][0] = goal.getId();
 			data[i][1] = goal.getName();			
 			data[i][2] = "";
@@ -215,12 +227,10 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 			i++;
 		}
 
-
-
 		UmpstModule pai = getFatherPanel();
 		changePanel(pai.getMenuPanel());
 
-		TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
+		TableGoals goalsTable = pai.getMenuPanel().getGoalsPane().getGoalsTable();
 		JTable table = goalsTable.createTable(columnNames,data);
 
 		goalsTable.getScrollPanePergunta().setViewportView(table);
@@ -230,7 +240,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		goalsTable.repaint();
 	}
 
-	public void returnTableGoals(){
+	public void createTableGoals(){
 		String[] columnNames = {"ID","Goal","","",""};
 
 		Object[][] data = new Object[getUmpstProject().getMapGoal().size()][5];
@@ -251,7 +261,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		UmpstModule pai = getFatherPanel();
 		changePanel(pai.getMenuPanel());
 
-		TableGoals goalsTable = pai.getMenuPanel().getRequirementsPane().getGoalsTable();
+		TableGoals goalsTable = pai.getMenuPanel().getGoalsPane().getGoalsTable();
 		JTable table = goalsTable.createTable(columnNames,data);
 
 		goalsTable.getScrollPanePergunta().setViewportView(table);

@@ -2,8 +2,6 @@ package unbbayes.gui.umpst.goal;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -21,11 +19,8 @@ import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.TableButton;
 import unbbayes.gui.umpst.UmpstModule;
-import unbbayes.gui.umpst.TableButton.TableButtonCustomizer;
-import unbbayes.gui.umpst.TableButton.TableButtonPressedHandler;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
 
 public class TableSubGoals extends IUMPSTPanel{
 	
@@ -190,14 +185,7 @@ public class TableSubGoals extends IUMPSTPanel{
 						GoalModel goalToBeDeleted = getUmpstProject().getMapGoal().get(key);
 
 						goalRelated.getSubgoals().remove(key);
-						getUmpstProject().getMapHypothesis().remove(key);
-
-						
-						/*Updating MapSearch*/
-						deleteFromSearchMap(goalToBeDeleted);
-
-						
-						
+						getUmpstProject().getMapHypothesis().remove(key);						
 						
 						if(goalToBeDeleted.getSubgoals() !=null){
 							int numberSubgoal = goalToBeDeleted.getSubgoals().size()+1;
@@ -222,7 +210,7 @@ public class TableSubGoals extends IUMPSTPanel{
 						}
 						
 						UmpstModule pai = getFatherPanel();
-					    changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
+					    changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
 						 
 						 JTable table = createTable();
 						 
@@ -267,27 +255,6 @@ public class TableSubGoals extends IUMPSTPanel{
             System.err.println("Couldn't find file: " + path);
             return null;
         }
-    }
-    
-  
-	
-    public void deleteFromSearchMap(GoalModel goalToBeDeleted){
-    	Set<GoalModel> aux = new HashSet<GoalModel>();
-		GoalModel goalBeta;
-		String[] strAux = goalToBeDeleted.getName().split(" ");
-
-	    for (int i = 0; i < strAux.length; i++) {
-    		if(getUmpstProject().getMapSearchGoal().get(strAux[i])!=null){
-
-    			getUmpstProject().getMapSearchGoal().get(strAux[i]).getGoalsRelated().remove(goalToBeDeleted);
-    			aux = getUmpstProject().getMapSearchGoal().get(strAux[i]).getGoalsRelated();
-    	    	for (Iterator<GoalModel> it = aux.iterator(); it.hasNext(); ) {
-    	    		goalBeta = it.next();
-    	   		}
-    		}
-    		
-	    	
-	    }
     }
 
 }

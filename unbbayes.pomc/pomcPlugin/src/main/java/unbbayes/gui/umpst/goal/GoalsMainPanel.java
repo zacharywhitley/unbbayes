@@ -29,7 +29,6 @@ public class GoalsMainPanel extends IUMPSTPanel{
 		
 		this.setLayout(new FlowLayout());
 		this.add(createSplitPane());
-
 	}
 
 	/**

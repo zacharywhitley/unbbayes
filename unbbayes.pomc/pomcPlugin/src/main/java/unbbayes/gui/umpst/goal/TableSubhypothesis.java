@@ -194,7 +194,7 @@ public class TableSubhypothesis extends IUMPSTPanel{
 					//UMPSTProject.getInstance().getMapHypothesis().remove(key);
 
 					UmpstModule pai = getFatherPanel();
-					changePanel(pai.getMenuPanel().getRequirementsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
+					changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
 
 					JTable table = createTable();
 

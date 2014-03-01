@@ -2,8 +2,6 @@ package unbbayes.gui.umpst.group;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -20,11 +18,8 @@ import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.TableButton;
 import unbbayes.gui.umpst.UmpstModule;
-import unbbayes.gui.umpst.TableButton.TableButtonCustomizer;
-import unbbayes.gui.umpst.TableButton.TableButtonPressedHandler;
 import unbbayes.model.umpst.groups.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.rules.RuleModel;
 
 public class TableGroups extends IUMPSTPanel{
 	
@@ -127,14 +122,7 @@ public class TableGroups extends IUMPSTPanel{
 							String key = data[row][0].toString();
 							GroupModel groupToBeDeleted = getUmpstProject().getMapGroups().get(key);
 							
-							/*Updating MapSearch*/
-							deleteFromSearchMap(groupToBeDeleted);
-	
-							
-							
 							getUmpstProject().getMapRules().remove(groupToBeDeleted.getId());
-							
-							
 							 
 							Object[][] dataDel = new Object[getUmpstProject().getMapGroups().size()][4];
 							Integer i=0;
@@ -198,25 +186,6 @@ public class TableGroups extends IUMPSTPanel{
             System.err.println("Couldn't find file: " + path);
             return null;
         }
-    }
-    
-  
-    public void deleteFromSearchMap(GroupModel groupToBeDeleted){
-    	Set<GroupModel> aux = new HashSet<GroupModel>();
-		GroupModel groupBeta;
-		String[] strAux= groupToBeDeleted.getName().split(" ");
-
-	    for (int i = 0; i < strAux.length; i++) {
-    		if(getUmpstProject().getMapSearchGroups().get(strAux[i])!=null){
-    			getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups().remove(groupToBeDeleted);
-    			aux = getUmpstProject().getMapSearchGroups().get(strAux[i]).getRelatedGroups();   
-    	    	for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
-    	    		groupBeta = it.next();
-    	   		}
-    		}
-    		
-	    	
-	    }
     }
 	    
 		/************/

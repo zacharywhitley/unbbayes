@@ -159,7 +159,7 @@ public class MainPanel extends IUMPSTPanel{
 							e1.printStackTrace();
 						}
 						GoalsSearchPanel goalPanel = new GoalsSearchPanel(getFatherPanel(),getUmpstProject());
-						goalPanel.returnTableGoals();
+						goalPanel.createTableGoals();
                     }
         			else{
         				JOptionPane.showMessageDialog(null, "This file format is not suported. Try .ump");
@@ -313,14 +313,14 @@ public class MainPanel extends IUMPSTPanel{
 		/**
 		 * @return the requirementsPane
 		 */
-		public GoalsMainPanel getRequirementsPane() {
+		public GoalsMainPanel getGoalsPane() {
 			return goalsPane;
 		}
 
 		/**
 		 * @param requirementsPane the requirementsPane to set
 		 */
-		public void setRequirementsPane(GoalsMainPanel requirementsPane) {
+		public void setGoalsPane(GoalsMainPanel requirementsPane) {
 			this.goalsPane = requirementsPane;
 		}
 
