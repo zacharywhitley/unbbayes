@@ -32,6 +32,7 @@ import unbbayes.util.CommonDataUtil;
 public class AtributeEditionPanel extends IUMPSTPanel {
 
 	private static final long serialVersionUID = 1L;
+	
 	private GridBagConstraints constraints     = new GridBagConstraints();
 
 	private JButton buttonSave 	     ;
@@ -301,7 +302,9 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 
 	public JPanel createSubAtributeTable(){
 
-		TableSubatribute subatributeTable = new TableSubatribute(getFatherPanel(),entityRelated,atribute);
+		TableSubatribute subatributeTable = new TableSubatribute(getFatherPanel(),
+				getUmpstProject(),entityRelated,atribute);
+		
 		JTable table = subatributeTable.createTable();
 		JScrollPane scrollPane = new JScrollPane(table);
 

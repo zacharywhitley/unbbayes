@@ -14,26 +14,21 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
 import unbbayes.controller.umpst.IconController;
-import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.TableButton;
+import unbbayes.gui.umpst.TableObject;
 import unbbayes.gui.umpst.UmpstModule;
-import unbbayes.gui.umpst.TableButton.TableButtonCustomizer;
-import unbbayes.gui.umpst.TableButton.TableButtonPressedHandler;
 import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
 
-public class TableSubatribute extends IUMPSTPanel{
+public class TableSubatribute extends TableObject{
 
 
 	private static final long serialVersionUID = 1L;
 	private JTable table;
 	private JScrollPane scrollpanePergunta;
 
-	private UmpstModule janelaPaiAux; 
 	private EntityModel entityRelated;
 	private AttributeModel atributeRelated;
 
@@ -46,13 +41,13 @@ public class TableSubatribute extends IUMPSTPanel{
 	/**private constructors make class extension almost impossible,
     	that's why this is protected*/
 	protected TableSubatribute(UmpstModule janelaPai, 
+			UMPSTProject umpstProject, 
 			EntityModel entityRelated,
 			AttributeModel atributeRelated) {
 
-		super(janelaPai);
+		super(janelaPai, umpstProject);
 		this.setLayout(new GridLayout(1,0));
 
-		this.janelaPaiAux = janelaPai;
 		this.entityRelated=entityRelated;
 		this.atributeRelated=atributeRelated;
 
@@ -112,7 +107,7 @@ public class TableSubatribute extends IUMPSTPanel{
 		});
 
 		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-3);
-		buttonColumn1.setMaxWidth(28);
+		buttonColumn1.setMaxWidth(SIZE_COLUMN_BUTTON);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
 
@@ -142,7 +137,7 @@ public class TableSubatribute extends IUMPSTPanel{
 		});
 
 		TableColumn buttonColumn2 = table.getColumnModel().getColumn(columnNames.length-2);
-		buttonColumn2.setMaxWidth(22);
+		buttonColumn2.setMaxWidth(SIZE_COLUMN_BUTTON);
 		buttonColumn2.setCellRenderer(buttonAdd);
 		buttonColumn2.setCellEditor(buttonAdd);
 
@@ -166,7 +161,7 @@ public class TableSubatribute extends IUMPSTPanel{
 			}
 		});
 		TableColumn buttonColumn3 = table.getColumnModel().getColumn(columnNames.length-1);
-		buttonColumn3.setMaxWidth(25);
+		buttonColumn3.setMaxWidth(SIZE_COLUMN_BUTTON);
 		buttonColumn3.setCellRenderer(buttonDel);
 		buttonColumn3.setCellEditor(buttonDel);
 
@@ -199,9 +194,11 @@ public class TableSubatribute extends IUMPSTPanel{
 			}
 		});
 
+		TableColumn indexColumn = table.getColumnModel().getColumn(0);
+		indexColumn.setMaxWidth(SIZE_COLUMN_INDEX);
+		
 		return table;
 	}
-
 
 	public JScrollPane createScrolltableHypothesis(){
 		if(scrollpanePergunta == null){
@@ -211,27 +208,9 @@ public class TableSubatribute extends IUMPSTPanel{
 
 		return scrollpanePergunta;
 	}
-
-
-
+	
 	public JScrollPane getScrollPanePergunta(){
 
 		return scrollpanePergunta; 
 	}
-
-
-	/** Returns an ImageIcon, or null if the path was invalid. */
-	protected static ImageIcon createImageIcon(String path) {
-		java.net.URL imgURL = MainPanel.class.getResource(path);
-		if (imgURL != null) {
-			return new ImageIcon(imgURL);
-		} else {
-			System.err.println("Couldn't find file: " + path);
-			return null;
-		}
-	}
-
-
-
-
 }

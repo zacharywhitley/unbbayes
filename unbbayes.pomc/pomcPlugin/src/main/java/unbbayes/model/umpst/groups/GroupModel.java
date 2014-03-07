@@ -13,6 +13,8 @@ import unbbayes.model.umpst.rules.RuleModel;
 
 public class GroupModel extends ObjectModel {
 	
+	private static final long serialVersionUID = 1L;
+	
 	List<GoalModel> backtrackingGoal;
 	List<HypothesisModel> backtrackingHypothesis;
 	

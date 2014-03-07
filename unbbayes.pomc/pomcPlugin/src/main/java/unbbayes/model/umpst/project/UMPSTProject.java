@@ -1,5 +1,5 @@
 /**
- *   Classe Singleton que contém todos os mapas em memória. 
+ *   Classe Singleton que contem todos os mapas em memoria. 
  * 
  * 
  * 
@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import unbbayes.model.umpst.ObjectModel;
 import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
@@ -27,7 +28,9 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 
-public class UMPSTProject implements Graph, Serializable {
+public class UMPSTProject extends ObjectModel implements Graph, Serializable  {
+	
+	private static final long serialVersionUID = 1L;
 	
 	private java.util.Map<String,GoalModel>          mapGoal;
 	private java.util.Map<String,HypothesisModel>    mapHypothesis;
@@ -36,10 +39,12 @@ public class UMPSTProject implements Graph, Serializable {
 	private java.util.Map<String,RelationshipModel>  mapRelationship;
 	private java.util.Map<String, RuleModel>         mapRules;
 	private java.util.Map<String, GroupModel>        mapGroups;
+
+	private String fileName; 
 	
-	private static UMPSTProject umpstProject;
-	
-	protected UMPSTProject() {
+	public UMPSTProject() {
+
+		super(null, null, null, null, null); 
 		
 		this.setMapGoal(new HashMap<String,GoalModel>());
 		this.setMapHypothesis(new HashMap<String, HypothesisModel>());
@@ -48,24 +53,9 @@ public class UMPSTProject implements Graph, Serializable {
 		this.setMapRelationship(new HashMap<String, RelationshipModel>());
 		this.setMapRules(new HashMap<String, RuleModel>());
 		this.setMapGroups(new HashMap<String, GroupModel>());
-		
-		
+	
 	}
 	
-	public static UMPSTProject  newInstance() {
-		  
-		  return (new UMPSTProject());
-	}
-	
-	public void setUMPSTProject(UMPSTProject umpstProject) {
-		UMPSTProject.umpstProject = umpstProject;
-	}
-	
-	public UMPSTProject getUMPSTProject() {
-		return UMPSTProject.umpstProject;
-	}
-
-
 	/**
 	 * @return the mapGroups
 	 */
@@ -228,6 +218,15 @@ public class UMPSTProject implements Graph, Serializable {
 	public Object getProperty(String name) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
 	}
 
 }

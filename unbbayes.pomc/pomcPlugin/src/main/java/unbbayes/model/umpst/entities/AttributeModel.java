@@ -12,6 +12,8 @@ import unbbayes.model.umpst.rules.RuleModel;
 
 public class AttributeModel extends ObjectModel {
 	
+	private static final long serialVersionUID = 1L;
+	
 	private AttributeModel father;
 	private Set<EntityModel> entityRelated;
 	private Map<String, AttributeModel> mapSubAtributes;

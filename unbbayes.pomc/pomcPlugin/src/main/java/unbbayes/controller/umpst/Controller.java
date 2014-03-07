@@ -2,6 +2,8 @@ package unbbayes.controller.umpst;
 
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
@@ -14,13 +16,15 @@ public class Controller {
 
 	private static Controller singleton;
 
-	private UMPSTProject umpstProject;
+	private static UMPSTProject umpstProject;
+
+	private String author = ""; 
 
 	public static Controller getInstance(UMPSTProject _umpstProject) {
-		if (singleton == null) {
+		if (umpstProject != _umpstProject) {
 			singleton = new Controller(_umpstProject);
-
 		}
+		
 		return singleton;
 	}
 
@@ -56,6 +60,20 @@ public class Controller {
 				newEntity);	
 
 		return newEntity;
+	}
+	
+	public void showErrorMessageDialog(String message){
+		JOptionPane.showMessageDialog(null, 
+				message, 
+				"UnBBayes UMP", 
+				JOptionPane.ERROR_MESSAGE); 
+	}
+	
+	public void showSucessMessageDialog(String message){
+		JOptionPane.showMessageDialog(null, 
+				message, 
+				"UnBBayes UMP", 
+				JOptionPane.INFORMATION_MESSAGE); 
 	}
 
 	public void deleteEntity(String key) {
@@ -155,6 +173,15 @@ public class Controller {
 		relationship.getFowardtrackingRules().remove(rule); 
 		rule.removeBacktrackingRelationship(relationship); 
 		
+	}
+
+	
+	public String getAuthor() {
+		return author;
+	}
+
+	public void setAuthor(String author) {
+		this.author = author;
 	}
 
 }

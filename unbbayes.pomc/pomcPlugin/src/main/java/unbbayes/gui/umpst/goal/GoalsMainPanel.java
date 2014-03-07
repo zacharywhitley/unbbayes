@@ -28,6 +28,7 @@ public class GoalsMainPanel extends IUMPSTPanel{
 		this.setUmpstProject(umpstProject);
 		
 		this.setLayout(new FlowLayout());
+		
 		this.add(createSplitPane());
 	}
 
@@ -51,7 +52,8 @@ public class GoalsMainPanel extends IUMPSTPanel{
 	public TableGoals getGoalsTable() {
 		if(menuPanel == null ){
 
-			menuPanel = new TableGoals(getFatherPanel(),getUmpstProject());
+//			menuPanel = new TableGoals(getFatherPanel(),getUmpstProject());
+			menuPanel = requirementsPanel.createTableGoals();
 		}
 		return menuPanel;
 	}

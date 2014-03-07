@@ -38,7 +38,7 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 
 
 
-	private JButton buttonAdd 	     = new JButton();
+	private JButton buttonSave 	     = new JButton();
 	private JButton buttonCancel     = new JButton("Cancel");
 	private JButton buttonHypothesis = new JButton("add Hypothesis");
 	private JButton buttonSubgoal    = new JButton("add SubGoal");
@@ -89,9 +89,9 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 		createListeners();
 
 		if( goal == null){
-			buttonAdd.setText(" Add ");
+			buttonSave.setText(" Add ");
 		} else {
-			buttonAdd.setText(" Update ");
+			buttonSave.setText(" Update ");
 
 		}
 
@@ -111,7 +111,7 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 		// CREATE FORM 
 		mainPropertiesEditionPane = 
 				new MainPropertiesEditionPane(buttonBack, 
-						buttonAdd, 
+						buttonSave, 
 						title, 
 						"Subgoals Details",
 						null,
@@ -126,18 +126,12 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 
 		return mainPropertiesEditionPane.getPanel(); 
 		
-//		if (goalFather!=null){
-//			c.gridx = 0; c.gridy = 6;c.gridwidth=1;
-//			panel.add( new JLabel("Father Name: "), c);
-//			c.gridx = 1; c.gridy = 6;c.gridwidth=2;
-//			panel.add( new JLabel(goalFather.getGoalName()), c);
-//		}
 	}
 
 
 	public void createListeners(){
 
-		buttonAdd.addActionListener(new ActionListener() {
+		buttonSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if( goal == null){
 
@@ -153,8 +147,8 @@ public class SubgoalsEditionPanel extends IUMPSTPanel {
 
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating subgoal", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-						UmpstModule pai = getFatherPanel();
-						changePanel(pai.getMenuPanel());	
+//						UmpstModule pai = getFatherPanel();
+//						changePanel(pai.getMenuPanel());	
 
 					}
 				}

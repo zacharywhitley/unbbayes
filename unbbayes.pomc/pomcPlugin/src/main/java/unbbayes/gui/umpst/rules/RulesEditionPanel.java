@@ -1,6 +1,7 @@
 package unbbayes.gui.umpst.rules;
 
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -25,15 +26,16 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JToolBar;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
 import unbbayes.controller.umpst.Controller;
 import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.IUMPSTPanel;
-import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.gui.umpst.TableButton;
+import unbbayes.gui.umpst.TableObject;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
@@ -277,17 +279,6 @@ public class RulesEditionPanel extends IUMPSTPanel {
 	}
 	
 	
-	/** Returns an ImageIcon, or null if the path was invalid. */
-    protected static ImageIcon createImageIcon(String path) {
-        java.net.URL imgURL = MainPanel.class.getResource(path);
-        if (imgURL != null) {
-            return new ImageIcon(imgURL);
-        } else {
-            System.err.println("Couldn't find file: " + path);
-            return null;
-        }
-    }
-    
     public RuleModel updateMapRules(){
     	String idAux = "";
     	Set<String> keys = getUmpstProject().getMapRules().keySet();
@@ -595,11 +586,11 @@ public class RulesEditionPanel extends IUMPSTPanel {
 	
     public void createFrameEntities(){
 		
-		JFrame frame = new JFrame("Adding Backtracking from entities");
+		final JFrame frame = new JFrame("Adding Backtracking from entities");
 		JPanel panel = new JPanel();
 		
-		panel.setLayout(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
+		panel.setLayout(new BorderLayout());
+//		GridBagConstraints c = new GridBagConstraints();
 		
 		String[] columnNames = {"ID","Entity",""};
     	
@@ -630,9 +621,12 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		});
 
 		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-1);
-		buttonColumn1.setMaxWidth(28);
+		buttonColumn1.setMaxWidth(TableObject.SIZE_COLUMN_BUTTON);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
+		
+		TableColumn indexColumn = table.getColumnModel().getColumn(0);
+		indexColumn.setMaxWidth(TableObject.SIZE_COLUMN_INDEX);
 		
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
@@ -653,12 +647,32 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		
 		JScrollPane scroll = new JScrollPane(table);
 
-		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
-		panel.add(scroll,c);
+//		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
+		panel.add(scroll,BorderLayout.CENTER);
 		panel.setPreferredSize(new Dimension(400,200));
+		
+		JButton btnClose = new JButton(resource.getString("closeButton")); 
+		btnClose.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				frame.dispose();
+			}
+		});
+
+		JToolBar toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		toolBar.setLayout(new GridLayout());
+		toolBar.add(new JLabel());
+		toolBar.add(new JLabel());
+//		toolBar.add(btnSelect);
+		toolBar.add(btnClose);
+		
+		panel.add(toolBar, BorderLayout.PAGE_END); 
+		
 		
 		frame.add(panel);
 		
+		frame.setLocationRelativeTo(buttonBackEntities);
+//		frame.setLocationByPlatform(true); 
 		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		frame.setSize(300,200);
 		frame.setVisible(true);
@@ -667,11 +681,9 @@ public class RulesEditionPanel extends IUMPSTPanel {
 
 	public void createFrameAtributes(){
 		
-		JFrame frame = new JFrame("Adding Backtracking from atributes");
+		final JFrame frame = new JFrame("Adding Backtracking from atributes");
 		JPanel panel = new JPanel();
-		panel.setLayout(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
-		
+		panel.setLayout(new BorderLayout());
 		
 		String[] columnNames = {"ID","Atribute",""};
 		
@@ -705,9 +717,12 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		});
 	
 		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-1);
-		buttonColumn1.setMaxWidth(28);
+		buttonColumn1.setMaxWidth(TableObject.SIZE_COLUMN_BUTTON);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
+		
+		TableColumn indexColumn = table.getColumnModel().getColumn(0);
+		indexColumn.setMaxWidth(TableObject.SIZE_COLUMN_INDEX);
 		
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
@@ -728,12 +743,38 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		
 		JScrollPane scroll = new JScrollPane(table);
 	
-		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
-		panel.add(scroll,c);
+//		c.gridx=0;
+//		c.gridy=0;
+//		c.weightx=0.5;
+//		c.weighty=0.5;  
+//		c.fill = GridBagConstraints.BOTH;
+		
+		panel.add(scroll,BorderLayout.CENTER);
+		
+		JButton btnClose = new JButton(resource.getString("closeButton")); 
+		btnClose.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				frame.dispose();
+			}
+		});
+
+		JToolBar toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		toolBar.setLayout(new GridLayout());
+		toolBar.add(new JLabel());
+		toolBar.add(new JLabel());
+//		toolBar.add(btnSelect);
+		toolBar.add(btnClose);
+		
+		panel.add(toolBar, BorderLayout.PAGE_END); 
+		
+		
 		panel.setPreferredSize(new Dimension(400,200));
 		
 		frame.add(panel);
 		
+		frame.setLocationRelativeTo(buttonBackAtributes);
+//		frame.setLocationByPlatform(buttonBackAtributes); 
 		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		frame.setSize(300,200);
 		frame.setVisible(true);
@@ -742,11 +783,10 @@ public class RulesEditionPanel extends IUMPSTPanel {
 
 	public void createFrameRelationship(){
 		
-		JFrame frame = new JFrame("Adding Backtracking from relationship");
+		final JFrame frame = new JFrame("Adding Backtracking from relationship");
 		JPanel panel = new JPanel();
-		panel.setLayout(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
-		
+		panel.setLayout(new BorderLayout());
+//		GridBagConstraints c = new GridBagConstraints();
 		
 		String[] columnNames = {"ID","Relationship",""};
 		
@@ -768,19 +808,20 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		DefaultTableModel model = new DefaultTableModel(dataFrame,columnNames);
 		JTable table = new JTable(model);
 		
-		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
-		{
-			public void customize(JButton button, int row, int column)
-			{
+		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer(){
+			public void customize(JButton button, int row, int column){
 				button.setIcon(iconController.getAddIconP());
 	
 			}
 		});
 	
 		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-1);
-		buttonColumn1.setMaxWidth(28);
+		buttonColumn1.setMaxWidth((TableObject.SIZE_COLUMN_BUTTON));
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
+		
+		TableColumn indexColumn = table.getColumnModel().getColumn(0);
+		indexColumn.setMaxWidth(TableObject.SIZE_COLUMN_INDEX);
 		
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
@@ -801,12 +842,32 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		
 		JScrollPane scroll = new JScrollPane(table);
 	
-		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
-		panel.add(scroll,c);
+//		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
+		panel.add(scroll,BorderLayout.CENTER);
 		panel.setPreferredSize(new Dimension(400,200));
+		
+		JButton btnClose = new JButton(resource.getString("closeButton")); 
+		btnClose.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				frame.dispose();
+			}
+		});
+
+		JToolBar toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		toolBar.setLayout(new GridLayout());
+		toolBar.add(new JLabel());
+		toolBar.add(new JLabel());
+//		toolBar.add(btnSelect);
+		toolBar.add(btnClose);
+		
+		panel.add(toolBar, BorderLayout.PAGE_END); 
+		
 		
 		frame.add(panel);
 		
+//		frame.setLocationByPlatform(true); 
+		frame.setLocationRelativeTo(buttonBackRelationship);
 		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		frame.setSize(300,200);
 		frame.setVisible(true);

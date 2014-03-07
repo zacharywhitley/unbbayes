@@ -1,12 +1,12 @@
 package unbbayes.gui.umpst;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -40,6 +40,9 @@ public class MainPropertiesEditionPane {
 	
 	private JPanel panel; 
 	
+	private final JButton btnCancel; 
+	private final JButton btnOK; 
+	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = 
   			unbbayes.util.ResourceController.newInstance().getBundle(
@@ -51,6 +54,9 @@ public class MainPropertiesEditionPane {
 			String panelName, 
 			JLabel extraLabel,
 			JComponent extraPanel){
+		
+		this.btnCancel = btn1; 
+		this.btnOK = btn2; 
 		
 		GridBagConstraints c = new GridBagConstraints();
 		c.anchor =  GridBagConstraints.FIRST_LINE_START; 
@@ -119,7 +125,16 @@ public class MainPropertiesEditionPane {
 		nameText.setLineWrap(true); 
 		nameText.setWrapStyleWord(true);
 		nameText.setBorder(BorderFactory.createEtchedBorder());
+//		nameText.getF
 		nameText.setText(""); 
+		
+		nameText.addKeyListener(new java.awt.event.KeyAdapter() {
+			 public void keyPressed(java.awt.event.KeyEvent evt) {
+				 if(evt.getKeyCode() == evt.VK_TAB){
+					 authorText.requestFocusInWindow(); 
+				 }
+			 }
+		}); 
 
 		JScrollPane scroolName  = new JScrollPane(nameText); 
 		
@@ -136,6 +151,7 @@ public class MainPropertiesEditionPane {
 		c.gridy = 4;
 		c.gridwidth=2;
 		
+		JPanel panelAuthor = new JPanel(new BorderLayout()); 
 		panel.add( authorText, c);
 
 		try {
@@ -153,12 +169,19 @@ public class MainPropertiesEditionPane {
 		c.gridwidth= 2;
 		panel.add( dateText, c);
 
-
 		commentsText = new JTextArea(4,20);
 		commentsText.setLineWrap(true); 
 		commentsText.setWrapStyleWord(true);
 		commentsText.setBorder(BorderFactory.createEtchedBorder());
 		commentsText.setText(""); 
+		
+		commentsText.addKeyListener(new java.awt.event.KeyAdapter() {
+			 public void keyPressed(java.awt.event.KeyEvent evt) {
+				 if(evt.getKeyCode() == evt.VK_TAB){
+					 btnOK.requestFocusInWindow(); 
+				 }
+			 }
+		}); 
 		
 		JScrollPane scroolComments  = new JScrollPane(commentsText); 
 		

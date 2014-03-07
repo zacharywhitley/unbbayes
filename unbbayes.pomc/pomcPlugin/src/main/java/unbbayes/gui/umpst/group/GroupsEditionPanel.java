@@ -1,6 +1,7 @@
 package unbbayes.gui.umpst.group;
 
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -23,14 +24,15 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JToolBar;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
 import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.IUMPSTPanel;
-import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.gui.umpst.TableButton;
+import unbbayes.gui.umpst.TableObject;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
@@ -41,8 +43,8 @@ import unbbayes.util.CommonDataUtil;
 
 public class GroupsEditionPanel extends IUMPSTPanel {
 
-	private GridBagConstraints constraint     = new GridBagConstraints();
-	private JLabel titulo            = new JLabel();
+	private GridBagConstraints constraint  = new GridBagConstraints();
+	private JLabel titulo                  = new JLabel();
 
 	private JButton buttonSave 	     ;
 	private JButton buttonCancel     ;
@@ -53,12 +55,6 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 	private GroupModel group;
 
 	private static final long serialVersionUID = 1L;
-
-//	private JList list,listAux, listAtributeAux, listRelationshipAux; 
-//	private DefaultListModel listModel = new DefaultListModel();
-//	private DefaultListModel listModelAux = new DefaultListModel();
-//	private DefaultListModel listModelAtrAux = new DefaultListModel();
-//	private DefaultListModel listModelRltAux = new DefaultListModel();
 
 	private Object[][] dataBacktracking = {};
 	private Object[][] dataFrame = {};
@@ -71,11 +67,11 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 					unbbayes.gui.umpst.resources.Resources.class.getName());
 
 	private IconController iconController = IconController.getInstance();
-	
+
 	public GroupsEditionPanel(UmpstModule janelaPai,
 			UMPSTProject umpstProject, 
 			GroupModel group){
-		
+
 		super(janelaPai);
 
 		this.setUmpstProject(umpstProject);
@@ -85,7 +81,7 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 		this.setLayout(new GridLayout(1,1));
 
 		createButtons(); 
-		
+
 		JSplitPane splitPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 				createPanelText(),
 				getBacktrackingPanel()); 
@@ -127,24 +123,24 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 
 		buttonSave	     = new JButton(iconController.getSaveObjectIcon());
 		buttonSave.setText(resource.getString("btnSave"));
-		
+
 		if( group == null){
 			buttonSave.setToolTipText(resource.getString("hpSaveGroup"));
 
 		} else {
 			buttonSave.setToolTipText(resource.getString("hpUpdateGroup"));
 		}
-		
+
 		buttonCancel     = new JButton(iconController.getReturnIcon());
 		buttonCancel.setText(resource.getString("btnReturn")); 
 		buttonCancel.setToolTipText(resource.getString("HpReturnMainPanel"));
-		
+
 		buttonBackEntities = new JButton(iconController.getCicleEntityIcon());
 		buttonBackEntities.setToolTipText(resource.getString("hpAddBackEntity"));
-		
+
 		buttonBackAtributes = new JButton(iconController.getCicleAttributeIcon());
 		buttonBackAtributes.setToolTipText(resource.getString("hpAddBackAttribute"));
-		
+
 		buttonBackRelationship = new JButton(iconController.getCicleRelationshipIcon());
 		buttonBackAtributes.setToolTipText(resource.getString("hpAddBackRelationship"));
 
@@ -237,17 +233,6 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 	}
 
 
-	/** Returns an ImageIcon, or null if the path was invalid. */
-	protected static ImageIcon createImageIcon(String path) {
-		java.net.URL imgURL = MainPanel.class.getResource(path);
-		if (imgURL != null) {
-			return new ImageIcon(imgURL);
-		} else {
-			System.err.println("Couldn't find file: " + path);
-			return null;
-		}
-	}
-
 	public GroupModel updateMapGroups(){
 		String idAux = "";
 
@@ -308,14 +293,14 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 
 		JPanel panel = new JPanel();
 		JScrollPane scrollPane = new JScrollPane();
-		
-//		private JList list,listAux, listAtributeAux, listRelationshipAux; 
-//		private DefaultListModel listModel = new DefaultListModel();
-		
+
+		//		private JList list,listAux, listAtributeAux, listRelationshipAux; 
+		//		private DefaultListModel listModel = new DefaultListModel();
+
 		if(group!=null){
-			
+
 			DefaultListModel listModel = new DefaultListModel(); 
-			
+
 			//Entities
 			for (EntityModel entity: group.getBacktrackingEntities()) {
 				listModel.addElement(entity);
@@ -332,11 +317,11 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 			}
 
 			JList list = new JList(listModel); 
-			
+
 			dataBacktracking = new Object[listModel.getSize()][3];
 
 			int i = 0;
-			
+
 			for (Object obj: listModel.toArray()) {
 				System.out.println(obj);
 				if(obj instanceof EntityModel){
@@ -372,36 +357,36 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 
 			TableColumn buttonColumn1 = table.getColumnModel().getColumn(columns.length-1);
 
-			buttonColumn1.setMaxWidth(28);
+			buttonColumn1.setMaxWidth(TableObject.SIZE_COLUMN_BUTTON);
 			buttonColumn1.setCellRenderer(buttonDel);
 			buttonColumn1.setCellEditor(buttonDel);
 
-//			buttonDel.addHandler(new TableButton.TableButtonPressedHandler() {	
-//				public void onButtonPress(int row, int column) {
-//					if (row<listAux.getModel().getSize()){
-//						String key = dataBacktracking[row][0].toString();
-//						listModelAux.remove(listModelAux.indexOf(key));
-//						listAux = new JList(listModelAux);
-//						group.setBacktrackingEntities(listAux);
-//					}
-//					else{
-//						if (row<(listAux.getModel().getSize()+listAtributeAux.getModel().getSize())){
-//							String keyAtr = dataBacktracking[row][0].toString();
-//							listModelAtrAux.remove(listModelAtrAux.indexOf(keyAtr));
-//							listAtributeAux = new JList(listModelAtrAux);
-//							group.setBacktrackingAtributes(listAtributeAux);
-//						}
-//						else{
-//							String keyAtr = dataBacktracking[row][0].toString();
-//							listModelRltAux.remove(listModelRltAux.indexOf(keyAtr));
-//							listRelationshipAux = new JList(listModelRltAux);
-//							group.setBacktrackingRelationship(listRelationshipAux);
-//						}
-//					}
-//					UmpstModule father = getFatherPanel();
-//					changePanel(father.getMenuPanel().getGroupsPane().getGroupsPanel().getGroupsAdd(group));
-//				}
-//			});
+			//			buttonDel.addHandler(new TableButton.TableButtonPressedHandler() {	
+			//				public void onButtonPress(int row, int column) {
+			//					if (row<listAux.getModel().getSize()){
+			//						String key = dataBacktracking[row][0].toString();
+			//						listModelAux.remove(listModelAux.indexOf(key));
+			//						listAux = new JList(listModelAux);
+			//						group.setBacktrackingEntities(listAux);
+			//					}
+			//					else{
+			//						if (row<(listAux.getModel().getSize()+listAtributeAux.getModel().getSize())){
+			//							String keyAtr = dataBacktracking[row][0].toString();
+			//							listModelAtrAux.remove(listModelAtrAux.indexOf(keyAtr));
+			//							listAtributeAux = new JList(listModelAtrAux);
+			//							group.setBacktrackingAtributes(listAtributeAux);
+			//						}
+			//						else{
+			//							String keyAtr = dataBacktracking[row][0].toString();
+			//							listModelRltAux.remove(listModelRltAux.indexOf(keyAtr));
+			//							listRelationshipAux = new JList(listModelRltAux);
+			//							group.setBacktrackingRelationship(listRelationshipAux);
+			//						}
+			//					}
+			//					UmpstModule father = getFatherPanel();
+			//					changePanel(father.getMenuPanel().getGroupsPane().getGroupsPanel().getGroupsAdd(group));
+			//				}
+			//			});
 
 			panel = new JPanel();
 			panel.setLayout(new GridBagLayout());
@@ -431,17 +416,14 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 		}
 
 		return panel;
-		//add(box,constraint);
-
 	}
 
 	public void createFrameEntity(){
 
-		JFrame frame = new JFrame("Adding Backtracking from entities");
+		final JFrame frame = new JFrame("Adding Backtracking from entities");
 		JPanel panel = new JPanel();
-		panel.setLayout(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
-
+		panel.setLayout(new BorderLayout());
+//		GridBagConstraints c = new GridBagConstraints();
 
 		String[] columnNames = {"ID","Entity",""};
 
@@ -464,27 +446,28 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 		DefaultTableModel model = new DefaultTableModel(dataFrame,columnNames);
 		JTable table = new JTable(model);
 
-		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
-		{
-			public void customize(JButton button, int row, int column)
-			{
+		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer(){
+			public void customize(JButton button, int row, int column){
 				button.setIcon(iconController.getAddIconP() );
 
 			}
 		});
 
 		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-1);
-		buttonColumn1.setMaxWidth(28);
+		buttonColumn1.setMaxWidth(TableObject.SIZE_COLUMN_BUTTON);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
+		
+		TableColumn indexColumn = table.getColumnModel().getColumn(0);
+		indexColumn.setMaxWidth(TableObject.SIZE_COLUMN_INDEX);
 
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 
 				String key = dataFrame[row][0].toString();
-				
+
 				group.getBacktrackingEntities().add(getUmpstProject().getMapEntity().get(key));
-				
+
 				Set<String> keys = getUmpstProject().getMapEntity().keySet();
 				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				for (String keyAux : sortedKeys){
@@ -493,24 +476,39 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 					}
 				}
 
-
 				UmpstModule father = getFatherPanel();
 				changePanel(father.getMenuPanel().getGroupsPane().getGroupsPanel().getGroupsAdd(group));
 
 			}
 		});
 
-
-
 		JScrollPane scroll = new JScrollPane(table);
 
-		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
-		panel.add(scroll,c);
+//		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
+		panel.add(scroll,BorderLayout.CENTER);
 		panel.setPreferredSize(new Dimension(400,200));
 
+		JButton btnClose = new JButton(resource.getString("closeButton")); 
+		btnClose.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				frame.dispose();
+			}
+		});
+
+		JToolBar toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		toolBar.setLayout(new GridLayout());
+		toolBar.add(new JLabel());
+		toolBar.add(new JLabel());
+//		toolBar.add(btnSelect);
+		toolBar.add(btnClose);
+		
+		panel.add(toolBar, BorderLayout.PAGE_END); 
+		
 		frame.add(panel);
 
 		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		frame.setLocationRelativeTo(buttonBackEntities);
 		frame.setSize(300,200);
 		frame.setVisible(true);
 
@@ -518,10 +516,10 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 
 	public void createFrameAtributes(){
 
-		JFrame frame = new JFrame("Adding Backtracking from atributes");
+		final JFrame frame = new JFrame("Adding Backtracking from atributes");
 		JPanel panel = new JPanel();
-		panel.setLayout(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
+		panel.setLayout(new BorderLayout());
+//		GridBagConstraints c = new GridBagConstraints();
 
 		String[] columnNames = {"ID","Atribute",""};
 
@@ -542,24 +540,25 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 		DefaultTableModel model = new DefaultTableModel(dataFrame,columnNames);
 		JTable table = new JTable(model);
 
-		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
-		{
-			public void customize(JButton button, int row, int column)
-			{
+		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer(){
+			public void customize(JButton button, int row, int column){
 				button.setIcon(iconController.getAddIconP() );
 			}
 		});
 
 		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-1);
-		buttonColumn1.setMaxWidth(28);
+		buttonColumn1.setMaxWidth((TableObject.SIZE_COLUMN_BUTTON));
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
+		
+		TableColumn indexColumn = table.getColumnModel().getColumn(0);
+		indexColumn.setMaxWidth(TableObject.SIZE_COLUMN_INDEX);
 
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 
 				String key = dataFrame[row][0].toString();
-				
+
 				group.getBacktrackingAtributes().add(getUmpstProject().getMapAtribute().get(key));
 
 				Set<String> keys = getUmpstProject().getMapAtribute().keySet();
@@ -576,16 +575,34 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 		});
 
 
-
 		JScrollPane scroll = new JScrollPane(table);
 
-		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
-		panel.add(scroll,c);
+//		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
+		panel.add(scroll,BorderLayout.CENTER);
 		panel.setPreferredSize(new Dimension(400,200));
 
+		JButton btnClose = new JButton(resource.getString("closeButton")); 
+		btnClose.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				frame.dispose();
+			}
+		});
+
+		JToolBar toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		toolBar.setLayout(new GridLayout());
+		toolBar.add(new JLabel());
+		toolBar.add(new JLabel());
+//		toolBar.add(btnSelect);
+		toolBar.add(btnClose);
+		
+		panel.add(toolBar, BorderLayout.PAGE_END); 
+		
+		
 		frame.add(panel);
 
 		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
+		frame.setLocationRelativeTo(buttonBackAtributes);
 		frame.setSize(300,200);
 		frame.setVisible(true);
 
@@ -593,16 +610,14 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 
 	public void createFrameRelationship(){
 
-		JFrame frame = new JFrame("Adding Backtracking from relationship");
+		final JFrame frame = new JFrame("Adding Backtracking from relationship");
 		JPanel panel = new JPanel();
-		panel.setLayout(new GridBagLayout());
-		GridBagConstraints c = new GridBagConstraints();
-
+		panel.setLayout(new BorderLayout());
+//		GridBagConstraints c = new GridBagConstraints();
 
 		String[] columnNames = {"ID","Relationship",""};
 
 		dataFrame = new Object[getUmpstProject().getMapRelationship().size()][3];
-
 
 		Integer i=0;
 
@@ -616,30 +631,29 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 			i++;
 		}
 
-
-
 		DefaultTableModel model = new DefaultTableModel(dataFrame,columnNames);
 		JTable table = new JTable(model);
 
-		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
-		{
-			public void customize(JButton button, int row, int column)
-			{
+		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer(){
+			public void customize(JButton button, int row, int column){
 				button.setIcon(iconController.getAddIconP() );
-
 			}
 		});
 
 		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-1);
-		buttonColumn1.setMaxWidth(28);
+		buttonColumn1.setMaxWidth(TableObject.SIZE_COLUMN_BUTTON);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
 
+		TableColumn indexColumn = table.getColumnModel().getColumn(0);
+		indexColumn.setMaxWidth(TableObject.SIZE_COLUMN_INDEX);
+		
+		
 		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 
 				String key = dataFrame[row][0].toString();
-				
+
 				group.getBacktrackingRelationship().add(getUmpstProject().getMapRelationship().get(key));
 
 				Set<String> keys = getUmpstProject().getMapRelationship().keySet();
@@ -649,21 +663,36 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 						getUmpstProject().getMapRelationship().get(keyAux).getFowardtrackingGroups().add(group);
 					}
 				}
-
 				UmpstModule father = getFatherPanel();
 				changePanel(father.getMenuPanel().getGroupsPane().getGroupsPanel().getGroupsAdd(group));
-
 			}
 		});
 
 		JScrollPane scroll = new JScrollPane(table);
 
-		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
-		panel.add(scroll,c);
+//		c.gridx=0;c.gridy=0;c.weightx=0.5;c.weighty=0.5;  c.fill = GridBagConstraints.BOTH;
+		panel.add(scroll,BorderLayout.CENTER);
 		panel.setPreferredSize(new Dimension(400,200));
 
-		frame.add(panel);
+		JButton btnClose = new JButton(resource.getString("closeButton")); 
+		btnClose.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent arg0) {
+				frame.dispose();
+			}
+		});
 
+		JToolBar toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		toolBar.setLayout(new GridLayout());
+		toolBar.add(new JLabel());
+		toolBar.add(new JLabel());
+//		toolBar.add(btnSelect);
+		toolBar.add(btnClose);
+		
+		panel.add(toolBar, BorderLayout.PAGE_END); 
+		
+		frame.add(panel);
+		frame.setLocationRelativeTo(buttonBackRelationship);
 		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		frame.setSize(300,200);
 		frame.setVisible(true);

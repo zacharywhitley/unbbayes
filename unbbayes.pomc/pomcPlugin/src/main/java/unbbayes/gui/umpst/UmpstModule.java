@@ -3,13 +3,10 @@
  */
 package unbbayes.gui.umpst;
 
-import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 
-import javax.servlet.jsp.tagext.TryCatchFinally;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
+import javax.swing.JFrame;
 import javax.swing.JTabbedPane;
 
 import unbbayes.io.BaseIO;
@@ -24,20 +21,17 @@ import unbbayes.util.extension.UnBBayesModule;
 public class UmpstModule extends UnBBayesModule {
 	
 	private JTabbedPane topTabbedPane;
-	private UMPSTProject umpstProject;
 	
 	private MainPanel menuPanel;
 	
 	public MainPanel getMenuPanel(){
 		if(menuPanel == null){
-			menuPanel = new MainPanel(this,getUmpstProject());
+			menuPanel = new MainPanel(this);
 		}
 		return menuPanel;
 	}
 
 	protected void initComponents(){
-		
-		
 		
 		//this.setTopTabbedPane(new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT));
 		
@@ -112,23 +106,13 @@ public class UmpstModule extends UnBBayesModule {
 		this.topTabbedPane = topTabbedPane;
 	}
 
-	/**
-	 * @return the umpstProject
-	 */
-	public UMPSTProject getUmpstProject() {
-		if(umpstProject==null){
-			this.umpstProject = UMPSTProject.newInstance();
-		}
-		return umpstProject;
+	public static void main(String... args){
+		UmpstModule umpstModule = new UmpstModule(); 
+		JFrame jframe = new JFrame(); 
+		jframe.setContentPane(umpstModule.getContentPane());
+		jframe.pack();
+		jframe.setVisible(true); 
 	}
-
-	/**
-	 * @param umpstProject the umpstProject to set
-	 */
-	public void setUmpstProject(UMPSTProject umpstProject) {
-		this.umpstProject = umpstProject;
-	}
-
 	
 	
 }

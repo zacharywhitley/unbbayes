@@ -11,6 +11,8 @@ import unbbayes.model.umpst.groups.GroupModel;
 
 public class GoalModel extends ObjectModel{
 	
+	private static final long serialVersionUID = 1L;
+	
 	private GoalModel                   goalFather;
 	private Map<String, GoalModel>      subgoals ;
 	private Map<String,HypothesisModel> mapHypothesis;

@@ -9,20 +9,35 @@ import unbbayes.model.umpst.project.UMPSTProject;
 
 public class FileSaveObject {
 
-
 		public static final String NULL = "null";
 
 		private UMPSTProject umpstProject;
 
-		public void saveUbf(File file,
-				UMPSTProject umpstProject) throws IOException{
+		private File file; 
+		
+		public void saveUbf(File _file,
+				UMPSTProject _umpstProject) throws IOException{
 
 
-			this.umpstProject = umpstProject;
-			//File file = new File("images/file.ump");
+			this.umpstProject = _umpstProject;
+			
+			file = _file; 
+			
+			String fileName = file.getName(); 
+			
+			int index = fileName.lastIndexOf(".");
 
-			/*-- Listing the overall data of the map --*/
-			FileOutputStream fileOut = new FileOutputStream(new File(file.getPath()+".ump"));
+			String fileExtension = null; 
+			
+			if (index >= 0) {
+				fileExtension = fileName.substring(index + 1);
+			}
+			
+			if (!fileExtension.equals("ump")){
+				file = new File(file.getPath()+".ump");
+			}
+			
+			FileOutputStream fileOut = new FileOutputStream(file);
 			ObjectOutputStream out = new ObjectOutputStream(fileOut);
 			
 			out.writeObject(umpstProject); 

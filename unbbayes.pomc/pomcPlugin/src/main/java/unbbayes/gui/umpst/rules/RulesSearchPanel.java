@@ -250,8 +250,6 @@ public class RulesSearchPanel extends IUMPSTPanel {
 	   public void returnTableRules(){
 	    	String[] columnNames = {"ID","Rule","",""};
 	    	
-	    	
-		    
 			Object[][] data = new Object[getUmpstProject().getMapRules().size()][4];
 			Integer i=0;
 		    

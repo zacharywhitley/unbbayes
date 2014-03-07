@@ -14,6 +14,8 @@ import unbbayes.model.umpst.rules.RuleModel;
 
 public class RelationshipModel extends ObjectModel{
 	
+	private static final long serialVersionUID = 1L;
+	
 	private List<EntityModel>     entityList;
 	private List<AttributeModel>  atributeList;
 	private List<GoalModel>       goalList;

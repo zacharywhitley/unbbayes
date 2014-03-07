@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -42,6 +41,9 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 	private JButton buttonAddGoal,buttonCancel;
 	private JTextField textGoal;
 	
+	private UmpstModule janelaPai;
+	private UMPSTProject umpstProject; 
+	
 	/** Load resource file from this package */
 	private static ResourceBundle resource = 
 			unbbayes.util.ResourceController.newInstance().getBundle(
@@ -55,6 +57,9 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		this.setLayout(new BorderLayout());
 		//GridBagConstraints constraints = new  GridBagConstraints();
 
+		this.janelaPai = janelaPai; 
+		this.umpstProject = umpstProject; 
+		
 		JPanel searchPanel = new JPanel();
 
 		searchPanel.setLayout(new BoxLayout(searchPanel, BoxLayout.PAGE_AXIS));
@@ -231,7 +236,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		changePanel(pai.getMenuPanel());
 
 		TableGoals goalsTable = pai.getMenuPanel().getGoalsPane().getGoalsTable();
-		JTable table = goalsTable.createTable(columnNames,data);
+		JTable table = goalsTable.createTable(columnNames, data);
 
 		goalsTable.getScrollPanePergunta().setViewportView(table);
 		goalsTable.getScrollPanePergunta().updateUI();
@@ -240,7 +245,7 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 		goalsTable.repaint();
 	}
 
-	public void createTableGoals(){
+	public TableGoals createTableGoals(){
 		String[] columnNames = {"ID","Goal","","",""};
 
 		Object[][] data = new Object[getUmpstProject().getMapGoal().size()][5];
@@ -258,17 +263,21 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 			i++;
 		}
 
-		UmpstModule pai = getFatherPanel();
-		changePanel(pai.getMenuPanel());
+//		UmpstModule pai = getFatherPanel();
+//		changePanel(pai.getMenuPanel());
 
-		TableGoals goalsTable = pai.getMenuPanel().getGoalsPane().getGoalsTable();
-		JTable table = goalsTable.createTable(columnNames,data);
-
-		goalsTable.getScrollPanePergunta().setViewportView(table);
-		goalsTable.getScrollPanePergunta().updateUI();
-		goalsTable.getScrollPanePergunta().repaint();
-		goalsTable.updateUI();
-		goalsTable.repaint();
+//		TableGoals goalsTable = pai.getMenuPanel().getGoalsPane().getGoalsTable();
+		
+		TableGoals goalsTable = new TableGoals(janelaPai, umpstProject); 
+		
+//		JTable table = goalsTable.createTable(columnNames,data);
+//		goalsTable.getScrollPanePergunta().setViewportView(table);
+//		goalsTable.getScrollPanePergunta().updateUI();
+//		goalsTable.getScrollPanePergunta().repaint();
+//		goalsTable.updateUI();
+//		goalsTable.repaint();
+		
+		return goalsTable; 
 	}
 
 

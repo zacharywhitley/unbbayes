@@ -33,16 +33,20 @@ public class TableButton extends AbstractCellEditor implements TableCellEditor, 
 {
 	//private static final long serialVersionUID = 5647725208335645741L;
 
+	private List<TableButtonPressedHandler> handlers;
+	private Hashtable<Integer, JButton> buttons;
+	private TableButtonCustomizer customizer;
+
 	public interface TableButtonPressedHandler
-    {
-        /**
-         * Called when the button is pressed.
-         * @param row The row in which the button is in the table.
-         * @param column The column the button is in in the table.
-         */
-        void onButtonPress(int row, int column);
-    }
-	
+	{
+		/**
+		 * Called when the button is pressed.
+		 * @param row The row in which the button is in the table.
+		 * @param column The column the button is in in the table.
+		 */
+		void onButtonPress(int row, int column);
+	}
+
 	public interface TableButtonCustomizer
 	{
 		/**
@@ -54,130 +58,124 @@ public class TableButton extends AbstractCellEditor implements TableCellEditor, 
 		void customize(JButton button, int row, int column);
 	}
 
-    private List<TableButtonPressedHandler> handlers;
-    private Hashtable<Integer, JButton> buttons;
-    private TableButtonCustomizer customizer;
-    
-    public TableButton()
-    {
-        handlers = new ArrayList<TableButtonPressedHandler>();
-        buttons = new Hashtable<Integer, JButton>();
-    }
-    
-    public TableButton(TableButtonCustomizer customizer)
-    {
-    	this();
-    	this.customizer = customizer;
-    }
 
-    /**
-     * Add a slide callback handler
-     * @param handler
-     */
-    public void addHandler(TableButtonPressedHandler handler)
-    {
-        if (handlers != null)
-        {
-            handlers.add(handler);
-        }
-    }
+	public TableButton()
+	{
+		handlers = new ArrayList<TableButtonPressedHandler>();
+		buttons = new Hashtable<Integer, JButton>();
+	}
 
-    /**
-     * Remove a slide callback handler
-     * @param handler
-     */
-    public void removeHandler(TableButtonPressedHandler handler)
-    {
-        if (handlers != null)
-        {
-            handlers.remove(handler);
-        }
-    }
+	public TableButton(TableButtonCustomizer customizer)
+	{
+		this();
+		this.customizer = customizer;
+	}
 
-    public Component getTableCellRendererComponent(JTable table, Object value, boolean selected, boolean focus, final int row, final int column)
-    {
-        JButton button = null;
-        if(buttons.containsKey(row))
-        {
-            button = buttons.get(row);
-        }
-        else
-        {
-            button = new JButton();
-            if(customizer != null)
-            {
-            	customizer.customize(button, row, column);
-            }
-            if(value != null && value instanceof String)
-            {
-                button.setText((String)value);
-            }
-            button.addActionListener(new ActionListener()
-            {
-                public void actionPerformed(ActionEvent e)
-                {
-                    if(handlers != null)
-                    {
-                        for(TableButtonPressedHandler handler : handlers)
-                        {
-                            handler.onButtonPress(row, column);
-                        }
-                    }
-                }
-            });
-            buttons.put(row, button);
-        }
+	/**
+	 * Add a slide callback handler
+	 * @param handler
+	 */
+	public void addHandler(TableButtonPressedHandler handler)
+	{
+		if (handlers != null)
+		{
+			handlers.add(handler);
+		}
+	}
 
-        return button;
-    }
+	/**
+	 * Remove a slide callback handler
+	 * @param handler
+	 */
+	public void removeHandler(TableButtonPressedHandler handler)
+	{
+		if (handlers != null)
+		{
+			handlers.remove(handler);
+		}
+	}
 
-    public Component getTableCellEditorComponent(JTable table, Object value, boolean selected, int row, int column)
-    {
-        JButton button = null;
-        if(buttons.containsKey(row))
-        {
-            button = buttons.get(row);
-        }
-        else
-        {
-            button = new JButton();
-            if(customizer != null)
-            {
-            	// customize the button
-            	customizer.customize(button, row, column);
-            }
-            if(value != null && value instanceof String)
-            {
-                button.setText((String)value);
-            }
+	public Component getTableCellRendererComponent(JTable table, 
+			Object value, 
+			boolean selected, 
+			boolean focus, 
+			final int row, 
+			final int column){
 
-            buttons.put(row, button);
-        }
+		JButton button = null;
 
-        return button;
-    }
-   
-    
-    public void setButtonText(int row, String text)
-    {
-        JButton button = null;
-        if(buttons.containsKey(row))
-        {
-            button = buttons.get(row);
-            button.setText(text);
-        }
-    }
+		if(buttons.containsKey(row)){
+			button = buttons.get(row);
+		}else{
+			button = new JButton();
+			if(customizer != null){
+				customizer.customize(button, row, column);
+			}
+			if(value != null && value instanceof String){
+				button.setText((String)value);
+			}
+			button.addActionListener(new ActionListener(){
+				public void actionPerformed(ActionEvent e){
+					if(handlers != null){
+						for(TableButtonPressedHandler handler : handlers){
+							handler.onButtonPress(row, column);
+						}
+					}
+				}
+			});
+			buttons.put(row, button);
+		}
 
-    public Object getCellEditorValue()
-    {
-        return null;
-    }
+		return button;
+	}
 
-    public void dispose()
-    {
-        if (handlers != null)
-        {
-            handlers.clear();
-        }
-    }
+	public Component getTableCellEditorComponent(JTable table, Object value, boolean selected, int row, int column)
+	{
+		JButton button = null;
+		if(buttons.containsKey(row))
+		{
+			button = buttons.get(row);
+		}
+		else
+		{
+			button = new JButton();
+			if(customizer != null)
+			{
+				// customize the button
+				customizer.customize(button, row, column);
+			}
+			if(value != null && value instanceof String)
+			{
+				button.setText((String)value);
+			}
+
+			buttons.put(row, button);
+		}
+
+		return button;
+	}
+
+
+	public void setButtonText(int row, String text)
+	{
+		JButton button = null;
+		if(buttons.containsKey(row))
+		{
+			button = buttons.get(row);
+			button.setText(text);
+		}
+	}
+
+	public Object getCellEditorValue()
+	{
+		return null;
+	}
+
+	public void dispose()
+	{
+		if (handlers != null)
+		{
+			handlers.clear();
+		}
+	}
 }

@@ -14,6 +14,8 @@ import unbbayes.model.umpst.groups.GroupModel;
 
 public class RuleModel extends ObjectModel{
 	
+	private static final long serialVersionUID = 1L;
+	
 	private String ruleType;
 	
 	private List<EntityModel>       entityList;

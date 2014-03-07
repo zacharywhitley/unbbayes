@@ -15,7 +15,7 @@ import unbbayes.util.GuiUtils;
 public class EntitiesMainPanel extends IUMPSTPanel{
 	
 	private JSplitPane splitPane;
-	private EntitiesTable menuPanel;
+	private TableEntities menuPanel;
 	private EntitiesSearchPanel requirementsPanel;
 	
 	public EntitiesMainPanel(UmpstModule parentPanel, 
@@ -52,11 +52,11 @@ public class EntitiesMainPanel extends IUMPSTPanel{
 	/**
 	 * @return the menuPanel
 	 */
-	public EntitiesTable getEntitiesTable() {
+	public TableEntities getEntitiesTable() {
 		if(menuPanel == null ){
 			DefaultTableModel model = new DefaultTableModel();
 
-			menuPanel = new EntitiesTable(getFatherPanel(),getUmpstProject());
+			menuPanel = new TableEntities(getFatherPanel(),getUmpstProject());
 		}
 		return menuPanel;
 	}

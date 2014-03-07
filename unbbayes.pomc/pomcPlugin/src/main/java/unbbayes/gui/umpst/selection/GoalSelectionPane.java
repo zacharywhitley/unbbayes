@@ -20,12 +20,10 @@ import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 
 import unbbayes.controller.IconController;
-import unbbayes.gui.umpst.goal.GoalsEditionPanel;
-import unbbayes.gui.umpst.selection.interfaces.HypothesisAddition;
+import unbbayes.gui.umpst.selection.interfaces.GoalAddition;
 import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
 
-public class HypothesisSelectionPane extends JDialog{
+public class GoalSelectionPane extends JDialog{
 
 	private IconController iconController = IconController.getInstance();
 	
@@ -37,30 +35,29 @@ public class HypothesisSelectionPane extends JDialog{
 
 	private final JDialog dialog; 
 	
-	private final HypothesisAddition hypothesisEditionPanel;
+	private GoalAddition fatherPanel; 
 	
 	JButton btnSelect;
 	JButton btnClose; 
 	
-	public HypothesisSelectionPane(Collection<HypothesisModel> _hypothesisArray, 
-			HypothesisAddition _hypothesisEditionPanel){
+	public GoalSelectionPane(Collection<GoalModel> _goals, GoalAddition _fatherPanel){
 		
 		super();
 		
-		dialog = this;
+		dialog = this; 
 		
-		this.hypothesisEditionPanel = _hypothesisEditionPanel; 
+		this.fatherPanel = _fatherPanel; 
 		
-		this.setTitle(resource.getString("TtHypothesis")); 
-		this.setModal(true); 
+		GoalModel[] goals = (GoalModel[])_goals.toArray(new GoalModel[0]); 
+		
+		this.setTitle(resource.getString("ttGoals")); 
+		
+		this.setModalityType(DEFAULT_MODALITY_TYPE); 
 		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
 		this.setLayout(new BorderLayout()); 
 		
-		HypothesisModel[] hypothesis = (HypothesisModel[])_hypothesisArray.toArray(new HypothesisModel[0]); 
-		
-		this.jlist = new JList(hypothesis); 
-		
+		this.jlist = new JList(goals); 
 		jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); 
 		
 		scrollListObjectEntity = new JScrollPane(jlist);
@@ -69,10 +66,9 @@ public class HypothesisSelectionPane extends JDialog{
 		btnSelect.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				if(jlist.getSelectedValue() != null){
-					List<HypothesisModel> list = new ArrayList<HypothesisModel>();
-					list.add((HypothesisModel) jlist.getSelectedValue()); 
-					hypothesisEditionPanel.addHypothesisList(list); 
-//					hypothesisEditionPanel.addVinculateHypothesis((String) jlist.getSelectedValue());
+					List<GoalModel> listGoals = new ArrayList<GoalModel>();
+					listGoals.add((GoalModel) jlist.getSelectedValue()); 
+					fatherPanel.addGoalList(listGoals);
 					dialog.dispose();
 				}
 			}
@@ -92,7 +88,7 @@ public class HypothesisSelectionPane extends JDialog{
 		toolBar.add(btnSelect);
 		toolBar.add(btnClose);
 
-		JLabel label = new JLabel(resource.getString("HpSelectHipothesis") + "               ");
+		JLabel label = new JLabel(resource.getString("hpSelectGoals") + "               ");
 		
 		//TODO put options of the algorithm here. 
 		

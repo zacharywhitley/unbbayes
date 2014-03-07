@@ -104,6 +104,7 @@ public class Resources extends GuiResources {
 		{"HpSelectSubHipothesis" , "Select one sub hipothesis"},
 		{"HpSelectHipothesis" , "Select one hipothesis"},
 		{"hpSelectSubGoals" , "Select one sub goal"},
+		{"hpSelectGoals" , "Select one goal"},
 		{"hpSelectAttribute" , "Select one attribute"},
 		
 		{"hpGoalsTab" , "Edit goals,queries and envidences"},
@@ -129,6 +130,11 @@ public class Resources extends GuiResources {
 		{"ErGoalDescriptionEmpty" , "Goal description empty!"},
 		{"erEntityDescriptionEmpty" , "Entity description empty!"},
 		{"erHypothesisDescriptionEmpty" , "Hypothesis description empty!"},
+		{"erIncompatibleVersion" , "File loaded is incompatible whith this version of plugin!"},
+		{"erLoadFatal" , "Fatal error in load project."},
+		{"erNotUmpFormat" , "This file format is not supported."},
+		{"erFileNotFound" , "File not found."},
+		{"erSaveFatal" , "Fatal error in save project."},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
@@ -138,6 +144,8 @@ public class Resources extends GuiResources {
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 		
+		{"msSaveSuccessfull" , "File save successfull."},
+		{"msLoadSuccessfull" , "File load successfull."},
 		
 		//##############       Title Dialog Messages   ###################//
 				
@@ -196,10 +204,14 @@ public class Resources extends GuiResources {
 		
 		{"mnFile" , "File"},
 		{"mnFileMnemonic" , "F"},
+		{"mnNewFile" , "New Project"},
+		{"mnNewFileMnemonic" , "N"},
 		{"mnOpen" , "Open"},
 		{"mnOpenMnemonic" , "O"},
 		{"mnSave" , "Save"},
 		{"mnSaveMnemonic" , "S"},
+		{"mnSaveAs" , "Save as"},
+		{"mnSaveAsMnemonic" , "V"},
 		{"mnHelp" , "Help"},
 		{"mnHelpMnemonic" , "H"},
 		{"mnHelpContents" , "Help"},

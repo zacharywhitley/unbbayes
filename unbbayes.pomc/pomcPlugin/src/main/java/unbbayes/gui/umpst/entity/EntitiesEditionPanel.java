@@ -7,17 +7,16 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -29,11 +28,15 @@ import javax.swing.table.TableColumn;
 import unbbayes.controller.umpst.Controller;
 import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.IUMPSTPanel;
-import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.gui.umpst.TableButton;
+import unbbayes.gui.umpst.TableObject;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.gui.umpst.selection.AttributeSelectionPane;
+import unbbayes.gui.umpst.selection.GoalSelectionPane;
+import unbbayes.gui.umpst.selection.HypothesisSelectionPane;
+import unbbayes.gui.umpst.selection.interfaces.GoalAddition;
+import unbbayes.gui.umpst.selection.interfaces.HypothesisAddition;
 import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
@@ -51,17 +54,14 @@ import unbbayes.model.umpst.rules.RuleModel;
  * @author Shou Matusumoto
  *
  */
-public class EntitiesEditionPanel extends IUMPSTPanel {
+public class EntitiesEditionPanel extends IUMPSTPanel 
+                                  implements GoalAddition, HypothesisAddition {
 
 	private static final long serialVersionUID = 1L;
 
 	private Object[][] dataFrame ;
 	private Object[][] dataFrameHypo ;
 	private Object[][] dataBacktracking ;
-	private Object[][] dataBacktrackingHypo ;
-
-	private GridBagConstraints constraint     = 
-			new GridBagConstraints();
 
 	private JButton buttonSave;
 	private JButton buttonCancel;
@@ -74,19 +74,11 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 
 	private MainPropertiesEditionPane mainPropertiesEditionPane ; 
 
-	private JList list; 
-	private JList listAux;
-	
-	private DefaultListModel listModel = new DefaultListModel();
-	private DefaultListModel listModelAux = new DefaultListModel();
-
-	private JList listHypothesis,listHypothesisAux; 
-	private DefaultListModel listHypothesisModel = new DefaultListModel();
-	private DefaultListModel listHypothesisModelAux = new DefaultListModel();
-	
 	private Controller controller; 
-	
+
 	UmpstModule fatherModule; 
+	
+	private final EntitiesEditionPanel entitiesEditionPanel; 
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource = 
@@ -101,8 +93,10 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 
 		super(_fatherModule);
 		
+		entitiesEditionPanel = this; 
+
 		fatherModule = _fatherModule; 
-		
+
 		controller = Controller.getInstance(_umpstProject); 
 
 		this.setUmpstProject(_umpstProject);
@@ -142,12 +136,14 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 
 	public JSplitPane createBacktrackingPanel(){
 
-		JSplitPane panel = new JSplitPane(
+		JSplitPane splitPanel = new JSplitPane(
 				JSplitPane.VERTICAL_SPLIT,
 				createBacktrackingGoalPanel(),
 				createBacktrackingHypothesis());
 
-		return panel; 
+		splitPanel.setDividerLocation(150); 
+
+		return splitPanel; 
 
 	}
 
@@ -202,7 +198,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 
 		buttonReuseAttribute = new JButton(iconController.getReuseAttributeIcon());
 		buttonReuseAttribute.setToolTipText(resource.getString("hpReuseAttribute"));
-		
+
 		buttonFrameGoal	= new JButton (iconController.getCicleGoalIcon());
 		buttonFrameHypothesis	= new JButton (iconController.getCicleHypothesisIcon());
 
@@ -212,7 +208,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 
 		buttonSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+
 				//Creating new entity
 				if( entity == null){
 					try {
@@ -221,15 +217,13 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 							JOptionPane.showMessageDialog(null, resource.getString("erEntityDescriptionEmpty"));
 						}
 						else{
-							
+
 							EntityModel newEntity = controller.createNewEntity(
 									mainPropertiesEditionPane.getTitleText(), 
 									mainPropertiesEditionPane.getCommentsText(), 
 									mainPropertiesEditionPane.getAuthorText(), 
 									mainPropertiesEditionPane.getDateText()); 
-		
-//							updateMapSearch(entityAdd);
-							//updateBacktracking(entityAdd);
+
 							updateTableEntities();
 
 							changePanel(new EntitiesEditionPanel(getFatherPanel(),getUmpstProject(),newEntity));	
@@ -246,33 +240,15 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 
 					}
 				}
-				
+
 				//Changing old entity
 				else{
 					if( JOptionPane.showConfirmDialog(null, 
 							"Do you want to update this entity?", 
 							"UnBBayes", 
 							JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
-						
+
 						try{
-
-							/**Cleaning Search Map*/
-//							Set<EntityModel> aux = new HashSet<EntityModel>();
-//							EntityModel entityBeta;
-//							String[] strAux = entity.getEntityName().split(" ");
-//
-//							for (int i = 0; i < strAux.length; i++) {
-//								if(getUmpstProject().getMapSearchEntity().get(strAux[i])!=null){
-//									getUmpstProject().getMapSearchEntity().get(strAux[i]).getEntitiesRelated().remove(entity);
-//									aux = getUmpstProject().getMapSearchEntity().get(strAux[i]).getEntitiesRelated();
-//									for (Iterator<EntityModel> it = aux.iterator(); it.hasNext(); ) {
-//										entityBeta = it.next();
-//									}
-//								}
-//							}
-
-
-							/************/
 
 							entity.setName(mainPropertiesEditionPane.getTitleText());
 							entity.setComments(mainPropertiesEditionPane.getCommentsText());
@@ -285,8 +261,6 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 									"entity successfully updated", 
 									"UnBBayes", 
 									JOptionPane.INFORMATION_MESSAGE);
-
-
 						}
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,
@@ -304,16 +278,30 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 		buttonFrameHypothesis.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
-				createFrameHypo();
-
+				Collection<HypothesisModel> hypothesisSet = getUmpstProject().getMapHypothesis().values(); 
+				
+				HypothesisSelectionPane hypothesisSelectionPane = 
+						new HypothesisSelectionPane(hypothesisSet, entitiesEditionPanel); 
+				hypothesisSelectionPane.setLocationRelativeTo(entitiesEditionPanel); 
+				hypothesisSelectionPane.pack(); 
+				hypothesisSelectionPane.setVisible(true); 
 			}
 		});
 
 		buttonFrameGoal.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
-				createFrameGoal();				
+//				createFrameGoal();	
+//				Set<String> keys = getUmpstProject().getMapGoal().keySet();
+//				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+				Collection<GoalModel> goalSet = getUmpstProject().getMapGoal().values(); 
+				
+				GoalSelectionPane goalSelectionPane = new GoalSelectionPane(goalSet, entitiesEditionPanel); 
+				goalSelectionPane.setLocationRelativeTo(entitiesEditionPanel); 
+				goalSelectionPane.pack(); 
+				goalSelectionPane.setVisible(true); 
 			}
+			
 		});
 
 		buttonCancel.addActionListener(new ActionListener() {
@@ -329,7 +317,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 
 			}
 		});
-		
+
 		buttonReuseAttribute.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				createAttributeSelectionPanel(); 
@@ -338,25 +326,13 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 		});
 	}
 
-
-	/** Returns an ImageIcon, or null if the path was invalid. */
-	protected static ImageIcon createImageIcon(String path) {
-		java.net.URL imgURL = MainPanel.class.getResource(path);
-		if (imgURL != null) {
-			return new ImageIcon(imgURL);
-		} else {
-			System.err.println("Couldn't find file: " + path);
-			return null;
-		}
-	}
-	
 	public void createAttributeSelectionPanel(){
 		AttributeSelectionPane hypothesisSelectionPane = new AttributeSelectionPane(vinculateAtribute(), this); 
 		hypothesisSelectionPane.setLocationRelativeTo(fatherModule); 
 		hypothesisSelectionPane.pack();
 		hypothesisSelectionPane.setVisible(true);
 	}
-	
+
 	public void updateTableEntities(){
 		String[] columnNames = {"ID","Entity","",""};	    
 
@@ -375,9 +351,8 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 		}
 
 		UmpstModule pai = getFatherPanel();
-//		changePanel(pai.getMenuPanel());
 
-		EntitiesTable entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
+		TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
 		JTable table = entitiesTable.createTable(columnNames,data);
 
 		entitiesTable.getScrollPanePergunta().setViewportView(table);
@@ -387,85 +362,65 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 		entitiesTable.repaint();
 	}
 
-//	public void updateMapSearch(EntityModel entityAdd){
-//		/**Upating searchPanel*/
-//
-//		String[] strAux = {};
-//		strAux = entityAdd.getEntityName().split(" ");
-//		Set<EntityModel> entitySetSearch = new HashSet<EntityModel>();
-//
-//		for (int i = 0; i < strAux.length; i++) {
-//			if(!strAux[i].equals(" ")){
-//				if(getUmpstProject().getMapSearchEntity().get(strAux[i])==null){
-//					entitySetSearch.add(entityAdd);
-//					SearchModelEntity searchModel = new SearchModelEntity(strAux[i], entitySetSearch);
-//					getUmpstProject().getMapSearchEntity().put(searchModel.getKeyWord(), searchModel);
-//				}
-//				else{
-//					getUmpstProject().getMapSearchEntity().get(strAux[i]).getEntitiesRelated().add(entityAdd);
-//				}
-//			}
-//		}
-//
-//		/************/		    
-//
-//	}
-
-
 	public JPanel createBacktrackingGoalPanel(){
 
 		JPanel panel = new JPanel();
+		
+		final int COLUMN_BUTTON_DEL = 0; 
+		final int COLUMN_ID         = 1; 
+		final int COLUMN_NAME       = 2; 
 
 		JScrollPane scrollPane = new JScrollPane();
-		
+
 		if(( entity != null ) && (entity.getBacktrackingGoalList().size() > 0) ){
-			
+
 			if(entity.getBacktrackingGoalList().size() > 0){
 				dataBacktracking = new Object[entity.getBacktrackingGoalList().size()][3];
 
 				for (int i = 0; i < entity.getBacktrackingGoalList().size(); i++) {
-					dataBacktracking[i][0] = entity.getBacktrackingGoalList().get(i);
-					dataBacktracking[i][1] = "Goal";
-					dataBacktracking[i][2] = "";
+					dataBacktracking[i][COLUMN_BUTTON_DEL] = "";
+					dataBacktracking[i][COLUMN_ID] = entity.getBacktrackingGoalList().get(i).getId();
+					dataBacktracking[i][COLUMN_NAME] = entity.getBacktrackingGoalList().get(i);
 				}
 			}
-			
-			String[] columns = {"Name","Type",""};
-			
+
+			String[] columns = {"","ID","Name"};
+
 			DefaultTableModel model = new DefaultTableModel(dataBacktracking, 
 					columns);
-			
+
 			JTable table = new JTable(model);
 
-			TableButton buttonDel = new TableButton( new TableButton.TableButtonCustomizer()
-			{
-				public void customize(JButton button, int row, int column)
-				{
+			TableButton buttonDel = new TableButton( new TableButton.TableButtonCustomizer(){
+				public void customize(JButton button, int row, int column){
 					button.setIcon(IconController.getInstance().getDeleteIcon() );
 				}
 			});
 
-			TableColumn buttonColumn1 = table.getColumnModel().getColumn(columns.length-1);
+			TableColumn buttonColumn1 = table.getColumnModel().getColumn(COLUMN_BUTTON_DEL);
 
-			buttonColumn1.setMaxWidth(28);
+			buttonColumn1.setMaxWidth(TableObject.SIZE_COLUMN_BUTTON);
 			buttonColumn1.setCellRenderer(buttonDel);
 			buttonColumn1.setCellEditor(buttonDel);
 
 			buttonDel.addHandler(new TableButton.TableButtonPressedHandler() {	
 				public void onButtonPress(int row, int column) {
-					
-					GoalModel goal = (GoalModel)dataBacktracking[row][0];
-					
+
+					GoalModel goal = (GoalModel)dataBacktracking[row][COLUMN_NAME];
+
 					controller.removeGoalFromEntityBackTrackingList(entity, goal); 
-					
+
 					UmpstModule pai = getFatherPanel();
 					changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().createEntitiesPanel(entity));
 				}
 			});
+
+			table.getColumnModel().getColumn(COLUMN_ID).setMaxWidth(TableObject.SIZE_COLUMN_INDEX); 
 			
 			scrollPane = new JScrollPane(table);
-
 		}
+
+		//Add painel only if have one entity created. 
 		
 		if (entity != null){
 
@@ -474,46 +429,46 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 
 			GridBagConstraints c = new GridBagConstraints();
 
-			if (entity!=null){
-				c.gridx = 1; c.gridy = 0; c.gridwidth=1;
-				panel.add(buttonFrameGoal,c);
-				buttonFrameGoal.setToolTipText("Add backtracking from goals");
-			}
+			c.gridx = 1; c.gridy = 0; c.gridwidth=1;
+			panel.add(buttonFrameGoal,c);
+			buttonFrameGoal.setToolTipText("Add backtracking from goals");
 
 			c.fill = GridBagConstraints.BOTH;
 			c.gridx=0;c.gridy=1;c.weightx=0.9;c.weighty=0.9;c.gridwidth=6;
 
 			panel.add(scrollPane,c);
-			
 		}
 
 		return panel;
-
 	}
 
 	public JPanel createBacktrackingHypothesis(){
 
 		JPanel panel = new JPanel();
 
-		JScrollPane scrollPane = new JScrollPane();
+		final int COLUMN_BUTTON_DEL = 0; 
+		final int COLUMN_ID         = 1; 
+		final int COLUMN_NAME       = 2; 
 		
+		JScrollPane scrollPane = new JScrollPane();
+
 		if(( entity != null ) && (entity.getBacktrackingHypothesis().size() > 0)){
-			
+
 			if(entity.getBacktrackingHypothesis().size() > 0){
 				dataBacktracking = new Object[entity.getBacktrackingHypothesis().size()][3];
 
 				for (int i = 0; i < entity.getBacktrackingHypothesis().size(); i++) {
-					dataBacktracking[i][0] = entity.getBacktrackingHypothesis().get(i);
-					dataBacktracking[i][1] = "Hypothesis";
-					dataBacktracking[i][2] = "";
+					dataBacktracking[i][COLUMN_BUTTON_DEL] = "";
+					dataBacktracking[i][COLUMN_ID] = entity.getBacktrackingHypothesis().get(i).getId();
+					dataBacktracking[i][COLUMN_NAME] = entity.getBacktrackingHypothesis().get(i);
 				}
 			}
-			
-			String[] columns = {"Name","Type",""};
-			
+
+			String[] columns = {" ","ID","Name"};
+
 			DefaultTableModel model = new DefaultTableModel(dataBacktracking, 
 					columns);
-			
+
 			JTable table = new JTable(model);
 
 			TableButton buttonDel = new TableButton( new TableButton.TableButtonCustomizer()
@@ -524,28 +479,30 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 				}
 			});
 
-			TableColumn buttonColumn1 = table.getColumnModel().getColumn(columns.length-1);
+			TableColumn buttonColumn1 = table.getColumnModel().getColumn(COLUMN_BUTTON_DEL);
 
-			buttonColumn1.setMaxWidth(28);
+			buttonColumn1.setMaxWidth(TableObject.SIZE_COLUMN_BUTTON);
 			buttonColumn1.setCellRenderer(buttonDel);
 			buttonColumn1.setCellEditor(buttonDel);
 
 			buttonDel.addHandler(new TableButton.TableButtonPressedHandler() {	
 				public void onButtonPress(int row, int column) {
-					
-					HypothesisModel hypothesis = (HypothesisModel)dataBacktracking[row][0];
-					
+
+					HypothesisModel hypothesis = (HypothesisModel)dataBacktracking[row][COLUMN_NAME];
+
 					controller.removeHypothesisFromEntityBackTrackingList(entity, hypothesis); 
-					
+
 					UmpstModule pai = getFatherPanel();
 					changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().createEntitiesPanel(entity));
 				}
 			});
+
+			table.getColumnModel().getColumn(COLUMN_ID).setMaxWidth(TableObject.SIZE_COLUMN_INDEX); 
 			
 			scrollPane = new JScrollPane(table);
 
 		}
-		
+
 		if (entity != null){
 
 			panel = new JPanel();
@@ -553,64 +510,20 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 
 			GridBagConstraints c = new GridBagConstraints();
 
-			if (entity!=null){
-				c.gridx = 1; c.gridy = 0; c.gridwidth=1;
-				panel.add(buttonFrameHypothesis,c);
-				buttonFrameHypothesis.setToolTipText("Add hypothesis from goals");
-			}
-
+     		c.gridx = 1; c.gridy = 0; c.gridwidth=1;
+			panel.add(buttonFrameHypothesis,c);
+			buttonFrameHypothesis.setToolTipText("Add hypothesis from goals");
+	
 			c.fill = GridBagConstraints.BOTH;
 			c.gridx=0;c.gridy=1;c.weightx=0.9;c.weighty=0.9;c.gridwidth=6;
 
 			panel.add(scrollPane,c);
-			
+
 		}
 
 		return panel;
 
 	}
-
-
-
-
-	/**public void updateBacktracking(EntityModel entity){
-		String keyWord = "";
-		Set<String> keys = getUmpstProject().getMapGoal().keySet();
-		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-
-
-
-		if (list !=null){
-			for (int i = 0; i < list.getModel().getSize();i++) {
-				keyWord = list.getModel().getElementAt(i).toString();
-				for (String key: sortedKeys){
-					if (keyWord.equals( getUmpstProject().getMapGoal().get(key).getGoalName()) ){
-						getUmpstProject().getMapGoal().get(key).getFowardTrackingEntity().add(entity);
-					}			
-
-				}
-			}
-			entity.setBacktracking(list);
-
-		}
-
-		if (listHypothesis !=null){
-			for (int i = 0; i < listHypothesis.getModel().getSize();i++) {
-				keyWord = listHypothesis.getModel().getElementAt(i).toString();
-				for (String key: sortedKeys){
-					if ( getUmpstProject().getMapHypothesis().get(key)!=null){
-						if (keyWord.equals( getUmpstProject().getMapHypothesis().get(key).getHypothesisName()) ){
-							getUmpstProject().getMapHypothesis().get(key).getFowardTrackingEntity().add(entity);
-						}	
-					}
-
-				}
-			}
-			entity.setBacktrackingHypothesis(listHypothesis);
-
-		}
-
-	}*/
 
 	public JPanel createAtributeTable(){
 
@@ -666,7 +579,6 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 				rule = it.next();
 				i++;
 			}
-
 		}
 
 		if ((entity!=null)&&(entity.getFowardTrackingRelationship()!=null)){
@@ -676,8 +588,6 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 				relationship = it.next();
 				i++;
 			}
-
-
 		}
 
 		Object[][] data = new Object[i+1][2];
@@ -710,7 +620,6 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 				data[i][1] = "Rule";
 				i++;
 			}
-
 		}
 
 		if ((entity!=null)&&(entity.getFowardTrackingRelationship()!=null)){
@@ -722,10 +631,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 				data[i][1] = "Relationship";
 				i++;
 			}
-
-
 		}
-
 
 		DefaultTableModel model = new DefaultTableModel(data, columns);
 		JTable table = new JTable(model);
@@ -826,7 +732,6 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 				break;
 			}
 		}  
-
 	}
 
 	public void updateMapAtribute(AttributeModel atributeVinculated){
@@ -882,36 +787,30 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 		DefaultTableModel model = new DefaultTableModel(dataFrame,columnNames);
 		JTable table = new JTable(model);
 
-		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
-		{
-			public void customize(JButton button, int row, int column)
-			{
+		TableButton buttonAdd = new TableButton( new TableButton.TableButtonCustomizer(){
+			public void customize(JButton button, int row, int column){
 				button.setIcon(IconController.getInstance().getAddIconP());
-
 			}
 		});
 
 		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-1);
-		buttonColumn1.setMaxWidth(28);
-		buttonColumn1.setCellRenderer(buttonEdit);
-		buttonColumn1.setCellEditor(buttonEdit);
+		buttonColumn1.setMaxWidth(TableObject.SIZE_COLUMN_BUTTON);
+		buttonColumn1.setCellRenderer(buttonAdd);
+		buttonColumn1.setCellEditor(buttonAdd);
 
-		buttonEdit.addHandler(new TableButton.TableButtonPressedHandler() {	
+		buttonAdd.addHandler(new TableButton.TableButtonPressedHandler() {	
 			public void onButtonPress(int row, int column) {
 
 				String key = dataFrame[row][0].toString();
-				
+
 				GoalModel goal = (GoalModel)getUmpstProject().getMapGoal().get(key); 
-				
+
 				controller.addGoalToEntityBackTrackingList(entity, goal);
-				
+
 				UmpstModule pai = getFatherPanel();
 				changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().createEntitiesPanel(entity));
-
 			}
 		});
-
-
 
 		JScrollPane scroll = new JScrollPane(table);
 
@@ -924,10 +823,9 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		frame.setSize(300,200);
 		frame.setVisible(true);
-
 	}	
 
-	public void createFrameHypo(){
+	public void createFrameHypothesis(){
 
 		JFrame frame = new JFrame("Adding backtracking from hypothesis");
 		JPanel panel = new JPanel();
@@ -952,16 +850,14 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 		DefaultTableModel model = new DefaultTableModel(dataFrameHypo,columnNames);
 		JTable table = new JTable(model);
 
-		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
-		{
-			public void customize(JButton button, int row, int column)
-			{
+		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer(){
+			public void customize(JButton button, int row, int column){
 				button.setIcon(IconController.getInstance().getAddIcon());
-
 			}
 		});
 
-		TableColumn buttonColumn1 = table.getColumnModel().getColumn(columnNames.length-1);
+		TableColumn buttonColumn1 = table.getColumnModel().getColumn(0);
+		
 		buttonColumn1.setMaxWidth(28);
 		buttonColumn1.setCellRenderer(buttonEdit);
 		buttonColumn1.setCellEditor(buttonEdit);
@@ -970,17 +866,15 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 			public void onButtonPress(int row, int column) {
 
 				String key = dataFrame[row][0].toString();
-				
+
 				HypothesisModel hypothesis = (HypothesisModel)getUmpstProject().getMapHypothesis().get(key); 
-				
+
 				controller.addHypothesisToEntityBackTrackingList(entity, hypothesis);
-								UmpstModule pai = getFatherPanel();
+				UmpstModule pai = getFatherPanel();
 				changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().createEntitiesPanel(entity));
 
 			}
 		});
-
-
 
 		JScrollPane scroll = new JScrollPane(table);
 
@@ -993,8 +887,24 @@ public class EntitiesEditionPanel extends IUMPSTPanel {
 		frame.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 		frame.setSize(300,200);
 		frame.setVisible(true);
-
 	}
 
+	public void addGoalList(List<GoalModel> listGoals) {
+	
+		GoalModel goal = listGoals.get(0); 
+		controller.addGoalToEntityBackTrackingList(entity, goal);
+
+		UmpstModule pai = getFatherPanel();
+		changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().createEntitiesPanel(entity));
+	
+	}
+
+	public void addHypothesisList(List<HypothesisModel> list) {
+		HypothesisModel hypothesis = list.get(0); 
+		controller.addHypothesisToEntityBackTrackingList(entity, hypothesis);
+
+		UmpstModule pai = getFatherPanel();
+		changePanel(pai.getMenuPanel().getEntitiesPane().getEntitiesPanel().createEntitiesPanel(entity));
+	}
 
 }

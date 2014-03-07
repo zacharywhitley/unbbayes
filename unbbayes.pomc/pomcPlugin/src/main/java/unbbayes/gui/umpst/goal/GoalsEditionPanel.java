@@ -6,8 +6,11 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
@@ -27,12 +30,14 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.MaskFormatter;
 
+import unbbayes.controller.umpst.Controller;
 import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.gui.umpst.selection.HypothesisSelectionPane;
 import unbbayes.gui.umpst.selection.SubGoalSelectionPane;
+import unbbayes.gui.umpst.selection.interfaces.HypothesisAddition;
 import unbbayes.model.umpst.entities.AttributeModel;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.entities.RelationshipModel;
@@ -46,7 +51,7 @@ import unbbayes.util.CommonDataUtil;
 /**
  * Panel for Goals Edition
  */
-public class GoalsEditionPanel extends IUMPSTPanel {
+public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition{
 
 	private static final long serialVersionUID = 1L;
 
@@ -72,6 +77,8 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 	private HypothesisSelectionPane hypothesisSelectionPane; 
 
 	UmpstModule janelaPai; 
+	
+	private Controller controller; 
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource = 
@@ -89,6 +96,8 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 		super(fatherModule);
 
 		setUmpstProject(umpstProject);
+		
+		Controller controller = Controller.getInstance(umpstProject); 
 		
 		this.goal = goal;
 		
@@ -207,11 +216,11 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 					else{
 						GoalModel goalAdd = updateMapGoal();		
 						
-						TableGoals tableGoals = updateTableGoals(goalAdd);
+						TableGoals tableGoals = updateTableGoals();
 						
 						UmpstModule pai = getFatherPanel();
-						changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalAdd));	
-						//						JOptionPane.showMessageDialog(null, "Goal successfully added",null, JOptionPane.INFORMATION_MESSAGE);
+						changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalAdd));
+						
 					}
 				}
 				// -> Update Goal
@@ -234,7 +243,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 							goal.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							goal.setDate(mainPropertiesEditionPane.getDateText());
 
-							updateTableGoals(goal);
+							updateTableGoals();
 
 							//							JOptionPane.showMessageDialog(null, "Goal successfully updated",null, JOptionPane.INFORMATION_MESSAGE);	
 
@@ -266,7 +275,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 				UmpstModule pai = getFatherPanel();
 				if(goalFather == null){
-					TableGoals tableGoals = updateTableGoals(goal);
+					TableGoals tableGoals = updateTableGoals();
 					changeToTableGoals(tableGoals); 
 				} else{
 					changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalFather));	
@@ -380,8 +389,6 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 					aux=null;
 				}
 			}
-
-			//goalFather.getSubgoals().put(goalAdd.getId(), goalAdd);
 		}
 
 
@@ -393,27 +400,12 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 	}
 
 
-	public TableGoals updateTableGoals(GoalModel goalUpdate){
+	public TableGoals updateTableGoals(){
 		String[] columnNames = {"ID","Goal","","",""};
-
-		Object[][] data = new Object[getUmpstProject().getMapGoal().size()][5];
-		Integer i=0;
-
-		Set<String> keys = getUmpstProject().getMapGoal().keySet();
-		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-
-		for (String key: sortedKeys){
-			data[i][0] = getUmpstProject().getMapGoal().get(key).getId();
-			data[i][1] = getUmpstProject().getMapGoal().get(key).getName();			
-			data[i][2] = "";
-			data[i][3] = "";
-			data[i][4] = "";
-			i++;
-		}
 
 		UmpstModule pai = getFatherPanel();
 		TableGoals goalsTable = pai.getMenuPanel().getGoalsPane().getGoalsTable();
-		goalsTable.createTable(columnNames,data);
+		goalsTable.createTable(columnNames);
 		
 		return goalsTable; 
 	}
@@ -795,7 +787,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 	}
 
 
-	public String[] getOthersHypothesisList(){
+	public Collection<HypothesisModel> getOthersHypothesisList(){
 
 		Set<String> keys = getUmpstProject().getMapGoal().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);	
@@ -824,10 +816,9 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 				}
 			}
 		}   
-
-		String[] allOtherHypothesis = new String[i];
-
-		i=0;
+		
+		List<HypothesisModel> listHypothesis = new ArrayList<HypothesisModel>(); 
+		
 		for (String key: sortedKeys){
 			if(getUmpstProject().getMapGoal().get(key)!=goal){
 				if(getUmpstProject().getMapGoal().get(key).getMapHypothesis()!=null){
@@ -838,15 +829,15 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 					for (String keyHypo : sortedKeysHypo){
 						if ( goal.getMapHypothesis().get(goalAux.getMapHypothesis().get(keyHypo).getId()) == null ){
-							allOtherHypothesis[i] = goalAux.getMapHypothesis().get(keyHypo).getName();
-							i++;
+							listHypothesis.add(goalAux.getMapHypothesis().get(keyHypo));
 						}
 					}
 
 				}
 			}
 		} 
-		return allOtherHypothesis;
+		
+		return listHypothesis;
 
 	}
 
@@ -913,22 +904,19 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 		int i=0;
 
-		/**This is only to found the number of other hypothesis existents in order to create 
+		/**This is only to found the number of other goals existents in order to create 
 		 *     	    String[] allOtherHypothesis = new String[i];
 		 * */
 		for (String key: sortedKeys){
 			if(getUmpstProject().getMapGoal().get(key)!=goal){
 
 				if(goal.getSubgoals().size()>0){
-
 					if (goal.getSubgoals().get(getUmpstProject().getMapGoal().get(key).getId())==null){
 						i++;
 					}
-
 				}
 				else{
 					i++;	
-
 				}
 			}
 		}   
@@ -941,7 +929,7 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 			if(getUmpstProject().getMapGoal().get(key)!=goal){
 
 				if(goal.getSubgoals().size()>0){
-					if (goal.getSubgoals().get(getUmpstProject().getMapGoal().get(key).getId())==null){
+					if (goal.getSubgoals().get(getUmpstProject().getMapGoal().get(key).getId()) == null){
 						allOtherGoals[i] = getUmpstProject().getMapGoal().get(key).getName();
 						i++;
 					}
@@ -980,6 +968,11 @@ public class GoalsEditionPanel extends IUMPSTPanel {
 
 		UmpstModule pai = getFatherPanel();
 		changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goal));    			
+	}
+
+	public void addHypothesisList(List<HypothesisModel> list) {
+		HypothesisModel hypothesisModel = list.get(0); 
+		addVinculateHypothesis(hypothesisModel.getName()); 
 	}
 
 

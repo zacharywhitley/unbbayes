@@ -36,7 +36,7 @@ public class EntitySelectionPanel extends JDialog{
 	JButton btnSelect;
 	JButton btnClose; 
 	
-	public EntitySelectionPanel(String[] _attributeList, 
+	public EntitySelectionPanel(String[] _entityList, 
 			EntitiesEditionPanel _entitiesEditionPanel){
 		
 		super();
@@ -50,7 +50,7 @@ public class EntitySelectionPanel extends JDialog{
 		
 		this.setLayout(new BorderLayout()); 
 		
-		jlist = new JList(_attributeList);
+		jlist = new JList(_entityList);
 		jlist.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); 
 		
 		scrollListObjectEntity = new JScrollPane(jlist);

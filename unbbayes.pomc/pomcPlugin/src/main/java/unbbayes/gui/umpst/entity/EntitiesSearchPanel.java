@@ -29,7 +29,6 @@ import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.entities.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.rules.RuleModel;
 
 public class EntitiesSearchPanel extends IUMPSTPanel {
 		
@@ -242,7 +241,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	    UmpstModule pai = getFatherPanel();
 	    changePanel(pai.getMenuPanel());
 	    
-	    EntitiesTable entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
+	    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
 	    JTable table = entitiesTable.createTable(columnNames,data);
 	    
 	    entitiesTable.getScrollPanePergunta().setViewportView(table);
@@ -273,7 +272,7 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		    UmpstModule pai = getFatherPanel();
 		    changePanel(pai.getMenuPanel());
 		    
-		    EntitiesTable entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
+		    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
 		    JTable table = entitiesTable.createTable(columnNames,data);
 		    
 		    entitiesTable.getScrollPanePergunta().setViewportView(table);

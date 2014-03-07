@@ -15,6 +15,8 @@ import unbbayes.model.umpst.rules.RuleModel;
 
 public class EntityModel extends ObjectModel{
 	
+	private static final long serialVersionUID = 1L;
+	
 	private Map<String,AttributeModel> mapAtributes  = new HashMap<String, AttributeModel>();
 	private List<GoalModel> backtrackingGoalsList;
 	private List<HypothesisModel> backtrackingHypothesisList;

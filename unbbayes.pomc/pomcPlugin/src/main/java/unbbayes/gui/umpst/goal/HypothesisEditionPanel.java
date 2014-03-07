@@ -201,8 +201,8 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating hypothesis", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-						UmpstModule pai = getFatherPanel();
-						changePanel(pai.getMenuPanel());	
+//						UmpstModule pai = getFatherPanel();
+//						changePanel(pai.getMenuPanel());	
 
 					}
 				}
@@ -238,7 +238,12 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-				changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
+				if (hypothesis!=null && (hypothesis.getFather() != null)){
+					changePanel(new HypothesisEditionPanel(getFatherPanel(),getUmpstProject(),goalRelated,hypothesis.getFather(),null));
+				}else{
+					changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalRelated)	);
+				}
+		
 			}
 		});
 
