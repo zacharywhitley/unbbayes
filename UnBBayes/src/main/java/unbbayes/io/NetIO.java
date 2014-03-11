@@ -156,7 +156,7 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 	 */
 	public void save(File output, Graph graph) throws FileNotFoundException {
 		if (output.getName().lastIndexOf(".") < 0) {
-			String name = output.getPath() + ".net";
+			String name = output.getPath() + "."+SUPPORTED_EXTENSIONS[0];
 			output = new File(name);
 		}
 		
@@ -1175,11 +1175,11 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 	 */
 	public boolean supports(File file, boolean isLoadOnly) {
 		String fileExtension = null;
-		if (file.isDirectory()) {
-			// do not support directory
-			return false;
-		}
 		try {
+			if (file.isDirectory()) {
+				// do not support directory
+				return false;
+			}
 			int index = file.getName().lastIndexOf(".");
 			if (!isLoadOnly && index < 0) {
 				// force this to support saving files with no extension
