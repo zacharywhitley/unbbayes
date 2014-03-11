@@ -901,6 +901,10 @@ public class UbfIO implements MebnIO {
 	 */
 	public void saveMebn(File file, MultiEntityBayesianNetwork mebn)
 			throws IOException, IOMebnException {
+		if (file.getName().lastIndexOf(".") < 0) {
+			String name = file.getPath() + "."+SUPPORTED_EXTENSIONS[0];
+			file = new File(name);
+		}
 		
 		// Placeholder for Variable type names
 		String varType = null;
@@ -1199,7 +1203,15 @@ public class UbfIO implements MebnIO {
 	public boolean supports(File file, boolean isLoadOnly) {
 		String fileExtension = null;
 		try {
+			if (file.isDirectory()) {
+				// do not support directory
+				return false;
+			}
 			int index = file.getName().lastIndexOf(".");
+			if (!isLoadOnly && index < 0) {
+				// force this to support saving files with no extension
+				return true;
+			}
 			if (index >= 0) {
 				fileExtension = file.getName().substring(index + 1);
 			}
