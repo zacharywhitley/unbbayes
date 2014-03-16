@@ -7614,8 +7614,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 			// use the m-separation utility component in order to find a path between node1 and node2
 			if (!isVirtual 	// getMSeparationUtility().getRoutes shall be called only when we are actually including the edge. 
-					&& getMSeparationUtility().getRoutes(nodeTo, assumption, null, null, 1).isEmpty()) {
-				// there is no route from assumption to child, so we can create assumption->child without generating cycle
+					&& getMSeparationUtility().getRoutes(assumption, nodeTo, null, null, 1).isEmpty()) {
+				// there is no route from assumption to child, so we can create assumption<-child without generating cycle
 				createdEdge = new Edge(nodeTo, assumption);
 			} else { // supposedly, we can always add edges in one of the directions (i.e. there is no way we add arc in each direction and both result in cycle)
 				// if this is virtual edge, then the direction doesn't matter here, because direction will be tested again and occasionally inverted when other actual arcs are included
@@ -13256,7 +13256,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getVersionInfo()
 	 */
 	public String getVersionInfo() {
-		return "UnBBayes SciCast Markov Engine 1.0.3";
+		return "UnBBayes SciCast Markov Engine 1.0.4";
 	}
 
 	/**
