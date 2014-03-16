@@ -21,9 +21,12 @@
 package unbbayes.prs.bn;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import unbbayes.prs.INode;
+import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityTable;
@@ -454,6 +457,136 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 	public void setInternalIdentificator(int internalIdentificator) {
 		this.internalIdentificator = internalIdentificator;
 	}
+
+	/**
+	 * Generates a clone of this clique. It does not generate associated separators.
+	 * @param net: nodes in this network will be used to fill {@link Clique#getNodesList()}
+	 * @return a cloned clique
+	 */
+	public Clique clone(Network net) {
+		Clique newClique = new Clique();
+		newClique.setInternalIdentificator(this.getInternalIdentificator());
+		
+//		boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in new network.
+		// add nodes to clique
+		for (Node node : this.getNodes()) {
+			Node newNode = null;	
+			if (net != null) {
+				// extract associated node, because they are related by name
+				newNode = net.getNode(node.getName()); 
+			}
+			if (newNode == null) {
+				if (node instanceof ProbabilisticNode) {
+					// create the new node on the fly
+					newNode = (ProbabilisticNode) ((ProbabilisticNode) node).clone();
+				} else {
+					throw new IllegalStateException("Unable to clone: " + node + ", " + this);
+				}
+			}
+			newClique.getNodes().add(newNode);
+		}
+		
+		// add nodes to the list "associatedProbabilisticNodes"
+		for (Node node : this.getAssociatedProbabilisticNodes()) {
+			Node newNode = null;
+			if (net != null) {
+				// extract associated node, because they are related by name
+				newNode = net.getNode(node.getName());
+			}
+			if (newNode == null) {
+				if (node instanceof ProbabilisticNode) {
+					// create the new node on the fly
+					newNode = (ProbabilisticNode) ((ProbabilisticNode) node).clone();
+				} else {
+					throw new IllegalStateException("Unable to clone: " + node + ", " + this);
+				}
+			}
+			// this.getNodes() and this.getAssociatedProbabilisticNodes() may be different... Copy both separately. 
+			newClique.getAssociatedProbabilisticNodes().add(newNode);
+		}
+		
+		newClique.setIndex(this.getIndex());
+		
+		// copy clique potential variables
+		PotentialTable origPotential = this.getProbabilityFunction();
+		PotentialTable copyPotential = newClique.getProbabilityFunction();
+		for (int i = 0; i < origPotential.getVariablesSize(); i++) {
+			Node newNode = null;
+			if (net != null) {
+				newNode = net.getNode(origPotential.getVariableAt(i).getName());
+			}
+			if (newNode == null) {
+				if (origPotential.getVariableAt(i) instanceof ProbabilisticNode) {
+					// create the new node on the fly
+					newNode = (ProbabilisticNode) ((ProbabilisticNode) origPotential.getVariableAt(i)).clone();
+				} else {
+					throw new IllegalStateException("Unable to clone: " + origPotential.getVariableAt(i) + ", " + this);
+				}
+			}
+			copyPotential.addVariable(newNode);
+		}
+		
+		// copy the values of clique potential
+		copyPotential.setValues(origPotential.getValues());
+		copyPotential.copyData();
+		
+		return newClique;
+	}
+	
+	/**
+	 * Just delegates to {@link #clone(Network)} passing null as argument.
+	 * @see java.lang.Object#clone()
+	 * @see #clone(Network)
+	 */
+	public Object clone() throws CloneNotSupportedException {
+		return this.clone(null);
+	}
+	
+
+	/**
+	 * Will join this clique to another clique.
+	 * It is assumed that clique potentials are already globally consistent 
+	 * (i.e. marginalizing out the clique table will result in separator table).
+	 * For example, if this clique has nodes [X,Y], and the other clique has nodes [Y,Z],
+	 * then this method will change this clique to [X,Y,Z].
+	 * {@link #getProbabilityFunction()} will also be expanded and filled with joint probability of [X,Y,Z] obtained from the original two cliques.
+	 * Content of separators are kept untouched.
+	 * Content of related nodes are also kept untouched.
+	 * @param cliqueToJoin : clique to be joined to this clique.
+	 * @param separator : separator between this clique and cliqueToJoin. No consistency check will be made.
+	 * @see {@link #clone(Network)}
+	 * @see #getProbabilityFunction()
+	 * @see PotentialTable#directOpTab(PotentialTable, int)
+	 */
+	public void join(Clique cliqueToJoin) {
+		// basic assertion
+		if (cliqueToJoin == null) {
+			return;
+		}
+		
+		// get nodes in cliqueToJoin that is not in this clique
+		List<INode> disjointNodes = new ArrayList<INode>(cliqueToJoin.getNodesList());	// clone nodes in cliqueToJoin
+		disjointNodes.removeAll(this.getNodesList());
+		
+		// get the separator potentials by summing-out the nodes in disjointNodes
+		PotentialTable separatorTable = cliqueToJoin.getProbabilityFunction().getTemporaryClone();
+		for (INode nodeToSumOut : disjointNodes) {
+			separatorTable.removeVariable(nodeToSumOut);
+		}
+		
+		// add disjointNodes in this clique
+		this.getNodesList().addAll((List) disjointNodes);
+		// also add to clique table
+		PotentialTable cliqueTable = this.getProbabilityFunction();
+		for (INode nodeToAdd : disjointNodes) {
+			cliqueTable.addVariable(nodeToAdd);
+		}
+		
+		// absorb cliqueToJoin: multiply by potentials in cliqueToJoin, and divide by separatorTable
+		cliqueTable.opTab(separatorTable, PotentialTable.DIVISION_OPERATOR);	// divide first, to avoid underflow (because division by 0<x<=1 will increase value)
+		cliqueTable.opTab(cliqueToJoin.getProbabilityFunction(), PotentialTable.PRODUCT_OPERATOR);
+	}
+
 
 
 }

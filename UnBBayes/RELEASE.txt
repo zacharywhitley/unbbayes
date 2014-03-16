@@ -2,6 +2,7 @@ UNBBAYES VERSION 4.18.8
 FEATURE LIST		
 Number	Request ID	Summary
 18					Setting the NetIO to handle I/O requests for saving a file with no extension.
+19					Moved method for cloning and joining cliques to Clique.
 
 UNBBAYES VERSION 4.17.8
 ----------------------------
