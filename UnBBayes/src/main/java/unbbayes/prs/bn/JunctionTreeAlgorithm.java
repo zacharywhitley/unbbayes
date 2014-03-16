@@ -2058,60 +2058,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			// copy cliques if there are cliques to copy
 			if (originalNet.getJunctionTree() != null && originalNet.getJunctionTree().getCliques() != null) {
 				for (Clique origClique : originalNet.getJunctionTree().getCliques()) {
-					Clique newClique = new Clique();
-					newClique.setInternalIdentificator(origClique.getInternalIdentificator());
-					
-//					boolean hasInvalidNode = false;	// this will be true if a clique contains a node not in new network.
-					// add nodes to clique
-					for (Node node : origClique.getNodes()) {
-						Node newNode = this.getNode(node.getName());	// extract associated node, because they are related by name
-						if (newNode == null) {
-							if (node instanceof ProbabilisticNode) {
-								// create the new node on the fly
-								newNode = (ProbabilisticNode) ((ProbabilisticNode) node).clone();
-							} else {
-								throw new IllegalStateException(JunctionTreeAlgorithm.utilResource.getString("InstantiationException") + ": " + node + ", " + origClique);
-							}
-						}
-						newClique.getNodes().add(newNode);
-					}
-					
-					// add nodes to the list "associatedProbabilisticNodes"
-					for (Node node : origClique.getAssociatedProbabilisticNodes()) {
-						Node newNode = this.getNode(node.getName());	// extract associated node, because they are related by name
-						if (newNode == null) {
-							if (node instanceof ProbabilisticNode) {
-								// create the new node on the fly
-								newNode = (ProbabilisticNode) ((ProbabilisticNode) node).clone();
-							} else {
-								throw new IllegalStateException(JunctionTreeAlgorithm.utilResource.getString("InstantiationException") + ": " + node + ", " + origClique);
-							}
-						}
-						// origClique.getNodes() and origClique.getAssociatedProbabilisticNodes() may be different... Copy both separately. 
-						newClique.getAssociatedProbabilisticNodes().add(newNode);
-					}
-					
-					newClique.setIndex(origClique.getIndex());
-					
-					// copy clique potential variables
-					PotentialTable origPotential = origClique.getProbabilityFunction();
-					PotentialTable copyPotential = newClique.getProbabilityFunction();
-					for (int i = 0; i < origPotential.getVariablesSize(); i++) {
-						Node newNode = this.getNode(origPotential.getVariableAt(i).getName());
-						if (newNode == null) {
-							if (origPotential.getVariableAt(i) instanceof ProbabilisticNode) {
-								// create the new node on the fly
-								newNode = (ProbabilisticNode) ((ProbabilisticNode) origPotential.getVariableAt(i)).clone();
-							} else {
-								throw new IllegalStateException(JunctionTreeAlgorithm.utilResource.getString("InstantiationException") + ": " + origPotential.getVariableAt(i) + ", " + origClique);
-							}
-						}
-						copyPotential.addVariable(newNode);
-					}
-					
-					// copy the values of clique potential
-					copyPotential.setValues(origPotential.getValues());
-					copyPotential.copyData();
+					Clique newClique = origClique.clone(this);
 					
 					// NOTE: this is ignoring utility table and nodes
 					
@@ -2230,6 +2177,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 */
 	public ProbabilisticNetwork updateCPTBasedOnCliques () {
 		InCliqueConditionalProbabilityExtractor cptExtractor = (InCliqueConditionalProbabilityExtractor) InCliqueConditionalProbabilityExtractor.newInstance();
+		cptExtractor.setToJoinCliquesWhenNoCliqueFound(true);	// force the extractor to join cliques when there is no clique containing all questions simultaneously
 		for (Node node : getNet().getNodes()) {
 			if (node instanceof ProbabilisticNode) {
 				

@@ -5,6 +5,7 @@ package unbbayes.prs.bn.cpt.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.Set;
 
 import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
+import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.IProbabilityFunction;
@@ -43,6 +45,8 @@ public class InCliqueConditionalProbabilityExtractor implements
 	};
 	
 	private boolean isToOptimizeFullCliqueConditionalProbEvaluation = true;
+
+	private boolean isToJoinCliquesWhenNoCliqueFound = false;
 
 	/**
 	 * default constructor is made protected to at least allow inheritance.
@@ -172,6 +176,55 @@ public class InCliqueConditionalProbabilityExtractor implements
 			}
 		} else if (!clique.getNodes().contains(mainNode) || !clique.getNodes().containsAll(parentNodes)) {
 			throw new NoCliqueException(clique + " should contain " + mainNode + " and " + parentNodes);
+		}
+		
+		// check if we can simply join a few cliques in order to get conditional probability
+		if (clique == null && isToJoinCliquesWhenNoCliqueFound() && !parentNodes.isEmpty()) { 
+			// We'll try to get a set of cliques that will together contain all nodes, because could not find a single clique containing all the nodes. 
+			// Note that if parentNodes is empty, the method was unable to find any clique containing mainNode. We'll throw exception in such case.
+			
+			// get all cliques that we know they contain main node
+			Collection<Clique> cliquesWithMainNode = this.getCliquesContainingAllNodes((SingleEntityNetwork) net, Collections.singletonList(mainNode), Integer.MAX_VALUE);
+			
+			// We will fill the following list with cliques that contains main node and also parent nodes
+			List<Clique> cliquesAlsoWithSomeOfTheParents = new ArrayList<Clique>(cliquesWithMainNode.size());	
+			
+			// will use this list to see what parents are remaining to complete set of cliques that together manages main node and parents
+			List<INode> remainingParents = new ArrayList<INode>(parentNodes);	
+			remainingParents.remove(null);	// make sure there is no null element.
+			
+			// find clique that has intersection with parentsToFind, insert to clique cliqueSetForNodes, remove intersection, and do again
+			for (Clique candidateClique : cliquesWithMainNode) {
+				if (remainingParents.isEmpty()) {
+					break;
+				}
+				if (remainingParents.removeAll(candidateClique.getNodesList())) { // if true, then there is intersection
+					cliquesAlsoWithSomeOfTheParents.add(candidateClique);
+				}
+			}
+			
+			// check that we found cliques and the cliques are a complete set (i.e. contains main node and all parents if considered together)
+			if (cliquesAlsoWithSomeOfTheParents.isEmpty() || !remainingParents.isEmpty()) {
+				throw new NoCliqueException("There is no complete set of cliques containing main node " + mainNode + " and any of the parents  " + parentNodes + " simultaneously. "
+						+ (remainingParents==null?"":("Parents not found: " + remainingParents)));
+			}
+			
+			// get a clone of the the 1st clique in the set, because we'll join the other cliques in it.
+			if (net instanceof Network) {
+				clique = cliquesAlsoWithSomeOfTheParents.get(0).clone((Network) net);	// will clone clique, but reuse nodes in it
+			} else {
+				clique = cliquesAlsoWithSomeOfTheParents.get(0).clone(null);	// this will clone clique and also the nodes in it
+			}
+			cliquesAlsoWithSomeOfTheParents.remove(0);	// make sure we don't double-count the clique we just cloned
+			
+			// attempt to create a larger clique that includes all nodes
+			for (Clique cliqueToJoin : cliquesAlsoWithSomeOfTheParents) {
+				// join all other cliques to the cloned clique
+				clique.join(cliqueToJoin);
+			}
+			
+			// just let the remaining code to handle joined clique as if it is some existing clique in the junction tree
+			
 		}
 		if (clique == null) {
 			// TODO use resource files
@@ -608,6 +661,25 @@ public class InCliqueConditionalProbabilityExtractor implements
 	public void setToOptimizeFullCliqueConditionalProbEvaluation(
 			boolean isToOptimizeFullCliqueConditionalProbEvaluation) {
 		this.isToOptimizeFullCliqueConditionalProbEvaluation = isToOptimizeFullCliqueConditionalProbEvaluation;
+	}
+
+	/**
+	 * If this is true, then {@link #buildCondicionalProbability(INode, List, Graph, IInferenceAlgorithm)} will
+	 * try to join existing cliques if no clique containing all nodes simultaneously is found.
+	 * @return the isToJoinCliquesWhenNoCliqueFound
+	 */
+	public boolean isToJoinCliquesWhenNoCliqueFound() {
+		return isToJoinCliquesWhenNoCliqueFound;
+	}
+
+	/**
+	 * If this is true, then {@link #buildCondicionalProbability(INode, List, Graph, IInferenceAlgorithm)} will
+	 * try to join existing cliques if no clique containing all nodes simultaneously is found.
+	 * @param isToJoinCliquesWhenNoCliqueFound the isToJoinCliquesWhenNoCliqueFound to set
+	 */
+	public void setToJoinCliquesWhenNoCliqueFound(
+			boolean isToJoinCliquesWhenNoCliqueFound) {
+		this.isToJoinCliquesWhenNoCliqueFound = isToJoinCliquesWhenNoCliqueFound;
 	}
 
 }
