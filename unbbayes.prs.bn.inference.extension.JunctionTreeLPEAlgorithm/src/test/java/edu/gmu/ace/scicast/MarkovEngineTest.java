@@ -23696,6 +23696,237 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	/**
+	 * Tests a case of clique stability whose the new arcs added by the routine will cause
+	 * a node and its parents not to be in the same clique.
+	 * Network topology is:
+	 * 
+	 * 103<---102<---157<---341
+	 *   \           /      /
+	 *    V V--------      /
+	 *    155<------------/         
+	 */
+	public final void testCliqueStabilityCPTNotInSameClique() {
+		
+		// build the network
+//		engine.addQuestion(null, new Date(), 102, 2, null);
+//		engine.addQuestion(null, new Date(), 103, 2, null);
+//		engine.addQuestion(null, new Date(), 155, 2, null);
+//		engine.addQuestion(null, new Date(), 157, 2, null);
+//		engine.addQuestion(null, new Date(), 341, 2, null);
+//		engine.addQuestionAssumption(null, new Date(), 103, Collections.singletonList(102L), null);
+//		engine.addQuestionAssumption(null, new Date(), 102, Collections.singletonList(157L), null);
+//		engine.addQuestionAssumption(null, new Date(), 157, Collections.singletonList(341L), null);
+//		engine.addQuestionAssumption(null, new Date(), 155, Collections.singletonList(103L), null);
+//		engine.addQuestionAssumption(null, new Date(), 155, Collections.singletonList(157L), null);
+//		engine.addQuestionAssumption(null, new Date(), 155, Collections.singletonList(341L), null);
+		// use the import state feature to load a full net and probabilities 
+		engine.importState(
+				"net { name = \"DAGGRE\" ; } "
+				+ " node N103 { label = \"N103\" ; states = (\"0\" \"1\") ; }"
+				+ " node N102 { label = \"N102\" ; states = (\"0\" \"1\") ; }"
+				+ " node N157 { label = \"N157\" ; states = (\"0\" \"1\"); }"
+				+ " node N341 { label = \"N341\"; states = (\"0\" \"1\"); }"
+				+ " node N155 { label = \"N155\"; states = (\"0\" \"1\"); }"
+				+ " potential (N103 | N102) {  data = (( 0.1 0.9 ) ( 0.6 0.4 )); }"
+				+ " potential (N102 | N157) {  data = (( 0.3 0.7 ) ( 0.9 0.1 )); }"
+				+ " potential (N157 | N341) {  data = (( 0.2 0.8 ) ( 0.4 0.6 )); }"
+				+ " potential (N341) {  data = ( 0.99 0.01 ); } "
+				+ " potential (N155 | N341 N157 N103) {  "
+				+ " data = (((( 0.1 0.9 ) ( 0.9 0.1 ))"
+				+ " (( 0.8 0.2 )"
+				+ " ( 0.2 0.8 )))"
+				+ " ((( 0.3 0.7 )"
+				+ " ( 0.7 0.3 ))"
+				+ " (( 0.6 0.4 )"
+				+ " ( 0.4 0.6 )))); }"
+		);
+		
+		
+		// probabilities for later comparison
+		
+		// make a trade that will generate arc 103<--341
+		List<Float> newValues = new ArrayList<Float>(2);
+		newValues.add(0.1f); newValues.add(0.9f);
+		engine.addTrade(null, new Date(), "a trade that will generate arc 103<--341", 1, 103, newValues, Collections.singletonList(341L), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.8f); newValues.add(0.2f); 
+		engine.addTrade(null, new Date(), "a trade that will generate arc 103<--341", 1, 103, newValues, Collections.singletonList(341L), Collections.singletonList(1), true);
+		
+		// make a trade that will generate arc 103<--157
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.7f); newValues.add(0.3f); 
+		engine.addTrade(null, new Date(), "a trade that will generate arc 103<--157", 1, 103, newValues, Collections.singletonList(157L), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.4f); newValues.add(0.6f); 
+		engine.addTrade(null, new Date(), "a trade that will generate arc 103<--157", 1, 103, newValues, Collections.singletonList(157L), Collections.singletonList(1), true);
+		
+		
+		// resolve 155
+		engine.resolveQuestion(null, new Date(), 155, 0);
+		
+		Map<Long, List<Float>> oldProbs = engine.getProbLists(null, null, null);
+		
+		// check that we can create additional node and arc with no problem
+		engine.addQuestion(null, new Date(), 666, 2, null);
+		engine.addQuestionAssumption(null, new Date(), 666, Collections.singletonList(103L),null);
+		assertNotNull(engine.getProbList(666, null, null));
+		assertEquals(0.5f, engine.getProbList(666, null, null).get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, engine.getProbList(666, null, null).get(1), PROB_ERROR_MARGIN);
+		
+		// compare probability
+		Map<Long, List<Float>> newProbs = engine.getProbLists(null, null, null);
+		assertEquals(newProbs.toString()+ " ; " + oldProbs.toString(), oldProbs.size(), newProbs.size()-1);
+		for (Long id : oldProbs.keySet()) {
+			if (id.longValue() == 103L) {continue;};	// ignore 103 because we traded onit
+			List<Float> oldProb = oldProbs.get(id);
+			List<Float> newProb = newProbs.get(id);
+			assertEquals(newProbs.toString()+ " ; " + oldProbs.toString(), oldProb.size(), newProb.size());
+			for (int i = 0; i < oldProb.size(); i++) {
+				assertEquals(newProbs.toString()+ " ; " + oldProbs.toString(), oldProb.get(i), newProb.get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+	}
+	
+	/**
+	 * Same case of {@link #testCliqueStabilityCPTNotInSameClique()},
+	 * but using single transaction, and not using import/export state to initialize
+	 * probabilities    
+	 */
+	public final void testCliqueStabilityCPTNotInSameCliqueSingleTransaction() {
+		
+		// build the network
+		long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 102, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 103, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 155, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 157, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 341, 2, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 103, Collections.singletonList(102L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 102, Collections.singletonList(157L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 157, Collections.singletonList(341L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 155, Collections.singletonList(103L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 155, Collections.singletonList(157L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 155, Collections.singletonList(341L), null);
+		
+		// use trades to initialize probabilities
+		List<Float> newValues = new ArrayList<Float>(2);
+		newValues.add(0.99f); newValues.add(1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), " (N341) {  data = ( 0.99 0.01 ); }", 1, 341, newValues , null, null, true);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.1f); newValues.add(1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), " (N103 | N102) {  data = (( 0.1 0.9 ) ( 0.6 0.4 )); }", 1, 103, newValues , Collections.singletonList(102L), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.6f); newValues.add(1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), "(N103 | N102) {  data = (( 0.1 0.9 ) ( 0.6 0.4 )); }", 1, 103, newValues , Collections.singletonList(102L), Collections.singletonList(1), true);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.3f); newValues.add(1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), "(N102 | N157) {  data = (( 0.3 0.7 ) ( 0.9 0.1 ));", 1, 102, newValues , Collections.singletonList(157L), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.9f); newValues.add(1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), "(N102 | N157) {  data = (( 0.3 0.7 ) ( 0.9 0.1 ));", 1, 102, newValues , Collections.singletonList(157L), Collections.singletonList(1), true);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.2f); newValues.add(1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), "(N157 | N341) {  data = (( 0.2 0.8 ) ( 0.4 0.6 ))", 1, 157, newValues , Collections.singletonList(341L), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.4f); newValues.add(1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), "(N157 | N341) {  data = (( 0.2 0.8 ) ( 0.4 0.6 ))", 1, 157, newValues , Collections.singletonList(341L), Collections.singletonList(1), true);
+		
+		// set CPT of 155, which has 3 parents
+		List<Long> assumptions = new ArrayList<Long>();
+		assumptions.add(341L);
+		assumptions.add(157L);
+		assumptions.add(103L);
+		
+		List<Integer> assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);  assumedStates.add(0); assumedStates.add(0);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.1f);  newValues.add(1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), "(N155 | N341 N157 N103)", 1, 155, newValues , assumptions, assumedStates , true);
+		assumedStates.set(2,1);
+		newValues.set(0,newValues.get(1));  newValues.set(1,1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), "(N155 | N341 N157 N103)", 1, 155, newValues , assumptions, assumedStates , true);
+		
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(0);  assumedStates.add(1); assumedStates.add(0);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.8f);  newValues.add(1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), "(N155 | N341 N157 N103)", 1, 155, newValues , assumptions, assumedStates , true);
+		assumedStates.set(2,1);
+		newValues.set(0,newValues.get(1));  newValues.set(1,1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), "(N155 | N341 N157 N103)", 1, 155, newValues , assumptions, assumedStates , true);
+		
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(1);  assumedStates.add(0); assumedStates.add(0);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.3f);  newValues.add(1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), "(N155 | N341 N157 N103)", 1, 155, newValues , assumptions, assumedStates , true);
+		assumedStates.set(2,1);
+		newValues.set(0,newValues.get(1));  newValues.set(1,1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), "(N155 | N341 N157 N103)", 1, 155, newValues , assumptions, assumedStates , true);
+		
+		assumedStates = new ArrayList<Integer>();
+		assumedStates.add(1);  assumedStates.add(1); assumedStates.add(0);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.6f);  newValues.add(1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), "(N155 | N341 N157 N103)", 1, 155, newValues , assumptions, assumedStates , true);
+		assumedStates.set(2,1);
+		newValues.set(0,newValues.get(1));  newValues.set(1,1-newValues.get(0));
+		engine.addTrade(transactionKey, new Date(), "(N155 | N341 N157 N103)", 1, 155, newValues , assumptions, assumedStates , true);
+		
+		
+		// probabilities for later comparison
+		
+		// make a trade that will generate arc 103<--341
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.1f); newValues.add(0.9f);
+		engine.addTrade(transactionKey, new Date(), "a trade that will generate arc 103<--341", 1, 103, newValues, Collections.singletonList(341L), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.8f); newValues.add(0.2f); 
+		engine.addTrade(transactionKey, new Date(), "a trade that will generate arc 103<--341", 1, 103, newValues, Collections.singletonList(341L), Collections.singletonList(1), true);
+		
+		// make a trade that will generate arc 103<--157
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.7f); newValues.add(0.3f); 
+		engine.addTrade(transactionKey, new Date(), "a trade that will generate arc 103<--157", 1, 103, newValues, Collections.singletonList(157L), Collections.singletonList(0), true);
+		newValues = new ArrayList<Float>(2);
+		newValues.add(0.4f); newValues.add(0.6f); 
+		engine.addTrade(transactionKey, new Date(), "a trade that will generate arc 103<--157", 1, 103, newValues, Collections.singletonList(157L), Collections.singletonList(1), true);
+		
+		
+		// resolve 155
+		engine.resolveQuestion(transactionKey, new Date(), 155, 0);
+		
+		// commit now, so that we can get probabilities at this point
+		engine.commitNetworkActions(transactionKey);
+		
+		Map<Long, List<Float>> oldProbs = engine.getProbLists(null, null, null);
+		
+		// check that we can create additional node and arc with no problem
+		transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 666, 2, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 666, Collections.singletonList(103L),null);
+		engine.commitNetworkActions(transactionKey);
+		assertNotNull(engine.getProbList(666, null, null));
+		assertEquals(0.5f, engine.getProbList(666, null, null).get(0), PROB_ERROR_MARGIN);
+		assertEquals(0.5f, engine.getProbList(666, null, null).get(1), PROB_ERROR_MARGIN);
+		
+		// compare probability
+		Map<Long, List<Float>> newProbs = engine.getProbLists(null, null, null);
+		assertEquals(newProbs.toString()+ " ; " + oldProbs.toString(), oldProbs.size(), newProbs.size()-1);
+		for (Long id : oldProbs.keySet()) {
+			if (id.longValue() == 103L) {continue;};	// ignore 103 because we traded onit
+			List<Float> oldProb = oldProbs.get(id);
+			List<Float> newProb = newProbs.get(id);
+			assertEquals(newProbs.toString()+ " ; " + oldProbs.toString(), oldProb.size(), newProb.size());
+			for (int i = 0; i < oldProb.size(); i++) {
+				assertEquals(newProbs.toString()+ " ; " + oldProbs.toString(), oldProb.get(i), newProb.get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+	}
+	
+	/**
 	 * Checks if we can add and resolve questions in a single transaction
 	 */
 	public final void testAddResolveQuestionSingleTransaction() {

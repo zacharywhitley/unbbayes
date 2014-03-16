@@ -2626,10 +2626,12 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	 * This method will update the CPT of all nodes in {@link #getNet()}
 	 * by using clique potentials available at {@link ProbabilisticNetwork#getJunctionTree()}
 	 * of {@link #getNet()}.
+	 * @deprecated see #updateCPTBasedOnCliques()
 	 */
 	public void updateCPTFromJT() {
 		// this probability extractor will enable us to get conditional probabilities from current state of junction tree.
-		IArbitraryConditionalProbabilityExtractor extractor = new JTConditionalProbabilityExtractor();
+		JTConditionalProbabilityExtractor extractor = new JTConditionalProbabilityExtractor();
+		extractor.setToJoinCliquesWhenNoCliqueFound(true);
 		
 		// iterate over all nodes in the net
 		ProbabilisticNetwork net = this.getNet();
@@ -2718,11 +2720,13 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	 * of a node are present in same clique.
 	 * This class is particularly used in {@link AssetAwareInferenceAlgorithm#updateCPTBasedOnCliques()}.
 	 * @author Shou Matsumoto
+	 * @deprecated see {@link InCliqueConditionalProbabilityExtractor#setToJoinCliquesWhenNoCliqueFound(boolean)}
 	 */
 	public class JTConditionalProbabilityExtractor extends InCliqueConditionalProbabilityExtractor {
 
 		/**
 		 * default constructor
+		 * @deprecated see {@link InCliqueConditionalProbabilityExtractor#setToJoinCliquesWhenNoCliqueFound(boolean)}
 		 */
 		public JTConditionalProbabilityExtractor() {}
 		
