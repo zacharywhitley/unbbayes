@@ -203,6 +203,10 @@ public class UbfIO2 extends UbfIO {
 		if (this.ubfVersion < version) {
 			throw new IOMebnException(resource.getString("IncompatibleVersion"));
 		}
+		if (this.ubfVersion > version) {
+			// use old loader
+			return super.loadMebn(file);
+		}
 		
 		// Read correspondent owl file name
 		try {
@@ -831,6 +835,11 @@ public class UbfIO2 extends UbfIO {
 	 */
 	public void saveMebn(File file, MultiEntityBayesianNetwork mebn)
 			throws IOException, IOMebnException {
+		
+		if (file.getName().lastIndexOf(".") < 0) {
+			String name = file.getPath() + "."+SUPPORTED_EXTENSIONS[0];
+			file = new File(name);
+		}
 		
 		// Placeholder for Variable type names
 		String varType = null;
