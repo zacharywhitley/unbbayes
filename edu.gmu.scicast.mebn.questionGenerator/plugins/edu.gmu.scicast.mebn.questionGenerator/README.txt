@@ -30,7 +30,7 @@ ATTENTION
 Some plugins use other plugins. In such case, you must install all dependencies too.
 
 - unbbayes.prs.mebn-1.13.10
-- unbbayes.gui.mebn.ontology.protege-2.0.0
+- unbbayes.gui.mebn.ontology.protege-1.1.3
 	
 AVALILABILITY
 ------------------------------
