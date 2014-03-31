@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import unbbayes.controller.INetworkMediator;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -35,6 +36,7 @@ import unbbayes.simulation.likelihoodweighting.ILikelihoodWeightingSampling;
 import unbbayes.simulation.likelihoodweighting.sampling.LikelihoodWeightingSampling;
 import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
+import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
 
 /**
  * 
@@ -58,6 +60,7 @@ public class GibbsSampling extends MatrixMonteCarloSampling implements IInferenc
 	/** Load resource file from util */
   	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
   			unbbayes.util.resources.UtilResources.class.getName());
+	private INetworkMediator mediator;
 	
 	public GibbsSampling() {
 		this.sampleSize = 100000;
@@ -301,6 +304,36 @@ public class GibbsSampling extends MatrixMonteCarloSampling implements IInferenc
 	 */
 	public void propagate() {
 		this.run();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#addInferencceAlgorithmListener(unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener)
+	 */
+	public void addInferencceAlgorithmListener(
+			IInferenceAlgorithmListener listener) {
+		// TODO Auto-generated method stub
+	}
+
+	public void removeInferencceAlgorithmListener(
+			IInferenceAlgorithmListener listener) {
+		// TODO Auto-generated method stub
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#setMediator(unbbayes.controller.INetworkMediator)
+	 */
+	public void setMediator(INetworkMediator mediator) {
+		this.mediator = mediator;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getMediator()
+	 */
+	public INetworkMediator getMediator() {
+		return mediator;
 	}
 	
 	

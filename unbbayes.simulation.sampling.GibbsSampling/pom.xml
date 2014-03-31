@@ -239,7 +239,7 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes</artifactId>
-				<version>4.0.0</version>
+				<version>4.17.8</version>
 			</dependency>
 			
 			<!-- This plugin has a dependency to, unbbayes.simulation.montecarlo.sampling plugin -->
