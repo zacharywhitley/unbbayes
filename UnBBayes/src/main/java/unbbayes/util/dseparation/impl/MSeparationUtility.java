@@ -73,19 +73,29 @@ public class MSeparationUtility implements IDSeparationUtility {
   	 * Builds a map containing a temporally reference to all adjacent nodes, given a key node.
   	 * It is used to represent a undirected graph.
   	 * 
+  	 * <br/> <br/>
+  	 * 
   	 * Mapping model:
-  	 * 		node (key) --<<mapped to>>--> set of all adjacent nodes obtained by {@link Node#getAdjacents()}
+  	 * 		node (key) --<<mapped to>>--> set of all adjacent nodes obtained by {@link INode#getParentNodes()}
+  	 * and {@link INode#getChildNodes()}. Please, notice that {@link INode#getAdjacentNodes()} shall not be used,
+  	 * because this list will be changed during {@link unbbayes.prs.bn.JunctionTreeAlgorithm#run()}
+  	 * when moralization and triangulation is performed (so, using {@link INode#getAdjacentNodes()} during
+  	 * moralization and triangulation may cause unexpected behavior).
+  	 * 
+  	 * <br/> <br/>
   	 * 
   	 * It also guarantees that the map is "closed" (destination nodes are also keys). 
   	 * I.E. if "key" is mapped to "node", then "node" must be a key in this map too.
+  	 * 
+  	 * <br/> <br/>
   	 * 
   	 * It does not go down/up recursively (so that it guarantees only the nodes within
   	 * the parameter is mapped).
   	 * 
   	 * @param allKeys
   	 * 
-  	 * @see {@link Node#getAdjacents()}
-  	 * @see {@link Node#makeAdjacents()}
+  	 * @see INode#getParentNodes()
+  	 * @see INode#getChildNodes()
   	 */
 	public Map<INode, Set<INode>> buildClosedAdjacentNodeMap(Set<INode> allKeys) {
 		Map<INode, Set<INode>> ret = new HashMap<INode, Set<INode>>();
@@ -94,7 +104,15 @@ public class MSeparationUtility implements IDSeparationUtility {
 			
 			// build up the adjacent set
 			Set<INode> adjacents = new HashSet<INode>();
-			for (INode node : key.getAdjacentNodes()) {
+			// add parents
+			for (INode node : key.getParentNodes()) {
+				// make sure only those nodes within allKeys are mapped
+				if (allKeys.contains(node)) {
+					adjacents.add(node);
+				}
+			}
+			// add children
+			for (INode node : key.getChildNodes()) {
 				// make sure only those nodes within allKeys are mapped
 				if (allKeys.contains(node)) {
 					adjacents.add(node);
