@@ -249,6 +249,10 @@ public class OntologyClient {
     
     JSONObject json = remoteJSONRequest("term/read/?name="+URLEncoder.encode(name));
 //    JSONObject json = remoteJSONRequest("term/read/?name="+URLEncoder.encode(name)+"&relations=true");
+    if (term == null) {
+    	logWriter.error("No response to getTermBySimpleName request: " + name);
+    	return null;
+    }
     try {
       term = localCloneTerm(json);
       term.setId(json.getInt("id"));
