@@ -296,7 +296,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToThrowExceptionInTradesToResolvedQuestions = false;
 	
 	/** If true, cash of each user will be stored when questions are resolved */
-	private boolean isToStoreCashBeforeResolveQuestion = true;
+	private boolean isToStoreCashBeforeResolveQuestion = false;
 	
 	/** This is a map which stores which user has gained how much cash in what resolved questions. The mapping is: userId -> (questionId -> cash gain). */
 	private Map<Long, Map<Long,Float>> userIdToResolvedQuestionCashGainMap;
