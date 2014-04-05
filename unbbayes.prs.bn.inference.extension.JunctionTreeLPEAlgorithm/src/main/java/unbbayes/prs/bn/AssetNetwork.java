@@ -105,6 +105,20 @@ public class AssetNetwork extends ProbabilisticNetwork {
 	    // do not add listener
 //	    node.addNodeNameChangedListener(nodeNameChangedListener);
 	}
+	
+	/**
+	 * Only updates parent and child nodes, but does not update {@link #getEdges()}
+	 * @see unbbayes.prs.Network#addEdge(unbbayes.prs.Edge)
+	 */
+	public void addEdge(Edge edge) throws InvalidParentException {
+		edge.getOriginNode().addChild(edge.getDestinationNode());
+		edge.getDestinationNode().addParent(edge.getOriginNode());
+	    if (edge.getDestinationNode() instanceof IRandomVariable) {
+			IRandomVariable v2 = (IRandomVariable) edge.getDestinationNode();
+			IProbabilityFunction auxTab = v2.getProbabilityFunction();
+			auxTab.addVariable(edge.getOriginNode());
+		}
+	}
 
 	public void setRelatedNetwork(ProbabilisticNetwork relatedNetwork)  throws InvalidParentException  {
 		this.setRelatedNetwork(relatedNetwork, false);
