@@ -68,7 +68,7 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 	
 	public LaskeySSBNGenerator(LaskeyAlgorithmParameters _parameters){
 		
-		parameters = _parameters; 
+		setParameters(_parameters); 
 		
 		//Set the default implementations. 
 		setBuilderStructure(BuilderStructureImpl.newInstance()); 
@@ -88,9 +88,9 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 		SSBN ssbn = null; 
 		
 		//Step 1: 
-		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION))){
+		if(Boolean.valueOf(getParameters().getParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION))){
 			ssbn = initialization(queryList, knowledgeBase); 
-			ssbn.setParameters(parameters); 
+			ssbn.setParameters(getParameters()); 
 		}
 		
 		ISSBNLogManager logManager = null;
@@ -99,7 +99,7 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 		}
 		
 		//Step 2: 
-		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_BUILDER))){
+		if(Boolean.valueOf(getParameters().getParameterValue(LaskeyAlgorithmParameters.DO_BUILDER))){
 			
 			if (logManager != null) {
 				logManager.skipLine(); 
@@ -123,7 +123,7 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 		}
 		
 		//Step 3: 
-		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_PRUNE))){
+		if(Boolean.valueOf(getParameters().getParameterValue(LaskeyAlgorithmParameters.DO_PRUNE))){
 			
 			if (logManager != null) {
 				logManager.skipLine();
@@ -146,7 +146,7 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 		}
 		
 		//Step 4: 
-		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION))){
+		if(Boolean.valueOf(getParameters().getParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION))){
 			
 			if (logManager != null) {
 				logManager.skipLine();
@@ -475,6 +475,22 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 	public int getLastIterationCount() {
 		// not a iterative method, so it is just 1 iteration
 		return 1;
+	}
+
+
+	/**
+	 * @return the parameters
+	 */
+	public Parameters getParameters() {
+		return parameters;
+	}
+
+
+	/**
+	 * @param parameters the parameters to set
+	 */
+	public void setParameters(Parameters parameters) {
+		this.parameters = parameters;
 	}
 	
 }
