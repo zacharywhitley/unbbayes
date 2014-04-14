@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is the plugin descriptor for UnBBayes-MEBN extension to add grounded gibbs sampling reasoner. -->
+<plugin id="unbbayes.prs.mebn.simulation.sampling.GibbsSampling" version="0.0.1">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core" plugin-version="4.11.4" />
+        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.13.12"/>
+        <import plugin-id="unbbayes.simulation.sampling.GibbsSampling" plugin-version="1.1.0"/>
+    </requires>
+    <runtime>
+       	<!-- Because dist.xml creates the resources folder, we must include it -->
+        <library type="resources" path="resources/" id="resources">
+            <!-- This folder contains JARS that Protege4.1 loads using OSGI. Because OSGI and JPF uses different (sometimes incompatible) mechanisms for plug-ins, they must be separated -->
+        	<export prefix="*"/>
+        </library>
+        <library type="resources" path="conf/" id="conf">
+        	<export prefix="*"/>
+        </library>
+        <library type="code" path="lib/" id="lib">
+        	<!-- This is where protege resources resides -->
+        	<export prefix="*"/>
+        </library>
+        <!-- It seems that loaders does not work as expected on jar files -->
+        <!-- If you change/add the libraries, change/add these library declaration too -->
+        <library id="unbbayes.prs.mebn.simulation.sampling.GibbsSampling" path="unbbayes.prs.mebn.simulation.sampling.GibbsSampling-0.0.1.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+    </runtime>
+     
+    <extension plugin-id="unbbayes.prs.mebn" point-id="SSBN" id="SSBNWithGibbs">
+        <parameter id="class" value="unbbayes.prs.mebn.simulation.sampling.GibbsSamplingSSBNGenerator" />
+        <parameter id="name" value="Grounded Gibbs Sampling" />
+    </extension>
+</plugin>
