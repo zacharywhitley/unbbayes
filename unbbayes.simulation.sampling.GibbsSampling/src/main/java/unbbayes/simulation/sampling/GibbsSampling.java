@@ -105,7 +105,8 @@ public class GibbsSampling extends MatrixMonteCarloSampling implements IInferenc
 					marginal[j] = marginalMap.get(node)[j] / nTrials;
 				}
 				node.initMarginalList();
-				node.addLikeliHood(marginal);
+//				node.addLikeliHood(marginal);
+				node.setMarginalProbabilities(marginal);
 			}
 		}
 	}
