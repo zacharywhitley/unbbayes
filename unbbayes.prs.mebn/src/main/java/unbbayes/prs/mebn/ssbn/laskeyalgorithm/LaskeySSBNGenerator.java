@@ -231,6 +231,7 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 			((IMEBNMediator)this.getMediator()).setSpecificSituationBayesianNetwork(ssbn.getProbabilisticNetwork());
 			((IMEBNMediator)this.getMediator()).setToTurnToSSBNMode(true);	// if this is false, ((IMEBNMediator)this.getMediator()).turnToSSBNMode() will not work
 			((IMEBNMediator)this.getMediator()).turnToSSBNMode();
+			((IMEBNMediator)this.getMediator()).getScreen().getEvidenceTree().updateTree(true);;
 		}
 	}
 	
