@@ -35,6 +35,7 @@ import unbbayes.prs.bn.TreeVariable;
 import unbbayes.simulation.likelihoodweighting.ILikelihoodWeightingSampling;
 import unbbayes.simulation.likelihoodweighting.sampling.LikelihoodWeightingSampling;
 import unbbayes.simulation.montecarlo.sampling.MatrixMonteCarloSampling;
+import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
 
@@ -72,14 +73,23 @@ public class GibbsSampling extends MatrixMonteCarloSampling implements IInferenc
 		this.sampleSize = sampleSize;
 	}
 
-	@Override
+	/**
+	 * Just delegates to {@link #start(ProbabilisticNetwork, int, long)} by setting {@link Long#MAX_VALUE} as the time to wait.
+	 * @deprecated use {@link #start(ProbabilisticNetwork, int, long)} instead.
+	 */
+	public void start(ProbabilisticNetwork pn , int nTrials){
+		this.start(pn, nTrials, Long.MAX_VALUE);
+	}
+	
 	/**
 	 * Responsible for setting the initial variables for Likelihood Weighting.
 	 * Besides sampling (like MC), it calculates P(E|Par(E)) for each trial.
 	 * @param pn Probabilistic network that will be used for sampling.
 	 * @param nTrials Number of trials to generate.
+	 * @param ellapsedTimeMillis : the sampling process will stop after executing this amount of time
+	 * in milliseconds
 	 */
-	public void start(ProbabilisticNetwork pn , int nTrials){
+	public void start(ProbabilisticNetwork pn , int nTrials, long ellapsedTimeMillis){
 		this.setNetwork(pn);
 		this.sampleSize = nTrials;
 		this.marginalMap = new HashMap<Node, Float[]>();
@@ -91,7 +101,7 @@ public class GibbsSampling extends MatrixMonteCarloSampling implements IInferenc
 			}
 			marginalMap.put(node, marginal);
 		}
-		super.start(pn, nTrials);
+		super.start(pn, nTrials, ellapsedTimeMillis);
 		normalizeMarginals(nTrials);
 	}
 	
@@ -101,8 +111,27 @@ public class GibbsSampling extends MatrixMonteCarloSampling implements IInferenc
 			TreeVariable node = (TreeVariable)samplingNodeOrderQueue.get(i);
 			if (!node.hasEvidence()) {
 				marginal = new float[node.getStatesSize()];
+				double sum = 0.0;	// get the sum of values obtained in marginalMap for current node
 				for (int j = 0; j < marginal.length; j++) {
-					marginal[j] = marginalMap.get(node)[j] / nTrials;
+					try {
+						marginal[j] = marginalMap.get(node)[j];
+						sum += marginal[j];
+						// NOTE dividing by nTrials can also normalize, but it is not certain whether we really executed nTrials samples in an anytime inference
+						// because we may have had aborted execution, so it is unsafe to divide by nTrials
+					} catch (Exception e) {
+						Debug.println(getClass(), "Unable to get sampled marginal of " + node, e);
+					}
+				}
+				if (sum <= 0.0f) {
+					// number of samples was not enough to fill this marginal. Fill with uniform by default
+					for (int j = 0; j < marginal.length; j++) {
+						marginal[j] = 1f/marginal.length;
+					}
+				} else {
+					// just normalize 
+					for (int j = 0; j < marginal.length; j++) {
+						marginal[j] = (float) (marginal[j]/sum);
+					}
 				}
 				node.initMarginalList();
 //				node.addLikeliHood(marginal);
@@ -242,7 +271,7 @@ public class GibbsSampling extends MatrixMonteCarloSampling implements IInferenc
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#run()
 	 */
 	public void run() {
-		start(pn, sampleSize);
+		start(pn, sampleSize, getElapsedTimeMillis());
 	}
 
 
