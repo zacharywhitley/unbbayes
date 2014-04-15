@@ -29,6 +29,7 @@ import java.util.Set;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.util.Debug;
 
 /*
  * TODO : since unbbayes.evaluation package is using 
@@ -126,17 +127,27 @@ public class MapMonteCarloSampling extends AMonteCarloSampling {
 	}
 	
 	/**
+	 * Just delegates to {@link #start(ProbabilisticNetwork, int, long)} by setting {@link Long#MAX_VALUE} as the time to wait.
+	 * @deprecated use {@link #start(ProbabilisticNetwork, int, long)} instead.
+	 */
+	public void start(ProbabilisticNetwork pn , int nTrials){
+		this.start(pn, nTrials, Long.MAX_VALUE);
+	}
+	
+	/**
 	 * Generates the MC sample with the given size for the given probabilistic network.
 	 * @param pn Probabilistic network that will be used for sampling.
 	 * @param nTrials Number of trials to generate.
+	 * @param elapsedTimeMillis: time to finish execution
 	 */
-	public void start(ProbabilisticNetwork pn , int nTrials){
+	public void start(ProbabilisticNetwork pn , int nTrials, long elapsedTimeMillis){
 		this.pn = pn;
 		this.nTrials = nTrials;
 		sampledStatesMap = new HashMap<Integer, Integer>();
 		samplingNodeOrderQueue = new ArrayList<Node>();		
 		createSamplingOrderQueue();
 		int[] sampledStates = null;
+		long timeBeforeExecution = System.currentTimeMillis();
 		for(int i = 0; i < nTrials; i++){						
 			sampledStates = simulate();
 			int key = getLinearCoord(sampledStates);
@@ -145,6 +156,10 @@ public class MapMonteCarloSampling extends AMonteCarloSampling {
 				sampledStatesMap.put(key, ++value);
 			} else {
 				sampledStatesMap.put(key, 1);
+			}
+			if ((System.currentTimeMillis() - timeBeforeExecution) > elapsedTimeMillis) {
+				Debug.println(getClass(), "Finished sampling, because exceeded " + elapsedTimeMillis + " ms.");
+				break;
 			}
 		}
 	}

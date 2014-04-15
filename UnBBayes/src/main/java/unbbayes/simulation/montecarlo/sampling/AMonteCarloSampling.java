@@ -128,18 +128,36 @@ public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 	 */
 	public abstract Map<Integer,Integer> getSampledStatesMap();
 	
+	
+	
 	/**
 	 * Generates the MC sample with the given size for the given probabilistic network.
 	 * @param pn Probabilistic network that will be used for sampling.
 	 * @param nTrials Number of trials to generate.
+	 * @deprecated use {@link #start(ProbabilisticNetwork, int, long)} instead.
 	 */
-	
 	public abstract void start(ProbabilisticNetwork pn , int nTrials);
 
+	/**
+	 * Generates the MC sample with the given size for the given probabilistic network.
+	 * This is implemented as {@link #start(ProbabilisticNetwork, int)} for backward compatibility,
+	 * but implementations shall implement this method, and set {@link #start(ProbabilisticNetwork, int)}
+	 * to simply delegate to {@link #start(ProbabilisticNetwork, int, long)}.
+	 * @param pn Probabilistic network that will be used for sampling.
+	 * @param nTrials Number of trials to generate.
+	 * @param elapsedTimeMillis : the sampling process will stop after executing this amount of time
+	 * in milliseconds.
+	 */
+	public void start(ProbabilisticNetwork pn , int nTrials, long elapsedTimeMillis) {
+		this.start(pn, nTrials);
+	}
+	
 	protected ProbabilisticNetwork pn;
 	protected int nTrials;
 	protected List<Node> samplingNodeOrderQueue;
 	protected Map<Integer,Integer> sampledStatesMap;
+	
+	private long elapsedTimeMillis = Long.MAX_VALUE;
 
 	/**
 	 * Return the order the nodes are in the sampled matrix.
@@ -422,6 +440,22 @@ public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 			linearCoord %= factorI;
 		}
 		return multidimensionalCoord;
+	}
+
+	/**
+	 * @return the maximum amount of time for the sampling process to stop.
+	 * @see #start(ProbabilisticNetwork, int, long)
+	 */
+	public long getElapsedTimeMillis() {
+		return elapsedTimeMillis;
+	}
+
+	/**
+	 * @param elapsedTimeMillis : the maximum amount of time for the sampling process to stop.
+	 * @see #start(ProbabilisticNetwork, int, long)
+	 */
+	public void setElapsedTimeMillis(long elapsedTimeMillis) {
+		this.elapsedTimeMillis = elapsedTimeMillis;
 	}
 
 }

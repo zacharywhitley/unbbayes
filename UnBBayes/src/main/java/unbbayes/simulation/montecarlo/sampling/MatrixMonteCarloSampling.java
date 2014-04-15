@@ -27,6 +27,7 @@ import java.util.Map;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.util.Debug;
 /*
  * TODO : since unbbayes.evaluation package is using 
  * unbbayes.simulation.montecarlo.sampling package,
@@ -76,11 +77,21 @@ public class MatrixMonteCarloSampling extends AMonteCarloSampling {
 	}
 	
 	/**
+	 * Just delegates to {@link #start(ProbabilisticNetwork, int, long)} by setting {@link Long#MAX_VALUE} as the time to wait.
+	 * @deprecated use {@link #start(ProbabilisticNetwork, int, long)} instead.
+	 */
+	public void start(ProbabilisticNetwork pn , int nTrials){
+		this.start(pn, nTrials, Long.MAX_VALUE);
+	}
+	
+	/**
 	 * Generates the MC sample with the given size for the given probabilistic network.
 	 * @param pn Probabilistic network that will be used for sampling.
 	 * @param nTrials Number of trials to generate.
+	 * @param elapsedTimeMillis : the sampling process will stop after executing this amount of time
+	 * in milliseconds
 	 */
-	public void start(ProbabilisticNetwork pn , int nTrials){
+	public void start(ProbabilisticNetwork pn , int nTrials, long elapsedTimeMillis){
 		this.pn = pn;
 		this.nTrials = nTrials;
 		// set max value allowed for the progress
@@ -88,10 +99,16 @@ public class MatrixMonteCarloSampling extends AMonteCarloSampling {
 		samplingNodeOrderQueue = new ArrayList<Node>();		
 		createSamplingOrderQueue();
 		sampledStatesMatrix = new byte[nTrials][pn.getNodeCount()];		
+		long startingTimeMillis = System.currentTimeMillis();	// the time when the sampling has started
 		for(int i = 0; i < nTrials; i++){	
 			// update the current value of the progress
 			updateProgress(i);
 			simulate(i);
+			// check if we shall stop execution due to elapsed time
+			if ((System.currentTimeMillis() - startingTimeMillis) > elapsedTimeMillis) {
+				Debug.println(getClass(), "Stopping simulation because it exeeded time limit of " + elapsedTimeMillis + " ms.");
+				break;
+			}
 		}
 	}
 	
