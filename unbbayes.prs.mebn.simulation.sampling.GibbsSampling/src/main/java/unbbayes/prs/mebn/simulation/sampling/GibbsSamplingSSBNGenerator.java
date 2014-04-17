@@ -21,7 +21,7 @@ import unbbayes.simulation.sampling.GibbsSampling;
 public class GibbsSamplingSSBNGenerator extends LaskeySSBNGenerator implements
 		ISSBNGeneratorBuilder {
 	
-	private GibbsSampling gibbsSampler = new GibbsSampling();
+	private GibbsSampling gibbsSampler = null;
 
 	private String name = "SSBN Generator and Gibbs Sampler";
 	
@@ -29,14 +29,26 @@ public class GibbsSamplingSSBNGenerator extends LaskeySSBNGenerator implements
 	 * 
 	 */
 	public GibbsSamplingSSBNGenerator() {
-		super(null);
-		// initialize laskey algorithm using default parameter values
-		LaskeyAlgorithmParameters param = new LaskeyAlgorithmParameters();
-		param.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
-		param.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
-		param.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
-		param.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
-		this.setParameters(param);
+		this(null);
+	}
+
+	/**
+	 * This is called in {@link #GibbsSamplingSSBNGenerator(LaskeyAlgorithmParameters)}
+	 * in order to initialize attributes.
+	 */
+	protected void init() {
+		if (this.getParameters() == null) {
+			// initialize laskey algorithm using default parameter values
+			LaskeyAlgorithmParameters param = new LaskeyAlgorithmParameters();
+			param.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
+			param.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
+			param.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
+			param.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
+			this.setParameters(param);
+		}
+		// initialize gibbs sampler
+		this.setGibbsSampler(new GibbsSampling());
+		this.getGibbsSampler().setElapsedTimeMillis(600);
 	}
 
 	/**
@@ -44,7 +56,7 @@ public class GibbsSamplingSSBNGenerator extends LaskeySSBNGenerator implements
 	 */
 	public GibbsSamplingSSBNGenerator(LaskeyAlgorithmParameters _parameters) {
 		super(_parameters);
-		// TODO Auto-generated constructor stub
+		this.init(); 
 	}
 	
 	/**
