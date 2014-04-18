@@ -332,6 +332,7 @@ public class GUIPotentialTable {
 	 * Show the potential table. Used for DEBUG.
 	 * 
 	 * @param title Title of the window to be shown.
+	 * @deprecated Use it only for debugging purpose.
 	 */
 	public void showTable(String title) {
 		JDialog diag = new JDialog();
