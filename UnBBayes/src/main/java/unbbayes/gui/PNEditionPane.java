@@ -30,13 +30,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.IOException;
 import java.util.EventObject;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,7 +55,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
-import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -616,17 +612,45 @@ public class PNEditionPane extends JPanel {
 	 * @return A JTabbedPane containing all loaded plugins
 	 */
 	protected JComponent buildCPFPaneFromPlugin(Node tableOwner) {
-		JTabbedPane ret = new JTabbedPane(JTabbedPane.TOP,
+		final JTabbedPane ret = new JTabbedPane(JTabbedPane.TOP,
 				JTabbedPane.SCROLL_TAB_LAYOUT);
+		
+		// fill content and listeners of CPF tabbed pane
+		this.resetCPFTabbedPane(ret, tableOwner);
+		this.resetCPTTabbedPaneChangeListeners(ret, tableOwner);
+		
+		return ret;
+	}
 
-		// there is nothing to do if no table owner is set
-		if (tableOwner == null) {
-			return ret;
+
+	/**
+	 * Simply reset the content of tabbed pane and fill it with new content.
+	 * This can be used to reset content of tabbed pane created at {@link #buildCPFPaneFromPlugin(Node)}
+	 * @param tabs : tabbed pane to be filled
+	 * @param node : owner of the CPT which will be edited by "tabs"
+	 */
+	protected void resetCPFTabbedPane(JTabbedPane tabs, Node node) {
+		// there is nothing to do if no tab or table owner is set
+		if (node == null || tabs == null) {
+			return;
 		}
+		
+		// delete listeners before calling removeAll(), because removeAll will trigger a change event
+		for (ChangeListener cl : tabs.getChangeListeners()) {
+			tabs.removeChangeListener(cl);
+		}
+		
+		// delete everything, so that we can fill them again
+		tabs.removeAll();
+		
+		// just convert to final variables, so that we can reference them inside the listeners
+		final JTabbedPane ret = tabs;
+		final Node tableOwner = node;
 
 		// initializing pane with the basic discrete node's JTable
 		ret.addTab(this.resource.getString("CPFTableTitle"),
-				iconController.getTableIcon(), this.getCPTPane(),
+				iconController.getTableIcon(), 
+				this.getCPTPane(),
 				this.resource.getString("CPFTableToolTip"));
 
 		// getting singleton instance of plugin manager
@@ -670,20 +694,68 @@ public class PNEditionPane extends JPanel {
 				continue;
 			}
 		}
-
+	}
+	
+	/**
+	 * This is called by {@link #buildCPFPaneFromPlugin(Node)} in order to fill the listeners of the tabbed pane.
+	 * @param ret : tabbed pane whose listeners will be initialized
+	 * @param tableOwner
+	 */
+	protected void resetCPTTabbedPaneChangeListeners(final JTabbedPane ret, final Node tableOwner) {
 		ret.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				try {
-					fitCPFDividerLocationToComponent((JComponent) ((JTabbedPane) centerPanel
-							.getTopComponent()).getSelectedComponent());
+					if (e.getSource().equals(ret)) {
+						// get what tab is selected
+						int selectedIndex = ret.getSelectedIndex();
+						if (selectedIndex >= 0) {
+//							// rebuild tab
+//							resetCPFTabbedPane(ret, tableOwner);
+//							// select the tab which was selected prior to rebuild
+//							ret.setSelectedIndex(selectedIndex);
+//							// rebuild listeners of tab
+//							resetCPTTabbedPaneChangeListeners(ret, tableOwner);
+							
+							// purge listener and components in old tabs
+							for (ChangeListener changeListener : ret.getChangeListeners()) {
+								// remove listeners first, because removeAll may trigger change listener
+								ret.removeChangeListener(changeListener);
+							}
+							ret.removeAll();
+//							ret.updateUI();
+//							ret.repaint();
+							
+							// rebuild tabs. This should update content of getCpfPane()
+							controller.createTable(tableOwner);
+							
+							// extract the new tabs 
+							if (getCpfPane() instanceof JTabbedPane) {
+								JTabbedPane tabs = (JTabbedPane) getCpfPane();
+								// backup change listeners of tab that was rebuild, so that we can disble them temporary
+								ChangeListener[] listeners = tabs.getChangeListeners();
+								// temporary disable all listeners
+								for (ChangeListener changeListener : listeners) {
+									tabs.removeChangeListener(changeListener);
+								}
+								// change selected tab to the one which was selected before rebuild
+								tabs.setSelectedIndex(selectedIndex);
+								
+								// restore listeners
+								for (ChangeListener changeListener : listeners) {
+									tabs.addChangeListener(changeListener);
+								}
+							}
+							
+						}
+					}
+					// change divider position
+//					fitCPFDividerLocationToComponent((JComponent) ((JTabbedPane) centerPanel
+//							.getTopComponent()).getSelectedComponent());
 				} catch (Exception exc) {
 					exc.printStackTrace();
 				}
 			}
-		});
-
-		return ret;
-	}
+		});}
 
 	private int selectedFunction = 0;
 
