@@ -29,6 +29,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
+import java.util.ResourceBundle;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -105,6 +107,10 @@ public class ExplanationProperties extends JDialog
   private JLabel explanationVariableLabel = new JLabel();
   private JLabel descriptionLabel = new JLabel();
   private JTextArea explanationNodeTextArea = new JTextArea();
+  
+  /** Load resource file from this package */
+	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
+			unbbayes.gui.resources.GuiResources.class.getName(), Locale.getDefault(), ExplanationProperties.class.getClassLoader());
 
   public ExplanationProperties(NetworkWindow netWindow,SingleEntityNetwork net)
   { this.netWindow = netWindow;
@@ -122,13 +128,13 @@ public class ExplanationProperties extends JDialog
   {
     this.setSize(550, 470);
     this.setResizable(false);
-    this.setTitle("Propriedades da Variável de Explicação");
+    this.setTitle(resource.getString("properties"));
 
     // Cria bordas
     border1 = BorderFactory.createEmptyBorder(0,10,0,10);
     border2 = BorderFactory.createEmptyBorder(20,20,20,20);
-    titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:");
-    evidenceTypeBorder = BorderFactory.createCompoundBorder(new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)),"Tipo de Evidência:"),BorderFactory.createEmptyBorder(0,10,0,0));
+    titledBorder1 = new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)), resource.getString("typeLabel"));
+    evidenceTypeBorder = BorderFactory.createCompoundBorder(new TitledBorder(BorderFactory.createEtchedBorder(Color.white,new Color(148, 145, 140)), resource.getString("typeLabel")),BorderFactory.createEmptyBorder(0,10,0,0));
 
     // Muda propriedades do botao ok
     okButton.setMaximumSize(new Dimension(85, 27));
@@ -147,7 +153,7 @@ public class ExplanationProperties extends JDialog
     explanationPanel.setLayout(new GridLayout(2,0,0,10));
     explanationTopPanel.setLayout(new BorderLayout(0,10));
     evidencePhrasePanel.setLayout(new BorderLayout(0,5));
-    evidenceNodeLabel.setText("Evidencia : ");
+    evidenceNodeLabel.setText(resource.getString("addConditionsSoftEvidence"));
     evidenceNodePanel.setLayout(new BorderLayout());
     evidenceTypePanel.setBorder(evidenceTypeBorder);
     evidenceTypePanel.setLayout(new GridLayout(2,3,10,0));
@@ -175,7 +181,7 @@ public class ExplanationProperties extends JDialog
         evidenceRadioButton_actionPerformed(e);
       }
     });
-    necessaryRadioButton.setText("Essencial");
+    necessaryRadioButton.setText("Essential");
     necessaryRadioButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -183,7 +189,7 @@ public class ExplanationProperties extends JDialog
         evidenceRadioButton_actionPerformed(e);
       }
     });
-    exclusiveRadioButton.setText("Excludente");
+    exclusiveRadioButton.setText("Excludent");
     exclusiveRadioButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -197,10 +203,10 @@ public class ExplanationProperties extends JDialog
     necessaryPanel.setLayout(new BorderLayout());
     exclusivePanel.setLayout(new BorderLayout());
     notUsedPanel.setLayout(new BorderLayout());
-    evidencePhraseLabel.setText("Texto para Explanação :");
+    evidencePhraseLabel.setText(resource.getString("probabilisticExplanationNodeColorLabel") + ": ");
     evidencePhraseTopPanel.setLayout(new BorderLayout());
     evidencePhraseBottomPanel.setLayout(new BorderLayout());
-    cancelButton.setText("Cancelar");
+    cancelButton.setText(resource.getString("cancelLabel"));
     cancelButton.addActionListener(new java.awt.event.ActionListener()
     {
       public void actionPerformed(ActionEvent e)
@@ -226,10 +232,10 @@ public class ExplanationProperties extends JDialog
     descriptionTopPanel3.setLayout(new BorderLayout());
     descriptionTopPanel.setLayout(new GridLayout(3,0));
     descriptionBottomPanel.setLayout(new BorderLayout());
-    explanationVariableLabel.setText("Variável de explicação : ");
+    explanationVariableLabel.setText(resource.getString("probabilisticExplanationNodeColorLabel") + " (" + resource.getString("nodeGraphName") + "): ");
     descriptionPanel.setBorder(border2);
     descriptionTopPanel1.setLayout(new BorderLayout());
-    descriptionLabel.setText("Descrição:");
+    descriptionLabel.setText(resource.getString("probabilisticDescriptionNodeColorLabel")+":");
     explanationPanel.setBorder(border2);
     this.getContentPane().add(southPanel,  BorderLayout.SOUTH);
     descriptionTopPanel.add(descriptionTopPanel1, null);
@@ -272,8 +278,8 @@ public class ExplanationProperties extends JDialog
     buttonGroup1.add(necessaryRadioButton);
     buttonGroup1.add(exclusiveRadioButton);
     jTabbedPane.setBorder(border1);
-    jTabbedPane.add(descriptionPanel, "Descrição");
-    jTabbedPane.add(explanationPanel, "Explanação");
+    jTabbedPane.add(descriptionPanel, resource.getString("probabilisticDescriptionNodeColorLabel"));
+    jTabbedPane.add(explanationPanel, resource.getString("probabilisticExplanationNodeColorLabel"));
     this.getContentPane().add(jTabbedPane,  BorderLayout.CENTER);
     ArrayList<Node> nodes = net.getNodes();
     //ArrayList<Node> nodes = net.getDescriptionNodes();
@@ -298,7 +304,7 @@ public class ExplanationProperties extends JDialog
       updateExplanationInformation(evidenceNodeComboBox.getItemAt(0).toString());
     }
     nodeNameLabel.setText(node.getName());
-    descriptionLabel.setText("Descrição: "+node.getDescription());
+    descriptionLabel.setText(resource.getString("probabilisticDescriptionNodeColorLabel")+": "+node.getDescription());
   }
 
   void okButton_actionPerformed(ActionEvent e)
