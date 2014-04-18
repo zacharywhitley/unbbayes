@@ -241,7 +241,7 @@ public class GuiResources extends ListResourceBundle {
 		{"OVariableTitle", "Ord. Variable"}, 
 		{"ArgumentTitle", "Arguments"}, 
 		{"StatesTitle", "States"}, 	
-		{"FathersTitle", "Fathers Nodes"}, 		
+		{"FathersTitle", "Parent Nodes"}, 		
 		{"AddFinding", "Finding"}, 	
 		
 		//Label for buttons of tab selection
@@ -427,7 +427,7 @@ public class GuiResources extends ListResourceBundle {
 		{"compileCPTTip", "Compile table"},
 		{"saveCPTTip", "Save table"},
 		{"exitCPTTip", "Close table"},
-		{"fatherCPTTip", "Open list of fathers/fathers' states"},
+		{"fatherCPTTip", "Open list of parents/parents' states"},
 		{"argumentCPTTip", "Open list of arguments"},
 		{"statesCPTTip", "Open list of states of this node"},
 		
@@ -437,7 +437,7 @@ public class GuiResources extends ListResourceBundle {
 		{"compileCPT", "Compile"},
 		{"saveCPT", "Save"},
 		{"exitCPT", "Exit"},
-		{"fatherCPT", "Fathers"},
+		{"fatherCPT", "Parents"},
 		{"argumentCPT", "Arguments"},
 		{"statesCPT", "States"},
 		
