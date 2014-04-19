@@ -81,7 +81,8 @@ public class ICIFactorizationJunctionTreeAlgorithm extends JunctionTreeAlgorithm
 			public void onAfterPropagate(IInferenceAlgorithm algorithm) { }
 		});
 		
-		
+		// factorize() will use this handler
+		getFactorizationHandlerList().add(new NoisyMaxTemporalFactorizationHandler());
 	}
 
 
@@ -118,7 +119,7 @@ public class ICIFactorizationJunctionTreeAlgorithm extends JunctionTreeAlgorithm
 	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#getName()
 	 */
 	public String getName() {
-		return "Junction Tree with ICI optimization";
+		return "Junction Tree with ICI";
 	}
 
 	
@@ -129,7 +130,7 @@ public class ICIFactorizationJunctionTreeAlgorithm extends JunctionTreeAlgorithm
 	 * @see #getFactorizationHandlerList()
 	 */
 	protected void factorize() {
-		if (getFactorizationHandlerList() != null) {
+		if (getFactorizationHandlerList() != null && !getFactorizationHandlerList().isEmpty()) {
 			// extract the network we are going to iterate
 			ProbabilisticNetwork network = getNet();
 			if (network == null) {
@@ -137,7 +138,7 @@ public class ICIFactorizationJunctionTreeAlgorithm extends JunctionTreeAlgorithm
 				throw new NullPointerException("Network was not specified. getNet() == null");
 			}
 			// iterate on all nodes, check if ICI, then handle it
-			for (Node node : network.getNodes()) {
+			for (Node node : new ArrayList<Node>(network.getNodes())) {	// iterate on a clone of list, because network.getNodes() will change
 				// check what handler is compatible with current node
 				for (ICINodeFactorizationHandler handler : getFactorizationHandlerList()) {
 					if (handler.isICICompatible(node, network)) {

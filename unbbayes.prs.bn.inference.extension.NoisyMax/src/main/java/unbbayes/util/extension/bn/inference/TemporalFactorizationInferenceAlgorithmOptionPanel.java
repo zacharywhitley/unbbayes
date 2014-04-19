@@ -3,7 +3,6 @@
  */
 package unbbayes.util.extension.bn.inference;
 
-import unbbayes.prs.bn.JunctionTreeAlgorithm;
 
 /**
  * @author Shou Matsumoto
@@ -25,7 +24,9 @@ public class TemporalFactorizationInferenceAlgorithmOptionPanel extends Inferenc
 	 * @see unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel#getInferenceAlgorithm()
 	 */
 	public IInferenceAlgorithm getInferenceAlgorithm() {
-		return new ICIFactorizationJunctionTreeAlgorithm();
+		ICIFactorizationJunctionTreeAlgorithm algorithm = new ICIFactorizationJunctionTreeAlgorithm();
+		algorithm.setOptionPanel(this);
+		return algorithm;
 	}
 
 	/* (non-Javadoc)

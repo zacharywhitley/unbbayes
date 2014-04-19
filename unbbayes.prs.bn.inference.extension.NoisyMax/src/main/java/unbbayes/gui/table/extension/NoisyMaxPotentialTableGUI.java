@@ -431,7 +431,7 @@ public class NoisyMaxPotentialTableGUI extends GUIPotentialTable {
 						// clone coordinateOfCellInCPT, and use it in order to iterate only on cells of current column in CPT
 						int[] coordinateForIterationOnSameColumn = getPotentialTable().getMultidimensionalCoord(getPotentialTable().getLinearCoord(coordinateOfCellInCPT));
 						// iterate on cells of current column in CPT
-						int stateSizeMinus1 = getPotentialTable().getVariableAt(variableIndex).getStatesSize() - 1;	// - 1 because we don't need to iterate on last state
+						int stateSizeMinus1 = node.getStatesSize() - 1;	// - 1 because we don't need to iterate on last state
 						for (coordinateForIterationOnSameColumn[0] = 0; coordinateForIterationOnSameColumn[0] < stateSizeMinus1; coordinateForIterationOnSameColumn[0]++) {
 							if (coordinateForIterationOnSameColumn[0] == coordinateOfCellInCPT[0]) {
 								// this is the value being updated now
@@ -443,8 +443,37 @@ public class NoisyMaxPotentialTableGUI extends GUIPotentialTable {
 						}
 						// check if sum is consistent
 						if (sum < 0f || sum > 1f) {
+							// build a message like p1 + p2 + ... + pn = sum
+							String message = "";
+							for (coordinateForIterationOnSameColumn[0] = 0; coordinateForIterationOnSameColumn[0] < stateSizeMinus1; coordinateForIterationOnSameColumn[0]++) {
+								if (coordinateForIterationOnSameColumn[0] != 0) {
+									message += " + ";
+								}
+								if (coordinateForIterationOnSameColumn[0] == coordinateOfCellInCPT[0]) {
+									// this is the value being updated now
+									message += value;	
+								} else {
+									// other values
+									message += getPotentialTable().getValue(coordinateForIterationOnSameColumn);
+								}
+								if (coordinateForIterationOnSameColumn[0] + 1 >= stateSizeMinus1) {
+									// last iteration
+									message += " = " + sum + ((sum<0)?" < 0":" > 1");
+								}
+							}
 							// it's an invalid edit. Do not make any updates
-							JOptionPane.showMessageDialog(null, getResource().getString("numberFormatError"), getResource().getString("error"), JOptionPane.ERROR_MESSAGE);
+							JOptionPane.showMessageDialog(
+									null, 
+									getResource().getString("statusEvidenceException") + "\n" + message, 
+									getResource().getString("statusError"), 
+									JOptionPane.ERROR_MESSAGE
+								);
+							jTable.revalidate();
+							jTable.setValueAt(
+									"" + getPotentialTable().getValue(coordinateOfCellInCPT),
+									e.getLastRow(), 
+									e.getColumn()
+								);
 						} else {
 							// Note: at this point, sum is consistent, and 1-sum will be also consistent
 							

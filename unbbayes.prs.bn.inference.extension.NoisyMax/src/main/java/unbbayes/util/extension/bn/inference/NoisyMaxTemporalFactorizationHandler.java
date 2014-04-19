@@ -31,7 +31,7 @@ import unbbayes.util.Debug;
 public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizationHandler {
 
 	private Map<INode, PotentialTable> tableBackups = null;
-	private Map<INode, List<INode>> parentsBackup;
+//	private Map<INode, List<INode>> parentsBackup;
 	private Map<INode, Graph> networkBackup;
 	private Map<INode, List<INode>> leakBackup;
 	private Map<INode, List<INode>> divorcingNodesBackup;
@@ -96,9 +96,9 @@ public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizatio
 		// get the CPT
 		PotentialTable table = mainNode.getProbabilityFunction();
 		
-		// backup parents
+		// get parents. Use a clone, because the original list will be changed (we'll remove parents from main node)
 		ArrayList<INode> originalParents = new ArrayList<INode>(mainNode.getParentNodes());
-		getParentsBackup().put(mainNode, originalParents);
+//		getParentsBackup().put(mainNode, originalParents);
 		
 		// create leak nodes
 		List<INode> leakNodes = new ArrayList<INode>(originalParents.size());	// leakNodes and originalParents shall correspond by indexes
@@ -108,9 +108,10 @@ public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizatio
 			Double x = null;
 			Double y = null;
 			if (parent instanceof Node) {
-				// place node between child and parent, but closer to parent
-				x = .3*mainNode.getPosition().getX() + .7*((Node) parent).getPosition().getX(); 
-				y = .3*mainNode.getPosition().getY() + .7*((Node) parent).getPosition().getY() ;
+				// below the parent
+				x = ((Node) parent).getPosition().getX(); 
+				// place node somewhere in between child and parent, but closer to parent
+				y = .4*mainNode.getPosition().getY() + .6*((Node) parent).getPosition().getY() ;
 			}
 			
 			ProbabilisticNode leak = addNewNodeToNet("Leak_"+parent.getName(), x, y, mainNode,network);
@@ -144,7 +145,7 @@ public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizatio
 		getTableBackups().put(mainNode, (PotentialTable) table.clone());
 		
 		// disconnect main node from parents. This will change cpt of main node as well
-		for (INode parent : mainNode.getParentNodes()) {
+		for (INode parent : originalParents) {
 			Edge edge = network.getEdge((Node) parent, mainNode);
 			if (edge != null) {
 				network.removeEdge(edge);
@@ -179,7 +180,14 @@ public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizatio
 				}
 			} else {
 				// create new divorcing node 
-				ProbabilisticNode divorcingNode = addNewNodeToNet("Divorce_"+leak.getName(), leak.getPosition().getX(), null, mainNode, network);
+				ProbabilisticNode divorcingNode 
+					= addNewNodeToNet(
+							"Partition_"+leak.getName(), 
+							leak.getPosition().getX(), 
+							mainNode.getPosition().getY() + Math.abs(mainNode.getPosition().getY() - leak.getPosition().getY()), 	// place divorce node at the other side of the main node
+							mainNode, 
+							network
+						);
 				
 				// connect new divorcing node to last divorcing node (if there is no divorcing node, connect to mainNode)
 				if (!divorcingNodes.isEmpty()) {
@@ -265,11 +273,11 @@ public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizatio
 		Random random = new Random();
 		if (x == null) {
 			// randomly place it close to main node
-			x =  mainNode.getPosition().getX() + (random.nextBoolean()?-1:1)*random.nextDouble()*80; 
+			x =  mainNode.getPosition().getX() + (random.nextBoolean()?-1:1)*random.nextDouble()*200; 
 		}
 		if (y == null) {
 			// randomly place it close to main node
-			y =  mainNode.getPosition().getY() + (random.nextBoolean()?-1:1)*random.nextDouble()*80;
+			y =  mainNode.getPosition().getY() + (random.nextBoolean()?-1:1)*random.nextDouble()*200;
 		}
 		random = null;	// do not use it anymore
 		
@@ -333,23 +341,31 @@ public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizatio
 				}
 			}
 			
-			// reconnect parents and main node (parents must be connected in the same order)
-			nodes = getParentsBackup().get(entry.getKey());
-			if (nodes != null) {
-				for (INode parent : nodes) {
+			// extract cpt of main node in order to reconnect parents and restore probability
+			PotentialTable backupTable = getTableBackups().get(entry.getKey());
+			
+			if (backupTable != null) {
+				// reconnect parents and main node (parents must be connected in the same order)
+				for (int i = 1; i < backupTable.getVariablesSize(); i++) {	// start from 1, because 0 is the main node itself
+					
+					Node parent = (Node) backupTable.getVariableAt(i);
+//					if (entry.getValue() instanceof Network) {
+//						// make sure the instance is the same of the one in current network
+//						parent = ((Network) entry.getValue()).getNode(parent.getName());
+//					}
 					try {
-						entry.getValue().addEdge(new Edge((Node)parent, (Node)entry.getKey()));
+						entry.getValue().addEdge(new Edge((Node)parent , (Node)entry.getKey()));
 					} catch (Exception e) {
 						Debug.println(getClass(), "Could not reconnect " + parent + " and " + entry.getKey(), e);
 					}
 				}
+				
+				// restore content of CPT of main node
+				if (entry.getKey() instanceof ProbabilisticNode) {
+					((ProbabilisticNode) entry.getKey()).getProbabilityFunction().setValues(backupTable.getValues());
+				}
 			}
 			
-			// restore CPT of main node
-			PotentialTable backupTable = getTableBackups().get(entry.getKey());
-			if (entry.getKey() instanceof ProbabilisticNode) {
-				((ProbabilisticNode) entry.getKey()).getProbabilityFunction().setValues(backupTable.getValues());
-			}
 		}
 		
 	}
@@ -379,22 +395,22 @@ public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizatio
 		this.tableBackups = tableBackups;
 	}
 
-	/**
-	 * @return backup of what nodes were direct parents of {@link #getNode()}
-	 */
-	public Map<INode, List<INode>> getParentsBackup() {
-		if (parentsBackup == null) {
-			parentsBackup = new HashMap<INode, List<INode>>();
-		}
-		return parentsBackup;
-	}
-
-	/**
-	 * @param parentsBackup: backup of what nodes were direct parents of {@link #getNode()}
-	 */
-	protected void setParentsBackup(Map<INode, List<INode>> parentsBackup) {
-		this.parentsBackup = parentsBackup;
-	}
+//	/**
+//	 * @return backup of what nodes were direct parents of {@link #getNode()}
+//	 */
+//	public Map<INode, List<INode>> getParentsBackup() {
+//		if (parentsBackup == null) {
+//			parentsBackup = new HashMap<INode, List<INode>>();
+//		}
+//		return parentsBackup;
+//	}
+//
+//	/**
+//	 * @param parentsBackup: backup of what nodes were direct parents of {@link #getNode()}
+//	 */
+//	protected void setParentsBackup(Map<INode, List<INode>> parentsBackup) {
+//		this.parentsBackup = parentsBackup;
+//	}
 
 	/**
 	 * @return a backup of what network was used in {@link #treatICI(INode, Graph)}
