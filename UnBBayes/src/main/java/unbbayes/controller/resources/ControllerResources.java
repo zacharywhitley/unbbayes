@@ -56,7 +56,7 @@ public class ControllerResources extends ListResourceBundle {
 		{"likelihoodName","Likelihood"},
 		{"likelihoodException","There are only zeros!"},
 		{"statusEvidenceProbabilistic","Total Evidence Probabilistic: "},
-		{"statusEvidenceException","Evidences are not consistancy or underflow"},
+		{"statusEvidenceException","Evidences are not consistent, or there was an underflow"},
 		{"statusError","Error!"},
 		{"printLogToolTip","Print compilation log"},
 		{"previewLogToolTip","Print preview"},
@@ -114,7 +114,7 @@ public class ControllerResources extends ListResourceBundle {
 		{"numberFormatError","The value must be a real number."},
 		
 
-		{"JAXBExceptionFound", "Sintaxe error..."},
+		{"JAXBExceptionFound", "Sintax error..."},
 		
 		/* Numeric attribute node */
 		{"mean", "Mean"},
