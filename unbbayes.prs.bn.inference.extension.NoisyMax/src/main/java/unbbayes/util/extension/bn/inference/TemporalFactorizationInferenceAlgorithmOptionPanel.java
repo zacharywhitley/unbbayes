@@ -25,8 +25,7 @@ public class TemporalFactorizationInferenceAlgorithmOptionPanel extends Inferenc
 	 * @see unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel#getInferenceAlgorithm()
 	 */
 	public IInferenceAlgorithm getInferenceAlgorithm() {
-		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm();
-		return algorithm;
+		return new ICIFactorizationJunctionTreeAlgorithm();
 	}
 
 	/* (non-Javadoc)
