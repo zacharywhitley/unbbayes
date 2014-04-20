@@ -29,6 +29,10 @@ import unbbayes.util.Debug;
  * @see NoisyMaxCPTConverter
  */
 public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizationHandler {
+	
+	/** This is lazily instantiated at {@link #getNoisyMaxCPTChecker()} */
+	private IIndependenceCausalInfluenceChecker noisyMaxCPTChecker = null; 
+	
 
 	private Map<INode, PotentialTable> tableBackups = null;
 //	private Map<INode, List<INode>> parentsBackup;
@@ -45,12 +49,17 @@ public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizatio
 	 * @see unbbayes.util.extension.bn.inference.ICINodeFactorizationHandler#isICICompatible(unbbayes.prs.INode, unbbayes.prs.Graph)
 	 */
 	public boolean isICICompatible(INode node, Graph net) {
+		
 		// basic assertions
 		if (node == null || net == null) {
 			return false;
 		}
-		// TODO Auto-generated method stub
-		return (node instanceof ProbabilisticNode) && (node.getParentNodes().size() >= 2);
+		if (!(node instanceof ProbabilisticNode) || (node.getParentNodes().size() < 2)) {
+			// no need to use ICI if this is not probabilistic node, and there are less than 2 parents
+			return false;
+		}
+		
+		return getNoisyMaxCPTChecker().isICI(((ProbabilisticNode)node).getProbabilityFunction());
 	}
 
 	/**
@@ -465,6 +474,25 @@ public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizatio
 	 */
 	protected void setDivorcingNodesBackup(Map<INode, List<INode>> divorcingNodesBackup) {
 		this.divorcingNodesBackup = divorcingNodesBackup;
+	}
+
+	
+
+	/**
+	 * @return the object responsible for checking whether a CPT follows the pattern of noisy-max distribution.
+	 */
+	public IIndependenceCausalInfluenceChecker getNoisyMaxCPTChecker() {
+		if (noisyMaxCPTChecker == null) {
+			noisyMaxCPTChecker = new NoisyMaxCPTConverter();
+		}
+		return noisyMaxCPTChecker;
+	}
+
+	/**
+	 * @param noisyMaxCPTChecker : the object responsible for checking whether a CPT follows the pattern of noisy-max distribution.
+	 */
+	public void setNoisyMaxCPTChecker(IIndependenceCausalInfluenceChecker noisyMaxCPTConverter) {
+		this.noisyMaxCPTChecker = noisyMaxCPTConverter;
 	}
 
 }

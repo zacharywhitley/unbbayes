@@ -13,7 +13,11 @@ import unbbayes.prs.bn.PotentialTable;
  * @author Shou Matsumoto
  *
  */
-public class NoisyMaxCPTConverter implements IIndependenceCausalInfluenceCPTConverter {
+public class NoisyMaxCPTConverter implements IIndependenceCausalInfluenceCPTConverter, IIndependenceCausalInfluenceChecker {
+	
+
+	/** Differences in probability within this margin will be considered ignorable in comparison */
+	private float probErrorMargin = 0.00005f;
 
 	/**
 	 * Default constructor
@@ -57,9 +61,27 @@ public class NoisyMaxCPTConverter implements IIndependenceCausalInfluenceCPTConv
 	 * @see unbbayes.util.extension.bn.inference.IIndependenceCausalInfluenceCPTConverter#forceCPTToIndependenceCausalInfluence(unbbayes.prs.bn.IProbabilityFunction)
 	 */
 	public void forceCPTToIndependenceCausalInfluence( IProbabilityFunction localDistribution) {
+		if (!this.visitCPTCells(localDistribution, true)) {
+			throw new RuntimeException("Could not update non-free parameters of noisy-max distribution accordingly to free parameters.");
+		}
+	}
+	
+	/**
+	 * Reads noisy-max free parameters (those in columns which only 1 parent is at non-zero state --i.e. those specified by user) from a cpt,
+	 * and either updates other cells (non-free parameters) accordingly, or checks if the values in the other cells matches
+	 * with the values that can be derived from the free parameters.
+	 * @param localDistribution : cpt to be verified
+	 * @param isToOverwrite : if true, will update (write) non-free parameters. If false, will check if non-free parameters are consistent with
+	 * free parameters.
+	 * @return true if non-free parameters are consistent with free parameters. False otherwise.
+	 * @see #isICI(IProbabilityFunction)
+	 * @see #forceCPTToIndependenceCausalInfluence(IProbabilityFunction)
+	 */
+	protected boolean visitCPTCells (IProbabilityFunction localDistribution, boolean isToOverwrite) {
+
 		// check inputs
 		if (localDistribution == null) {
-			return;
+			return false;
 		}
 		if (!(localDistribution instanceof PotentialTable)) {
 			throw new IllegalArgumentException("This version expects the local probability distribution to be an instance of " + PotentialTable.class.getName());
@@ -73,10 +95,19 @@ public class NoisyMaxCPTConverter implements IIndependenceCausalInfluenceCPTConv
 		// extract the number of states of the owner
 		int numStatesOwner = tableOwner.getStatesSize();
 		
-		// set first column to [100%, 0%, 0% ,..., 0%]
-		table.setValue(0, 1f);
+		// check if first column is [100%, 0%, 0% ,..., 0%]
+		if (isToOverwrite) {
+			table.setValue(0, 1f);
+		} else  if (Math.abs(1f-table.getValue(0) ) > getProbErrorMargin()) { // check if first row is 100%
+			return false;
+		}
+		// check other rows (cells starting at index 1)
 		for (int i = 1; i < numStatesOwner; i++) {
-			table.setValue(i, 0f);
+			if (isToOverwrite) {
+				table.setValue(i, 0f);
+			} else if (Math.abs(table.getValue(i) ) > getProbErrorMargin()) { // check if other rows are 0%
+				return false;
+			}
 		}
 		
 		// extract the size of the table, because we'll iterate on it
@@ -108,12 +139,12 @@ public class NoisyMaxCPTConverter implements IIndependenceCausalInfluenceCPTConv
 						+ ". This is probably a bug. Please, check required plug-in/core versions.");
 			}
 			
-			// check if current column needs change
-			if (isToKeepCPTColumnUnchanged(cellIndex, table)) {
+			// check if current is free parameter. If so, column does not need to be changed or checked
+			if (isCPTColumnWithNoisyMaxParameter(cellIndex, table)) {
 				// go directly to next column
 				cellIndex += numStatesOwner;
 			} else {
-				// change the probabilities
+				// change or check the probabilities
 				
 				// convert the index of cell to array which indicates what are the states of each variable
 				int[] coordCurrentColumn = table.getMultidimensionalCoord(cellIndex);	// this will be used to extract parameters of noisy max
@@ -171,13 +202,18 @@ public class NoisyMaxCPTConverter implements IIndependenceCausalInfluenceCPTConv
 					}
 					
 					// set the current cell to the value we calculated
-					table.setValue(cellIndex, product);
+					if (isToOverwrite) {
+						table.setValue(cellIndex, product);
+					} else if (Math.abs(table.getValue(cellIndex) - product) > getProbErrorMargin()) { // if we are simply checking consistency with noisy max, then check if content of table is equal to the value we want
+						return false;
+					}
 				}
 				
 			}
 		}
 		
-		return;
+		return true;
+	
 	}
 	
 
@@ -186,10 +222,12 @@ public class NoisyMaxCPTConverter implements IIndependenceCausalInfluenceCPTConv
 	 * to check whether the current column must remain the same in a noisy-max distribution.
 	 * Columns are kept the same if only one parent is at a non-zero state.
 	 * @param tableIndex : index in {@link PotentialTable#getValue(int)}
-	 * @param table: CPT being processed.
+	 * @param localDistribution: CPT being processed.
 	 * @return true if the noisy-max distribution shall not touch this column. False otherwise.
 	 */
-	protected boolean isToKeepCPTColumnUnchanged(int tableIndex, PotentialTable table) {
+	public boolean isCPTColumnWithNoisyMaxParameter(int tableIndex, IProbabilityFunction localDistribution) {
+		
+		PotentialTable table = (PotentialTable) localDistribution;
 		
 		// extract what are the states represented by the cell of table at index tableIndex 
 		int[] states = table.getMultidimensionalCoord(tableIndex);
@@ -212,6 +250,31 @@ public class NoisyMaxCPTConverter implements IIndependenceCausalInfluenceCPTConv
 		// note: if foundNonZero == false, then all values were zero. 
 		// In noisy max, this column must be changed to [100%,0%,...,0%], so must not remain the same
 		return foundNonZero;
+	}
+	
+	/**
+	 * Checks if content of given cpt follows the pattern of noisy-max distribution
+	 * @param localDistribution : the distribution to check
+	 * @return: true if provided local distribution can be considered to represent a noisy-max distribution
+	 */
+	public boolean isICI(IProbabilityFunction localDistribution) {
+		return this.visitCPTCells(localDistribution, false);
+	}
+	
+	/**
+	 * @return  Differences in probability within this margin will be considered ignorable in comparison.
+	 * @see #isICI(IProbabilityFunction)
+	 */
+	public float getProbErrorMargin() {
+		return probErrorMargin;
+	}
+
+	/**
+	 * @param probErrorMargin :  Differences in probability within this margin will be considered ignorable in comparison.
+	 * @see #isICI(IProbabilityFunction)
+	 */
+	public void setProbErrorMargin(float probErrorMargin) {
+		this.probErrorMargin = probErrorMargin;
 	}
 
 }
