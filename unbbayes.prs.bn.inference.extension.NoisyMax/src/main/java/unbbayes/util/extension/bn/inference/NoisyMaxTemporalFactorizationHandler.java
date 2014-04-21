@@ -54,8 +54,8 @@ public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizatio
 		if (node == null || net == null) {
 			return false;
 		}
-		if (!(node instanceof ProbabilisticNode) || (node.getParentNodes().size() < 2)) {
-			// no need to use ICI if this is not probabilistic node, and there are less than 2 parents
+		if (!(node instanceof ProbabilisticNode) || (node.getParentNodes().size() < 3)) {
+			// no need to use ICI linear decomposition if this is not probabilistic node, and there are less than 3 parents
 			return false;
 		}
 		

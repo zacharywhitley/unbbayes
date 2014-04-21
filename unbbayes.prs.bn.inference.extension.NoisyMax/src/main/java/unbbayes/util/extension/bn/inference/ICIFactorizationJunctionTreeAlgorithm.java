@@ -129,7 +129,7 @@ public class ICIFactorizationJunctionTreeAlgorithm extends JunctionTreeAlgorithm
 	 * @see #defactorize()
 	 * @see #getFactorizationHandlerList()
 	 */
-	protected void factorize() {
+	public void factorize() {
 		if (getFactorizationHandlerList() != null && !getFactorizationHandlerList().isEmpty()) {
 			// extract the network we are going to iterate
 			ProbabilisticNetwork network = getNet();
@@ -155,7 +155,7 @@ public class ICIFactorizationJunctionTreeAlgorithm extends JunctionTreeAlgorithm
 	 * Undo changes performed by {@link #factorize()}
 	 * @see #getFactorizationHandlerList()
 	 */
-	protected void defactorize() {
+	public void defactorize() {
 		if (getFactorizationHandlerList() != null) {
 			for (ICINodeFactorizationHandler handler : getFactorizationHandlerList()) {
 				handler.undo();
