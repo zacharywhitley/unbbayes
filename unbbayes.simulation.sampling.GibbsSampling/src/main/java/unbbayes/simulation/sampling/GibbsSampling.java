@@ -102,10 +102,14 @@ public class GibbsSampling extends MatrixMonteCarloSampling implements IInferenc
 			marginalMap.put(node, marginal);
 		}
 		super.start(pn, nTrials, ellapsedTimeMillis);
-		normalizeMarginals(nTrials);
+		fillMarginals();
 	}
 	
-	private void normalizeMarginals(int nTrials) {
+	/**
+	 * Uses the sample data in {@link #marginalMap} in order to update the
+	 * marginal probabilities of all nodes.
+	 */
+	public void fillMarginals() {
 		float[] marginal;
 		for (int i = 0; i < samplingNodeOrderQueue.size(); i++) {
 			TreeVariable node = (TreeVariable)samplingNodeOrderQueue.get(i);
