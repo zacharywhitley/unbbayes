@@ -39,6 +39,7 @@ import unbbayes.util.longtask.LongTaskProgressChangedEvent;
  */
 public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 	
+	
 	/* LONG TASK BEGIN */
 
 	private List<ILongTaskProgressObserver> observers = new ArrayList<ILongTaskProgressObserver>();
@@ -457,5 +458,6 @@ public abstract class AMonteCarloSampling implements IMonteCarloSampling {
 	public void setElapsedTimeMillis(long elapsedTimeMillis) {
 		this.elapsedTimeMillis = elapsedTimeMillis;
 	}
+
 
 }

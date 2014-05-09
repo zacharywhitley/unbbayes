@@ -21,6 +21,7 @@
 package unbbayes.simulation.montecarlo.sampling;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,8 @@ import unbbayes.util.Debug;
  *
  */
 public class MatrixMonteCarloSampling extends AMonteCarloSampling {
+	
+	private List<SampleGenerationListener> sampleGenerationListener = null;
 	
 	public byte[][] getSampledStatesCompactMatrix() {
 		return null;
@@ -109,6 +112,14 @@ public class MatrixMonteCarloSampling extends AMonteCarloSampling {
 				Debug.println(getClass(), "Stopping simulation because it exeeded time limit of " + elapsedTimeMillis + " ms.");
 				break;
 			}
+			if (sampleGenerationListener != null) {
+				for (SampleGenerationListener listener : sampleGenerationListener) {
+					if (!listener.onSampleGenerated(this, i)) {
+						// force loop to break on next iteration
+						i = nTrials;
+					}
+				}
+			}
 		}
 	}
 	
@@ -127,6 +138,51 @@ public class MatrixMonteCarloSampling extends AMonteCarloSampling {
 			sampledStates[i] = getState(pmf);
 			sampledStatesMatrix[nTrial][i] = (byte)sampledStates[i];
 		}				
+	}
+	
+
+	/**
+	 * Returns a copy of the list of {@link SampleGenerationListener},
+	 * which is a listener called in {@link #start(ProbabilisticNetwork, int, long)}
+	 * when a sample is generated.
+	 * @return the sampleGenerationListener
+	 */
+	public List<SampleGenerationListener> getSampleGenerationListener() {
+		if (sampleGenerationListener == null) {
+			return Collections.emptyList();
+		}
+		return new ArrayList<SampleGenerationListener>(sampleGenerationListener);
+	}
+	
+	/**
+	 * Includes a new {@link SampleGenerationListener} to {@link #getSampleGenerationListener()}
+	 * @param listener
+	 */
+	public void addSampleGenerationListener(SampleGenerationListener listener) {
+		if (sampleGenerationListener == null) {
+			sampleGenerationListener = new ArrayList<SampleGenerationListener>();
+		}
+		sampleGenerationListener.add(listener);
+	}
+	
+	/**
+	 * Removes a listener from {@link #getSampleGenerationListener()}
+	 * @param listener : listener to remove
+	 * @return : true if the content of the list was changed.
+	 * @see #getSampleGenerationListener()
+	 */
+	public boolean removeSampleGenerationListener(SampleGenerationListener listener) {
+		if (sampleGenerationListener != null) {
+			return sampleGenerationListener.remove(listener);
+		}
+		return false;
+	}
+
+	/**
+	 * @param sampleGenerationListener the sampleGenerationListener to set
+	 */
+	protected void setSampleGenerationListener(List<SampleGenerationListener> sampleGenerationListener) {
+		this.sampleGenerationListener = sampleGenerationListener;
 	}
 	
 }
