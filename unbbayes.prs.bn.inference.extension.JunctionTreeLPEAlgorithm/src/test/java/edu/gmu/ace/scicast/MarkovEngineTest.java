@@ -29772,6 +29772,8 @@ public class MarkovEngineTest extends TestCase {
 //		fail("Not implemented yet");
 //	}
 	
+	
+	
 	/**
 	 * Check if underflow will not happen when cliques have many large cliques
 	 */
@@ -29789,15 +29791,21 @@ public class MarkovEngineTest extends TestCase {
 		for (int i = 619; i <= 639; i++) {	
 			me.addQuestionAssumption(null, new Date(), i, Collections.singletonList(617L), null);
 			for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+				float sum = 0f;
 				for (Float value : entry.getValue()) {
 					assertEquals(i+":"+entry.toString(), 1f/20f, value.floatValue(), 0.0001f);
+					sum += value;
 				}
+				assertEquals(entry.toString(), 1f, sum, 0.0001f);
 			}
 			me.addQuestionAssumption(null, new Date(), i, Collections.singletonList(618L), null);
 			for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+				float sum = 0f;
 				for (Float value : entry.getValue()) {
 					assertEquals(i+":"+entry.toString(), 1f/20f, value.floatValue(), 0.0001f);
+					sum += value;
 				}
+				assertEquals(entry.toString(), 1f, sum, 0.0001f);
 			}
 		}
 
@@ -29817,9 +29825,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		System.out.println(me.exportState());
 		for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+			float sum = 0f;
 			for (Float value : entry.getValue()) {
 				assertTrue(entry.toString(), 0f< value && value <= 1f);
+				sum += value;
 			}
+			assertEquals(entry.toString(), 1f, sum, 0.0001f);
 		}
 		
 		for (long nodeIndex = 0; nodeIndex < 20; nodeIndex++) {
@@ -29842,9 +29853,12 @@ public class MarkovEngineTest extends TestCase {
 				}
 				me.addTrade(null, new Date(), "", 0L, nodeIndex+619, newValues , Collections.singletonList(617L), Collections.singletonList(parentStateIndex), true);	
 				for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+					float sum = 0f;
 					for (Float value : entry.getValue()) {
 						assertTrue(nodeIndex+","+parentStateIndex+"."+entry.toString(), -0.0001f< value && value <= 1.0001);
+						sum += value;
 					}
+					assertEquals(nodeIndex+","+parentStateIndex+"."+entry.toString(), 1f, sum, 0.0001f);
 				}
 			}
 		}
@@ -29868,9 +29882,12 @@ public class MarkovEngineTest extends TestCase {
 				}
 				me.addTrade(null, new Date(), "", 0L, nodeIndex+619, newValues , Collections.singletonList(618L), Collections.singletonList(parentStateIndex), true);	
 				for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+					float sum = 0f;
 					for (Float value : entry.getValue()) {
 						assertTrue(nodeIndex+","+parentStateIndex+"."+entry.toString(), -0.0001f< value && value <= 1.0001);
+						sum += value;
 					}
+					assertEquals(nodeIndex+","+parentStateIndex+"."+entry.toString(), 1f, sum, 0.0001f);
 				}
 			}
 		}
@@ -29878,9 +29895,22 @@ public class MarkovEngineTest extends TestCase {
 		System.out.println(me.exportState());
 		
 		for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+			float sum = 0f;
 			for (Float value : entry.getValue()) {
 				assertTrue(entry.toString(), -0.0001f< value && value <= 1.0001);
+				sum += value;
 			}
+			assertEquals(entry.toString(), 1f, sum, 0.0001f);
+		}
+		
+		me.importState(me.exportState());
+		for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+			float sum = 0f;
+			for (Float value : entry.getValue()) {
+				assertTrue(entry.toString(), -0.0001f< value && value <= 1.0001);
+				sum += value;
+			}
+			assertEquals(entry.toString(), 1f, sum, 0.0001f);
 		}
 	}
 	
