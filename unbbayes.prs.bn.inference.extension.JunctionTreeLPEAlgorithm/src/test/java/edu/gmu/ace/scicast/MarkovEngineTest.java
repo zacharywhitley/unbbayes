@@ -29772,6 +29772,117 @@ public class MarkovEngineTest extends TestCase {
 //		fail("Not implemented yet");
 //	}
 	
+	/**
+	 * Check if underflow will not happen when cliques have many large cliques
+	 */
+	public final void testUnderflows() {
+		MarkovEngineImpl me = (MarkovEngineImpl) MarkovEngineImpl.getInstance(2, 100, 1000);
+		
+		for (int i = 617; i <= 639; i++) {
+			me.addQuestion(null, new Date(), i, 20, null);
+		}
+		
+		System.out.println(me.exportState());
+		me.addQuestionAssumption(null, new Date(), 618, Collections.singletonList(617L), null);
+		System.out.println(me.exportState());
+		
+		for (int i = 619; i <= 639; i++) {	
+			me.addQuestionAssumption(null, new Date(), i, Collections.singletonList(617L), null);
+			for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+				for (Float value : entry.getValue()) {
+					assertEquals(i+":"+entry.toString(), 1f/20f, value.floatValue(), 0.0001f);
+				}
+			}
+			me.addQuestionAssumption(null, new Date(), i, Collections.singletonList(618L), null);
+			for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+				for (Float value : entry.getValue()) {
+					assertEquals(i+":"+entry.toString(), 1f/20f, value.floatValue(), 0.0001f);
+				}
+			}
+		}
+
+		System.out.println(me.exportState());
+		
+		for (int i = 0; i < 20; i++) {
+			List<Float> newValues = new ArrayList<Float>();
+			for (int j = 0; j < 20; j++) {
+				if (i == j) {
+					newValues.add(0f);
+				} else {
+					newValues.add(1f/19);
+				}
+			}
+			me.addTrade(null, new Date(), "", 0L, 618L, newValues , Collections.singletonList(617L), Collections.singletonList(i), true);		
+		}
+		
+		System.out.println(me.exportState());
+		for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+			for (Float value : entry.getValue()) {
+				assertTrue(entry.toString(), 0f< value && value <= 1f);
+			}
+		}
+		
+		for (long nodeIndex = 0; nodeIndex < 20; nodeIndex++) {
+			for (int parentStateIndex = 0; parentStateIndex < 20; parentStateIndex++) {
+				List<Float> newValues = new ArrayList<Float>();
+				for (int stateIndex = 0; stateIndex < 20; stateIndex++) {
+					if (stateIndex == 0) {
+						if (nodeIndex == parentStateIndex) {
+							newValues.add(1f);
+						} else {
+							newValues.add(0f);
+						}
+					} else {
+						if (nodeIndex == parentStateIndex) {
+							newValues.add(0f);
+						} else {
+							newValues.add(1f/19f);
+						}
+					}
+				}
+				me.addTrade(null, new Date(), "", 0L, nodeIndex+619, newValues , Collections.singletonList(617L), Collections.singletonList(parentStateIndex), true);	
+				for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+					for (Float value : entry.getValue()) {
+						assertTrue(nodeIndex+","+parentStateIndex+"."+entry.toString(), -0.0001f< value && value <= 1.0001);
+					}
+				}
+			}
+		}
+		for (long nodeIndex = 0; nodeIndex < 20; nodeIndex++) {
+			for (int parentStateIndex = 0; parentStateIndex < 20; parentStateIndex++) {
+				List<Float> newValues = new ArrayList<Float>();
+				for (int stateIndex = 0; stateIndex < 20; stateIndex++) {
+					if (stateIndex == 1) {
+						if (nodeIndex == parentStateIndex) {
+							newValues.add(1f);
+						} else {
+							newValues.add(0f);
+						}
+					} else {
+						if (nodeIndex == parentStateIndex) {
+							newValues.add(0f);
+						} else {
+							newValues.add(1f/19f);
+						}
+					}
+				}
+				me.addTrade(null, new Date(), "", 0L, nodeIndex+619, newValues , Collections.singletonList(618L), Collections.singletonList(parentStateIndex), true);	
+				for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+					for (Float value : entry.getValue()) {
+						assertTrue(nodeIndex+","+parentStateIndex+"."+entry.toString(), -0.0001f< value && value <= 1.0001);
+					}
+				}
+			}
+		}
+		
+		System.out.println(me.exportState());
+		
+		for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+			for (Float value : entry.getValue()) {
+				assertTrue(entry.toString(), -0.0001f< value && value <= 1.0001);
+			}
+		}
+	}
 	
 	/**
 	 * Test method for {@link MarkovEngineImpl#exportState()}
