@@ -178,6 +178,18 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	}
 	
 	/**
+	 * This is basically the same of {@link #consistency()}, but
+	 * it is customized for {@link #initBeliefs()}, so that underflow is avoided.
+	 * @throws Exception
+	 */
+	protected void initConsistency() throws Exception {
+		Clique rootClique = cliques.get(0);
+		totalEstimatedProb = 1;
+		collectEvidence(rootClique,true, true);
+		distributeEvidences(rootClique, true);
+	}
+	
+	/**
 	 * Basically, this method propagates evidences by calling
 	 * {@link #coleteEvidencia(Clique)} and {@link #distributeEvidences(Clique)},
 	 * passing as their arguments the clique specified in the argument.
@@ -194,11 +206,13 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 * If evidences are expected to be across several cliques, set this to true,
 	 * otherwise, if evidences are expected to be present only at the subtree
 	 * of rootClique, then set this as false.
+	 * @param forceOptimizationInitialization: if true, will attempt to optimize this 
+	 * method for the context of {@link #initBeliefs()}.
 	 * @throws Exception
 	 * @see unbbayes.prs.bn.IJunctionTree#consistency()
 	 * @see {@link #consistency()}
-	 * @see #coleteEvidencia(Clique)
 	 * @see #distributeEvidences(Clique)
+	 * @see #collectEvidence(Clique, boolean, boolean)
 	 */
 	public void consistency(Clique rootClique, boolean isToContinueOnEmptySep) throws Exception {
 		if (rootClique == null) {
@@ -208,6 +222,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		collectEvidence(rootClique, isToContinueOnEmptySep);
 		distributeEvidences(rootClique, isToContinueOnEmptySep);
 	}
+	
 
 	/**
 	 * Simply delegates to {@link #collectEvidence(Clique, boolean)} passing true in its second argument
@@ -219,28 +234,47 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	protected void coleteEvidencia(Clique clique) throws Exception {
 		this.collectEvidence(clique, true);
 	}
+	
+	/**
+	 * Delegates to {@link #collectEvidence(Clique, boolean, boolean)} setting the last argument to false.
+	 */
+	protected void collectEvidence(Clique clique, boolean isToContinueOnEmptySep) throws Exception {
+		this.collectEvidence(clique, isToContinueOnEmptySep, false);
+	}
 	/**
 	 * Processes the collection of evidences.
 	 * It absorbs child cliques.
 	 *@param  clique  clique.
+	 *@param isToContinueOnEmptySep: if false, will stop propagation if empty separator is found.
+	 *@param isInitialization: if true, will attempt to run optimizations for the context of {@link #initBeliefs()}.
 	 */
-	protected void collectEvidence(Clique clique, boolean isToContinueOnEmptySep) throws Exception {
+	private void collectEvidence(Clique clique, boolean isToContinueOnEmptySep, boolean isInitialization) throws Exception {
 		for (Clique auxClique : clique.getChildren()) {
 			if (isToContinueOnEmptySep) {
 				// call recursive regardless of separator
-				this.collectEvidence(auxClique,isToContinueOnEmptySep);
+				this.collectEvidence(auxClique,isToContinueOnEmptySep, isInitialization);
 				absorb(clique, auxClique);
+				if (isInitialization) {
+					// not normalizing now may cause underflow if there are plenty of child cliques during initBelief
+					clique.normalize();
+				}
 			} else {
 				// call recursive only if separator can propagate evidence (non-empty and more than 1 state)
 				Separator sep = getSeparator(clique, auxClique); 
 				if (sep.getProbabilityFunction().tableSize() > 1) {
-					this.collectEvidence(auxClique,isToContinueOnEmptySep);
+					this.collectEvidence(auxClique,isToContinueOnEmptySep, isInitialization);
 					absorb(clique, auxClique);
+					if (isInitialization) {
+						// not normalizing now may cause underflow if there are plenty of child cliques during initBelief
+						clique.normalize();
+					}
 				}
 			}
 		}
 
-		totalEstimatedProb *= clique.normalize();
+		if (!isInitialization) {
+			totalEstimatedProb *= clique.normalize();
+		}
 	}
 
 	/**
@@ -352,7 +386,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 				this.initBelief(auxSep);
 			}
 			
-			consistency();
+			this.initConsistency();
 			copyTableData();
 			initialized = true;
 		} else {

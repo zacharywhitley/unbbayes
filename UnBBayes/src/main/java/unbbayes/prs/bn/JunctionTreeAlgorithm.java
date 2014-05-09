@@ -21,6 +21,7 @@ import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
+import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
@@ -2178,6 +2179,9 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	public ProbabilisticNetwork updateCPTBasedOnCliques () {
 		InCliqueConditionalProbabilityExtractor cptExtractor = (InCliqueConditionalProbabilityExtractor) InCliqueConditionalProbabilityExtractor.newInstance();
 		cptExtractor.setToJoinCliquesWhenNoCliqueFound(true);	// force the extractor to join cliques when there is no clique containing all questions simultaneously
+		
+		NormalizeTableFunction normalizer = new NormalizeTableFunction();	// responsible for normalizing the CPT
+		
 		for (Node node : getNet().getNodes()) {
 			if (node instanceof ProbabilisticNode) {
 				
@@ -2204,7 +2208,10 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 						}
 					}
 				}
+				// force table to be normalized
+				normalizer.applyFunction((ProbabilisticTable) oldCPT);
 			}
+			
 		}
 		return this.getNet();
 	}
