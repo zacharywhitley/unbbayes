@@ -52,7 +52,6 @@ public class GoalsMainPanel extends IUMPSTPanel{
 	public TableGoals getGoalsTable() {
 		if(menuPanel == null ){
 
-//			menuPanel = new TableGoals(getFatherPanel(),getUmpstProject());
 			menuPanel = requirementsPanel.createTableGoals();
 		}
 		return menuPanel;

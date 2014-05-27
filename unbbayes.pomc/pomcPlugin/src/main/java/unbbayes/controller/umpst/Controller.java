@@ -4,13 +4,14 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
-import unbbayes.model.umpst.entities.AttributeModel;
-import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.entities.RelationshipModel;
+import unbbayes.model.umpst.entity.AttributeModel;
+import unbbayes.model.umpst.entity.EntityModel;
+import unbbayes.model.umpst.entity.RelationshipModel;
+import unbbayes.model.umpst.goal.GoalModel;
+import unbbayes.model.umpst.goal.HypothesisModel;
+import unbbayes.model.umpst.group.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
-import unbbayes.model.umpst.rules.RuleModel;
+import unbbayes.model.umpst.rule.RuleModel;
 
 public class Controller {
 
@@ -32,6 +33,28 @@ public class Controller {
 		this.umpstProject = _umpstProject; 
 	}
 
+	public void deleteGoal(String key) {
+		GoalModel goalToBeDeleted = this.umpstProject.getMapGoal().get(key);
+
+		//Remove external references. 
+		if (goalToBeDeleted.getGoalFather()!=null){
+			goalToBeDeleted.getGoalFather().getSubgoals().remove(goalToBeDeleted.getId());
+		}
+
+		if(goalToBeDeleted.getSubgoals() !=null){
+			int numberSubgoal = goalToBeDeleted.getSubgoals().size();
+			for (int i = 1; i < numberSubgoal; i++) {
+				if (goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).getGoalFather()!=null){
+					goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).getGoalFather().getSubgoals().remove(goalToBeDeleted.getId());
+				}
+
+				goalToBeDeleted.getSubgoals().get(goalToBeDeleted.getId()+"."+i).setGoalFather(null);
+			}
+		}
+
+		this.umpstProject.getMapGoal().remove(goalToBeDeleted.getId());
+	}
+	
 	public EntityModel createNewEntity(String titleText, 
 			String commentsText,
 			String authorText, 
@@ -175,6 +198,29 @@ public class Controller {
 		
 	}
 
+	public void addRuleToRuleBackTrackingList(RuleModel ruleChildren, 
+			RuleModel rule){
+
+		ruleChildren.getFatherRuleList().add(rule);  
+		rule.getChildrenRuleList().add(ruleChildren);  
+		
+	}
+	
+	public void removeRuleFromRuleBackTrackingList(RuleModel ruleModel, 
+			RuleModel rule){
+		
+		ruleModel.getFatherRuleList().remove(rule);  
+		rule.getFatherRuleList().remove(ruleModel);  
+		
+	}
+	
+	public void removeEntityFromGroupBackTrackingList(EntityModel entity, 
+			GroupModel group){
+		
+		group.getBacktrackingEntities().remove(entity); 
+		entity.getFowardTrackingGroups().remove(group); 
+		
+	}
 	
 	public String getAuthor() {
 		return author;

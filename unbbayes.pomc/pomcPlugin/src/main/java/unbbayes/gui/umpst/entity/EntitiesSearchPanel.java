@@ -27,7 +27,7 @@ import javax.swing.JTextField;
 import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.UmpstModule;
-import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.entity.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 
 public class EntitiesSearchPanel extends IUMPSTPanel {
@@ -244,9 +244,9 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 	    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
 	    JTable table = entitiesTable.createTable(columnNames,data);
 	    
-	    entitiesTable.getScrollPanePergunta().setViewportView(table);
-	    entitiesTable.getScrollPanePergunta().updateUI();
-	    entitiesTable.getScrollPanePergunta().repaint();
+	    entitiesTable.getScrollPaneEntitiesTable().setViewportView(table);
+	    entitiesTable.getScrollPaneEntitiesTable().updateUI();
+	    entitiesTable.getScrollPaneEntitiesTable().repaint();
 	    entitiesTable.updateUI();
 	    entitiesTable.repaint();
     }
@@ -275,9 +275,9 @@ public class EntitiesSearchPanel extends IUMPSTPanel {
 		    TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
 		    JTable table = entitiesTable.createTable(columnNames,data);
 		    
-		    entitiesTable.getScrollPanePergunta().setViewportView(table);
-		    entitiesTable.getScrollPanePergunta().updateUI();
-		    entitiesTable.getScrollPanePergunta().repaint();
+		    entitiesTable.getScrollPaneEntitiesTable().setViewportView(table);
+		    entitiesTable.getScrollPaneEntitiesTable().updateUI();
+		    entitiesTable.getScrollPaneEntitiesTable().repaint();
 		    entitiesTable.updateUI();
 		    entitiesTable.repaint();
 	    }

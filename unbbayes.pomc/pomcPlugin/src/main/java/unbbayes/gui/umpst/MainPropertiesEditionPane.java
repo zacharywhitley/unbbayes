@@ -43,6 +43,10 @@ public class MainPropertiesEditionPane {
 	private final JButton btnCancel; 
 	private final JButton btnOK; 
 	
+	private final int SIZE_COLUMNS_TEXT = 25; 
+	private final int NUMBER_LINES_DESCRIPTION = 3; 
+	private final int NUMBER_LINES_COMMENTS = 4; 
+	
 	/** Load resource file from this package */
   	private static ResourceBundle resource = 
   			unbbayes.util.ResourceController.newInstance().getBundle(
@@ -53,7 +57,8 @@ public class MainPropertiesEditionPane {
 			String _title, 
 			String panelName, 
 			JLabel extraLabel,
-			JComponent extraPanel){
+			JComponent extraPanel,
+			boolean nameLimited){
 		
 		this.btnCancel = btn1; 
 		this.btnOK = btn2; 
@@ -121,11 +126,15 @@ public class MainPropertiesEditionPane {
 		c.gridwidth=1;
 		panel.add( new JLabel("Comments: "), c);
 
-		nameText = new JTextArea(2,20);
+		if (nameLimited){
+			nameText = new JTextArea(1,SIZE_COLUMNS_TEXT);
+		}else{
+			nameText = new JTextArea(NUMBER_LINES_DESCRIPTION, SIZE_COLUMNS_TEXT);
+		}
+		
 		nameText.setLineWrap(true); 
 		nameText.setWrapStyleWord(true);
 		nameText.setBorder(BorderFactory.createEtchedBorder());
-//		nameText.getF
 		nameText.setText(""); 
 		
 		nameText.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -144,7 +153,7 @@ public class MainPropertiesEditionPane {
 
 		panel.add( scroolName, c);
 
-		authorText = new JTextField(20);
+		authorText = new JTextField(SIZE_COLUMNS_TEXT);
 		
 		
 		c.gridx = 1; 
@@ -162,14 +171,14 @@ public class MainPropertiesEditionPane {
 		}
 
 		dateText = new JFormattedTextField(maskFormatter);
-		dateText.setColumns(20);
+		dateText.setColumns(SIZE_COLUMNS_TEXT);
 
 		c.gridx    = 1; 
 		c.gridy    = 5;
 		c.gridwidth= 2;
 		panel.add( dateText, c);
 
-		commentsText = new JTextArea(4,20);
+		commentsText = new JTextArea(NUMBER_LINES_COMMENTS, SIZE_COLUMNS_TEXT);
 		commentsText.setLineWrap(true); 
 		commentsText.setWrapStyleWord(true);
 		commentsText.setBorder(BorderFactory.createEtchedBorder());

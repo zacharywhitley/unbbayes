@@ -19,8 +19,8 @@ import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.TableButton;
 import unbbayes.gui.umpst.TableObject;
 import unbbayes.gui.umpst.UmpstModule;
-import unbbayes.model.umpst.entities.AttributeModel;
-import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.entity.AttributeModel;
+import unbbayes.model.umpst.entity.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 
 public class TableAtribute extends TableObject{

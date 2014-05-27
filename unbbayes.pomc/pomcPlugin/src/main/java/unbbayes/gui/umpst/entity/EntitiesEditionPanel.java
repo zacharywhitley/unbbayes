@@ -37,13 +37,14 @@ import unbbayes.gui.umpst.selection.GoalSelectionPane;
 import unbbayes.gui.umpst.selection.HypothesisSelectionPane;
 import unbbayes.gui.umpst.selection.interfaces.GoalAddition;
 import unbbayes.gui.umpst.selection.interfaces.HypothesisAddition;
-import unbbayes.model.umpst.entities.AttributeModel;
-import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.entities.RelationshipModel;
+import unbbayes.model.umpst.entity.AttributeModel;
+import unbbayes.model.umpst.entity.EntityModel;
+import unbbayes.model.umpst.entity.RelationshipModel;
+import unbbayes.model.umpst.goal.GoalModel;
+import unbbayes.model.umpst.goal.HypothesisModel;
+import unbbayes.model.umpst.group.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
-import unbbayes.model.umpst.rules.RuleModel;
+import unbbayes.model.umpst.rule.RuleModel;
 
 
 /**
@@ -163,7 +164,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 						title, 
 						"Goals Details",
 						null,
-						null); 
+						null, true); 
 
 		if (entity != null){
 			mainPropertiesEditionPane.setTitleText(entity.getName());
@@ -291,9 +292,6 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 		buttonFrameGoal.addActionListener(new ActionListener() {
 
 			public void actionPerformed(ActionEvent e) {
-//				createFrameGoal();	
-//				Set<String> keys = getUmpstProject().getMapGoal().keySet();
-//				TreeSet<String> sortedKeys = new TreeSet<String>(keys);
 				Collection<GoalModel> goalSet = getUmpstProject().getMapGoal().values(); 
 				
 				GoalSelectionPane goalSelectionPane = new GoalSelectionPane(goalSet, entitiesEditionPanel); 
@@ -355,9 +353,9 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 		TableEntities entitiesTable = pai.getMenuPanel().getEntitiesPane().getEntitiesTable();
 		JTable table = entitiesTable.createTable(columnNames,data);
 
-		entitiesTable.getScrollPanePergunta().setViewportView(table);
-		entitiesTable.getScrollPanePergunta().updateUI();
-		entitiesTable.getScrollPanePergunta().repaint();
+		entitiesTable.getScrollPaneEntitiesTable().setViewportView(table);
+		entitiesTable.getScrollPaneEntitiesTable().updateUI();
+		entitiesTable.getScrollPaneEntitiesTable().repaint();
 		entitiesTable.updateUI();
 		entitiesTable.repaint();
 	}
@@ -590,6 +588,15 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 			}
 		}
 
+		if ( ( entity!=null ) && ( entity.getFowardTrackingGroups() != null ) ){
+			Set<GroupModel> aux = entity.getFowardTrackingGroups();
+			GroupModel group;
+			for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
+				group = it.next();
+				i++;
+			}
+		}
+		
 		Object[][] data = new Object[i+1][2];
 
 		if (i < 30){
@@ -632,8 +639,21 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 				i++;
 			}
 		}
+		
+		if ((entity!=null) && (entity.getFowardTrackingGroups() != null)){
+			Set<GroupModel> aux = entity.getFowardTrackingGroups();
+			GroupModel group;
+			for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
+				group = it.next();
+				System.out.println("Group=" + group);
+				data[i][0] = group.getName();
+				data[i][1] = "Group";
+				i++;
+			}
+		}
 
 		DefaultTableModel model = new DefaultTableModel(data, columns);
+		
 		JTable table = new JTable(model);
 		table.setGridColor(Color.WHITE); 
 		table.setEnabled(false); 
@@ -671,7 +691,6 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 						if ( entity.getMapAtributes().get(entityAux.getMapAtributes().get(keyHypo).getId())==null )
 							i++;
 					}
-
 				}
 			}
 		}   
@@ -696,9 +715,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 							i++;
 						}
 					}
-
 				}
-
 			}
 		} 
 

@@ -20,8 +20,8 @@ import unbbayes.gui.umpst.TableButton;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.gui.umpst.TableButton.TableButtonCustomizer;
 import unbbayes.gui.umpst.TableButton.TableButtonPressedHandler;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
+import unbbayes.model.umpst.goal.GoalModel;
+import unbbayes.model.umpst.goal.HypothesisModel;
 
 
 /**

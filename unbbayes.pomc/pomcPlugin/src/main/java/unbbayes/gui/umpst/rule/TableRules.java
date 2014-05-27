@@ -1,4 +1,4 @@
-package unbbayes.gui.umpst.rules;
+package unbbayes.gui.umpst.rule;
 
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -19,7 +19,7 @@ import unbbayes.gui.umpst.TableButton;
 import unbbayes.gui.umpst.TableObject;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.rules.RuleModel;
+import unbbayes.model.umpst.rule.RuleModel;
 
 public class TableRules extends TableObject{
 

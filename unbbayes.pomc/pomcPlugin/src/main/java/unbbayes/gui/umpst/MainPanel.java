@@ -37,7 +37,7 @@ import unbbayes.gui.umpst.entity.EntitiesMainPanel;
 import unbbayes.gui.umpst.goal.GoalsEditionPanel;
 import unbbayes.gui.umpst.goal.GoalsMainPanel;
 import unbbayes.gui.umpst.group.GroupsMainPanel;
-import unbbayes.gui.umpst.rules.RulesMainPanel;
+import unbbayes.gui.umpst.rule.RulesMainPanel;
 import unbbayes.io.umpst.FileLoadObject;
 import unbbayes.io.umpst.FileSaveObject;
 import unbbayes.model.umpst.project.UMPSTProject;

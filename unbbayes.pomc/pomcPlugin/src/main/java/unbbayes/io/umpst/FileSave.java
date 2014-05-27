@@ -8,12 +8,12 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
 
-import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.entities.RelationshipModel;
-import unbbayes.model.umpst.groups.GroupModel;
+import unbbayes.model.umpst.entity.EntityModel;
+import unbbayes.model.umpst.entity.RelationshipModel;
+import unbbayes.model.umpst.goal.GoalModel;
+import unbbayes.model.umpst.group.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.rules.RuleModel;
+import unbbayes.model.umpst.rule.RuleModel;
 
 public class FileSave {
 

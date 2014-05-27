@@ -1,4 +1,4 @@
-package unbbayes.model.umpst.entities;
+package unbbayes.model.umpst.entity;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.Set;
 
 import unbbayes.model.umpst.ObjectModel;
-import unbbayes.model.umpst.groups.GroupModel;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
-import unbbayes.model.umpst.rules.RuleModel;
+import unbbayes.model.umpst.goal.GoalModel;
+import unbbayes.model.umpst.goal.HypothesisModel;
+import unbbayes.model.umpst.group.GroupModel;
+import unbbayes.model.umpst.rule.RuleModel;
 
 
 public class RelationshipModel extends ObjectModel{
@@ -17,7 +17,7 @@ public class RelationshipModel extends ObjectModel{
 	private static final long serialVersionUID = 1L;
 	
 	private List<EntityModel>     entityList;
-	private List<AttributeModel>  atributeList;
+	
 	private List<GoalModel>       goalList;
 	private List<HypothesisModel> hypothesisList;
 	
@@ -38,11 +38,6 @@ public class RelationshipModel extends ObjectModel{
 		
 		super(id, relationshipName, comments, author, date); 
 		
-		this.atributeList=backtrackingAtribute;
-		
-		if(backtrackingAtribute==null){
-			this.setBacktrackingAtribute(new ArrayList<AttributeModel>());
-		}
 		this.entityList=backtrackingEntity;
 		if(backtrackingEntity==null){
 			this.setBacktrackingEntity(new ArrayList<EntityModel>());
@@ -137,22 +132,34 @@ public class RelationshipModel extends ObjectModel{
 	}
 
 	/**
-	 * @return the backtrackingAtribute
+	 * toString: relationship(EntityA, EntityB)
+	 *           relationship(EntityA)
+	 *           relationship()
+	 *           relationship(EntityA, EntityB, EntityC)
+	 *           
+	 * Is the name of the relationchip more the names of the entities between 
+	 * brackets and separated by virgles. 
 	 */
-	public List<AttributeModel> getBacktrackingAtribute() {
-		return atributeList;
-	}
-
-
-	/**
-	 * @param backtrackingAtribute the backtrackingAtribute to set
-	 */
-	public void setBacktrackingAtribute(List<AttributeModel> backtrackingAtribute) {
-		this.atributeList = backtrackingAtribute;
-	}
-
 	public String toString(){
-		return getName();
+		String relationshipName = getName(); 
+		
+		relationshipName+= "("; 
+		
+		if(relationshipName != ""){
+			if (getBacktrackingEntityList().size() != 0){
+				
+				for (int i = 0; i < getBacktrackingEntityList().size(); i++){
+					relationshipName+= getBacktrackingEntityList().get(i);
+					relationshipName+=" , "; 
+				}
+				relationshipName = relationshipName.subSequence(0, relationshipName.length()-3).toString(); 
+				
+			}
+		}
+		
+		relationshipName+= ")"; 
+		
+		return relationshipName;
 	}
 	
 }

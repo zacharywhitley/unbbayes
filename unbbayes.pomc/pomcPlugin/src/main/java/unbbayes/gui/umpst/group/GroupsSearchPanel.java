@@ -6,7 +6,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -27,9 +26,8 @@ import javax.swing.JTextField;
 import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.UmpstModule;
-import unbbayes.model.umpst.groups.GroupModel;
+import unbbayes.model.umpst.group.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.GoalModel;
 
 public class GroupsSearchPanel extends IUMPSTPanel {
 	
@@ -164,7 +162,6 @@ public class GroupsSearchPanel extends IUMPSTPanel {
 			buttonSearch.setForeground(Color.blue);
 		}
 	
-			
 		buttonSearch.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {

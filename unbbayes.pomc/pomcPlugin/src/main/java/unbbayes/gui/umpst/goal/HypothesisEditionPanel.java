@@ -33,11 +33,11 @@ import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.gui.umpst.selection.SubHipotheseSelectionPane;
-import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.groups.GroupModel;
+import unbbayes.model.umpst.entity.EntityModel;
+import unbbayes.model.umpst.goal.GoalModel;
+import unbbayes.model.umpst.goal.HypothesisModel;
+import unbbayes.model.umpst.group.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
 import unbbayes.util.CommonDataUtil;
 
 
@@ -161,7 +161,7 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 						title, 
 						"Hypothesis Details",
 						null,
-						null); 
+						null, false); 
 
 		if (hypothesis != null){
 			mainPropertiesEditionPane.setTitleText(hypothesis.getName());

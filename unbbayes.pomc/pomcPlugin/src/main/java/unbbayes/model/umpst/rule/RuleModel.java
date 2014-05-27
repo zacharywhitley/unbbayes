@@ -1,15 +1,13 @@
-package unbbayes.model.umpst.rules;
+package unbbayes.model.umpst.rule;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import unbbayes.model.umpst.ObjectModel;
-import unbbayes.model.umpst.entities.AttributeModel;
-import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.entities.RelationshipModel;
-import unbbayes.model.umpst.groups.GroupModel;
+import unbbayes.model.umpst.entity.AttributeModel;
+import unbbayes.model.umpst.entity.EntityModel;
+import unbbayes.model.umpst.entity.RelationshipModel;
+import unbbayes.model.umpst.group.GroupModel;
 
 
 public class RuleModel extends ObjectModel{
@@ -21,7 +19,10 @@ public class RuleModel extends ObjectModel{
 	private List<EntityModel>       entityList;
 	private List<AttributeModel>    attributeList;
 	private List<RelationshipModel> relationshipList;	
-	private Set<GroupModel>         groupSet;
+	
+	private List<RuleModel>          fatherRuleList; 
+	private List<RuleModel>          childrenRuleList; 
+	private List<GroupModel>         groupList;
 	
 	public RuleModel(String id,
 			String rulesName,
@@ -37,7 +38,9 @@ public class RuleModel extends ObjectModel{
 		entityList       = new ArrayList<EntityModel>(); 
 		attributeList    = new ArrayList<AttributeModel>(); 
 		relationshipList = new ArrayList<RelationshipModel>(); 
-		groupSet         = new HashSet<GroupModel>(); 
+		groupList        = new ArrayList<GroupModel>(); 
+		fatherRuleList   = new ArrayList<RuleModel>(); 
+		childrenRuleList = new ArrayList<RuleModel>(); 
 	}
 
 	public List<EntityModel> getEntityList() {
@@ -52,8 +55,25 @@ public class RuleModel extends ObjectModel{
 		return relationshipList;
 	}
 
-	public Set<GroupModel> getGroupSet() {
-		return groupSet;
+	public List<GroupModel> getGroupList() {
+		if(groupList == null){
+			groupList = new ArrayList<GroupModel>(); 
+		}
+		return groupList;
+	}
+	
+	public List<RuleModel> getFatherRuleList() {
+		if(fatherRuleList == null){
+			fatherRuleList = new ArrayList<RuleModel>(); 
+		}
+		return fatherRuleList;
+	}
+	
+	public List<RuleModel> getChildrenRuleList() {
+		if(childrenRuleList == null){
+			childrenRuleList = new ArrayList<RuleModel>(); 
+		}
+		return childrenRuleList;
 	}
 	
     public void addBacktrackingEntity(EntityModel entity){
@@ -81,11 +101,11 @@ public class RuleModel extends ObjectModel{
     }
     
     public void addGroup(GroupModel group){
-		this.groupSet.add(group); 
+		this.groupList.add(group); 
 	}
     
     public void removeGroup(GroupModel group){
-    	this.groupSet.remove(group); 
+    	this.groupList.remove(group); 
     }
 
 	/**

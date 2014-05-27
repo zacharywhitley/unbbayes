@@ -21,7 +21,7 @@ import javax.swing.ListSelectionModel;
 
 import unbbayes.controller.IconController;
 import unbbayes.gui.umpst.selection.interfaces.GoalAddition;
-import unbbayes.model.umpst.requirements.GoalModel;
+import unbbayes.model.umpst.goal.GoalModel;
 
 public class GoalSelectionPane extends JDialog{
 

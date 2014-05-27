@@ -36,7 +36,9 @@ public class UmpstModule extends UnBBayesModule {
 		//this.setTopTabbedPane(new JTabbedPane(JTabbedPane.TOP, JTabbedPane.SCROLL_TAB_LAYOUT));
 		
 		this.setContentPane(getMenuPanel());
+	
 	}
+	
 	
 	
 	/**
@@ -48,6 +50,8 @@ public class UmpstModule extends UnBBayesModule {
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
+
+		this.setName("UMP-ST"); 
 		// TODO Auto-generated constructor stub
 	}
 

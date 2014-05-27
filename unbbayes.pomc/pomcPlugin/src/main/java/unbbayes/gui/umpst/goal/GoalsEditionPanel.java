@@ -1,6 +1,5 @@
 package unbbayes.gui.umpst.goal;
 
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
@@ -38,14 +37,14 @@ import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.gui.umpst.selection.HypothesisSelectionPane;
 import unbbayes.gui.umpst.selection.SubGoalSelectionPane;
 import unbbayes.gui.umpst.selection.interfaces.HypothesisAddition;
-import unbbayes.model.umpst.entities.AttributeModel;
-import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.entities.RelationshipModel;
-import unbbayes.model.umpst.groups.GroupModel;
+import unbbayes.model.umpst.entity.AttributeModel;
+import unbbayes.model.umpst.entity.EntityModel;
+import unbbayes.model.umpst.entity.RelationshipModel;
+import unbbayes.model.umpst.goal.GoalModel;
+import unbbayes.model.umpst.goal.HypothesisModel;
+import unbbayes.model.umpst.group.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
-import unbbayes.model.umpst.rules.RuleModel;
+import unbbayes.model.umpst.rule.RuleModel;
 import unbbayes.util.CommonDataUtil;
 
 /**
@@ -77,7 +76,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 	private HypothesisSelectionPane hypothesisSelectionPane; 
 
 	UmpstModule janelaPai; 
-	
+
 	private Controller controller; 
 
 	/** Load resource file from this package */
@@ -96,19 +95,19 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 		super(fatherModule);
 
 		setUmpstProject(umpstProject);
-		
+
 		Controller controller = Controller.getInstance(umpstProject); 
-		
+
 		this.goal = goal;
-		
+
 		this.goalFather = goalFather;
-		
+
 		if(goal != null){
 			if(goal.getGoalFather() != null){
 				this.goalFather = goal.getGoalFather(); 
 			}
 		}
-		
+
 		this.janelaPai = fatherModule; 
 
 		this.setLayout(new GridLayout(1,1));
@@ -117,7 +116,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 
 		JSplitPane leftPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 				createPanelText(),
-				createSubgoalsTable()); 
+				createSubgoalsPanel()); 
 
 		JSplitPane rightPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
 				createTraceabilityTable(),
@@ -140,16 +139,12 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 
 		String title = ""; 
 
-		if( goal == null){
-			if (goalFather!=null){
-				title = "New Subgoal";
-			}
-			else{
-				title = "New Goal";
-			}
 
-		} else {
-			title = "Update Goal";
+		if (goalFather!=null){
+			title = resource.getString("ttSubGoal");
+		}
+		else{
+			title = resource.getString("ttGoal");
 		}
 
 		// CREATE FORM 
@@ -159,7 +154,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 						title, 
 						"Goals Details",
 						null,
-						null); 
+						null, false); 
 
 		if (goal != null){
 			mainPropertiesEditionPane.setTitleText(goal.getName());
@@ -176,18 +171,18 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 
 		buttonSave 	     = new JButton(iconController.getSaveObjectIcon());
 		buttonSave.setText(resource.getString("btnSave"));
-		
+
 		if( goal == null){
 			buttonSave.setToolTipText(resource.getString("HpSaveGoal"));
 
 		} else {
 			buttonSave.setToolTipText(resource.getString("HpUpdateGoal"));
 		}
-		
+
 		buttonCancel     = new JButton(iconController.getReturnIcon());
 		buttonCancel.setText(resource.getString("btnReturn")); 
 		buttonCancel.setToolTipText(resource.getString("HpReturnMainPanel"));
-		
+
 		buttonHypothesis = new JButton(iconController.getListAddIcon());
 		buttonHypothesis.setToolTipText(resource.getString("HpAddHyphotesis"));
 
@@ -214,45 +209,40 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 						JOptionPane.showMessageDialog(null, resource.getString("ErGoalDescriptionEmpty"));
 					}
 					else{
-						GoalModel goalAdd = updateMapGoal();		
-						
+						GoalModel goalAdd = createGoal();		
+
 						TableGoals tableGoals = updateTableGoals();
-						
+
 						UmpstModule pai = getFatherPanel();
-						changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalAdd));
 						
+						changePanel(pai.getMenuPanel().getGoalsPane().getGoalsPanel().getGoalsAdd(goalAdd));
 					}
 				}
 				// -> Update Goal
 				else{
-					if( JOptionPane.showConfirmDialog(null, 
-							"Do you want to update this Goal?", 
-							"UnBBayes", 
-							JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
+					try{
+						/**Cleaning Search Map*/
+						Set<GoalModel> aux = new HashSet<GoalModel>();
+						GoalModel goalBeta;
+						String[] strAux=goal.getName().split(" ");
 
-						try{
-							/**Cleaning Search Map*/
-							Set<GoalModel> aux = new HashSet<GoalModel>();
-							GoalModel goalBeta;
-							String[] strAux=goal.getName().split(" ");
+						/************/
 
-							/************/
+						goal.setName(mainPropertiesEditionPane.getTitleText());
+						goal.setComments(mainPropertiesEditionPane.getCommentsText());
+						goal.setAuthor(mainPropertiesEditionPane.getAuthorText());
+						goal.setDate(mainPropertiesEditionPane.getDateText());
 
-							goal.setName(mainPropertiesEditionPane.getTitleText());
-							goal.setComments(mainPropertiesEditionPane.getCommentsText());
-							goal.setAuthor(mainPropertiesEditionPane.getAuthorText());
-							goal.setDate(mainPropertiesEditionPane.getDateText());
+						updateTableGoals();
 
-							updateTableGoals();
-
-							//							JOptionPane.showMessageDialog(null, "Goal successfully updated",null, JOptionPane.INFORMATION_MESSAGE);	
-
-						}
-						catch (Exception e2) {
-							JOptionPane.showMessageDialog(null,"Error while updating goal", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-							UmpstModule pai = getFatherPanel();
-							changePanel(pai.getMenuPanel());	
-						}
+					}
+					catch (Exception e2) {
+						JOptionPane.showMessageDialog(null,
+								resource.getString("erSaveGoal"), 
+								"UnBBayes", 
+								JOptionPane.WARNING_MESSAGE);
+						UmpstModule pai = getFatherPanel();
+						changePanel(pai.getMenuPanel());	
 					}
 				}
 			}
@@ -286,13 +276,11 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 		buttonHypothesis.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				changePanel(new HypothesisEditionPanel(getFatherPanel(),getUmpstProject(),goal,null,null));
-
 			}
 		});
 
 		buttonSubgoal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				//				changePanel(new SubgoalsAdd(getFatherPanel(),getUmpstProject(),null,goal));
 				changePanel(new GoalsEditionPanel(getFatherPanel(),getUmpstProject(),null,goal));
 			}
 		});
@@ -313,13 +301,13 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 		hypothesisSelectionPane.setVisible(true);
 	}
 
-	public GoalModel updateMapGoal(){
-		
-		String idAux = "";
+	public GoalModel createGoal(){
+
 		Set<String> keys = getUmpstProject().getMapGoal().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-		int tamanho = getUmpstProject().getMapGoal().size() + 1;
-		int maior = 0;
+		
+		int max = 0;
+		String idAux = "";
 		String idAux2 = "";
 		int intAux;
 
@@ -328,25 +316,25 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 			if ( getUmpstProject().getMapGoal().size()!=0){
 				for (String key: sortedKeys){
 					//tamanho = tamanho - getUmpstProject().getMapGoal().get(key).getSubgoals().size();
-					
+
 					idAux= getUmpstProject().getMapGoal().get(key).getId();
-					
+
 					if (idAux.contains(".")){
 						intAux = idAux.indexOf(".");
 						idAux2 = idAux.substring(0, intAux);
-						if (maior < Integer.parseInt(idAux2)){
-							maior = Integer.parseInt(idAux2);
+						if (max < Integer.parseInt(idAux2)){
+							max = Integer.parseInt(idAux2);
 						}
 					}
 					else{
-						if (maior< Integer.parseInt(idAux)){
-							maior = Integer.parseInt(idAux);
+						if (max< Integer.parseInt(idAux)){
+							max = Integer.parseInt(idAux);
 						}
 					}
-					
+
 				}
-				maior++;
-				idAux = maior+"";
+				max++;
+				idAux = max+"";
 			}
 			else{
 				idAux = 1+"";
@@ -363,7 +351,6 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 
 			}
 		}
-
 
 		GoalModel goalAdd = new GoalModel(idAux,
 				mainPropertiesEditionPane.getTitleText(),
@@ -391,7 +378,6 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 			}
 		}
 
-
 		CommonDataUtil.getInstance().setAuthorName(mainPropertiesEditionPane.getAuthorText()); 
 
 		getUmpstProject().getMapGoal().put(goalAdd.getId(), goalAdd);	
@@ -401,15 +387,13 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 
 
 	public TableGoals updateTableGoals(){
-		String[] columnNames = {"ID","Goal","","",""};
-
 		UmpstModule pai = getFatherPanel();
 		TableGoals goalsTable = pai.getMenuPanel().getGoalsPane().getGoalsTable();
-		goalsTable.createTable(columnNames);
-		
+		goalsTable.createTable();
+
 		return goalsTable; 
 	}
-	
+
 	public void changeToTableGoals(TableGoals goalsTable){
 
 		UmpstModule pai = getFatherPanel();
@@ -488,12 +472,12 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 		return panel; 
 	}
 
-	public JPanel createSubgoalsTable(){
+	public JPanel createSubgoalsPanel(){
 
 		TableSubGoals subgoalsTable = new TableSubGoals(getFatherPanel(),
 				getUmpstProject(),
 				goal);
-		
+
 		JTable table = subgoalsTable.createTable();
 		JScrollPane scrollPane = new JScrollPane(table);
 
@@ -503,7 +487,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
 		panel.setBorder(BorderFactory.createTitledBorder("List of Subgoals"));
-		
+
 		if (goal!=null){
 
 			JPanel panelIcons = new JPanel();
@@ -532,7 +516,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 		int i = 0;
 
 		//All this magic only for calculate the number of lines... 
-		
+
 		//--------- Traceability table --------------
 		//Entities (F) 
 		//   Rules
@@ -632,8 +616,8 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 		String[] columnNames = {
 				" ",
 				" ",
-				"Name"};
-		
+		"Name"};
+
 		//Agora sim... vai comecar a inserir os elementos... 
 		i=0;
 
@@ -699,7 +683,6 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 						i++;
 					}
 				}
-
 			}
 		}
 
@@ -752,29 +735,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 		table.getColumnModel().getColumn(0).setMaxWidth(100); 
 		table.getColumnModel().getColumn(1).setMaxWidth(50); 
 		table.getColumnModel().getColumn(2).setMinWidth(1000); 
-		
-		
-//		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer()
-//		{
-//			public void customize(JButton button, int row, int column)
-//			{
-//				if(data[row][2] instanceof EntityModel){
-//					button.setIcon(iconController.getCicleGoalPIcon());
-//					button.setBackground(Color.WHITE); 
-//					button.setBorder(null); 
-//				}else{
-//					button.setBackground(Color.WHITE); 
-//					button.setBorder(null); 
-//				}
-//
-//			}
-//		});
-//
-//		TableColumn buttonColumn1 = table.getColumnModel().getColumn(0);
-//		buttonColumn1.setMaxWidth(28);
-//		buttonColumn1.setCellRenderer(buttonEdit);
-//		buttonColumn1.setCellEditor(buttonEdit);
-//		
+
 		table.setBackground(Color.WHITE); 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); 
@@ -816,9 +777,9 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 				}
 			}
 		}   
-		
+
 		List<HypothesisModel> listHypothesis = new ArrayList<HypothesisModel>(); 
-		
+
 		for (String key: sortedKeys){
 			if(getUmpstProject().getMapGoal().get(key)!=goal){
 				if(getUmpstProject().getMapGoal().get(key).getMapHypothesis()!=null){
@@ -836,7 +797,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 				}
 			}
 		} 
-		
+
 		return listHypothesis;
 
 	}
@@ -956,7 +917,6 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 				break;
 			}
 		}  
-
 	}
 
 

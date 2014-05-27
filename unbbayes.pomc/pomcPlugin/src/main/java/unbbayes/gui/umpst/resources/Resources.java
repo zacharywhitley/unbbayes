@@ -135,8 +135,11 @@ public class Resources extends GuiResources {
 		{"erNotUmpFormat" , "This file format is not supported."},
 		{"erFileNotFound" , "File not found."},
 		{"erSaveFatal" , "Fatal error in save project."},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
+		
+		{"erSaveGoal" , "Error while trying to save goal."},
+		
+		{"erSearchEmpty" , "Search is empty!"},
+		
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
@@ -160,6 +163,8 @@ public class Resources extends GuiResources {
 		{"ttRule" , "Rule"},
 		
 		{"ttEntity" , "Entity"},
+		{"ttGoal" , "Goal"},
+		{"ttSubGoal" , "Subgoal"},
 		{"ttAtribute" , "Atribute"},
 		{"ttRelationship" , "Relationship"},
 		{"ttRule" , "Rule"},
@@ -233,7 +238,11 @@ public class Resources extends GuiResources {
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
+		
+		//##############       Question Messages         ###################//
+		
+		{"qtDeleteSubgoal" , "Do you realy want to delete this subgoal?"},
+		{"qtDeleteGoal" , "Do you realy want to delete this goal?"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},
 //		{"HpReturnPreviousPanel" , "Return to previous goal"},

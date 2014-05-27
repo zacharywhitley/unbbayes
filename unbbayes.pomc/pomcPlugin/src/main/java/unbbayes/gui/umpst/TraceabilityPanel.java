@@ -14,9 +14,9 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
-import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
+import unbbayes.model.umpst.entity.EntityModel;
+import unbbayes.model.umpst.goal.GoalModel;
+import unbbayes.model.umpst.goal.HypothesisModel;
 
 public class TraceabilityPanel extends IUMPSTPanel{
 	

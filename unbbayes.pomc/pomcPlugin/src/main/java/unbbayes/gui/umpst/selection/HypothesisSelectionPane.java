@@ -22,8 +22,8 @@ import javax.swing.ListSelectionModel;
 import unbbayes.controller.IconController;
 import unbbayes.gui.umpst.goal.GoalsEditionPanel;
 import unbbayes.gui.umpst.selection.interfaces.HypothesisAddition;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
+import unbbayes.model.umpst.goal.GoalModel;
+import unbbayes.model.umpst.goal.HypothesisModel;
 
 public class HypothesisSelectionPane extends JDialog{
 

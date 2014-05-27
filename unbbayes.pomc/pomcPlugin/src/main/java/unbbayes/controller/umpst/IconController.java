@@ -44,6 +44,8 @@ public class IconController extends unbbayes.controller.IconController {
 	protected ImageIcon cicleEntityIcon; 
 	protected ImageIcon cicleAttributeIcon; 
 	protected ImageIcon cicleRelationshipIcon; 
+	protected ImageIcon cicleRuleIcon; 
+	protected ImageIcon cicleGroupIcon; 
 	
 	protected ImageIcon cicleGoalPIcon; 
 	
@@ -306,6 +308,26 @@ public class IconController extends unbbayes.controller.IconController {
 			cicleRelationshipIcon = new ImageIcon(getClass().getResource(
 					"/icons/circle_orange_relationship.png"));
 			return cicleRelationshipIcon;
+		}
+	}
+	
+	public ImageIcon getCicleRuleIcon() {
+		if (cicleRuleIcon != null) {
+			return cicleRuleIcon;
+		} else {
+			cicleRuleIcon = new ImageIcon(getClass().getResource(
+					"/icons/button_red_rules.png"));
+			return cicleRuleIcon;
+		}
+	}
+	
+	public ImageIcon getCicleGroupIcon() {
+		if (cicleGroupIcon != null) {
+			return cicleGroupIcon;
+		} else {
+			cicleGroupIcon = new ImageIcon(getClass().getResource(
+					"/icons/circle_green_group.png"));
+			return cicleGroupIcon;
 		}
 	}
 	

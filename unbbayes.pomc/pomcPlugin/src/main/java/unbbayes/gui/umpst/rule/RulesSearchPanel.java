@@ -1,4 +1,4 @@
-package unbbayes.gui.umpst.rules;
+package unbbayes.gui.umpst.rule;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -28,9 +28,9 @@ import javax.swing.JTextField;
 import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.UmpstModule;
+import unbbayes.model.umpst.goal.GoalModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.rules.RuleModel;
+import unbbayes.model.umpst.rule.RuleModel;
 
 public class RulesSearchPanel extends IUMPSTPanel {
 	

@@ -1,5 +1,6 @@
 package unbbayes.gui.umpst.group;
 
+import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.util.Set;
@@ -16,7 +17,7 @@ import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.TableButton;
 import unbbayes.gui.umpst.TableObject;
 import unbbayes.gui.umpst.UmpstModule;
-import unbbayes.model.umpst.groups.GroupModel;
+import unbbayes.model.umpst.group.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 
 public class TableGroups extends TableObject{
@@ -39,8 +40,9 @@ public class TableGroups extends TableObject{
 	public TableGroups(UmpstModule janelaPai,UMPSTProject umpstProject) {
 
 		super(janelaPai, umpstProject);
-		this.setLayout(new GridLayout(1,0));
-		this.add(createScrolltableRules(columnNames));
+//		this.setLayout(new GridLayout(1,0));
+		this.setLayout(new BorderLayout());
+		this.add(createScrolltableRules(columnNames), BorderLayout.CENTER);
 
 	}
 
@@ -55,12 +57,21 @@ public class TableGroups extends TableObject{
 	public JTable createTable(String[] columnNames){
 		
 		Object[][] data = new Object[getUmpstProject().getMapGroups().size()][4];
+		
 		Integer i=0;
 
-		Set<String> keys = getUmpstProject().getMapGroups().keySet();
-		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+//		Set<String> keys = new TreeSet<String>;
+		
+		Set<Integer> keysInteger = new TreeSet<Integer>() ; 
+		
+		for (String key: getUmpstProject().getMapGroups().keySet()){
+			keysInteger.add(new Integer(key)); 
+		}
+		
+//		TreeSet<Integer> sortedKeys = new TreeSet<Integer>(keysInteger);
 
-		for (String key: sortedKeys){
+		for (Integer keyInteger: keysInteger){
+			String key = keyInteger.toString(); 
 			data[i][0] = getUmpstProject().getMapGroups().get(key).getId();
 			data[i][1] = getUmpstProject().getMapGroups().get(key).getName();			
 			data[i][2] = "";
@@ -163,7 +174,7 @@ public class TableGroups extends TableObject{
 	public JScrollPane createScrolltableRules(String[] columnNames){
 		if(scrollpanePergunta == null){
 			scrollpanePergunta = new JScrollPane(createTable(columnNames));
-			scrollpanePergunta.setMinimumSize(new Dimension(300,150));
+			scrollpanePergunta.setSize(new Dimension(300,150));
 		}
 
 		return scrollpanePergunta;

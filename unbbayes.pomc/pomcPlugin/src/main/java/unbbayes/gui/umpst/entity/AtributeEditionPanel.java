@@ -23,8 +23,8 @@ import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.gui.umpst.UmpstModule;
-import unbbayes.model.umpst.entities.AttributeModel;
-import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.entity.AttributeModel;
+import unbbayes.model.umpst.entity.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.util.CommonDataUtil;
 
@@ -92,7 +92,7 @@ public class AtributeEditionPanel extends IUMPSTPanel {
 						title, 
 						"Atribute Details", 
 						null,
-						null); 
+						null, true); 
 
 		if (atribute != null){
 			mainPropertiesEditionPane.setTitleText(atribute.getName());

@@ -1,4 +1,4 @@
-package unbbayes.gui.umpst.rules;
+package unbbayes.gui.umpst.rule;
 
 import java.awt.Color;
 import java.awt.Dimension;

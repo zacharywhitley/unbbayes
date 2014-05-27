@@ -33,7 +33,7 @@ public class FileSaveObject {
 				fileExtension = fileName.substring(index + 1);
 			}
 			
-			if (!fileExtension.equals("ump")){
+			if ((fileExtension == null) || (!fileExtension.equals("ump"))){
 				file = new File(file.getPath()+".ump");
 			}
 			

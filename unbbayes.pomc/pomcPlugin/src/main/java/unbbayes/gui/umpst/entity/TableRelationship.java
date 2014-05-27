@@ -18,11 +18,10 @@ import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.TableButton;
 import unbbayes.gui.umpst.TableObject;
 import unbbayes.gui.umpst.UmpstModule;
-import unbbayes.model.umpst.entities.RelationshipModel;
+import unbbayes.model.umpst.entity.RelationshipModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 
 public class TableRelationship extends TableObject{
-
 
 	private static final long serialVersionUID = 1L;
 	private JTable table;
@@ -30,12 +29,8 @@ public class TableRelationship extends TableObject{
 
 	private IconController iconController = IconController.getInstance(); 
 
-	String[] columnNames = {"id","Hypothesis","",""};
+	String[] columnNames = {"Id","Hypothesis","",""};
 	Object[][] data = {};
-
-
-
-
 
 	/**private constructors make class extension almost impossible,
     	that's why this is protected*/
@@ -56,8 +51,6 @@ public class TableRelationship extends TableObject{
 
 	}
 
-
-
 	/**
 	 * @return the table
 	 */
@@ -75,7 +68,7 @@ public class TableRelationship extends TableObject{
 			for (String key: sortedKeys){
 
 				data[i][0] = getUmpstProject().getMapRelationship().get(key).getId();
-				data[i][1] = getUmpstProject().getMapRelationship().get(key).getName();
+				data[i][1] = getUmpstProject().getMapRelationship().get(key);
 				data[i][2] = "";
 				data[i][3] = "";
 				i++;
@@ -127,7 +120,7 @@ public class TableRelationship extends TableObject{
 
 			public void onButtonPress(int row, int column) {
 
-				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete Relationship "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
+				if( JOptionPane.showConfirmDialog(null,"Do you realy want to delete the Relationship "	+ data[row][0].toString() + "?", "UMPSTPlugin", 
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 
 					String key = data[row][0].toString();

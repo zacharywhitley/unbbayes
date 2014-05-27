@@ -1,4 +1,4 @@
-package unbbayes.model.umpst.requirements;
+package unbbayes.model.umpst.goal;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -6,18 +6,22 @@ import java.util.Map;
 import java.util.Set;
 
 import unbbayes.model.umpst.ObjectModel;
-import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.groups.GroupModel;
+import unbbayes.model.umpst.entity.EntityModel;
+import unbbayes.model.umpst.group.GroupModel;
 
 public class GoalModel extends ObjectModel{
 	
 	private static final long serialVersionUID = 1L;
 	
 	private GoalModel                   goalFather;
+	
 	private Map<String, GoalModel>      subgoals ;
+	
 	private Map<String,HypothesisModel> mapHypothesis;
+	
 	private Set<EntityModel>            fowardTrackingEntity;
 	private Set<GroupModel>             fowardTrackingGroups;
+	
 	private Set<GoalModel>              goalsRelated;
 	
 	public GoalModel(String id,
@@ -45,7 +49,6 @@ public class GoalModel extends ObjectModel{
 		
 		if ( hypothesis==null ){
 			this.setMapHypothesis(new HashMap<String, HypothesisModel>());
-
 		}
 		
 		this.fowardTrackingEntity = fowardTrackingEntity;

@@ -17,7 +17,7 @@ import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.TableButton;
 import unbbayes.gui.umpst.TableObject;
 import unbbayes.gui.umpst.UmpstModule;
-import unbbayes.model.umpst.entities.EntityModel;
+import unbbayes.model.umpst.entity.EntityModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 
 public class TableEntities extends TableObject{
@@ -25,7 +25,7 @@ public class TableEntities extends TableObject{
 	private static final long serialVersionUID = 1L;
 
 	private JTable table;
-	private JScrollPane scrollpanePergunta;
+	private JScrollPane scrollPaneEntitiesTable;
 
 	private IconController iconController = IconController.getInstance(); 
 
@@ -62,12 +62,19 @@ public class TableEntities extends TableObject{
 		Object[][] data = new Object[getUmpstProject().getMapEntity().size()][4];
 		Integer i=0;
 
-		Set<String> keys = getUmpstProject().getMapEntity().keySet();
-		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+//		Set<String> keys = getUmpstProject().getMapEntity().keySet();
+		
+		Set<Integer> keysInteger = new TreeSet<Integer>(); 
+		
+		for (String key: getUmpstProject().getMapEntity().keySet()){
+			keysInteger.add(new Integer(key)); 
+		}
+		
+		TreeSet<Integer> sortedKeys = new TreeSet<Integer>(keysInteger);
 
-		for (String key: sortedKeys){
-			data[i][0] = getUmpstProject().getMapEntity().get(key).getId();
-			data[i][1] = getUmpstProject().getMapEntity().get(key).getName();			
+		for (Integer key: sortedKeys){
+			data[i][0] = getUmpstProject().getMapEntity().get("" + key).getId();
+			data[i][1] = getUmpstProject().getMapEntity().get("" + key).getName();			
 			data[i][2] = "";
 			data[i][3] = "";
 			i++;
@@ -151,9 +158,9 @@ public class TableEntities extends TableObject{
 
 					JTable table = createTable(colunas,dataDel);
 
-					getScrollPanePergunta().setViewportView(table);
-					getScrollPanePergunta().updateUI();
-					getScrollPanePergunta().repaint();
+					getScrollPaneEntitiesTable().setViewportView(table);
+					getScrollPaneEntitiesTable().updateUI();
+					getScrollPaneEntitiesTable().repaint();
 					updateUI();
 					repaint();
 
@@ -168,17 +175,17 @@ public class TableEntities extends TableObject{
 	}
 
 	public JScrollPane createScrolltableEntities(String[] columnNames, Object[][] data){
-		if(scrollpanePergunta == null){
-			scrollpanePergunta = new JScrollPane(createTable(columnNames));
-			scrollpanePergunta.setMinimumSize(new Dimension(300,150));
+		if(scrollPaneEntitiesTable == null){
+			scrollPaneEntitiesTable = new JScrollPane(createTable(columnNames));
+			scrollPaneEntitiesTable.setMinimumSize(new Dimension(150,150));
 		}
 
-		return scrollpanePergunta;
+		return scrollPaneEntitiesTable;
 	}
 
-	public JScrollPane getScrollPanePergunta(){
+	public JScrollPane getScrollPaneEntitiesTable(){
 
-		return scrollpanePergunta; 
+		return scrollPaneEntitiesTable; 
 	}
 
 	/************/

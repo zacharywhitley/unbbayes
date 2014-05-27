@@ -1,4 +1,4 @@
-package unbbayes.model.umpst.entities;
+package unbbayes.model.umpst.entity;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.Set;
 
 import unbbayes.model.umpst.ObjectModel;
-import unbbayes.model.umpst.groups.GroupModel;
-import unbbayes.model.umpst.rules.RuleModel;
+import unbbayes.model.umpst.group.GroupModel;
+import unbbayes.model.umpst.rule.RuleModel;
 
 
 public class AttributeModel extends ObjectModel {
@@ -21,36 +21,52 @@ public class AttributeModel extends ObjectModel {
 	private Set<RuleModel> fowardTrackingRules;
 	private Set<GroupModel> fowardTrackingGroups;
 	
-	public AttributeModel(String id,String atributeName, String comments,String author, String date,Set<EntityModel> entityRelated,
-			AttributeModel father,Map<String,AttributeModel> mapSubAtributes,Set<RelationshipModel> fowardTrackingRelationship,
-			Set<RuleModel> fowardTrackingRules , Set<GroupModel> fowardTrackingGroups) {
+	public AttributeModel(String id,
+			String atributeName, 
+			String comments,
+			String author, 
+			String date,
+			Set<EntityModel> entityRelated,
+			AttributeModel father,
+			Map<String,AttributeModel> mapSubAtributes,
+			Set<RelationshipModel> fowardTrackingRelationship,
+			Set<RuleModel> fowardTrackingRules , 
+			Set<GroupModel> fowardTrackingGroups) {
 
 		super(id, atributeName, comments, author, date); 
 		
 		this.father = father;
+		
 		this.entityRelated=entityRelated;
+		
 		if(entityRelated==null){
 			this.setEntityRelated(new HashSet<EntityModel>());
 		}
+		
 		this.mapSubAtributes=mapSubAtributes;
+		
 		if (mapSubAtributes==null){
 			this.setMapSubAtributes(new HashMap<String, AttributeModel>());
 		}
+		
 		this.fowardTrackingRelationship=fowardTrackingRelationship;
+		
 		if(fowardTrackingRelationship==null){
 			this.setFowardTrackingRelationship(new java.util.HashSet<RelationshipModel>());
 		}
+		
 		this.fowardTrackingRules=fowardTrackingRules;
+		
 		if(fowardTrackingRules==null){
 			this.setFowardTrackingRules(new HashSet<RuleModel>());
 		}
+		
 		this.fowardTrackingGroups=fowardTrackingGroups;
+		
 		if(fowardTrackingGroups==null){
 			this.setFowardTrackingGroups(new HashSet<GroupModel>());
-		}
+		}	
 	}
-
-	
 
 
 	/**
@@ -59,9 +75,7 @@ public class AttributeModel extends ObjectModel {
 	public Set<RuleModel> getFowardTrackingRules() {
 		return fowardTrackingRules;
 	}
-
-
-
+	
 
 	/**
 	 * @param fowardTrackingRules the fowardTrackingRules to set
@@ -69,8 +83,6 @@ public class AttributeModel extends ObjectModel {
 	public void setFowardTrackingRules(Set<RuleModel> fowardTrackingRules) {
 		this.fowardTrackingRules = fowardTrackingRules;
 	}
-
-
 
 
 	/**

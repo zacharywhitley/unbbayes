@@ -1,15 +1,15 @@
-package unbbayes.model.umpst.groups;
+package unbbayes.model.umpst.group;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.model.umpst.ObjectModel;
-import unbbayes.model.umpst.entities.AttributeModel;
-import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.entities.RelationshipModel;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
-import unbbayes.model.umpst.rules.RuleModel;
+import unbbayes.model.umpst.entity.AttributeModel;
+import unbbayes.model.umpst.entity.EntityModel;
+import unbbayes.model.umpst.entity.RelationshipModel;
+import unbbayes.model.umpst.goal.GoalModel;
+import unbbayes.model.umpst.goal.HypothesisModel;
+import unbbayes.model.umpst.rule.RuleModel;
 
 public class GroupModel extends ObjectModel {
 	
@@ -17,7 +17,6 @@ public class GroupModel extends ObjectModel {
 	
 	List<GoalModel> backtrackingGoal;
 	List<HypothesisModel> backtrackingHypothesis;
-	
 	List<RuleModel> backtrackingRules;
 	
 	List<EntityModel> backtrackingEntities;
@@ -48,14 +47,12 @@ public class GroupModel extends ObjectModel {
 		return backtrackingEntities;
 	}
 
-
 	/**
 	 * @return the backtrackingAtributes
 	 */
 	public List<AttributeModel> getBacktrackingAtributes() {
 		return backtrackingAtributes;
 	}
-
 
 	/**
 	 * @return the backtrackingRelationship
@@ -64,14 +61,12 @@ public class GroupModel extends ObjectModel {
 		return backtrackingRelationship;
 	}
 
-
 	/**
 	 * @return the backtrackingRules
 	 */
 	public List<RuleModel> getBacktrackingRules() {
 		return backtrackingRules;
 	}
-
 
 	/**
 	 * @return the backtrackingGoal

@@ -1,4 +1,4 @@
-package unbbayes.model.umpst.entities;
+package unbbayes.model.umpst.entity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,18 +8,20 @@ import java.util.Map;
 import java.util.Set;
 
 import unbbayes.model.umpst.ObjectModel;
-import unbbayes.model.umpst.groups.GroupModel;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
-import unbbayes.model.umpst.rules.RuleModel;
+import unbbayes.model.umpst.goal.GoalModel;
+import unbbayes.model.umpst.goal.HypothesisModel;
+import unbbayes.model.umpst.group.GroupModel;
+import unbbayes.model.umpst.rule.RuleModel;
 
 public class EntityModel extends ObjectModel{
 	
 	private static final long serialVersionUID = 1L;
 	
-	private Map<String,AttributeModel> mapAtributes  = new HashMap<String, AttributeModel>();
+	private Map<String,AttributeModel> mapAtributes;
+	
 	private List<GoalModel> backtrackingGoalsList;
 	private List<HypothesisModel> backtrackingHypothesisList;
+	
 	private Set<RuleModel> fowardTrackingRules;
 	private Set<GroupModel> fowardTrackingGroups;
 	private Set<RelationshipModel> fowardTrackingRelationship;
@@ -32,17 +34,12 @@ public class EntityModel extends ObjectModel{
 		
 		super(id, entityName, comments, author, date); 
 		
+		mapAtributes  = new HashMap<String, AttributeModel>();
 		backtrackingGoalsList = new ArrayList<GoalModel>();
 		backtrackingHypothesisList = new ArrayList<HypothesisModel>();
 		fowardTrackingRules = new HashSet<RuleModel>();
 		fowardTrackingGroups = new HashSet<GroupModel>();
 		fowardTrackingRelationship = new HashSet<RelationshipModel>();
-	}
-	
-	public EntityModel(String id) {
-		
-		this(id,"","","","");
-		
 	}
 
 
@@ -86,14 +83,6 @@ public class EntityModel extends ObjectModel{
 	}
 
 
-//	/**
-//	 * @param backtrackingHypothesis the backtrackingHypothesis to set
-//	 */
-//	public void setBacktrackingHypothesis(JList backtrackingHypothesis) {
-//		this.backtrackingHypothesisList = backtrackingHypothesis;
-//	}
-
-
 	/**
 	 * @return the fowardTrackingRules
 	 */
@@ -125,21 +114,12 @@ public class EntityModel extends ObjectModel{
 		this.mapAtributes = mapAtributes;
 	}
 
-
 	/**
 	 * @return the backtracking
 	 */
 	public List<GoalModel> getBacktrackingGoalList() {
 		return backtrackingGoalsList;
 	}
-
-
-//	/**
-//	 * @param backtracking the backtracking to set
-//	 */
-//	public void setBacktracking(JList backtracking) {
-//		this.backtrackingGoalsList = backtracking;
-//	}
 
 	public String toString(){
 		return getName(); 

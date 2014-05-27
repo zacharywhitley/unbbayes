@@ -29,9 +29,9 @@ import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.gui.umpst.UmpstModule;
-import unbbayes.model.umpst.entities.AttributeModel;
-import unbbayes.model.umpst.entities.EntityModel;
-import unbbayes.model.umpst.entities.RelationshipModel;
+import unbbayes.model.umpst.entity.AttributeModel;
+import unbbayes.model.umpst.entity.EntityModel;
+import unbbayes.model.umpst.entity.RelationshipModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.util.CommonDataUtil;
 
@@ -39,7 +39,7 @@ import unbbayes.util.CommonDataUtil;
 public class RelationshipEditionPanel extends IUMPSTPanel {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	private GridBagConstraints constraint     = new GridBagConstraints();
 	private JLabel titulo                     = new JLabel();
 
@@ -49,14 +49,14 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 	private RelationshipModel relationshipModel;
 
 	private JList<EntityModel> listEntity,
-	              listUsedEntitiesRelationship; 
-	
+	listUsedEntitiesRelationship; 
+
 	private DefaultListModel<EntityModel> listEntityModel = new DefaultListModel<EntityModel>();
 	private DefaultListModel<EntityModel> listUsedEntitiesModel = new DefaultListModel<EntityModel>();
 
 	private JList<AttributeModel> listAtribute,
-	              listUsedAttributes;
-	
+	listUsedAttributes;
+
 	private DefaultListModel<AttributeModel> listAtributeModel = new DefaultListModel<AttributeModel>();
 	private DefaultListModel<AttributeModel> listUsedAtributeModel = new DefaultListModel<AttributeModel>();
 
@@ -85,7 +85,7 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 		this.setLayout(new GridLayout(1,1));
 
 		createButtons(); 
-		
+
 		JSplitPane leftPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, 
 				createTextPanel(),
 				createBacktrackingEntity()); 
@@ -117,7 +117,8 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 						title, 
 						"Atribute Details",
 						null,
-						null); 
+						null, 
+						true); 
 
 		if (relationshipModel != null){
 			mainPropertiesEditionPane.setTitleText(relationshipModel.getName());
@@ -134,7 +135,7 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 	public void createButtons(){
 		buttonSave 	     = new JButton(iconController.getSaveObjectIcon());
 		buttonSave.setText(resource.getString("btnSave"));
-		
+
 		if( relationshipModel == null){
 			buttonSave.setToolTipText(
 					resource.getString("hpSaveRelationship"));
@@ -143,22 +144,22 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 			buttonSave.setToolTipText(
 					resource.getString("hpUpdateRelationship"));
 		}
-		
+
 		buttonCancel     = new JButton(iconController.getReturnIcon());
 		buttonCancel.setText(resource.getString("btnReturn")); 
-		
+
 		buttonCancel.setToolTipText(resource.getString("hpReturnMainPanel"));
-		
+
 	}
-	
+
 	public void createListeners(){
 
 		buttonSave.addActionListener(new ActionListener() {
-			
+
 			public void actionPerformed(ActionEvent e) {
-				
+
 				// Creating new relationship 
-				
+
 				if( relationshipModel == null ){
 					try {
 
@@ -168,12 +169,12 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 						else{
 							RelationshipModel relationshipModel = updateMapRelationship();
 							updateBacktracking(relationshipModel);
-							
+
 							JOptionPane.showMessageDialog(null, 
 									"Relationship successfully added",
 									null, 
 									JOptionPane.INFORMATION_MESSAGE);
-							
+
 							UmpstModule father = getFatherPanel();
 							changePanel(father.getMenuPanel());
 						}
@@ -186,9 +187,9 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 
 					}
 				}
-				
+
 				// Update existing relationship
-				
+
 				else{
 					if( JOptionPane.showConfirmDialog(null, "Do you want to update this relationship?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 						//RelationshipText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null,null,null);
@@ -270,7 +271,7 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 	public  JPanel createBacktrackingEntity(){
 
 		JPanel panel = new JPanel(new GridLayout(1,3));
-		JButton buttonCopy, buttonDelete;
+		JButton buttonCopy, buttonRemove;
 
 		//Build the entity selection list. The entities are inserted in 
 		//alphabetic order. 
@@ -297,7 +298,7 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 
 		listEntity = new JList(listEntityModel); //data has type Object[]
 		listEntity.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		listEntity.setLayoutOrientation(JList.VERTICAL_WRAP);
+		listEntity.setLayoutOrientation(JList.VERTICAL);
 		listEntity.setVisibleRowCount(-1);
 
 		JScrollPane listHypothesisScroller = new JScrollPane(listEntity);
@@ -319,26 +320,24 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 
 					public void actionPerformed(ActionEvent e) {
 						listUsedEntitiesModel.addElement(listEntity.getSelectedValue());	
-						listEntityModel.removeElement(listEntity.getSelectedValue());
+						//						listEntityModel.removeElement(listEntity.getSelectedValue());
 
 					}
 				}
 
 				);
 
-		buttonDelete = new JButton(resource.getString("btnRemove"));
-		buttonDelete.setIcon(IconController.getInstance().getLeftDoubleArrowIcon());
-		buttonDelete.setBackground(Color.WHITE); 
+		buttonRemove = new JButton(resource.getString("btnRemove"));
+		buttonRemove.setIcon(IconController.getInstance().getLeftDoubleArrowIcon());
+		buttonRemove.setBackground(Color.WHITE); 
 
-		panelButtons.add(buttonDelete);
+		panelButtons.add(buttonRemove);
 
-		buttonDelete.addActionListener(
+		buttonRemove.addActionListener(
 				new ActionListener() {
 
 					public void actionPerformed(ActionEvent e) {
-						listEntityModel.addElement(listUsedEntitiesRelationship.getSelectedValue());
-						
-						
+						//						listEntityModel.addElement(listUsedEntitiesRelationship.getSelectedValue());
 						listUsedEntitiesModel.removeElement(listUsedEntitiesRelationship.getSelectedValue());
 					}
 				}
@@ -359,95 +358,9 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 		JScrollPane listHypothesisScrollerAux = new JScrollPane(listUsedEntitiesRelationship);
 		panel.add(listHypothesisScrollerAux);
 
-		panel.setBorder(BorderFactory.createTitledBorder("Adding backtracking from entities"));
+		panel.setBorder(BorderFactory.createTitledBorder("Envolved Entities"));
 
 		return panel;
-
-	}
-
-
-	public  Box createBacktrackingAtribute(){
-		Box box = Box.createHorizontalBox();
-		JButton buttonCopy, buttonDelete;
-
-
-		Set<String> keys = getUmpstProject().getMapAtribute().keySet();
-		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-
-		for (String key: sortedKeys){
-			listAtributeModel.addElement(getUmpstProject().getMapAtribute().get(key));
-		}
-
-
-		/**This IF is responsable to update the first JList with all requirements elemente MINUS those 
-		 * who are already registred as backtracking.
-		 * */
-		if (relationshipModel!=null){
-			for (AttributeModel atribute: relationshipModel.getBacktrackingAtribute()) {
-				listUsedAtributeModel.addElement(atribute);
-				if (listAtributeModel.contains(atribute)){
-					listAtributeModel.removeElement(atribute);
-				}
-			}
-
-		}
-
-		listAtribute = new JList(listAtributeModel); //data has type Object[]
-		listAtribute.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		listAtribute.setLayoutOrientation(JList.VERTICAL);
-		listAtribute.setVisibleRowCount(-1);
-
-
-		JScrollPane listHypothesisScroller = new JScrollPane(listAtribute);
-		listHypothesisScroller.setMinimumSize(new Dimension(100,150));
-
-		box.add(listHypothesisScroller);
-
-		JPanel panel = new JPanel(new GridLayout(6,1)); 
-
-		buttonCopy = new JButton("copy >>>");
-		panel.add(buttonCopy);
-		buttonCopy.addActionListener(
-				new ActionListener() {
-
-					public void actionPerformed(ActionEvent e) {
-						listUsedAtributeModel.addElement(listAtribute.getSelectedValue());	
-						listAtributeModel.removeElement(listAtribute.getSelectedValue());
-
-					}
-				}
-
-				);
-
-		buttonDelete = new JButton("<<< delete");
-		panel.add(buttonDelete);
-		buttonDelete.addActionListener(
-				new ActionListener() {
-
-					public void actionPerformed(ActionEvent e) {
-						listAtributeModel.addElement(listUsedAttributes.getSelectedValue());	
-						listUsedAtributeModel.removeElement(listUsedAttributes.getSelectedValue());
-					}
-				}
-
-				);	
-
-		box.add(panel); 
-
-		listUsedAttributes = new JList(listUsedAtributeModel);
-
-		listUsedAttributes.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		listUsedAttributes.setLayoutOrientation(JList.VERTICAL_WRAP);
-		listUsedAttributes.setVisibleRowCount(-1);
-
-		JScrollPane listHypothesisScrollerAux = new JScrollPane(listUsedAttributes);
-		listHypothesisScrollerAux.setMinimumSize(new Dimension(100,150));
-		box.add(listHypothesisScrollerAux);
-
-		box.setBorder(BorderFactory.createTitledBorder("Adding backtracking from atribute"));
-
-		return box;
-		//add(box,constraint);
 
 	}
 
@@ -455,17 +368,17 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 	public void updateBacktracking(RelationshipModel relationship){
 
 		String keyWord = "";
-		
+
 		Set<String> keys = getUmpstProject().getMapEntity().keySet();
-		
+
 		TreeSet<String> sortedKeysMapEntity = new TreeSet<String>(keys);
 
 		// Add each entitie to the backtracking list of the relationship and 
 		// update the forward tracking list of the entitie adding this 
 		// relationship. 
-		
+
 		if (listUsedEntitiesRelationship != null){
-			
+
 			for (int i = 0; i < listUsedEntitiesRelationship.getModel().getSize();i++) {
 				keyWord = listUsedEntitiesRelationship.getModel().getElementAt(i).toString();
 				for (String key: sortedKeysMapEntity){
@@ -478,9 +391,9 @@ public class RelationshipEditionPanel extends IUMPSTPanel {
 
 				}
 			}
-			
+
 			for(int i = 0; i < listUsedEntitiesModel.getSize(); i++){
-			    relationship.getBacktrackingEntityList().add(listUsedEntitiesModel.getElementAt(i)); 	
+				relationship.getBacktrackingEntityList().add(listUsedEntitiesModel.getElementAt(i)); 	
 			}
 
 		}

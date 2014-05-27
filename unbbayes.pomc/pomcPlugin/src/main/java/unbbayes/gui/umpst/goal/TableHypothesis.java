@@ -19,9 +19,9 @@ import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.MainPanel;
 import unbbayes.gui.umpst.TableButton;
 import unbbayes.gui.umpst.UmpstModule;
+import unbbayes.model.umpst.goal.GoalModel;
+import unbbayes.model.umpst.goal.HypothesisModel;
 import unbbayes.model.umpst.project.UMPSTProject;
-import unbbayes.model.umpst.requirements.GoalModel;
-import unbbayes.model.umpst.requirements.HypothesisModel;
 
 public class TableHypothesis extends IUMPSTPanel{
 
