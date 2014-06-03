@@ -56,15 +56,47 @@ import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
 
 
-/*
+/**
+ <pre>
  BNF MEBN Table:
+ ===============================================================
+ table := statement | if_statement
+ if_statement  ::= 
+ 	"if" allop varsetname "have" "(" b_expression ")" statement 
+ 	"else" else_statement 
+ allop ::= "any" | "all"
+ varsetname ::= ident ["." ident]*
+ b_expression ::= b_term [ "|" b_term ]*
+ b_term ::= not_factor [ "&" not_factor ]*
+ not_factor ::= [ "~" ] b_factor
+ b_factor ::= ident "=" ident | "(" b_expression ")"
+ else_statement ::= statement | if_statement
+ statement ::= "[" assignment_or_if "]" 
+ assignment_or_if ::= assignment | if_statement
+ assignment ::= ident "=" expression [ "," assignment ]*
+ expression ::= term [ addop term ]*
+ term ::= signed_factor [ mulop signed_factor ]*
+ signed_factor ::= [ addop ] factor
+ factor ::= number | function | "(" expression ")"
+ function ::= possibleVal 
+ 	| "CARDINALITY" "(" varsetname ")"
+ 	| "CARDINALITY" "(" ")"
+ 	| "MIN" "(" expression ";" expression ")"
+ 	| "MAX" "(" expression ";" expression ")"
+ possibleVal ::= ident
+ addop ::= "+" | "-"
+ mulop ::= "*" | "/"
+ ident ::= letter [ letter | digit ]*
+ number ::= [digit]+
+ ================================================================
+ 
  ----------------
  Changes (Month/Date/Year): 
- 
- 	08/02/2008:
+ </pre>
+ @version 08/02/2008:
  			Description: Added nested "if" feature.
  			Now an if-clause would look like this ("else" is still mandatory):
- 			
+ 			<pre>
  				if any x have (parentx = valuex1) [
  					myprob1 = 0.5 , 
  					myprob2 = 0.5
@@ -103,57 +135,58 @@ import unbbayes.util.Debug;
  						myprob2 = 0.1
  					]
  				]
- 			Author: Shou Matsumoto (cardialfly@[gmail,yahoo].com)
+ 			@Author Shou Matsumoto (cardialfly@[gmail,yahoo].com)
+ 			</pre>
  
- 	07/09/2008:
+ 	@version 07/09/2008:
  			Description: BNF fails to describe a complex boolean expression
- 			Author: Shou Matsumoto (cardialfly@[gmail,yahoo].com)
+ 			@Author Shou Matsumoto (cardialfly@[gmail,yahoo].com)
  	
- 	06/15/2008:
+ 	@version 06/15/2008:
  			Description: a boolean expression was returning a boolean neutral value (false in "Any" 
  			and true in "All") when no valid expression (involving parents) was evaluated. It
  			is now returning false when no expression was valid
- 			Author: Shou Matsumoto (cardialfly@[gmail,yahoo].com)
+ 			@Author Shou Matsumoto (cardialfly@[gmail,yahoo].com)
  
- 	03/03/2008:
+ 	@version 03/03/2008:
  			Description: compiler was trying to parse a table even when node was
  			known to be a finding (a finding doesn't need a cpt). This condition now 
  			is tested before parsing a ssbn node.
- 			Author: Shou Matsumoto (cardialfly@[gmail,yahoo].com)
+ 			@Author Shou Matsumoto (cardialfly@[gmail,yahoo].com)
  
- 	12/28/2007:
+ 	@version 12/28/2007:
  			Description: fixed the BNF definition of factor, and
  			added the " char before and after ;.
- 			Author: Rommel Carvalho (rommel.carvalho@gmail.com)
+ 			@Author Rommel Carvalho (rommel.carvalho@gmail.com)
  
- 	11/27/2007:
+ 	@version 11/27/2007:
  			Description: term ::= signed_factor [ mulop factor ]* changed to
  				term ::= signed_factor [ mulop signed_factor ]*,
  				and CPT generation is in alpha state now.
- 			Author: Shou Matsumoto
+ 			@Author Shou Matsumoto
  
- 	11/25/2007:
+ 	@version 11/25/2007:
  			Description: added non-terminal variable "possibleVal" to the grammar (and its implementation).
- 			Author: Shou Matsumoto
+ 			@Author Shou Matsumoto
  	
- 	10/07/2007:
+ 	@version 10/07/2007:
  			Description: "varsetname" has been added to the grammar (and implemented inside the class)
  				in order to allow us to declare parent set by strong OV.
- 			Author: Shou Matsumoto
+ 			@Author Shou Matsumoto
  	
  
- 	06/24/2007:
+ 	@version 06/24/2007:
  			Description: The top level BNF Grammar class was changed from 
  				if_statement to table, in order to make possible a probability
  				table without an if clause.
-			Author: Shou Matsumoto
+			@Author Shou Matsumoto
  
- 	06/10/2007: 
+ 	@version 06/10/2007: 
  			Description: Added cardinality(), min() and max() functions
  			syntax analyzer.
- 			Author: Shou Matsumoto 
+ 			@Author Shou Matsumoto 
 
- 	05/29/2007: 
+ 	@version 05/29/2007: 
  			Description: the else clause is now required, in order to
  				force user to declare a default distribution and
  				grant declaration of every possible combination of states
@@ -162,43 +195,12 @@ import unbbayes.util.Debug;
  				of states were provided and the last else
  				must be related to the first if every time - since
  				we don't have a block sentence yet, it is not possible).
- 			Author: Shou Matsumoto
- 			
-
- 	
- ===============================================================
- table := statement | if_statement
- if_statement  ::= 
- 	"if" allop varsetname "have" "(" b_expression ")" statement 
- 	"else" else_statement 
- allop ::= "any" | "all"
- varsetname ::= ident ["." ident]*
- b_expression ::= b_term [ "|" b_term ]*
- b_term ::= not_factor [ "&" not_factor ]*
- not_factor ::= [ "~" ] b_factor
- b_factor ::= ident "=" ident | "(" b_expression ")"
- else_statement ::= statement | if_statement
- statement ::= "[" assignment_or_if "]" 
- assignment_or_if ::= assignment | if_statement
- assignment ::= ident "=" expression [ "," assignment ]*
- expression ::= term [ addop term ]*
- term ::= signed_factor [ mulop signed_factor ]*
- signed_factor ::= [ addop ] factor
- factor ::= number | function | "(" expression ")"
- function ::= possibleVal 
- 	| "CARDINALITY" "(" varsetname ")"
- 	| "MIN" "(" expression ";" expression ")"
- 	| "MAX" "(" expression ";" expression ")"
- possibleVal ::= ident
- addop ::= "+" | "-"
- mulop ::= "*" | "/"
- ident ::= letter [ letter | digit ]*
- number ::= [digit]+
- ================================================================
+ 			@Author Shou Matsumoto
+ 	@version 06/03/2014: 
+ 			Description: CARDINALITY() was included. That is, if CARDINALITY
+ 			is called with no argument, then it will return the number of all parents.
+ 			@Author Shou Matsumoto
  */
-
-
-
 public class Compiler implements ICompiler {
 	
 	private Comparator<List<INode>> cacheParentsComparator = new Comparator<List<INode>>() {
@@ -2030,6 +2032,7 @@ public class Compiler implements ICompiler {
 	/**
 	 *  function ::= ident 
 	 *   	| "CARDINALITY" "(" ident ")"
+	 *   	| "CARDINALITY" "(" ")"
 	 *    	| "MIN" "(" expression ";" expression ")"
 	 *     	| "MAX" "(" expression ";" expression ")"
 	 * @return numeric value expected for the function
@@ -2068,8 +2071,13 @@ public class Compiler implements ICompiler {
 		IProbabilityValue ret = null;
 		match('(');
 		
-		String var = this.varsetname();
 		skipWhite();
+		String var = null;
+		if (look != ')') {	// check if argument was provided
+			var = this.varsetname();
+			skipWhite();
+		}
+		
 		// Debug.println("CARDINALITY'S ARGUMENT IS " + var);
 		// TODO test if ret has returned NaN (guarantees "value" is a varsetname)?
 		ret = new CardinalityProbabilityValue(this.currentHeader, var);
@@ -3431,6 +3439,11 @@ public class Compiler implements ICompiler {
 			}
 			if (getSSBNNode() == null) {
 				return Float.NaN;
+			}
+			
+			// if argument was not provided (i.e. it was "CARDINALITY()"), simply return total number of parents
+			if (this.varSetName == null || this.varSetName.trim().isEmpty()) {
+				return getSSBNNode().getParents().size();
 			}
 			
 			// look for the upper if clauses which has matching varsetname
