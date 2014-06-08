@@ -35,7 +35,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JLayeredPane;
 
@@ -76,6 +78,12 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	public static final String NODE_ALIGN_LEFT = "NodeAlignLeft";
 
 	public static final String NODE_ALIGN_RIGHT = "NodeAlignRight";
+	
+	public static final String NODE_ALIGN_VERTICAL = "NodeAlignVERTICAL";
+	
+	public static final String NODE_ALIGN_HORIZONTAL = "NodeAlignHORIZONTAL";
+	
+	
 
 	public String m_state;
 
@@ -332,24 +340,25 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 		int left = 1000;// this.getBounds().width;
 		int right = 0;
 		int top = this.getBounds().height;
-		int bottom = 0;
-
+		int bottom = 0;  
+		
 		int n = this.getComponentCount();
 		for (int i = 0; i < n; i++) {
 			UShape shape = (UShape) this.getComponent(i);
 
-			if (shape.getState() == UShape.STATE_SELECTED) {
-				if (str == NODE_ALIGN_LEFT)
-					left = Math.min(left, shape.getCenterX());
-				else if (str == NODE_ALIGN_RIGHT)
-					right = Math.max(right, shape.getCenterX());
-				else if (str == NODE_ALIGN_TOP)
-					top = Math.min(top, shape.getCenterY());
-				else if (str == NODE_ALIGN_BOTTOM)
+			if (shape.getState() == UShape.STATE_SELECTED) { 
+				if (str == NODE_ALIGN_LEFT ||
+					str == NODE_ALIGN_RIGHT ||
+					str == NODE_ALIGN_TOP ||
+					str == NODE_ALIGN_BOTTOM){					
+					left = Math.min(left, shape.getCenterX()); 
+					right = Math.max(right, shape.getCenterX()); 
+					top = Math.min(top, shape.getCenterY()); 
 					bottom = Math.max(bottom, shape.getCenterY());
+				}  
 			}
-		}
-
+		} 
+		
 		for (int i = 0; i < n; i++) {
 			UShape shape = (UShape) this.getComponent(i);
 
@@ -361,12 +370,149 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 				else if (str == NODE_ALIGN_TOP)
 					shape.move(shape.getX(), top - shape.getHeight() / 2);
 				else if (str == NODE_ALIGN_BOTTOM)
-					shape.move(shape.getX(), bottom - shape.getHeight() / 2);
+					shape.move(shape.getX(), bottom - shape.getHeight() / 2); 
 			}
 		}
 
+		//////////////////////////////////////////////////////////////////////////////
+		// for vertical/ horizontal align in a same gap
+		onAlignNodes_HORIZONTAL(str);
+		onAlignNodes_VERTICAL(str);
+		
 		updateLines();
 
+	}
+	
+	public void onAlignNodes_VERTICAL(String str) {
+		if (str != NODE_ALIGN_VERTICAL)
+			return;
+		int top = 0; 
+		int topOld = 0; 
+		int bottom = 0;  
+		int totalH = 0; 
+		int totalBoxH = 0;  
+		int totalGapH = 0;
+		int GapH = 0;
+		int moveH = 0;  
+		int n = this.getComponentCount();
+		Map<Integer, UShape> ordered = new HashMap<Integer, UShape>();
+		List<UShape> selected = new ArrayList<UShape>();
+		
+		// find selected
+		for (int i = 0; i < n; i++) {
+			UShape shape = (UShape) this.getComponent(i);
+			if (shape.getState() == UShape.STATE_SELECTED) 
+				selected.add(shape);
+		}
+		
+		// find order		
+		for (int i = 0; i < selected.size(); i++){
+			top = Integer.MAX_VALUE;
+			topOld = Integer.MAX_VALUE;
+			for (UShape shape : selected){
+				if (!ordered.containsValue(shape)){ 
+					top = Math.min(top, shape.getY()); 
+					if (topOld != top){
+						ordered.put(i, shape);
+					}
+					
+					topOld = top;
+				}
+			}	
+		}
+		
+		top = Integer.MAX_VALUE;
+		bottom = Integer.MIN_VALUE;
+		for (Integer i : ordered.keySet()){
+			UShape shape = ordered.get(i);
+			top = Math.min(top, shape.getCenterY() - shape.getHeight()/2); 
+			bottom = Math.max(bottom, shape.getCenterY() + shape.getHeight()/2);  
+			totalBoxH += shape.getHeight();
+		}
+		
+		totalH = bottom - top; 
+		totalGapH = totalH - totalBoxH;
+		GapH = totalGapH/(ordered.size() - 1); 
+				 
+		for (Integer i : ordered.keySet()){
+			UShape shape = ordered.get(i);
+			 
+			if( i == 0 || i == ordered.size() - 1 ){
+				moveH = shape.getCenterY() + shape.getHeight()/2;
+				continue;
+			}
+			
+			moveH += GapH;
+			shape.move(shape.getX(), moveH);
+			moveH = shape.getCenterY() + shape.getHeight()/2;
+		} 
+	}
+	
+
+	public void onAlignNodes_HORIZONTAL(String str) {
+		if (str != NODE_ALIGN_HORIZONTAL)
+			return;
+				
+		int left = 0; 
+		int leftOld = 0; 
+		int right = 0;  
+		int totalW = 0; 
+		int totalBoxW = 0;  
+		int totalGapW = 0;
+		int GapW = 0;
+		int moveW = 0;  
+		int n = this.getComponentCount();
+		Map<Integer, UShape> ordered = new HashMap<Integer, UShape>();
+		List<UShape> selected = new ArrayList<UShape>();
+		
+		// find selected
+		for (int i = 0; i < n; i++) {
+			UShape shape = (UShape) this.getComponent(i);
+			if (shape.getState() == UShape.STATE_SELECTED) 
+				selected.add(shape);
+		}
+		
+		// find order		
+		for (int i = 0; i < selected.size(); i++){
+			left = Integer.MAX_VALUE;
+			leftOld = Integer.MAX_VALUE;
+			for (UShape shape : selected){
+				if (!ordered.containsValue(shape)){ 
+					left = Math.min(left, shape.getX()); 
+					if (leftOld != left){
+						ordered.put(i, shape);
+					}
+					
+					leftOld = left;
+				}
+			}	
+		}
+		
+		left = Integer.MAX_VALUE;
+		right = Integer.MIN_VALUE;
+		for (Integer i : ordered.keySet()){
+			UShape shape = ordered.get(i);
+			left = Math.min(left, shape.getCenterX() - shape.getWidth()/2); 
+			right = Math.max(right, shape.getCenterX() + shape.getWidth()/2);  
+			totalBoxW += shape.getWidth();
+		}
+		
+		totalW = right - left; 
+		totalGapW = totalW - totalBoxW;
+		GapW = totalGapW/(ordered.size() - 1); 
+				 
+		for (Integer i : ordered.keySet()){
+			UShape shape = ordered.get(i);
+			 
+			if( i == 0 || i == ordered.size() - 1 ){
+				moveW = shape.getCenterX() + shape.getWidth()/2;
+				continue;
+			}
+			
+			moveW += GapW;
+			shape.move(moveW , shape.getY());
+			moveW = shape.getCenterX() + shape.getWidth()/2;
+		} 
 	}
 
 	public Node getSelectedShapesNode() {

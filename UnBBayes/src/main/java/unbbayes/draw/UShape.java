@@ -330,11 +330,29 @@ public class UShape extends JComponent implements ActionListener,
 				getCanvas().onAlignNodes(UCanvas.NODE_ALIGN_BOTTOM);
 			}
 		});
+		
+		//////////////////////////////////////////////////////////////////////////////
+		// for vertical/ horizontal align in a same gap
+		JMenuItem item6 = new JMenuItem("Node Distribution: Vertical ");
+		item6.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				getCanvas().onAlignNodes(UCanvas.NODE_ALIGN_VERTICAL);
+			}
+		});
+		
+		JMenuItem item7 = new JMenuItem("Node Distribution: Horizontal");
+		item7.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				getCanvas().onAlignNodes(UCanvas.NODE_ALIGN_HORIZONTAL);
+			}
+		});
 
 		popup.add(item2);
 		popup.add(item3);
 		popup.add(item4);
 		popup.add(item5);
+		popup.add(item6);
+		popup.add(item7);
 	}
 
 	public void createColorChooser() {
