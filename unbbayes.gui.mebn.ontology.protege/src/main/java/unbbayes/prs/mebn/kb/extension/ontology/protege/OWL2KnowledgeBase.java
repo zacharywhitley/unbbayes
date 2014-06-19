@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.protege.editor.owl.model.OWLModelManager;
@@ -36,6 +37,7 @@ import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.OWLProperty;
 import org.semanticweb.owlapi.model.PrefixManager;
+import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import unbbayes.controller.mebn.IMEBNMediator;
@@ -49,6 +51,8 @@ import unbbayes.io.mebn.owlapi.IPROWL2ModelUser;
 import unbbayes.io.mebn.protege.ProtegeStorageImplementorDecorator;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.DefaultMappingArgumentExtractor;
+import unbbayes.prs.mebn.IMappingArgumentExtractor;
 import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -119,6 +123,13 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	private Map<String, OWLClassExpression> expressionCache;
 
 	private Map<ContextNode, Map<Collection<OVInstance>, SearchResult>> searchContextCache;
+	
+	/**
+	 * This is the default instance of {@link #getMappingArgumentExtractor()}.
+	 */
+	public IMappingArgumentExtractor DEFAULT_MAPPING_ARGUMENT_EXTRACTOR = DefaultMappingArgumentExtractor.newInstance();
+	
+	private IMappingArgumentExtractor mappingArgumentExtractor = DEFAULT_MAPPING_ARGUMENT_EXTRACTOR;
 
 	/**
 	 * The default constructor is only visible in order to allow inheritance
@@ -189,6 +200,31 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#clearKnowledgeBase()
 	 */
 	public void clearKnowledgeBase() {
+		if (this.getTypeToIndividualsCache() != null) {
+			this.getTypeToIndividualsCache().clear();
+		}
+		// needs to clear following cache
+//		if (getResidentNodeCache() != null) {
+//			getResidentNodeCache().clear();
+//		}
+//
+//		if (getEntityCache() != null) {
+//			
+//		}
+//
+//		private Map<ResidentNode, Map<Collection<OVInstance>, StateLink>> findingCache;
+//
+//		private Map<String, List<String>> typeToIndividualsCache;
+//
+//		private Map<ResidentNode, Collection<RandomVariableFinding>> residentNodeFindingCache;
+//
+//		private boolean isToResetCache = true;
+//
+//		private Map<String, OWLClassExpression> expressionCache;
+
+//		private Map<ContextNode, Map<Collection<OVInstance>, SearchResult>> searchContextCache;
+		
+		
 		// execute commands inserted from other classes (they are inserted as instances of IClearKBCommand)
 		if (this.getClearKBCommandList() != null) {
 			for (IClearKBCommand command : this.getClearKBCommandList()) {
@@ -205,6 +241,8 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#clearFindings()
 	 */
 	public void clearFindings() {
+		
+		
 		if (this.getNonPROWLClassExtractor() != null) {
 			// clear the non-prowl class extractor.
 			this.getNonPROWLClassExtractor().resetNonPROWLClassExtractor();
@@ -857,16 +895,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// This version cannot represent resident nodes with no arguments
 			throw new IllegalArgumentException("This knowledge base cannot handle resident nodes with 0 arguments. Resident node = " + resident);
 		}
-		if (listArguments.size() > 2) {
-			// This version cannot handle findings for resident nodes with more than 2 arguments
-//			throw new IllegalArgumentException("This knowledge base cannot handle resident nodes repesenting n-ary relationships with n > 2. Resident node = " + resident);
-			try {
-				Debug.println(this.getClass(), "This knowledge base cannot handle resident nodes repesenting n-ary relationships with n > 2. Resident node = " + resident);
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
-			return null;
-		}
+		
+//		if (listArguments.size() > 2) {
+//			// This version cannot handle findings for resident nodes with more than 2 arguments
+////			throw new IllegalArgumentException("This knowledge base cannot handle resident nodes repesenting n-ary relationships with n > 2. Resident node = " + resident);
+//			try {
+//				Debug.println(this.getClass(), "This knowledge base cannot handle resident nodes repesenting n-ary relationships with n > 2. Resident node = " + resident);
+//			} catch (Throwable t) {
+//				t.printStackTrace();
+//			}
+//			return null;
+//		}
 		
 		// extract reasoner and ontology
 		OWLReasoner reasoner = this.getDefaultOWLReasoner();
@@ -961,58 +1000,21 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				String expression = "inverse " + this.extractName(property) + " value " + listArguments.iterator().next().getEntity().getInstanceName();
 				Debug.println(this.getClass(), "Expression: " + expression);
 				
-				Collection<OWLIndividual> nodeSet = getOWLIndividuals(expression, reasoner,reasoner.getRootOntology());
-				if (nodeSet != null) {
-					for (OWLIndividual individual: nodeSet) {
-						try {
-							// use only the first valid individual. Multiple-valued properties should be resolved in another method
-							StateLink link = resident.getPossibleValueByName(this.extractName(individual));
-							if (link != null) {
-								try {
-									Debug.println(this.getClass(), "The value of  " + resident + " is " + link);
-								} catch (Throwable t) {
-									t.printStackTrace();
-								}
-								// cache finding
-								if (this.getFindingCache() != null) {
-									Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
-									if (cachedFindings == null) {
-										cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
-									}
-									cachedFindings.put(listArguments, link);
-									this.getFindingCache().put(resident, cachedFindings);
-								}
-								return link;
-							}
-						} catch (Exception e) {
-							Debug.println(this.getClass(), "Failed to convert value " + individual + " to a StateLink for resident node " + resident, e);
-							continue;
-						}
-						Debug.println(this.getClass(), "Failed to convert value " + individual + " to a StateLink for resident node " + resident);
-					}
-				}
-			}
-		} else {
-			// 2 arguments. This is either a simple binary relationship or a ternary relationship (the last one is invalid)
-			
-			if (resident.getTypeOfStates() != ResidentNode.BOOLEAN_RV_STATES) {
-				// ternary not supported
-				try {
-					System.err.println("This knowledge base cannot handle resident nodes repesenting n-ary relationships with n = 3. Resident node = " + resident); 
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				StateLink link = this.getEntityStateLinkFromExpression(expression, reasoner, resident);
+				
 				// cache finding
 				if (this.getFindingCache() != null) {
 					Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
 					if (cachedFindings == null) {
 						cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
 					}
-					cachedFindings.put(listArguments, null);
+					cachedFindings.put(listArguments, link);
 					this.getFindingCache().put(resident, cachedFindings);
 				}
-				return null;
+				return link;
 			}
+		} else if ((listArguments.size() == 2) && (resident.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES)) {
+			// 2 arguments. This is a simple binary relationship
 			
 			// this is binary relationship, so let's use owl object property
 			OWLObjectProperty property = factory.getOWLObjectProperty(propertyIRI);
@@ -1020,73 +1022,255 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// extract the name of subject and object (i.e. the first and the second arguments respectively)
 			String subjectName = null;
 			String objectName = null;
-			if (listArguments.size() > 1) {
-				Iterator<OVInstance> it = listArguments.iterator();
-				// this should not be dangerous, because if we reach this code, the number of arguments must be exactly 2
-				subjectName = it.next().getEntity().getInstanceName();
-				objectName = it.next().getEntity().getInstanceName();
-			}
+			
+			// Note that at this point we shall have only 2 arguments
+			
+			// TODO use subjectOf and objectOf in order to decide which one is subject and which one is object
+			Iterator<OVInstance> it = listArguments.iterator();
+			
+			subjectName = it.next().getEntity().getInstanceName();
+			objectName = it.next().getEntity().getInstanceName();
 			
 			// create an expression that returns the subject if the subject has a link to object. Empty otherwise
 			String expressionToParse = "{" +  subjectName + "}" + " that " + this.extractName(property) + " value " + objectName ;
 			Debug.println(this.getClass(), "Expression: " + expressionToParse);
 			
 			// because we are in open-world assumption, we must check if individuals "are" related, "never" related or "unknown"
-			if (!getOWLIndividuals((expressionToParse), reasoner,reasoner.getRootOntology()).isEmpty()) {
-				// they are related
-				StateLink link = resident.getPossibleValueByName("true"); 
-				if (link != null) {
-					try {
-						Debug.println(this.getClass(), "The value of  " + resident + " is " + link);
-					} catch (Throwable t) {
-						t.printStackTrace();
+
+			StateLink link = this.getBooleanStateLinkFromExpression(expressionToParse, reasoner, resident, true);
+			if (link != null) {
+				// cache finding
+				if (this.getFindingCache() != null) {
+					Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
+					if (cachedFindings == null) {
+						cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
 					}
-					// cache finding
-					if (this.getFindingCache() != null) {
-						Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
-						if (cachedFindings == null) {
-							cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
-						}
-						cachedFindings.put(listArguments, link);
-						this.getFindingCache().put(resident, cachedFindings);
-					}
-					return link;
-				} else {
-					// TODO ask PR-OWL2 creator if it is OK if OWL says it is true, but PR-OWL says it does not handle such value
-					System.err.println("Reasoner says that " + resident + " is true, but this resident node cannot handle such value...");
+					cachedFindings.put(listArguments, link);
+					this.getFindingCache().put(resident, cachedFindings);
 				}
-			} 
+				
+				return link;
+			}
 
 			// perform the second query to check if they are "never" related
 			expressionToParse = "{" +  subjectName + "}" + " that not ( " + this.extractName(property) + " value " + objectName + " )" ;
 			Debug.println(this.getClass(), "Expression: " + expressionToParse);
-			
-			if (!getOWLIndividuals((expressionToParse), reasoner,reasoner.getRootOntology()).isEmpty()) {
-				// they are NEVER related
-				StateLink link = resident.getPossibleValueByName("false"); 
-				if (link != null) {
-					try {
-						Debug.println(this.getClass(), "The value of  " + resident + " is " + link);
-					} catch (Throwable t) {
-						t.printStackTrace();
+
+			link = this.getBooleanStateLinkFromExpression(expressionToParse, reasoner, resident, false);
+			if (link != null) {
+				// cache finding
+				if (this.getFindingCache() != null) {
+					Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
+					if (cachedFindings == null) {
+						cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
 					}
-					// cache finding
-					if (this.getFindingCache() != null) {
-						Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
-						if (cachedFindings == null) {
-							cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
-						}
-						cachedFindings.put(listArguments, link);
-						this.getFindingCache().put(resident, cachedFindings);
-					}
-					return link;
-				} else {
-					// TODO ask PR-OWL2 creator if it is OK if OWL says it is true, but PR-OWL says it does not handle such value
-					System.err.println("Reasoner says that " + resident + " is false, but this resident node cannot handle such value...");
+					cachedFindings.put(listArguments, link);
+					this.getFindingCache().put(resident, cachedFindings);
 				}
-			} 
+			}
+			return link;
 			
 			// ok, reasoner cannot say if it is either true or false
+		} else if (resident.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES) {
+			// this is a boolean n-ary relationship with n > 2
+			
+			// Extract the OWL object property pointed by definesUncertaintyOf.
+			// At least 1 argument must be using it either in subjectIn or objectIn. 
+			// If not, by default the 1st unspecified argument will be considered as the subject of this property
+			OWLObjectProperty mainProperty = factory.getOWLObjectProperty(propertyIRI);
+			
+			// get the owl properties related (by subjectIn or objectIn) to the arguments of this node
+			Map<Argument, Map<OWLProperty, Integer>> propertiesPerArgument = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
+			if (propertiesPerArgument == null || propertiesPerArgument.isEmpty()) {
+				// a node with no arguments mapped to OWL properties cannot have findings anyway
+				try {
+					Debug.println(getClass(), "There is no mapping specified for n-ary relationship of node " + resident);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return null;
+			}
+			if (propertiesPerArgument.size() != resident.getArgumentList().size()) {
+				try {
+					Debug.println(getClass(), "The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return null;
+			}
+			
+			// translate the mapping to a map of ordinary variables to properties, because listArguments uses ordinary variables as reference
+			Map<OrdinaryVariable, Map<OWLProperty, Integer>> propertiesPerOV = new HashMap<OrdinaryVariable, Map<OWLProperty,Integer>>();
+			for (Entry<Argument, Map<OWLProperty, Integer>> entry : propertiesPerArgument.entrySet()) {
+				propertiesPerOV.put(entry.getKey().getOVariable(), entry.getValue());
+			}
+			
+			// from the mapping, create an expression that returns the subject if the subject has a link to object.
+			// example 1: inverse inv_MTI value Slow and inverse inv_MTI_RPT value Rpt2 and inverse inv_MTI_T value T1
+			// example 2: MTI value Fast and MTI_RPT value Rpt1 and MTI_T value T1
+			String expressionToParse = "";
+			// Note: we already checked at the beginning of this method that listArgument.size() == resident.getArgumentList().size()
+			for (Iterator<OVInstance> iterator = listArguments.iterator(); iterator.hasNext(); ) {
+				// I'm using an explicit iterator, because expressionToParse shall include an "and" at the end of expression
+				OVInstance argInstance = iterator.next();
+				
+				// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
+				OWLProperty property = mainProperty;
+				boolean isSubjectIn = true;
+				// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
+				Map<OWLProperty, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
+				if (propertyMap != null) {
+					// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
+					for (Entry<OWLProperty, Integer> entry : propertyMap.entrySet()) {
+						if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
+							isSubjectIn = false;
+							property = entry.getKey();
+							break;
+						} else if (entry.getValue().equals(IMappingArgumentExtractor.SUBJECT_CODE)) {
+							isSubjectIn = true;
+							property = entry.getKey();
+							break;
+						} 
+						// or else, entry.getValue() == IMappingArgumentExtractor.UNDEFINED_CODE), so find next
+					}
+				}
+				
+				expressionToParse += isSubjectIn?"":"inverse " + this.extractName(property) + " value " + argInstance.getEntity().getInstanceName();
+				if (iterator.hasNext()) {
+					// if this is not the last argument, we shall join expressions with an "and" operation
+					expressionToParse += " and ";
+				}
+			}
+			
+			Debug.println(this.getClass(), "Expression: " + expressionToParse);
+			
+			// because we are in open-world assumption, we must check if individuals "are" related, "never" related or "unknown"
+
+			StateLink link = this.getBooleanStateLinkFromExpression(expressionToParse, reasoner, resident, true);
+			
+			if (link != null) {
+				// cache finding
+				if (this.getFindingCache() != null) {
+					Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
+					if (cachedFindings == null) {
+						cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
+					}
+					cachedFindings.put(listArguments, link);
+					this.getFindingCache().put(resident, cachedFindings);
+				}
+				
+				return link;
+			}
+			
+
+			// perform the second query to check if they are "never" related
+			expressionToParse = "not ( " + expressionToParse + " )";
+			Debug.println(this.getClass(), "Expression: " + expressionToParse);
+
+			link = this.getBooleanStateLinkFromExpression(expressionToParse, reasoner, resident, false);
+			if (link != null) {
+				// cache finding
+				if (this.getFindingCache() != null) {
+					Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
+					if (cachedFindings == null) {
+						cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
+					}
+					cachedFindings.put(listArguments, link);
+					this.getFindingCache().put(resident, cachedFindings);
+				}
+			}
+			return link;
+			
+		} else { 
+			// this is a n-ary function, with 2 or more arguments and 1 non-boolean return type
+			
+			// Extract the OWL object property pointed by definesUncertaintyOf.
+			// By default, this object property relates the n-ary object to the state of the resident node (we cannot specify the inverse).
+			OWLObjectProperty mainProperty = factory.getOWLObjectProperty(propertyIRI);
+			
+			// get the owl properties related (by subjectIn or objectIn) to the arguments of this node
+			Map<Argument, Map<OWLProperty, Integer>> propertiesPerArgument = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
+			if (propertiesPerArgument == null || propertiesPerArgument.isEmpty()) {
+				// a node with no arguments mapped to OWL properties cannot have findings anyway
+				try {
+					Debug.println(getClass(), "There is no mapping specified for n-ary relationship of node " + resident);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return null;
+			}
+			if (propertiesPerArgument.size() != resident.getArgumentList().size()) {
+				try {
+					Debug.println(getClass(), "The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return null;
+			}
+			
+			// translate the mapping to a map of ordinary variables to properties, because listArguments uses ordinary variables as reference
+			Map<OrdinaryVariable, Map<OWLProperty, Integer>> propertiesPerOV = new HashMap<OrdinaryVariable, Map<OWLProperty,Integer>>();
+			for (Entry<Argument, Map<OWLProperty, Integer>> entry : propertiesPerArgument.entrySet()) {
+				propertiesPerOV.put(entry.getKey().getOVariable(), entry.getValue());
+			}
+			
+			// from the mapping, create an expression that returns the subject if the subject has a link to object.
+			// example 1: inverse MTI some  (MTI_RPT value Rpt1 and MTI_T value T1)
+			// example 2: inverse MTI some  (inverse inv_MTI_RPT value Rpt2 and inverse inv_MTI_T value T1)
+			String expressionToParse = "inverse " + mainProperty + " some ( ";
+			// Note: we already checked at the beginning of this method that listArgument.size() == resident.getArgumentList().size()
+			for (Iterator<OVInstance> iterator = listArguments.iterator(); iterator.hasNext(); ) {
+				// I'm using an explicit iterator, because expressionToParse shall not include an "and" at the end of expression
+				OVInstance argInstance = iterator.next();
+				
+				OWLProperty property = null; // if there is no valid mapping, property will be null
+				boolean isSubjectIn = true;
+				
+				// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
+				Map<OWLProperty, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
+				if (propertyMap != null) {
+					// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
+					for (Entry<OWLProperty, Integer> entry : propertyMap.entrySet()) {
+						if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
+							isSubjectIn = false;
+							property = entry.getKey();
+							break;
+						} else if (entry.getValue().equals(IMappingArgumentExtractor.SUBJECT_CODE)) {
+							isSubjectIn = true;
+							property = entry.getKey();
+							break;
+						} 
+						// or else, entry.getValue() == IMappingArgumentExtractor.UNDEFINED_CODE), so find next
+					}
+				}
+				if (property == null) {
+					throw new IllegalArgumentException("Argument " + argInstance + " of " + resident + " has no mapping to OWL property.");
+				}
+				
+				expressionToParse += isSubjectIn?"":"inverse " + this.extractName(property) + " value " + argInstance.getEntity().getInstanceName();
+				if (iterator.hasNext()) {
+					// if this is not the last argument, we shall join expressions with an "and" operation
+					expressionToParse += " and ";
+				}
+			}
+			expressionToParse += " )";
+			
+			Debug.println(this.getClass(), "Expression: " + expressionToParse);
+			
+			StateLink link = this.getEntityStateLinkFromExpression(expressionToParse, reasoner, resident);
+			
+			// cache finding
+			if (this.getFindingCache() != null) {
+				Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
+				if (cachedFindings == null) {
+					cachedFindings = new HashMap<Collection<OVInstance>, StateLink>();
+				}
+				cachedFindings.put(listArguments, link);
+				this.getFindingCache().put(resident, cachedFindings);
+			}
+			
+			// TODO In open-world assumption, do we need to perform a second query to check if they are "never" related?
+			return link;
 		}
 		
 		// nothing found
@@ -1103,6 +1287,73 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			}
 			cachedFindings.put(listArguments, null);
 			this.getFindingCache().put(resident, cachedFindings);
+		}
+		return null;
+	}
+
+	/**
+	 * This is used in {@link #searchFinding(ResidentNode, Collection)} in order to convert manchester-DL syntax formula to 
+	 * {@link StateLink}, only for boolean nodes.
+	 * @param expression: expression in manchester-DL syntax. If individuals matching this expression exists, then this method will
+	 * return stateToReturn.
+	 * @param reasoner: DL reasoner to be used for resolving the DL query. 
+	 * @param resident : the resident node whose {@link StateLink} will be considered as being the finding. Must be boolean node.
+	 * @param stateToReturn: the method will return {@link StateLink} representing this boolean value if any OWL individual matching
+	 * expression is found. If null is passed, then it will be considered as being the special boolean state "absurd".
+	 * @return a {@link StateLink} representing the boolean state stateToReturn. Null if no OWL individual matches expression.
+	 */
+	private StateLink getBooleanStateLinkFromExpression( String expressionToParse, OWLReasoner reasoner, ResidentNode resident, Boolean stateToReturn) {
+
+		if (!getOWLIndividuals((expressionToParse), reasoner,reasoner.getRootOntology()).isEmpty()) {
+			// they are related
+			StateLink link = resident.getPossibleValueByName((stateToReturn==null)?"absurd":stateToReturn.toString()); 
+			if (link != null) {
+				try {
+					Debug.println(this.getClass(), "The value of  " + resident + " is " + link);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return link;
+			} else {
+				// TODO ask PR-OWL2 creator if it is OK if OWL says it is true, but PR-OWL says it does not handle such value
+				System.err.println("Reasoner says that " + resident + " is true, but this resident node cannot handle such value...");
+			}
+		} 
+		
+		return null;
+	}
+
+	/**
+	 * This is used in {@link #searchFinding(ResidentNode, Collection)} in order to convert manchester-DL syntax formula to 
+	 * {@link StateLink}, only for non-boolean nodes.
+	 * @param expression: expression in manchester-DL syntax
+	 * @param reasoner: DL reasoner to be used for resolving the DL query
+	 * @param resident : the resident node whose {@link StateLink} will be considered as being the finding. Must be non-boolean node.
+	 * @return a {@link StateLink} representing the state of resident node.
+	 * @see #getBooleanStateLinkFromExpression(String, OWLReasoner, ResidentNode)
+	 */
+	private StateLink getEntityStateLinkFromExpression(String expression, OWLReasoner reasoner, ResidentNode resident) {
+
+		Collection<OWLIndividual> nodeSet = getOWLIndividuals(expression, reasoner,reasoner.getRootOntology());
+		if (nodeSet != null) {
+			for (OWLIndividual individual: nodeSet) {
+				try {
+					// use only the first valid individual. Multiple-valued properties should be resolved in another method
+					StateLink link = resident.getPossibleValueByName(this.extractName(individual));
+					if (link != null) {
+						try {
+							Debug.println(this.getClass(), "The value of  " + resident + " is " + link);
+						} catch (Throwable t) {
+							t.printStackTrace();
+						}
+						return link;
+					}
+				} catch (Exception e) {
+					Debug.println(this.getClass(), "Failed to convert value " + individual + " to a StateLink for resident node " + resident, e);
+					continue;
+				}
+				Debug.println(this.getClass(), "Failed to convert value " + individual + " to a StateLink for resident node " + resident);
+			}
 		}
 		return null;
 	}
@@ -1260,10 +1511,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			Debug.println(this.getClass(), "Invalid attempt to search findings for node " + resident +  " with no arguments.");
 			return;	// this knowledge base has no support for such findings, but that does not mean it should throw an exception...
 		}
-		if (resident.getArgumentList().size() > 2) {
-			Debug.println(this.getClass(), "Invalid attempt to search findings for node " + resident +  " with " + resident.getArgumentList().size() + " arguments.");
-			return;	// this knowledge base has no support for such findings, but that does not mean it should throw an exception...
-		}
+//		if (resident.getArgumentList().size() > 2) {
+//			Debug.println(this.getClass(), "Invalid attempt to search findings for node " + resident +  " with " + resident.getArgumentList().size() + " arguments.");
+//			return;	// this knowledge base has no support for such findings, but that does not mean it should throw an exception...
+//		}
 		
 		// do not read again if it is already cached
 		if (this.getResidentNodeFindingCache() != null) {
@@ -1278,11 +1529,18 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			throw new IllegalArgumentException("No reasoner found.");
 		}
 		
+		// also extract the ontology to be used
+		OWLOntology ontology = reasoner.getRootOntology();
+		if (ontology == null) {
+			throw new IllegalArgumentException("No ontology found.");
+		}
+		
+		
 		// extract the IRI of the owl property related to the resident node
 		IRI propertyIRI = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(this.getDefaultMEBN(), resident);
 		if (propertyIRI == null 
-				|| ( !reasoner.getRootOntology().containsObjectPropertyInSignature(propertyIRI, true) 
-						&& !reasoner.getRootOntology().containsDataPropertyInSignature(propertyIRI, true) )) {
+				|| ( !ontology.containsObjectPropertyInSignature(propertyIRI, true) 
+						&& !ontology.containsDataPropertyInSignature(propertyIRI, true) )) {
 			// there would be no finding for this resident node, because the property is not mapped to a resident node or the property does not exist at all
 			try {
 				Debug.println(this.getClass(), this.getDefaultMEBN() + " contains an invalid link from node " + resident + " to OWL property " + propertyIRI);
@@ -1293,7 +1551,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		}
 		
 		// extract the factory to obtain property and other OWL objects
-		OWLDataFactory factory = reasoner.getRootOntology().getOWLOntologyManager().getOWLDataFactory();
+		OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
 		
 		// only 3 options available: boolean node with 1 argument, categorical node with 1 argument, and boolean node with 2 arguments.
 		// TODO add support for n-ary relationships
@@ -1310,7 +1568,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				String expression = this.extractName(property) + " value true";
 				
 				// execute query to obtain all individuals using that property as true
-				for (OWLIndividual individual : getOWLIndividuals(expression, reasoner,reasoner.getRootOntology())) {
+				for (OWLIndividual individual : getOWLIndividuals(expression, reasoner,ontology)) {
 					try {
 						// generate arguments (it should have only 1 argument if code reaches this point)...
 						ObjectEntityInstance argument = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(this.extractName(individual));
@@ -1345,7 +1603,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				expression = this.extractName(property) + " value false";
 				
 				// execute query to obtain all individuals using that property as false
-				for (OWLIndividual individual : getOWLIndividuals(expression, reasoner,reasoner.getRootOntology())) {
+				for (OWLIndividual individual : getOWLIndividuals(expression, reasoner,ontology)) {
 					try {
 						// generate arguments (it should have only 1 argument if code reaches this point)...
 						ObjectEntityInstance argument = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(this.extractName(individual));
@@ -1376,7 +1634,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				}
 				
 				
-			} else if (reasoner.getRootOntology().containsObjectPropertyInSignature(propertyIRI, true)) {
+			} else if (ontology.containsObjectPropertyInSignature(propertyIRI, true)) {
 				// this property has a function-like format (i.e. F(x) = y) and y is not a literal data (because this is an owl object property)
 				OWLObjectProperty property = factory.getOWLObjectProperty(propertyIRI);
 				
@@ -1384,7 +1642,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				String expression = this.extractName(property) + " some Thing";
 				
 				// execute query to obtain all individuals using that property
-				for (OWLIndividual subject : getOWLIndividuals(expression, reasoner,reasoner.getRootOntology())) {
+				for (OWLIndividual subject : getOWLIndividuals(expression, reasoner,ontology)) {
 					try {
 						if (!subject.isNamed()) {
 							Debug.println(getClass(), "This version cannot use anonymous OWL individuals to fill findings.");
@@ -1428,7 +1686,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						System.err.println("But the system will keep loading other findings.");
 					}
 				}
-			} else if (reasoner.getRootOntology().containsDataPropertyInSignature(propertyIRI, true)) {
+			} else if (ontology.containsDataPropertyInSignature(propertyIRI, true)) {
 				// this property has a function-like format (i.e. F(x) = y) and y is a literal data (because this is an owl data property
 				OWLDataProperty property = factory.getOWLDataProperty(propertyIRI);
 				
@@ -1436,7 +1694,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				String expression = this.extractName(property) + " some Literal";	// we assume Literal is the top data value
 				
 				// execute query to obtain all individuals using that property
-				for (OWLIndividual subject : getOWLIndividuals(expression, reasoner,reasoner.getRootOntology())) {
+				for (OWLIndividual subject : getOWLIndividuals(expression, reasoner,ontology)) {
 					try {
 						if (!subject.isNamed()) {
 							Debug.println(getClass(), "This version cannot use anonymous OWL individuals in order to fill findings.");
@@ -1481,7 +1739,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					}
 				}
 			}
-		} else if (resident.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES) {
+		} else if ((resident.getArgumentList().size() == 2) && (resident.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES)) {
 			// boolean node with 2 arguments: this is representation of a arbitrary relation between two individuals
 			OWLObjectProperty property = factory.getOWLObjectProperty(propertyIRI);
 			
@@ -1489,7 +1747,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			String expression = this.extractName(property) + " some Thing";
 			
 			// execute query to obtain all positive individuals using that property
-			for (OWLIndividual subject : getOWLIndividuals(expression, reasoner,reasoner.getRootOntology())) {
+			for (OWLIndividual subject : getOWLIndividuals(expression, reasoner,ontology)) {
 				try {
 					if (!subject.isNamed()) {
 						Debug.println(getClass(), "This version cannot use anonymous OWL individuals in order to fill findings.");
@@ -1546,8 +1804,142 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			
 			// TODO find out an effective way to obtain negative findings
 			System.err.println("WARNING: negative finding not supported yet - assertions that " + property + " will NOT happen is NOT being loaded...");
+		} else if (resident.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES) {
+			// this is a n-ary relationship represented as a boolean node with more than 2 arguments
+
+			// Extract the OWL object property pointed by definesUncertaintyOf.
+			// At least 1 argument must be using it either in subjectIn or objectIn. 
+			// If not, by default the 1st unspecified argument will be considered as the subject of this property
+			OWLObjectProperty mainProperty = factory.getOWLObjectProperty(propertyIRI);
+			
+			// get the owl properties related (by subjectIn or objectIn) to the arguments of this node
+			Map<Argument, Map<OWLProperty, Integer>> propertiesPerArgument = 
+					getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
+			if (propertiesPerArgument == null || propertiesPerArgument.isEmpty()) {
+				// a node with no arguments mapped to OWL properties cannot have findings anyway
+				try {
+					Debug.println(getClass(), "There is no mapping specified for n-ary relationship of node " + resident);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return;
+			}
+			if (propertiesPerArgument.size() != resident.getArgumentList().size()) {
+				try {
+					Debug.println(getClass(), "The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return;
+			}
+
+			// Create expression that returns all n-tuples using the property
+			// Example 1: MTI some Thing and MTI_RPT some Thing and MTI_T some Thing
+			// Example 2: inverse inv_MTI some Thing and inverse inv_MTI_RPT some Thing and inverse inv_MTI_T some Thing
+			String expressionToParse = "";
+			// Note: we already checked at the beginning of this method that listArgument.size() == resident.getArgumentList().size()
+			for (Iterator<Entry<Argument, Map<OWLProperty, Integer>>> iterator = propertiesPerArgument.entrySet().iterator(); iterator.hasNext(); ) {
+				// I'm using an explicit iterator, because expressionToParse shall not include an "and" at the end of expression
+				Entry<Argument, Map<OWLProperty, Integer>> argumentEntry = iterator.next();
+				
+				// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
+				OWLProperty property = mainProperty;
+				boolean isSubjectIn = true;
+				// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
+				if (argumentEntry.getValue() != null) {
+					// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
+					for (Entry<OWLProperty, Integer> entry : argumentEntry.getValue().entrySet()) {
+						if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
+							isSubjectIn = false;
+							property = entry.getKey();
+							break;
+						} else if (entry.getValue().equals(IMappingArgumentExtractor.SUBJECT_CODE)) {
+							isSubjectIn = true;
+							property = entry.getKey();
+							break;
+						} 
+						// or else, entry.getValue() == IMappingArgumentExtractor.UNDEFINED_CODE), so find next
+					}
+				}
+				
+				expressionToParse += isSubjectIn?"":"inverse " + this.extractName(property) + " some Thing ";
+				if (iterator.hasNext()) {
+					// if this is not the last argument, we shall join expressions with an "and" operation
+					expressionToParse += " and ";
+				}
+			}
+			
+			Debug.println(this.getClass(), "Expression: " + expressionToParse);
+			
+			// execute query to obtain all n-tuples using that property
+			for (OWLIndividual tuple : getOWLIndividuals(expressionToParse, reasoner,ontology)) {
+				if (!tuple.isNamed()) {
+					Debug.println(getClass(), "Current version cannot use anonymous OWL individuals in order to fill findings.");
+					continue;
+				}
+				try {
+					// This will be the list of instances of the arguments of the resident node
+					List<ObjectEntityInstance> argumentInstancesList = new ArrayList<ObjectEntityInstance>();
+					
+					
+					// for each triple, extract associated values and create resident node's finding
+					for (Entry<Argument, Map<OWLProperty, Integer>> propertyEntry : propertiesPerArgument.entrySet()) {
+						// note: we assume each tuple represents a single finding (i.e. an n-tuple relates only n entities, by using n OWL properties). 
+						// Therefore, pick only 1 associated OWL object per argument.
+						
+						// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
+						OWLProperty property = mainProperty;
+						boolean isSubjectIn = true;
+						
+						// pick the OWL property to query.
+						for (Entry<OWLProperty, Integer> entry : propertyEntry.getValue().entrySet()) {
+							if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
+								isSubjectIn = false;
+								property = entry.getKey();
+								break;
+							} else if (entry.getValue().equals(IMappingArgumentExtractor.SUBJECT_CODE)) {
+								isSubjectIn = true;
+								property = entry.getKey();
+								break;
+							} 
+							// or else, entry.getValue() == IMappingArgumentExtractor.UNDEFINED_CODE), so find next
+						}
+						
+						// If property is tagged as "subject", then entity is pointing to tuple (so use inverse property to get entity). 
+						// If property is tagged as "object", then tuple is pointing to entity (so use property to get entity directly) 
+						NodeSet<OWLNamedIndividual> entityOWLIndividuals = reasoner.getObjectPropertyValues(tuple.asOWLNamedIndividual(), isSubjectIn?property.asOWLObjectProperty().getInverseProperty():property.asOWLObjectProperty());
+						if (entityOWLIndividuals != null && !entityOWLIndividuals.isEmpty()) {
+							// as previously stated, we assume each tuple represents only 1 finding, so use only the 1st entity
+							ObjectEntityInstance entityInstance = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(this.extractName(entityOWLIndividuals.getFlattened().iterator().next()));
+							argumentInstancesList.add(entityInstance);
+						}
+						
+					}
+					
+					
+					// generate finding
+					RandomVariableFinding finding = new RandomVariableFinding(
+							resident, 
+							argumentInstancesList.toArray(new ObjectEntityInstance[2]), 
+							resident.getPossibleValueByName("true").getState(), 
+							this.getDefaultMEBN()
+							);
+					// add finding
+					resident.addRandomVariableFinding(finding);
+				} catch (Exception e) {
+					e.printStackTrace();
+					// keep going on
+					System.err.println("Error in tuple " + tuple);
+					System.err.println("But the system will attempt to load other findings.");
+				}
+			}
+			
+			// TODO find out an effective way to obtain negative findings
+			System.err.println("WARNING: negative finding not supported yet - assertions that " + mainProperty + " will NOT happen is NOT being loaded...");
 		} else {
+			// this is a n-ary relationship represented as a function with more than 1 argument
 			Debug.println(this.getClass(), resident + " has a format that is not supported by this knowledge base.");
+			// TODO
 		}
 
 		// cache everything
@@ -1823,6 +2215,13 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// 7. not (ov = nonBooleanNode(<1 argument>))
 			// 8. not (nonBooleanNode(<1 argument>) = ov)
 			// TODO implement other types of formulas.
+			// 9. ov = nonBooleanNode(<2+ argument>)
+			// 9.1. const = nonBooleanNode(<2+ argument>)
+			// 10. nonBooleanNode(<2+ argument>) = ov
+			// 10.1. nonBooleanNode(<2+ argument>) = const
+			// 11. booleanNode(<3+ arguments>)
+			// 12. not booleanNode(<3+ arguments>)
+			// TODO implement other types of formulas.
 			
 			// thus, the top level operand/operator must be equalsTo, not or a node
 			if (!( (formulaTree.getNodeVariable() instanceof ResidentNode) || (formulaTree.getNodeVariable() instanceof ResidentNodePointer))
@@ -1918,6 +2317,13 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					t.printStackTrace();
 				}
 			}
+			
+			// 9. TODO
+			
+			/* 
+			 * Example:
+			 * MTI some Thing and MTI_RPT some Report and MTI_T some TimeStep or inverse MTI some Thing and MTI_RPT some Report and MTI_T some TimeStep
+			 */
 			
 			
 			// the "not" cases can be solved recursively by passing "not isToSolveAsPositiveOperation" as argument
@@ -3516,6 +3922,28 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	public void setSearchContextCache(
 			Map<ContextNode, Map<Collection<OVInstance>, SearchResult>> searchContextCache) {
 		this.searchContextCache = searchContextCache;
+	}
+
+	/**
+	 * This object is used in order to handle the mappings (between OWL and MEBN) of arguments of nodes.
+	 * The method {@link IMappingArgumentExtractor#getOWLPropertiesOfArgumentsOfSelectedNode(unbbayes.prs.INode, MultiEntityBayesianNetwork, OWLOntology)}
+	 * is used for example in {@link #searchFinding(ResidentNode, Collection)} and {@link #evaluateSearchContextNodeFormula(ContextNode, List)} in order to get what
+	 * OWL properties are referenced by objectIn or subjectIn.
+	 * @return the mappingArgumentExtractor
+	 */
+	public IMappingArgumentExtractor getMappingArgumentExtractor() {
+		return mappingArgumentExtractor;
+	}
+
+	/**
+	 *  This object is used in order to handle the mappings (between OWL and MEBN) of arguments of nodes.
+	 * The method {@link IMappingArgumentExtractor#getOWLPropertiesOfArgumentsOfSelectedNode(unbbayes.prs.INode, MultiEntityBayesianNetwork, OWLOntology)}
+	 * is used for example in {@link #searchFinding(ResidentNode, Collection)} and {@link #evaluateSearchContextNodeFormula(ContextNode, List)} in order to get what
+	 * OWL properties are referenced by objectIn or subjectIn.
+	 * @param mappingArgumentExtractor the mappingArgumentExtractor to set
+	 */
+	public void setMappingArgumentExtractor(IMappingArgumentExtractor mappingArgumentExtractor) {
+		this.mappingArgumentExtractor = mappingArgumentExtractor;
 	}
 	
 }
