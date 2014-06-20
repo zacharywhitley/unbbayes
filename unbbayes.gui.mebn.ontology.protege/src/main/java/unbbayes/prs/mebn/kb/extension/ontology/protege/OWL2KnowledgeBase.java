@@ -1803,9 +1803,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			}
 			
 			// TODO find out an effective way to obtain negative findings
-			System.err.println("WARNING: negative finding not supported yet - assertions that " + property + " will NOT happen is NOT being loaded...");
+			System.err.println("WARNING: negative finding not supported yet - assertions that " + property + " will NOT happen will NOT be loaded in MEBN...");
 		} else if (resident.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES) {
 			// this is a n-ary relationship represented as a boolean node with more than 2 arguments
+
 
 			// Extract the OWL object property pointed by definesUncertaintyOf.
 			// At least 1 argument must be using it either in subjectIn or objectIn. 
@@ -1826,7 +1827,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			}
 			if (propertiesPerArgument.size() != resident.getArgumentList().size()) {
 				try {
-					Debug.println(getClass(), "The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
+					System.err.println("The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
 				} catch (Throwable t) {
 					t.printStackTrace();
 				}
@@ -1915,17 +1916,24 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						}
 						
 					}
+
+					// make sure we could fill all arguments of resident node from the n-tuple (i.e. check that n == number of arguments)
+					if (argumentInstancesList.size() == resident.getArgumentList().size()) {
+						// generate finding
+						RandomVariableFinding finding = new RandomVariableFinding(
+								resident, 
+								argumentInstancesList.toArray(new ObjectEntityInstance[argumentInstancesList.size()]), 
+								resident.getPossibleValueByName("true").getState(), 			// in "negative" finding, this will be set to "false"
+								this.getDefaultMEBN()
+								);
+						// add finding
+						resident.addRandomVariableFinding(finding);
+					} else {
+						// print error message, but keep going on in order to load other findings
+						System.err.println("Node " + resident + " has " + resident.getArgumentList().size() 
+								+ " arguments, but found a finding represented as " + argumentInstancesList.size() + "-tuple: " + tuple);
+					}
 					
-					
-					// generate finding
-					RandomVariableFinding finding = new RandomVariableFinding(
-							resident, 
-							argumentInstancesList.toArray(new ObjectEntityInstance[2]), 
-							resident.getPossibleValueByName("true").getState(), 
-							this.getDefaultMEBN()
-							);
-					// add finding
-					resident.addRandomVariableFinding(finding);
 				} catch (Exception e) {
 					e.printStackTrace();
 					// keep going on
@@ -1934,12 +1942,250 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				}
 			}
 			
-			// TODO find out an effective way to obtain negative findings
-			System.err.println("WARNING: negative finding not supported yet - assertions that " + mainProperty + " will NOT happen is NOT being loaded...");
+			// Similarly, execute query to obtain all n-tuples of negative findings (those explicitly stating that the tuples won't happen)
+			expressionToParse = "not ( " + expressionToParse + " )";
+			Debug.println(this.getClass(), "Expression: " + expressionToParse);
+			for (OWLIndividual tuple : getOWLIndividuals(expressionToParse, reasoner,ontology)) {
+				if (!tuple.isNamed()) {
+					Debug.println(getClass(), "Current version cannot use anonymous OWL individuals in order to fill findings.");
+					continue;
+				}
+				// extract name (ID) of tuple object in advance
+				String tupleName = this.extractName(tuple);
+				try {
+					// This will be the list of instances of the arguments of the resident node
+					List<ObjectEntityInstance> argumentInstancesList = new ArrayList<ObjectEntityInstance>();
+					
+					
+					// for each triple, extract associated values and create resident node's finding
+					for (Entry<Argument, Map<OWLProperty, Integer>> propertyEntry : propertiesPerArgument.entrySet()) {
+						// note: we assume each tuple represents a single finding (i.e. an n-tuple relates only n entities, by using n OWL properties). 
+						// Therefore, pick only 1 associated OWL object per argument.
+						
+						// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
+						OWLProperty property = mainProperty;
+						boolean isSubjectIn = true;
+						
+						// pick the OWL property to query.
+						for (Entry<OWLProperty, Integer> entry : propertyEntry.getValue().entrySet()) {
+							if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
+								isSubjectIn = false;
+								property = entry.getKey();
+								break;
+							} else if (entry.getValue().equals(IMappingArgumentExtractor.SUBJECT_CODE)) {
+								isSubjectIn = true;
+								property = entry.getKey();
+								break;
+							} 
+							// or else, entry.getValue() == IMappingArgumentExtractor.UNDEFINED_CODE), so find next
+						}
+						
+						Collection<OWLIndividual> entityOWLIndividuals = null;
+						if (isSubjectIn) {
+							// If property is tagged as "subject", then entity is pointing to tuple (so use inverse property to get entity). 
+							entityOWLIndividuals = getOWLIndividuals("not ( inverse " + this.extractName(property) + " value " + tupleName + " )", reasoner, ontology);
+						} else {
+							// If property is tagged as "object", then tuple is pointing to entity (so use property to get entity directly) 
+							entityOWLIndividuals = getOWLIndividuals("not ( " + this.extractName(property) + " value " + tupleName + " )", reasoner, ontology);
+						}
+						if (entityOWLIndividuals != null && !entityOWLIndividuals.isEmpty()) {
+							// as previously stated, we assume each tuple represents only 1 finding, so use only the 1st entity
+							ObjectEntityInstance entityInstance = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(this.extractName(entityOWLIndividuals.iterator().next()));
+							if (entityInstance != null) {
+								argumentInstancesList.add(entityInstance);
+							} else {
+								System.err.println("An equivalent entity was not found in current MEBN project: " + entityOWLIndividuals);
+							}
+						}
+					}
+					
+					// make sure we could fill all arguments of resident node from the n-tuple (i.e. check that n == number of arguments)
+					if (argumentInstancesList.size() == resident.getArgumentList().size()) {
+						// generate finding
+						RandomVariableFinding finding = new RandomVariableFinding(
+								resident, 
+								argumentInstancesList.toArray(new ObjectEntityInstance[argumentInstancesList.size()]), 
+								resident.getPossibleValueByName("false").getState(), 			// this is the part that differs from "positive" finding
+								this.getDefaultMEBN()
+								);
+						// add finding
+						resident.addRandomVariableFinding(finding);
+					} else {
+						// print error message, but keep going on in order to load other findings
+						System.err.println("Node " + resident + " has " + resident.getArgumentList().size() 
+								+ " arguments, but found a finding represented as " + argumentInstancesList.size() + "-tuple: " + tuple);
+					}
+					
+				} catch (Exception e) {
+					e.printStackTrace();
+					// keep going on
+					System.err.println("Error in tuple " + tuple);
+					System.err.println("But the system will attempt to load other findings.");
+				}
+			}
+			
 		} else {
 			// this is a n-ary relationship represented as a function with more than 1 argument
-			Debug.println(this.getClass(), resident + " has a format that is not supported by this knowledge base.");
-			// TODO
+
+			// Extract the OWL object property pointed by definesUncertaintyOf.
+			// At least 1 argument must be using it either in subjectIn or objectIn. 
+			// If not, by default the 1st unspecified argument will be considered as the subject of this property
+			OWLObjectProperty mainProperty = factory.getOWLObjectProperty(propertyIRI);
+			
+			// get the owl properties related (by subjectIn or objectIn) to the arguments of this node
+			Map<Argument, Map<OWLProperty, Integer>> propertiesPerArgument = 
+					getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
+			if (propertiesPerArgument == null || propertiesPerArgument.isEmpty()) {
+				// a node with no arguments mapped to OWL properties cannot have findings anyway
+				try {
+					Debug.println(getClass(), "There is no mapping specified for n-ary relationship of node " + resident);
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return;
+			}
+			if (propertiesPerArgument.size() != resident.getArgumentList().size()) {
+				try {
+					System.err.println("The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+				return;
+			}
+
+			// Create expression that returns all n-tuples using the property.
+			// NOTE that the mainProperty (referenced by definesUncertaintyOf) by default is pointing to a possible state of resident node, 
+			// so we do not use "inverse" for it in order to find the OWL instances which represents the n-tuples.
+			// Example 1: MTI some Thing and MTI_RPT some Thing and MTI_T some Thing
+			// Example 2: MTI some Thing and inverse inv_MTI_RPT some Thing and inverse inv_MTI_T some Thing
+			String expressionToParse = this.extractName(mainProperty) + " some Thing and ";
+			// Note: we already checked at the beginning of this method that listArgument.size() == resident.getArgumentList().size()
+			for (Iterator<Entry<Argument, Map<OWLProperty, Integer>>> iterator = propertiesPerArgument.entrySet().iterator(); iterator.hasNext(); ) {
+				// I'm using an explicit iterator, because expressionToParse shall not include an "and" at the end of expression
+				Entry<Argument, Map<OWLProperty, Integer>> argumentEntry = iterator.next();
+				
+				// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
+				OWLProperty property = mainProperty;
+				boolean isSubjectIn = true;
+				// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
+				if (argumentEntry.getValue() != null) {
+					// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
+					for (Entry<OWLProperty, Integer> entry : argumentEntry.getValue().entrySet()) {
+						if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
+							isSubjectIn = false;
+							property = entry.getKey();
+							break;
+						} else if (entry.getValue().equals(IMappingArgumentExtractor.SUBJECT_CODE)) {
+							isSubjectIn = true;
+							property = entry.getKey();
+							break;
+						} 
+						// or else, entry.getValue() == IMappingArgumentExtractor.UNDEFINED_CODE), so find next
+					}
+				}
+				
+				expressionToParse += isSubjectIn?"":"inverse " + this.extractName(property) + " some Thing ";
+				if (iterator.hasNext()) {
+					// if this is not the last argument, we shall join expressions with an "and" operation
+					expressionToParse += " and ";
+				}
+			}
+			
+			Debug.println(this.getClass(), "Expression: " + expressionToParse);
+			
+			// execute query to obtain all n-tuples that uses mainProperty
+			for (OWLIndividual tuple : getOWLIndividuals(expressionToParse, reasoner,ontology)) {
+				if (!tuple.isNamed()) {
+					Debug.println(getClass(), "Current version cannot use anonymous OWL individuals in order to fill findings.");
+					continue;
+				}
+				try {
+					// This will be the list of instances of the arguments of the resident node
+					List<ObjectEntityInstance> argumentInstancesList = new ArrayList<ObjectEntityInstance>();
+					
+					// for each triple, extract associated values and create resident node's finding
+					for (Entry<Argument, Map<OWLProperty, Integer>> propertyEntry : propertiesPerArgument.entrySet()) {
+						// note: we assume each tuple represents a single finding (i.e. an n-tuple relates only n entities, by using n OWL properties). 
+						// Therefore, pick only 1 associated OWL object per argument.
+						
+						// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
+						OWLProperty property = mainProperty;
+						boolean isSubjectIn = true;
+						
+						// pick the OWL property to query.
+						for (Entry<OWLProperty, Integer> entry : propertyEntry.getValue().entrySet()) {
+							if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
+								isSubjectIn = false;
+								property = entry.getKey();
+								break;
+							} else if (entry.getValue().equals(IMappingArgumentExtractor.SUBJECT_CODE)) {
+								isSubjectIn = true;
+								property = entry.getKey();
+								break;
+							} 
+							// or else, entry.getValue() == IMappingArgumentExtractor.UNDEFINED_CODE), so find next
+						}
+						
+						// If property is tagged as "subject", then entity is pointing to tuple (so use inverse property to get entity). 
+						// If property is tagged as "object", then tuple is pointing to entity (so use property to get entity directly) 
+						NodeSet<OWLNamedIndividual> entityOWLIndividuals = reasoner.getObjectPropertyValues(tuple.asOWLNamedIndividual(), isSubjectIn?property.asOWLObjectProperty().getInverseProperty():property.asOWLObjectProperty());
+						if (entityOWLIndividuals != null && !entityOWLIndividuals.isEmpty()) {
+							// as previously stated, we assume each tuple represents only 1 finding, so use only the 1st entity
+							ObjectEntityInstance entityInstance = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(this.extractName(entityOWLIndividuals.getFlattened().iterator().next()));
+							argumentInstancesList.add(entityInstance);
+						}
+						
+					}
+
+					
+					// make sure we could fill all arguments of resident node from the n-tuple (i.e. check that n == number of arguments)
+					if (argumentInstancesList.size() == resident.getArgumentList().size()) {
+						
+						// extract the "possible state" related to the tuple, by using mainProperty
+						Set<OWLNamedIndividual> possibleStates = reasoner.getObjectPropertyValues(tuple.asOWLNamedIndividual(), mainProperty).getFlattened();
+						
+						String nameOfStateInOntology = null;			// name of the state specified by the tuple OWL individual
+						StateLink possibleStateLink = null;				// corresponding entity in MEBN model
+						
+						// we assume there is only 1 tuple per finding, so we assume there is only 1 possible state associated with current tuple.
+						if (!possibleStates.isEmpty()) {
+							// so use 1st owl individual
+							nameOfStateInOntology = this.extractName(possibleStates.iterator().next());
+							possibleStateLink = resident.getPossibleValueByName(nameOfStateInOntology);	
+						} else {
+							Debug.println(getClass(), "Finding of node " + resident + " is not specifying any state: " + tuple);
+						}
+						
+						if (possibleStateLink != null && possibleStateLink.getState() != null) {
+							// generate finding
+							RandomVariableFinding finding = new RandomVariableFinding(
+									resident, 
+									argumentInstancesList.toArray(new ObjectEntityInstance[argumentInstancesList.size()]), 
+									possibleStateLink.getState(),
+									this.getDefaultMEBN()
+								);
+							// add finding
+							resident.addRandomVariableFinding(finding);
+						} else {
+							Debug.println(getClass(), "Finding of node " + resident + " is specifying an invalid state " + nameOfStateInOntology + " in tuple " + tuple);
+						}
+					} else {
+						// print error message, but keep going on in order to load other findings
+						System.err.println("Node " + resident + " has " + resident.getArgumentList().size() 
+								+ " arguments, but found a finding represented as " + argumentInstancesList.size() + "-tuple: " + tuple);
+					}
+					
+				} catch (Exception e) {
+					e.printStackTrace();
+					// keep going on
+					System.err.println("Error in tuple " + tuple);
+					System.err.println("But the system will attempt to load other findings.");
+				}
+			}
+		
+			// TODO find out an effective way to obtain negative findings
+			System.err.println("WARNING: negative finding not supported yet - assertions that " + mainProperty + " will NOT happen is NOT being loaded...");
+		
 		}
 
 		// cache everything
