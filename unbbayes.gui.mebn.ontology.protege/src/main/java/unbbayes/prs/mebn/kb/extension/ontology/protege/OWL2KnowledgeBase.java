@@ -78,8 +78,6 @@ import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.util.Debug;
 
-import com.sun.xml.bind.v2.TODO;
-
 /**
  * This knowledge base delegates inference to {@link OWLReasoner}.
  * This class reuses {@link OWLReasoner} from {@link MultiEntityBayesianNetwork#getStorageImplementor()} if necessary (when no reasoner is provided).
@@ -2567,7 +2565,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			}
 			
 			// 9. TODO
-//			asdf
+			
 			/* 
 			 * Example:
 			 * MTI some Thing and MTI_RPT some Report and MTI_T some TimeStep or inverse MTI some Thing and MTI_RPT some Report and MTI_T some TimeStep
@@ -3014,15 +3012,22 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						break;
 					}
 				}
+				
+				// use iterators, because we want to append "and" to expression only if there is next element.
+				List<Iterator<OVInstance>> iterators = Collections.EMPTY_LIST;
 				if (hasOVWithMultipleValues) {
 					// TODO iterate over combinations of possible values if there are more than 1 value for the same OV.
-					// For example, if ov1 = {a,b} and ov2={c}, then iterate on (a,c) and (b,c)
-					throw new UnsupportedOperationException("Current version of KB only allows 1 value per OV");
+					// For example, if ov1 = {a,b} and ov2={c}, then iterate on [a,c], and then [b,c]. 
+					// That is, create an iterator for [a,c], then another iterator for [a,c], and then just include them in the list "iterators"
+					throw new UnsupportedOperationException("Current version of KB only allows an ordinary variable to have only 1 known value.");
 				} else {
+					iterators = Collections.singletonList(knownValues.iterator());
+				}
+
+				for (Iterator<OVInstance> iterator : iterators) {
 					
-					// use an iterator, because we want to append "and" to expression only if there is next element.
-					for (Iterator<OVInstance> it = knownValues.iterator(); it.hasNext(); ) {
-						OVInstance knownValue = it.next();
+					while ( iterator.hasNext() ) {
+						OVInstance knownValue = iterator.next();
 						
 						if (isToSolveAsPositiveOperation) {
 							expression += " not ( ";
@@ -3046,26 +3051,31 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 							expression += " ) ";
 						}
 						
-						if (it.hasNext()) {
+						if (iterator.hasNext()) {
 							expression += " and ";
 						}
+						
 					}
 					
 					// do query
-					return this.buildNTupleSearchResultFromExpression(
-							booleanResidentNode,	// node being evaluated
-							expression, 	// expression for query
-							reasoner, 		// owl reasoner to use
-							isToAddKnownValuesToSearchResult, 	// if the returned result should also include the known values
-							knownValues, 	// the values (OV and individuals) currently known
-							knownSearchResults.getOrdinaryVariableSequence(),	// the order of OVs in the returned results 
-							null												// the OV whose value will be filled with possible state of resident node, instead of arguments.
+					SearchResult result = this.buildNTupleSearchResultFromExpression(
+								booleanResidentNode,	// node being evaluated
+								expression, 	// expression for query
+								reasoner, 		// owl reasoner to use
+								isToAddKnownValuesToSearchResult, 	// if the returned result should also include the known values
+								knownValues, 	// the values (OV and individuals) currently known
+								knownSearchResults.getOrdinaryVariableSequence(),	// the order of OVs in the returned results 
+								null												// the OV whose value will be filled with possible state of resident node, instead of arguments.
 							);
-				}
+					
+					// append to final results
+					for (String[] values : result.getValuesResultList()) {
+						knownSearchResults.addResult(values);
+					}
+					
+				}	// end of for each iterator
 				
-				
-				
-			}
+			}	// end of else
 			
 			
 		} catch (Exception e) {
@@ -3216,20 +3226,144 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	
 
 	/**
-	 * 
-	 * @param resident
-	 * @param expression
-	 * @param reasoner
-	 * @param isToAddKnownValuesToSearchResult
-	 * @param knownValues
-	 * @param ordinaryVariableSequence
+	 * @param resident : the node which represents the n-tuples being queried by expression. {@link OWLProperty} in {@link #getMappingArgumentExtractor()}
+	 * will be then used to query each values of OVs.
+	 * @param expression : manchester syntax query for n-tuples
+	 * @param reasoner : owl DL reasoner to be used to query the n-tuple owl instances.
+	 * @param isToAddKnownValuesToSearchResult : if true, the results will include values in knownValues
+	 * @param knownValues : values assumed to be known.
+	 * @param orderOfOrdinaryVariables : ordering of ordinary variables to be considered in the returned result. See {@link SearchResult}
 	 * @param possibleStateOV: OV in ordinaryVariableSequence whose value will be filled with possible states of resident node (instead of being filled with values of resident's arguments).
-	 * @return
+	 * @return an instance of {@link SearchResult} filled with results of query "expression". The ordinary variables will be sorted accordingly to ordinaryVariableSequence.
 	 */
 	private SearchResult buildNTupleSearchResultFromExpression( ResidentNode resident, String expression, OWLReasoner reasoner, boolean isToAddKnownValuesToSearchResult,
-			List<OVInstance> knownValues, OrdinaryVariable[] ordinaryVariableSequence, OrdinaryVariable possibleStateOV) {
-		// TODO Auto-generated method stub
-		return null;
+			List<OVInstance> knownValues, OrdinaryVariable[] orderOfOrdinaryVariables, OrdinaryVariable possibleStateOV) {
+		
+		// this variable will be returned
+		SearchResult ret = null;
+		
+		// do query for n-tuples
+		Collection<OWLIndividual> tuples = getOWLIndividuals(expression, reasoner,reasoner.getRootOntology());
+		
+		// add the query results of ov's possible values to knownSearchResults if the query has returned something
+		if (tuples != null && !tuples.isEmpty()) {
+			// prepare return
+			ret = new SearchResult(orderOfOrdinaryVariables);
+			
+			// extract IRI and the OWL property related to resident node by "defineUncertaintyOf"
+			IRI booleanNodeIRI = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(this.getDefaultMEBN(),resident);
+			OWLProperty mainProperty = null;
+			if (booleanNodeIRI == null) {
+				throw new IllegalArgumentException(resident + " Has no related OWL property. This KB can only solve findings that has a reference to \"definesUncertaintyOf\"");
+			} else {
+				// extract the property by checking existence
+				if (reasoner.getRootOntology().containsObjectPropertyInSignature(booleanNodeIRI, true)) {
+					// this is an object property
+					mainProperty = reasoner.getRootOntology().getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(booleanNodeIRI);
+				} else if (reasoner.getRootOntology().containsDataPropertyInSignature(booleanNodeIRI, true)) {
+					// this is a data property
+					mainProperty = reasoner.getRootOntology().getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(booleanNodeIRI);
+				} else {
+					throw new IllegalArgumentException("\"definesUncertaintyOf\" " + resident + " is " + booleanNodeIRI + ", which is not an OWL property.");
+				}
+			}
+			
+			// extract the mapping from arguments to owl properties, so that we can extract the values related to the tuples we found
+			Map<Argument, Map<OWLProperty, Integer>> owlPropertiesOfArgumentsOfSelectedNode = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), reasoner.getRootOntology());
+			// we need a mapping from OV to properties, instead of argument to properties, so convert.
+			Map<OrdinaryVariable, Map<OWLProperty, Integer>> propertyMapping = new HashMap<OrdinaryVariable, Map<OWLProperty,Integer>>();
+			if (owlPropertiesOfArgumentsOfSelectedNode != null) {
+				for (Entry<Argument, Map<OWLProperty, Integer>> entry : owlPropertiesOfArgumentsOfSelectedNode.entrySet()) {
+					propertyMapping.put(entry.getKey().getOVariable(), entry.getValue());
+				}
+			}
+			
+			// extract the related entities (OWL instances) from the tuples
+			for (OWLIndividual tuple : tuples) {
+				
+				// TODO allow n-tuples to use anonymous owl individual
+				if (!tuple.isNamed()) {
+					Debug.println(getClass(), "Found anonymous n-tuple individual related to resident node " + resident + ": " + tuple);
+					continue;
+				}
+				
+				// TODO make sure result is initialized with null
+				String[] result = new String[orderOfOrdinaryVariables.length];
+				
+				// extract the entity for each ov
+				for (int i = 0; i < orderOfOrdinaryVariables.length; i++) {
+					OrdinaryVariable ov = orderOfOrdinaryVariables[i];
+					
+					// extract the 1st valid property mapped in propertyMapping
+					OWLProperty property = mainProperty;	// default value is mainProperty -- the one related to definesUncertaintyOf
+					boolean isSubject = false;				// by default, entity is an object/range (not a subject/domain) of the mapped property.
+					for (Entry<OWLProperty, Integer> entry : propertyMapping.get(ov).entrySet()) {
+						if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
+							property = entry.getKey();
+							isSubject = false;
+							break;
+						} else if (entry.getValue().equals(IMappingArgumentExtractor.SUBJECT_CODE)) {
+							property = entry.getKey();
+							isSubject = true;
+							break;
+						} else {
+							System.err.println("Unknown type of mapping. Argument " + ov + " of node " + resident + " is mapped to " + entry.getKey());
+						}
+					}
+					
+					if (property == null) {
+						System.err.println("Unable to extract mapping for OV " + ov + " of node " + resident + ", but will keep loading other findings.");
+						continue;
+					}
+					
+					// query the entity. 
+					if (isSubject) {
+						// we need to use inverse property
+						Collection<OWLIndividual> owlIndividuals = getOWLIndividuals("inverse " + extractName(property) + " value " + extractName(tuple), reasoner, reasoner.getRootOntology());
+						// We assume each tuple is using one property only once, so extract only the 1st individual
+						if (owlIndividuals != null && !owlIndividuals.isEmpty()) {
+							result[i] = this.extractName(owlIndividuals.iterator().next());
+						}
+					} else {
+						// we can query the property directly
+						if (property.isDataPropertyExpression()) {
+							Set<OWLLiteral> dataPropertyValues = reasoner.getDataPropertyValues(tuple.asOWLNamedIndividual(), property.asOWLDataProperty());
+							if (dataPropertyValues != null && !dataPropertyValues.isEmpty() ) {
+								result[i] = dataPropertyValues.iterator().next().getLiteral();
+							}
+						} else {
+							NodeSet<OWLNamedIndividual> owlIndividuals = reasoner.getObjectPropertyValues(tuple.asOWLNamedIndividual(), property.asOWLObjectProperty());
+							if (owlIndividuals != null && !owlIndividuals.isEmpty()) {
+								result[i] = this.extractName(owlIndividuals.getFlattened().iterator().next());
+							}
+						}
+					}
+					
+				}
+				
+				// if we are querying a non-boolean resident node (possibleStateOV is non-null), query the main property and set to possibleStateOV
+				if (possibleStateOV != null) {
+					NodeSet<OWLNamedIndividual> states = reasoner.getObjectPropertyValues(tuple.asOWLNamedIndividual(), mainProperty.asOWLObjectProperty());
+					if (states != null && !states.isEmpty()) {
+						// search the correct index to insert obtained value
+						for (int i = 0; i < orderOfOrdinaryVariables.length; i++) {
+							if (orderOfOrdinaryVariables[i].equals(possibleStateOV)) {
+								// again, we assume each tuple is using the same property only once
+								result[i] = this.extractName(states.getFlattened().iterator().next());
+								// we assume there are no duplicates
+								break;	 // TODO check for duplicates
+							}
+						}
+					}	
+				}
+				
+				ret.addResult(result);
+				
+			}	// end of for each tuple
+			
+		}	// end of if tuple is not empty
+		
+		return ret;
 	}
 
 	/**
