@@ -30166,6 +30166,109 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	/**
+	 * Test if I can change probability from [0,X,0,Y,0] to [0,X',0,Y',0]
+	 */
+	public final void testMultipleChoiceSomeStatesInZero() {
+		engine.initialize();
+		
+		engine.addQuestion(null, new Date(), 1, 3, null);
+		engine.addQuestion(null, new Date(), 'M', 5, null);
+		
+		engine.addQuestionAssumption(null, new Date(), 'M', Collections.singletonList(1L),null);
+		
+		assertEquals(engine.getProbabilisticNetwork().getNodeCount(),2);
+		assertNotNull(engine.getProbabilisticNetwork().getNode("1"));
+		assertNotNull(engine.getProbabilisticNetwork().getNode(""+((long)'M')));
+		
+		// start prior [0,X,0,Y,0]
+		float x = (float) Math.random();
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(0f);
+		newValues.add(x);
+		newValues.add(0f);
+		newValues.add(1f-x);
+		newValues.add(0f);
+		engine.addTrade(null, new Date(), "", 0, 'M', newValues , null, null, true);
+		List<Float> probList = engine.getProbList(1, null, null);
+		assertEquals(3,probList.size());
+		assertEquals(1f/3f,probList.get(0),.000001);
+		assertEquals(1f/3f,probList.get(1),.000001);
+		assertEquals(1f/3f,probList.get(2),.000001);
+		probList = engine.getProbList('M', null, null);
+		assertEquals(5,probList.size());
+		assertEquals(0f,probList.get(0),.000001);
+		assertEquals(x,probList.get(1),.000001);
+		assertEquals(0f,probList.get(2),.000001);
+		assertEquals(1-x,probList.get(3),.000001);
+		assertEquals(0f,probList.get(4),.000001);
+		
+		// change to [0,X',0,Y',0]
+		x = (float) Math.random();
+		newValues = new ArrayList<Float>();
+		newValues.add(0f);
+		newValues.add(x);
+		newValues.add(0f);
+		newValues.add(1f-x);
+		newValues.add(0f);
+		engine.addTrade(null, new Date(), "", 0, 'M', newValues , null, null, true);
+		probList = engine.getProbList(1, null, null);
+		assertEquals(3,probList.size());
+		assertEquals(1f/3f,probList.get(0),.000001);
+		assertEquals(1f/3f,probList.get(1),.000001);
+		assertEquals(1f/3f,probList.get(2),.000001);
+		probList = engine.getProbList('M', null, null);
+		assertEquals(5,probList.size());
+		assertEquals(0f,probList.get(0),.000001);
+		assertEquals(x,probList.get(1),.000001);
+		assertEquals(0f,probList.get(2),.000001);
+		assertEquals(1-x,probList.get(3),.000001);
+		assertEquals(0f,probList.get(4),.000001);
+		
+		// also change some conditionals too
+		
+		newValues = new ArrayList<Float>();
+		newValues.add(0f);
+		newValues.add(.3f);
+		newValues.add(0f);
+		newValues.add(.7f);
+		newValues.add(0f);
+		engine.addTrade(null, new Date(), "", 0, 'M', newValues , Collections.singletonList(1L), Collections.singletonList(0), true);
+		probList = engine.getProbList(1, null, null);
+		assertEquals(3,probList.size());
+		assertEquals(1f/3f,probList.get(0),.000001);
+		assertEquals(1f/3f,probList.get(1),.000001);
+		assertEquals(1f/3f,probList.get(2),.000001);
+		probList = engine.getProbList('M', Collections.singletonList(1L), Collections.singletonList(0));
+		assertEquals(5,probList.size());
+		assertEquals(.0f,probList.get(0),.000001);
+		assertEquals(.3f,probList.get(1),.000001);
+		assertEquals(.0f,probList.get(2),.000001);
+		assertEquals(.7f,probList.get(3),.000001);
+		assertEquals(.0f,probList.get(4),.000001);
+		
+		newValues = new ArrayList<Float>();
+		newValues.add(0f);
+		newValues.add(.5f);
+		newValues.add(0f);
+		newValues.add(.5f);
+		newValues.add(0f);
+		engine.addTrade(null, new Date(), "", 0, 'M', newValues , Collections.singletonList(1L), Collections.singletonList(1), true);
+		probList = engine.getProbList(1, null, null);
+		assertEquals(3,probList.size());
+		assertEquals(1f/3f,probList.get(0),.000001);
+		assertEquals(1f/3f,probList.get(1),.000001);
+		assertEquals(1f/3f,probList.get(2),.000001);
+		probList = engine.getProbList('M', Collections.singletonList(1L), Collections.singletonList(1));
+		assertEquals(5,probList.size());
+		assertEquals(.0f,probList.get(0),.000001);
+		assertEquals(.5f,probList.get(1),.000001);
+		assertEquals(.0f,probList.get(2),.000001);
+		assertEquals(.5f,probList.get(3),.000001);
+		assertEquals(.0f,probList.get(4),.000001);
+		
+	}
+	
+	/**
 	 * Test method for {@link MarkovEngineImpl#exportState()}
 	 * and {@link MarkovEngineImpl#importState(String)}
 	 * for 1000 vars and randomly created arcs (max 10 parents)

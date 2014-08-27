@@ -6965,10 +6965,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			List<Float> ret = new ArrayList<Float>(newValues.size());
 			for (int i = 0; i < newValues.size(); i++) {
 				if (oldValues.get(i).equals(0f) && newValues.get(i)> 0f) {
-					throw new IllegalArgumentException("Probability of question " + questionId + " given " + assumptionIds + "=" + assumedStates + " has probability " + oldValues + " (it's settled), thus cannot be changed.");
+					throw new IllegalArgumentException("Probability of question " + questionId + " given " + assumptionIds + "=" + assumedStates + " has probability " + oldValues + " (there is a 0% state being changed), thus cannot be changed.");
 				}
 				if (oldValues.get(i) >= 1f) {
-					throw new IllegalArgumentException("Probability of question " + questionId + " given " + assumptionIds + "=" + assumedStates + " has probability " + oldValues + " (it's settled), thus cannot be changed.");
+					throw new IllegalArgumentException("Probability of question " + questionId + " given " + assumptionIds + "=" + assumedStates + " has probability " + oldValues + ". A 100% state was detected, thus other states cannot be changed.");
 				}
 				// probs and assets are all supposedly related by indexes
 				if (newValues.get(i) == null) {
@@ -7157,15 +7157,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (child.hasEvidence()) {
 			throw new IllegalArgumentException("Question " + child + " is already resolved and cannot be changed.");
 		}
-		for (int i = 0; i < child.getStatesSize(); i++) {
-			if (child.getMarginalAt(i) == 0.0f || child.getMarginalAt(i) == 1.0f) {
-				if (isToThrowExceptionInTradesToResolvedQuestions()) {
-					throw new IllegalArgumentException("State " + i + " of question " + child + " given " + assumptionIds +  " = " + assumedStates + " has probability " + child.getMarginalAt(i) + " and cannot be changed.");
-				} else {
-					return null;
-				}
-			}
-		}
+//		for (int i = 0; i < child.getStatesSize(); i++) {
+//			if (child.getMarginalAt(i) == 0.0f || child.getMarginalAt(i) == 1.0f) {
+//				if (isToThrowExceptionInTradesToResolvedQuestions()) {
+//					throw new IllegalArgumentException("State " + i + " of question " + child + " given " + assumptionIds +  " = " + assumedStates + " has probability " + child.getMarginalAt(i) + " and cannot be changed.");
+//				} else {
+//					return null;
+//				}
+//			}
+//		}
 		
 		
 		// this var will store the correct size of cpd. If negative, owner of the cpd was not found.
@@ -12697,7 +12697,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)} will
 	 * throw exception when the question has probability 0 or 1 in any state
 	 * @return the isToThrowExceptionInTradesToResolvedQuestions
+	 * @deprecated this is not used anymore
 	 */
+	@Deprecated
 	public boolean isToThrowExceptionInTradesToResolvedQuestions() {
 		return isToThrowExceptionInTradesToResolvedQuestions;
 	}
@@ -12706,7 +12708,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)} will
 	 * throw exception when the question has probability 0 or 1 in any state
 	 * @param isToThrowExceptionInTradesToResolvedQuestions the isToThrowExceptionInTradesToResolvedQuestions to set
+	 * @deprecated this is not used anymore
 	 */
+	@Deprecated
 	public void setToThrowExceptionInTradesToResolvedQuestions(
 			boolean isToThrowExceptionInTradesToResolvedQuestions) {
 		this.isToThrowExceptionInTradesToResolvedQuestions = isToThrowExceptionInTradesToResolvedQuestions;
