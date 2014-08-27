@@ -30266,6 +30266,55 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(.5f,probList.get(3),.000001);
 		assertEquals(.0f,probList.get(4),.000001);
 		
+		// disallow edit that changes 0% to anything else
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(0f);
+		newValues.add(.2f);
+		newValues.add(.3f);
+		newValues.add(.4f);
+		// keep backup to check if probability did not change
+		Map<Long, List<Float>> probBackup = engine.getProbLists(null, null, null);
+		try {
+			engine.addTrade(null, new Date(), "", 0, 'M', newValues , null, null, true);
+			fail("Should disallow this edit");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		// check that probability did not change
+		assertEquals(probBackup.size(), engine.getProbLists(null, null, null).entrySet().size());
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			probList = entry.getValue();
+			List<Float> probListOriginal = probBackup.get(entry.getKey());
+			assertEquals(probListOriginal.size(), probList.size());
+			for (int i = 0; i < probList.size(); i++) {
+				assertEquals(probListOriginal.get(i),probList.get(i),.000001);
+			}
+		}
+		
+		newValues = new ArrayList<Float>();
+		newValues.add(1f/5f);
+		newValues.add(1f/5f);
+		newValues.add(1f/5f);
+		newValues.add(1f/5f);
+		newValues.add(1f/5f);
+		try {
+			engine.addTrade(null, new Date(), "", 0, 'M', newValues , Collections.singletonList(1L), Collections.singletonList(1), true);
+			fail("Should disallow this edit");
+		} catch (IllegalArgumentException e) {
+			// OK
+		}
+		
+		// check that probability did not change
+		assertEquals(probBackup.size(), engine.getProbLists(null, null, null).entrySet().size());
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			probList = entry.getValue();
+			List<Float> probListOriginal = probBackup.get(entry.getKey());
+			assertEquals(probListOriginal.size(), probList.size());
+			for (int i = 0; i < probList.size(); i++) {
+				assertEquals(probListOriginal.get(i),probList.get(i),.000001);
+			}
+		}
 	}
 	
 	/**
