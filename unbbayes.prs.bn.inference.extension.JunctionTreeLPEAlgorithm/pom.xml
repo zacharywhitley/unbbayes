@@ -249,11 +249,18 @@
 				<version>2.3</version>
 			</dependency>
 			
-			<!-- This is for Base64 encoding -->
+			<!-- This is for Base64 encoding using javax -->
+<!-- 			<dependency> -->
+<!-- 				<groupId>javax.mail</groupId> -->
+<!-- 				<artifactId>javax.mail-api</artifactId> -->
+<!-- 				<version>1.4.7</version> -->
+<!-- 			</dependency> -->
+
+			<!-- This is for Base 64 encoding using apache commons -->
 			<dependency>
-				<groupId>javax.mail</groupId>
-				<artifactId>javax.mail-api</artifactId>
-				<version>1.4.7</version>
+				<groupId>commons-codec</groupId>
+				<artifactId>commons-codec</artifactId>
+				<version>1.9</version>
 			</dependency>
 			
 			<!-- JUNIT -->

@@ -46,6 +46,7 @@ import edu.gmu.ace.scicast.MarkovEngineImpl.ResolveQuestionNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.StructureChangeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.VirtualTradeAction;
 import edu.gmu.ace.scicast.ScoreSummary.SummaryContribution;
+import edu.gmu.ace.scicast.io.ValueTreeNetIO;
 
 /**
  * @author Shou Matsumoto
@@ -30177,7 +30178,194 @@ public class MarkovEngineTest extends TestCase {
 		boolean isToCompressExportedStateBackup = engine.isToCompressExportedState();
 		boolean isToReturnIdentifiersInExportStateBackup = engine.isToReturnIdentifiersInExportState();
 		
-		fail("Not implemented yet");
+		// backup which files were in states' directory before the test, so that we don't remove them
+//		Set<String> stateFilesBeforeTest = new HashSet<String>();
+//		File statesFolder = new File(engine.getStatesFolderName());
+//		if (statesFolder.exists()) {
+//			assertTrue(statesFolder.isDirectory());
+//			for (String fileName : statesFolder.list()) {
+//				stateFilesBeforeTest.add(fileName);
+//			}
+//		}
+		
+		// Configuration: won't compress state, and will not return identifier.
+		
+		// run previous checks related to import/export
+		engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+		engine.initialize();
+		engine.setToCompressExportedState(false);
+		engine.setToReturnIdentifiersInExportState(false);
+		this.testExportImportAfterTradeOnDisconnectedParents();
+		// check that it is returning in expected format
+		String exportedState = engine.exportState();
+		assertTrue(exportedState, exportedState.startsWith("net"));
+		assertTrue(exportedState, exportedState.contains("node"));
+		
+//		
+//		// reset engine, and again run another previous check related to import/export
+//		engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+//		engine.initialize();
+//		engine.setToCompressExportedState(false);
+//		engine.setToReturnIdentifiersInExportState(false);
+//		this.testExportImport1000VarsTW10();
+//		// check that it is returning in expected format
+//		exportedState = engine.exportState();
+//		assertTrue(exportedState, exportedState.startsWith("net"));
+//		assertTrue(exportedState, exportedState.contains("node"));
+		
+		// Configuration: compress state, and will not return identifier.
+		
+		// under current configuration, run previous checks related to import/export
+		engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+		engine.initialize();
+		engine.setToCompressExportedState(true);
+		engine.setToReturnIdentifiersInExportState(false);
+		this.testExportImportAfterTradeOnDisconnectedParents();
+		
+		// reset engine, and again run previous checks related to import/export
+//		engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+//		engine.initialize();
+//		engine.setToCompressExportedState(true);
+//		engine.setToReturnIdentifiersInExportState(false);
+//		this.testExportImport1000VarsTW10();
+		// check that the size is compressed, compared to a non-compressed format
+		engine.setToCompressExportedState(false);
+		exportedState = engine.exportState();
+		engine.setToCompressExportedState(true);
+		assertTrue(exportedState, exportedState.length() > engine.exportState().length());
+		
+		
+		// Configuration: won't compress state, and return identifier.
+		
+		// run previous checks related to import/export
+		engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+		engine.initialize();
+		engine.setToCompressExportedState(false);
+		engine.setToReturnIdentifiersInExportState(true);
+		this.testExportImportAfterTradeOnDisconnectedParents();
+		// check that it is returning in expected format
+		exportedState = engine.exportState();
+		assertNotNull(exportedState);
+		// the identifier is supposedly a timestamp (milliseconds from midnight, January 1, 1970 UTC) created before now
+		assertTrue(exportedState.toString(), Long.parseLong(exportedState) > 0 && Long.parseLong(exportedState) <= System.currentTimeMillis());
+		ProbabilisticNetwork net = null;
+		// keep reference to this file, so that we can compare size with compressed one
+		File uncompressedFile1 = new File(engine.getStatesFolderName() + exportedState + engine.getExportedStateFileExtension());	
+		// check that this is an existing file
+		assertTrue(uncompressedFile1.exists());
+		assertTrue(uncompressedFile1.isFile());
+		// check that content is consistent
+		try {
+			// load file. Use I/O that can handle value trees, because testExportImportAfterTradeOnDisconnectedParents() uses it
+			ValueTreeNetIO io = new ValueTreeNetIO();
+			io.setDefaultNodeNamePrefix("N");	// consider 'N' just as a prefix for names of nodes (so don't include it in names)
+			net = (ProbabilisticNetwork) io.load(uncompressedFile1); // load the file, which supposedly have the same name of identifier
+			new JunctionTreeAlgorithm(net).run(); 	// compile net, so that we can retrieve probabilities for comparison
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		assertNotNull(exportedState, net);
+		// check number of nodes
+		assertEquals(exportedState, engine.getProbLists(null, null, null).size() , net.getNodes().size());
+		// check all marginals
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			ProbabilisticNode node = (ProbabilisticNode) net.getNode(entry.getKey().toString());
+			assertEquals(entry.toString(), entry.getValue().size(), node.getStatesSize());
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				assertEquals(entry.toString(), entry.getValue().get(i), node.getMarginalAt(i), 0.000001);
+			}
+		}
+		
+//		// reset engine, and again run another previous check related to import/export
+//		engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+//		engine.initialize();
+//		engine.setToCompressExportedState(false);
+//		engine.setToReturnIdentifiersInExportState(true);
+//		this.testExportImport1000VarsTW10();
+//		// check that it is returning in expected format
+//		exportedState = engine.exportState();
+//		assertNotNull(exportedState);
+//		// the identifier is supposedly a timestamp (milliseconds from midnight, January 1, 1970 UTC) created before now
+//		assertTrue(exportedState.toString(), Long.parseLong(exportedState) > 0 && Long.parseLong(exportedState) <= System.currentTimeMillis());
+//		net = null;
+//		File uncompressedFile2 = new File(exportedState); // keep reference to this file, so that we can compare size with compressed one
+//		// check that this is an existing file
+//		assertTrue(uncompressedFile2.exists());
+//		assertTrue(uncompressedFile2.isFile());
+//		// check that content is consistent
+//		try {
+//			// load file
+//			NetIO io = new NetIO();
+//			io.setDefaultNodeNamePrefix("N");	// consider 'N' just as a prefix for names of nodes (so don't include it in names)
+//			net = (ProbabilisticNetwork) io.load(uncompressedFile2); // load the file, which supposedly have the same name of identifier
+//		} catch (Exception e) {
+//			throw new RuntimeException(e);
+//		}
+//		assertNotNull(exportedState, net);
+//		// check number of nodes
+//		assertEquals(exportedState, engine.getProbLists(null, null, null).size() , net.getNodes().size());
+//		// check all marginals
+//		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+//			ProbabilisticNode node = (ProbabilisticNode) net.getNode(entry.getKey().toString());
+//			assertEquals(entry.toString(), entry.getValue().size(), node.getStatesSize());
+//			for (int i = 0; i < node.getStatesSize(); i++) {
+//				assertEquals(entry.toString(), entry.getValue().get(i), node.getMarginalAt(i), 0.000001);
+//			}
+//		}
+		
+		// Configuration: compress state, and return identifier.
+		
+		// run previous checks related to import/export
+		engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+		engine.initialize();
+		engine.setToCompressExportedState(true);
+		engine.setToReturnIdentifiersInExportState(true);
+		this.testExportImportAfterTradeOnDisconnectedParents();
+		// check that it is returning in expected format
+		exportedState = engine.exportState();
+		assertNotNull(exportedState);
+		// the identifier is supposedly a timestamp (milliseconds from midnight, January 1, 1970 UTC) created before now
+		assertTrue(exportedState.toString(), Long.parseLong(exportedState) > 0 && Long.parseLong(exportedState) <= System.currentTimeMillis());
+		net = null;
+		File compressedFile1 = new File(engine.getStatesFolderName() + exportedState + engine.getExportedStateFileExtension());	// we'll compare size
+		// check that this is an existing file
+		assertTrue(compressedFile1.exists());
+		assertTrue(compressedFile1.isFile());
+		// check that file size is smaller than uncompressed one
+		assertTrue(compressedFile1.length() < uncompressedFile1.length());
+		
+//		// reset engine, and again run another previous check related to import/export
+//		engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+//		engine.initialize();
+//		engine.setToCompressExportedState(true);
+//		engine.setToReturnIdentifiersInExportState(true);
+//		this.testExportImport1000VarsTW10();
+//		// check that it is returning in expected format
+//		exportedState = engine.exportState();
+//		assertNotNull(exportedState);
+//		// the identifier is supposedly a timestamp (milliseconds from midnight, January 1, 1970 UTC) created before now
+//		assertTrue(exportedState.toString(), Long.parseLong(exportedState) > 0 && Long.parseLong(exportedState) <= System.currentTimeMillis());
+//		net = null;
+//		File compressedFile2 = new File(exportedState); // we'll compare size
+//		// check that this is an existing file
+//		assertTrue(compressedFile2.exists());
+//		assertTrue(compressedFile2.isFile());
+//		// check that file size is smaller than uncompressed one
+//		assertTrue(compressedFile2.length() < uncompressedFile2.length());
+		
+		// delete all states generated by this method (it's OK to keep the folder, though)
+//		statesFolder = new File(engine.getStatesFolderName());	// renew statesFolder
+		File statesFolder = new File(engine.getStatesFolderName());	// renew statesFolder
+		assertTrue(statesFolder.exists());
+		assertTrue(statesFolder.isDirectory());
+//		assertTrue(statesFolder.list().length > stateFilesBeforeTest.size());
+		for (String fileName : statesFolder.list()) {
+//			if (stateFilesBeforeTest.contains(fileName)) {
+//				continue;	// do not delete files that were already there before test
+//			}
+			File currentFile = new File(statesFolder, fileName);
+		    currentFile.delete();
+		}
 		
 		engine.setToReturnIdentifiersInExportState(isToReturnIdentifiersInExportStateBackup);
 		engine.setToCompressExportedState(isToCompressExportedStateBackup);
