@@ -1,0 +1,59 @@
+net
+{
+     node_size = (0 0);
+     name = "New BN";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node C6
+{
+     label = "C1";
+     position = (544 75);
+     states = ("State 0" "State 1");
+}
+
+node C5
+{
+     label = "C2";
+     position = (377 187);
+     states = ("State 0" "State 1" "State 2");
+}
+
+node C8
+{
+     label = "C3";
+     position = (652 186);
+     states = ("State 0" "State 1");
+}
+
+node C7
+{
+     label = "C4";
+     position = (767 344);
+     states = ("State 0" "State 1");
+}
+
+potential (C6)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (C5 | C6)
+{
+ data = (( 0.33333334 0.33333334 0.33333334 )
+( 0.33333334 0.33333334 0.33333334 ));
+}
+
+potential (C8 | C6)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (C7 | C8)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+

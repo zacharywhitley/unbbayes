@@ -9581,8 +9581,14 @@ public class MarkovEngineTest extends TestCase {
 			List<Float> newValues = new ArrayList<Float>();
 			newValues.add((float) Math.random());	newValues.add(1-newValues.get(0));
 			engine.previewTrade(userId, (long)0x0D, newValues, null, null);
-			fail("D should not be present anymore");
+			if (!engine.isToAllowNonBayesianUpdate()){
+				fail("D should not be present anymore");
+			}
 		} catch (IllegalArgumentException e) {
+			if (engine.isToAllowNonBayesianUpdate()) {
+				e.printStackTrace();
+				fail("If non bayesian update is allowed, then preview shall not stop trade:" + e.getMessage());
+			}
 			assertNotNull(e);
 		}
 		try {
@@ -9747,42 +9753,47 @@ public class MarkovEngineTest extends TestCase {
 			List<Float> newValues = new ArrayList<Float>();
 			newValues.add((float) Math.random());	newValues.add(1-newValues.get(0));
 			engine.addTrade(transactionKey, new Date(), "To fail", userId, (long)0x0D, newValues, null, null, false);
-			fail("D should not be present anymore");
-		} catch (IllegalArgumentException e) {
+			if (!engine.isToAllowNonBayesianUpdate()) {
+				fail("D should not be present anymore");
+			}
+		} catch (IllegalArgumentException e) {}
+		try {
 			engine.commitNetworkActions(transactionKey);
-			assertNotNull(e);
-		}
+			if (engine.isToAllowNonBayesianUpdate()) {
+				fail("Should not allow commit of trade to a resolved question");
+			} //  else shall allow commit, because trade was not created
+		} catch (Exception e) {}
 		try {
 			userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
 			transactionKey = engine.startNetworkActions();
 			List<Float> newValues = new ArrayList<Float>();
 			newValues.add((float) Math.random());	newValues.add(1-newValues.get(0));
 			engine.addTrade(transactionKey, new Date(), "To fail", userId, (long)((Math.random()<.5)?0x0E:0x0F), newValues, Collections.singletonList((long)0x0D), Collections.singletonList(((Math.random()<.5)?0:1)), false);
-			fail("D should not be present anymore");
-		} catch (IllegalArgumentException e) {
+			fail("D should not be present anymore (so cannot be used in assumptions)");
+		} catch (IllegalArgumentException e) {}
+		try {
 			engine.commitNetworkActions(transactionKey);
-			assertNotNull(e);
-		}
+		} catch (Exception e) {}
 		if (!engine.isToAddArcsOnlyToProbabilisticNetwork()) {
 			try {
 				userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
 				transactionKey = engine.startNetworkActions();
 				engine.doBalanceTrade(transactionKey, new Date(), "To fail", userId, (long)0x0D, null, null );
 				fail("D should not be present anymore");
-			} catch (IllegalArgumentException e) {
+			} catch (IllegalArgumentException e) {}
+			try {
 				engine.commitNetworkActions(transactionKey);
-				assertNotNull(e);
-			}
+			} catch (Exception e) {}
 			
 			try {
 				userId = userNameToIDMap.get((Math.random() < .25)?"Joe":(Math.random() < .25)?"Eric":(Math.random() < .25)?"Tom":"Amy");
 				transactionKey = engine.startNetworkActions();
 				engine.doBalanceTrade(transactionKey, new Date(), "To fail", userId, (long)((Math.random()<.5)?0x0E:0x0F), Collections.singletonList((long)0x0D), Collections.singletonList(((Math.random()<.5)?0:1)));
 				fail("D should not be present anymore");
-			} catch (IllegalArgumentException e) {
+			} catch (IllegalArgumentException e) {}
+			try {
 				engine.commitNetworkActions(transactionKey);
-				assertNotNull(e);
-			}
+			} catch (Exception e) {}
 		}
 		
 		
@@ -23100,11 +23111,12 @@ public class MarkovEngineTest extends TestCase {
 		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
 		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
 		boolean isToTraceHistory = engine.isToTraceHistory();
+		boolean isToUseCorrectiveTrades = engine.isToUseCorrectiveTrades();
 		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
 		engine.setToAddArcsWithoutReboot(false);
 		engine.setToTraceHistory(true);
 		
-		assertTrue(engine.isToUseCorrectiveTrades());
+		engine.setToUseCorrectiveTrades(true);
 		
 		engine.setDefaultInitialAssetTableValue(0f);
 		
@@ -23526,7 +23538,8 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 
-		
+
+		engine.setToUseCorrectiveTrades(isToUseCorrectiveTrades);
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
@@ -23978,6 +23991,8 @@ public class MarkovEngineTest extends TestCase {
 	 * 
 	 */
 	public final void testCorrectiveTradeHistoryProbListSize() {
+		boolean isToUseCorrectiveTrades = engine.isToUseCorrectiveTrades();
+		engine.setToUseCorrectiveTrades(true);
 		engine.setDefaultInitialAssetTableValue(1000);
 		engine.setCurrentCurrencyConstant(100);
 		engine.setCurrentLogBase(2);
@@ -24259,6 +24274,8 @@ public class MarkovEngineTest extends TestCase {
 				}
 			}
 		}
+
+		engine.setToUseCorrectiveTrades(isToUseCorrectiveTrades);
 	}
 	
 	/**
@@ -28999,8 +29016,14 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(0);
 		try {
 			engine.addTrade(null, new Date(), "", 666L, 0, newValues, assumptionIds, assumedStates, true);
-			fail("Should not be able to trade on P(0 | 1=1, 2=1), because of impossible (0%) assumptions.");
+			if (!engine.isToAllowNonBayesianUpdate()) {
+				fail("Should not be able to trade on P(0 | 1=1, 2=1), because of impossible (0%) assumptions.");
+			}
 		} catch (IllegalArgumentException e) {
+			if (engine.isToAllowNonBayesianUpdate()) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
 			// OK
 			assertTrue(e.getMessage().contains("cannot be changed"));
 		}
@@ -29261,8 +29284,14 @@ public class MarkovEngineTest extends TestCase {
 		assumedStates.add(1);
 		try {
 			engine.addTrade(null, new Date(), "", 666L, 0, newValues, assumptionIds, assumedStates, true);
-			fail("Should not be able to trade on P(0 | 1=1, 2=1), because of impossible (0%) assumptions.");
+			if (!engine.isToAllowNonBayesianUpdate()) {
+				fail("Should not be able to trade on P(0 | 1=1, 2=1), because of impossible (0%) assumptions.");
+			}
 		} catch (IllegalArgumentException e) {
+			if (engine.isToAllowNonBayesianUpdate()) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
 			// OK
 			assertTrue(e.getMessage().contains("cannot be changed"));
 		}
@@ -29915,6 +29944,246 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	/**
+	 * Check if we can move a 0% state out from 0%
+	 */
+	public final void testChangeProbabilityFromZero() {
+		// backup flags
+		boolean isToAllowNonBayesianUpdateBackup = engine.isToAllowNonBayesianUpdate();
+		
+		
+		// build a B<-A->C  E<-D->F network with 3-state variables
+		engine.addQuestion(null, new Date(), 0x0AL, 3, null);
+		engine.addQuestion(null, new Date(), 0x0BL, 3, null);
+		engine.addQuestion(null, new Date(), 0x0CL, 3, null);
+		engine.addQuestion(null, new Date(), 0x0DL, 3, null);
+		engine.addQuestion(null, new Date(), 0x0EL, 3, null);
+		engine.addQuestion(null, new Date(), 0x0FL, 3, null);
+		engine.addQuestionAssumption(null, new Date(), 0x0BL, Collections.singletonList(0x0AL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0CL, Collections.singletonList(0x0AL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		
+		// make sure all questions were added
+		assertEquals(6, engine.getProbLists(null, null, null).size());
+		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0AL));
+		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0BL));
+		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0CL));
+		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0DL));
+		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0EL));
+		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0FL));
+		
+		assertEquals(0, engine.getProbabilisticNetwork().getNode(String.valueOf(0x0AL)).getParentNodes().size());
+		assertEquals(2, engine.getProbabilisticNetwork().getNode(String.valueOf(0x0AL)).getChildNodes().size());
+		assertEquals(0, engine.getProbabilisticNetwork().getNode(String.valueOf(0x0DL)).getParentNodes().size());
+		assertEquals(2, engine.getProbabilisticNetwork().getNode(String.valueOf(0x0DL)).getChildNodes().size());
+		assertEquals(1, engine.getProbabilisticNetwork().getNode(String.valueOf(0x0BL)).getParentNodes().size());
+		assertEquals(0, engine.getProbabilisticNetwork().getNode(String.valueOf(0x0BL)).getChildNodes().size());
+		assertEquals(1, engine.getProbabilisticNetwork().getNode(String.valueOf(0x0CL)).getParentNodes().size());
+		assertEquals(0, engine.getProbabilisticNetwork().getNode(String.valueOf(0x0CL)).getChildNodes().size());
+		assertEquals(1, engine.getProbabilisticNetwork().getNode(String.valueOf(0x0EL)).getParentNodes().size());
+		assertEquals(0, engine.getProbabilisticNetwork().getNode(String.valueOf(0x0EL)).getChildNodes().size());
+		assertEquals(1, engine.getProbabilisticNetwork().getNode(String.valueOf(0x0FL)).getParentNodes().size());
+		assertEquals(0, engine.getProbabilisticNetwork().getNode(String.valueOf(0x0FL)).getChildNodes().size());
+		
+		// make sure everything has started from uniform distribution
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			for (Float value : entry.getValue()) {
+				assertEquals("Was not uniform: " + entry, 1f/3f, value, .00005f);
+			}
+		}
+		
+		// set some marginal of D, but second to 0%
+		List<Float> newValues = new ArrayList<Float>();
+		float prob = (float) Math.random();
+		newValues.add(prob);
+		newValues.add(0f);
+		newValues.add(1f-prob);
+		engine.addTrade(null, new Date(), "", 0, 0x0DL, newValues, null, null, true);
+		
+		// set some prob of B given a1, but its third state to 0%
+		newValues = new ArrayList<Float>();
+		prob = (float) Math.random();
+		newValues.add(prob);
+		newValues.add(1f-prob);
+		newValues.add(0f);
+		engine.addTrade(null, new Date(), "", 0, 0x0BL, newValues, Collections.singletonList(0x0AL), Collections.singletonList(1), true);
+		
+		// check that change was successful
+		assertEquals(0f, engine.getProbList(0x0DL, null, null).get(1), .00005f);
+		assertEquals(0f, engine.getProbList(0x0BL, Collections.singletonList(0x0AL), Collections.singletonList(1)).get(2), .00005f);
+		
+		// backup marginals
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		
+		// test if we cannot change probability from zero if flag is off
+		engine.setToAllowNonBayesianUpdate(false);
+		newValues = new ArrayList<Float>();
+		newValues.add(.5f);
+		newValues.add(.5f);
+		newValues.add(0f);
+		try {
+			engine.addTrade(null, new Date(), "", 0, 0x0DL, newValues, null, null, true);
+			fail("Should disallow trade, because we are changing the 2nd state from 0 to .5");
+		} catch (IllegalArgumentException e) {
+			assertTrue(e.getMessage(), e.getMessage().toUpperCase().contains("THERE IS A 0% STATE BEING CHANGED"));
+		}
+		
+		newValues = new ArrayList<Float>();
+		newValues.add(0f);
+		newValues.add(.5f);
+		newValues.add(.5f);
+		try {
+			engine.addTrade(null, new Date(), "", 0, 0x0BL, newValues, Collections.singletonList(0x0AL), Collections.singletonList(1), true);
+			fail("Should disallow trade, because we are changing the 3rd state from 0 to .5");
+		} catch (IllegalArgumentException e) {
+			assertTrue(e.getMessage(), e.getMessage().toUpperCase().contains("THERE IS A 0% STATE BEING CHANGED"));
+		}
+		
+		// test that probability did not change after the above failed attempt
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());	// check number of nodes
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			// check number of states
+			assertEquals(entry.toString(), probLists.get(entry.getKey()).size(), entry.getValue().size());
+			// compare probability values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.toString(), probLists.get(entry.getKey()).get(i), entry.getValue().get(i), 0.0000001);
+			}
+		}
+		
+		// test if we can change probability from zero if flag is on
+		engine.setToAllowNonBayesianUpdate(true);
+		newValues = new ArrayList<Float>();
+		newValues.add(.5f);
+		newValues.add(.5f);
+		newValues.add(0f);
+		engine.addTrade(null, new Date(), "", 0, 0x0DL, newValues, null, null, true);
+		
+		newValues = new ArrayList<Float>();
+		newValues.add(0f);
+		newValues.add(.5f);
+		newValues.add(.5f);
+		engine.addTrade(null, new Date(), "", 0, 0x0BL, newValues, Collections.singletonList(0x0AL), Collections.singletonList(1), true);
+		
+		// check that the probabilities did change
+		assertEquals(3, engine.getProbList(0x0DL, null, null).size());
+		assertEquals(.5f, engine.getProbList(0x0DL, null, null).get(0), 0.00005);
+		assertEquals(.5f, engine.getProbList(0x0DL, null, null).get(1), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0DL, null, null).get(2), 0.00005);
+		assertEquals(3, engine.getProbList(0x0BL, Collections.singletonList(0x0AL), Collections.singletonList(1)).size(), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0BL, Collections.singletonList(0x0AL), Collections.singletonList(1)).get(0), 0.00005);
+		assertEquals(.5f, engine.getProbList(0x0BL, Collections.singletonList(0x0AL), Collections.singletonList(1)).get(1), 0.00005);
+		assertEquals(.5f, engine.getProbList(0x0BL, Collections.singletonList(0x0AL), Collections.singletonList(1)).get(2), 0.00005);
+		
+		// test if we can change probability given impossible assumption (i.e. e given d2 or f given d2)
+		
+		// test that we can retrieve such probability in both modes
+		engine.setToAllowNonBayesianUpdate(false);
+		assertEquals(3, engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(2)).size(), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(2)).get(0), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(2)).get(1), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(2)).get(2), 0.00005);
+		assertEquals(3, engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(2)).size(), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(2)).get(0), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(2)).get(1), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(2)).get(2), 0.00005);
+		engine.setToAllowNonBayesianUpdate(true);
+		assertEquals(3, engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(2)).size(), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(2)).get(0), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(2)).get(1), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0EL, Collections.singletonList(0x0DL), Collections.singletonList(2)).get(2), 0.00005);
+		assertEquals(3, engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(2)).size(), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(2)).get(0), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(2)).get(1), 0.00005);
+		assertEquals(0f, engine.getProbList(0x0FL, Collections.singletonList(0x0DL), Collections.singletonList(2)).get(2), 0.00005);
+		
+		// test that we cannot change probability from zero if flag is off
+		engine.setToAllowNonBayesianUpdate(false);
+		probLists = engine.getProbLists(null, null, null); // backup marginals
+		
+		// use a random trade
+		newValues = new ArrayList<Float>();
+		prob = (float) Math.random();
+		newValues.add(prob);
+		prob = (float) Math.random();
+		newValues.add((1f-newValues.get(0))*(prob));
+		newValues.add((1f-newValues.get(0))*(1-prob));
+		try {
+			engine.addTrade(null, new Date(), "", 0, 0x0EL, newValues, Collections.singletonList(0x0DL), Collections.singletonList(2), true);
+			fail("Should disallow trade, because of impossible assumption");
+		} catch (IllegalArgumentException e) {
+			assertTrue(e.getMessage(), e.getMessage().toUpperCase().contains("THERE IS A 0% STATE BEING CHANGED"));
+		}
+		
+		// randomly shuffle probabilities
+		Collections.shuffle(newValues);	
+		try {
+			engine.addTrade(null, new Date(), "", 0, 0x0FL, newValues, Collections.singletonList(0x0DL), Collections.singletonList(2), true);
+			fail("Should disallow trade, because of impossible assumption");
+		} catch (IllegalArgumentException e) {
+			assertTrue(e.getMessage(), e.getMessage().toUpperCase().contains("THERE IS A 0% STATE BEING CHANGED"));
+		}
+		
+
+		// test that probability did not change after the above failed attempt
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());	// check number of nodes
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			// check number of states
+			assertEquals(entry.toString(), probLists.get(entry.getKey()).size(), entry.getValue().size());
+			// compare probability values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.toString(), probLists.get(entry.getKey()).get(i), entry.getValue().get(i), 0.0000001);
+			}
+		}
+		
+		// now, test that we can change if we set the flag on
+		engine.setToAllowNonBayesianUpdate(true);
+		probLists = engine.getProbLists(null, Collections.singletonList(0x0DL), Collections.singletonList(2));	// backup conditional probability given impossible state
+				
+		// use another trade
+		newValues = new ArrayList<Float>();
+		newValues.add(.9f);
+		newValues.add(.09f);
+		newValues.add(.01f);
+		Collections.shuffle(newValues);	 // randomly shuffle probabilities
+		engine.addTrade(null, new Date(), "", 0, 0x0EL, newValues, Collections.singletonList(0x0DL), Collections.singletonList(2), true);
+		
+		Collections.shuffle(newValues);	 // randomly shuffle probabilities
+		engine.addTrade(null, new Date(), "", 0, 0x0FL, newValues, Collections.singletonList(0x0DL), Collections.singletonList(2), true);
+		
+		// test that at least some probability changed
+		assertEquals(probLists.size(), engine.getProbLists(null, Collections.singletonList(0x0DL), Collections.singletonList(2)).size());	// check number of nodes
+		boolean hasChanged = false;
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, Collections.singletonList(0x0DL), Collections.singletonList(2)).entrySet()) {
+			// check number of states
+			assertEquals(entry.toString(), probLists.get(entry.getKey()).size(), entry.getValue().size());
+			// compare probability values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				hasChanged = Math.abs(probLists.get(entry.getKey()).get(i) - entry.getValue().get(i)) > 0.0000001;
+				if (hasChanged) {
+					break;
+				}
+			}
+		}
+		assertTrue("Old=" + probLists + " ; New="+engine.getProbLists(null, Collections.singletonList(0x0DL), Collections.singletonList(2)), hasChanged);
+		
+		engine.setToAllowNonBayesianUpdate(isToAllowNonBayesianUpdateBackup);
+	}
+	
+	/**
+	 * Simple test methods for {@link MarkovEngineImpl#exportState()} and {@link MarkovEngineImpl#importState(String)}
+	 */
+	public final void testExportImportState() {
+		// backup flags
+		boolean isToCompressExportedStateBackup = engine.isToCompressExportedState();
+		boolean isToReturnIdentifiersInExportStateBackup = engine.isToReturnIdentifiersInExportState();
+		
+		fail("Not implemented yet");
+		
+		engine.setToReturnIdentifiersInExportState(isToReturnIdentifiersInExportStateBackup);
+		engine.setToCompressExportedState(isToCompressExportedStateBackup);
+	}
+	
+	/**
 	 * Test method for {@link MarkovEngineImpl#exportState()}
 	 * and {@link MarkovEngineImpl#importState(String)}
 	 * for 2000 vars and randomly created arcs (max 10 parents)
@@ -30273,22 +30542,30 @@ public class MarkovEngineTest extends TestCase {
 		newValues.add(.2f);
 		newValues.add(.3f);
 		newValues.add(.4f);
-		// keep backup to check if probability did not change
+		// keep backup to check if probability did not change or revert
 		Map<Long, List<Float>> probBackup = engine.getProbLists(null, null, null);
 		try {
 			engine.addTrade(null, new Date(), "", 0, 'M', newValues , null, null, true);
-			fail("Should disallow this edit");
+			if (!engine.isToAllowNonBayesianUpdate()) {
+				fail("Should disallow this edit");
+			} 
 		} catch (IllegalArgumentException e) {
+			if (engine.isToAllowNonBayesianUpdate()) {
+				throw e;
+			}
 			// OK
 		}
-		// check that probability did not change
-		assertEquals(probBackup.size(), engine.getProbLists(null, null, null).entrySet().size());
-		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
-			probList = entry.getValue();
-			List<Float> probListOriginal = probBackup.get(entry.getKey());
-			assertEquals(probListOriginal.size(), probList.size());
-			for (int i = 0; i < probList.size(); i++) {
-				assertEquals(probListOriginal.get(i),probList.get(i),.000001);
+		
+		if (!engine.isToAllowNonBayesianUpdate()) {
+			// check that probability did not change
+			assertEquals(probBackup.size(), engine.getProbLists(null, null, null).entrySet().size());
+			for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+				probList = entry.getValue();
+				List<Float> probListOriginal = probBackup.get(entry.getKey());
+				assertEquals(probListOriginal.size(), probList.size());
+				for (int i = 0; i < probList.size(); i++) {
+					assertEquals(probListOriginal.get(i),probList.get(i),.000001);
+				}
 			}
 		}
 		
@@ -30300,19 +30577,32 @@ public class MarkovEngineTest extends TestCase {
 		newValues.add(1f/5f);
 		try {
 			engine.addTrade(null, new Date(), "", 0, 'M', newValues , Collections.singletonList(1L), Collections.singletonList(1), true);
-			fail("Should disallow this edit");
+			if (!engine.isToAllowNonBayesianUpdate()) {
+				fail("Should disallow this edit");
+			}
 		} catch (IllegalArgumentException e) {
+			if (engine.isToAllowNonBayesianUpdate()) {
+				throw e;
+			}
 			// OK
 		}
 		
-		// check that probability did not change
-		assertEquals(probBackup.size(), engine.getProbLists(null, null, null).entrySet().size());
-		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
-			probList = entry.getValue();
-			List<Float> probListOriginal = probBackup.get(entry.getKey());
-			assertEquals(probListOriginal.size(), probList.size());
+		if (!engine.isToAllowNonBayesianUpdate()) {
+			// check that probability did not change
+			assertEquals(probBackup.size(), engine.getProbLists(null, null, null).entrySet().size());
+			for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+				probList = entry.getValue();
+				List<Float> probListOriginal = probBackup.get(entry.getKey());
+				assertEquals(probListOriginal.size(), probList.size());
+				for (int i = 0; i < probList.size(); i++) {
+					assertEquals(probListOriginal.get(i),probList.get(i),.000001);
+				}
+			}
+		} else {
+			// check that probability has changed
+			assertEquals(newValues.size(), engine.getProbList((long)'M', Collections.singletonList(1L), Collections.singletonList(1)).size());
 			for (int i = 0; i < probList.size(); i++) {
-				assertEquals(probListOriginal.get(i),probList.get(i),.000001);
+				assertEquals(engine.getProbList((long)'M', Collections.singletonList(1L), Collections.singletonList(1)).get(i),newValues.get(i),.000001);
 			}
 		}
 	}

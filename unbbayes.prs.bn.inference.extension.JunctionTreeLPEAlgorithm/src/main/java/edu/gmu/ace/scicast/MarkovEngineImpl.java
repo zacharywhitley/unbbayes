@@ -1,11 +1,16 @@
 package edu.gmu.ace.scicast;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -23,8 +28,15 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+import javax.mail.internet.MimeUtility;
 
 import unbbayes.io.BaseIO;
+import unbbayes.io.IPrintStreamBuilder;
+import unbbayes.io.IReaderBuilder;
 import unbbayes.io.NetIO;
 import unbbayes.io.StringPrintStreamBuilder;
 import unbbayes.io.StringReaderBuilder;
@@ -35,6 +47,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.IJunctionTree;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
@@ -84,6 +97,7 @@ import edu.gmu.ace.scicast.io.ValueTreeNetIO;
  * @version January 30, 2013
  */
 public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssetsConverter {
+
 	
 	private boolean isToUseQValues = false;
 	
@@ -283,7 +297,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/** If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction)}
 	 * will attempt to use house account to run corrective trades when the old probabilities provided by the caller is different
 	 * from the actual probabilities retrieved from the Bayes net before trade. */
-	private boolean isToUseCorrectiveTrades = true;
+	private boolean isToUseCorrectiveTrades = false;
 
 	/** If true, {@link #commitNetworkActions(long, boolean)} will place all {@link AddCashNetworkAction} before trades. */
 	private boolean isToSortAddCashAction = true;
@@ -350,6 +364,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/** If true, {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction, boolean)}
 	 * will call {@link #addQuestionAssumption(Long, Date, long, List, List)} in order to connect nodes that are not connected, but was used in trades*/
 	private boolean isToAddArcsOnAddTradeAndUpdateJT = true;
+
+	/** If true, {@link #importState(String)} and {@link #exportState()} will consider compressed format (e.g. zip and then base64 encoding) */
+	private boolean isToCompressExportedState = false;
+	private boolean isToReturnIdentifiersInExportState = false;
+
+	private boolean isToAllowNonBayesianUpdate = true; // false
 	
 	/**
 	 * Default constructor is protected to allow inheritance.
@@ -6963,19 +6983,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			List<Float> oldValues = getProbList(questionId, assumptionIds, assumedStates);
 			// this is the list to be returned
 			List<Float> ret = new ArrayList<Float>(newValues.size());
+			if (oldValues.size() < 2) {
+				throw new IllegalStateException("Question " + questionId + " seems to have ess than 2 states, so its probability cannot be changed.");
+			}
 			for (int i = 0; i < newValues.size(); i++) {
-				if (oldValues.get(i).equals(0f) && newValues.get(i)> 0f) {
-					throw new IllegalArgumentException("Probability of question " + questionId + " given " + assumptionIds + "=" + assumedStates + " has probability " + oldValues + " (there is a 0% state being changed), thus cannot be changed.");
-				}
-				if (oldValues.get(i) >= 1f) {
-					throw new IllegalArgumentException("Probability of question " + questionId + " given " + assumptionIds + "=" + assumedStates + " has probability " + oldValues + ". A 100% state was detected, thus other states cannot be changed.");
+				if (!isToAllowNonBayesianUpdate() && oldValues.get(i).equals(0f) && newValues.get(i) > 0f) {
+					// there is a 0% state being changed, so cannot use bayesian updating.
+					throw new IllegalArgumentException("Probability of question " + questionId + " given " + assumptionIds + "=" + assumedStates + " has probability " + oldValues + " (there is a 0% state being changed), thus cannot be modified with bayesian update.");
 				}
 				// probs and assets are all supposedly related by indexes
-				if (newValues.get(i) == null) {
+//				if (newValues.get(i) == null) {
 					ret.add(0f);
-				} else {
-					ret.add(this.getScoreFromQValues(newValues.get(i)/oldValues.get(i)));
-				}
+//				} else {
+//					if (oldValues.get(i).equals(0f)) {
+//						ret.add(this.getScoreFromQValues(Float.NaN));
+//					} else {
+//						ret.add(this.getScoreFromQValues(newValues.get(i)/oldValues.get(i)));
+//					}
+//				}
 			}
 			return ret;
 		}
@@ -7072,6 +7097,85 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return null;
 	}
 	
+	/**
+	 * This will use non-bayesian update to change all occurrences of 0%
+	 * to some very small probability (and then normalize),
+	 * so that impossible states becomes possible to happen (and thus, can be updated with bayes rule).
+	 * This is called by {@link #executeTrade(long, List, List, List, List, boolean, AssetAwareInferenceAlgorithm, boolean, boolean, NetworkAction, boolean)}
+	 * if {@link #isToAllowNonBayesianUpdate()} is true
+	 */
+	public void moveUpZeroProbability() {
+		Debug.println(getClass(), "Invoked non bayesian update method to move up states with 0% probability.");
+		
+		// the net to verify is the shared BN
+		ProbabilisticNetwork net = getProbabilisticNetwork();
+		
+		// TODO this is a relatively slow operation. See if we can synchronize smaller blocks instead of the whole network
+		synchronized (net) {	
+			
+			// find zeros in junction tree and substitute with a small number
+			IJunctionTree junctionTree = net.getJunctionTree();
+			
+			// use the smaller of error margins used in this class by other methods as the value to substitute
+			float valueToSubstitute = Math.min(Math.abs(getProbabilityErrorMargin()), Math.abs(getProbabilityErrorMarginBalanceTrade()));
+			
+			// iterate on cliques
+			for (Clique clique : junctionTree.getCliques()) {
+				boolean isChanged = false;
+				// extract clique table and iterate on its cells
+				PotentialTable table = clique.getProbabilityFunction();
+				int tableSize = table.tableSize();
+				for (int i = 0; i < tableSize; i++) {
+					if (table.getValue(i) <= 0f) {
+						// found a zero. Substitute current entry
+						table.setValue(i, valueToSubstitute);
+						isChanged = true;
+					}
+				}
+				// normalize current table
+				if (isChanged) {
+					table.normalize();
+				}
+			}
+			// also iterate on separators
+			for (Separator separator : junctionTree.getSeparators()) {
+				boolean isChanged = false;
+				// extract separator table and iterate on its cells
+				PotentialTable table = separator.getProbabilityFunction();
+				int tableSize = table.tableSize();
+				for (int i = 0; i < tableSize; i++) {
+					if (table.getValue(i) <= 0f) {
+						// found a zero. Substitute current entry
+						table.setValue(i, valueToSubstitute);
+						isChanged = true;
+					}
+				}
+				// normalize current table
+				if (isChanged) {
+					table.normalize();
+				}
+			}
+			
+			// propagate, just to make sure we have global consistency
+			try {
+				junctionTree.consistency();
+			} catch (Exception e) {
+				// it's OK to keep it this way, because the next evidence propagation will force global consistency, and this is an approximation (and a non bayesian update) anyway.
+				// but at least print a stack trace indicating that something is happening
+				Debug.println(null, "Could not use Junction Tree propagation to force global consistency after moving up 0% probabilities.", e);
+			}
+			
+			// update marginals of nodes too, because they are used as some sort of cache when marginals are used/queried
+			// This is the same code of unbbayes.prs.bn.SingleEntityNetwork#updateMarginals(), which is "copied" here because of method visibility (it's protected). 
+			// TODO Move this code (and also unbbayes.prs.bn.SingleEntityNetwork#updateMarginals()) to unbbayes.prs.bn.JunctionTreeAlgorithm.
+			for (Node node : net.getNodes()) {
+				if (node.getStatesSize() > 0 && (node instanceof TreeVariable)) {
+					((TreeVariable)node).updateMarginal();
+				}
+			}
+		}
+	}
+
 	/**
 	 * 
 	 * @param questionId : the id of the question to be edited (i.e. the random variable "T"  in the example)
@@ -7375,6 +7479,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			return condProbBeforeTrade;
 		}
 		
+		
+		// check if we are moving up any probability from 0%, because in such case we don't have a bayesian update 
+		// (i.e. there is no likelihood ratio to multiply to 0 in order to result in non-zero)
+		if (isToAllowNonBayesianUpdate()) {
+			int size = condProbBeforeTrade.size();
+			for (int i = 0; i < size; i++) {
+				if (condProbBeforeTrade.get(i).equals(0f) && newValues.get(i) > 0) {
+					// this will supposedly find occurrences of zeros, replace with very small value, normalize, and propagate (for global consistency)
+					this.moveUpZeroProbability();
+					break;
+				}
+			}
+		}
+		
 		// connect the nodes used in trade if there is no clique containing all nodes simultaneously
 		if (!isPreview && isToAddArcsOnAddTradeAndUpdateJT()) {
 			// make connection only if the flag isToAddArcsOnAddTradeAndUpdateJT is turned on
@@ -7477,7 +7595,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						if (!child.getParents().isEmpty() || !child.getChildren().isEmpty()) {
 							// question connected to another question. So, we need to store changes in probabilities
 							// Store marginals
-							marginalsBefore = getProbLists(null, null, null);
+							if (isToTraceHistory()) {
+								marginalsBefore = getProbLists(null, null, null);
+							}
 							
 							if (memento == null && getMaxConditionalProbHistorySize() > 0 ) {
 								// store cliques for conditional probabilities
@@ -7488,7 +7608,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// Note: this memento is also used in order to store clique tables, so that we can retrieve history of any conditional probabilities
 
 					// store marginal before trade, if the parent trade was not executed previously
-					if (parentTrade != null && parentTrade.getWhenExecutedFirstTime() == null) {
+					if (isToTraceHistory() && parentTrade != null && parentTrade.getWhenExecutedFirstTime() == null) {
 						if (marginalsBefore != null) {
 							// reuse the map of marginals obtained previously
 							parentTrade.setOldValues(marginalsBefore.get(questionId));
@@ -11660,7 +11780,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * (which will be retrieved from the history).<br/>
 	 * 1.4. The position (x and y coordinates) of the nodes will be random.<br/>
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#exportNetwork(java.io.File)
+	 * @deprecated use {@link MarkovEngineImpl#exportState()}
 	 */
+	@Deprecated
 	public synchronized void exportNetwork(File file) throws IOException, IllegalStateException {
 		if (isToExportOnlyCurrentSharedProbabilisticNet()) {
 			// simply call exportCurrentSharedNetwork
@@ -12097,7 +12219,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * the current conditional probabilities equal to the non-uniform CPTs (i.e. if any CPT of the imported BN is not uniform, 
 	 * then it will be treated like a trade performed at the moment of the import).<br/>
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#importNetwork(java.io.File)
+	 * @deprecated use {@link MarkovEngineImpl#importState(String)}
 	 */
+	@Deprecated
 	public synchronized void importNetwork(File file) throws IOException, IllegalStateException {
 		
 		if (isToExportOnlyCurrentSharedProbabilisticNet()) {
@@ -12963,9 +13087,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	protected void setToPrintRootClique(boolean isToPrintRoot) {
 		this.isToPrintRootClique = isToPrintRoot;
 	}
+	
 
 	/**
-	 * This method uses {@link #getNetIOToExportSharedNetToSting()} and will call 
+	 * This method uses {@link #getNetIOToExportSharedNetToString()} and will call 
 	 * {@link NetIO#setPrintStreamBuilder(unbbayes.io.IPrintStreamBuilder)}
 	 * with {@link StringPrintStreamBuilder} in order to use {@link NetIO} for printing net files to string instead of
 	 * files. 
@@ -12974,17 +13099,124 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public synchronized String exportState() {	// TODO check if we can remove the synchronized
 		// TODO use a specific I/O class instead of handling I/O here 
 		
-		// prepare an I/O class which actually prints to string instead of file
-		StringBuilder stringBuilder = new StringBuilder();	// this string will be updated
+		// this I/O class will print a network representation in some format
+		NetIO io = getNetIOToExportSharedNetToString();	// NetIO represents BN as human-readable text in Hugin NET specification.
 		
-		// this I/O class will print a network representation
+		// the above I/O class will print the network to a stream built by this builder
+		IPrintStreamBuilder streamBuilder = null;
 		
-		// this I/O class will print a network representation
-		NetIO io = getNetIOToExportSharedNetToSting();
 		
-		// By using StringPrintStreamBuilder, net will be printed to string instead of file
-		io.setPrintStreamBuilder(new StringPrintStreamBuilder(stringBuilder));
+		// set the streamBuilder accordingly to flags
+		if (isToReturnIdentifiersInExportState()) {
+			// this will save to file, and return an identifier
+			
+			if (isToCompressExportedState()) {
+				// use a zipped file
+				streamBuilder =  new IPrintStreamBuilder() {
+					// TODO stop using attributes related to objects built by this builder
+					private String id = null;
+					
+					/** @see unbbayes.io.IPrintStreamBuilder#getPrintStreamFromFile(java.io.File) */
+					public PrintStream getPrintStreamFromFile(File file) throws FileNotFoundException {
+						id = file.getName();
+						
+						// this will zip the content and then write to a file
+						ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(file));
+						
+						// it seems that a ZipOutputStream requires at least 1 entry (content)
+						try {
+							zipOutputStream.putNextEntry(new ZipEntry(id+".net"));
+						} catch (IOException e) {
+							throw new RuntimeException("Was not able to create a new ZIP entry for file " + file.toString(), e);
+						}
+						
+						return new PrintStream(zipOutputStream);
+					}
+					
+					/** Return the identifier (i.e. file name) */
+					public String toString() { return id; }
+				};
+			} else {
+				// don't zip the file
+				streamBuilder =  new IPrintStreamBuilder() {
+					// TODO stop using attributes related to objects built by this builder
+					private String id = null;
+					
+					/** @see unbbayes.io.IPrintStreamBuilder#getPrintStreamFromFile(java.io.File) */
+					public PrintStream getPrintStreamFromFile(File file) throws FileNotFoundException {
+						id = file.getName();
+						return new PrintStream(new FileOutputStream(file));
+					}
+					
+					/** Return the identifier (i.e. file name) */
+					public String toString() { return id; }
+				};
+			}
+			
+		} else if (isToCompressExportedState()) { 
+			// return the exported network itself, but it needs to be compressed
+			
+			// this will zip the content and encode to base64
+			streamBuilder =  new IPrintStreamBuilder() {
+				// TODO stop using attributes related to objects built by this builder
+				private ByteArrayOutputStream byteArrayOutputStream;
+				
+				/** @see unbbayes.io.IPrintStreamBuilder#getPrintStreamFromFile(java.io.File) */
+				public PrintStream getPrintStreamFromFile(File file) throws FileNotFoundException {
+					try {
+						// ignore the file and write to a byte array instead
+						byteArrayOutputStream = new ByteArrayOutputStream();
+						// this will zip the content, encode to base64, and then write to byte array
+						ZipOutputStream zipOutputStream = new ZipOutputStream(MimeUtility.encode(byteArrayOutputStream, "base64"));
+						// it seems that a ZipOutputStream requires at least 1 entry (content)
+						zipOutputStream.putNextEntry(new ZipEntry(file.getName()+".net"));
+						return new PrintStream(zipOutputStream);
+					} catch (Exception e) {
+						// TODO stop doing exception translation
+						throw new RuntimeException(e);
+					}
+				}
+				
+				/** Return the content encoded to base64 */
+				public String toString() { return byteArrayOutputStream.toString(); }
+			};
+			
+		} else {	
+			// return the network representation itself, but don't compress
+			
+//			// prepare an I/O class which actually prints to string instead of file
+//			StringBuilder stringBuilder = new StringBuilder();	// this string will be updated
+//			
+//			// By using StringPrintStreamBuilder, net will be printed to string instead of file
+//			io.setPrintStreamBuilder(new StringPrintStreamBuilder(stringBuilder));
+			
+			// the above code was substituted with the following
+			
+			// this will return the content created by the I/O class, without any transformation
+			streamBuilder =  new IPrintStreamBuilder() {
+				// TODO stop using attributes related to objects built by this builder
+				private ByteArrayOutputStream byteArrayOutputStream;
+				
+				/** @see unbbayes.io.IPrintStreamBuilder#getPrintStreamFromFile(java.io.File) */
+				public PrintStream getPrintStreamFromFile(File file) throws FileNotFoundException {
+					// ignore the file and write to a byte array instead
+					byteArrayOutputStream = new ByteArrayOutputStream();
+					return new PrintStream(byteArrayOutputStream);
+				}
+				/** Return the content of the bytearray, converted to string  */
+				public String toString() { return byteArrayOutputStream.toString(); }
+			};
+		}
 		
+		// tell I/O class to build streams by using this builder
+		if (streamBuilder != null) {
+			io.setPrintStreamBuilder(streamBuilder);
+		} else {
+			throw new RuntimeException("Could not find any builder for the output stream where the network snapshot will be written to. This is a bug. Please, contact administrator.");
+		}
+		
+		
+		// retrieve current BN and use the I/O class to generate a proper representation
 		synchronized (getDefaultInferenceAlgorithm()) {
 			// TODO create the virtual arcs
 			if (isToAddVirtualArcsOnAddTrade()) {
@@ -12998,7 +13230,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 			// save to string. The file is ignored if we use StringPrintStreamBuilder.
 			try {
-				io.save(new File("If_you_see_this_file_then_there_is_bug_in_MarkovEngineImpl.exportCurrentSharedNetwork"), getDefaultInferenceAlgorithm().getNet());
+				// use current timestamp as default file name (milliseconds from midnight, January 1, 1970 UTC)
+				io.save(new File(String.valueOf(System.currentTimeMillis())), getDefaultInferenceAlgorithm().getNet());
 			} catch (FileNotFoundException e) {
 				throw new RuntimeException("StringPrintStreamBuilder was supposed to print to strings and ignore files, but a FileNotFoundException was thrown. This is probably a bug in a library being used by the Markov Engine. Please, check your version of UnBBayes.",e);
 			}
@@ -13008,11 +13241,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}
 		}
 		
-		return stringBuilder.toString();
+		// return the string representation.
+		// This can a representation of the network (compressed or not), or a file identifier.
+		return streamBuilder.toString();
 	}
 
 	/**
-	 * This method uses {@link #getNetIOToExportSharedNetToSting()} and will call 
+	 * This method uses {@link #getNetIOToExportSharedNetToString()} and will call 
 	 * {@link NetIO#setReaderBuilder(unbbayes.io.IReaderBuilder)}
 	 * with {@link StringReaderBuilder} in order to use 
 	 * {@link NetIO} for printing net files to string instead of files. 
@@ -13020,6 +13255,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * Note: this will also set {@link #setToAddArcsOnlyToProbabilisticNetwork(boolean)} to true,
 	 * which is expected to reset users.
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#importState(java.lang.String)
+	 * @param netString: this is a string representation of the network. It is expected to be something returned from {@link #exportState()}.
+	 * If {@link #isToReturnIdentifiersInExportState()} is true, then it is just an identifier of a local file to be loaded.
+	 * If {@link #isToCompressExportedState()} is true, then the string is expected to be a compressed representation, instead of being some 
+	 * human-readable format.
 	 */
 	public synchronized void importState(String netString) throws IllegalArgumentException {
 		// indicate that we are only using probabilistic net
@@ -13027,20 +13266,65 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// this shall also reset existing users
 
 		// this I/O class will read a network representation
-		NetIO io = getNetIOToExportSharedNetToSting();
+		NetIO io = getNetIOToExportSharedNetToString();
 		
 		// reset/initialize and specify the mapping of what arcs are tagged as virtual. This will be filled posteriory when we load the network from this IO
 		if (io instanceof ValueTreeNetIO) {
 			((ValueTreeNetIO) io).setVirtualParents(new HashMap<INode, List<INode>>());
 		}
-				
-		// By using StringReaderBuilder, net will be read from string instead of file
-		io.setReaderBuilder(new StringReaderBuilder(netString));
+		
+		String netIdentifier = "This_File_Will_Be_Ignored_By_StringStreamTokenizerBuilder";
+
+		// check the mode we are reading: using an identifier
+		if (isToReturnIdentifiersInExportState()) {
+			// this will load from file, given identifier
+			netIdentifier = netString;
+			
+			if (isToCompressExportedState()) {
+				io.setReaderBuilder(new IReaderBuilder() {
+					public Reader getReaderFromFile(File file) throws FileNotFoundException {
+						// This stream will read a file input stream, and then unzip it
+						ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(file));
+						try {
+							// move cursor to 1st zipped entry  
+							zipInputStream.getNextEntry();
+						} catch (IOException e) {
+							throw new RuntimeException("Could not unzip the content of imported file " + file.getPath(),e);
+						}	
+						// Convert stream to reader, and wraps with buffer
+						return new BufferedReader(new InputStreamReader(zipInputStream));
+					}
+				});
+			} else {
+				// by setting the reader builder of a NetIO to itself, it will do its default behavior
+				io.setReaderBuilder(io);
+			}
+		} else if (isToCompressExportedState()) {
+			io.setReaderBuilder(new IReaderBuilder() {
+				public Reader getReaderFromFile(File file) throws FileNotFoundException {
+					// reads a file input stream, decode from base64, unzip, convert to reader, and wraps with buffer
+					try {
+						// This stream will read a file input stream, decode from base64 encoding, and then unzip it
+						ZipInputStream zipInputStream = new ZipInputStream(MimeUtility.decode(new FileInputStream(file), "base64"));
+						zipInputStream.getNextEntry(); // move cursor to 1st zipped entry  
+						return new BufferedReader(new InputStreamReader(zipInputStream));	// Convert stream to reader, and wraps with buffer
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
+				}
+			});
+		} else {
+			// By using StringReaderBuilder, net will be read uncompresed NET format from string, instead of file
+			io.setReaderBuilder(new StringReaderBuilder(netString));
+		}
+			
+		
+		
 		
 		// load the network
 		ProbabilisticNetwork probNet = null;
 		try {
-			probNet = (ProbabilisticNetwork) io.load(new File("This_File_Will_Be_Ignored_By_StringStreamTokenizerBuilder"));
+			probNet = (ProbabilisticNetwork) io.load(new File(netIdentifier));
 		} catch (LoadException e) {
 			throw new RuntimeException("The format of the string does not seem to be valid. Please check its content.",e);
 		} catch (IOException e) {
@@ -13208,7 +13492,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return the netIOToExportSharedNetToSting
 	 * @see #setNetIOToExportSharedNetToSting(NetIO)
 	 */
-	protected NetIO getNetIOToExportSharedNetToSting() {
+	protected NetIO getNetIOToExportSharedNetToString() {
 		return netIOToExportSharedNetToSting;
 	}
 
@@ -13229,7 +13513,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * where {@link #exportState()} and {@link #importState(String)}
 	 * will reference to.
 	 * @param netIOToExportSharedNetToSting the netIOToExportSharedNetToSting to set
-	 * @see #getNetIOToExportSharedNetToSting()
+	 * @see #getNetIOToExportSharedNetToString()
 	 */
 	protected void setNetIOToExportSharedNetToSting( NetIO netIOToExportSharedNetToSting) {
 		this.netIOToExportSharedNetToSting = netIOToExportSharedNetToSting;
@@ -13373,5 +13657,71 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		this.isToAddArcsOnAddTradeAndUpdateJT = isToAddArcsOnAddTradeAndUpdateJT;
 	}
 
+	/**
+	 * @return If true, {@link #importState(String)} and {@link #exportState()} will consider compressed format (e.g. zip and then base64 encoding)
+	 */
+	public boolean isToCompressExportedState() {
+		return isToCompressExportedState;
+	}
+
+	/**
+	 * @param isToCompressExportedState : If true, {@link #importState(String)} and {@link #exportState()} will consider compressed format (e.g. zip and then base64 encoding)
+	 */
+	public void setToCompressExportedState(boolean isToCompressExportedState) {
+		this.isToCompressExportedState = isToCompressExportedState;
+	}
+
+	/**
+	 * @return if this is true, then
+	 * {@link #exportState()} will save a file in local repository and return an identifier.
+	 * Additionally, {@link #importState(String)} will consider that its argument is an identifier,
+	 * and will attempt to load network from local file.
+	 */
+	public boolean isToReturnIdentifiersInExportState() {
+		return isToReturnIdentifiersInExportState;
+	}
+
+	/**
+	 * @param isToReturnIdentifiersInExportState : if this is true, then
+	 * {@link #exportState()} will save a file in local repository and return an identifier.
+	 * Additionally, {@link #importState(String)} will consider that its argument is an identifier,
+	 * and will attempt to load network from local file.
+	 */
+	public void setToReturnIdentifiersInExportState(
+			boolean isToReturnIdentifiersInExportState) {
+		this.isToReturnIdentifiersInExportState = isToReturnIdentifiersInExportState;
+	}
+
+	/**
+	 * @return if true, then updates in probability that are not bayesian can be performed.
+	 * For instance, this will allow states that are 0% (impossible) to be changed to non 0.
+	 * @see #moveUpZeroProbability()
+	 */
+	public boolean isToAllowNonBayesianUpdate() {
+		return isToAllowNonBayesianUpdate;
+	}
+
+	/**
+	 * @param isToAllowNonBayesianUpdate: if true, then updates in probability that are not bayesian can be performed.
+	 * For instance, this will allow states that are 0% (impossible) to be changed to non 0.
+	 * @see #moveUpZeroProbability()
+	 */
+	public void setToAllowNonBayesianUpdate(boolean isToAllowNonBayesianUpdate) {
+		this.isToAllowNonBayesianUpdate = isToAllowNonBayesianUpdate;
+	}
+
+
+//	/**
+//	 * Exception thrown when some state at 0% probability is attempted to be changed to non 0 probability.
+//	 * This usually an error, because a bayes rule cannot make impossible states to become possible.
+//	 * @author Shou Matsumoto
+//	 *
+//	 */
+//	class ChangeZeroProbabilityStateException extends RuntimeException {
+//		public ChangeZeroProbabilityStateException() {}
+//		public ChangeZeroProbabilityStateException(String message) { super(message); }
+//		public ChangeZeroProbabilityStateException(Throwable cause) { super(cause);}
+//		public ChangeZeroProbabilityStateException(String message, Throwable cause) { super(message, cause); }
+//	}
 
 }

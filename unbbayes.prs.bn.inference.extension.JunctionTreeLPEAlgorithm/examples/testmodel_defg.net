@@ -37,6 +37,7 @@ node G
 
 potential (F | G D)
 {
+%virtual D  G
  data = ((( 0.7 0.2 0.1 )
 ( 0.05 0.9 0.05 )
 ( 0.1 0.3 0.6 ))
@@ -50,6 +51,7 @@ potential (F | G D)
 
 potential (E | D)
 {
+%virtual D
  data = (( 0.1 0.2 0.7 )
 ( 0.05 0.9 0.05 )
 ( 0.5 0.4 0.1 ));

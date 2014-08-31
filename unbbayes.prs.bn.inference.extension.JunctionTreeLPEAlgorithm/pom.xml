@@ -249,6 +249,13 @@
 				<version>2.3</version>
 			</dependency>
 			
+			<!-- This is for Base64 encoding -->
+			<dependency>
+				<groupId>javax.mail</groupId>
+				<artifactId>javax.mail-api</artifactId>
+				<version>1.4.7</version>
+			</dependency>
+			
 			<!-- JUNIT -->
 			<!--
 				JUnit is a simple framework to write repeatable tests. It is an

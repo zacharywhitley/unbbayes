@@ -1101,7 +1101,9 @@ public interface MarkovEngineInterface {
 	 * @throws IllegalStateException : if this method was called when the Markov Engine was in an
 	 * invalid state.
 	 * @see #importNetwork(File)
+	 * @deprecated use {@link #exportState()}
 	 */
+	@Deprecated
 	public void exportNetwork(File file) throws IOException, IllegalStateException;
 	
 	/**
@@ -1126,7 +1128,9 @@ public interface MarkovEngineInterface {
 	 * @throws IllegalStateException : if this method was called when the Markov Engine was in an
 	 * invalid state.
 	 * @see #exportNetwork(File)
+	 * @deprecated use {@link #importState(String)}
 	 */
+	@Deprecated
 	public void importNetwork(File file) throws IOException, IllegalStateException;
 	
 	/**

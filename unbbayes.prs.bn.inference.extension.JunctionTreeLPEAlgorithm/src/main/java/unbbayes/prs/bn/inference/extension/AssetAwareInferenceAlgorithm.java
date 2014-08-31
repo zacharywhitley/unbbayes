@@ -38,7 +38,6 @@ import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
-import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.builder.INodeBuilder;
@@ -373,11 +372,38 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 			this.updateProbabilityPriorToPropagation();
 		}
 		
+		// this list contains the asset cliques which shall be considered
+		List<Clique> editCliques = getEditCliques();	// reuse the same instance of getEditCliques() whenever possible
+//		if (editCliques == null) {
+//			editCliques = new ArrayList<Clique>(1);
+//		} else if (!isToUpdateAssets()) {
+//			editCliques.clear();
+//		}
+//		// update getEditCliques() if it was not specified. The condition !isToUpdateAssets() is here, because if isToUpdateAssets(), then updateProbabilityPriorToPropagation should have done this already
+//		if (!isToUpdateAssets() && isToUpdateOnlyEditClique() /*&& editCliques.isEmpty()*/) {
+//			for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+//				if (node instanceof TreeVariable) {
+//					TreeVariable treeVar = (TreeVariable) node;
+//					if (treeVar.hasLikelihood()) {
+//						List<INode> likelihoodParents = getLikelihoodExtractor().extractLikelihoodParents(getRelatedProbabilisticNetwork(), treeVar);
+//						likelihoodParents.add(treeVar);
+//						List<Clique> cliquesContainingAllNodes = getRelatedProbabilisticNetwork().getJunctionTree().getCliquesContainingAllNodes(likelihoodParents, 1);
+//						if (cliquesContainingAllNodes.isEmpty()) {
+//							throw new RuntimeException("Detected a trade on node " + treeVar + " with invalid assumptions: there is no clique containing " + likelihoodParents);
+//						} else {
+//							editCliques.add(cliquesContainingAllNodes.get(0));
+//						}
+//					}
+//				}
+//			}
+//			// we need to copy data of all prob cliques/separators prior to update anyway, because we want to revert propagation in case of ZeroAssetsException
+//		}
+		
 		// propagate probability
 		
 		// check if we can limit the scope of propagation (if only 1 clique is edited, then we can limit to that subtree if it's disconnected from others)
-		List<Clique> editCliques = this.getEditCliques();
-		if (editCliques != null && editCliques.size() == 1) {
+//		if (editCliques.size() == 1) {
+	    if (editCliques != null && editCliques.size() == 1) {
 			// if there is only 1 clique being updated, then limit the scope only to that portion of the junction tree (do not consider other disconnected portions)
 			Clique rootOfSubtree = editCliques.get(0);
 			// the clique to be passed must be of the same network (can be different network if we are trying to simulate or using a copied network)
@@ -399,6 +425,9 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 			}
 			// only propagate through the sub-tree rooted by rootOfSubtree
 			((JunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).propagate(rootOfSubtree, isToUpdateMarginals);
+			
+//			// clear this edit list, because we don't want it to be used in next propagation, or to be alive after finishing propagation
+//			editCliques.clear();	
 		} else {
 			// assume there are other potential evidences all over the junction tree
 			this.getProbabilityPropagationDelegator().propagate();
