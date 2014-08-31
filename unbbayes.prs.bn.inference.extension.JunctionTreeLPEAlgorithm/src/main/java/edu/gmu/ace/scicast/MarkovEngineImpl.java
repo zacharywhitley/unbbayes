@@ -13304,9 +13304,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// this will load from file, given identifier. Make sure we specify correct file in correct folder.
 			netIdentifier = getStatesFolderName() + netString + getExportedStateFileExtension();
 			
-			if (isToCompressExportedState()) {
-				io.setReaderBuilder(new IReaderBuilder() {
-					public Reader getReaderFromFile(File file) throws FileNotFoundException {
+			io.setReaderBuilder(new IReaderBuilder() {
+				public Reader getReaderFromFile(File file) throws FileNotFoundException {
+					// check if this is a zip file
+					boolean isZip = false;
+					try {
+						isZip = isZipFile(file);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					if (isZip) {
 						// This stream will read a file input stream, and then unzip it
 						ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(file));
 						try {
@@ -13317,12 +13324,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						}	
 						// Convert stream to reader, and wraps with buffer
 						return new BufferedReader(new InputStreamReader(zipInputStream));
+					} else {
+						// just read the file normally
+						return (new BufferedReader(new FileReader(file)));
 					}
-				});
-			} else {
-				// by setting the reader builder of a NetIO to itself, it will do its default behavior
-				io.setReaderBuilder(io);
-			}
+				}
+			});
 		} else if (isToCompressExportedState()) {
 			io.setReaderBuilder(new IReaderBuilder() {
 				public Reader getReaderFromFile(File file) throws FileNotFoundException {
