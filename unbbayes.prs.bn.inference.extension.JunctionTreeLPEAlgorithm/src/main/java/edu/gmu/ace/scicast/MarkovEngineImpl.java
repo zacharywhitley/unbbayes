@@ -370,7 +370,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToAddArcsOnAddTradeAndUpdateJT = true;
 
 	/** If true, {@link #importState(String)} and {@link #exportState()} will consider compressed format (e.g. zip and then base64 encoding) */
-	private boolean isToCompressExportedState = false;
+	private boolean isToCompressExportedState = true;
 	private boolean isToReturnIdentifiersInExportState = false;
 
 	private boolean isToAllowNonBayesianUpdate = true; // false
