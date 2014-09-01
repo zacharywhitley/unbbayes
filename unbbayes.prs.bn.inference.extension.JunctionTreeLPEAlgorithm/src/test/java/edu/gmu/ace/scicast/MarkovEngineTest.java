@@ -23734,6 +23734,12 @@ public class MarkovEngineTest extends TestCase {
 //		engine.addQuestionAssumption(null, new Date(), 155, Collections.singletonList(157L), null);
 //		engine.addQuestionAssumption(null, new Date(), 155, Collections.singletonList(341L), null);
 		// use the import state feature to load a full net and probabilities 
+		// backup configuration
+		boolean isToCompressExportedState = engine.isToCompressExportedState();
+		boolean isToReturnIdentifiersInExportState = engine.isToReturnIdentifiersInExportState();
+		// force importState to read uncompressed NET format
+		engine.setToCompressExportedState(false);
+		engine.setToReturnIdentifiersInExportState(false);
 		engine.importState(
 				"net { name = \"DAGGRE\" ; } "
 				+ " node N103 { label = \"N103\" ; states = (\"0\" \"1\") ; }"
@@ -23754,7 +23760,9 @@ public class MarkovEngineTest extends TestCase {
 				+ " (( 0.6 0.4 )"
 				+ " ( 0.4 0.6 )))); }"
 		);
-		
+		// restore backup
+		engine.setToCompressExportedState(isToCompressExportedState);
+		engine.setToReturnIdentifiersInExportState(isToReturnIdentifiersInExportState);
 		
 		// probabilities for later comparison
 		
@@ -29193,14 +29201,15 @@ public class MarkovEngineTest extends TestCase {
 		probLists = engine.getProbLists(null, null, null);
 		
 		// check that we can export and import net state
-		assertEquals(engine.exportState(), engine.exportState());	// check that exporting several times won't change the output
+		// the following check was commented out because exporting several times changes the output due to timestamp
+//		assertEquals(engine.exportState(), engine.exportState());	// check that exporting several times won't change the output
 		System.out.println("-------------------------------------------------------------------------");
 		System.out.println(engine.exportState());
 		engine.importState(engine.exportState());
 		System.out.println("-------------------------------------------------------------------------");
 		System.out.println(engine.exportState());
 		engine.importState(engine.exportState());
-		assertEquals(engine.exportState(), engine.exportState());	// check that exporting several times won't change the output
+//		assertEquals(engine.exportState(), engine.exportState());	// check that exporting several times won't change the output
 		
 		// check that marginals did not change
 		assertEquals(probLists.toString(), probLists.size(), engine.getProbLists(null, null, null).size());
@@ -31002,6 +31011,14 @@ public class MarkovEngineTest extends TestCase {
 	 * {@link MarkovEngineImpl#exportState()} are correctly loading nodes.
 	 */
 	public final void testExportImportRPCQueue() {
+		// backup config
+		boolean isToCompressExportedState = engine.isToCompressExportedState();
+		boolean isToReturnIdentifiersInExportState = engine.isToReturnIdentifiersInExportState();
+		
+		// the files used in this test were exported in non compressed form, so use same configuration
+		engine.setToCompressExportedState(false);
+		engine.setToReturnIdentifiersInExportState(false);
+		
 		// files to read string of  {@link MarkovEngineImpl#importState(String)}
 		String files[] = {
 				"./examples/export_states/rpc_queue_138323988490.state",
@@ -31019,6 +31036,7 @@ public class MarkovEngineTest extends TestCase {
 				"./examples/export_states/rpc_queue_138422160216.state",
 				"./examples/export_states/rpc_queue_138430800197.state",
 			}; 
+		
 		// for each file in files[], check if the following questions are present
 		long nodesPerFile[][] = {
 				{1,2,3},
@@ -31077,6 +31095,9 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 		
+		// restore backup
+		engine.setToCompressExportedState(isToCompressExportedState);
+		engine.setToReturnIdentifiersInExportState(isToReturnIdentifiersInExportState);
 	}
 	
 }
