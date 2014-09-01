@@ -367,37 +367,37 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 			}
 		}
 		
+		// this list will contain the asset cliques which shall be considered
+		List<Clique> editCliques = null;	// reuse the same instance of getEditCliques() whenever possible
 		if (isToUpdateAssets()) {
-			// store the probability before the propagation, so that we can calculate the ratio
+			// store the probability before the propagation, so that we can calculate the ratio.
+			// This shall also update the content of getEditCliques();
 			this.updateProbabilityPriorToPropagation();
+			editCliques = getEditCliques();
+		} else {
+			// if we are not calling updateProbabilityPriorToPropagation(), then we need to get the editted cliques manually
+			editCliques = new ArrayList<Clique>(1);
+			// update getEditCliques() if it was not specified. 
+			if (isToUpdateOnlyEditClique() /*&& editCliques.isEmpty()*/) {
+				for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+					if (node instanceof TreeVariable) {
+						TreeVariable treeVar = (TreeVariable) node;
+						if (treeVar.hasLikelihood()) {
+							List<INode> likelihoodParents = getLikelihoodExtractor().extractLikelihoodParents(getRelatedProbabilisticNetwork(), treeVar);
+							likelihoodParents.add(treeVar);
+							List<Clique> cliquesContainingAllNodes = getRelatedProbabilisticNetwork().getJunctionTree().getCliquesContainingAllNodes(likelihoodParents, 1);
+							if (cliquesContainingAllNodes.isEmpty()) {
+								throw new RuntimeException("Detected a trade on node " + treeVar + " with invalid assumptions: there is no clique containing " + likelihoodParents);
+							} else {
+								editCliques.add(cliquesContainingAllNodes.get(0));
+							}
+						}
+					}
+				}
+				// we need to copy data of all prob cliques/separators prior to update anyway, because we want to revert propagation in case of ZeroAssetsException
+			}
 		}
 		
-		// this list contains the asset cliques which shall be considered
-		List<Clique> editCliques = getEditCliques();	// reuse the same instance of getEditCliques() whenever possible
-//		if (editCliques == null) {
-//			editCliques = new ArrayList<Clique>(1);
-//		} else if (!isToUpdateAssets()) {
-//			editCliques.clear();
-//		}
-//		// update getEditCliques() if it was not specified. The condition !isToUpdateAssets() is here, because if isToUpdateAssets(), then updateProbabilityPriorToPropagation should have done this already
-//		if (!isToUpdateAssets() && isToUpdateOnlyEditClique() /*&& editCliques.isEmpty()*/) {
-//			for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
-//				if (node instanceof TreeVariable) {
-//					TreeVariable treeVar = (TreeVariable) node;
-//					if (treeVar.hasLikelihood()) {
-//						List<INode> likelihoodParents = getLikelihoodExtractor().extractLikelihoodParents(getRelatedProbabilisticNetwork(), treeVar);
-//						likelihoodParents.add(treeVar);
-//						List<Clique> cliquesContainingAllNodes = getRelatedProbabilisticNetwork().getJunctionTree().getCliquesContainingAllNodes(likelihoodParents, 1);
-//						if (cliquesContainingAllNodes.isEmpty()) {
-//							throw new RuntimeException("Detected a trade on node " + treeVar + " with invalid assumptions: there is no clique containing " + likelihoodParents);
-//						} else {
-//							editCliques.add(cliquesContainingAllNodes.get(0));
-//						}
-//					}
-//				}
-//			}
-//			// we need to copy data of all prob cliques/separators prior to update anyway, because we want to revert propagation in case of ZeroAssetsException
-//		}
 		
 		// propagate probability
 		
