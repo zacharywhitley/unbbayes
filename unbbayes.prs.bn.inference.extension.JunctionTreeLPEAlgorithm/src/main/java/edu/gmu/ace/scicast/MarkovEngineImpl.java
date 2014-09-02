@@ -4505,6 +4505,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}
 				// TODO revert on some error
 				
+
+				
 				// do not release lock to global BN until we change all asset nets
 				synchronized (getUserToAssetAwareAlgorithmMap()) {
 					synchronized (getDefaultInferenceAlgorithm()) {
@@ -4517,6 +4519,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 								marginalsBeforeResolution = getProbLists(null, null, null);
 								// backup clique potentials
 								previousCliquePotentials = getCurrentCliquePotentials();
+							}
+							
+							// check if we need to take some 0% state out from it
+							if (isMovingZeroProbability(getSettlement(), getProbList((TreeVariable) node))) {
+								moveUpZeroProbability();
 							}
 							
 							// actually add hard evidences and propagate (only on BN, because getDefaultInferenceAlgorithm().isToUpdateAssets() == false)
@@ -4749,6 +4756,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				});
 				
 				// check consistency and fill the map of evidences and the map for the history
+				boolean hasMovedUpFrom0Already = false;	// this is not to run moveUpZeroProbability multiple times
 				for (ResolveQuestionNetworkAction action : resolutions) {
 					TreeVariable probNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(action.getQuestionId()));
 					if (probNode != null) {	
@@ -4768,6 +4776,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							}
 							action.setMarginalWhenResolved(marginalBeforeResolution);
 //						}
+						
+						// check if we need to take some 0% state out from it
+						if (!hasMovedUpFrom0Already && isMovingZeroProbability(action.getSettlement(), marginalBeforeResolution)) {
+							moveUpZeroProbability();
+							hasMovedUpFrom0Already = true;
+						}
+						
 						// in the map which will be passed to the algorithm, mark that this node has an evidence at this state
 						mapOfEvidences.put(probNode, action.getSettlement());
 						// update the map to be used to update the history all at once at the end of this method
@@ -7492,15 +7507,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// check if we are moving up any probability from 0%, because in such case we don't have a bayesian update 
 		// (i.e. there is no likelihood ratio to multiply to 0 in order to result in non-zero)
-		if (isToAllowNonBayesianUpdate()) {
-			int size = condProbBeforeTrade.size();
-			for (int i = 0; i < size; i++) {
-				if (condProbBeforeTrade.get(i).equals(0f) && newValues.get(i) > 0) {
-					// this will supposedly find occurrences of zeros, replace with very small value, normalize, and propagate (for global consistency)
-					this.moveUpZeroProbability();
-					break;
-				}
-			}
+		if (isToAllowNonBayesianUpdate() && isMovingZeroProbability(newValues, condProbBeforeTrade)) {
+			this.moveUpZeroProbability();
 		}
 		
 		// connect the nodes used in trade if there is no clique containing all nodes simultaneously
@@ -7701,6 +7709,32 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 		
 		return condProbBeforeTrade;
+	}
+
+	/**
+	 * Check if this trade is trying to change some impossible (0%) state.
+	 * @param newProb: trade (probability to set)
+	 * @param oldProb: current probability
+	 * @return if this is true, then oldProb has a 0% state, but the same state in newProb is above 0%.
+	 * In such case, {@link #moveUpZeroProbability()} shall be used to move 0% out from 0%.
+	 * If any of the arguments is null, then will return false too.
+	 * If the sizes of the arguments are different, it will only compare the states in smaller list.
+	 */
+	protected boolean isMovingZeroProbability(List<Float> newProb, List<Float> oldProb) {
+		if (newProb == null || oldProb == null) {
+			// if there is no state to be compared, return false too.
+			return false;
+		}
+//		if (newProb.size() != oldProb.size()) {
+//			throw new IllegalArgumentException("The number of states in the probabilities being compared is different. New probability is " + newProb + ", and old is " + oldProb);
+//		}
+		int size = Math.min(oldProb.size(), newProb.size());
+		for (int i = 0; i < size; i++) {
+			if (oldProb.get(i).equals(0f) && newProb.get(i) > 0) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -13500,6 +13534,26 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			setNetworkActionsIndexedByQuestions(new HashMap<Long, List<NetworkAction>>());	// HashMap allows null key.
 			setMaxConditionalProbHistorySize(DEFAULT_MAX_CONDITIONAL_PROB_HISTORY_SIZE);
 		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getNewComplexityFactor(java.util.Map)
+	 */
+	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies) {
+		throw new RuntimeException(new NoSuchMethodException("Not implemented yet"));
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getNewComplexityFactor(java.lang.Long, java.util.List)
+	 */
+	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds) {
+		if (childQuestionId == null) {
+			// special case: we want the current complexity
+			return this.getComplexityFactor(null);
+		}
+		return this.getComplexityFactor((Map)Collections.singletonMap(childQuestionId, parentQuestionIds));
 	}
 
 	/**

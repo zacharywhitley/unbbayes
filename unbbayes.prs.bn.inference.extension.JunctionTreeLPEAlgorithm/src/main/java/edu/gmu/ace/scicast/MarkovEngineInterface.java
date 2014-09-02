@@ -2,6 +2,7 @@ package edu.gmu.ace.scicast;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -1199,4 +1200,22 @@ public interface MarkovEngineInterface {
 	 * @return simply a text containing versioning information.
 	 */
 	public String getVersionInfo();
+	
+	/**
+	 * 
+	 * @param newDependencies
+	 * @return a number indicating the complexity after changing network structure. In Junction tree algorithm, this will be the tree width.
+	 * If the argument is null, then it return the current complexity number (current tree width, if using Junction Tree).
+	 */
+	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies);
+	
+	/**
+	 * This is just an adaptor for {@link #getComplexityFactor(Map)}, for a single question,
+	 * just in order to keep the signature compatible with {@link #addQuestionAssumption(Long, Date, long, List, List)}.
+	 * @param childQuestionId : the question to be considered as the argument childQuestionId in {@link #addQuestionAssumption(Long, Date, long, List, List)}.
+	 * If this is null, then it will return {@link #getComplexityFactor(Map)} with null argument.
+	 * @param parentQuestionIds : the questions to be considered as the "parents" (dependencies) in {@link #addQuestionAssumption(Long, Date, long, List, List)}
+	 * @return : a number indicating the complexity after changing network structure. In Junction tree algorithm, this will be the tree width.
+	 */
+	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds);
 }

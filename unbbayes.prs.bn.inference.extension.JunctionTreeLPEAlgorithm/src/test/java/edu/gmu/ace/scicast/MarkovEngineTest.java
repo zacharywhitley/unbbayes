@@ -30732,6 +30732,9 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(.5f,probList.get(3),.000001);
 		assertEquals(.0f,probList.get(4),.000001);
 		
+		// save backup, so that we can undo trades or settlements
+		String state = engine.exportState();
+		
 		// disallow edit that changes 0% to anything else
 		newValues = new ArrayList<Float>();
 		newValues.add(.1f);
@@ -30800,6 +30803,170 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(newValues.size(), engine.getProbList((long)'M', Collections.singletonList(1L), Collections.singletonList(1)).size());
 			for (int i = 0; i < probList.size(); i++) {
 				assertEquals(engine.getProbList((long)'M', Collections.singletonList(1L), Collections.singletonList(1)).get(i),newValues.get(i),.000001);
+			}
+		}
+		
+		// restore backup
+		engine.importState(state);
+		
+		// store marginals
+		probBackup = engine.getProbLists(null, null, null);
+		
+		// get the conditional now, so that we can compare to the probability after resolution
+		probList = engine.getProbList('M', Collections.singletonList(1L), Collections.singletonList(1));
+		
+		// check that we can settle questions related to questions with 0% states
+		engine.resolveQuestion(null, new Date(), 1, 1);	// settle the parent
+		
+		// check the probability of the child
+		assertEquals(5,probList.size());
+		for (int i = 0; i < probList.size(); i++) {
+			assertEquals(probList.toString() + engine.getProbList('M',null, null), probList.get(i), engine.getProbList('M',null, null).get(i),.000001);
+		}
+		
+		// undo settlement
+		engine.importState(state);
+
+		// check that probability did not change
+		assertEquals(probBackup.size(), engine.getProbLists(null, null, null).size());
+		// iterate on questions
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			assertEquals(probBackup.get(entry.getKey()).size(), entry.getValue().size());
+			// check marginals of this question
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.toString() + probBackup, probBackup.get(entry.getKey()).get(i), entry.getValue().get(i),.000001);
+			}
+		}
+		
+		// check that we can settle questions with 0% states
+		try {
+			engine.resolveQuestion(null, new Date(), 'M', 0);	// settle the child
+			if (!engine.isToAllowNonBayesianUpdate()) {
+				fail("We shall not allow settlement in impossible state.");
+			} else {
+				assertTrue(engine.getProbLists(null, null, null).containsKey(1L));
+				assertEquals(engine.isToDeleteResolvedNode(), !engine.getProbLists(null, null, null).containsKey((long)'M'));
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToAllowNonBayesianUpdate()) {
+				throw (e);
+			}
+			// check that probability did not change
+			assertEquals(probBackup.size(), engine.getProbLists(null, null, null).size());
+			// iterate on questions
+			for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+				assertEquals(probBackup.get(entry.getKey()).size(), entry.getValue().size());
+				// check marginals of this question
+				for (int i = 0; i < entry.getValue().size(); i++) {
+					assertEquals(entry.toString() + probBackup, probBackup.get(entry.getKey()).get(i), entry.getValue().get(i),.000001);
+				}
+			}
+		}
+		
+		// test multiple question settlement too
+		// restore backup
+		engine.importState(state);
+		
+		
+		long transactionKey = engine.startNetworkActions();
+		// add a new question, just to assure we don't resolve everything
+		engine.addQuestion(transactionKey, new Date(), 'N', 5, null);
+		if (Math.random() < .5) {
+			// force the network to be 1->M->N
+			engine.addQuestionAssumption(transactionKey, new Date(), 'N', Collections.singletonList((long)'M'), null);	
+			// change some conditionals
+			newValues = new ArrayList<Float>();
+			newValues.add(0f);
+			newValues.add(.1f);
+			newValues.add(.2f);
+			newValues.add(.3f);
+			newValues.add(.4f);
+			engine.addTrade(transactionKey, new Date(), "", 0L, 'N', newValues, Collections.singletonList((long)'M'), Collections.singletonList(0), true);
+			Collections.shuffle(newValues);	
+			engine.addTrade(transactionKey, new Date(), "", 0L, 'N', newValues, Collections.singletonList((long)'M'), Collections.singletonList(1), true);
+			Collections.shuffle(newValues);	
+			engine.addTrade(transactionKey, new Date(), "", 0L, 'N', newValues, Collections.singletonList((long)'M'), Collections.singletonList(2), true);
+			Collections.shuffle(newValues);	
+			engine.addTrade(transactionKey, new Date(), "", 0L, 'N', newValues, Collections.singletonList((long)'M'), Collections.singletonList(3), true);
+			Collections.shuffle(newValues);	
+			engine.addTrade(transactionKey, new Date(), "", 0L, 'N', newValues, Collections.singletonList((long)'M'), Collections.singletonList(4), true);
+		}
+		// set 2nd parent state (the one to be settled too) to 0%
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(0f);
+		newValues.add(.9f);
+		engine.addTrade(transactionKey, new Date(), "", 0L, 1, newValues, null, null, true);
+		engine.resolveQuestion(transactionKey, new Date(), 'M', 1);
+		engine.resolveQuestion(transactionKey, new Date(), 1, 1);
+		try {
+			engine.commitNetworkActions(transactionKey);
+			if (!engine.isToAllowNonBayesianUpdate()) {
+				fail("Should not allow commit");
+			} else {
+				assertTrue(engine.getProbLists(null, null, null).containsKey((long)'N'));
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToAllowNonBayesianUpdate()) {
+				throw e;
+			}
+			
+		}
+		
+		
+		assertFalse(engine.getProbLists(null, null, null).containsKey((long)'M'));
+		assertFalse(engine.getProbLists(null, null, null).containsKey(1L));
+		
+		
+		// check single settlement of impossible parent too
+		engine.importState(state);
+		
+		// create new node, so that the node to be resolved is possibly a separator
+		engine.addQuestion(null, new Date(), 'N', 5, null);
+		if (Math.random() < .8) {
+			// force the network to be M<-1->N
+			engine.addQuestionAssumption(null, new Date(), 'N', Collections.singletonList(1L), null);	
+			// change some conditionals
+			newValues = new ArrayList<Float>();
+			newValues.add(0f);
+			newValues.add(.1f);
+			newValues.add(.2f);
+			newValues.add(.3f);
+			newValues.add(.4f);
+			engine.addTrade(null, new Date(), "", 0L, 'N', newValues, Collections.singletonList(1L), Collections.singletonList(0), true);
+			Collections.shuffle(newValues);	
+			engine.addTrade(null, new Date(), "", 0L, 'N', newValues, Collections.singletonList(1L), Collections.singletonList(1), true);
+			Collections.shuffle(newValues);	
+			engine.addTrade(null, new Date(), "", 0L, 'N', newValues, Collections.singletonList(1L), Collections.singletonList(2), true);
+		}
+		
+		// set parent's 2nd state (the one to be settled too) to 0%
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(0f);
+		newValues.add(.9f);
+		engine.addTrade(null, new Date(), "", 0L, 1, newValues, null, null, true);
+		assertEquals(0f, engine.getProbList(1, null, null).get(1), .000001);	// make sure I set the state 1 to 0
+
+		
+		// resolve to impossible state
+		try {
+			engine.resolveQuestion(null, new Date(), 1, 1);
+			if (!engine.isToAllowNonBayesianUpdate()) {
+				fail("We shall not allow settlement in impossible state.");
+			} else {
+				// check the probability of the child given impossible state is uniform, because we lose such conditionals when we set probability to 0%
+				assertFalse(engine.getProbLists(null, null, null).containsKey(1L));
+				assertEquals(5,engine.getProbList('M',null, null).size());
+				assertEquals(5,engine.getProbList('N',null, null).size());
+				for (int i = 0; i < 5; i++) {
+					assertEquals(engine.getProbList('M',null, null).toString(), 1f/5f, engine.getProbList('M',null, null).get(i),.000001);
+					assertEquals(engine.getProbList('N',null, null).toString(), 1f/5f, engine.getProbList('N',null, null).get(i),.000001);
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			if (engine.isToAllowNonBayesianUpdate()) {
+				throw e;
 			}
 		}
 	}
