@@ -30381,6 +30381,255 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	/**
+	 * This is used in {@link #testGetComplexityFactor()} in order to convert arguments of {@link MarkovEngineImpl#getComplexityFactor(List, List)}
+	 * to the argument of {@link MarkovEngineImpl#getComplexityFactor(Map)}
+	 * @param childQuestionIds : 1st argument of {@link MarkovEngineImpl#getComplexityFactor(List, List)}
+	 * @param parentQuestionIds : 2nd argument of {@link MarkovEngineImpl#getComplexityFactor(List, List)}
+	 * @return argument of {@link MarkovEngineImpl#getComplexityFactor(Map)}
+	 */
+	public Map<Long, Collection<Long>> getDependenciesMapFromLists(List<Long> childQuestionIds, List<Long> parentQuestionIds) {
+		if (childQuestionIds == null) {
+			return null;
+		}
+		if (parentQuestionIds == null) {
+			parentQuestionIds = new ArrayList<Long>();
+		}
+		
+		Map<Long, Collection<Long>> ret = new HashMap<Long, Collection<Long>>();
+		
+		for (int i = 0; i < childQuestionIds.size(); i++) {
+			Collection<Long> parents = ret.get(childQuestionIds.get(i));
+			if (parents == null) {
+				parents = new HashSet<Long>();
+				ret.put(childQuestionIds.get(i),parents);
+			}
+			if (i < parentQuestionIds.size()) {
+				parents.add(parentQuestionIds.get(i));
+			}
+		}
+		
+		return ret;
+	}
+	
+	/**
+	 * Test method for {@link MarkovEngineImpl#getComplexityFactor(Map)}, {@link MarkovEngineImpl#getComplexityFactor(Long, List)},
+	 * and {@link MarkovEngineImpl#getComplexityFactor(List, List)}.
+	 * @throws InvalidParentException 
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public final void testGetComplexityFactor() throws InvalidParentException {
+		engine.initialize();
+		
+		// check empty network
+		int complexityFactorList = engine.getComplexityFactor((List)null, null);
+		int complexityFactorMap = engine.getComplexityFactor((Map)null);
+		int complexityFactorSingle = engine.getComplexityFactor((Long)null, null);
+		assertEquals(0, complexityFactorMap);
+		assertEquals(0, complexityFactorSingle);
+		assertEquals(0, complexityFactorList);
+		// also check empty arguments instead of null arguments
+		complexityFactorList = engine.getComplexityFactor(Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+		complexityFactorMap = engine.getComplexityFactor(Collections.EMPTY_MAP);
+		complexityFactorSingle = engine.getComplexityFactor((Long)null, Collections.EMPTY_LIST);
+		assertEquals(0, complexityFactorMap);
+		assertEquals(0, complexityFactorSingle);
+		assertEquals(0, complexityFactorList);
+		
+		// check cases that will create a node A, not arcs
+		complexityFactorList = engine.getComplexityFactor(Collections.singletonList(0x0AL), (Math.random() < .5)?Collections.EMPTY_LIST:null);
+		complexityFactorMap = engine.getComplexityFactor((Map)Collections.singletonMap(0x0AL, (Math.random() < .5)?Collections.EMPTY_LIST:null));
+		complexityFactorSingle = engine.getComplexityFactor(0x0AL, (Math.random() < .5)?Collections.EMPTY_LIST:null);
+		assertEquals(1, complexityFactorMap);
+		assertEquals(1, complexityFactorSingle);
+		assertEquals(1, complexityFactorList);
+		
+		// check that node was not created
+		assertTrue(engine.getProbLists(null, null, null).isEmpty());
+		
+		// check B<-A   E<-D->F (creating new nodes and arcs)
+		
+		List<Long> childQuestionIds = new ArrayList<Long>();
+		List<Long> parentQuestionIds = new ArrayList<Long>();
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0BL); 	// A->B
+		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0EL); 	// D->E
+		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0FL); 	// D->F
+		
+		complexityFactorList = engine.getComplexityFactor(childQuestionIds, parentQuestionIds);
+		assertEquals("3 keys (children) B, E, F", 3, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).size());
+		assertEquals("2 values (parents) A and D", 2, new HashSet(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values()).size());
+		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		complexityFactorSingle = engine.getComplexityFactor(0x0BL, Collections.singletonList(0x0AL));	// can't create everything at once, so just check subset B<-A
+		assertEquals(2, complexityFactorMap);
+		assertEquals(2, complexityFactorSingle);
+		assertEquals(2, complexityFactorList);
+		
+		// check that nodes&arcs were not actually created
+		assertTrue(engine.getProbLists(null, null, null).isEmpty());
+		
+		// now, actually create B<-A   E<-D->F
+		engine.addQuestion(null, new Date(), 0x0AL, 5, null);
+		engine.addQuestion(null, new Date(), 0x0BL, 5, null);
+		engine.addQuestion(null, new Date(), 0x0DL, 5, null);
+		engine.addQuestion(null, new Date(), 0x0EL, 5, null);
+		engine.addQuestion(null, new Date(), 0x0FL, 5, null);
+		engine.addQuestionAssumption(null, new Date(), 0x0BL, Collections.singletonList(0x0AL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we created 5 nodes
+		
+		// check complexity with no new arcs 
+		complexityFactorList = engine.getComplexityFactor((List)null, null);
+		complexityFactorMap = engine.getComplexityFactor((Map)null);
+		complexityFactorSingle = engine.getComplexityFactor((Long)null, null);
+		assertEquals(2, complexityFactorMap);
+		assertEquals(2, complexityFactorSingle);
+		assertEquals(2, complexityFactorList);
+		// also check empty arguments instead of null arguments
+		complexityFactorList = engine.getComplexityFactor(Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+		complexityFactorMap = engine.getComplexityFactor(Collections.EMPTY_MAP);
+		complexityFactorSingle = engine.getComplexityFactor((Long)0x0AL, Collections.EMPTY_LIST);
+		assertEquals(2, complexityFactorMap);
+		assertEquals(2, complexityFactorSingle);
+		assertEquals(2, complexityFactorList);
+		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
+		
+		// check that complexity won't chage if we add F->A, resulting in E<-D->F->A->B
+		childQuestionIds = new ArrayList<Long>();
+		parentQuestionIds = new ArrayList<Long>();
+		parentQuestionIds.add(0x0FL); childQuestionIds.add(0x0AL); 	// F->A
+		complexityFactorList = engine.getComplexityFactor(childQuestionIds, parentQuestionIds);
+		assertEquals("Expected only 1 key/child = 0x0A", 1, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).size());
+		assertTrue("Expected only 1 key/child = 0x0A", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).containsKey(0x0AL));
+		assertEquals("Expected only 1 value/parent = 0x0F", 1, new HashSet(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next()).size());	
+		assertTrue("Expected only 1 value/parent = 0x0F", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next().contains(0x0FL));	
+		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		complexityFactorSingle = engine.getComplexityFactor(0x0AL, Collections.singletonList(0x0FL));
+		assertEquals(2, complexityFactorMap);
+		assertEquals(2, complexityFactorSingle);
+		assertEquals(2, complexityFactorList);
+		
+		// check that F->A was not actually added
+		assertFalse(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0AL)).getParentNodes().contains(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0FL))));
+		assertFalse(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0FL)).getChildNodes().contains(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0AL))));
+		assertNull(engine.getProbabilisticNetwork().getEdge(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0FL)), engine.getProbabilisticNetwork().getNode(String.valueOf(0x0AL))));
+		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
+		
+		// check that complexity won't change if we add A->C (i.e. with a new node C)
+		childQuestionIds = new ArrayList<Long>();
+		parentQuestionIds = new ArrayList<Long>();
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0CL); 	// A->C
+		complexityFactorList = engine.getComplexityFactor(childQuestionIds, parentQuestionIds);
+		assertEquals("Expected only 1 key/child = 0x0C", 1, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).size());
+		assertTrue("Expected only 1 key/child = 0x0C", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).containsKey(0x0CL));
+		assertEquals("Expected only 1 value/parent = 0x0A", 1, new HashSet(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next()).size());	
+		assertTrue("Expected only 1 value/parent = 0x0A", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next().contains(0x0AL));	
+		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		complexityFactorSingle = engine.getComplexityFactor(0x0CL, Collections.singletonList(0x0AL));
+		assertEquals(2, complexityFactorMap);
+		assertEquals(2, complexityFactorSingle);
+		assertEquals(2, complexityFactorList);
+		
+		// check that A remains there, but C was not actually added
+		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0AL));
+		assertFalse(engine.getProbLists(null, null, null).containsKey(0x0CL));
+		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
+		
+		// check that complexity increases if we add B->F, resulting in E<-D->F<-B<-A
+		childQuestionIds = new ArrayList<Long>();
+		parentQuestionIds = new ArrayList<Long>();
+		parentQuestionIds.add(0x0BL); childQuestionIds.add(0x0FL); 	// B->F
+		complexityFactorList = engine.getComplexityFactor(childQuestionIds, parentQuestionIds);
+		assertEquals("Expected only 1 key/child = 0x0F", 1, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).size());
+		assertTrue("Expected only 1 key/child = 0x0F", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).containsKey(0x0FL));
+		assertEquals("Expected only 1 value/parent = 0x0B", 1, new HashSet(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next()).size());	
+		assertTrue("Expected only 1 value/parent = 0x0B", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next().contains(0x0BL));	
+		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		complexityFactorSingle = engine.getComplexityFactor(0x0FL, Collections.singletonList(0x0BL));
+		assertEquals(3, complexityFactorMap);
+		assertEquals(3, complexityFactorSingle);
+		assertEquals(3, complexityFactorList);
+		
+		// check that B->F was not actually added
+		assertFalse(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0FL)).getParentNodes().contains(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0BL))));
+		assertFalse(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0BL)).getChildNodes().contains(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0FL))));
+		assertNull(engine.getProbabilisticNetwork().getEdge(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0BL)), engine.getProbabilisticNetwork().getNode(String.valueOf(0x0FL))));
+		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
+		
+		// check that complexity increases if we add C->B (i.e. with a new node C)
+		childQuestionIds = new ArrayList<Long>();
+		parentQuestionIds = new ArrayList<Long>();
+		parentQuestionIds.add(0x0CL); childQuestionIds.add(0x0BL); 	// C->B
+		complexityFactorList = engine.getComplexityFactor(childQuestionIds, parentQuestionIds);
+		assertEquals("Expected only 1 key/child = 0x0B", 1, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).size());
+		assertTrue("Expected only 1 key/child = 0x0B", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).containsKey(0x0BL));
+		assertEquals("Expected only 1 value/parent = 0x0C", 1, new HashSet(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next()).size());	
+		assertTrue("Expected only 1 value/parent = 0x0C", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next().contains(0x0CL));	
+		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		complexityFactorSingle = engine.getComplexityFactor(0x0BL, Collections.singletonList(0x0CL));
+		assertEquals(3, complexityFactorMap);
+		assertEquals(3, complexityFactorSingle);
+		assertEquals(3, complexityFactorList);
+		
+		// check that B remains there, but C was not actually added
+		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0BL));
+		assertFalse(engine.getProbLists(null, null, null).containsKey(0x0CL));
+		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
+		
+		// check that complexity increases by including new node C and fully connecting the net
+		childQuestionIds = new ArrayList<Long>();
+		parentQuestionIds = new ArrayList<Long>();
+		// also check that we can specify arcs that are there already
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0BL);
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0CL);
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0DL);
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0EL);
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0FL);
+		parentQuestionIds.add(0x0BL); childQuestionIds.add(0x0CL);
+		parentQuestionIds.add(0x0BL); childQuestionIds.add(0x0DL);
+		parentQuestionIds.add(0x0BL); childQuestionIds.add(0x0EL);
+		parentQuestionIds.add(0x0BL); childQuestionIds.add(0x0FL);
+		parentQuestionIds.add(0x0CL); childQuestionIds.add(0x0DL);
+		parentQuestionIds.add(0x0CL); childQuestionIds.add(0x0EL);
+		parentQuestionIds.add(0x0CL); childQuestionIds.add(0x0FL);
+		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0EL);
+		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0FL);
+		parentQuestionIds.add(0x0EL); childQuestionIds.add(0x0FL);
+		complexityFactorList = engine.getComplexityFactor(childQuestionIds, parentQuestionIds);
+		assertEquals("Expected 5 key/child = B,C,D,E,F", 5, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).size());
+		for (long i = 0x0B; i <= 0x0F; i++) {
+			assertTrue("Expected key/child = " + i, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).containsKey(i));
+		}
+		// check that key B is related to A, key C is related to A and B, key D is related to A,B,C, and so on.
+		for (Entry<Long, Collection<Long>> entry : getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).entrySet()) {
+			// A is related to 0 values, B is related to 1 value, C is related to 2 values, and so on
+			assertEquals(entry.toString(), entry.getKey()-0x0AL, entry.getValue().size());
+			for (long i = 0x0AL; i < entry.getKey(); i++) {
+				// key B is related to A, key C is related to A and B, key D is related to A,B,C, and so on.
+				assertTrue(entry.toString(), entry.getValue().contains(i));
+			}
+		}
+		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		
+		// "simulate" fully connected situation in MarkovEngineImpl#getComplexityFactor(Long, List) by making F a common child of all other nodes
+		parentQuestionIds = new ArrayList<Long>();
+		parentQuestionIds.add(0x0AL); parentQuestionIds.add(0x0BL); parentQuestionIds.add(0x0CL);
+		parentQuestionIds.add(0x0DL); parentQuestionIds.add(0x0EL);
+		complexityFactorSingle = engine.getComplexityFactor(0x0FL, parentQuestionIds);	
+		
+		assertEquals(6, complexityFactorMap);
+		assertEquals(6, complexityFactorSingle);
+		assertEquals(6, complexityFactorList);
+		
+		// check that the new node and arcs were not actually created.
+		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
+		assertEquals(3, engine.getProbabilisticNetwork().getJunctionTree().getCliques().size());	// cliques are supposedly AB, DE, and DF
+		// make sure the complexity returned to its normal value
+		assertEquals(2, engine.getComplexityFactor((Map)null));
+		assertEquals(2, engine.getComplexityFactor((Long)null, null));
+		assertEquals(2, engine.getComplexityFactor((List)null, null));
+	}
+	
+	/**
 	 * Test method for {@link MarkovEngineImpl#exportState()}
 	 * and {@link MarkovEngineImpl#importState(String)}
 	 * for 2000 vars and randomly created arcs (max 10 parents)

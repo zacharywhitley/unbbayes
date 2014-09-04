@@ -46,20 +46,24 @@ import unbbayes.io.StringPrintStreamBuilder;
 import unbbayes.io.StringReaderBuilder;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Edge;
+import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.IJunctionTree;
+import unbbayes.prs.bn.IJunctionTreeBuilder;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
+import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.Separator;
+import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.ITableFunction;
@@ -12319,6 +12323,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return instance of {@link NetStatistics}
 	 * @see NetStatistics
 	 * @see NetStatisticsImpl
+	 * @see #getComplexityFactor(Map)
 	 */
 	public NetStatistics getNetStatistics() {
 		NetStatistics ret = new NetStatisticsImpl();
@@ -13536,24 +13541,245 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 	}
 	
-	/*
-	 * (non-Javadoc)
+	/**
+	 * This will simply return the maximum size of cliques (in number of variables), after adding arcs if requested.
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getNewComplexityFactor(java.util.Map)
 	 */
-	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies) {
-		throw new RuntimeException(new NoSuchMethodException("Not implemented yet"));
+	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies) throws InvalidParentException {
+		
+		ProbabilisticNetwork netToCheck = null;	// this will hold a copy of the Bayes net whose complexity will be checked
+		AssetAwareInferenceAlgorithm algorithm = getDefaultInferenceAlgorithm();	// this will be used to clone the probabilistic network
+		
+		// I want to lock the algorithm and then lock the shared net in this order. Since other portions of this class also locks in the same order, this prevents deadlocks.
+		synchronized (algorithm) {	
+			ProbabilisticNetwork sharedBn = getProbabilisticNetwork();
+			// the following code was commented out, because I assume the shared bayes net and the bayes net handled by the default algorithms are the same
+			// ...and besides, I don't need them to be the same in the context of this method.
+//			ProbabilisticNetwork sharedBn = algorithm.getRelatedProbabilisticNetwork();
+//			if (sharedBn == null || !sharedBn.equals(getProbabilisticNetwork())) {
+//				// this should be unnecessary, but just for backward compatibility and to make sure
+//				sharedBn = getProbabilisticNetwork();
+//			}
+			synchronized (sharedBn) {
+				// clone the network
+				netToCheck = algorithm.cloneProbabilisticNetwork(sharedBn);
+				// TODO do not clone clique/separator potentials
+			}
+		} // we don't need to keep the lock anymore, because we are working with a clone
+		
+		// check if new arcs shall be considered
+		if (newDependencies != null && !newDependencies.isEmpty()) {
+			boolean isModified = false;	// this is used to check if there was any modification in net structure
+			// add arcs 
+			for (Entry<Long, Collection<Long>> entry : newDependencies.entrySet()) {
+				if (entry.getKey() == null) {
+					continue; // ignore null keys
+				}
+				// the key of the entry is the destination (i.e. target, child, or the node where the arc is pointing to), 
+				Node destinationNode = netToCheck.getNode(entry.getKey().toString());
+				if (destinationNode == null) {
+					// create node if it does not exist. 
+					destinationNode = new ProbabilisticNode();
+					destinationNode.setName(entry.getKey().toString());
+					// We don't need to care about # of states, because our objective is to find treewidth in terms of # of nodes in cliques
+					// Make sure the node has only 1 state, because we need a simple, yet consistent node.
+					destinationNode.removeStates();
+					if (destinationNode.getStatesSize() < 1) {
+						destinationNode.appendState("s");	// make sure there is at least 1 state, though
+					}
+					// also make sure the Conditional Probability Table is consistent, just to make sure junction tree compilation won't throw exceptions
+					PotentialTable cpt = (PotentialTable)((ProbabilisticNode)destinationNode).getProbabilityFunction();
+					cpt.addVariable(destinationNode);
+					cpt.setValue(0, 1);	// we only have 1 state and no parents at this point, so this must be set to 100%
+					netToCheck.addNode(destinationNode);	// make sure it is included in the network
+					isModified = true;	// mark this net as modified
+				}
+				
+				// values are the node the arc is pointing from (i.e. parent, or the origin of the arc)
+				if (entry.getValue() != null) {
+					for (Long originNodeId : entry.getValue()) {
+						if (originNodeId == null) {
+							continue; // ignore null values
+						}
+						// extract the origin node
+						Node originNode = netToCheck.getNode(originNodeId.toString());
+						if (originNode == null) {
+							// create node if it does not exist. 
+							originNode = new ProbabilisticNode();
+							originNode.setName(originNodeId.toString());
+							// We don't need to care about # of states, because our objective is to find treewidth in terms of # of nodes in cliques
+							// Make sure the node has only 1 state, because we need a simple, yet consistent node.
+							originNode.removeStates();
+							if (originNode.getStatesSize() < 1) {
+								originNode.appendState("s");	// make sure there is at least 1 state, though
+							}
+							// also make sure the Conditional Probability Table is consistent, just to make sure junction tree compilation won't throw exceptions
+							PotentialTable cpt = (PotentialTable)((ProbabilisticNode)originNode).getProbabilityFunction();
+							cpt.addVariable(originNode);
+							cpt.setValue(0, 1);	// we only have 1 state and no parents at this point, so this must be set to 100%
+							netToCheck.addNode(originNode);	// make sure it is included in the network
+							// no need to set isModified = true here, because it will be set after this if-clause anyway (since we'll add new edge for sure)
+						}
+						// only include new arc if it does not exist
+						if (netToCheck.hasEdge(originNode, destinationNode) < 0) {
+							// TODO hasEdge is a redundant check, because something similar is done in addEdge
+							// finally, include the new arc
+							netToCheck.addEdge(new Edge(originNode, destinationNode));
+							isModified = true;	// mark this net as modified
+						}
+					}	// end of for
+				}	// end of if (entry.getValue() != null)
+			}	// end of for each entry in map
+			
+			// only re-compile junction tree if we really modified network structure.
+			if (isModified) {
+				// Set a junction tree builder which will not try to fill probabilities or assure globally consistent during compilation, 
+				// because we don't need the clique potentials in order to get number of variables.
+				netToCheck.setJunctionTreeBuilder(new IJunctionTreeBuilder() {
+					public IJunctionTree buildJunctionTree(Graph network) throws InstantiationException, IllegalAccessException {
+						return new StructureOnlyJunctionTree((ProbabilisticNetwork) network);
+					}
+				});
+				
+				// make sure new nodes are visible for the JT compiler
+				netToCheck.resetNodesCopy();
+				// ...and re-compile junction tree (because we have changes in Bayes net structure).
+				try {
+					// TODO although this is faster, it is safer to use JunctionTreeAlgorithm#run() instead
+					netToCheck.compile();
+				} catch (Exception e) {
+					// TODO stop using exception translation
+					throw new RuntimeException("Unable to compile the network after including new arcs: " + newDependencies, e);
+				}	
+			}
+		} // end of if (newDependencies != null && !newDependencies.isEmpty())
+		
+		// return the maximum number of variables
+		return this.getComplexityFactor(netToCheck);
 	}
 	
+	/**
+	 * This is just an extension of {@link JunctionTree} which does never fill or update content of clique/separator potentials
+	 * when {@link ProbabilisticNetwork#compile()} is run.
+	 * This is used in {@link MarkovEngineImpl#getComplexityFactor(Map)} in order to quickly build a junction tree
+	 * structure after changes in Bayes net, without wasting computational time for initializing beliefs or to guarantee global consitency.
+	 * Basically, this forces {@link SingleEntityNetwork#compileJT(IJunctionTree)} not to fill probabilities nor to assure global consistency,
+	 * so changes in {@link SingleEntityNetwork#compileJT(IJunctionTree)} may affect the behavior of this class.
+	 * Additionally, this class only assures that fields read by {@link MarkovEngineImpl#getComplexityFactor(ProbabilisticNetwork)}
+	 * are consistent, so other fields/methods must not be accessed.
+	 * @author Shou Matsumoto
+	 */
+	private class StructureOnlyJunctionTree extends JunctionTree {
+		private static final long serialVersionUID = 5496557084782672808L;
+		private ProbabilisticNetwork net;
+		/** Default constructor using fields */
+		public StructureOnlyJunctionTree(ProbabilisticNetwork net) { this.net = net;}
+		/** 
+		 * Do not initialize belief (this will make sure {@link SingleEntityNetwork#compileJT(IJunctionTree)} won't touch probabilities). 
+		 * This will also clear {@link ProbabilisticNetwork#getNodesCopy()},
+		 * so that {@link SingleEntityNetwork#compileJT(IJunctionTree)} will do nothing after this method.
+		 * {@link ProbabilisticNetwork#resetNodesCopy()} shall be called to fill {@link ProbabilisticNetwork#getNodesCopy()} again, if necessary. 
+		 */
+		public void initBeliefs() throws Exception { net.getNodesCopy().clear(); return; }
+	}
+	
+	/**
+	 * This is used in {@link #getComplexityFactor(Map)} in order to return the maximum number of variables in a clique.
+	 * Subclasses can overwrite this method in order to make {@link #getComplexityFactor(Map)} to return desired metrics from a {@link ProbabilisticNetwork}.
+	 * @param net : network to be evaluated (we can use {@link ProbabilisticNetwork#getJunctionTree()} to retrieve junction tree) 
+	 * @return maximum number of variables in a clique. If the network does not have cliques, then 0 will be returned by default.
+	 * @see #getNetStatistics()
+	 */
+	protected int getComplexityFactor(ProbabilisticNetwork net) {
+		// TODO remove redundancy with #getNetStatistics().
+		
+		// initial assertion
+		if (net == null || net.getJunctionTree() == null || net.getJunctionTree().getCliques() == null) {
+			// no clique to consider, so return immediately
+			return 0;
+		}
+		
+		// maximum number of variables in a clique
+		int maxNumVars = 0;	// this is the value to be returned by this method
+		
+		// iterate on cliques in order to get the maximum
+		for (Clique clique : net.getJunctionTree().getCliques()) {
+			// clique.getNodesList().size() is supposedly the number of variables/nodes in this clique,
+			// but I prefer to use clique.getProbabilityFunction().getVariablesSize(), which is the number of variables/nodes in the clique table (this is more reliable).
+			int currentNumVars = clique.getProbabilityFunction().getVariablesSize();	// the number of variables/nodes in current clique
+			if (currentNumVars > maxNumVars) {
+				// this is the maximum we know so far
+				maxNumVars = currentNumVars;
+			}
+		}
+		
+		return maxNumVars;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getNewComplexityFactor(java.lang.Long, java.util.List)
 	 */
-	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds) {
+	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds) throws InvalidParentException {
 		if (childQuestionId == null) {
-			// special case: we want the current complexity
-			return this.getComplexityFactor(null);
+			// special case: we want the current complexity, not the complexity after including new arcs
+			return this.getComplexityFactor((Map)null);
 		}
+//		if (parentQuestionIds == null) {
+//			// make sure we don't pass null to map's value
+//			parentQuestionIds = Collections.EMPTY_LIST;
+//		}
 		return this.getComplexityFactor((Map)Collections.singletonMap(childQuestionId, parentQuestionIds));
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactor(java.util.List, java.util.List)
+	 */
+	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds) throws InvalidParentException {
+		// initial assertions to avoid NullPointerException
+		if (childQuestionIds == null /*|| parentQuestionIds == null*/) {
+			// special case: we want the current complexity, not the complexity after including new arcs
+			return this.getComplexityFactor((Map)null);
+		}
+		if (parentQuestionIds == null) {
+			// make sure we don't use null
+			parentQuestionIds = Collections.EMPTY_LIST;
+		}
+		
+		// this will be the map to be passed to #getComplexityFactor(Map). 
+		Map<Long, Collection<Long>> newDependencies = new HashMap<Long, Collection<Long>>();
+		
+		// fill the map. 
+		for (int i = 0; i < childQuestionIds.size(); i++) {
+			// If childQuestionIds.size() < parentQuestionIds.size(), then last few values in parentQuestionIds will be ignored.
+			
+			// get the value to become the key of the map
+			Long childId = childQuestionIds.get(i);
+			// TODO shall we allow null keys?
+			
+			// extract the value
+			Collection<Long> parentIds = newDependencies.get(childId);
+			if (parentIds == null) {
+				// if this is the first time we find childId, then instantiate value of the map
+				// use Collections.EMPTY_LIST to save memory, if we know for sure this list won't be filled
+				parentIds = (i < parentQuestionIds.size())?new ArrayList<Long>():Collections.EMPTY_LIST;	
+				// by default, Collection is a reference, so pushing it to the map and then modifying the collection shall also modify the value in the map.
+				newDependencies.put(childId, parentIds);
+			}
+			
+			// If childQuestionIds.size() > parentQuestionIds.size(), then 
+			if (i < parentQuestionIds.size()) {
+				// extract the ID of the parent and add to the value in the map
+				Long parentId = parentQuestionIds.get(i);
+				// TODO shall we allow null values?
+				parentIds.add(parentId);
+				// since parentIds is a reference (to values in the map), we don't need to push it to the map again
+			}
+		}
+		
+		// delegate to #getComplexityFactor(Map).
+		return getComplexityFactor(newDependencies);
 	}
 
 	/**
@@ -13654,7 +13880,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getVersionInfo()
 	 */
 	public String getVersionInfo() {
-		return "UnBBayes SciCast Markov Engine 1.0.6";
+		return "UnBBayes SciCast Markov Engine 1.1.6";
 	}
 
 	/**

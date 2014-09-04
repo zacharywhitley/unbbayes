@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
+import unbbayes.prs.exception.InvalidParentException;
 
 
 
@@ -1155,6 +1156,8 @@ public interface MarkovEngineInterface {
 	 * @return instance of {@link NetStatistics}
 	 * @see NetStatistics
 	 * @see NetStatisticsImpl
+	 * @see #getComplexityFactor(Map)
+	 * @see #getComplexityFactor(Long, List)
 	 */
 	public NetStatistics getNetStatistics();
 	
@@ -1202,20 +1205,62 @@ public interface MarkovEngineInterface {
 	public String getVersionInfo();
 	
 	/**
-	 * 
-	 * @param newDependencies
-	 * @return a number indicating the complexity after changing network structure. In Junction tree algorithm, this will be the tree width.
-	 * If the argument is null, then it return the current complexity number (current tree width, if using Junction Tree).
+	 * This method can be used to get some metric that is related to the complexity (e.g. time complexity) of the 
+	 * underlying algorithm after adding new arcs. For instance, in a Junction tree algorithm, treewidth is a plausible metric for this purpose.
+	 * @param newDependencies : a map representing arcs to be added to current Bayes net before calculating a metric for complexity.
+	 * The keys are questions/nodes the arcs will be pointing to (i.e. child nodes), and values will be questions/nodes the arcs
+	 * will be coming from (i.e. parent nodes).
+	 * If the specified question/node did not exist, they shall be created before calculating the complexity metric.
+	 * Setting this to null will return the complexity metric of current Bayes net.
+	 * This method shall not actually modify the original Bayes net.
+	 * @return a number indicating the complexity after changing network structure (i.e. after adding new arsc). In Junction tree algorithm, this will be the tree width.
+	 * @see #getNetStatistics()
+	 * @see #getComplexityFactor(List, List)
+	 * @see #getComplexityFactor(Long, List)
+	 * @throws InvalidParentException if the new arcs to be added are invalid.
 	 */
-	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies);
+	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies) throws InvalidParentException;
 	
 	/**
-	 * This is just an adaptor for {@link #getComplexityFactor(Map)}, for a single question,
-	 * just in order to keep the signature compatible with {@link #addQuestionAssumption(Long, Date, long, List, List)}.
+	 * This is just an adaptor/wrapper for {@link #getComplexityFactor(Map)}, for a single question,
+	 * created just in order to keep the signature compatible with {@link #addQuestionAssumption(Long, Date, long, List, List)}.
 	 * @param childQuestionId : the question to be considered as the argument childQuestionId in {@link #addQuestionAssumption(Long, Date, long, List, List)}.
 	 * If this is null, then it will return {@link #getComplexityFactor(Map)} with null argument.
 	 * @param parentQuestionIds : the questions to be considered as the "parents" (dependencies) in {@link #addQuestionAssumption(Long, Date, long, List, List)}
-	 * @return : a number indicating the complexity after changing network structure. In Junction tree algorithm, this will be the tree width.
+	 * @return  a number indicating the complexity after changing network structure. In Junction tree algorithm, this will be the tree width.
+	 * @see #getNetStatistics()
+	 * @see #getComplexityFactor(List, List)
+	 * @see #getComplexityFactor(Map)
+	 * @throws InvalidParentException if the new arcs to be added are invalid.
 	 */
-	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds);
+	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds) throws InvalidParentException;
+	
+	/**
+	 * This is another wrapper for {@link #getComplexityFactor(Map)}.
+	 * It is similar to {@link #getComplexityFactor(Long, List)} but this specifies arcs one-by-one, 
+	 * so the method signature is not very compatible with {@link #addQuestionAssumption(Long, Date, long, List, List)}.
+	 * <br/>
+	 * <br/>
+	 * The 1st element in childQuestionIds is related to 1st element in parentQuestionIds, the 2nd with 2nd, and so on.
+	 * In other words, the following arcs will be created:
+	 * <pre>
+	 *  arc from parentQuestionIds.get(0) to childQuestionIds.get(0);
+	 *  arc from parentQuestionIds.get(1) to childQuestionIds.get(1);
+	 *  arc from parentQuestionIds.get(2) to childQuestionIds.get(2);
+	 *  arc from parentQuestionIds.get(3) to childQuestionIds.get(3);
+	 *  (...)
+	 *  arc from parentQuestionIds.get(Math.min(parentQuestionIds.size(), childQuestionIds.size())) to childQuestionIds.get(Math.min(parentQuestionIds.size(), childQuestionIds.size()));
+	 * </pre>
+	 * Implementations may consider a special case when childQuestionIds is larger than parentQuestionIds.
+	 * In this case, one option is to check if there are inexisting nodes in the rest of childQuestionIds and create them if so.
+	 * @param childQuestionIds: arcs will be pointing to this node.
+	 * @param parentQuestionIds: arcs will come from this node.
+	 * @return a number indicating the complexity after changing network structure. In Junction tree algorithm, this will be the tree width.
+	 * @see #getNetStatistics()
+	 * @see #getComplexityFactor(Long, List)
+	 * @see #getComplexityFactor(Map)
+	 * @throws InvalidParentException if the new arcs to be added are invalid.
+	 */
+	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds) throws InvalidParentException;
+	
 }
