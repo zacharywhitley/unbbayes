@@ -13545,7 +13545,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * This will simply return the maximum size of cliques (in number of variables), after adding arcs if requested.
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getNewComplexityFactor(java.util.Map)
 	 */
-	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies) throws InvalidParentException {
+	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies) {
 		
 		ProbabilisticNetwork netToCheck = null;	// this will hold a copy of the Bayes net whose complexity will be checked
 		AssetAwareInferenceAlgorithm algorithm = getDefaultInferenceAlgorithm();	// this will be used to clone the probabilistic network
@@ -13624,7 +13624,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						if (netToCheck.hasEdge(originNode, destinationNode) < 0) {
 							// TODO hasEdge is a redundant check, because something similar is done in addEdge
 							// finally, include the new arc
-							netToCheck.addEdge(new Edge(originNode, destinationNode));
+							try {
+								netToCheck.addEdge(new Edge(originNode, destinationNode));
+							} catch (InvalidParentException e) {
+								throw new IllegalArgumentException(e);
+							}
 							isModified = true;	// mark this net as modified
 						}
 					}	// end of for
@@ -13720,7 +13724,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * (non-Javadoc)
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getNewComplexityFactor(java.lang.Long, java.util.List)
 	 */
-	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds) throws InvalidParentException {
+	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds) {
 		if (childQuestionId == null) {
 			// special case: we want the current complexity, not the complexity after including new arcs
 			return this.getComplexityFactor((Map)null);
@@ -13736,7 +13740,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * (non-Javadoc)
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactor(java.util.List, java.util.List)
 	 */
-	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds) throws InvalidParentException {
+	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds) {
 		// initial assertions to avoid NullPointerException
 		if (childQuestionIds == null /*|| parentQuestionIds == null*/) {
 			// special case: we want the current complexity, not the complexity after including new arcs
@@ -13880,7 +13884,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getVersionInfo()
 	 */
 	public String getVersionInfo() {
-		return "UnBBayes SciCast Markov Engine 1.1.6";
+		return "UnBBayes SciCast Markov Engine 1.1.7";
 	}
 
 	/**

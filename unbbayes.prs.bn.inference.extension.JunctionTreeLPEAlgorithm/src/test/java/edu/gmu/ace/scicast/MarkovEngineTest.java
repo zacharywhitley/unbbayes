@@ -30417,7 +30417,7 @@ public class MarkovEngineTest extends TestCase {
 	 * @throws InvalidParentException 
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public final void testGetComplexityFactor() throws InvalidParentException {
+	public final void testGetComplexityFactor() {
 		engine.initialize();
 		
 		// check empty network

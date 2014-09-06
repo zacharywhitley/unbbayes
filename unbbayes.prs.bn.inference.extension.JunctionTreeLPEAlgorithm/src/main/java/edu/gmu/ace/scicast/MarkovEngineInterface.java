@@ -1213,13 +1213,13 @@ public interface MarkovEngineInterface {
 	 * If the specified question/node did not exist, they shall be created before calculating the complexity metric.
 	 * Setting this to null will return the complexity metric of current Bayes net.
 	 * This method shall not actually modify the original Bayes net.
-	 * @return a number indicating the complexity after changing network structure (i.e. after adding new arsc). In Junction tree algorithm, this will be the tree width.
+	 * @return a number indicating the complexity after changing network structure (i.e. after adding new arcs). In Junction tree algorithm, this will be the tree width.
 	 * @see #getNetStatistics()
 	 * @see #getComplexityFactor(List, List)
 	 * @see #getComplexityFactor(Long, List)
-	 * @throws InvalidParentException if the new arcs to be added are invalid.
+	 * @throws IllegalArumentException if the new arcs to be added are invalid.
 	 */
-	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies) throws InvalidParentException;
+	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies);
 	
 	/**
 	 * This is just an adaptor/wrapper for {@link #getComplexityFactor(Map)}, for a single question,
@@ -1231,9 +1231,9 @@ public interface MarkovEngineInterface {
 	 * @see #getNetStatistics()
 	 * @see #getComplexityFactor(List, List)
 	 * @see #getComplexityFactor(Map)
-	 * @throws InvalidParentException if the new arcs to be added are invalid.
+	 * @throws IllegalArumentException if the new arcs to be added are invalid.
 	 */
-	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds) throws InvalidParentException;
+	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds);
 	
 	/**
 	 * This is another wrapper for {@link #getComplexityFactor(Map)}.
@@ -1259,8 +1259,8 @@ public interface MarkovEngineInterface {
 	 * @see #getNetStatistics()
 	 * @see #getComplexityFactor(Long, List)
 	 * @see #getComplexityFactor(Map)
-	 * @throws InvalidParentException if the new arcs to be added are invalid.
+	 * @throws IllegalArumentException if the new arcs to be added are invalid.
 	 */
-	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds) throws InvalidParentException;
+	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds);
 	
 }

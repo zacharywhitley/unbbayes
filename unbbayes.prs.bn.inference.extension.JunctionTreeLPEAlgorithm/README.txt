@@ -22,8 +22,6 @@ Get the newest UnBBayes' JAR file and run the following command.
 Substitute <UnBBayes Jar File> to the actual file name you have.
 mvn install:install-file -DgroupId=br.unb.cic -DartifactId=unbbayes -Dversion=4.11.5 -Dpackaging=jar -Dfile=<UnBBayes Jar File>
 
-Go to \mvn_lib\unbbayes>
-mvn install:install-file -DgroupId=guess -DartifactId=jpf -Dversion=1.5 -Dpackaging=jar -Dfile=jpf-1.5.jar
 
 
 
