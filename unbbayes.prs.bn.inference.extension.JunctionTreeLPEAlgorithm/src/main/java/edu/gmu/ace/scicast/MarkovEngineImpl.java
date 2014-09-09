@@ -13369,23 +13369,46 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}
 				}
 			});
-		} else if (isToCompressExportedState()) {
+//		} else if (isToCompressExportedState()) {
+//			io.setReaderBuilder(new IReaderBuilder() {
+//				public Reader getReaderFromFile(File file) throws FileNotFoundException {
+//					// reads a file input stream, decode from base64, unzip, convert to reader, and wraps with buffer
+//					try {
+//						// This stream will read netString, decode from base64 encoding, and then unzip it
+//						ZipInputStream zipInputStream = new ZipInputStream(new Base64InputStream(new ByteArrayInputStream(netString.getBytes())));
+//						zipInputStream.getNextEntry(); // move cursor to 1st zipped entry  
+//						return new BufferedReader(new InputStreamReader(zipInputStream));	// Convert stream to reader, and wraps with buffer
+//					} catch (Exception e) {
+//						throw new RuntimeException(e);
+//					}
+//				}
+//			});
+		} else {
+//			// By using StringReaderBuilder, net will be read uncompresed NET format from string, instead of file
+//			io.setReaderBuilder(new StringReaderBuilder(netString));
 			io.setReaderBuilder(new IReaderBuilder() {
 				public Reader getReaderFromFile(File file) throws FileNotFoundException {
 					// reads a file input stream, decode from base64, unzip, convert to reader, and wraps with buffer
 					try {
-						// This stream will read netString, decode from base64 encoding, and then unzip it
-						ZipInputStream zipInputStream = new ZipInputStream(new Base64InputStream(new ByteArrayInputStream(netString.getBytes())));
-						zipInputStream.getNextEntry(); // move cursor to 1st zipped entry  
-						return new BufferedReader(new InputStreamReader(zipInputStream));	// Convert stream to reader, and wraps with buffer
+//						if (netString.matches("\\s*net\\s*\\{.*\\}\\s*\\z")) {
+						// regex is expensive when string is very large, so I'm only checking initial 20 chars and last 10 chars
+						// TODO perform a more robust, yet inexpensive check
+						if (netString.substring(0, Math.min(netString.length(), 20)).replaceAll("\\s+", "").startsWith("net{")
+								&& netString.substring(Math.max(netString.length()-10, 0), netString.length()).replaceAll("\\s+", "").endsWith("}")) {
+							// consider this as a Hugin Net file specification (not zipped and not encoded to base64)
+							return new BufferedReader(new InputStreamReader(new ByteArrayInputStream(netString.getBytes())));
+						} else {
+							// consider this as a zip and base64-encoded string
+							// This stream will read netString, decode from base64 encoding, and then unzip it
+							ZipInputStream zipInputStream = new ZipInputStream(new Base64InputStream(new ByteArrayInputStream(netString.getBytes())));
+							zipInputStream.getNextEntry(); // move cursor to 1st zipped entry  
+							return new BufferedReader(new InputStreamReader(zipInputStream));	// Convert stream to reader, and wraps with buffer
+						}
 					} catch (Exception e) {
 						throw new RuntimeException(e);
 					}
 				}
 			});
-		} else {
-			// By using StringReaderBuilder, net will be read uncompresed NET format from string, instead of file
-			io.setReaderBuilder(new StringReaderBuilder(netString));
 		}
 			
 		
@@ -13884,7 +13907,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getVersionInfo()
 	 */
 	public String getVersionInfo() {
-		return "UnBBayes SciCast Markov Engine 1.1.7";
+		return "UnBBayes SciCast Markov Engine 1.1.8";
 	}
 
 	/**
