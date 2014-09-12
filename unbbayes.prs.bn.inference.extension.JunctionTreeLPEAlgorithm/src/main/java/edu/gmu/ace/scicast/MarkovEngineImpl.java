@@ -211,7 +211,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	private boolean isToDeleteResolvedNode = true;
 	
-	private boolean isToThrowExceptionOnInvalidAssumptions = true;
+	/**Default value of {@link #isToThrowExceptionOnInvalidAssumptions()}*/
+	public static final boolean IS_TO_THROW_EXCEPTION_ON_INVALID_ASSUMPTION = true;
+	private boolean isToThrowExceptionOnInvalidAssumptions = IS_TO_THROW_EXCEPTION_ON_INVALID_ASSUMPTION;
 
 //	/** Set this value to < 0 to disable this feature */
 //	private float forcedInitialQValue = 100.0;
@@ -419,7 +421,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @return new instance of some class implementing {@link MarkovEngineInterface}
 	 */
 	public static MarkovEngineInterface getInstance(float logBase, float currencyConstant, float initialUserAssets) {
-		return MarkovEngineImpl.getInstance(logBase, currencyConstant, initialUserAssets, false);
+		return MarkovEngineImpl.getInstance(logBase, currencyConstant, initialUserAssets, IS_TO_THROW_EXCEPTION_ON_INVALID_ASSUMPTION);
 	}
 	
 	/**
@@ -14101,6 +14103,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	public void setExportedStateFileExtension(String exportedStateFileExtension) {
 		this.exportedStateFileExtension = exportedStateFileExtension;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#addJointTrade(java.lang.Long, java.util.Date, java.util.List, java.util.List)
+	 */
+	public boolean addJointTrade(Long transactionKey, Date occurredWhen, List<Long> targetVariables, List<Float> newValues) {
+		throw new UnsupportedOperationException("Not implemented yet");
+		
 	}
 
 

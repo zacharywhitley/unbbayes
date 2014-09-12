@@ -501,6 +501,26 @@ public interface MarkovEngineInterface {
 	public List<Float> addTrade(Long transactionKey, Date occurredWhen, long questionId, List<Integer> targetPath, List<Integer> referencePath, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException;
 	
 	/**
+	 * This method makes a trade on whole joint probabilities of a set of variables.
+	 * This is useful if you want to change the entire clique, if implementations are using Junction tree approaches.
+	 * Implementations may impose additional restrictions on the list of variables (e.g. implementations based on junction tree may
+	 * impose that the list of variables must be in same clique).
+	 * Note: this is not compatible with {@link #addTrade(Long, Date, String, long, long, List, List, List, List, boolean)} family,
+	 * because the interface does not expect assets to be handled.
+	 * @param transactionKey : key returned by {@link #startNetworkActions()}
+	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
+	 * @param targetVariables : list of variables (questions) to trade on joint probability. The order matters, because indexes are related
+	 * to indexes of newValues. Questions need to exist in the market. States of first variables switches more often.
+	 * @param newValues : joint probability distribution. States of first variables in targetVariables switches more often.
+	 * For example, if targetVariables = [1,2] with 2 states each (s0 or s1), then 
+	 * newValues = [(1=s0,2=s0); (1=s1,2=s0); (1=s0,2=s1); (1=s1,2=s1)].
+	 * @return true in case the trade was successful. false otherwise.
+	 * @throws IllegalArgumentException : if the arguments were found to be inconsistent.
+	 * @throws RuntimeException : if any other inconsistent state of ME is detected.
+	 */
+	public boolean addJointTrade(Long transactionKey, Date occurredWhen, List<Long> targetVariables, List<Float> newValues);
+	
+	/**
 	 * This function will settle a specific question.
 	 * Implementations of this method shall be synchronized.
 	 * @param transactionKey : key returned by {@link #startNetworkActions()}
@@ -1262,5 +1282,6 @@ public interface MarkovEngineInterface {
 	 * @throws IllegalArumentException if the new arcs to be added are invalid.
 	 */
 	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds);
+	
 	
 }

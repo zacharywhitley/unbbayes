@@ -43,6 +43,7 @@ import edu.gmu.ace.scicast.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.BalanceTradeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.DummyTradeAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.InexistingQuestionException;
+import edu.gmu.ace.scicast.MarkovEngineImpl.InvalidAssumptionException;
 import edu.gmu.ace.scicast.MarkovEngineImpl.RebuildNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.ResolveQuestionNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.StructureChangeNetworkAction;
@@ -16072,37 +16073,66 @@ public class MarkovEngineTest extends TestCase {
 		// add a in which the assumptions will be ignored
 		newValues = new ArrayList<Float>();
 		newValues.add(.5f); newValues.add(.5f); 
-		assertFalse( engine.addTrade(
-				null, 
-				new Date(), 
-				"Tom bets P(F|E = e2) = [.5,.5]", 
-				userNameToIDMap.get("Tom"), 
-				0x0FL, 
-				newValues, 
-				Collections.singletonList(0x0EL), 
-				Collections.singletonList(1), 
-				false
-			).isEmpty());
-		
-		// check that marginal of F is [.5,.5] (i.e. condition E was ignored)
-		probList = engine.getProbList(0x0FL, null, null);
-		assertEquals(2, probList.size());
-		assertEquals(.5f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(.5f, probList.get(1), PROB_ERROR_MARGIN);
-		
-		// check that in the history, the assumption E was ignored
-		questionHistory = engine.getQuestionHistory(0x0FL, null, null);
-		for (QuestionEvent questionEvent : questionHistory) {
-			if (!(questionEvent instanceof StructureChangeNetworkAction)
-					&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
-				assertNotNull(questionEvent.getUserId());
-			}
+		// backup probs and history to check if they were not changed
+		if (engine.isToThrowExceptionOnInvalidAssumptions()) {
+			probListsBeforeTrade = engine.getProbLists(null, null, null);
+			questionHistory = engine.getQuestionHistory(0x0FL, null, null);
 		}
-		assertNotNull(questionHistory);
-		assertFalse(questionHistory.isEmpty());
-		AddTradeNetworkAction action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
-		assertEquals((long)0x0F, (long)action.getQuestionId());
-		assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
+		try {
+			assertFalse( engine.addTrade(
+						null, 
+						new Date(), 
+						"Tom bets P(F|E = e2) = [.5,.5]", 
+						userNameToIDMap.get("Tom"), 
+						0x0FL, 
+						newValues, 
+						Collections.singletonList(0x0EL), 
+						Collections.singletonList(1), 
+						false
+					).isEmpty());
+			if (engine.isToThrowExceptionOnInvalidAssumptions()) {
+				fail("Should have thrown exceptions");
+			}
+		} catch (InvalidAssumptionException e) {
+			if (!engine.isToThrowExceptionOnInvalidAssumptions()) {
+				throw e;
+			} // else OK, because it's meant to throw this exception
+		}
+		if (engine.isToThrowExceptionOnInvalidAssumptions()) {
+			// check that probabilities did not change
+			for (Entry<Long, List<Float>> entry : probListsBeforeTrade.entrySet()) {
+				probList = engine.getProbList(entry.getKey(), null, null);
+				assertEquals(entry.toString() + "; " + probList.toString(), entry.getValue().size(), probList.size());
+				for (int i = 0; i < probList.size(); i++) {
+					assertEquals(entry.toString() + "; " + probList.toString(), entry.getValue().get(i), probList.get(i),0.00005);
+				}
+			}
+		} else {
+			// check that marginal of F is [.5,.5] (i.e. condition E was ignored)
+			probList = engine.getProbList(0x0FL, null, null);
+			assertEquals(2, probList.size());
+			assertEquals(.5f, probList.get(0), PROB_ERROR_MARGIN);
+			assertEquals(.5f, probList.get(1), PROB_ERROR_MARGIN);
+		}
+		
+		if (engine.isToThrowExceptionOnInvalidAssumptions()) {
+			// check that history was not changed
+			assertEquals(questionHistory.size(), engine.getQuestionHistory(0x0FL, null, null).size());
+		} else {
+			// check that in the history, the assumption E was ignored
+			questionHistory = engine.getQuestionHistory(0x0FL, null, null);
+			for (QuestionEvent questionEvent : questionHistory) {
+				if (!(questionEvent instanceof StructureChangeNetworkAction)
+						&& !(questionEvent.getQuestionId().longValue() != 0x0FL)) {
+					assertNotNull(questionEvent.getUserId());
+				}
+			}
+			assertNotNull(questionHistory);
+			assertFalse(questionHistory.isEmpty());
+			AddTradeNetworkAction action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
+			assertEquals((long)0x0F, (long)action.getQuestionId());
+			assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
+		}
 		
 		List<Float> editLimits = engine.getEditLimits(userNameToIDMap.get("Tom"), 0x0DL, 0, null, null);
 		assertEquals(2, editLimits.size());
@@ -16117,37 +16147,61 @@ public class MarkovEngineTest extends TestCase {
 		// add a in which the assumptions will be ignored
 		newValues = new ArrayList<Float>();
 		newValues.add(.5f); newValues.add(.5f); 
-		assertFalse( engine.addTrade(
-				null, 
-				new Date(), 
-				"Tom bets P(D|A = a1) = [.5,.5]", 
-				userNameToIDMap.get("Tom"), 
-				0x0DL, 
-				newValues, 
-				Collections.singletonList(0x0AL), 
-				Collections.singletonList(0), 
-				false
-			).isEmpty());
-		
-		// check that marginal of D is [.5,.5] (i.e. condition A was ignored)
-		probList = engine.getProbList(0x0DL, null, null);
-		assertEquals(2, probList.size());
-		assertEquals(.5f, probList.get(0), PROB_ERROR_MARGIN);
-		assertEquals(.5f, probList.get(1), PROB_ERROR_MARGIN);
-		
-		// check that in the history, the assumption A was ignored
-		questionHistory = engine.getQuestionHistory(0x0DL, null, null);
-		for (QuestionEvent questionEvent : questionHistory) {
-			if (!(questionEvent instanceof StructureChangeNetworkAction)
-					&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
-				assertNotNull(questionEvent.getUserId());
+		try {
+			assertFalse( engine.addTrade(
+					null, 
+					new Date(), 
+					"Tom bets P(D|A = a1) = [.5,.5]", 
+					userNameToIDMap.get("Tom"), 
+					0x0DL, 
+					newValues, 
+					Collections.singletonList(0x0AL), 
+					Collections.singletonList(0), 
+					false
+				).isEmpty());
+			if (engine.isToThrowExceptionOnInvalidAssumptions()) {
+				fail("Should have thrown exception here");
 			}
+		} catch (InvalidAssumptionException e) {
+			if (!engine.isToThrowExceptionOnInvalidAssumptions()) {
+				throw e;
+			} // else OK, because exception was expected
 		}
-		assertNotNull(questionHistory);
-		assertFalse(questionHistory.isEmpty());
-		action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
-		assertEquals((long)0x0D, (long)action.getQuestionId());
-		assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
+		
+		if (engine.isToThrowExceptionOnInvalidAssumptions()) {
+			// check that probabilities did not change
+			for (Entry<Long, List<Float>> entry : probListsBeforeTrade.entrySet()) {
+				probList = engine.getProbList(entry.getKey(), null, null);
+				assertEquals(entry.toString() + "; " + probList.toString(), entry.getValue().size(), probList.size());
+				for (int i = 0; i < probList.size(); i++) {
+					assertEquals(entry.toString() + "; " + probList.toString(), entry.getValue().get(i), probList.get(i),0.00005);
+				}
+			}
+			// check that history was not changed
+			assertEquals(questionHistory.size(), engine.getQuestionHistory(0x0FL, null, null).size());
+		} else {
+			// check that marginal of D is [.5,.5] (i.e. condition A was ignored)
+			probList = engine.getProbList(0x0DL, null, null);
+			assertEquals(2, probList.size());
+			assertEquals(.5f, probList.get(0), PROB_ERROR_MARGIN);
+			assertEquals(.5f, probList.get(1), PROB_ERROR_MARGIN);
+			
+			// check that in the history, the assumption A was ignored
+			questionHistory = engine.getQuestionHistory(0x0DL, null, null);
+			for (QuestionEvent questionEvent : questionHistory) {
+				if (!(questionEvent instanceof StructureChangeNetworkAction)
+						&& !(questionEvent.getQuestionId().longValue() != 0x0DL)) {
+					assertNotNull(questionEvent.getUserId());
+				}
+			}
+			assertNotNull(questionHistory);
+			assertFalse(questionHistory.isEmpty());
+			AddTradeNetworkAction action = (AddTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
+			assertEquals((long)0x0D, (long)action.getQuestionId());
+			assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
+		}
+		
+		
 		
 		// check history of questions
 		boolean bkp = engine.isToRetriveOnlyTradeHistory();
@@ -16166,7 +16220,6 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(engine.getPossibleQuestionAssumptions(0x0A, null).isEmpty());
 		assertNotNull(engine.getScoreDetails(userNameToIDMap.get("Tom"), 0x0AL, null, null));
 		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
-		
 		
 		
 		// test condition in which min is below 0 even though no entry in asset table is below 0
