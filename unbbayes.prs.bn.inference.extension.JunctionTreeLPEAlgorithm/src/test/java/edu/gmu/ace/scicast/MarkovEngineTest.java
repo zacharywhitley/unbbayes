@@ -5,8 +5,10 @@ package edu.gmu.ace.scicast;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -31432,7 +31434,7 @@ public class MarkovEngineTest extends TestCase {
 		boolean isToReturnIdentifiersInExportState = engine.isToReturnIdentifiersInExportState();
 		
 		// the files used in this test were exported in non compressed form, so use same configuration
-		engine.setToCompressExportedState(false);
+//		engine.setToCompressExportedState(false);
 		engine.setToReturnIdentifiersInExportState(false);
 		
 		// files to read string of  {@link MarkovEngineImpl#importState(String)}
@@ -31470,6 +31472,23 @@ public class MarkovEngineTest extends TestCase {
 				{1,2,3,5},
 				{1,2,3,5},
 		};
+		// what should be the clique structure
+		Long cliquesPerFile[][][] = {
+				{{1L,3L},{2L}},
+				{{1L,3L},{2L}},
+				{{1L,3L},{2L}},
+				{{1L,3L},{2L}},
+				{{1L,3L},{2L}},
+				{{1L,3L},{2L}},
+				{{1L,3L},{2L},{4L}},
+				{{1L,3L},{2L}},
+				{{1L,3L},{2L}},
+				{{1L,3L,5L},{2L}},
+				{{1L,3L,5L},{2L}, {6L}, {8L}},
+				{{1L,3L,5L},{2L}, {6L}, {8L}},
+				{{1L,3L,5L},{2L}},
+				{{1L,3L,5L},{2L}},
+		};
 		
 		// do test for each file
 		for (int i = 0; i < files.length; i++) {
@@ -31495,6 +31514,20 @@ public class MarkovEngineTest extends TestCase {
 					assertTrue(files[i] + ", node="+node,probLists.containsKey(node));
 				}
 				
+				// check if cliques match
+				List<List<Long>> groups = engine.getQuestionAssumptionGroups();
+				assertEquals(cliquesPerFile[i].length, groups.size());
+				for (Long[] expectedClique : cliquesPerFile[i]) {
+					boolean isPresent = false;
+					for (List<Long> actualClique : groups) {
+						if (actualClique.containsAll(Arrays.asList(expectedClique))) {
+							isPresent = true;
+							break;
+						}
+					}
+					assertTrue("["+i+ "]"+groups.toString(), isPresent);
+				}
+				
 				// export/import again
 				engine.importState(engine.exportState());
 				
@@ -31503,6 +31536,21 @@ public class MarkovEngineTest extends TestCase {
 				assertEquals(nodes.length, probLists.size());
 				for (long node : nodes) {
 					assertTrue(files[i] + ", node="+node,probLists.containsKey(node));
+				}
+				
+
+				// check if cliques match
+				groups = engine.getQuestionAssumptionGroups();
+				assertEquals(cliquesPerFile[i].length, groups.size());
+				for (Long[] expectedClique : cliquesPerFile[i]) {
+					boolean isPresent = false;
+					for (List<Long> actualClique : groups) {
+						if (actualClique.containsAll(Arrays.asList(expectedClique))) {
+							isPresent = true;
+							break;
+						}
+					}
+					assertTrue("["+i+ "]"+groups.toString(), isPresent);
 				}
 				
 			} catch (IOException e) {
@@ -31514,6 +31562,111 @@ public class MarkovEngineTest extends TestCase {
 		// restore backup
 		engine.setToCompressExportedState(isToCompressExportedState);
 		engine.setToReturnIdentifiersInExportState(isToReturnIdentifiersInExportState);
+	}
+	
+	/**
+	 * This is just a smoke test for something that has been observed previously
+	 * @throws IOException 
+	 */
+	public final void testExportImport1409112321State() throws IOException {
+		
+		// read file
+		FileInputStream stream = new FileInputStream("./examples/export_states/1409112321.state");
+		String netString = "";
+		int content;
+		while ((content = stream.read()) != -1) {
+			// convert to char and display it
+			netString += (char) content;
+		}
+		stream.close();
+		
+		engine.importState(netString);
+		
+		// check if nodes 317 and 853 were loaded correctly
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertTrue(probLists.containsKey(317L));
+		assertTrue(probLists.containsKey(853L));
+		
+		// expected probabilities for the nodes to check
+		float[] probN317 = {0.3001f, 0.30497152f, 0.27662206f, 0.079000615f, 0.039305806f};
+		float[] probN853 = {0.25000003f, 0.74999994f};
+		
+		// check probabilities
+		assertEquals(probN317.length, probLists.get(317L).size());
+		for (int i = 0; i < probLists.get(317L).size(); i++) {
+			assertEquals(probN317[i], probLists.get(317L).get(i), 0.00005);
+		}
+		assertEquals(probN853.length, probLists.get(853L).size());
+		for (int i = 0; i < probLists.get(853L).size(); i++) {
+			assertEquals(probN853[i], probLists.get(853L).get(i), 0.00005);
+		}
+		
+		// insert link from 853 to 317, export, import, and see if link is still present
+		
+		// insert the link
+		engine.addQuestionAssumption(null, new Date(), 317L, Collections.singletonList(853L), null);
+		
+		// make sure the link has caused 853 and 317 to be in same clique
+		List<List<Long>> groups = engine.getQuestionAssumptionGroups();
+		boolean hasFound = false;
+		for (List<Long> clique : groups) {
+			if (clique.contains((Long)853L) || clique.contains((Long)317L)) {
+				if (clique.contains((Long)853L) && clique.contains((Long)317L)) {
+					hasFound = true;
+				} else {
+					// make sure we don't allow 853 and 317 to be in other cliques
+					hasFound = false;
+					break;
+				}
+			}
+		}
+		assertTrue(groups.toString(), hasFound);
+		
+		
+		// get the state with the link
+		netString = engine.exportState();
+		
+		// reset the engine
+		engine.initialize();
+		
+		// make sure it's reset
+		assertTrue(engine.getProbLists(null, null, null).isEmpty());
+		
+		// reload again
+		engine.importState(netString);
+		
+
+		// again, check if nodes 317 and 853 were loaded correctly
+		probLists = engine.getProbLists(null, null, null);
+		assertTrue(probLists.containsKey(317L));
+		assertTrue(probLists.containsKey(853L));
+		
+		// expected probabilities for the nodes to check are supposedly unchanged
+		assertEquals(probN317.length, probLists.get(317L).size());
+		for (int i = 0; i < probLists.get(317L).size(); i++) {
+			assertEquals(probN317[i], probLists.get(317L).get(i), 0.00005);
+		}
+		assertEquals(probN853.length, probLists.get(853L).size());
+		for (int i = 0; i < probLists.get(853L).size(); i++) {
+			assertEquals(probN853[i], probLists.get(853L).get(i), 0.00005);
+		}
+		
+		// make sure the link has caused 853 and 317 to be in same clique
+		groups = engine.getQuestionAssumptionGroups();
+		hasFound = false;
+		for (List<Long> clique : groups) {
+			if (clique.contains((Long)853L) || clique.contains((Long)317L)) {
+				if (clique.contains((Long)853L) && clique.contains((Long)317L)) {
+					hasFound = true;
+				} else {
+					// make sure we don't allow 853 and 317 to be in other cliques
+					hasFound = false;
+					break;
+				}
+			}
+		}
+		assertTrue(groups.toString(), hasFound);
+		
 	}
 	
 }
