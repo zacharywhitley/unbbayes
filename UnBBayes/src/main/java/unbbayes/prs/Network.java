@@ -183,7 +183,7 @@ public class Network implements Graph{
 	 * @throws InvalidParentException 
 	 */
 	public void addEdge(Edge edge) throws InvalidParentException {
-		if (this.getEdges().contains(edge)) {
+		if (this.getEdges().contains(edge)) { // TODO use hasEdge
 			// avoid duplicate edges
 			Debug.println(this.getClass(), "Attempt to insert duplicate edge: " + edge.getOriginNode() + " -> " + edge.getDestinationNode());
 			return;
@@ -284,6 +284,7 @@ public class Network implements Graph{
 	 *@return      index of the edge in {@link #getEdges()}, or -1 if it does not exist.
 	 */
 	public int hasEdge(Node node1, Node node2) {
+		// TODO use a more efficient structure (like hash map) instead of linear search on edgeList
 		return hasEdge(node1, node2, edgeList);
 	}
 
@@ -294,6 +295,7 @@ public class Network implements Graph{
 	
 		int sizeArcos = vetArcos.size();
 		Edge auxA;
+		// TODO use Edge#equals
 		for (int i = 0; i < sizeArcos; i++) {
 			auxA = (Edge) vetArcos.get(i);
 			if ((auxA.getOriginNode() == node1)

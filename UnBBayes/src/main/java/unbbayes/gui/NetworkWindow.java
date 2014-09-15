@@ -463,6 +463,7 @@ public class NetworkWindow extends UnBBayesModule {
 			bCompiled = false;
 
 			controller.getSingleEntityNetwork().setFirstInitialization(true);
+			controller.getSingleEntityNetwork().setJunctionTree(null);	// discard junction tree now	
 
 			//by young
 			graphPane.update();

@@ -1,8 +1,13 @@
-UNBBAYES VERSION 4.18.8
+UNBBAYES VERSION 4.18.10
 FEATURE LIST		
 Number	Request ID	Summary
-18					Setting the NetIO to handle I/O requests for saving a file with no extension.
-19					Moved method for cloning and joining cliques to Clique.
+18		120 		Equally distribute nodes horizontally or vertically, in GUI.
+
+BUG LIST		
+Number	Request ID	Summary
+9		161			Setting the NetIO to handle I/O requests for saving a file with no extension.
+10		162 		Preventing underflows when there are cliques with too many children.
+
 
 UNBBAYES VERSION 4.17.8
 ----------------------------

@@ -187,14 +187,12 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
 			}
 			return;
 		}
-		PotentialTable auxTab = (PotentialTable) ((PotentialTable) cliqueAssociado
-				.getProbabilityFunction()).getTemporaryClone();
+		PotentialTable auxTab = (PotentialTable) ((PotentialTable) cliqueAssociado.getProbabilityFunction()).getTemporaryClone();
 		int index = auxTab.indexOfVariable(this);
 		int size = cliqueAssociado.getProbabilityFunction().variableCount();
 		for (int i = 0; i < size; i++) {
 			if (i != index) {
-				auxTab.removeVariable(cliqueAssociado.getProbabilityFunction()
-						.getVariableAt(i));
+				auxTab.removeVariable(cliqueAssociado.getProbabilityFunction().getVariableAt(i));
 			}
 		}
 

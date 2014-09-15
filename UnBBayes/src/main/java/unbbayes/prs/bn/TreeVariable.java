@@ -55,6 +55,7 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     /**
      * This method has to be overwritten in order to 
      * show the correct marginal list in the tree.
+     * @deprecated the way marginal is updated depends on the underlying inference algorithm, so this method should not be here.
      */
     public void updateMarginal() {
     	this.marginal();

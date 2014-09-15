@@ -414,11 +414,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 						//						if (auxNode.getType()
 //							== Node.PROBABILISTIC_NODE_TYPE) {
 						if (auxNode instanceof ProbabilisticNode) {
-							((ProbabilisticNode) auxNode).setAssociatedClique(
-								auxClique);
+							((ProbabilisticNode) auxNode).setAssociatedClique(auxClique);
 						} else {
-							((DecisionNode) auxNode).setAssociatedClique(
-								auxClique);
+							((DecisionNode) auxNode).setAssociatedClique(auxClique);
 							break;
 						}
 						menor = auxClique.getProbabilityFunction().tableSize();
