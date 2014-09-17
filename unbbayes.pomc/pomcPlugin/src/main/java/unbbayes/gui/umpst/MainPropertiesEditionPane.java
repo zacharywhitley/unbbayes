@@ -1,6 +1,5 @@
 package unbbayes.gui.umpst;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -23,6 +22,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.text.MaskFormatter;
 
 import unbbayes.util.CommonDataUtil;
@@ -31,10 +32,10 @@ public class MainPropertiesEditionPane {
 
 	private JLabel titleLabel = new JLabel();
 
-	private JTextField authorText;
-	private JTextField dateText;
-	private JTextArea nameText;
-	private JTextArea commentsText;
+	private final JTextField authorText;
+	private final JTextField dateText;
+	private final JTextArea nameText;
+	private final JTextArea commentsText;
 	
 	private MaskFormatter maskFormatter;
 	
@@ -155,12 +156,10 @@ public class MainPropertiesEditionPane {
 
 		authorText = new JTextField(SIZE_COLUMNS_TEXT);
 		
-		
 		c.gridx = 1; 
 		c.gridy = 4;
 		c.gridwidth=2;
 		
-		JPanel panelAuthor = new JPanel(new BorderLayout()); 
 		panel.add( authorText, c);
 
 		try {
@@ -245,8 +244,19 @@ public class MainPropertiesEditionPane {
 		panel.setBorder(BorderFactory.createTitledBorder(panelName));
 		
 		titleLabel.setText(_title);
+		
 		authorText.setText(CommonDataUtil.getInstance().getAuthorName()); 
+		
 		dateText.setText(CommonDataUtil.getInstance().getActualDate()); 
+		
+		authorText.addCaretListener(new CaretListener(){
+
+			public void caretUpdate(CaretEvent arg0) {
+				CommonDataUtil.getInstance().setAuthorName(authorText.getText()); 
+				System.out.println("caret update");
+			}
+			
+		}); 
 		
 		authorText.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {

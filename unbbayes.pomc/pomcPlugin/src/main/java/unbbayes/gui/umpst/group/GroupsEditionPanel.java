@@ -175,7 +175,6 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 				}
 				else{
 					if( JOptionPane.showConfirmDialog(null, "Do you want to update this group?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
-						//EntityModel group = new EntityModel(groupText.getText(),commentsText.getText(), authorText.getText(), dateText.getText(),null);
 						try{
 
 							/**Cleaning Search Map*/
@@ -192,12 +191,12 @@ public class GroupsEditionPanel extends IUMPSTPanel {
 
 							updateTableGroups();
 
-							JOptionPane.showMessageDialog(null, "group successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
+							JOptionPane.showMessageDialog(null, "Group successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
 
 
 						}
 						catch (Exception e2) {
-							JOptionPane.showMessageDialog(null,"Error while ulpating group", "UnBBayes", JOptionPane.WARNING_MESSAGE);
+							JOptionPane.showMessageDialog(null,"Error while ulpdating group", "UnBBayes", JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getFatherPanel();
 							changePanel(pai.getMenuPanel());	
 						}

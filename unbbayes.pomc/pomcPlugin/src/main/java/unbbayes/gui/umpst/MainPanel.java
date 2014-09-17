@@ -180,9 +180,17 @@ public class MainPanel extends IUMPSTPanel{
 					FileLoadObject io = new FileLoadObject();
 
 					try {
+						controller = Controller.getInstance(null); 
 						setUmpstProject(io.loadUbf(loadFile,getUmpstProject())) ;
-						controller = Controller.getInstance(getUmpstProject()); 
+						controller.setUMPSTProject(getUmpstProject()); 
+						
 						createTabPanels(getUmpstProject(), iconController, tabbedPane);
+						
+						getUmpstProject().setFileName(loadFile.getAbsolutePath()); 
+						
+						System.out.println(getUmpstProject().getFileName());
+						controller.showSucessMessageDialog(resource.getString("msLoadSuccessfull")); 
+						
 					} catch (ClassNotFoundException e1) {
 						controller.showErrorMessageDialog(
 								resource.getString("erLoadFatal")); 
@@ -197,11 +205,6 @@ public class MainPanel extends IUMPSTPanel{
 								resource.getString("erLoadFatal")); 
 						e1.printStackTrace();
 					}
-					
-					getUmpstProject().setFileName(loadFile.getAbsolutePath()); 
-					
-					System.out.println(getUmpstProject().getFileName());
-					controller.showSucessMessageDialog(resource.getString("msLoadSuccessfull")); 
 
 				}
 				else{

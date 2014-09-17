@@ -22,14 +22,25 @@ public class Controller {
 	private String author = ""; 
 
 	public static Controller getInstance(UMPSTProject _umpstProject) {
+		
 		if (umpstProject != _umpstProject) {
 			singleton = new Controller(_umpstProject);
+		}else{
+			if(_umpstProject == null ){
+				if(singleton == null){
+					singleton = new Controller(null);
+				}
+			}
 		}
 		
 		return singleton;
 	}
 
 	private Controller(UMPSTProject _umpstProject){
+		this.umpstProject = _umpstProject; 
+	}
+	
+	public void setUMPSTProject(UMPSTProject _umpstProject){
 		this.umpstProject = _umpstProject; 
 	}
 

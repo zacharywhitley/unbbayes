@@ -7,22 +7,19 @@ public class CommonDataUtil {
 
 	private static CommonDataUtil  singleton;
 
-
 	private String authorName = null; 
-	private String actualDate = null; 
 	
 	private CommonDataUtil(){
 		
 	}
-	
-	
+		
 	public static CommonDataUtil getInstance(){
 		
-		if (singleton!=null){
-			return singleton; 
-		}else{
-			return new CommonDataUtil(); 
+		if (singleton == null){
+			singleton = new CommonDataUtil(); 
 		}
+		
+		return singleton;
 		
 	}
 	

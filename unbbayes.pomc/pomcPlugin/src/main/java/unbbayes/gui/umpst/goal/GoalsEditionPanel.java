@@ -315,7 +315,6 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 
 			if ( getUmpstProject().getMapGoal().size()!=0){
 				for (String key: sortedKeys){
-					//tamanho = tamanho - getUmpstProject().getMapGoal().get(key).getSubgoals().size();
 
 					idAux= getUmpstProject().getMapGoal().get(key).getId();
 

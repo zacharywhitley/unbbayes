@@ -51,8 +51,6 @@ public class RulesEditionPanel extends IUMPSTPanel {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	private GridBagConstraints constraints     = new GridBagConstraints();
-
 	private JButton buttonSave 	          ;
 	private JButton buttonCancel          ;
 
@@ -63,12 +61,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 
 	private RuleModel rule;
 
-	private JButton buttonCopy, 
-	buttonDelete;
-
-	private JComboBox ruleTypeText;
-
-	private JList list;
+	private JComboBox<String> ruleTypeText;
 
 	private Object[][] dataBacktracking = {};
 	private Object[][] dataFrame = {};
@@ -127,7 +120,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 				resource.getString("tpNoDeterministic") 
 		};
 
-		ruleTypeText = new JComboBox(possibleStates); 
+		ruleTypeText = new JComboBox<String>(possibleStates); 
 
 		mainPropertiesEditionPane = 
 				new MainPropertiesEditionPane(
@@ -139,11 +132,12 @@ public class RulesEditionPanel extends IUMPSTPanel {
 						ruleTypeText, false); 
 
 		if (rule != null){
+			System.out.println(rule.getRuleType());
 			mainPropertiesEditionPane.setTitleText(rule.getName());
 			mainPropertiesEditionPane.setCommentsText(rule.getComments());
 			mainPropertiesEditionPane.setAuthorText(rule.getAuthor());
 			mainPropertiesEditionPane.setDateText(rule.getDate());
-			ruleTypeText.setSelectedItem((String)rule.getRuleType());
+			ruleTypeText.setSelectedItem(rule.getRuleType());
 		}
 
 		return mainPropertiesEditionPane.getPanel();
@@ -216,10 +210,10 @@ public class RulesEditionPanel extends IUMPSTPanel {
 							/************/
 
 							rule.setName(mainPropertiesEditionPane.getTitleText());
-							//							rule.setRuleType(typeText.getText());
 							rule.setComments(mainPropertiesEditionPane.getCommentsText());
 							rule.setAuthor(mainPropertiesEditionPane.getAuthorText());
 							rule.setDate(mainPropertiesEditionPane.getDateText());
+							rule.setRuleType((String)ruleTypeText.getSelectedItem()); 
 
 							updateTableRules();
 
@@ -334,7 +328,7 @@ public class RulesEditionPanel extends IUMPSTPanel {
 		String idAux = "";
 		Set<String> keys = getUmpstProject().getMapRules().keySet();
 		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
-		int tamanho = getUmpstProject().getMapRules().size()+1;
+		
 		int maior = 0;
 		String idAux2 = "";
 		int intAux;
