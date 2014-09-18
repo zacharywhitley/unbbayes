@@ -1420,36 +1420,39 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			getNet().removeNode((Node) virtualNode, false);
 			
 			// remove clique/separator from junction tree
-			for (IRandomVariable cliqueOrSep : getVirtualNodesToCliquesAndSeparatorsMap().get(virtualNode)) {
-				if (cliqueOrSep instanceof Clique) {
-					// remove this clique from parent
-					Clique clique = (Clique) cliqueOrSep;
-					// do not use List#remove() because it uses equals internally
-					int indexToRemove = 0;
-					for (Clique child :  clique.getParent().getChildren()) {
-						// use this comparison, because it's faster than equals()
-						if (child.getInternalIdentificator() == clique.getInternalIdentificator()) {
-							break;
+			if (this.getNet().getJunctionTree() != null) {
+				for (IRandomVariable cliqueOrSep : getVirtualNodesToCliquesAndSeparatorsMap().get(virtualNode)) {
+					if (cliqueOrSep instanceof Clique) {
+						// remove this clique from parent
+						Clique clique = (Clique) cliqueOrSep;
+						// do not use List#remove() because it uses equals internally
+						int indexToRemove = 0;
+						for (Clique child :  clique.getParent().getChildren()) {
+							// use this comparison, because it's faster than equals()
+							if (child.getInternalIdentificator() == clique.getInternalIdentificator()) {
+								break;
+							}
+							indexToRemove++;
 						}
-						indexToRemove++;
-					}
-					clique.getParent().getChildren().remove(indexToRemove);
-					
-					// remove the clique containing the virtual node
-					List<Clique> cliques = this.getNet().getJunctionTree().getCliques();
-					indexToRemove = 0;
-					for (Clique cliqueToCompare : this.getNet().getJunctionTree().getCliques()) {
-						// do this comparison instead of equals, which is a name comparison
-						if (cliqueToCompare.getInternalIdentificator() == cliqueOrSep.getInternalIdentificator()) {
-							break;
+						clique.getParent().getChildren().remove(indexToRemove);
+						
+						// remove the clique containing the virtual node
+						List<Clique> cliques = this.getNet().getJunctionTree().getCliques();
+						indexToRemove = 0;
+						for (Clique cliqueToCompare : this.getNet().getJunctionTree().getCliques()) {
+							// do this comparison instead of equals, which is a name comparison
+							if (cliqueToCompare.getInternalIdentificator() == cliqueOrSep.getInternalIdentificator()) {
+								break;
+							}
+							indexToRemove++;
 						}
-						indexToRemove++;
+						cliques.remove(indexToRemove);
+					} else {
+						this.getNet().getJunctionTree().removeSeparator((Separator)cliqueOrSep);
 					}
-					cliques.remove(indexToRemove);
-				} else {
-					this.getNet().getJunctionTree().removeSeparator((Separator)cliqueOrSep);
 				}
 			}
+			
 		}
 		getVirtualNodesToCliquesAndSeparatorsMap().clear();
 	}
