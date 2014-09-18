@@ -1,9 +1,7 @@
-UNBBAYES PLUGIN - MSBN VERSION 1.1.0
-----------------------------
-FEATURE LIST		
-Number	Request ID	Summary
-1				.
+UNBBAYES PLUGIN - MSBN VERSION 1.1.1
+----------------------------			.
 
 
 BUG LIST		
 Number	Request ID	Summary
+1					Fixed incompatibility with newest UnBBayes core
