@@ -1,11 +1,12 @@
+UNBBAYES PLUGIN - OOBN VERSION 1.3.2
+----------------------------
+
+BUG LIST		
+Number	Request ID	Summary
+2					Fixed compatibility with UnBBayes 4.18.X
+
 UNBBAYES PLUGIN - OOBN VERSION 1.3.1
 ----------------------------
-FEATURE LIST		
-Number	Request ID	Summary
-1				.
-2				.
-3				.
-
 
 BUG LIST		
 Number	Request ID	Summary
