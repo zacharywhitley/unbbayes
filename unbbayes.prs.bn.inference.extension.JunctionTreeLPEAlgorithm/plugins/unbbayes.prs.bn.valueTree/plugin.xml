@@ -25,7 +25,7 @@
         <parameter id="description" value="Nodes using value tree" />
     </extension> 
      <extension plugin-id="unbbayes.util.extension.core" point-id="PNIO" id="ValueTreeNetIO">
-        <parameter id="class" value="edu.gmu.ace.scicast.io.ValueTreeNetIO" />
+        <parameter id="class" value="unbbayes.io.ValueTreeNetIO" />
         <parameter id="name" value="ValueTree" />
     </extension>
 </plugin>

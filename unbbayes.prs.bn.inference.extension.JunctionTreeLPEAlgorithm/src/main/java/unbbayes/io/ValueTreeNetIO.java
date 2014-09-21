@@ -1,4 +1,4 @@
-package edu.gmu.ace.scicast.io;
+package unbbayes.io;
 
 
 import java.io.File;

@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- This is a plugin descriptor for Inference module -->
-<plugin id="unbbayes.prs.bn.inference.extension.MinProductJunctionTree" version="0.0.1">
+<plugin id="unbbayes.prs.bn.inference.extension.MinProductJunctionTree" version="1.0.0">
     <requires>
         <import plugin-id="unbbayes.util.extension.core" plugin-version="4.11.5"/>
     </requires>
     <runtime>
-    	<library id="unbbayes.prs.bn.inference.extension.MinProductJunctionTree" path="unbbayes.prs.bn.inference.extension.MinProductJunctionTree-0.0.1.jar" type="code" >
+    	<library id="unbbayes.prs.bn.inference.extension.MinProductJunctionTree" path="unbbayes.prs.bn.inference.extension.MinProductJunctionTree-1.0.0.jar" type="code" >
         	<export prefix="*"/>
         </library>
     </runtime>

@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import junit.framework.TestCase;
 import unbbayes.io.NetIO;
+import unbbayes.io.ValueTreeNetIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -49,7 +50,6 @@ import edu.gmu.ace.scicast.MarkovEngineImpl.ResolveQuestionNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.StructureChangeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.VirtualTradeAction;
 import edu.gmu.ace.scicast.ScoreSummary.SummaryContribution;
-import edu.gmu.ace.scicast.io.ValueTreeNetIO;
 
 /**
  * @author Shou Matsumoto
@@ -22239,12 +22239,26 @@ public class MarkovEngineTest extends TestCase {
 		if (assumptionIds.remove(questionId)){ // make sure assumptionIds does not contain questionId
 			assumedStates.remove(0);  // make sure the size of the 2 lists remains the same
 		}
-		engine.doBalanceTrade(null, new Date(), "User 1 balances " + questionId + " | " + assumptionIds + "=" + assumedStates, 
-				1L, questionId, assumptionIds, assumedStates);
+		try {
+			engine.doBalanceTrade(null, new Date(), "User 1 balances " + questionId + " | " + assumptionIds + "=" + assumedStates, 
+					1L, questionId, assumptionIds, assumedStates);
+		} catch (InvalidAssumptionException e) {
+			if (!engine.isToThrowExceptionOnInvalidAssumptions()) {
+				throw e;
+			} else {
+				// check that there is no clique containing question and all assumptions, because we shall not throw this exception if so
+				List<List<Long>> groups = engine.getQuestionAssumptionGroups();
+				for (List<Long> clique : groups) {
+					if (clique.containsAll(assumptionIds) && clique.contains(new Long(questionId))) {
+						fail(groups.toString() + ", question = " + questionId + ", assumption = " + assumptionIds);
+					}
+				}
+			}
+		}
+		
 		// check that nothing was done
 		assertEquals(sizeOfHistory, engine.getExecutedActions().size());
 		assertNull(engine.getUserToAssetAwareAlgorithmMap().get(1L)); // assert that user was not created
-		
 		
 		/************************************************************************************************************/
 		

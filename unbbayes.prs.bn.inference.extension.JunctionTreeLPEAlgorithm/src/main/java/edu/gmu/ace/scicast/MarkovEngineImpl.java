@@ -44,6 +44,7 @@ import unbbayes.io.IReaderBuilder;
 import unbbayes.io.NetIO;
 import unbbayes.io.StringPrintStreamBuilder;
 import unbbayes.io.StringReaderBuilder;
+import unbbayes.io.ValueTreeNetIO;
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
@@ -93,7 +94,6 @@ import unbbayes.util.Debug;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import edu.gmu.ace.scicast.ScoreSummary.SummaryContribution;
-import edu.gmu.ace.scicast.io.ValueTreeNetIO;
 
 /**
  * This is the default implementation of {@link MarkovEngineInterface}.
