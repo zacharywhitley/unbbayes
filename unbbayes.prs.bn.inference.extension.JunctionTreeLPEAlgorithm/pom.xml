@@ -2,7 +2,7 @@
 <project>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.gmu</groupId>
-	<artifactId>JunctionTreeLPEAlgorithm</artifactId>
+	<artifactId>unbbayes.prs.bn.inference.extension.JunctionTreeLPEAlgorithm</artifactId>
 	<name>Least and Most Probable Explanation Algorithms and Value Tree</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->

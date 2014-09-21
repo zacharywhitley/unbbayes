@@ -23,21 +23,21 @@
   </dependencySets>
   <fileSets>
   <fileSet>
-      <directory>plugins/unbbayes.prs.bn.inference.extension.MinProductJunctionTree/icons/</directory>
+      <directory>plugins/unbbayes.prs.bn.inference.extension.JunctionTreeLPEAlgorithm/icons/</directory>
       <outputDirectory>icons</outputDirectory>
       <includes>
         <include>**/*</include>
       </includes>
     </fileSet>
     <fileSet>
-      <directory>plugins/unbbayes.prs.bn.inference.extension.MinProductJunctionTree/</directory>
+      <directory>plugins/unbbayes.prs.bn.inference.extension.JunctionTreeLPEAlgorithm/</directory>
       <outputDirectory></outputDirectory>
       <includes>
         <include>plugin.xml</include>
       </includes>
     </fileSet>
     <fileSet>
-      <directory>plugins/unbbayes.prs.bn.inference.extension.MinProductJunctionTree/</directory>
+      <directory>plugins/unbbayes.prs.bn.inference.extension.JunctionTreeLPEAlgorithm/</directory>
       <outputDirectory></outputDirectory>
       <includes>
         <include>README.txt</include>
