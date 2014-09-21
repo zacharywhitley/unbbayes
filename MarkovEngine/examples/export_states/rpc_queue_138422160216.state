@@ -1,0 +1,60 @@
+net
+{
+     node_size = (0 0);
+     name = "DAGGRE";
+     tree = "()";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node N1
+{
+     label = "";
+     position = (80 60);
+     states = ("0" "1");
+}
+
+node N2
+{
+     label = "";
+     position = (80 60);
+     states = ("0" "1");
+}
+
+node N3
+{
+     label = "";
+     position = (80 60);
+     states = ("0" "1");
+}
+
+node N5
+{
+     label = "";
+     position = (80 60);
+     states = ("0" "1");
+}
+
+potential (N1)
+{
+ data = ( 0.550923 0.449077 );
+}
+
+potential (N2)
+{
+ data = ( 0.08 0.92 );
+}
+
+potential (N3 | N5 N1)
+{
+ data = ((( 0.3304912 0.6695088 )
+( 0.42706257 0.5729374 ))
+(( 0.42111433 0.5788856 )
+( 0.5234624 0.47653764 )));
+}
+
+potential (N5)
+{
+ data = ( 0.3501654 0.6498346 );
+}
+

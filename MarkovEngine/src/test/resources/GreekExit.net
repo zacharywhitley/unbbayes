@@ -1,0 +1,76 @@
+net
+{
+     node_size = (0 0);
+     name = "Greek_Exit_Draft_3-18-2012";
+     tree = "(Germany uses political and economic influence to keep Greece in EU,Greek Election Results,Greek Govt chooses to withdraw,DAGGRE Now,DAGGRE Prev,Other Poll or Market,EU Votes to Eject Greece,Will Greece exit the EU?,Social pressures from German population will force Greece to exit,Alternative legal propositions to keep Greece in te EU,C0,Others,C1,C2,C3,C11,C12,C10)";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node Germany
+{
+     label = "Germany uses political and economic influence to keep Greece in EU";
+     position = (114 192);
+     states = ("True" "False");
+}
+
+node Withdraw
+{
+     label = "Greek Govt chooses to withdraw";
+     position = (562 326);
+     states = ("True" "False");
+}
+
+node Ejected
+{
+     label = "EU Votes to Eject Greece";
+     position = (282 322);
+     states = ("True" "False");
+}
+
+node Hypothesis
+{
+     label = "Will Greece exit the EU?";
+     position = (414 478);
+     states = ("True" "False");
+}
+
+node Others
+{
+     label = "Others";
+     position = (411 192);
+     states = ("True" "False");
+}
+
+potential (Germany)
+{
+ data = ( 0.2 0.8 );
+}
+
+potential (Withdraw)
+{
+ data = ( 0.1 0.9 );
+}
+
+potential (Ejected | Germany Others)
+{
+ data = ((( 1.0 0.0 )
+( 0.0 1.0 ))
+(( 0.0 1.0 )
+( 0.0 1.0 )));
+}
+
+potential (Hypothesis | Ejected Withdraw)
+{
+ data = ((( 1.0 0.0 )
+( 0.0 1.0 ))
+(( 0.0 1.0 )
+( 0.0 1.0 )));
+}
+
+potential (Others | Germany)
+{
+ data = (( 0.9 0.1 )
+( 0.1 0.9 ));
+}
+

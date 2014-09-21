@@ -1,0 +1,99 @@
+net
+{
+     node_size = (0 0);
+     name = "DAGGRE.csv";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node 45
+{
+     label = "";
+     position = (259 234);
+     states = ("false" "true");
+}
+
+node 46
+{
+     label = "";
+     position = (713 87);
+     states = ("false" "true");
+}
+
+node 6
+{
+     label = "";
+     position = (304 166);
+     states = ("false" "true");
+}
+
+node 41
+{
+     label = "";
+     position = (669 1065);
+     states = ("false" "true");
+}
+
+node 42
+{
+     label = "";
+     position = (856 1026);
+     states = ("false" "true");
+}
+
+node 1
+{
+     label = "";
+     position = (785 603);
+     states = ("false" "true");
+}
+
+node 7
+{
+     label = "";
+     position = (1055 486);
+     states = ("false" "true");
+}
+
+potential (45)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (46 | 45)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (6 | 46)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (41 | 46)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (42 | 46 45)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (1)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (7 | 1)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+

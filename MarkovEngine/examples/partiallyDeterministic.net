@@ -1,0 +1,33 @@
+net
+{
+     node_size = (0 0);
+     name = "New BN";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node Q1
+{
+     label = "C1";
+     position = (325 138);
+     states = ("no" "yes");
+}
+
+node M
+{
+     label = "C2";
+     position = (364 297);
+     states = ("None" "Jan" "Feb" "Mar");
+}
+
+potential (Q1)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (M | Q1)
+{
+ data = (( 1.0 0.0 0.0 0.0 )
+( 0.0 0.33333334 0.33333334 0.33333334 ));
+}
+

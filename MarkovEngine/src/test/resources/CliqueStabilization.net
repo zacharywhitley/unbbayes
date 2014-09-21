@@ -1,0 +1,92 @@
+net
+{
+     node_size = (0 0);
+     name = "CliqueStabilization";
+     tree = "(N103,N102,N157,N341,N155)";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node N103
+{
+     label = "N103";
+     position = (781 117);
+     states = ("0" "1");
+}
+
+node N102
+{
+     label = "N102";
+     position = (618 125);
+     states = ("0" "1");
+}
+
+node N157
+{
+     label = "N157";
+     position = (479 139);
+     states = ("0" "1");
+}
+
+node N341
+{
+     label = "N341";
+     position = (280 120);
+     states = ("0" "1");
+}
+
+node N155
+{
+     label = "N155";
+     position = (500 286);
+     states = ("0" "1");
+}
+
+node N666
+{
+     label = "N666";
+     position = (935 122);
+     states = ("0" "1");
+}
+
+potential (N103 | N102)
+{
+ data = (( 0.1 0.9 )
+( 0.6 0.4 ));
+}
+
+potential (N102 | N157)
+{
+ data = (( 0.3 0.7 )
+( 0.9 0.1 ));
+}
+
+potential (N157 | N341)
+{
+ data = (( 0.2 0.8 )
+( 0.4 0.6 ));
+}
+
+potential (N341)
+{
+ data = ( 0.99 0.01 );
+}
+
+potential (N155 | N341 N157 N103)
+{
+ data = (((( 0.1 0.9 )
+( 0.9 0.1 ))
+(( 0.8 0.2 )
+( 0.2 0.8 )))
+((( 0.3 0.7 )
+( 0.7 0.3 ))
+(( 0.6 0.4 )
+( 0.4 0.6 ))));
+}
+
+potential (N666 | N103)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+

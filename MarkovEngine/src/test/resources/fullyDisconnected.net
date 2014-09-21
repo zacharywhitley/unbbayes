@@ -1,0 +1,129 @@
+net
+{
+     node_size = (0 0);
+     name = "New BN";
+     tree = "(C0,C1,C2,C3,C4,C5,C6,C7,C8,C9)";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node 0
+{
+     label = "C0";
+     position = (98 60);
+     states = ("State 0" "State 1");
+}
+
+node 1
+{
+     label = "C1";
+     position = (255 51);
+     states = ("State 0" "State 1");
+}
+
+node 2
+{
+     label = "C2";
+     position = (416 51);
+     states = ("State 0" "State 1");
+}
+
+node 3
+{
+     label = "C3";
+     position = (552 48);
+     states = ("State 0" "State 1");
+}
+
+node 4
+{
+     label = "C4";
+     position = (713 48);
+     states = ("State 0" "State 1");
+}
+
+node 5
+{
+     label = "C5";
+     position = (92 211);
+     states = ("State 0" "State 1");
+}
+
+node 6
+{
+     label = "C6";
+     position = (241 202);
+     states = ("State 0" "State 1");
+}
+
+node 7
+{
+     label = "C7";
+     position = (423 205);
+     states = ("State 0" "State 1");
+}
+
+node 8
+{
+     label = "C8";
+     position = (562 204);
+     states = ("State 0" "State 1");
+}
+
+node 9
+{
+     label = "C9";
+     position = (725 201);
+     states = ("State 0" "State 1" "State 2");
+}
+
+potential (0)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (1)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (2)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (3)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (4)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (5)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (6)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (7)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (8)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (9)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
