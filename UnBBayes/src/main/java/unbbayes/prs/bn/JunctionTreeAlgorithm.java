@@ -2315,7 +2315,10 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 * Obtains a new junction tree structure (potentials won't be filled) 
 	 * that can be build by performing a maximum prime subgraph decomposition
 	 * of the current Bayes net and current junction tree.
-	 * Such decomposition can be obtained by joining cliques 
+	 * Such decomposition can be obtained by joining cliques.
+	 * The resulting junction tree can be used in other algorithms in order to
+	 * identify portions of the original junction tree that won't be changed after
+	 *  changes in the structure of the related Bayes net.
 	 * @param originalJunctionTree
 	 * @return a junction tree with no potentials filled (i.e. cliques only represent set of nodes, not a table of globally consistent joint probabilities).
 	 * @throws IllegalAccessException from {@link IJunctionTreeBuilder#buildJunctionTree(Graph)}
