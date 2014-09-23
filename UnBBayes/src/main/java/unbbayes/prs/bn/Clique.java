@@ -552,6 +552,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 	 * {@link #getProbabilityFunction()} will also be expanded and filled with joint probability of [X,Y,Z] obtained from the original two cliques.
 	 * Content of separators are kept untouched.
 	 * Content of related nodes are also kept untouched.
+	 * TODO also join utility table {@link #getUtilityTable()}
 	 * @param cliqueToJoin : clique to be joined to this clique.
 	 * @param separator : separator between this clique and cliqueToJoin. No consistency check will be made.
 	 * @see {@link #clone(Network)}
@@ -560,31 +561,44 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 	 */
 	public void join(Clique cliqueToJoin) {
 		// basic assertion
-		if (cliqueToJoin == null) {
+		if (cliqueToJoin == null || cliqueToJoin.getNodesList() == null) {
 			return;
 		}
 		
-		// get nodes in cliqueToJoin that is not in this clique
+		if (this.getUtilityTable() != null && this.getUtilityTable().variableCount() > 0) {
+			throw new UnsupportedOperationException("Current version is unable to join cliques in influence diagrams (i.e. those using utility tables)");
+		}
+		
+		// get nodes in cliqueToJoin that is not in this clique.
+		// I'm using a list in order to keep same ordering
 		List<INode> disjointNodes = new ArrayList<INode>(cliqueToJoin.getNodesList());	// clone nodes in cliqueToJoin
 		disjointNodes.removeAll(this.getNodesList());
 		
 		// get the separator potentials by summing-out the nodes in disjointNodes
-		PotentialTable separatorTable = cliqueToJoin.getProbabilityFunction().getTemporaryClone();
-		for (INode nodeToSumOut : disjointNodes) {
-			separatorTable.removeVariable(nodeToSumOut);
+		if (cliqueToJoin.getProbabilityFunction() != null) {
+			PotentialTable separatorTable = cliqueToJoin.getProbabilityFunction().getTemporaryClone();
+			if (separatorTable != null) {
+				for (INode nodeToSumOut : disjointNodes) {
+					separatorTable.removeVariable(nodeToSumOut);
+				}
+				
+				// also add to clique table
+				PotentialTable cliqueTable = this.getProbabilityFunction();
+				if (cliqueTable != null) {
+					for (INode nodeToAdd : disjointNodes) {
+						cliqueTable.addVariable(nodeToAdd);
+					}
+					
+					// absorb cliqueToJoin: multiply by potentials in cliqueToJoin, and divide by separatorTable
+					cliqueTable.opTab(separatorTable, PotentialTable.DIVISION_OPERATOR);	// divide first, to avoid underflow (because division by 0<x<=1 will increase value)
+					cliqueTable.opTab(cliqueToJoin.getProbabilityFunction(), PotentialTable.PRODUCT_OPERATOR);
+				}
+			}
 		}
 		
 		// add disjointNodes in this clique
 		this.getNodesList().addAll((List) disjointNodes);
-		// also add to clique table
-		PotentialTable cliqueTable = this.getProbabilityFunction();
-		for (INode nodeToAdd : disjointNodes) {
-			cliqueTable.addVariable(nodeToAdd);
-		}
 		
-		// absorb cliqueToJoin: multiply by potentials in cliqueToJoin, and divide by separatorTable
-		cliqueTable.opTab(separatorTable, PotentialTable.DIVISION_OPERATOR);	// divide first, to avoid underflow (because division by 0<x<=1 will increase value)
-		cliqueTable.opTab(cliqueToJoin.getProbabilityFunction(), PotentialTable.PRODUCT_OPERATOR);
 	}
 
 
