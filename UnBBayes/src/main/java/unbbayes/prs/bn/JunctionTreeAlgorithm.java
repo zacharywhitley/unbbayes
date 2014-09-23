@@ -23,6 +23,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.prs.id.UtilityTable;
 import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
@@ -2217,6 +2218,253 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			
 		}
 		return this.getNet();
+	}
+	
+	/** This is used in {@link StubClique} as the default content of utility tables. It is static in order to avoid using unnecessary memory */
+	public static final PotentialTable DEFAULT_SINGLETON_UTILITY_TABLE = new UtilityTable();
+	/** This is used in {@link StubClique} as the default content of potential tables. It is static in order to avoid unnecessary memory garbage */
+	public static final PotentialTable DEFAULT_SINGLETON_POTENTIAL_TABLE = new ProbabilisticTable();
+	
+	/** 
+	 * This is a clique that will not use potential tables {@link Clique#getProbabilityFunction()}. 
+	 * @see {@link JunctionTreeAlgorithm#getMaximumPrimeSubgraphDecompositionTree(IJunctionTree)} 
+	 */
+	class StubClique extends Clique {
+		private static final long serialVersionUID = 9157001174566229956L;
+		/**
+		 * This is just a constructor which overwrites superclass.
+		 * @param cliqueProbability: will be ignored and set to null.
+		 * @param cliqueUtility: will be ignored and set to DEFAULT_SINGLETON_UTILITY_TABLE
+		 */
+		public StubClique(PotentialTable cliqueProbability, PotentialTable cliqueUtility) {
+			super(cliqueProbability, DEFAULT_SINGLETON_UTILITY_TABLE);
+			this.setProbabilityFunction(null);
+		}
+
+		/**
+		 * This is just a constructor which overwrites superclass.
+		 * @see StubClique#StubClique(PotentialTable, PotentialTable)
+		 */
+		public StubClique(PotentialTable cliqueProb) { this(cliqueProb, DEFAULT_SINGLETON_UTILITY_TABLE); }
+
+		/**
+		 * This is just a constructor which overwrites superclass.
+		 * It calls {@link StubClique#StubClique(PotentialTable)} with {@link JunctionTreeAlgorithm#DEFAULT_SINGLETON_POTENTIAL_TABLE}
+		 * in order to avoid unnecessary garbage collection in {@link StubClique#StubClique(PotentialTable)}
+		 * because of automatic instantiation of tables when null is passed as argument.
+		 */
+		public StubClique() { this(DEFAULT_SINGLETON_POTENTIAL_TABLE); }
+
+		/**
+		 * Just add nodes to {@link #getNodesList()}, without changing clique potentials
+		 * @see unbbayes.prs.bn.Clique#join(unbbayes.prs.bn.Clique)
+		 */
+		public void join(Clique cliqueToJoin) {
+			// basic assertion
+			if (cliqueToJoin == null || cliqueToJoin.getNodesList() == null) {
+				return;
+			}
+			
+			// add disjoint nodes in this clique
+			for (Node nodeInCliqueToJoin : cliqueToJoin.getNodesList()) {
+				if (!this.getNodesList().contains(nodeInCliqueToJoin)) {
+					// add in same ordering
+					this.getNodesList().add(nodeInCliqueToJoin);
+				}
+			}
+		}
+		
+	}
+	
+	/** 
+	 * This is a separator that will not use potential tables {@link Separator#getProbabilityFunction()}. 
+	 * @see {@link JunctionTreeAlgorithm#getMaximumPrimeSubgraphDecompositionTree(IJunctionTree)} 
+	 */
+	class StubSeparator extends Separator {
+		private static final long serialVersionUID = 7371081543252487376L;
+		/**
+		 * Instantiates a separator that will not use potential tables.
+		 * @param clique1 : parent clique 
+		 * @param clique2 : child clique
+		 * @param probTable : will be ignored and set to null
+		 * @param utilTable : will be ignored and set to {@link JunctionTreeAlgorithm#DEFAULT_SINGLETON_UTILITY_TABLE}
+		 * @see Separator#Separator(Clique, Clique, PotentialTable, PotentialTable)
+		 */
+		public StubSeparator(Clique clique1, Clique clique2, PotentialTable probTable, PotentialTable utilTable) {
+			super(clique1, clique2, null, DEFAULT_SINGLETON_UTILITY_TABLE);
+			this.setProbabilityFunction(null);
+		}
+
+		/** @see StubSeparator#StubSeparator(Clique, Clique, PotentialTable, PotentialTable) */
+		public StubSeparator(Clique clique1, Clique clique2, boolean updateCliques) {
+			this(clique1, clique2, DEFAULT_SINGLETON_POTENTIAL_TABLE, DEFAULT_SINGLETON_UTILITY_TABLE);
+		}
+
+		/** @see StubSeparator#StubSeparator(Clique, Clique, PotentialTable, PotentialTable) */
+		public StubSeparator(Clique assetClique1, Clique assetClique2, PotentialTable table) {
+			this(assetClique1, assetClique2, table, DEFAULT_SINGLETON_UTILITY_TABLE);
+		}
+
+		/** @see StubSeparator#StubSeparator(Clique, Clique, PotentialTable, PotentialTable) */
+		public StubSeparator(Clique clique1, Clique clique2) {
+			this(clique1, clique2, DEFAULT_SINGLETON_POTENTIAL_TABLE, DEFAULT_SINGLETON_UTILITY_TABLE);
+		}
+	}
+	
+	/**
+	 * Obtains a new junction tree structure (potentials won't be filled) 
+	 * that can be build by performing a maximum prime subgraph decomposition
+	 * of the current Bayes net and current junction tree.
+	 * Such decomposition can be obtained by joining cliques 
+	 * @param originalJunctionTree
+	 * @return a junction tree with no potentials filled (i.e. cliques only represent set of nodes, not a table of globally consistent joint probabilities).
+	 * @throws IllegalAccessException from {@link IJunctionTreeBuilder#buildJunctionTree(Graph)}
+	 * @throws InstantiationException  from {@link IJunctionTreeBuilder#buildJunctionTree(Graph)}
+	 * @see Separator#isComplete()
+	 */
+	public IJunctionTree getMaximumPrimeSubgraphDecompositionTree(IJunctionTree originalJunctionTree) throws InstantiationException, IllegalAccessException {
+		// builder to be used in order to instantiate a new junction tree
+		IJunctionTreeBuilder junctionTreeBuilder = getJunctionTreeBuilder();
+		if (junctionTreeBuilder == null) {
+			// use a default builder if nothing was specified
+			junctionTreeBuilder = DEFAULT_JUNCTION_TREE_BUILDER;
+		}
+		
+		// obtain the root clique, so that we can start copying cliques from it
+		Clique root = null;
+		for (Clique clique : originalJunctionTree.getCliques()) {
+			if (clique.getParent() == null) {
+				root = clique;
+				break;	// we assume there is only 1 root clique
+			}
+		}
+		
+		// instantiate junction tree to return, and recursively copy cliques and separators
+		IJunctionTree ret = junctionTreeBuilder.buildJunctionTree(getNetwork());
+		recursivelyFillMaxPrimeSubgraphDecompositionTree(originalJunctionTree, ret, root);
+		return ret;
+	}
+
+	/**
+	 * Recursively visit cliques from root to leaves in order to fill the junction tree with copies of cliques and separators,
+	 * but cliques will be merged accordingly to maximum prime subgraph decomposition criteria
+	 * (i.e. if {@link Separator#isComplete()} is false, then we must merge the cliques connected by such separator).
+	 * @param junctionTreeToRead : the original junction tree being read.
+	 * @param currentCliqueToRead : 
+	 * This clique must belong to the original junction tree being read.
+	 * Current recursive call will consider this clique and children
+	 * (i.e. in current recursive call, maximum prime subgraph decomposition criteria will potentially join this clique to children, but never to its parent). 
+	 * Next recursive call will invoke this method for children of this clique.
+	 * @param junctionTreeToFill : this junction tree will be filled (thus, this is an input and output argument)
+	 * @param parentCliqueCreatedInPreviousCall : clique generated by previous recursive call (i.e. this clique will become the parent of cliques generated in current call).
+	 * Set this to null if the current clique being visited is the root.
+	 * This clique will be in the target junction tree (i.e. the junction tree to be filled).
+	 * @return the root clique of the tree created by this recursive call. Null if nothing was created.
+	 * @see Clique#join(Clique)
+	 */
+	private Clique recursivelyFillMaxPrimeSubgraphDecompositionTree(IJunctionTree junctionTreeToRead, IJunctionTree junctionTreeToFill, Clique currentCliqueToRead) {
+		
+		// basic assertion
+		if (currentCliqueToRead == null || junctionTreeToRead == null) {
+			return null;
+		}
+		
+		// this method needs a junction tree to fill, because it is used to remember which cliques/separators were handled already.
+		if (junctionTreeToFill == null) {
+			// use empty junction tree if nothing was specified.
+			try {
+//				junctionTreeToFill = DEFAULT_JUNCTION_TREE_BUILDER.buildJunctionTree(getNet());
+				junctionTreeToFill = DEFAULT_JUNCTION_TREE_BUILDER.buildJunctionTree(null);
+			} catch (Exception e) {
+				throw new RuntimeException(e);	// TODO stop using exception translation
+			}
+		}
+		
+		// copy current clique (do not copy its potential table, though)
+		StubClique currentCliqueToFill = new StubClique();	// use a stub, which won't use potential tables
+		currentCliqueToFill.setIndex(currentCliqueToRead.getIndex());								  // just for backward compatibility
+		currentCliqueToFill.setInternalIdentificator(currentCliqueToRead.getInternalIdentificator()); // just for backward compatibility
+		currentCliqueToFill.setNodesList(new ArrayList<Node>(currentCliqueToRead.getNodesList()));	  // clone the list (so that we don't modify original list)
+		currentCliqueToFill.setParent(null);		// make sure this is initialized with null value
+		
+		// Do a depth-first recursive call to children.
+		// A depth-first will guarantee that my grandchildren were handled before current clique;
+		// thus, I don't need to check whether I should merge current clique with its grandchildren after merging current clique to its children
+		// (because if the grandchildren exist --i.e. was not merged to children -- then it means the separator was incomplete, so we don't need to merge them anyway)
+		if (currentCliqueToRead.getChildren() != null) {
+			// iterate on children (to make recursive calls on each child)
+			for (Clique childCliqueToRead : currentCliqueToRead.getChildren()) {
+				if (childCliqueToRead == null) {
+					continue;	// ignore null values
+				}
+				
+				// do a in-depth recursive call with the child clique as pivot
+				Clique childCliqueToFill = this.recursivelyFillMaxPrimeSubgraphDecompositionTree( 	// the returned clique is actually the root of the subtree created by this call
+						junctionTreeToRead, 		// still access the same junction tree
+						junctionTreeToFill, 		// still write to same junction tree
+						childCliqueToRead 			// set the child clique as the current clique to visit
+					);
+				
+				// get the separator between the original parent and child
+				Separator separatorToRead = junctionTreeToRead.getSeparator(currentCliqueToRead, childCliqueToRead);
+				if (separatorToRead == null) {
+					throw new IllegalArgumentException("Clique " + childCliqueToRead + " is a child of clique " + currentCliqueToRead + ", but no separator was found in between.");
+				}
+				
+				// check if we shall merge clique
+				if (!separatorToRead.isComplete()) { // needs to merge cliques
+					
+					// move children of the child (being merged) to my children (i.e. convert grand children to children)
+					for (Clique grandChild : childCliqueToFill.getChildren()) {
+						// link current clique to/from grand child
+						currentCliqueToFill.addChild(grandChild); 	// add grandchild to my list of children
+						grandChild.setParent(currentCliqueToFill);	// set current clique as parent of grandchild
+						
+						// prepare to replace separator
+						Separator oldSeparator = junctionTreeToFill.getSeparator(childCliqueToFill, grandChild);	// the separtor to be replaced
+						if (oldSeparator == null) {
+							throw new IllegalArgumentException("Clique " + grandChild + " is expected to be a child of clique " + childCliqueToFill + ", but no separator was created in previous recursive call.");
+						}
+						
+						// create new instance of separator, because unfortunately we cannot change existing separator
+						StubSeparator newSeparator = new StubSeparator(currentCliqueToFill, grandChild);	// new separator is from current clique to grandchild
+						newSeparator.setInternalIdentificator(oldSeparator.getInternalIdentificator());		// just for backward compatibility
+						newSeparator.setNodes(oldSeparator.getNodes());	// can use reference, because old separator will be removed anyway
+						
+						// now, replace the separator
+						junctionTreeToFill.removeSeparator(oldSeparator);
+						junctionTreeToFill.addSeparator(newSeparator);
+					}
+					
+					// no need to disassociate child clique from current clique, because we never associated them anyway (they are only associated in the else clause below)
+					
+					// merge child to current clique (the current clique will become a large clique containing nodes from both cliques)
+					currentCliqueToFill.join(childCliqueToFill);
+					
+				} else {	// no need to merge cliques
+					
+					// create separator between the current clique and child clique
+					StubSeparator newSeparator = new StubSeparator(currentCliqueToFill, childCliqueToFill);	// new separator is from current clique to grandchild
+					newSeparator.setInternalIdentificator(separatorToRead.getInternalIdentificator());		// just for backward compatibility
+					newSeparator.setNodes(separatorToRead.getNodes());	// can use reference, because old separator will be removed anyway
+					
+					// add separator to the junction tree being filled
+					junctionTreeToFill.addSeparator(newSeparator);
+					
+					// creating new separators won't automatically associate the current clique with child clique, so associate them
+					currentCliqueToFill.addChild(childCliqueToFill);
+					childCliqueToFill.setParent(currentCliqueToFill);
+					
+				}
+				
+			}
+		}
+		
+		// include copied clique to target junction tree
+		junctionTreeToFill.getCliques().add(currentCliqueToFill);
+		
+		// return the generated clique
+		return currentCliqueToFill;
 	}
 
 	
