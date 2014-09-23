@@ -196,6 +196,66 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 		sb.append(this.getClique2());
 		return sb.toString();
 	}
+	
+	/**
+	 * Checks whether this separator is complete in the moralized Bayes net structure.
+	 * That is, checks if nodes in this separator are fully connected after moralization
+	 * (i.e. all pairs of variables are either connected by arcs, or shares at least one common child in the Bayes net).
+	 * Connections and common children will be retrieved by referencing {@link Node#getParentNodes()}
+	 * or {@link Node#getChildNodes()}.
+	 * <br/> <br/>
+	 * Please, notice that nodes in this separator will be retrieved from {@link #getNodes()},
+	 * not from the separator table {@link #getProbabilityFunction()},
+	 * so be careful if your implementation doesn't keep {@link #getNodes()} and {@link IProbabilityFunction#getVariableAt(int)}
+	 * consistent.
+	 * @return true if this separator is empty, or has only 1 variable, or all variables
+	 * are fully connected in a moralized network. Returns false otherwise.
+	 * @see Node#isParentOf(Node)
+	 * @see Node#getChildren()
+	 */
+	public boolean isComplete() {
+		// retrieve the nodes in this separator
+		ArrayList<Node> nodesInSeparator = getNodes();
+		
+		// if empty or has only 1 node, this is complete
+		if (nodesInSeparator == null || nodesInSeparator.size() <= 1) {
+			return true;
+		}
+		
+		// At this point of code, there is at least 1 pair of nodes in this separator.
+		// Check if all nodes in this separator are pairwise connected, or shares the same children
+		int separatorSize = nodesInSeparator.size();	// how many nodes there are in this separator
+		for (int i = 0; i < separatorSize-1; i++) {
+			Node node1 = nodesInSeparator.get(i); // extract one of the pair of nodes being verified
+			for (int j = i+1; j < separatorSize; j++) {
+				Node node2 = nodesInSeparator.get(j); // extract the other node in the pair being verified
+				// If we found at least 1 pair of nodes not connected and not sharing same children, then separator is not complete.
+				// First, check if there is any connection. 
+				if ( node1.isParentOf(node2)				// there is an arc node1->node2
+						|| node2.isParentOf(node1) ) { 	// there is an arc node2->node1
+					continue;	// this pair was fine, so check other pairs of nodes
+				}
+				
+				// There is no direct connection, but we should check if there is a common children (to see if they would be connected if graph is moralized)
+				boolean hasCommonChild = false;
+				for (Node child : node1.getChildren()) {
+					if (node2.isParentOf(child)) {
+						hasCommonChild = true;
+						break;	// we need just 1 common child in order to have node1 and node2 connected in moralized net.
+					}
+				}
+				if (hasCommonChild) {
+					continue;	// this pair was fine, so check other pairs of nodes
+				}
+				
+				// if program reached this point, then current pair is not connected, and doesn't share common child.
+				return false;	// we can return immediately, because 1 disconnected pair makes this separator not fully connected (in the moralized net).
+			}
+		}
+		
+		// if program reached this line, all nodes in this separator are either connected or shares same children
+		return true;	// so, this separator is complete
+	}
 
 	/**
 	 * Internal identificators of separators
