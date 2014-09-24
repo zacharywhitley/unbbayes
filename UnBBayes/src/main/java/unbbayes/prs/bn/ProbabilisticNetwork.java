@@ -208,8 +208,8 @@ public class ProbabilisticNetwork
 						PotentialTable cliqueTable = clique.getProbabilityFunction();
 						cliqueTable.purgeVariable(nodeToRemove, false);
 						cliqueTable.normalize();
-						clique.getAssociatedProbabilisticNodes().remove(nodeToRemove);
-						clique.getNodes().remove(nodeToRemove);
+						clique.getAssociatedProbabilisticNodesList().remove(nodeToRemove);
+						clique.getNodesList().remove(nodeToRemove);
 					}
 				}
 			}
