@@ -91,6 +91,15 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	private boolean isToCalculateJointProbabilityLocally = true;
 
 	private boolean isToUseEstimatedTotalProbability = true;
+
+	/** {@link #run()} will use dynamic junction tree compilation if number of nodes is above this value */
+	private int dynamicJunctionTreeNetSizeThreshold = Integer.MAX_VALUE;	// setting to large values will disable dynamic junction tree compilation
+
+	/** Set of nodes detected when {@link #run()} was executed the previous time */
+	private Collection<INode> nodesPreviousRun = new HashSet<INode>();
+	
+	/** Set of arcs (edges) detected when {@link #run()} was executed the previous time */
+	private Collection<Edge> edgesPreviousRun  = new HashSet<Edge>();
 	
 	/** This is the error margin used when comparing probabilities */
 	public static final float ERROR_MARGIN = 0.00005f;
@@ -709,43 +718,181 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				|| this.getNet().getNodes().size() == 0) {
 			throw new IllegalStateException(resource.getString("EmptyNetException"));
 		}
-		try {
-			// TODO gradually migrate all compile routines to here
-			this.getNet().compile();
-//			if (this.getNet().getNodeCount() == 0) {
-//				throw new Exception(resource.getString("EmptyNetException"));
-//			}
-//			if (this.getNet().isCreateLog()) {
-//				this.getNet().getLogManager().reset();
-//			}
-//			this.verifyConsistency(this.getNet());
-//			this.moralize(this.getNet());
-//			this.triangularize(this.getNet());		
-//			
-//			this.getNet().compileJT(this.getJunctionTreeBuilder().buildJunctionTree(this.getNet()));
-			
-			// TODO migrate these GUI code to the plugin infrastructure
-			if (this.getMediator() != null) {
-				JPanel component = this.getMediator().getScreen().getNetWindowCompilation();
-				if (component == null) {
-					throw new NullPointerException("No compilation pane for " + this.getName() + " could be obtained.");
-				}
-				// avoid duplicate
-				this.getMediator().getScreen().getContentPane().remove(component);
-				this.getMediator().getScreen().getCardLayout().removeLayoutComponent(component);
-				
-				this.getMediator().getScreen().getContentPane().add(component, this.getMediator().getScreen().PN_PANE_PN_COMPILATION_PANE);
-				this.getMediator().getScreen().getCardLayout().addLayoutComponent(component, this.getMediator().getScreen().PN_PANE_PN_COMPILATION_PANE);
+		
+		// if this is true, we will not attempt to use dynamic junction tree compilation.
+		// I'm using a boolean var here instead of putting it directly in the if-clause, 
+		// because if an exception if thrown, I want to set this to true and compile junction tree normally
+		boolean isToCompileNormally = this.getNet().getNodes().size() <= getDynamicJunctionTreeNetSizeThreshold();
+		// check if we should use dynamic junction tree compilation
+		if ( !isToCompileNormally ) {
+			try {
+				this.runDynamicJunctionTreeCompilation();
+			} catch (Exception e) {
+				Debug.println(getClass(), "Unable to dynamically compile junction tree. Compiling normally...", e);
+				isToCompileNormally = true;	// set the flag, so that we can run the normal junction tree compilation in the next if-clause
 			}
-		} catch (Exception e) {
-			throw new IllegalStateException(e);
+		} 
+		
+		// ordinal junction tree compilation
+		if (isToCompileNormally) {
+			try {
+				// TODO gradually migrate all compile routines to here
+				this.getNet().compile();
+//				if (this.getNet().getNodeCount() == 0) {
+//					throw new Exception(resource.getString("EmptyNetException"));
+//				}
+//				if (this.getNet().isCreateLog()) {
+//					this.getNet().getLogManager().reset();
+//				}
+//				this.verifyConsistency(this.getNet());
+//				this.moralize(this.getNet());
+//				this.triangularize(this.getNet());		
+//				
+//				this.getNet().compileJT(this.getJunctionTreeBuilder().buildJunctionTree(this.getNet()));
+				
+				// TODO migrate these GUI code to the plugin infrastructure
+				if (this.getMediator() != null) {
+					JPanel component = this.getMediator().getScreen().getNetWindowCompilation();
+					if (component == null) {
+						throw new NullPointerException("No compilation pane for " + this.getName() + " could be obtained.");
+					}
+					// avoid duplicate
+					this.getMediator().getScreen().getContentPane().remove(component);
+					this.getMediator().getScreen().getCardLayout().removeLayoutComponent(component);
+					
+					this.getMediator().getScreen().getContentPane().add(component, this.getMediator().getScreen().PN_PANE_PN_COMPILATION_PANE);
+					this.getMediator().getScreen().getCardLayout().addLayoutComponent(component, this.getMediator().getScreen().PN_PANE_PN_COMPILATION_PANE);
+				}
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
 		}
+		
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onAfterRun(this);
 		}
 	}
 	
-    /**
+	/**
+	 * Runs the algorithm of Julia Florez in order to reuse the junction tree that was previously compiled.
+	 */
+    protected void runDynamicJunctionTreeCompilation() {
+		// do dynamic junction tree compilation if number of nodes is above a threshold and the previous junction tree is there
+		
+		// store what nodes were added/deleted
+		Collection<INode> deletedNodes = new HashSet<INode>();
+		Collection<INode> includedNodes = new HashSet<INode>();
+		// check modifications in nodes
+		if (getNodesPreviousRun() != null) {
+			// search for nodes that were deleted
+			for (INode oldNode : getNodesPreviousRun()) {
+				if (getNet().getNodeIndex(oldNode.getName()) < 0) {
+					// also check that junction tree does not have the node, because we may have another object modifying this junction tree without notifying this instance
+					for (Clique clique : getJunctionTree().getCliques()) {
+						if (clique.getAssociatedProbabilisticNodesList().contains(oldNode)) {
+							// junction tree still contains this node, so we need to mark it as deleted and properly handle it later
+							deletedNodes.add(oldNode);
+							break;
+						}
+					}
+				}
+			}
+			// search for nodes that were included
+			for (Node newNode : getNet().getNodes()) {
+				if (!(newNode instanceof ProbabilisticNode)) {
+					throw new ClassCastException(newNode + " is not a probabilistic node, thus it cannot be handled by this algorithm.");
+				}
+				if (!getNodesPreviousRun().contains(newNode)) {
+					// Additionally, check if junction tree already contains the node, because if so, the junction tree may have been handled by another algorithm/instance
+					if (((ProbabilisticNode) newNode).getAssociatedClique() == null 
+							|| !getJunctionTree().getCliques().contains(((ProbabilisticNode) newNode).getAssociatedClique())) {
+						// This criteria is only checking if node is associated with some clique in this junction tree.
+						// TODO perform a more robust check.
+						includedNodes.add(newNode);
+					}
+				}
+			}
+		}
+		
+		// store what arcs were added/deleted
+		Collection<Edge> deletedEdges = new HashSet<Edge>();
+		Collection<Edge> includedEdges = new HashSet<Edge>();
+		if (getEdgesPreviousRun() != null) {
+			// search for arcs that were deleted
+			for (Edge oldEdge : getEdgesPreviousRun()) {
+				if (!getNet().getEdges().contains(oldEdge)) {
+					deletedEdges.add(oldEdge);
+				}
+			}
+			// search for arcs that were included
+			for (Edge newEdge : getNet().getEdges()) {
+				if (!getEdgesPreviousRun().contains(newEdge)) {
+					includedEdges.add(newEdge);
+				}
+			}
+			// TODO handle cases when edges were included/excluded and junction tree handled by an instance other than this algorithm
+		}
+		
+		// TODO
+		try {
+			Thread.sleep(10000);
+			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
+			Thread.sleep(10000);
+			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
+			Thread.sleep(10000);
+			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
+			Thread.sleep(10000);
+			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
+			Thread.sleep(10000);
+			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
+			Thread.sleep(10000);
+			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
+			Thread.sleep(10000);
+			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
+			Thread.sleep(10000);
+			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
+			Thread.sleep(10000);
+			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
+			Thread.sleep(10000);
+			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
+			Thread.sleep(10000);
+			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
+			Thread.sleep(10000);
+			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
+			Thread.sleep(10000);
+			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
+		}
+		
+		
+		// update collection of what nodes were present in last call of run()
+		Collection<INode> nodesCache = getNodesPreviousRun();
+		if (nodesCache != null) {
+			// clear the collection regardless of whether number of nodes is above or below threshold
+			nodesCache.clear();
+			if (getNet().getNodes().size() > getDynamicJunctionTreeNetSizeThreshold()) {
+				// store what nodes were detected in this run, because we may need to use it later to detect structure changes
+				// only do this if network has more nodes than a threshold
+				nodesCache.addAll(getNet().getNodes());
+			}
+		}
+		// similarly, update collection of what arcs were present in last call of run()
+		Collection<Edge> edgesCache = getEdgesPreviousRun();
+		if (edgesCache != null) {
+			// clear the collection regardless of whether number of nodes is above or below threshold
+			edgesCache.clear();
+			if (getNet().getNodes().size() > getDynamicJunctionTreeNetSizeThreshold()) {
+				// store what arcs were detected in this run, because we may need to use it later to detect structure changes
+				// only do this if network has more nodes than a threshold
+				edgesCache.addAll(getNet().getEdges());
+			}
+		}
+		throw new UnsupportedOperationException("Dynamic junction tree compilation is not implemented yet");
+	}
+
+	/**
      * Performs moralization (for each node, link its parents with arcs) of the network.
      * @param net
      */
@@ -2189,8 +2336,9 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		for (Node node : getNet().getNodes()) {
 			if (node instanceof ProbabilisticNode) {
 				
-				PotentialTable newCPT = (PotentialTable) cptExtractor.buildCondicionalProbability(node, node.getParentNodes(), getNet(), null);	// null as the algorithm forces the return to be conditional probabilities
 				PotentialTable oldCPT = ((ProbabilisticNode) node).getProbabilityFunction();
+				// needs to keep same ordering of variables in newCPT, so I'm passing a sublist of oldCPT.variableList (sublist, because the 1st variable in it is the node itself)
+				PotentialTable newCPT = (PotentialTable) cptExtractor.buildCondicionalProbability(node, (List)oldCPT.variableList.subList(1, oldCPT.variableList.size()), getNet(), null);	// null as the algorithm forces the return to be conditional probabilities
 				
 				// iterate over columns of the table, not over each cell
 				for (int indexOf1stCellOfColumn = 0; indexOf1stCellOfColumn < oldCPT.tableSize(); indexOf1stCellOfColumn+=oldCPT.getVariableAt(0).getStatesSize()) {	
@@ -2205,9 +2353,17 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 						}
 					}
 					
-					// if it is impossible state, then keep this column with old distribution. If it is a possible state, then update
-					if (!isImpossibleState) {
-						for (int stateIndex = 0; stateIndex < oldCPT.getVariableAt(0).getStatesSize(); stateIndex++) {
+					// if it is impossible state, then fill with uniform distribution. If it is a possible state, then update with new distribution
+					int statesSize = oldCPT.getVariableAt(0).getStatesSize();	// this is how many cells to fill in this iteration
+					if (isImpossibleState) {
+						// this is an invalid column in cpt (because parents are impossible), so fill with uniform.
+						float value = 1f/statesSize;
+						for (int stateIndex = 0; stateIndex < statesSize; stateIndex++) {
+							oldCPT.setValue(indexOf1stCellOfColumn+stateIndex,value);
+						}
+					} else {
+						// fill with new CPT
+						for (int stateIndex = 0; stateIndex < statesSize; stateIndex++) {
 							oldCPT.setValue(indexOf1stCellOfColumn+stateIndex,newCPT.getValue(indexOf1stCellOfColumn+stateIndex));
 						}
 					}
@@ -2224,6 +2380,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	public static final PotentialTable DEFAULT_SINGLETON_UTILITY_TABLE = new UtilityTable();
 	/** This is used in {@link StubClique} as the default content of potential tables. It is static in order to avoid unnecessary memory garbage */
 	public static final PotentialTable DEFAULT_SINGLETON_POTENTIAL_TABLE = new ProbabilisticTable();
+
 	
 	/** 
 	 * This is a clique that will not use potential tables {@link Clique#getProbabilityFunction()}. 
@@ -2468,6 +2625,65 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		
 		// return the generated clique
 		return currentCliqueToFill;
+	}
+
+	/**
+	 * @return the set of nodes detected when {@link #run()} was executed.
+	 * This is used later in {@link #run()} again in order to detect modifications in structure.
+	 * @see #setDynamicJunctionTreeNetSizeThreshold(int)
+	 * @see #getDynamicJunctionTreeNetSizeThreshold()
+	 */
+	public Collection<INode> getNodesPreviousRun() {
+		return nodesPreviousRun;
+	}
+
+	/**
+	 * @param nodesPreviousRun the set of nodes detected when {@link #run()} was executed.
+	 * This is used later in {@link #run()} again in order to detect modifications in structure.
+	 * @see #setDynamicJunctionTreeNetSizeThreshold(int)
+	 * @see #getDynamicJunctionTreeNetSizeThreshold()
+	 */
+	public void setNodesPreviousRun(Collection<INode> nodesPreviousRun) {
+		this.nodesPreviousRun = nodesPreviousRun;
+	}
+
+	/**
+	 * @return {@link #run()} will use dynamic junction tree compilation if number of nodes is above this value.
+	 * @see #getNodesPreviousRun()
+	 * @see #getEdgesPreviousRun()
+	 */
+	public int getDynamicJunctionTreeNetSizeThreshold() {
+		return dynamicJunctionTreeNetSizeThreshold;
+	}
+
+	/**
+	 * @param dynamicJunctionTreeNetSizeThreshold : {@link #run()} will use dynamic junction tree compilation if number of nodes is above this value.
+	 * @see #getNodesPreviousRun()
+	 * @see #getEdgesPreviousRun()
+	 */
+	public void setDynamicJunctionTreeNetSizeThreshold(
+			int dynamicJunctionTreeNetSizeThreshold) {
+		this.dynamicJunctionTreeNetSizeThreshold = dynamicJunctionTreeNetSizeThreshold;
+	}
+
+	/**
+	 * @return set of arcs (edges) detected when {@link #run()} was executed previous time.
+	 * This is used later in {@link #run()} again in order to detect modifications in structure.
+	 * @see #setDynamicJunctionTreeNetSizeThreshold(int)
+	 * @see #getDynamicJunctionTreeNetSizeThreshold()
+	 */
+	public Collection<Edge> getEdgesPreviousRun() {
+		return edgesPreviousRun;
+	}
+
+	/**
+	 * @param edgesPreviousRun : set of arcs (edges) detected when {@link #run()} was executed previous time.
+	 * This is used later in {@link #run()} again in order to detect modifications in structure.
+	 * @see #setDynamicJunctionTreeNetSizeThreshold(int)
+	 * @see #getDynamicJunctionTreeNetSizeThreshold()
+	 */
+	public void setEdgesPreviousRun(Collection<Edge> edgesPreviousRun) {
+		this.edgesPreviousRun = edgesPreviousRun;
 	}
 
 	
