@@ -5,11 +5,13 @@ package unbbayes.prs.bn;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -26,6 +28,7 @@ import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.id.UtilityTable;
 import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
+import unbbayes.util.dseparation.impl.MSeparationUtility;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
 import unbbayes.util.extension.bn.inference.IRandomVariableAwareInferenceAlgorithm;
@@ -95,11 +98,14 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	/** {@link #run()} will use dynamic junction tree compilation if number of nodes is above this value */
 	private int dynamicJunctionTreeNetSizeThreshold = Integer.MAX_VALUE;	// setting to large values will disable dynamic junction tree compilation
 
-	/** Set of nodes detected when {@link #run()} was executed the previous time */
-	private Collection<INode> nodesPreviousRun = new HashSet<INode>();
+//	/** Set of nodes detected when {@link #run()} was executed the previous time */
+//	private Collection<INode> nodesPreviousRun = new HashSet<INode>();
+//	
+//	/** Set of arcs (edges) detected when {@link #run()} was executed the previous time */
+//	private Collection<Edge> edgesPreviousRun  = new HashSet<Edge>();
 	
-	/** Set of arcs (edges) detected when {@link #run()} was executed the previous time */
-	private Collection<Edge> edgesPreviousRun  = new HashSet<Edge>();
+	/** Copy of the network used when {@link #run()} was executed the previous time */
+	private ProbabilisticNetwork netPreviousRun = null;
 	
 	/** This is the error margin used when comparing probabilities */
 	public static final float ERROR_MARGIN = 0.00005f;
@@ -722,7 +728,11 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		// if this is true, we will not attempt to use dynamic junction tree compilation.
 		// I'm using a boolean var here instead of putting it directly in the if-clause, 
 		// because if an exception if thrown, I want to set this to true and compile junction tree normally
-		boolean isToCompileNormally = this.getNet().getNodes().size() <= getDynamicJunctionTreeNetSizeThreshold();
+		boolean isToCompileNormally = this.getNet().getNodes().size() <= getDynamicJunctionTreeNetSizeThreshold()
+									// if there is no junction tree to reuse, then do not use dynamic junction tree compilation
+									|| getJunctionTree() == null
+									|| getJunctionTree().getCliques() == null
+									|| getJunctionTree().getCliques().isEmpty();
 		// check if we should use dynamic junction tree compilation
 		if ( !isToCompileNormally ) {
 			try {
@@ -775,128 +785,769 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	
 	/**
 	 * Runs the algorithm of Julia Florez in order to reuse the junction tree that was previously compiled.
+	 * Please, notice that if there is no previous junction tree, this method will throw a {@link NullPointerException}.
+	 * @throws InvalidParentException  when failed to clone arcs in prime subgraph.
+	 * @see #getNet()
+	 * @see #getJunctionTree()
+	 * @se {@link #run()}
 	 */
-    protected void runDynamicJunctionTreeCompilation() {
+    protected void runDynamicJunctionTreeCompilation() throws InvalidParentException {
 		// do dynamic junction tree compilation if number of nodes is above a threshold and the previous junction tree is there
 		
-		// store what nodes were added/deleted
+		
+		// extract the network structure used in previous run
+		ProbabilisticNetwork oldNet = getNetPreviousRun();
+		// extract the network structure to be used in current run
+		ProbabilisticNetwork newNet = getNet();
+		
+		// store what nodes were added/deleted to/from the network
 		Collection<INode> deletedNodes = new HashSet<INode>();
 		Collection<INode> includedNodes = new HashSet<INode>();
-		// check modifications in nodes
-		if (getNodesPreviousRun() != null) {
-			// search for nodes that were deleted
-			for (INode oldNode : getNodesPreviousRun()) {
-				if (getNet().getNodeIndex(oldNode.getName()) < 0) {
-					// also check that junction tree does not have the node, because we may have another object modifying this junction tree without notifying this instance
-					for (Clique clique : getJunctionTree().getCliques()) {
-						if (clique.getAssociatedProbabilisticNodesList().contains(oldNode)) {
-							// junction tree still contains this node, so we need to mark it as deleted and properly handle it later
-							deletedNodes.add(oldNode);
-							break;
-						}
-					}
-				}
-			}
-			// search for nodes that were included
-			for (Node newNode : getNet().getNodes()) {
-				if (!(newNode instanceof ProbabilisticNode)) {
-					throw new ClassCastException(newNode + " is not a probabilistic node, thus it cannot be handled by this algorithm.");
-				}
-				if (!getNodesPreviousRun().contains(newNode)) {
-					// Additionally, check if junction tree already contains the node, because if so, the junction tree may have been handled by another algorithm/instance
-					if (((ProbabilisticNode) newNode).getAssociatedClique() == null 
-							|| !getJunctionTree().getCliques().contains(((ProbabilisticNode) newNode).getAssociatedClique())) {
-						// This criteria is only checking if node is associated with some clique in this junction tree.
-						// TODO perform a more robust check.
-						includedNodes.add(newNode);
-					}
-				}
-			}
-		}
-		
 		// store what arcs were added/deleted
 		Collection<Edge> deletedEdges = new HashSet<Edge>();
 		Collection<Edge> includedEdges = new HashSet<Edge>();
-		if (getEdgesPreviousRun() != null) {
+				
+		// check modifications in nodes and arcs
+		if (oldNet != null) {
+			// search for nodes that were deleted
+			for (INode oldNode : oldNet.getNodes()) {
+				// check if node is in new net. If not, it was deleted
+				if (newNet.getNodeIndex(oldNode.getName()) < 0) {
+					deletedNodes.add(oldNode);
+				}
+			}
+			// search for nodes that were included
+			for (Node newNode : newNet.getNodes()) {
+				if (!(newNode instanceof ProbabilisticNode)) {
+					throw new ClassCastException(newNode + " is not a probabilistic node, thus it cannot be handled by this algorithm.");
+				}
+				if (oldNet.getNodeIndex(newNode.getName()) < 0) {
+					// if node is in new net, but not in old net, then it is a new node
+					includedNodes.add(newNode);
+				}
+			}
+			
 			// search for arcs that were deleted
-			for (Edge oldEdge : getEdgesPreviousRun()) {
-				if (!getNet().getEdges().contains(oldEdge)) {
+			for (Edge oldEdge : oldNet.getEdges()) {
+				// we know that getEdges() is an ArrayList, and that it uses Object#equals(Object).
+				// the Edge#equals(Edge) uses name comparison of nodes it connects.
+				// This makes this if-clause to work even when the Edge objects are not exactly the same instances (i.e. we can compare node with its clone).
+				if (!newNet.getEdges().contains(oldEdge)) {
 					deletedEdges.add(oldEdge);
 				}
 			}
 			// search for arcs that were included
-			for (Edge newEdge : getNet().getEdges()) {
-				if (!getEdgesPreviousRun().contains(newEdge)) {
-					includedEdges.add(newEdge);
+			for (Edge newEdge : newNet.getEdges()) {
+				// we know that getEdges() is an ArrayList, and that it uses Object#equals(Object).
+				// the Edge#equals(Edge) uses name comparison of nodes it connects.
+				// This makes this if-clause to work even when the Edge objects are not exactly the same instances (i.e. we can compare node with its clone).
+				if (!oldNet.getEdges().contains(newEdge)) {
+					// we should not consider an edge as "new" if it is just connecting parents that was already "connected" by a "moralization arc" in the old net
+					// extract the nodes in the old net
+					Node oldOriginNode = oldNet.getNode(newEdge.getOriginNode().getName());
+					Node oldDestinationNode = oldNet.getNode(newEdge.getDestinationNode().getName());
+					if (oldOriginNode == null || oldDestinationNode == null) {
+						// the nodes were not present previously, so there is no sense in checking whether the nodes were moralized in previous net
+						includedEdges.add(newEdge);
+					} else {
+						// check common children
+						List<INode> commonChildren = new ArrayList<INode>(oldOriginNode.getChildNodes());
+						commonChildren.retainAll(oldDestinationNode.getChildNodes());	// this gives an intersection
+						if (commonChildren.isEmpty()) {
+							// they did not have common children, so they did not have any "moralziation arc" previously, so the new edge is actually "new".
+							includedEdges.add(newEdge);
+						}
+					}
 				}
 			}
 			// TODO handle cases when edges were included/excluded and junction tree handled by an instance other than this algorithm
 		}
 		
-		// TODO
+		
+		// This algorithm also needs to track which moral connections (i.e. implicit connections between parents with common child) were deleted because of arc deletion.
+		if (!deletedEdges.isEmpty()) { // I'm assuming that if we never deleted any edge, there is no old moral arc deleted too
+			deletedEdges.addAll(getDeletedMoralArcs(oldNet, newNet, deletedEdges));
+		}
+		
+		// This algorithm also needs to track which moral connections (i.e. implicit connections between parents with common child) were created because of new arcs.
+		if (!includedEdges.isEmpty()) { // I'm assuming that if we never included any edge, there is no new moral arc too
+			includedEdges.addAll(getIncludedMoralArcs(oldNet, newNet, includedEdges));
+		}
+		
+		// obtain the maximum prime subgraph decomposition tree, which will be used to isolate modifications 
+		// (i.e. check which portion of JT can be reused, and which portions shall be recompiled)
+		IJunctionTree decompositionTree = null;
+		// also, this will be a map relating a cluster included in the max prime subgraph decomposition to the clique in the original junction tree
+		Map<Clique, Collection<Clique>> clusterToOriginalCliqueMap = new HashMap<Clique, Collection<Clique>>();
 		try {
-			Thread.sleep(10000);
-			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
-			Thread.sleep(10000);
-			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
-			Thread.sleep(10000);
-			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
-			Thread.sleep(10000);
-			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
-			Thread.sleep(10000);
-			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
-			Thread.sleep(10000);
-			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
-			Thread.sleep(10000);
-			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
-			Thread.sleep(10000);
-			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
-			Thread.sleep(10000);
-			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
-			Thread.sleep(10000);
-			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
-			Thread.sleep(10000);
-			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
-			Thread.sleep(10000);
-			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
-			Thread.sleep(10000);
-			Debug.println(getClass(), "TODO handle dynamic junction tree compilation here");
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
+			// the junction tree here needs to be the old junction tree, prior to modifications.
+			decompositionTree = getMaximumPrimeSubgraphDecompositionTree(getJunctionTree(), clusterToOriginalCliqueMap); // also fill clusterToOriginalCliqueMap
+		} catch (Exception e) {
+			throw new RuntimeException("Unable to obtain maximum prime subgraph decomposition tree from the current junction tree.",e);
 		}
 		
+		// this set will be filled with clusters in the maximum prime subgraph decomposition tree which needs to be modified.
+		Set<Clique> clustersToModify = new HashSet<Clique>();
 		
-		// update collection of what nodes were present in last call of run()
-		Collection<INode> nodesCache = getNodesPreviousRun();
-		if (nodesCache != null) {
-			// clear the collection regardless of whether number of nodes is above or below threshold
-			nodesCache.clear();
-			if (getNet().getNodes().size() > getDynamicJunctionTreeNetSizeThreshold()) {
-				// store what nodes were detected in this run, because we may need to use it later to detect structure changes
-				// only do this if network has more nodes than a threshold
-				nodesCache.addAll(getNet().getNodes());
+		// identify which clusters needs to be modified, accordingly to the type of modification (e.g. new nodes, new arcs, or deletions)
+		for (INode includedNode : includedNodes) {
+			clustersToModify.addAll(this.treatAddNode(includedNode, decompositionTree));
+		}
+		for (INode deletedNode : deletedNodes) {
+			clustersToModify.addAll(this.treatRemoveNode(deletedNode, decompositionTree));
+		}
+		for (Edge includedEdge : includedEdges) {
+			clustersToModify.addAll(this.treatIncludeEdge(includedEdge, decompositionTree));
+		}
+		for (Edge deletedEdge : deletedEdges) {
+			clustersToModify.addAll(this.treatRemoveEdge(deletedEdge, decompositionTree));
+		}
+		
+		// We don't need the list of modification in net structure anymore. 
+		// Release them, because we'll have a memory-intense operation (compilation of junction trees of max prime subgraphs) now
+		includedNodes.clear(); includedNodes = null;
+		deletedNodes.clear() ; deletedNodes  = null;
+		includedEdges.clear(); includedEdges = null;
+		deletedEdges.clear() ; deletedEdges  = null;
+		
+		// for each connected marked clusters, retrieve the nodes in prime subnet decomposition and compile junction tree for each of subnets
+		Map<IJunctionTree, Collection<Clique>> compiledSubnetToClusterMap = this.getCompiledPrimeDecompositionSubnets(clustersToModify);
+
+		// aggregate the junction tree of the subnets to the original junction tree (removing unnecessary cliques)
+		for (Entry<IJunctionTree, Collection<Clique>> entry : compiledSubnetToClusterMap.entrySet()) {
+			this.aggregateJunctionTree(getJunctionTree(), entry.getKey(), entry.getValue(), decompositionTree, clusterToOriginalCliqueMap);
+		}
+		
+		// We don't need the junction tree of max prime subgraphs anymore. 
+		// Release them, because we have a memory-intense operation (i.e. backup) now.
+		compiledSubnetToClusterMap.clear(); 
+		compiledSubnetToClusterMap = null; 
+		// we don't need the max prime decomposition tree and its clusters too
+		decompositionTree = null;
+		clusterToOriginalCliqueMap.clear(); 
+		clusterToOriginalCliqueMap = null;
+		clustersToModify.clear(); 
+		clustersToModify = null;
+		
+		// update backup of network
+		ProbabilisticNetwork cloneProbabilisticNetwork = this.cloneProbabilisticNetwork(newNet);
+		cloneProbabilisticNetwork.setJunctionTree(null); // we don't need to keep clone of new junction tree
+		this.setNetPreviousRun(cloneProbabilisticNetwork);
+	}
+
+    /**
+     * @param originalJunctionTree : junction tree whose new junction trees obtained from max prime subgraphs will be aggregated to.
+     * @param primeSubgraphJunctionTree : this is a fragment of junction tree created by compiling nodes in the connected maximum prime subgraph
+     * marked for modification. Cliques in this junction tree will be aggregated to original junction tree.
+     * @param modifiedClusters : clusters that belongs to the prime subgraph junction tree.
+     * This parameter is necessary because we need to find out which separators connects these clusters to clusters not in this collection.
+     * @param maxPrimeSubgraphDecompositionTree : this is the entire maximum prime subgraph decomposition tree
+     * obtained from {@link #getMaximumPrimeSubgraphDecompositionTree(IJunctionTree, Map)}.
+     * @param clusterToOriginalCliqueMap : this map associates clusters in max prime subgraph decomposition tree to cliques in original junction tree. 
+     * It it used to retrieve cliques of original junction tree related to the cluster currently being evaluated.
+     * @see #runDynamicJunctionTreeCompilation()
+     */
+    protected void aggregateJunctionTree(IJunctionTree originalJunctionTree, IJunctionTree primeSubgraphJunctionTree, Collection<Clique> modifiedClusters,	// main parameters
+			IJunctionTree maxPrimeSubgraphDecompositionTree, Map<Clique, Collection<Clique>> clusterToOriginalCliqueMap) {									// auxiliary parameters for reference
+
+    	// basic assertions
+    	if (originalJunctionTree == null || primeSubgraphJunctionTree == null || modifiedClusters == null || modifiedClusters.isEmpty()) {
+    		return;	// can't do anything without the main arguments
+    	}
+    	
+		// also build an inverse mapping from original clique to generated clusters in max prime subgraph decomposition tree, 
+    	// because we'll use it later to check if a clique was marked for modification
+		Map<Clique, Clique> originalCliqueToClusterMap = new HashMap<Clique, Clique>();
+		// invert the clusterToOriginalCliqueMap and write it to originalCliqueToClusterMap
+		for (Entry<Clique, Collection<Clique>> clusterToOriginalCliques : clusterToOriginalCliqueMap.entrySet()) {
+			for (Clique originalClique : clusterToOriginalCliques.getValue()) {
+				originalCliqueToClusterMap.put(originalClique, clusterToOriginalCliques.getKey());
 			}
 		}
-		// similarly, update collection of what arcs were present in last call of run()
-		Collection<Edge> edgesCache = getEdgesPreviousRun();
-		if (edgesCache != null) {
-			// clear the collection regardless of whether number of nodes is above or below threshold
-			edgesCache.clear();
-			if (getNet().getNodes().size() > getDynamicJunctionTreeNetSizeThreshold()) {
-				// store what arcs were detected in this run, because we may need to use it later to detect structure changes
-				// only do this if network has more nodes than a threshold
-				edgesCache.addAll(getNet().getEdges());
+    	
+    	// get separators pointing to/from the clusters (not between the clusters), so that we can iterate on them
+    	// but first, get the cliques related to the clusters
+		Set<Clique> modifiedCliques = new HashSet<Clique>();
+    	for (Clique cluster : modifiedClusters) {
+			modifiedCliques.addAll(clusterToOriginalCliqueMap.get(cluster));
+		}
+    	// for each of the cliques, get separators that connects modified and not modified cliques
+    	Set<Separator> borderSeparators = new HashSet<Separator>();	// this will be filled with separators that are in the border between modified and not modified cliques
+    	for (Clique modifiedClique : modifiedCliques) { // only needs to check separators connected to these cliques
+			// check parent
+    		if (modifiedClique.getParent() != null
+    				&& !modifiedClusters.contains(originalCliqueToClusterMap.get(modifiedClique.getParent()))) {
+    			// cluster related to this parent clique was not modified, so this is a separator between modified and not modified cliques
+    			borderSeparators.add(originalJunctionTree.getSeparator(modifiedClique.getParent(), modifiedClique));
+    		}
+    		// check children
+    		if (modifiedClique.getChildren() != null) {
+    			for (Clique child : modifiedClique.getChildren()) {
+    				if (!modifiedClusters.contains(originalCliqueToClusterMap.get(child))) {
+    	    			// cluster related to this clique was not modified, so this is a separator between modified and not modified cliques
+    	    			borderSeparators.add(originalJunctionTree.getSeparator(modifiedClique, child));
+    	    		}
+    			}
+    		}
+		}
+    	
+    	
+    	// now, iterate on separators in order to substitute them with connections between new subtrees and the original junction tree
+    	for (Separator borderSeparator : borderSeparators) {
+    		// border separator connects modified clique with unmodified clique. 
+    		Clique unmodifiedOriginalClique = borderSeparator.getClique1(); // Extract the unmodified clique.
+    		Clique modifiedOriginalClique = borderSeparator.getClique2();	// Extract the modified clique (to be deleted after this process)
+    		if (modifiedCliques.contains(unmodifiedOriginalClique)) {
+    			// clique 1 was the modified one
+    			modifiedOriginalClique 	 = borderSeparator.getClique1();
+    			unmodifiedOriginalClique = borderSeparator.getClique2();
+    		}
+    		
+			// find clique in new prime subgraph junction tree whose intersection with the unmodified clique is maximal
+    		Clique cliqueInMaxPrimeJunctionTree = null;
+			try {
+				cliqueInMaxPrimeJunctionTree = maxPrimeSubgraphDecompositionTree.getCliquesContainingMostOfNodes((Collection)unmodifiedOriginalClique.getNodesList()).get(0);
+			} catch (Exception e) {
+				throw new RuntimeException("Unable to find clique in max prime subgraph decomposition junction tree containing at least one node in " + unmodifiedOriginalClique);
+			}
+			
+			// at this point, the clique with maximum intersection shall not be null
+    		
+//    		Connect the new clique to the original clique by the border separator; 
+//    		The border separator needs to be replaced, because we cannot change its content;
+//    		
+//			
+//			
+//    		Don't forget to include the new clique into the original junction tree;
+//    		
+//    		if new clique and border separator are the same (i.e. represents same joint space), then join original clique and new clique;
+//    		
+//    		delete the modified clique from original junction tree;
+    		
+		}
+    	
+	}
+
+
+	/**
+     * @param clustersToCompile : these are the clusters in prime subgraph decomposition tree to be used
+     * @return map from the generated junction trees to clusters that has generated the respective junction tree. 
+     * By extracting the keys, you can obtain the set of junction trees generated from the argument.
+     * By obtaining the values, you can obtain which cluster originated the junction tree
+     * @throws InvalidParentException  when failing to clone arcs while generating a clone of the subnetwork.
+     * @see #runDynamicJunctionTreeCompilation()
+     * @see IJunctionTree#initBeliefs()
+     * @see #getNet()
+     */
+    protected Map<IJunctionTree,Collection<Clique>> getCompiledPrimeDecompositionSubnets( Collection<Clique> clustersToCompile) throws InvalidParentException {
+    	// basic assertion
+    	if (clustersToCompile == null || clustersToCompile.isEmpty()) {
+    		return Collections.EMPTY_MAP;
+    	}
+		
+    	// the map to return
+    	Map<IJunctionTree,Collection<Clique>> ret = new HashMap<IJunctionTree,Collection<Clique>>();
+    	
+    	// if clusters are in this set, then they were processed already
+		Set<Clique> processedClusters = new HashSet<Clique>();	
+		
+		// collect nodes in connected clusters, so that we can build a bayes net from it and compile
+		for (Clique cluster : clustersToCompile) {
+			// this loop is just to guarantee that all clusters will be processed, regardless of being connected or not each other
+			if (!processedClusters.contains(cluster)) { // if current cluster was connected to some previous cluster, it was processed already
+				
+				// this var will be used to store which clusters were processed before this iteration, 
+				// so that we can check which clusters were processed in this iteration
+				Set<Clique> clustersProcessedBeforeThisIteration = new HashSet<Clique>(processedClusters);
+				
+				// obtain nodes in current and connected marked clusters (a cluster is marked if it is in clustersToCompile)
+				Set<INode> originalNodes = getNodesInConnectedClustersRecursively(cluster, clustersToCompile, processedClusters);	// this will also update processedClusters
+				// Note: above method must insert current cluster to processedClusters
+				
+				Set<Clique> clustersProcessedInThisIteration = new HashSet<Clique>(processedClusters);
+				clustersProcessedInThisIteration.removeAll(clustersProcessedBeforeThisIteration);
+				
+				
+				// we don't need these clusters anymore, so purge them
+				clustersProcessedBeforeThisIteration.clear();
+				clustersProcessedBeforeThisIteration = null;
+				
+				// generate a bayes net to add node
+				ProbabilisticNetwork subnet = new ProbabilisticNetwork("subnet" + cluster.getInternalIdentificator());
+				
+				// add nodes that belong to current cluster and connected clusters
+				for (INode nodeToAdd : originalNodes) {
+					// use a clone instead of the original node, so that we don't change original
+					subnet.addNode(((ProbabilisticNode)nodeToAdd).basicClone());
+				}
+				
+				// Now that all necessary nodes were included to the subnet, add edges related to nodes we just added;
+				for (INode originalChild : originalNodes) {
+					// extract the object in the subnet. They have the same name, but are different instances (because nodes in subnet are clones)
+					Node childInSubnet = subnet.getNode(originalChild.getName());
+					// add edges that will complete the parents.
+					for (INode originalParent : originalChild.getParentNodes()) {
+						// check if parent is in subnet
+						Node parentInSubnet = subnet.getNode(originalParent.getName());
+						if (parentInSubnet != null) {
+							// both parent and child exist in subnet, so add arc
+							Edge edge = new Edge(parentInSubnet, childInSubnet);
+							subnet.addEdge(edge);	// this will also automatically update cpts, so we need to overwrite cpts later
+						}
+					}
+				}
+				
+				// cpt of nodes must be kept the same of original net, so that potentials can be filled correctly by JunctionTree#initBeliefs();
+				for (INode originalNode : originalNodes) {
+					if (originalNode instanceof ProbabilisticNode) {
+						// extract the CPTs
+						PotentialTable originalTable = ((ProbabilisticNode) originalNode).getProbabilityFunction();
+						
+						// clear the cpt of the node in subnet
+						PotentialTable tableToOverwrite = ((ProbabilisticNode) subnet.getNode(originalNode.getName())).getProbabilityFunction();
+						while (tableToOverwrite.getVariablesSize() > 1) {	
+							// keep the 1st element (at index 0), because it is the owner of the cpt. 
+							tableToOverwrite.removeVariable(tableToOverwrite.getVariableAt(1)); // Remove others
+						}
+						
+						// Copy the content of original cpt to current cpt.
+						// By doing this, I'm actually including dependences in CPTs without adding arcs.
+						// This allows JunctionTree#initBeliefs() to initialize clique potentials that are consistent with original net.
+						for (int i = 0; i < originalTable.getVariablesSize(); i++) { // make sure we add variables without braking ordering
+							// check if we can find this variable in subnet
+							INode nodeToAdd = subnet.getNode(originalTable.getVariableAt(i).getName()); 
+							if (nodeToAdd == null) { // No equivalent node in subnet.
+								// I'm adding nodes from original net, but this should be fine given the way JunctionTree#initBeliefs() works.
+								nodeToAdd  = originalTable.getVariableAt(i);
+							}
+							tableToOverwrite.addVariable(nodeToAdd);
+						}
+						
+						// Now, the size of table and nodes referenced by it (and their order) are consistent. 
+						tableToOverwrite.setValues(originalTable.getValues()); // Overwrite probabilities at once, since the ordering of variables supposedly matches.
+					}
+				}
+				
+				// This will compile a junction tree for the subnet. 
+				JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(subnet);
+				// Make sure ordinal junction tree compilation is used (i.e. we don't call dynamic compilation again)
+				algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// this shall guarantee that dynamic compilation is disabled
+				subnet.setJunctionTree(null);											// this will also guarantee dynamic compilation to be disabled
+				// finally, compile the subnet
+				algorithm.run();
+				// assert that junction tree was compiled
+				if (algorithm.getJunctionTree() == null || algorithm.getJunctionTree() != subnet.getJunctionTree()) {
+					throw new RuntimeException("Unable to compile max prime subnet of cluster " + cluster);
+				}
+				
+				// substitute nodes in decomposition junction tree with original nodes, 
+				// for backward compatibility and in order to avoid other problems potentially caused by multiple java objects representing same node;
+				for (Clique clique : algorithm.getJunctionTree().getCliques()) {
+					
+					// substitute the nodes in clique
+					List<Node> cliqueNodes = clique.getNodesList();
+					for (int i = 0; i < cliqueNodes.size(); i++) {
+						// just replace the current variable with instance in original net
+						cliqueNodes.set(i, net.getNode(cliqueNodes.get(i).getName()));
+					}
+					
+					// don't forget to update the associated nodes of each clique
+					cliqueNodes = clique.getAssociatedProbabilisticNodesList();
+					for (int i = 0; i < cliqueNodes.size(); i++) {
+						// just replace the current variable with instance in original net
+						cliqueNodes.set(i, net.getNode(cliqueNodes.get(i).getName()));
+					}
+					// the opposite direction (node to associated clique) is processed later
+					
+					// substitute the nodes in potential table too
+					PotentialTable table = clique.getProbabilityFunction();
+					for (int i = 0; i < table.getVariablesSize(); i++) {
+						// just replace the current variable with instance in original net
+						table.setVariableAt(i, getNet().getNode(table.getVariableAt(i).getName()));
+					}
+				}
+				
+				// do the same for separators
+				for (Separator separator : algorithm.getJunctionTree().getSeparators()) {
+					
+					// substitute the nodes in separator
+					List<Node> separatorNodes = separator.getNodes();
+					for (int i = 0; i < separatorNodes.size(); i++) {
+						// just replace the current variable with instance in original net
+						separatorNodes.set(i, net.getNode(separatorNodes.get(i).getName()));
+					}
+					
+					// substitute the nodes in potential table too
+					PotentialTable table = separator.getProbabilityFunction();
+					for (int i = 0; i < table.getVariablesSize(); i++) {
+						// just replace the current variable with instance in original net
+						table.setVariableAt(i, getNet().getNode(table.getVariableAt(i).getName()));
+					}
+				}
+				
+				// make original nodes to point to new cliques/separators, instead of pointing to old cliques/separators that are likely to be removed later
+				for (INode originalNode : originalNodes) {
+					if (originalNode instanceof TreeVariable) {
+						// I did not remove new nodes from subnet, so I can query subnet in order to get the respective new node
+						TreeVariable newNode = (TreeVariable) subnet.getNode(originalNode.getName());
+						// subnet was compiled, so nodes in it are supposedly associated with some clique in new junction subtree.
+						// use new node (which is associated to new cliques) to associate original node to new clique.
+						((TreeVariable) originalNode).setAssociatedClique(newNode.getAssociatedClique());
+					}
+				}
+				
+				// add junction tree to the map to be returned.
+				// Current cluster and all related clusters are supposedly in clustersProcessedInThisIteration
+				ret.put(algorithm.getJunctionTree(), clustersProcessedInThisIteration);
 			}
 		}
-		throw new UnsupportedOperationException("Dynamic junction tree compilation is not implemented yet");
+    			
+		return ret;
+	}
+
+    /**
+     * Recursively collects nodes of current cluster and connected clusters marked in clustersToCompile.
+     * Connected clusters are clusters related with {@link Clique#getParent()} and {@link Clique#getChildren()}.
+     * @param cluster : current cluster in recursive call
+     * @param clustersToCompile : if cluster is not in this set, stop recursive calls.
+     * @param processedClusters : stores which clusters were processed already, so that we don't process the same cluster twice.
+     * @return : set of all nodes in current cluster and all connected clusters;
+     * @see #getCompiledPrimeDecompositionSubnets(Collection)
+     * @see #runDynamicJunctionTreeCompilation()
+     */
+	private Set<INode> getNodesInConnectedClustersRecursively(Clique cluster, Collection<Clique> clustersToCompile, Set<Clique> processedClusters) {
+		// if current cluster is not marked, then return nothing
+		if (clustersToCompile == null || !clustersToCompile.contains(cluster)) {
+			return Collections.EMPTY_SET;
+		}
+		// make sure the processed clusters is not null
+		if (processedClusters == null) {
+			// instantiate new set, because we'll use it in recursive call anyway
+			processedClusters = new HashSet<Clique>();
+		}
+		// check if this cluster was already processed
+		if (processedClusters.contains(cluster)) {
+			return Collections.EMPTY_SET; // if it was processed already, return nothing
+		}
+		// prepare the set to return
+		Set<INode> ret = new HashSet<INode>();
+		ret.addAll(cluster.getNodesList()); // process current cluster
+		processedClusters.add(cluster); 	// mark this cluster as processed before making recursive calls
+		
+		// call recursive for parent cluster
+		ret.addAll(this.getNodesInConnectedClustersRecursively(cluster.getParent(), clustersToCompile, processedClusters));
+		
+		// call recursive for child clusters
+		for (Clique childCluster : cluster.getChildren()) {
+			ret.addAll(this.getNodesInConnectedClustersRecursively(childCluster, clustersToCompile, processedClusters));
+		}
+		
+		return ret;
+	}
+
+	/**
+     * This method identifies which clusters in a maximum subgraph decomposition tree needs to be modified
+     * by a new edge/arc.
+     * @param includedEdge : the new edge/arc to be included
+     * @param decompositionTree : this is the maximum subgraph decomposition tree
+     * obtained from {@link #getMaximumPrimeSubgraphDecompositionTree(IJunctionTree)}.
+     * This object can have its content modified after calling this method.
+     * @return clusters in the decomposition tree that needs to be modified
+     * @see #runDynamicJunctionTreeCompilation()
+     * @see #getClustersToModifyAddNode(INode, IJunctionTree)
+     * @see #getClustersToModifyRemoveEdge(Edge, IJunctionTree)
+     * @see #getClustersToModifyRemoveNode(INode, IJunctionTree)
+     */
+    protected Collection<Clique> treatIncludeEdge( Edge includedEdge, IJunctionTree decompositionTree) {
+    	// basic assertion
+    	if (includedEdge == null || decompositionTree == null) {
+    		return Collections.EMPTY_LIST;	// do nothing, and just return empty
+    	}
+    	
+		// get the parent and child nodes
+    	Node child = includedEdge.getDestinationNode();
+    	Node parent = includedEdge.getOriginNode();
+    	
+    	// find clusters containing child and clusters containing parent
+    	List<Clique> childClusters = new ArrayList<Clique>();
+    	List<Clique> parentClusters = new ArrayList<Clique>();
+    	for (Clique cluster : decompositionTree.getCliques()) {
+			if (cluster.getNodesList().contains(child)) {
+				childClusters.add(cluster);
+			}
+			if (cluster.getNodesList().contains(parent)) {
+				parentClusters.add(cluster);
+			}
+		}
+    	if (childClusters.isEmpty()) {
+    		throw new IllegalArgumentException("There is no maximum prime subgraph decomposition tree cluster containing child node " + child);
+    	}
+    	if (parentClusters.isEmpty()) {
+    		throw new IllegalArgumentException("There is no maximum prime subgraph decomposition tree cluster containing parent node " + parent);
+    	}
+    	
+    	// find shortest path between clusters of child node and clusters of parent node
+    	List<Clique> shortestPathFromChild = null;  			// shortest path from the cluster of child node to the cluster of parent node
+    	for (Clique clusterWithChildNode : childClusters) {
+    		for (Clique clusterWithParentNode : parentClusters) {
+    			List<Clique> currentPath = ((JunctionTree)decompositionTree).getPath(clusterWithChildNode, clusterWithParentNode);
+    			// check if current path is shorter than the shortest path we know so far
+    			if (shortestPathFromChild == null || currentPath.size() < shortestPathFromChild.size() ) {
+    				shortestPathFromChild = currentPath;
+    			}
+    		}
+		}
+    	
+    	// the decomposition tree is supposed to have 1 root, so any clusters should always have a path in between
+    	if (shortestPathFromChild == null || shortestPathFromChild.isEmpty()) {
+    		throw new IllegalArgumentException("The maximum prime subgraph decomposition tree is expected to have a single root (so there should be a path between any pair of clusters in the tree), but no path between clusters containing " 
+    					+ child + " and " + parent + " was found");
+    	}
+    	
+    	// is path has only 1 cluster, then child node and parent node are in same cluster already
+    	if (shortestPathFromChild.size() == 1) {
+    		return shortestPathFromChild;	// mark this cluster (for modification)
+    	}
+    	
+    	// find an empty separator between path, starting from child
+    	Separator emptySeparatorInShortestPath = null;	// if there is an empty separator in path, this will be the closest to child
+    	int stepsToEmptySepFromChildCluster = 0;					// this stores how long (in steps) it took to reach an empty separator from the cluster containing child node
+    	for (;stepsToEmptySepFromChildCluster < shortestPathFromChild.size() - 1; stepsToEmptySepFromChildCluster++) {
+			Separator separator = decompositionTree.getSeparator(shortestPathFromChild.get(stepsToEmptySepFromChildCluster), shortestPathFromChild.get(stepsToEmptySepFromChildCluster+1));
+			if (separator.getNodes().isEmpty()) {
+				emptySeparatorInShortestPath = separator;
+				break;
+			}
+		}
+    	
+    	if (emptySeparatorInShortestPath == null) {
+    		// No empty separator, so all clusters in path shall be marked for modification;
+    		return shortestPathFromChild;
+    	} 
+    	
+    	// we will remove empty separators and connect the child's cluster and parent's cluster directly
+    	// in order to do so, we need to decide which one will become the parent cluster (and the other must be transformed in order to become a root of subtree)
+    	// By default, the cluster containing parent node will become a parent cluster as well
+    	Clique clusterToBecomeParent = shortestPathFromChild.get(shortestPathFromChild.size()-1);	
+    	// child cluster needs to be reorganized, so that the cluster containing child node will become the root of the subtree after removing empty separator.
+    	Clique clusterToBecomeChild  = shortestPathFromChild.get(0); 
+    	
+    	// check if we can find an empty separator from the end of the path (i.e. from parent node's cluster) in shorter steps
+    	int stepsToEmptySepFromParentCluster = 0;					// if this is shorter, then we may want to use this.
+    	for (int i = shortestPathFromChild.size() - 1; i > 0 ; stepsToEmptySepFromParentCluster++, i--) {
+    		if (stepsToEmptySepFromParentCluster >= stepsToEmptySepFromChildCluster) {
+    			// no need to look further, because we know that we could get the empty separator from child's cluster in fewer or equal steps
+    			break;
+    		}
+    		Separator separator = decompositionTree.getSeparator(shortestPathFromChild.get(i-1), shortestPathFromChild.get(i));
+    		if (separator.getNodes().isEmpty()) {
+    			// found empty separator in shorter steps
+    			emptySeparatorInShortestPath = separator;
+    			// this means it's easier to reorganize parent node's cluster to become a root of subtree if we remove this empty separator
+    			clusterToBecomeChild  = shortestPathFromChild.get(shortestPathFromChild.size()-1); 
+    			clusterToBecomeParent = shortestPathFromChild.get(0);	// the other cluster will become the parent of the reorganized cluster
+    			break;
+    		}
+    	}
+    	
+    	// remove empty separator from the decomposition tree
+    	decompositionTree.removeSeparator(emptySeparatorInShortestPath);
+    	// also disconnect the cliques
+    	if (emptySeparatorInShortestPath.getClique1().getParent().equals(emptySeparatorInShortestPath.getClique2())) {
+    		emptySeparatorInShortestPath.getClique1().setParent(null);
+    		emptySeparatorInShortestPath.getClique2().removeChild(emptySeparatorInShortestPath.getClique1());
+    	} else {
+    		emptySeparatorInShortestPath.getClique2().setParent(null);
+    		emptySeparatorInShortestPath.getClique1().removeChild(emptySeparatorInShortestPath.getClique2());
+    	}
+    	
+    	// make one of the clusters (the one whose path to empty separator is shorter) a root cluster
+    	// if one of the clusters is already a root, then use it as a child of the other cluster
+    	if (clusterToBecomeParent.getParent() == null) {
+    		// clusterToBeReorganized shall be the one to become a parent cluster instead 
+    		Clique aux = clusterToBecomeParent;
+    		clusterToBecomeParent = clusterToBecomeChild;
+    		clusterToBecomeChild = aux;
+    	} 
+    	
+    	// reorganize cluster, so that the one we have will become a root of the subtree
+    	if (clusterToBecomeChild.getParent() != null) {
+    		// do it if this cluster is not the root already
+    		((JunctionTree)decompositionTree).moveCliqueToRoot(clusterToBecomeChild);
+    	}
+    	
+    	// just an assertion
+    	if (clusterToBecomeChild.getParent() != null) {
+    		throw new RuntimeException("Unable to rebuild maximum prime subgraph decomposition tree in order to make " + clusterToBecomeChild + " a root cluster.");
+    	}
+    	
+    	// and connect child node's cluster with parent node's cluster
+    	clusterToBecomeParent.addChild(clusterToBecomeChild);
+    	clusterToBecomeChild.setParent(clusterToBecomeParent);
+    	
+    	// some algorihthms expect that the global root is the 1st clique in the list
+    	// find global root
+    	Clique globalRoot = clusterToBecomeParent;
+    	while (globalRoot.getParent() != null) {
+    		globalRoot = globalRoot.getParent();
+    	}
+    	int indexOfGlobalRoot = decompositionTree.getCliques().indexOf(globalRoot);
+    	if (indexOfGlobalRoot != 0) {
+    		// move it to the 1st position in the list of cliques
+    		Collections.swap(decompositionTree.getCliques(), 0, indexOfGlobalRoot);
+    	}
+    	
+    	// only the parent and child cluster shall be marked for modification, because they are directly connected now;
+    	List<Clique> ret = new ArrayList<Clique>(2);
+    	ret.add(clusterToBecomeChild);
+    	ret.add(clusterToBecomeParent);
+    	return ret;
+	}
+
+   
+    
+
+	/**
+     * This method identifies which clusters in a maximum subgraph decomposition tree needs to be modified
+     * because of an edge/arc being deleted from the network.
+     * @param deletedEdge : the new edge/arc to be deleted
+     * @param decompositionTree : this is the maximum subgraph decomposition tree
+     * obtained from {@link #getMaximumPrimeSubgraphDecompositionTree(IJunctionTree)}.
+     * This object can have its content modified after calling this method.
+     * @return clusters in the decomposition tree that needs to be modified
+     * @see #runDynamicJunctionTreeCompilation()
+     * @see #getClustersToModifyAddNode(INode, IJunctionTree)
+     * @see #getClustersToModifyIncludeEdge(Edge, IJunctionTree)
+     * @see #getClustersToModifyRemoveNode(INode, IJunctionTree)
+     */
+    protected Collection<Clique> treatRemoveEdge( Edge deletedEdge, IJunctionTree decompositionTree) {
+		// TODO Auto-generated method stub
+    	throw new UnsupportedOperationException("Current version of dynamic junction tree compilation does not handle arc deletion.");
+	}
+
+    /**
+     * This method identifies which clusters in a maximum subgraph decomposition tree needs to be modified
+     * by a new edge/arc.
+     * @param includedEdge : the new edge/arc to be included
+     * @param decompositionTree : this is the maximum subgraph decomposition tree
+     * obtained from {@link #getMaximumPrimeSubgraphDecompositionTree(IJunctionTree)}.
+     * This object can have its content modified after calling this method.
+     * @return clusters in the decomposition tree that needs to be modified
+     * @see #runDynamicJunctionTreeCompilation()
+     * @see #getClustersToModifyAddNode(INode, IJunctionTree)
+     * @see #getClustersToModifyIncludeEdge(Edge, IJunctionTree)
+     * @see #getClustersToModifyRemoveEdge(Edge, IJunctionTree)
+     */
+    protected Collection<Clique> treatRemoveNode( INode deletedNode, IJunctionTree decompositionTree) {
+    	// TODO Auto-generated method stub
+    	throw new UnsupportedOperationException("Current version of dynamic junction tree compilation does not handle node deletion.");
+	}
+
+    /**
+     * This method identifies which clusters in a maximum subgraph decomposition tree needs to be modified
+     * by a new edge/arc.
+     * @param includedEdge : the new edge/arc to be included
+     * @param decompositionTree : this is the maximum subgraph decomposition tree
+     * obtained from {@link #getMaximumPrimeSubgraphDecompositionTree(IJunctionTree)}.
+     * This object can have its content modified after calling this method.
+     * @return clusters in the decomposition tree that needs to be modified
+     * @see #runDynamicJunctionTreeCompilation()
+     * @see #getClustersToModifyIncludeEdge(Edge, IJunctionTree)
+     * @see #getClustersToModifyRemoveEdge(Edge, IJunctionTree)
+     * @see #getClustersToModifyRemoveNode(INode, IJunctionTree)
+     */
+    protected Collection<Clique> treatAddNode( INode includedNode, IJunctionTree decompositionTree) {
+		// TODO Auto-generated method stub
+    	throw new UnsupportedOperationException("Current version of dynamic junction tree compilation does not handle node inclusion.");
+	}
+
+	/**
+     * @param includedEdges : edges that were included in previous network. This will be used together with
+     * the current network in order to retrieve which nodes were parents of some common child.
+     * @param newNet : current network. This will be used to retrieve existing parents. 
+     * @param includedEdges : edges to be considered as new in new net.
+     * @return a collection of edges (not real edges in the network) that represents connections between moral parents
+     * (i.e. conditional dependence between parents with a common child) that was included because of new arcs being added
+     * to the network. Edges returned by this method are not to be added to the network, because the moralization phase of junction tree
+     * compilation should do it automatically.
+     * @see #runDynamicJunctionTreeCompilation()
+     */
+	protected Collection<Edge> getIncludedMoralArcs( ProbabilisticNetwork oldNet, ProbabilisticNetwork newNet, Collection<Edge> includedEdges) {
+		
+		Collection<Edge> ret = new ArrayList<Edge>();
+		
+		// this will be used to check if there is a path between two parents, so that we can test whether we can add arcs without generating cycles.
+		MSeparationUtility mSeparationUtility = MSeparationUtility.newInstance();
+		
+		// for each children in new arc, check parents pairwise and see if they had common child in previous net
+		for (Edge edge : includedEdges) {
+			Node newChild = edge.getDestinationNode();
+			Node oldChild = oldNet.getNode(newChild.getName());
+			Node newParent = edge.getOriginNode();
+			Node oldParent = oldNet.getNode(newParent.getName());
+			for (Node parentToBeMoralized : newChild.getParents()) {
+				if (parentToBeMoralized.equals(newParent)) {
+					continue;	// do not attempt to create arc to the node itself
+				}
+				if (parentToBeMoralized.isParentOf(newParent) 
+						|| parentToBeMoralized.isChildOf(newParent)) {
+					continue;	// do not try to moralize if it is already connected.
+				}
+				if (oldChild != null && oldParent != null) {
+					// check if the parent already had common child
+					Node oldParentToBeMoralized = oldNet.getNode(parentToBeMoralized.getName());
+					// check if they have had some children in common. If so, they were already moralized in old net (so we don't need new moral arc)
+					// use an array list, so that internal comparison uses Object#equals(Object), because it will do name comparison
+					List<Node> childrenInCommon = new ArrayList<Node>((List)oldParent.getChildNodes());
+					childrenInCommon.removeAll((List)oldParentToBeMoralized.getChildNodes());
+					if (!childrenInCommon.isEmpty()) {
+						// they had some child in common, so no need to treat this pair. Go to next pair of parents
+						continue;
+					}
+				}
+				
+				// this will be the edge to be included for moralization (will not be actually included, 
+				// it's just for the algorithm to understand that this is a change in conditional (in)dependence)
+				Edge edgeForMoralization = null;
+				// just make sure we won't create cycles by adding this new arc (this is just for backward compatibility with directed graphs in general)
+				if (mSeparationUtility.getRoutes(parentToBeMoralized, newParent, null, null, 1).isEmpty()) {
+					// there is no directed route from parentToBeMoralized to newParent, so we can create link parentToBeMoralized -> newParent
+					edgeForMoralization = new Edge(parentToBeMoralized, newParent);
+				} else {
+					// there is directed route from parentToBeMoralized to newParent, so we cannot create link parentToBeMoralized -> newParent. 
+					// Thus, create in opposite direction
+					edgeForMoralization = new Edge(newParent, parentToBeMoralized);
+				}
+				// make sure we don't add redundant edges
+				if (!ret.contains(edgeForMoralization) && !includedEdges.contains(edgeForMoralization)) {
+					// TODO check if the above if is redundant and/or can be optimized
+//					edgeForMoralization.setDirection(false);	// TODO check if this is necessary
+					ret.add(edgeForMoralization);
+				}
+			}
+		}
+		return ret;
+	}
+
+	/**
+     * @param oldNet : the network before changes. This will be used together with
+     * the current network in order to retrieve which nodes were parents of some common child.
+     * @param newNet : current network. This will be used to retrieve existing parents. 
+	 * @param deletedEdges : edges to be considered that were deleted from old net.
+     * @return a collection of edges (not real edges in the network) that represents connections between moral parents
+     * (i.e. conditional dependence between parents with a common child) that was deleted because of arcs being deleted
+     * from the network.
+     * @see #runDynamicJunctionTreeCompilation()
+     */
+	protected Collection<? extends Edge> getDeletedMoralArcs( ProbabilisticNetwork oldNet, ProbabilisticNetwork newNet, Collection<Edge> deletedEdges) {
+		return Collections.EMPTY_LIST;
 	}
 
 	/**
      * Performs moralization (for each node, link its parents with arcs) of the network.
      * @param net
      */
-    protected void moralize(ProbabilisticNetwork net) {
+    public void moralize(ProbabilisticNetwork net) {
 		Node auxNo;
 		Node auxPai1;
 		Node auxPai2;
@@ -961,7 +1612,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
      * Starts the triangularization process of the junction tree algorithm
      * @param net
      */
-	protected void triangularize(ProbabilisticNetwork net) {
+	public void triangularize(ProbabilisticNetwork net) {
 
 		Node aux;
 		List<Node> auxNodes;
@@ -997,14 +1648,14 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		}
 
 		net.setNodeEliminationOrder(new ArrayList<Node>(copiaNos.size()));
-		List<Node> oe = net.getNodeEliminationOrder();
+		List<Node> eliminationOrder = net.getNodeEliminationOrder();
 
 		while (minimumWeightElimination(auxNodes, net));
 
 		//        int index;
 		for (int i = decisionNodes.size() - 1; i >= 0; i--) {
 			aux = (Node) decisionNodes.get(i);
-			oe.add(aux);
+			eliminationOrder.add(aux);
 			int sizeAdjacentes = aux.getAdjacents().size();
 			for (int j = 0; j < sizeAdjacentes; j++) {
 				Node v = aux.getAdjacents().get(j);
@@ -1012,12 +1663,12 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			}
 			if (net.isCreateLog()) {
 				net.getLogManager().append(
-					"\t" + oe.size() + " " + aux.getName() + "\n");
+					"\t" + eliminationOrder.size() + " " + aux.getName() + "\n");
 			}
 
 			auxNodes = SetToolkit.clone(aux.getParents());
 			auxNodes.removeAll(decisionNodes);
-			auxNodes.removeAll(oe);
+			auxNodes.removeAll(eliminationOrder);
 			for (int j = 0; j < i; j++) {
 				Node decision = (Node) decisionNodes.get(j);
 				auxNodes.removeAll(decision.getParents());
@@ -2476,19 +3127,23 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 * The resulting junction tree can be used in other algorithms in order to
 	 * identify portions of the original junction tree that won't be changed after
 	 *  changes in the structure of the related Bayes net.
-	 * @param originalJunctionTree
+	 * @param originalJunctionTree : the junction tree to be referenced in order to build the prime subgraph decomposition
+	 * @param clusterToOriginalCliqueMap : a cluster ({@link Clique}) in the prime subgraph decomposition tree will be related to 1 or many
+	 * cliques in the original junction tree. This mapping associates the original cliques to a cluster generated from them.
+	 * This argument is an output argument.
 	 * @return a junction tree with no potentials filled (i.e. cliques only represent set of nodes, not a table of globally consistent joint probabilities).
 	 * @throws IllegalAccessException from {@link IJunctionTreeBuilder#buildJunctionTree(Graph)}
 	 * @throws InstantiationException  from {@link IJunctionTreeBuilder#buildJunctionTree(Graph)}
 	 * @see Separator#isComplete()
 	 */
-	public IJunctionTree getMaximumPrimeSubgraphDecompositionTree(IJunctionTree originalJunctionTree) throws InstantiationException, IllegalAccessException {
+	public IJunctionTree getMaximumPrimeSubgraphDecompositionTree(IJunctionTree originalJunctionTree, Map<Clique, Collection<Clique>> clusterToOriginalCliqueMap) throws InstantiationException, IllegalAccessException {
 		// builder to be used in order to instantiate a new junction tree
 		IJunctionTreeBuilder junctionTreeBuilder = getJunctionTreeBuilder();
 		if (junctionTreeBuilder == null) {
 			// use a default builder if nothing was specified
 			junctionTreeBuilder = DEFAULT_JUNCTION_TREE_BUILDER;
 		}
+		
 		
 		// obtain the root clique, so that we can start copying cliques from it
 		Clique root = null;
@@ -2499,9 +3154,16 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			}
 		}
 		
+		// make sure the mapping is not null, because we are going to use it in recursive call
+		if (clusterToOriginalCliqueMap == null) {
+			clusterToOriginalCliqueMap = new HashMap<Clique, Collection<Clique>>();
+		}
+		
 		// instantiate junction tree to return, and recursively copy cliques and separators
 		IJunctionTree ret = junctionTreeBuilder.buildJunctionTree(getNetwork());
-		recursivelyFillMaxPrimeSubgraphDecompositionTree(originalJunctionTree, ret, root);
+		recursivelyFillMaxPrimeSubgraphDecompositionTree(originalJunctionTree, ret, root, clusterToOriginalCliqueMap);
+		
+		
 		return ret;
 	}
 
@@ -2516,13 +3178,16 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 * (i.e. in current recursive call, maximum prime subgraph decomposition criteria will potentially join this clique to children, but never to its parent). 
 	 * Next recursive call will invoke this method for children of this clique.
 	 * @param junctionTreeToFill : this junction tree will be filled (thus, this is an input and output argument)
+	 * @param decompositionToJunctionTreeMap : a cluster ({@link Clique}) in the prime subgraph decomposition tree will be related to 1 or many
+	 * cliques in the original junction tree. This mapping associates them.
+	 * This argument is an output argument.
 	 * @param parentCliqueCreatedInPreviousCall : clique generated by previous recursive call (i.e. this clique will become the parent of cliques generated in current call).
 	 * Set this to null if the current clique being visited is the root.
 	 * This clique will be in the target junction tree (i.e. the junction tree to be filled).
 	 * @return the root clique of the tree created by this recursive call. Null if nothing was created.
 	 * @see Clique#join(Clique)
 	 */
-	private Clique recursivelyFillMaxPrimeSubgraphDecompositionTree(IJunctionTree junctionTreeToRead, IJunctionTree junctionTreeToFill, Clique currentCliqueToRead) {
+	private Clique recursivelyFillMaxPrimeSubgraphDecompositionTree(IJunctionTree junctionTreeToRead, IJunctionTree junctionTreeToFill, Clique currentCliqueToRead, Map<Clique, Collection<Clique>> decompositionToJunctionTreeMap) {
 		
 		// basic assertion
 		if (currentCliqueToRead == null || junctionTreeToRead == null) {
@@ -2547,6 +3212,9 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		currentCliqueToFill.setNodesList(new ArrayList<Node>(currentCliqueToRead.getNodesList()));	  // clone the list (so that we don't modify original list)
 		currentCliqueToFill.setParent(null);		// make sure this is initialized with null value
 		
+		decompositionToJunctionTreeMap.put(currentCliqueToFill, new HashSet<Clique>());
+		decompositionToJunctionTreeMap.get(currentCliqueToFill).add(currentCliqueToRead);
+		
 		// Do a depth-first recursive call to children.
 		// A depth-first will guarantee that my grandchildren were handled before current clique;
 		// thus, I don't need to check whether I should merge current clique with its grandchildren after merging current clique to its children
@@ -2562,7 +3230,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				Clique childCliqueToFill = this.recursivelyFillMaxPrimeSubgraphDecompositionTree( 	// the returned clique is actually the root of the subtree created by this call
 						junctionTreeToRead, 		// still access the same junction tree
 						junctionTreeToFill, 		// still write to same junction tree
-						childCliqueToRead 			// set the child clique as the current clique to visit
+						childCliqueToRead, 			// set the child clique as the current clique to visit
+						decompositionToJunctionTreeMap
 					);
 				
 				// get the separator between the original parent and child
@@ -2598,8 +3267,13 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 					
 					// no need to disassociate child clique from current clique, because we never associated them anyway (they are only associated in the else clause below)
 					
+					// we are going to merge child to current clique, so move all mapping of the child to the mapping of current clique
+					decompositionToJunctionTreeMap.get(currentCliqueToFill).addAll(decompositionToJunctionTreeMap.get(childCliqueToFill));
+					decompositionToJunctionTreeMap.remove(childCliqueToFill);	// remove child from mapping
+					
 					// merge child to current clique (the current clique will become a large clique containing nodes from both cliques)
 					currentCliqueToFill.join(childCliqueToFill);
+					
 					
 				} else {	// no need to merge cliques
 					
@@ -2627,25 +3301,25 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		return currentCliqueToFill;
 	}
 
-	/**
-	 * @return the set of nodes detected when {@link #run()} was executed.
-	 * This is used later in {@link #run()} again in order to detect modifications in structure.
-	 * @see #setDynamicJunctionTreeNetSizeThreshold(int)
-	 * @see #getDynamicJunctionTreeNetSizeThreshold()
-	 */
-	public Collection<INode> getNodesPreviousRun() {
-		return nodesPreviousRun;
-	}
-
-	/**
-	 * @param nodesPreviousRun the set of nodes detected when {@link #run()} was executed.
-	 * This is used later in {@link #run()} again in order to detect modifications in structure.
-	 * @see #setDynamicJunctionTreeNetSizeThreshold(int)
-	 * @see #getDynamicJunctionTreeNetSizeThreshold()
-	 */
-	public void setNodesPreviousRun(Collection<INode> nodesPreviousRun) {
-		this.nodesPreviousRun = nodesPreviousRun;
-	}
+//	/**
+//	 * @return the set of nodes detected when {@link #run()} was executed.
+//	 * This is used later in {@link #run()} again in order to detect modifications in structure.
+//	 * @see #setDynamicJunctionTreeNetSizeThreshold(int)
+//	 * @see #getDynamicJunctionTreeNetSizeThreshold()
+//	 */
+//	public Collection<INode> getNodesPreviousRun() {
+//		return nodesPreviousRun;
+//	}
+//
+//	/**
+//	 * @param nodesPreviousRun the set of nodes detected when {@link #run()} was executed.
+//	 * This is used later in {@link #run()} again in order to detect modifications in structure.
+//	 * @see #setDynamicJunctionTreeNetSizeThreshold(int)
+//	 * @see #getDynamicJunctionTreeNetSizeThreshold()
+//	 */
+//	public void setNodesPreviousRun(Collection<INode> nodesPreviousRun) {
+//		this.nodesPreviousRun = nodesPreviousRun;
+//	}
 
 	/**
 	 * @return {@link #run()} will use dynamic junction tree compilation if number of nodes is above this value.
@@ -2658,8 +3332,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 
 	/**
 	 * @param dynamicJunctionTreeNetSizeThreshold : {@link #run()} will use dynamic junction tree compilation if number of nodes is above this value.
-	 * @see #getNodesPreviousRun()
-	 * @see #getEdgesPreviousRun()
+	 * @see #getNetPreviousRun()
 	 */
 	public void setDynamicJunctionTreeNetSizeThreshold(
 			int dynamicJunctionTreeNetSizeThreshold) {
@@ -2667,24 +3340,42 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	}
 
 	/**
-	 * @return set of arcs (edges) detected when {@link #run()} was executed previous time.
-	 * This is used later in {@link #run()} again in order to detect modifications in structure.
+	 * @return Copy of the network used when {@link #run()} was executed the previous time
 	 * @see #setDynamicJunctionTreeNetSizeThreshold(int)
 	 * @see #getDynamicJunctionTreeNetSizeThreshold()
 	 */
-	public Collection<Edge> getEdgesPreviousRun() {
-		return edgesPreviousRun;
+	public ProbabilisticNetwork getNetPreviousRun() {
+		return netPreviousRun;
 	}
 
 	/**
-	 * @param edgesPreviousRun : set of arcs (edges) detected when {@link #run()} was executed previous time.
-	 * This is used later in {@link #run()} again in order to detect modifications in structure.
+	 * @param netPreviousRun : Copy of the network used when {@link #run()} was executed the previous time
 	 * @see #setDynamicJunctionTreeNetSizeThreshold(int)
 	 * @see #getDynamicJunctionTreeNetSizeThreshold()
 	 */
-	public void setEdgesPreviousRun(Collection<Edge> edgesPreviousRun) {
-		this.edgesPreviousRun = edgesPreviousRun;
+	public void setNetPreviousRun(ProbabilisticNetwork netPreviousRun) {
+		this.netPreviousRun = netPreviousRun;
 	}
+
+//	/**
+//	 * @return set of arcs (edges) detected when {@link #run()} was executed previous time.
+//	 * This is used later in {@link #run()} again in order to detect modifications in structure.
+//	 * @see #setDynamicJunctionTreeNetSizeThreshold(int)
+//	 * @see #getDynamicJunctionTreeNetSizeThreshold()
+//	 */
+//	public Collection<Edge> getEdgesPreviousRun() {
+//		return edgesPreviousRun;
+//	}
+//
+//	/**
+//	 * @param edgesPreviousRun : set of arcs (edges) detected when {@link #run()} was executed previous time.
+//	 * This is used later in {@link #run()} again in order to detect modifications in structure.
+//	 * @see #setDynamicJunctionTreeNetSizeThreshold(int)
+//	 * @see #getDynamicJunctionTreeNetSizeThreshold()
+//	 */
+//	public void setEdgesPreviousRun(Collection<Edge> edgesPreviousRun) {
+//		this.edgesPreviousRun = edgesPreviousRun;
+//	}
 
 	
 }
