@@ -561,6 +561,58 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	protected void setSeparators(Collection<Separator> separators) {
 		this.separators = separators;
 	}
+	
+    /**
+     * Finds the shortest path between two cliques.
+     * This method assumes that both cliques have a common root
+     * (i.e. the junction tree is actually a single tree, with a path present between all pairs of cliques).
+     * @param from : a clique to start from. This needs to be a clique in this junction tree.
+     * @param to : a clique to finish search. This also needs to be in this junction tree.
+     * @return : a list of sequence of cliques that forms a path between two cliques in this junction tree.
+     */
+    public List<Clique> getPath(Clique from, Clique to) {
+    	
+    	// build path from the clique "to" to the root of junction tree
+    	List<Clique> pathToRoot = new ArrayList<Clique>();
+    	pathToRoot.add(to);
+    	if (to.equals(from)) {
+    		// they were the same clique, so path only contains the clique itself. Return.
+    		return pathToRoot;
+    	}
+    	while (to.getParent() != null) {
+    		to = to.getParent();
+    		pathToRoot.add(to);
+    		if (to.equals(from)) {
+    			// we just found the correct path, so just return it
+    			return pathToRoot;
+    		}
+    	}
+    	
+    	// now go from the clique "from" to the root of junction tree.
+    	// if we found any clique we visited previously (i.e. it's in pathToRoot), then we found a path.
+    	List<Clique> ret = new ArrayList<Clique>();
+    	int indexOfFirstMatchInPath = -1;	// this will contain the position in pathToRoot where there is a clique in common between the two paths to the root
+    	do { 
+    		// the 1st iteration will never match any of the cliques in path, and clique "to" is never a root of junction tree anyway,
+    		// because if there is a match (or it's a root), the method should have returned already.
+    		ret.add(from);
+    		from = from.getParent();
+		} while ((from != null) && ((indexOfFirstMatchInPath = pathToRoot.indexOf(from)) < 0));
+    	if (from == null || indexOfFirstMatchInPath < 0) { // note that checking indexOfFirstMatchInPath is redundant, but we do it here just for value safety
+    		// we found a root, but was not in pathToRoot (so the cliques did not share the same root) 
+    		throw new IllegalArgumentException("The junction tree is expected to be a single tree (possibly with empty separators), but cliques " + from + " and " + to + " did not have a common root.");
+    	}
+    	
+    	// Now we have ret = ["from" -> ... -> "child of common clique"], 
+    	// and pathToRoot = ["to" -> ... -> "common clique" -> ... -> "root"] (note: "common clique" can be the "root" too).
+    	// The path ["from" -> ... -> "child of common clique" -> "common clique" -> ... -> "to"] is the path we want to return, 
+    	// and it can be obtained by getting a sublist of pathToRoot (ending at the common clique), reversing its order, and appending it at the end of ret.
+    	pathToRoot = pathToRoot.subList(0, indexOfFirstMatchInPath+1);	// +1 because the common clique needs to be included
+    	Collections.reverse(pathToRoot);
+    	ret.addAll(pathToRoot);
+    	
+    	return ret;
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -586,14 +638,17 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		TreeVariable pivot = (TreeVariable) nodes.iterator().next();	// use 1st node as pivot
 		
 		// get clique/separator connected to pivot
-		IRandomVariable cliqueOrSeparator = pivot.getAssociatedClique();
+//		if (cliqueOrSeparatorPivot == null) {
+//			cliqueOrSeparatorPivot = pivot.getAssociatedClique();
+//		}
+		IRandomVariable cliqueOrSeparatorPivot = pivot.getAssociatedClique();
 		
 		// from pivot, visit adjacent cliques in looking for the cliques containing all nodes
-		if (cliqueOrSeparator instanceof Separator) {
+		if (cliqueOrSeparatorPivot instanceof Separator) {
 			HashSet<Clique> visited = new HashSet<Clique>();
 			// visit clique 1
 			maxCount -= this.visitCliquesSeparatorsContainingAllNodesRecursive(
-					((Separator)cliqueOrSeparator).getClique1(), nodes, maxCount, (List)ret, false, visited
+					((Separator)cliqueOrSeparatorPivot).getClique1(), nodes, maxCount, (List)ret, false, visited
 				);
 			// we do not need to visit second clique, because the above call has visited it recursively
 //			// visit clique 2 if we added less than maxCount cliques into ret
@@ -602,9 +657,9 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 //						((Separator)cliqueOrSeparator).getClique2(), nodes, maxCount, (List)ret, false, visited
 //					);
 //			}
-		} else if (cliqueOrSeparator instanceof Clique) {
+		} else if (cliqueOrSeparatorPivot instanceof Clique) {
 			// recursively visit clique and adjacents
-			this.visitCliquesSeparatorsContainingAllNodesRecursive((Clique)cliqueOrSeparator, nodes, maxCount, (List)ret, false, new HashSet<Clique>());
+			this.visitCliquesSeparatorsContainingAllNodesRecursive((Clique)cliqueOrSeparatorPivot, nodes, maxCount, (List)ret, false, new HashSet<Clique>());
 		}
 		return ret;
 	}
@@ -890,6 +945,38 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			i++;
 		}
 		return null;
+	}
+
+	/**
+	 * Reorganizes the junction tree hierarchy so that the given cluster becomes the root of the tree it belongs.
+	 * The root of the tree it belongs is the nearest clique that we obtain by iteratively visiting {@link Clique#getParent()} 
+	 * until we get {@link Clique#getParent()} == null.
+	 * It will recursively move {@link Clique#getParent()} to {@link Clique#getChildren()} until
+	 * the clique becomes a root clique.
+	 * @param cliqueToBecomeRoot : this clique will become the root of the tree it belongs.
+	 * @see Clique#getChildren()
+	 */
+	public void moveCliqueToRoot(Clique cliqueToBecomeRoot) {
+		if (cliqueToBecomeRoot == null || cliqueToBecomeRoot.getParent() == null) {
+			return;	// there is nothing to do
+		}
+		
+		// extract the parent clique, so that we can set it as a child of current clique
+		Clique parentClique = cliqueToBecomeRoot.getParent();
+		
+		// call recursive first, so that my immediate parent becomes the root of the tree
+		moveCliqueToRoot(parentClique);
+		
+		// at this point, parentClique is the root of the tree this clique belongs
+		
+		// convert parent clique to child of current clique
+		parentClique.removeChild(cliqueToBecomeRoot);
+		cliqueToBecomeRoot.addChild(parentClique);
+		parentClique.setParent(cliqueToBecomeRoot);
+		
+		// become the new root
+		cliqueToBecomeRoot.setParent(null);
+		
 	}
 
 //	/**
