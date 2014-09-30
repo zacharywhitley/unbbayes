@@ -729,6 +729,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		// I'm using a boolean var here instead of putting it directly in the if-clause, 
 		// because if an exception if thrown, I want to set this to true and compile junction tree normally
 		boolean isToCompileNormally = this.getNet().getNodes().size() <= getDynamicJunctionTreeNetSizeThreshold()
+									|| getNetPreviousRun() == null	// if there is no way to retrieve what were the changes from previous net, then just compile normally
 									// if there is no junction tree to reuse, then do not use dynamic junction tree compilation
 									|| getJunctionTree() == null
 									|| getJunctionTree().getCliques() == null
@@ -778,6 +779,23 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			}
 		}
 		
+		// update backup of network if necessary
+		if (this.getNet().getNodes().size() > getDynamicJunctionTreeNetSizeThreshold()) {
+			// disconnect junction tree from network to clone, because there's no need for a clone of the junction tree.
+			IJunctionTree junctionTreeNotToIncludeInClone = getJunctionTree();
+			getNet().setJunctionTree(null);	// disconnect net with junction tree, so that junction tree is not cloned in next method
+			// clone the network, but do not clone the junction tree
+			try {
+				ProbabilisticNetwork cloneProbabilisticNetwork = this.cloneProbabilisticNetwork(getNet());
+//				cloneProbabilisticNetwork.setJunctionTree(null); // we don't need to keep clone of new junction tree
+				this.setNetPreviousRun(cloneProbabilisticNetwork);
+			} catch (Exception e) {
+				// Failed to backup, but this is not fatal
+				Debug.println(getClass(), "Failed to backup network for the next dynamic junction tree compilation", e);
+			}
+			getNet().setJunctionTree(junctionTreeNotToIncludeInClone);	// restore junction tree
+		}
+		
 		for (IInferenceAlgorithmListener listener : this.getInferenceAlgorithmListeners()) {
 			listener.onAfterRun(this);
 		}
@@ -786,10 +804,21 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	/**
 	 * Runs the algorithm of Julia Florez in order to reuse the junction tree that was previously compiled.
 	 * Please, notice that if there is no previous junction tree, this method will throw a {@link NullPointerException}.
+	 * This method relies on {@link #getNetPreviousRun()} in order to retrieve changes in the net structure.
 	 * @throws InvalidParentException  when failed to clone arcs in prime subgraph.
 	 * @see #getNet()
 	 * @see #getJunctionTree()
-	 * @se {@link #run()}
+	 * @see {@link #run()}
+	 * @see #setNetPreviousRun(ProbabilisticNetwork)
+	 * @see #getDeletedMoralArcs(ProbabilisticNetwork, ProbabilisticNetwork, Collection)
+	 * @see #getIncludedMoralArcs(ProbabilisticNetwork, ProbabilisticNetwork, Collection)
+	 * @see #getMaximumPrimeSubgraphDecompositionTree(IJunctionTree, Map)
+	 * @see #treatAddNode(INode, IJunctionTree)
+	 * @see #treatIncludeEdge(Edge, IJunctionTree)
+	 * @see #treatRemoveEdge(Edge, IJunctionTree)
+	 * @see #treatRemoveNode(INode, IJunctionTree)
+	 * @see #getCompiledPrimeDecompositionSubnets(Collection)
+	 * @see #aggregateJunctionTree(IJunctionTree, IJunctionTree, Collection, IJunctionTree, Map)
 	 */
     protected void runDynamicJunctionTreeCompilation() throws InvalidParentException {
 		// do dynamic junction tree compilation if number of nodes is above a threshold and the previous junction tree is there
@@ -915,7 +944,31 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 
 		// aggregate the junction tree of the subnets to the original junction tree (removing unnecessary cliques)
 		for (Entry<IJunctionTree, Collection<Clique>> entry : compiledSubnetToClusterMap.entrySet()) {
-			this.aggregateJunctionTree(getJunctionTree(), entry.getKey(), entry.getValue(), decompositionTree, clusterToOriginalCliqueMap);
+			this.aggregateJunctionTree(getJunctionTree(), entry.getKey(), entry.getValue(), 
+//					decompositionTree, 
+					clusterToOriginalCliqueMap);
+		}
+		
+		// move the new root clique to the 1st entry in the list of cliques in junction tree, because some algorithms assume the 1st element is the root;
+		Clique root = getJunctionTree().getCliques().get(0);
+		while (root.getParent() != null) { 
+			root = root.getParent(); // go up in hierarchy until we find the root
+		}
+		int indexOfRoot = getJunctionTree().getCliques().indexOf(root);
+		if (indexOfRoot > 0) {
+			// move root to the beginning (index 0) of the list
+			Collections.swap(getJunctionTree().getCliques(), 0, indexOfRoot);
+		}
+		
+		// redistribute internal identifications accordingly to indexes
+		for (int i = 0; i < getJunctionTree().getCliques().size(); i++) {
+			getJunctionTree().getCliques().get(i).setIndex(i);
+			getJunctionTree().getCliques().get(i).setInternalIdentificator(i);
+		}
+		// do the same for separators
+		int separatorIndex = -1;
+		for (Separator sep : getJunctionTree().getSeparators()) {
+			sep.setInternalIdentificator(separatorIndex--);
 		}
 		
 		// We don't need the junction tree of max prime subgraphs anymore. 
@@ -929,26 +982,25 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		clustersToModify.clear(); 
 		clustersToModify = null;
 		
-		// update backup of network
-		ProbabilisticNetwork cloneProbabilisticNetwork = this.cloneProbabilisticNetwork(newNet);
-		cloneProbabilisticNetwork.setJunctionTree(null); // we don't need to keep clone of new junction tree
-		this.setNetPreviousRun(cloneProbabilisticNetwork);
+		// the caller shall make the backup of the network
 	}
 
     /**
+     * Will connect the original junction tree to the new junction tree compiled from max prime subgraph decomposition.
      * @param originalJunctionTree : junction tree whose new junction trees obtained from max prime subgraphs will be aggregated to.
      * @param primeSubgraphJunctionTree : this is a fragment of junction tree created by compiling nodes in the connected maximum prime subgraph
      * marked for modification. Cliques in this junction tree will be aggregated to original junction tree.
      * @param modifiedClusters : clusters that belongs to the prime subgraph junction tree.
      * This parameter is necessary because we need to find out which separators connects these clusters to clusters not in this collection.
-     * @param maxPrimeSubgraphDecompositionTree : this is the entire maximum prime subgraph decomposition tree
-     * obtained from {@link #getMaximumPrimeSubgraphDecompositionTree(IJunctionTree, Map)}.
      * @param clusterToOriginalCliqueMap : this map associates clusters in max prime subgraph decomposition tree to cliques in original junction tree. 
      * It it used to retrieve cliques of original junction tree related to the cluster currently being evaluated.
      * @see #runDynamicJunctionTreeCompilation()
      */
+//    * @param maxPrimeSubgraphDecompositionTree : this is the entire maximum prime subgraph decomposition tree
+//    * obtained from {@link #getMaximumPrimeSubgraphDecompositionTree(IJunctionTree, Map)}.
     protected void aggregateJunctionTree(IJunctionTree originalJunctionTree, IJunctionTree primeSubgraphJunctionTree, Collection<Clique> modifiedClusters,	// main parameters
-			IJunctionTree maxPrimeSubgraphDecompositionTree, Map<Clique, Collection<Clique>> clusterToOriginalCliqueMap) {									// auxiliary parameters for reference
+//			IJunctionTree maxPrimeSubgraphDecompositionTree,
+			Map<Clique, Collection<Clique>> clusterToOriginalCliqueMap) {									// auxiliary parameters for reference
 
     	// basic assertions
     	if (originalJunctionTree == null || primeSubgraphJunctionTree == null || modifiedClusters == null || modifiedClusters.isEmpty()) {
@@ -995,41 +1047,216 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
     	// now, iterate on separators in order to substitute them with connections between new subtrees and the original junction tree
     	for (Separator borderSeparator : borderSeparators) {
     		// border separator connects modified clique with unmodified clique. 
-    		Clique unmodifiedOriginalClique = borderSeparator.getClique1(); // Extract the unmodified clique.
+    		Clique unchangedOriginalClique = borderSeparator.getClique1(); 	// Extract the unchanged clique.
     		Clique modifiedOriginalClique = borderSeparator.getClique2();	// Extract the modified clique (to be deleted after this process)
-    		if (modifiedCliques.contains(unmodifiedOriginalClique)) {
+    		if (modifiedCliques.contains(unchangedOriginalClique)) {
     			// clique 1 was the modified one
     			modifiedOriginalClique 	 = borderSeparator.getClique1();
-    			unmodifiedOriginalClique = borderSeparator.getClique2();
+    			unchangedOriginalClique = borderSeparator.getClique2();
     		}
     		
 			// find clique in new prime subgraph junction tree whose intersection with the unmodified clique is maximal
-    		Clique cliqueInMaxPrimeJunctionTree = null;
+    		Clique newCliqueInMaxPrimeJunctionTree = null;
 			try {
-				cliqueInMaxPrimeJunctionTree = maxPrimeSubgraphDecompositionTree.getCliquesContainingMostOfNodes((Collection)unmodifiedOriginalClique.getNodesList()).get(0);
+				newCliqueInMaxPrimeJunctionTree = primeSubgraphJunctionTree.getCliquesContainingMostOfNodes((Collection)unchangedOriginalClique.getNodesList()).get(0);
 			} catch (Exception e) {
-				throw new RuntimeException("Unable to find clique in max prime subgraph decomposition junction tree containing at least one node in " + unmodifiedOriginalClique);
+				throw new RuntimeException("Unable to find clique in max prime subgraph decomposition junction tree containing at least one node in " + unchangedOriginalClique);
 			}
 			
-			// at this point, the clique with maximum intersection shall not be null
-    		
-//    		Connect the new clique to the original clique by the border separator; 
-//    		The border separator needs to be replaced, because we cannot change its content;
-//    		
-//			
-//			
-//    		Don't forget to include the new clique into the original junction tree;
-//    		
-//    		if new clique and border separator are the same (i.e. represents same joint space), then join original clique and new clique;
-//    		
-//    		delete the modified clique from original junction tree;
-    		
+			// at this point, the new clique (with maximum intersection) shall not be null
+			
+			/*
+			 * In terms of whether it was modified or not, the original junction tree looks like the following:
+			 * 
+			 * UnchangedClique --BorderSeparator--> {subtree of modified cliques} --{set of border separators}--> {set of other unchanged cliques}.
+			 * 
+			 * In this model, UnchangedClique is an ancestor clique (parent, or parent of parent, or so on) of all cliques in {subtree of modified cliques} 
+			 * and {set of other unchanged cliques}.
+			 * The cliques in {subtree of modified cliques} will be substituted with the new junction tree compiled from the max prime subgraph.
+			 * 
+			 * Therefore, given a single border separator, there are only 2 possible scenarios.
+			 * 
+			 * 1 - The unchanged clique is a parent of the modified subtree. This can happen only with 1 border separator, due to properties of tree structures.
+			 * 	   In this case, a new clique (of the junction tree compiled from max prime subgraph) will become a child of the unchanged clique.
+			 *     This is the case when we need to move the new clique to the root of the junction tree of the max prime subgraph,
+			 *     in order to keep the hierarchy consistent (e.g. keep unique root).
+			 * 
+			 * 2 - The unchanged clique is a child of the modified subtree. This happens to all the other border separators.
+			 *     In this case, a new clique (of the junction tree compiled from max prime subgraph) will become a parent of the unchanged clique.
+			 */
+			
+			// Connect the new clique to the original unmodified clique, by the border separator; 
+			if (modifiedOriginalClique.getParent().equals(unchangedOriginalClique)) {	
+				// case 1 - new clique becomes a child of original unchanged clique
+				
+				// move the new clique to root of its junction tree, so that it gets easier to connect to original junction tree just by adding it to list of children
+				((JunctionTree)primeSubgraphJunctionTree).moveCliqueToRoot(newCliqueInMaxPrimeJunctionTree);
+				if (newCliqueInMaxPrimeJunctionTree.getParent() != null) {
+					throw new RuntimeException("Unable to move clique " + newCliqueInMaxPrimeJunctionTree 
+							+ " to root of junction tree fragment generated from max prime subgraph decomposition.");
+				}
+				
+				// if new clique and border separator are the same (i.e. represents same joint space), then join original (unchanged) clique and new clique;
+				if (borderSeparator.getNodes().size() == newCliqueInMaxPrimeJunctionTree.getNodesList().size()
+						&& borderSeparator.getNodes().contains(newCliqueInMaxPrimeJunctionTree.getNodesList())) {
+					// if they have the same size, and one is included in other, then they are the same
+					
+					// join cliques. The unchanged original clique will remain, and the new clique (the one obtained from max prime subtree) will be deleted
+					unchangedOriginalClique.join(newCliqueInMaxPrimeJunctionTree);
+					
+					// set the joined clique as parent of all children of the clique to delete
+					for (Clique childClique : newCliqueInMaxPrimeJunctionTree.getChildren()) {
+						
+						// inherit children of the clique that is going to be "deleted" (actually, it simply won't be included to original junction tree)
+						unchangedOriginalClique.addChild(childClique);
+						childClique.setParent(unchangedOriginalClique);
+						
+						// also create separator with this child clique, 
+						
+						// but before that, we need to delete separator from the max prime subtree, so that it won't be referenced later
+						Separator separatorToDelete = primeSubgraphJunctionTree.getSeparator(newCliqueInMaxPrimeJunctionTree, childClique);
+						primeSubgraphJunctionTree.removeSeparator(separatorToDelete);
+						
+						// now, create the separator in the original net
+						Separator newSeparator = new Separator(unchangedOriginalClique, childClique);
+						
+						// copy content of deleted separator
+						newSeparator.setInternalIdentificator(separatorToDelete.getInternalIdentificator());
+						newSeparator.setProbabilityFunction(separatorToDelete.getProbabilityFunction());
+						newSeparator.setNodes(separatorToDelete.getNodes());
+						
+						// finally, include separator to original junction tree
+						originalJunctionTree.addSeparator(newSeparator);
+					}
+					
+					// remove new clique from max prime subtree. This will make sure it won't be referenced later
+					primeSubgraphJunctionTree.getCliques().remove(newCliqueInMaxPrimeJunctionTree);
+					
+				} else {
+					// set new clique as a child of old unchanged clique
+					newCliqueInMaxPrimeJunctionTree.setParent(unchangedOriginalClique);
+					unchangedOriginalClique.addChild(newCliqueInMaxPrimeJunctionTree);
+					
+					// The border separator needs to be replaced, because we cannot change the cliques it points to/from;
+					Separator newSeparator = new Separator(unchangedOriginalClique, newCliqueInMaxPrimeJunctionTree);
+					// copy content of border separator
+					newSeparator.setInternalIdentificator(borderSeparator.getInternalIdentificator());
+					newSeparator.setProbabilityFunction(borderSeparator.getProbabilityFunction());
+					newSeparator.setNodes(borderSeparator.getNodes());
+					
+					// this will substitute the border separator, once the previous border separator is deleted
+					originalJunctionTree.addSeparator(newSeparator);
+					
+				}
+				
+				// the border separator needs to be deleted regardless of whether the new clique was merged/joined or not
+				originalJunctionTree.removeSeparator(borderSeparator);
+				
+				// disconnect the old child from parent
+				unchangedOriginalClique.removeChild(modifiedOriginalClique);
+				modifiedOriginalClique.setParent(null);
+				
+				
+			} else {
+				// case 2 - new clique becomes a parent of original unchanged clique
+				
+				// disconnect unchanged clique (child) from its current parent
+				if (unchangedOriginalClique.getParent() != null) {
+					unchangedOriginalClique.getParent().removeChild(unchangedOriginalClique);
+				}
+				
+				// if new clique and border separator are the same (i.e. represents same joint space), then join original (unchanged) clique and new clique;
+				if (borderSeparator.getNodes().size() == newCliqueInMaxPrimeJunctionTree.getNodesList().size()
+						&& borderSeparator.getNodes().contains(newCliqueInMaxPrimeJunctionTree.getNodesList())) {
+					// if they have the same size, and one is included in other, then they are the same
+				
+					// join cliques. The new clique will remain, and the unchanged original clique will be deleted
+					newCliqueInMaxPrimeJunctionTree.join(unchangedOriginalClique);
+					
+					// needs to delete the unchanged clique (the one absorbed by the new clique) from original join tree, because newCliqueInMaxPrimeJunctionTree will take its role
+					originalJunctionTree.getCliques().remove(unchangedOriginalClique);
+					
+					// set the resulting (joined) clique as a parent of all children of the clique being deleted
+					for (Clique childClique : unchangedOriginalClique.getChildren()) {
+						
+						// inherit children of the clique that is going to be "deleted" (actually, it simply won't be included to original junction tree)
+						newCliqueInMaxPrimeJunctionTree.addChild(childClique);
+						childClique.setParent(newCliqueInMaxPrimeJunctionTree);
+						
+						// also create separator with this child clique, 
+						
+						// but before that, we need to delete separator from the original junction tree, so that it won't be referenced later
+						Separator separatorToDelete = originalJunctionTree.getSeparator(unchangedOriginalClique, childClique);
+						originalJunctionTree.removeSeparator(separatorToDelete);
+						
+						// now, create the separator in the original net
+						Separator newSeparator = new Separator(newCliqueInMaxPrimeJunctionTree, childClique);
+						
+						// copy content of deleted separator
+						newSeparator.setInternalIdentificator(separatorToDelete.getInternalIdentificator());
+						newSeparator.setProbabilityFunction(separatorToDelete.getProbabilityFunction());
+						newSeparator.setNodes(separatorToDelete.getNodes());
+						
+						// finally, include separator to original junction tree
+						originalJunctionTree.addSeparator(newSeparator);
+					}
+					
+				} else {
+					// set new clique as a parent of old unchanged clique
+					unchangedOriginalClique.setParent(newCliqueInMaxPrimeJunctionTree);
+					newCliqueInMaxPrimeJunctionTree.addChild(unchangedOriginalClique);
+					
+					// Again, the border separator needs to be replaced, because we cannot change the cliques it points to/from;
+					Separator newSeparator = new Separator(newCliqueInMaxPrimeJunctionTree, unchangedOriginalClique);
+					// copy content of border separator
+					newSeparator.setInternalIdentificator(borderSeparator.getInternalIdentificator());
+					newSeparator.setProbabilityFunction(borderSeparator.getProbabilityFunction());
+					newSeparator.setNodes(borderSeparator.getNodes());
+					
+					// replace the border separator
+					originalJunctionTree.addSeparator(newSeparator);
+				}
+				
+				// the border separator needs to be deleted regardless of whether the new clique was merged/joined or not
+				originalJunctionTree.removeSeparator(borderSeparator);
+				
+			}
+		}	// end of iteration on border separators
+    	
+    	// Do not forget to include all the new cliques into the original junction tree;
+    	for (Clique newClique : primeSubgraphJunctionTree.getCliques()) {
+    		// TODO should we check for duplicates?
+			originalJunctionTree.getCliques().add(newClique);
 		}
+    	// do the same for separators in max prime subtree;
+    	for (Separator separator : primeSubgraphJunctionTree.getSeparators()) {
+			originalJunctionTree.addSeparator(separator);
+		}
+    	
+    	// Now, we need to delete all the modified (old) cliques and separators from original junction tree;
+    	
+    	// first, delete the separators that pairwise connects modified cliques (because we only deleted the border separators)
+    	Set<Separator> separatorsToDelete = new HashSet<Separator>(); // this is to avoid deleting and reading concurrently (which may cause exceptions)
+    	for (Separator separator : originalJunctionTree.getSeparators()) {
+			if (modifiedCliques.contains(separator.getClique1())
+					|| modifiedCliques.contains(separator.getClique2())) {
+				// this is a separator connecting cliques to be deleted (this is a sufficient condition), so delete it
+				separatorsToDelete.add(separator);
+			}
+		}
+    	// use the IJunctionTree#removeSeparator(Separator), so that internal indexes (for faster access) are also removed
+    	for (Separator separator : separatorsToDelete) {
+			originalJunctionTree.removeSeparator(separator);
+		}
+    	
+    	// then, delete all old (modified) cliques
+    	originalJunctionTree.getCliques().removeAll(modifiedCliques);
     	
 	}
 
 
 	/**
+	 * For nodes in each connected clusters marked for modification, compile a junction tree.
      * @param clustersToCompile : these are the clusters in prime subgraph decomposition tree to be used
      * @return map from the generated junction trees to clusters that has generated the respective junction tree. 
      * By extracting the keys, you can obtain the set of junction trees generated from the argument.
@@ -1462,10 +1689,11 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	}
 
 	/**
+	 * Obtains new moralization arcs (arcs of conditional dependences) that will result from arc inclusion.
      * @param includedEdges : edges that were included in previous network. This will be used together with
      * the current network in order to retrieve which nodes were parents of some common child.
+     * @param oldNet : previous network. This will be used to check which parents were not present in old network. 
      * @param newNet : current network. This will be used to retrieve existing parents. 
-     * @param includedEdges : edges to be considered as new in new net.
      * @return a collection of edges (not real edges in the network) that represents connections between moral parents
      * (i.e. conditional dependence between parents with a common child) that was included because of new arcs being added
      * to the network. Edges returned by this method are not to be added to the network, because the moralization phase of junction tree
@@ -1540,7 +1768,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
      * @see #runDynamicJunctionTreeCompilation()
      */
 	protected Collection<? extends Edge> getDeletedMoralArcs( ProbabilisticNetwork oldNet, ProbabilisticNetwork newNet, Collection<Edge> deletedEdges) {
-		return Collections.EMPTY_LIST;
+    	throw new UnsupportedOperationException("Current version of dynamic junction tree compilation does not handle deletion of arcs.");
+//		return Collections.EMPTY_LIST;
 	}
 
 	/**
@@ -3337,6 +3566,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	public void setDynamicJunctionTreeNetSizeThreshold(
 			int dynamicJunctionTreeNetSizeThreshold) {
 		this.dynamicJunctionTreeNetSizeThreshold = dynamicJunctionTreeNetSizeThreshold;
+		// clear the network cache
+		this.setNetPreviousRun(null);
 	}
 
 	/**
