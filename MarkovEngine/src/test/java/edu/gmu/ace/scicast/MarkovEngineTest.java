@@ -5,8 +5,8 @@ package edu.gmu.ace.scicast;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31734,6 +31734,206 @@ public class MarkovEngineTest extends TestCase {
 		}
 		assertTrue(groups.toString(), hasFound);
 		
+	}
+	
+	/**
+	 * A black box test on dynamic junction tree compilation.
+	 * @throws URISyntaxException 
+	 * @throws IOException 
+	 * @see JunctionTreeAlgorithm#setDynamicJunctionTreeNetSizeThreshold(int)
+	 */
+	public final void testDynamicJTCompilationAsiaModel() throws IOException, URISyntaxException {
+		// load the ground truth model
+		ProbabilisticNetwork groundTruth = (ProbabilisticNetwork) new NetIO().load(new File(getClass().getResource("/asia.net").toURI()));
+		assertNotNull(groundTruth);
+		
+		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(groundTruth);
+		// make sure the ground truth does not use dynamic JT compilation
+		algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// large values of this attribute disables dynamic compilation
+		
+		// compile the ground truth model
+		algorithm.run();
+		assertNotNull(groundTruth.getJunctionTree());
+		assertNotNull(groundTruth.getJunctionTree().getCliques());
+		assertEquals(6, groundTruth.getJunctionTree().getCliques().size());
+	
+		/*
+		 * create nodes in markov engine accordingly to the ground truth:
+		 * 
+		 * Ids = nodes in ground truth (var name between parenthesis), and their marginals:
+		 * 33 = Positive X-ray? (X),   		[0.11029005, 0.88971]
+		 * 21 = Has lung cancer (L), 		[0.055000007, 0.945]
+		 * 10 = Visit to Asia? (A), 		[0.009999999, 0.98999995]
+		 * 11 = Has bronchitis (B), 		[0.45000002, 0.55]
+		 * 29 = Has tuberculosis (T), 		[0.010399999, 0.9896]
+		 * 28 = Smoker? (S), 				[0.5, 0.5]
+		 * 13 = Dyspnoea? (D), 				[0.43597063, 0.5640294]
+		 * 14 = Tuberculosis or cancer (E),	[0.06482801, 0.935172]
+		 * 
+		 * Respective IDs in markov engine:
+		 * 	X = 33; B = 11; D = 13; A = 10; S = 28; L = 21; T = 29; E = 14
+		 */
+		for (Node node : groundTruth.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				Long nodeId = (long) Character.getNumericValue(node.getName().charAt(0));
+				try {
+					engine.addQuestion(null, new Date(), nodeId, node.getStatesSize(), null);
+				} catch (RuntimeException e) {
+					throw new RuntimeException("Failed to create node " + node, e);
+				}
+				try {
+					// also set the marginals now
+					List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
+					for (int i = 0; i < node.getStatesSize(); i++) {
+						newValues.add(((ProbabilisticNode) node).getMarginalAt(i));
+					}
+					engine.addTrade(null, new Date(), node.toString(), 0, nodeId, newValues , null, null, true);
+				} catch (RuntimeException e) {
+					throw new RuntimeException("Failed to set marginals of node " + node, e);
+				}
+			}
+		}
+		
+		// check if marginals matches
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals(groundTruth.getNodeCount(), probLists.size());
+		for (Node node : groundTruth.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
+				assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
+				for (int i = 0; i < prob.size(); i++) {
+					assertEquals(node.toString() + "; " + probLists.toString(), ((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 0.00001);
+				}
+			}
+		}
+		
+//		// reset marginals of all questions to uniform
+//		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+//			int numStates = entry.getValue().size();
+//			List<Float> newValues = new ArrayList<Float>(numStates);
+//			for (int i = 0; i < numStates; i++) {
+//				newValues.add(1f/numStates);
+//			}
+//			engine.addTrade(null, new Date(), "", 0, entry.getKey(), newValues , null, null, true);
+//		}
+//		
+//
+//		// check if marginals were reset to uniform
+//		probLists = engine.getProbLists(null, null, null);
+//		assertEquals(groundTruth.getNodeCount(), probLists.size());
+//		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+//			for (int i = 0; i < entry.getValue().size(); i++) {
+//				assertEquals(entry.toString(), 1f/entry.getValue().size(), entry.getValue().get(i), 0.00001);
+//			}
+//		}
+		
+		// create arcs in markov engine accordingly to the ground truth
+		for (Node childNode : groundTruth.getNodes()) {
+			if (childNode instanceof ProbabilisticNode) {
+				// this is the question ID of the respective node
+				Long childQuestionId = Long.valueOf(Character.getNumericValue(childNode.getName().charAt(0)));
+				
+				// add arcs that points to child node (i.e. check presence of parents)
+				if (childNode.getParentNodes() != null
+						&& !childNode.getParentNodes().isEmpty()) {
+					
+					// backup marginals, before adding new arc, for later comparison
+					probLists = engine.getProbLists(null, null, null);
+					
+					// extract cpt
+					PotentialTable cpt = ((ProbabilisticNode) childNode).getProbabilityFunction();	
+					
+					// for each parent in ground truth, create parent in engine too. 
+					List<Long> parentQuestionIds = new ArrayList<Long>(childNode.getParentNodes().size());
+					// fill list with ids of parent
+					for (int i = 1; i < cpt.getVariablesSize(); i++) {	// start from index 1, because index 0 is the child node itself
+						// Parents will be inserted in the order of appearance in cpt
+						parentQuestionIds.add(Long.valueOf(Character.getNumericValue(cpt.getVariableAt(i).getName().charAt(0)))); 
+					}
+					
+					// actually create arc
+					engine.addQuestionAssumption(null, new Date(), childQuestionId, parentQuestionIds, null);
+					
+					// check that adding a new arc does not affect probabilities
+					Map<Long, List<Float>> newProbs = engine.getProbLists(null, null, null);
+					assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+					for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+						// check number of states for current question
+						assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+						// check values
+						for (int i = 0; i < entry.getValue().size(); i++) {
+							assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+									entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+									0.00001															// error margin
+								);
+						}
+					}
+					
+					// then, make trades that will copy cpt of ground truth to engine
+					List<Float> newValues = new ArrayList<Float>();	// this will be filled with values in the CPT
+					for (int i = 0; i < cpt.tableSize(); i++) {
+						newValues.add(cpt.getValue(i));
+					}
+					
+					// passing null as assumed states will make the newValues to be interpreted as the CPT for all states of child and parents
+					engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, parentQuestionIds, null, true);
+					
+//				} else {
+//					// this node doesn't have parents. Just set its marginal
+//					
+//					// this will be filled with values in the CPT
+//					List<Float> newValues = new ArrayList<Float>();	
+//					for (int i = 0; i < childNode.getStatesSize(); i++) {
+//						newValues.add(((ProbabilisticNode) childNode).getMarginalAt(i));
+//					}
+//					
+//					// set marginal
+//					engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, null, null, true);
+				}
+			}
+			
+			// for each modification, check marginals again
+			probLists = engine.getProbLists(null, null, null);
+			assertEquals(groundTruth.getNodeCount(), probLists.size());
+			for (Node node : groundTruth.getNodes()) {
+				if (node instanceof ProbabilisticNode) {
+					List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
+					assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
+					for (int i = 0; i < prob.size(); i++) {
+						assertEquals("After adding arcs to child " + childNode + "; " + node.toString() + ", failed to match marginal: " + probLists.toString(), 
+								((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 0.001);
+					}
+				}
+			}
+		}
+		
+		// resolve some nodes
+		fail("Not implemented yet");
+		
+		// check that marginals after resolution matches
+		fail("Not implemented yet");
+		
+		// include a new node and arc to it, just to trigger compilation again
+		fail("Not implemented yet");
+		
+		// check that the marginals are still consistent
+		fail("Not implemented yet");
+		
+	}
+	
+	/**
+	 * Same of {@link #testDynamicJTCompilationAsiaModel()}, but nodes and arcs are included in single transaction.
+	 */
+	public final void testDynamicJTCompilationAsiaModelSingleTransaction() throws IOException, URISyntaxException {
+		fail("not implemented yet");
+	}
+	
+	/**
+	 * Check that performance of dynamic JT compilation is better than recompiling everything, 
+	 * if network is sufficiently large.
+	 */
+	public final void testDynamicJTCompilationPerformance() {
+		fail("not implemented yet");
 	}
 	
 }
