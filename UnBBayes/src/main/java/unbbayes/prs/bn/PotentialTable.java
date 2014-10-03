@@ -22,6 +22,7 @@ package unbbayes.prs.bn;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -1114,6 +1115,24 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
         }
         return n;
     }
+	
+	/**
+	 * This method simply fills all entries in {@link #dataPT}
+	 * with the provided value, which is the null value in multiplication and division
+	 * (these two operations are the ones used in junction tree propagation
+	 * for global consistency between tables in cliques and separators)
+	 * @param value : the value to fill
+	 * @see JunctionTree#initBelief(Separator)
+	 * @see JunctionTree#initConsistency()
+	 * @see #setValue(int, float)
+	 */
+	public void fillTable(float value) {
+		Arrays.fill(dataPT.data, 0, dataPT.size,  value); // Arrays#fill seems to be faster than calling PotentialTable#setValue multiple times
+//		int tableSize = tableSize();
+//		for (int i = 0; i < tableSize; i++) {
+//			setValue(i, 1f);
+//		}
+	}
 	
 	/**
 	 * This var is used in {@link #notifyModification()}, {@link #computeFactors()}

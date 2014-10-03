@@ -419,17 +419,21 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	public void initBelief(Separator auxSep) {
 		// initialize table related to probabilistic nodes
 		PotentialTable auxTabPot = auxSep.getProbabilityFunction();
-		int sizeDados = auxTabPot.tableSize();
-		for (int c = 0; c < sizeDados; c++) {
-			auxTabPot.setValue(c, 1);
-		}
+//		int sizeDados = auxTabPot.tableSize();
+//		for (int c = 0; c < sizeDados; c++) {
+//			auxTabPot.setValue(c, 1);
+//		}
+		// the above code was substituted by the following
+		auxTabPot.fillTable(1f);
 
 		// initialize table related to utility nodes
 		PotentialTable auxUtilTab = auxSep.getUtilityTable();
-		sizeDados = auxUtilTab.tableSize();
-		for (int i = 0; i < sizeDados; i++) {
-			auxUtilTab.setValue(i, 0);
-		}
+//		int utilTableSize = auxUtilTab.tableSize();
+//		for (int i = 0; i < utilTableSize; i++) {
+//			auxUtilTab.setValue(i, 0);
+//		}
+		// the above code was substituted by the following
+		auxUtilTab.fillTable(0f);
 		
 	}
 
