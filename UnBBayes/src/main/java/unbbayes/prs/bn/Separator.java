@@ -63,7 +63,7 @@ public class Separator implements IRandomVariable, java.io.Serializable {
      * @param clique2 the destination clique
      */
     public Separator(Clique clique1, Clique clique2) {
-    	this(clique1, clique2, true);        
+    	this(clique1, clique2, new ProbabilisticTable(), new UtilityTable(), true);     
     }
     
     /**
@@ -74,24 +74,17 @@ public class Separator implements IRandomVariable, java.io.Serializable {
      * @param updateCliques
      */
     public Separator(Clique clique1, Clique clique2, boolean updateCliques) {
-    	this();    	
-        this.clique1 = clique1;
-        this.clique2 = clique2;
-        if (updateCliques) {
-	        clique2.setParent(clique1);
-	        clique1.addChild(clique2);
-        }
+    	this(clique1, clique2, new ProbabilisticTable(), new UtilityTable(), updateCliques);
     }
 
     /**
      * Constructor initializing fields
-     * @param assetClique1
-     * @param assetClique2
+     * @param clique1
+     * @param clique2
      * @param table : {@link #getProbabilityFunction()} will be initialized to this object
      */
-    public Separator(Clique assetClique1, Clique assetClique2,
-    		PotentialTable table) {
-    	this(assetClique1, assetClique2, table, new UtilityTable());
+    public Separator(Clique clique1, Clique clique2, PotentialTable table) {
+    	this(clique1, clique2, table, new UtilityTable(), true);
     }
    
     /**
@@ -103,14 +96,33 @@ public class Separator implements IRandomVariable, java.io.Serializable {
      */
     public Separator(Clique assetClique1, Clique assetClique2,
 			PotentialTable probTable, PotentialTable utilTable) {
-		this(assetClique1, assetClique2);
-		if (probTable != null) {
-			tabelaPot = probTable;
-		}
-		if (utilTable != null) {
-			utilityTable = utilTable;
-		}
+		this(assetClique1, assetClique2, probTable, utilTable, true);
 	}
+    
+    /**
+     * Constructor initializing fields
+     * @param clique1
+     * @param clique2
+     * @param probTable : probability table
+     * @param utilTable : utility table
+     * @param updateCliques
+     */
+    public Separator(Clique clique1, Clique clique2,
+    		PotentialTable probTable, PotentialTable utilTable, boolean updateCliques) {
+    	this();
+    	this.clique1 = clique1;
+    	this.clique2 = clique2;
+    	if (probTable != null) {
+    		tabelaPot = probTable;
+    	}
+    	if (utilTable != null) {
+    		utilityTable = utilTable;
+    	}
+    	if (updateCliques) {
+	        clique2.setParent(clique1);
+	        clique1.addChild(clique2);
+        }
+    }
 
 	/**
      *@param  nodeList list of clusterized nodes
@@ -276,5 +288,21 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 	public void setInternalIdentificator(int internalIdentificator) {
 		this.internalIdentificator = internalIdentificator;
 	}
+
+//	/**
+//	 * This method simply fills all entries in {@link #getProbabilityFunction()}
+//	 * with 1, which is the null value in multiplication and division
+//	 * (these two operations are the ones used in junction tree propagation
+//	 * for global consistency between tables in cliques and separators)
+//	 * @see JunctionTree#initBelief(Separator)
+//	 * @see JunctionTree#initConsistency()
+//	 * @see PotentialTable#setValue(int, float)
+//	 */
+//	public void fillTableWith1() {
+//		PotentialTable table = this.getProbabilityFunction();
+//		if (table != null) {
+//			table.fillTable(1f);
+//		}
+//	}
 }
 
