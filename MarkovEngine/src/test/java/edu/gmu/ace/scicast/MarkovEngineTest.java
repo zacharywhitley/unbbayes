@@ -91,6 +91,7 @@ public class MarkovEngineTest extends TestCase {
 		engine.setDefaultInitialAssetTableValue(0f);
 		engine.setToReturnEVComponentsAsScoreSummary(false);
 		engine.setToDeleteResolvedNode(true);
+		engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(true);
 		engine.initialize();
 		Debug.setDebug(true);
 	}
@@ -31743,6 +31744,15 @@ public class MarkovEngineTest extends TestCase {
 	 * @see JunctionTreeAlgorithm#setDynamicJunctionTreeNetSizeThreshold(int)
 	 */
 	public final void testDynamicJTCompilationAsiaModel() throws IOException, URISyntaxException {
+		
+		// force engine to throw exception if dynamic JT compilation fails
+		Boolean isToHaltOnDynamicJunctionTreeFailure = null;
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			JunctionTreeAlgorithm algorithm = (JunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+			isToHaltOnDynamicJunctionTreeFailure = algorithm.isToHaltOnDynamicJunctionTreeFailure();
+			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
+		}
+		
 		// load the ground truth model
 		ProbabilisticNetwork groundTruth = (ProbabilisticNetwork) new NetIO().load(new File(getClass().getResource("/asia.net").toURI()));
 		assertNotNull(groundTruth);
@@ -31901,7 +31911,10 @@ public class MarkovEngineTest extends TestCase {
 					assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
 					for (int i = 0; i < prob.size(); i++) {
 						assertEquals("After adding arcs to child " + childNode + "; " + node.toString() + ", failed to match marginal: " + probLists.toString(), 
-								((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 0.001);
+								((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 
+								0.005
+//								0.0001
+								);
 					}
 				}
 			}
@@ -31919,6 +31932,13 @@ public class MarkovEngineTest extends TestCase {
 		// check that the marginals are still consistent
 		fail("Not implemented yet");
 		
+		// check case when changed clusters are equal to existing separator
+		fail("Not implemented yet");
+		
+		// revert change in config
+		if (isToHaltOnDynamicJunctionTreeFailure != null) {
+			engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(isToHaltOnDynamicJunctionTreeFailure);
+		}
 	}
 	
 	/**
