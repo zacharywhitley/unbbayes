@@ -13101,7 +13101,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 			// in this mode, we won't need to obtain probability of resolved questions either.
 			this.setToObtainProbabilityOfResolvedQuestions(false);
-		} 
+			
+			this.getDefaultInferenceAlgorithm().setToDeleteEmptyCliques(true);
+		}  else {
+			this.getDefaultInferenceAlgorithm().setToDeleteEmptyCliques(false);
+		}
 		
 	}
 
@@ -14112,6 +14116,26 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public boolean addJointTrade(Long transactionKey, Date occurredWhen, List<Long> targetVariables, List<Float> newValues) {
 		throw new UnsupportedOperationException("Not implemented yet");
 		
+	}
+	
+	/**
+	 * This method can be used to switch the behavior of exception handling of junction tree algorithm of probabilities.
+	 * If set to true, a failure in dynamic junction tree compilation will result in exception.
+	 * If set to false, a failure in dynamic junction tree compilation will simply trigger default (ordinal) junction tree compilation.
+	 * {@link AssetAwareInferenceAlgorithm#getProbabilityPropagationDelegator()} of
+	 *  {@link #getDefaultInferenceAlgorithm()} must be an instance of {@link JunctionTreeAlgorithm} in order for this to work.
+	 * @param isToHalt : this value will be delegated to {@link JunctionTreeAlgorithm#setToHaltOnDynamicJunctionTreeFailure(boolean)}
+	 * of {@link AssetAwareInferenceAlgorithm#getProbabilityPropagationDelegator()} of
+	 *  {@link #getDefaultInferenceAlgorithm()}.
+	 * @see JunctionTreeAlgorithm#run()
+	 * @see JunctionTreeAlgorithm#setDynamicJunctionTreeNetSizeThreshold(int)
+	 * @deprecated this is for the purpose of debugging, so it may be eventually removed in future releases.
+	 */
+	public void setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(boolean isToHalt) {
+		IInferenceAlgorithm algorithm = getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+		if (algorithm instanceof JunctionTreeAlgorithm) {
+			((JunctionTreeAlgorithm) algorithm).setToHaltOnDynamicJunctionTreeFailure(isToHalt);
+		}
 	}
 
 
