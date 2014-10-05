@@ -117,20 +117,22 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 * @see unbbayes.prs.bn.IJunctionTree#removeSeparator(unbbayes.prs.bn.Separator)
 	 */
 	public void removeSeparator(Separator sep) {
-		Set<Separator> seps = separatorsMap.get(sep.getClique1());
-		if (seps != null) {
-			seps.remove(sep);
-			// if the list became empty, delete the key too
-			if (seps.isEmpty()) {
-				separatorsMap.remove(sep.getClique1());
+		if (sep != null) {
+			Set<Separator> seps = separatorsMap.get(sep.getClique1());
+			if (seps != null) {
+				seps.remove(sep);
+				// if the list became empty, delete the key too
+				if (seps.isEmpty()) {
+					separatorsMap.remove(sep.getClique1());
+				}
 			}
-		}
-		seps = separatorsMap.get(sep.getClique2());
-		if (seps != null) {
-			seps.remove(sep);
-			// if the list became empty, delete the key too
-			if (seps.isEmpty()) {
-				separatorsMap.remove(sep.getClique2());
+			seps = separatorsMap.get(sep.getClique2());
+			if (seps != null) {
+				seps.remove(sep);
+				// if the list became empty, delete the key too
+				if (seps.isEmpty()) {
+					separatorsMap.remove(sep.getClique2());
+				}
 			}
 		}
 		separators.remove(sep);
