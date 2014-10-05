@@ -158,8 +158,8 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	private boolean isToChangeGUI = true;
 
 	private boolean isToConnectParentsWhenAbsorbingNode = true;
-	
 
+	private boolean isToDeleteEmptyCliques = false;
 	
 
 	/**
@@ -1961,12 +1961,19 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 				getRelatedProbabilisticNetwork().removeNode((Node) node); // this will supposedly delete the nodes from cliques as well
 			}
 			// special treatment if the node to remove makes the clique to become empty
+			List<Clique> emptyCliques = new ArrayList<Clique>(); // keep track of which cliques were detected to be empty
 			for (Clique clique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
 				// TODO update only the important clique
 				if (clique.getProbabilityFunction().tableSize() <= 0) {
 					clique.getProbabilityFunction().addVariable(ONE_STATE_PROBNODE);  // this node has only 1 state
-					clique.getProbabilityFunction().setValue(0, 1f);	// if there is only 1 possible state, it should have 100% probability
+					clique.getProbabilityFunction().setValue(0, 1f);	// if there is only 1 possible state, it should have 100% probability4
+					// don't forget to keep track of empty cliques, so that we can eventually remove them later if necessary
+					emptyCliques.add(clique);
 				}
+			}
+			if (isToDeleteEmptyCliques() && !emptyCliques.isEmpty()) {
+				// if we are only using probabilities, then we don't need the empty cliques anymore
+				this.deleteEmptyCliques(emptyCliques, getRelatedProbabilisticNetwork().getJunctionTree());
 			}
 		}
 		if (isToUpdateAssets()) {
@@ -1996,6 +2003,91 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 		for (TreeVariable node : nodesToResetEvidenceAtTheEnd) {
 			node.resetEvidence();
 		}
+		
+	}
+	
+
+	/**
+	 * This will delete empty cliques, and also delete separators in order to reorganize {@link Clique#getParent()}
+	 * and {@link Clique#getChildren()}.
+	 * Please, notice that this won't change {@link unbbayes.prs.bn.TreeVariable#getAssociatedClique()}.
+	 * @param emptyCliques : list of cliques to delete. It is assumed to be empty cliques.
+	 * @param junctionTree  : the junction tree where the cliques will be deleted from.
+	 * @see #setAsPermanentEvidence(Map, boolean)
+	 * @deprecated TODO a similar method must be implemented in {@link unbbayes.prs.bn.JunctionTreeAlgorithm} or {@link IJunctionTree}
+	 */
+	private void deleteEmptyCliques(List<Clique> emptyCliques, IJunctionTree junctionTree) {
+		// basic assertion
+		if (emptyCliques == null || junctionTree == null) {
+			return;	// there is nothing to remove, or no tree to remove cliques from
+		}
+		
+		// at this point, isToReconnectJunctionTree == true, thus we need to remove each clique and connect children to parent
+		for (Clique emptyClique : emptyCliques) {
+			// extract children
+			List<Clique> children = emptyClique.getChildren();
+			if (children == null) {	// just make sure the list of children is never null
+				children = Collections.emptyList();
+			}
+			
+			// extract parent
+			Clique parent = emptyClique.getParent();
+			
+			if (parent != null) {
+				// disconnect from parent
+				parent.removeChild(emptyClique);
+				// delete separator between empty clique to delete and its parent
+				junctionTree.removeSeparator(junctionTree.getSeparator(parent, emptyClique));
+				
+				if (!children.isEmpty()) {
+					// make each children to point to parent, instead of to the clique that will be deleted
+					for (Clique child : children) {
+						// delete separators between empty clique and its children
+						junctionTree.removeSeparator(junctionTree.getSeparator(emptyClique, child));
+						// create empty separators from parent clique to children
+						// Separator(Clique,Clique) will also update Clique#getParent() of child clique, and Clique#getChildren() of parent clique
+						junctionTree.addSeparator(new Separator(parent, child));
+					}
+				} // or else, there was no children. Empty clique was a leaf, so no need to process children.
+				
+			} else if (!children.isEmpty()) { // parent is null, and there are children
+				
+				// the empty clique was a root (but it will be removed), so pick one (any) children to become a new root
+				parent = children.get(0);
+				parent.setParent(null);	  // this will make sure the new parent is a root, and also disconnect it from empty clique.
+				
+				// also make sure the separator between the new root and empty clique is removed
+				junctionTree.removeSeparator(junctionTree.getSeparator(emptyClique, parent));
+				
+				// get the remaining children
+				if (children.size() > 1) {
+					children = children.subList(1, children.size());  // don't modify original list
+				} else {	// there was only 1 child, and it became a parent
+					children = Collections.emptyList();	// there is no remaining children
+				}
+				
+				// connect remaining children (i.e. brothers) to new root, by using empty separators
+				for (Clique child : children) {
+					// create separator from parent to children. 
+					// Separator(Clique,Clique) will also update Clique#getParent() of child clique, and Clique#getChildren() of parent clique
+					junctionTree.addSeparator(new Separator(parent, child));
+					// also make sure the separator between this child and empty clique is removed
+					junctionTree.removeSeparator(junctionTree.getSeparator(emptyClique, child));
+				}
+				
+				// some algorithms require the root clique to be the 1st in list, so reorder
+				int indexOfNewRoot = junctionTree.getCliques().indexOf(parent);
+				if (indexOfNewRoot > 0) {
+					// swap with clique at index 0 (probably, this will swap with empty clique)
+					Collections.swap(junctionTree.getCliques(), 0, indexOfNewRoot);	
+				}
+				
+			}	// or else, the empty clique was the only clique in the junction tree
+			
+			// finally, remove the empty clique from the list of cliques in junction tree
+			junctionTree.getCliques().remove(emptyClique);
+			
+		}	// end of for each empty clique
 		
 	}
 
@@ -2750,6 +2842,25 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 //	}
 	
 	
+
+	/**
+	 * @return the isToDeleteEmptyCliques : if true, {@link #setAsPermanentEvidence(INode, List, boolean)} will
+	 * also delete cliques that became empty due to nodes being permanently removed (i.e. absorbed after setting hard evidences).
+	 * If false, empty separators will be kept.
+	 */
+	public boolean isToDeleteEmptyCliques() {
+		return isToDeleteEmptyCliques;
+	}
+
+	/**
+	 * @param isToDeleteEmptyCliques : if true, {@link #setAsPermanentEvidence(INode, List, boolean)} will
+	 * also delete cliques that became empty due to nodes being permanently removed (i.e. absorbed after setting hard evidences).
+	 * If false, empty separators will be kept.
+	 */
+	public void setToDeleteEmptyCliques(boolean isToDeleteEmptyCliques) {
+		this.isToDeleteEmptyCliques = isToDeleteEmptyCliques;
+	}
+
 
 	/**
 	 * This extends {@link InCliqueConditionalProbabilityExtractor}
