@@ -91,8 +91,8 @@ public class MarkovEngineTest extends TestCase {
 		engine.setDefaultInitialAssetTableValue(0f);
 		engine.setToReturnEVComponentsAsScoreSummary(false);
 		engine.setToDeleteResolvedNode(true);
-		engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(true);
 		engine.initialize();
+		engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(true);
 		Debug.setDebug(true);
 	}
 
@@ -28040,7 +28040,9 @@ public class MarkovEngineTest extends TestCase {
 	public final void testValueTreeQuestionSingleTransaction() {
 		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
 		engine.setToAddArcsOnlyToProbabilisticNetwork(true);
+		engine.getDefaultInferenceAlgorithm().setToDeleteEmptyCliques(false);
 		engine.initialize();
+		engine.getDefaultInferenceAlgorithm().setToDeleteEmptyCliques(false);
 		
 		// create DEF net.
 		createDEFNetIn1Transaction(new HashMap<String, Long>());
