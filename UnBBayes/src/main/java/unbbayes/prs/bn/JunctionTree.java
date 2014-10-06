@@ -195,7 +195,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 * Basically, this method propagates evidences by calling
 	 * {@link #coleteEvidencia(Clique)} and {@link #distributeEvidences(Clique)},
 	 * passing as their arguments the clique specified in the argument.
-	 * @param rootClique: this clique will be considered as the root node
+	 * @param rootClique this clique will be considered as the root node
 	 * of the junction tree during this propagation, and evidences will
 	 * only be propagated across this node and descendants.
 	 * This is useful in order to force the propagation to be limited
@@ -203,13 +203,12 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 * disconnected from other portions, and no other evidence is expected in other
 	 * cliques disconnected from the current clique.
 	 * If null, then the 1st clique in {@link #getCliques()} will be used.
+	 * 
 	 * @param isToContinueOnEmptySep : if false, propagation will not recursively
 	 * guarantee global consistency to subtrees connected with empty separators.
 	 * If evidences are expected to be across several cliques, set this to true,
 	 * otherwise, if evidences are expected to be present only at the subtree
 	 * of rootClique, then set this as false.
-	 * @param forceOptimizationInitialization: if true, will attempt to optimize this 
-	 * method for the context of {@link #initBeliefs()}.
 	 * @throws Exception
 	 * @see unbbayes.prs.bn.IJunctionTree#consistency()
 	 * @see {@link #consistency()}
@@ -589,7 +588,8 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
     		to = to.getParent();
     		pathToRoot.add(to);
     		if (to.equals(from)) {
-    			// we just found the correct path, so just return it
+    			// we just found the correct path, so just return it, but in reverse order (because we started from the "to" clique)
+    			Collections.reverse(pathToRoot);
     			return pathToRoot;
     		}
     	}
@@ -959,10 +959,14 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 * until we get {@link Clique#getParent()} == null.
 	 * It will recursively move {@link Clique#getParent()} to {@link Clique#getChildren()} until
 	 * the clique becomes a root clique.
+	 * {@link #getSeparators()} and {@link #getSeparatorsMap()} may get changed, because
+	 * some algorithms expects {@link Separator#getClique1()} to be a parent clique 
+	 * (and this method may reverse such hierarchy).
 	 * @param cliqueToBecomeRoot : this clique will become the root of the tree it belongs.
 	 * @see Clique#getChildren()
 	 */
 	public void moveCliqueToRoot(Clique cliqueToBecomeRoot) {
+		// basic assertion and stop condition
 		if (cliqueToBecomeRoot == null || cliqueToBecomeRoot.getParent() == null) {
 			return;	// there is nothing to do
 		}
@@ -979,6 +983,28 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		parentClique.removeChild(cliqueToBecomeRoot);
 		cliqueToBecomeRoot.addChild(parentClique);
 		parentClique.setParent(cliqueToBecomeRoot);
+		
+		// some of the algorithms expects the 1st clique of separator to be a parent, and the other to be a child, 
+		// so we need to revert order in separator too. Separator does not allow such changes, so we need to substitute separator
+		Separator oldSeparator = getSeparator(parentClique, cliqueToBecomeRoot);	// this represents the link parentClique->cliqueToBecomeRoot
+		removeSeparator(oldSeparator);	// delete this separator, so that we can include a new one
+		
+		// create a new separator. This represents the link cliqueToBecomeRoot->parentClique (the direction is the inverse of old separator)
+		Separator newSeparator = new Separator(cliqueToBecomeRoot, parentClique, false);	// false means that the constructor shall not change Clique#getParent and Clique#getChildren
+		// copy content from old separator
+		newSeparator.setInternalIdentificator(oldSeparator.getInternalIdentificator());
+		newSeparator.setNodes(oldSeparator.getNodes());
+		newSeparator.setProbabilityFunction(oldSeparator.getProbabilityFunction());	// we can reuse same instance of separator table, because old separator will not be used anymore
+		addSeparator(newSeparator);	// include the new separator, and now we finished replacing the separator.
+		
+		// if any node is pointing to the old separator (with TreeVariable#getAssociatedClique()), then point to the new separator instead
+		for (Node node : newSeparator.getNodes()) {
+			if ((node instanceof TreeVariable)
+					&& ((TreeVariable)node).getAssociatedClique() == oldSeparator) {	// use exact instance equality, instead of Object#equal
+				((TreeVariable)node).setAssociatedClique(newSeparator);
+			}
+		}
+		
 		
 		// become the new root
 		cliqueToBecomeRoot.setParent(null);
