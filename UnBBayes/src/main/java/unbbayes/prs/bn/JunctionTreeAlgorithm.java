@@ -843,11 +843,12 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		}
 		
 		// store what nodes were added/deleted to/from the network
-		Collection<INode> nodesToDelete = new HashSet<INode>();
-		Collection<INode> nodesToAdd = new HashSet<INode>();
+		Collection<INode> nodesToDelete = new HashSet<INode>();		// this will *not* contain nodes that were already removed from junction tree
+		Collection<INode> allDeletedNodes = new HashSet<INode>();	// this will also contain nodes that were already removed from junction tree
+		Collection<INode> nodesToAdd = new HashSet<INode>();		// this will *not* contain nodes that were already included in junction tree
 		// store what arcs were added/deleted
 		Collection<Edge> edgesToDelete = new HashSet<Edge>();
-		Collection<Edge> edgesToAdd = new HashSet<Edge>();			// this will not contain edges that overwrites a moralization arc previously present
+		Collection<Edge> edgesToAdd = new HashSet<Edge>();			// this will *not* contain edges that overwrites a moralization arc previously present
 		Collection<Edge> allConsideredEdges = new HashSet<Edge>();	// this will also contain edges that overwrites a moralization arc previously present
 				
 		// check modifications in nodes and arcs
@@ -866,6 +867,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			for (INode oldNode : oldNet.getNodes()) {
 				// check if node is in new net. If not, it was deleted
 				if (newNet.getNodeIndex(oldNode.getName()) < 0) {
+					// cannot find node in new net, so it was deleted.
+					allDeletedNodes.add(oldNode);
 					// if node is absent from junction tree already, then we don't need to consider it
 					if (nodeNamesInJunctionTree.contains(oldNode.getName())) {
 						// node is still in junction tree, so we need to remove it from junction tree
@@ -895,6 +898,12 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				// the Edge#equals(Edge) uses name comparison of nodes it connects.
 				// This makes this if-clause to work even when the Edge objects are not exactly the same instances (i.e. we can compare node with its clone).
 				if (!newNet.getEdges().contains(oldEdge)) {
+					// do not consider arcs to/from nodes that were already deleted from junction tree, because they cannot be handled by this algorithm anyway;
+					if ( ( allDeletedNodes.contains(oldEdge.getOriginNode()) && !nodesToDelete.contains(oldEdge.getOriginNode()) )
+							|| ( allDeletedNodes.contains(oldEdge.getDestinationNode()) && !nodesToDelete.contains(oldEdge.getDestinationNode()) )) {
+						// the node was already deleted from junction tree if it is in the set of deleted nodes, but it is not marked for deletion now
+						continue; // this case usually happens when multiple objects accesses the junction tree and makes modifications;
+					}
 					edgesToDelete.add(oldEdge);
 				}
 			}
@@ -977,10 +986,18 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		
 		// We don't need the list of modification in net structure anymore. 
 		// Release them, because we'll have a memory-intense operation (compilation of junction trees of max prime subgraphs) now
-		nodesToAdd.clear(); nodesToAdd = null;
-		nodesToDelete.clear() ; nodesToDelete  = null;
-		edgesToAdd.clear(); edgesToAdd = null;
-		edgesToDelete.clear() ; edgesToDelete  = null;
+//		nodesToAdd.clear(); 
+		nodesToAdd = null;
+//		allDeletedNodes.clear(); 
+		allDeletedNodes = null;
+//		nodesToDelete.clear() ; 
+		nodesToDelete  = null;
+//		edgesToAdd.clear(); 
+		edgesToAdd = null;
+//		edgesToDelete.clear() ; 
+		edgesToDelete  = null;
+//		allConsideredEdges.clear(); 
+		allConsideredEdges = null;
 		
 		// for each connected marked clusters, retrieve the nodes in prime subnet decomposition and compile junction tree for each of subnets
 		Map<IJunctionTree, Collection<Clique>> compiledSubnetToClusterMap = this.getCompiledPrimeDecompositionSubnets(clustersToModify);
@@ -1194,6 +1211,14 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 						// merged without being biased by content of old separator table.
 //						newSeparator.getProbabilityFunction().fillTable(1f);
 						// TODO check if the above is necessary
+
+						// if any node is pointing to the old separator (with TreeVariable#getAssociatedClique()), then point to the new separator instead
+						for (Node node : newSeparator.getNodes()) {
+							if ((node instanceof TreeVariable)
+									&& ((TreeVariable)node).getAssociatedClique() == separatorToDelete) {	// use exact instance equality, instead of Object#equal
+								((TreeVariable)node).setAssociatedClique(newSeparator);
+							}
+						}
 						
 						// finally, include separator to original junction tree
 						originalJunctionTree.addSeparator(newSeparator);
@@ -1222,6 +1247,14 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 					// merged without being biased by content of old separator table.
 //					newSeparator.getProbabilityFunction().fillTable(1f);
 					// TODO check if the above is necessary
+
+					// if any node is pointing to the old separator (with TreeVariable#getAssociatedClique()), then point to the new separator instead
+					for (Node node : newSeparator.getNodes()) {
+						if ((node instanceof TreeVariable)
+								&& ((TreeVariable)node).getAssociatedClique() == borderSeparator) {	// use exact instance equality, instead of Object#equal
+							((TreeVariable)node).setAssociatedClique(newSeparator);
+						}
+					}
 					
 					// this will substitute the border separator, once the previous border separator is deleted
 					originalJunctionTree.addSeparator(newSeparator);
@@ -1284,6 +1317,14 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 						// merged without being biased by content of old separator table.
 //						newSeparator.getProbabilityFunction().fillTable(1f);
 						// TODO check if the above is necessary
+
+						// if any node is pointing to the old separator (with TreeVariable#getAssociatedClique()), then point to the new separator instead
+						for (Node node : newSeparator.getNodes()) {
+							if ((node instanceof TreeVariable)
+									&& ((TreeVariable)node).getAssociatedClique() == separatorToDelete) {	// use exact instance equality, instead of Object#equal
+								((TreeVariable)node).setAssociatedClique(newSeparator);
+							}
+						}
 						
 						// finally, include separator to original junction tree
 						originalJunctionTree.addSeparator(newSeparator);
@@ -1308,6 +1349,14 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 					// so that when we run initial propagation (for global consistency) the local probabilities of original cliques and new cliques gets consistently 
 					// merged without being biased by content of old separator table.
 //					newSeparator.getProbabilityFunction().fillTable(1f);
+
+					// if any node is pointing to the old separator (with TreeVariable#getAssociatedClique()), then point to the new separator instead
+					for (Node node : newSeparator.getNodes()) {
+						if ((node instanceof TreeVariable)
+								&& ((TreeVariable)node).getAssociatedClique() == borderSeparator) {	// use exact instance equality, instead of Object#equal
+							((TreeVariable)node).setAssociatedClique(newSeparator);
+						}
+					}
 					
 					// replace the border separator
 					originalJunctionTree.addSeparator(newSeparator);
@@ -1610,6 +1659,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
     	// find clusters containing child and clusters containing parent
     	List<Clique> childClusters = new ArrayList<Clique>();
     	List<Clique> parentClusters = new ArrayList<Clique>();
+    	// Cannot use IJunctionTree#getCliquesContainingAllNodes(Collection,int), because it assumes the node is associated with only 1 clique
     	for (Clique cluster : decompositionTree.getCliques()) {
 			if (cluster.getNodesList().contains(child)) {
 				childClusters.add(cluster);
@@ -1727,7 +1777,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
     		// do the same for the original junction tree
     		originalJunctionTree.removeSeparator(originalEmptySeparatorInShortestPath);	
     		
-    		// also disconnect the clusters
+    		// also disconnect the clusters connected by the empty separator
     		if (emptySeparatorInShortestPath.getClique1().getParent() != null
     				&& emptySeparatorInShortestPath.getClique1().getParent().equals(emptySeparatorInShortestPath.getClique2())) {
     			
@@ -1803,7 +1853,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
     		originalCliqueToBecomeParent.addChild(originalCliqueToBecomeChild);
     		originalCliqueToBecomeChild.setParent(originalCliqueToBecomeParent);
     		
-    		// and also insert the new separator
+    		// and also insert the new empty separator. No need to update TreeVariable#getAssociatedClique of nodes in this separator, because there is no node at all
 			decompositionTree.addSeparator(new StubSeparator(clusterToBecomeParent, clusterToBecomeChild));	// stub separator will not initialize probability table
 			// again, same modification to original junction tree
 			originalJunctionTree.addSeparator(new Separator(originalCliqueToBecomeParent, originalCliqueToBecomeChild, false)); // false:=parent/children's links shall not be re-included
@@ -3269,7 +3319,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 					continue;
 				}
 				// ProbabilisticNode has a clone() method, but it keeps parents and children pointing to old nodes (which may cause future problems)
-				ProbabilisticNode newNode = ((ProbabilisticNode)node).basicClone();
+				ProbabilisticNode newNode = ((ProbabilisticNode)node).basicClone();	// so, use basicClone, which does not clone references
 				if (newNode.getProbabilityFunction().getVariablesSize() <= 0) {
 					newNode.getProbabilityFunction().addVariable(newNode);
 				}
@@ -3396,7 +3446,20 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				newNode.setAssociatedClique(oldCliqueToNewCliqueMap.get(((TreeVariable)origNode).getAssociatedClique()));
 				
 				// force marginal to have some value
-				newNode.updateMarginal();
+				newNode.initMarginalList();
+				if (origNode instanceof TreeVariable) {
+					// fill with original marginal
+					try {
+						// this is faster, but deprecated
+						newNode.setMarginalProbabilities(((TreeVariable) origNode).marginalList);
+					} catch (Throwable e) {
+						// fill one-by-one (slower, but higher compatibility)
+						int statesSize = newNode.getStatesSize();
+						for (int i = 0; i < statesSize; i++) {
+							newNode.setMarginalAt(i, newNode.getMarginalAt(i));
+						}
+					}
+				} 
 			}
 		}
 		/**
