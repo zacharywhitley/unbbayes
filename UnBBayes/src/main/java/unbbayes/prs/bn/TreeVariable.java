@@ -35,7 +35,8 @@ public abstract class TreeVariable extends Node implements java.io.Serializable 
     // Clique associated to this variable.
     protected IRandomVariable cliqueAssociado;
 
-    // Store the marginal list (they add to 1).
+    /** Store the marginal list (they add to 1). 
+     * @deprecated use {@link #getMarginalAt(int)} and {@link #setMarginalAt(int, float)} to access these values.*/
     protected float[] marginalList;
     
     private float[] marginalCopy;

@@ -247,6 +247,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	}
 	
 	// FIXME ROMMEL - THIS SHOULD NOT BE HERE!! FIX BUG REPORTED ABOUT ERROR WHEN REMOVING STATE FROM NODE
+	@Deprecated
 	public void setTableSize(int size) {
 		dataPT.size = size;
 	}
