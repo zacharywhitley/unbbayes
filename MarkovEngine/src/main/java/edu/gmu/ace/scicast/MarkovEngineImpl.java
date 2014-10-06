@@ -2082,7 +2082,46 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				// properly set shadow nodes
 				if (this.getShadowNodes() != null) {
 					for (IValueTreeNode shadowNode : this.getShadowNodes()) {
-						root.getValueTree().setAsShadowNode(shadowNode);
+						root.getValueTree().setAsShadowNode(shadowNode);	// this should also update the marginals
+					}
+					
+					// we need to update associated clique table, because new shadow nodes implies new states, thus the clique table needs to expand
+					IRandomVariable associatedCliqueOrSeparator = root.getAssociatedClique();
+					if (associatedCliqueOrSeparator == null 					   	// AssetAwareInferenceAlgorithm#createNodeInProbabilisticNetwork should have created a clique where the node belongs
+							|| !(associatedCliqueOrSeparator instanceof Clique)) { 	// the node we just created is disconnected from everything else, so there shall not be any separator containing it
+						if (isToUpdateJunctionTreeAndAssetNets) {
+							throw new RuntimeException("Adding new value tree node " + root + " did not automatically create a new clique in junction tree. The clique was: " + associatedCliqueOrSeparator);
+						}
+					} else {
+						// extract the clique potential
+						PotentialTable cliqueTable = ((Clique)associatedCliqueOrSeparator).getProbabilityFunction();
+						if (cliqueTable == null) {
+							throw new RuntimeException("No potential table for clique " + associatedCliqueOrSeparator + " was found.");
+						}
+						// the size of clique table must be this
+						int tableSize = root.getStatesSize();
+						
+						// the node we just created is supposedly associated with only 1 clique, and the clique is supposed to have only the node
+						switch (cliqueTable.variableCount()) {
+						case 0:
+							// inserting the variable shall initialize the table with proper number of shadow nodes (i.e. proper number of states)
+							cliqueTable.addVariable(root);
+							break;
+						case 1:
+							// expand the table to proper size
+							while (cliqueTable.tableSize() < tableSize) {
+								// just expand and fill with any value. Zero should use less space in java class objects (because it's a default global constant specified by the language)
+								cliqueTable.addValueAt(0, 0f); 	// the table will be filled with marginals later (after the swith-case)
+							}
+							break;
+						default:
+							throw new RuntimeException("Table of newly created clique/separator " + associatedCliqueOrSeparator
+									+ " is expected to contain only the value tree node " + root + ", but table contained " + cliqueTable.variableCount() + " variables.");
+						}
+						// now, update content of clique table. It must be equal to the marginal
+						for (int i = 0; i < tableSize; i++) {
+							cliqueTable.setValue(i, root.getMarginalAt(i));
+						}
 					}
 				}
 				
@@ -14124,6 +14163,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * If set to false, a failure in dynamic junction tree compilation will simply trigger default (ordinal) junction tree compilation.
 	 * {@link AssetAwareInferenceAlgorithm#getProbabilityPropagationDelegator()} of
 	 *  {@link #getDefaultInferenceAlgorithm()} must be an instance of {@link JunctionTreeAlgorithm} in order for this to work.
+	 *  This needs to be called AFTER {@link #initialize()}
 	 * @param isToHalt : this value will be delegated to {@link JunctionTreeAlgorithm#setToHaltOnDynamicJunctionTreeFailure(boolean)}
 	 * of {@link AssetAwareInferenceAlgorithm#getProbabilityPropagationDelegator()} of
 	 *  {@link #getDefaultInferenceAlgorithm()}.
