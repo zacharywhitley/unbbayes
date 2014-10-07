@@ -1740,37 +1740,44 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
     	}
     	
     	
-    	// If the clusters are already directly connected by the empty separator, we don't need to reconnect clusters (i.e. no need to substitute separator). Check such condition.
-    	if ( !( ( emptySeparatorInShortestPath.getClique1().equals(clusterToBecomeParent) && emptySeparatorInShortestPath.getClique2().equals(clusterToBecomeChild) )
+    	// Find the equivalent empty separator from original junction tree. 
+    	Separator originalEmptySeparatorInShortestPath = null;
+    	// clusters can represent many cliques, so search separators between each possible pair of cliques
+    	for (Clique cliqueInCluster1 : clusterToOriginalCliqueMap.get(emptySeparatorInShortestPath.getClique1())) {		// clusterToOriginalCliqueMap translates a cluster to collection of cliques
+    		for (Clique cliqueInCluster2 : clusterToOriginalCliqueMap.get(emptySeparatorInShortestPath.getClique2())) { // iterating on the other cluster
+    			Separator separator = originalJunctionTree.getSeparator(cliqueInCluster1, cliqueInCluster2);
+    			if (separator != null && separator.getNodes().isEmpty()) {
+    				// found the empty separator between cliques in each cluster
+    				originalEmptySeparatorInShortestPath = separator;
+    				break; // It should be unique, because they are tree structures. 
+    			}
+    		}
+    		// If we found the separator (which is unique), we don't need to keep searching for other pairs.
+    		if (originalEmptySeparatorInShortestPath != null) {
+    			break;	
+    		}
+    	}
+    	// assert that we found the respective separator in original junction tree
+    	if (originalEmptySeparatorInShortestPath == null || !originalEmptySeparatorInShortestPath.getNodes().isEmpty()) {
+    		throw new RuntimeException(
+    				"Unable to find the empty separator in original junction tree corresponding to the following separator in max prime subgraph decomposition: " 
+    						+ emptySeparatorInShortestPath
+    				);
+    	}
+    	
+    	// The following separators will be the ones that connect the parent node's clique/cluster and child node's clique/cluster.
+    	// A node will be included to them later, so that they are not kept empty, 
+    	// because we want to make sure cliques/clusters between parent node and child node are kept connected,
+    	// but if we keep separators empty they may be disconnected later when calling this method for another arc.
+    	Separator newSeparatorInMaxPrimeDecomposition = emptySeparatorInShortestPath;			// the next if clause will check if empty sep in shortest path connects parent and child nodes
+    	Separator newSeparatorInOriginalJunctionTree  = originalEmptySeparatorInShortestPath;
+    	
+		// If the clusters are already directly connected by the empty separator, we don't need to reconnect clusters (i.e. no need to substitute separator). Check such condition.
+		if ( !( ( emptySeparatorInShortestPath.getClique1().equals(clusterToBecomeParent) && emptySeparatorInShortestPath.getClique2().equals(clusterToBecomeChild) )
     			|| ( emptySeparatorInShortestPath.getClique2().equals(clusterToBecomeParent) && emptySeparatorInShortestPath.getClique1().equals(clusterToBecomeChild) ) ) ) {
     		
     		// The clusters are not directly connected, so we need to reconnect clusters and thus substitute separator.
     		// We also need to do the same for the original junction tree, so extract separator and cliques from original junction tree and perform same modifications.
-    		
-    		// First, find the equivalent empty separator from original junction tree. 
-    		Separator originalEmptySeparatorInShortestPath = null;
-    		// clusters can represent many cliques, so search separators between each possible pair of cliques
-    		for (Clique cliqueInCluster1 : clusterToOriginalCliqueMap.get(emptySeparatorInShortestPath.getClique1())) {		// clusterToOriginalCliqueMap translates a cluster to collection of cliques
-    			for (Clique cliqueInCluster2 : clusterToOriginalCliqueMap.get(emptySeparatorInShortestPath.getClique2())) { // iterating on the other cluster
-    				Separator separator = originalJunctionTree.getSeparator(cliqueInCluster1, cliqueInCluster2);
-    				if (separator != null && separator.getNodes().isEmpty()) {
-    					// found the empty separator between cliques in each cluster
-    					originalEmptySeparatorInShortestPath = separator;
-    					break; // It should be unique, because they are tree structures. 
-    				}
-    			}
-    			// If we found the separator (which is unique), we don't need to keep searching for other pairs.
-    			if (originalEmptySeparatorInShortestPath != null) {
-    				break;	
-    			}
-			}
-    		// assert that we found the respective separator in original junction tree
-    		if (originalEmptySeparatorInShortestPath == null || !originalEmptySeparatorInShortestPath.getNodes().isEmpty()) {
-    			throw new RuntimeException(
-    					"Unable to find the empty separator in original junction tree corresponding to the following separator in max prime subgraph decomposition: " 
-    				   + emptySeparatorInShortestPath
-				   );
-    		}
     		
     		// remove empty separator from the max prime subgraph decomposition tree
     		decompositionTree.removeSeparator(emptySeparatorInShortestPath);
@@ -1854,9 +1861,11 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
     		originalCliqueToBecomeChild.setParent(originalCliqueToBecomeParent);
     		
     		// and also insert the new empty separator. No need to update TreeVariable#getAssociatedClique of nodes in this separator, because there is no node at all
-			decompositionTree.addSeparator(new StubSeparator(clusterToBecomeParent, clusterToBecomeChild));	// stub separator will not initialize probability table
+    		newSeparatorInMaxPrimeDecomposition = new StubSeparator(clusterToBecomeParent, clusterToBecomeChild);
+			decompositionTree.addSeparator(newSeparatorInMaxPrimeDecomposition);	// stub separator will not initialize probability table
 			// again, same modification to original junction tree
-			originalJunctionTree.addSeparator(new Separator(originalCliqueToBecomeParent, originalCliqueToBecomeChild, false)); // false:=parent/children's links shall not be re-included
+			newSeparatorInOriginalJunctionTree = new Separator(originalCliqueToBecomeParent, originalCliqueToBecomeChild, false); // false:=parent/children's links shall not be re-included
+			originalJunctionTree.addSeparator(newSeparatorInOriginalJunctionTree); 
 			
 			// some algorithms expect the global root to be the 1st clique in the list, so reorder.
 			Clique globalRoot = clusterToBecomeParent;
@@ -1884,9 +1893,15 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			
     	} 	// else, the clusters are already connected by this empty separator, thus we don't need any changes in structure
     	
-    	// accordingly to Julia Florez's paper, the empty separator between the two clusters must now include the parent node
-//    	newSeparator.getNodes().add(parent); // no need to include node into separator's potential table, because stub separator is for storing the structure only, not the potentials
-    	// Update: the above separator is never used again, so I found it's worthless to add new node in separator.
+
+    	// accordingly to Julia Florez's paper, the empty separator between the two clusters must now include the parent node.
+    	// This is in order to avoid disconnecting cliques that were connected in this method 
+    	// (because calling this method multiple times may eventually disconnect and connect the cliques to other portions, if we leave the separator empty).
+    	newSeparatorInMaxPrimeDecomposition.getNodes().add(parent); // no need to include node into separator's potential table, because stub separator is for storing the structure only, not the potentials
+    	newSeparatorInOriginalJunctionTree.getNodes().add(parent);  // do this to original separator too. 
+//    	newSeparatorInOriginalJunctionTree.getProbabilityFunction().addVariable(parent);
+    	// No need to update content of separator table, because whether a separator is empty or not is checked by looking at Separator#getNodes(), not at the tables.
+    	// besides, these separators will be discarded anyway (since the cliques connected here are marked for modification, thus will be substituted).
     	
     	// only the parent and child cluster shall be marked for modification, because they are directly connected now;
     	List<Clique> ret = new ArrayList<Clique>(2);
