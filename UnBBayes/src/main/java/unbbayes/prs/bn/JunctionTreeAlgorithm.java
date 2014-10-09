@@ -1511,6 +1511,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(subnet);
 				// Make sure ordinal junction tree compilation is used (i.e. we don't call dynamic compilation again)
 				algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// this shall guarantee that dynamic compilation is disabled
+				algorithm.setJunctionTreeBuilder(getJunctionTreeBuilder());				// reuse the same builder of junction tree.
 				subnet.setJunctionTree(null);											// this will also guarantee dynamic compilation to be disabled
 				// finally, compile the subnet
 				algorithm.run();
@@ -1973,8 +1974,84 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
      * @see #getClustersToModifyRemoveNode(INode, IJunctionTree)
      */
     protected Collection<Clique> treatAddNode( INode includedNode, IJunctionTree originalJunctionTree, IJunctionTree decompositionTree, Map<Clique, Collection<Clique>> clusterToOriginalCliqueMap) {
-		// TODO Auto-generated method stub
-    	throw new UnsupportedOperationException("Current version of dynamic junction tree compilation does not handle node inclusion.");
+    	// we'll just add a new clique and insert the new node
+    	
+    	// create the clique instance
+    	Clique cliqueOfNewNode = new Clique();
+		cliqueOfNewNode.getNodesList().add((Node)includedNode);
+		cliqueOfNewNode.getProbabilityFunction().addVariable(includedNode);
+		cliqueOfNewNode.setInternalIdentificator(originalJunctionTree.getCliques().size());
+		// same for the decomposition tree
+		Clique clusterOfNewNode = new Clique();
+		clusterOfNewNode.getNodesList().add((Node)includedNode);
+		clusterOfNewNode.getProbabilityFunction().addVariable(includedNode);
+		clusterOfNewNode.setInternalIdentificator(cliqueOfNewNode.getInternalIdentificator());
+		
+		
+		// extract the root cluster (cluster with no parents)
+		Clique rootCluster = null;
+		// do sequential search, but the root is likely to be the 1st cluster
+		for (Clique cluster : decompositionTree.getCliques()) {
+			if (cluster.getParent() == null) {
+				rootCluster = cluster;
+				break;
+			}
+		}
+		if (rootCluster == null) {
+			throw new RuntimeException("Inconsistent max prime subgraph decomposition tree structure: no root node was found.");
+		}
+		// similarly, extract the root clique in junction tree
+		Clique rootClique = null;
+//		for (Clique clique : clusterToOriginalCliqueMap.get(rootCluster)) {	// root clique is supposedly in root cluster
+		for (Clique clique : originalJunctionTree.getCliques()) {
+			if (clique.getParent() == null) {
+				rootClique = clique;
+				break;
+			}
+		}
+		if (rootClique == null) {
+			throw new RuntimeException("Inconsistent junction tree structure: no root node was found.");
+		}
+		
+		// add clique to junction tree, so that the algorithm can handle the clique correctly
+		originalJunctionTree.getCliques().add(cliqueOfNewNode);
+		decompositionTree.getCliques().add(clusterOfNewNode);
+		
+		// create separator between the clique of parent nodes and virtual node (the separator should contain all parents)
+		Separator separatorOfNewNode = new Separator(rootClique , cliqueOfNewNode);
+		separatorOfNewNode.setInternalIdentificator(-(originalJunctionTree.getSeparators().size()+1)); // internal identificator must be set before adding separator, because it is used as key
+		originalJunctionTree.addSeparator(separatorOfNewNode);
+		// do the same for max prime subgraph decomposition tree
+		StubSeparator separatorOfNewNodeInPrimeDecompositon = new StubSeparator(rootCluster , clusterOfNewNode);
+		// for stub separator, we need to explicitly set parent/child cliques
+		rootCluster.addChild(clusterOfNewNode);
+		clusterOfNewNode.setParent(rootCluster);
+		separatorOfNewNodeInPrimeDecompositon.setInternalIdentificator(separatorOfNewNode.getInternalIdentificator());
+		decompositionTree.addSeparator(separatorOfNewNodeInPrimeDecompositon);
+		
+		// now, let's link the nodes with the cliques/clusters
+		cliqueOfNewNode.getAssociatedProbabilisticNodes().add((Node) includedNode);
+		clusterOfNewNode.getAssociatedProbabilisticNodes().add((Node) includedNode);
+		((TreeVariable)includedNode).setAssociatedClique(cliqueOfNewNode);
+		// no need to associate node -> cluster
+		
+		// initialize the probabilities of clique and separator
+		originalJunctionTree.initBelief(cliqueOfNewNode);
+		originalJunctionTree.initBelief(separatorOfNewNode);	// this one sets all separator potentials to 1
+		// no need to initialize potentials in max prime subgraph decomposition tree
+		
+		// store the potentials after propagation, so that the "reset" will restore these values
+		cliqueOfNewNode.getProbabilityFunction().copyData();	
+		separatorOfNewNode.getProbabilityFunction().copyData();
+		
+		// update the marginal values (we only updated clique/separator potentials, thus, the marginals still have the old values if we do not update)
+		((TreeVariable)includedNode).updateMarginal();
+		((TreeVariable)includedNode).copyMarginal();
+    	
+		// and finally, add the mapping
+		clusterToOriginalCliqueMap.put(clusterOfNewNode, Collections.singletonList(cliqueOfNewNode));
+				
+    	return Collections.EMPTY_LIST;	// no need to tell which cliques were changed, because the change has been made already
 	}
 
 	/**
@@ -1992,6 +2069,26 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	protected Collection<Edge> getIncludedMoralArcs( ProbabilisticNetwork oldNet, ProbabilisticNetwork newNet, Collection<Edge> includedEdges) {
 		
 		Collection<Edge> ret = new ArrayList<Edge>();
+		
+		// this keeps track of what arcs were included to ret (it keeps trac of both directions, so that we don't add arc between two nodes in 2 directions).
+		Map<Node, Set<Node>> retMap = new HashMap<Node, Set<Node>>();
+		// the mapping must contain the includedEdges already
+		for (Edge edge : includedEdges) {
+			// add new mapping
+			Set<Node> mapping = retMap.get(edge.getOriginNode());
+			if (mapping == null) {
+				mapping = new HashSet<Node>();
+				retMap.put(edge.getOriginNode(), mapping);
+			}
+			mapping.add(edge.getDestinationNode());
+			// add mapping in the reverse direction too
+			mapping = retMap.get(edge.getDestinationNode());
+			if (mapping == null) {
+				mapping = new HashSet<Node>();
+				retMap.put(edge.getDestinationNode(), mapping);
+			}
+			mapping.add(edge.getOriginNode());
+		}
 		
 		// this will be used to check if there is a path between two parents, so that we can test whether we can add arcs without generating cycles.
 		MSeparationUtility mSeparationUtility = MSeparationUtility.newInstance();
@@ -2013,14 +2110,16 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				if (oldChild != null && oldParent != null) {
 					// check if the parent already had common child
 					Node oldParentToBeMoralized = oldNet.getNode(parentToBeMoralized.getName());
-					// check if they have had some children in common. If so, they were already moralized in old net (so we don't need new moral arc)
-					// use an array list, so that internal comparison uses Object#equals(Object), because it will do name comparison
-					List<Node> childrenInCommon = new ArrayList<Node>((List)oldParent.getChildNodes());
-					childrenInCommon.removeAll((List)oldParentToBeMoralized.getChildNodes());
-					if (!childrenInCommon.isEmpty()) {
-						// they had some child in common, so no need to treat this pair. Go to next pair of parents
-						continue;
-					}
+					if (oldParentToBeMoralized != null) {
+						// check if they have had some children in common. If so, they were already moralized in old net (so we don't need new moral arc)
+						// use an array list, so that internal comparison uses Object#equals(Object), because it will do name comparison
+						List<Node> childrenInCommon = new ArrayList<Node>((List)oldParent.getChildNodes());
+						childrenInCommon.removeAll((List)oldParentToBeMoralized.getChildNodes());
+						if (!childrenInCommon.isEmpty()) {
+							// they had some child in common, so no need to treat this pair. Go to next pair of parents
+							continue;
+						}
+					}	// if oldParentToBeMoralized==null, then there is a new moral arc to add between the parentToBeMoralized and newParent
 				}
 				
 				// this will be the edge to be included for moralization (will not be actually included, 
@@ -2036,10 +2135,25 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 					edgeForMoralization = new Edge(newParent, parentToBeMoralized);
 				}
 				// make sure we don't add redundant edges
-				if (!ret.contains(edgeForMoralization) && !includedEdges.contains(edgeForMoralization)) {
+				if (!retMap.containsKey(edgeForMoralization.getOriginNode()) 	// there is no arc to/from the origin node
+						|| !retMap.get(edgeForMoralization.getOriginNode()).contains(edgeForMoralization.getDestinationNode())) {	// there is an arc to/from origin node, but it is not to/from destination node
 					// TODO check if the above if is redundant and/or can be optimized
 //					edgeForMoralization.setDirection(false);	// TODO check if this is necessary
 					ret.add(edgeForMoralization);
+					// add new mapping regarding the new edge we just included in ret
+					Set<Node> mapping = retMap.get(edgeForMoralization.getOriginNode());
+					if (mapping == null) {
+						mapping = new HashSet<Node>();
+						retMap.put(edgeForMoralization.getOriginNode(), mapping);
+					}
+					mapping.add(edgeForMoralization.getDestinationNode());
+					// add mapping in the reverse direction too
+					mapping = retMap.get(edgeForMoralization.getDestinationNode());
+					if (mapping == null) {
+						mapping = new HashSet<Node>();
+						retMap.put(edgeForMoralization.getDestinationNode(), mapping);
+					}
+					mapping.add(edgeForMoralization.getOriginNode());
 				}
 			}
 		}
