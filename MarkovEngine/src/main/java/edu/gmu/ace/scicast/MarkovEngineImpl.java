@@ -392,6 +392,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private boolean isToThrowExceptionOnDynamicJunctionTreeCompilationFailure = false;	// set this to true to debug dynamic junction tree compilation
 	
+	
+	
 	/**
 	 * Default constructor is protected to allow inheritance.
 	 * Use {@link #getInstance()} to actually instantiate objects of this class.
@@ -13619,9 +13621,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	/**
 	 * This will simply return the maximum size of cliques (in number of variables), after adding arcs if requested.
+	 * This method simply delegates to {@link #getComplexityFactors(Map)} and extracts the value mapped from
+	 * key {@link edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE}
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getNewComplexityFactor(java.util.Map)
+	 * @see #getComplexityFactors(Map)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE
 	 */
 	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies) {
+		return this.getComplexityFactors(newDependencies).get(COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE).intValue();
+	}
+	
+	/**
+	 * This will simply return the maximum size of clique tables and also the sum of sizes of clique tables, 
+	 * after adding arcs if requested.
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getNewComplexityFactors(java.util.Map)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE
+	 */
+	public Map<String,Double> getComplexityFactors(Map<Long, Collection<Long>> newDependencies) {
 		
 		ProbabilisticNetwork netToCheck = null;	// this will hold a copy of the Bayes net whose complexity will be checked
 		AssetAwareInferenceAlgorithm algorithm = getDefaultInferenceAlgorithm();	// this will be used to clone the probabilistic network
@@ -13804,23 +13821,33 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	}
 	
 	/**
-	 * This is used in {@link #getComplexityFactor(Map)} in order to return the maximum table size of a clique.
-	 * Subclasses can overwrite this method in order to make {@link #getComplexityFactor(Map)} to return desired metrics from a {@link ProbabilisticNetwork}.
+	 * This is used in {@link #getComplexityFactors(Map)} in order to return the maximum table size of a clique,
+	 * and the sum of clique table sizes.
+	 * Subclasses can overwrite this method in order to make {@link #getComplexityFactors(Map)} to return desired metrics from a {@link ProbabilisticNetwork}.
 	 * @param net : network to be evaluated (we can use {@link ProbabilisticNetwork#getJunctionTree()} to retrieve junction tree) 
-	 * @return maximum number of variables in a clique. If the network does not have cliques, then 0 will be returned by default.
+	 * @return maximum clique table size (identified with key {@link edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE});
+	 * and the sum of clique table sizes (identified with key {@link edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE})
+	 * If the network does not have cliques, then 0 will be returned by default.
 	 * @see #getNetStatistics()
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE
 	 */
-	protected int getComplexityFactor(ProbabilisticNetwork net) {
+	protected Map<String,Double> getComplexityFactor(ProbabilisticNetwork net) {
 		// TODO remove redundancy with #getNetStatistics().
+		
+		// the map to return
+		Map<String,Double> ret = new HashMap<String, Double>();
+		ret.put(COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE, 0d);	// initialize with zeros
+		ret.put(COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE, 0d);	// initialize with zeros
 		
 		// initial assertion
 		if (net == null || net.getJunctionTree() == null || net.getJunctionTree().getCliques() == null) {
 			// no clique to consider, so return immediately
-			return 0;
+			return ret;
 		}
 		
-		// maximum value found in a clique
-		int ret = 0;	// this is the value to be returned by this method. 0 is the minimum value this method can return.
+		int maxCliqueTableSize = 0;	 // maximum clique table size found so far
+		long sumCliqueTableSize = 0; // sum of clique table sizes known so far
 		
 		// iterate on cliques in order to get the maximum
 		for (Clique clique : net.getJunctionTree().getCliques()) {
@@ -13834,11 +13861,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //			for (Node node : clique.getNodesList()) {
 //				valueInThisClique *= node.getStatesSize();
 //			}
-			if (valueInThisClique > ret) {
+			// update the max
+			if (valueInThisClique > maxCliqueTableSize) {
 				// this is the maximum we know so far
-				ret = valueInThisClique;
+				maxCliqueTableSize = valueInThisClique;
 			}
+			
+			// also update the sum
+			sumCliqueTableSize += valueInThisClique;
 		}
+		
+		// put the obtained values into the map to be returned, and return it
+		ret.put(COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE, (double) maxCliqueTableSize);
+		ret.put(COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE, (double) sumCliqueTableSize);	
 		
 		return ret;
 	}

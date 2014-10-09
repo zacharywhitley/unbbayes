@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
-import unbbayes.prs.exception.InvalidParentException;
 
 
 
@@ -1284,5 +1283,38 @@ public interface MarkovEngineInterface {
 	 */
 	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds);
 	
+	
+	/**
+	 * This method can be used to get a collection of metrics that are related to the complexity (e.g. time complexity) of the 
+	 * underlying algorithm after adding new arcs. For instance, in a Junction tree algorithm, 
+	 * the size (state space) of the largest clique is a plausible metric, and the sum of all cliques' table sizes can be also
+	 * included.
+	 * @param newDependencies : a map representing arcs to be added to current Bayes net before calculating a metric for complexity.
+	 * The keys are questions/nodes the arcs will be pointing to (i.e. child nodes), and values will be questions/nodes the arcs
+	 * will be coming from (i.e. parent nodes).
+	 * If the specified question/node did not exist, they shall be created before calculating the complexity metric.
+	 * Setting this to null will return the complexity metric of current Bayes net.
+	 * This method shall not actually modify the original Bayes net.
+	 * @return a map from a name of the metric to the value of the metric. 
+	 * For instance, an implementation using junction trees would return the following mapping:
+	 * <br/> <br/>
+	 * 
+	 * {@value #COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE} -> 50;   (this is the size of the table of the largest clique)
+	 * <br/>
+	 * {@value #COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE}" -> 1048; (this is the sum of clique table size)
+	 * @see #getNetStatistics()
+	 * @see #getComplexityFactor(List, List)
+	 * @see #getComplexityFactor(Long, List)
+	 * @see #getComplexityFactor(Map)
+	 * @see #COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE
+	 * @see #COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE
+	 * @throws IllegalArumentException if the new arcs to be added are invalid.
+	 */
+	public Map<String,Double> getComplexityFactors(Map<Long, Collection<Long>> newDependencies);
+	
+	/** This is the name of the key in the map returned by {@link #getComplexityFactors(Map)} which represents the maximum clique table size. */
+	public static final String COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE = "MaxCliqueTableSize";
+	/** This is the name of the key in the map returned by {@link #getComplexityFactors(Map)} which represents the sum of clique table sizes. */
+	public static final String COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE = "SumCliqueTableSize";
 	
 }
