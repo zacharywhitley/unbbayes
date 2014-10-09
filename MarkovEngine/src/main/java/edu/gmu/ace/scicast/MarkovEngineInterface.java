@@ -1227,6 +1227,7 @@ public interface MarkovEngineInterface {
 	/**
 	 * This method can be used to get some metric that is related to the complexity (e.g. time complexity) of the 
 	 * underlying algorithm after adding new arcs. For instance, in a Junction tree algorithm, treewidth is a plausible metric for this purpose.
+	 * The size (state space) of the largest clique is also a plausible metric.
 	 * @param newDependencies : a map representing arcs to be added to current Bayes net before calculating a metric for complexity.
 	 * The keys are questions/nodes the arcs will be pointing to (i.e. child nodes), and values will be questions/nodes the arcs
 	 * will be coming from (i.e. parent nodes).

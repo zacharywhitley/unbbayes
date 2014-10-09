@@ -29970,7 +29970,7 @@ public class MarkovEngineTest extends TestCase {
 						assertTrue(nodeIndex+","+parentStateIndex+"."+entry.toString(), -0.0001f< value && value <= 1.0001);
 						sum += value;
 					}
-					assertEquals(nodeIndex+","+parentStateIndex+"."+entry.toString(), 1f, sum, 0.0001f);
+					assertEquals(nodeIndex+","+parentStateIndex+"."+entry.toString(), 1f, sum, 0.0002f);
 				}
 			}
 		}
@@ -30512,9 +30512,10 @@ public class MarkovEngineTest extends TestCase {
 		complexityFactorList = engine.getComplexityFactor(Collections.singletonList(0x0AL), (Math.random() < .5)?Collections.EMPTY_LIST:null);
 		complexityFactorMap = engine.getComplexityFactor((Map)Collections.singletonMap(0x0AL, (Math.random() < .5)?Collections.EMPTY_LIST:null));
 		complexityFactorSingle = engine.getComplexityFactor(0x0AL, (Math.random() < .5)?Collections.EMPTY_LIST:null);
-		assertEquals(1, complexityFactorMap);
-		assertEquals(1, complexityFactorSingle);
-		assertEquals(1, complexityFactorList);
+		// number of states is unknwon for engine, so it supposedly used the default
+		assertEquals(engine.getDefaultNodeSize(), complexityFactorMap);
+		assertEquals(engine.getDefaultNodeSize(), complexityFactorSingle);
+		assertEquals(engine.getDefaultNodeSize(), complexityFactorList);
 		
 		// check that node was not created
 		assertTrue(engine.getProbLists(null, null, null).isEmpty());
@@ -30532,19 +30533,21 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals("2 values (parents) A and D", 2, new HashSet(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values()).size());
 		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		complexityFactorSingle = engine.getComplexityFactor(0x0BL, Collections.singletonList(0x0AL));	// can't create everything at once, so just check subset B<-A
-		assertEquals(2, complexityFactorMap);
-		assertEquals(2, complexityFactorSingle);
-		assertEquals(2, complexityFactorList);
+		// number of states is unknwon for engine, so it supposedly used the default
+		assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)), complexityFactorMap);
+		assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)), complexityFactorSingle);
+		assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)), complexityFactorList);
 		
 		// check that nodes&arcs were not actually created
 		assertTrue(engine.getProbLists(null, null, null).isEmpty());
 		
 		// now, actually create B<-A   E<-D->F
-		engine.addQuestion(null, new Date(), 0x0AL, 5, null);
-		engine.addQuestion(null, new Date(), 0x0BL, 5, null);
+		// use prime numbers in number of states of nodes, because I want the size of product space to be unique
+		engine.addQuestion(null, new Date(), 0x0AL, 2, null);
+		engine.addQuestion(null, new Date(), 0x0BL, 3, null);
 		engine.addQuestion(null, new Date(), 0x0DL, 5, null);
-		engine.addQuestion(null, new Date(), 0x0EL, 5, null);
-		engine.addQuestion(null, new Date(), 0x0FL, 5, null);
+		engine.addQuestion(null, new Date(), 0x0EL, 7, null);
+		engine.addQuestion(null, new Date(), 0x0FL, 11, null);
 		engine.addQuestionAssumption(null, new Date(), 0x0BL, Collections.singletonList(0x0AL), null);
 		engine.addQuestionAssumption(null, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
 		engine.addQuestionAssumption(null, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
@@ -30554,16 +30557,18 @@ public class MarkovEngineTest extends TestCase {
 		complexityFactorList = engine.getComplexityFactor((List)null, null);
 		complexityFactorMap = engine.getComplexityFactor((Map)null);
 		complexityFactorSingle = engine.getComplexityFactor((Long)null, null);
-		assertEquals(2, complexityFactorMap);
-		assertEquals(2, complexityFactorSingle);
-		assertEquals(2, complexityFactorList);
+		// {D,F} is supposedly the largest clique
+		assertEquals(5*11, complexityFactorMap);	
+		assertEquals(5*11, complexityFactorSingle);
+		assertEquals(5*11, complexityFactorList);
 		// also check empty arguments instead of null arguments
 		complexityFactorList = engine.getComplexityFactor(Collections.EMPTY_LIST, Collections.EMPTY_LIST);
 		complexityFactorMap = engine.getComplexityFactor(Collections.EMPTY_MAP);
 		complexityFactorSingle = engine.getComplexityFactor((Long)0x0AL, Collections.EMPTY_LIST);
-		assertEquals(2, complexityFactorMap);
-		assertEquals(2, complexityFactorSingle);
-		assertEquals(2, complexityFactorList);
+		// Again, {D,F} is supposedly the largest clique
+		assertEquals(5*11, complexityFactorMap);	
+		assertEquals(5*11, complexityFactorSingle);
+		assertEquals(5*11, complexityFactorList);
 		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
 		
 		// check that complexity won't chage if we add F->A, resulting in E<-D->F->A->B
@@ -30577,9 +30582,10 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue("Expected only 1 value/parent = 0x0F", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next().contains(0x0FL));	
 		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		complexityFactorSingle = engine.getComplexityFactor(0x0AL, Collections.singletonList(0x0FL));
-		assertEquals(2, complexityFactorMap);
-		assertEquals(2, complexityFactorSingle);
-		assertEquals(2, complexityFactorList);
+		// {D,F} is still supposedly the largest clique
+		assertEquals(5*11, complexityFactorMap);
+		assertEquals(5*11, complexityFactorSingle);
+		assertEquals(5*11, complexityFactorList);
 		
 		// check that F->A was not actually added
 		assertFalse(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0AL)).getParentNodes().contains(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0FL))));
@@ -30587,7 +30593,7 @@ public class MarkovEngineTest extends TestCase {
 		assertNull(engine.getProbabilisticNetwork().getEdge(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0FL)), engine.getProbabilisticNetwork().getNode(String.valueOf(0x0AL))));
 		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
 		
-		// check that complexity won't change if we add A->C (i.e. with a new node C)
+		// check complexity after adding A->C (i.e. with a new unknown node C)
 		childQuestionIds = new ArrayList<Long>();
 		parentQuestionIds = new ArrayList<Long>();
 		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0CL); 	// A->C
@@ -30598,9 +30604,10 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue("Expected only 1 value/parent = 0x0A", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next().contains(0x0AL));	
 		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		complexityFactorSingle = engine.getComplexityFactor(0x0CL, Collections.singletonList(0x0AL));
-		assertEquals(2, complexityFactorMap);
-		assertEquals(2, complexityFactorSingle);
-		assertEquals(2, complexityFactorList);
+		// the largest clique still has 2 nodes. It's either the largest in state space would be either the old largest clique, or the new clique
+		assertEquals(Math.max(5*11, 2*engine.getDefaultNodeSize()), complexityFactorMap);
+		assertEquals(Math.max(5*11, 2*engine.getDefaultNodeSize()), complexityFactorSingle);
+		assertEquals(Math.max(5*11, 2*engine.getDefaultNodeSize()), complexityFactorList);
 		
 		// check that A remains there, but C was not actually added
 		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0AL));
@@ -30618,9 +30625,10 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue("Expected only 1 value/parent = 0x0B", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next().contains(0x0BL));	
 		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		complexityFactorSingle = engine.getComplexityFactor(0x0FL, Collections.singletonList(0x0BL));
-		assertEquals(3, complexityFactorMap);
-		assertEquals(3, complexityFactorSingle);
-		assertEquals(3, complexityFactorList);
+		// the largest clique (in terms of state space) is supposedly {B,D,F}, with size = states of B * states of D * states of F =  3*5*11
+		assertEquals(3*5*11, complexityFactorMap);
+		assertEquals(3*5*11, complexityFactorSingle);
+		assertEquals(3*5*11, complexityFactorList);
 		
 		// check that B->F was not actually added
 		assertFalse(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0FL)).getParentNodes().contains(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0BL))));
@@ -30639,9 +30647,10 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue("Expected only 1 value/parent = 0x0C", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next().contains(0x0CL));	
 		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		complexityFactorSingle = engine.getComplexityFactor(0x0BL, Collections.singletonList(0x0CL));
-		assertEquals(3, complexityFactorMap);
-		assertEquals(3, complexityFactorSingle);
-		assertEquals(3, complexityFactorList);
+		// new largest clique is now {A,B,C}, with number of states of C being unknown
+		assertEquals(2*3*engine.getDefaultNodeSize(), complexityFactorMap);
+		assertEquals(2*3*engine.getDefaultNodeSize(), complexityFactorSingle);
+		assertEquals(2*3*engine.getDefaultNodeSize(), complexityFactorList);
 		
 		// check that B remains there, but C was not actually added
 		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0BL));
@@ -30689,17 +30698,18 @@ public class MarkovEngineTest extends TestCase {
 		parentQuestionIds.add(0x0DL); parentQuestionIds.add(0x0EL);
 		complexityFactorSingle = engine.getComplexityFactor(0x0FL, parentQuestionIds);	
 		
-		assertEquals(6, complexityFactorMap);
-		assertEquals(6, complexityFactorSingle);
-		assertEquals(6, complexityFactorList);
+		// the largest clique contains all nodes, so it's size is a product of states of all nodes
+		assertEquals(2*3*5*7*11*engine.getDefaultNodeSize(), complexityFactorMap);
+		assertEquals(2*3*5*7*11*engine.getDefaultNodeSize(), complexityFactorSingle);
+		assertEquals(2*3*5*7*11*engine.getDefaultNodeSize(), complexityFactorList);
 		
 		// check that the new node and arcs were not actually created.
 		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
 		assertEquals(3, engine.getProbabilisticNetwork().getJunctionTree().getCliques().size());	// cliques are supposedly AB, DE, and DF
-		// make sure the complexity returned to its normal value
-		assertEquals(2, engine.getComplexityFactor((Map)null));
-		assertEquals(2, engine.getComplexityFactor((Long)null, null));
-		assertEquals(2, engine.getComplexityFactor((List)null, null));
+		// make sure the complexity returned to its normal value (i.e. largest clique is {D,F})
+		assertEquals(5*11, engine.getComplexityFactor((Map)null));
+		assertEquals(5*11, engine.getComplexityFactor((Long)null, null));
+		assertEquals(5*11, engine.getComplexityFactor((List)null, null));
 	}
 	
 	/**
@@ -32309,8 +32319,8 @@ public class MarkovEngineTest extends TestCase {
 		Random rand = new Random(seed);
 		Debug.println("Seed = " + seed);
 		
-		int initialNumNodes = 50;	// size of network to test initially
-		int steps = 10;				
+		int initialNumNodes = 100;	// size of network to test initially
+		int steps = 50;				
 		
 		// force engine to throw exception if dynamic JT compilation fails
 		Boolean isToHaltOnDynamicJunctionTreeFailure = null;
