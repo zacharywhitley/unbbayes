@@ -14042,7 +14042,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getVersionInfo()
 	 */
 	public String getVersionInfo() {
-		return "UnBBayes SciCast Markov Engine 1.1.8";
+		return "UnBBayes SciCast Markov Engine 1.2.8";
 	}
 
 	/**

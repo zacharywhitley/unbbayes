@@ -4,8 +4,8 @@
 package edu.gmu.ace.scicast;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31564,8 +31564,9 @@ public class MarkovEngineTest extends TestCase {
 	/**
 	 * Checs if the {@link MarkovEngineImpl#importState(String)} and
 	 * {@link MarkovEngineImpl#exportState()} are correctly loading nodes.
+	 * @throws IOException 
 	 */
-	public final void testExportImportRPCQueue() {
+	public final void testExportImportRPCQueue() throws IOException {
 		// backup config
 		boolean isToCompressExportedState = engine.isToCompressExportedState();
 		boolean isToReturnIdentifiersInExportState = engine.isToReturnIdentifiersInExportState();
@@ -31576,20 +31577,20 @@ public class MarkovEngineTest extends TestCase {
 		
 		// files to read string of  {@link MarkovEngineImpl#importState(String)}
 		String files[] = {
-				"./examples/export_states/rpc_queue_138323988490.state",
-				"./examples/export_states/rpc_queue_138326760196.state",
-				"./examples/export_states/rpc_queue_138335400179.state",
-				"./examples/export_states/rpc_queue_138344040160.state",
-				"./examples/export_states/rpc_queue_138353040160.state",
-				"./examples/export_states/rpc_queue_138361680134.state",
-				"./examples/export_states/rpc_queue_138370320211.state",
-				"./examples/export_states/rpc_queue_138378960189.state",
-				"./examples/export_states/rpc_queue_138387600235.state",
-				"./examples/export_states/rpc_queue_138396240232.state",
-				"./examples/export_states/rpc_queue_138404880216.state",
-				"./examples/export_states/rpc_queue_138413520148.state",
-				"./examples/export_states/rpc_queue_138422160216.state",
-				"./examples/export_states/rpc_queue_138430800197.state",
+				"/export_states/rpc_queue_138323988490.state",
+				"/export_states/rpc_queue_138326760196.state",
+				"/export_states/rpc_queue_138335400179.state",
+				"/export_states/rpc_queue_138344040160.state",
+				"/export_states/rpc_queue_138353040160.state",
+				"/export_states/rpc_queue_138361680134.state",
+				"/export_states/rpc_queue_138370320211.state",
+				"/export_states/rpc_queue_138378960189.state",
+				"/export_states/rpc_queue_138387600235.state",
+				"/export_states/rpc_queue_138396240232.state",
+				"/export_states/rpc_queue_138404880216.state",
+				"/export_states/rpc_queue_138413520148.state",
+				"/export_states/rpc_queue_138422160216.state",
+				"/export_states/rpc_queue_138430800197.state",
 			}; 
 		
 		// for each file in files[], check if the following questions are present
@@ -31630,70 +31631,65 @@ public class MarkovEngineTest extends TestCase {
 		// do test for each file
 		for (int i = 0; i < files.length; i++) {
 			String netString = "";
-			FileInputStream stream = null;
-			try {
-				// read file
-				stream = new FileInputStream(files[i]);
-				int content;
-				while ((content = stream.read()) != -1) {
-					// convert to char and display it
-					netString += (char) content;
-				}
-				
-				// import the network
-				engine.importState(netString);
-				
-				// check if number of nodes matches
-				long[] nodes = nodesPerFile[i];
-				Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
-				assertEquals(nodes.length, probLists.size());
-				for (long node : nodes) {
-					assertTrue(files[i] + ", node="+node,probLists.containsKey(node));
-				}
-				
-				// check if cliques match
-				List<List<Long>> groups = engine.getQuestionAssumptionGroups();
-				assertEquals(cliquesPerFile[i].length, groups.size());
-				for (Long[] expectedClique : cliquesPerFile[i]) {
-					boolean isPresent = false;
-					for (List<Long> actualClique : groups) {
-						if (actualClique.containsAll(Arrays.asList(expectedClique))) {
-							isPresent = true;
-							break;
-						}
-					}
-					assertTrue("["+i+ "]"+groups.toString(), isPresent);
-				}
-				
-				// export/import again
-				engine.importState(engine.exportState());
-				
-				// check if number of nodes matches again
-				probLists = engine.getProbLists(null, null, null);
-				assertEquals(nodes.length, probLists.size());
-				for (long node : nodes) {
-					assertTrue(files[i] + ", node="+node,probLists.containsKey(node));
-				}
-				
-
-				// check if cliques match
-				groups = engine.getQuestionAssumptionGroups();
-				assertEquals(cliquesPerFile[i].length, groups.size());
-				for (Long[] expectedClique : cliquesPerFile[i]) {
-					boolean isPresent = false;
-					for (List<Long> actualClique : groups) {
-						if (actualClique.containsAll(Arrays.asList(expectedClique))) {
-							isPresent = true;
-							break;
-						}
-					}
-					assertTrue("["+i+ "]"+groups.toString(), isPresent);
-				}
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-				fail(files[i] + ": " +e.getMessage());
+			// read file
+			InputStream stream = getClass().getResourceAsStream(files[i]);
+//			stream = new FileInputStream(files[i]);
+			int content;
+			while ((content = stream.read()) != -1) {
+				// convert to char and display it
+				netString += (char) content;
 			}
+			
+			// import the network
+			engine.importState(netString);
+			
+			// check if number of nodes matches
+			long[] nodes = nodesPerFile[i];
+			Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+			assertEquals(nodes.length, probLists.size());
+			for (long node : nodes) {
+				assertTrue(files[i] + ", node="+node,probLists.containsKey(node));
+			}
+			
+			// check if cliques match
+			List<List<Long>> groups = engine.getQuestionAssumptionGroups();
+			assertEquals(cliquesPerFile[i].length, groups.size());
+			for (Long[] expectedClique : cliquesPerFile[i]) {
+				boolean isPresent = false;
+				for (List<Long> actualClique : groups) {
+					if (actualClique.containsAll(Arrays.asList(expectedClique))) {
+						isPresent = true;
+						break;
+					}
+				}
+				assertTrue("["+i+ "]"+groups.toString(), isPresent);
+			}
+			
+			// export/import again
+			engine.importState(engine.exportState());
+			
+			// check if number of nodes matches again
+			probLists = engine.getProbLists(null, null, null);
+			assertEquals(nodes.length, probLists.size());
+			for (long node : nodes) {
+				assertTrue(files[i] + ", node="+node,probLists.containsKey(node));
+			}
+			
+
+			// check if cliques match
+			groups = engine.getQuestionAssumptionGroups();
+			assertEquals(cliquesPerFile[i].length, groups.size());
+			for (Long[] expectedClique : cliquesPerFile[i]) {
+				boolean isPresent = false;
+				for (List<Long> actualClique : groups) {
+					if (actualClique.containsAll(Arrays.asList(expectedClique))) {
+						isPresent = true;
+						break;
+					}
+				}
+				assertTrue("["+i+ "]"+groups.toString(), isPresent);
+			}
+		
 		}
 		
 		// restore backup
@@ -31708,7 +31704,7 @@ public class MarkovEngineTest extends TestCase {
 	public final void testExportImport1409112321State() throws IOException {
 		
 		// read file
-		FileInputStream stream = new FileInputStream("./examples/export_states/1409112321.state");
+		InputStream stream = getClass().getResourceAsStream("/export_states/1409112321.state");
 		String netString = "";
 		int content;
 		while ((content = stream.read()) != -1) {
