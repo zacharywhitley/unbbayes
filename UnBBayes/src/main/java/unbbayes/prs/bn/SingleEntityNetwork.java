@@ -22,6 +22,7 @@ package unbbayes.prs.bn;
 
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -99,7 +100,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 * Points to junction tree related to the graph.
 	 * @deprecated use {@link #getJunctionTree()} or {@link #setJunctionTree(JunctionTree)} instead.
 	 */
-	protected IJunctionTree junctionTree;	
+	protected IJunctionTree junctionTree;
+
+	private Collection<Edge> markovArcsToBeForced = null;	
 	
 //	/**This is the name of the property in {@link Network#getProperty(String)} for evidences not to be reset in {@link #resetEvidences()}. Use comma separated {@link Node#getName()} for values*/
 //	public static final String EVIDENCES_NOT_TO_RESET = SingleEntityNetwork.class.getName() + ".STORED_EVIDENCE";
@@ -315,6 +318,12 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			logManager.append(resource.getString("moralizeLabel"));
 		}
 		arcosMarkov.clear();
+		
+		Collection<Edge> markovArcsToBeForced = getMarkovArcsToBeForced();
+		if (markovArcsToBeForced != null && !markovArcsToBeForced.isEmpty()) {
+			arcosMarkov.addAll(markovArcsToBeForced);
+		}
+		
 		copiaArcos = (ArrayList<Edge>)SetToolkit.clone(edgeList);
 	
 		// remove the list of edges for information
@@ -1453,6 +1462,22 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			this.copiaNos.clear();
 		}
 		this.setJunctionTree(null);
+	}
+
+
+	/**
+	 * @return the markovArcsToBeForced : arcs (undirected) in this collection will be enforced to exist in {@link #moralize()}
+	 */
+	public Collection<Edge> getMarkovArcsToBeForced() {
+		return markovArcsToBeForced;
+	}
+
+
+	/**
+	 * @param markovArcsToBeForced : arcs (undirected) in this collection will be enforced to exist in {@link #moralize()}
+	 */
+	public void setMarkovArcsToBeForced(Collection<Edge> markovArcsToBeForced) {
+		this.markovArcsToBeForced = markovArcsToBeForced;
 	}
 }
 

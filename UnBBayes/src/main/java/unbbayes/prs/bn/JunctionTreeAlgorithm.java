@@ -96,7 +96,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	private boolean isToUseEstimatedTotalProbability = true;
 
 	/** {@link #run()} will use dynamic junction tree compilation if number of nodes is above this value */
-	private int dynamicJunctionTreeNetSizeThreshold = Integer.MAX_VALUE;	// setting to large values will disable dynamic junction tree compilation
+	private int dynamicJunctionTreeNetSizeThreshold = 1;//Integer.MAX_VALUE;	// setting to large values will disable dynamic junction tree compilation
 	
 	/** Set this to true if you need {@link #run()} to throw exception when {@link #runDynamicJunctionTreeCompilation()} fails. */
 	private boolean isToHaltOnDynamicJunctionTreeFailure = false;
@@ -1460,20 +1460,94 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 					subnet.addNode(clone);
 				}
 				
+				
 				// Now that all necessary nodes were included to the subnet, add edges related to nodes we just added;
-				for (INode originalChild : originalNodes) {
+				for (INode originalParent : originalNodes) {
 					// extract the object in the subnet. They have the same name, but are different instances (because nodes in subnet are clones)
-					Node childInSubnet = subnet.getNode(originalChild.getName());
+					Node parentInSubnet = subnet.getNode(originalParent.getName());
 					// add edges that will complete the parents.
-					for (INode originalParent : originalChild.getParentNodes()) {
-						// check if parent is in subnet
-						Node parentInSubnet = subnet.getNode(originalParent.getName());
-						if (parentInSubnet != null) {
+					for (INode originalChild : originalParent.getChildNodes()) {
+						// check if child is in subnet
+						Node childInSubnet = subnet.getNode(originalChild.getName());
+						if (childInSubnet != null) {
 							// both parent and child exist in subnet, so add arc
 							Edge edge = new Edge(parentInSubnet, childInSubnet);
 							subnet.addEdge(edge);	// this will also automatically update cpts, so we need to overwrite cpts later
 						}
 					}
+				}
+				
+				// now that all arcs were created, process moralization arcs that needs to be forced 
+				// (because some children may exist in original net but not in new subnet, but we want to keep the moralization link intact)
+				
+				// store connections between parents that are present in original net by moralization (needs to add explicitly, because new subnet may not contain the children).
+				Map<Node, Set<Node>> nodesToForceMoralization = new HashMap<Node, Set<Node>>();	// this is to avoid double insertion
+				
+				// iterate on all children of nodes that are in subnet
+				for (INode originalNodeAlsoInSubnet : originalNodes) {
+					// check for children, because we need to moralize nodes in new subnet if they share same child in original net
+					for (INode originalChild : originalNodeAlsoInSubnet.getChildNodes()) {
+						// check if child is in subnet
+						Node childInSubnet = subnet.getNode(originalChild.getName());
+						if (childInSubnet == null) {
+							// process arcs that must be explicitly added due to moralization in original network (which may not be present in new subnet, due to absense of some children)
+							int numParents = originalChild.getParentNodes().size();
+							// pair-wise process parents
+							for (int i = 0; i < numParents-1; i++) {
+								// extract one of the nodes
+								Node parentToConnect1 = subnet.getNode(originalChild.getParentNodes().get(i).getName());
+								// ignore nodes that are not present in new subnet
+								if (parentToConnect1 == null) {
+									continue;	
+								}
+								for (int j = i+1; j < numParents; j++) {
+									// extract the other node
+									Node parentToConnect2 = subnet.getNode(originalChild.getParentNodes().get(j).getName());
+									// ignore nodes that are not present in new subnet
+									if (parentToConnect2 == null) {
+										continue;	
+									}
+									// never connect node to itself. This is unlikely to happen, though
+									if (parentToConnect1.equals(parentToConnect2)) { // TODO check that it is safe to remove this condition
+										continue; 
+									}
+									// ignore pairs that are connected already
+									if (parentToConnect2.isChildOf(parentToConnect1)
+											|| parentToConnect1.isChildOf(parentToConnect2)) {
+										continue;
+									}
+									// avoid processing the same pair twice
+									if ( ( nodesToForceMoralization.containsKey(parentToConnect1) && nodesToForceMoralization.get(parentToConnect1).contains(parentToConnect2) )
+											|| ( nodesToForceMoralization.containsKey(parentToConnect2) && nodesToForceMoralization.get(parentToConnect2).contains(parentToConnect1) ) ) {
+										continue;	
+									}
+									// at this point, we can add the new pair, because it is not in the mapping
+									Set<Node> setInMapping = nodesToForceMoralization.get(parentToConnect1);
+									if (setInMapping == null) {
+										// this is a completely new entry in the mapping (i.e. parentToConnect1 is connected to no other node by moralization)
+										setInMapping = new HashSet<Node>();	// so, update map
+										nodesToForceMoralization.put(parentToConnect1, setInMapping);
+									}
+									// update the value in the map
+									setInMapping.add(parentToConnect2);
+								}
+							}
+						}
+					}
+				
+				}
+				
+				// now, convert the map (of moralization links) to actual arcs. 
+				if (!nodesToForceMoralization.isEmpty()) {
+					Collection<Edge> moralizationArcs = new ArrayList<Edge>(nodesToForceMoralization.size());
+					for (Entry<Node, Set<Node>> entry : nodesToForceMoralization.entrySet()) {
+						for (Node node : entry.getValue()) {
+							// TODO check if we need to set the edge as undirected
+							moralizationArcs.add(new Edge(entry.getKey(), node));
+						}
+					}
+					// this will make sure moralization arcs are kept when compiling subnet
+					subnet.setMarkovArcsToBeForced(moralizationArcs);
 				}
 				
 				// cpt of nodes must be kept the same of original net, so that potentials can be filled correctly by JunctionTree#initBeliefs();
