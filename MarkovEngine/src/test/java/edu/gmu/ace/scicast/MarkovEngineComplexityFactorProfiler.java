@@ -30,7 +30,10 @@ public class MarkovEngineComplexityFactorProfiler extends TestCase {
 
 	private static PrintStream printStream = null;
 	
-	private int numThreads = 20;
+	private int numThreads = 50;
+
+	/** {@link #connectNodes()} will attempt to increase largest clique with this prob */
+	private float probPickNodeInLargestClique = 1f/20f;
 	
 
 	/**
@@ -67,22 +70,28 @@ public class MarkovEngineComplexityFactorProfiler extends TestCase {
 		}
 	}
 
-	private synchronized void connectNodesInLargeCliques() {
+	private synchronized void connectNodes() {
 		synchronized (engine) {
-			// find 2 nodes that belongs to 2 different large cliques
-			Node nodeInLargestClique = null;
-			Node nodeIn2ndLargestClique = null;
-			int largestSize = 0;
-			for (Clique clique : engine.getProbabilisticNetwork().getJunctionTree().getCliques()) {
-				if (clique.getProbabilityFunction().tableSize() > largestSize) {
-					nodeIn2ndLargestClique = nodeInLargestClique;
-					// pick any node in largest clique
-					nodeInLargestClique = clique.getNodesList().get(rand.nextInt(clique.getNodesList().size()));
-					largestSize = clique.getProbabilityFunction().tableSize();
+			
+			// this will be used as upper bound (open/exclusive) when randomly picking nodes in net
+			int numNodes = engine.getProbabilisticNetwork().getNodes().size();
+			
+			// these nodes will be connected
+			Node nodeInLargestClique = engine.getProbabilisticNetwork().getNodes().get(rand.nextInt(numNodes)); ;
+			Node nodeIn2ndLargestClique = engine.getProbabilisticNetwork().getNodes().get(rand.nextInt(numNodes));
+			
+			if (rand.nextFloat() < probPickNodeInLargestClique ) {
+				// find 2 nodes that belongs to 2 different large cliques
+				int largestSize = 0;
+				for (Clique clique : engine.getProbabilisticNetwork().getJunctionTree().getCliques()) {
+					if (clique.getProbabilityFunction().tableSize() > largestSize) {
+						nodeIn2ndLargestClique = nodeInLargestClique;
+						// pick any node in largest clique
+						nodeInLargestClique = clique.getNodesList().get(rand.nextInt(clique.getNodesList().size()));
+						largestSize = clique.getProbabilityFunction().tableSize();
+					}
 				}
 			}
-			
-			int numNodes = engine.getProbabilisticNetwork().getNodes().size();
 			
 			// make sure nodeIn2ndLargestClique is not null and not equal nor connected to the other node
 			for (int i = 0; 
@@ -96,7 +105,7 @@ public class MarkovEngineComplexityFactorProfiler extends TestCase {
 				nodeIn2ndLargestClique = engine.getProbabilisticNetwork().getNodes().get(rand.nextInt(numNodes)); 
 				
 				// do not loop forever
-				if (i >= numNodes*2) { 
+				if (i >= numNodes*3) { 
 					System.err.println("Unable to find a pair for node " + nodeInLargestClique);
 					return;	
 				}
@@ -121,38 +130,37 @@ public class MarkovEngineComplexityFactorProfiler extends TestCase {
 	 */
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		this.connectNodesInLargeCliques();
+		this.connectNodes();
 	}
 	
-	private synchronized void makeTradeLargestClique() {
-		synchronized (engine) {
-			// find a node in the largest clique
-			Node node = null;
-			int largestSize = 0;
-			for (Clique clique : engine.getProbabilisticNetwork().getJunctionTree().getCliques()) {
-				if (clique.getProbabilityFunction().tableSize() > largestSize) {
-					node = clique.getNodesList().get(0);
-					largestSize = clique.getProbabilityFunction().tableSize();
-				}
+	private void makeTradeLargestClique() {
+		// find a node in the largest clique
+		Node node = null;
+		int largestSize = 0;
+		for (Clique clique : engine.getProbabilisticNetwork().getJunctionTree().getCliques()) {
+			if (clique.getProbabilityFunction().tableSize() > largestSize) {
+				node = clique.getNodesList().get(0);
+				largestSize = clique.getProbabilityFunction().tableSize();
 			}
-			// randomly fill new value
-			List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
-			float sum = 0f;
-			// for a node with n states, fill n-1 states (the free parameters) with random prob
-			for (int i = 0; i < node.getStatesSize()-1; i++) {
-				float value = rand.nextFloat()*(1f-sum);	// multiply with 1-sum to guarantee that sum will never exceed 1
-				newValues.add(value);
-				sum += value;
-			}
-			newValues.add(1f-sum);	// last state is a non-free parameter (to guarantee sum to be 1)
-			
-			engine.addTrade(null, new Date(), "", 0, Long.parseLong(node.getName()), newValues , null, null, true);
 		}
+		// randomly fill new value
+		List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
+		float sum = 0f;
+		// for a node with n states, fill n-1 states (the free parameters) with random prob
+		for (int i = 0; i < node.getStatesSize()-1; i++) {
+			float value = rand.nextFloat()*(1f-sum);	// multiply with 1-sum to guarantee that sum will never exceed 1
+			newValues.add(value);
+			sum += value;
+		}
+		newValues.add(1f-sum);	// last state is a non-free parameter (to guarantee sum to be 1)
+		
+		engine.addTrade(null, new Date(), "", 0, Long.parseLong(node.getName()), newValues , null, null, true);
+	
 	}
 	
 	
 	/**
-	 * Create and runs a {@link ComplexityFactorRunnable} and then runs {@link #connectNodesInLargeCliques()}
+	 * Create and runs a {@link ComplexityFactorRunnable} and then runs {@link #connectNodes()}
 	 * @throws InterruptedException 
 	 */
 	public final void testGetComplexityFactorMultiThread() throws InterruptedException {
@@ -161,7 +169,7 @@ public class MarkovEngineComplexityFactorProfiler extends TestCase {
 //			t.setDaemon(true);
 			t.start();
 			Thread.sleep(1000*i);
-			this.connectNodesInLargeCliques();
+			this.connectNodes();
 		}
 	}
 	

@@ -30,17 +30,21 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.Separator;
+import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.inference.extension.AssetAwareInferenceAlgorithm;
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
 import unbbayes.prs.bn.valueTree.IValueTreeNode;
 import unbbayes.prs.bn.valueTree.ValueTreeProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
+import unbbayes.util.dseparation.impl.MSeparationUtility;
+import edu.gmu.ace.scicast.MarkovEngineComplexityFactorProfiler.ComplexityFactorRunnable;
 import edu.gmu.ace.scicast.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.BalanceTradeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.DummyTradeAction;
@@ -30254,8 +30258,9 @@ public class MarkovEngineTest extends TestCase {
 	
 	/**
 	 * Simple test methods for {@link MarkovEngineImpl#exportState()} and {@link MarkovEngineImpl#importState(String)}
+	 * @throws InterruptedException 
 	 */
-	public final void testExportImportState() {
+	public final void testExportImportState() throws InterruptedException {
 		// backup flags
 		boolean isToCompressExportedStateBackup = engine.isToCompressExportedState();
 		boolean isToReturnIdentifiersInExportStateBackup = engine.isToReturnIdentifiersInExportState();
@@ -30326,6 +30331,7 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToReturnIdentifiersInExportState(true);
 		this.testExportImportAfterTradeOnDisconnectedParents();
 		// check that it is returning in expected format
+		Thread.sleep(100);	// make sure we have enough time to change timestamp before exporting (because the file id is the timestamp)
 		exportedState = engine.exportState();
 		assertNotNull(exportedState);
 		// the identifier is supposedly a timestamp (milliseconds from midnight, January 1, 1970 UTC) created before now
@@ -30404,6 +30410,7 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToReturnIdentifiersInExportState(true);
 		this.testExportImportAfterTradeOnDisconnectedParents();
 		// check that it is returning in expected format
+		Thread.sleep(100);	// make sure we have enough time to change timestamp before exporting (because the file id is the timestamp)
 		exportedState = engine.exportState();
 		assertNotNull(exportedState);
 		// the identifier is supposedly a timestamp (milliseconds from midnight, January 1, 1970 UTC) created before now
@@ -30414,7 +30421,7 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(compressedFile1.exists());
 		assertTrue(compressedFile1.isFile());
 		// check that file size is smaller than uncompressed one
-		assertTrue(compressedFile1.length() < uncompressedFile1.length());
+		assertTrue(compressedFile1.getName() + "=" + compressedFile1.length() + " <? " + uncompressedFile1.getName() + "=" + uncompressedFile1.length() ,compressedFile1.length() < uncompressedFile1.length());
 		
 //		// reset engine, and again run another previous check related to import/export
 //		engine = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
@@ -30569,6 +30576,14 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestionAssumption(null, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
 		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we created 5 nodes
 		
+		// backup nodes and associated cliques, so that we can check later that they were not changed
+		Map<INode, IRandomVariable> nodeToAssociatedCliqueOrSeparatorMap = new HashMap<INode, IRandomVariable>();
+		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+			if (node instanceof TreeVariable) {
+				nodeToAssociatedCliqueOrSeparatorMap.put(node, ((TreeVariable) node).getAssociatedClique());
+			}
+		}
+		
 		// check complexity with no new arcs 
 		complexityFactorList = engine.getComplexityFactor((List)null, null);
 		complexityFactorMap = engine.getComplexityFactor((Map)null);
@@ -30596,6 +30611,13 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(5*11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
 		assertEquals(2*3+5*11+5*7, complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);	// 3 cliques with 2 nodes each
 		
+		// check that nodes and associated cliques did not change
+		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+			if (node instanceof TreeVariable) {
+				assertTrue(node.getName(), nodeToAssociatedCliqueOrSeparatorMap.containsKey(node));
+				assertTrue(node.getName() + "; " + ((TreeVariable) node).getAssociatedClique(), nodeToAssociatedCliqueOrSeparatorMap.get(node) == ((TreeVariable) node).getAssociatedClique());	// use == for exact object comparison
+			}
+		}
 		
 		// check that complexity won't chage if we add F->A, resulting in E<-D->F->A->B
 		childQuestionIds = new ArrayList<Long>();
@@ -30625,6 +30647,14 @@ public class MarkovEngineTest extends TestCase {
 		assertNull(engine.getProbabilisticNetwork().getEdge(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0FL)), engine.getProbabilisticNetwork().getNode(String.valueOf(0x0AL))));
 		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
 		
+		// check that nodes and associated cliques did not change
+		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+			if (node instanceof TreeVariable) {
+				assertTrue(node.getName(), nodeToAssociatedCliqueOrSeparatorMap.containsKey(node));
+				assertTrue(node.getName() + "; " + ((TreeVariable) node).getAssociatedClique(), nodeToAssociatedCliqueOrSeparatorMap.get(node) == ((TreeVariable) node).getAssociatedClique());	// use == for exact object comparison
+			}
+		}
+		
 		// check complexity after adding A->C (i.e. with a new unknown node C)
 		childQuestionIds = new ArrayList<Long>();
 		parentQuestionIds = new ArrayList<Long>();
@@ -30649,6 +30679,14 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0AL));
 		assertFalse(engine.getProbLists(null, null, null).containsKey(0x0CL));
 		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
+		
+		// check that nodes and associated cliques did not change
+		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+			if (node instanceof TreeVariable) {
+				assertTrue(node.getName(), nodeToAssociatedCliqueOrSeparatorMap.containsKey(node));
+				assertTrue(node.getName() + "; " + ((TreeVariable) node).getAssociatedClique(), nodeToAssociatedCliqueOrSeparatorMap.get(node) == ((TreeVariable) node).getAssociatedClique());	// use == for exact object comparison
+			}
+		}
 		
 		// check that complexity increases if we add B->F, resulting in E<-D->F<-B<-A
 		childQuestionIds = new ArrayList<Long>();
@@ -30677,6 +30715,14 @@ public class MarkovEngineTest extends TestCase {
 		assertNull(engine.getProbabilisticNetwork().getEdge(engine.getProbabilisticNetwork().getNode(String.valueOf(0x0BL)), engine.getProbabilisticNetwork().getNode(String.valueOf(0x0FL))));
 		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
 		
+		// check that nodes and associated cliques did not change
+		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+			if (node instanceof TreeVariable) {
+				assertTrue(node.getName(), nodeToAssociatedCliqueOrSeparatorMap.containsKey(node));
+				assertTrue(node.getName() + "; " + ((TreeVariable) node).getAssociatedClique(), nodeToAssociatedCliqueOrSeparatorMap.get(node) == ((TreeVariable) node).getAssociatedClique());	// use == for exact object comparison
+			}
+		}
+		
 		// check that complexity increases if we add C->B (i.e. with a new node C), resulting in C->B<-A   E<-D->F
 		childQuestionIds = new ArrayList<Long>();
 		parentQuestionIds = new ArrayList<Long>();
@@ -30702,6 +30748,14 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(engine.getProbLists(null, null, null).containsKey(0x0BL));
 		assertFalse(engine.getProbLists(null, null, null).containsKey(0x0CL));
 		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
+		
+		// check that nodes and associated cliques did not change
+		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+			if (node instanceof TreeVariable) {
+				assertTrue(node.getName(), nodeToAssociatedCliqueOrSeparatorMap.containsKey(node));
+				assertTrue(node.getName() + "; " + ((TreeVariable) node).getAssociatedClique(), nodeToAssociatedCliqueOrSeparatorMap.get(node) == ((TreeVariable) node).getAssociatedClique());	// use == for exact object comparison
+			}
+		}
 		
 		// check that complexity increases by including new node C and fully connecting the net
 		childQuestionIds = new ArrayList<Long>();
@@ -30766,6 +30820,13 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(5*11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
 		assertEquals(2*3+5*7+5*11, complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);	// {AB}+{DE}+{DF}
 		
+		// check that nodes and associated cliques did not change
+		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+			if (node instanceof TreeVariable) {
+				assertTrue(node.getName(), nodeToAssociatedCliqueOrSeparatorMap.containsKey(node));
+				assertTrue(node.getName() + "; " + ((TreeVariable) node).getAssociatedClique(), nodeToAssociatedCliqueOrSeparatorMap.get(node) == ((TreeVariable) node).getAssociatedClique());	// use == for exact object comparison
+			}
+		}
 	}
 	
 	/**
@@ -32528,6 +32589,128 @@ public class MarkovEngineTest extends TestCase {
 		if (dynamicJunctionTreeNetSizeThreshold != null) {
 			((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
 		}
+	}
+	
+	/**
+	 * Create and runs a {@link ComplexityFactorRunnable} and then runs {@link #connectNodes()}.
+	 * This is also a regression test for a bug that happens when using dynamic junction tree compilation without
+	 * considering moralization arcs completely (i.e. when compiling a subnet, but if a node shares a common child
+	 * which is not present in the subnet, the moralization won't happen automatically -- so the dynamic junction tree compiler
+	 * must moralize the parents in advance).
+	 * If moralization is not properly handled, then this method throws an exception.
+	 * @throws IOException 
+	 * @throws InterruptedException 
+	 */
+	public final void testMoralizationProblemInDynamicJunctionTreeCompilation() throws IOException {
+		int numIterations = 7;
+		// using a "random" with fixed seed, because the original test (which uncovered the problem) was a random test and the bug happened with this seed 
+		// (and I'm copying/pasting such specific test to here, for regression).
+		long seed = 1413743663628l;	
+		Random rand = new Random(seed);
+		
+		// load the scicast network from state file
+		String netString = "";
+		// read file
+		InputStream stream = getClass().getResourceAsStream("/140925.net");
+		int content;
+		while ((content = stream.read()) != -1) {
+			// convert to char and display it
+			netString += (char) content;
+		}
+		engine.importState(netString);
+		
+		// run trade and then connect node (and then run trade again in next loop and so on)
+		for (int i = 1; i <= numIterations; i++) {
+			makeTradeLargestClique(rand);
+			this.connectNodes(rand);
+		}
+	}
+	
+	/**
+	 * Auxiliary method used in {@link #testGetComplexityFactorLargeCliques()}
+	 * @param rand
+	 */
+	private void makeTradeLargestClique(Random rand) {
+		// find a node in the largest clique
+		Node node = null;
+		int largestSize = 0;
+		for (Clique clique : engine.getProbabilisticNetwork().getJunctionTree().getCliques()) {
+			if (clique.getProbabilityFunction().tableSize() > largestSize) {
+				node = clique.getNodesList().get(0);
+				largestSize = clique.getProbabilityFunction().tableSize();
+			}
+		}
+		// randomly fill new value
+		List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
+		float sum = 0f;
+		// for a node with n states, fill n-1 states (the free parameters) with random prob
+		for (int i = 0; i < node.getStatesSize()-1; i++) {
+			float value = rand.nextFloat()*(1f-sum);	// multiply with 1-sum to guarantee that sum will never exceed 1
+			newValues.add(value);
+			sum += value;
+		}
+		newValues.add(1f-sum);	// last state is a non-free parameter (to guarantee sum to be 1)
+		
+		engine.addTrade(null, new Date(), "", 0, Long.parseLong(node.getName()), newValues , null, null, true);
+	
+	}
+	
+	/**
+	 * Auxiliary method used in {@link #testGetComplexityFactorLargeCliques()}
+	 * @param rand
+	 */
+	private void connectNodes(Random rand) {
+		
+		// this will be used as upper bound (open/exclusive) when randomly picking nodes in net
+		int numNodes = engine.getProbabilisticNetwork().getNodes().size();
+		
+		// these nodes will be connected
+		Node nodeInLargestClique = engine.getProbabilisticNetwork().getNodes().get(rand.nextInt(numNodes)); ;
+		Node nodeIn2ndLargestClique = engine.getProbabilisticNetwork().getNodes().get(rand.nextInt(numNodes));
+		
+		if (rand.nextFloat() < 1f/3f ) {
+			// find 2 nodes that belongs to 2 different large cliques
+			int largestSize = 0;
+			for (Clique clique : engine.getProbabilisticNetwork().getJunctionTree().getCliques()) {
+				if (clique.getProbabilityFunction().tableSize() > largestSize) {
+					nodeIn2ndLargestClique = nodeInLargestClique;
+					// pick any node in largest clique
+					nodeInLargestClique = clique.getNodesList().get(rand.nextInt(clique.getNodesList().size()));
+					largestSize = clique.getProbabilityFunction().tableSize();
+				}
+			}
+		}
+		
+		// make sure nodeIn2ndLargestClique is not null and not equal nor connected to the other node
+		for (int i = 0; 
+				nodeIn2ndLargestClique == null 										// make sure we have a node
+						|| nodeInLargestClique.equals(nodeIn2ndLargestClique)			// make sure the node is not equal
+						|| nodeInLargestClique.isChildOf(nodeIn2ndLargestClique)		// make sure the nodes are not connected already
+						|| nodeInLargestClique.isParentOf(nodeIn2ndLargestClique); 		// make sure the nodes are not connected already
+				i++) {
+			
+			// pick a node randomly
+			nodeIn2ndLargestClique = engine.getProbabilisticNetwork().getNodes().get(rand.nextInt(numNodes)); 
+			
+			// do not loop forever
+			if (i >= numNodes*3) { 
+				System.err.println("Unable to find a pair for node " + nodeInLargestClique);
+				return;	
+			}
+		}
+		
+		// check direction of arcs by checking if there is already a directed path
+		MSeparationUtility util = MSeparationUtility.newInstance();
+		// add new edge between 2 nodes large cliques
+		if (!util.getRoutes(nodeInLargestClique, nodeIn2ndLargestClique).isEmpty()) {
+			// there is a path from nodeInLargestClique to nodeIn2ndLargestClique, so we must add arc in same direction nodeInLargestClique->nodeIn2ndLargestClique
+			engine.addQuestionAssumption(null, new Date(), Long.parseLong(nodeIn2ndLargestClique.getName()), Collections.singletonList(Long.parseLong(nodeInLargestClique.getName())), null);
+		} else {
+			// either there is no path or there is a path in opposite direction.
+			// in both cases, we can add arc nodeIn2ndLargestClique->nodeInLargestClique
+			engine.addQuestionAssumption(null, new Date(), Long.parseLong(nodeInLargestClique.getName()), Collections.singletonList(Long.parseLong(nodeIn2ndLargestClique.getName())), null);
+		}
+	
 	}
 	
 }
