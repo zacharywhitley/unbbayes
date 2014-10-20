@@ -30,10 +30,10 @@ public class MarkovEngineComplexityFactorProfiler extends TestCase {
 
 	private static PrintStream printStream = null;
 	
-	private int numThreads = 50;
+	private int numThreads = 30;
 
 	/** {@link #connectNodes()} will attempt to increase largest clique with this prob */
-	private float probPickNodeInLargestClique = 1f/20f;
+	private float probPickNodeInLargestClique = 1f/2f;
 	
 
 	/**
@@ -93,6 +93,11 @@ public class MarkovEngineComplexityFactorProfiler extends TestCase {
 				}
 			}
 			
+			// randomly discard nodeIn2ndLargestClique, so that we will pick another node randomly
+			if (rand.nextFloat() > probPickNodeInLargestClique) {
+				nodeIn2ndLargestClique = null;
+			}
+			
 			// make sure nodeIn2ndLargestClique is not null and not equal nor connected to the other node
 			for (int i = 0; 
 					nodeIn2ndLargestClique == null 										// make sure we have a node
@@ -130,7 +135,11 @@ public class MarkovEngineComplexityFactorProfiler extends TestCase {
 	 */
 	protected void tearDown() throws Exception {
 		super.tearDown();
-		this.connectNodes();
+//		this.connectNodes();
+		while (true) {
+			System.err.println("Finished execution. Please, halt.");
+			Thread.sleep(10000);
+		}
 	}
 	
 	private void makeTradeLargestClique() {
