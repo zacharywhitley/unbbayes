@@ -102,7 +102,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	private boolean isRemovedCellInDataPT[] = null;
 	
 	/** This is the singleton value enabled when {@link #isToUseSingletonArrayOfRemovedCellInDataPT()} is true */
-	private boolean[] singletonArrayOfRemovedCellInDataPT;
+	private static boolean[] singletonArrayOfRemovedCellInDataPT;
 	
 	private static boolean isToUseSingletonArrayOfRemovedCellInDataPT = true;
 	
