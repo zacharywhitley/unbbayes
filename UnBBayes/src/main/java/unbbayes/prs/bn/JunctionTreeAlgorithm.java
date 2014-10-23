@@ -96,7 +96,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	private boolean isToUseEstimatedTotalProbability = true;
 
 	/** {@link #run()} will use dynamic junction tree compilation if number of nodes is above this value */
-	private int dynamicJunctionTreeNetSizeThreshold = 1;//Integer.MAX_VALUE;	// setting to large values will disable dynamic junction tree compilation
+	private int dynamicJunctionTreeNetSizeThreshold = Integer.MAX_VALUE;	// setting to large values will disable dynamic junction tree compilation
 	
 	/** Set this to true if you need {@link #run()} to throw exception when {@link #runDynamicJunctionTreeCompilation()} fails. */
 	private boolean isToHaltOnDynamicJunctionTreeFailure = false;
