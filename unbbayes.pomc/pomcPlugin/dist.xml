@@ -36,9 +36,16 @@
         <include>*.jar</include>
       </includes>
     </fileSet>
-    <fileSet>
+        <fileSet>
       <directory>examples/</directory>
       <outputDirectory>examples</outputDirectory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+    </fileSet>
+        <fileSet>
+      <directory>help/</directory>
+      <outputDirectory>target/classes/</outputDirectory>
       <includes>
         <include>**/*</include>
       </includes>

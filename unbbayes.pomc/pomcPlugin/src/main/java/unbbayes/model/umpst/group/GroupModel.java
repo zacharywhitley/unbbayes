@@ -38,6 +38,8 @@ public class GroupModel extends ObjectModel {
 		backtrackingEntities = new ArrayList<EntityModel>();
 		backtrackingAtributes = new ArrayList<AttributeModel>();
 		backtrackingRelationship = new ArrayList<RelationshipModel>();	
+		
+		super.setType("Group");
 	}
 	
 	/**

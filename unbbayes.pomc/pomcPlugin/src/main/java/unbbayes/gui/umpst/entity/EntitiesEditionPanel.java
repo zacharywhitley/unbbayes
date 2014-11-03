@@ -7,8 +7,8 @@ import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
@@ -37,6 +37,7 @@ import unbbayes.gui.umpst.selection.GoalSelectionPane;
 import unbbayes.gui.umpst.selection.HypothesisSelectionPane;
 import unbbayes.gui.umpst.selection.interfaces.GoalAddition;
 import unbbayes.gui.umpst.selection.interfaces.HypothesisAddition;
+import unbbayes.model.umpst.ObjectModel;
 import unbbayes.model.umpst.entity.AttributeModel;
 import unbbayes.model.umpst.entity.EntityModel;
 import unbbayes.model.umpst.entity.RelationshipModel;
@@ -113,7 +114,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 		JSplitPane leftPane = new JSplitPane(
 				JSplitPane.VERTICAL_SPLIT,
 				createPanelText(),
-				createBacktrackingPanel()); 
+				createGoalBacktrackingPanel()); 
 
 		JSplitPane rightPane = new JSplitPane(
 				JSplitPane.VERTICAL_SPLIT,
@@ -135,7 +136,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 		createListeners();
 	}
 
-	public JSplitPane createBacktrackingPanel(){
+	public JSplitPane createGoalBacktrackingPanel(){
 
 		JSplitPane splitPanel = new JSplitPane(
 				JSplitPane.VERTICAL_SPLIT,
@@ -201,7 +202,10 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 		buttonReuseAttribute.setToolTipText(resource.getString("hpReuseAttribute"));
 
 		buttonFrameGoal	= new JButton (iconController.getCicleGoalIcon());
+		buttonFrameGoal.setToolTipText(resource.getString("hpAddBackGoal"));
+		
 		buttonFrameHypothesis	= new JButton (iconController.getCicleHypothesisIcon());
+		buttonFrameHypothesis.setToolTipText(resource.getString("hpAddBackHypothesis"));
 
 	}
 
@@ -232,8 +236,8 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, 
-								"Error while creating entity", 
-								"UnBBayes", 
+								resource.getString("erCreatingEntity"), 
+								resource.getString("ttPanelError"),
 								JOptionPane.WARNING_MESSAGE);
 						UmpstModule pai = getFatherPanel();
 						changePanel(pai.getMenuPanel());	
@@ -245,8 +249,8 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 				//Changing old entity
 				else{
 					if( JOptionPane.showConfirmDialog(null, 
-							"Do you want to update this entity?", 
-							"UnBBayes", 
+							resource.getString("qtUpdateEntity"), 
+							resource.getString("ttPanelQuestion"), 
 							JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
 
 						try{
@@ -259,14 +263,14 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 							updateTableEntities();
 
 							JOptionPane.showMessageDialog(null, 
-									"entity successfully updated", 
-									"UnBBayes", 
+									resource.getString("msEntitySuccessfullUpdated"), 
+									resource.getString("ttPanelSucessfull"), 
 									JOptionPane.INFORMATION_MESSAGE);
 						}
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,
-									"Error while ulpating entity", 
-									"UnBBayes", 
+									resource.getString("erUpdatingEntity"), 
+									resource.getString("ttPanelError"), 
 									JOptionPane.WARNING_MESSAGE);
 							UmpstModule pai = getFatherPanel();
 							changePanel(pai.getMenuPanel());	
@@ -429,7 +433,6 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 
 			c.gridx = 1; c.gridy = 0; c.gridwidth=1;
 			panel.add(buttonFrameGoal,c);
-			buttonFrameGoal.setToolTipText("Add backtracking from goals");
 
 			c.fill = GridBagConstraints.BOTH;
 			c.gridx=0;c.gridy=1;c.weightx=0.9;c.weighty=0.9;c.gridwidth=6;
@@ -510,7 +513,6 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 
      		c.gridx = 1; c.gridy = 0; c.gridwidth=1;
 			panel.add(buttonFrameHypothesis,c);
-			buttonFrameHypothesis.setToolTipText("Add hypothesis from goals");
 	
 			c.fill = GridBagConstraints.BOTH;
 			c.gridx=0;c.gridy=1;c.weightx=0.9;c.weighty=0.9;c.gridwidth=6;
@@ -547,7 +549,7 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 		c.gridx=0;c.gridy=1;c.weightx=0.9;c.weighty=0.9;c.gridwidth=6;
 
 		panel.add(scrollPane,c);
-		panel.setBorder(BorderFactory.createTitledBorder("List of Atributes"));
+		panel.setBorder(BorderFactory.createTitledBorder(resource.getString("ttListAttibutes")));
 
 		return panel; 
 
@@ -557,99 +559,62 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 	public JScrollPane createTraceabilityTable(){
 
 		int i = 0;
-		String[] columns = {"Name", "Type"};
 
-		if ( (entity!=null) && (entity.getMapAtributes()!=null) ){
+		String[] columns = {resource.getString("ttColType"), 
+				            resource.getString("ttColDescription")};
 
-			Set<String> keys = entity.getMapAtributes().keySet();
-			TreeSet<String> sortedString = new TreeSet<String>(keys);
+		List<ObjectModel> listObjectModel = new ArrayList<ObjectModel>(); 
 
-			for (String key : sortedString){
-				i++;
+		if (entity != null){
+			
+			//ATRIBUTOS
+			if ( entity.getMapAtributes()!=null ){
+
+				Set<String> keys = entity.getMapAtributes().keySet();
+				TreeSet<String> sortedString = new TreeSet<String>(keys);
+
+				for (String key : sortedString){
+					AttributeModel attributeModel = entity.getMapAtributes().get(key); 
+					listObjectModel.add(attributeModel); 
+				}
 			}
-		}
 
-		if ((entity!=null)&&(entity.getFowardTrackingRules()!=null)){
+			if (entity.getFowardTrackingRules() != null){
 
-			Set<RuleModel> aux = entity.getFowardTrackingRules();
-			RuleModel rule;
-			for (Iterator<RuleModel> it = aux.iterator(); it.hasNext(); ) {
-				rule = it.next();
-				i++;
+				Set<RuleModel> aux = entity.getFowardTrackingRules();
+				
+				for(RuleModel ruleModel: aux){
+					listObjectModel.add(ruleModel); 
+				}
 			}
-		}
 
-		if ((entity!=null)&&(entity.getFowardTrackingRelationship()!=null)){
-			Set<RelationshipModel> aux = entity.getFowardTrackingRelationship();
-			RelationshipModel relationship;
-			for (Iterator<RelationshipModel> it = aux.iterator(); it.hasNext(); ) {
-				relationship = it.next();
-				i++;
+			if (entity.getFowardTrackingRelationship() != null){
+				
+				Set<RelationshipModel> aux = entity.getFowardTrackingRelationship();
+				for( RelationshipModel relationshipModel: aux){
+					listObjectModel.add(relationshipModel); 
+				}
 			}
-		}
 
-		if ( ( entity!=null ) && ( entity.getFowardTrackingGroups() != null ) ){
-			Set<GroupModel> aux = entity.getFowardTrackingGroups();
-			GroupModel group;
-			for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
-				group = it.next();
-				i++;
-			}
-		}
-		
-		Object[][] data = new Object[i+1][2];
-
-		if (i < 30){
-			data = new Object[30][3];
-		}
-
-		i=0;
-
-		if ( (entity!=null) && (entity.getMapAtributes()!=null) ){
-
-			Set<String> keys = entity.getMapAtributes().keySet();
-			TreeSet<String> sortedString = new TreeSet<String>(keys);
-
-			for (String key : sortedString){
-				data[i][0] = entity.getMapAtributes().get(key).getName();
-				data[i][1] = "Atribute";
-				i++;
-			}
-		}
-
-		if ((entity!=null)&&(entity.getFowardTrackingRules()!=null)){
-
-			Set<RuleModel> aux = entity.getFowardTrackingRules();
-			RuleModel rule;
-			for (Iterator<RuleModel> it = aux.iterator(); it.hasNext(); ) {
-				rule = it.next();
-				data[i][0] = rule.getName();
-				data[i][1] = "Rule";
-				i++;
-			}
-		}
-
-		if ((entity!=null)&&(entity.getFowardTrackingRelationship()!=null)){
-			Set<RelationshipModel> aux = entity.getFowardTrackingRelationship();
-			RelationshipModel relationship;
-			for (Iterator<RelationshipModel> it = aux.iterator(); it.hasNext(); ) {
-				relationship = it.next();
-				data[i][0] = relationship.getName();
-				data[i][1] = "Relationship";
-				i++;
+			if (entity.getFowardTrackingGroups() != null){
+				Set<GroupModel> aux = entity.getFowardTrackingGroups();
+				for(GroupModel groupModel: aux){
+					listObjectModel.add(groupModel); 
+				}
 			}
 		}
 		
-		if ((entity!=null) && (entity.getFowardTrackingGroups() != null)){
-			Set<GroupModel> aux = entity.getFowardTrackingGroups();
-			GroupModel group;
-			for (Iterator<GroupModel> it = aux.iterator(); it.hasNext(); ) {
-				group = it.next();
-				System.out.println("Group=" + group);
-				data[i][0] = group.getName();
-				data[i][1] = "Group";
-				i++;
+		String[][] data; 
+		
+		if(listObjectModel.size() > 0){
+			data = new String[listObjectModel.size()][2]; 
+			for(ObjectModel objectModel: listObjectModel){
+				data[i][0] = objectModel.getType(); 
+				data[i][1] = objectModel.getName(); 
+				i++; 
 			}
+		}else{
+			data = new String[30][2];
 		}
 
 		DefaultTableModel model = new DefaultTableModel(data, columns);
@@ -657,9 +622,11 @@ public class EntitiesEditionPanel extends IUMPSTPanel
 		JTable table = new JTable(model);
 		table.setGridColor(Color.WHITE); 
 		table.setEnabled(false); 
+		
+		table.getColumnModel().getColumn(0).setMaxWidth(100); 
 
 		JScrollPane scrollPane = new JScrollPane(table);
-		scrollPane.setBorder(BorderFactory.createTitledBorder("This entity traceability"));
+		scrollPane.setBorder(BorderFactory.createTitledBorder(resource.getString("ttEntityTraceability")));
 
 		return scrollPane;
 

@@ -18,9 +18,11 @@ public class RelationshipModel extends ObjectModel{
 	
 	private List<EntityModel>     entityList;
 	
+	//BACKTRACKING
 	private List<GoalModel>       goalList;
 	private List<HypothesisModel> hypothesisList;
 	
+	//FORWARDTRACKING
 	private Set<RuleModel> fowardtrackingRulesSet;
 	private Set<GroupModel> fowardtrackingGroupsSet;
 
@@ -40,7 +42,7 @@ public class RelationshipModel extends ObjectModel{
 		
 		this.entityList=backtrackingEntity;
 		if(backtrackingEntity==null){
-			this.setBacktrackingEntity(new ArrayList<EntityModel>());
+			this.setEntityList(new ArrayList<EntityModel>());
 		}
 		this.goalList=backtrackingGoal;
 		if(backtrackingGoal==null){
@@ -58,6 +60,9 @@ public class RelationshipModel extends ObjectModel{
 		if(fowardtrackingGroups==null){
 			this.setFowardtrackingGroups(new HashSet<GroupModel>());
 		}
+		
+		super.setType("Relationship"); 
+		
 	}
 
 
@@ -120,14 +125,23 @@ public class RelationshipModel extends ObjectModel{
 	/**
 	 * @return the backtrackingEntity
 	 */
-	public List<EntityModel> getBacktrackingEntityList() {
+	public List<EntityModel> getEntityList() {
 		return entityList;
+	}
+	
+	public void cleanEntityList(){
+		
+		for(EntityModel entity: entityList){
+			entity.getFowardTrackingRelationship().remove(this); 
+		}
+		
+		entityList.removeAll(entityList); 
 	}
 
 	/**
 	 * @param backtrackingEntity the backtrackingEntity to set
 	 */
-	public void setBacktrackingEntity(List<EntityModel> backtrackingEntity) {
+	public void setEntityList(List<EntityModel> backtrackingEntity) {
 		this.entityList = backtrackingEntity;
 	}
 
@@ -137,8 +151,8 @@ public class RelationshipModel extends ObjectModel{
 	 *           relationship()
 	 *           relationship(EntityA, EntityB, EntityC)
 	 *           
-	 * Is the name of the relationchip more the names of the entities between 
-	 * brackets and separated by virgles. 
+	 * Is the name of the relationship more the names of the entities between 
+	 * brackets and separated by commas. 
 	 */
 	public String toString(){
 		String relationshipName = getName(); 
@@ -146,10 +160,10 @@ public class RelationshipModel extends ObjectModel{
 		relationshipName+= "("; 
 		
 		if(relationshipName != ""){
-			if (getBacktrackingEntityList().size() != 0){
+			if (getEntityList().size() != 0){
 				
-				for (int i = 0; i < getBacktrackingEntityList().size(); i++){
-					relationshipName+= getBacktrackingEntityList().get(i);
+				for (int i = 0; i < getEntityList().size(); i++){
+					relationshipName+= getEntityList().get(i);
 					relationshipName+=" , "; 
 				}
 				relationshipName = relationshipName.subSequence(0, relationshipName.length()-3).toString(); 

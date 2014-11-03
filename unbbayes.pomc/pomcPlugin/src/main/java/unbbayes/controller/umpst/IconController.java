@@ -117,7 +117,7 @@ public class IconController extends unbbayes.controller.IconController {
 		}
 	}	
 	
-	public ImageIcon getEditIcon() {
+	public ImageIcon getEditUMPIcon() {
 		if (editIcon != null) {
 			return editIcon;
 		} else {

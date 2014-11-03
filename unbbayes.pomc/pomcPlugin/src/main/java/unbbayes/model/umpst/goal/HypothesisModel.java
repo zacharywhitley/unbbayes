@@ -8,6 +8,7 @@ import java.util.Set;
 import unbbayes.model.umpst.ObjectModel;
 import unbbayes.model.umpst.entity.EntityModel;
 import unbbayes.model.umpst.group.GroupModel;
+import unbbayes.model.umpst.rule.RuleModel;
 
 public class HypothesisModel extends ObjectModel{
 	
@@ -16,8 +17,10 @@ public class HypothesisModel extends ObjectModel{
 	private HypothesisModel father;
 	private Set<GoalModel> goalRelated;
 	private Map<String,HypothesisModel> mapSubHypothesis;
+	
 	private Set<EntityModel> fowardTrackingEntity;
 	private Set<GroupModel> fowardTrackingGroups;
+	private Set<RuleModel> fowardTrackingRules;
 
 	
 	public HypothesisModel(String id,
@@ -27,9 +30,7 @@ public class HypothesisModel extends ObjectModel{
 			String date,
 			Set<GoalModel> goalRelated, 
 			HypothesisModel father,
-			Map<String,HypothesisModel> subHypothesis,
-			Set<EntityModel> fowardTrackingEntity,
-			 Set<GroupModel> fowardTrackingGroups) {
+			Map<String,HypothesisModel> subHypothesis) {
 		
 		super(id, hypothesisName, comments, author, date); 
 		
@@ -43,14 +44,14 @@ public class HypothesisModel extends ObjectModel{
 		if(goalRelated==null){
 			this.setGoalRelated(new HashSet<GoalModel>());
 		}
-		this.fowardTrackingEntity=fowardTrackingEntity;
-		if (fowardTrackingEntity==null){
-			this.setFowardTrackingEntity(new HashSet<EntityModel>());
-		}
-		this.fowardTrackingGroups = fowardTrackingGroups;
-		if (fowardTrackingGroups==null){
-			this.setFowardTrackingGroups(new HashSet<GroupModel>());
-		}
+		
+		this.setFowardTrackingEntity(new HashSet<EntityModel>());
+		
+		this.setFowardTrackingGroups(new HashSet<GroupModel>());
+		
+		this.setFowardTrackingRules(new HashSet<RuleModel>()); 
+		
+		super.setType("Hypothesis");
 	}
 	
 	/**
@@ -134,6 +135,13 @@ public class HypothesisModel extends ObjectModel{
 		return father;
 	}
 
+	public Set<RuleModel> getFowardTrackingRules() {
+		return fowardTrackingRules;
+	}
+
+	public void setFowardTrackingRules(Set<RuleModel> fowardTrackingRules) {
+		this.fowardTrackingRules = fowardTrackingRules;
+	}
 
 	/**
 	 * @param father the father to set

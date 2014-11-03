@@ -40,6 +40,9 @@ public class EntityModel extends ObjectModel{
 		fowardTrackingRules = new HashSet<RuleModel>();
 		fowardTrackingGroups = new HashSet<GroupModel>();
 		fowardTrackingRelationship = new HashSet<RelationshipModel>();
+		
+		super.setType("Entity"); 
+		
 	}
 
 

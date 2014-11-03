@@ -6,7 +6,7 @@
 	<name>Uncertainty Modeling Process for Semantic Technologies</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>

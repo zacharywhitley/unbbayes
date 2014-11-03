@@ -7,6 +7,8 @@ import unbbayes.model.umpst.ObjectModel;
 import unbbayes.model.umpst.entity.AttributeModel;
 import unbbayes.model.umpst.entity.EntityModel;
 import unbbayes.model.umpst.entity.RelationshipModel;
+import unbbayes.model.umpst.goal.GoalModel;
+import unbbayes.model.umpst.goal.HypothesisModel;
 import unbbayes.model.umpst.group.GroupModel;
 
 
@@ -23,6 +25,9 @@ public class RuleModel extends ObjectModel{
 	private List<RuleModel>          fatherRuleList; 
 	private List<RuleModel>          childrenRuleList; 
 	private List<GroupModel>         groupList;
+
+	private List<GoalModel> backtrackingGoalsList;
+	private List<HypothesisModel> backtrackingHypothesisList;
 	
 	public RuleModel(String id,
 			String rulesName,
@@ -41,6 +46,11 @@ public class RuleModel extends ObjectModel{
 		groupList        = new ArrayList<GroupModel>(); 
 		fatherRuleList   = new ArrayList<RuleModel>(); 
 		childrenRuleList = new ArrayList<RuleModel>(); 
+		
+		backtrackingGoalsList = new ArrayList<GoalModel>();
+		backtrackingHypothesisList = new ArrayList<HypothesisModel>();
+		
+		super.setType("Rule");
 	}
 
 	public List<EntityModel> getEntityList() {
@@ -107,6 +117,24 @@ public class RuleModel extends ObjectModel{
     public void removeGroup(GroupModel group){
     	this.groupList.remove(group); 
     }
+    
+	
+	public List<GoalModel> getBacktrackingGoalList() {
+		return backtrackingGoalsList;
+	}
+
+	public void setBacktrackingGoalsList(List<GoalModel> backtrackingGoalList) {
+		this.backtrackingGoalsList = backtrackingGoalsList;
+	}
+
+	public List<HypothesisModel> getBacktrackingHypothesis() {
+		return backtrackingHypothesisList;
+	}
+
+	public void setBacktrackingHypothesis(
+			List<HypothesisModel> backtrackingHypothesisList) {
+		this.backtrackingHypothesisList = backtrackingHypothesisList;
+	}
 
 	/**
 	 * @return the ruleType

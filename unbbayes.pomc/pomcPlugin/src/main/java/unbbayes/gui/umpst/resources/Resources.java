@@ -100,6 +100,9 @@ public class Resources extends GuiResources {
 		{"hpAddBackEntity" , "Add backtracking entity"},
 		{"hpAddBackAttribute" , "Add backtracking attribute"},
 		{"hpAddBackRelationship" , "Add backtracking relationship"},
+		{"hpAddBackRule" , "Add backtracking rule"},
+		{"hpAddBackGoal" , "Add backtracking goal"},
+		{"hpAddBackHypothesis" , "Add backtracking hypothesis"},
 		
 		{"HpSelectSubHipothesis" , "Select one sub hipothesis"},
 		{"HpSelectHipothesis" , "Select one hipothesis"},
@@ -119,10 +122,15 @@ public class Resources extends GuiResources {
 		
 		{"hpCleanSearch" , "Clean previous search results"},
 		
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
+		
+		//##############       Question Messages         ###################//
+		
+		{"qtDeleteSubgoal" , "Do you want to delete this subgoal?"},
+		{"qtDeleteGoal" , "Do you want to delete this goal?"},
+		
+		{"qtUpdateRelationship" , "Do you want to update this relationship?"},
+		{"qtUpdateRule" , "Do you want to update this rule?"},
+		{"qtUpdateEntity" , "Do you want to update this entity?"},
 		
 		
 		//##############       Error Messages        ###################//
@@ -130,6 +138,9 @@ public class Resources extends GuiResources {
 		{"ErGoalDescriptionEmpty" , "Goal description empty!"},
 		{"erEntityDescriptionEmpty" , "Entity description empty!"},
 		{"erHypothesisDescriptionEmpty" , "Hypothesis description empty!"},
+		{"erRelationshipDescriptionEmpty" , "Relationship name empty!"},
+		{"erRuleDescriptionEmpty" , "Rule description empty!"},
+		
 		{"erIncompatibleVersion" , "File loaded is incompatible whith this version of plugin!"},
 		{"erLoadFatal" , "Fatal error in load project."},
 		{"erNotUmpFormat" , "This file format is not supported."},
@@ -138,17 +149,25 @@ public class Resources extends GuiResources {
 		
 		{"erSaveGoal" , "Error while trying to save goal."},
 		
+		{"erCreatingRelationship" , "Error while creating relationship."},
+		{"erUlpdatingRelationship" , "Error while updating relationship."},
+		{"erCreatingRule" , "Error while creating rule."},
+		{"erUpdatingRule" , "Error while updating rule."},
+		{"erCreatingEntity" , "Error while creating entity."},
+		{"erUpdatingEntity" , "Error while updating entity."},
+		
 		{"erSearchEmpty" , "Search is empty!"},
 		
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
+		//##############       Succesfull Messages        ###################//
 		
 		{"msSaveSuccessfull" , "File save successfull."},
 		{"msLoadSuccessfull" , "File load successfull."},
+		{"msRelationshipSuccessfullAdded" , "Relationship successfully added."},
+		{"msRelationshipSuccessfullUpdated" , "Relationship successfully updated."},
+		{"msRuleSuccessfullAdded" , "Rule successfully added."},
+		{"msRuleSuccessfullUpdated" , "Rule successfully updated."},
+		{"msEntitySuccessfullAdded" , "Entity successfully added."},
+		{"msEntitySuccessfullUpdated" , "Entity successfully updated."},
 		
 		//##############       Title Dialog Messages   ###################//
 				
@@ -171,19 +190,31 @@ public class Resources extends GuiResources {
 		{"ttGroup" , "Group"},
 		
 		{"ttType" , "Type: "},
+		{"ttDescription" , "Description: "},
+		
+		{"ttColType" , "Type"},
+		{"ttColDescription" , "Description"},
 		
 		{"ttRuleDetails" , "Rule Details"},
 		{"ttGroupDetails" , "Group Details"},
 		
 		{"tpDeterministic" , "Deterministic"},
 		{"tpNoDeterministic" , "Not Deterministic"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
+		
+		{"ttPanelSucessfull" , "UnBBayes"},
+		{"ttPanelError" , "UnBBayes"},
+		{"ttPanelQuestion" , "UnBBayes"},
+		
+		{"ttTableRelationship" , "Table of Relationship"},
+		
+		{"ttListHypothesis" , "List of Hypothesis"},
+		{"ttListSubgoals" , "List of Subgoals"},
+		{"ttListAttibutes" , "List of Attributes"},
+		{"ttListBacktracking" , "List of Backtrackings"},
+		
+		{"ttGoalTraceability" , "Goal Traceability"},
+		{"ttRuleTraceability" , "Rule Traceability"},
+		{"ttEntityTraceability" , "Entity Traceability"},
 		
 		//##############       Button Messages   ###################//
 		
@@ -195,14 +226,6 @@ public class Resources extends GuiResources {
 		{"btnRemove" , "Remove"},
 		{"btnSave" , "Save"},
 		{"btnSelect" , "Select"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
 		
 		
 		//##############       Menu Messages   ###################//
@@ -223,44 +246,8 @@ public class Resources extends GuiResources {
 		{"mnHelpContentsMnemonic" , "H"},
 		{"mnAbout" , "About"},
 		{"mnAboutMnemonic" , "A"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
 		
-		//##############       Question Messages         ###################//
-		
-		{"qtDeleteSubgoal" , "Do you realy want to delete this subgoal?"},
-		{"qtDeleteGoal" , "Do you realy want to delete this goal?"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-//		{"HpReturnPreviousPanel" , "Return to previous goal"},
-		
+
 	};
 	
 }

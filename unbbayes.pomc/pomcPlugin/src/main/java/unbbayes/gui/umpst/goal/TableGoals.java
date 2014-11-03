@@ -103,7 +103,7 @@ public class TableGoals extends TableObject{
 
 		TableButton buttonEdit = new TableButton( new TableButton.TableButtonCustomizer(){
 			public void customize(JButton button, int row, int column){
-				button.setIcon(iconController.getEditIcon());
+				button.setIcon(iconController.getEditUMPIcon());
 			}
 		});
 

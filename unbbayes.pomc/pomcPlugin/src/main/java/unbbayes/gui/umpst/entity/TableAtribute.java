@@ -178,7 +178,7 @@ public class TableAtribute extends TableObject{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(iconController.getEditIcon());
+				button.setIcon(iconController.getEditUMPIcon());
 
 			}
 		});

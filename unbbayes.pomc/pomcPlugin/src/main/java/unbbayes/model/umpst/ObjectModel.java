@@ -11,6 +11,8 @@ public class ObjectModel implements Serializable {
 	private String comments;
 	private String author;
 	private String date;
+
+	private String type; 
 	
 	public ObjectModel(String id,String name,
 			String comments,
@@ -99,5 +101,13 @@ public class ObjectModel implements Serializable {
 		return this.name; 
 	}
 
+	public String getType() {
+		return type;
+	}
+
+
+	protected void setType(String type) {
+		this.type = type;
+	}
 	
 }

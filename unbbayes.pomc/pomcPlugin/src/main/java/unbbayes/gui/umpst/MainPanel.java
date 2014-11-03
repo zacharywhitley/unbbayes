@@ -290,7 +290,6 @@ public class MainPanel extends IUMPSTPanel{
 					controller.showErrorMessageDialog(resource.getString("erSaveFatal")); 
 				}
 			}
-			
 		});
 		
 		helpContentsItem.addActionListener(new ActionListener() {

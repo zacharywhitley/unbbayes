@@ -66,6 +66,8 @@ public class AttributeModel extends ObjectModel {
 		if(fowardTrackingGroups==null){
 			this.setFowardTrackingGroups(new HashSet<GroupModel>());
 		}	
+		
+		super.setType("Attribute"); 
 	}
 
 
@@ -92,17 +94,12 @@ public class AttributeModel extends ObjectModel {
 		return fowardTrackingGroups;
 	}
 
-
-
-
 	/**
 	 * @param fowardTrackingGroups the fowardTrackingGroups to set
 	 */
 	public void setFowardTrackingGroups(Set<GroupModel> fowardTrackingGroups) {
 		this.fowardTrackingGroups = fowardTrackingGroups;
 	}
-
-
 
 
 	/**
@@ -112,11 +109,6 @@ public class AttributeModel extends ObjectModel {
 		return fowardTrackingRelationship;
 	}
 
-
-
-
-
-
 	/**
 	 * @param fowardTrackingRelationship the fowardTrackingRelationship to set
 	 */
@@ -124,11 +116,6 @@ public class AttributeModel extends ObjectModel {
 			Set<RelationshipModel> fowardTrackingRelationship) {
 		this.fowardTrackingRelationship = fowardTrackingRelationship;
 	}
-
-
-
-
-
 
 	/**
 	 * @return the entityRelated
@@ -145,7 +132,6 @@ public class AttributeModel extends ObjectModel {
 		this.entityRelated = entityRelated;
 	}
 
-
 	/**
 	 * @return the mapSubAtributes
 	 */
@@ -153,14 +139,13 @@ public class AttributeModel extends ObjectModel {
 		return mapSubAtributes;
 	}
 
-
 	/**
 	 * @param mapSubAtributes the mapSubAtributes to set
 	 */
 	public void setMapSubAtributes(Map<String, AttributeModel> mapSubAtributes) {
 		this.mapSubAtributes = mapSubAtributes;
 	}
-
+	
 
 	/**
 	 * @return the father
@@ -168,7 +153,6 @@ public class AttributeModel extends ObjectModel {
 	public AttributeModel getFather() {
 		return father;
 	}
-
 
 	/**
 	 * @param father the father to set

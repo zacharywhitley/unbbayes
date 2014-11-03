@@ -189,7 +189,6 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 						}
 						else{
 							HypothesisModel hypothesisAdd = updateMapHypothesis();
-//							updateTable(hypothesisAdd);
 
 							changePanel(new HypothesisEditionPanel(
 									getFatherPanel(),
@@ -201,14 +200,9 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 
 					} catch (Exception e1) {
 						JOptionPane.showMessageDialog(null, "Error while creating hypothesis", "UnBBayes", JOptionPane.WARNING_MESSAGE);
-//						UmpstModule pai = getFatherPanel();
-//						changePanel(pai.getMenuPanel());	
-
 					}
 				}
 				else{
-//					if( JOptionPane.showConfirmDialog(null, "Do you want to update this hypothesis?", "UnBBayes", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION ){
-
 						try{
 							hypothesis.setName(mainPropertiesEditionPane.getTitleText());
 							hypothesis.setComments(mainPropertiesEditionPane.getCommentsText());
@@ -222,8 +216,6 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 							getUmpstProject().getMapHypothesis().get(hypothesis.getId()).setDate(hypothesis.getDate());
 
 							updateTable(hypothesis);
-//							JOptionPane.showMessageDialog(null, "hypothesis successfully updated", "UnBBayes", JOptionPane.INFORMATION_MESSAGE);
-
 						}
 						catch (Exception e2) {
 							JOptionPane.showMessageDialog(null,"Error while ulpating hypothesis", "UnBBayes", JOptionPane.WARNING_MESSAGE);
@@ -362,9 +354,7 @@ public class HypothesisEditionPanel extends IUMPSTPanel {
 				mainPropertiesEditionPane.getDateText(),
 				setGoalRelated, 
 				hypothesisFather,
-				hypothesisChildren,
-				null,
-				null);
+				hypothesisChildren);
 
 		if (hypothesisAdd.getFather()!=null){
 			HypothesisModel aux = hypothesisAdd.getFather();

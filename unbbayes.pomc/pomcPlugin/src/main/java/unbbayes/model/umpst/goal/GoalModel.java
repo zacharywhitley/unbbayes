@@ -8,6 +8,7 @@ import java.util.Set;
 import unbbayes.model.umpst.ObjectModel;
 import unbbayes.model.umpst.entity.EntityModel;
 import unbbayes.model.umpst.group.GroupModel;
+import unbbayes.model.umpst.rule.RuleModel;
 
 public class GoalModel extends ObjectModel{
 	
@@ -17,10 +18,11 @@ public class GoalModel extends ObjectModel{
 	
 	private Map<String, GoalModel>      subgoals ;
 	
-	private Map<String,HypothesisModel> mapHypothesis;
+	private Map<String, HypothesisModel> mapHypothesis;
 	
 	private Set<EntityModel>            fowardTrackingEntity;
 	private Set<GroupModel>             fowardTrackingGroups;
+	private Set<RuleModel>              fowardTrackingRules; 
 	
 	private Set<GoalModel>              goalsRelated;
 	
@@ -29,45 +31,25 @@ public class GoalModel extends ObjectModel{
 			String comments,
 			String author, 
 			String date, 
-			GoalModel father,
-			Map<String,GoalModel> children,
-			Map<String,HypothesisModel> hypothesis,
-			Set<EntityModel> fowardTrackingEntity,
-			Set<GroupModel> fowardTrackingGroups,
-			Set<GoalModel> goalsRelated) {
+			GoalModel father) {
 		
 		super(id, goalName, comments, author, date);
 		
 		this.goalFather = father;
-		this.subgoals = children;
+				
+		this.setSubgoals(new HashMap<String, GoalModel>());
 		
-		if (children==null){
-			this.setSubgoals(new HashMap<String, GoalModel>());
-		}
+		this.setMapHypothesis(new HashMap<String, HypothesisModel>());
 		
-		this.mapHypothesis=hypothesis;
+		this.setFowardTrackingEntity(new HashSet<EntityModel>());
 		
-		if ( hypothesis==null ){
-			this.setMapHypothesis(new HashMap<String, HypothesisModel>());
-		}
+		this.setFowardTrackingGroups(new HashSet<GroupModel>());
 		
-		this.fowardTrackingEntity = fowardTrackingEntity;
+		this.fowardTrackingRules = new HashSet<RuleModel>(); 
 		
-		if (fowardTrackingEntity==null){
-			this.setFowardTrackingEntity(new HashSet<EntityModel>());
-		}
+		this.setGoalsRelated(new HashSet<GoalModel>());
 		
-		this.fowardTrackingGroups = fowardTrackingGroups;
-		
-		if (fowardTrackingGroups==null){
-			this.setFowardTrackingGroups(new HashSet<GroupModel>());
-		}
-		
-		this.goalsRelated=goalsRelated;
-		
-		if (goalsRelated==null){
-			this.setGoalsRelated(new HashSet<GoalModel>());
-		}
+		super.setType("Goal"); 
 		
 	}
 
@@ -118,6 +100,21 @@ public class GoalModel extends ObjectModel{
 	}
 
 
+	/**
+	 * @return the fowardTrackingEntity
+	 */
+	public Set<RuleModel> getFowardTrackingRules() {
+		return fowardTrackingRules;
+	}
+
+
+	/**
+	 * @param fowardTrackingEntity the fowardTrackingEntity to set
+	 */
+	public void setFowardTrackingRule(Set<RuleModel> fowardTrackingRule) {
+		this.fowardTrackingRules = fowardTrackingRule;
+	}
+	
 	/**
 	 * @return the goalFather
 	 */

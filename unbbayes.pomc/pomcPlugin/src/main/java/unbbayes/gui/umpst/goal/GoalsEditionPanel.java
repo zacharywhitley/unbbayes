@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -31,6 +33,7 @@ import javax.swing.text.MaskFormatter;
 
 import unbbayes.controller.umpst.Controller;
 import unbbayes.controller.umpst.IconController;
+import unbbayes.gui.umpst.FastHelpJFrame;
 import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.gui.umpst.UmpstModule;
@@ -68,8 +71,6 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 
 	private GoalModel goal;
 	private GoalModel goalFather;
-
-	private MaskFormatter maskFormatter;
 
 	private SubGoalSelectionPane subgoalSelectionPane; 
 
@@ -278,6 +279,15 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 				changePanel(new HypothesisEditionPanel(getFatherPanel(),getUmpstProject(),goal,null,null));
 			}
 		});
+		
+		buttonHypothesis.addMouseListener(new MouseAdapter(){
+		    public void mouseClicked(MouseEvent e) {
+		        if (e.getButton() == 3) { 
+		        	FastHelpJFrame fastHelp = new FastHelpJFrame("AddHypothesis", buttonHypothesis); 
+		        	fastHelp.showHelp();	
+		        }
+		    }
+		}); 
 
 		buttonSubgoal.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -343,11 +353,9 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 		else{
 			if (goalFather.getSubgoals()!=null){
 				idAux = goalFather.getId()+"."+ (goalFather.getSubgoals().size()+1);
-
 			}
 			else{
 				idAux = goalFather.getId()+".1";
-
 			}
 		}
 
@@ -356,12 +364,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 				mainPropertiesEditionPane.getCommentsText(), 
 				mainPropertiesEditionPane.getAuthorText(), 
 				mainPropertiesEditionPane.getDateText(),
-				goalFather,
-				null,
-				null,
-				null,
-				null,
-				null);
+				goalFather);
 
 		if (goalFather!=null){
 
@@ -420,7 +423,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
-		panel.setBorder(BorderFactory.createTitledBorder("List of Hypothesis"));
+		panel.setBorder(BorderFactory.createTitledBorder(resource.getString("ttListHypothesis")));
 
 		if(goal!=null){
 
@@ -485,7 +488,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 
 		JPanel panel = new JPanel();
 		panel.setLayout(new BorderLayout());
-		panel.setBorder(BorderFactory.createTitledBorder("List of Subgoals"));
+		panel.setBorder(BorderFactory.createTitledBorder(resource.getString("ttListSubgoals")));
 
 		if (goal!=null){
 
@@ -519,13 +522,16 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 		//--------- Traceability table --------------
 		//Entities (F) 
 		//   Rules
-		//   Atributes
+		//   Attributes
 		//   Relationship
 		//   Groups
-		//Subgoals
-		//Hypothesis
-		//Groups
+		//Subgoals    (-)
+		//Hypothesis  (-)
+		//Groups      
 
+		
+		//Only calculate the size of the array for insert the elements... 
+		
 		if ( (goal != null ) && (goal.getFowardTrackingEntity() !=null) ){
 
 			EntityModel entity;
@@ -607,17 +613,15 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 		final Object[][] data;
 
 		if (i < 30){
-			data = new Object[30][3];
+			data = new Object[30][2];
 		}else{
-			data = new Object[i+1][3];
+			data = new Object[i+1][2];
 		}
-
-		String[] columnNames = {
-				" ",
-				" ",
-		"Name"};
-
-		//Agora sim... vai comecar a inserir os elementos... 
+		
+		String[] columnNames = {resource.getString("ttColType"), 
+	            resource.getString("ttColDescription")};
+		
+		//Insert the elements
 		i=0;
 
 		if ( (goal!=null)&&(goal.getFowardTrackingEntity() !=null) ){
@@ -628,8 +632,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 				entity = it.next();
 
 				data[i][0] = "Entity";
-				data[i][1] = "Direct";
-				data[i][2] = entity;
+				data[i][1] = entity;
 
 				i++;
 				if (entity.getFowardTrackingRules()!=null){
@@ -639,8 +642,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 						rule = itRules.next();
 
 						data[i][0] = "Rule";
-						data[i][1] = "Indirect";
-						data[i][2] = rule;
+						data[i][1] = rule;
 						i++;
 					}
 				}
@@ -652,8 +654,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 					for(String keyAtribute : sortedKeysAtribute){
 
 						data[i][0] = "Atribute";
-						data[i][1] = "Indirect";
-						data[i][2] = entity.getMapAtributes().get(keyAtribute);
+						data[i][1] = entity.getMapAtributes().get(keyAtribute);
 						i++;
 					}
 				}
@@ -665,8 +666,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 						relationship = itRelationship.next();
 
 						data[i][0] = "Relationship";
-						data[i][1] = "Indirect";
-						data[i][2] = relationship;
+						data[i][1] = relationship;
 						i++;
 					}
 				}
@@ -677,8 +677,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 						group = itGroups.next();
 
 						data[i][0] = "Group";
-						data[i][1] = "Indirect";
-						data[i][2] = group;
+						data[i][1] = group;
 						i++;
 					}
 				}
@@ -693,8 +692,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 			for (String key: sortedKeys){
 
 				data[i][0] = "Goals";
-				data[i][1] = "Direct";
-				data[i][2] = goal.getSubgoals().get(key);
+				data[i][1] = goal.getSubgoals().get(key);
 				i++;
 			}
 		}
@@ -705,8 +703,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 			for (String key: sortedKeys){
 
 				data[i][0] = "Hypothesis";
-				data[i][1] = "Direct";
-				data[i][2] = goal.getMapHypothesis().get(key);
+				data[i][1] = goal.getMapHypothesis().get(key);
 				i++;
 			}    	
 		}
@@ -719,8 +716,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 				group = it.next();
 
 				data[i][0] = "Group";
-				data[i][1] = "Direct";
-				data[i][2] = group;
+				data[i][1] = group;
 
 				i++;
 			}
@@ -732,15 +728,14 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 		table.setEnabled(false); 
 
 		table.getColumnModel().getColumn(0).setMaxWidth(100); 
-		table.getColumnModel().getColumn(1).setMaxWidth(50); 
-		table.getColumnModel().getColumn(2).setMinWidth(1000); 
+		table.getColumnModel().getColumn(1).setMinWidth(1000); 
 
 		table.setBackground(Color.WHITE); 
 		JScrollPane scrollPane = new JScrollPane(table);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); 
 		scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 
-		scrollPane.setBorder(BorderFactory.createTitledBorder("Goal Traceability"));
+		scrollPane.setBorder(BorderFactory.createTitledBorder(resource.getString("ttGoalTraceability")));
 
 		return scrollPane; 
 
@@ -772,7 +767,6 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 						if ( goal.getMapHypothesis().get(goalAux.getMapHypothesis().get(keyHypo).getId())==null )
 							i++;
 					}
-
 				}
 			}
 		}   
@@ -792,7 +786,6 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 							listHypothesis.add(goalAux.getMapHypothesis().get(keyHypo));
 						}
 					}
-
 				}
 			}
 		} 
@@ -843,12 +836,9 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 			HypothesisModel hypothesis;
 			for (String key: sortedKeys){
 				hypothesis = hypothesisVinculated.getMapSubHypothesis().get(key);
-
 				getUmpstProject().getMapHypothesis().get(hypothesis.getId()).getGoalRelated().add(goal);
 				goal.getMapHypothesis().put(hypothesis.getId(),hypothesis);
-
 			}
-
 		}
 		//PRECISO ATUALIZAR O GOAL RELATED DA HIPOTESE QUE ESTA NO MAPA GERAL
 

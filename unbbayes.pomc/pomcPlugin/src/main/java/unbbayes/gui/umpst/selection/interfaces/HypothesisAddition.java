@@ -8,5 +8,4 @@ public interface HypothesisAddition {
 
 	public void addHypothesisList(List<HypothesisModel> list); 
 	
-	
 }

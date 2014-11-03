@@ -5,23 +5,31 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.help.HelpSet;
+import javax.help.HelpSetException;
+import javax.help.JHelp;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
 
 import unbbayes.controller.umpst.IconController;
+import unbbayes.gui.umpst.FastHelpJFrame;
 import unbbayes.gui.umpst.IUMPSTPanel;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.goal.GoalModel;
@@ -118,12 +126,23 @@ public class GoalsSearchPanel extends IUMPSTPanel {
 			buttonAddGoal = new JButton (IconController.getInstance().getAddIconP());
 			buttonAddGoal.setToolTipText(resource.getString("hpAddGoal"));
 			buttonAddGoal.setForeground(Color.blue);
+			
 			buttonAddGoal.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
 					changePanel(getGoalsAdd(null));
 				}
 			});
+			
+			buttonAddGoal.addMouseListener(new MouseAdapter(){
+			    public void mouseClicked(MouseEvent e) {
+			        if (e.getButton() == 3) { 
+			        	FastHelpJFrame fastHelp = new FastHelpJFrame("AddGoal", buttonAddGoal); 
+			        	fastHelp.showHelp();	
+			        }
+			    }
+			}); 
+
 		}
 
 		return buttonAddGoal;

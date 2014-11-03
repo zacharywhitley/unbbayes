@@ -111,7 +111,7 @@ public class TableSubhypothesis extends IUMPSTPanel{
 		{
 			public void customize(JButton button, int row, int column)
 			{
-				button.setIcon(iconController.getEditIcon() );
+				button.setIcon(iconController.getEditUMPIcon() );
 
 			}
 		});

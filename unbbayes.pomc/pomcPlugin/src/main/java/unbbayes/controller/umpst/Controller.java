@@ -145,6 +145,22 @@ public class Controller {
 		
 	}
 	
+	public void addGoalToRuleBackTrackingList(RuleModel rule, 
+			GoalModel goal){
+		
+		rule.getBacktrackingGoalList().add(goal); 
+		goal.getFowardTrackingRules().add(rule); 
+		
+	}
+	
+	public void removeGoalFromRuleBackTrackingList(RuleModel rule, 
+			GoalModel goal){
+		
+		rule.getBacktrackingGoalList().remove(goal); 
+		goal.getFowardTrackingRules().remove(rule); 
+		
+	}
+	
 	public void addHypothesisToEntityBackTrackingList(EntityModel entity, 
 			HypothesisModel hypothesis){
 		
@@ -158,6 +174,22 @@ public class Controller {
 		
 		entity.getBacktrackingHypothesis().remove(hypothesis); 
 		hypothesis.getFowardTrackingEntity().remove(entity); 
+		
+	}
+	
+	public void addHypothesisToRuleBackTrackingList(RuleModel rule, 
+			HypothesisModel hypothesis){
+		
+		rule.getBacktrackingHypothesis().add(hypothesis); 
+		hypothesis.getFowardTrackingRules().add(rule); 
+		
+	}
+	
+	public void removeHypothesisFromRuleBackTrackingList(RuleModel rule, 
+			HypothesisModel hypothesis){
+		
+		rule.getBacktrackingHypothesis().remove(hypothesis); 
+		hypothesis.getFowardTrackingEntity().remove(rule); 
 		
 	}
 	
