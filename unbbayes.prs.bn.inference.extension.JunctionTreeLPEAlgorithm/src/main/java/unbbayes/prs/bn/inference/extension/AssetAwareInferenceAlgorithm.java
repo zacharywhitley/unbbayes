@@ -1595,6 +1595,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 		
 		// clone JT algorithm using the cloned BN
 		JunctionTreeAlgorithm jtAlgorithm = new JunctionTreeAlgorithm(newNet);
+		jtAlgorithm.setDynamicJunctionTreeNetSizeThreshold(getDynamicJunctionTreeNetSizeThreshold());	// use the same configuration for dynamic JT compilation
 		if (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
 			// reuse same likelihood extractor
 			JunctionTreeAlgorithm origJTAlgorithm = (JunctionTreeAlgorithm) getProbabilityPropagationDelegator();
