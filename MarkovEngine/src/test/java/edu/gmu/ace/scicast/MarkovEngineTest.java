@@ -45,7 +45,6 @@ import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
-import edu.gmu.ace.scicast.MarkovEngineComplexityFactorProfiler.ComplexityFactorRunnable;
 import edu.gmu.ace.scicast.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.BalanceTradeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.DummyTradeAction;
