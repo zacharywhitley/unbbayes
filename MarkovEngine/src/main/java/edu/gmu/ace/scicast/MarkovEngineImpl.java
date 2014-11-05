@@ -7208,9 +7208,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			
 			// find zeros in junction tree and substitute with a small number
 			IJunctionTree junctionTree = net.getJunctionTree();
+			if (junctionTree == null) {
+				return;
+			}
 			
 			// use the smaller of error margins used in this class by other methods as the value to substitute
-			float valueToSubstitute = Math.min(Math.abs(getProbabilityErrorMargin()), Math.abs(getProbabilityErrorMarginBalanceTrade()));
+//			float valueToSubstitute = Math.min(Math.abs(getProbabilityErrorMargin()/1000f), Math.abs(getProbabilityErrorMarginBalanceTrade()/1000f));
+			float valueToSubstitute = Float.MIN_NORMAL;
 			
 			// iterate on cliques
 			for (Clique clique : junctionTree.getCliques()) {
@@ -13353,6 +13357,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			if (isToAddVirtualArcsOnAddTrade()) {
 				throw new UnsupportedOperationException("Virtual arcs are not implmented yet.");
 			}
+			
+			// for the purpose of this method, we don't need to represent impossible states, so set them to a very low probability instead
+//			moveUpZeroProbability();
+			
 			// make sure the cpts of all nodes are consistent with the current status of junction trees.
 			getDefaultInferenceAlgorithm().updateCPTFromJT();
 			
