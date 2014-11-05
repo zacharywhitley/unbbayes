@@ -54,7 +54,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
      */
     private int index;
     
-    private int internalIdentificator = Integer.MIN_VALUE;
+//    private int internalIdentificator = Integer.MIN_VALUE;
 
     /**
      *  Referencia para o clique pai.
@@ -447,7 +447,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 	 * @see unbbayes.prs.bn.IRandomVariable#getInternalIdentificator()
 	 */
 	public int getInternalIdentificator() {
-		return this.internalIdentificator;
+		return this.index;
 	}
 
 	/*
@@ -455,7 +455,7 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 	 * @see unbbayes.prs.bn.IRandomVariable#setInternalIdentificator(int)
 	 */
 	public void setInternalIdentificator(int internalIdentificator) {
-		this.internalIdentificator = internalIdentificator;
+		this.index = internalIdentificator;
 	}
 
 	/**
