@@ -421,6 +421,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 * of the nodes in {@link #getNet()}. 
 	 * By default, the internal id will be the index of the node within the network.
 	 * @see IInferenceAlgorithmListener#onBeforeRun(IInferenceAlgorithm)
+	 * @see #updateCliqueAndSeparatorInternalIdentificators(IJunctionTree)
 	 */
 	public void initInternalIdentificators() {
 		// the network to be considered is the current network
@@ -1009,28 +1010,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 					clusterToOriginalCliqueMap);
 		}
 		
-		
-		// move the new root clique to the 1st entry in the list of cliques in junction tree, because some algorithms assume the 1st element is the root;
-		Clique root = junctionTree.getCliques().get(0);
-		while (root.getParent() != null) { 
-			root = root.getParent(); // go up in hierarchy until we find the root
-		}
-		int indexOfRoot = junctionTree.getCliques().indexOf(root);
-		if (indexOfRoot > 0) {
-			// move root to the beginning (index 0) of the list
-			Collections.swap(junctionTree.getCliques(), 0, indexOfRoot);
-		}
-		
-		// redistribute internal identifications accordingly to indexes
-		for (int i = 0; i < junctionTree.getCliques().size(); i++) {
-			junctionTree.getCliques().get(i).setIndex(i);
-			junctionTree.getCliques().get(i).setInternalIdentificator(i);
-		}
-		// do the same for separators
-		int separatorIndex = -1;
-		for (Separator sep : junctionTree.getSeparators()) {
-			sep.setInternalIdentificator(separatorIndex--);
-		}
+		this.updateCliqueAndSeparatorInternalIdentificators(junctionTree);
 		
 		// make sure the junction tree is still globally consistent
 //		try {
@@ -1062,8 +1042,55 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		
 		// the caller shall make the backup of the network
 	}
-
+    
+    
     /**
+     * This method moves the root clique to 1st index, and then updates {@link IRandomVariable#getInternalIdentificator()}
+     * accordingly to its order of appearance in {@link IJunctionTree#getCliques()} and {@link IJunctionTree#getSeparators()}.
+     * This is necessary because some implementations assumes that {@link IRandomVariable#getInternalIdentificator()} is synchronized with indexes.
+     * This is different from {@link #initInternalIdentificators()}, because this one only updates {@link Clique} and {@link Separator}.
+     * @param junctionTree : where separators and cliques will be accessed
+     * @see JunctionTree#updateCliqueAndSeparatorInternalIdentificators()
+     */
+    public void updateCliqueAndSeparatorInternalIdentificators( IJunctionTree junctionTree) {
+    	if (junctionTree == null) {
+    		return;	// nothing to do
+    	}
+    	
+    	// check if we can simply delegate
+    	if (junctionTree instanceof JunctionTree) {
+    		// just delegate to junction tree
+    		((JunctionTree)junctionTree).updateCliqueAndSeparatorInternalIdentificators();
+    		return;
+    	}
+    	
+    	// do it manually
+    	if (junctionTree.getCliques() != null && !junctionTree.getCliques().isEmpty() ) {
+    		// move the new root clique to the 1st entry in the list of cliques in junction tree, because some algorithms assume the 1st element is the root;
+    		Clique root = junctionTree.getCliques().get(0);
+    		while (root.getParent() != null) { 
+    			root = root.getParent(); // go up in hierarchy until we find the root
+    		}
+    		int indexOfRoot = junctionTree.getCliques().indexOf(root);
+    		if (indexOfRoot > 0) {
+    			// move root to the beginning (index 0) of the list
+    			Collections.swap(junctionTree.getCliques(), 0, indexOfRoot);
+    		}
+    		
+    		// redistribute internal identifications accordingly to indexes
+    		for (int i = 0; i < junctionTree.getCliques().size(); i++) {
+    			junctionTree.getCliques().get(i).setIndex(i);
+    			junctionTree.getCliques().get(i).setInternalIdentificator(i);
+    		}
+    	}
+		// do the same for separators
+		int separatorIndex = -1;
+		for (Separator sep : junctionTree.getSeparators()) {
+			sep.setInternalIdentificator(separatorIndex--);
+		}
+	}
+
+	/**
      * Will connect the original junction tree to the new junction tree compiled from max prime subgraph decomposition.
      * @param originalJunctionTree : junction tree whose new junction trees obtained from max prime subgraphs will be aggregated to.
      * @param primeSubgraphJunctionTree : this is a fragment of junction tree created by compiling nodes in the connected maximum prime subgraph

@@ -376,6 +376,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			for (int k = 0; k < sizeCliques; k++) {
 				auxClique = cliques.get(k);
 				// also, update the internal id, for fast comparison
+				// TODO internal id should be updated in this.updateCliqueAndSeparatorInternalIdentificators() only, but it's here just for fast execution
 				auxClique.setInternalIdentificator(k);
 				this.initBelief(auxClique);
 			}
@@ -383,12 +384,15 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			int separatorId = -1;
 			for (Separator auxSep : getSeparators()) {
 				// also, update the internal id, for fast comparison
+				// TODO internal id should be updated in this.updateCliqueAndSeparatorInternalIdentificators() only, but it's here just for fast execution
 				auxSep.setInternalIdentificator(separatorId--);
 				this.initBelief(auxSep);
 			}
 			
 			this.initConsistency();
 			copyTableData();
+			// TODO uncomment the following after replacing the routine for updating the internal ids
+//			this.updateCliqueAndSeparatorInternalIdentificators();
 			initialized = true;
 		} else {
 			restoreTableData();						
@@ -1009,6 +1013,37 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		// become the new root
 		cliqueToBecomeRoot.setParent(null);
 		
+	}
+
+	/**
+     * This method moves the root clique to 1st index, and then updates {@link IRandomVariable#getInternalIdentificator()}
+     * accordingly to its order of appearance in {@link IJunctionTree#getCliques()} and {@link IJunctionTree#getSeparators()}.
+     * This is necessary because some implementations assumes that {@link IRandomVariable#getInternalIdentificator()} is synchronized with indexes.
+	 */
+	public void updateCliqueAndSeparatorInternalIdentificators() {
+    	if (cliques != null && !cliques.isEmpty()) {
+    		// move the new root clique to the 1st entry in the list of cliques in junction tree, because some algorithms assume the 1st element is the root;
+    		Clique root = cliques.get(0);
+    		while (root.getParent() != null) { 
+    			root = root.getParent(); // go up in hierarchy until we find the root
+    		}
+    		int indexOfRoot = cliques.indexOf(root);
+    		if (indexOfRoot > 0) {
+    			// move root to the beginning (index 0) of the list
+    			Collections.swap(cliques, 0, indexOfRoot);
+    		}
+    		
+    		// redistribute internal identifications accordingly to indexes
+    		for (int i = 0; i < cliques.size(); i++) {
+    			cliques.get(i).setIndex(i);
+    			cliques.get(i).setInternalIdentificator(i);
+    		}
+    	}
+    	// do the same for separators
+    	int separatorIndex = -1;
+    	for (Separator sep : separators) {
+    		sep.setInternalIdentificator(separatorIndex--);
+    	}
 	}
 
 //	/**
