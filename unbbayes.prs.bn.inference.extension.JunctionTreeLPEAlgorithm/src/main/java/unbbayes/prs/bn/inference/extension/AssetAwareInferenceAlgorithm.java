@@ -29,6 +29,7 @@ import unbbayes.prs.bn.IJunctionTree;
 import unbbayes.prs.bn.ILikelihoodExtractor;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
+import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -2089,6 +2090,38 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 			junctionTree.getCliques().remove(emptyClique);
 			
 		}	// end of for each empty clique
+		
+		// rebuild indexes, because some methods assumes that internal identificators and indexes are the same
+		if (junctionTree instanceof JunctionTree) {
+			// use the junction tree algorithm for this purpose
+			((JunctionTree)junctionTree).updateCliqueAndSeparatorInternalIdentificators();
+		} else {
+			// do it manually
+			if (!junctionTree.getCliques().isEmpty()) {
+				// move the new root clique to the 1st entry in the list of cliques in junction tree, because some algorithms assume the 1st element is the root;
+				Clique root = junctionTree.getCliques().get(0);
+				while (root.getParent() != null) { 
+					root = root.getParent(); // go up in hierarchy until we find the root
+				}
+				int indexOfRoot = junctionTree.getCliques().indexOf(root);
+				if (indexOfRoot > 0) {
+					// move root to the beginning (index 0) of the list
+					Collections.swap(junctionTree.getCliques(), 0, indexOfRoot);
+				}
+				
+				// redistribute internal identifications accordingly to indexes
+				for (int i = 0; i < junctionTree.getCliques().size(); i++) {
+					junctionTree.getCliques().get(i).setIndex(i);
+					junctionTree.getCliques().get(i).setInternalIdentificator(i);
+				}
+			}
+			// do the same for separators
+			int separatorIndex = -1;
+			for (Separator sep : junctionTree.getSeparators()) {
+				sep.setInternalIdentificator(separatorIndex--);
+			}
+		
+		}
 		
 	}
 
