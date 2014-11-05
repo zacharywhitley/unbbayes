@@ -35,13 +35,13 @@ public class MarkovEngineComplexityFactorProfiler extends TestCase {
 	/** How many nodes to create in {@link #testGetComplexityFactorMultiThread()} */
 	private int numNodesToCreate = 200;
 	/** How many arcs to create in {@link #testGetComplexityFactorMultiThread()} before starting threads for profiling. */
-	private int numArcsToCreate = 10;
+	private int numArcsToCreate = 140;
 	
 	/** Max number of states of nodes to create in {@link #testGetComplexityFactorMultiThread()} */
 	private int maxNumStates = 10;
 
 	/** {@link #connectNodes()} will attempt to increase largest clique with this prob */
-	private float probPickNodeInLargestClique = 1f/5f;
+	private float probPickNodeInLargestClique = 1f/12f;
 
 	
 
@@ -161,7 +161,7 @@ public class MarkovEngineComplexityFactorProfiler extends TestCase {
 //		this.connectNodes();
 		while (true) {
 			System.err.println("Finished execution. Please, halt.");
-			Thread.sleep(10000);
+			Thread.sleep(30000);
 		}
 	}
 	

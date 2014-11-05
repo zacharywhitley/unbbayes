@@ -391,6 +391,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private int defaultNodeSize = 13;
 
 	private boolean isToThrowExceptionOnDynamicJunctionTreeCompilationFailure = false;	// set this to true to debug dynamic junction tree compilation
+
+	private int dynamicJunctionTreeNetSizeThreshold = 1;
 	
 	
 	
@@ -550,6 +552,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		
 		// prepare inference algorithm for the BN
 		JunctionTreeAlgorithm junctionTreeAlgorithm = new JunctionTreeAlgorithm(getProbabilisticNetwork());
+		// whether we shall enable dynamic junction tree compilation or not
+		junctionTreeAlgorithm.setDynamicJunctionTreeNetSizeThreshold(getDynamicJunctionTreeNetSizeThreshold());
 		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
 		JeffreyRuleLikelihoodExtractor jeffreyRuleLikelihoodExtractor = (JeffreyRuleLikelihoodExtractor) AssetAwareInferenceAlgorithm.DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR;
 		junctionTreeAlgorithm.setLikelihoodExtractor(jeffreyRuleLikelihoodExtractor);
@@ -5680,7 +5684,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						mainNode = net.getNode(Long.toString(questionId));
 					} else {
 						mainNode = net.getNodeAt(i);
-						questionId = Long.parseLong(mainNode.getName());
+						try {
+							questionId = Long.parseLong(mainNode.getName());
+						} catch (NumberFormatException e) {
+							e.printStackTrace();
+							if (getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+								((JunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).clearVirtualNodes();
+							}
+							continue;
+						}
 					}
 					if (mainNode == null ) { // note: questionId == null will not happen here, because it would have thrown nullpointerexception
 						// this  boolean was commented out because it was only useful when questionId == null, which cannot happen at this point
@@ -5878,6 +5890,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// propagate findings only when there are findings to propagate
 		if (!findingNodeIDs.isEmpty() && !findingStates.isEmpty()) {
 			JunctionTreeAlgorithm jtAlgorithm = new JunctionTreeAlgorithm(pn);
+			jtAlgorithm.setDynamicJunctionTreeNetSizeThreshold(getDynamicJunctionTreeNetSizeThreshold());
 			if (jtAlgorithm.getInferenceAlgorithmListeners() != null) {
 				// delete any extra operation performed prior and after compilation/propagation/reset of the network,
 				// because we only need to perform propagation from current state (we never do initialization or finalization)
@@ -14042,7 +14055,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getVersionInfo()
 	 */
 	public String getVersionInfo() {
-		return "UnBBayes SciCast Markov Engine 1.2.9";
+		return "UnBBayes SciCast Markov Engine 1.2.10";
 	}
 
 	/**
@@ -14293,6 +14306,29 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 */
 	protected boolean isToThrowExceptionOnDynamicJunctionTreeCompilationFailure() {
 		return this.isToThrowExceptionOnDynamicJunctionTreeCompilationFailure;
+	}
+
+	/**
+	 * @return {@link #getProbabilisticNetwork()} will be compiled with dynamic junction tree compilation if number of nodes is above this value.
+	 * @see JunctionTreeAlgorithm#getDynamicJunctionTreeNetSizeThreshold()
+	 * @see #setDynamicJunctionTreeNetSizeThreshold(int)
+	 */
+	public int getDynamicJunctionTreeNetSizeThreshold() {
+		return dynamicJunctionTreeNetSizeThreshold;
+	}
+
+	/**
+	 * @param dynamicJunctionTreeNetSizeThreshold : {@link #getProbabilisticNetwork()} will be compiled with dynamic junction tree compilation if number of nodes is above this value.
+	 * @see JunctionTreeAlgorithm#setDynamicJunctionTreeNetSizeThreshold(int)
+	 * @see #getDynamicJunctionTreeNetSizeThreshold()
+	 */
+	public void setDynamicJunctionTreeNetSizeThreshold(
+			int dynamicJunctionTreeNetSizeThreshold) {
+		this.dynamicJunctionTreeNetSizeThreshold = dynamicJunctionTreeNetSizeThreshold;
+		IInferenceAlgorithm algorithm = getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+		if (algorithm instanceof JunctionTreeAlgorithm) {
+			((JunctionTreeAlgorithm) algorithm).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
+		}
 	}
 
 

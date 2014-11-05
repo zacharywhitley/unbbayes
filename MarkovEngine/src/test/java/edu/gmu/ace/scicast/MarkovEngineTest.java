@@ -44,6 +44,8 @@ import unbbayes.prs.bn.valueTree.ValueTreeProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
+import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
+import edu.gmu.ace.scicast.MarkovEngineComplexityFactorProfiler.ComplexityFactorRunnable;
 import edu.gmu.ace.scicast.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.BalanceTradeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.DummyTradeAction;
@@ -32710,6 +32712,572 @@ public class MarkovEngineTest extends TestCase {
 			engine.addQuestionAssumption(null, new Date(), Long.parseLong(nodeInLargestClique.getName()), Collections.singletonList(Long.parseLong(nodeIn2ndLargestClique.getName())), null);
 		}
 	
+	}
+	
+	/**
+	 * Checks that engine will still work if virtual nodes fails to be deleted from network,
+	 * or when there are nodes that doesn't follow correct naming patterns (i.e. when names of nodes are not long).
+	 * @throws Exception 
+	 */
+	public final void testNonNumericNodes() throws Exception  {
+		engine.initialize();
+		IInferenceAlgorithm algorithm = engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+		if (algorithm instanceof JunctionTreeAlgorithm) {
+			((JunctionTreeAlgorithm) algorithm).getInferenceAlgorithmListeners().clear();
+			// this one won't delete virtual nodes
+			algorithm.addInferencceAlgorithmListener(JunctionTreeAlgorithm.DEFAULT_INFERENCE_ALGORITHM_LISTENER);
+		}
+		
+		// The E<-D->F net
+		engine.addQuestion(null, new Date(), 0x0DL, 2, null);
+		engine.addQuestion(null, new Date(), 0x0EL, 3, null);
+		engine.addQuestion(null, new Date(), 0x0FL, 5, null);
+		engine.addQuestionAssumption(null, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		
+		// make sure there is no virtual nodes yet
+		assertEquals(3, engine.getProbabilisticNetwork().getNodeCount());
+		
+		// make sure we can query the nodes before creating virtual nodes
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0DL));
+		assertTrue(probLists.containsKey(0x0EL));
+		assertTrue(probLists.containsKey(0x0FL));
+		
+		// make a trade, in order to generate a virtual node (that won't be deleted)
+		List<Float> newValues = new ArrayList<Float>(2);
+		newValues.add(.1f);
+		newValues.add(.9f);
+		engine.addTrade(null, new Date(), "", 0, 0x0DL, newValues , null, null, true);
+		
+		// make sure the virtual node was not deleted
+		assertEquals(4, engine.getProbabilisticNetwork().getNodeCount());
+		
+		// make sure we can query only the valid nodes
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0DL));
+		assertTrue(probLists.containsKey(0x0EL));
+		assertTrue(probLists.containsKey(0x0FL));
+		
+		
+		engine.initialize();
+		
+		// The E<-D->F net
+		engine.addQuestion(null, new Date(), 0x0DL, 2, null);
+		engine.addQuestion(null, new Date(), 0x0EL, 3, null);
+		engine.addQuestion(null, new Date(), 0x0FL, 5, null);
+		engine.addQuestionAssumption(null, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		
+		// make sure we can query all nodes
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0DL));
+		assertTrue(probLists.containsKey(0x0EL));
+		assertTrue(probLists.containsKey(0x0FL));
+		
+		// include a new node with invalid name
+		ProbabilisticNode wrongNode = new ProbabilisticNode();
+		wrongNode.setName("WrongNode");
+		wrongNode.setInternalIdentificator(engine.getProbabilisticNetwork().getNodeCount());
+		wrongNode.appendState("no");
+		wrongNode.appendState("yes");
+		wrongNode.getProbabilityFunction().addVariable(wrongNode);
+		wrongNode.getProbabilityFunction().fillTable(.5f);
+		engine.getProbabilisticNetwork().addNode(wrongNode);
+		engine.getProbabilisticNetwork().compile();
+		
+		// make sure we can query only the valid nodes
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(3, probLists.size());
+		assertTrue(probLists.containsKey(0x0DL));
+		assertTrue(probLists.containsKey(0x0EL));
+		assertTrue(probLists.containsKey(0x0FL));
+		
+		
+	}
+	
+	/**
+	 * Just checks that {@link MarkovEngineImpl#setDynamicJunctionTreeNetSizeThreshold(int)} works properly.
+	 * @throws LoadException
+	 * @throws IOException
+	 * @throws URISyntaxException
+	 */
+	public final void testDisableDinamicJunctionTreeCompilation() throws LoadException, IOException, URISyntaxException {
+		
+		// force engine to throw exception if dynamic JT compilation fails
+		Boolean isToHaltOnDynamicJunctionTreeFailure = null;	// make a backup of original value first
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			JunctionTreeAlgorithm algorithm = (JunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+			isToHaltOnDynamicJunctionTreeFailure = algorithm.isToHaltOnDynamicJunctionTreeFailure();
+			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
+		}
+		Integer dynamicJunctionTreeNetSizeThreshold = engine.getDynamicJunctionTreeNetSizeThreshold();
+		engine.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE); // indicate that we shall never use dynamic junction tree compilation
+		
+		engine.initialize();
+		// check that configuration did not change after initialize
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			assertEquals(Integer.MAX_VALUE,  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+			assertTrue(((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).isToHaltOnDynamicJunctionTreeFailure());
+		}
+		
+		// load the ground truth model
+		ProbabilisticNetwork groundTruth = (ProbabilisticNetwork) new NetIO().load(new File(getClass().getResource("/asia.net").toURI()));
+		assertNotNull(groundTruth);
+		
+		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(groundTruth);
+		// make sure the ground truth does not use dynamic JT compilation
+		algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// large values of this attribute disables dynamic compilation
+		
+		// compile the ground truth model
+		algorithm.run();
+		assertNotNull(groundTruth.getJunctionTree());
+		assertNotNull(groundTruth.getJunctionTree().getCliques());
+		assertEquals(6, groundTruth.getJunctionTree().getCliques().size());
+	
+		/*
+		 * create nodes in markov engine accordingly to the ground truth:
+		 * 
+		 * Ids = nodes in ground truth (var name between parenthesis), and their marginals:
+		 * 33 = Positive X-ray? (X),   		[0.11029005, 0.88971]
+		 * 21 = Has lung cancer (L), 		[0.055000007, 0.945]
+		 * 10 = Visit to Asia? (A), 		[0.009999999, 0.98999995]
+		 * 11 = Has bronchitis (B), 		[0.45000002, 0.55]
+		 * 29 = Has tuberculosis (T), 		[0.010399999, 0.9896]
+		 * 28 = Smoker? (S), 				[0.5, 0.5]
+		 * 13 = Dyspnoea? (D), 				[0.43597063, 0.5640294]
+		 * 14 = Tuberculosis or cancer (E),	[0.06482801, 0.935172]
+		 * 
+		 * Respective IDs in markov engine:
+		 * 	X = 33; B = 11; D = 13; A = 10; S = 28; L = 21; T = 29; E = 14
+		 */
+		for (Node node : groundTruth.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				// check that configuration did not change
+				if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+					assertEquals(Integer.MAX_VALUE,  
+							((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+				}
+				Long nodeId = (long) Character.getNumericValue(node.getName().charAt(0));
+				try {
+					engine.addQuestion(null, new Date(), nodeId, node.getStatesSize(), null);
+				} catch (RuntimeException e) {
+					throw new RuntimeException("Failed to create node " + node, e);
+				}
+				try {
+					// also set the marginals now
+					List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
+					for (int i = 0; i < node.getStatesSize(); i++) {
+						newValues.add(((ProbabilisticNode) node).getMarginalAt(i));
+					}
+					// check that configuration did not change
+					if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+						assertEquals(Integer.MAX_VALUE,  
+								((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					}
+					engine.addTrade(null, new Date(), node.toString(), 0, nodeId, newValues , null, null, true);
+				} catch (RuntimeException e) {
+					throw new RuntimeException("Failed to set marginals of node " + node, e);
+				}
+			}
+		}
+		
+		// check that configuration did not change
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			assertEquals(Integer.MAX_VALUE,  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+		}
+		
+		// check if marginals matches
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals(groundTruth.getNodeCount(), probLists.size());
+		for (Node node : groundTruth.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
+				assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
+				for (int i = 0; i < prob.size(); i++) {
+					assertEquals(node.toString() + "; " + probLists.toString(), ((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 0.00001);
+				}
+			}
+		}
+		
+//		// reset marginals of all questions to uniform
+//		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+//			int numStates = entry.getValue().size();
+//			List<Float> newValues = new ArrayList<Float>(numStates);
+//			for (int i = 0; i < numStates; i++) {
+//				newValues.add(1f/numStates);
+//			}
+//			engine.addTrade(null, new Date(), "", 0, entry.getKey(), newValues , null, null, true);
+//		}
+//		
+//
+//		// check if marginals were reset to uniform
+//		probLists = engine.getProbLists(null, null, null);
+//		assertEquals(groundTruth.getNodeCount(), probLists.size());
+//		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+//			for (int i = 0; i < entry.getValue().size(); i++) {
+//				assertEquals(entry.toString(), 1f/entry.getValue().size(), entry.getValue().get(i), 0.00001);
+//			}
+//		}
+		
+		// create arcs in markov engine accordingly to the ground truth
+		for (Node childNode : groundTruth.getNodes()) {
+			if (childNode instanceof ProbabilisticNode) {
+				// this is the question ID of the respective node
+				Long childQuestionId = Long.valueOf(Character.getNumericValue(childNode.getName().charAt(0)));
+				
+				// add arcs that points to child node (i.e. check presence of parents)
+				if (childNode.getParentNodes() != null
+						&& !childNode.getParentNodes().isEmpty()) {
+					
+					// check that configuration did not change
+					if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+						assertEquals(Integer.MAX_VALUE,  
+								((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					}
+					
+					// backup marginals, before adding new arc, for later comparison
+					probLists = engine.getProbLists(null, null, null);
+					
+					// extract cpt
+					PotentialTable cpt = ((ProbabilisticNode) childNode).getProbabilityFunction();	
+					
+					// for each parent in ground truth, create parent in engine too. 
+					List<Long> parentQuestionIds = new ArrayList<Long>(childNode.getParentNodes().size());
+					// fill list with ids of parent
+					for (int i = 1; i < cpt.getVariablesSize(); i++) {	// start from index 1, because index 0 is the child node itself
+						// Parents will be inserted in the order of appearance in cpt
+						parentQuestionIds.add(Long.valueOf(Character.getNumericValue(cpt.getVariableAt(i).getName().charAt(0)))); 
+					}
+					
+					// check that configuration did not change
+					if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+						assertEquals(Integer.MAX_VALUE,  
+								((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					}
+					
+					// actually create arc
+					engine.addQuestionAssumption(null, new Date(), childQuestionId, parentQuestionIds, null);
+					
+					// check that adding a new arc does not affect probabilities
+					Map<Long, List<Float>> newProbs = engine.getProbLists(null, null, null);
+					assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+					for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+						// check number of states for current question
+						assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+						// check values
+						for (int i = 0; i < entry.getValue().size(); i++) {
+							assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+									entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+									0.00001															// error margin
+								);
+						}
+					}
+					
+					// then, make trades that will copy cpt of ground truth to engine
+					List<Float> newValues = new ArrayList<Float>();	// this will be filled with values in the CPT
+					for (int i = 0; i < cpt.tableSize(); i++) {
+						newValues.add(cpt.getValue(i));
+					}
+					
+					// check that configuration did not change
+					if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+						assertEquals(Integer.MAX_VALUE,  
+								((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					}
+					
+					// passing null as assumed states will make the newValues to be interpreted as the CPT for all states of child and parents
+					engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, parentQuestionIds, null, true);
+					
+//				} else {
+//					// this node doesn't have parents. Just set its marginal
+//					
+//					// this will be filled with values in the CPT
+//					List<Float> newValues = new ArrayList<Float>();	
+//					for (int i = 0; i < childNode.getStatesSize(); i++) {
+//						newValues.add(((ProbabilisticNode) childNode).getMarginalAt(i));
+//					}
+//					
+//					// set marginal
+//					engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, null, null, true);
+				}
+			}
+			
+			// check that configuration did not change
+			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+				assertEquals(Integer.MAX_VALUE,  
+						((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+			}
+			
+			// for each modification, check marginals again
+			probLists = engine.getProbLists(null, null, null);
+			assertEquals(groundTruth.getNodeCount(), probLists.size());
+			for (Node node : groundTruth.getNodes()) {
+				if (node instanceof ProbabilisticNode) {
+					List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
+					assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
+					for (int i = 0; i < prob.size(); i++) {
+						assertEquals("After adding arcs to child " + childNode + "; " + node.toString() + ", failed to match marginal: " + probLists.toString(), 
+								((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 
+								0.005
+//								0.0001
+								);
+					}
+				}
+			}
+		}
+		
+		// check that adding an arc that moralizes parents will not change junction tree
+		// the asia domain does not have any node that conditinal dependence/independence won't change by adding arc, so create disconnected subnet
+		
+		
+		// backup probabilities now, so that we can check later
+		probLists = engine.getProbLists(null, null, null);
+		
+		// check that configuration did not change
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			assertEquals(Integer.MAX_VALUE,  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+		}
+		
+		// Create H, I, J
+		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('H')), 2, null);
+		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('I')), 3, null);
+		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('J')), 4, null);
+		
+		// check that configuration did not change
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			assertEquals(Integer.MAX_VALUE,  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+		}
+		
+		// check that adding nodes did not affect probabilities
+		Map<Long, List<Float>> newProbs = engine.getProbLists(null, null, null);
+		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size()+3, newProbs.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+					);
+			}
+		}
+		
+		// backup probabilities again, in order to check them later
+		probLists = engine.getProbLists(null, null, null);
+		
+		// check that configuration did not change
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			assertEquals(Integer.MAX_VALUE,  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+		}
+		
+		// Create H->I<-J
+		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('I')), Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))), null);
+		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('I')), Collections.singletonList(Long.valueOf(Character.getNumericValue('J'))), null);
+		
+		// check that configuration did not change
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			assertEquals(Integer.MAX_VALUE,  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+		}
+		
+		// check that adding arcs did not affect probabilities
+		newProbs = engine.getProbLists(null, null, null);
+		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+					);
+			}
+		}
+		
+		// change some probabilities too
+		List<Long> assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add(Long.valueOf(Character.getNumericValue('H')));
+		assumptionIds.add(Long.valueOf(Character.getNumericValue('J')));
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(.1f); newValues.add(.1f); newValues.add(.8f);
+		newValues.add(.2f); newValues.add(.1f); newValues.add(.7f);
+		newValues.add(.3f); newValues.add(.1f); newValues.add(.6f);
+		newValues.add(.1f); newValues.add(.7f); newValues.add(.2f);
+		newValues.add(.2f); newValues.add(.7f); newValues.add(.1f);
+		newValues.add(.6f); newValues.add(.1f); newValues.add(.3f);
+		newValues.add(.7f); newValues.add(.1f); newValues.add(.2f);
+		newValues.add(.8f); newValues.add(.1f); newValues.add(.1f);
+		engine.addTrade(null, new Date(), "", 0L, Long.valueOf(Character.getNumericValue('I')), newValues, assumptionIds, null, true);
+		
+		// collect the cliques and marginals before modification
+		List<Clique> cliquesBefore = new ArrayList<Clique>(engine.getProbabilisticNetwork().getJunctionTree().getCliques());
+		probLists = engine.getProbLists(null, null, null);
+		
+		// check that configuration did not change
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			assertEquals(Integer.MAX_VALUE,  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+		}
+				
+		// create arc H->J
+		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('J')), Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))), null);
+		
+		// check that configuration did not change
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			assertEquals(Integer.MAX_VALUE,  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+		}
+		
+		// check that cliques did not change
+		List<Clique> cliquesAfter = engine.getProbabilisticNetwork().getJunctionTree().getCliques();
+		assertEquals(cliquesBefore.size(), cliquesAfter.size());
+		for (int i = 0; i < cliquesBefore.size(); i++) {
+			// they are different java object instances,
+			assertTrue("["+i+"] before="+cliquesBefore + " ; after = " + cliquesAfter, cliquesBefore.get(i).getNodesList() != (cliquesAfter.get(i).getNodesList()));
+			// but they are the same cliques
+			assertTrue("["+i+"] before="+cliquesBefore + " ; after = " + cliquesAfter, cliquesBefore.get(i).getNodesList().containsAll(cliquesAfter.get(i).getNodesList()));
+			assertTrue("["+i+"] before="+cliquesBefore + " ; after = " + cliquesAfter, cliquesAfter.get(i).getNodesList().containsAll(cliquesBefore.get(i).getNodesList()));
+		}
+		
+		
+		// check that probabilities did not change either
+		newProbs = engine.getProbLists(null, null, null);
+		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+					);
+			}
+		}
+		
+
+		// check that configuration did not change
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			assertEquals(Integer.MAX_VALUE,  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+		}
+		
+		// resolve T(29), A(10), and E(14)
+		engine.resolveQuestion(null, new Date(), 14L, 1);
+		engine.resolveQuestion(null, new Date(), 10L, 0);
+		engine.resolveQuestion(null, new Date(), 29L, 1);
+		
+
+		// check that configuration did not change
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			assertEquals(Integer.MAX_VALUE,  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+		}
+		
+		// resolve in ground truth too
+		((ProbabilisticNode)groundTruth.getNode("T")).addFinding(1);
+		((ProbabilisticNode)groundTruth.getNode("A")).addFinding(0);
+		((ProbabilisticNode)groundTruth.getNode("E")).addFinding(1);
+		algorithm.setNet(groundTruth);
+		algorithm.propagate();
+		
+		// check that marginals after resolution matches
+		probLists = engine.getProbLists(null, null, null);
+		if (engine.isToDeleteResolvedNode()) {
+			assertEquals(groundTruth.getNodeCount(), probLists.size());	// engine has 3 additional nodes, and resolved 3 nodes
+		} else {
+			assertEquals(groundTruth.getNodeCount(), probLists.size()+3);
+		}
+		for (Node node : groundTruth.getNodes()) {
+			if (engine.isToDeleteResolvedNode()) {
+				if (Character.getNumericValue(node.getName().charAt(0)) == Character.getNumericValue('T')
+						|| Character.getNumericValue(node.getName().charAt(0)) == Character.getNumericValue('A')
+						|| Character.getNumericValue(node.getName().charAt(0)) == Character.getNumericValue('E')) {
+					continue;	// do not check resolved nodes
+				}
+			}
+			if (node instanceof ProbabilisticNode) {
+				List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
+				assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
+				for (int i = 0; i < prob.size(); i++) {
+					assertEquals(node.toString() + ", failed to match marginal: " + probLists.toString(), 
+							((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 
+							0.005
+//							0.0001
+							);
+				}
+			}
+		}
+		
+		// backup prob again
+		probLists = engine.getProbLists(null, null, null);
+		
+
+		// check that configuration did not change
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			assertEquals(Integer.MAX_VALUE,  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+		}
+		
+		// include new nodes and arcs to it, just to trigger compilation again
+		// New node: Z;
+		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('Z')), 5, null);
+		// New arcs: S->Z->D, L->D
+		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('D')), Collections.singletonList(Long.valueOf(Character.getNumericValue('Z'))), null); // Z->D
+		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('Z')), Collections.singletonList(Long.valueOf(Character.getNumericValue('S'))), null); // S->Z
+		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('D')), Collections.singletonList(Long.valueOf(Character.getNumericValue('L'))), null); // L->D
+		
+
+		// check that configuration did not change
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			assertEquals(Integer.MAX_VALUE,  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+		}
+		
+		// check that the marginals are still consistent
+		newProbs = engine.getProbLists(null, null, null);
+		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size()+1, newProbs.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+					);
+			}
+		}
+		
+
+		// check that configuration did not change
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			assertEquals(Integer.MAX_VALUE,  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+		}
+		
+		// TODO check case when changed clusters are equal to existing separator
+		
+		// revert changes in config
+		if (isToHaltOnDynamicJunctionTreeFailure != null) {
+			engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(isToHaltOnDynamicJunctionTreeFailure);
+		}
+		if (dynamicJunctionTreeNetSizeThreshold != null) {
+			engine.setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
+			assertEquals(dynamicJunctionTreeNetSizeThreshold.intValue(),  
+					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+		}
 	}
 	
 }
