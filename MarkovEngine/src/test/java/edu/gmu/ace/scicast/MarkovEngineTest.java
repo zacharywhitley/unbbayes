@@ -33279,4 +33279,58 @@ public class MarkovEngineTest extends TestCase {
 		}
 	}
 	
+	/**
+	 * Regression test to check if engine can work fine when empty cliques (after nodes being resolved) are configured to be deleted.
+	 */
+	public final void testInternalIdentificatorWithEmptyCliques() {
+		
+		// The E<-D->F C net
+		engine.addQuestion(null, new Date(), 0x0DL, 2, null);
+		engine.addQuestion(null, new Date(), 0x0EL, 3, null);
+		engine.addQuestion(null, new Date(), 0x0FL, 5, null);
+		engine.addQuestionAssumption(null, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		engine.addQuestion(null, new Date(), 0x0CL, 7, null);
+		
+		// resolve nodes in the root clique. This shall cause 1 clique to become empty
+		Clique root = engine.getProbabilisticNetwork().getJunctionTree().getCliques().get(0);
+		while(root.getParent() != null) {
+			root = root.getParent();
+		}
+		// use a copy list, because the original list may be modified when resolving question
+		Set<Node> nodesInRootClique = new HashSet<Node>(root.getNodesList());
+		for (Node node : nodesInRootClique) {
+			engine.resolveQuestion(null, new Date(), Long.parseLong(node.getName()), 0);
+		}
+		
+		// now, make sure we can make a trade on remaining nodes without throwing ArrayIndexOutOfBoundException or RuntimeException
+		List<Node> nodesToTrade = new ArrayList<Node>();	// use different list instance, because we may have concurrent modification
+		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+			if (nodesInRootClique.contains(node)) {
+				continue;	// ignore resolved nodes
+			}
+			nodesToTrade.add(node);
+		}
+		for (Node node : nodesToTrade) {
+			List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
+			newValues.add(.9f);	// first state at 90%, and the rest is distributed to other states
+			for (int i = 1; i < node.getStatesSize(); i++) {
+				newValues.add(.1f/(node.getStatesSize()-1f));
+			}
+			engine.addTrade(null, new Date(), "", 0, Long.parseLong(node.getName()), newValues , null, null, true);
+		}
+		
+		// make sure the trades were OK
+		for (Node node : nodesToTrade) {
+			List<Float> probList = engine.getProbList(Long.parseLong(node.getName()), null, null);
+			assertEquals(node.getStatesSize(), probList.size());
+			assertEquals(probList.toString(), probList.get(0), .9f, .000001);
+			for (int i = 1; i < probList.size(); i++) {
+				assertEquals(probList.toString(), probList.get(1), .1f/(probList.size()-1f), .000001);
+			}
+		}
+		
+		
+	}
+	
 }
