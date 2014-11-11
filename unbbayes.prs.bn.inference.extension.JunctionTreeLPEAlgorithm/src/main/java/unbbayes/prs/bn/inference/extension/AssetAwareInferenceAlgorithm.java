@@ -28,6 +28,7 @@ import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.IJunctionTree;
 import unbbayes.prs.bn.ILikelihoodExtractor;
 import unbbayes.prs.bn.IRandomVariable;
+import unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
@@ -106,7 +107,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 
 	
 
-	/** Default value to fill {@link JunctionTreeAlgorithm#setLikelihoodExtractor(ILikelihoodExtractor)} */
+	/** Default value to fill {@link IncrementalJunctionTreeAlgorithm#setLikelihoodExtractor(ILikelihoodExtractor)} */
 	public static final JeffreyRuleLikelihoodExtractor DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR = (JeffreyRuleLikelihoodExtractor) JeffreyRuleLikelihoodExtractor.newInstance();
 
 	/** This is a default instance of a node with only 1 state. Use this instance if you want to have nodes with 1 state not to occupy too much space in memory */
@@ -175,9 +176,9 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	public static IInferenceAlgorithm getInstance(IInferenceAlgorithm probabilityDelegator) {
 		AssetAwareInferenceAlgorithm ret = new AssetAwareInferenceAlgorithm();
 		// for some reason, polymorphism is not working so properly...
-		if (probabilityDelegator instanceof JunctionTreeAlgorithm) {
+		if (probabilityDelegator instanceof IncrementalJunctionTreeAlgorithm) {
 			// call explicitly
-			ret.setProbabilityPropagationDelegator((JunctionTreeAlgorithm)probabilityDelegator);
+			ret.setProbabilityPropagationDelegator((IncrementalJunctionTreeAlgorithm)probabilityDelegator);
 		} else {
 			ret.setProbabilityPropagationDelegator(probabilityDelegator);
 		}
@@ -244,7 +245,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	 * also ensures that {@link #addEdgesToNet(INode, List)}
 	 * and {@link #findShortestJunctionTreePath(Collection, Collection)}
 	 * will look at probabilistic network instead of asset network.
-	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#getNet()
+	 * @see unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm#getNet()
 	 */
 	public ProbabilisticNetwork getNet() {
 		return (ProbabilisticNetwork) this.getProbabilityPropagationDelegator().getNetwork();
@@ -410,14 +411,14 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 			// the clique to be passed must be of the same network (can be different network if we are trying to simulate or using a copied network)
 			// TODO this is unsafe, because it assumes that the internal identificator is synchronized with the array index
 			int index = rootOfSubtree.getInternalIdentificator();
-			rootOfSubtree = ((JunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).getJunctionTree().getCliques().get(index);
+			rootOfSubtree = ((IncrementalJunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).getJunctionTree().getCliques().get(index);
 			if (rootOfSubtree.getInternalIdentificator() != index) {
 				throw new RuntimeException("The index of cliques of BN associated with user " + getAssetNetwork() + " is desynchronized.");
 			}
 			// visit parent cliques until we find the root of the edited sub-tree
 			while (rootOfSubtree.getParent() != null) {
 				// extract the separator
-				Separator separator = ((JunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).getJunctionTree().getSeparator(rootOfSubtree, rootOfSubtree.getParent());
+				Separator separator = ((IncrementalJunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).getJunctionTree().getSeparator(rootOfSubtree, rootOfSubtree.getParent());
 				if (separator == null || separator.getProbabilityFunction().tableSize() <= 1) {
 					// there is no more parent connected with non-empty separator
 					break;
@@ -425,7 +426,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 				rootOfSubtree = rootOfSubtree.getParent();
 			}
 			// only propagate through the sub-tree rooted by rootOfSubtree
-			((JunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).propagate(rootOfSubtree, isToUpdateMarginals);
+			((IncrementalJunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).propagate(rootOfSubtree, isToUpdateMarginals);
 			
 //			// clear this edit list, because we don't want it to be used in next propagation, or to be alive after finishing propagation
 //			editCliques.clear();	
@@ -498,14 +499,14 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 
 	/**
 	 * 
-	 * @param delegator : in {@link AssetAwareInferenceAlgorithm}, only instances compatible with {@link JunctionTreeAlgorithm}
+	 * @param delegator : in {@link AssetAwareInferenceAlgorithm}, only instances compatible with {@link IncrementalJunctionTreeAlgorithm}
 	 * are allowed.
 	 */
 	public void setProbabilityPropagationDelegator(IInferenceAlgorithm delegator) {
-		if (!(delegator instanceof JunctionTreeAlgorithm)) {
-			throw new IllegalArgumentException("Only instances of " + JunctionTreeAlgorithm.class.getName() + " are allowed in " + this.getClass().getName()+ "#setProbabilityPropagationDelegator(IInferenceAlgorithm)");
+		if (!(delegator instanceof IncrementalJunctionTreeAlgorithm)) {
+			throw new IllegalArgumentException("Only instances of " + IncrementalJunctionTreeAlgorithm.class.getName() + " are allowed in " + this.getClass().getName()+ "#setProbabilityPropagationDelegator(IInferenceAlgorithm)");
 		} else {
-			this.setProbabilityPropagationDelegator((JunctionTreeAlgorithm) delegator);
+			this.setProbabilityPropagationDelegator((IncrementalJunctionTreeAlgorithm) delegator);
 		}
 	}
 	
@@ -516,7 +517,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	 * and {@link IInferenceAlgorithm#addInferencceAlgorithmListener(IInferenceAlgorithmListener)} in order
 	 * to adjust the behavior of the algorithm.
 	 * Particularly, this method will remove the old listeners and add a new one which is similar to the one added by
-	 * {@link JunctionTreeAlgorithm#JunctionTreeAlgorithm(ProbabilisticNetwork)}, but does not
+	 * {@link IncrementalJunctionTreeAlgorithm#IncrementalJunctionTreeAlgorithm(ProbabilisticNetwork)}, but does not
 	 * reset the network each time a {@link IInferenceAlgorithm#propagate()} is called.
 	 * By doing this, we cannot overwrite hard evidences anymore (i.e. we cannot add a hard evidence to one state, and then
 	 * add another hard evidence to another state - which is 0% now because of the previous hard evidence), 
@@ -527,7 +528,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	 * If so, it will throw an {@link IllegalArgumentException} on {@link IInferenceAlgorithmListener#onBeforeRun(IInferenceAlgorithm)}.
 	 * @param probabilityPropagationDelegator the probabilityPropagationDelegator to set
 	 */
-	public void setProbabilityPropagationDelegator(JunctionTreeAlgorithm delegator) {
+	public void setProbabilityPropagationDelegator(IncrementalJunctionTreeAlgorithm delegator) {
 		this.probabilityPropagationDelegator = delegator;
 		if (this.probabilityPropagationDelegator != null) {
 			// calling removeInferencceAlgorithmListener with null is supposed to remove all listeners...
@@ -571,8 +572,8 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 								TreeVariable node = (TreeVariable)n;
 								if (node.hasEvidence()) {
 									if (node.hasLikelihood()) {
-										if (algorithm instanceof JunctionTreeAlgorithm) {
-											JunctionTreeAlgorithm jt = (JunctionTreeAlgorithm) algorithm;
+										if (algorithm instanceof IncrementalJunctionTreeAlgorithm) {
+											IncrementalJunctionTreeAlgorithm jt = (IncrementalJunctionTreeAlgorithm) algorithm;
 											// Enter the likelihood as virtual nodes
 											try {
 												// prepare list of nodes to add soft/likelihood evidence
@@ -631,13 +632,13 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 //					}
 					
 					// clear virtual nodes if this is using junction tree algorithm or algorithms related to it
-					if (algorithm instanceof JunctionTreeAlgorithm) {
-						((JunctionTreeAlgorithm) algorithm).clearVirtualNodes();						
+					if (algorithm instanceof IncrementalJunctionTreeAlgorithm) {
+						((IncrementalJunctionTreeAlgorithm) algorithm).clearVirtualNodes();						
 					} else if (algorithm instanceof AssetAwareInferenceAlgorithm) {
 						// extract algorithm responsible for updating probabilities
 						IInferenceAlgorithm probAlgorithm = ((AssetAwareInferenceAlgorithm)algorithm).getProbabilityPropagationDelegator();
-						if (probAlgorithm instanceof JunctionTreeAlgorithm) {
-							((JunctionTreeAlgorithm) probAlgorithm).clearVirtualNodes();		
+						if (probAlgorithm instanceof IncrementalJunctionTreeAlgorithm) {
+							((IncrementalJunctionTreeAlgorithm) probAlgorithm).clearVirtualNodes();		
 						}
 					}
 				}
@@ -898,8 +899,8 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	 */
 	public AssetNetwork createAssetNetFromProbabilisticNet(ProbabilisticNetwork relatedProbabilisticNetwork)
 			throws InvalidParentException {
-		if (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-			JunctionTreeAlgorithm junctionTreeAlgorithm = (JunctionTreeAlgorithm) getProbabilityPropagationDelegator();
+		if (getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			IncrementalJunctionTreeAlgorithm junctionTreeAlgorithm = (IncrementalJunctionTreeAlgorithm) getProbabilityPropagationDelegator();
 			// create asset net without dummy (virtual) nodes
 			if (junctionTreeAlgorithm.getVirtualNodesToCliquesAndSeparatorsMap().isEmpty()) {
 				// do not instantiate new object (ProbabilisticNetworkFilter), if we do not need to filter nodes
@@ -1564,7 +1565,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	 * @return the clone of the originalProbabilisticNetwork
 	 */
 	public ProbabilisticNetwork cloneProbabilisticNetwork(ProbabilisticNetwork originalProbabilisticNetwork) {
-		return ((JunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).cloneProbabilisticNetwork(originalProbabilisticNetwork);
+		return ((IncrementalJunctionTreeAlgorithm)this.getProbabilityPropagationDelegator()).cloneProbabilisticNetwork(originalProbabilisticNetwork);
 	}
 	
 	/**
@@ -1595,8 +1596,11 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 		ProbabilisticNetwork newNet = this.cloneProbabilisticNetwork(getRelatedProbabilisticNetwork());
 		
 		// clone JT algorithm using the cloned BN
-		JunctionTreeAlgorithm jtAlgorithm = new JunctionTreeAlgorithm(newNet);
-		jtAlgorithm.setDynamicJunctionTreeNetSizeThreshold(getDynamicJunctionTreeNetSizeThreshold());	// use the same configuration for dynamic JT compilation
+		IncrementalJunctionTreeAlgorithm jtAlgorithm = new IncrementalJunctionTreeAlgorithm(newNet);
+		if (getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			// use the same configuration for dynamic JT compilation
+			jtAlgorithm.setDynamicJunctionTreeNetSizeThreshold(((IncrementalJunctionTreeAlgorithm)getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());	
+		} 
 		if (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
 			// reuse same likelihood extractor
 			JunctionTreeAlgorithm origJTAlgorithm = (JunctionTreeAlgorithm) getProbabilityPropagationDelegator();
@@ -1680,14 +1684,14 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	
 	/**
 	 * Delegates to {@link #getProbabilityPropagationDelegator()}
-	 * if it is an instance of {@link JunctionTreeAlgorithm}.
+	 * if it is an instance of {@link IncrementalJunctionTreeAlgorithm}.
 	 * @return the joint probability
 	 */
 	public float getJointProbability(Map<ProbabilisticNode,Integer> nodesAndStatesToConsider) {
-		if (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-			return ((JunctionTreeAlgorithm) getProbabilityPropagationDelegator()).getJointProbability(nodesAndStatesToConsider);
+		if (getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			return ((IncrementalJunctionTreeAlgorithm) getProbabilityPropagationDelegator()).getJointProbability(nodesAndStatesToConsider);
 		}
-		throw new UnsupportedOperationException("#getProbabilityPropagationDelegator() is not a JunctionTreeAlgorithm. This method does not support calculation of joint probability in algorithms which are not based on junction tree.");
+		throw new UnsupportedOperationException("#getProbabilityPropagationDelegator() is not a IncrementalJunctionTreeAlgorithm. This method does not support calculation of joint probability in algorithms which are not based on junction tree.");
 	}
 
 	/**
@@ -2016,7 +2020,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	 * @param emptyCliques : list of cliques to delete. It is assumed to be empty cliques.
 	 * @param junctionTree  : the junction tree where the cliques will be deleted from.
 	 * @see #setAsPermanentEvidence(Map, boolean)
-	 * @deprecated TODO a similar method must be implemented in {@link unbbayes.prs.bn.JunctionTreeAlgorithm} or {@link IJunctionTree}
+	 * @deprecated TODO a similar method must be implemented in {@link unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm} or {@link IJunctionTree}
 	 */
 	private void deleteEmptyCliques(List<Clique> emptyCliques, IJunctionTree junctionTree) {
 		// basic assertion
@@ -2781,14 +2785,14 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	 * This method will update the CPT of all nodes in {@link #getNet()}
 	 * by using clique potentials available at {@link ProbabilisticNetwork#getJunctionTree()}
 	 * of {@link #getNet()}.
-	 * @deprecated see {@link JunctionTreeAlgorithm#updateCPTBasedOnCliques()}
+	 * @deprecated see {@link IncrementalJunctionTreeAlgorithm#updateCPTBasedOnCliques()}
 	 */
 	public void updateCPTFromJT() {
 		
 		// delegate to the probability algorithm if possible
 		IInferenceAlgorithm probAlgorithm = getProbabilityPropagationDelegator();
-		if (probAlgorithm instanceof JunctionTreeAlgorithm) {
-			((JunctionTreeAlgorithm) probAlgorithm).updateCPTBasedOnCliques();
+		if (probAlgorithm instanceof IncrementalJunctionTreeAlgorithm) {
+			((IncrementalJunctionTreeAlgorithm) probAlgorithm).updateCPTBasedOnCliques();
 			return;
 		}
 		
@@ -2830,11 +2834,11 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	
 	/**
 	 * Attempts to delegate to {@link #getProbabilityPropagationDelegator()} if possible
-	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#getLikelihoodExtractor()
+	 * @see unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm#getLikelihoodExtractor()
 	 */
 	public ILikelihoodExtractor getLikelihoodExtractor() {
-		if (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-			return ((JunctionTreeAlgorithm) getProbabilityPropagationDelegator()).getLikelihoodExtractor();
+		if (getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			return ((IncrementalJunctionTreeAlgorithm) getProbabilityPropagationDelegator()).getLikelihoodExtractor();
 		} else {
 			return super.getLikelihoodExtractor();
 		}
@@ -2842,11 +2846,11 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	
 	/**
 	 * Attempts to delegate to {@link #getProbabilityPropagationDelegator()} if possible
-	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#setLikelihoodExtractor(unbbayes.prs.bn.ILikelihoodExtractor)
+	 * @see unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm#setLikelihoodExtractor(unbbayes.prs.bn.ILikelihoodExtractor)
 	 */
 	public void setLikelihoodExtractor(ILikelihoodExtractor likelihoodExtractor) {
-		if (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-			((JunctionTreeAlgorithm) getProbabilityPropagationDelegator()).setLikelihoodExtractor(likelihoodExtractor);
+		if (getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			((IncrementalJunctionTreeAlgorithm) getProbabilityPropagationDelegator()).setLikelihoodExtractor(likelihoodExtractor);
 		}
 		super.setLikelihoodExtractor(likelihoodExtractor);
 	}

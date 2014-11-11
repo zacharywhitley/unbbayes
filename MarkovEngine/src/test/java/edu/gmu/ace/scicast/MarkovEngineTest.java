@@ -31,6 +31,7 @@ import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.IRandomVariable;
+import unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -45,6 +46,7 @@ import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
+import edu.gmu.ace.scicast.MarkovEngineComplexityFactorProfiler.ComplexityFactorRunnable;
 import edu.gmu.ace.scicast.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.BalanceTradeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.DummyTradeAction;
@@ -23756,7 +23758,7 @@ public class MarkovEngineTest extends TestCase {
 				assertNotNull(qe.getUserId());
 			}
 		}
-		assertTrue(questionHistory.size() > 1);
+		assertTrue(questionHistory.size()+"", questionHistory.size() > 1);
 		questionHistory = engine.getQuestionHistory(2L, null, null);
 		for (QuestionEvent qe : questionHistory) {
 			if (!(qe instanceof StructureChangeNetworkAction)
@@ -29111,7 +29113,7 @@ public class MarkovEngineTest extends TestCase {
 				fail(e.getMessage());
 			}
 			// OK
-			assertTrue(e.getMessage().contains("cannot be changed"));
+			assertTrue(e.getMessage(), e.getMessage().contains("cannot be"));
 		}
 		// check that marginals did not change
 		assertEquals(probLists.toString(), probLists.size(), engine.getProbLists(null, null, null).size());
@@ -29380,7 +29382,7 @@ public class MarkovEngineTest extends TestCase {
 				fail(e.getMessage());
 			}
 			// OK
-			assertTrue(e.getMessage().contains("cannot be changed"));
+			assertTrue(e.getMessage().contains("cannot be"));
 		}
 		// check that marginals did not change
 		assertEquals(probLists.toString(), probLists.size(), engine.getProbLists(null, null, null).size());
@@ -30331,7 +30333,8 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToReturnIdentifiersInExportState(true);
 		this.testExportImportAfterTradeOnDisconnectedParents();
 		// check that it is returning in expected format
-		Thread.sleep(100);	// make sure we have enough time to change timestamp before exporting (because the file id is the timestamp)
+		Thread.sleep(500);	// make sure we have enough time to change timestamp before exporting (because the file id is the timestamp)
+		assertFalse(engine.isToCompressExportedState());
 		exportedState = engine.exportState();
 		assertNotNull(exportedState);
 		// the identifier is supposedly a timestamp (milliseconds from midnight, January 1, 1970 UTC) created before now
@@ -30410,7 +30413,8 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToReturnIdentifiersInExportState(true);
 		this.testExportImportAfterTradeOnDisconnectedParents();
 		// check that it is returning in expected format
-		Thread.sleep(100);	// make sure we have enough time to change timestamp before exporting (because the file id is the timestamp)
+		Thread.sleep(500);	// make sure we have enough time to change timestamp before exporting (because the file id is the timestamp)
+		assertTrue(engine.isToCompressExportedState());
 		exportedState = engine.exportState();
 		assertNotNull(exportedState);
 		// the identifier is supposedly a timestamp (milliseconds from midnight, January 1, 1970 UTC) created before now
@@ -31874,8 +31878,8 @@ public class MarkovEngineTest extends TestCase {
 		// force engine to throw exception if dynamic JT compilation fails
 		Boolean isToHaltOnDynamicJunctionTreeFailure = null;
 		Integer dynamicJunctionTreeNetSizeThreshold = null;
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-			JunctionTreeAlgorithm algorithm = (JunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			IncrementalJunctionTreeAlgorithm algorithm = (IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
 			isToHaltOnDynamicJunctionTreeFailure = algorithm.isToHaltOnDynamicJunctionTreeFailure();
 			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
 			dynamicJunctionTreeNetSizeThreshold = algorithm.getDynamicJunctionTreeNetSizeThreshold();
@@ -31888,7 +31892,7 @@ public class MarkovEngineTest extends TestCase {
 		
 		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(groundTruth);
 		// make sure the ground truth does not use dynamic JT compilation
-		algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// large values of this attribute disables dynamic compilation
+//		algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// large values of this attribute disables dynamic compilation
 		
 		// compile the ground truth model
 		algorithm.run();
@@ -32215,7 +32219,7 @@ public class MarkovEngineTest extends TestCase {
 			engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(isToHaltOnDynamicJunctionTreeFailure);
 		}
 		if (dynamicJunctionTreeNetSizeThreshold != null) {
-			((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
+			((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
 		}
 	}
 	
@@ -32227,8 +32231,8 @@ public class MarkovEngineTest extends TestCase {
 		// force engine to throw exception if dynamic JT compilation fails
 		Boolean isToHaltOnDynamicJunctionTreeFailure = null;
 		Integer dynamicJunctionTreeNetSizeThreshold = null;
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-			JunctionTreeAlgorithm algorithm = (JunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			IncrementalJunctionTreeAlgorithm algorithm = (IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
 			isToHaltOnDynamicJunctionTreeFailure = algorithm.isToHaltOnDynamicJunctionTreeFailure();
 			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
 			dynamicJunctionTreeNetSizeThreshold = algorithm.getDynamicJunctionTreeNetSizeThreshold();
@@ -32239,9 +32243,9 @@ public class MarkovEngineTest extends TestCase {
 		ProbabilisticNetwork groundTruth = (ProbabilisticNetwork) new NetIO().load(new File(getClass().getResource("/asia.net").toURI()));
 		assertNotNull(groundTruth);
 		
-		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(groundTruth);
 		// make sure the ground truth does not use dynamic JT compilation
-		algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// large values of this attribute disables dynamic compilation
+		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(groundTruth);
+//		algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// large values of this attribute disables dynamic compilation
 		
 		// compile the ground truth model
 		algorithm.run();
@@ -32415,7 +32419,7 @@ public class MarkovEngineTest extends TestCase {
 			engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(isToHaltOnDynamicJunctionTreeFailure);
 		}
 		if (dynamicJunctionTreeNetSizeThreshold != null) {
-			((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
+			((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
 		}
 	}
 	
@@ -32438,8 +32442,8 @@ public class MarkovEngineTest extends TestCase {
 		// force engine to throw exception if dynamic JT compilation fails
 		Boolean isToHaltOnDynamicJunctionTreeFailure = null;
 		Integer dynamicJunctionTreeNetSizeThreshold = null;
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-			JunctionTreeAlgorithm algorithm = (JunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			IncrementalJunctionTreeAlgorithm algorithm = (IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
 			isToHaltOnDynamicJunctionTreeFailure = algorithm.isToHaltOnDynamicJunctionTreeFailure();
 			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
 			dynamicJunctionTreeNetSizeThreshold = algorithm.getDynamicJunctionTreeNetSizeThreshold();
@@ -32474,8 +32478,8 @@ public class MarkovEngineTest extends TestCase {
 			
 			// first, run without dynamic junction tree compilation
 			engine.initialize();
-			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-				((JunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);
+			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+				((IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);
 			}
 			assertEquals(0 , engine.getProbLists(null, null, null).size());
 			assertTrue(engine.getProbabilisticNetwork().getNodeCount() == 0);
@@ -32526,8 +32530,8 @@ public class MarkovEngineTest extends TestCase {
 			
 			// run with dynamic compilation
 			engine.initialize();
-			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-				((JunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(0);
+			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+				((IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(0);
 			}
 			assertEquals(0 , engine.getProbLists(null, null, null).size());
 			assertTrue(engine.getProbabilisticNetwork().getNodeCount() == 0);
@@ -32587,7 +32591,7 @@ public class MarkovEngineTest extends TestCase {
 			engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(isToHaltOnDynamicJunctionTreeFailure);
 		}
 		if (dynamicJunctionTreeNetSizeThreshold != null) {
-			((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
+			((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
 		}
 	}
 	
@@ -32808,8 +32812,8 @@ public class MarkovEngineTest extends TestCase {
 		
 		// force engine to throw exception if dynamic JT compilation fails
 		Boolean isToHaltOnDynamicJunctionTreeFailure = null;	// make a backup of original value first
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
-			JunctionTreeAlgorithm algorithm = (JunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			IncrementalJunctionTreeAlgorithm algorithm = (IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
 			isToHaltOnDynamicJunctionTreeFailure = algorithm.isToHaltOnDynamicJunctionTreeFailure();
 			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
 		}
@@ -32818,19 +32822,19 @@ public class MarkovEngineTest extends TestCase {
 		
 		engine.initialize();
 		// check that configuration did not change after initialize
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 			assertEquals(Integer.MAX_VALUE,  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
-			assertTrue(((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).isToHaltOnDynamicJunctionTreeFailure());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+			assertTrue(((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).isToHaltOnDynamicJunctionTreeFailure());
 		}
 		
 		// load the ground truth model
 		ProbabilisticNetwork groundTruth = (ProbabilisticNetwork) new NetIO().load(new File(getClass().getResource("/asia.net").toURI()));
 		assertNotNull(groundTruth);
 		
-		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(groundTruth);
 		// make sure the ground truth does not use dynamic JT compilation
-		algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// large values of this attribute disables dynamic compilation
+		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(groundTruth);
+//		algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// large values of this attribute disables dynamic compilation
 		
 		// compile the ground truth model
 		algorithm.run();
@@ -32857,9 +32861,9 @@ public class MarkovEngineTest extends TestCase {
 		for (Node node : groundTruth.getNodes()) {
 			if (node instanceof ProbabilisticNode) {
 				// check that configuration did not change
-				if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+				if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 					assertEquals(Integer.MAX_VALUE,  
-							((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+							((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 				}
 				Long nodeId = (long) Character.getNumericValue(node.getName().charAt(0));
 				try {
@@ -32874,9 +32878,9 @@ public class MarkovEngineTest extends TestCase {
 						newValues.add(((ProbabilisticNode) node).getMarginalAt(i));
 					}
 					// check that configuration did not change
-					if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+					if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 						assertEquals(Integer.MAX_VALUE,  
-								((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+								((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 					}
 					engine.addTrade(null, new Date(), node.toString(), 0, nodeId, newValues , null, null, true);
 				} catch (RuntimeException e) {
@@ -32886,9 +32890,9 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		// check that configuration did not change
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 			assertEquals(Integer.MAX_VALUE,  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
 		
 		// check if marginals matches
@@ -32935,9 +32939,9 @@ public class MarkovEngineTest extends TestCase {
 						&& !childNode.getParentNodes().isEmpty()) {
 					
 					// check that configuration did not change
-					if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+					if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 						assertEquals(Integer.MAX_VALUE,  
-								((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+								((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 					}
 					
 					// backup marginals, before adding new arc, for later comparison
@@ -32955,9 +32959,9 @@ public class MarkovEngineTest extends TestCase {
 					}
 					
 					// check that configuration did not change
-					if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+					if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 						assertEquals(Integer.MAX_VALUE,  
-								((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+								((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 					}
 					
 					// actually create arc
@@ -32985,9 +32989,9 @@ public class MarkovEngineTest extends TestCase {
 					}
 					
 					// check that configuration did not change
-					if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+					if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 						assertEquals(Integer.MAX_VALUE,  
-								((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+								((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 					}
 					
 					// passing null as assumed states will make the newValues to be interpreted as the CPT for all states of child and parents
@@ -33008,9 +33012,9 @@ public class MarkovEngineTest extends TestCase {
 			}
 			
 			// check that configuration did not change
-			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 				assertEquals(Integer.MAX_VALUE,  
-						((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+						((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 			}
 			
 			// for each modification, check marginals again
@@ -33039,9 +33043,9 @@ public class MarkovEngineTest extends TestCase {
 		probLists = engine.getProbLists(null, null, null);
 		
 		// check that configuration did not change
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 			assertEquals(Integer.MAX_VALUE,  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
 		
 		// Create H, I, J
@@ -33050,9 +33054,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('J')), 4, null);
 		
 		// check that configuration did not change
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 			assertEquals(Integer.MAX_VALUE,  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
 		
 		// check that adding nodes did not affect probabilities
@@ -33074,9 +33078,9 @@ public class MarkovEngineTest extends TestCase {
 		probLists = engine.getProbLists(null, null, null);
 		
 		// check that configuration did not change
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 			assertEquals(Integer.MAX_VALUE,  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
 		
 		// Create H->I<-J
@@ -33084,9 +33088,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('I')), Collections.singletonList(Long.valueOf(Character.getNumericValue('J'))), null);
 		
 		// check that configuration did not change
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 			assertEquals(Integer.MAX_VALUE,  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
 		
 		// check that adding arcs did not affect probabilities
@@ -33124,18 +33128,18 @@ public class MarkovEngineTest extends TestCase {
 		probLists = engine.getProbLists(null, null, null);
 		
 		// check that configuration did not change
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 			assertEquals(Integer.MAX_VALUE,  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
 				
 		// create arc H->J
 		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('J')), Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))), null);
 		
 		// check that configuration did not change
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 			assertEquals(Integer.MAX_VALUE,  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
 		
 		// check that cliques did not change
@@ -33167,9 +33171,9 @@ public class MarkovEngineTest extends TestCase {
 		
 
 		// check that configuration did not change
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 			assertEquals(Integer.MAX_VALUE,  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
 		
 		// resolve T(29), A(10), and E(14)
@@ -33179,9 +33183,9 @@ public class MarkovEngineTest extends TestCase {
 		
 
 		// check that configuration did not change
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 			assertEquals(Integer.MAX_VALUE,  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
 		
 		// resolve in ground truth too
@@ -33224,9 +33228,9 @@ public class MarkovEngineTest extends TestCase {
 		
 
 		// check that configuration did not change
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 			assertEquals(Integer.MAX_VALUE,  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
 		
 		// include new nodes and arcs to it, just to trigger compilation again
@@ -33239,9 +33243,9 @@ public class MarkovEngineTest extends TestCase {
 		
 
 		// check that configuration did not change
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 			assertEquals(Integer.MAX_VALUE,  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
 		
 		// check that the marginals are still consistent
@@ -33261,9 +33265,9 @@ public class MarkovEngineTest extends TestCase {
 		
 
 		// check that configuration did not change
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm) {
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
 			assertEquals(Integer.MAX_VALUE,  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
 		
 		// TODO check case when changed clusters are equal to existing separator
@@ -33275,7 +33279,7 @@ public class MarkovEngineTest extends TestCase {
 		if (dynamicJunctionTreeNetSizeThreshold != null) {
 			engine.setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
 			assertEquals(dynamicJunctionTreeNetSizeThreshold.intValue(),  
-					((JunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
+					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
 	}
 	

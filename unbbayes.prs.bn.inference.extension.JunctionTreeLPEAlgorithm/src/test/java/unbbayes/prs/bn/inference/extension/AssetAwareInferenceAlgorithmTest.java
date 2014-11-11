@@ -22,12 +22,11 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.AssetNetwork;
 import unbbayes.prs.bn.AssetNode;
 import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
-import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
@@ -49,7 +48,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 
 	private ProbabilisticNetwork network;
 
-	private JunctionTreeAlgorithm junctionTreeAlgorithm;
+	private IncrementalJunctionTreeAlgorithm junctionTreeAlgorithm;
 
 	/**
 	 * @param name
@@ -85,7 +84,7 @@ public class AssetAwareInferenceAlgorithmTest extends TestCase {
 		assertNotNull(network);
 		
 		// algorithm to propagate probabilities
-		junctionTreeAlgorithm = new JunctionTreeAlgorithm(network);
+		junctionTreeAlgorithm = new IncrementalJunctionTreeAlgorithm(network);
 		assertNotNull(junctionTreeAlgorithm);
 		
 		// enable soft evidence by using jeffrey rule in likelihood evidence w/ virtual nodes.
