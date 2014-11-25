@@ -70,9 +70,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 //	private int coordSep[][][];
 
 	/**
-	 * Default constructor for juction tree. It initializes the list {@link #getCliques()}
-	 * and the separatorsMap obtainable from {@link #getSeparator(Clique, Clique)},
-	 * {@link #getSeparatorAt(int)}, {@link #getSeparatorsSize()}
+	 * Default constructor for junction tree. It initializes the list {@link #getCliques()}.
 	 */
 	public JunctionTree() {
 //		separatorsMap = new ArrayList<Separator>();
@@ -90,6 +88,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	/**
 	 * Caution: {@link Separator#setInternalIdentificator(int)} must be set
 	 * to a value before calling this method.
+	 * This method does not update {@link Clique#getParent()} and {@link Clique#getChildren()}.
 	 * @see unbbayes.prs.bn.IJunctionTree#addSeparator(unbbayes.prs.bn.Separator)
 	 */
 	public void addSeparator(Separator sep) {
@@ -508,23 +507,29 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 */
 	public Separator getSeparator(Clique clique1, Clique clique2) {
 		Set<Separator> seps = separatorsMap.get(clique1);	// separators reachable from clique 1
+		if (seps == null) {
+			seps = Collections.emptySet();	// make sure we use non-null collections
+		}
+		
 		Clique theOtherClique = clique2;	// the clique other that the one used to extract separator
 		
 		// compare with size of separators reachable from clique 2, because we will do linear search in case of multiple separators
 		Set<Separator> seps2 = separatorsMap.get(clique2);	// separators reachable from clique 2
+		if (seps2 == null) {
+			seps2 = Collections.emptySet();	// make sure we use non-null collections
+		}
+		
 		if (seps2.size() < seps.size()) {
 			// use separators reachable from clique 2, because it's smaller, and set the other clique as clique 1
 			seps = seps2;
 			theOtherClique = clique1;	
 		}
 		
-		if (seps != null) {
-			for (Separator separator : seps) {
-//				if (separator.getClique2().equals(clique2) || separator.getClique1().equals(clique2)) {
-				if (separator.getClique2().getInternalIdentificator() == theOtherClique.getInternalIdentificator()
-						|| separator.getClique1().getInternalIdentificator() == theOtherClique.getInternalIdentificator()) {
-					return separator;
-				}
+		for (Separator separator : seps) {
+//			if (separator.getClique2().equals(clique2) || separator.getClique1().equals(clique2)) {
+			if (separator.getClique2().getInternalIdentificator() == theOtherClique.getInternalIdentificator()
+					|| separator.getClique1().getInternalIdentificator() == theOtherClique.getInternalIdentificator()) {
+				return separator;
 			}
 		}
 //		if (seps != null) {
@@ -1044,6 +1049,115 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
     	for (Separator sep : separators) {
     		sep.setInternalIdentificator(separatorIndex--);
     	}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#removeCliques(java.util.Collection)
+	 */
+	public boolean removeCliques(Collection<Clique> cliques) {
+		// basic assertion
+		if (cliques == null || cliques.isEmpty()) {
+			return false;	// there was nothing to remove
+		}
+		
+		boolean ret = false;
+		
+		// we need to remove each clique and connect children to parent
+		for (Clique cliqueToRemove : cliques) {
+			if (cliqueToRemove == null) {
+				continue;
+			}
+			// extract children
+			List<Clique> children = cliqueToRemove.getChildren();
+			if (children == null) {	// just make sure the list of children is never null
+				children = Collections.emptyList();
+			}
+			
+			// handle parent
+			List<Clique> parents = getParents(cliqueToRemove);
+			for (Clique parent : parents) {
+				// disconnect from parent
+				parent.removeChild(cliqueToRemove);
+				// delete separator between empty clique to delete and its parent
+				this.removeSeparator(this.getSeparator(parent, cliqueToRemove));
+				
+				if (!children.isEmpty()) {
+					// make each children to point to parent, instead of to the clique that will be deleted
+					for (Clique child : children) {
+						// delete separators between empty clique and its children
+						this.removeSeparator(this.getSeparator(cliqueToRemove, child));
+						// create empty separators from parent clique to children
+						// Separator(Clique,Clique) will also update Clique#getParent() of child clique, and Clique#getChildren() of parent clique
+						this.addSeparator(new Separator(parent, child));
+					}
+				} // or else, there was no children. Empty clique was a leaf, so no need to process children.
+			}
+			
+			// handle case when clique to delete is a root
+			if ( (parents == null || parents.isEmpty())
+					&& !children.isEmpty()) { 
+				// parent is null, and there are children
+				
+				// the empty clique was a root (but it will be removed), so pick one (any) children to become a new root
+				Clique parent = children.get(0);
+				parent.setParent(null);	  // this will make sure the new parent is a root, and also disconnect it from empty clique.
+				
+				// also make sure the separator between the new root and empty clique is removed
+				this.removeSeparator(this.getSeparator(cliqueToRemove, parent));
+				
+				// get the remaining children
+				if (children.size() > 1) {
+					children = children.subList(1, children.size());  // don't modify original list
+				} else {	// there was only 1 child, and it became a parent
+					children = Collections.emptyList();	// there is no remaining children
+				}
+				
+				// connect remaining children (i.e. brothers) to new root, by using empty separators
+				for (Clique child : children) {
+					// create separator from parent to children. 
+					// Separator(Clique,Clique) will also update Clique#getParent() of child clique, and Clique#getChildren() of parent clique
+					this.addSeparator(new Separator(parent, child));
+					// also make sure the separator between this child and empty clique is removed
+					this.removeSeparator(this.getSeparator(cliqueToRemove, child));
+				}
+				
+				// some algorithms require the root clique to be the 1st in list, so reorder
+				int indexOfNewRoot = this.getCliques().indexOf(parent);
+				if (indexOfNewRoot > 0) {
+					// swap with clique at index 0 (probably, this will swap with empty clique)
+					Collections.swap(this.getCliques(), 0, indexOfNewRoot);	
+				}
+				
+			}	// or else, the empty clique was the only clique in the junction tree
+			
+			// finally, remove the empty clique from the list of cliques in junction tree
+			if (this.getCliques().remove(cliqueToRemove)) {
+				ret = true;
+			}
+			
+		}	// end of for each empty clique
+		
+		// rebuild indexes, because some methods assumes that internal identificators and indexes are the same
+		this.updateCliqueAndSeparatorInternalIdentificators();
+		
+		return ret;
+		
+	}
+
+	/**
+	 * Extracts the parent of the provided clique.
+	 * This is useful when the {@link IJunctionTree} structure
+	 * allows multiple parents (e.g. loopy clique structures)
+	 * @param clique
+	 * @return parents of the clique. In a tree structure, this will contain only 1 element.
+	 * @see Clique#getParent()
+	 */
+	public List<Clique> getParents(Clique clique) {
+		if (clique == null || clique.getParent() == null) {
+			return Collections.emptyList();
+		}
+		return Collections.singletonList(clique.getParent());
 	}
 
 //	/**

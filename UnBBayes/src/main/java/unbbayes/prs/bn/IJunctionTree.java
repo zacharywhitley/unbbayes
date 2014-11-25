@@ -66,6 +66,13 @@ public interface IJunctionTree {
 	public abstract List<Clique> getCliques();
 	
 	/**
+	 * Deletes a clique from this junction tree
+	 * @param cliques : list of cliques to delete
+	 * @return true if this method has resulted in modification. False otherwise.
+	 */
+	public abstract boolean removeCliques(Collection<Clique> cliques);
+	
+	/**
 	 * @return list with associated separators
 	 */
 	public abstract Collection<Separator> getSeparators();

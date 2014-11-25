@@ -2133,7 +2133,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 					Clique newClique2 = (Clique) oldCliqueToNewCliqueMap.get(origSeparator.getClique2());
 					if (newClique1 == null || newClique2 == null) {
 						try {
-							Debug.println(getClass(), "Could not clone separator between " + newClique1 + " and " + newClique2);
+							Debug.println(getClass(), "Could not clone separator between " + origSeparator.getClique1() + " and " + origSeparator.getClique2());
 						} catch (Throwable t) {
 							t.printStackTrace();
 						}
