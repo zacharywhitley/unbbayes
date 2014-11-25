@@ -1979,7 +1979,8 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 			}
 			if (isToDeleteEmptyCliques() && !emptyCliques.isEmpty()) {
 				// if we are only using probabilities, then we don't need the empty cliques anymore
-				this.deleteEmptyCliques(emptyCliques, getRelatedProbabilisticNetwork().getJunctionTree());
+				getRelatedProbabilisticNetwork().getJunctionTree().removeCliques(emptyCliques);
+//				this.deleteEmptyCliques(emptyCliques, getRelatedProbabilisticNetwork().getJunctionTree());
 			}
 		}
 		if (isToUpdateAssets()) {
@@ -2013,121 +2014,121 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	}
 	
 
-	/**
-	 * This will delete empty cliques, and also delete separators in order to reorganize {@link Clique#getParent()}
-	 * and {@link Clique#getChildren()}.
-	 * Please, notice that this won't change {@link unbbayes.prs.bn.TreeVariable#getAssociatedClique()}.
-	 * @param emptyCliques : list of cliques to delete. It is assumed to be empty cliques.
-	 * @param junctionTree  : the junction tree where the cliques will be deleted from.
-	 * @see #setAsPermanentEvidence(Map, boolean)
-	 * @deprecated TODO a similar method must be implemented in {@link unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm} or {@link IJunctionTree}
-	 */
-	private void deleteEmptyCliques(List<Clique> emptyCliques, IJunctionTree junctionTree) {
-		// basic assertion
-		if (emptyCliques == null || junctionTree == null) {
-			return;	// there is nothing to remove, or no tree to remove cliques from
-		}
-		
-		// at this point, isToReconnectJunctionTree == true, thus we need to remove each clique and connect children to parent
-		for (Clique emptyClique : emptyCliques) {
-			// extract children
-			List<Clique> children = emptyClique.getChildren();
-			if (children == null) {	// just make sure the list of children is never null
-				children = Collections.emptyList();
-			}
-			
-			// extract parent
-			Clique parent = emptyClique.getParent();
-			
-			if (parent != null) {
-				// disconnect from parent
-				parent.removeChild(emptyClique);
-				// delete separator between empty clique to delete and its parent
-				junctionTree.removeSeparator(junctionTree.getSeparator(parent, emptyClique));
-				
-				if (!children.isEmpty()) {
-					// make each children to point to parent, instead of to the clique that will be deleted
-					for (Clique child : children) {
-						// delete separators between empty clique and its children
-						junctionTree.removeSeparator(junctionTree.getSeparator(emptyClique, child));
-						// create empty separators from parent clique to children
-						// Separator(Clique,Clique) will also update Clique#getParent() of child clique, and Clique#getChildren() of parent clique
-						junctionTree.addSeparator(new Separator(parent, child));
-					}
-				} // or else, there was no children. Empty clique was a leaf, so no need to process children.
-				
-			} else if (!children.isEmpty()) { // parent is null, and there are children
-				
-				// the empty clique was a root (but it will be removed), so pick one (any) children to become a new root
-				parent = children.get(0);
-				parent.setParent(null);	  // this will make sure the new parent is a root, and also disconnect it from empty clique.
-				
-				// also make sure the separator between the new root and empty clique is removed
-				junctionTree.removeSeparator(junctionTree.getSeparator(emptyClique, parent));
-				
-				// get the remaining children
-				if (children.size() > 1) {
-					children = children.subList(1, children.size());  // don't modify original list
-				} else {	// there was only 1 child, and it became a parent
-					children = Collections.emptyList();	// there is no remaining children
-				}
-				
-				// connect remaining children (i.e. brothers) to new root, by using empty separators
-				for (Clique child : children) {
-					// create separator from parent to children. 
-					// Separator(Clique,Clique) will also update Clique#getParent() of child clique, and Clique#getChildren() of parent clique
-					junctionTree.addSeparator(new Separator(parent, child));
-					// also make sure the separator between this child and empty clique is removed
-					junctionTree.removeSeparator(junctionTree.getSeparator(emptyClique, child));
-				}
-				
-				// some algorithms require the root clique to be the 1st in list, so reorder
-				int indexOfNewRoot = junctionTree.getCliques().indexOf(parent);
-				if (indexOfNewRoot > 0) {
-					// swap with clique at index 0 (probably, this will swap with empty clique)
-					Collections.swap(junctionTree.getCliques(), 0, indexOfNewRoot);	
-				}
-				
-			}	// or else, the empty clique was the only clique in the junction tree
-			
-			// finally, remove the empty clique from the list of cliques in junction tree
-			junctionTree.getCliques().remove(emptyClique);
-			
-		}	// end of for each empty clique
-		
-		// rebuild indexes, because some methods assumes that internal identificators and indexes are the same
-		if (junctionTree instanceof JunctionTree) {
-			// use the junction tree algorithm for this purpose
-			((JunctionTree)junctionTree).updateCliqueAndSeparatorInternalIdentificators();
-		} else {
-			// do it manually
-			if (!junctionTree.getCliques().isEmpty()) {
-				// move the new root clique to the 1st entry in the list of cliques in junction tree, because some algorithms assume the 1st element is the root;
-				Clique root = junctionTree.getCliques().get(0);
-				while (root.getParent() != null) { 
-					root = root.getParent(); // go up in hierarchy until we find the root
-				}
-				int indexOfRoot = junctionTree.getCliques().indexOf(root);
-				if (indexOfRoot > 0) {
-					// move root to the beginning (index 0) of the list
-					Collections.swap(junctionTree.getCliques(), 0, indexOfRoot);
-				}
-				
-				// redistribute internal identifications accordingly to indexes
-				for (int i = 0; i < junctionTree.getCliques().size(); i++) {
-					junctionTree.getCliques().get(i).setIndex(i);
-					junctionTree.getCliques().get(i).setInternalIdentificator(i);
-				}
-			}
-			// do the same for separators
-			int separatorIndex = -1;
-			for (Separator sep : junctionTree.getSeparators()) {
-				sep.setInternalIdentificator(separatorIndex--);
-			}
-		
-		}
-		
-	}
+//	/**
+//	 * This will delete empty cliques, and also delete separators in order to reorganize {@link Clique#getParent()}
+//	 * and {@link Clique#getChildren()}.
+//	 * Please, notice that this won't change {@link unbbayes.prs.bn.TreeVariable#getAssociatedClique()}.
+//	 * @param emptyCliques : list of cliques to delete. It is assumed to be empty cliques.
+//	 * @param junctionTree  : the junction tree where the cliques will be deleted from.
+//	 * @see #setAsPermanentEvidence(Map, boolean)
+//	 * @deprecated TODO a similar method must be implemented in {@link unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm} or {@link IJunctionTree}
+//	 */
+//	private void deleteEmptyCliques(List<Clique> emptyCliques, IJunctionTree junctionTree) {
+//		// basic assertion
+//		if (emptyCliques == null || junctionTree == null) {
+//			return;	// there is nothing to remove, or no tree to remove cliques from
+//		}
+//		
+//		// at this point, isToReconnectJunctionTree == true, thus we need to remove each clique and connect children to parent
+//		for (Clique emptyClique : emptyCliques) {
+//			// extract children
+//			List<Clique> children = emptyClique.getChildren();
+//			if (children == null) {	// just make sure the list of children is never null
+//				children = Collections.emptyList();
+//			}
+//			
+//			// extract parent
+//			Clique parent = emptyClique.getParent();
+//			
+//			if (parent != null) {
+//				// disconnect from parent
+//				parent.removeChild(emptyClique);
+//				// delete separator between empty clique to delete and its parent
+//				junctionTree.removeSeparator(junctionTree.getSeparator(parent, emptyClique));
+//				
+//				if (!children.isEmpty()) {
+//					// make each children to point to parent, instead of to the clique that will be deleted
+//					for (Clique child : children) {
+//						// delete separators between empty clique and its children
+//						junctionTree.removeSeparator(junctionTree.getSeparator(emptyClique, child));
+//						// create empty separators from parent clique to children
+//						// Separator(Clique,Clique) will also update Clique#getParent() of child clique, and Clique#getChildren() of parent clique
+//						junctionTree.addSeparator(new Separator(parent, child));
+//					}
+//				} // or else, there was no children. Empty clique was a leaf, so no need to process children.
+//				
+//			} else if (!children.isEmpty()) { // parent is null, and there are children
+//				
+//				// the empty clique was a root (but it will be removed), so pick one (any) children to become a new root
+//				parent = children.get(0);
+//				parent.setParent(null);	  // this will make sure the new parent is a root, and also disconnect it from empty clique.
+//				
+//				// also make sure the separator between the new root and empty clique is removed
+//				junctionTree.removeSeparator(junctionTree.getSeparator(emptyClique, parent));
+//				
+//				// get the remaining children
+//				if (children.size() > 1) {
+//					children = children.subList(1, children.size());  // don't modify original list
+//				} else {	// there was only 1 child, and it became a parent
+//					children = Collections.emptyList();	// there is no remaining children
+//				}
+//				
+//				// connect remaining children (i.e. brothers) to new root, by using empty separators
+//				for (Clique child : children) {
+//					// create separator from parent to children. 
+//					// Separator(Clique,Clique) will also update Clique#getParent() of child clique, and Clique#getChildren() of parent clique
+//					junctionTree.addSeparator(new Separator(parent, child));
+//					// also make sure the separator between this child and empty clique is removed
+//					junctionTree.removeSeparator(junctionTree.getSeparator(emptyClique, child));
+//				}
+//				
+//				// some algorithms require the root clique to be the 1st in list, so reorder
+//				int indexOfNewRoot = junctionTree.getCliques().indexOf(parent);
+//				if (indexOfNewRoot > 0) {
+//					// swap with clique at index 0 (probably, this will swap with empty clique)
+//					Collections.swap(junctionTree.getCliques(), 0, indexOfNewRoot);	
+//				}
+//				
+//			}	// or else, the empty clique was the only clique in the junction tree
+//			
+//			// finally, remove the empty clique from the list of cliques in junction tree
+//			junctionTree.getCliques().remove(emptyClique);
+//			
+//		}	// end of for each empty clique
+//		
+//		// rebuild indexes, because some methods assumes that internal identificators and indexes are the same
+//		if (junctionTree instanceof JunctionTree) {
+//			// use the junction tree algorithm for this purpose
+//			((JunctionTree)junctionTree).updateCliqueAndSeparatorInternalIdentificators();
+//		} else {
+//			// do it manually
+//			if (!junctionTree.getCliques().isEmpty()) {
+//				// move the new root clique to the 1st entry in the list of cliques in junction tree, because some algorithms assume the 1st element is the root;
+//				Clique root = junctionTree.getCliques().get(0);
+//				while (root.getParent() != null) { 
+//					root = root.getParent(); // go up in hierarchy until we find the root
+//				}
+//				int indexOfRoot = junctionTree.getCliques().indexOf(root);
+//				if (indexOfRoot > 0) {
+//					// move root to the beginning (index 0) of the list
+//					Collections.swap(junctionTree.getCliques(), 0, indexOfRoot);
+//				}
+//				
+//				// redistribute internal identifications accordingly to indexes
+//				for (int i = 0; i < junctionTree.getCliques().size(); i++) {
+//					junctionTree.getCliques().get(i).setIndex(i);
+//					junctionTree.getCliques().get(i).setInternalIdentificator(i);
+//				}
+//			}
+//			// do the same for separators
+//			int separatorIndex = -1;
+//			for (Separator sep : junctionTree.getSeparators()) {
+//				sep.setInternalIdentificator(separatorIndex--);
+//			}
+//		
+//		}
+//		
+//	}
 
 //	/**
 //	 * This method only delegates to
