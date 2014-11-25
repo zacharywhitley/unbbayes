@@ -36,6 +36,13 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	public static final PotentialTable DEFAULT_SINGLETON_UTILITY_TABLE = new UtilityTable();
 	/** This is used in {@link StubClique} as the default content of potential tables. It is static in order to avoid unnecessary memory garbage */
 	public static final PotentialTable DEFAULT_SINGLETON_POTENTIAL_TABLE = new ProbabilisticTable();
+	
+	/** A builder that instantiates an instance of {@link LoopyJunctionTree}, which enables loopy belief propagation of cliques when {@link LoopyJunctionTree#isLoopy()} is true. */
+	public static final IJunctionTreeBuilder DEFAULT_LOOPY_JT_BUILDER = new IJunctionTreeBuilder() {
+		public IJunctionTree buildJunctionTree(Graph network) throws InstantiationException, IllegalAccessException {
+			return new LoopyJunctionTree();
+		}
+	};
 
 
 	/** {@link #run()} will use dynamic junction tree compilation if number of nodes is above this value */
@@ -47,6 +54,94 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 
 	/** Copy of the network used when {@link #run()} was executed the previous time */
 	private ProbabilisticNetwork netPreviousRun = null;
+	
+	private int loopyBPCliqueSizeThreshold = 16384;
+	
+	/**
+	 * This clique splitter will split the clique in the way that
+	 * the 1st clique will have the first N variables that fills desired size,
+	 * the second clique will have the next M variables starting from (N-N/2)-th variable
+	 * (so that the separator between the K-th and (K+1)th variable has N/2 variables),
+	 * and the last clique will have variables in common with the 1st clique (so that it will
+	 * generate a cycle of common variables).
+	 * <br/> <br/>
+	 * For example, suppose the provided clique is {A,B,C,D,E,F,G} (with all binary variables), 
+	 * and the desired size is 2^3 (so, each resulting clique shall have 3 variables). Then, this object
+	 * will create the following cliques:
+	 * <br/> <br/>
+	 * {A,B,C},{C,D,E}, {E,F,G},{G,A,B}
+	 */
+	public static final ICliqueSplitter SINGLE_CYCLE_HALF_SIZE_SEPARATOR_CLIQUE_SPLITTER = new ICliqueSplitter() {
+		public List<Clique> splitClique(Clique cliqueToSplit, IJunctionTree jt, int desiredSize) {
+			
+			// prepare the list to return already
+			List<Clique> ret = new ArrayList<Clique>();
+			
+			// extract the nodes to be included in the cliques
+			// we'll edit clique tables first, so keep the ordering of variables the same of original clique table
+			List<Node> nodesList = cliqueToSplit.getProbabilityFunction().variableList;	
+			final int numNodes = nodesList.size();	// a local variable just to avoid invoking List#size() multiple times
+			
+			// iterate on nodes
+			for (int nodeIndex = 0; nodeIndex < numNodes; ) {
+				
+				// instantiate the clique in advance
+				Clique clique = new Clique();
+				
+				// also extract the clique table in advance, so that we can fill it immediately
+				PotentialTable currentCliqueTable = clique.getProbabilityFunction();
+				
+				// add nodes to clique table until we reach desired table size
+				while (currentCliqueTable.tableSize() < desiredSize) {
+					// using mod (i.e. "%") in nodeIndex, so that if nodeIndex exceeds size of nodesList, then we go back to first few nodes again.
+					currentCliqueTable.addVariable(nodesList.get(nodeIndex % numNodes));	
+					nodeIndex++;
+					// stop iteration if by adding the next node it will exceed desired table size
+					if ( ( currentCliqueTable.tableSize() * nodesList.get(nodeIndex % numNodes).getStatesSize() ) > desiredSize) {
+						if ((nodeIndex - 1) < numNodes) { 
+							// step back nodeIndex, so that the clique of next iteration has some nodes in common
+							nodeIndex -= currentCliqueTable.variableCount()/2;	// last half (truncated) of the variables in current clique will be in common with next clique
+						} // or else, we already completed a "loop" (i.e. created a clique containing last few nodes and first few nodes)
+							
+						break;
+					}
+				}
+				
+				// content of new clique table shall be filled with original clique table (summing out unnecessary variables);
+				PotentialTable sumOutOriginalCliqueTable = cliqueToSplit.getProbabilityFunction().getTemporaryClone();	// use a clone, so that we keep original untouched
+				// check which variables we shall sum out from original clique table in order to retain the variables in new clique table
+				List<INode> nodesToSumOut = new ArrayList<INode>(sumOutOriginalCliqueTable.variableList);
+				nodesToSumOut.removeAll(currentCliqueTable.variableList);	// the list will contain variables in original clique that is not in current clique
+				// sum out unnecessary variables
+				for (INode nodeToSumOut : nodesToSumOut) {
+					sumOutOriginalCliqueTable.removeVariable(nodeToSumOut);
+				}
+				// just an assertion
+				if (sumOutOriginalCliqueTable.tableSize() != currentCliqueTable.tableSize()) {
+					throw new RuntimeException("Expected clique table's size of " + currentCliqueTable.variableList + " is " + sumOutOriginalCliqueTable.tableSize() + ", but found " + currentCliqueTable.tableSize());
+				}
+				// copy values
+				System.arraycopy(sumOutOriginalCliqueTable.getValues(), 0, currentCliqueTable.getValues(), 0, currentCliqueTable.tableSize());
+				
+				// check if this is the last clique (the one which completes a loop).
+				if (nodeIndex >= numNodes) {
+					// it has variables in some order that is different from original clique table, 
+					// so we'd better reorder the variables to keep the same ordering
+					currentCliqueTable.variableList = new ArrayList<Node>(sumOutOriginalCliqueTable.variableList);
+				}
+				
+				// fill clique with the nodes we just included in clique table
+				clique.getNodesList().addAll(currentCliqueTable.variableList);
+				Collections.reverse(clique.getNodesList());	// the order of nodes in clique is the inverse of variables in clique table
+				
+				ret.add(clique);
+			}
+			
+			return ret;
+		}
+	};
+	
+	private ICliqueSplitter cliqueSplitter = SINGLE_CYCLE_HALF_SIZE_SEPARATOR_CLIQUE_SPLITTER;
 	
 	/**
 	 * Default constructor.
@@ -180,6 +275,13 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		if (isToCompileNormally) {
 			// run ordinal junction tree compilation
 			super.run();
+			// activate loopy BP if clique size got too large
+			List<Clique> largestCliques = getLargestCliques();
+			if (largestCliques != null && 
+					!largestCliques.isEmpty() 
+					&& ( largestCliques.get(0).getProbabilityFunction().tableSize() > getLoopyBPCliqueSizeThreshold() ) ) {
+				this.buildLoopyCliques();
+			}
 		}
 		
 		// update backup of network if necessary
@@ -200,6 +302,246 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		
 	}
 	
+	/**
+	 * @return List of the cliques with largest size in {@link #getJunctionTree()}.
+	 * This will return multiple elements if there are cliques with same size.
+	 */
+	public List<Clique> getLargestCliques() {
+		// basic assertions
+		if (getNet() == null 
+				|| getNet().getJunctionTree() == null 
+				|| getNet().getJunctionTree().getCliques() == null
+				|| getNet().getJunctionTree().getCliques().isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		// the variable to return
+		List<Clique> largestCliques = new ArrayList<Clique>();
+		
+		// keeps track of the size of the largest cliques we know so far
+		int largestCliqueSize = -1;
+		
+		// iterate on cliques to check largest size
+		for (Clique currentCliqueInIteration : getNet().getJunctionTree().getCliques()) {
+			
+			// extract size of the current clique in iteration
+			int currentCliqueSize = currentCliqueInIteration.getProbabilityFunction().tableSize();
+			
+			// compare clique table size
+			if (currentCliqueSize >= largestCliqueSize) {
+				if (currentCliqueSize > largestCliqueSize) {
+					// found clique strictly larger than the largest we know so far, so delete what we know so far
+					largestCliques.clear();	
+					largestCliqueSize = currentCliqueSize;
+				}
+				largestCliques.add(currentCliqueInIteration);
+			}
+		}
+		
+		return largestCliques;
+	}
+
+	public void buildLoopyCliques() {
+		// extract the junction tree
+		LoopyJunctionTree jt = null;
+		try {
+			jt = (LoopyJunctionTree) getJunctionTree();
+		} catch (ClassCastException e) {
+			e.printStackTrace();
+			// needs to recompile JT using LoopyJunctionTree
+			getNet().setJunctionTreeBuilder(DEFAULT_LOOPY_JT_BUILDER);
+			super.run();	// recompile the whole structure
+			// now, the junction tree is supposedly an instance of LoopyJunctionTree
+			try {
+				jt = (LoopyJunctionTree) getJunctionTree();
+			} catch (ClassCastException e2) {
+				throw new RuntimeException("Unable to create a special instance of junction tree for loopy BP.", e2);
+			}
+		}
+		
+		// explicitly indicate that this junction tree is not a tree, and it has loops...
+		jt.setLoopy(true);	// this should enable loopy BP
+		
+		// split largest cliques
+		for (Clique largeClique : getLargestCliques()) {
+			this.splitCliqueAndAddToJT(largeClique, jt, getLoopyBPCliqueSizeThreshold());
+		}
+	}
+
+	/**
+	 * Split a clique (and creates a loop between them) until the size of the clique is smaller than or equals to 
+	 * the loopyBPCliqueSizeThreshold.
+	 * 
+	 * @param originalClique : the clique to be split. Separators will be adjusted.
+	 * @param jt : the junction tree used to obtain separators between clique to be separated and other connected cliques
+	 * @param desiredCliqueSize : resulting cliques shall have this size
+	 */
+	protected void splitCliqueAndAddToJT(Clique originalClique, LoopyJunctionTree jt, int desiredCliqueSize) {
+		
+		// TODO find out a way to split which keeps loopy BP performance/convergence acceptable
+		
+		// just an initial assertion
+		if (originalClique == null
+				|| jt == null) {
+			return;
+		}
+		
+		// extract the clique table in advance, because we'll access it frequently
+		PotentialTable cliqueTable = originalClique.getProbabilityFunction();
+		
+		// another condition to do nothing
+		if (cliqueTable.tableSize() <= desiredCliqueSize) {
+			return;
+		}
+		
+		
+		/*
+		 * Example: split {ABCDE} given cluster structure:
+		 * 
+		 * {XABCD}<ABCD>{ABCDE}<BCDE>{BCDEY}
+		 * 
+		 * Expected result:
+		 * 
+		 *          {XABCD}
+		 *      <ABC> <CD>   <AB>
+		 *   {ABC}<C>{CDE}<E>{EAB}--"<AB>{ABC}"
+		 *      <BC>  <CDE>  <EB>
+		 *          {BCDEY}
+		 */
+		
+
+		// extract the object to be used to split the clique (without connecting separators)
+		ICliqueSplitter splitter = getCliqueSplitter();
+		if (splitter == null) {
+			// use a default one if none was specified
+			splitter = SINGLE_CYCLE_HALF_SIZE_SEPARATOR_CLIQUE_SPLITTER;
+		}
+		
+		// generate smaller cliques by splitting the clique.
+		// do this before making any change in JT, because implementations may need such information.
+		List<Clique> generatedCliques = splitter.splitClique(originalClique, jt, desiredCliqueSize);
+		
+		// extract parents of original clique
+		List<Clique> parentCliques = jt.getParents(originalClique);
+		// disconnect clique from parents 
+		if (parentCliques != null) {
+			for (Clique parentClique : parentCliques) {
+				// extract the separator between the cliques
+				Separator separator = jt.getSeparator(parentClique, originalClique);
+				if (separator != null) {
+					throw new IllegalArgumentException(parentClique + " is supposed to be a parent clique of " + originalClique + ", but no separator was found in between.");
+				}
+				// delete the separator from the jt
+				jt.removeSeparator(separator);	// this will not remove the references between cliques, so we need to explicitly remove them
+				// delete the reference in the mapping of parents
+				jt.removeParent(parentClique, originalClique);
+				// also remove the reference to original clique from list of children of parent clique
+				parentClique.removeChild(originalClique);
+			}
+		}
+		
+		// extract children of original clique
+		List<Clique> childCliques = originalClique.getChildren();
+		// disconnect clique from children
+		if (childCliques != null) {
+			for (Clique childClique : childCliques) {
+				// extract the separator between the cliques
+				Separator separator = jt.getSeparator(originalClique, childClique);
+				if (separator != null) {
+					throw new IllegalArgumentException(childClique + " is supposed to be a child clique of " + originalClique + ", but no separator was found in between.");
+				}
+				// delete the separator from the jt
+				jt.removeSeparator(separator);	// this will not remove the references between cliques, so we need to explicitly remove them
+				// delete the reference in the mapping of parents
+				jt.removeParent(originalClique, childClique);
+				// also remove the reference in list of children
+				originalClique.removeChild(childClique);
+			}
+		}
+		
+		// remove original clique from junction tree
+		jt.removeCliques(Collections.singletonList(originalClique));
+		
+		// include new cliques in junction tree in advance (we'll generate separators later)
+		jt.getCliques().addAll(generatedCliques);
+		
+		// fully (pairwise) connect generated cliques with plausible separators.
+		// Use same ordering in the list as the parent/child order of the cliques
+		// (i.e. if a clique appear first in list, then it is an ancestor of cliques that appear after it in the list).
+		for (int i = 0; i < generatedCliques.size()-1; i++) {
+			for (int j = i+1; j < generatedCliques.size(); j++) {
+				this.connectCliquesAndAddSeparator(generatedCliques.get(i), generatedCliques.get(j), jt);
+			}
+		}
+		
+		// connect generated cliques with original parents;
+		for (Clique parent : parentCliques) {
+			for (Clique child : generatedCliques) {
+				this.connectCliquesAndAddSeparator(parent, child, jt);
+			}
+		}
+		
+		// connect generated cliques with original children;
+		for (Clique child : childCliques) {
+			for (Clique parent : generatedCliques) {
+				this.connectCliquesAndAddSeparator(parent, child, jt);
+			}
+		}
+	}
+
+	/**
+	 * This will update the references to parent/child cliques
+	 * by updating {@link LoopyJunctionTree#getParents(Clique)} and {@link Clique#getChildren()},
+	 * and it will also generate a new {@link Separator} between the provided cliques and include
+	 * it in the junction tree.
+	 * @param parent : one of the cliques to be connected. This will be come the parent clique in hierarchy
+	 * @param child : the other clique to be connected. This will become the child clique.
+	 * @param jt : the junction tree where the new separator will be included.
+	 */
+	protected void connectCliquesAndAddSeparator(Clique parent, Clique child, LoopyJunctionTree jt) {
+		// basic assertions
+		if (parent == null || child == null || jt == null) {
+			return;	// there is nothing to do
+		}
+		
+		// keep track of variables in parent that are not in child
+		List<INode> differentVars = new ArrayList<INode>(parent.getNodesList());	// use a clone, because we don't want to modify original list
+		differentVars.removeAll(child.getNodesList());
+		// also extract common variables;
+		List<INode> commonVars = new ArrayList<INode>(parent.getNodesList());	// use a clone, because we don't want to modify original list
+		commonVars.removeAll(differentVars);
+		
+		
+		// create a separator with the common variables;
+		Separator sep = new Separator(parent, child, null, null, false);
+		sep.getNodes().addAll((List)commonVars);	// the order of variables is supposedly the same of parent clique
+		
+		
+		// sum out variables from parent clique table
+		PotentialTable cliqueTable = (PotentialTable) parent.getProbabilityFunction().getTemporaryClone();	// use clone so that we don't affect original table
+		for (INode varToSumOut : differentVars) {
+			// this shall sum out the variable
+			cliqueTable.removeVariable(varToSumOut);
+		}
+		
+		// update the separator table by reading from parent's clique table;
+		PotentialTable separatorTable = sep.getProbabilityFunction();
+		for (INode var : cliqueTable.variableList) {	
+			// keep same ordering of variables
+			separatorTable.addVariable(var);
+		}
+		// copy the content of the table (after sum out) too
+		System.arraycopy(cliqueTable.getValues(), 0, separatorTable.getValues(), 0, separatorTable.tableSize());
+		
+		// include separator in JT (this will not update references between cliques yet);
+		jt.addSeparator(sep);
+		
+		// update reference from child to parent;
+		jt.addParent(parent, child);
+		
+		// update reference from parent to child;
+		parent.addChild(child);
+	}
 
 	/**
 	 * Runs the algorithm of Julia Florez in order to reuse the junction tree that was previously compiled.
@@ -898,7 +1240,11 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					}
 					
 					// remove new clique from max prime subtree. This will make sure it won't be referenced later
-					primeSubgraphJunctionTree.getCliques().remove(newCliqueInMaxPrimeJunctionTree);
+					// just to make sure references from the clique are also removed
+//					newCliqueInMaxPrimeJunctionTree.setParent(null);		
+//					newCliqueInMaxPrimeJunctionTree.getChildren().clear();
+					// call the general method to remove clique
+					primeSubgraphJunctionTree.removeCliques(Collections.singletonList(newCliqueInMaxPrimeJunctionTree));
 					
 				} else {
 					// set new clique as a child of old unchanged clique
@@ -958,8 +1304,6 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					// join cliques. The new clique will remain, and the unchanged original clique will be deleted
 					newCliqueInMaxPrimeJunctionTree.join(unchangedOriginalClique);
 					
-					// needs to delete the unchanged clique (the one absorbed by the new clique) from original join tree, because newCliqueInMaxPrimeJunctionTree will take its role
-					originalJunctionTree.getCliques().remove(unchangedOriginalClique);
 					
 					// set the resulting (joined) clique as a parent of all children of the clique being deleted
 					for (Clique childClique : unchangedOriginalClique.getChildren()) {
@@ -1002,6 +1346,10 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 						// finally, include separator to original junction tree
 						originalJunctionTree.addSeparator(newSeparator);
 					}
+					
+
+					// needs to delete the unchanged clique (the one absorbed by the new clique) from original join tree, because newCliqueInMaxPrimeJunctionTree will take its role
+					originalJunctionTree.removeCliques(Collections.singletonList(unchangedOriginalClique));
 					
 				} else {
 					// set new clique as a parent of old unchanged clique
@@ -1054,22 +1402,23 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
     	// Now, we need to delete all the modified (old) cliques and separators from original junction tree;
     	
     	// first, delete the separators that pairwise connects modified cliques (because we only deleted the border separators)
-    	Set<Separator> separatorsToDelete = new HashSet<Separator>(); // this is to avoid deleting and reading concurrently (which may cause exceptions)
-    	for (Separator separator : originalJunctionTree.getSeparators()) {
-			if (modifiedCliques.contains(separator.getClique1())
-					|| modifiedCliques.contains(separator.getClique2())) {
-				// this is a separator connecting cliques to be deleted (this is a sufficient condition), so delete it
-				separatorsToDelete.add(separator);
-			}
-		} // TODO assuming that number of modified cliques is small, isn't it faster to iterate on pairs of modified cliques?
-    	
-    	// use the IJunctionTree#removeSeparator(Separator), so that internal indexes (for faster access) are also removed
-    	for (Separator separator : separatorsToDelete) {
-			originalJunctionTree.removeSeparator(separator);
-		}
+//    	Set<Separator> separatorsToDelete = new HashSet<Separator>(); // this is to avoid deleting and reading concurrently (which may cause exceptions)
+//    	for (Separator separator : originalJunctionTree.getSeparators()) {
+//			if (modifiedCliques.contains(separator.getClique1())
+//					|| modifiedCliques.contains(separator.getClique2())) {
+//				// this is a separator connecting cliques to be deleted (this is a sufficient condition), so delete it
+//				separatorsToDelete.add(separator);
+//			}
+//		} // TODO assuming that number of modified cliques is small, isn't it faster to iterate on pairs of modified cliques?
+//    	
+//    	// use the IJunctionTree#removeSeparator(Separator), so that internal indexes (for faster access) are also removed
+//    	for (Separator separator : separatorsToDelete) {
+//			originalJunctionTree.removeSeparator(separator);
+//		}
+    	// we don't need the above code anymore, because it was included in JunctionTree#removeCliques(Collection)
     	
     	// then, delete all old (modified) cliques
-    	originalJunctionTree.getCliques().removeAll(modifiedCliques);
+    	originalJunctionTree.removeCliques(modifiedCliques);
     	
 	}
 
@@ -1855,7 +2204,9 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					currentCliqueToFill.join(childCliqueToFill);
 					
 					// also needs to remove the joined child from the junction tree being filled, because the recursive call has inserted it in the junction tree
-					junctionTreeToFill.getCliques().remove(childCliqueToFill);
+					childCliqueToFill.setParent(null);
+					childCliqueToFill.getChildren().clear();
+					junctionTreeToFill.removeCliques(Collections.singletonList(childCliqueToFill));
 					
 				} else {	// no need to merge cliques
 					
@@ -1883,6 +2234,54 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		return currentCliqueToFill;
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#setNet(unbbayes.prs.bn.ProbabilisticNetwork)
+	 */
+	public void setNet(ProbabilisticNetwork net) {
+		super.setNet(net);
+		net.setJunctionTreeBuilder(DEFAULT_LOOPY_JT_BUILDER);
+	}
 
+	/**
+	 * @return if the max clique size of the junction tree is above this threshold, then
+	 * {@link #run()} or {@link #runDynamicJunctionTreeCompilation()} will
+	 * invoke {@link #buildLoopyCliques()} in order to start using approximation by loopy belief propagation.
+	 */
+	public int getLoopyBPCliqueSizeThreshold() {
+		return loopyBPCliqueSizeThreshold;
+	}
+
+	/**
+	 * @param loopyBPCliqueSizeThreshold the loopyBPCliqueSizeThreshold to set.
+	 * If the max clique size of the junction tree is above this threshold, then
+	 * {@link #run()} or {@link #runDynamicJunctionTreeCompilation()} will
+	 * invoke {@link #buildLoopyCliques()} in order to start using approximation by loopy belief propagation.
+	 */
+	public void setLoopyBPCliqueSizeThreshold(int loopyBPCliqueSizeThreshold) {
+		this.loopyBPCliqueSizeThreshold = loopyBPCliqueSizeThreshold;
+	}
+
+	/**
+	 * @return the cliqueSplitter used in {@link #splitCliqueAndAddToJT(Clique, LoopyJunctionTree, int)} in order
+	 * to generate cliques with desired size.
+	 * @see #SINGLE_CYCLE_HALF_SIZE_SEPARATOR_CLIQUE_SPLITTER
+	 * @see #setCliqueSplitter(ICliqueSplitter)
+	 */
+	public ICliqueSplitter getCliqueSplitter() {
+		return cliqueSplitter;
+	}
+
+	/**
+	 * @param cliqueSplitter : used in {@link #splitCliqueAndAddToJT(Clique, LoopyJunctionTree, int)} in order
+	 * to generate cliques with desired size. Change this object in order to customize the way 
+	 * small cliques are generated from larger ones.
+	 * @see #SINGLE_CYCLE_HALF_SIZE_SEPARATOR_CLIQUE_SPLITTER
+	 * @see #getCliqueSplitter()
+	 */
+	public void setCliqueSplitter(ICliqueSplitter cliqueSplitter) {
+		this.cliqueSplitter = cliqueSplitter;
+	}
+
+	
 
 }
