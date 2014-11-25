@@ -394,6 +394,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private int dynamicJunctionTreeNetSizeThreshold = 1;
 	
+	private String defaultComplexityFactorName = COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE;
 	
 	
 	/**
@@ -13658,7 +13659,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE
 	 */
 	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies) {
-		return this.getComplexityFactors(newDependencies).get(COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE).intValue();
+		return this.getComplexityFactors(newDependencies).get(getDefaultComplexityFactorName()).intValue();
 	}
 	
 	/**
@@ -14346,6 +14347,30 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (algorithm instanceof IncrementalJunctionTreeAlgorithm) {
 			((IncrementalJunctionTreeAlgorithm) algorithm).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
 		}
+	}
+	
+
+	/**
+	 * @return the key of {@link #getComplexityFactors(Map)} returned by default by {@link #getComplexityFactor(Map)}.
+	 * @see #getComplexityFactor(List, List)
+	 * @see #getComplexityFactor(Long, List)
+	 * @see MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE
+	 * @see MarkovEngineInterface#COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE
+	 */
+	public String getDefaultComplexityFactorName() {
+		return defaultComplexityFactorName;
+	}
+
+	/**
+	 * @param defaultComplexityFactorName : the key of {@link #getComplexityFactors(Map)} returned by default by {@link #getComplexityFactor(Map)}.
+	 * @see #getComplexityFactor(List, List)
+	 * @see #getComplexityFactor(Long, List)
+	 * @see MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE
+	 * @see MarkovEngineInterface#COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE
+	 */
+	public void setDefaultComplexityFactorName(
+			String defaultComplexityFactorName) {
+		this.defaultComplexityFactorName = defaultComplexityFactorName;
 	}
 
 

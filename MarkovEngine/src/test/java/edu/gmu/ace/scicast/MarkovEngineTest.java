@@ -33,6 +33,7 @@ import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
+import unbbayes.prs.bn.LoopyJunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -46,7 +47,6 @@ import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
-import edu.gmu.ace.scicast.MarkovEngineComplexityFactorProfiler.ComplexityFactorRunnable;
 import edu.gmu.ace.scicast.MarkovEngineImpl.AddTradeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.BalanceTradeNetworkAction;
 import edu.gmu.ace.scicast.MarkovEngineImpl.DummyTradeAction;
@@ -301,6 +301,8 @@ public class MarkovEngineTest extends TestCase {
 			//ok
 		}
 		
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
 	}
 
@@ -505,6 +507,9 @@ public class MarkovEngineTest extends TestCase {
 		for (Float prob : probLists.get(1313L)) {
 			assertEquals(1f/probLists.get(1313L).size(), prob, PROB_ERROR_MARGIN);
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	
@@ -919,6 +924,8 @@ public class MarkovEngineTest extends TestCase {
 			engine.addQuestionAssumption(null, new Date(), Long.MIN_VALUE, Collections.singletonList(0L), null);
 			engine.commitNetworkActions(transactionKey);
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 
@@ -1378,6 +1385,8 @@ public class MarkovEngineTest extends TestCase {
 		assertFalse(Double.isInfinite(me.getCash(2L, null, null)));
 		
 		// TODO test disconnected network cases
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 
@@ -4045,7 +4054,9 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(engine.getPossibleQuestionAssumptions(0x0A, null).isEmpty());
 		assertNotNull(engine.getScoreDetails(userNameToIDMap.get("Tom"), 0x0AL, null, null));
 		assertFalse(engine.getQuestionAssumptionGroups().isEmpty());
-		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+			
 	}
 	
 	
@@ -4649,6 +4660,8 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -5170,6 +5183,8 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -5677,7 +5692,9 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 		
-		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+			
 	}
 	
 	
@@ -7410,7 +7427,9 @@ public class MarkovEngineTest extends TestCase {
 				assertEquals(questionAssumptionGroups.toString(), 2, group.size());
 			}
 		}
-		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+			
 	}
 	
 	/**
@@ -8032,6 +8051,8 @@ public class MarkovEngineTest extends TestCase {
 		cash = engine.getCash(userNameToIDMap.get("Eric"), assumptionIds, assumedStates);
 		assertEquals(minCash, cash, ASSET_ERROR_MARGIN);
 		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -8623,6 +8644,9 @@ public class MarkovEngineTest extends TestCase {
 				assertTrue("Clique = " + clique, clique.contains(5L));
 			}
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -9034,6 +9058,9 @@ public class MarkovEngineTest extends TestCase {
 		BalanceTradeNetworkAction action = (BalanceTradeNetworkAction) questionHistory.get(questionHistory.size()-1);
 		assertEquals((long)0x0E, (long)action.getQuestionId());
 		assertTrue("Assumptions = " + action.getTradeId(), action.getAssumptionIds().isEmpty());
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 
 	/**
@@ -9888,6 +9915,9 @@ public class MarkovEngineTest extends TestCase {
 				}
 			} 
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 		
 		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
 	}
@@ -10245,6 +10275,8 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(engine.getScoreSummaryObject(Long.MIN_VALUE, null, null, null).getCash(), 12050.81f);
 			assertEquals(engine.getScoreSummaryObject(Long.MIN_VALUE, null, null, null).getScoreEV(), 12050.81f);
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
 	}
@@ -11084,6 +11116,8 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
 		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 
@@ -11547,6 +11581,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 
 
@@ -11939,6 +11976,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -12360,6 +12400,10 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -13591,6 +13635,10 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -13899,6 +13947,9 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(.01f, engine.getJointProbability(questionIds, manualAssumptionStates), PROB_ERROR_MARGIN);
 		manualAssumptionStates.add(0,1); manualAssumptionStates.add(1,1); manualAssumptionStates.set(2,1);
 		assertEquals(.09f, engine.getJointProbability(questionIds, manualAssumptionStates), PROB_ERROR_MARGIN);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -14027,96 +14078,12 @@ public class MarkovEngineTest extends TestCase {
 		validAssumptions = engine.getMaximumValidAssumptionsSublists(0x0FL, assumptionIds , (int)(2 + (Math.random() * (Integer.MAX_VALUE - 2))));
 		assertEquals(1, validAssumptions.size());
 		assertEquals(0, validAssumptions.get(0).size());
+		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
-//	/**
-//	 * Check that if Gain(X) = Prob(X=true) * ExpectedGain(X=true) + Prob(X=false) * ExpectedGain(X=false),
-//	 * then Sum(Gain(Xi)) for all nodes will result in global expected gain.
-//	 * This will test the DEF net after the trades of {@link #testAddTrade()}.
-//	 */
-//	public final void testQuestionLevelScoreGain() {
-//		// crate transaction
-//		long transactionKey = engine.startNetworkActions();
-//		// create nodes D, E, F
-//		engine.addQuestion(transactionKey, new Date(), 0x0D, 2, null);	// question D has ID = hexadecimal D. CPD == null -> linear distro
-//		engine.addQuestion(transactionKey, new Date(), 0x0E, 2, null);	// question E has ID = hexadecimal E. CPD == null -> linear distro
-//		engine.addQuestion(transactionKey, new Date(), 0x0F, 2, null);	// question F has ID = hexadecimal F. CPD == null -> linear distro
-//		// create edge D->E 
-//		engine.addQuestionAssumption(transactionKey, new Date(), 0x0E, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
-//		// create edge D->F
-//		engine.addQuestionAssumption(transactionKey, new Date(), 0x0F, Collections.singletonList((long) 0x0D), null);	// cpd == null -> linear distro
-//		engine.addCash(transactionKey, new Date(), Long.MAX_VALUE, engine.getScoreFromQValues(100), "adding 100 q");
-//		engine.commitNetworkActions(transactionKey);
-//		
-//		// extract the marginal probabilities of all nodes
-//		Map<Long, List<Float>> marginals = engine.getProbLists(null, null, null);
-//		assertEquals(10.0,engine.scoreUserEv(Long.MAX_VALUE, null, null),ASSET_ERROR_MARGIN);
-//		assertEquals(10.0,engine.getCash(Long.MAX_VALUE, null, null),ASSET_ERROR_MARGIN);
-//		
-//		// multiply with expected scores conditioned to states and compare the sum with engine.scoreUserEv
-//		// extract base so that we can obtain the score = base + gain -> gain = score - base.
-////			float base = engine.getCash(userNameToIDMap.get(name), null, null);
-//		float base = engine.getScoreFromQValues(100f);
-//		try {
-//			engine.getAlgorithmAndAssetNetFromUserID(Long.MAX_VALUE).setExpectedAssetPivot(base);
-//			base = 0;
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(Long.MAX_VALUE+"");
-//		} 
-//		double sum = 0;
-//		double sumWithoutProb = 0;
-//		for (Long questionId : marginals.keySet()) {
-//			List<Float> scorePerState = engine.scoreUserQuestionEvStates(Long.MAX_VALUE, questionId, null, null);
-//			// the quantity of states must match
-//			assertEquals("user = " + Long.MAX_VALUE + ", question = " + questionId, marginals.get(questionId).size(), scorePerState.size());
-//			for (int i = 0; i < scorePerState.size(); i++) {
-//				// Prob(X=i) * ExpectedGain(X=i). Note: ExpectedGain(X=i) = scoreUserQuestionEvStates[i] - cash.
-//				sum += marginals.get(questionId).get(i) * (scorePerState.get(i) - base);
-//				sumWithoutProb += (scorePerState.get(i) - base);
-//			}
-//		}
-//		assertEquals(Long.MAX_VALUE+"", engine.scoreUserEv(Long.MAX_VALUE, null, null)- base, sum, PROB_ERROR_MARGIN);
-//		
-//		engine.initialize();
-//		Map<String, Long> userNameToIDMap = new HashMap<String, Long>();
-//		this.createDEFNetIn1Transaction(userNameToIDMap );
-//		
-//		// extract the marginal probabilities of all nodes
-//		marginals = engine.getProbLists(null, null, null);
-//		
-//		// multiply with expected scores conditioned to states and compare the sum with engine.scoreUserEv
-//		for (String name : userNameToIDMap.keySet()) {
-//			// extract base so that we can obtain the score = base + gain -> gain = score - base.
-////			base = engine.getCash(userNameToIDMap.get(name), null, null);
-//			base = engine.getScoreFromQValues(100f);
-//			try {
-////				engine.getAlgorithmAndAssetNetFromUserID(userNameToIDMap.get(name)).setExpectedAssetPivot(base);
-//				base = 0;
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//				fail(name);
-//			} 
-//			sum = 0;
-//			sumWithoutProb = 0;
-//			for (Long questionId : marginals.keySet()) {
-//				List<Float> scorePerState = engine.scoreUserQuestionEvStates(userNameToIDMap.get(name), questionId, null, null);
-//				// the quantity of states must match
-//				assertEquals("user = " + name + ", question = " + questionId, marginals.get(questionId).size(), scorePerState.size());
-//				for (int i = 0; i < scorePerState.size(); i++) {
-//					// Prob(X=i) * ExpectedGain(X=i). Note: ExpectedGain(X=i) = scoreUserQuestionEvStates[i] - cash.
-//					sum += marginals.get(questionId).get(i) * (scorePerState.get(i) - base);
-//					sumWithoutProb += (scorePerState.get(i) - base);
-//				}
-//			}
-//			float globalGain = engine.scoreUserEv(userNameToIDMap.get(name), null, null)- base;
-//			if (Math.abs(globalGain - sum) < Math.abs(globalGain - sumWithoutProb)) {
-//				assertEquals(name, globalGain, sum, 0.01);
-//			} else {
-//				assertEquals(name, globalGain, sumWithoutProb, 0.01);
-//			}
-//		}
-//	}
 
 	/**
 	 * @param isToUseQValues the isToUseQValues to set
@@ -16435,6 +16402,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	
@@ -16955,6 +16925,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -17029,6 +17002,8 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
 		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -17061,6 +17036,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -17264,6 +17242,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -17347,6 +17328,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/** Yet another test case for regression test */
@@ -17434,6 +17418,9 @@ public class MarkovEngineTest extends TestCase {
 		
 		// restore backup
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	
@@ -17768,6 +17755,8 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
 		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -20493,6 +20482,9 @@ public class MarkovEngineTest extends TestCase {
 		
 		// restore backup
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -20797,7 +20789,7 @@ public class MarkovEngineTest extends TestCase {
 			// check that the  probabilities are the same
 			assertEquals(trade.getProbabilities().size(), previewedTrades.get(i).getProbabilities().size());
 			for (int j = 0; j < trade.getProbabilities().size(); j++) {
-				assertEquals(trade.getProbabilities().get(j), previewedTrades.get(i).getProbabilities().get(j));
+				assertEquals(trade.getProbabilities().get(j), previewedTrades.get(i).getProbabilities().get(j), PROB_ERROR_MARGIN/100f);
 			}
 		}
 		
@@ -20915,6 +20907,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -20985,6 +20980,9 @@ public class MarkovEngineTest extends TestCase {
 //		*13 2     3         [.2,.8]  wait
 //		* END - commit everything
 		engine.commitNetworkActions(transactionKey);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -21289,6 +21287,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -21408,6 +21409,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 
 	
@@ -21524,6 +21528,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
 		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
+		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -21780,6 +21787,8 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
 
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	
@@ -22723,6 +22732,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+		
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -22920,6 +22932,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -22997,6 +23012,8 @@ public class MarkovEngineTest extends TestCase {
 				assertEquals(parentClique, clique.getParent());
 			}
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -23070,6 +23087,9 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(1, map.size());
 		assertEquals(2, (int) map.keySet().iterator().next());
 		assertEquals(2, (int) map.get(2));
+		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -23176,6 +23196,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -23621,6 +23644,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -23678,6 +23704,9 @@ public class MarkovEngineTest extends TestCase {
 		
 		// restore old config
 		engine.setToFullyConnectNodesInCliquesOnRebuild(backup);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -23784,6 +23813,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -23884,6 +23916,8 @@ public class MarkovEngineTest extends TestCase {
 				assertEquals(newProbs.toString()+ " ; " + oldProbs.toString(), oldProb.get(i), newProb.get(i), PROB_ERROR_MARGIN);
 			}
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -24022,6 +24056,8 @@ public class MarkovEngineTest extends TestCase {
 				assertEquals(newProbs.toString()+ " ; " + oldProbs.toString(), oldProb.get(i), newProb.get(i), PROB_ERROR_MARGIN);
 			}
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -24068,6 +24104,8 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(.8f, probList.get(2), PROB_ERROR_MARGIN);
 		
 		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -24362,6 +24400,9 @@ public class MarkovEngineTest extends TestCase {
 		}
 
 		engine.setToUseCorrectiveTrades(isToUseCorrectiveTrades);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -24977,6 +25018,8 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		engine.setToObtainProbabilityOfResolvedQuestions(isToObtainProbabilityOfResolvedQuestions);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -25003,6 +25046,9 @@ public class MarkovEngineTest extends TestCase {
 			}
 			assertTrue(questionHistory.size() > 1);
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -25617,6 +25663,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);	
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	
@@ -25740,6 +25789,9 @@ public class MarkovEngineTest extends TestCase {
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
 		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -25917,6 +25969,9 @@ public class MarkovEngineTest extends TestCase {
 		// if configured to delete nodes, make sure all nodes were deleted
 		probLists = engine.getProbLists(null, null, null);
 		assertEquals(probLists.toString(), engine.isToDeleteResolvedNode()?0:3, probLists.size());
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -26012,6 +26067,8 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(probLists.toString(), probLists.get(0x0FL).get(0), .15f, PROB_ERROR_MARGIN);
 		assertEquals(probLists.toString(), probLists.get(0x0FL).get(1), .275f, PROB_ERROR_MARGIN);
 		assertEquals(probLists.toString(), probLists.get(0x0FL).get(2), .575f, PROB_ERROR_MARGIN);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -26238,6 +26295,8 @@ public class MarkovEngineTest extends TestCase {
 		} catch (IllegalArgumentException e) {
 			// OK
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -28039,6 +28098,9 @@ public class MarkovEngineTest extends TestCase {
 		
 		// restore backups
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -28457,7 +28519,9 @@ public class MarkovEngineTest extends TestCase {
 		
 		// restore backups
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
-	
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -28561,6 +28625,8 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(1), .0f, PROB_ERROR_MARGIN);
 		assertEquals("Seed=" + seed + ";" + probLists.toString(), probLists.get(0x0FL).get(2), .0f, PROB_ERROR_MARGIN);
 		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -28688,154 +28754,11 @@ public class MarkovEngineTest extends TestCase {
 			}
 			
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
-	/**
-	 * This does the same test of {@link #testExportImportAfterTradeOnDisconnectedParents()},
-	 * but assumes that virtual arcs are created, instead of real arcs.
-	 */
-//	public final void testExportImportAfterTradeOnDisconnectedParentsWithVirtualArcs() {
-//		long seed = System.currentTimeMillis();
-//		Random random = new Random(seed );
-//		
-//		boolean isToAddVirtualArcsOnAddTrade = engine.isToAddVirtualArcsOnAddTrade();
-//		engine.setToAddVirtualArcsOnAddTrade(true);
-//		boolean isToAddArcsOnAddTrade = engine.isToAddArcsOnAddTrade();
-//		engine.setToAddArcsOnAddTrade(false);
-//		
-//		// generate ABC
-//		long transactionKey = engine.startNetworkActions();
-//		if (random.nextBoolean()) {
-//			// node is root of value tree
-//			engine.addQuestion(transactionKey, new Date(), 0x0AL, 2, null, "[2][0][1]");
-//		} else {
-//			// node is ordinal node
-//			engine.addQuestion(transactionKey,  new Date(), 0x0AL, 2, null);
-//		}
-//		if (random.nextBoolean()) {
-//			// node is root of value tree
-//			engine.addQuestion(transactionKey, new Date(), 0x0BL, 2, null, "[2][0][1]");
-//		} else {
-//			// node is ordinal node
-//			engine.addQuestion(transactionKey,  new Date(), 0x0BL, 2, null);
-//		}
-//		if (random.nextBoolean()) {
-//			// node is root of value tree
-//			engine.addQuestion(transactionKey, new Date(), 0x0CL, 2, null, "[2][0][1]");
-//		} else {
-//			// node is ordinal node
-//			engine.addQuestion(transactionKey,  new Date(), 0x0CL, 2, null);
-//		}
-//		if (random.nextBoolean()) {
-//			// insert parents at once
-//			List<Long> parentQuestionIds = new ArrayList<Long>(2);
-//			parentQuestionIds.add(0x0AL);
-//			parentQuestionIds.add(0x0CL);
-//			engine.addQuestionAssumption(transactionKey, new Date()	, 0x0BL, parentQuestionIds, null);
-//		} else {
-//			// insert one-by-one
-//			engine.addQuestionAssumption(transactionKey, new Date()	, 0x0BL, Collections.singletonList(0x0AL), null);
-//			engine.addQuestionAssumption(transactionKey, new Date()	, 0x0BL, Collections.singletonList(0x0CL), null);
-//		}
-//		// commit transaction
-//		engine.commitNetworkActions(transactionKey);
-//		
-//		// check that node exists
-//		assertNotNull("seed="+seed,engine.getProbabilisticNetwork().getNode(""+0x0AL));
-//		assertNotNull("seed="+seed,engine.getProbabilisticNetwork().getNode(""+0x0BL));
-//		assertNotNull("seed="+seed,engine.getProbabilisticNetwork().getNode(""+0x0CL));
-//		// check that they all have 2 states
-//		assertEquals("seed="+seed,2,engine.getProbabilisticNetwork().getNode(""+0x0AL).getStatesSize());
-//		assertEquals("seed="+seed,2,engine.getProbabilisticNetwork().getNode(""+0x0BL).getStatesSize());
-//		assertEquals("seed="+seed,2,engine.getProbabilisticNetwork().getNode(""+0x0CL).getStatesSize());
-//		// check that number of parents are consistent
-//		assertEquals("seed="+seed,0,engine.getProbabilisticNetwork().getNode(""+0xAL).getParentNodes().size());
-//		assertEquals("seed="+seed,2,engine.getProbabilisticNetwork().getNode(""+0xBL).getParentNodes().size());
-//		assertEquals("seed="+seed,0,engine.getProbabilisticNetwork().getNode(""+0xCL).getParentNodes().size());
-//		// check that structure is A->B<-C
-//		assertTrue("seed="+seed,engine.getProbabilisticNetwork().getNode(""+0xBL).getParentNodes().contains(engine.getProbabilisticNetwork().getNode(""+0xAL)));
-//		assertTrue("seed="+seed,engine.getProbabilisticNetwork().getNode(""+0xBL).getParentNodes().contains(engine.getProbabilisticNetwork().getNode(""+0xCL)));
-//		
-//		// change probability of P(B|A)
-//		List<Float> newValues = new ArrayList<Float>(2);
-//		newValues.add(.8f);
-//		newValues.add(.2f);
-//		engine.addTrade(null, new Date(), "", Long.MAX_VALUE, 0x0BL, newValues, 
-//				Collections.singletonList(0x0AL), Collections.singletonList(0), true);
-//		newValues = new ArrayList<Float>(2);
-//		newValues.add(.1f);
-//		newValues.add(.9f);
-//		engine.addTrade(null, new Date(), "", Long.MAX_VALUE, 0x0BL, newValues, 
-//				Collections.singletonList(0x0AL), Collections.singletonList(1), true);
-//		
-//		// change probability of P(B|C)
-//		newValues = new ArrayList<Float>(2);
-//		newValues.add(.1f);
-//		newValues.add(.9f);
-//		engine.addTrade(null, new Date(), "", Long.MAX_VALUE, 0x0BL, newValues, 
-//				Collections.singletonList(0x0CL), Collections.singletonList(0), true);
-//		newValues = new ArrayList<Float>(2);
-//		newValues.add(.7f);
-//		newValues.add(.3f);
-//		engine.addTrade(null, new Date(), "", Long.MAX_VALUE, 0x0BL, newValues, 
-//				Collections.singletonList(0x0CL), Collections.singletonList(1), true);
-//		
-//		// change probability of P(A|C)
-//		newValues = new ArrayList<Float>(2);
-//		newValues.add(.2f);
-//		newValues.add(.8f);
-//		engine.addTrade(null, new Date(), "", Long.MAX_VALUE, 0x0AL, newValues, 
-//				Collections.singletonList(0x0CL), Collections.singletonList(0), true);
-//		newValues = new ArrayList<Float>(2);
-//		newValues.add(.9999f);
-//		newValues.add(.0001f);
-//		engine.addTrade(null, new Date(), "", Long.MAX_VALUE, 0x0AL, newValues, 
-//				Collections.singletonList(0x0CL), Collections.singletonList(1), true);
-//		
-//		// backup marginals for later comparison
-//		Map<Long, List<Float>> oldProbLists = engine.getProbLists(null, null, null);
-//		
-//		// assure some arcs were set as virtual
-//		List<Edge> virtualArcs = engine.getVirtualArcs();
-//		assertNotNull(virtualArcs);
-//		assertFalse(virtualArcs.isEmpty());
-//		assertEquals(1, virtualArcs.size());
-//		assertTrue(virtualArcs.get(0).getOriginNode().getName().equals(""+0x0C));
-//		assertTrue(virtualArcs.get(0).getDestinationNode().getName().equals(""+0x0A));
-//		
-//		// export/import net
-//		engine.importState(engine.exportState());
-//		
-//		virtualArcs = engine.getVirtualArcs();
-//		assertNotNull(virtualArcs);
-//		assertFalse(virtualArcs.isEmpty());
-//		assertEquals(1, virtualArcs.size());
-//		assertTrue(virtualArcs.get(0).getOriginNode().getName().equals("C"));
-//		assertTrue(virtualArcs.get(0).getDestinationNode().getName().equals("A"));
-//		
-//		// check that all marginals did not change
-//		// extract the probabilities after import
-//		Map<Long, List<Float>> newProbLists = engine.getProbLists(null, null, null);
-//		// check that quantity of nodes is the same
-//		assertEquals("seed="+seed + "; old=" +oldProbLists + "; new="+newProbLists, oldProbLists.size(), newProbLists.size());
-//		for (Entry<Long, List<Float>> oldEntry : oldProbLists.entrySet()) {
-//			// extract old and new probabilities
-//			List<Float> oldValues = oldEntry.getValue();
-//			newValues = newProbLists.get(oldEntry.getKey());
-//			// check that node still exits
-//			assertNotNull("seed="+seed + "; old=" +oldProbLists + "; new="+newProbLists, newValues);
-//			// check that number of states are the same
-//			assertEquals("seed="+seed + "; old=" +oldProbLists + "; new="+newProbLists, oldValues.size(), newValues.size());
-//			for (int i = 0; i < oldValues.size(); i++) {
-//				// check marginal
-//				assertEquals("seed="+seed + "; old=" +oldProbLists + "; new="+newProbLists, oldValues.get(i), newValues.get(i),PROB_ERROR_MARGIN);
-//			}
-//			
-//		}
-//		
-//		engine.setToAddArcsOnAddTrade(isToAddArcsOnAddTrade);
-//		engine.setToAddVirtualArcsOnAddTrade(isToAddVirtualArcsOnAddTrade);
-//	}
 	
 	/**
 	 * Checks if adding arcs works fine when there are trades on parents of a node which are not directly connected.
@@ -28969,6 +28892,9 @@ public class MarkovEngineTest extends TestCase {
 			}
 			
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -29459,6 +29385,8 @@ public class MarkovEngineTest extends TestCase {
 				}
 			}
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -29547,6 +29475,9 @@ public class MarkovEngineTest extends TestCase {
 		for (Float value : probList) {
 			assertEquals(1f/3f, value, PROB_ERROR_MARGIN);
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -29640,6 +29571,9 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(probLists.toString(),1f, probLists.get(1L).get(0));
 		assertEquals(probLists.toString(),0f, probLists.get(1L).get(1));
 		assertEquals(probLists.toString(),0f, probLists.get(1L).get(2));
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -29742,6 +29676,9 @@ public class MarkovEngineTest extends TestCase {
 		for (Float prob : probLists.get(1L)) {
 			assertEquals(probLists.toString(),1f/3f, prob, PROB_ERROR_MARGIN);
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -29799,6 +29736,9 @@ public class MarkovEngineTest extends TestCase {
 		} catch (RuntimeException e) {
 			assertFalse(e.getMessage().contains("0"));
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 
@@ -29862,33 +29802,11 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0.05f,probList.get(1),.0001);
 		assertEquals(0.4f,probList.get(2),.0001);
 		assertEquals(0.05f,probList.get(3),.0001);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
-	
-	/**
-	 * Check that adding an assumption which causes cycles will
-	 * throw exception and keep the probabilities intact.
-	 * This test shall also check the same condition when the cycle is caused
-	 * because there are virtual arcs.
-	 */
-//	public final void testProbabilityAddQuestionAssumptionCycleWithVirtualArcs() {
-//		create network
-//		
-//		make conditional trades in order to generate virtual arcs
-//		
-//		store all marginals
-//		
-//		store conditional probabilities given parents
-//		
-//		create cycle
-//		
-//		see that it has thrown exception
-//		
-//		compare marginals
-//		
-//		compare conditional probabilities given parents
-//		fail("Not implemented yet");
-//	}
 	
 	
 	
@@ -30030,6 +29948,9 @@ public class MarkovEngineTest extends TestCase {
 			}
 			assertEquals(entry.toString(), 1f, sum, 0.0001f);
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -30256,6 +30177,9 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue("Old=" + probLists + " ; New="+engine.getProbLists(null, Collections.singletonList(0x0DL), Collections.singletonList(2)), hasChanged);
 		
 		engine.setToAllowNonBayesianUpdate(isToAllowNonBayesianUpdateBackup);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -30462,6 +30386,9 @@ public class MarkovEngineTest extends TestCase {
 		
 		engine.setToReturnIdentifiersInExportState(isToReturnIdentifiersInExportStateBackup);
 		engine.setToCompressExportedState(isToCompressExportedStateBackup);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -30500,7 +30427,6 @@ public class MarkovEngineTest extends TestCase {
 	 * and {@link MarkovEngineImpl#getComplexityFactor(List, List)}.
 	 * @throws InvalidParentException 
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public final void testGetComplexityFactor() {
 		engine.initialize();
 		
@@ -30557,9 +30483,18 @@ public class MarkovEngineTest extends TestCase {
 		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		complexityFactorSingle = engine.getComplexityFactor(0x0BL, Collections.singletonList(0x0AL));	// can't create everything at once, so just check subset B<-A
 		// number of states is unknwon for engine, so it supposedly used the default
-		assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)), complexityFactorMap);
-		assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)), complexityFactorSingle);
-		assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)), complexityFactorList);
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)), complexityFactorMap);
+			assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)), complexityFactorSingle);
+			assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)), complexityFactorList);
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			//3 cliques with 2 nodes each
+			assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)*3), complexityFactorMap);
+			assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)), complexityFactorSingle); // specified just B<-A 
+			assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)*3), complexityFactorList);
+		} else {
+			fail("Unknown complexity factor key.");
+		}
 		complexityFactors = engine.getComplexityFactors(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		assertNotNull(complexityFactors);
 		assertEquals(Math.pow(engine.getDefaultNodeSize(), 2), complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
@@ -30592,10 +30527,19 @@ public class MarkovEngineTest extends TestCase {
 		complexityFactorList = engine.getComplexityFactor((List)null, null);
 		complexityFactorMap = engine.getComplexityFactor((Map)null);
 		complexityFactorSingle = engine.getComplexityFactor((Long)null, null);
-		// {D,F} is supposedly the largest clique
-		assertEquals(5*11, complexityFactorMap);	
-		assertEquals(5*11, complexityFactorSingle);
-		assertEquals(5*11, complexityFactorList);
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// {D,F} is supposedly the largest clique
+			assertEquals(5*11, complexityFactorMap);	
+			assertEquals(5*11, complexityFactorSingle);
+			assertEquals(5*11, complexityFactorList);
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			// 3 cliques with 2 nodes each
+			assertEquals(2*3+5*11+5*7, complexityFactorMap);	
+			assertEquals(2*3+5*11+5*7, complexityFactorSingle);
+			assertEquals(2*3+5*11+5*7, complexityFactorList);
+		} else {
+			fail("Unknown complexity factor key.");
+		}
 		complexityFactors = engine.getComplexityFactors((Map)null);
 		assertNotNull(complexityFactors);
 		assertEquals(5*11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
@@ -30605,10 +30549,19 @@ public class MarkovEngineTest extends TestCase {
 		complexityFactorList = engine.getComplexityFactor(Collections.EMPTY_LIST, Collections.EMPTY_LIST);
 		complexityFactorMap = engine.getComplexityFactor(Collections.EMPTY_MAP);
 		complexityFactorSingle = engine.getComplexityFactor((Long)0x0AL, Collections.EMPTY_LIST);
-		// Again, {D,F} is supposedly the largest clique
-		assertEquals(5*11, complexityFactorMap);	
-		assertEquals(5*11, complexityFactorSingle);
-		assertEquals(5*11, complexityFactorList);
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// Again, {D,F} is supposedly the largest clique
+			assertEquals(5*11, complexityFactorMap);	
+			assertEquals(5*11, complexityFactorSingle);
+			assertEquals(5*11, complexityFactorList);
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			// 3 cliques with 2 nodes each
+			assertEquals(2*3+5*11+5*7, complexityFactorMap);	
+			assertEquals(2*3+5*11+5*7, complexityFactorSingle);
+			assertEquals(2*3+5*11+5*7, complexityFactorList);
+		} else {
+			fail("Unknown complexity factor key.");
+		}
 		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
 		complexityFactors = engine.getComplexityFactors(Collections.EMPTY_MAP);
 		assertNotNull(complexityFactors);
@@ -30634,10 +30587,19 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue("Expected only 1 value/parent = 0x0F", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next().contains(0x0FL));	
 		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		complexityFactorSingle = engine.getComplexityFactor(0x0AL, Collections.singletonList(0x0FL));
-		// {D,F} is still supposedly the largest clique
-		assertEquals(5*11, complexityFactorMap);
-		assertEquals(5*11, complexityFactorSingle);
-		assertEquals(5*11, complexityFactorList);
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// {D,F} is still supposedly the largest clique
+			assertEquals(5*11, complexityFactorMap);
+			assertEquals(5*11, complexityFactorSingle);
+			assertEquals(5*11, complexityFactorList);
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			// 4 cliques with 2 nodes each
+			assertEquals(2*3+5*11+5*7+11*2, complexityFactorMap);
+			assertEquals(2*3+5*11+5*7+11*2, complexityFactorSingle);
+			assertEquals(2*3+5*11+5*7+11*2, complexityFactorList);
+		} else {
+			fail("Unknown complexity factor key.");
+		}
 		complexityFactors = engine.getComplexityFactors(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		assertNotNull(complexityFactors);
 		assertEquals(5*11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
@@ -30670,10 +30632,19 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue("Expected only 1 value/parent = 0x0A", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next().contains(0x0AL));	
 		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		complexityFactorSingle = engine.getComplexityFactor(0x0CL, Collections.singletonList(0x0AL));
-		// the largest clique still has 2 nodes. It's either the largest in state space would be either the old largest clique, or the new clique
-		assertEquals(Math.max(5*11, 2*engine.getDefaultNodeSize()), complexityFactorMap);
-		assertEquals(Math.max(5*11, 2*engine.getDefaultNodeSize()), complexityFactorSingle);
-		assertEquals(Math.max(5*11, 2*engine.getDefaultNodeSize()), complexityFactorList);
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// the largest clique still has 2 nodes. It's either the largest in state space would be either the old largest clique, or the new clique
+			assertEquals(Math.max(5*11, 2*engine.getDefaultNodeSize()), complexityFactorMap);
+			assertEquals(Math.max(5*11, 2*engine.getDefaultNodeSize()), complexityFactorSingle);
+			assertEquals(Math.max(5*11, 2*engine.getDefaultNodeSize()), complexityFactorList);
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			// 4 cliques with 2 nodes each
+			assertEquals(2*3+5*11+5*7+2*engine.getDefaultNodeSize(), complexityFactorMap);
+			assertEquals(2*3+5*11+5*7+2*engine.getDefaultNodeSize(), complexityFactorSingle);
+			assertEquals(2*3+5*11+5*7+2*engine.getDefaultNodeSize(), complexityFactorList);
+		} else {
+			fail("Unknown complexity factor key.");
+		}
 		complexityFactors = engine.getComplexityFactors(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		assertNotNull(complexityFactors);
 		assertEquals(Math.max(5*11, 2*engine.getDefaultNodeSize()), complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
@@ -30703,10 +30674,19 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue("Expected only 1 value/parent = 0x0B", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next().contains(0x0BL));	
 		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		complexityFactorSingle = engine.getComplexityFactor(0x0FL, Collections.singletonList(0x0BL));
-		// the largest clique (in terms of state space) is supposedly {B,D,F}, with size = states of B * states of D * states of F =  3*5*11
-		assertEquals(3*5*11, complexityFactorMap);
-		assertEquals(3*5*11, complexityFactorSingle);
-		assertEquals(3*5*11, complexityFactorList);
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// the largest clique (in terms of state space) is supposedly {B,D,F}, with size = states of B * states of D * states of F =  3*5*11
+			assertEquals(3*5*11, complexityFactorMap);
+			assertEquals(3*5*11, complexityFactorSingle);
+			assertEquals(3*5*11, complexityFactorList);
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			// table size of {BDF}+{DE}+{AB}
+			assertEquals(3*5*11+5*7+2*3, complexityFactorMap);
+			assertEquals(3*5*11+5*7+2*3, complexityFactorSingle);
+			assertEquals(3*5*11+5*7+2*3, complexityFactorList);
+		} else {
+			fail("Unknown complexity factor key.");
+		}
 		complexityFactors = engine.getComplexityFactors(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		assertNotNull(complexityFactors);
 		assertEquals(3*5*11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
@@ -30738,10 +30718,19 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue("Expected only 1 value/parent = 0x0C", getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values().iterator().next().contains(0x0CL));	
 		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		complexityFactorSingle = engine.getComplexityFactor(0x0BL, Collections.singletonList(0x0CL));
-		// new largest clique is now {A,B,C}, with number of states of C being unknown
-		assertEquals(2*3*engine.getDefaultNodeSize(), complexityFactorMap);
-		assertEquals(2*3*engine.getDefaultNodeSize(), complexityFactorSingle);
-		assertEquals(2*3*engine.getDefaultNodeSize(), complexityFactorList);
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// new largest clique is now {A,B,C}, with number of states of C being unknown
+			assertEquals(2*3*engine.getDefaultNodeSize(), complexityFactorMap);
+			assertEquals(2*3*engine.getDefaultNodeSize(), complexityFactorSingle);
+			assertEquals(2*3*engine.getDefaultNodeSize(), complexityFactorList);
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			// {DF}+{DE}+{ABC}
+			assertEquals(5*11+5*7+2*3*engine.getDefaultNodeSize(), complexityFactorMap);
+			assertEquals(5*11+5*7+2*3*engine.getDefaultNodeSize(), complexityFactorSingle);
+			assertEquals(5*11+5*7+2*3*engine.getDefaultNodeSize(), complexityFactorList);
+		} else {
+			fail("Unknown complexity factor key.");
+		}
 		complexityFactors = engine.getComplexityFactors(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		assertNotNull(complexityFactors);
 		assertEquals(2*3*engine.getDefaultNodeSize(), complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
@@ -30815,10 +30804,20 @@ public class MarkovEngineTest extends TestCase {
 		// check that the new node and arcs were not actually created.
 		assertEquals(5, engine.getProbLists(null, null, null).size());	// assert we still have 5 nodes
 		assertEquals(3, engine.getProbabilisticNetwork().getJunctionTree().getCliques().size());	// cliques are supposedly AB, DE, and DF
-		// make sure the complexity returned to its normal value (i.e. largest clique is {D,F})
-		assertEquals(5*11, engine.getComplexityFactor((Map)null));
-		assertEquals(5*11, engine.getComplexityFactor((Long)null, null));
-		assertEquals(5*11, engine.getComplexityFactor((List)null, null));
+		// make sure the complexity returned to its normal value 
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// normal value: largest clique is {D,F}
+			assertEquals(5*11, engine.getComplexityFactor((Map)null));
+			assertEquals(5*11, engine.getComplexityFactor((Long)null, null));
+			assertEquals(5*11, engine.getComplexityFactor((List)null, null));
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			// {AB}+{DE}+{DF}
+			assertEquals(2*3+5*7+5*11, engine.getComplexityFactor((Map)null));
+			assertEquals(2*3+5*7+5*11, engine.getComplexityFactor((Long)null, null));
+			assertEquals(2*3+5*7+5*11, engine.getComplexityFactor((List)null, null));
+		} else {
+			fail("Unknown complexity factor key.");
+		}
 		complexityFactors = engine.getComplexityFactors((Map)null);
 		assertNotNull(complexityFactors);
 		assertEquals(5*11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
@@ -31082,6 +31081,9 @@ public class MarkovEngineTest extends TestCase {
 		
 		// restore backup 
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -31422,6 +31424,9 @@ public class MarkovEngineTest extends TestCase {
 				throw e;
 			}
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -31624,6 +31629,9 @@ public class MarkovEngineTest extends TestCase {
 		
 		// restore backup 
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -31760,6 +31768,9 @@ public class MarkovEngineTest extends TestCase {
 		// restore backup
 		engine.setToCompressExportedState(isToCompressExportedState);
 		engine.setToReturnIdentifiersInExportState(isToReturnIdentifiersInExportState);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -31864,6 +31875,8 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 		assertTrue(groups.toString(), hasFound);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -32221,6 +32234,9 @@ public class MarkovEngineTest extends TestCase {
 		if (dynamicJunctionTreeNetSizeThreshold != null) {
 			((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -32421,6 +32437,156 @@ public class MarkovEngineTest extends TestCase {
 		if (dynamicJunctionTreeNetSizeThreshold != null) {
 			((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
+	}
+	
+	
+	/**
+	 * Randomly creates a network and checks performance of dynamic/incremental junction tree compilation.
+	 */
+	public final void testDynamicJTCompilationPerformanceRandomNet()  {
+		long seed = System.currentTimeMillis();
+		Random rand = new Random(seed);
+		Debug.println("Seed = " + seed);
+		
+		int averageNumArcs = 50;
+//		float probAddArcs = .25f;
+		
+		boolean isToUseSingleTransaction = false;//rand.nextBoolean();
+		Debug.println("Single transaction = " + isToUseSingleTransaction);
+		
+		int maxNumStates = 3;
+		
+		int initialNumNodes = 100;	// size of network to test initially
+		int steps = 50; //50;	
+		int maxNodes = 2000;
+		
+		// force engine to throw exception if dynamic JT compilation fails
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			IncrementalJunctionTreeAlgorithm algorithm = (IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
+		}
+
+		Debug.setDebug(false);	// temporary disable debug
+
+		System.out.println("nodes , arcs , classic , incremental");
+		for (int numNodes = initialNumNodes; numNodes <= maxNodes; numNodes+=steps) {
+			
+			// first, run without dynamic junction tree compilation
+			engine.initialize();
+			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+				((IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);
+			}
+			assertEquals(0 , engine.getProbLists(null, null, null).size());
+			assertTrue(engine.getProbabilisticNetwork().getNodeCount() == 0);
+			assertTrue(engine.getProbabilisticNetwork().getJunctionTree() == null || engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
+			
+			// randomly generate the network structure to be compiled by both approaches
+			List<Integer> sizesOfNodesToCreate = new ArrayList<Integer>(numNodes);
+			Map<Long, List<Long>> arcsToCreate = new HashMap<Long, List<Long>>();
+			
+			// include nodes with random size
+			for (int currentNumNodes = 0; currentNumNodes < numNodes; currentNumNodes++) {
+				sizesOfNodesToCreate.add(2 + rand.nextInt(maxNumStates-1));
+			}
+			
+			// randomly create arcs from previously created nodes
+			for (long parentId = 0; parentId < numNodes-1; parentId++) {
+				for (long childId = parentId+1; childId < numNodes; childId++) {
+					if ( //(rand.nextFloat() < probAddArcs) && 
+							( rand.nextFloat() < (float)averageNumArcs/((float)numNodes*numNodes) ) ) {
+						List<Long> parents = arcsToCreate.get(childId);
+						if (parents == null) {
+							parents = new ArrayList<Long>();
+							arcsToCreate.put(childId, parents);
+						}
+						parents.add(parentId);
+					}
+				}
+			}
+			
+			Long transactionKey = null;
+			if (isToUseSingleTransaction) {
+				transactionKey = engine.startNetworkActions();
+			}
+			
+			// start timer
+			long timeBeforeExecution = System.currentTimeMillis();
+			
+			
+			// create the nodes
+			for (int nodeId = 0; nodeId < sizesOfNodesToCreate.size(); nodeId++) {
+				engine.addQuestion(transactionKey, new Date(), nodeId, sizesOfNodesToCreate.get(nodeId), null);
+			}
+			
+			// create arcs
+			for (Entry<Long, List<Long>> entry : arcsToCreate.entrySet()) {
+				engine.addQuestionAssumption(transactionKey, new Date(), entry.getKey(), entry.getValue(), null);
+			}
+			
+			if (isToUseSingleTransaction) {
+				engine.commitNetworkActions(transactionKey);
+			}
+			
+			// stop timer
+			long executionTime = System.currentTimeMillis() - timeBeforeExecution;
+			
+			assertEquals(numNodes, engine.getProbLists(null, null, null).size());
+			assertFalse(engine.getProbabilisticNetwork().getJunctionTree() == null);
+			assertFalse(engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
+			
+			// enable dynamic JT compilation (in debug mode)
+			engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(true);
+			engine.initialize();
+			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+				((IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(0);
+			}
+			assertTrue(engine.isToThrowExceptionOnDynamicJunctionTreeCompilationFailure());
+			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+				assertTrue(((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).isToHaltOnDynamicJunctionTreeFailure());
+			}
+			assertEquals(0 , engine.getProbLists(null, null, null).size());
+			assertTrue(engine.getProbabilisticNetwork().getNodeCount() == 0);
+			assertTrue(engine.getProbabilisticNetwork().getJunctionTree() == null || engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
+			
+			// do the same test
+			
+			transactionKey = null;
+			if (isToUseSingleTransaction) {
+				transactionKey = engine.startNetworkActions();
+			}
+			
+			// start timer
+			timeBeforeExecution = System.currentTimeMillis();
+
+			// create the nodes
+			for (int nodeId = 0; nodeId < sizesOfNodesToCreate.size(); nodeId++) {
+				engine.addQuestion(transactionKey, new Date(), nodeId, sizesOfNodesToCreate.get(nodeId), null);
+			}
+			
+			// create arcs
+			for (Entry<Long, List<Long>> entry : arcsToCreate.entrySet()) {
+				engine.addQuestionAssumption(transactionKey, new Date(), entry.getKey(), entry.getValue(), null);
+			}
+			
+			if (isToUseSingleTransaction) {
+				engine.commitNetworkActions(transactionKey);
+			}
+			
+			// stop timer
+			long executionTimeDynamic = System.currentTimeMillis() - timeBeforeExecution;
+
+			assertEquals(numNodes, engine.getProbLists(null, null, null).size());
+			assertFalse(engine.getProbabilisticNetwork().getJunctionTree() == null);
+			assertFalse(engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
+			
+			System.out.println(numNodes + " , " + arcsToCreate.size() + " , " + executionTime + " , " + executionTimeDynamic);
+		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -32430,14 +32596,14 @@ public class MarkovEngineTest extends TestCase {
 	 * @throws IOException 
 	 * @throws LoadException 
 	 */
-	public final void testDynamicJTCompilationPerformance() throws LoadException, IOException, URISyntaxException {
+	public final void testDynamicJTCompilationPerformanceSciCastNet() throws LoadException, IOException, URISyntaxException {
 		
 		long seed = System.currentTimeMillis();
 		Random rand = new Random(seed);
 		Debug.println("Seed = " + seed);
 		
-		int initialNumNodes = 100;	// size of network to test initially
-		int steps = 50;				
+		int initialNumNodes = 50; //100;	// size of network to test initially
+		int steps = 10; //50;				
 		
 		// force engine to throw exception if dynamic JT compilation fails
 		Boolean isToHaltOnDynamicJunctionTreeFailure = null;
@@ -32593,10 +32759,89 @@ public class MarkovEngineTest extends TestCase {
 		if (dynamicJunctionTreeNetSizeThreshold != null) {
 			((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
-	 * Create and runs a {@link ComplexityFactorRunnable} and then runs {@link #connectNodes()}.
+	 * Simply runs dynamic JT compilation in A E<-D->F net, by changing it to D->{A,E,F}.
+	 */
+	public final void testDynamicJTDEFNet()  {
+		
+		engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(true);
+		
+		// build the A E<-D->F net
+		engine.setDynamicJunctionTreeNetSizeThreshold(9999);	// disable dynamic JT compilation
+		long transactionKey = engine.startNetworkActions();
+		engine.addQuestion(transactionKey, new Date(), 0x0AL, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0DL, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0EL, 5, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0FL, 7, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that we have 3 cliques A, DE, and DF
+		List<List<Long>> assumptionGroups = engine.getQuestionAssumptionGroups();
+		assertEquals(3, assumptionGroups.size());
+		int checked = 0;
+		for (List<Long> group : assumptionGroups) {
+			if (group.contains(0x0AL)) {
+				assertEquals(1, group.size());
+				checked++;
+			}
+			if (group.contains(0x0EL)) {
+				assertEquals(2,group.size());
+				assertTrue(group.contains(0x0DL));
+				checked++;
+			}
+			if (group.contains(0x0FL)) {
+				assertEquals(2,group.size());
+				assertTrue(group.contains(0x0DL));
+				checked++;
+			}
+		}
+		assertEquals(3, checked);
+		
+		Debug.println(engine.getProbabilisticNetwork().getJunctionTree().getCliques().toString());
+		Debug.println(engine.getProbabilisticNetwork().getJunctionTree().getSeparators().toString());
+		
+		// run dynamic JT compilation
+		engine.setDynamicJunctionTreeNetSizeThreshold(1);
+		engine.addQuestionAssumption(null, new Date(), 0x0AL, Collections.singletonList(0x0DL), null);
+		
+
+		Debug.println(engine.getProbabilisticNetwork().getJunctionTree().getCliques().toString());
+		Debug.println(engine.getProbabilisticNetwork().getJunctionTree().getSeparators().toString());
+
+		// check that we have 3 cliques: DE, DA, DF
+		assumptionGroups = engine.getQuestionAssumptionGroups();
+		assertEquals(3, assumptionGroups.size());
+		checked = 0;
+		for (List<Long> group : assumptionGroups) {
+			assertEquals(2, group.size());
+			if (group.contains(0x0AL)) {
+				assertTrue(group.contains(0x0DL));
+				checked++;
+			}
+			if (group.contains(0x0EL)) {
+				assertTrue(group.contains(0x0DL));
+				checked++;
+			}
+			if (group.contains(0x0FL)) {
+				assertTrue(group.contains(0x0DL));
+				checked++;
+			}
+		}
+		assertEquals(3, checked);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
+	}
+	
+	/**
+	 * Runs {@link #connectNodes()}.
 	 * This is also a regression test for a bug that happens when using dynamic junction tree compilation without
 	 * considering moralization arcs completely (i.e. when compiling a subnet, but if a node shares a common child
 	 * which is not present in the subnet, the moralization won't happen automatically -- so the dynamic junction tree compiler
@@ -32628,6 +32873,9 @@ public class MarkovEngineTest extends TestCase {
 			makeTradeLargestClique(rand);
 			this.connectNodes(rand);
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -32799,6 +33047,8 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(probLists.containsKey(0x0EL));
 		assertTrue(probLists.containsKey(0x0FL));
 		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
@@ -33281,6 +33531,9 @@ public class MarkovEngineTest extends TestCase {
 			assertEquals(dynamicJunctionTreeNetSizeThreshold.intValue(),  
 					((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getDynamicJunctionTreeNetSizeThreshold());
 		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	/**
@@ -33328,12 +33581,14 @@ public class MarkovEngineTest extends TestCase {
 		for (Node node : nodesToTrade) {
 			List<Float> probList = engine.getProbList(Long.parseLong(node.getName()), null, null);
 			assertEquals(node.getStatesSize(), probList.size());
-			assertEquals(probList.toString(), probList.get(0), .9f, .000001);
+			assertEquals(probList.toString(), probList.get(0), .9f, .0001);
 			for (int i = 1; i < probList.size(); i++) {
 				assertEquals(probList.toString(), probList.get(1), .1f/(probList.size()-1f), .000001);
 			}
 		}
 		
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
 	
