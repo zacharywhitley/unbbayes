@@ -30,7 +30,6 @@ import unbbayes.prs.bn.ILikelihoodExtractor;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
-import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -48,6 +47,7 @@ import unbbayes.util.Debug;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
+import unbbayes.util.extension.bn.inference.IPermanentEvidenceInferenceAlgorithm;
 
 /**
  * The pseudocode implemented by this algorithm is:<br/>
@@ -79,10 +79,8 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	
 	private boolean isToUseQValues = AssetPropagationInferenceAlgorithm.IS_TO_USE_Q_VALUES;
 	
-	private MSeparationUtility mseparationUtility = DEFAULT_MSEPARATION_UTILITY; 
-	
 	/** This is a default instance of {@link #getMSeparationUtility()} */
-	public static final MSeparationUtility DEFAULT_MSEPARATION_UTILITY = MSeparationUtility.newInstance();
+	public static final MSeparationUtility DEFAULT_MSEPARATION_UTILITY = JunctionTreeAlgorithm.DEFAULT_MSEPARATION_UTILITY;
 	
 
 	/** 
@@ -110,39 +108,6 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	/** Default value to fill {@link IncrementalJunctionTreeAlgorithm#setLikelihoodExtractor(ILikelihoodExtractor)} */
 	public static final JeffreyRuleLikelihoodExtractor DEFAULT_JEFFREYRULE_LIKELIHOOD_EXTRACTOR = (JeffreyRuleLikelihoodExtractor) JeffreyRuleLikelihoodExtractor.newInstance();
 
-	/** This is a default instance of a node with only 1 state. Use this instance if you want to have nodes with 1 state not to occupy too much space in memory */
-	public static final ProbabilisticNode ONE_STATE_PROBNODE = new ProbabilisticNode() {
-		// TODO do not allow edit
-
-		/* (non-Javadoc)
-		 * @see unbbayes.prs.bn.ProbabilisticNode#clone(double)
-		 */
-		public ProbabilisticNode clone(double radius) {
-			return this;
-		}
-
-		/* (non-Javadoc)
-		 * @see unbbayes.prs.bn.ProbabilisticNode#clone()
-		 */
-		public Object clone() {
-			return this;
-		}
-
-		/* (non-Javadoc)
-		 * @see unbbayes.prs.bn.ProbabilisticNode#basicClone()
-		 */
-		public ProbabilisticNode basicClone() {
-			return this;
-		}
-	};
-	static{
-//		ONE_STATE_PROBNODE = new ProbabilisticNode();
-		ONE_STATE_PROBNODE.setName("PROB_NODE_WITH_SINGLE_STATE");
-		// copy states
-		ONE_STATE_PROBNODE.appendState("VIRTUAL_STATE");
-		ONE_STATE_PROBNODE.initMarginalList();	// guarantee that marginal list is initialized
-		ONE_STATE_PROBNODE.setMarginalAt(0, 1f);	// set the only state to 100%
-	}
 	
 
 	private List<ExpectedAssetCellMultiplicationListener> expectedAssetCellListeners = new ArrayList<AssetAwareInferenceAlgorithm.ExpectedAssetCellMultiplicationListener>();
@@ -159,9 +124,8 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 
 	private boolean isToChangeGUI = true;
 
-	private boolean isToConnectParentsWhenAbsorbingNode = true;
+	
 
-	private boolean isToDeleteEmptyCliques = false;
 	
 
 	/**
@@ -1767,7 +1731,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.prs.bn.inference.extension.IAssetNetAlgorithm#setAsPermanentEvidence(java.util.Map, boolean)
+	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#setAsPermanentEvidence(java.util.Map, boolean)
 	 */
 	public void setAsPermanentEvidence(Map<INode, List<Float>> evidences, boolean isToDeleteNode){
 		// initial assertion
@@ -1775,28 +1739,37 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 			return;
 		}
 		
-		// fill the findings
-		Map<INode, List<Float>> hardEvidenceEntry = new HashMap<INode, List<Float>>();	// will store elements in evidences which were hard evidences
-		Map<INode, List<Float>> entriesToBeDeleted = new HashMap<INode, List<Float>>();	// will store elements in evidences which were not negative hard evidences (because negative evidences will set states to 0%, and shall not be delete node from net)
-		List<TreeVariable> nodesToResetEvidenceAtTheEnd = new ArrayList<TreeVariable>(evidences.size());	// TreeVariable#resetEvidence() will be called for nodes in this list will 
-		boolean hasProbChange = false;	// this will become true if at least one node had its probability marked for change.
-		for (Entry<INode, List<Float>> entry : evidences.entrySet()) {
-			INode node = entry.getKey();
-			ProbabilisticNode probNode = (ProbabilisticNode) getRelatedProbabilisticNetwork().getNode(node.getName());
+		// TreeVariable#resetEvidence() will be called for nodes in this list 
+		List<TreeVariable> nodesToResetEvidenceAtTheEnd = new ArrayList<TreeVariable>(evidences.size());
+		
+		if (getProbabilityPropagationDelegator() instanceof IPermanentEvidenceInferenceAlgorithm) {
 			
-			// ignore nodes which we did not find
-			if (probNode == null) {
-				throw new IllegalArgumentException("Probabilistic node " + node + " was not found in probabilistic network.");
-			} 
-			// extract state of evidence
-			List<Float> prob = evidences.get(node);
-			if (prob == null) {
-				Debug.println(getClass(), "Evidence of node " + node + " was null");
-				// ignore this value, but mark it to be deleted posteriorly
-				entriesToBeDeleted.put(entry.getKey(), entry.getValue());
-				continue;
-			}
-			//			// check if this contains unspecified values
+			// just delegate to proper object
+			((IPermanentEvidenceInferenceAlgorithm)this.getProbabilityPropagationDelegator()).setAsPermanentEvidence(evidences, isToDeleteNode);
+			
+		} else { // do things manually
+			
+			// fill the findings
+			Map<INode, List<Float>> hardEvidenceEntry = new HashMap<INode, List<Float>>();	// will store elements in evidences which were hard evidences
+			Map<INode, List<Float>> entriesToBeDeleted = new HashMap<INode, List<Float>>();	// will store elements in evidences which were not negative hard evidences (because negative evidences will set states to 0%, and shall not be delete node from net)
+			boolean hasProbChange = false;	// this will become true if at least one node had its probability marked for change.
+			for (Entry<INode, List<Float>> entry : evidences.entrySet()) {
+				INode node = entry.getKey();
+				ProbabilisticNode probNode = (ProbabilisticNode) getRelatedProbabilisticNetwork().getNode(node.getName());
+				
+				// ignore nodes which we did not find
+				if (probNode == null) {
+					throw new IllegalArgumentException("Probabilistic node " + node + " was not found in probabilistic network.");
+				} 
+				// extract state of evidence
+				List<Float> prob = evidences.get(node);
+				if (prob == null) {
+					Debug.println(getClass(), "Evidence of node " + node + " was null");
+					// ignore this value, but mark it to be deleted posteriorly
+					entriesToBeDeleted.put(entry.getKey(), entry.getValue());
+					continue;
+				}
+				//			// check if this contains unspecified values
 //			boolean hasUnspecifiedValues = false;	// becomes true if null, NaN, <0, >1, or infinite is found, and false if 
 //			for (Float value : prob) {
 //				if ( isUnspecifiedProb(value) ) {
@@ -1818,197 +1791,207 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 //					}
 //				}
 //			}
-			// special treatment depending on type of evidence
-			boolean isNegativeHardEvidence = true;	// this will become false if getEvidenceType(prob) == HARD_EVIDENCE
-			// check if this is a soft evidence or hard evidence	
-			Integer resolvedState = getResolvedState(prob);
-			if (resolvedState == null) {
-				// soft evidence
-				// this method does not support "permanent" soft evidence. Must use trades instead.
-				if (isToUpdateAssets()) {
-					throw new UnsupportedOperationException("Resolving a question to a value other than 1 or 0 is not supported when assets are enabled. " +
-							"Please let a house account to make a trade instead.");
-				}
-				// check if it is normalized
-				float sum = 0f;
-				float[] likelihood = new float[prob.size()];	// also, use same loop to convert to an array of float instead of Float
-				for (int i = 0; i < prob.size(); i++) {
-					Float value = prob.get(i);
-					if (isUnspecifiedProb(value)) {
-						// unspecified values in soft evidence shall be considered as 0%
-						value = 0f;
+				// special treatment depending on type of evidence
+				boolean isNegativeHardEvidence = true;	// this will become false if getEvidenceType(prob) == HARD_EVIDENCE
+				// check if this is a soft evidence or hard evidence	
+				Integer resolvedState = getResolvedState(prob);
+				if (resolvedState == null) {
+					// soft evidence
+					// this method does not support "permanent" soft evidence. Must use trades instead.
+					if (isToUpdateAssets()) {
+						throw new UnsupportedOperationException("Resolving a question to a value other than 1 or 0 is not supported when assets are enabled. " +
+								"Please let a house account to make a trade instead.");
 					}
-					sum += value;
-					likelihood[i] = value;	// use same loop to fill array of float instead of using list of Float
-				}
-				// check if it was normalized
-				if (Math.abs(sum - 1f) > ERROR_MARGIN) {
-					throw new IllegalArgumentException("Soft evidence of question " + node + " doesn't look normalized, because its sum was " + sum);
-				}
-				
-				// at this point, it is normalized.
-				
-				// TODO we may need to propagate before adding soft evidence, because soft evidence is sensitive to current state of network.
-				
-				probNode.addLikeliHood(likelihood);
-				hasProbChange = true;	// indicate that at least one node was marked for a change
-				
-				// soft evidences are to be deleted, so put in the mapping
-				entriesToBeDeleted.put(entry.getKey(), entry.getValue());
-
-				// by default, reset evidences of soft evidences
-				nodesToResetEvidenceAtTheEnd.add(probNode);
-				
-			} else { 
-				// hard evidence (negative or positive)
-				if (resolvedState >= 0) {
-					// positive (i.e. "normal") hard evidence
-					isNegativeHardEvidence = false;
-					// also mark this entry as positive (actually, non-negative) hard evidence.
-					entriesToBeDeleted.put(entry.getKey(), entry.getValue());	// normal hard evidences will be deleted from net
-				} else {
-					isNegativeHardEvidence = true;
-					resolvedState = -resolvedState - 1;
-
-					// by default, reset evidences of all negative hard evidence
+					// check if it is normalized
+					float sum = 0f;
+					float[] likelihood = new float[prob.size()];	// also, use same loop to convert to an array of float instead of Float
+					for (int i = 0; i < prob.size(); i++) {
+						Float value = prob.get(i);
+						if (isUnspecifiedProb(value)) {
+							// unspecified values in soft evidence shall be considered as 0%
+							value = 0f;
+						}
+						sum += value;
+						likelihood[i] = value;	// use same loop to fill array of float instead of using list of Float
+					}
+					// check if it was normalized
+					if (Math.abs(sum - 1f) > ERROR_MARGIN) {
+						throw new IllegalArgumentException("Soft evidence of question " + node + " doesn't look normalized, because its sum was " + sum);
+					}
+					
+					// at this point, it is normalized.
+					
+					// TODO we may need to propagate before adding soft evidence, because soft evidence is sensitive to current state of network.
+					
+					probNode.addLikeliHood(likelihood);
+					hasProbChange = true;	// indicate that at least one node was marked for a change
+					
+					// soft evidences are to be deleted, so put in the mapping
+					entriesToBeDeleted.put(entry.getKey(), entry.getValue());
+					
+					// by default, reset evidences of soft evidences
 					nodesToResetEvidenceAtTheEnd.add(probNode);
-				}
-				
-				// the following code is common to both types of evidence, because they have similar treatment, differing only by isNegativeHardEvidence
-				
-				// modify unspecified values to 0 or 1 depending on whether caller was specifying negative hard evidences 
-				// (by indicating which states are 0%) or normal hard evidences (by indicating which states are 100%)
-				for (int i = 0; i < prob.size(); i++) {
-					if (isUnspecifiedProb(prob.get(i))) {
-						// change unspecified values to 1 if there were zeros, and 0 if there were no zeros.
-						prob.set(i, isNegativeHardEvidence?1f:0f);
+					
+				} else { 
+					// hard evidence (negative or positive)
+					if (resolvedState >= 0) {
+						// positive (i.e. "normal") hard evidence
+						isNegativeHardEvidence = false;
+						// also mark this entry as positive (actually, non-negative) hard evidence.
+						entriesToBeDeleted.put(entry.getKey(), entry.getValue());	// normal hard evidences will be deleted from net
+					} else {
+						isNegativeHardEvidence = true;
+						resolvedState = -resolvedState - 1;
+						
+						// by default, reset evidences of all negative hard evidence
+						nodesToResetEvidenceAtTheEnd.add(probNode);
 					}
+					
+					// the following code is common to both types of evidence, because they have similar treatment, differing only by isNegativeHardEvidence
+					
+					// modify unspecified values to 0 or 1 depending on whether caller was specifying negative hard evidences 
+					// (by indicating which states are 0%) or normal hard evidences (by indicating which states are 100%)
+					for (int i = 0; i < prob.size(); i++) {
+						if (isUnspecifiedProb(prob.get(i))) {
+							// change unspecified values to 1 if there were zeros, and 0 if there were no zeros.
+							prob.set(i, isNegativeHardEvidence?1f:0f);
+						}
+					}
+					
+					// by turning the flag of findings on and providing the desired marginal, we can add any type of hard evidence 
+					// (either those which sets specified state to 1 or those which sets specified states to 0)
+					probNode.addFinding(resolvedState,isNegativeHardEvidence);	// just to set the flag indicating presence of a finding
+					
+					hasProbChange = true;	// indicate that at least one node was marked for a change
+					
+					// set up the marginal which will set a specified state to 1 or some specified states to 0
+					float[] newMarginalToSet = new float[prob.size()];
+					for (int i = 0; i < prob.size(); i++) {
+						newMarginalToSet[i] = prob.get(i);
+					}
+					probNode.setMarginalProbabilities(newMarginalToSet);
+					
+					// mark this entry as a hard evidence
+					hardEvidenceEntry.put(entry.getKey(), entry.getValue());
 				}
 				
-				// by turning the flag of findings on and providing the desired marginal, we can add any type of hard evidence 
-				// (either those which sets specified state to 1 or those which sets specified states to 0)
-				probNode.addFinding(resolvedState,isNegativeHardEvidence);	// just to set the flag indicating presence of a finding
-
-				hasProbChange = true;	// indicate that at least one node was marked for a change
-				
-				// set up the marginal which will set a specified state to 1 or some specified states to 0
-				float[] newMarginalToSet = new float[prob.size()];
-				for (int i = 0; i < prob.size(); i++) {
-					newMarginalToSet[i] = prob.get(i);
-				}
-				probNode.setMarginalProbabilities(newMarginalToSet);
-				
-				// mark this entry as a hard evidence
-				hardEvidenceEntry.put(entry.getKey(), entry.getValue());
 			}
 			
-		}
-		
-		// propagate only the probabilities of hard evidences
-		if (hasProbChange) {
-			try {
-				getProbabilityPropagationDelegator().propagate();
-			} catch (RuntimeException e) {
-				// reset evidences from all nodes, so that they are not re-inserted
-				for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
-					if (node instanceof TreeVariable) {
-						((TreeVariable)node).resetEvidence();
+			// propagate only the probabilities of hard evidences
+			if (hasProbChange) {
+				try {
+					getProbabilityPropagationDelegator().propagate();
+				} catch (RuntimeException e) {
+					// reset evidences from all nodes, so that they are not re-inserted
+					for (Node node : getRelatedProbabilisticNetwork().getNodes()) {
+						if (node instanceof TreeVariable) {
+							((TreeVariable)node).resetEvidence();
+						}
 					}
+					throw e;
 				}
-				throw e;
 			}
-		}
-		
-		
-		// delete resolved nodes
-		if (isToDeleteNode) {
-			for (INode node : entriesToBeDeleted.keySet()) {	// only delete nodes which are not negative hard evidence
-				// connect the parents, because they shall be conditionally dependent even after resolution
-				if (isToConnectParentsWhenAbsorbingNode()) {
-					// iterate over all pairs of parent nodes
-					for (int i = 0; i < node.getParentNodes().size()-1; i++) {
-						for (int j = i+1; j < node.getParentNodes().size(); j++) {
-							// extract the pair of nodes
-							Node parent1 = (Node) node.getParentNodes().get(i);
-							Node parent2 = (Node) node.getParentNodes().get(j);
-							
-							// check if there is an arc between these 2 nodes
-							if (parent1.getParents().contains(parent2) || parent2.getParents().contains(parent1)){
-								// ignore this combination of nodes, because they are already connected
-								continue;
-							}
-							
-							if (getMSeparationUtility().getRoutes(parent1, parent2, null, null, 1).isEmpty()) {
-								// there is no route from node1 to node2, so we can create parent2->parent1 without generating cycle
-								Edge edge = new Edge(parent2,parent1);
-								// add edge into the network
-								try {
-									getRelatedProbabilisticNetwork().addEdge(edge);
-								} catch (Exception e) {
-									throw new RuntimeException("Could not add edge from " + parent2 + " to " + parent1 + " while absorbing " + node, e);
+			
+			
+			// delete resolved nodes
+			if (isToDeleteNode) {
+				for (INode node : entriesToBeDeleted.keySet()) {	// only delete nodes which are not negative hard evidence
+					// connect the parents, because they shall be conditionally dependent even after resolution
+					if (isToConnectParentsWhenAbsorbingNode()) {
+						// iterate over all pairs of parent nodes
+						for (int i = 0; i < node.getParentNodes().size()-1; i++) {
+							for (int j = i+1; j < node.getParentNodes().size(); j++) {
+								// extract the pair of nodes
+								Node parent1 = (Node) node.getParentNodes().get(i);
+								Node parent2 = (Node) node.getParentNodes().get(j);
+								
+								// check if there is an arc between these 2 nodes
+								if (parent1.getParents().contains(parent2) || parent2.getParents().contains(parent1)){
+									// ignore this combination of nodes, because they are already connected
+									continue;
 								}
-								// normalize table
-								new NormalizeTableFunction().applyFunction((ProbabilisticTable) ((ProbabilisticNode)parent1).getProbabilityFunction());
-							} else { // supposedly, we can always add edges in one of the directions (i.e. there is no way we add arc in each direction and both result in cycle)
-								// there is a route from node1 to node2, so we cannot create parent2->parent1 (it will create a cycle if we do so), so create parent1->parent2
-								Edge edge = new Edge(parent1,parent2);
-								// add edge into the network
-								try {
-									getRelatedProbabilisticNetwork().addEdge(edge);
-								} catch (Exception e) {
-									throw new RuntimeException("Could not add edge from " + parent1 + " to " + parent2 + " while absorbing " + node, e);
+								
+								if (getMSeparationUtility().getRoutes(parent1, parent2, null, null, 1).isEmpty()) {
+									// there is no route from node1 to node2, so we can create parent2->parent1 without generating cycle
+									Edge edge = new Edge(parent2,parent1);
+									// add edge into the network
+									try {
+										getRelatedProbabilisticNetwork().addEdge(edge);
+									} catch (Exception e) {
+										throw new RuntimeException("Could not add edge from " + parent2 + " to " + parent1 + " while absorbing " + node, e);
+									}
+									// normalize table
+									new NormalizeTableFunction().applyFunction((ProbabilisticTable) ((ProbabilisticNode)parent1).getProbabilityFunction());
+								} else { // supposedly, we can always add edges in one of the directions (i.e. there is no way we add arc in each direction and both result in cycle)
+									// there is a route from node1 to node2, so we cannot create parent2->parent1 (it will create a cycle if we do so), so create parent1->parent2
+									Edge edge = new Edge(parent1,parent2);
+									// add edge into the network
+									try {
+										getRelatedProbabilisticNetwork().addEdge(edge);
+									} catch (Exception e) {
+										throw new RuntimeException("Could not add edge from " + parent1 + " to " + parent2 + " while absorbing " + node, e);
+									}
+									// normalize table
+									new NormalizeTableFunction().applyFunction((ProbabilisticTable) ((ProbabilisticNode)parent2).getProbabilityFunction());
 								}
-								// normalize table
-								new NormalizeTableFunction().applyFunction((ProbabilisticTable) ((ProbabilisticNode)parent2).getProbabilityFunction());
 							}
 						}
 					}
+					getRelatedProbabilisticNetwork().removeNode((Node) node); // this will supposedly delete the nodes from cliques as well
 				}
-				getRelatedProbabilisticNetwork().removeNode((Node) node); // this will supposedly delete the nodes from cliques as well
-			}
-			// special treatment if the node to remove makes the clique to become empty
-			List<Clique> emptyCliques = new ArrayList<Clique>(); // keep track of which cliques were detected to be empty
-			for (Clique clique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
-				// TODO update only the important clique
-				if (clique.getProbabilityFunction().tableSize() <= 0) {
-					clique.getProbabilityFunction().addVariable(ONE_STATE_PROBNODE);  // this node has only 1 state
-					clique.getProbabilityFunction().setValue(0, 1f);	// if there is only 1 possible state, it should have 100% probability4
-					// don't forget to keep track of empty cliques, so that we can eventually remove them later if necessary
-					emptyCliques.add(clique);
+				// special treatment if the node to remove makes the clique to become empty
+				List<Clique> emptyCliques = new ArrayList<Clique>(); // keep track of which cliques were detected to be empty
+				for (Clique clique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
+					// TODO update only the important clique
+					if (clique.getProbabilityFunction().tableSize() <= 0) {
+						clique.getProbabilityFunction().addVariable(ONE_STATE_PROBNODE);  // this node has only 1 state
+						clique.getProbabilityFunction().setValue(0, 1f);	// if there is only 1 possible state, it should have 100% probability4
+						// don't forget to keep track of empty cliques, so that we can eventually remove them later if necessary
+						emptyCliques.add(clique);
+					}
 				}
-			}
-			if (isToDeleteEmptyCliques() && !emptyCliques.isEmpty()) {
-				// if we are only using probabilities, then we don't need the empty cliques anymore
-				getRelatedProbabilisticNetwork().getJunctionTree().removeCliques(emptyCliques);
+				if (isToDeleteEmptyCliques() && !emptyCliques.isEmpty()) {
+					// if we are only using probabilities, then we don't need the empty cliques anymore
+					getRelatedProbabilisticNetwork().getJunctionTree().removeCliques(emptyCliques);
 //				this.deleteEmptyCliques(emptyCliques, getRelatedProbabilisticNetwork().getJunctionTree());
+				}
 			}
 		}
+		
 		if (isToUpdateAssets()) {
 			// only consider hard evidences, because resolving to soft evidences are not supported for assets
-			if (hardEvidenceEntry.size() != evidences.size()) {
-				throw new UnsupportedOperationException("Resolving to a state other than 0 and 1 is not allowed when assets are managed by the Markov Engine." +
-						" Please, use house account to add trades instead.");
-			}
-			this.getAssetPropagationDelegator().setAsPermanentEvidence(hardEvidenceEntry, isToDeleteNode);
+//			if (hardEvidenceEntry.size() != evidences.size()) {
+//				throw new UnsupportedOperationException("Resolving to a state other than 0 and 1 is not allowed when assets are managed by the Markov Engine." +
+//						" Please, use house account to add trades instead.");
+//			}
+//			this.getAssetPropagationDelegator().setAsPermanentEvidence(hardEvidenceEntry, isToDeleteNode);
+			this.getAssetPropagationDelegator().setAsPermanentEvidence(evidences, isToDeleteNode);
 		}
+		
 		if (!isToDeleteNode) {
-			// copy all clique/separator potentials
-			for (Clique clique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
-				clique.getProbabilityFunction().copyData();
-			}
-			for (Separator sep : getRelatedProbabilisticNetwork().getJunctionTree().getSeparators()) {
-				sep.getProbabilityFunction().copyData();
-			}
 			if (getPermanentEvidenceMap() == null) {
 				setPermanentEvidenceMap(new HashMap<TreeVariable, Integer>());
 			}
 			getPermanentEvidenceMap().putAll((Map)evidences);
 		}
 		
-		
-		// reset evidences from nodes that were handled already
-		for (TreeVariable node : nodesToResetEvidenceAtTheEnd) {
-			node.resetEvidence();
+		if (!(getProbabilityPropagationDelegator() instanceof IPermanentEvidenceInferenceAlgorithm)) {
+			
+			if (!isToDeleteNode) {
+				// copy all clique/separator potentials
+				for (Clique clique : getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
+					clique.getProbabilityFunction().copyData();
+				}
+				for (Separator sep : getRelatedProbabilisticNetwork().getJunctionTree().getSeparators()) {
+					sep.getProbabilityFunction().copyData();
+				}
+			}
+			
+			
+			// reset evidences from nodes that were handled already
+			for (TreeVariable node : nodesToResetEvidenceAtTheEnd) {
+				node.resetEvidence();
+			}
 		}
 		
 	}
@@ -2742,44 +2725,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 		return false;	// default value
 	}
 
-	/**
-	 * If this is true, then {@link #setAsPermanentEvidence(Map, boolean)} will attempt
-	 * to connect parent of resolved nodes when it is configured to remove/absorb resolved nodes.
-	 * @return the isToConnectParentsWhenAbsorbingNode
-	 */
-	public boolean isToConnectParentsWhenAbsorbingNode() {
-		return isToConnectParentsWhenAbsorbingNode;
-	}
 
-	/**
-	 * If this is true, then {@link #setAsPermanentEvidence(Map, boolean)} will attempt
-	 * to connect parent of resolved nodes when it is configured to remove/absorb resolved nodes.
-	 * @param isToConnectParentsWhenAbsorbingNode the isToConnectParentsWhenAbsorbingNode to set
-	 */
-	public void setToConnectParentsWhenAbsorbingNode(
-			boolean isToConnectParentsWhenAbsorbingNode) {
-		this.isToConnectParentsWhenAbsorbingNode = isToConnectParentsWhenAbsorbingNode;
-	}
-
-	/**
-	 * This is used in {@link #removeInferencceAlgorithmListener(IInferenceAlgorithmListener)} while
-	 * connecting parents of absorbed nodes, in order to check which direction of arcs will not cause
-	 * cycles.
-	 * @return the mseparationUtility
-	 */
-	public MSeparationUtility getMSeparationUtility() {
-		return mseparationUtility;
-	}
-
-	/**
-	 * This is used in {@link #removeInferencceAlgorithmListener(IInferenceAlgorithmListener)} while
-	 * connecting parents of absorbed nodes, in order to check which direction of arcs will not cause
-	 * cycles.
-	 * @param mseparationUtility the mseparationUtility to set
-	 */
-	public void setMSeparationUtility(MSeparationUtility mseparationUtility) {
-		this.mseparationUtility = mseparationUtility;
-	}
 
 	
 	/**
@@ -2881,25 +2827,6 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 //	}
 	
 	
-
-	/**
-	 * @return the isToDeleteEmptyCliques : if true, {@link #setAsPermanentEvidence(INode, List, boolean)} will
-	 * also delete cliques that became empty due to nodes being permanently removed (i.e. absorbed after setting hard evidences).
-	 * If false, empty separators will be kept.
-	 */
-	public boolean isToDeleteEmptyCliques() {
-		return isToDeleteEmptyCliques;
-	}
-
-	/**
-	 * @param isToDeleteEmptyCliques : if true, {@link #setAsPermanentEvidence(INode, List, boolean)} will
-	 * also delete cliques that became empty due to nodes being permanently removed (i.e. absorbed after setting hard evidences).
-	 * If false, empty separators will be kept.
-	 */
-	public void setToDeleteEmptyCliques(boolean isToDeleteEmptyCliques) {
-		this.isToDeleteEmptyCliques = isToDeleteEmptyCliques;
-	}
-
 
 	/**
 	 * This extends {@link InCliqueConditionalProbabilityExtractor}
@@ -3123,5 +3050,93 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 	}
 
 	
+	
+
+	/**
+	 * Just delegates to {@link #getProbabilityPropagationDelegator()} if it is an instance of 
+	 * {@link JunctionTreeAlgorithm}. Otherwise, calls the method in super class.
+	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#isToConnectParentsWhenAbsorbingNode()
+	 */
+	public boolean isToConnectParentsWhenAbsorbingNode() {
+		if ( (getProbabilityPropagationDelegator() != null)
+				&& (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm ) ) {
+			JunctionTreeAlgorithm algorithm = (JunctionTreeAlgorithm) getProbabilityPropagationDelegator();
+			super.setToConnectParentsWhenAbsorbingNode(algorithm.isToConnectParentsWhenAbsorbingNode());
+			return algorithm.isToConnectParentsWhenAbsorbingNode();
+		}
+		return super.isToConnectParentsWhenAbsorbingNode();
+	}
+
+	/**
+	 * Just delegates to {@link #getProbabilityPropagationDelegator()} if it is an instance of 
+	 * {@link JunctionTreeAlgorithm}. Otherwise, calls the method in super class.
+	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#setToConnectParentsWhenAbsorbingNode(boolean)
+	 */
+	public void setToConnectParentsWhenAbsorbingNode( boolean isToConnectParentsWhenAbsorbingNode) {
+		if ( (getProbabilityPropagationDelegator() != null)
+				&& (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm ) ) {
+			((JunctionTreeAlgorithm) getProbabilityPropagationDelegator()).setToConnectParentsWhenAbsorbingNode(isToConnectParentsWhenAbsorbingNode);
+		}
+		super.setToConnectParentsWhenAbsorbingNode(isToConnectParentsWhenAbsorbingNode);
+	}
+	
+
+	/**
+	 * Just delegates to {@link #getProbabilityPropagationDelegator()} if it is an instance of 
+	 * {@link JunctionTreeAlgorithm}. Otherwise, calls the method in super class.
+	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#getMSeparationUtility()
+	 */
+	public MSeparationUtility getMSeparationUtility() {
+		if ( (getProbabilityPropagationDelegator() != null)
+				&& (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm ) ) {
+			JunctionTreeAlgorithm algorithm = (JunctionTreeAlgorithm) getProbabilityPropagationDelegator();
+			super.setMSeparationUtility(algorithm.getMSeparationUtility());
+			return algorithm.getMSeparationUtility();
+		}
+		return super.getMSeparationUtility();
+	}
+
+	/**
+	 * Just delegates to {@link #getProbabilityPropagationDelegator()} if it is an instance of 
+	 * {@link JunctionTreeAlgorithm}. Otherwise, calls the method in super class.
+	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#setMSeparationUtility(unbbayes.util.dseparation.impl.MSeparationUtility)
+	 */
+	public void setMSeparationUtility(MSeparationUtility mseparationUtility) {
+		if ( (getProbabilityPropagationDelegator() != null)
+				&& (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm ) ) {
+			((JunctionTreeAlgorithm) getProbabilityPropagationDelegator()).setMSeparationUtility(mseparationUtility);
+		}
+		super.setMSeparationUtility(mseparationUtility);
+	}
+	
+
+	/**
+	 * @return the isToDeleteEmptyCliques : if true, {@link #setAsPermanentEvidence(INode, List, boolean)} will
+	 * also delete cliques that became empty due to nodes being permanently removed (i.e. absorbed after setting hard evidences).
+	 * If false, empty separators will be kept.
+	 */
+	public boolean isToDeleteEmptyCliques() {
+		if ( (getProbabilityPropagationDelegator() != null)
+				&& (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm ) ) {
+			JunctionTreeAlgorithm algorithm = (JunctionTreeAlgorithm) getProbabilityPropagationDelegator();
+			super.setToDeleteEmptyCliques(algorithm.isToDeleteEmptyCliques());
+			return algorithm.isToDeleteEmptyCliques();
+		}
+		return super.isToDeleteEmptyCliques();
+	}
+
+	/**
+	 * @param isToDeleteEmptyCliques : if true, {@link #setAsPermanentEvidence(INode, List, boolean)} will
+	 * also delete cliques that became empty due to nodes being permanently removed (i.e. absorbed after setting hard evidences).
+	 * If false, empty separators will be kept.
+	 */
+	public void setToDeleteEmptyCliques(boolean isToDeleteEmptyCliques) {
+		if ( (getProbabilityPropagationDelegator() != null)
+				&& (getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm ) ) {
+			((JunctionTreeAlgorithm) getProbabilityPropagationDelegator()).setToDeleteEmptyCliques(isToDeleteEmptyCliques);
+		}
+		super.setToDeleteEmptyCliques(isToDeleteEmptyCliques);
+	}
+
 	
 }
