@@ -11,9 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.swing.JPanel;
 
@@ -25,12 +25,12 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.exception.InvalidParentException;
-import unbbayes.prs.id.UtilityTable;
 import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
+import unbbayes.util.extension.bn.inference.IPermanentEvidenceInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.IRandomVariableAwareInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
 
@@ -45,7 +45,7 @@ import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
  * @author Shou Matsumoto
  *
  */
-public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgorithm {
+public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgorithm, IPermanentEvidenceInferenceAlgorithm {
 	
 	private static ResourceBundle generalResource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.controller.resources.ControllerResources.class.getName(),
@@ -94,6 +94,17 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	private boolean isToCalculateJointProbabilityLocally = true;
 
 	private boolean isToUseEstimatedTotalProbability = true;
+	
+	private boolean isToConnectParentsWhenAbsorbingNode = true;
+	
+	/** This is a default instance of {@link #getMSeparationUtility()} */
+	public static final MSeparationUtility DEFAULT_MSEPARATION_UTILITY = MSeparationUtility.newInstance();
+	
+	private MSeparationUtility mseparationUtility = DEFAULT_MSEPARATION_UTILITY;
+	
+
+	private boolean isToDeleteEmptyCliques = false;
+	
 
 
 //	/** Set of nodes detected when {@link #run()} was executed the previous time */
@@ -105,6 +116,43 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	
 	/** This is the error margin used when comparing probabilities */
 	public static final float ERROR_MARGIN = 0.00005f;
+	
+
+	/** This is a default instance of a node with only 1 state. Use this instance if you want to have nodes with 1 state not to occupy too much space in memory */
+	public static final ProbabilisticNode ONE_STATE_PROBNODE = new ProbabilisticNode() {
+		private static final long serialVersionUID = -433609923386089166L;
+		
+		// TODO do not allow edit
+
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.bn.ProbabilisticNode#clone(double)
+		 */
+		public ProbabilisticNode clone(double radius) {
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.bn.ProbabilisticNode#clone()
+		 */
+		public Object clone() {
+			return this;
+		}
+
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.bn.ProbabilisticNode#basicClone()
+		 */
+		public ProbabilisticNode basicClone() {
+			return this;
+		}
+	};
+	static{
+//		ONE_STATE_PROBNODE = new ProbabilisticNode();
+		ONE_STATE_PROBNODE.setName("PROB_NODE_WITH_SINGLE_STATE");
+		// copy states
+		ONE_STATE_PROBNODE.appendState("VIRTUAL_STATE");
+		ONE_STATE_PROBNODE.initMarginalList();	// guarantee that marginal list is initialized
+		ONE_STATE_PROBNODE.setMarginalAt(0, 1f);	// set the only state to 100%
+	}
 	
 	/**
 	 * This listener can be used if you want the junction tree algorithm not to reset the clique potentials before each propagation.
@@ -1658,6 +1706,313 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		
 		return (float) ret;
 	}
+	
+
+	/**
+	 * Indicates whether a given value must be considered as "unspecified" (so can assume either 0% or 100%)
+	 * @param value: value to check
+	 * @return value == null || Float.isInfinite(value) || Float.isNaN(value) || value < 0 || value > 1 
+	 */
+	public boolean isUnspecifiedProb(Float value) {
+		return value == null || Float.isInfinite(value) || Float.isNaN(value) || value < 0 || value > 1;
+	}
+
+	/**
+	 * Will attempt to obtain what is the index of hard evidence.
+	 * Will return negative or null if this is not a hard evidence
+	 * @param prob : list to check content.
+	 * @return : positive value if hard evidence (it will be the index of the state set to 100%), 
+	 * negative value if negative hard evidence, and null if soft evidence.
+	 * In case of negative hard evidence, then (-RETURNED_VALUE-1) will be the index of the 1st state
+	 * found to be set to 0%.
+	 * @see #getEvidenceType(List)
+	 */
+	public Integer getResolvedState(List<Float> prob) {
+		// initial assertion
+		if (prob == null || prob.isEmpty()) {
+			throw new IllegalArgumentException("Could not verify whether the specified probability is a hard evidence, soft evidence, or ; \"negative\" hard evidence; " +
+					"because nothing was provided.");
+		}
+		float sum = 0;	// if the sum of specified probs is 1, then it is either a positive hard evidence or a soft evidence. If not, then it is negative hard evidence 
+		boolean hasSpecifiedProb = false;	// if all probs were unspecified, then this is false, and neither of the three types of findings matches our case
+		boolean hasUnspecifiedProb = false;	// if there is any unspecified value, then this becomes true
+		boolean hasSoftEvidence = false;	// if 0 < value < 1, then it is a soft evidence (not a hard evidence)
+		boolean hasZeros = false;	// if at least one state is specified as 0%, then this flag will be turned on
+		int index1stState0 = -1;	// will hold the first state settled with 0%. This will be used as a return if this is a hard evidence
+		int index1stState1 = -1;	// will hold the first state settled with 100%. This will be used as a return if this is a negative hard evidence.
+		for (int i = 0; i < prob.size(); i++) {
+			Float value = prob.get(i);
+			if (isUnspecifiedProb(value)) {
+				hasUnspecifiedProb = true;
+				continue;	// ignore unspecified values for now
+			}
+			// at this point, value is supposedly between 0　and 1
+			sum += value;
+			if (value > ERROR_MARGIN && value < 1-ERROR_MARGIN) {
+				// 0 < value < 1 given error margin
+				hasSoftEvidence = true;
+			} else if (Math.abs(value) < ERROR_MARGIN) {
+				// there is a state explicitly at 0%
+				hasZeros =  true;
+				if (index1stState0 < 0) {
+					index1stState0 = i;
+				}
+			} else {
+				// this is a state explicitly at 100%
+				if (index1stState1 < 0) {
+					index1stState1 = i;
+				}
+			}
+			hasSpecifiedProb = true;	// turn on flag indicating that at least 1 prob was specified
+		}
+		if (!hasSpecifiedProb) {
+			throw new IllegalArgumentException("No probability was explicited in the argument. Please specify the probabability of at least 1 state");
+		}
+		// at this point, prob contains at least 1 state with valid probability value (i.e. not all states are "unspecified")
+		if (hasSoftEvidence) {
+			// check if the specified soft evidence is normalized
+			if (Math.abs(1f-sum) > ERROR_MARGIN) {
+				throw new IllegalArgumentException("The soft evidence " + prob +" does not seem to sum up to 1.");
+			}
+			if (hasUnspecifiedProb) {
+				throw new IllegalArgumentException("In a soft evidence, all values must be explicitly specified.");
+			}
+			// this is a valid soft evidence
+//			return EvidenceType.SOFT_EVIDENCE;
+			return null;
+		}
+		// at this point, can be considered as hard evidence. Check sum to see if this is negative or positive hard evidence
+		if (Math.abs(1f-sum) < ERROR_MARGIN) {
+			// sum was 1 and was not soft evidence, so it was specifying only 1 state explicitly with 100%
+			if (index1stState1 < 0) {
+				throw new RuntimeException(prob + " was detected to be a hard evidence, but no state settled to 1 was found.");
+			}
+//			return EvidenceType.HARD_EVIDENCE;
+			return index1stState1;
+		} 
+		// at this point, sum was not 1 and this is a hard evidence, so it was either only specifying zeros (if sum < 1) or specifying 1 multiple times (if sum > 1)
+		if (hasZeros) {
+			// at least one state was set at 0%, so this is a negative hard evidence
+			if (index1stState0 < 0) {
+				throw new RuntimeException(prob + " was detected to be a negative evidence, but no state settled to 0% was found.");
+			}
+//			return EvidenceType.NEGATIVE_HARD_EVIDENCE;
+			return -index1stState0-1;
+		}
+		// if every specified probability was 1, then it is a negative hard evidence, but we don't know which state to set to 0%
+		throw new IllegalArgumentException("The specified list " + prob + ", is likely to be specifying a negative finding, but could not infer from it which state to set to 0%.");
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.bn.inference.IPermanentEvidenceInferenceAlgorithm#setAsPermanentEvidence(java.util.Map, boolean)
+	 */
+	public void setAsPermanentEvidence(Map<INode, List<Float>> evidences, boolean isToDeleteNode){
+		// initial assertion
+		if (evidences == null || evidences.isEmpty()) {
+			return;
+		}
+		
+		// fill the findings
+		Map<INode, List<Float>> hardEvidenceEntry = new HashMap<INode, List<Float>>();	// will store elements in evidences which were hard evidences
+		Map<INode, List<Float>> entriesToBeDeleted = new HashMap<INode, List<Float>>();	// will store elements in evidences which were not negative hard evidences (because negative evidences will set states to 0%, and shall not be delete node from net)
+		List<TreeVariable> nodesToResetEvidenceAtTheEnd = new ArrayList<TreeVariable>(evidences.size());	// TreeVariable#resetEvidence() will be called for nodes in this list will 
+		boolean hasProbChange = false;	// this will become true if at least one node had its probability marked for change.
+		for (Entry<INode, List<Float>> entry : evidences.entrySet()) {
+			INode node = entry.getKey();
+			ProbabilisticNode probNode = (ProbabilisticNode) getNet().getNode(node.getName());
+			
+			// ignore nodes which we did not find
+			if (probNode == null) {
+				throw new IllegalArgumentException("Probabilistic node " + node + " was not found in probabilistic network.");
+			} 
+			// extract state of evidence
+			List<Float> prob = evidences.get(node);
+			if (prob == null) {
+				Debug.println(getClass(), "Evidence of node " + node + " was null");
+				// ignore this value, but mark it to be deleted posteriorly
+				entriesToBeDeleted.put(entry.getKey(), entry.getValue());
+				continue;
+			}
+			
+			// special treatment depending on type of evidence
+			boolean isNegativeHardEvidence = true;	// this will become false if getEvidenceType(prob) == HARD_EVIDENCE
+			// check if this is a soft evidence or hard evidence	
+			Integer resolvedState = getResolvedState(prob);
+			if (resolvedState == null) {
+				// soft evidence
+				// this method does not support "permanent" soft evidence. Must use trades instead.
+				// check if it is normalized
+				float sum = 0f;
+				float[] likelihood = new float[prob.size()];	// also, use same loop to convert to an array of float instead of Float
+				for (int i = 0; i < prob.size(); i++) {
+					Float value = prob.get(i);
+					if (isUnspecifiedProb(value)) {
+						// unspecified values in soft evidence shall be considered as 0%
+						value = 0f;
+					}
+					sum += value;
+					likelihood[i] = value;	// use same loop to fill array of float instead of using list of Float
+				}
+				// check if it was normalized
+				if (Math.abs(sum - 1f) > ERROR_MARGIN) {
+					throw new IllegalArgumentException("Soft evidence of question " + node + " doesn't look normalized, because its sum was " + sum);
+				}
+				
+				// at this point, it is normalized.
+				
+				// TODO we may need to propagate before adding soft evidence, because soft evidence is sensitive to current state of network.
+				
+				probNode.addLikeliHood(likelihood);
+				hasProbChange = true;	// indicate that at least one node was marked for a change
+				
+				// soft evidences are to be deleted, so put in the mapping
+				entriesToBeDeleted.put(entry.getKey(), entry.getValue());
+
+				// by default, reset evidences of soft evidences
+				nodesToResetEvidenceAtTheEnd.add(probNode);
+				
+			} else { 
+				// hard evidence (negative or positive)
+				if (resolvedState >= 0) {
+					// positive (i.e. "normal") hard evidence
+					isNegativeHardEvidence = false;
+					// also mark this entry as positive (actually, non-negative) hard evidence.
+					entriesToBeDeleted.put(entry.getKey(), entry.getValue());	// normal hard evidences will be deleted from net
+				} else {
+					isNegativeHardEvidence = true;
+					resolvedState = -resolvedState - 1;
+
+					// by default, reset evidences of all negative hard evidence
+					nodesToResetEvidenceAtTheEnd.add(probNode);
+				}
+				
+				// the following code is common to both types of evidence, because they have similar treatment, differing only by isNegativeHardEvidence
+				
+				// modify unspecified values to 0 or 1 depending on whether caller was specifying negative hard evidences 
+				// (by indicating which states are 0%) or normal hard evidences (by indicating which states are 100%)
+				for (int i = 0; i < prob.size(); i++) {
+					if (isUnspecifiedProb(prob.get(i))) {
+						// change unspecified values to 1 if there were zeros, and 0 if there were no zeros.
+						prob.set(i, isNegativeHardEvidence?1f:0f);
+					}
+				}
+				
+				// by turning the flag of findings on and providing the desired marginal, we can add any type of hard evidence 
+				// (either those which sets specified state to 1 or those which sets specified states to 0)
+				probNode.addFinding(resolvedState,isNegativeHardEvidence);	// just to set the flag indicating presence of a finding
+
+				hasProbChange = true;	// indicate that at least one node was marked for a change
+				
+				// set up the marginal which will set a specified state to 1 or some specified states to 0
+				float[] newMarginalToSet = new float[prob.size()];
+				for (int i = 0; i < prob.size(); i++) {
+					newMarginalToSet[i] = prob.get(i);
+				}
+				probNode.setMarginalProbabilities(newMarginalToSet);
+				
+				// mark this entry as a hard evidence
+				hardEvidenceEntry.put(entry.getKey(), entry.getValue());
+			}
+			
+		}
+		
+		// propagate only the probabilities of hard evidences
+		if (hasProbChange) {
+			try {
+				this.propagate();
+			} catch (RuntimeException e) {
+				// reset evidences from all nodes, so that they are not re-inserted
+				for (Node node : getNet().getNodes()) {
+					if (node instanceof TreeVariable) {
+						((TreeVariable)node).resetEvidence();
+					}
+				}
+				throw e;
+			}
+		}
+		
+		
+		// delete resolved nodes
+		if (isToDeleteNode) {
+			for (INode node : entriesToBeDeleted.keySet()) {	// only delete nodes which are not negative hard evidence
+				// connect the parents, because they shall be conditionally dependent even after resolution
+				if (isToConnectParentsWhenAbsorbingNode()) {
+					// iterate over all pairs of parent nodes
+					for (int i = 0; i < node.getParentNodes().size()-1; i++) {
+						for (int j = i+1; j < node.getParentNodes().size(); j++) {
+							// extract the pair of nodes
+							Node parent1 = (Node) node.getParentNodes().get(i);
+							Node parent2 = (Node) node.getParentNodes().get(j);
+							
+							// check if there is an arc between these 2 nodes
+							if (parent1.getParents().contains(parent2) || parent2.getParents().contains(parent1)){
+								// ignore this combination of nodes, because they are already connected
+								continue;
+							}
+							
+							if (getMSeparationUtility().getRoutes(parent1, parent2, null, null, 1).isEmpty()) {
+								// there is no route from node1 to node2, so we can create parent2->parent1 without generating cycle
+								Edge edge = new Edge(parent2,parent1);
+								// add edge into the network
+								try {
+									getNet().addEdge(edge);
+								} catch (Exception e) {
+									throw new RuntimeException("Could not add edge from " + parent2 + " to " + parent1 + " while absorbing " + node, e);
+								}
+								// normalize table
+								new NormalizeTableFunction().applyFunction((ProbabilisticTable) ((ProbabilisticNode)parent1).getProbabilityFunction());
+							} else { // supposedly, we can always add edges in one of the directions (i.e. there is no way we add arc in each direction and both result in cycle)
+								// there is a route from node1 to node2, so we cannot create parent2->parent1 (it will create a cycle if we do so), so create parent1->parent2
+								Edge edge = new Edge(parent1,parent2);
+								// add edge into the network
+								try {
+									getNet().addEdge(edge);
+								} catch (Exception e) {
+									throw new RuntimeException("Could not add edge from " + parent1 + " to " + parent2 + " while absorbing " + node, e);
+								}
+								// normalize table
+								new NormalizeTableFunction().applyFunction((ProbabilisticTable) ((ProbabilisticNode)parent2).getProbabilityFunction());
+							}
+						}
+					}
+				}
+				getNet().removeNode((Node) node); // this will supposedly delete the nodes from cliques as well
+			}
+			// special treatment if the node to remove makes the clique to become empty
+			List<Clique> emptyCliques = new ArrayList<Clique>(); // keep track of which cliques were detected to be empty
+			for (Clique clique : getNet().getJunctionTree().getCliques()) {
+				// TODO update only the important clique
+				if (clique.getProbabilityFunction().tableSize() <= 0) {
+					clique.getProbabilityFunction().addVariable(ONE_STATE_PROBNODE);  // this node has only 1 state
+					clique.getProbabilityFunction().setValue(0, 1f);	// if there is only 1 possible state, it should have 100% probability4
+					// don't forget to keep track of empty cliques, so that we can eventually remove them later if necessary
+					emptyCliques.add(clique);
+				}
+			}
+			if (isToDeleteEmptyCliques() && !emptyCliques.isEmpty()) {
+				// if we are only using probabilities, then we don't need the empty cliques anymore
+				getNet().getJunctionTree().removeCliques(emptyCliques);
+//				this.deleteEmptyCliques(emptyCliques, getNet().getJunctionTree());
+			}
+		}
+		if (!isToDeleteNode) {
+			// copy all clique/separator potentials
+			for (Clique clique : getNet().getJunctionTree().getCliques()) {
+				clique.getProbabilityFunction().copyData();
+			}
+			for (Separator sep : getNet().getJunctionTree().getSeparators()) {
+				sep.getProbabilityFunction().copyData();
+			}
+		}
+		
+		
+		// reset evidences from nodes that were handled already
+		for (TreeVariable node : nodesToResetEvidenceAtTheEnd) {
+			node.resetEvidence();
+		}
+		
+	}
 
 
 	/**
@@ -1711,18 +2066,26 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	}
 
 	/**
-	 * @return the junctionTreeBuilder
+	 * @return the junctionTreeBuilder 
+	 * @see ProbabilisticNetwork#getJunctionTreeBuilder()
 	 */
 	public IJunctionTreeBuilder getJunctionTreeBuilder() {
-		return junctionTreeBuilder;
+		if (getNet() != null) {
+			this.junctionTreeBuilder = getNet().getJunctionTreeBuilder();
+		}
+		return this.junctionTreeBuilder;
 	}
 
 
 	/**
 	 * @param junctionTreeBuilder the junctionTreeBuilder to set
+	 * @see ProbabilisticNetwork#setJunctionTreeBuilder(IJunctionTreeBuilder)
 	 */
 	public void setJunctionTreeBuilder(IJunctionTreeBuilder junctionTreeBuilder) {
 		this.junctionTreeBuilder = junctionTreeBuilder;
+		if (getNet() != null) {
+			getNet().setJunctionTreeBuilder(junctionTreeBuilder);
+		}
 	}
 	
 	/**
@@ -2102,9 +2465,17 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				}
 			}
 			
+			// also clone the builder of Junction tree, so that the junction trees generated from the clone are also instances of the same class (useful when JT is customized for some purpose)
+			this.setJunctionTreeBuilder(originalNet.getJunctionTreeBuilder());
+			
 			// instantiate junction tree and copy content
 			if (originalNet.getJunctionTree() != null) {
-				this.setJunctionTree(new JunctionTree());
+				try {
+					// use the builder, so that we instantiate JT from same class when we copy its content.
+					this.setJunctionTree(getJunctionTreeBuilder().buildJunctionTree(this));
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
 			}
 			
 			// mapping between original cliques/separator to copied clique/separator 
@@ -2293,6 +2664,65 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		return this.getNet();
 	}
 	
+
+	/**
+	 * If this is true, then {@link #setAsPermanentEvidence(Map, boolean)} will attempt
+	 * to connect parent of resolved nodes when it is configured to remove/absorb resolved nodes.
+	 * @return the isToConnectParentsWhenAbsorbingNode
+	 */
+	public boolean isToConnectParentsWhenAbsorbingNode() {
+		return isToConnectParentsWhenAbsorbingNode;
+	}
+
+	/**
+	 * If this is true, then {@link #setAsPermanentEvidence(Map, boolean)} will attempt
+	 * to connect parent of resolved nodes when it is configured to remove/absorb resolved nodes.
+	 * @param isToConnectParentsWhenAbsorbingNode the isToConnectParentsWhenAbsorbingNode to set
+	 */
+	public void setToConnectParentsWhenAbsorbingNode(
+			boolean isToConnectParentsWhenAbsorbingNode) {
+		this.isToConnectParentsWhenAbsorbingNode = isToConnectParentsWhenAbsorbingNode;
+	}
+	
+
+	/**
+	 * This is used in {@link #removeInferencceAlgorithmListener(IInferenceAlgorithmListener)} while
+	 * connecting parents of absorbed nodes, in order to check which direction of arcs will not cause
+	 * cycles.
+	 * @return the mseparationUtility
+	 */
+	public MSeparationUtility getMSeparationUtility() {
+		return mseparationUtility;
+	}
+
+	/**
+	 * This is used in {@link #removeInferencceAlgorithmListener(IInferenceAlgorithmListener)} while
+	 * connecting parents of absorbed nodes, in order to check which direction of arcs will not cause
+	 * cycles.
+	 * @param mseparationUtility the mseparationUtility to set
+	 */
+	public void setMSeparationUtility(MSeparationUtility mseparationUtility) {
+		this.mseparationUtility = mseparationUtility;
+	}
+	
+
+	/**
+	 * @return the isToDeleteEmptyCliques : if true, {@link #setAsPermanentEvidence(INode, List, boolean)} will
+	 * also delete cliques that became empty due to nodes being permanently removed (i.e. absorbed after setting hard evidences).
+	 * If false, empty separators will be kept.
+	 */
+	public boolean isToDeleteEmptyCliques() {
+		return isToDeleteEmptyCliques;
+	}
+
+	/**
+	 * @param isToDeleteEmptyCliques : if true, {@link #setAsPermanentEvidence(INode, List, boolean)} will
+	 * also delete cliques that became empty due to nodes being permanently removed (i.e. absorbed after setting hard evidences).
+	 * If false, empty separators will be kept.
+	 */
+	public void setToDeleteEmptyCliques(boolean isToDeleteEmptyCliques) {
+		this.isToDeleteEmptyCliques = isToDeleteEmptyCliques;
+	}
 
 	
 }
