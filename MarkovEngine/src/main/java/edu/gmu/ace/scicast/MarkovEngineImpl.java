@@ -58,13 +58,12 @@ import unbbayes.prs.bn.IJunctionTreeBuilder;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
-import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.Separator;
-import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.prs.bn.StructureOnlyJunctionTree;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.IArbitraryConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.ITableFunction;
@@ -13798,15 +13797,30 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// backup some attributes that are sensitive to context
 					Graph backup = probAlgorithm.getNetwork();
 					if (probAlgorithm instanceof IncrementalJunctionTreeAlgorithm) {
-						// this is needed for dynamic junction tree to work
-						ProbabilisticNetwork previousNetBackup = ((IncrementalJunctionTreeAlgorithm) probAlgorithm).getNetPreviousRun();	
+						// this is needed for dynamic junction tree to work, so keep backup
+						ProbabilisticNetwork previousNetBackup = ((IncrementalJunctionTreeAlgorithm) probAlgorithm).getNetPreviousRun();
+						// also keep backup of whether to use approximation or not 
+						int loopyBPCliqueSizeThreshold = ((IncrementalJunctionTreeAlgorithm) probAlgorithm).getLoopyBPCliqueSizeThreshold();
+						
+						// disable approximation by setting the threshold very high
+						((IncrementalJunctionTreeAlgorithm) probAlgorithm).setLoopyBPCliqueSizeThreshold(Integer.MAX_VALUE);
+						
+						if (((IncrementalJunctionTreeAlgorithm) probAlgorithm).isLoopy()) {
+							// do not measure complexity of approximate structure. Try using exact structure.
+							// disabling incremental JT compilation will compile an exact structure
+							((IncrementalJunctionTreeAlgorithm) probAlgorithm).setNetPreviousRun(null); // setting this to null should disable incremental JT compilation
+						}
+						
 						// compile the cloned network
 						probAlgorithm.setNetwork(netToCheck);
 						probAlgorithm.run();
+						
 						// restore backup for dynamic JT compilation
 						((IncrementalJunctionTreeAlgorithm) probAlgorithm).setNetPreviousRun(previousNetBackup);
+						// restore backup for loopy bp threshold
+						((IncrementalJunctionTreeAlgorithm) probAlgorithm).setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThreshold);
 					} else {
-						Debug.println(getClass(), "The associated probability algorithm is not a junction tree algorithm");
+						Debug.println(getClass(), "The associated probability algorithm is not a incremental junction tree algorithm");
 //						netToCheck.compile();	// this is usually faster to compile JT, but doesn't use any algorithm-level optimization (like dynamic junction tree compilation)
 						probAlgorithm.setNetwork(netToCheck);
 						probAlgorithm.run();
@@ -13826,30 +13840,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return this.getComplexityFactor(netToCheck);
 	}
 	
-	/**
-	 * This is just an extension of {@link JunctionTree} which does never fill or update content of clique/separator potentials
-	 * when {@link ProbabilisticNetwork#compile()} is run.
-	 * This is used in {@link MarkovEngineImpl#getComplexityFactor(Map)} in order to quickly build a junction tree
-	 * structure after changes in Bayes net, without wasting computational time for initializing beliefs or to guarantee global consitency.
-	 * Basically, this forces {@link SingleEntityNetwork#compileJT(IJunctionTree)} not to fill probabilities nor to assure global consistency,
-	 * so changes in {@link SingleEntityNetwork#compileJT(IJunctionTree)} may affect the behavior of this class.
-	 * Additionally, this class only assures that fields read by {@link MarkovEngineImpl#getComplexityFactor(ProbabilisticNetwork)}
-	 * are consistent, so other fields/methods must not be accessed.
-	 * @author Shou Matsumoto
-	 */
-	private class StructureOnlyJunctionTree extends JunctionTree {
-		private static final long serialVersionUID = 5496557084782672808L;
-		private ProbabilisticNetwork net;
-		/** Default constructor using fields */
-		public StructureOnlyJunctionTree(ProbabilisticNetwork net) { this.net = net;}
-		/** 
-		 * Do not initialize belief (this will make sure {@link SingleEntityNetwork#compileJT(IJunctionTree)} won't touch probabilities). 
-		 * This will also clear {@link ProbabilisticNetwork#getNodesCopy()},
-		 * so that {@link SingleEntityNetwork#compileJT(IJunctionTree)} will do nothing after this method.
-		 * {@link ProbabilisticNetwork#resetNodesCopy()} shall be called to fill {@link ProbabilisticNetwork#getNodesCopy()} again, if necessary. 
-		 */
-		public void initBeliefs() throws Exception { net.getNodesCopy().clear(); return; }
-	}
+	
 	
 	/**
 	 * This is used in {@link #getComplexityFactors(Map)} in order to return the maximum table size of a clique,

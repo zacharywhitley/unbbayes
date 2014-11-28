@@ -30750,6 +30750,12 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 		
+		// keep backup of loopy BP configuration, so that we can check if it was changed
+		Integer loopyBPCliqueSizeThreshold = null;
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			loopyBPCliqueSizeThreshold = ((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getLoopyBPCliqueSizeThreshold();
+		}
+		
 		// check that complexity increases by including new node C and fully connecting the net
 		childQuestionIds = new ArrayList<Long>();
 		parentQuestionIds = new ArrayList<Long>();
@@ -30829,6 +30835,11 @@ public class MarkovEngineTest extends TestCase {
 				assertTrue(node.getName(), nodeToAssociatedCliqueOrSeparatorMap.containsKey(node));
 				assertTrue(node.getName() + "; " + ((TreeVariable) node).getAssociatedClique(), nodeToAssociatedCliqueOrSeparatorMap.get(node) == ((TreeVariable) node).getAssociatedClique());	// use == for exact object comparison
 			}
+		}
+		
+		// check that configuration of loopy bp threshold did not change
+		if (loopyBPCliqueSizeThreshold != null) {
+			assertEquals(loopyBPCliqueSizeThreshold.intValue(), ((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getLoopyBPCliqueSizeThreshold());
 		}
 	}
 	
