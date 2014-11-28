@@ -275,13 +275,14 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		if (isToCompileNormally) {
 			// run ordinal junction tree compilation
 			super.run();
-			// activate loopy BP if clique size got too large
-			List<Clique> largestCliques = getLargestCliques();
-			if (largestCliques != null && 
-					!largestCliques.isEmpty() 
-					&& ( largestCliques.get(0).getProbabilityFunction().tableSize() > getLoopyBPCliqueSizeThreshold() ) ) {
-				this.buildLoopyCliques();
-			}
+		}
+		
+		// activate loopy BP if clique size got too large
+		List<Clique> largestCliques = getLargestCliques(getNet());
+		if (largestCliques != null && 
+				!largestCliques.isEmpty() 
+				&& ( largestCliques.get(0).getProbabilityFunction().tableSize() > getLoopyBPCliqueSizeThreshold() ) ) {
+			this.buildLoopyCliques(getNet());
 		}
 		
 		// update backup of network if necessary
@@ -303,15 +304,18 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	}
 	
 	/**
+	 * @param probabilisticNetwork : the network whose {@link Clique} belongs to.
+	 * The {@link Clique} will be extracted from {@link ProbabilisticNetwork#getJunctionTree()}
+	 * and then from {@link IJunctionTree#getCliques()}.
 	 * @return List of the cliques with largest size in {@link #getJunctionTree()}.
 	 * This will return multiple elements if there are cliques with same size.
 	 */
-	public List<Clique> getLargestCliques() {
+	public List<Clique> getLargestCliques(ProbabilisticNetwork probabilisticNetwork) {
 		// basic assertions
-		if (getNet() == null 
-				|| getNet().getJunctionTree() == null 
-				|| getNet().getJunctionTree().getCliques() == null
-				|| getNet().getJunctionTree().getCliques().isEmpty()) {
+		if (probabilisticNetwork == null 
+				|| probabilisticNetwork.getJunctionTree() == null 
+				|| probabilisticNetwork.getJunctionTree().getCliques() == null
+				|| probabilisticNetwork.getJunctionTree().getCliques().isEmpty()) {
 			return Collections.emptyList();
 		}
 		
@@ -322,7 +326,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		int largestCliqueSize = -1;
 		
 		// iterate on cliques to check largest size
-		for (Clique currentCliqueInIteration : getNet().getJunctionTree().getCliques()) {
+		for (Clique currentCliqueInIteration : probabilisticNetwork.getJunctionTree().getCliques()) {
 			
 			// extract size of the current clique in iteration
 			int currentCliqueSize = currentCliqueInIteration.getProbabilityFunction().tableSize();
@@ -341,29 +345,37 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		return largestCliques;
 	}
 
-	public void buildLoopyCliques() {
+	/**
+	 * This method will call {@link #splitCliqueAndAddToJT(Clique, LoopyJunctionTree, int)} in order
+	 * to reduce the maximum size of cliques and generate cliques with loops.
+	 * It will also call {@link LoopyJunctionTree#setLoopy(boolean)} to true in order
+	 * to explicitly indicate that the clique structures are loopy now.
+	 * @param probabilisticNetwork
+	 */
+	public void buildLoopyCliques(ProbabilisticNetwork probabilisticNetwork) {
 		// extract the junction tree
 		LoopyJunctionTree jt = null;
 		try {
-			jt = (LoopyJunctionTree) getJunctionTree();
+			jt = (LoopyJunctionTree) probabilisticNetwork.getJunctionTree();
 		} catch (ClassCastException e) {
-			e.printStackTrace();
-			// needs to recompile JT using LoopyJunctionTree
-			getNet().setJunctionTreeBuilder(DEFAULT_LOOPY_JT_BUILDER);
-			super.run();	// recompile the whole structure
-			// now, the junction tree is supposedly an instance of LoopyJunctionTree
-			try {
-				jt = (LoopyJunctionTree) getJunctionTree();
-			} catch (ClassCastException e2) {
-				throw new RuntimeException("Unable to create a special instance of junction tree for loopy BP.", e2);
-			}
+			throw new UnsupportedOperationException("Current version only allows loopy BP in clique/cluster structure if the network is associated with an instance of " + LoopyJunctionTree.class.getName(), e);
+//			e.printStackTrace();
+//			// needs to recompile JT using LoopyJunctionTree
+//			getNet().setJunctionTreeBuilder(DEFAULT_LOOPY_JT_BUILDER);
+//			super.run();	// recompile the whole structure
+//			// now, the junction tree is supposedly an instance of LoopyJunctionTree
+//			try {
+//				jt = (LoopyJunctionTree) getJunctionTree();
+//			} catch (ClassCastException e2) {
+//				throw new RuntimeException("Unable to create a special instance of junction tree for loopy BP.", e2);
+//			}
 		}
 		
 		// explicitly indicate that this junction tree is not a tree, and it has loops...
 		jt.setLoopy(true);	// this should enable loopy BP
 		
 		// split largest cliques
-		for (Clique largeClique : getLargestCliques()) {
+		for (Clique largeClique : getLargestCliques(probabilisticNetwork)) {
 			this.splitCliqueAndAddToJT(largeClique, jt, getLoopyBPCliqueSizeThreshold());
 		}
 	}
@@ -1070,6 +1082,20 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 						((TreeVariable) originalNode).setAssociatedClique(newNode.getAssociatedClique());
 					}
 				}
+				
+				// activate loopy BP if clique size got too large
+//				List<Clique> largestCliques = getLargestCliques(algorithm.getNet());
+//				if (largestCliques != null && 
+//						!largestCliques.isEmpty() 
+//						&& ( largestCliques.get(0).getProbabilityFunction().tableSize() > getLoopyBPCliqueSizeThreshold() ) ) {
+//					this.buildLoopyCliques(algorithm.getNet());
+//					// also make sure the main junction tree is notified about presence of loops
+//					try {
+//						((LoopyJunctionTree)this.getJunctionTree()).setLoopy(true);
+//					} catch (ClassCastException e) {
+//						throw new UnsupportedOperationException("Current version only allows loopy BP in clique/cluster structure if the network is associated with an instance of " + LoopyJunctionTree.class.getName(), e);
+//					}
+//				}
 				
 				// add junction tree to the map to be returned.
 				// Current cluster and all related clusters are supposedly in clustersProcessedInThisIteration
@@ -2233,6 +2259,78 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		// return the generated clique
 		return currentCliqueToFill;
 	}
+	
+	
+	
+
+	/**
+	 * @return it will just delegate to {@link LoopyJunctionTree#isLoopy()}.
+	 */
+	public boolean isLoopy() {
+		IJunctionTree jt = getJunctionTree();
+		if ((jt != null)
+				&& (jt instanceof LoopyJunctionTree)) {
+			return ((LoopyJunctionTree) jt).isLoopy();
+		}
+		// if it is not associated with a LoopyJunctionTree, then by default consider that this doesn't have loops
+		return false;
+	}
+
+	/**
+	 * @param isLoopy : 
+	 * if {@link #isLoopy()} was false and this is set to true, then {@link #buildLoopyCliques(ProbabilisticNetwork)} will
+	 * be called in order to force the {@link #getJunctionTree()} to be loopy, and thus use loopy BP.
+	 * <br/>
+	 * if {@link #isLoopy()} was true and this is set to false, then {@link #run()} will be called with loopy BP and incremental JT compilation
+	 * disabled.
+	 * <br/>
+	 * Otherwise, it will just delegate to {@link LoopyJunctionTree#setLoopy(boolean)}.
+	 * 
+	 * @see #getLargestCliques(ProbabilisticNetwork)
+	 * @see #updateCPTBasedOnCliques()
+	 * @see #setNetPreviousRun(ProbabilisticNetwork)
+	 * @see #getLoopyBPCliqueSizeThreshold()
+	 * @see #setLoopyBPCliqueSizeThreshold(int)
+	 * 
+	 * @throws ClassCastException if {@link #getJunctionTree()} is not an instance of {@link LoopyJunctionTree}.
+	 */
+	public void setLoopy(boolean isLoopy) {
+		if (!isLoopy() && isLoopy) {	// changing from non-loopy to loopy
+			// force loopy BP if clique size got too large
+			List<Clique> largestCliques = getLargestCliques(getNet());
+			if (largestCliques != null && 
+					!largestCliques.isEmpty() 
+					&& ( largestCliques.get(0).getProbabilityFunction().tableSize() > getLoopyBPCliqueSizeThreshold() ) ) {
+				this.buildLoopyCliques(getNet());
+			}
+		} else if (isLoopy() && !isLoopy) {	// changing from loopy to non-loopy
+			
+			// make sure we use CPTs that are up-to-date (accordingly to clique potentials)
+			updateCPTBasedOnCliques();
+			
+			// disable dynamic JT compilation
+			setNetPreviousRun(null);
+			
+			int loopyBPCliqueSizeThresholdBakup = this.getLoopyBPCliqueSizeThreshold();	// keep backup, in order to restore later
+			// disable loopy BP
+			this.setLoopyBPCliqueSizeThreshold(Integer.MAX_VALUE);
+			
+			// recompile JT
+			this.run();
+			
+			// restore backup
+			this.setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThresholdBakup);
+		}
+		
+
+		
+		IJunctionTree jt = getJunctionTree();
+		if ((jt != null)
+				&& (jt instanceof LoopyJunctionTree)) {
+			((LoopyJunctionTree) jt).setLoopy(isLoopy);;
+		}
+		// if it is not associated with a LoopyJunctionTree, then just ignore
+	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#setNet(unbbayes.prs.bn.ProbabilisticNetwork)
@@ -2280,6 +2378,64 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	 */
 	public void setCliqueSplitter(ICliqueSplitter cliqueSplitter) {
 		this.cliqueSplitter = cliqueSplitter;
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#setAsPermanentEvidence(java.util.Map, boolean)
+	 */
+	public void setAsPermanentEvidence(Map<INode, List<Float>> evidences, boolean isToDeleteNode) {
+		super.setAsPermanentEvidence(evidences, isToDeleteNode);
+		
+		// if we are using loopy BP, check condition to return to exact inference
+		returnToExactJunctionTree();
+	}
+
+	/**
+	 * Check for conditions to return to exact inference (i.e. non-loopy bp in junction tree)
+	 * and if conditions are satisfied, disable loopy BP and return to ordinal junction tree.
+	 * @return true if there were changes. False otherwise.
+	 * @see #isLoopy()
+	 * @see #setLoopy(boolean)
+	 */
+	public boolean returnToExactJunctionTree() {
+		
+		if (!isLoopy()) {
+			// do nothing if we are not doing loopy BP
+			return false;
+		}
+		
+		// other basic assertions
+		if (getNet() == null
+				|| getNet().getJunctionTree() == null) {
+			return false;
+		}
+		
+		// check for conditions to stop loopy-BP. The conditions are the inverse of starting loopy-BP
+		ProbabilisticNetwork netToCheck = this.cloneProbabilisticNetwork(getNet());	// use a clone, so that we don't change original
+		
+		// compile the junction tree without using incremental or loopy JT
+		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(netToCheck);
+		algorithm.run();
+		
+		// check clique sizes
+		List<Clique> largestCliques = getLargestCliques(algorithm.getNet());
+		if (largestCliques != null && !largestCliques.isEmpty()) {
+			// check if the largest clique table size is below the threshold. If so, stop using loopy bp
+			if (largestCliques.get(0).getProbabilityFunction().tableSize() <= getLoopyBPCliqueSizeThreshold()) {
+				
+				// TODO compiling a clone to check clique size, and then using setLoopy(false) to recompile exact JT is redundant
+				
+				// setting isLoopy from true to false this should recompile junction tree in non-loopy and non-incremental mode
+				this.setLoopy(false);
+				
+				return true;	// indicate that there were changes
+			} // table size still larger than threshold, so don't return to exact inference
+		} else {
+			Debug.println(getClass(), "Unable to compile junction tree without using loopy or incremental JT");
+		}
+		
+		// if we reached this point, then there were no changes in original junction tree.
+		return false;
 	}
 
 	

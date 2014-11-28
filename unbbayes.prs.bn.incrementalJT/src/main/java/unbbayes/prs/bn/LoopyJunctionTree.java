@@ -4,6 +4,7 @@
 package unbbayes.prs.bn;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -140,11 +141,13 @@ public class LoopyJunctionTree extends JunctionTree {
 	 */
 	public List<Clique> getParents(Clique clique) {
 		Map<Clique, List<Clique>> parentMap = getCliqueParentMap();
-		if (parentMap == null || parentMap.isEmpty()) {
+		if (parentMap == null) {
 //			return super.getParents(clique);
 			initParentMapping();
+			parentMap = getCliqueParentMap();
 		}
-		return parentMap.get(clique);
+		List<Clique> ret = parentMap.get(clique);
+		return ((ret == null)?((List)Collections.emptyList()):ret);	// never return null
 	}
 	
 
@@ -164,7 +167,7 @@ public class LoopyJunctionTree extends JunctionTree {
 	 * @see #getMaxLoopyBPIteration()
 	 * @see #setMaxLoopyBPIteration(int)
 	 */
-	public void setLoopy(boolean isLoopy) {
+	protected void setLoopy(boolean isLoopy) {
 		this.isLoopy = isLoopy;
 	}
 
@@ -236,13 +239,13 @@ public class LoopyJunctionTree extends JunctionTree {
 		
 		Map<Clique,List<Clique>> parentMap = getCliqueParentMap();
 		// initialize map if it was not initialized yet
-		if (parentMap == null || parentMap.isEmpty()) {
+		if (parentMap == null) {
 			this.initParentMapping();
 			parentMap = getCliqueParentMap();
 		}
 		
 		// assertion: map should be initialized at this point
-		if (parentMap == null || parentMap.isEmpty()) {
+		if (parentMap == null) {
 			throw new IllegalStateException("Uninitialized mapping of parent cliques. LoopyJunctionTre#initParentMapping() must be called.");
 		}
 		
