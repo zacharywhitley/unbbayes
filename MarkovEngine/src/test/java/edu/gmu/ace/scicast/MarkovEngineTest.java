@@ -30500,6 +30500,39 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(Math.pow(engine.getDefaultNodeSize(), 2), complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
 		assertEquals(Math.pow(engine.getDefaultNodeSize(), 2)*3, complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);	//3 cliques with 2 nodes each
 		
+		// assert that we cannot create cycles
+		// create B<-A   D->E->F->D(cycle)
+		childQuestionIds = new ArrayList<Long>();
+		parentQuestionIds = new ArrayList<Long>();
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0BL); 	// A->B
+		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0EL); 	// D->E
+		parentQuestionIds.add(0x0EL); childQuestionIds.add(0x0FL); 	// E->F
+		parentQuestionIds.add(0x0FL); childQuestionIds.add(0x0DL); 	// F->D (cycle)
+		try {
+			complexityFactorList = engine.getComplexityFactor(childQuestionIds, parentQuestionIds);
+			fail("Should have thrown exception");
+		} catch (RuntimeException e) {
+			// OK
+			Debug.println(getClass(), "Throwing exception as expected", e);
+			// make sure it did not change the complexity factor of next calls
+			assertEquals(0, engine.getComplexityFactor((Long)null, null));
+			assertEquals(0, engine.getComplexityFactor((Map)null));
+			assertEquals(0, engine.getComplexityFactor((List)null, (List)null));
+		}
+		assertEquals("4 keys (children) B, E, F, D", 4, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).size());
+		assertEquals("4 values (parents) A,D,E,F", 4, new HashSet(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values()).size());
+		try {
+			complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+			fail("Should have thrown exception");
+		} catch (RuntimeException e) {
+			// OK
+			Debug.println(getClass(), "Throwing exception as expected", e);
+			// make sure it did not change the complexity factor of next calls
+			assertEquals(0, engine.getComplexityFactor((Long)null, null));
+			assertEquals(0, engine.getComplexityFactor((Map)null));
+			assertEquals(0, engine.getComplexityFactor((List)null, (List)null));
+		}
+		
 		// check that nodes&arcs were not actually created
 		assertTrue(engine.getProbLists(null, null, null).isEmpty());
 		
@@ -30573,6 +30606,54 @@ public class MarkovEngineTest extends TestCase {
 			if (node instanceof TreeVariable) {
 				assertTrue(node.getName(), nodeToAssociatedCliqueOrSeparatorMap.containsKey(node));
 				assertTrue(node.getName() + "; " + ((TreeVariable) node).getAssociatedClique(), nodeToAssociatedCliqueOrSeparatorMap.get(node) == ((TreeVariable) node).getAssociatedClique());	// use == for exact object comparison
+			}
+		}
+		
+
+		// assert that we cannot create cycles
+		// create A->D, E->A (cycle A->D->E->A)
+		childQuestionIds = new ArrayList<Long>();
+		parentQuestionIds = new ArrayList<Long>();
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0DL); 	// A->D
+		parentQuestionIds.add(0x0EL); childQuestionIds.add(0x0AL); 	// E->A (cycle)
+		try {
+			complexityFactorList = engine.getComplexityFactor(childQuestionIds, parentQuestionIds);
+			fail("Should have thrown exception");
+		} catch (RuntimeException e) {
+			// OK
+			Debug.println(getClass(), "Throwing exception as expected", e);
+			// make sure it did not change the complexity factor of next calls
+			if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+				assertEquals(5*11, engine.getComplexityFactor((Map)null));	
+				assertEquals(5*11, engine.getComplexityFactor((Long)null, null));
+				assertEquals(5*11, engine.getComplexityFactor((List)null, null));
+			} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+				assertEquals(2*3+5*11+5*7, engine.getComplexityFactor((Map)null));	
+				assertEquals(2*3+5*11+5*7, engine.getComplexityFactor((Long)null, null));
+				assertEquals(2*3+5*11+5*7, engine.getComplexityFactor((List)null, null));
+			} else {
+				fail("Unknown complexity factor key.");
+			}
+		}
+		assertEquals("2 keys (children) A, D", 2, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).size());
+		assertEquals("2 values (parents) A, E", 2, new HashSet(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).values()).size());
+		try {
+			complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+			fail("Should have thrown exception");
+		} catch (RuntimeException e) {
+			// OK
+			Debug.println(getClass(), "Throwing exception as expected", e);
+			// make sure it did not change the complexity factor of next calls
+			if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+				assertEquals(5*11, engine.getComplexityFactor((Map)null));	
+				assertEquals(5*11, engine.getComplexityFactor((Long)null, null));
+				assertEquals(5*11, engine.getComplexityFactor((List)null, null));
+			} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+				assertEquals(2*3+5*11+5*7, engine.getComplexityFactor((Map)null));	
+				assertEquals(2*3+5*11+5*7, engine.getComplexityFactor((Long)null, null));
+				assertEquals(2*3+5*11+5*7, engine.getComplexityFactor((List)null, null));
+			} else {
+				fail("Unknown complexity factor key.");
 			}
 		}
 		
