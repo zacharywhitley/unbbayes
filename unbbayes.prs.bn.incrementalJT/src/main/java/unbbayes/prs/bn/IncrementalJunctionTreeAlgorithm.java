@@ -2627,7 +2627,93 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		
 		return ret;
 	}
-
 	
+	
+
+	/**
+	 * @return the error margin which will be used when comparing probabilities in loopy BP.
+	 * If a loop does not result in change in clique potential larger than this value, then a loop will stop.
+	 * @see LoopyJunctionTree#getProbErrorMargin()
+	 * @see LoopyJunctionTree#consistency(Clique, boolean)
+	 * @see LoopyJunctionTree#absorb(Clique, Clique)
+	 */
+	public float getProbErrorMargin() {
+		try {
+			return ((LoopyJunctionTree)getJunctionTree()).getProbErrorMargin();
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		return Float.MIN_NORMAL;
+	}
+
+	/**
+	 * @param probErrorMargin : the error margin which will be used when comparing probabilities in loopy BP.
+	 * If a loop does not result in change in clique potential larger than this value, then a loop will stop.
+	 * @see LoopyJunctionTree#setProbErrorMargin(float)
+	 * @see LoopyJunctionTree#consistency(Clique, boolean)
+	 * @see LoopyJunctionTree#absorb(Clique, Clique)
+	 */
+	public void setProbErrorMargin(float probErrorMargin) {
+		try {
+			((LoopyJunctionTree)getJunctionTree()).setProbErrorMargin(probErrorMargin);
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+	}
+
+
+	/**
+	 * @return the max number of iterations the loopy belief propagation in
+	 * {@link LoopyJunctionTree#consistency(Clique, boolean)} will execute.
+	 */
+	public int getMaxLoopyBPIteration() {
+		try {
+			return ((LoopyJunctionTree)getJunctionTree()).getMaxLoopyBPIteration();
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		return 1;
+	}
+
+	/**
+	 * @param maxLoopyBPIteration : the max number of iterations the loopy belief propagation in
+	 * {@link LoopyJunctionTree#consistency(Clique, boolean)} will execute.
+	 */
+	public void setMaxLoopyBPIteration(int maxLoopyBPIteration) {
+		try {
+			((LoopyJunctionTree)getJunctionTree()).setMaxLoopyBPIteration(maxLoopyBPIteration);
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * @return the time in milliseconds allowed for {@link LoopyJunctionTree#consistency(Clique, boolean)}
+	 * to run iterations in loopy Belief Propagation when {@link LoopyJunctionTree#isLoopy()} == true.
+	 * After an iteration (a collect/propagate evidence loop) finishes, the time will be checked, 
+	 * and the loopy BP will stop if the time exceeded this amount.
+	 */
+	public long getMaxLoopyBPTimeMillis() {
+		try {
+			return ((LoopyJunctionTree)getJunctionTree()).getMaxLoopyBPTimeMillis();
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		return Long.MAX_VALUE;
+	}
+
+	/**
+	 * @param maxLoopyBPTimeMillis : the time in milliseconds allowed for {@link LoopyJunctionTree#consistency(Clique, boolean)}
+	 * to run iterations in loopy Belief Propagation when {@link LoopyJunctionTree#isLoopy()} == true.
+	 * After an iteration (a collect/propagate evidence loop) finishes, the time will be checked, 
+	 * and the loopy BP will stop if the time exceeded this amount.
+	 */
+	public void setMaxLoopyBPTimeMillis(long maxLoopyBPTimeMillis) {
+		try {
+			((LoopyJunctionTree)getJunctionTree()).setMaxLoopyBPTimeMillis(maxLoopyBPTimeMillis);
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+	}
 
 }

@@ -36,6 +36,8 @@ public class LoopyJunctionTree extends JunctionTree {
 	private float probErrorMargin = (float) 1e-5;
 
 	private Map<Clique, List<Clique>> cliqueParentMap;
+
+	private long maxLoopyBPTimeMillis = 5000;
 	
 	private static float[] probBefore = null;
 	
@@ -63,10 +65,12 @@ public class LoopyJunctionTree extends JunctionTree {
 	public void consistency(Clique rootClique, boolean isToContinueOnEmptySep)
 			throws Exception {
 		if (isLoopy()) {
+			long startTime = System.currentTimeMillis();
 			for (int i = 0; i < maxLoopyBPIteration; i++) {
 				this.setModified(false);
 				super.consistency(rootClique, isToContinueOnEmptySep);
-				if (!isModified()) {
+				if (!isModified()							// there were no considerable change in probability in last loop
+						|| (System.currentTimeMillis() - startTime) > maxLoopyBPTimeMillis) {	// time exceeded limit
 					break;
 				}
 			}
@@ -170,7 +174,7 @@ public class LoopyJunctionTree extends JunctionTree {
 	protected void setLoopy(boolean isLoopy) {
 		this.isLoopy = isLoopy;
 	}
-
+	
 	/**
 	 * @return the max number of iterations the loopy belief propagation in
 	 * {@link #consistency(Clique, boolean)} will execute.
@@ -185,6 +189,26 @@ public class LoopyJunctionTree extends JunctionTree {
 	 */
 	public void setMaxLoopyBPIteration(int maxLoopyBPIteration) {
 		this.maxLoopyBPIteration = maxLoopyBPIteration;
+	}
+	
+	/**
+	 * @return the time in milliseconds allowed for {@link #consistency(Clique, boolean)}
+	 * to run iterations in loopy Belief Propagation when {@link #isLoopy()} == true.
+	 * After an iteration (a collect/propagate evidence loop) finishes, the time will be checked, 
+	 * and the loopy BP will stop if the time exceeded this amount.
+	 */
+	public long getMaxLoopyBPTimeMillis() {
+		return this.maxLoopyBPTimeMillis;
+	}
+
+	/**
+	 * @param maxLoopyBPTimeMillis : the time in milliseconds allowed for {@link #consistency(Clique, boolean)}
+	 * to run iterations in loopy Belief Propagation when {@link #isLoopy()} == true.
+	 * After an iteration (a collect/propagate evidence loop) finishes, the time will be checked, 
+	 * and the loopy BP will stop if the time exceeded this amount.
+	 */
+	protected void setMaxLoopyBPTimeMillis(long maxLoopyBPTimeMillis) {
+		this.maxLoopyBPTimeMillis = maxLoopyBPTimeMillis;
 	}
 
 	/**
@@ -505,6 +529,8 @@ public class LoopyJunctionTree extends JunctionTree {
 	protected void setCliqueParentMap(Map<Clique, List<Clique>> cliqueParentMap) {
 		this.cliqueParentMap = cliqueParentMap;
 	}
+
+	
 
 	
 

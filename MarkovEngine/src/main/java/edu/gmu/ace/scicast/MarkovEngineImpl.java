@@ -58,6 +58,7 @@ import unbbayes.prs.bn.IJunctionTreeBuilder;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
+import unbbayes.prs.bn.LoopyJunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -14362,6 +14363,100 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public void setDefaultComplexityFactorName(
 			String defaultComplexityFactorName) {
 		this.defaultComplexityFactorName = defaultComplexityFactorName;
+	}
+	
+	/**
+	 * @return the error margin which will be used when comparing probabilities in loopy BP.
+	 * If a loop does not result in change in clique potential larger than this value, then a loop will stop.
+	 * @see IncrementalJunctionTreeAlgorithm#getProbErrorMargin()
+	 */
+	public float getProbErrorMargin() {
+		try {
+			return ((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getProbErrorMargin();
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		} catch (NullPointerException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		return Float.MIN_NORMAL;
+	}
+
+	/**
+	 * @param probErrorMargin : the error margin which will be used when comparing probabilities in loopy BP.
+	 * If a loop does not result in change in clique potential larger than this value, then a loop will stop.
+	 * @see IncrementalJunctionTreeAlgorithm#setProbErrorMargin(float)
+	 */
+	public void setProbErrorMargin(float probErrorMargin) {
+		try {
+			((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setProbErrorMargin(probErrorMargin);
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		} catch (NullPointerException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+	}
+
+
+	/**
+	 * @return the max number of iterations the loopy belief propagation.
+	 * @see IncrementalJunctionTreeAlgorithm#getMaxLoopyBPIteration()
+	 */
+	public int getMaxLoopyBPIteration() {
+		try {
+			return ((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getMaxLoopyBPIteration();
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		} catch (NullPointerException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		return 1;
+	}
+
+	/**
+	 * @param maxLoopyBPIteration : the max number of iterations the loopy belief propagation.
+	 * @see IncrementalJunctionTreeAlgorithm#setMaxLoopyBPIteration(int)
+	 */
+	public void setMaxLoopyBPIteration(int maxLoopyBPIteration) {
+		try {
+			((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setMaxLoopyBPIteration(maxLoopyBPIteration);
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		} catch (NullPointerException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+	}
+	
+	/**
+	 * @return the time in milliseconds allowed for the loopy belief propagation to run iterations.
+	 * After an iteration (a collect/propagate evidence loop) finishes, the time will be checked, 
+	 * and the loopy BP will stop if the time exceeded this amount.
+	 * @see IncrementalJunctionTreeAlgorithm#getMaxLoopyBPTimeMillis()
+	 */
+	public long getMaxLoopyBPTimeMillis() {
+		try {
+			return ((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getMaxLoopyBPTimeMillis();
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		} catch (NullPointerException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		return Long.MAX_VALUE;
+	}
+
+	/**
+	 * @param maxLoopyBPTimeMillis : the time in milliseconds allowed for the loopy belief propagation to run iterations.
+	 * After an iteration (a collect/propagate evidence loop) finishes, the time will be checked, 
+	 * and the loopy BP will stop if the time exceeded this amount.
+	 * @see IncrementalJunctionTreeAlgorithm#setMaxLoopyBPTimeMillis(long)
+	 */
+	public void setMaxLoopyBPTimeMillis(long maxLoopyBPTimeMillis) {
+		try {
+			((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setMaxLoopyBPTimeMillis(maxLoopyBPTimeMillis);
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		} catch (NullPointerException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
 	}
 
 
