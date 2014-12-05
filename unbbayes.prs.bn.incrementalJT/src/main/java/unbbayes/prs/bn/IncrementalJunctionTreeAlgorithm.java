@@ -666,6 +666,11 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 			throw new NullPointerException("Unable to obtain junction tree to dynamically compile.");
 		}
 		
+		// basic assertion: there should be no cycles in net
+		if (newNet.hasCycle()) {
+			throw new IllegalStateException("Cannot compile a network with cycles.");
+		}
+		
 		// store what nodes were added/deleted to/from the network
 		Collection<INode> nodesToDelete = new HashSet<INode>();		// this will *not* contain nodes that were already removed from junction tree
 		Collection<INode> allDeletedNodes = new HashSet<INode>();	// this will also contain nodes that were already removed from junction tree
@@ -1101,6 +1106,10 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					throw new RuntimeException("Unable to compile max prime subnet of cluster " + cluster);
 				}
 				
+//				if (algorithm.getJunctionTree() instanceof LoopyJunctionTree) {
+//					((LoopyJunctionTree)algorithm.getJunctionTree()).initParentMapping();
+//				}
+				
 				// extract the network managed by this algorithm (i.e. this is the original network, and it will be used to replace nodes in cloned subnets with nodes in original net)
 				ProbabilisticNetwork net = this.getNet();
 				
@@ -1222,12 +1231,14 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
     	// for each of the cliques, get separators that connects modified and not modified cliques
     	Set<Separator> borderSeparators = new HashSet<Separator>();	// this will be filled with separators that are in the border between modified and not modified cliques
     	for (Clique modifiedClique : modifiedCliques) { // only needs to check separators connected to these cliques
-			// check parent
-    		if (modifiedClique.getParent() != null
-    				&& !modifiedClusters.contains(originalCliqueToClusterMap.get(modifiedClique.getParent()))) {
-    			// cluster related to this parent clique was not modified, so this is a separator between modified and not modified cliques
-    			borderSeparators.add(originalJunctionTree.getSeparator(modifiedClique.getParent(), modifiedClique));
-    		}
+    		// check parent
+    		for (Clique parent : ((LoopyJunctionTree)originalJunctionTree).getParents(modifiedClique)) {
+    			if (parent != null
+    					&& !modifiedClusters.contains(originalCliqueToClusterMap.get(parent))) {
+    				// cluster related to this parent clique was not modified, so this is a separator between modified and not modified cliques
+    				borderSeparators.add(originalJunctionTree.getSeparator(parent, modifiedClique));
+    			}
+			}
     		// check children
     		if (modifiedClique.getChildren() != null) {
     			for (Clique child : modifiedClique.getChildren()) {
@@ -1272,7 +1283,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 			 * 
 			 * Therefore, given a single border separator, there are only 2 possible scenarios.
 			 * 
-			 * 1 - The unchanged clique is a parent of the modified subtree. This can happen only with 1 border separator, due to properties of tree structures.
+			 * 1 - The unchanged clique is a parent of the modified subtree.
 			 * 	   In this case, a new clique (of the junction tree compiled from max prime subgraph) will become a child of the unchanged clique.
 			 *     This is the case when we need to move the new clique to the root of the junction tree of the max prime subgraph,
 			 *     in order to keep the hierarchy consistent (e.g. keep unique root).
@@ -1282,7 +1293,8 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 			 */
 			
 			// Connect the new clique to the original unmodified clique, by the border separator; 
-			if (modifiedOriginalClique.getParent() != null && modifiedOriginalClique.getParent().equals(unchangedOriginalClique)) {	
+			List<Clique> parentsOfModifiedOriginalClique = ((LoopyJunctionTree)originalJunctionTree).getParents(modifiedOriginalClique);
+			if (parentsOfModifiedOriginalClique != null && parentsOfModifiedOriginalClique.contains(unchangedOriginalClique)) {	
 				// case 1 - new clique becomes a child of original unchanged clique
 				
 				// move the new clique to root of its junction tree, so that it gets easier to connect to original junction tree just by adding it to list of children
@@ -1305,7 +1317,8 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 						
 						// inherit children of the clique that is going to be "deleted" (actually, it simply won't be included to original junction tree)
 						unchangedOriginalClique.addChild(childClique);
-						childClique.setParent(unchangedOriginalClique);
+//						childClique.setParent(unchangedOriginalClique);
+						((LoopyJunctionTree)originalJunctionTree).addParent(unchangedOriginalClique, childClique);
 						
 						// also create separator with this child clique, 
 						
@@ -1351,7 +1364,8 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					
 				} else {
 					// set new clique as a child of old unchanged clique
-					newCliqueInMaxPrimeJunctionTree.setParent(unchangedOriginalClique);
+//					newCliqueInMaxPrimeJunctionTree.setParent(unchangedOriginalClique);
+					((LoopyJunctionTree)originalJunctionTree).addParent(unchangedOriginalClique, newCliqueInMaxPrimeJunctionTree);
 					unchangedOriginalClique.addChild(newCliqueInMaxPrimeJunctionTree);
 					
 					// The border separator needs to be replaced, because we cannot change the cliques it points to/from;
@@ -1388,7 +1402,8 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 				
 				// disconnect the old child from parent
 				unchangedOriginalClique.removeChild(modifiedOriginalClique);
-				modifiedOriginalClique.setParent(null);
+				//modifiedOriginalClique.setParent(null);
+				((LoopyJunctionTree)originalJunctionTree).removeParent(unchangedOriginalClique, modifiedOriginalClique);
 				
 				
 			} else {
@@ -1413,7 +1428,8 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 						
 						// inherit children of the clique that is going to be "deleted" (actually, it simply won't be included to original junction tree)
 						newCliqueInMaxPrimeJunctionTree.addChild(childClique);
-						childClique.setParent(newCliqueInMaxPrimeJunctionTree);
+//						childClique.setParent(newCliqueInMaxPrimeJunctionTree);
+						((LoopyJunctionTree)originalJunctionTree).addParent(newCliqueInMaxPrimeJunctionTree, childClique);
 						
 						// also create separator with this child clique, 
 						
@@ -1456,8 +1472,9 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					
 				} else {
 					// set new clique as a parent of old unchanged clique
-					unchangedOriginalClique.setParent(newCliqueInMaxPrimeJunctionTree);
 					newCliqueInMaxPrimeJunctionTree.addChild(unchangedOriginalClique);
+//					unchangedOriginalClique.setParent(newCliqueInMaxPrimeJunctionTree);
+					((LoopyJunctionTree)originalJunctionTree).addParent(newCliqueInMaxPrimeJunctionTree, unchangedOriginalClique);
 					
 					// Again, the border separator needs to be replaced, because we cannot change the cliques it points to/from;
 					Separator newSeparator = new Separator(newCliqueInMaxPrimeJunctionTree, unchangedOriginalClique, false);
@@ -1500,6 +1517,8 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
     	// do the same for separators in max prime subtree;
     	for (Separator separator : primeSubgraphJunctionTree.getSeparators()) {
 			originalJunctionTree.addSeparator(separator);
+			// also make sure to update mapping of parents in LoopyJunctionTree
+			((LoopyJunctionTree)originalJunctionTree).addParent(separator.getClique1(), separator.getClique2());
 		}
     	
     	// Now, we need to delete all the modified (old) cliques and separators from original junction tree;
@@ -1689,21 +1708,25 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
     		
     		// also disconnect the clusters connected by the empty separator
     		if (emptySeparatorInShortestPath.getClique1().getParent() != null
-    				&& emptySeparatorInShortestPath.getClique1().getParent().equals(emptySeparatorInShortestPath.getClique2())) {
-    			
-    			emptySeparatorInShortestPath.getClique1().setParent(null);
+//    				&& emptySeparatorInShortestPath.getClique1().getParent().equals(emptySeparatorInShortestPath.getClique2())) {
+    				&& ((LoopyJunctionTree)decompositionTree).getParents(emptySeparatorInShortestPath.getClique1()).contains(emptySeparatorInShortestPath.getClique2())) {
+    			((LoopyJunctionTree)decompositionTree).removeParent(emptySeparatorInShortestPath.getClique2(), emptySeparatorInShortestPath.getClique1());
+//    			emptySeparatorInShortestPath.getClique1().setParent(null);
     			emptySeparatorInShortestPath.getClique2().removeChild(emptySeparatorInShortestPath.getClique1());
     			
     			// do the same for the original cliques;
-    			originalEmptySeparatorInShortestPath.getClique1().setParent(null);
+    			((LoopyJunctionTree)originalJunctionTree).removeParent(originalEmptySeparatorInShortestPath.getClique2(), originalEmptySeparatorInShortestPath.getClique1());
+//    			originalEmptySeparatorInShortestPath.getClique1().setParent(null);
     			originalEmptySeparatorInShortestPath.getClique2().removeChild(originalEmptySeparatorInShortestPath.getClique1());
     			
     		} else {
-    			emptySeparatorInShortestPath.getClique2().setParent(null);
+    			((LoopyJunctionTree)decompositionTree).removeParent(emptySeparatorInShortestPath.getClique1(), emptySeparatorInShortestPath.getClique2());
+//    			emptySeparatorInShortestPath.getClique2().setParent(null);
     			emptySeparatorInShortestPath.getClique1().removeChild(emptySeparatorInShortestPath.getClique2());
     			
     			// do the same for the original cliques;
-    			originalEmptySeparatorInShortestPath.getClique2().setParent(null);
+    			((LoopyJunctionTree)originalJunctionTree).removeParent(originalEmptySeparatorInShortestPath.getClique1(), originalEmptySeparatorInShortestPath.getClique2());
+//    			originalEmptySeparatorInShortestPath.getClique2().setParent(null);
     			originalEmptySeparatorInShortestPath.getClique1().removeChild(originalEmptySeparatorInShortestPath.getClique2());
     		}
     		
@@ -1758,10 +1781,12 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
     		
     		// and connect child node's cluster with parent node's cluster
     		clusterToBecomeParent.addChild(clusterToBecomeChild);
-    		clusterToBecomeChild.setParent(clusterToBecomeParent);
+//    		clusterToBecomeChild.setParent(clusterToBecomeParent);
+    		((LoopyJunctionTree)decompositionTree).addParent(clusterToBecomeParent, clusterToBecomeChild);
     		// same modification to original junction tree
     		originalCliqueToBecomeParent.addChild(originalCliqueToBecomeChild);
-    		originalCliqueToBecomeChild.setParent(originalCliqueToBecomeParent);
+//    		originalCliqueToBecomeChild.setParent(originalCliqueToBecomeParent);
+    		((LoopyJunctionTree)originalJunctionTree).addParent(originalCliqueToBecomeParent, originalCliqueToBecomeChild);
     		
     		// and also insert the new empty separator. No need to update TreeVariable#getAssociatedClique of nodes in this separator, because there is no node at all
     		newSeparatorInMaxPrimeDecomposition = new StubSeparator(clusterToBecomeParent, clusterToBecomeChild);
@@ -1808,8 +1833,8 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
     	
     	// only the parent and child cluster shall be marked for modification, because they are directly connected now;
     	List<Clique> ret = new ArrayList<Clique>(2);
-    	ret.add(clusterToBecomeChild);
     	ret.add(clusterToBecomeParent);
+    	ret.add(clusterToBecomeChild);
     	return ret;
 	}
     
@@ -1884,9 +1909,9 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		cliqueOfNewNode.getProbabilityFunction().addVariable(includedNode);
 		cliqueOfNewNode.setInternalIdentificator(originalJunctionTree.getCliques().size());
 		// same for the decomposition tree
-		Clique clusterOfNewNode = new Clique();
+		Clique clusterOfNewNode = new StubClique();
 		clusterOfNewNode.getNodesList().add((Node)includedNode);
-		clusterOfNewNode.getProbabilityFunction().addVariable(includedNode);
+//		clusterOfNewNode.getProbabilityFunction().addVariable(includedNode);
 		clusterOfNewNode.setInternalIdentificator(cliqueOfNewNode.getInternalIdentificator());
 		
 		
@@ -1920,14 +1945,17 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		decompositionTree.getCliques().add(clusterOfNewNode);
 		
 		// create separator between the clique of parent nodes and virtual node (the separator should contain all parents)
-		Separator separatorOfNewNode = new Separator(rootClique , cliqueOfNewNode);
+		Separator separatorOfNewNode = new Separator(rootClique , cliqueOfNewNode, false);
+		rootClique.addChild(cliqueOfNewNode);
+		((LoopyJunctionTree)originalJunctionTree).addParent(rootClique, cliqueOfNewNode);
 		separatorOfNewNode.setInternalIdentificator(-(originalJunctionTree.getSeparators().size()+1)); // internal identificator must be set before adding separator, because it is used as key
 		originalJunctionTree.addSeparator(separatorOfNewNode);
 		// do the same for max prime subgraph decomposition tree
 		StubSeparator separatorOfNewNodeInPrimeDecompositon = new StubSeparator(rootCluster , clusterOfNewNode);
 		// for stub separator, we need to explicitly set parent/child cliques
 		rootCluster.addChild(clusterOfNewNode);
-		clusterOfNewNode.setParent(rootCluster);
+//		clusterOfNewNode.setParent(rootCluster);
+		((LoopyJunctionTree)decompositionTree).addParent(rootCluster, clusterOfNewNode);
 		separatorOfNewNodeInPrimeDecompositon.setInternalIdentificator(separatorOfNewNode.getInternalIdentificator());
 		decompositionTree.addSeparator(separatorOfNewNodeInPrimeDecompositon);
 		
@@ -2195,7 +2223,9 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		IJunctionTree ret = junctionTreeBuilder.buildJunctionTree(getNetwork());
 		recursivelyFillMaxPrimeSubgraphDecompositionTree(originalJunctionTree, ret, root, clusterToOriginalCliqueMap);
 		
-		
+		if (ret instanceof LoopyJunctionTree) {
+			((LoopyJunctionTree) ret).initParentMapping();
+		}
 		return ret;
 	}
 
@@ -2537,18 +2567,33 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 			Debug.println(getClass(), "Not using instance of LoopyJunctionTree. Calling superclass method to build cliques and separators for virtual node.", e);
 			return super.createCliqueAndSeparatorForVirtualNode(virtualNode, parentNodes, net);
 		}
-		if (!junctionTree.isLoopy()) {
+		
+		
+		// if there is a clique containing all nodes, or we are not using loopy BP, then we can use the superclass method too
+		List<Clique> cliquesContainingAllNodes = junctionTree.getCliquesContainingAllNodes(parentNodes, 1); // just check if there is at least 1 clique satisfying condition
+		if (!junctionTree.isLoopy()
+				|| (cliquesContainingAllNodes != null && !cliquesContainingAllNodes.isEmpty())) {
 			// call superclass if this is not loopy BP
 			Debug.println(getClass(), "Not using loopy BP. Creating cliques/separators with virtual node normally.");
-			return super.createCliqueAndSeparatorForVirtualNode(virtualNode, parentNodes, net);
+			Collection<IRandomVariable> ret = super.createCliqueAndSeparatorForVirtualNode(virtualNode, parentNodes, net);
+			
+			// extract the new cliques from ret and attempt to synchronize mapping of parents
+			for (IRandomVariable rv : ret) {
+				if (rv instanceof Clique) {
+					Clique clique = (Clique) rv;
+					if (clique.getParent() != null) {
+						List<Clique> parents = junctionTree.getParents(clique);
+						if (parents == null || parents.isEmpty()) {
+							// clique.getParent() and unctionTree.getParents(clique) were inconsistent. Make them consistent
+							junctionTree.addParent(clique.getParent(), clique);
+						}
+					}
+					
+				}
+			}
+			return ret;
 		}
 		
-		// if there is a clique containing all nodes, then we can use the superclass method too
-		List<Clique> cliquesContainingAllNodes = junctionTree.getCliquesContainingAllNodes(parentNodes, 1); // just check if there is at least 1 clique satisfying condition
-		if (cliquesContainingAllNodes != null && !cliquesContainingAllNodes.isEmpty()) { // TODO getCliquesContainingAllNodes is called in superclass too, so this may be redundant call
-			// we were able to find a clique containing all nodes we are using for the soft/likelihood evidence, so we can use superclass method
-			return super.createCliqueAndSeparatorForVirtualNode(virtualNode, parentNodes, net);
-		}
 		
 		// now, we have a special situation: we are using loopy BP, and there is no cluster containing all the nodes in the evidence.
 		// So, we cannot create a clique with all the nodes, and such new clique to be connected to a single clique in original JT

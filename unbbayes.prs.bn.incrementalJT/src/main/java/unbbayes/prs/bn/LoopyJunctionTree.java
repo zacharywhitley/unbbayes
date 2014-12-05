@@ -4,10 +4,12 @@
 package unbbayes.prs.bn;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import unbbayes.prs.Node;
 import unbbayes.util.Debug;
@@ -151,6 +153,16 @@ public class LoopyJunctionTree extends JunctionTree {
 			parentMap = getCliqueParentMap();
 		}
 		List<Clique> ret = parentMap.get(clique);
+		if (( ret == null || ret.isEmpty() )
+				&& (clique.getParent() != null)) {
+			Debug.println(getClass(), 
+					"Mapping of parents of clique " + clique  
+					+ " is desynchronized. Forcing synchronization now and setting " 
+					+ clique.getParent() + " as new parent clique.");
+			ret = new ArrayList<Clique>(1);
+			ret.add(clique.getParent());
+			parentMap.put(clique, ret);
+		}
 		return ((ret == null)?((List)Collections.emptyList()):ret);	// never return null
 	}
 	
@@ -342,9 +354,9 @@ public class LoopyJunctionTree extends JunctionTree {
 		
 		// extract the mapping
 		Map<Clique,List<Clique>> parentMap = getCliqueParentMap();
-		if (parentMap == null) {
-			// mapping was not initialized, so there is no parent to remove anyway
-			return false;
+		if (parentMap == null || parentMap.isEmpty()) {
+			this.initParentMapping();
+			parentMap = getCliqueParentMap();
 		}
 		
 		// extract the entry in mapping
@@ -354,11 +366,15 @@ public class LoopyJunctionTree extends JunctionTree {
 			// check if content is consistent with child#getParent()
 			if (child.getParent() != null) {
 				// the list of parent is empty, but child was related to some parent. There was inconsistency.
-				throw new IllegalStateException("Desync detected in mapping of parents of clique " + child 
-						+ ". Expected" + child.getParent() + ", but list of parents was " + parents);
+				Debug.println(getClass(), "Desync detected in mapping of parents of clique " + child  + ". Expected" + child.getParent() + ", but list of parents was " + parents);
+				// force synchronization now
+				parents = new ArrayList<Clique>();
+				parents.add(child.getParent());
+				parentMap.put(child, parents);
+			} else {
+				// nothing to remove anyway
+				return false;
 			}
-			// nothing to remove anyway
-			return false;
 		}
 		
 		// actually remove the parent from list
@@ -371,6 +387,7 @@ public class LoopyJunctionTree extends JunctionTree {
 					if (parents.isEmpty()) {
 						// no parent to substitute. Set to null
 						child.setParent(null);
+						parentMap.remove(child);
 					} else {
 						// substitute with any remaining parent in list. Use 1st then.
 						child.setParent(parents.get(0));
@@ -384,6 +401,7 @@ public class LoopyJunctionTree extends JunctionTree {
 				if (parents.isEmpty()) {
 					// no parent to substitute. Set to null
 					child.setParent(null);
+					parentMap.remove(child);
 				} else {
 					// substitute with any remaining parent in list. Use 1st then.
 					child.setParent(parents.get(0));
@@ -400,6 +418,7 @@ public class LoopyJunctionTree extends JunctionTree {
 				if (parents.isEmpty()) {
 					// no parent to substitute. Set to null
 					child.setParent(null);
+					parentMap.remove(child);
 				} else {
 					// substitute with any remaining parent in list. Use 1st then.
 					child.setParent(parents.get(0));
@@ -409,6 +428,23 @@ public class LoopyJunctionTree extends JunctionTree {
 		
 		// at this point, nothing was removed
 		return false;
+	}
+	
+	/**
+	 * @return all cliques in {@link #getCliques()} whose {@link #getParents(Clique)} are null or empty.
+	 * Most of algorithms expect this list to contain only 1 entry.
+	 */
+	public List<Clique> findRootCliques() {
+		List<Clique> ret = new ArrayList<Clique>(1);	// prepare the list to return
+		// for each clique, check parents
+		for (Clique clique : getCliques()) {
+			List<Clique> parents = getParents(clique);
+			if (parents == null || parents.isEmpty()) {
+				// this clique has no parents
+				ret.add(clique);
+			}
+		}
+		return ret;
 	}
 	
 	/**
@@ -444,7 +480,7 @@ public class LoopyJunctionTree extends JunctionTree {
 	}
 	
 	/**
-	 * Reorganizes the junction tree hierarchy so that the given cluster becomes the root of the tree it belongs.
+	 * Reorganizes the junction tree hierarchy so that the given cluster becomes the root of the subtree it belongs.
 	 * The difference from superclass is that this method assumes that the cluster structure does not necessarily
 	 * follow a tree structure, so it updates {@link #getCliqueParentMap()} instead of only updating {@link Clique#getParent()}
 	 * @see unbbayes.prs.bn.JunctionTree#moveCliqueToRoot(unbbayes.prs.bn.Clique)
@@ -462,7 +498,7 @@ public class LoopyJunctionTree extends JunctionTree {
 		
 		
 		// extract the parent clique, so that we can set it as a child of current clique
-		List<Clique> parentCliques = getParents(cliqueToBecomeRoot);
+		List<Clique> parentCliques = new ArrayList(getParents(cliqueToBecomeRoot)); // use a clone of the list, because we will make modifications, and ordinal list doesn't allow concurrent modification.
 		if (parentCliques == null || parentCliques.isEmpty()) {
 			return;	// it is already a root, so there is nothing to do
 			// This is a redundant check, but Clique#getParent() may be desync with getParents(Clique), so I'm double checking anyway
@@ -474,18 +510,19 @@ public class LoopyJunctionTree extends JunctionTree {
 		// at this point, my first parent is the root of the tree this clique belongs
 		
 		// convert all parent cliques to children of current clique (this is the difference from superclass' method)
-		for (Clique parentClique : parentCliques) {
-			// make current parent to become a child of cliqueToBecomeRoot
-			parentClique.removeChild(cliqueToBecomeRoot);
-			cliqueToBecomeRoot.addChild(parentClique);
-			addParent(parentClique, cliqueToBecomeRoot);	// update the mapping of parents (this is another difference from superclass' method)
+		for (Clique parentClique : parentCliques) {	
 			
-			// parents of cliqueToBecomeRoot will become null/empty (i.e. clique will be set as a root) later, after the "for" loop
-			
+			// need to extract separator in advance, because we may not be able to extract separator once we call addParent next
 			// some of the algorithms expects the 1st clique of separator to be a parent, and the other to be a child, 
 			// so we need to revert order in separator too. Separator does not allow such changes, so we need to substitute separator
 			Separator oldSeparator = getSeparator(parentClique, cliqueToBecomeRoot);	// this represents the link parentClique->cliqueToBecomeRoot
 			removeSeparator(oldSeparator);	// delete this separator, so that we can include a new one
+			
+			// make current parent to become a child of cliqueToBecomeRoot
+			parentClique.removeChild(cliqueToBecomeRoot);
+			cliqueToBecomeRoot.addChild(parentClique);
+			addParent(cliqueToBecomeRoot,parentClique);	// update the mapping of parents (this is another difference from superclass' method)
+			// parents of cliqueToBecomeRoot will become null/empty (i.e. clique will be set as a root) later, after the "for" loop
 			
 			// create a new separator. This represents the link cliqueToBecomeRoot->parentClique (the direction is the inverse of old separator)
 			Separator newSeparator = new Separator(cliqueToBecomeRoot, parentClique, false);	// false means that the constructor shall not change Clique#getParent and Clique#getChildren
@@ -530,8 +567,39 @@ public class LoopyJunctionTree extends JunctionTree {
 		this.cliqueParentMap = cliqueParentMap;
 	}
 
-	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.JunctionTree#removeSeparator(unbbayes.prs.bn.Separator)
+	 */
+	public void removeSeparator(Separator sep) {
+		super.removeSeparator(sep);
+		// also remove mapping of parents
+		this.removeParent(sep.getClique1(), sep.getClique2());
+	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.bn.JunctionTree#removeCliques(java.util.Collection)
+	 */
+	public boolean removeCliques(Collection<Clique> cliques) {
+		boolean isModified = super.removeCliques(cliques);
+		if (isModified) {
+			// also remove reference in mapping
+			Map<Clique, List<Clique>> map = this.getCliqueParentMap();
+			if (map != null && !map.isEmpty()) {
+				// remove references in values first
+				for (Entry<Clique, List<Clique>> entry : map.entrySet()) {
+					entry.getValue().removeAll(cliques);
+				}
+				// then, remove keys
+				for (Clique key : cliques) {
+					map.remove(key);
+				}
+			}
+		}
+		return isModified;
+	}
+
+	
+	
 	
 
 //	/**
