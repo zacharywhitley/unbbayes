@@ -11,9 +11,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import javax.swing.JPanel;
 
@@ -1542,24 +1542,29 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			
 			// remove clique/separator from junction tree
 			if (this.getNet().getJunctionTree() != null) {
+				// store the separators to be deleted, and delete them later
+				List<Separator> separatorsToRemove = new ArrayList<Separator>(getVirtualNodesToCliquesAndSeparatorsMap().size()/2);
 				for (IRandomVariable cliqueOrSep : getVirtualNodesToCliquesAndSeparatorsMap().get(virtualNode)) {
 					if (cliqueOrSep instanceof Clique) {
 						// remove this clique from parent
 						Clique clique = (Clique) cliqueOrSep;
-						// do not use List#remove() because it uses equals internally
-						int indexToRemove = 0;
-						for (Clique child :  clique.getParent().getChildren()) {
-							// use this comparison, because it's faster than equals()
-							if (child.getInternalIdentificator() == clique.getInternalIdentificator()) {
-								break;
+						// this.getNet().getJunctionTree().removeSeparator((Separator)cliqueOrSep); may have done this already, so check if there is a reference to parent
+						if (clique.getParent() != null) {
+							// do not use List#remove() because it uses equals internally
+							int indexToRemove = 0;
+							for (Clique child :  clique.getParent().getChildren()) {
+								// use this comparison, because it's faster than equals()
+								if (child.getInternalIdentificator() == clique.getInternalIdentificator()) {
+									break;
+								}
+								indexToRemove++;
 							}
-							indexToRemove++;
+							clique.getParent().getChildren().remove(indexToRemove);
 						}
-						clique.getParent().getChildren().remove(indexToRemove);
 						
 						// remove the clique containing the virtual node
 						List<Clique> cliques = this.getNet().getJunctionTree().getCliques();
-						indexToRemove = 0;
+						int indexToRemove = 0;
 						for (Clique cliqueToCompare : this.getNet().getJunctionTree().getCliques()) {
 							// do this comparison instead of equals, which is a name comparison
 							if (cliqueToCompare.getInternalIdentificator() == cliqueOrSep.getInternalIdentificator()) {
@@ -1569,8 +1574,14 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 						}
 						cliques.remove(indexToRemove);
 					} else {
-						this.getNet().getJunctionTree().removeSeparator((Separator)cliqueOrSep);
+						// keep track of separators, so that we can remove them later.
+						// don't remove now, because extensions of JunctionTree#removeSeparator may disconnect cliques by using comparisons with Object#equals, which is not always precise
+						separatorsToRemove.add((Separator)cliqueOrSep);
 					}
+				}
+				// remove the separators at once, after the cliques
+				for (Separator separator : separatorsToRemove) {
+					this.getNet().getJunctionTree().removeSeparator(separator);
 				}
 			}
 			

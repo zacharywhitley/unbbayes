@@ -1075,7 +1075,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			}
 			
 			// handle parent
-			List<Clique> parents = getParents(cliqueToRemove);
+			List<Clique> parents = new ArrayList(getParents(cliqueToRemove));
 			for (Clique parent : parents) {
 				// disconnect from parent
 				parent.removeChild(cliqueToRemove);
