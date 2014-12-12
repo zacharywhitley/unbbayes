@@ -244,6 +244,27 @@ public class Edge implements java.io.Serializable {
 		node2.setPosition(x, y);
 		
 	}
+	
+	/**
+	 * Checks if this edge connects the specified nodes.
+	 * @param originNode
+	 * @param destinationNode
+	 * @param isToIgnoreDirection : if true, the direction of this edge will not be considered when checking for link.
+	 * @return true if this edge is connecting the specified nodes. False otherwise.
+	 * @see #getOriginNode()
+	 * @see #getDestinationNode()
+	 */
+	public boolean isConnectingNodes(INode originNode , INode destinationNode, boolean isToIgnoreDirection) {
+		if (getOriginNode().equals(originNode) && getDestinationNode().equals(destinationNode)) {
+			// this arc is node1->node2
+			return true;
+		} else if (isToIgnoreDirection && getOriginNode().equals(destinationNode) && getDestinationNode().equals(originNode)) {
+			// this arc is node2->node1
+			return true;
+		}
+		// this arc either doesn't connect the nodes, or the direction was not the same.
+		return false;
+	}
 
 
 	/* (non-Javadoc)

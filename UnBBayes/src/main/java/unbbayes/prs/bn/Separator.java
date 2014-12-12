@@ -22,7 +22,10 @@ package unbbayes.prs.bn;
 
 
 import java.util.ArrayList;
+import java.util.Collection;
 
+import unbbayes.prs.Edge;
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.UtilityTable;
 
@@ -210,6 +213,24 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 	}
 	
 	/**
+	 * This is just an "OR" aggregation/wrapper of {@link Edge#isConnectingNodes(INode, INode, boolean)} for multiple edges.
+	 * @return true if any of the edges connects the provided nodes. False otherwise.
+	 * @see #isComplete()
+	 */
+	public static boolean isConnectingNodes(INode node1, INode node2, boolean isToIgnoreDirection, Collection<Edge> edges) {
+		boolean isIgnoredArc = false;
+		if (edges != null) {
+			for (Edge ignoredEdge : edges) {
+				if (ignoredEdge.isConnectingNodes(node1, node2, isToIgnoreDirection)) {	
+					isIgnoredArc = true;
+					break;
+				}
+			}
+		}
+		return isIgnoredArc;
+	}
+	
+	/**
 	 * Checks whether this separator is complete in the moralized Bayes net structure.
 	 * That is, checks if nodes in this separator are fully connected after moralization
 	 * (i.e. all pairs of variables are either connected by arcs, or shares at least one common child in the Bayes net).
@@ -220,12 +241,16 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 	 * not from the separator table {@link #getProbabilityFunction()},
 	 * so be careful if your implementation doesn't keep {@link #getNodes()} and {@link IProbabilityFunction#getVariableAt(int)}
 	 * consistent.
+	 * @param edgesToIgnore : edges/arcs in this collection will be considered as nonexistent when checking for completeness of this separator.
 	 * @return true if this separator is empty, or has only 1 variable, or all variables
 	 * are fully connected in a moralized network. Returns false otherwise.
 	 * @see Node#isParentOf(Node)
 	 * @see Node#getChildren()
+	 * @see #isConnectingNodes(INode, INode, boolean, Collection)
 	 */
-	public boolean isComplete() {
+	public boolean isComplete(Collection<Edge> edgesToIgnore) {
+		
+
 		// retrieve the nodes in this separator
 		ArrayList<Node> nodesInSeparator = getNodes();
 		
@@ -233,6 +258,11 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 		if (nodesInSeparator == null || nodesInSeparator.size() <= 1) {
 			return true;
 		}
+		
+//		// make sure edgesToIgnore is non-null
+//		if (edgesToIgnore == null) {
+//			edgesToIgnore = Collections.EMPTY_LIST;
+//		}
 		
 		// At this point of code, there is at least 1 pair of nodes in this separator.
 		// Check if all nodes in this separator are pairwise connected, or shares the same children
@@ -242,16 +272,20 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 			for (int j = i+1; j < separatorSize; j++) {
 				Node node2 = nodesInSeparator.get(j); // extract the other node in the pair being verified
 				// If we found at least 1 pair of nodes not connected and not sharing same children, then separator is not complete.
-				// First, check if there is any connection. 
-				if ( node1.isParentOf(node2)				// there is an arc node1->node2
-						|| node2.isParentOf(node1) ) { 	// there is an arc node2->node1
+				
+				// Check if there is any connection. 
+				if ( !isConnectingNodes(node1, node2, true, edgesToIgnore) 	// do not consider ignored arcs. True will ignore direction
+						&& ( node1.isParentOf(node2)					// there is an arc node1->node2
+								|| node2.isParentOf(node1)) ) { 		// there is an arc node2->node1
 					continue;	// this pair was fine, so check other pairs of nodes
 				}
 				
 				// There is no direct connection, but we should check if there is a common children (to see if they would be connected if graph is moralized)
 				boolean hasCommonChild = false;
 				for (Node child : node1.getChildren()) {
-					if (node2.isParentOf(child)) {
+					
+					if (!isConnectingNodes(node1, child, false, edgesToIgnore) // do not consider children connected by ignored arc. False makes the method sensitive to arc direction.
+							&& node2.isParentOf(child)) {
 						hasCommonChild = true;
 						break;	// we need just 1 common child in order to have node1 and node2 connected in moralized net.
 					}
@@ -267,6 +301,15 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 		
 		// if program reached this line, all nodes in this separator are either connected or shares same children
 		return true;	// so, this separator is complete
+	
+		
+	}
+	
+	/**
+	 * @return {@link #isComplete(Collection)} passing null/empty as the argument.
+	 */
+	public boolean isComplete() {
+		return isComplete(null);
 	}
 
 	/**
