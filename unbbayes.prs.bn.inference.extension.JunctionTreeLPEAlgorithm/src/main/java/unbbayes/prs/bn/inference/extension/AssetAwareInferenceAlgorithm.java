@@ -349,14 +349,26 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 					if (node instanceof TreeVariable) {
 						TreeVariable treeVar = (TreeVariable) node;
 						if (treeVar.hasLikelihood()) {
-							List<INode> likelihoodParents = getLikelihoodExtractor().extractLikelihoodParents(getRelatedProbabilisticNetwork(), treeVar);
-							likelihoodParents.add(treeVar);
-							List<Clique> cliquesContainingAllNodes = getRelatedProbabilisticNetwork().getJunctionTree().getCliquesContainingAllNodes(likelihoodParents, 1);
-							if (cliquesContainingAllNodes.isEmpty()) {
-								throw new RuntimeException("Detected a trade on node " + treeVar + " with invalid assumptions: there is no clique containing " + likelihoodParents);
-							} else {
-								editCliques.add(cliquesContainingAllNodes.get(0));
+							// just use clique associated with this node as the clique being modified.
+							// it doesn't have to be exactly the clique being edited, because editCliques is simply used to extract the root of subtree of the junction tree containing the modified clique,
+							// so any clique containing this node supposedly has the same root (or else the junction tree is inconsistent anyway).
+							IRandomVariable editRV = treeVar.getAssociatedClique();	// this will be included to editCliques later
+							if (editRV == null) {
+								// try using the old approach to extract modified clique.
+								List<INode> likelihoodParents = getLikelihoodExtractor().extractLikelihoodParents(getRelatedProbabilisticNetwork(), treeVar);
+								likelihoodParents.add(treeVar);
+								List<Clique> cliquesContainingAllNodes = getRelatedProbabilisticNetwork().getJunctionTree().getCliquesContainingAllNodes(likelihoodParents, 1);
+								if (cliquesContainingAllNodes.isEmpty()) {
+									throw new RuntimeException("Detected a trade on node " + treeVar + " with invalid assumptions: there is no clique containing " + likelihoodParents);
+								} else {
+									editRV = cliquesContainingAllNodes.get(0);
+								}
+							} else if (editRV instanceof Separator) {
+								// pick any clique separated by this separator.
+								editRV = ((Separator) editRV).getClique1();	// pick the parent, because it is supposedly closer to the root of subtree.
 							}
+							
+							editCliques.add((Clique) editRV);
 						}
 					}
 				}
@@ -397,6 +409,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 		} else {
 			// assume there are other potential evidences all over the junction tree
 			this.getProbabilityPropagationDelegator().propagate();
+			// TODO allow parallel propagation if edited cliques are independent.
 		}
 		
 		// zeroAssetsException != null if this.getAssetPropagationDelegator().propagate() has thrown such exception
@@ -2830,7 +2843,7 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 
 	/**
 	 * This extends {@link InCliqueConditionalProbabilityExtractor}
-	 * wo that it can work peacefully with changes caused in network structure
+	 * so that it can work peacefully with changes caused in network structure
 	 * by {@link AssetAwareInferenceAlgorithm#setAsPermanentEvidence(Map, boolean)},
 	 * which may add additional arcs and break the condition that all parents
 	 * of a node are present in same clique.

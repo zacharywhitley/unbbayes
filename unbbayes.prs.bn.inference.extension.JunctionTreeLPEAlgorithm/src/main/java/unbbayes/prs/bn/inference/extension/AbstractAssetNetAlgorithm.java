@@ -27,6 +27,7 @@ import unbbayes.prs.bn.Separator;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.bn.cpt.impl.UniformTableFunction;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.util.Debug;
 
 
 /**
@@ -945,6 +946,90 @@ public abstract class AbstractAssetNetAlgorithm extends JunctionTreeLPEAlgorithm
 //		}
 		
 		// return the generated edges
+		return ret;
+	}
+	
+	/**
+	 * Removes the specified arcs/links from the network
+	 * @param links : mapping from child to parent nodes.
+	 * @return : edges removed from the network.
+	 * @see #getNet()
+	 */
+	public List<Edge> removeEdgesNotConsideringAssets(Map<INode, List<INode>> links)  {
+		
+		// basic assertion
+		if (links == null  || links.isEmpty()) {
+			return Collections.emptyList();	// there is nothing to do
+		}
+		
+		// extract the network to be used in this method
+		ProbabilisticNetwork net = getRelatedProbabilisticNetwork();
+		if ( net == null ) {
+			return Collections.emptyList();
+		}
+		
+		// this is the list to be returned
+		List<Edge> ret = new ArrayList<Edge>();
+		
+		// iterate over the mapping
+		for (Entry<INode, List<INode>> entry : links.entrySet()) {
+			// extract the nodes in the mapping entry
+			INode child = entry.getKey();
+			List<INode> parents = entry.getValue();
+			
+			// assertions about content of map
+			if (child == null 
+					|| parents == null
+					|| parents.isEmpty() ) {
+				continue;
+			}
+			
+			for (INode parent : parents) {
+				// get the edge
+				Edge edge = null;
+				try {
+					edge = net.getEdge((Node)parent, (Node)child);
+					if (edge == null) {
+						// try searching for an edge with opposite direction
+						Debug.println(getClass(), "Arc from " + parent + " to " + child + " not found. Trying an arc with opposite direction...");
+						edge = net.getEdge((Node)child, (Node)parent);
+					}
+				} catch (ClassCastException e) {
+					Debug.println(getClass(), "Nodes " + child + " or " + parent + " are required to be instances of unbbayes.prs.Node: " + e.getMessage(), e);
+				}
+				if (edge == null) {
+					Debug.println(getClass(), "There is no arc/link between nodes " + parent + " and " + child);
+					continue;	// ignore this entry
+				}
+				
+				// actually remove the edge from network
+				net.removeEdge(edge);
+				
+				// don't forget to include the removed edge in the list to be returned.
+				ret.add(edge);
+			}
+		}
+		
+		// update the CPTs of all nodes after edges were deleted
+		this.updateCPTBasedOnCliques();
+		
+		// compile junction tree, considering the new structure
+		try {
+			run();
+		} catch (Throwable e) {
+			// attempt to undo all changes in arcs
+			for (Edge edge : ret) {
+				try {
+					net.addEdge(edge);
+				} catch (InvalidParentException e1) {
+					e1.printStackTrace();
+					throw new RuntimeException("Failed to revert changes in network while re-inserting deleted edge " + edge + ": " + e1.getMessage(), e);
+				}
+			}
+			throw new RuntimeException(e);
+		}
+		
+		// return the removed edges
 		return ret;
 	}
 	
