@@ -338,9 +338,11 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 											INode virtual = null;
 											try {
 												virtual = jt.addVirtualNode(algorithm.getNetwork(), evidenceNodes);
-												// store the hard evidence of the new virtual node, so that it can be retrieved after reset
-												// hard evidence of virtual node is never a "NOT" evidence (evidence is always about a given particular state, and never about values "NOT" in a given state)
-												evidenceMap.put(virtual.getName(), ((TreeVariable) virtual).getEvidence());
+												if (virtual != null) {
+													// store the hard evidence of the new virtual node, so that it can be retrieved after reset
+													// hard evidence of virtual node is never a "NOT" evidence (evidence is always about a given particular state, and never about values "NOT" in a given state)
+													evidenceMap.put(virtual.getName(), ((TreeVariable) virtual).getEvidence());
+												}
 											} catch (Exception e) {
 												Debug.println(getClass(), "Could not create virtual node for " + node, e);
 												// backup plan: use old routine (although it is not entirely correct)
@@ -1457,7 +1459,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		int smallestSize = Integer.MAX_VALUE;
 		Clique smallestCliqueContainingAllParents = null;
 		for (Clique clique : junctionTree.getCliquesContainingAllNodes(parentNodes, Integer.MAX_VALUE)) {
-			if (!clique.getNodes().contains(virtualNode) && (clique.getProbabilityFunction().tableSize() < smallestSize)) {
+			if (!clique.getNodesList().contains(virtualNode) && (clique.getProbabilityFunction().tableSize() < smallestSize)) {
 				smallestCliqueContainingAllParents = clique;
 				smallestSize = clique.getProbabilityFunction().tableSize();
 			}
@@ -1465,12 +1467,13 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		
 		// if could not find smallest clique, the arguments are inconsistent
 		if (smallestCliqueContainingAllParents == null) {
-			throw new IllegalArgumentException(this.getResource().getString("noCliqueForNodes") + parentNodes);
+			throw new IllegalArgumentException(getResource().getString("noCliqueForNodes") + parentNodes);
 		}
 		
-		// reorder parent nodes, so that the order matches the nodes in smallestCliqueContainingAllParents.
-		List<INode> orderedParentNodes = new ArrayList<INode>();
-		for (INode parent : smallestCliqueContainingAllParents.getNodes()) {
+		// reorder parent nodes, so that the order matches the nodes in clique potential.
+		List<INode> orderedParentNodes = new ArrayList<INode>(parentNodes.size());
+//		for (INode parent : smallestCliqueContainingAllParents.getNodes()) {
+		for (INode parent : smallestCliqueContainingAllParents.getProbabilityFunction().variableList) {	// use the ordering of variables in clique table instead
 			if (parentNodes.contains(parent)) {
 				orderedParentNodes.add(parent);
 			}
@@ -1478,10 +1481,10 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		
 		// create clique for the virtual node and parents
 		Clique cliqueOfVirtualNode = new Clique();
-		cliqueOfVirtualNode.getNodes().add(virtualNode);
-		cliqueOfVirtualNode.getNodes().addAll((List)orderedParentNodes);
+		cliqueOfVirtualNode.getNodesList().add(virtualNode);
+		cliqueOfVirtualNode.getNodesList().addAll((List)orderedParentNodes);		// TODO check if clique#getNodes() is sensitive to ordering (clique tables are, but this is usually not so sensitive).
 		cliqueOfVirtualNode.getProbabilityFunction().addVariable(virtualNode);
-		for (INode parentNode : orderedParentNodes) {
+		for (INode parentNode : orderedParentNodes) {	// use same ordering of variables in clique table, because some algorithms may require same ordering.
 			cliqueOfVirtualNode.getProbabilityFunction().addVariable(parentNode);
 		}
 		cliqueOfVirtualNode.setInternalIdentificator(junctionTree.getCliques().size());
@@ -1492,7 +1495,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		// create separator between the clique of parent nodes and virtual node (the separator should contain all parents)
 		Separator separatorOfVirtualCliqueAndParents = new Separator(smallestCliqueContainingAllParents , cliqueOfVirtualNode);
 		separatorOfVirtualCliqueAndParents.setNodes(new ArrayList<Node>((List)orderedParentNodes));
-		for (INode parentNode : orderedParentNodes) {
+		for (INode parentNode : orderedParentNodes) {	// again, use the same ordering of variables in clique table
 			separatorOfVirtualCliqueAndParents.getProbabilityFunction().addVariable(parentNode);
 		}
 		junctionTree.addSeparator(separatorOfVirtualCliqueAndParents);
@@ -1502,7 +1505,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		net.resetNodesCopy();
 		
 		// now, let's link the nodes with the cliques
-		cliqueOfVirtualNode.getAssociatedProbabilisticNodes().add(virtualNode);
+		cliqueOfVirtualNode.getAssociatedProbabilisticNodesList().add(virtualNode);
 		virtualNode.setAssociatedClique(cliqueOfVirtualNode);
 		
 		// initialize the probabilities of clique and separator

@@ -32,6 +32,7 @@ import java.util.Set;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.id.UtilityNode;
+import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -57,6 +58,9 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 */
 	private Collection<Separator> separators = new ArrayList<Separator>();
 	private Map<Clique, Set<Separator>> separatorsMap = new HashMap<Clique, Set<Separator>>();
+
+
+	private boolean isUsingSafeOrdering = true;
 
 	/** If true, {@link #absorb(Clique, Clique)} will use singleton temporary lists in order to reduce garbage */
 	private static boolean isToUseSingletonListsInAbsorb = true;
@@ -330,30 +334,62 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		if (isToUseSingletonListsInAbsorb) {
 			nodesInClique2NotInSeparator = singletonListForAbsorb;
 			nodesInClique2NotInSeparator.clear();
-			nodesInClique2NotInSeparator.addAll(clique2.getNodes());
+			nodesInClique2NotInSeparator.addAll(clique2.getNodesList());
 			nodesInClique2NotInSeparator.removeAll(sep.getNodes());
 		} else {
-			nodesInClique2NotInSeparator = new ArrayList<Node>(clique2.getNodes());
+			nodesInClique2NotInSeparator = new ArrayList<Node>(clique2.getNodesList());
 			nodesInClique2NotInSeparator.removeAll(sep.getNodes());
 		}
 
-//		PotentialTable dummyTable =
-//			(PotentialTable) clique2.getProbabilityFunction().clone();
-		PotentialTable dummyTable =
-				(PotentialTable) clique2.getProbabilityFunction().getTemporaryClone();
+//		PotentialTable dummyTable = (PotentialTable) clique2.getProbabilityFunction().clone();
+		PotentialTable dummyTable = (PotentialTable) clique2.getProbabilityFunction().getTemporaryClone();
 		
 		for (Node nodeToRemove : nodesInClique2NotInSeparator) {
 			dummyTable.removeVariable(nodeToRemove);
 		}
 		
 
-//		PotentialTable originalSeparatorTable =
-//			(PotentialTable) sepTab.clone();
-		PotentialTable originalSeparatorTable =
-				(PotentialTable) sepTab.getTemporaryClone();
+//		PotentialTable originalSeparatorTable = (PotentialTable) sepTab.clone();
+		// TODO the following only works because PotentialTable#getTemporaryClone() returns 2 different singleton instances alternately
+		PotentialTable originalSeparatorTable = (PotentialTable) sepTab.getTemporaryClone();
+		if (originalSeparatorTable == dummyTable) {
+			// PotentialTable#getTemporaryClone() stopped working as desired. Use normal clone, instead of temporary clones.
+			Debug.println(getClass(), "[CAUTION] PotentialTable#getTemporaryClone() is not returning 2 singleton instances alternately.");
+			
+			// needs to re-create dummyTable, because it was overwritten
+			dummyTable = (PotentialTable) clique2.getProbabilityFunction().clone();
+			for (Node nodeToRemove : nodesInClique2NotInSeparator) {
+				dummyTable.removeVariable(nodeToRemove);
+			}
+		}
 
-		for (int i = sepTab.tableSize() - 1; i >= 0; i--) {
-			sepTab.setValue(i, dummyTable.getValue(i));
+//		for (int i = sepTab.tableSize() - 1; i >= 0; i--) {
+//			// this is not a safe operation, because it is assuming that variables in clique tables and separator tables follow the same ordering. fix it
+//			sepTab.setValue(i, dummyTable.getValue(i));
+//		}
+		// the above loop was substituted with the following code, in order to keep safety regarding the order of variables
+		if (isUsingSafeOrdering) {
+			// assume we will not have problems regarding ordering of variables, so use unsafe (but fast) copy
+			System.arraycopy(dummyTable.getValues(), 0, sepTab.getValues(), 0, sepTab.tableSize());
+		} else {
+			// we may have cliques with variables not ordered in same way, so we need to check such ordering
+			boolean isOrdered = true; // becomes false if there is any variable not in the same order
+			int numVars = sepTab.variableCount();
+			// check if dummyTable and sepTab has same ordering of variables
+			for (int i = 0; i < numVars; i++) {
+				if (!sepTab.getVariableAt(i).equals(dummyTable.getVariableAt(i))) {
+					isOrdered = false;
+					break;
+				}
+			}
+			if (isOrdered) {
+				// just use fast copy of table data
+				System.arraycopy(dummyTable.getValues(), 0, sepTab.getValues(), 0, sepTab.tableSize());
+			} else {
+				// filling table with 1 (neutral value in products) and then multiplying with dummyTable is equivalent to copying the content of dummyTable to sepTab
+				sepTab.fillTable(1f);
+				sepTab.directOpTab(dummyTable, PotentialTable.PRODUCT_OPERATOR);	// this operation is supposedly safe (regarding the order of variables).
+			}
 		}
 
 		dummyTable.directOpTab(
@@ -1158,6 +1194,36 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			return Collections.emptyList();
 		}
 		return Collections.singletonList(clique.getParent());
+	}
+
+	/**
+	 * @return true if {@link #absorb(Clique, Clique)} should assume that ordering of variables in cliques follow same ordering, 
+	 * so we can copy contents of clique tables (of same set of nodes) without being concerned about the ordering of variables
+	 * (and thus use quick array copy).
+	 * False otherwise.
+	 * <br/> <br/>
+	 * For example, if cliques are {A,B,C}, and {B,C,D}, they are using safe ordering (because common variables follows the same order),
+	 * and thus this attribute must be set to true. 
+	 * If the same cliques are {A,C,B}, and {B,C,D}, then nodes B and C are not following the same order in the two cliques,
+	 * and thus this attribute must be set to false.
+	 */
+	public boolean isUsingSafeOrdering() {
+		return isUsingSafeOrdering;
+	}
+
+	/**
+	 * @param isUsingSafeOrdering : true if {@link #absorb(Clique, Clique)} should assume that ordering of variables in cliques follow same ordering, 
+	 * so we can copy contents of clique tables (of same set of nodes) without being concerned about the ordering of variables
+	 * (and thus use quick array copy).
+	 * False otherwise.
+	 * <br/> <br/>
+	 * For example, if cliques are {A,B,C}, and {B,C,D}, they are using safe ordering (because common variables follows the same order),
+	 * and thus this attribute must be set to true. 
+	 * If the same cliques are {A,C,B}, and {B,C,D}, then nodes B and C are not following the same order in the two cliques,
+	 * and thus this attribute must be set to false.
+	 */
+	public void setUsingSafeOrdering(boolean isUsingSafeOrdering) {
+		this.isUsingSafeOrdering = isUsingSafeOrdering;
 	}
 
 //	/**
