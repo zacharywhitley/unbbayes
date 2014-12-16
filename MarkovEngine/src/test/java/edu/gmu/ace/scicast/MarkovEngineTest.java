@@ -26307,6 +26307,11 @@ public class MarkovEngineTest extends TestCase {
 		
 		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
 		engine.setToAddArcsOnlyToProbabilisticNetwork(true);
+		
+		// disable incremental/dynamic JT compilation
+		int dynamicJunctionTreeNetSizeThreshold = engine.getDynamicJunctionTreeNetSizeThreshold();
+		engine.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);
+		
 		engine.initialize();
 		
 		
@@ -28098,6 +28103,7 @@ public class MarkovEngineTest extends TestCase {
 		
 		// restore backups
 		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
 
 		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
@@ -30046,6 +30052,9 @@ public class MarkovEngineTest extends TestCase {
 			engine.addTrade(null, new Date(), "", 0, 0x0BL, newValues, Collections.singletonList(0x0AL), Collections.singletonList(1), true);
 			fail("Should disallow trade, because we are changing the 3rd state from 0 to .5");
 		} catch (IllegalArgumentException e) {
+			if (!e.getMessage().toUpperCase().contains("THERE IS A 0% STATE BEING CHANGED")) {
+				throw e;
+			}
 			assertTrue(e.getMessage(), e.getMessage().toUpperCase().contains("THERE IS A 0% STATE BEING CHANGED"));
 		}
 		
@@ -30841,7 +30850,8 @@ public class MarkovEngineTest extends TestCase {
 		childQuestionIds = new ArrayList<Long>();
 		parentQuestionIds = new ArrayList<Long>();
 		// also check that we can specify arcs that are there already
-		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0BL);
+		// don't add A->B, D->E, and D->F again
+//		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0BL);
 		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0CL);
 		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0DL);
 		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0EL);
@@ -30853,31 +30863,42 @@ public class MarkovEngineTest extends TestCase {
 		parentQuestionIds.add(0x0CL); childQuestionIds.add(0x0DL);
 		parentQuestionIds.add(0x0CL); childQuestionIds.add(0x0EL);
 		parentQuestionIds.add(0x0CL); childQuestionIds.add(0x0FL);
-		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0EL);
-		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0FL);
+//		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0EL);
+//		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0FL);
 		parentQuestionIds.add(0x0EL); childQuestionIds.add(0x0FL);
 		complexityFactorList = engine.getComplexityFactor(childQuestionIds, parentQuestionIds);
-		assertEquals("Expected 5 key/child = B,C,D,E,F", 5, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).size());
-		for (long i = 0x0B; i <= 0x0F; i++) {
+		assertEquals("Expected 4 key/child = C,D,E,F", 4, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).size());
+		for (long i = 0x0C; i <= 0x0F; i++) {
 			assertTrue("Expected key/child = " + i, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).containsKey(i));
 		}
-		// check that key B is related to A, key C is related to A and B, key D is related to A,B,C, and so on.
-		for (Entry<Long, Collection<Long>> entry : getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).entrySet()) {
-			// A is related to 0 values, B is related to 1 value, C is related to 2 values, and so on
-			assertEquals(entry.toString(), entry.getKey()-0x0AL, entry.getValue().size());
-			for (long i = 0x0AL; i < entry.getKey(); i++) {
-				// key B is related to A, key C is related to A and B, key D is related to A,B,C, and so on.
-				assertTrue(entry.toString(), entry.getValue().contains(i));
-			}
-		}
+		// check that key C is related to A and B, key D is related to A,B,C...
+		// C is related to 2 values, D is related to 3 values, E to 3, and F to 4
+		assertEquals(2, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0CL).size());
+		assertEquals(3, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0DL).size());
+		assertEquals(3, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0EL).size());
+		assertEquals(4, getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0FL).size());
+		// key C is related to A and B, key D is related to A,B,C, E to A,B,C, and F to A,B,C,E
+		assertTrue(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0CL).contains(0x0AL));
+		assertTrue(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0CL).contains(0x0BL));
+		assertTrue(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0DL).contains(0x0AL));
+		assertTrue(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0DL).contains(0x0BL));
+		assertTrue(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0DL).contains(0x0CL));
+		assertTrue(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0EL).contains(0x0AL));
+		assertTrue(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0EL).contains(0x0BL));
+		assertTrue(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0EL).contains(0x0CL));
+		assertTrue(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0FL).contains(0x0AL));
+		assertTrue(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0FL).contains(0x0BL));
+		assertTrue(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0FL).contains(0x0CL));
+		assertTrue(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds).get(0x0FL).contains(0x0EL));
+		
 		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		complexityFactors = engine.getComplexityFactors(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
 		assertNotNull(complexityFactors);
 		
 		// "simulate" fully connected situation in MarkovEngineImpl#getComplexityFactor(Long, List) by making F a common child of all other nodes
 		parentQuestionIds = new ArrayList<Long>();
-		parentQuestionIds.add(0x0AL); parentQuestionIds.add(0x0BL); parentQuestionIds.add(0x0CL);
-		parentQuestionIds.add(0x0DL); parentQuestionIds.add(0x0EL);
+		parentQuestionIds.add(0x0AL); parentQuestionIds.add(0x0BL); parentQuestionIds.add(0x0CL); parentQuestionIds.add(0x0EL);
+//		parentQuestionIds.add(0x0DL); 	D->F is already there
 		complexityFactorSingle = engine.getComplexityFactor(0x0FL, parentQuestionIds);	
 		
 		// the largest clique contains all nodes, so it's size is a product of states of all nodes
@@ -33095,7 +33116,11 @@ public class MarkovEngineTest extends TestCase {
 		engine.addTrade(null, new Date(), "", 0, 0x0DL, newValues , null, null, true);
 		
 		// make sure the virtual node was not deleted
-		assertEquals(4, engine.getProbabilisticNetwork().getNodeCount());
+		if (engine.isToCreateVirtualNode()) {
+			assertEquals(4, engine.getProbabilisticNetwork().getNodeCount());
+		} else {
+			assertEquals(3, engine.getProbabilisticNetwork().getNodeCount());
+		}
 		
 		// make sure we can query only the valid nodes
 		probLists = engine.getProbLists(null, null, null);
@@ -33683,5 +33708,267 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
+	
+	/**
+	 * Test some special cases that will make {@link IncrementalJunctionTreeAlgorithm#isLoopy()} == true,
+	 * and consequently trigger loopy BP algorithm.
+	 */
+	public final void testLoopyBP() {
+		
+		// some configuration parameters for this test
+		int numRandomTrades = 80;	// how many random trades to run on 2 engines for comparison of the probabilities after propagation
+		long timeForTrades = 1000;	// how long to wait for a loopy BP
+		float loopyBPErrorMargin = (float)1e-8;
+		boolean isToAllowCrossCliqueAssumption = false;
+		
+		// set up randomizer
+		long seed = 1418076630653L;//System.currentTimeMillis();
+		System.out.println("Seed = " + seed);
+		
+		// make backups of the configuration, before changing config
+		Boolean isToHaltOnDynamicJunctionTreeFailure = null;	// make a backup of original value first
+		int loopyBPCliqueSizeThreshold = engine.getLoopyBPCliqueSizeThreshold();
+		
+		// force engine to throw exception if dynamic JT compilation fails
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			IncrementalJunctionTreeAlgorithm algorithm = (IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+			isToHaltOnDynamicJunctionTreeFailure = algorithm.isToHaltOnDynamicJunctionTreeFailure();
+			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
+		}
+		// force loopy BP to be enabled even with very small clique size
+		engine.setLoopyBPCliqueSizeThreshold((2*3*5)-1);	// strictly smaller than state space of all 3 questions
+		
+		// create another engine (without loopy BP) for comparison
+		MarkovEngineImpl engineNoLoopyBP = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+		engineNoLoopyBP.setLoopyBPCliqueSizeThreshold(Integer.MAX_VALUE);
+		
+		
+		// create a network F<-E->D<-F (if we compile normally, all nodes would be in same clique)
+		
+		// using prime numbers as number of states, just to make sure the product of states is unique
+		engine.addQuestion(null, new Date(), 0x0DL, 2, null); engineNoLoopyBP.addQuestion(null, new Date(), 0x0DL, 2, null);	
+		engine.addQuestion(null, new Date(), 0x0EL, 3, null); engineNoLoopyBP.addQuestion(null, new Date(), 0x0EL, 3, null);
+		engine.addQuestion(null, new Date(), 0x0FL, 5, null); engineNoLoopyBP.addQuestion(null, new Date(), 0x0FL, 5, null);
+		
+		// make sure this is not loopy yet
+		assertFalse(engine.isLoopy());
+		assertFalse(engineNoLoopyBP.isLoopy());
+		
+		// make sure probabilities are correctly initialized before adding links
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals(3, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			for (Float value : entry.getValue()) {
+				assertEquals(entry.toString(), 1f/entry.getValue().size(), value, PROB_ERROR_MARGIN);
+			}
+		}
+		// same test for the baseline engine
+		probLists = engineNoLoopyBP.getProbLists(null, null, null);
+		assertEquals(3, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			for (Float value : entry.getValue()) {
+				assertEquals(entry.toString(), 1f/entry.getValue().size(), value, PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// create the arcs
+		engine.addQuestionAssumption(null, new Date(), 0x0DL, Collections.singletonList(0x0EL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0DL, Collections.singletonList(0x0FL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0FL, Collections.singletonList(0x0EL), null);
+		engineNoLoopyBP.addQuestionAssumption(null, new Date(), 0x0DL, Collections.singletonList(0x0EL), null);
+		engineNoLoopyBP.addQuestionAssumption(null, new Date(), 0x0DL, Collections.singletonList(0x0FL), null);
+		engineNoLoopyBP.addQuestionAssumption(null, new Date(), 0x0FL, Collections.singletonList(0x0EL), null);
+		
+		// make sure this is loopy now
+		assertTrue(engine.isLoopy());
+		assertFalse(engineNoLoopyBP.isLoopy());	// make sure the baseline engine is not loopy
+		
+		// make sure probabilities are kept unchanged after links were added
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(3, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			for (Float value : entry.getValue()) {
+				assertEquals(entry.toString(), 1f/entry.getValue().size(), value, PROB_ERROR_MARGIN);
+			}
+		}
+		// same for the baseline
+		probLists = engineNoLoopyBP.getProbLists(null, null, null);
+		assertEquals(3, probLists.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			for (Float value : entry.getValue()) {
+				assertEquals(entry.toString(), 1f/entry.getValue().size(), value, PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// check that baseline has only 1 clique with all nodes
+		assertEquals(1, engineNoLoopyBP.getProbabilisticNetwork().getJunctionTree().getCliques().size());
+		assertEquals(2*3*5, engineNoLoopyBP.getProbabilisticNetwork().getJunctionTree().getCliques().get(0).getProbabilityFunction().tableSize());
+		
+		// check clique sizes in loopy representation
+		assertEquals(2*5*3-1, engine.getLoopyBPCliqueSizeThreshold());
+		for (Clique clique : engine.getProbabilisticNetwork().getJunctionTree().getCliques()) {
+			assertTrue(clique.toString() + " = " + clique.getProbabilityFunction().tableSize() , clique.getProbabilityFunction().tableSize() <= engine.getLoopyBPCliqueSizeThreshold());
+		}
+		
+		// the following tests will use some random numbers
+		Random rand = new Random(seed);
+		int tradeNumber = 0;
+		try {
+			engine.setMaxLoopyBPTimeMillis(timeForTrades);				// force loopyBP to stop in less than 1.5 second
+			engine.setProbErrorMargin(loopyBPErrorMargin);	// or stop loopy BP if error margin got less than this value
+			// create some random trades
+			for (tradeNumber = 0; tradeNumber < numRandomTrades; tradeNumber++) {
+				// randomly create parameters of trade
+				
+				// pick a question ID from 0x0DL to 0x0FL to trade
+				long questionId = 0x0DL + rand.nextInt(3);	
+				
+				// randomly create assumptions
+				List<Long> assumptionIds = new ArrayList<Long>(2);
+				// 1st assumption
+				if (rand.nextBoolean()) {
+					long assumptionId = 0x0DL + rand.nextInt(3);
+					// don't assume the questionId itself
+					if (questionId == assumptionId) {
+						if (assumptionId < 0x0FL) {
+							assumptionId++;	// pick next available
+						} else {
+							assumptionId = 0x0DL; // the next available is this one
+						}
+					}
+					assumptionIds.add(assumptionId);
+				}
+				// 2nd assumption
+				if (rand.nextBoolean()
+						&& (assumptionIds.isEmpty() || isToAllowCrossCliqueAssumption)) {
+					// pick an assumption which is not the one we are using already
+					long assumptionId = 0x0DL + rand.nextInt(3);
+					while (questionId == assumptionId || assumptionIds.contains(assumptionId)) {
+						assumptionId = 0x0DL + rand.nextInt(3);
+					}
+					assumptionIds.add(assumptionId);
+				}
+				
+				// fill assumed states
+				List<Integer> assumedStates = new ArrayList<Integer>(assumptionIds.size());
+				for (Long assumptionId : assumptionIds) {
+					// randomly pick a state. Use probLists to retrieve the size (number of states) of the node
+					assumedStates.add(rand.nextInt(probLists.get(assumptionId).size()));
+				}
+				
+				// randomly fill the probability of the trade
+				List<Float> newValues = new ArrayList<Float>(probLists.get(questionId).size());
+				float sum = 0f;	// sum of newValues. This will be used to keep track of how much from total of 100% we already used in previous iteration
+				for (int state = 0; state < (probLists.get(questionId).size()-1); state++) {
+					Float prob = rand.nextFloat()*(1f-sum);	// adjust this probability accordingly to the sum of probabilities of previous states
+					newValues.add(prob);
+					sum += prob;
+				}
+				// fill the last state with an amount that will complete 100%
+				newValues.add(1f-sum);
+				
+				// compare conditional probabilities (given current assumptions) before trade
+				probLists = engine.getProbLists(null, assumptionIds, assumedStates);
+				Map<Long, List<Float>> probListsBaseNoLoopyBP = engineNoLoopyBP.getProbLists(null, assumptionIds, assumedStates);
+				assertEquals("Trade = " + tradeNumber + ", seed = " + seed + ". " + probListsBaseNoLoopyBP.toString() + " ; " + probLists.toString(), 
+						probListsBaseNoLoopyBP.size(), probLists.size());
+				for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+					List<Float> probNoLoop = probListsBaseNoLoopyBP.get(entry.getKey());
+					assertEquals("Trade = " + tradeNumber + ", seed = "  + seed + ". " + probListsBaseNoLoopyBP.toString() + " ; " + probLists.toString(), 
+							probNoLoop.size(), entry.getValue().size());
+					try {
+						for (int state = 0; state < entry.getValue().size(); state++) {
+							assertEquals("Trade = " + tradeNumber + ", seed = "  + seed + ". " + probListsBaseNoLoopyBP.toString() + " ; " + probLists.toString(), 
+									probNoLoop.get(state), entry.getValue().get(state), .01f);
+						}
+					} catch (Throwable t) {
+						// compare kl distance with uniform
+						List<Float> uniform = new ArrayList<Float>(probNoLoop.size());
+						for (int i = 0; i < probNoLoop.size(); i++) {
+							uniform.add(1f/probNoLoop.size());
+						}
+						float klDistance = engine.getKLDistance(probNoLoop, entry.getValue());
+						float klUniform = engine.getKLDistance(probNoLoop, uniform);
+						assertTrue("Trade = " + tradeNumber + ", seed = "  + seed + ". " + probListsBaseNoLoopyBP.toString() + " ; " + probLists.toString()
+								+ "KL(p||q)=" + klDistance + ", KL(p||uniform)=" + klUniform, 
+								klDistance < klUniform);
+					}
+				}
+				
+				// run trade on both engines
+				engine.addTrade(null, new Date(), ""+tradeNumber, 0, questionId, newValues, assumptionIds, assumedStates, true);
+				engineNoLoopyBP.addTrade(null, new Date(), ""+tradeNumber, 0, questionId, newValues, assumptionIds, assumedStates, true);
+				
+				// compare conditional probabilities after trade
+				probLists = engine.getProbLists(null, assumptionIds, assumedStates);
+				probListsBaseNoLoopyBP = engineNoLoopyBP.getProbLists(null, assumptionIds, assumedStates);
+				assertEquals("Trade = " + tradeNumber + ", seed = " + seed + ". " + probListsBaseNoLoopyBP.toString() + " ; " + probLists.toString(), 
+						probListsBaseNoLoopyBP.size(), probLists.size());
+				for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+					List<Float> probNoLoop = probListsBaseNoLoopyBP.get(entry.getKey());
+					assertEquals("Trade = " + tradeNumber + ", seed = "  + seed + ". " + probListsBaseNoLoopyBP.toString() + " ; " + probLists.toString(), 
+							probNoLoop.size(), entry.getValue().size());
+					try {
+						for (int state = 0; state < entry.getValue().size(); state++) {
+							assertEquals("Trade = " + tradeNumber + ", seed = "  + seed + ". " + probListsBaseNoLoopyBP.toString() + " ; " + probLists.toString(), 
+									probNoLoop.get(state), entry.getValue().get(state), .01f);
+						}
+					} catch (Throwable t) {
+						// compare kl distance with uniform
+						List<Float> uniform = new ArrayList<Float>(probNoLoop.size());
+						for (int i = 0; i < probNoLoop.size(); i++) {
+							uniform.add(1f/probNoLoop.size());
+						}
+						float klDistance = engine.getKLDistance(probNoLoop, entry.getValue());
+						float klUniform = engine.getKLDistance(probNoLoop, uniform);
+						assertTrue("Trade = " + tradeNumber + ", seed = "  + seed + ". " + probListsBaseNoLoopyBP.toString() + " ; " + probLists.toString()
+								+ "KL(p||q)=" + klDistance + ", KL(p||uniform)=" + klUniform, 
+								klDistance < klUniform);
+					}
+				}
+				
+				// compare marginals after trade
+				probLists = engine.getProbLists(null, null, null);
+				probListsBaseNoLoopyBP = engineNoLoopyBP.getProbLists(null, null, null);
+				assertEquals("Trade = " + tradeNumber + ", seed = " + seed + ". " + probListsBaseNoLoopyBP.toString() + " ; " + probLists.toString(), 
+						probListsBaseNoLoopyBP.size(), probLists.size());
+				for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+					List<Float> probNoLoop = probListsBaseNoLoopyBP.get(entry.getKey());
+					assertEquals("Trade = " + tradeNumber + ", seed = "  + seed + ". " + probListsBaseNoLoopyBP.toString() + " ; " + probLists.toString(), 
+							probNoLoop.size(), entry.getValue().size());
+					try {
+						for (int state = 0; state < entry.getValue().size(); state++) {
+							assertEquals("Trade = " + tradeNumber + ", seed = "  + seed + ". " + probListsBaseNoLoopyBP.toString() + " ; " + probLists.toString(), 
+									probNoLoop.get(state), entry.getValue().get(state), .01f);
+						}
+					} catch (Throwable t) {
+						// compare kl distance with uniform
+						List<Float> uniform = new ArrayList<Float>(probNoLoop.size());
+						for (int i = 0; i < probNoLoop.size(); i++) {
+							uniform.add(1f/probNoLoop.size());
+						}
+						float klDistance = engine.getKLDistance(probNoLoop, entry.getValue());
+						float klUniform = engine.getKLDistance(probNoLoop, uniform);
+						assertTrue("Trade = " + tradeNumber + ", seed = "  + seed + ". " + probListsBaseNoLoopyBP.toString() + " ; " + probLists.toString()
+								+ "KL(p||q)=" + klDistance + ", KL(p||uniform)=" + klUniform, 
+								klDistance < klUniform);
+					}
+				}
+				
+			}
+		} catch (Throwable t) {
+			// just to make sure the error message shown by JUnit keeps track of the seed used in random numbers
+			throw new RuntimeException("Seed = "+seed + ", iteration = " + tradeNumber, t);
+		}
+		
+		
+		// use backups in order to revert changes in config
+		if (isToHaltOnDynamicJunctionTreeFailure != null) {
+			engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(isToHaltOnDynamicJunctionTreeFailure);
+		}
+		engine.setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThreshold);
+	}
+	
+	
 	
 }

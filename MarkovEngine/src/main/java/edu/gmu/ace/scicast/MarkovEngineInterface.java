@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import unbbayes.prs.bn.inference.extension.ZeroAssetsException;
@@ -190,7 +191,7 @@ public interface MarkovEngineInterface {
 	 * <br/>
 	 * By default, this is a lazy method (in a sense that it just changes the structure in a way that it causes minimum impact on user's asset tables, without
 	 * optimizing the junction tree structure or user's asset table structures). 
-	 * @param transactionKey : key returned by {@link #startNetworkActions()}
+	 * @param transactionKey : key returned by {@link #startNetworkActions()}, or null in order to immediately commit.
 	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
 	 * @param childQuestionId : id of the child
 	 * @param parentQuestionIds : ids of the parents. If cpd is set to null, then these questions will be ADDED as parents of childQuestionId.
@@ -213,6 +214,18 @@ public interface MarkovEngineInterface {
 	 * @throws IllegalArgumentException
 	 */
 	public boolean addQuestionAssumption(Long transactionKey, Date occurredWhen, long childQuestionId, List<Long> parentQuestionIds,  List<Float> cpd) throws IllegalArgumentException;
+	
+	/**
+	 * This is basically the opposite operation of {@link #addQuestionAssumption(Long, Date, long, List, List)}.
+	 * In other words, this deletes links from the underlying model.
+	 * @param transactionKey : key returned by {@link #startNetworkActions()}, or null in order to immediately commit.
+	 * @param occurredWhen : implementations of this interface may use this timestamp to store a history of modifications.
+	 * @param childQuestionId : id of the child
+	 * @param parentQuestionIds : ids of the parents.
+	 * @return true if operation was successful.
+	 * @throws IllegalArgumentException
+	 */
+	public boolean removeQuestionAssumption(Long transactionKey, Date occurredWhen, long childQuestionId, List<Long> parentQuestionIds) throws IllegalArgumentException;
 	
 	/**
 	 * This function will add EXTERNAL cash to a specific userId. 
@@ -1233,6 +1246,7 @@ public interface MarkovEngineInterface {
 	 * If the specified question/node did not exist, they shall be created before calculating the complexity metric.
 	 * Setting this to null will return the complexity metric of current Bayes net.
 	 * This method shall not actually modify the original Bayes net.
+	 * If the arc exists, then the returned value will be a metric of the complexity after removing the existing arc.
 	 * @return a number indicating the complexity after changing network structure (i.e. after adding new arcs). In Junction tree algorithm, this will be the tree width.
 	 * @see #getNetStatistics()
 	 * @see #getComplexityFactor(List, List)
@@ -1246,7 +1260,10 @@ public interface MarkovEngineInterface {
 	 * created just in order to keep the signature compatible with {@link #addQuestionAssumption(Long, Date, long, List, List)}.
 	 * @param childQuestionId : the question to be considered as the argument childQuestionId in {@link #addQuestionAssumption(Long, Date, long, List, List)}.
 	 * If this is null, then it will return {@link #getComplexityFactor(Map)} with null argument.
+	 * If the arc exists, then the returned value will be a metric of the complexity after removing the existing arc.
 	 * @param parentQuestionIds : the questions to be considered as the "parents" (dependencies) in {@link #addQuestionAssumption(Long, Date, long, List, List)}
+	 * If the arc exists, then the returned value will be a metric of the complexity
+	 * after removing the existing arc.
 	 * @return  a number indicating the complexity after changing network structure. In Junction tree algorithm, this will be the tree width.
 	 * @see #getNetStatistics()
 	 * @see #getComplexityFactor(List, List)
@@ -1273,8 +1290,10 @@ public interface MarkovEngineInterface {
 	 * </pre>
 	 * Implementations may consider a special case when childQuestionIds is larger than parentQuestionIds.
 	 * In this case, one option is to check if there are inexisting nodes in the rest of childQuestionIds and create them if so.
-	 * @param childQuestionIds: arcs will be pointing to this node.
-	 * @param parentQuestionIds: arcs will come from this node.
+	 * @param childQuestionIds: arcs will be pointing to this node. If the arc exists, then the returned value will be a metric of the complexity
+	 * after removing the existing arc.
+	 * @param parentQuestionIds: arcs will come from this node. If the arc exists, then the returned value will be a metric of the complexity
+	 * after removing the existing arc.
 	 * @return a number indicating the complexity after changing network structure. In Junction tree algorithm, this will be the tree width.
 	 * @see #getNetStatistics()
 	 * @see #getComplexityFactor(Long, List)
@@ -1282,6 +1301,65 @@ public interface MarkovEngineInterface {
 	 * @throws IllegalArumentException if the new arcs to be added are invalid.
 	 */
 	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds);
+	
+	/**
+	 * Estimates the complexity factor of arcs/links like in {@link #getComplexityFactor(Long, List)},
+	 * but the estimation will be for each arcs/links, one-by-one, instead of making a joint estimate of all specified links.
+	 * If a flag is on, the result will be sorted from the link with smallest complexity factor to largest complexity factor, 
+	 * therefore this method can be used to provide a sorted list which indicates which assumptions are less likely to compromise performance
+	 * (the first few assumptions have less impact -- i.e. better -- and the last ones have greater impact -- i.e. worse). 
+	 * <br/> <br/>
+	 * If an arc exists, then this method will return the complexity factor after REMOVING such link.
+	 * @param childIds : the questions in which arc/link will be pointing to. In a Bayes net structure, this will identify the child node.
+	 * If this is set to null, then all arcs/links related to assumptionIds will be considered.
+	 * If this is null and assumptionIds is also null, then all existing arcs will be considered.
+	 * <br/>
+	 * The indexes of this list must be synchronized with the indexes of parentIds, because the i-th link is identified as
+	 * a link from parentIds.get(i) to childId.get(i).
+	 * @param parentIds : questions the arcs/links will be starting from. In a Bayes net structure, this will identify the parent nodes.
+	 * If childIds is null, then all arcs/links related to these nodes will be considered.
+	 * If this is null and childIds is also null, then all existing arcs will be considered.
+	 * <br/>
+	 * The indexes of this list must be synchronized with the indexes of childIds, because the i-th link is identified as
+	 * a link from parentIds.get(i) to childId.get(i).
+	 * @param complexityFactorLimit : assumptions with complexity factors strictly larger than this threshold will not be included in returned list.
+	 * Use {@link Integer#MAX_VALUE} to virtually disable this option.
+	 * @param sortByComplexityFactor : 
+	 * if true, the returned list will be sorted by complexity factor. 
+	 * If false, the ordering of the input argument (assumptionIds) will be kept.
+	 * @return a list with pairs (pair of nodes -- i.e. the link ; complexity factor). 
+	 * {@link Entry#getKey()} is the pair or nodes representing the link, and {@link Entry#getValue()} is the complexity factor.
+	 * In the link, {@link Entry#getKey()}  is the parent -- the node an arc is coming from -- and {@link Entry#getValue()} is the parent. 
+	 * @see #getComplexityFactor(Long, List)
+	 * @see #getComplexityFactors(Map)
+	 * @see #getComplexityFactorPerAssumption(Long, List, int, boolean)
+	 */
+	public List<Entry<Entry<Long,Long>, Integer>> getComplexityFactorPerAssumption(List<Long> childIds, List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor);
+	
+	/**
+	 * This is just a wrapper for {@link #getComplexityFactorPerAssumption(List, List, int, boolean)} for a single child Id.
+	 * <br/>
+	 * This is equivalent to {@link #getComplexityFactorPerAssumption(List, List, int, boolean)} with all entries in the first list having
+	 * the same value (childId).
+	 * @param childId : the question in which arc/link will be pointing to. In a Bayes net structure, this will identify the child node.
+	 * If this is set to null, then all arcs/links related to assumptionIds will be considered.
+	 * If this is null and assumptionIds is also null, then all existing arcs will be considered.
+	 * @param parentIds : questions the arcs/links will be starting from. In a Bayes net structure, this will identify the parent nodes.
+	 * If childId is null, then all arcs/links related to these nodes will be considered.
+	 * If this is null and childId is also null, then all existing arcs will be considered.
+	 * @param complexityFactorLimit : assumptions with complexity factors strictly larger than this threshold will not be included in returned list.
+	 * Use {@link Integer#MAX_VALUE} to virtually disable this option.
+	 * @param sortByComplexityFactor : 
+	 * if true, the returned list will be sorted by complexity factor. 
+	 * If false, the ordering of the input argument (assumptionIds) will be kept.
+	 * @return a list with pairs (pair of nodes -- i.e. the link ; complexity factor). 
+	 * {@link Entry#getKey()} is the pair or nodes representing the link, and {@link Entry#getValue()} is the complexity factor.
+	 * In the link, {@link Entry#getKey()}  is the parent -- the node an arc is coming from -- and {@link Entry#getValue()} is the parent. 
+	 * @see #getComplexityFactorPerAssumption(List, List, int, boolean)
+	 */
+	public List<Entry<Entry<Long,Long>, Integer>>  getComplexityFactorPerAssumption(Long childId, List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor);
+	
+	
 	
 	
 	/**
@@ -1316,5 +1394,8 @@ public interface MarkovEngineInterface {
 	public static final String COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE = "MaxCliqueTableSize";
 	/** This is the name of the key in the map returned by {@link #getComplexityFactors(Map)} which represents the sum of clique table sizes. */
 	public static final String COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE = "SumCliqueTableSize";
+	
+	
+	
 	
 }

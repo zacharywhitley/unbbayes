@@ -58,7 +58,6 @@ import unbbayes.prs.bn.IJunctionTreeBuilder;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
-import unbbayes.prs.bn.LoopyJunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -91,6 +90,7 @@ import unbbayes.prs.bn.valueTree.ValueTreeProbabilisticNode;
 import unbbayes.prs.builder.INodeBuilder;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.Debug;
+import unbbayes.util.SingleValueList;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import edu.gmu.ace.scicast.ScoreSummary.SummaryContribution;
@@ -394,7 +394,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	private int dynamicJunctionTreeNetSizeThreshold = 1;
 	
-	private String defaultComplexityFactorName = COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE;
+	private String defaultComplexityFactorName = COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE; //COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE;
 	
 	
 	/**
@@ -1498,8 +1498,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return true;
 	}
 	
-	/*
-	 * (non-Javadoc)
+	/**
+	 * TODO value tree and dynamic/incremental JT compilation doesn't seem to work well together. Use {@link #setDynamicJunctionTreeNetSizeThreshold(int)} with high value to disable dynamic/incremental JT compilation.
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#addQuestion(java.lang.Long, java.util.Date, long, int, java.util.List, java.lang.String)
 	 */
 	public boolean addQuestion(Long transactionKey, Date occurredWhen, long questionId, int numberStates, List<Float> initProbs, String structure ) throws IllegalArgumentException {
@@ -2510,8 +2510,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// the conditions that we need to reboot (re-run trades) are in the following if-clause. 
 			// The condition cpd == null indicates that we are not substituting any arc (if cpd != null, then we are trying to substitute arcs)
 			if (isToAddArcsWithoutReboot() && !isTriggerForRebuild()) {
-				// we need to change structure and junction tree without rebuilding and re-running trades
 				// extract the object responsible for managing the probabilistic network alone.
+				// we need to change structure and junction tree without rebuilding and re-running trades
 				AssetAwareInferenceAlgorithm probAlgorithm = getDefaultInferenceAlgorithm();
 				
 				// extract child node and parent nodes to be used by probabilistic network
@@ -3831,8 +3831,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			);
 	}
 	
-	/*
-	 * (non-Javadoc)
+	/**
+	 * TODO value tree and dynamic/incremental JT compilation doesn't seem to work well together. Use {@link #setDynamicJunctionTreeNetSizeThreshold(int)} with high value to disable dynamic/incremental JT compilation.
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#addTrade(java.lang.Long, java.util.Date, long, java.util.List, java.util.List, java.util.List, java.util.List, java.util.List)
 	 */
 	public List<Float> addTrade(Long transactionKey, Date occurredWhen, long questionId, List<Integer> targetPath, List<Integer> referencePath, List<Float> newValues, List<Long> assumptionIds, List<Integer> assumedStates) throws IllegalArgumentException{
@@ -5966,15 +5966,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getPossibleQuestionAssumptions(long, java.util.List)
 	 */
 	public List<Long> getPossibleQuestionAssumptions(long questionId, List<Long> assumptionIds) throws IllegalArgumentException {
-		// this object is going to be used to extract what nodes can become assumptions in a conditional soft evidence
-		IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
-		if (conditionalProbabilityExtractor == null) {
-			throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
-		}
-		if (getProbabilisticNetwork() == null) {
-			// there is no way to find a node from a null network
-			throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
-		}
+		
+		// this is the list to return
+		List<Long> ret = new ArrayList<Long>();
+		
 		// extract main node
 		Node mainNode = null;
 		synchronized (getProbabilisticNetwork()) {
@@ -5983,36 +5978,84 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		if (mainNode == null) {
 			throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
 		}
-		// extract assumption nodes
-		List<INode> assumptions = new ArrayList<INode>();
-		if (assumptionIds != null) {
-			for (Long id : assumptionIds) {
-				Node node = null;
-				synchronized (getProbabilisticNetwork()) {
-					node = getProbabilisticNetwork().getNode(Long.toString(id));
+		
+		if (this.isLoopy()) { // if we are using loopy BP, then only allow trades on directly connected nodes
+			// TODO implement a more clean condition to allow trade with loopy BP
+			
+			synchronized (getProbabilisticNetwork()) {
+				// add IDs of all parent nodes
+				for (INode parent : mainNode.getParentNodes()) {
+					try {
+						ret.add(Long.parseLong(parent.getName()));
+					} catch (NumberFormatException e) {
+						// invalid node name, but ignore this error because it's not fatal at this point
+						Debug.println(getClass(), "Unable to extract question ID of parent " + parent + " of node " + mainNode + ": " + e.getMessage(), e);
+					}
 				}
-				if (node == null) {
-					throw new InexistingQuestionException("Question " + id + " not found.", id);
+				// add IDs of all child nodes
+				for (INode child : mainNode.getChildNodes()) {
+					try {
+						ret.add(Long.parseLong(child.getName()));
+					} catch (NumberFormatException e) {
+						// invalid node name, but ignore this error because it's not fatal at this point
+						Debug.println(getClass(), "Unable to extract question ID of child " + child + " of node " + mainNode + ": " + e.getMessage(), e);
+					}
 				}
-				assumptions.add(node);
+			}
+			
+			// at this point, ret contains IDs of all nodes that are connected to node identified by questionId
+			
+			// check if there is any ID in assumptionIds that is not connected to question. 
+			List<Long> nonParentOrChildAssumptions = new ArrayList<Long>(assumptionIds);
+			nonParentOrChildAssumptions.removeAll(ret);
+			
+			// If there is any node not connected to the question, then we shall return empty
+			if (!nonParentOrChildAssumptions.isEmpty()) {
+				return Collections.emptyList();
+			}
+			
+		} else { // ordinal case: allow trade if it is in same clique
+			// this object is going to be used to extract what nodes can become assumptions in a conditional soft evidence
+			IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = getConditionalProbabilityExtractor();	
+			if (conditionalProbabilityExtractor == null) {
+				throw new RuntimeException("Could not reuse conditional probability extractor of the current default inference algorithm. Perhaps you are using incompatible version of Markov Engine or UnBBayes.");
+			}
+			if (getProbabilisticNetwork() == null) {
+				// there is no way to find a node from a null network
+				throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
+			}
+			// extract assumption nodes
+			List<INode> assumptions = new ArrayList<INode>();
+			if (assumptionIds != null) {
+				for (Long id : assumptionIds) {
+					Node node = null;
+					synchronized (getProbabilisticNetwork()) {
+						node = getProbabilisticNetwork().getNode(Long.toString(id));
+					}
+					if (node == null) {
+						throw new InexistingQuestionException("Question " + id + " not found.", id);
+					}
+					assumptions.add(node);
+				}
+			}
+			
+			// obtain possible condition nodes
+			List<INode> returnedNodes = null;
+			synchronized (getProbabilisticNetwork()) {
+				returnedNodes = conditionalProbabilityExtractor.getValidConditionNodes(mainNode, assumptions, getProbabilisticNetwork(), null);
+			}
+			// convert condition nodes to ids
+			if (returnedNodes != null){
+				for (INode node : returnedNodes) {
+					if (node != null) {
+						// question IDs and node names are supposedly equal
+						ret.add(Long.parseLong(node.getName()));
+					}
+				}
 			}
 		}
 		
-		// obtain possible condition nodes
-		List<INode> returnedNodes = null;
-		synchronized (getProbabilisticNetwork()) {
-			returnedNodes = conditionalProbabilityExtractor.getValidConditionNodes(mainNode, assumptions, getProbabilisticNetwork(), null);
-		}
-		// convert condition nodes to ids
-		List<Long> ret = new ArrayList<Long>();
-		if (returnedNodes != null){
-			for (INode node : returnedNodes) {
-				if (node != null) {
-					// question IDs and node names are supposedly equal
-					ret.add(Long.parseLong(node.getName()));
-				}
-			}
-		}
+		
 		
 		return ret;
 	}
@@ -13765,15 +13808,31 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							// no need to set isModified = true here, because it will be set after this if-clause anyway (since we'll add new edge for sure)
 						}
 						// only include new arc if it does not exist
-						if (netToCheck.hasEdge(originNode, destinationNode) < 0) {
-							// TODO hasEdge is a redundant check, because something similar is done in addEdge
-							// finally, include the new arc
+						if ((netToCheck.hasEdge(originNode, destinationNode) < 0)
+								&& (netToCheck.hasEdge(destinationNode, originNode) < 0)) {		// just checking existence of link for both direction
+							// TODO hasEdge seems to be a redundant check, because something similar is done in addEdge
 							try {
+								// finally, include the new arc
 								netToCheck.addEdge(new Edge(originNode, destinationNode));
 							} catch (InvalidParentException e) {
 								throw new IllegalArgumentException(e);
 							}
 							isModified = true;	// mark this net as modified
+						} else { // the edge exists (either originNode->destinationNode, or the opposite)
+							// extract the existing edge
+							Edge edgeToRemove = netToCheck.getEdge(originNode, destinationNode);
+							if (edgeToRemove == null) { // just checking if it was in the opposite direction
+								edgeToRemove = netToCheck.getEdge(destinationNode, originNode);
+							}
+							if (edgeToRemove == null) {
+								// Network#hasEdge and Network#getEdge are inconsistent each other (the prior is saying that there is a link, but the latter cannot retrieve it)
+								throw new IllegalStateException("The network cloned from the shared BN indicates existence of link between  nodes " 
+										+ originNode + " and " + destinationNode 
+										+ ", but the link cannot be retrieved. This is probably a bug in UnBBayes core, or in some plug-in. Please, check the version you are using.");
+							}
+							//remove the edge in case the edge exists;
+							netToCheck.removeEdge(edgeToRemove);	// simply remove the edge, without caring about the CPT (because we just need the JT structure, not the probabilities)
+							isModified = true; // needs to mark this net as modified
 						}
 					}	// end of for
 				}	// end of if (entry.getValue() != null)
@@ -14360,8 +14419,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE
 	 * @see MarkovEngineInterface#COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE
 	 */
-	public void setDefaultComplexityFactorName(
-			String defaultComplexityFactorName) {
+	public void setDefaultComplexityFactorName(String defaultComplexityFactorName) {
 		this.defaultComplexityFactorName = defaultComplexityFactorName;
 	}
 	
@@ -14387,13 +14445,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see IncrementalJunctionTreeAlgorithm#setProbErrorMargin(float)
 	 */
 	public void setProbErrorMargin(float probErrorMargin) {
-		try {
-			((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setProbErrorMargin(probErrorMargin);
-		} catch (ClassCastException e) {
-			Debug.println(getClass(), e.getMessage(), e);
-		} catch (NullPointerException e) {
-			Debug.println(getClass(), e.getMessage(), e);
-		}
+		((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setProbErrorMargin(probErrorMargin);
+//		try {
+//			((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setProbErrorMargin(probErrorMargin);
+//		} catch (ClassCastException e) {
+//			Debug.println(getClass(), e.getMessage(), e);
+//		} catch (NullPointerException e) {
+//			Debug.println(getClass(), e.getMessage(), e);
+//		}
 	}
 
 
@@ -14417,13 +14476,14 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see IncrementalJunctionTreeAlgorithm#setMaxLoopyBPIteration(int)
 	 */
 	public void setMaxLoopyBPIteration(int maxLoopyBPIteration) {
-		try {
-			((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setMaxLoopyBPIteration(maxLoopyBPIteration);
-		} catch (ClassCastException e) {
-			Debug.println(getClass(), e.getMessage(), e);
-		} catch (NullPointerException e) {
-			Debug.println(getClass(), e.getMessage(), e);
-		}
+		((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setMaxLoopyBPIteration(maxLoopyBPIteration);
+//		try {
+//			((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setMaxLoopyBPIteration(maxLoopyBPIteration);
+//		} catch (ClassCastException e) {
+//			Debug.println(getClass(), e.getMessage(), e);
+//		} catch (NullPointerException e) {
+//			Debug.println(getClass(), e.getMessage(), e);
+//		}
 	}
 	
 	/**
@@ -14450,8 +14510,81 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see IncrementalJunctionTreeAlgorithm#setMaxLoopyBPTimeMillis(long)
 	 */
 	public void setMaxLoopyBPTimeMillis(long maxLoopyBPTimeMillis) {
+//		try {
+//			((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setMaxLoopyBPTimeMillis(maxLoopyBPTimeMillis);
+//		} catch (ClassCastException e) {
+//			Debug.println(getClass(), e.getMessage(), e);
+//		} catch (NullPointerException e) {
+//			Debug.println(getClass(), e.getMessage(), e);
+//		}
+		((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setMaxLoopyBPTimeMillis(maxLoopyBPTimeMillis);
+	}
+
+
+	/**
+	 * @return if the max clique size of the junction tree is above this threshold, then loopy BP will be enabled.
+	 * @see IncrementalJunctionTreeAlgorithm#buildLoopyCliques(ProbabilisticNetwork)
+	 * @see IncrementalJunctionTreeAlgorithm#run()
+	 */
+	public int getLoopyBPCliqueSizeThreshold() {
 		try {
-			((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setMaxLoopyBPTimeMillis(maxLoopyBPTimeMillis);
+			return ((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getLoopyBPCliqueSizeThreshold();
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		} catch (NullPointerException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		return Integer.MAX_VALUE;
+	}
+
+	/**
+	 * @param loopyBPCliqueSizeThreshold the loopyBPCliqueSizeThreshold to set.
+	 * If the max clique size of the junction tree is above this threshold, then loopy BP will be enabled.
+	 * @see IncrementalJunctionTreeAlgorithm#buildLoopyCliques(ProbabilisticNetwork)
+	 * @see IncrementalJunctionTreeAlgorithm#run()
+	 */
+	public void setLoopyBPCliqueSizeThreshold(int loopyBPCliqueSizeThreshold) {
+		((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThreshold);
+	}
+	
+
+	/**
+	 * @return it will just delegate to {@link IncrementalJunctionTreeAlgorithm#isLoopy()}.
+	 */
+	public boolean isLoopy() {
+		try {
+			return ((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).isLoopy();
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		} catch (NullPointerException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		// if it is not associated with a IncrementalJunctionTreeAlgorithm, then by default consider that this doesn't have loops
+		return false;
+	}
+	
+	/**
+	 * This will be delegated to {@link IncrementalJunctionTreeAlgorithm#isToSplitVirtualNodeClique()}.
+	 * If true, the loopy BP algorithm will also attempt to split cliques that were temporary created for soft evidence.
+	 */
+	public boolean isToSplitVirtualNodeClique() {
+		try {
+			return ((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).isToSplitVirtualNodeClique();
+		} catch (ClassCastException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		} catch (NullPointerException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		return false;
+	}
+
+	/**
+	 * This will be delegated to {@link IncrementalJunctionTreeAlgorithm#setToSplitVirtualNodeClique(boolean)}.
+	 * If true, the loopy BP algorithm will also attempt to split cliques that were temporary created for soft evidence.
+	 */
+	public void setToSplitVirtualNodeClique(boolean isToSplitVirtualNodeClique) {
+		try {
+			((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToSplitVirtualNodeClique(isToSplitVirtualNodeClique);
 		} catch (ClassCastException e) {
 			Debug.println(getClass(), e.getMessage(), e);
 		} catch (NullPointerException e) {
@@ -14459,7 +14592,580 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 	}
 
+	
+	/**
+	 * @param p : expected distribution
+	 * @param q : approximate distribution
+	 * @return The Kullback–Leibler divergence D(p||q)
+	 */
+	public static float getKLDistance(List<Float> p , List<Float> q) {
+		// basic assertions
+		if ((p == null && q == null) || (p.isEmpty() && q.isEmpty())) {
+			// by default, if both are null/empty, consider them equal distribution
+			return 0f;	// 0 means no divergence
+		}
+		if (p == null || q == null || (p.size() != q.size())) {
+			// no way to calculate kl distance
+			return Float.POSITIVE_INFINITY;
+		}
+		
+		// calculate kl distance := sum of expected log-divergence
+		float sum = 0f;
+		
+		// at this point, p.size() == q.size()
+		for (int i = 0; i < p.size(); i++) {
+			if (p.get(i) > 0) {	// this if is just to consider 0*ln(0) = 0
+				sum += p.get(i) * Math.log(p.get(i)/q.get(i));	// log-divergence is ln(p/q). Multiply by p to get its expectation.
+			}
+		}
+		
+		return sum;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactorPerAssumption(java.util.List, java.util.List, int, boolean)
+	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public List<Entry<Entry<Long,Long>, Integer>> getComplexityFactorPerAssumption(List<Long> childIds, List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor) {
+		
+		// make sure we don't have null lists
+		if (childIds == null) {
+			childIds = Collections.EMPTY_LIST;
+		}
+		if (parentIds == null) {
+			parentIds = Collections.EMPTY_LIST;
+		}
+		
+		// we will ignore last elements if one list is larger than the other
+		int length = Math.min(childIds.size(), parentIds.size());	
+		
+		// prepare the list to return
+		List<Entry<Entry<Long,Long>, Integer>> ret = new ArrayList<Entry<Entry<Long,Long>, Integer>>(length);
+		
+		// if childIds is empty, then get complexity factor for existing arcs containing parentIds (if parentIds is null or empty, then consider all arcs);
+		if (childIds.isEmpty()) {
+			
+			// fill childIds and parentIds with pairs of nodes in existing arcs
+			childIds = new ArrayList<Long>();		// use another list, because the original may be immutable
+			List<Long> idsToConsider = parentIds;	// backup what was parentIds before using another instance (to avoid immutable list)
+			parentIds = new ArrayList<Long>();		// again, use another list, because original may be immutable
+			
+			synchronized (getProbabilisticNetwork()) {
+				for (Edge edge : getProbabilisticNetwork().getEdges()) {
+					if (!idsToConsider.isEmpty()) {	// there is something in the filter
+						// check if any node in this arc is in filter
+						try {
+							if (!idsToConsider.contains(Long.parseLong(edge.getDestinationNode().getName()))		// child is not in idsToConsider
+									&& !idsToConsider.contains(Long.parseLong(edge.getOriginNode().getName()))) {	// and parent is not in idsToConsider
+								continue;	// ignore this arc, because it did not pass the filter
+							}
+						} catch (NumberFormatException e) {
+							Debug.println(getClass(), e.getMessage(), e);
+							continue;	// consider that it did not pass the filter
+						} catch (NullPointerException e) {
+							Debug.println(getClass(), e.getMessage(), e);
+							continue;	// consider that it did not pass the filter
+						}
+					}
+					
+					// at this point, it passed the filter, so include arc 
+					try {
+						// the child of the arc
+						childIds.add(Long.parseLong(edge.getDestinationNode().getName()));
+					} catch (NumberFormatException e) {
+						Debug.println(getClass(), e.getMessage(), e);
+						continue;	// don't add in parentIds
+					} catch (NullPointerException e) {
+						Debug.println(getClass(), e.getMessage(), e);
+						continue;	// don't add in parentIds
+					}
+					
+					try {
+						// the parent of the arc
+						parentIds.add(Long.parseLong(edge.getOriginNode().getName()));
+					} catch (NumberFormatException e) {
+						Debug.println(getClass(), e.getMessage(), e);
+						childIds.remove(childIds.size()-1);	// revert change in childIds
+						continue;
+					} catch (NullPointerException e) {
+						Debug.println(getClass(), e.getMessage(), e);
+						childIds.remove(childIds.size()-1); // revert change in childIds
+						continue;
+					}
+					
+				}	// end of for each edge
+			}	// release lock on probabilistic net
+		}	// end of if childId.isEmpty
+		
+		// estimate complexity factor for each arc and add to list to be returned.
+		for (int i = 0; i < length; i++) {
+			// extract the pair of ids (this will be the link to be evaluated)
+			Long childId = childIds.get(i);
+			Long parentId = parentIds.get(i);
+			
+			// get complexity factor for current arc parentId -> childId
+			int complexityFactor = this.getComplexityFactor(Collections.singletonList(childId), Collections.singletonList(parentId));
+			// ignore assumptions with complexity larger than the threshold
+			if (complexityFactor > complexityFactorLimit) {
+				continue;
+			}
+			
+			if (sortByComplexityFactor) {
+				// use insertion sort to sort by complexity value (i.e. by Entry#getValue())
+				int indexToAdd = 0;	// index in ret where the new entry will be inserted to
+				// search for a position where complexity factor at index is strictly higher
+				for (; indexToAdd < ret.size(); indexToAdd++) {
+					if (ret.get(indexToAdd).getValue().intValue() > complexityFactor) {
+						break;
+					}
+				}
+				// insert at the position where the next value will become strictly higher than this, but the previous value is still smaller or equal.
+				ret.add(indexToAdd, new java.util.AbstractMap.SimpleEntry(new java.util.AbstractMap.SimpleEntry(parentId, childId), complexityFactor));
+			} else {
+				// just insert at the end of the list
+				ret.add(new java.util.AbstractMap.SimpleEntry(new java.util.AbstractMap.SimpleEntry(parentId, childId), complexityFactor));
+			}
+			
+		}
+		
+		return ret;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactorPerAssumption(java.lang.Long, java.util.List, int, boolean)
+	 */
+	public List<Entry<Entry<Long,Long>, Integer>> getComplexityFactorPerAssumption(final Long childId, final List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor) {
+		
+		// simply wrap #getComplexityFactorPerAssumption(java.util.List, java.util.List, int, boolean)
+		
+		List<Long> childIds = null;	// this will be the 1st list in #getComplexityFactorPerAssumption(java.util.List, java.util.List, int, boolean)
+		if (childId != null) {
+			// create a list virtually containing parentIds.size() copies of childId
+			childIds = new SingleValueList<Long>(childId, parentIds.size());
+		}
+		return this.getComplexityFactorPerAssumption(childIds, parentIds, complexityFactorLimit, sortByComplexityFactor);
+	}
+	
 
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#removeQuestionAssumption(java.lang.Long, java.util.Date, long, java.util.List)
+	 */
+	public boolean removeQuestionAssumption(Long transactionKey, Date occurredWhen, long childQuestionId, List<Long> parentQuestionIds) throws IllegalArgumentException {
+		// initial assertions
+		if (!isToAddArcsOnlyToProbabilisticNetwork()) {
+			throw new UnsupportedOperationException("Current version cannot remove arcs when assets are managed by Markov Engine");
+		}
+		if (occurredWhen == null) {
+			throw new IllegalArgumentException("Argument \"occurredWhen\" is mandatory.");
+		}
+		
+		// this is the list of actions in a same transaction.
+		List<NetworkAction> actions = null;
+		if (transactionKey != null) {
+			actions = this.getNetworkActionsMap().get(transactionKey);
+			// check existence of transactionKey
+			if (actions == null) {
+				// startNetworkAction should have been called.
+				throw new IllegalArgumentException("Invalid transaction key: " + transactionKey);
+			}
+			// action should be at least a non-null empty list if startNetworkAction was called previously
+		}
+		
+		
+		// check existence of child
+		boolean isPresentInNetOrTransactionOrHistory = false;	// this will become true if child is in network, or it is being created in current transaction, or it is present in the history
+		Node child  = null;
+		synchronized (getProbabilisticNetwork()) {
+			child = getProbabilisticNetwork().getNode(Long.toString(childQuestionId));
+		}
+		if (child == null) {
+			// child node does not exist. Check if there was some previous action (in same transaction) adding such node
+			synchronized (actions) {
+				for (NetworkAction networkAction : actions) {
+					if (networkAction instanceof AddQuestionNetworkAction) {
+						AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
+						if (addQuestionNetworkAction.getQuestionId().equals(childQuestionId)) {
+							isPresentInNetOrTransactionOrHistory = true;
+							break;
+						}
+					}
+				}
+			}
+			if (!isPresentInNetOrTransactionOrHistory) {
+				// see if we can find the node in history. If so, RebuildNetworkAction can add the arcs correctly
+				synchronized (this.getResolvedQuestions()) {
+					StatePair stateSizeAndResolution = this.getResolvedQuestions().get(childQuestionId);
+					if (stateSizeAndResolution != null) {
+						isPresentInNetOrTransactionOrHistory = true;
+					}
+				}
+			}
+			if (!isPresentInNetOrTransactionOrHistory) {	
+				// sourceQuestionId was not found neither in transaction nor in history
+				throw new InexistingQuestionException("Question ID " + childQuestionId + " does not exist.", childQuestionId);
+			}
+		} else {
+			// initialize the value of expectedSizeOfCPD using the number of states of future owner of the cpd
+			isPresentInNetOrTransactionOrHistory = true;
+		}
+		
+		
+		// do not allow null values for collections
+		if (parentQuestionIds == null) {
+			parentQuestionIds = new ArrayList<Long>();
+		}
+		
+		// check existence of parents or arcs
+		for (Long assumptiveQuestionId : parentQuestionIds) {
+			Node parent =null;
+			synchronized (getProbabilisticNetwork()) {
+				parent = getProbabilisticNetwork().getNode(Long.toString(assumptiveQuestionId));
+			}
+			if (parent == null) {
+				// parent node does not exist. Check if there was some previous transaction adding such node
+				synchronized (actions) {
+					boolean hasFound = false;
+					for (NetworkAction networkAction : actions) {
+						if (networkAction instanceof AddQuestionNetworkAction) {
+							AddQuestionNetworkAction addQuestionNetworkAction = (AddQuestionNetworkAction) networkAction;
+//							System.out.println(addQuestionNetworkAction.getQuestionId());
+							if (addQuestionNetworkAction.getQuestionId().equals(assumptiveQuestionId)) {
+								// size of cpd = MULT (<quantity of states of child and parents>).
+								hasFound = true;
+								break;
+							}
+						}
+					}
+//					if (!hasFound) {
+//						// see if we can find the node in history. If so, RebuildNetworkAction can add the arcs correctly
+//						synchronized (this.getResolvedQuestions()) {
+//							StatePair statePair = this.getResolvedQuestions().get(assumptiveQuestionId);
+//							if (statePair != null) {
+//								hasFound = true;
+//							}
+//						}
+//					}
+					if (!hasFound) {	
+						// parent was not found
+						throw new InexistingQuestionException("Question ID " + assumptiveQuestionId + " does not exist.", assumptiveQuestionId);
+					} 
+					// at this point, parent does not exist in net, but it will be created in same transaction
+					// check if arc is in same transaction too
+					hasFound = false;
+					for (NetworkAction networkAction : actions) {
+						if (networkAction instanceof AggregatedQuestionAssumptionNetworkAction) {
+							AggregatedQuestionAssumptionNetworkAction action = (AggregatedQuestionAssumptionNetworkAction) networkAction;
+							for (Entry<Long, List<Long>> entry : action.getLinks().entrySet()) {
+								// check if link will be added in some transaction, regardless of direction
+								if ((entry.getKey().equals(childQuestionId) && entry.getValue().contains(assumptiveQuestionId))
+										|| (entry.getKey().equals(assumptiveQuestionId) && entry.getValue().contains(childQuestionId))) {
+									// there is a link childQuestionId->assumptiveQuestionId or assumptiveQuestionId->childQuestionId
+									hasFound = true;
+									break;
+								}
+							}
+						} else if (networkAction instanceof AddQuestionAssumptionNetworkAction) {
+							AddQuestionAssumptionNetworkAction action = (AddQuestionAssumptionNetworkAction) networkAction;
+							// check if link will be added in some transaction, regardless of direction
+							if ((action.getQuestionId().equals(childQuestionId) && action.getAssumptionIds().contains(assumptiveQuestionId))
+									|| (action.getQuestionId().equals(assumptiveQuestionId) && action.getAssumptionIds().contains(childQuestionId))) {
+								// there is a link childQuestionId->assumptiveQuestionId or assumptiveQuestionId->childQuestionId
+								hasFound = true;
+								break;
+							}
+						}
+					}
+					if (!hasFound) {	
+						// parent was not found
+						throw new InvalidAssumptionException("There is no link between " + assumptiveQuestionId + " and " + childQuestionId + ", and current transaction will not create it either.");
+					}
+				}
+			} else { // parent node exists in the net.
+				boolean hasFound = false;
+				if (child != null) {
+					// check if the arc exists in net
+					ProbabilisticNetwork net = getProbabilisticNetwork();
+					synchronized (net) {
+						if ((net.hasEdge(parent, child) < 0) && (net.hasEdge(child, parent) < 0)) {
+							throw new InvalidAssumptionException("There is no link between " + assumptiveQuestionId + " and " + childQuestionId + " in current network.");
+						}
+					}
+				} else {
+					// check if new arc will be inserted in current transaction
+					synchronized (actions) {
+						for (NetworkAction networkAction : actions) {
+							if (networkAction instanceof AggregatedQuestionAssumptionNetworkAction) {
+								AggregatedQuestionAssumptionNetworkAction action = (AggregatedQuestionAssumptionNetworkAction) networkAction;
+								for (Entry<Long, List<Long>> entry : action.getLinks().entrySet()) {
+									// check if link will be added in some transaction, regardless of direction
+									if ((entry.getKey().equals(childQuestionId) && entry.getValue().contains(assumptiveQuestionId))
+											|| (entry.getKey().equals(assumptiveQuestionId) && entry.getValue().contains(childQuestionId))) {
+										// there is a link childQuestionId->assumptiveQuestionId or assumptiveQuestionId->childQuestionId
+										hasFound = true;
+										break;
+									}
+								}
+							} else if (networkAction instanceof AddQuestionAssumptionNetworkAction) {
+								AddQuestionAssumptionNetworkAction action = (AddQuestionAssumptionNetworkAction) networkAction;
+								// check if link will be added in some transaction, regardless of direction
+								if ((action.getQuestionId().equals(childQuestionId) && action.getAssumptionIds().contains(assumptiveQuestionId))
+										|| (action.getQuestionId().equals(assumptiveQuestionId) && action.getAssumptionIds().contains(childQuestionId))) {
+									// there is a link childQuestionId->assumptiveQuestionId or assumptiveQuestionId->childQuestionId
+									hasFound = true;
+									break;
+								}
+							}
+						}
+					}	// end of synchronized(actions)
+				}
+				if (!hasFound) {
+					throw new InvalidAssumptionException("Question" + childQuestionId + "not created yet, and there is no link between " + assumptiveQuestionId + " and " + childQuestionId);
+				}
+			}
+			
+		}
+		
+		// instantiate the action object for adding the edge
+		if (transactionKey == null) {
+			transactionKey = this.startNetworkActions();
+			this.addNetworkAction(transactionKey, new RemoveQuestionAssumptionNetworkAction(transactionKey, occurredWhen.getTime(), childQuestionId, parentQuestionIds));
+			this.commitNetworkActions(transactionKey);
+		} else {
+			this.addNetworkAction(transactionKey, new RemoveQuestionAssumptionNetworkAction(transactionKey, occurredWhen.getTime(), childQuestionId, parentQuestionIds));
+		}
+		
+		return true;
+	}
+	
+	
+
+	/**
+	 * This is a network action for removing direct dependencies from shared BN.
+	 * @author Shou Matsumoto
+	 * @see MarkovEngineImpl#removeQuestionAssumption(Long, Date, long, List)
+	 * @see MarkovEngineImpl#commitNetworkActions(long, boolean)
+	 * @see MarkovEngineImpl#getDefaultInferenceAlgorithm()
+	 * @see MarkovEngineImpl#getProbabilisticNetwork()
+	 * @see AddQuestionAssumptionNetworkAction
+	 * @see MarkovEngineImpl#addQuestionAssumption(Long, Date, long, List, List)
+	 */
+	public class RemoveQuestionAssumptionNetworkAction extends StructureChangeNetworkAction {
+		private static final long serialVersionUID = -2353757267946670700L;
+		private Long transactionKey;
+		private long time;
+		private long childQuestionId;
+		private List<Long> parentQuestionIds;
+		private Map<Long, List<Long>> removedLinks = null;
+		private Long whenExecutedFirstTime = null;
+		
+		/** Default constructor initializing fields */
+		public RemoveQuestionAssumptionNetworkAction(Long transactionKey, long time, long childQuestionId, List<Long> parentQuestionIds) {
+			this.transactionKey = transactionKey;
+			this.time = time;
+			this.childQuestionId = childQuestionId;
+			this.parentQuestionIds = parentQuestionIds;
+		}
+
+		/* (non-Javadoc)
+		 * @see edu.gmu.ace.scicast.MarkovEngineImpl.StructureChangeNetworkAction#isStructureConstructionAction()
+		 */
+		public boolean isStructureConstructionAction() {
+			return false; // force commitNetworkAction not to reorder this action to the beginning
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see edu.gmu.ace.scicast.NetworkAction#revert()
+		 */
+		public void revert() throws UnsupportedOperationException {
+			if (getRemovedLinks() != null) {
+				// revert this action by re-creating all arcs we just removed.
+				// TODO figure out a way to revert eventual changes in conditional probabilities caused by arc deletion.
+				List<AddQuestionAssumptionNetworkAction> arcActions = new ArrayList<MarkovEngineImpl.AddQuestionAssumptionNetworkAction>(getRemovedLinks().values().size());
+				for (Entry<Long, List<Long>> entry : getRemovedLinks().entrySet()) {
+					arcActions.add(new AddQuestionAssumptionNetworkAction(Long.MIN_VALUE, System.currentTimeMillis(), entry.getKey(), entry.getValue(), null));
+				}
+				if (!arcActions.isEmpty()) {
+					// add all arcs at once.
+					new AggregatedQuestionAssumptionNetworkAction(arcActions).execute();
+				}
+			}
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see edu.gmu.ace.scicast.NetworkAction#isTriggerForRebuild()
+		 */
+		public boolean isTriggerForRebuild() { 
+			// if it is configured not to add arcs without reboot, then immediately return that we shall rebuild net
+			if (!isToAddArcsWithoutReboot()) {
+				return true;
+			}
+			
+			// if it is configured to delete resolved questions, then arcs may be involving deleted questions
+//			if (isToDeleteResolvedNode()) {
+//				// if arcs are involving resolved questions, nodes may not be present anymore, and in this case we need to reboot
+//				if (getResolvedQuestions().containsKey(childQuestionId)) {
+//					return true;
+//				}
+//				for (Long assumptionId : parentQuestionIds) {
+//					if (getResolvedQuestions().containsKey(assumptionId)) {
+//						return true;
+//					}
+//				}
+//			}
+			// or else, check that network was initialized (junction tree was created) already.
+			synchronized (getProbabilisticNetwork()) {
+				if (getProbabilisticNetwork().getJunctionTree() == null || getProbabilisticNetwork().getJunctionTree().getCliques() == null
+						|| getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty()) {
+					// network not initialized yet, so need to rebuild
+					return true;
+				}
+			}
+			// network is initialized already, and engine is configured to add arcs without reboot, so do not return flag to rebuild
+			return false; 
+		}
+
+		public boolean isHardEvidenceAction() {return false; }
+		public Integer getSettledState() {return null;}
+		public Boolean isCorrectiveTrade() {return false;}
+		public NetworkAction getCorrectedTrade() {return null; }
+		public Long getTransactionKey() {return transactionKey; }
+		public Long getQuestionId() { return childQuestionId; }
+		public List<Long> getAssumptionIds() { return parentQuestionIds; }
+		public List<Integer> getAssumedStates() { return Collections.EMPTY_LIST; }
+		public void setWhenExecutedFirstTime(Date whenExecutedFirst) { whenExecutedFirstTime = (whenExecutedFirst==null)?null:whenExecutedFirst.getTime(); /*set to null or convert to long*/ }
+		public void setOldValues(List<Float> oldValues) {}
+		public void setNewValues(List<Float> newValues) {}
+		public Date getWhenCreated() { return new Date(time); }
+		public Date getWhenExecutedFirstTime() { return (whenExecutedFirstTime==null)?null:new Date(whenExecutedFirstTime); /*return null or convert to Date*/}
+		public List<Float> getOldValues() { return Collections.EMPTY_LIST; }
+		public List<Float> getNewValues() {return Collections.EMPTY_LIST;}
+		public String getTradeId() { return ""; }
+		public Long getUserId() { return null; }
+		
+		/*
+		 * (non-Javadoc)
+		 * @see edu.gmu.ace.scicast.MarkovEngineImpl.StructureChangeNetworkAction#execute(unbbayes.prs.bn.ProbabilisticNetwork)
+		 */
+		public void execute(ProbabilisticNetwork net) {
+			if (!isToAddArcsOnlyToProbabilisticNetwork()) {
+				throw new UnsupportedOperationException("Current version cannot remove arcs when assets are managed by Markov Engine");
+			}
+			
+			List<Edge> removedEdges = null;
+			synchronized (getDefaultInferenceAlgorithm()) {
+				Map<INode, List<INode>> nodes = null;
+				ProbabilisticNetwork network = (ProbabilisticNetwork)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator().getNetwork();
+				synchronized (network) { // obtain nodes from question IDs;
+					// obtain the child node
+					INode childNode = network.getNode(""+childQuestionId);
+					
+					// convert parent ids to nodes
+					List<INode> parentNodes = new ArrayList<INode>(parentQuestionIds.size());
+					for (Long parentId : parentQuestionIds) {
+						if (parentId == null) {
+							continue;	// ignore null entries
+						}
+						// extract the node from net
+						Node parentNode = network.getNode(parentId.toString());
+						if (parentNode != null) {
+							parentNodes.add(parentNode);
+						} else {
+							// ignore nodes not in net
+							Debug.println(getClass(), "Question" + parentId + " was not found in BN.");
+						}
+					}
+					
+					if (childNode != null && !parentNodes.isEmpty()) {
+						nodes = Collections.singletonMap(childNode, parentNodes);
+					} 
+				}
+				if (nodes != null) {
+					removedEdges = getDefaultInferenceAlgorithm().removeEdgesNotConsideringAssets(nodes);
+				}
+			}
+			
+			// make sure removedLinks is non-null, because we will fill it
+			if (removedLinks == null) {
+				// this mapping is used in #revert()
+				removedLinks = new HashMap<Long, List<Long>>(removedEdges.size());
+//			} else {
+//				removedLinks.clear();
+			}
+			
+			// fill removedLinks based on what was returned by the algorithm object. It will be used in #revert()
+			if (removedEdges != null) {
+				for (Edge removedEdge : removedEdges) {	
+					try {
+						// extract the ID of the child node
+						long childId = Long.parseLong(removedEdge.getDestinationNode().getName());
+						List<Long> parents = removedLinks.get(childId);
+						if (parents == null) {
+							// this is the 1st time that the mapping is used for this child. Initialize.
+							parents = new ArrayList<Long>();
+							removedLinks.put(childId, parents);
+						}
+						// extract the id of the parent node
+						long parentId = Long.parseLong(removedEdge.getOriginNode().getName());
+						// add new parent to this mapping (from child to list of parents)
+						parents.add(parentId);
+					} catch (NumberFormatException e) {
+						// TODO handle cases when there are non-numeric nodes
+						Debug.println(getClass(), e.getMessage(), e);
+					} catch (NullPointerException e) {
+						// TODO handle cases when there are null nodes or null links
+						Debug.println(getClass(), e.getMessage(), e);
+					}
+				}
+			} else {
+				Debug.println(getClass(), childQuestionId + " and parents " + parentQuestionIds + " were not found in network.");
+			}
+		}
+
+		/**
+		 * @return links removed by {@link #execute(ProbabilisticNetwork)}
+		 * @see #revert()
+		 */
+		public Map<Long, List<Long>> getRemovedLinks() { return removedLinks; }
+
+		/**
+		 * @param removedLinks : links removed by {@link #execute(ProbabilisticNetwork)}
+		 * @see #revert()
+		 */
+		public void setRemovedLinks(Map<Long, List<Long>> removedLinks) { this.removedLinks = removedLinks; }
+	}
+	
+	/**
+	 * This method just delegates to {@link IncrementalJunctionTreeAlgorithm#isToCreateVirtualNode()}
+	 * @return true if soft evidences (trades) must use virtual nodes (which is safer). False otherwise (faster).
+	 */
+	public boolean isToCreateVirtualNode() {
+		if (getDefaultInferenceAlgorithm() == null || getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() == null
+				|| !(getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm)) {
+			return true;	// default value
+		}
+		// simply delegate
+		return ((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).isToCreateVirtualNode();
+	}
+
+	/**
+	 * This method just delegates to {@link IncrementalJunctionTreeAlgorithm#setToCreateVirtualNode(boolean)}
+	 * @param isToCreateVirtualNode : true if soft evidences (trades) must use virtual nodes (which is safer). False otherwise (faster).
+	 */
+	public void setToCreateVirtualNode(boolean isToCreateVirtualNode) {
+		if (getDefaultInferenceAlgorithm() == null || getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() == null
+				|| !(getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm)) {
+			return;	// don't do anything
+		}
+		// simply delegate
+		((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCreateVirtualNode(isToCreateVirtualNode);
+	}
+	
+	
 //	/**
 //	 * Exception thrown when some state at 0% probability is attempted to be changed to non 0 probability.
 //	 * This usually an error, because a bayes rule cannot make impossible states to become possible.
