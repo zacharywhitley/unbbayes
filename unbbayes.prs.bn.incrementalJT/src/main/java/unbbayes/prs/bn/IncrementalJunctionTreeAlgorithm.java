@@ -46,7 +46,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 
 
 	/** {@link #run()} will use dynamic junction tree compilation if number of nodes is above this value */
-	private int dynamicJunctionTreeNetSizeThreshold = 1;//Integer.MAX_VALUE;	// setting to large values will disable dynamic junction tree compilation
+	private int dynamicJunctionTreeNetSizeThreshold = 100;//Integer.MAX_VALUE;	// setting to large values will disable dynamic junction tree compilation
 	
 	/** Set this to true if you need {@link #run()} to throw exception when {@link #runDynamicJunctionTreeCompilation()} fails. */
 	private boolean isToHaltOnDynamicJunctionTreeFailure = false;
@@ -55,7 +55,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	/** Copy of the network used when {@link #run()} was executed the previous time */
 	private ProbabilisticNetwork netPreviousRun = null;
 	
-	private int loopyBPCliqueSizeThreshold = 16384;
+	private int loopyBPCliqueSizeThreshold = Integer.MAX_VALUE; //16384;
 	
 	/**
 	 * This clique splitter will split the clique in the way that
@@ -142,6 +142,10 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	};
 	
 	private ICliqueSplitter cliqueSplitter = SINGLE_CYCLE_HALF_SIZE_SEPARATOR_CLIQUE_SPLITTER;
+	
+	private boolean isToSplitVirtualNodeClique = false;
+	
+	private boolean isToCreateVirtualNode = false;
 	
 	/**
 	 * Default constructor.
@@ -456,7 +460,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		List<Separator> generatedSeparators = new ArrayList<Separator>();	// this list will be filled with separators generated in this method
 		
 		// extract parents of original clique
-		List<Clique> parentCliques = jt.getParents(originalClique);
+		List<Clique> parentCliques = new ArrayList<Clique>(jt.getParents(originalClique));	// use a clone, to allow modification
 		// disconnect clique from parents 
 		if (parentCliques != null) {
 			for (Clique parentClique : parentCliques) {
@@ -567,6 +571,9 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 				}
 			}
 		}
+		
+		// update internal ids, especially because we created new separators/cliques.
+		this.updateCliqueAndSeparatorInternalIdentificators(jt);
 		
 		// return cliques and separators generated in this method
 		List<IRandomVariable> ret = new ArrayList<IRandomVariable>(generatedCliques.size() + generatedSeparators.size());
@@ -767,9 +774,10 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		
 		
 		// This algorithm also needs to track which moral connections (i.e. implicit connections between parents with common child) were deleted because of arc deletion.
-		if (!edgesToDelete.isEmpty()) { // I'm assuming that if we never deleted any edge, there is no old moral arc deleted too
-			edgesToDelete.addAll(getDeletedMoralArcs(oldNet, newNet, edgesToDelete));
-		}
+//		if (!edgesToDelete.isEmpty()) { // I'm assuming that if we never deleted any edge, there is no old moral arc deleted too
+//			edgesToDelete.addAll(getDeletedMoralArcs(oldNet, newNet, edgesToDelete));
+//		}
+		// no need for the above code, because Separator#isComplete(Collection) is considering moralized arcs
 		
 		// This algorithm also needs to track which moral connections (i.e. implicit connections between parents with common child) were created because of new arcs.
 		if (!edgesToAdd.isEmpty()) { // I'm assuming that if we never included any edge, there is no new moral arc too
@@ -829,7 +837,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		allConsideredEdges = null;
 		
 		// for each connected marked clusters, retrieve the nodes in prime subnet decomposition and compile junction tree for each of subnets
-		Map<IJunctionTree, Collection<Clique>> compiledSubnetToClusterMap = this.getCompiledPrimeDecompositionSubnets(clustersToModify);
+		Map<IJunctionTree, Collection<Clique>> compiledSubnetToClusterMap = this.getCompiledPrimeDecompositionSubnets(clustersToModify, decompositionTree);
 
 		// aggregate the junction tree of the subnets to the original junction tree (removing unnecessary cliques)
 		for (Entry<IJunctionTree, Collection<Clique>> entry : compiledSubnetToClusterMap.entrySet()) {
@@ -879,11 +887,12 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
      * @param cluster : current cluster in recursive call
      * @param clustersToCompile : if cluster is not in this set, stop recursive calls.
      * @param processedClusters : stores which clusters were processed already, so that we don't process the same cluster twice.
+     * @param decompositionTree  : the max prime subgraph decomposition tree where the clusters belong
      * @return : set of all nodes in current cluster and all connected clusters;
      * @see #getCompiledPrimeDecompositionSubnets(Collection)
      * @see #runDynamicJunctionTreeCompilation()
      */
-	private Set<INode> getNodesInConnectedClustersRecursively(Clique cluster, Collection<Clique> clustersToCompile, Set<Clique> processedClusters) {
+	private Set<INode> getNodesInConnectedClustersRecursively(Clique cluster, Collection<Clique> clustersToCompile, Set<Clique> processedClusters, JunctionTree decompositionTree) {
 		// if current cluster is not marked, then return nothing
 		if (clustersToCompile == null || !clustersToCompile.contains(cluster)) {
 			return Collections.EMPTY_SET;
@@ -903,11 +912,13 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		processedClusters.add(cluster); 	// mark this cluster as processed before making recursive calls
 		
 		// call recursive for parent cluster
-		ret.addAll(this.getNodesInConnectedClustersRecursively(cluster.getParent(), clustersToCompile, processedClusters));
+		for (Clique parent : decompositionTree.getParents(cluster)) {
+			ret.addAll(this.getNodesInConnectedClustersRecursively(parent, clustersToCompile, processedClusters, decompositionTree));
+		}
 		
 		// call recursive for child clusters
 		for (Clique childCluster : cluster.getChildren()) {
-			ret.addAll(this.getNodesInConnectedClustersRecursively(childCluster, clustersToCompile, processedClusters));
+			ret.addAll(this.getNodesInConnectedClustersRecursively(childCluster, clustersToCompile, processedClusters, decompositionTree));
 		}
 		
 		return ret;
@@ -916,6 +927,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	/**
 	 * For nodes in each connected clusters marked for modification, compile a junction tree.
      * @param clustersToCompile : these are the clusters in prime subgraph decomposition tree to be used
+	 * @param decompositionTree : the max prime subgraph decomposition tree where the clusters belong
      * @return map from the generated junction trees to clusters that has generated the respective junction tree. 
      * By extracting the keys, you can obtain the set of junction trees generated from the argument.
      * By obtaining the values, you can obtain which cluster originated the junction tree
@@ -924,7 +936,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
      * @see IJunctionTree#initBeliefs()
      * @see #getNet()
      */
-    protected Map<IJunctionTree,Collection<Clique>> getCompiledPrimeDecompositionSubnets( Collection<Clique> clustersToCompile) throws InvalidParentException {
+    protected Map<IJunctionTree,Collection<Clique>> getCompiledPrimeDecompositionSubnets( Collection<Clique> clustersToCompile, IJunctionTree decompositionTree) throws InvalidParentException {
     	// basic assertion
     	if (clustersToCompile == null || clustersToCompile.isEmpty()) {
     		return Collections.EMPTY_MAP;
@@ -946,7 +958,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 				Set<Clique> clustersProcessedBeforeThisIteration = new HashSet<Clique>(processedClusters);
 				
 				// obtain nodes in current and connected marked clusters (a cluster is marked if it is in clustersToCompile)
-				Set<INode> originalNodes = getNodesInConnectedClustersRecursively(cluster, clustersToCompile, processedClusters);	// this will also update processedClusters
+				Set<INode> originalNodes = getNodesInConnectedClustersRecursively(cluster, clustersToCompile, processedClusters, (JunctionTree) decompositionTree);	// this will also update processedClusters
 				// Note: above method must insert current cluster to processedClusters
 				
 				Set<Clique> clustersProcessedInThisIteration = new HashSet<Clique>(processedClusters);
@@ -1856,12 +1868,128 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
      * @see #getClustersToModifyIncludeEdge(Edge, IJunctionTree)
      * @see #getClustersToModifyRemoveNode(INode, IJunctionTree)
      */
-    protected Collection<Clique> treatRemoveEdge( Edge deletedEdge, IJunctionTree originalJunctionTree, IJunctionTree decompositionTree, Map<Clique, Collection<Clique>> clusterToOriginalCliqueMap) {
-		// TODO Auto-generated method stub
-    	throw new UnsupportedOperationException("Current version of dynamic junction tree compilation does not handle arc deletion.");
+	protected Collection<Clique> treatRemoveEdge( Edge deletedEdge, IJunctionTree originalJunctionTree, IJunctionTree decompositionTree, Map<Clique, Collection<Clique>> clusterToOriginalCliqueMap) {
+    	// basic assertions
+    	if (deletedEdge == null) {
+    		// nothing to do
+    		return Collections.emptyList();
+    	}
+    	if (decompositionTree == null) {
+    		throw new NullPointerException("Max prime subgraph decomposition tree was not specified.");
+    	}
+    	
+    	// get the child node of the edge
+    	Node childNode = deletedEdge.getDestinationNode();
+    	if (childNode == null) {
+    		throw new IllegalArgumentException(deletedEdge + " is pointing to null node.");
+    	}
+    	
+    	// get a cluster containing the child node
+    	Clique currentCluster = decompositionTree.getCliquesContainingAllNodes((List)Collections.singletonList(childNode), 1).get(0);	// return exactly 1 element
+    	if (currentCluster == null) {
+    		throw new NullPointerException("Found a null cluster when searching for node " + childNode + " in max prime subgraph decomposition tree.");
+    	}
+    	
+    	// the collection of clusters being marked
+    	Collection<Clique> ret = new HashSet<Clique>();
+    	
+    	treatRemoveEdgeClusterRecursive(deletedEdge, currentCluster, ret, decompositionTree);
+    	
+    	return ret;
 	}
 
-    /**
+	/**
+	 * This is used in {@link #treatRemoveEdge(Edge, IJunctionTree, IJunctionTree, Map)} to
+	 * recursively find clusters connected to another cluster by a separator which became incomplete due to arcs being removed.
+	 * @param deletedEdge : arc being deleted
+	 * @param currentCluster : cluster to check in current recursive call.
+	 * @param previousCluster : cluster checked in previous recursive call. This will be used to extract separator between calls.
+	 * The 1st call must use null for this value.
+	 * @param markedClusters : this is an input/output argument.
+	 * This collection contains clusters that were handled/marked already for modification. 
+	 * The 1st call must set this value to a modifiable empty collection.
+	 * @param decompositionTree : the max prime subgraph decomposition tree where the clusters belong. This will be used to extract separators.
+	 * @see Separator#isComplete()
+	 */
+    protected void treatRemoveEdgeClusterRecursive( Edge deletedEdge, Clique currentCluster, Collection<Clique> markedClusters, IJunctionTree decompositionTree) {
+		
+    	// basic assertions
+    	if (deletedEdge == null || currentCluster == null) {
+    		return;	// nothing to do
+    	}
+    	if (decompositionTree == null) {
+    		throw new NullPointerException("The max prime subgraph decomposition tree must be specified.");
+    	}
+    	// make sure the collection of marked clusters is never null
+    	if (markedClusters == null) {
+    		markedClusters = new HashSet<Clique>();
+    	}
+    	
+    	// if current cluster is already marked, stop
+    	if (markedClusters.contains(currentCluster)) {
+    		return;
+    	}
+    	
+    	// mark current cluster for modification
+    	markedClusters.add(currentCluster);	
+    	
+    	// just prepare in advance a singleton collection for the deleted edge, because we'll use it multiple times
+    	Collection<Edge> deletedEdges = Collections.singletonList(deletedEdge);
+    	
+    	// check parent clusters recursively
+    	if (decompositionTree instanceof JunctionTree) { // we may have a graph instead of tree, so use JunctionTree#getParents instead of Clique#getParent
+    		for (Clique parentCluster : ((JunctionTree) decompositionTree).getParents(currentCluster)) {
+    			
+    			// extract the separator between parent and current cluster, and check if the separator will be kept complete
+    			Separator sep = decompositionTree.getSeparator(parentCluster, currentCluster);
+    			if (sep == null) {
+    				throw new IllegalArgumentException("No separator between cluster " + parentCluster + " and " + currentCluster + " was found in max prime subgraph decomposition.");
+    			}
+    			
+				// check if the separator will become incomplete if we delete the edge
+    			if (!sep.isComplete(deletedEdges)) {
+    				// if it is not complete anymore, recursively mark parent cluster for modification
+    				treatRemoveEdgeClusterRecursive(deletedEdge, parentCluster, markedClusters, decompositionTree);
+    			}
+    	    	
+			}
+    	} else { // consider this a pure tree, so only treat single parent
+    		
+			// extract the separator between parent and current cluster, and check if the separator will be kept complete
+			Separator sep = decompositionTree.getSeparator(currentCluster.getParent(), currentCluster);
+			if (sep == null) {
+				throw new IllegalArgumentException("No separator between cluster " + currentCluster.getParent() + " and " + currentCluster + " was found in max prime subgraph decomposition.");
+			}
+			
+			// check if the separator will become incomplete if we delete the edge
+			if (!sep.isComplete(deletedEdges)) {
+				// if it is not complete anymore, recursively mark parent cluster for modification
+				treatRemoveEdgeClusterRecursive(deletedEdge, currentCluster.getParent(), markedClusters, decompositionTree);
+			}
+			
+    	}
+    	
+    	// check child clusters recursively
+    	for (Clique childCluster : currentCluster.getChildren()) {
+
+			// extract the separator between parent and current cluster, and check if the separator will be kept complete
+			Separator sep = decompositionTree.getSeparator(currentCluster, childCluster);
+			if (sep == null) {
+				throw new IllegalArgumentException("No separator between cluster " + childCluster + " and " + currentCluster + " was found in max prime subgraph decomposition.");
+			}
+			
+			// check if the separator will become incomplete if we delete the edge
+			if (!sep.isComplete(deletedEdges)) {
+				// if it is not complete anymore, recursively mark parent cluster for modification
+				treatRemoveEdgeClusterRecursive(deletedEdge, childCluster, markedClusters, decompositionTree);
+			}
+			
+    		treatRemoveEdgeClusterRecursive(deletedEdge, childCluster, markedClusters, decompositionTree); // currentCluster becomes previousCluster in next recursive call
+		}
+    	
+	}
+
+	/**
      * This method identifies which clusters in a maximum subgraph decomposition tree needs to be modified
      * by a new edge/arc.
      * @param includedEdge : the new edge/arc to be included
@@ -1879,8 +2007,67 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
      * @see #getClustersToModifyRemoveEdge(Edge, IJunctionTree)
      */
     protected Collection<Clique> treatRemoveNode( INode deletedNode, IJunctionTree originalJunctionTree, IJunctionTree decompositionTree, Map<Clique, Collection<Clique>> clusterToOriginalCliqueMap) {
-    	// TODO Auto-generated method stub
-    	throw new UnsupportedOperationException("Current version of dynamic junction tree compilation does not handle node deletion.");
+    	// basic assertions
+    	if (deletedNode == null) {
+    		// nothing to do
+    		return Collections.emptyList();
+    	}
+    	if (decompositionTree == null || originalJunctionTree == null) {
+    		throw new NullPointerException("Junction tree or max prime subgraph decomposition tree were not specified.");
+    	}
+    	
+    	// just make sure the mapping is non-null
+    	if (clusterToOriginalCliqueMap == null) {
+    		clusterToOriginalCliqueMap = Collections.emptyMap();
+    	}
+    	
+    	// simply remove node from clusters, cliques and separators containing the deleted node, and mark them for modification
+    	
+    	Collection<Clique> ret = new ArrayList<Clique>();
+    	
+    	// remove node from clusters (and from cliques in original JT)
+    	// TODO only check for clusters/cliques associated with node, so that we don't need to iterate on all clusters/cliques
+    	for (Clique cluster : decompositionTree.getCliques()) {
+    		// remove node from cluster
+    		if (cluster.getNodesList().remove(deletedNode)) { 
+    			// if true, list was changed (it means that cluster contained the node)
+    			ret.add(cluster);	// mark this cluster for modification
+    			
+    			// remove node from separators connected to this cluster
+    			Set<Separator> separators = ((JunctionTree)decompositionTree).getSeparatorsMap().get(cluster);
+    			for (Separator separator : separators) {
+    				separator.getNodes().remove(deletedNode);
+					// no need to remove from separator table, because they are not filled
+				}
+    			
+    			
+    			// make sure we can retrieve the cliques related to this cluster in decomposition tree
+    			Collection<Clique> originalCliques = clusterToOriginalCliqueMap.get(cluster);
+    			if (originalCliques == null || originalCliques.isEmpty()) {
+    				throw new IllegalArgumentException("Cluster " + cluster + " in max prime subgraph decomposition tree is not associated with any clique in original Junction Tree.");
+    			}
+    			
+    			for (Clique clique : originalCliques) {
+    				// remove node from original cliques
+    				if (clique.getNodesList().remove(deletedNode)){
+    					// remove node from clique tables
+    					clique.getProbabilityFunction().removeVariable(deletedNode);
+    					
+    					// Also remove node from separators in original JT;
+    					separators = ((JunctionTree)originalJunctionTree).getSeparatorsMap().get(clique);
+    					for (Separator separator : separators) {
+    						if (separator.getNodes().remove(deletedNode)) {
+    							// remove node from separator table
+    							separator.getProbabilityFunction().removeVariable(deletedNode);
+    						}
+    					}
+    				}
+				}
+    			// we don't need to remove from max prime subgraph decomposition tree, because they don't have clique tables
+    		}
+		}
+    	
+    	return ret;
 	}
 
     /**
@@ -2090,20 +2277,20 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		return ret;
 	}
 
-	/**
-     * @param oldNet : the network before changes. This will be used together with
-     * the current network in order to retrieve which nodes were parents of some common child.
-     * @param newNet : current network. This will be used to retrieve existing parents. 
-	 * @param deletedEdges : edges to be considered that were deleted from old net.
-     * @return a collection of edges (not real edges in the network) that represents connections between moral parents
-     * (i.e. conditional dependence between parents with a common child) that was deleted because of arcs being deleted
-     * from the network.
-     * @see #runDynamicJunctionTreeCompilation()
-     */
-	protected Collection<? extends Edge> getDeletedMoralArcs( ProbabilisticNetwork oldNet, ProbabilisticNetwork newNet, Collection<Edge> deletedEdges) {
-    	throw new UnsupportedOperationException("Current version of dynamic junction tree compilation does not handle deletion of arcs.");
-//		return Collections.EMPTY_LIST;
-	}
+//	/**
+//     * @param oldNet : the network before changes. This will be used together with
+//     * the current network in order to retrieve which nodes were parents of some common child.
+//     * @param newNet : current network. This will be used to retrieve existing parents. 
+//	 * @param deletedEdges : edges to be considered that were deleted from old net.
+//     * @return a collection of edges (not real edges in the network) that represents connections between moral parents
+//     * (i.e. conditional dependence between parents with a common child) that was deleted because of arcs being deleted
+//     * from the network.
+//     * @see #runDynamicJunctionTreeCompilation()
+//     */
+//	protected Collection<? extends Edge> getDeletedMoralArcs( ProbabilisticNetwork oldNet, ProbabilisticNetwork newNet, Collection<Edge> deletedEdges) {
+//    	throw new UnsupportedOperationException("Current version of dynamic junction tree compilation does not handle deletion of arcs.");
+////		return Collections.EMPTY_LIST;
+//	}
 
 
 
@@ -2660,10 +2847,12 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		}
 		
 		// split the clique we just created if necessary. 
-		if (cliqueOfVirtualNode.getProbabilityFunction().tableSize() > getLoopyBPCliqueSizeThreshold()) {
+		if (isToSplitVirtualNodeClique()
+				&& cliqueOfVirtualNode.getProbabilityFunction().tableSize()/2 > getLoopyBPCliqueSizeThreshold()) {	// /2 because I don't want to consider the virtual node -- with 2 states
 			// This supposedly deletes the cliques and separators we created previously, so just return the new cliques/separtors;
 			return this.splitCliqueAndAddToJT(cliqueOfVirtualNode, junctionTree, getLoopyBPCliqueSizeThreshold());
 		} 
+		
 		
 		// return the cliques and separators created without splitting the large clique;
 		List<IRandomVariable> ret = new ArrayList<IRandomVariable>(separatorsCreated.size() + 1);	// size of list to return is no. of separators + the cliqueOfVirtualNode 
@@ -2759,6 +2948,113 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		} catch (ClassCastException e) {
 			Debug.println(getClass(), e.getMessage(), e);
 		}
+	}
+
+	/**
+	 * @return the isToSplitVirtualNodeClique.
+	 * If true, {@link #createCliqueAndSeparatorForVirtualNode(ProbabilisticNode, List, SingleEntityNetwork)} will
+	 * also attempt to split cliques that were temporary created for soft evidence.
+	 */
+	public boolean isToSplitVirtualNodeClique() {
+		return isToSplitVirtualNodeClique;
+	}
+
+	/**
+	 * @param isToSplitVirtualNodeClique the isToSplitVirtualNodeClique to set.
+	 * If true, {@link #createCliqueAndSeparatorForVirtualNode(ProbabilisticNode, List, SingleEntityNetwork)} will
+	 * also attempt to split cliques that were temporary created for soft evidence.
+	 */
+	public void setToSplitVirtualNodeClique(boolean isToSplitVirtualNodeClique) {
+		this.isToSplitVirtualNodeClique = isToSplitVirtualNodeClique;
+	}
+
+	/**
+	 * This method extends superclass in order to implement soft/likelihood evidences without creating virtual nodes,
+	 * if {@link #isToCreateVirtualNode()} is false.
+	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#addVirtualNode(unbbayes.prs.Graph, java.util.List)
+	 */
+	public INode addVirtualNode(Graph graph, List<INode> parentNodes) throws Exception {
+		if (isToCreateVirtualNode()) {
+			return super.addVirtualNode(graph, parentNodes);
+		}
+
+		// assertion
+		if (parentNodes == null || parentNodes.size() <= 0) {
+			throw new IllegalArgumentException("parentNodes == null");
+		}
+		
+		// extract network
+		SingleEntityNetwork net = this.getNet();
+		if (net == null) {
+			throw new IllegalStateException("Network == null");
+		}
+		
+		if (net.isID()) {
+			throw new IllegalArgumentException("Virtual nodes for influence diagrams not supported yet.");
+		}
+		
+		// extract likelihood value from extractor
+		float[] likelihood = this.getLikelihoodExtractor().extractLikelihoodRatio(graph, parentNodes.get(0));
+		// reset any finding of the main parent (the parent with the likelihood evidence)
+		((TreeVariable)parentNodes.get(0)).resetLikelihood();
+		
+		// init potential table to be multiplied with clique table
+		PotentialTable tableForMultiplication = new ProbabilisticTable();
+		
+		// add variables to table
+		for (INode parentNode : parentNodes) {
+			tableForMultiplication.addVariable(parentNode);
+		}
+		
+		// fill content of table based on likelihood
+		tableForMultiplication.setValues(likelihood);
+		tableForMultiplication.normalize();	// make sure this is normalized
+		
+		// prepare junction tree so that we can manipulate cliques
+		IJunctionTree junctionTree = net.getJunctionTree();
+		
+		// find the smallest clique containing all the parents
+		int smallestSize = Integer.MAX_VALUE;
+		Clique smallestCliqueContainingAllParents = null;
+		for (Clique clique : junctionTree.getCliquesContainingAllNodes(parentNodes, Integer.MAX_VALUE)) {
+			if (clique.getProbabilityFunction().tableSize() < smallestSize) {
+				smallestCliqueContainingAllParents = clique;
+				smallestSize = clique.getProbabilityFunction().tableSize();
+			}
+		}
+		
+		// if could not find smallest clique, the arguments are inconsistent
+		if (smallestCliqueContainingAllParents == null) {
+			throw new IllegalArgumentException(getResource().getString("noCliqueForNodes") + parentNodes);
+		}
+		
+		// extract the clique potential, so that we can multiply it with the table we created in this method
+		PotentialTable cliqueTable = smallestCliqueContainingAllParents.getProbabilityFunction();
+		
+		// multiply table
+		cliqueTable.opTab(tableForMultiplication, PotentialTable.PRODUCT_OPERATOR);
+		
+		// make sure table after operation is normalized
+		cliqueTable.normalize();
+		// TODO check if we really need to normalize, because JunctionTree#collectEvidence is supposedly doing it
+		
+		return null;
+	}
+
+	/**
+	 * @return true if {@link #addVirtualNode(Graph, List)} will create virtual nodes for soft/likelihood evidences.
+	 * False if such evidences will be inserted directly to cliques without using virtual nodes.
+	 */
+	public boolean isToCreateVirtualNode() {
+		return isToCreateVirtualNode;
+	}
+
+	/**
+	 * @param isToCreateVirtualNode : true if {@link #addVirtualNode(Graph, List)} will create virtual nodes for soft/likelihood evidences.
+	 * False if such evidences will be inserted directly to cliques without using virtual nodes
+	 */
+	public void setToCreateVirtualNode(boolean isToCreateVirtualNode) {
+		this.isToCreateVirtualNode = isToCreateVirtualNode;
 	}
 
 }

@@ -31,11 +31,11 @@ public class LoopyJunctionTree extends JunctionTree {
 	
 	private boolean isLoopy = false;
 
-	private int maxLoopyBPIteration = 100;
+	private int maxLoopyBPIteration = 65535;
 
 	private Boolean isModified = false;
 	
-	private float probErrorMargin = (float) 1e-5;
+	private float probErrorMargin = (float) 1e-6;
 
 	private Map<Clique, List<Clique>> cliqueParentMap;
 
@@ -68,14 +68,21 @@ public class LoopyJunctionTree extends JunctionTree {
 			throws Exception {
 		if (isLoopy()) {
 			long startTime = System.currentTimeMillis();
-			for (int i = 0; i < maxLoopyBPIteration; i++) {
+			int numIterations = 0;
+			for (; numIterations < maxLoopyBPIteration; numIterations++) {
 				this.setModified(false);
 				super.consistency(rootClique, isToContinueOnEmptySep);
 				if (!isModified()							// there were no considerable change in probability in last loop
 						|| (System.currentTimeMillis() - startTime) > maxLoopyBPTimeMillis) {	// time exceeded limit
+					if (isModified()) {
+						Debug.println(getClass(), "Loopy BP interrupted in " + (System.currentTimeMillis() - startTime) + " ms, because exceeded time limit: " + maxLoopyBPTimeMillis + " ms. ");
+					} else {
+						Debug.println(getClass(), "Loopy BP converged in " + (System.currentTimeMillis() - startTime) + " ms.");
+					}
 					break;
 				}
 			}
+			Debug.println(getClass(), "Loopy BP finished in " + numIterations + " iterations.");
 		} else {
 			// a single loop is enough for convergence
 			super.consistency(rootClique, isToContinueOnEmptySep);
@@ -114,8 +121,9 @@ public class LoopyJunctionTree extends JunctionTree {
 			// absorb
 			super.absorb(clique1, clique2);
 			
-			// check if there were changes in clique potential
-//			cliqueTable = clique1.getProbabilityFunction();	// there may be changes of instances?
+			// check if there were changes in clique potential.
+//			cliqueTable = clique1.getProbabilityFunction().getTemporaryClone();	// there may be changes of instances?
+//			cliqueTable.normalize();	// TODO check if it is really necessary to compare with normalized table
 			for (int i = 0; i < tableSize; i++) {
 				if (Math.abs(cliqueTable.getValue(i) - probBefore[i]) > probErrorMargin) {
 					isModified = true;
@@ -127,7 +135,6 @@ public class LoopyJunctionTree extends JunctionTree {
 		}
 		
 	}
-	
 	
 	
 	/**
