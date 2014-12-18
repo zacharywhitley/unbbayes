@@ -174,7 +174,7 @@ public class ProbabilisticTable extends PotentialTable implements java.io.Serial
 	
 	/**
 	 * CAUTION: this method is over fit to {@link unbbayes.prs.bn.JunctionTree#absorb(Clique, Clique)}
-	 * in order to reduce the ammount of garbage.
+	 * in order to reduce the amount of garbage.
 	 * Returns a copy of the data from the table,
 	 * but some optimizations may be performed by implementations (subclasses), assuming that
 	 * the copy will only be alive temporary.
