@@ -740,7 +740,8 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 						// the node was already deleted from junction tree if it is in the set of deleted nodes, but it is not marked for deletion now
 						continue; // this case usually happens when multiple objects accesses the junction tree and makes modifications;
 					}
-					edgesToDelete.add(oldEdge);
+					// the edges specified here must use node instances in new net, so search newNet for names of nodes in oldEdge and create a new edge
+					edgesToDelete.add(new Edge(newNet.getNode(oldEdge.getOriginNode().getName()), newNet.getNode(oldEdge.getDestinationNode().getName())));
 				}
 			}
 			// search for arcs that were included
@@ -804,6 +805,15 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 			throw new RuntimeException("Unable to obtain maximum prime subgraph decomposition tree from the current junction tree.",e);
 		}
 		
+		// also build the inverse mapping of clusterToOriginalCliqueMap, because we'll need it for some methods
+		Map<Clique, Clique> originalCliqueToClusterMap = new HashMap<Clique, Clique>();
+		// invert the clusterToOriginalCliqueMap and write it to originalCliqueToClusterMap
+		for (Entry<Clique, Collection<Clique>> clusterToOriginalCliques : clusterToOriginalCliqueMap.entrySet()) {
+			for (Clique originalClique : clusterToOriginalCliques.getValue()) {
+				originalCliqueToClusterMap.put(originalClique, clusterToOriginalCliques.getKey());
+			}
+		}
+		
 		// this set will be filled with clusters in the maximum prime subgraph decomposition tree which needs to be modified.
 		Set<Clique> clustersToModify = new HashSet<Clique>();
 		
@@ -818,7 +828,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 			clustersToModify.addAll(this.treatAddEdge(includedEdge, junctionTree, decompositionTree, clusterToOriginalCliqueMap));
 		}
 		for (Edge deletedEdge : edgesToDelete) {
-			clustersToModify.addAll(this.treatRemoveEdge(deletedEdge, junctionTree, decompositionTree, clusterToOriginalCliqueMap));
+			clustersToModify.addAll(this.treatRemoveEdge(deletedEdge, junctionTree, decompositionTree, originalCliqueToClusterMap));
 		}
 		
 		// We don't need the list of modification in net structure anymore. 
@@ -843,7 +853,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		for (Entry<IJunctionTree, Collection<Clique>> entry : compiledSubnetToClusterMap.entrySet()) {
 			this.aggregateJunctionTree(junctionTree, entry.getKey(), entry.getValue(), 
 //					decompositionTree, 
-					clusterToOriginalCliqueMap);
+					clusterToOriginalCliqueMap, originalCliqueToClusterMap);
 		}
 		
 		this.updateCliqueAndSeparatorInternalIdentificators(junctionTree);
@@ -1214,10 +1224,13 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
      * This parameter is necessary because we need to find out which separators connects these clusters to clusters not in this collection.
      * @param clusterToOriginalCliqueMap : this map associates clusters in max prime subgraph decomposition tree to cliques in original junction tree. 
      * It it used to retrieve cliques of original junction tree related to the cluster currently being evaluated.
+     * @param originalCliqueToClusterMap : this is just an inverse mapping of clusterToOriginalCliqueMap.
+     * Set this to null in order to automatically build it from clusterToOriginalCliqueMap.
+     * Set this to non-null in order to reuse an existing map, or to personalize the access from clique to cluster (by making the relationship asymmetric).
      * @see #runDynamicJunctionTreeCompilation()
      */
     protected void aggregateJunctionTree(IJunctionTree originalJunctionTree, IJunctionTree primeSubgraphJunctionTree, Collection<Clique> modifiedClusters,	// main parameters
-			Map<Clique, Collection<Clique>> clusterToOriginalCliqueMap) {									// auxiliary parameters for reference
+			Map<Clique, Collection<Clique>> clusterToOriginalCliqueMap, Map<Clique, Clique> originalCliqueToClusterMap) {									// auxiliary parameters for reference
 
     	// basic assertions
     	if (originalJunctionTree == null || primeSubgraphJunctionTree == null || modifiedClusters == null || modifiedClusters.isEmpty()) {
@@ -1226,13 +1239,15 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
     	
 		// also build an inverse mapping from original clique to generated clusters in max prime subgraph decomposition tree, 
     	// because we'll use it later to check if a clique was marked for modification
-		Map<Clique, Clique> originalCliqueToClusterMap = new HashMap<Clique, Clique>();
-		// invert the clusterToOriginalCliqueMap and write it to originalCliqueToClusterMap
-		for (Entry<Clique, Collection<Clique>> clusterToOriginalCliques : clusterToOriginalCliqueMap.entrySet()) {
-			for (Clique originalClique : clusterToOriginalCliques.getValue()) {
-				originalCliqueToClusterMap.put(originalClique, clusterToOriginalCliques.getKey());
-			}
-		}
+    	if (originalCliqueToClusterMap == null) {
+    		originalCliqueToClusterMap = new HashMap<Clique, Clique>();
+    		// invert the clusterToOriginalCliqueMap and write it to originalCliqueToClusterMap
+    		for (Entry<Clique, Collection<Clique>> clusterToOriginalCliques : clusterToOriginalCliqueMap.entrySet()) {
+    			for (Clique originalClique : clusterToOriginalCliques.getValue()) {
+    				originalCliqueToClusterMap.put(originalClique, clusterToOriginalCliques.getKey());
+    			}
+    		}
+    	}
     	
     	// get separators pointing to/from the clusters (not between the clusters), so that we can iterate on them
     	// but first, get the cliques related to the clusters
@@ -1318,23 +1333,37 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 				
 				// if new clique and border separator are the same (i.e. represents same joint space), then join original (unchanged) clique and new clique;
 				if (borderSeparator.getNodes().size() == newCliqueInMaxPrimeJunctionTree.getNodesList().size()
-						&& borderSeparator.getNodes().contains(newCliqueInMaxPrimeJunctionTree.getNodesList())) {
+						&& borderSeparator.getNodes().containsAll(newCliqueInMaxPrimeJunctionTree.getNodesList())) {
 					// if they have the same size, and one is included in other, then they are the same
 					
 					// join cliques. The unchanged original clique will remain, and the new clique (the one obtained from max prime subtree) will be deleted
 					unchangedOriginalClique.join(newCliqueInMaxPrimeJunctionTree);
 					
+					// move the references of associated nodes of newCliqueInMaxPrimeJunctionTree to the joined clique
+					for (Node node : newCliqueInMaxPrimeJunctionTree.getAssociatedProbabilisticNodesList()) {
+						if ((node instanceof TreeVariable)
+								&& ((TreeVariable) node).getAssociatedClique().equals(newCliqueInMaxPrimeJunctionTree)) {
+							((TreeVariable) node).setAssociatedClique(unchangedOriginalClique);
+						}
+					}
+					
 					// set the joined clique as parent of all children of the clique to delete
-					for (Clique childClique : newCliqueInMaxPrimeJunctionTree.getChildren()) {
+					for (Clique childClique : new ArrayList<Clique>(newCliqueInMaxPrimeJunctionTree.getChildren())) { // using a clone, because original list will be altered in the loop
 						
 						// inherit children of the clique that is going to be "deleted" (actually, it simply won't be included to original junction tree)
 						unchangedOriginalClique.addChild(childClique);
-//						childClique.setParent(unchangedOriginalClique);
-						((LoopyJunctionTree)originalJunctionTree).addParent(unchangedOriginalClique, childClique);
+						if (originalJunctionTree instanceof LoopyJunctionTree) {
+							((LoopyJunctionTree)originalJunctionTree).addParent(unchangedOriginalClique, childClique);
+						}
+						if (primeSubgraphJunctionTree instanceof LoopyJunctionTree) {
+							((LoopyJunctionTree) primeSubgraphJunctionTree).removeParent(newCliqueInMaxPrimeJunctionTree, childClique);
+						} // else child clique was modified anyway
+						// mark joined clique as the main parent node. This works also when JT is not loopy
+						childClique.setParent(unchangedOriginalClique);
 						
 						// also create separator with this child clique, 
 						
-						// but before that, we need to delete separator from the max prime subtree, so that it won't be referenced later
+						// we need to substitute the separator, so it links to the new joined clique (unchangedOriginalClique), instead of childClique
 						Separator separatorToDelete = primeSubgraphJunctionTree.getSeparator(newCliqueInMaxPrimeJunctionTree, childClique);
 						primeSubgraphJunctionTree.removeSeparator(separatorToDelete);
 						
@@ -1370,7 +1399,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					// remove new clique from max prime subtree. This will make sure it won't be referenced later
 					// just to make sure references from the clique are also removed
 //					newCliqueInMaxPrimeJunctionTree.setParent(null);		
-//					newCliqueInMaxPrimeJunctionTree.getChildren().clear();
+					newCliqueInMaxPrimeJunctionTree.getChildren().clear();	
 					// call the general method to remove clique
 					primeSubgraphJunctionTree.removeCliques(Collections.singletonList(newCliqueInMaxPrimeJunctionTree));
 					
@@ -1854,21 +1883,25 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	/**
      * This method identifies which clusters in a maximum subgraph decomposition tree needs to be modified
      * because of an edge/arc being deleted from the network.
-     * @param deletedEdge : the new edge/arc to be deleted
+     * @param deletedEdge : the new edge/arc to be deleted. 
+     * This {@link Edge} object simply represents a pair of nodes, thus it should not be an arc actually existing in some external network.
+     * This MUST be an edge between instances of nodes in the new network
+     * (i.e. it must not be the actual arc in old network, because instances of nodes in old network are not same object instances).
+     * Therefore, the nodes specified by this arc must also be present in originalJunctionTree or decompositionTree.
      * @param originalJunctionTree : the junction tree of probabilities
      * that is being reused in the dynamic junction tree compilation algorithm
      * @param decompositionTree : this is the maximum subgraph decomposition tree
      * obtained from {@link #getMaximumPrimeSubgraphDecompositionTree(IJunctionTree)}.
      * This object can have its content modified after calling this method.
-	 * @param clusterToOriginalCliqueMap : this map associates clusters in max prime subgraph decomposition tree to cliques in original junction tree. 
-     * It it used to retrieve cliques of original junction tree related to the cluster currently being evaluated.
+	 * @param originalCliqueToClusterMap : this map associates cliques in original junction tree to clusters in max prime subgraph decomposition tree. 
+     * It it used to retrieve the cluster currently being evaluated from cliques of original junction tree associated with a node in deleted arc.
      * @return clusters in the decomposition tree that needs to be modified
      * @see #runDynamicJunctionTreeCompilation()
      * @see #getClustersToModifyAddNode(INode, IJunctionTree)
      * @see #getClustersToModifyIncludeEdge(Edge, IJunctionTree)
      * @see #getClustersToModifyRemoveNode(INode, IJunctionTree)
      */
-	protected Collection<Clique> treatRemoveEdge( Edge deletedEdge, IJunctionTree originalJunctionTree, IJunctionTree decompositionTree, Map<Clique, Collection<Clique>> clusterToOriginalCliqueMap) {
+	protected Collection<Clique> treatRemoveEdge( Edge deletedEdge, IJunctionTree originalJunctionTree, IJunctionTree decompositionTree, Map<Clique, Clique> originalCliqueToClusterMap) {
     	// basic assertions
     	if (deletedEdge == null) {
     		// nothing to do
@@ -1884,8 +1917,9 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
     		throw new IllegalArgumentException(deletedEdge + " is pointing to null node.");
     	}
     	
-    	// get a cluster containing the child node
-    	Clique currentCluster = decompositionTree.getCliquesContainingAllNodes((List)Collections.singletonList(childNode), 1).get(0);	// return exactly 1 element
+    	// get a cluster containing the child node (just need 1)
+//    	Clique currentCluster = originalJunctionTree.getCliquesContainingAllNodes((List)Collections.singletonList(childNode), 1).get(0);	// return exactly 1 element
+    	Clique currentCluster = originalCliqueToClusterMap.get(originalJunctionTree.getCliquesContainingAllNodes((List)Collections.singletonList(childNode), 1).get(0));
     	if (currentCluster == null) {
     		throw new NullPointerException("Found a null cluster when searching for node " + childNode + " in max prime subgraph decomposition tree.");
     	}
