@@ -30939,6 +30939,267 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 		
+		// prepare the list of children and parents again
+		childQuestionIds = new ArrayList<Long>();
+		parentQuestionIds = new ArrayList<Long>();
+		// also check that we can specify arcs that are there already
+		// don't add A->B, D->E, and D->F again
+//		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0BL);
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0CL);
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0DL);
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0EL);
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0FL);
+		parentQuestionIds.add(0x0BL); childQuestionIds.add(0x0CL);
+		parentQuestionIds.add(0x0BL); childQuestionIds.add(0x0DL);
+		parentQuestionIds.add(0x0BL); childQuestionIds.add(0x0EL);
+		parentQuestionIds.add(0x0BL); childQuestionIds.add(0x0FL);
+		parentQuestionIds.add(0x0CL); childQuestionIds.add(0x0DL);
+		parentQuestionIds.add(0x0CL); childQuestionIds.add(0x0EL);
+		parentQuestionIds.add(0x0CL); childQuestionIds.add(0x0FL);
+//		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0EL);
+//		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0FL);
+		parentQuestionIds.add(0x0EL); childQuestionIds.add(0x0FL);
+		
+		
+		// now, actually add C and fully connect the network
+		engine.addQuestion(null, new Date(), 0x0CL, engine.getDefaultNodeSize(), null);
+		for (int i = 0; i < parentQuestionIds.size(); i++) {
+			engine.addQuestionAssumption(null, new Date(), childQuestionIds.get(i), Collections.singletonList(parentQuestionIds.get(i)), null);
+		}
+		
+		// check that the complexity was actually equal to the one estimated previously
+		complexityFactorSingle = engine.getComplexityFactor((Long)null, null);	
+		assertNotNull(complexityFactorSingle);
+		complexityFactorList = engine.getComplexityFactor((List)null, null);
+		assertNotNull(complexityFactorList);
+		complexityFactorMap = engine.getComplexityFactor((Map)null);
+		assertNotNull(complexityFactorMap);
+		complexityFactors = engine.getComplexityFactors(null);
+		assertNotNull(complexityFactors);
+		assertEquals(2*3*5*7*11*engine.getDefaultNodeSize(), complexityFactorMap);
+		assertEquals(2*3*5*7*11*engine.getDefaultNodeSize(), complexityFactorSingle);
+		assertEquals(2*3*5*7*11*engine.getDefaultNodeSize(), complexityFactorList);
+		assertEquals(2*3*5*7*11*engine.getDefaultNodeSize(), complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
+		assertEquals(2*3*5*7*11*engine.getDefaultNodeSize(), complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);	// single clique with all nodes
+		
+		// resolve C, so that it removes C from the network
+		engine.resolveQuestion(null, new Date(), 0x0CL, 1);
+		
+		// check complexity factor without C
+		complexityFactorSingle = engine.getComplexityFactor((Long)null, null);	
+		assertNotNull(complexityFactorSingle);
+		complexityFactorList = engine.getComplexityFactor((List)null, null);
+		assertNotNull(complexityFactorList);
+		complexityFactorMap = engine.getComplexityFactor((Map)null);
+		assertNotNull(complexityFactorMap);
+		complexityFactors = engine.getComplexityFactors(null);
+		assertNotNull(complexityFactors);
+		assertEquals(2*3*5*7*11, complexityFactorMap);
+		assertEquals(2*3*5*7*11, complexityFactorSingle);
+		assertEquals(2*3*5*7*11, complexityFactorList);
+		assertEquals(2*3*5*7*11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
+		assertEquals(2*3*5*7*11, complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);	// single clique with all nodes
+		
+		// prepare the list of children and parents without C.
+		// Check if it's OK to ignore the direction of the arc
+		childQuestionIds = new ArrayList<Long>();
+		parentQuestionIds = new ArrayList<Long>();
+		childQuestionIds.add(0x0AL); parentQuestionIds.add(0x0DL);
+		childQuestionIds.add(0x0AL); parentQuestionIds.add(0x0EL);
+		childQuestionIds.add(0x0AL); parentQuestionIds.add(0x0FL);
+		childQuestionIds.add(0x0BL); parentQuestionIds.add(0x0DL);
+		childQuestionIds.add(0x0BL); parentQuestionIds.add(0x0EL);
+		childQuestionIds.add(0x0BL); parentQuestionIds.add(0x0FL);
+		childQuestionIds.add(0x0EL); parentQuestionIds.add(0x0FL);
+		
+		
+		// now, check if the cost of removing arcs to previous net topology works.
+		// The network is A->B, E<-D->F
+		// cannot test complexityFactorSingle the same way here, because it can only remove links to a single child.
+		complexityFactorList = engine.getComplexityFactor(childQuestionIds, parentQuestionIds);	
+		assertNotNull(complexityFactorList);
+		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		assertNotNull(complexityFactorMap);
+		complexityFactors = engine.getComplexityFactors(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		assertNotNull(complexityFactors);
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// {D,F} is supposedly the largest clique
+			assertEquals(5*11, complexityFactorMap);	
+			assertEquals(5*11, complexityFactorList);
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			// 3 cliques with 2 nodes each
+			assertEquals(2*3+5*11+5*7, complexityFactorMap);	
+			assertEquals(2*3+5*11+5*7, complexityFactorList);
+		} else {
+			fail("Unknown complexity factor key.");
+		}
+		assertEquals(5*11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
+		assertEquals(2*3+5*11+5*7, complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);	// {DF}+{DE}+{AB}
+		
+		// now, check with correct direction of arcs
+		childQuestionIds = new ArrayList<Long>();
+		parentQuestionIds = new ArrayList<Long>();
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0DL);
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0EL);
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0FL);
+		parentQuestionIds.add(0x0BL); childQuestionIds.add(0x0DL);
+		parentQuestionIds.add(0x0BL); childQuestionIds.add(0x0EL);
+		parentQuestionIds.add(0x0BL); childQuestionIds.add(0x0FL);
+		parentQuestionIds.add(0x0EL); childQuestionIds.add(0x0FL);
+		
+		
+		// now, check if the cost of removing arcs to previous net topology works.
+		// The network is A->B, E<-D->F
+		// cannot test complexityFactorSingle the same way here, because it can only remove links to a single child.
+		complexityFactorList = engine.getComplexityFactor(childQuestionIds, parentQuestionIds);	
+		assertNotNull(complexityFactorList);
+		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		assertNotNull(complexityFactorMap);
+		complexityFactors = engine.getComplexityFactors(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		assertNotNull(complexityFactors);
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// {D,F} is supposedly the largest clique
+			assertEquals(5*11, complexityFactorMap);	
+			assertEquals(5*11, complexityFactorList);
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			// 3 cliques with 2 nodes each
+			assertEquals(2*3+5*11+5*7, complexityFactorMap);	
+			assertEquals(2*3+5*11+5*7, complexityFactorList);
+		} else {
+			fail("Unknown complexity factor key.");
+		}
+		assertEquals(5*11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
+		assertEquals(2*3+5*11+5*7, complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);	// {DF}+{DE}+{AB}
+		
+		// now, actually remove the arcs
+		for (int i = 0; i < parentQuestionIds.size(); i++) {
+			engine.removeQuestionAssumption(null, new Date(), childQuestionIds.get(i), Collections.singletonList(parentQuestionIds.get(i)));
+		}
+		
+		// check that the complexity factors are OK after arcs were removed
+		complexityFactorSingle = engine.getComplexityFactor((Long)null, null);	
+		assertNotNull(complexityFactorSingle);
+		complexityFactorList = engine.getComplexityFactor((List)null, null);	
+		assertNotNull(complexityFactorList);
+		complexityFactorMap = engine.getComplexityFactor((Map)null);
+		assertNotNull(complexityFactorMap);
+		complexityFactors = engine.getComplexityFactors(null);
+		assertNotNull(complexityFactors);
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// {D,F} is supposedly the largest clique
+			assertEquals(5*11, complexityFactorMap);	
+			assertEquals(5*11, complexityFactorList);
+			assertEquals(5*11, complexityFactorSingle);
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			// 3 cliques with 2 nodes each
+			assertEquals(2*3+5*11+5*7, complexityFactorMap);	
+			assertEquals(2*3+5*11+5*7, complexityFactorList);
+			assertEquals(2*3+5*11+5*7, complexityFactorSingle);
+		} else {
+			fail("Unknown complexity factor key.");
+		}
+		assertEquals(5*11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
+		assertEquals(2*3+5*11+5*7, complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);	// {DF}+{DE}+{AB}
+		
+		
+		// now, remove the arcs that were left: A-B, D-E, and D-F
+		childQuestionIds = new ArrayList<Long>();
+		parentQuestionIds = new ArrayList<Long>();
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0BL);
+		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0EL);
+		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0FL);
+		
+		
+		// now, check if the cost of removing arcs to previous net topology works.
+		// all nodes will be disconnected
+		// cannot test complexityFactorSingle the same way here, because it can only remove links to a single child.
+		complexityFactorList = engine.getComplexityFactor(childQuestionIds, parentQuestionIds);	
+		assertNotNull(complexityFactorList);
+		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		assertNotNull(complexityFactorMap);
+		complexityFactors = engine.getComplexityFactors(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		assertNotNull(complexityFactors);
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// {F} is supposedly the largest clique
+			assertEquals(11, complexityFactorMap);	
+			assertEquals(11, complexityFactorList);
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			// 5 cliques with 1 node each
+			assertEquals(2+3+5+7+11, complexityFactorMap);	
+			assertEquals(2+3+5+7+11, complexityFactorList);
+		} else {
+			fail("Unknown complexity factor key.");
+		}
+		assertEquals(11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
+		assertEquals(2+3+5+7+11, complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);
+		
+		// check for opposite direction
+		childQuestionIds = new ArrayList<Long>();
+		parentQuestionIds = new ArrayList<Long>();
+		parentQuestionIds.add(0x0AL); childQuestionIds.add(0x0BL);
+		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0EL);
+		parentQuestionIds.add(0x0DL); childQuestionIds.add(0x0FL);
+		
+		
+		// now, check if the cost of removing arcs to previous net topology works.
+		// all nodes will be disconnected
+		// cannot test complexityFactorSingle the same way here, because it can only remove links to a single child.
+		complexityFactorList = engine.getComplexityFactor(childQuestionIds, parentQuestionIds);	
+		assertNotNull(complexityFactorList);
+		complexityFactorMap = engine.getComplexityFactor(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		assertNotNull(complexityFactorMap);
+		complexityFactors = engine.getComplexityFactors(getDependenciesMapFromLists(childQuestionIds, parentQuestionIds));
+		assertNotNull(complexityFactors);
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// {F} is supposedly the largest clique
+			assertEquals(11, complexityFactorMap);	
+			assertEquals(11, complexityFactorList);
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			// 5 cliques with 1 node each
+			assertEquals(2+3+5+7+11, complexityFactorMap);	
+			assertEquals(2+3+5+7+11, complexityFactorList);
+		} else {
+			fail("Unknown complexity factor key.");
+		}
+		assertEquals(11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
+		assertEquals(2+3+5+7+11, complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);
+		
+		// now, remove the arcs (Note: this is using opposite direction of arcs)
+		long transactionKey = engine.startNetworkActions();
+		for (int i = 0; i < parentQuestionIds.size(); i++) {
+			engine.removeQuestionAssumption(transactionKey, new Date(), childQuestionIds.get(i), Collections.singletonList(parentQuestionIds.get(i)));
+		}
+		// also resolve A and D
+		engine.resolveQuestion(transactionKey, new Date(), 0x0AL, 0);
+		engine.resolveQuestion(transactionKey, new Date(), 0x0DL, 1);
+		engine.commitNetworkActions(transactionKey);
+		
+		
+		// check that the complexity factors are OK after arcs were removed
+		complexityFactorSingle = engine.getComplexityFactor((Long)null, null);	
+		assertNotNull(complexityFactorSingle);
+		complexityFactorList = engine.getComplexityFactor((List)null, null);	
+		assertNotNull(complexityFactorList);
+		complexityFactorMap = engine.getComplexityFactor((Map)null);
+		assertNotNull(complexityFactorMap);
+		complexityFactors = engine.getComplexityFactors(null);
+		assertNotNull(complexityFactors);
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// {F} is supposedly the largest clique
+			assertEquals(11, complexityFactorMap);	
+			assertEquals(11, complexityFactorList);
+			assertEquals(11, complexityFactorSingle);
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			// 3 cliques with 2 nodes each
+			assertEquals(3+7+11, complexityFactorMap);	
+			assertEquals(3+7+11, complexityFactorList);
+			assertEquals(3+7+11, complexityFactorSingle);
+		} else {
+			fail("Unknown complexity factor key.");
+		}
+		assertEquals(11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
+		assertEquals(3+7+11, complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);	
+		
 		// check that configuration of loopy bp threshold did not change
 		if (loopyBPCliqueSizeThreshold != null) {
 			assertEquals(loopyBPCliqueSizeThreshold.intValue(), ((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getLoopyBPCliqueSizeThreshold());
