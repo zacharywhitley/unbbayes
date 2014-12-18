@@ -565,9 +565,9 @@ public class Clique implements IRandomVariable, java.io.Serializable {
 			return;
 		}
 		
-		if (this.getUtilityTable() != null && this.getUtilityTable().variableCount() > 0) {
-			throw new UnsupportedOperationException("Current version is unable to join cliques in influence diagrams (i.e. those using utility tables)");
-		}
+//		if (this.getUtilityTable() != null && this.getUtilityTable().variableCount() > 0) {
+//			throw new UnsupportedOperationException("Current version is unable to join cliques in influence diagrams (i.e. those using utility tables)");
+//		}
 		
 		// get nodes in cliqueToJoin that is not in this clique.
 		// I'm using a list in order to keep same ordering
