@@ -13891,7 +13891,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					// this shall also revert the change, because getProbabilisticNetwork() shall contain the shared bayes net
 					getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator().setNetwork(getProbabilisticNetwork());
 					// TODO stop using exception translation
-					throw new RuntimeException("Unable to compile the network after including new arcs: " + newDependencies, e);
+					throw new RuntimeException("Unable to compile the network after including (or removing) arcs: " + newDependencies, e);
 				}	
 			}
 		} // end of if (newDependencies != null && !newDependencies.isEmpty())
@@ -14893,6 +14893,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							throw new InvalidAssumptionException("There is no link between " + assumptiveQuestionId + " and " + childQuestionId + " in current network.");
 						}
 					}
+					hasFound = true;
 				} else {
 					// check if new arc will be inserted in current transaction
 					synchronized (actions) {
@@ -14922,7 +14923,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}	// end of synchronized(actions)
 				}
 				if (!hasFound) {
-					throw new InvalidAssumptionException("Question" + childQuestionId + "not created yet, and there is no link between " + assumptiveQuestionId + " and " + childQuestionId);
+					throw new InvalidAssumptionException("Question " + childQuestionId + " not created yet, and there is no link between " + assumptiveQuestionId + " and " + childQuestionId);
 				}
 			}
 			
