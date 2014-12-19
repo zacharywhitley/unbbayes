@@ -32337,25 +32337,6 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 		
-//		// reset marginals of all questions to uniform
-//		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
-//			int numStates = entry.getValue().size();
-//			List<Float> newValues = new ArrayList<Float>(numStates);
-//			for (int i = 0; i < numStates; i++) {
-//				newValues.add(1f/numStates);
-//			}
-//			engine.addTrade(null, new Date(), "", 0, entry.getKey(), newValues , null, null, true);
-//		}
-//		
-//
-//		// check if marginals were reset to uniform
-//		probLists = engine.getProbLists(null, null, null);
-//		assertEquals(groundTruth.getNodeCount(), probLists.size());
-//		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
-//			for (int i = 0; i < entry.getValue().size(); i++) {
-//				assertEquals(entry.toString(), 1f/entry.getValue().size(), entry.getValue().get(i), 0.00001);
-//			}
-//		}
 		
 		// create arcs in markov engine accordingly to the ground truth
 		for (Node childNode : groundTruth.getNodes()) {
@@ -32408,17 +32389,6 @@ public class MarkovEngineTest extends TestCase {
 					// passing null as assumed states will make the newValues to be interpreted as the CPT for all states of child and parents
 					engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, parentQuestionIds, null, true);
 					
-//				} else {
-//					// this node doesn't have parents. Just set its marginal
-//					
-//					// this will be filled with values in the CPT
-//					List<Float> newValues = new ArrayList<Float>();	
-//					for (int i = 0; i < childNode.getStatesSize(); i++) {
-//						newValues.add(((ProbabilisticNode) childNode).getMarginalAt(i));
-//					}
-//					
-//					// set marginal
-//					engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, null, null, true);
 				}
 			}
 			
@@ -32519,6 +32489,103 @@ public class MarkovEngineTest extends TestCase {
 		
 		
 		// check that probabilities did not change either
+		newProbs = engine.getProbLists(null, null, null);
+		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+					);
+			}
+		}
+		
+		// backup clique structure for later comparison
+		List<List<Long>> questionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		
+		// remove arc j-h (which overrides a moralization arc)
+		engine.removeQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('J')), Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))));
+		
+		// make sure the arc was deleted
+		assertTrue(engine.getProbabilisticNetwork().hasEdge(engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('H')), engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('J'))) < 0);
+		
+		// check that clique structures did not change
+		List<List<Long>> newQuestionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		assertEquals(questionAssumptionGroups.size(), newQuestionAssumptionGroups.size());
+		for (List<Long> cliqueNodeIds : newQuestionAssumptionGroups) {
+			boolean found = false;
+			for (List<Long> oldCliqueNodeIds : questionAssumptionGroups) {
+				if (oldCliqueNodeIds.size() == cliqueNodeIds.size()
+						&& oldCliqueNodeIds.containsAll(cliqueNodeIds)) {
+					found = true;
+					break;
+				}
+			}
+			// make sure we always find equivalent clique
+			assertTrue(cliqueNodeIds + " not found.", found);
+		}
+		// check that probabilities did not change (because there is still a moralization arc between J-H)
+		newProbs = engine.getProbLists(null, null, null);
+		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+					);
+			}
+		}
+		
+		// remove H->I and I<-J too;
+		assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add(Long.valueOf(Character.getNumericValue('H')));
+		assumptionIds.add(Long.valueOf(Character.getNumericValue('J')));
+		engine.removeQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('I')), assumptionIds);
+		
+		// make sure the arcs were deleted
+		assertTrue(engine.getProbabilisticNetwork().hasEdge(engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('H')), engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('I'))) < 0);
+		assertTrue(engine.getProbabilisticNetwork().hasEdge(engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('J')), engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('I'))) < 0);
+		
+		// make sure the clique {H,I,J} became {H}, {I}, and {J}
+		newQuestionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		assertEquals(questionAssumptionGroups.size(), newQuestionAssumptionGroups.size() - 2); // one clique became 3, so we have 2 additional cliques in new structure
+		{
+			boolean[] foundHIJ = new boolean[3];
+			Arrays.fill(foundHIJ, false);
+			for (List<Long> cliqueNodeIds : newQuestionAssumptionGroups) {
+				if (cliqueNodeIds.contains(Long.valueOf(Character.getNumericValue('H')))
+						|| cliqueNodeIds.contains(Long.valueOf(Character.getNumericValue('I')))
+						|| cliqueNodeIds.contains(Long.valueOf(Character.getNumericValue('J')))) {
+					// make sure the clique has 1 node only
+					assertEquals(cliqueNodeIds.toString() ,1, cliqueNodeIds.size());
+					foundHIJ[cliqueNodeIds.get(0).intValue() - Character.getNumericValue('H')] = true;
+				} else {
+					// cliques containing other nodes must remain unchanged
+					boolean found = false;
+					for (List<Long> oldCliqueNodeIds : questionAssumptionGroups) {
+						if (oldCliqueNodeIds.size() == cliqueNodeIds.size()
+								&& oldCliqueNodeIds.containsAll(cliqueNodeIds)) {
+							found = true;
+							break;
+						}
+					}
+					// make sure we always find equivalent clique
+					assertTrue(cliqueNodeIds + " not found.", found);
+				}
+			}
+			// make sure we found nodes H, I, J
+			for (int i = 0; i < foundHIJ.length; i++) {
+				assertTrue("Did not find " + (i + Character.getNumericValue('H')) + " in " + newQuestionAssumptionGroups, foundHIJ[i]);
+			}
+		}
+		
+		// check that marginals did not change
 		newProbs = engine.getProbLists(null, null, null);
 		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
