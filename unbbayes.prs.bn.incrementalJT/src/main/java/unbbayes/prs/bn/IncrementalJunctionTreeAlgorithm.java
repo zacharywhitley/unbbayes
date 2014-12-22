@@ -1457,20 +1457,32 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 				
 				// if new clique and border separator are the same (i.e. represents same joint space), then join original (unchanged) clique and new clique;
 				if (borderSeparator.getNodes().size() == newCliqueInMaxPrimeJunctionTree.getNodesList().size()
-						&& borderSeparator.getNodes().contains(newCliqueInMaxPrimeJunctionTree.getNodesList())) {
+						&& borderSeparator.getNodes().containsAll(newCliqueInMaxPrimeJunctionTree.getNodesList())) {
 					// if they have the same size, and one is included in other, then they are the same
 				
 					// join cliques. The new clique will remain, and the unchanged original clique will be deleted
 					newCliqueInMaxPrimeJunctionTree.join(unchangedOriginalClique);
 					
+					// move the references of associated nodes of unchangedOriginalClique to the joined clique
+					for (Node node : unchangedOriginalClique.getAssociatedProbabilisticNodesList()) {
+						if ((node instanceof TreeVariable)
+								&& ((TreeVariable) node).getAssociatedClique().equals(unchangedOriginalClique)) {
+							((TreeVariable) node).setAssociatedClique(newCliqueInMaxPrimeJunctionTree);
+						}
+					}
 					
 					// set the resulting (joined) clique as a parent of all children of the clique being deleted
-					for (Clique childClique : unchangedOriginalClique.getChildren()) {
+					for (Clique childClique : new ArrayList<Clique>(unchangedOriginalClique.getChildren())) {	// using a clone, because of concurrent modification
 						
 						// inherit children of the clique that is going to be "deleted" (actually, it simply won't be included to original junction tree)
 						newCliqueInMaxPrimeJunctionTree.addChild(childClique);
-//						childClique.setParent(newCliqueInMaxPrimeJunctionTree);
-						((LoopyJunctionTree)originalJunctionTree).addParent(newCliqueInMaxPrimeJunctionTree, childClique);
+						if (originalJunctionTree instanceof LoopyJunctionTree) {
+							((LoopyJunctionTree)originalJunctionTree).addParent(newCliqueInMaxPrimeJunctionTree, childClique);
+							((LoopyJunctionTree) originalJunctionTree).removeParent(unchangedOriginalClique, childClique);
+						}
+						// mark joined clique as the main parent node. This works also when JT is not loopy
+						childClique.setParent(newCliqueInMaxPrimeJunctionTree);
+						
 						
 						// also create separator with this child clique, 
 						
@@ -1509,6 +1521,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					
 
 					// needs to delete the unchanged clique (the one absorbed by the new clique) from original join tree, because newCliqueInMaxPrimeJunctionTree will take its role
+					unchangedOriginalClique.getChildren().clear();
 					originalJunctionTree.removeCliques(Collections.singletonList(unchangedOriginalClique));
 					
 				} else {
@@ -1925,103 +1938,103 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
     	}
     	
     	// the collection of clusters being marked
-    	Collection<Clique> ret = new HashSet<Clique>();
-    	
-    	treatRemoveEdgeClusterRecursive(deletedEdge, currentCluster, ret, decompositionTree);
-    	
-    	return ret;
+//    	Collection<Clique> ret = new HashSet<Clique>();
+//    	
+//    	treatRemoveEdgeClusterRecursive(Collections.singleton(deletedEdge), currentCluster, ret, decompositionTree);
+//    	
+//    	return ret;
+    	// the above code was removed, because the max prime subgraph decomposition tree is created on-the-fly, so the deleted edge is already considered when clusters were built.
+    	// that is: the current cluster already contains nodes in cliques/cluster connected by separators which became incomplete because of deleted edges, because the current cluster
+    	// was generated AFTER the arc was deleted.
+    	return Collections.singletonList(currentCluster);
 	}
 
-	/**
-	 * This is used in {@link #treatRemoveEdge(Edge, IJunctionTree, IJunctionTree, Map)} to
-	 * recursively find clusters connected to another cluster by a separator which became incomplete due to arcs being removed.
-	 * @param deletedEdge : arc being deleted
-	 * @param currentCluster : cluster to check in current recursive call.
-	 * @param previousCluster : cluster checked in previous recursive call. This will be used to extract separator between calls.
-	 * The 1st call must use null for this value.
-	 * @param markedClusters : this is an input/output argument.
-	 * This collection contains clusters that were handled/marked already for modification. 
-	 * The 1st call must set this value to a modifiable empty collection.
-	 * @param decompositionTree : the max prime subgraph decomposition tree where the clusters belong. This will be used to extract separators.
-	 * @see Separator#isComplete()
-	 */
-    protected void treatRemoveEdgeClusterRecursive( Edge deletedEdge, Clique currentCluster, Collection<Clique> markedClusters, IJunctionTree decompositionTree) {
-		
-    	// basic assertions
-    	if (deletedEdge == null || currentCluster == null) {
-    		return;	// nothing to do
-    	}
-    	if (decompositionTree == null) {
-    		throw new NullPointerException("The max prime subgraph decomposition tree must be specified.");
-    	}
-    	// make sure the collection of marked clusters is never null
-    	if (markedClusters == null) {
-    		markedClusters = new HashSet<Clique>();
-    	}
-    	
-    	// if current cluster is already marked, stop
-    	if (markedClusters.contains(currentCluster)) {
-    		return;
-    	}
-    	
-    	// mark current cluster for modification
-    	markedClusters.add(currentCluster);	
-    	
-    	// just prepare in advance a singleton collection for the deleted edge, because we'll use it multiple times
-    	Collection<Edge> deletedEdges = Collections.singletonList(deletedEdge);
-    	
-    	// check parent clusters recursively
-    	if (decompositionTree instanceof JunctionTree) { // we may have a graph instead of tree, so use JunctionTree#getParents instead of Clique#getParent
-    		for (Clique parentCluster : ((JunctionTree) decompositionTree).getParents(currentCluster)) {
-    			
-    			// extract the separator between parent and current cluster, and check if the separator will be kept complete
-    			Separator sep = decompositionTree.getSeparator(parentCluster, currentCluster);
-    			if (sep == null) {
-    				throw new IllegalArgumentException("No separator between cluster " + parentCluster + " and " + currentCluster + " was found in max prime subgraph decomposition.");
-    			}
-    			
-				// check if the separator will become incomplete if we delete the edge
-    			if (!sep.isComplete(deletedEdges)) {
-    				// if it is not complete anymore, recursively mark parent cluster for modification
-    				treatRemoveEdgeClusterRecursive(deletedEdge, parentCluster, markedClusters, decompositionTree);
-    			}
-    	    	
-			}
-    	} else { // consider this a pure tree, so only treat single parent
-    		
-			// extract the separator between parent and current cluster, and check if the separator will be kept complete
-			Separator sep = decompositionTree.getSeparator(currentCluster.getParent(), currentCluster);
-			if (sep == null) {
-				throw new IllegalArgumentException("No separator between cluster " + currentCluster.getParent() + " and " + currentCluster + " was found in max prime subgraph decomposition.");
-			}
-			
-			// check if the separator will become incomplete if we delete the edge
-			if (!sep.isComplete(deletedEdges)) {
-				// if it is not complete anymore, recursively mark parent cluster for modification
-				treatRemoveEdgeClusterRecursive(deletedEdge, currentCluster.getParent(), markedClusters, decompositionTree);
-			}
-			
-    	}
-    	
-    	// check child clusters recursively
-    	for (Clique childCluster : currentCluster.getChildren()) {
-
-			// extract the separator between parent and current cluster, and check if the separator will be kept complete
-			Separator sep = decompositionTree.getSeparator(currentCluster, childCluster);
-			if (sep == null) {
-				throw new IllegalArgumentException("No separator between cluster " + childCluster + " and " + currentCluster + " was found in max prime subgraph decomposition.");
-			}
-			
-			// check if the separator will become incomplete if we delete the edge
-			if (!sep.isComplete(deletedEdges)) {
-				// if it is not complete anymore, recursively mark parent cluster for modification
-				treatRemoveEdgeClusterRecursive(deletedEdge, childCluster, markedClusters, decompositionTree);
-			}
-			
-    		treatRemoveEdgeClusterRecursive(deletedEdge, childCluster, markedClusters, decompositionTree); // currentCluster becomes previousCluster in next recursive call
-		}
-    	
-	}
+//	/**
+//	 * This is used in {@link #treatRemoveEdge(Edge, IJunctionTree, IJunctionTree, Map)} to
+//	 * recursively find clusters connected to another cluster by a separator which became incomplete due to arcs being removed.
+//	 * @param deletedEdges : arcs being deleted
+//	 * @param currentCluster : cluster to check in current recursive call.
+//	 * @param previousCluster : cluster checked in previous recursive call. This will be used to extract separator between calls.
+//	 * The 1st call must use null for this value.
+//	 * @param markedClusters : this is an input/output argument.
+//	 * This collection contains clusters that were handled/marked already for modification. 
+//	 * The 1st call must set this value to a modifiable empty collection.
+//	 * @param decompositionTree : the max prime subgraph decomposition tree where the clusters belong. This will be used to extract separators.
+//	 * @see Separator#isComplete()
+//	 */
+//    protected void treatRemoveEdgeClusterRecursive( Collection<Edge> deletedEdges, Clique currentCluster, Collection<Clique> markedClusters, IJunctionTree decompositionTree) {
+//		
+//    	// basic assertions
+//    	if (deletedEdges == null || deletedEdges.isEmpty() 
+//    			|| currentCluster == null) {
+//    		return;	// nothing to do
+//    	}
+//    	if (decompositionTree == null) {
+//    		throw new NullPointerException("The max prime subgraph decomposition tree must be specified.");
+//    	}
+//    	// make sure the collection of marked clusters is never null
+//    	if (markedClusters == null) {
+//    		markedClusters = new HashSet<Clique>();
+//    	}
+//    	
+//    	// if current cluster is already marked, stop
+//    	if (markedClusters.contains(currentCluster)) {
+//    		return;
+//    	}
+//    	
+//    	// mark current cluster for modification
+//    	markedClusters.add(currentCluster);	
+//    	
+//    	// check parent clusters recursively
+//    	if (decompositionTree instanceof JunctionTree) { // we may have a graph instead of tree, so use JunctionTree#getParents instead of Clique#getParent
+//    		for (Clique parentCluster : ((JunctionTree) decompositionTree).getParents(currentCluster)) {
+//    			
+//    			// extract the separator between parent and current cluster, and check if the separator will be kept complete
+//    			Separator sep = decompositionTree.getSeparator(parentCluster, currentCluster);
+//    			if (sep == null) {
+//    				throw new IllegalArgumentException("No separator between cluster " + parentCluster + " and " + currentCluster + " was found in max prime subgraph decomposition.");
+//    			}
+//    			
+//				// check if the separator will become incomplete if we delete the edge
+//    			if (!sep.isComplete(deletedEdges)) {
+//    				// if it is not complete anymore, recursively mark parent cluster for modification
+//    				treatRemoveEdgeClusterRecursive(deletedEdges, parentCluster, markedClusters, decompositionTree);
+//    			}
+//    	    	
+//			}
+//    	} else { // consider this a pure tree, so only treat single parent
+//    		
+//			// extract the separator between parent and current cluster, and check if the separator will be kept complete
+//			Separator sep = decompositionTree.getSeparator(currentCluster.getParent(), currentCluster);
+//			if (sep == null) {
+//				throw new IllegalArgumentException("No separator between cluster " + currentCluster.getParent() + " and " + currentCluster + " was found in max prime subgraph decomposition.");
+//			}
+//			
+//			// check if the separator will become incomplete if we delete the edge
+//			if (!sep.isComplete(deletedEdges)) {
+//				// if it is not complete anymore, recursively mark parent cluster for modification
+//				treatRemoveEdgeClusterRecursive(deletedEdges, currentCluster.getParent(), markedClusters, decompositionTree);
+//			}
+//			
+//    	}
+//    	
+//    	// check child clusters recursively
+//    	for (Clique childCluster : currentCluster.getChildren()) {
+//
+//			// extract the separator between parent and current cluster, and check if the separator will be kept complete
+//			Separator sep = decompositionTree.getSeparator(currentCluster, childCluster);
+//			if (sep == null) {
+//				throw new IllegalArgumentException("No separator between cluster " + childCluster + " and " + currentCluster + " was found in max prime subgraph decomposition.");
+//			}
+//			
+//			// check if the separator will become incomplete if we delete the edge
+//			if (!sep.isComplete(deletedEdges)) {
+//				// if it is not complete anymore, recursively mark child cluster for modification
+//				treatRemoveEdgeClusterRecursive(deletedEdges, childCluster, markedClusters, decompositionTree);
+//			}
+//		}
+//    	
+//	}
 
 	/**
      * This method identifies which clusters in a maximum subgraph decomposition tree needs to be modified
