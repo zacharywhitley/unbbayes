@@ -32,6 +32,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm;
+import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.LoopyJunctionTree;
 import unbbayes.prs.bn.PotentialTable;
@@ -30437,7 +30438,17 @@ public class MarkovEngineTest extends TestCase {
 	 * @throws InvalidParentException 
 	 */
 	public final void testGetComplexityFactor() {
+		// backup some configuration
+		String defaultComplexityFactorName = engine.getDefaultComplexityFactorName();
+		boolean hasDefaultComplexityFactorNameChanged = new Random().nextBoolean();
+		if (hasDefaultComplexityFactorNameChanged) {
+			engine.setDefaultComplexityFactorName(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE);
+		}
 		engine.initialize();
+		if (hasDefaultComplexityFactorNameChanged) {
+			assertEquals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE, engine.getDefaultComplexityFactorName());
+		}
+		
 		
 		// check empty network
 		int complexityFactorList = engine.getComplexityFactor((List)null, null);
@@ -30462,6 +30473,16 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(0d, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
 		assertEquals(0d, complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);
 		
+		// check complexity factors per assumption, when there is no arc
+		List<Entry<Entry<Long,Long>,Integer>> complexityFactorPerAssumption = engine.getComplexityFactorPerAssumption((List)null, null, 999, true);
+		assertTrue(complexityFactorPerAssumption.toString(), complexityFactorPerAssumption.isEmpty());
+		complexityFactorPerAssumption = engine.getComplexityFactorPerAssumption(Collections.EMPTY_LIST, Collections.EMPTY_LIST, 999, true);
+		assertTrue(complexityFactorPerAssumption.toString(), complexityFactorPerAssumption.isEmpty());
+		complexityFactorPerAssumption = engine.getComplexityFactorPerAssumption((Long)null, Collections.EMPTY_LIST, 999, true);
+		assertTrue(complexityFactorPerAssumption.toString(), complexityFactorPerAssumption.isEmpty());
+		complexityFactorPerAssumption = engine.getComplexityFactorPerAssumption((Long)null, Collections.EMPTY_LIST, 999, true);
+		assertTrue(complexityFactorPerAssumption.toString(), complexityFactorPerAssumption.isEmpty());
+		
 		// check cases that will create a node A, not arcs
 		complexityFactorList = engine.getComplexityFactor(Collections.singletonList(0x0AL), (Math.random() < .5)?Collections.EMPTY_LIST:null);
 		complexityFactorMap = engine.getComplexityFactor((Map)Collections.singletonMap(0x0AL, (Math.random() < .5)?Collections.EMPTY_LIST:null));
@@ -30475,10 +30496,33 @@ public class MarkovEngineTest extends TestCase {
 		assertEquals(engine.getDefaultNodeSize(), complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
 		assertEquals(engine.getDefaultNodeSize(), complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);
 		
+		// check if we can retrieve the complexity factor for arcs null->A
+		complexityFactorPerAssumption = engine.getComplexityFactorPerAssumption(Collections.singletonList(0x0AL), Collections.singletonList((Long)null), 999, true);
+		assertEquals(1, complexityFactorPerAssumption.size());
+		assertEquals(engine.getDefaultNodeSize(), complexityFactorPerAssumption.get(0).getValue().intValue());
+		assertEquals(0x0AL, complexityFactorPerAssumption.get(0).getKey().getValue().longValue());
+		assertNull(complexityFactorPerAssumption.toString(), complexityFactorPerAssumption.get(0).getKey().getKey());
+		complexityFactorPerAssumption = engine.getComplexityFactorPerAssumption(0x0AL, Collections.singletonList((Long)null), 999, true);
+		assertEquals(1, complexityFactorPerAssumption.size());
+		assertEquals(engine.getDefaultNodeSize(), complexityFactorPerAssumption.get(0).getValue().intValue());
+		assertEquals(0x0AL, complexityFactorPerAssumption.get(0).getKey().getValue().longValue());
+		assertNull(complexityFactorPerAssumption.toString(), complexityFactorPerAssumption.get(0).getKey().getKey());
+		
+		// complexity factor for arcs null->A, but with complexity smaller than the number of states of A
+		complexityFactorPerAssumption = engine.getComplexityFactorPerAssumption((List)null, null, -1, true);
+		assertTrue(complexityFactorPerAssumption.toString(), complexityFactorPerAssumption.isEmpty());
+		complexityFactorPerAssumption = engine.getComplexityFactorPerAssumption(Collections.EMPTY_LIST, Collections.EMPTY_LIST, engine.getDefaultNodeSize()-1, true);
+		assertTrue(complexityFactorPerAssumption.toString(), complexityFactorPerAssumption.isEmpty());
+		complexityFactorPerAssumption = engine.getComplexityFactorPerAssumption((Long)null, Collections.EMPTY_LIST, 0, true);
+		assertTrue(complexityFactorPerAssumption.toString(), complexityFactorPerAssumption.isEmpty());
+		complexityFactorPerAssumption = engine.getComplexityFactorPerAssumption((Long)null, Collections.EMPTY_LIST, Integer.MIN_VALUE, true);
+		assertTrue(complexityFactorPerAssumption.toString(), complexityFactorPerAssumption.isEmpty());
+		
+		
 		// check that node was not created
 		assertTrue(engine.getProbLists(null, null, null).isEmpty());
 		
-		// check B<-A   E<-D->F (creating new nodes and arcs)
+		// check B<-A   E<-D->F (estimating complexity for new nodes and arcs, but without actually creating such arcs/nodes)
 		
 		List<Long> childQuestionIds = new ArrayList<Long>();
 		List<Long> parentQuestionIds = new ArrayList<Long>();
@@ -30508,6 +30552,31 @@ public class MarkovEngineTest extends TestCase {
 		assertNotNull(complexityFactors);
 		assertEquals(Math.pow(engine.getDefaultNodeSize(), 2), complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
 		assertEquals(Math.pow(engine.getDefaultNodeSize(), 2)*3, complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);	//3 cliques with 2 nodes each
+		
+
+		// check if we can retrieve the complexity factor for each arcs
+		for (int complexityLimit = -20; complexityLimit < Math.round(Math.pow(engine.getDefaultNodeSize(), 2))*2; complexityLimit+=20) {
+			complexityFactorPerAssumption = engine.getComplexityFactorPerAssumption(childQuestionIds, parentQuestionIds, complexityLimit, true);
+			int expectedSize = 0;
+			if (complexityLimit >= Math.round(Math.pow(engine.getDefaultNodeSize(), 2))) {
+				expectedSize = childQuestionIds.size();
+			}
+			assertEquals("complexityLimit=" + complexityLimit, expectedSize , complexityFactorPerAssumption.size());
+			for (Entry<Entry<Long, Long>, Integer> entry : complexityFactorPerAssumption) {
+				assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)), entry.getValue().longValue());
+			}
+			for (int i = 0; i < Math.min(childQuestionIds.size(), parentQuestionIds.size()); i++) {
+				complexityFactorPerAssumption = engine.getComplexityFactorPerAssumption(childQuestionIds.get(i), Collections.singletonList(parentQuestionIds.get(i)), complexityLimit, true);
+				expectedSize = 0;
+				if (complexityLimit >= Math.round(Math.pow(engine.getDefaultNodeSize(), 2))) {
+					expectedSize = 1;
+				}
+				assertEquals("complexityLimit=" + complexityLimit, expectedSize , complexityFactorPerAssumption.size());
+				for (Entry<Entry<Long, Long>, Integer> entry : complexityFactorPerAssumption) {
+					assertEquals(Math.round(Math.pow(engine.getDefaultNodeSize(), 2)), entry.getValue().longValue());
+				}
+			}
+		}
 		
 		// assert that we cannot create cycles
 		// create B<-A   D->E->F->D(cycle)
@@ -30609,6 +30678,48 @@ public class MarkovEngineTest extends TestCase {
 		assertNotNull(complexityFactors);
 		assertEquals(5*11, complexityFactors.get(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE), 0.00001);
 		assertEquals(2*3+5*11+5*7, complexityFactors.get(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE), 0.00001);	// 3 cliques with 2 nodes each
+		
+		
+		// check if we can retrieve the complexity factor for existing arcs
+		complexityFactorPerAssumption = engine.getComplexityFactorPerAssumption((List)null, null, Integer.MAX_VALUE, true);
+		assertEquals(3, complexityFactorPerAssumption.size());
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// removed A->B or D->E
+			assertEquals(5*11, complexityFactorPerAssumption.get(2).getValue().intValue());
+			assertTrue( (complexityFactorPerAssumption.get(2).getKey().getKey().equals(0x0AL) && complexityFactorPerAssumption.get(2).getKey().getValue().equals(0x0BL) )
+							|| (complexityFactorPerAssumption.get(2).getKey().getKey().equals(0x0DL) && complexityFactorPerAssumption.get(2).getKey().getValue().equals(0x0EL) ) );	
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			assertEquals(2+3+5*7+5*11, complexityFactorPerAssumption.get(2).getValue().intValue());	// removed A->B
+			assertEquals(0x0AL, complexityFactorPerAssumption.get(2).getKey().getKey().longValue());	// removed A->B
+			assertEquals(0x0BL, complexityFactorPerAssumption.get(2).getKey().getValue().longValue());	//removed A->B
+		} else {
+			fail("Unknown complexity factor key.");
+		}
+		
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			// removed A->B or D->E
+			assertEquals(5*11, complexityFactorPerAssumption.get(1).getValue().intValue());	
+			assertTrue( (complexityFactorPerAssumption.get(1).getKey().getKey().equals(0x0AL) && complexityFactorPerAssumption.get(1).getKey().getValue().equals(0x0BL) )
+							|| (complexityFactorPerAssumption.get(1).getKey().getKey().equals(0x0DL) && complexityFactorPerAssumption.get(1).getKey().getValue().equals(0x0EL) ) );	
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			assertEquals(2*3+7+5*11, complexityFactorPerAssumption.get(1).getValue().intValue());	// AB, E, DF
+			assertEquals(0x0DL, complexityFactorPerAssumption.get(1).getKey().getKey().longValue());	// removed D->E
+			assertEquals(0x0EL, complexityFactorPerAssumption.get(1).getKey().getValue().longValue());	// removed D->E
+		} else {
+			fail("Unknown complexity factor key.");
+		}
+		
+		if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			assertEquals(5*7, complexityFactorPerAssumption.get(0).getValue().intValue());	// removed D->F
+		} else if (engine.getDefaultComplexityFactorName().equals(engine.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			assertEquals(2*3+5*7+11, complexityFactorPerAssumption.get(0).getValue().intValue());	// AB, F, DE
+		} else {
+			fail("Unknown complexity factor key.");
+		}
+		assertEquals(0x0DL, complexityFactorPerAssumption.get(0).getKey().getKey().longValue());	// removed D->F
+		assertEquals(0x0FL, complexityFactorPerAssumption.get(0).getKey().getValue().longValue());	// removed D->F
+		
+		
 		
 		// check that nodes and associated cliques did not change
 		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
@@ -31203,6 +31314,9 @@ public class MarkovEngineTest extends TestCase {
 		// check that configuration of loopy bp threshold did not change
 		if (loopyBPCliqueSizeThreshold != null) {
 			assertEquals(loopyBPCliqueSizeThreshold.intValue(), ((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).getLoopyBPCliqueSizeThreshold());
+		}
+		if (hasDefaultComplexityFactorNameChanged) {
+			engine.setDefaultComplexityFactorName(defaultComplexityFactorName);
 		}
 	}
 	
@@ -32255,12 +32369,10 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	/**
-	 * A black box test on dynamic junction tree compilation.
-	 * @throws URISyntaxException 
-	 * @throws IOException 
-	 * @see JunctionTreeAlgorithm#setDynamicJunctionTreeNetSizeThreshold(int)
+	 * Checks consistency of {@link MarkovEngineImpl#removeQuestionAssumption(Long, Date, long, List)}
+	 * in asia model
 	 */
-	public final void testDynamicJTCompilationAsiaModel() throws IOException, URISyntaxException {
+	public final void testRemoveQuestionAssumptionAsiaModel() throws IOException, URISyntaxException {
 		
 		// force engine to throw exception if dynamic JT compilation fails
 		Boolean isToHaltOnDynamicJunctionTreeFailure = null;
@@ -32416,7 +32528,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities now, so that we can check later
 		probLists = engine.getProbLists(null, null, null);
 		
-		// Create H, I, J
+		// Create disconnected subnet H, I, J, just to confirm that I can have disconnected subnets
 		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('H')), 2, null);
 		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('I')), 3, null);
 		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('J')), 4, null);
@@ -32506,6 +32618,11 @@ public class MarkovEngineTest extends TestCase {
 		// backup clique structure for later comparison
 		List<List<Long>> questionAssumptionGroups = engine.getQuestionAssumptionGroups();
 		
+		//backup some conditional probabilities
+		Map<Long, List<Float>> condProbLists = engine.getProbLists(null, Collections.singletonList(Long.valueOf(Character.getNumericValue('I'))), Collections.singletonList(0));
+		Map<Long, List<Float>> condProbLists2 = engine.getProbLists(null, Collections.singletonList(Long.valueOf(Character.getNumericValue('I'))), Collections.singletonList(1));
+		Map<Long, List<Float>> condProbLists3 = engine.getProbLists(null, Collections.singletonList(Long.valueOf(Character.getNumericValue('I'))), Collections.singletonList(2));
+		
 		// remove arc j-h (which overrides a moralization arc)
 		engine.removeQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('J')), Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))));
 		
@@ -32527,7 +32644,7 @@ public class MarkovEngineTest extends TestCase {
 			// make sure we always find equivalent clique
 			assertTrue(cliqueNodeIds + " not found.", found);
 		}
-		// check that probabilities did not change (because there is still a moralization arc between J-H)
+		// check that marginals did not change (because there is still a moralization arc between J-H)
 		newProbs = engine.getProbLists(null, null, null);
 		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
@@ -32539,6 +32656,49 @@ public class MarkovEngineTest extends TestCase {
 						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
 						0.00001															// error margin
 					);
+			}
+		}
+		
+		// check that probability conditioned to I=0 did not change
+		newProbs = engine.getProbLists(null, Collections.singletonList(Long.valueOf(Character.getNumericValue('I'))), Collections.singletonList(0));
+		assertEquals("Prev=" + condProbLists + " ; New=" + newProbs, condProbLists.size(), newProbs.size());
+		for (Entry<Long, List<Float>> entry : condProbLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+					);
+			}
+		}
+		// check that probability conditioned to I=1 did not change
+		newProbs = engine.getProbLists(null, Collections.singletonList(Long.valueOf(Character.getNumericValue('I'))), Collections.singletonList(1));
+		assertEquals("Prev=" + condProbLists2 + " ; New=" + newProbs, condProbLists2.size(), newProbs.size());
+		for (Entry<Long, List<Float>> entry : condProbLists2.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+						);
+			}
+		}
+		// check that probability conditioned to I=2 did not change
+		newProbs = engine.getProbLists(null, Collections.singletonList(Long.valueOf(Character.getNumericValue('I'))), Collections.singletonList(2));
+		assertEquals("Prev=" + condProbLists3 + " ; New=" + newProbs, condProbLists3.size(), newProbs.size());
+		for (Entry<Long, List<Float>> entry : condProbLists3.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+						);
 			}
 		}
 		
@@ -32599,6 +32759,536 @@ public class MarkovEngineTest extends TestCase {
 					);
 			}
 		}
+		
+		// make sure H, I, and J are independent each other
+		for (long assumptionId = Long.valueOf(Character.getNumericValue('H')); assumptionId <= Long.valueOf(Character.getNumericValue('J')); assumptionId++) {
+			for (int assumedState = 0; assumedState < newProbs.get(assumptionId).size(); assumedState++) {
+				// extract probability conditioned to a state of this variable
+				condProbLists = engine.getProbLists(null, Collections.singletonList(assumptionId), Collections.singletonList(assumedState));
+				// if they are independent, conditional probability must match marginals
+				for (long nodeId = Long.valueOf(Character.getNumericValue('H')); nodeId <= Long.valueOf(Character.getNumericValue('J')); nodeId++){
+					if (nodeId == assumptionId) {
+						continue;	// no need to check probability of the assumed node itself
+					}
+					for (int state = 0; state < probLists.get(nodeId).size(); state++) {
+						assertEquals("Conditional: " + condProbLists + "; marginal: " + probLists, probLists.get(nodeId).get(state), condProbLists.get(nodeId).get(state), PROB_ERROR_MARGIN);
+					}
+				}
+			}
+		}
+		
+		// force link L-B, so that clique structure is unique (compared to cliques in Flores et. al. UAI 2003) regardless of triangulation
+//		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('B')), Collections.singletonList(Long.valueOf(Character.getNumericValue('L'))), null);
+//
+//		// check that marginals did not change
+//		newProbs = engine.getProbLists(null, null, null);
+//		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+//		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+//			// check number of states for current question
+//			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+//			// check values
+//			for (int i = 0; i < entry.getValue().size(); i++) {
+//				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+//						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+//						0.00001															// error margin
+//					);
+//			}
+//		}
+		
+		// check that clique structures matches the ones in (Flores et. al. UAI 2003)
+		// build the structure of (Flores et. al. UAI 2003): {A,T}, {T,L,E}, {E,X}, {L,B,S}, {L,B,E}, {D,E,B}
+//		questionAssumptionGroups = new ArrayList<List<Long>>();
+//		assumptionIds = new ArrayList<Long>(2);
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('A')));
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('T')));
+//		questionAssumptionGroups.add(assumptionIds);
+//		assumptionIds = new ArrayList<Long>(2);
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('E')));
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('X')));
+//		questionAssumptionGroups.add(assumptionIds);
+//		assumptionIds = new ArrayList<Long>(3);
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('T')));
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('L')));
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('E')));
+//		questionAssumptionGroups.add(assumptionIds);
+//		assumptionIds = new ArrayList<Long>(3);
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('L')));
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('B')));
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('S')));
+//		questionAssumptionGroups.add(assumptionIds);
+//		assumptionIds = new ArrayList<Long>(3);
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('L')));
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('B')));
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('E')));
+//		questionAssumptionGroups.add(assumptionIds);
+//		assumptionIds = new ArrayList<Long>(3);
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('D')));
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('E')));
+//		assumptionIds.add(Long.valueOf(Character.getNumericValue('B')));
+//		questionAssumptionGroups.add(assumptionIds);
+//		// just include H,I,J, for completeness (because in the engine we created such nodes disconnected from everything else)
+//		questionAssumptionGroups.add(Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))));
+//		questionAssumptionGroups.add(Collections.singletonList(Long.valueOf(Character.getNumericValue('I'))));
+//		questionAssumptionGroups.add(Collections.singletonList(Long.valueOf(Character.getNumericValue('J'))));
+//		
+//		// compare with the one built by engine
+//		newQuestionAssumptionGroups = engine.getQuestionAssumptionGroups();
+//		assertEquals(questionAssumptionGroups.size(), newQuestionAssumptionGroups.size());
+//		for (List<Long> nodesInClique : newQuestionAssumptionGroups) {
+//			boolean found = false;
+//			for (List<Long> expectedNodesInClique : questionAssumptionGroups) {
+//				if ( (nodesInClique.size() == expectedNodesInClique.size() )
+//						&& nodesInClique.containsAll(expectedNodesInClique)) {
+//					found = true;
+//					break;
+//				} 
+//			}
+//			assertTrue(nodesInClique.toString(), found);
+//		}
+		
+		// make sure an attempt to remove arcs from/to same node throws exception
+//		for (Long questionId : probLists.keySet()) {
+//			assertFalse("Question = " + questionId,engine.removeQuestionAssumption(null, new Date(), questionId, Collections.singletonList(questionId)));
+//		}
+		// simply ignore arcs to the node itself
+		
+		// resolve I and J, just to make sure we can resolve nodes with arcs deleted
+		engine.resolveQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('I')), 0);
+		engine.resolveQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('J')), 1);
+		
+		// check that marginals did not change
+		newProbs = engine.getProbLists(null, null, null);
+		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size() + (engine.isToDeleteResolvedNode()?2:0)); // +2 because we resolved 2 nodes, but +0 if nodes are not deleted when resolved
+		for (Entry<Long, List<Float>> entry : newProbs.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("new="+ entry + "; old=" + probLists.get(entry.getKey()), entry.getValue().size(), probLists.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + probLists.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), probLists.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+					);
+			}
+		}
+		
+		// backup marginals, so that we can check them after removing link
+		probLists = engine.getProbLists(null, null, null);
+		
+		// remove link L->E
+		engine.removeQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('L')), Collections.singletonList(Long.valueOf(Character.getNumericValue('E'))));
+		
+		// check question in cliques
+		// create a list with T, E, and L, because these are the main nodes which was changed by removing the arc
+		assumptionIds = new ArrayList<Long>(3);
+		assumptionIds.add(Long.valueOf(Character.getNumericValue('T')));
+		assumptionIds.add(Long.valueOf(Character.getNumericValue('E')));
+		assumptionIds.add(Long.valueOf(Character.getNumericValue('L')));
+		boolean found = false;// make sure there is a clique containing only A and T
+		for (List<Long> cliqueQuestions : engine.getQuestionAssumptionGroups()) {
+			// make sure there is no clique containing T, E, and L simultaneously
+			assertFalse(cliqueQuestions.toString() , cliqueQuestions.containsAll(assumptionIds));
+			// make sure there is still a clique containing only A and T
+			if (cliqueQuestions.size() == 2 
+					&& cliqueQuestions.contains(Long.valueOf(Character.getNumericValue('A')))
+					&& cliqueQuestions.contains(Long.valueOf(Character.getNumericValue('T')))) {
+				found  = true;
+			}
+		}
+		assertTrue(engine.getQuestionAssumptionGroups().toString() , found);
+		
+		
+		// check that marginals did not change
+		newProbs = engine.getProbLists(null, null, null);
+		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+					);
+			}
+		}
+		
+		// make sure the cliques still follows a tree structure
+		if (engine.getProbabilisticNetwork().getJunctionTree() instanceof JunctionTree) {
+			JunctionTree tree = (JunctionTree) engine.getProbabilisticNetwork().getJunctionTree();
+			Set<Clique> rootCliques = new HashSet<Clique>();
+			for (Clique clique : tree.getCliques()) {
+				// each clique must have at most 1 parent, 
+				assertTrue(clique.toString() , tree.getParents(clique).size() <= 1);
+				// a clique with no parents is a root clique
+				if (tree.getParents(clique).size() <= 0) {
+					rootCliques.add(clique);
+				}
+			}
+			// only 1 clique must be root (i.e. only 1 clique with no parent)
+			assertEquals(rootCliques.toString() , 1, rootCliques.size());
+		}
+		
+		// revert changes in config
+		if (isToHaltOnDynamicJunctionTreeFailure != null) {
+			engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(isToHaltOnDynamicJunctionTreeFailure);
+		}
+		if (dynamicJunctionTreeNetSizeThreshold != null) {
+			((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
+		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
+	}
+	
+	/**
+	 * A black box test on dynamic junction tree compilation.
+	 * @throws URISyntaxException 
+	 * @throws IOException 
+	 * @see JunctionTreeAlgorithm#setDynamicJunctionTreeNetSizeThreshold(int)
+	 */
+	public final void testDynamicJTCompilationAsiaModel() throws IOException, URISyntaxException {
+		
+		// force engine to throw exception if dynamic JT compilation fails
+		Boolean isToHaltOnDynamicJunctionTreeFailure = null;
+		Integer dynamicJunctionTreeNetSizeThreshold = null;
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			IncrementalJunctionTreeAlgorithm algorithm = (IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+			isToHaltOnDynamicJunctionTreeFailure = algorithm.isToHaltOnDynamicJunctionTreeFailure();
+			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
+			dynamicJunctionTreeNetSizeThreshold = algorithm.getDynamicJunctionTreeNetSizeThreshold();
+			algorithm.setDynamicJunctionTreeNetSizeThreshold(0);
+		}
+		
+		// load the ground truth model
+		ProbabilisticNetwork groundTruth = (ProbabilisticNetwork) new NetIO().load(new File(getClass().getResource("/asia.net").toURI()));
+		assertNotNull(groundTruth);
+		
+		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(groundTruth);
+		// make sure the ground truth does not use dynamic JT compilation
+//		algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// large values of this attribute disables dynamic compilation
+		
+		// compile the ground truth model
+		algorithm.run();
+		assertNotNull(groundTruth.getJunctionTree());
+		assertNotNull(groundTruth.getJunctionTree().getCliques());
+		assertEquals(6, groundTruth.getJunctionTree().getCliques().size());
+		
+		/*
+		 * create nodes in markov engine accordingly to the ground truth:
+		 * 
+		 * Ids = nodes in ground truth (var name between parenthesis), and their marginals:
+		 * 33 = Positive X-ray? (X),   		[0.11029005, 0.88971]
+		 * 21 = Has lung cancer (L), 		[0.055000007, 0.945]
+		 * 10 = Visit to Asia? (A), 		[0.009999999, 0.98999995]
+		 * 11 = Has bronchitis (B), 		[0.45000002, 0.55]
+		 * 29 = Has tuberculosis (T), 		[0.010399999, 0.9896]
+		 * 28 = Smoker? (S), 				[0.5, 0.5]
+		 * 13 = Dyspnoea? (D), 				[0.43597063, 0.5640294]
+		 * 14 = Tuberculosis or cancer (E),	[0.06482801, 0.935172]
+		 * 
+		 * Respective IDs in markov engine:
+		 * 	X = 33; B = 11; D = 13; A = 10; S = 28; L = 21; T = 29; E = 14
+		 */
+		for (Node node : groundTruth.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				Long nodeId = (long) Character.getNumericValue(node.getName().charAt(0));
+				try {
+					engine.addQuestion(null, new Date(), nodeId, node.getStatesSize(), null);
+				} catch (RuntimeException e) {
+					throw new RuntimeException("Failed to create node " + node, e);
+				}
+				try {
+					// also set the marginals now
+					List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
+					for (int i = 0; i < node.getStatesSize(); i++) {
+						newValues.add(((ProbabilisticNode) node).getMarginalAt(i));
+					}
+					engine.addTrade(null, new Date(), node.toString(), 0, nodeId, newValues , null, null, true);
+				} catch (RuntimeException e) {
+					throw new RuntimeException("Failed to set marginals of node " + node, e);
+				}
+			}
+		}
+		
+		// check if marginals matches
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals(groundTruth.getNodeCount(), probLists.size());
+		for (Node node : groundTruth.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
+				assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
+				for (int i = 0; i < prob.size(); i++) {
+					assertEquals(node.toString() + "; " + probLists.toString(), ((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 0.00001);
+				}
+			}
+		}
+		
+		
+		// create arcs in markov engine accordingly to the ground truth
+		for (Node childNode : groundTruth.getNodes()) {
+			if (childNode instanceof ProbabilisticNode) {
+				// this is the question ID of the respective node
+				Long childQuestionId = Long.valueOf(Character.getNumericValue(childNode.getName().charAt(0)));
+				
+				// add arcs that points to child node (i.e. check presence of parents)
+				if (childNode.getParentNodes() != null
+						&& !childNode.getParentNodes().isEmpty()) {
+					
+					// backup marginals, before adding new arc, for later comparison
+					probLists = engine.getProbLists(null, null, null);
+					
+					// extract cpt
+					PotentialTable cpt = ((ProbabilisticNode) childNode).getProbabilityFunction();	
+					
+					// for each parent in ground truth, create parent in engine too. 
+					List<Long> parentQuestionIds = new ArrayList<Long>(childNode.getParentNodes().size());
+					// fill list with ids of parent
+					for (int i = 1; i < cpt.getVariablesSize(); i++) {	// start from index 1, because index 0 is the child node itself
+						// Parents will be inserted in the order of appearance in cpt
+						parentQuestionIds.add(Long.valueOf(Character.getNumericValue(cpt.getVariableAt(i).getName().charAt(0)))); 
+					}
+					
+					// actually create arc
+					engine.addQuestionAssumption(null, new Date(), childQuestionId, parentQuestionIds, null);
+					
+					// check that adding a new arc does not affect probabilities
+					Map<Long, List<Float>> newProbs = engine.getProbLists(null, null, null);
+					assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+					for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+						// check number of states for current question
+						assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+						// check values
+						for (int i = 0; i < entry.getValue().size(); i++) {
+							assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+									entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+									0.00001															// error margin
+									);
+						}
+					}
+					
+					// then, make trades that will copy cpt of ground truth to engine
+					List<Float> newValues = new ArrayList<Float>();	// this will be filled with values in the CPT
+					for (int i = 0; i < cpt.tableSize(); i++) {
+						newValues.add(cpt.getValue(i));
+					}
+					
+					// passing null as assumed states will make the newValues to be interpreted as the CPT for all states of child and parents
+					engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, parentQuestionIds, null, true);
+					
+				}
+			}
+			
+			// for each modification, check marginals again
+			probLists = engine.getProbLists(null, null, null);
+			assertEquals(groundTruth.getNodeCount(), probLists.size());
+			for (Node node : groundTruth.getNodes()) {
+				if (node instanceof ProbabilisticNode) {
+					List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
+					assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
+					for (int i = 0; i < prob.size(); i++) {
+						assertEquals("After adding arcs to child " + childNode + "; " + node.toString() + ", failed to match marginal: " + probLists.toString(), 
+								((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 
+								0.005
+//								0.0001
+								);
+					}
+				}
+			}
+		}
+		
+		// check that adding an arc that moralizes parents will not change junction tree
+		// the asia domain does not have any node that conditinal dependence/independence won't change by adding arc, so create disconnected subnet
+		
+		// backup probabilities now, so that we can check later
+		probLists = engine.getProbLists(null, null, null);
+		
+		// Create H, I, J
+		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('H')), 2, null);
+		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('I')), 3, null);
+		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('J')), 4, null);
+		
+		// check that adding nodes did not affect probabilities
+		Map<Long, List<Float>> newProbs = engine.getProbLists(null, null, null);
+		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size()+3, newProbs.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+						);
+			}
+		}
+		
+		// backup probabilities again, in order to check them later
+		probLists = engine.getProbLists(null, null, null);
+		
+		// Create H->I<-J
+		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('I')), Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))), null);
+		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('I')), Collections.singletonList(Long.valueOf(Character.getNumericValue('J'))), null);
+		
+		// check that adding arcs did not affect probabilities
+		newProbs = engine.getProbLists(null, null, null);
+		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+						);
+			}
+		}
+		
+		// change some probabilities too
+		List<Long> assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add(Long.valueOf(Character.getNumericValue('H')));
+		assumptionIds.add(Long.valueOf(Character.getNumericValue('J')));
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(.1f); newValues.add(.1f); newValues.add(.8f);
+		newValues.add(.2f); newValues.add(.1f); newValues.add(.7f);
+		newValues.add(.3f); newValues.add(.1f); newValues.add(.6f);
+		newValues.add(.1f); newValues.add(.7f); newValues.add(.2f);
+		newValues.add(.2f); newValues.add(.7f); newValues.add(.1f);
+		newValues.add(.6f); newValues.add(.1f); newValues.add(.3f);
+		newValues.add(.7f); newValues.add(.1f); newValues.add(.2f);
+		newValues.add(.8f); newValues.add(.1f); newValues.add(.1f);
+		engine.addTrade(null, new Date(), "", 0L, Long.valueOf(Character.getNumericValue('I')), newValues, assumptionIds, null, true);
+		
+		// collect the cliques and marginals before modification
+		List<Clique> cliquesBefore = new ArrayList<Clique>(engine.getProbabilisticNetwork().getJunctionTree().getCliques());
+		probLists = engine.getProbLists(null, null, null);
+		
+		// create arc H->J
+		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('J')), Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))), null);
+		
+		// check that cliques did not change
+		List<Clique> cliquesAfter = engine.getProbabilisticNetwork().getJunctionTree().getCliques();
+		assertEquals(cliquesBefore.size(), cliquesAfter.size());
+		for (int i = 0; i < cliquesBefore.size(); i++) {
+			assertTrue("["+i+"] before="+cliquesBefore + " ; after = " + cliquesAfter, cliquesBefore.get(i) == cliquesAfter.get(i));
+		}
+		
+		
+		// check that probabilities did not change either
+		newProbs = engine.getProbLists(null, null, null);
+		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+						);
+			}
+		}
+		
+		// backup clique structure for later comparison
+		List<List<Long>> questionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		
+		// remove arc j-h (which overrides a moralization arc)
+		engine.removeQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('J')), Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))));
+		
+		// make sure the arc was deleted
+		assertTrue(engine.getProbabilisticNetwork().hasEdge(engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('H')), engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('J'))) < 0);
+		
+		// check that clique structures did not change
+		List<List<Long>> newQuestionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		assertEquals(questionAssumptionGroups.size(), newQuestionAssumptionGroups.size());
+		for (List<Long> cliqueNodeIds : newQuestionAssumptionGroups) {
+			boolean found = false;
+			for (List<Long> oldCliqueNodeIds : questionAssumptionGroups) {
+				if (oldCliqueNodeIds.size() == cliqueNodeIds.size()
+						&& oldCliqueNodeIds.containsAll(cliqueNodeIds)) {
+					found = true;
+					break;
+				}
+			}
+			// make sure we always find equivalent clique
+			assertTrue(cliqueNodeIds + " not found.", found);
+		}
+		// check that probabilities did not change (because there is still a moralization arc between J-H)
+		newProbs = engine.getProbLists(null, null, null);
+		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+						);
+			}
+		}
+		
+		// remove H->I and I<-J too;
+		assumptionIds = new ArrayList<Long>(2);
+		assumptionIds.add(Long.valueOf(Character.getNumericValue('H')));
+		assumptionIds.add(Long.valueOf(Character.getNumericValue('J')));
+		engine.removeQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('I')), assumptionIds);
+		
+		// make sure the arcs were deleted
+		assertTrue(engine.getProbabilisticNetwork().hasEdge(engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('H')), engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('I'))) < 0);
+		assertTrue(engine.getProbabilisticNetwork().hasEdge(engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('J')), engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('I'))) < 0);
+		
+		// make sure the clique {H,I,J} became {H}, {I}, and {J}
+		newQuestionAssumptionGroups = engine.getQuestionAssumptionGroups();
+		assertEquals(questionAssumptionGroups.size(), newQuestionAssumptionGroups.size() - 2); // one clique became 3, so we have 2 additional cliques in new structure
+		{
+			boolean[] foundHIJ = new boolean[3];
+			Arrays.fill(foundHIJ, false);
+			for (List<Long> cliqueNodeIds : newQuestionAssumptionGroups) {
+				if (cliqueNodeIds.contains(Long.valueOf(Character.getNumericValue('H')))
+						|| cliqueNodeIds.contains(Long.valueOf(Character.getNumericValue('I')))
+						|| cliqueNodeIds.contains(Long.valueOf(Character.getNumericValue('J')))) {
+					// make sure the clique has 1 node only
+					assertEquals(cliqueNodeIds.toString() ,1, cliqueNodeIds.size());
+					foundHIJ[cliqueNodeIds.get(0).intValue() - Character.getNumericValue('H')] = true;
+				} else {
+					// cliques containing other nodes must remain unchanged
+					boolean found = false;
+					for (List<Long> oldCliqueNodeIds : questionAssumptionGroups) {
+						if (oldCliqueNodeIds.size() == cliqueNodeIds.size()
+								&& oldCliqueNodeIds.containsAll(cliqueNodeIds)) {
+							found = true;
+							break;
+						}
+					}
+					// make sure we always find equivalent clique
+					assertTrue(cliqueNodeIds + " not found.", found);
+				}
+			}
+			// make sure we found nodes H, I, J
+			for (int i = 0; i < foundHIJ.length; i++) {
+				assertTrue("Did not find " + (i + Character.getNumericValue('H')) + " in " + newQuestionAssumptionGroups, foundHIJ[i]);
+			}
+		}
+		
+		// check that marginals did not change
+		newProbs = engine.getProbLists(null, null, null);
+		assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+			// check number of states for current question
+			assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+			// check values
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+						0.00001															// error margin
+						);
+			}
+		}
+		
+		// remove arc from A(10) to T(29)
+		engine.removeQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('A')), Collections.singletonList(Long.valueOf(Character.getNumericValue('T'))));
+				
 		
 		// resolve T(29), A(10), and E(14)
 		engine.resolveQuestion(null, new Date(), 14L, 1);
@@ -32662,7 +33352,7 @@ public class MarkovEngineTest extends TestCase {
 				assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
 						entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
 						0.00001															// error margin
-					);
+						);
 			}
 		}
 		
@@ -32675,7 +33365,7 @@ public class MarkovEngineTest extends TestCase {
 		if (dynamicJunctionTreeNetSizeThreshold != null) {
 			((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
 		}
-
+		
 		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
@@ -32894,6 +33584,7 @@ public class MarkovEngineTest extends TestCase {
 		
 		int averageNumArcs = 50;
 //		float probAddArcs = .25f;
+		float probRemoveArc = .6f;
 		
 		boolean isToUseSingleTransaction = false;//rand.nextBoolean();
 		Debug.println("Single transaction = " + isToUseSingleTransaction);
@@ -32965,7 +33656,13 @@ public class MarkovEngineTest extends TestCase {
 			// create arcs
 			for (Entry<Long, List<Long>> entry : arcsToCreate.entrySet()) {
 				engine.addQuestionAssumption(transactionKey, new Date(), entry.getKey(), entry.getValue(), null);
+				// eventually remove and re-create arc
+				if (rand.nextFloat() < probRemoveArc) {
+					engine.removeQuestionAssumption(transactionKey,  new Date(), entry.getKey(), entry.getValue());
+					engine.addQuestionAssumption(transactionKey, new Date(), entry.getKey(), entry.getValue(), null);
+				}
 			}
+			
 			
 			if (isToUseSingleTransaction) {
 				engine.commitNetworkActions(transactionKey);
@@ -33043,6 +33740,7 @@ public class MarkovEngineTest extends TestCase {
 		Random rand = new Random(seed);
 		Debug.println("Seed = " + seed);
 		
+		float probRemoveArc = .6f;
 		int initialNumNodes = 50; //100;	// size of network to test initially
 		int steps = 10; //50;				
 		
@@ -33121,6 +33819,11 @@ public class MarkovEngineTest extends TestCase {
 				for (INode parent : node.getParentNodes()) {
 					if (probLists.containsKey(Long.parseLong(parent.getName()))) {
 						engine.addQuestionAssumption(null, new Date(), Long.parseLong(node.getName()), Collections.singletonList(Long.parseLong(parent.getName())), null);
+						// eventually remove and re-create arc
+						if (rand.nextFloat() < probRemoveArc) {
+							engine.removeQuestionAssumption(null,  new Date(), Long.parseLong(node.getName()), Collections.singletonList(Long.parseLong(parent.getName())));
+							engine.addQuestionAssumption(null, new Date(), Long.parseLong(node.getName()), Collections.singletonList(Long.parseLong(parent.getName())), null);
+						}
 					}
 				}
 				nodesToConnect.remove(indexOfNode);

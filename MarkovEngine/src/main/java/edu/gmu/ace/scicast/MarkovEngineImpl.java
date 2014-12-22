@@ -14637,11 +14637,6 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			parentIds = Collections.EMPTY_LIST;
 		}
 		
-		// we will ignore last elements if one list is larger than the other
-		int length = Math.min(childIds.size(), parentIds.size());	
-		
-		// prepare the list to return
-		List<Entry<Entry<Long,Long>, Integer>> ret = new ArrayList<Entry<Entry<Long,Long>, Integer>>(length);
 		
 		// if childIds is empty, then get complexity factor for existing arcs containing parentIds (if parentIds is null or empty, then consider all arcs);
 		if (childIds.isEmpty()) {
@@ -14698,6 +14693,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			}	// release lock on probabilistic net
 		}	// end of if childId.isEmpty
 		
+
+		// we will ignore last elements if one list is larger than the other (except when childIds is empty)
+		int length = Math.min(childIds.size(), parentIds.size());	
+		
+		// prepare the list to return
+		List<Entry<Entry<Long,Long>, Integer>> ret = new ArrayList<Entry<Entry<Long,Long>, Integer>>(length);
+		
 		// estimate complexity factor for each arc and add to list to be returned.
 		for (int i = 0; i < length; i++) {
 			// extract the pair of ids (this will be the link to be evaluated)
@@ -14743,7 +14745,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		List<Long> childIds = null;	// this will be the 1st list in #getComplexityFactorPerAssumption(java.util.List, java.util.List, int, boolean)
 		if (childId != null) {
 			// create a list virtually containing parentIds.size() copies of childId
-			childIds = new SingleValueList<Long>(childId, parentIds.size());
+			childIds = new SingleValueList<Long>(childId, ((parentIds==null)?0:parentIds.size()));
 		}
 		return this.getComplexityFactorPerAssumption(childIds, parentIds, complexityFactorLimit, sortByComplexityFactor);
 	}
