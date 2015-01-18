@@ -57,11 +57,22 @@ public class InCliqueConditionalProbabilityExtractor implements
 	}
 	
 	/**
-	 * default constructor method
-	 * @return
+	 * Default constructor method.
+	 * {@link #setToJoinCliquesWhenNoCliqueFound(boolean)} will be set to false by default.
+	 * @see #newInstance(boolean)
 	 */
 	public static IArbitraryConditionalProbabilityExtractor newInstance() {
-		return new InCliqueConditionalProbabilityExtractor();
+		return newInstance(false);
+	}
+	
+	/**
+	 * default constructor method initializing fields.
+	 * @param isToJoinCliquesWhenNoCliqueFound : {@link #setToJoinCliquesWhenNoCliqueFound(boolean)} will be set to this value
+	 */
+	public static IArbitraryConditionalProbabilityExtractor newInstance(boolean isToJoinCliquesWhenNoCliqueFound) {
+		InCliqueConditionalProbabilityExtractor ret = new InCliqueConditionalProbabilityExtractor();
+		ret.setToJoinCliquesWhenNoCliqueFound(isToJoinCliquesWhenNoCliqueFound);
+		return ret;
 	}
 	
 	/**
