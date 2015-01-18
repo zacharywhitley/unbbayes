@@ -1552,7 +1552,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				net.getLogManager().append(
 					"\t" + nodeEliminationOrder.size() + " " + auxNo.getName() + "\n");
 			}
-			eliminateNodeInTriangulation(auxNo, nodes, net); //Eliminate node and reduce the scope to be considered.
+			addChordAndEliminateNode(auxNo, nodes, net); //Eliminate node and reduce the scope to be considered.
 			return true;
 		}
 		
@@ -1595,16 +1595,16 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	
 	/**
 	 * Method used inside {@link #triangulate(ProbabilisticNetwork)}
-	 * in order to eliminate nodes and reduce the graph.
-	 * It includes necessary arcs in order to do so.
-	 * 
+	 * in order to eliminate nodes and reduce the graph after adding a new arc to result in a new chord.
+	 * The new arcs are included in {@link SingleEntityNetwork#getMarkovArcs()} of {@link #getNet()}.
+	 * {@link Node#getAdjacents()} is also updated accordingly to the new arcs.
 	 *@param  node      node to be eliminated
 	 *@param  nodes  available nodes
 	 * @see #minimumWeightElimination(List, ProbabilisticNetwork, List)
 	 * @see ProbabilisticNetwork#getMarkovArcs()
 	 * @see Node#getAdjacents()
 	 */
-	protected void eliminateNodeInTriangulation(Node node, List<Node> nodes, ProbabilisticNetwork net) {	
+	protected void addChordAndEliminateNode(Node node, List<Node> nodes, ProbabilisticNetwork net) {	
 		for (int i = node.getAdjacents().size()-1; i > 0; i--) {
 			Node auxNode1 = node.getAdjacents().get(i);
 	
