@@ -56,7 +56,7 @@ public class ProbabilisticNetwork
 
 	/**
 	 *  Do the triangularization process
-	 *  @deprecated use {@link JunctionTreeAlgorithm#triangularize(ProbabilisticNetwork)}
+	 *  @deprecated use {@link JunctionTreeAlgorithm#triangulate(ProbabilisticNetwork)}
 	 */
 	private void triangula() {		
 		Node aux;
