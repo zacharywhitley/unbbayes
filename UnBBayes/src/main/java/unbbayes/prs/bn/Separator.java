@@ -23,6 +23,7 @@ package unbbayes.prs.bn;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import unbbayes.prs.Edge;
 import unbbayes.prs.INode;
@@ -45,7 +46,7 @@ public class Separator implements IRandomVariable, java.io.Serializable {
     private int internalIdentificator = Integer.MIN_VALUE;
 
 	private PotentialTable utilityTable;
-    private ArrayList<Node> nodes;
+    private List<Node> nodes;
 
     private Clique clique1;
 
@@ -127,11 +128,18 @@ public class Separator implements IRandomVariable, java.io.Serializable {
         }
     }
 
-	/**
+//	/**
+//     *@param  nodeList list of clusterized nodes
+//     *@deprecated use {@link #setNodes(List)} instead
+//     */
+//    public void setNodes(ArrayList<Node> nodeList) {
+//        this.nodes = nodeList;
+//    }
+    /**
      *@param  nodeList list of clusterized nodes
      */
-    public void setNodes(ArrayList<Node> nodeList) {
-        this.nodes = nodeList;
+    public void setNodes(List<Node> nodeList) {
+    	this.nodes = nodeList;
     }
 
 
@@ -159,9 +167,19 @@ public class Separator implements IRandomVariable, java.io.Serializable {
 
     /**
      *@return    List of clusterized nodes.
+     *@deprecated use {@link #getNodesList()} instead
      */
     public ArrayList<Node> getNodes() {
-        return nodes;
+    	if (nodes instanceof ArrayList) {
+    		return (ArrayList)nodes;
+    	}
+        return new ArrayList<Node>(nodes);
+    }
+    /**
+     *@return    List of clusterized nodes.
+     */
+    public List<Node> getNodesList() {
+    	return nodes;
     }
 
 
