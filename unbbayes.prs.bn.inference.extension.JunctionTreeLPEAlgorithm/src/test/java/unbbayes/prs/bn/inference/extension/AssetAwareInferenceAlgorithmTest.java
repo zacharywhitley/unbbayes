@@ -38,10 +38,10 @@ import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
  */
 public class AssetAwareInferenceAlgorithmTest extends TestCase {
 	
-	/** If two probability values are within an interval of + or - this value, then it is considered to be equal�@*/
+	/** If two probability values are within an interval of + or - this value, then it is considered to be equal */
 	private static final float PROB_PRECISION_ERROR = 0.0005f;
 
-	/** If two asset q values are within an interval of + or - this value, then it is considered to be equal�@*/
+	/** If two asset q values are within an interval of + or - this value, then it is considered to be equal */
 	private static final float ASSET_PRECISION_ERROR = 0.05f;
 
 	private AssetAwareInferenceAlgorithm assetQAlgorithm;
