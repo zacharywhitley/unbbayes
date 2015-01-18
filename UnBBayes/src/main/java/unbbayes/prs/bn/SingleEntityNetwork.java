@@ -75,6 +75,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 
 	/**
 	 * A list of edges used during transformation process
+	 * @deprecated use {@link #getMarkovArcs()} or {@link #setMarkovArcs(List)} instead
 	 */
 	protected List<Edge> arcosMarkov;
 	
@@ -85,6 +86,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
            
     /**
      * Order of node elminination
+     * @deprecated do not use attributes like this to keep track of nodes eliminated in triangulation process of junction tree compilation.
 	 */
 	protected ArrayList<Node> nodeEliminationOrder;
 
@@ -94,6 +96,9 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 */
 	protected ArrayList<Node> copiaNos;
 	
+	/**
+	 * @deprecated use {@link #getEdgesCopy()} or {@link #setEdgesCopy(List)} instead
+	 */
 	protected List<Edge> copiaArcos;
 
 	/**
@@ -380,6 +385,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 
 	/**
 	 * Builds junction tree from graph.
+	 * @deprecated use {@link JunctionTreeAlgorithm#buildJunctionTree(ProbabilisticNetwork, List)} instead.
 	 */
 	protected void compileJT(IJunctionTree jt) throws Exception {
 		int menor;
@@ -456,6 +462,10 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 //		}
 	}
 
+	/**
+	 * Calls {@link TreeVariable#resetEvidence()} for all nodes in {@link #getNodesCopy()}.
+	 * @deprecated use {@link JunctionTreeAlgorithm#resetEvidences(SingleEntityNetwork)} instead.
+	 */
 	public void resetEvidences() {
 		for (Node node : this.getNodesCopy()) {
 //			if (this.getProperty(EVIDENCES_NOT_TO_RESET) != null && this.getProperty(EVIDENCES_NOT_TO_RESET).toString().contains(node.getName())) {
@@ -577,7 +587,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			listaCliques.add(auxClique);
 		}
 	
-		boolean haTroca = true;
+		boolean haTroca = true; // TODO check how good is Collections#sort compared to this bubble sort
 		while (haTroca) {
 			haTroca = false;
 			for (i = 0; i < listaCliques.size() - 1; i++) {
@@ -1183,7 +1193,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 * This method checks if decision nodes follow a linear (total) order.
 	 * That is, if there is a directed path through decision nodes.
 	 */
-	protected void sortDecisions() throws Exception {
+	public void sortDecisions() throws Exception {
 		clearAdjacents();
 		decisionNodes = new ArrayList<Node>();
 		int sizeNos = nodeList.size();
@@ -1439,6 +1449,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 
 	/**
 	 * @return the nodeEliminationOrder
+	 * @deprecated do not use attributes like this to keep track of nodes eliminated in triangulation process of junction tree compilation.
 	 */
 	public ArrayList<Node> getNodeEliminationOrder() {
 		return nodeEliminationOrder;
@@ -1447,6 +1458,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 
 	/**
 	 * @param nodeEliminationOrder the nodeEliminationOrder to set
+	 * @deprecated do not use attributes like this to keep track of nodes eliminated in triangulation process of junction tree compilation.
 	 */
 	public void setNodeEliminationOrder(ArrayList<Node> nodeEliminationOrder) {
 		this.nodeEliminationOrder = nodeEliminationOrder;
@@ -1479,5 +1491,41 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	public void setMarkovArcsToBeForced(Collection<Edge> markovArcsToBeForced) {
 		this.markovArcsToBeForced = markovArcsToBeForced;
 	}
+
+
+	/**
+	 * @return the arcs generated when inserting non-directed arcs to this net
+	 * @see #moralize()
+	 */
+	protected List<Edge> getMarkovArcs() {
+		return this.arcosMarkov;
+	}
+
+
+	/**
+	 * @param markovArcs : the arcs generated when inserting non-directed arcs to this net
+	 * @see #moralize()
+	 */
+	protected void setMarkovArcs(List<Edge> markovArcs) {
+		this.arcosMarkov = markovArcs;
+	}
+
+
+	/**
+	 * @return the copy of arcs generated in {@link #moralize()}
+	 */
+	protected List<Edge> getEdgesCopy() {
+		return this.copiaArcos;
+	}
+
+
+	/**
+	 * @param edgesCopy : the copy of arcs generated in {@link #moralize()}
+	 */
+	protected void setEdgesCopy(List<Edge> edgesCopy) {
+		this.copiaArcos = edgesCopy;
+	}
+	
+	
 }
 

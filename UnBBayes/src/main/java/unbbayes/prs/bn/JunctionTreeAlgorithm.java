@@ -6,6 +6,7 @@ package unbbayes.prs.bn;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,6 +26,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.prs.id.DecisionNode;
 import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
@@ -40,7 +42,7 @@ import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
  * 
  * By now, this is still a wrapper for {@link ProbabilisticNetwork#compile()}.
  * 
- * TODO gradually migrate every compilation routine from ProbabilisticNetwork to here.
+ * TODO gradually migrate attributes in {@link SingleEntityNetwork} and {@link ProbabilisticNetwork} related to compilation routine to this class.
  * 
  * @author Shou Matsumoto
  *
@@ -74,9 +76,9 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
   	
 	private List<INode> sortedDecisionNodes = new ArrayList<INode>(0);
 
-	private List<Edge> markovArc = new ArrayList<Edge>(0);
-
-	private List<Edge> markovArcCpy = new ArrayList<Edge>(0);
+//	private List<Edge> markovArc = new ArrayList<Edge>(0);
+//
+//	private List<Edge> markovArcCpy = new ArrayList<Edge>(0);
 
 	private List<IInferenceAlgorithmListener> inferenceAlgorithmListeners = new ArrayList<IInferenceAlgorithmListener>(0);
 
@@ -521,6 +523,9 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		ret.add(new IJunctionTreeCommand() {
 			public void undoAction(IInferenceAlgorithm algorithm, Graph graph) throws UndoableJTCommandException {throw new UndoableJTCommandException();}
 			public void doAction(IInferenceAlgorithm algorithm, Graph graph) {
+				if (graph == null || graph.getNodeCount() == 0) {
+					throw new RuntimeException(resource.getString("EmptyNetException"));
+				}
 				if (graph instanceof ProbabilisticNetwork) {
 					ProbabilisticNetwork net = (ProbabilisticNetwork) graph;
 					if (net.getNodeIndexes() == null) {
@@ -539,10 +544,12 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		ret.add(new IJunctionTreeCommand() {
 			public void undoAction(IInferenceAlgorithm algorithm, Graph graph) throws UndoableJTCommandException {throw new UndoableJTCommandException();}
 			public void doAction(IInferenceAlgorithm algorithm, Graph graph) {
-				try {
-					verifyUtility(graph);
-				} catch (Exception e) {
-					throw new RuntimeException(e);
+				if (graph.getNodeCount() > 0) {
+					try {
+						verifyUtility(graph);
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
 				}
 			}
 		});
@@ -551,9 +558,10 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		ret.add(new IJunctionTreeCommand() {
 			public void undoAction(IInferenceAlgorithm algorithm, Graph graph) throws UndoableJTCommandException {throw new UndoableJTCommandException();}
 			public void doAction(IInferenceAlgorithm algorithm, Graph graph) {
-				if (graph instanceof ProbabilisticNetwork) {
+				if (graph instanceof ProbabilisticNetwork && graph.getNodeCount() > 0) {
 					ProbabilisticNetwork net = (ProbabilisticNetwork) graph;
 					try {
+						// TODO move the content of net.verifyCycles() to this class
 						net.verifyCycles();
 					} catch (Exception e) {
 						throw new RuntimeException(e);
@@ -562,20 +570,21 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			}
 		});
 		
-		// check connective
-		ret.add(new IJunctionTreeCommand() {
-			public void undoAction(IInferenceAlgorithm algorithm, Graph graph) throws UndoableJTCommandException {throw new UndoableJTCommandException();}
-			public void doAction(IInferenceAlgorithm algorithm, Graph graph) {
-				if (graph instanceof ProbabilisticNetwork) {
-					ProbabilisticNetwork net = (ProbabilisticNetwork) graph;
-					try {
-						net.verifyConectivity();
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-				}
-			}
-		});
+		// check if there is no disconnected node
+		// there is no need for this check anymore, because we can compile disconnected subnets now.
+//		ret.add(new IJunctionTreeCommand() {
+//			public void undoAction(IInferenceAlgorithm algorithm, Graph graph) throws UndoableJTCommandException {throw new UndoableJTCommandException();}
+//			public void doAction(IInferenceAlgorithm algorithm, Graph graph) {
+//				if (graph instanceof ProbabilisticNetwork  && graph.getNodeCount() > 0) {
+//					ProbabilisticNetwork net = (ProbabilisticNetwork) graph;
+//					try {
+//						net.verifyConectivity();
+//					} catch (Exception e) {
+//						throw new RuntimeException(e);
+//					}
+//				}
+//			}
+//		});
 		
 		// verify CPT consistency
 		ret.add(new IJunctionTreeCommand() {
@@ -594,7 +603,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			public void undoAction(IInferenceAlgorithm algorithm, Graph graph) throws UndoableJTCommandException {throw new UndoableJTCommandException();}
 			public void doAction(IInferenceAlgorithm algorithm, Graph graph) {
 				try {
-					sortDecisionNodes(graph);
+					// this should throw exception if decision nodes were not properly ordered (by arcs)
+					setSortedDecisionNodes(sortDecisionNodes(graph));
 				} catch (Exception e) {
 					throw new RuntimeException(e);
 				}
@@ -608,53 +618,59 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	/**
 	 * This method will initialize {@link #getSortedDecisionNodes()}
 	 * @param graph
-	 * @throws Exception 
+	 * @throws Exception  : if the ordering of decision nodes could not be established.
+	 * @returns decision nodes properly ordered
 	 */
-	protected void sortDecisionNodes(Graph graph) throws Exception {
+	protected List<INode> sortDecisionNodes(Graph graph) throws Exception {
 
 		if (!(graph instanceof ProbabilisticNetwork)) {
-			return;
+			return null;
 		}
 		
 		ProbabilisticNetwork net = (ProbabilisticNetwork) graph;
-		
 		List<Node> nodeList = net.getNodes();
 		
-		// reset decision nodes
-		this.setSortedDecisionNodes(new ArrayList<INode>());
-		List<INode> decisionNodes = this.getSortedDecisionNodes();
+		// clear adjacency mapping, because we'll use it in this method (and it needs to be clean)
+		for (Node node : nodeList) {
+			node.clearAdjacents();
+		}
 		
-		int sizeNos = nodeList.size();
-		for (int i = 0; i < sizeNos; i++) {
+		// collect decision nodes
+		List<INode> decisionNodes = new ArrayList<INode>();
+		int numNodes = nodeList.size();
+		for (int i = 0; i < numNodes; i++) {
 			if (nodeList.get(i).getType() == Node.DECISION_NODE_TYPE) {
 				decisionNodes.add(nodeList.get(i));
 			}
 		}
 	
-		ArrayList<Node> fila = new ArrayList<Node>();
-		fila.ensureCapacity(nodeList.size()); 
-		Node aux, aux2, aux3;
-	
-		int sizeDecisao = decisionNodes.size();
-		for (int i = 0; i < sizeDecisao; i++) {
-			boolean visitados[] = new boolean[nodeList.size()];
-			aux = (Node) decisionNodes.get(i);
-			fila.clear();
-			fila.add(aux);
-	
-			while (fila.size() != 0) {
-				aux2 = fila.remove(0);
-				visitados[nodeList.indexOf(aux2)] = true;
-	
-				int sizeFilhos = aux2.getChildren().size();
-				for (int k = 0; k < sizeFilhos; k++) {
-					aux3 = (Node) aux2.getChildren().get(k);
-					if (!visitados[nodeList.indexOf(aux3)]) {
-						if (aux3.getType() == Node.DECISION_NODE_TYPE
-							&& !aux.getAdjacents().contains(aux3)) {
-							aux.getAdjacents().add(aux3);
+		// start ordering the decision nodes
+		int numDecisionNodes = decisionNodes.size();
+		if (numDecisionNodes > 0) {
+			// a queue to check
+			ArrayList<INode> queue = new ArrayList<INode>();
+			queue.ensureCapacity(nodeList.size()); 
+			
+			for (int i = 0; i < numDecisionNodes; i++) {
+				boolean isVisited[] = new boolean[nodeList.size()];
+				Node firstInQueue = (Node) decisionNodes.get(i);
+				queue.clear();
+				queue.add(firstInQueue);
+				
+				while (queue.size() != 0) {
+					INode currentInQueue = queue.remove(0);
+					isVisited[nodeList.indexOf(currentInQueue)] = true;
+					
+					int numChildren = currentInQueue.getChildNodes().size();
+					for (int k = 0; k < numChildren; k++) {
+						Node child = (Node) currentInQueue.getChildNodes().get(k);
+						if (!isVisited[nodeList.indexOf(child)]) {
+							if (child.getType() == Node.DECISION_NODE_TYPE
+									&& !firstInQueue.getAdjacents().contains(child)) {
+								firstInQueue.getAdjacents().add(child);
+							}
+							queue.add(child);
 						}
-						fila.add(aux3);
 					}
 				}
 			}
@@ -688,8 +704,9 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		}
 	
 		for (int i = 0; i < decisionNodes.size(); i++) {
+			Node decisionNode = null;
 			try {
-				aux = (Node) decisionNodes.get(i);
+				decisionNode = (Node) decisionNodes.get(i);
 			} catch (ClassCastException e) {
 				try {
 					Debug.println(getClass(), e.getMessage(), e);
@@ -698,8 +715,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				}
 				continue;
 			}
-			if (aux != null
-					&& ( aux.getAdjacents().size() != decisionNodes.size() - i - 1) ) {
+			if (decisionNode != null
+					&& ( decisionNode.getAdjacents().size() != decisionNodes.size() - i - 1) ) {
 				throw new Exception(resource.getString("DecisionOrderException"));
 			}
 		}
@@ -707,6 +724,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		for (Node node : nodeList) {
 			node.clearAdjacents();
 		}
+		
+		return decisionNodes;
 	}
 
 	/**
@@ -714,22 +733,17 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 * in order to check consistency of conditional probability tables
 	 * @param graph
 	 * @throws Exception 
+	 * @see {@link ProbabilisticTable#verifyConsistency()}
 	 */
 	protected void verifyPotentialTables(Graph graph) throws Exception {
 		if (graph instanceof ProbabilisticNetwork) {
-			ProbabilisticNetwork net = (ProbabilisticNetwork) graph;
-			ProbabilisticTable auxTabPot;
-			int c;
-			Node auxNo;
-			ProbabilisticNode auxVP;
-			
-			int sizeNos = net.getNodeCount();
-			for (c = 0; c < sizeNos; c++) {
-				auxNo = net.getNodes().get(c);
-				if (auxNo.getType() == Node.PROBABILISTIC_NODE_TYPE) {
-					auxVP = (ProbabilisticNode) auxNo;
-					auxTabPot = (ProbabilisticTable) auxVP.getProbabilityFunction();
-					auxTabPot.verifyConsistency();
+			// just call ProbabilisticTable#verifyConsistency() for CPT of each node
+			for (Node node : ((ProbabilisticNetwork)graph).getNodes()) {
+				if ( node instanceof ProbabilisticNode ) {
+					PotentialTable probabilityFunction = ((ProbabilisticNode) node).getProbabilityFunction();
+					if (probabilityFunction instanceof ProbabilisticTable) {
+						((ProbabilisticTable) probabilityFunction).verifyConsistency();
+					}
 				}
 			}
 		}
@@ -773,10 +787,16 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		}
 		
 		try {
-			// TODO gradually migrate all compile routines to here
-			this.getNet().compile();
 			
-			// TODO migrate these GUI code to the plugin infrastructure
+			// the following code should be equivalent to "getNet().compile()", but without filling getNet() with garbage related to compilation process
+			this.verifyConsistency(getNet());
+			this.moralize(getNet());
+			List<INode> nodeEliminationOrder = this.triangulate(getNet());
+			IJunctionTree junctionTree = this.buildJunctionTree(getNet(), nodeEliminationOrder);
+			getNet().setJunctionTree(junctionTree);
+			setSortedDecisionNodes(null);	// clear this list, just to make sure it is rebuild at next compilation
+			
+			// TODO migrate these GUI code to the plugin infrastructure, instead of leaving them here
 			if (this.getMediator() != null) {
 				JPanel component = this.getMediator().getScreen().getNetWindowCompilation();
 				if (component == null) {
@@ -799,7 +819,9 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	}
 	
     
-    /**
+    
+
+	/**
      * This method moves the root clique to 1st index, and then updates {@link IRandomVariable#getInternalIdentificator()}
      * accordingly to its order of appearance in {@link IJunctionTree#getCliques()} and {@link IJunctionTree#getSeparators()}.
      * This is necessary because some implementations assumes that {@link IRandomVariable#getInternalIdentificator()} is synchronized with indexes.
@@ -864,16 +886,23 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		if (net.isCreateLog()) {
 			net.getLogManager().append(resource.getString("moralizeLabel"));
 		}
-		getMarkovArc().clear();
-		setMarkovArcCpy((List<Edge>)SetToolkit.clone(net.getEdges()));
-	
+		
+		net.getMarkovArcs().clear();
+		
+		Collection<Edge> markovArcsToBeForced = net.getMarkovArcsToBeForced();
+		if (markovArcsToBeForced != null && !markovArcsToBeForced.isEmpty()) {
+			net.getMarkovArcs().addAll(markovArcsToBeForced);
+		}
+		
+		net.setEdgesCopy(SetToolkit.clone(net.getEdges()));
+		
 		// remove the list of edges for information
-		int sizeArcos = getMarkovArcCpy().size() - 1;
+		int sizeArcos = net.getMarkovArcs().size() - 1;
 		for (int i = sizeArcos; i >= 0; i--) {
-			auxArco = getMarkovArcCpy().get(i);
+			auxArco = net.getMarkovArcs().get(i);
 			if (auxArco.getDestinationNode().getType()
 				== Node.DECISION_NODE_TYPE) {
-				getMarkovArcCpy().remove(i);
+				net.getMarkovArcs().remove(i);
 			}
 		}
 	
@@ -887,8 +916,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 					auxPai1 = auxNo.getParents().get(j);
 					for (int k = j + 1; k < sizePais; k++) {
 						auxPai2 = auxNo.getParents().get(k);
-						if ((net.hasEdge(auxPai1, auxPai2,  getMarkovArcCpy()) == -1)
-							&& (net.hasEdge(auxPai1, auxPai2, getMarkovArc()) == -1)) {
+						if ((net.hasEdge(auxPai1, auxPai2,  net.getEdgesCopy()) == -1)
+							&& (net.hasEdge(auxPai1, auxPai2, net.getMarkovArcs()) == -1)) {
 							auxArco = new Edge(auxPai1, auxPai2);
 							if (net.isCreateLog()) {
 								net.getLogManager().append(
@@ -897,7 +926,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 										+ auxPai2.getName()
 										+ "\n");
 							}
-							getMarkovArc().add(auxArco);
+							net.getMarkovArcs().add(auxArco);
 						}
 					}
 				}
@@ -914,10 +943,12 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	/**
      * Starts the triangularization process of the junction tree algorithm
      * @param net
+     * @return a list specifying the order of elimination of nodes used in this triangulation process.
+     * @see #minimumWeightElimination(List, ProbabilisticNetwork, List)
      */
-	public void triangularize(ProbabilisticNetwork net) {
+	public List<INode> triangulate(ProbabilisticNetwork net) {
 
-		Node aux;
+//		Node aux;
 		List<Node> auxNodes;
 		List<Node> nodeList = net.getNodes();
 
@@ -927,105 +958,565 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		auxNodes = SetToolkit.clone(nodeList);
 		
 		// remove utility nodes from auxNodes
-		Set<Node> nodesToRemove = new HashSet<Node>();
-		for (Node node : auxNodes) {
-			if (node.getType() == Node.UTILITY_NODE_TYPE) {
-				nodesToRemove.add(node);
+		{
+			Set<Node> nodesToRemove = new HashSet<Node>();
+			for (Node node : auxNodes) {
+				if (node.getType() == Node.UTILITY_NODE_TYPE) {
+					nodesToRemove.add(node);
+				}
 			}
+			auxNodes.removeAll(nodesToRemove);
 		}
-		auxNodes.removeAll(nodesToRemove);
 		
 		// reset copy of nodes
 		net.getNodesCopy().clear();
-		List<Node> copiaNos = net.getNodesCopy();
+		net.getNodesCopy().addAll(SetToolkit.clone(auxNodes));
+		List<Node> nodesCopy = net.getNodesCopy();
 		
 		List<INode> decisionNodes = getSortedDecisionNodes();
-		
-		// initialize copy of nodes
-		copiaNos = SetToolkit.clone(auxNodes);
-		int sizeDecisao = decisionNodes.size();
-		for (int i = 0; i < sizeDecisao; i++) {
-			aux = (Node) decisionNodes.get(i);
-			auxNodes.remove(aux);
-			auxNodes.removeAll(aux.getParentNodes());
+		if (decisionNodes == null) {
+			// double-checking decision nodes.
+			try {
+				decisionNodes = sortDecisionNodes(net);
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}
+		for (INode node : decisionNodes) {
+			auxNodes.remove(node);
+			auxNodes.removeAll(node.getParentNodes());
 		}
 
-		net.setNodeEliminationOrder(new ArrayList<Node>(copiaNos.size()));
-		List<Node> eliminationOrder = net.getNodeEliminationOrder();
+		List<INode> nodeEliminationOrder = new ArrayList<INode>(nodesCopy.size());
+		
+		// fill nodeEliminationOrder until there is no more nodes that can be eliminated in triangulation process
+		while (minimumWeightElimination(auxNodes, net, nodeEliminationOrder));
 
-		while (minimumWeightElimination(auxNodes, net));
-
-		//        int index;
+		// consider elimination of decision nodes as well
 		for (int i = decisionNodes.size() - 1; i >= 0; i--) {
-			aux = (Node) decisionNodes.get(i);
-			eliminationOrder.add(aux);
-			int sizeAdjacentes = aux.getAdjacents().size();
+			Node decisionNode = (Node) decisionNodes.get(i);
+			nodeEliminationOrder.add(decisionNode);
+			int sizeAdjacentes = decisionNode.getAdjacents().size();
 			for (int j = 0; j < sizeAdjacentes; j++) {
-				Node v = aux.getAdjacents().get(j);
-				v.getAdjacents().remove(aux);
+				Node v = decisionNode.getAdjacents().get(j);
+				v.getAdjacents().remove(decisionNode);
 			}
 			if (net.isCreateLog()) {
 				net.getLogManager().append(
-					"\t" + eliminationOrder.size() + " " + aux.getName() + "\n");
+					"\t" + nodeEliminationOrder.size() + " " + decisionNode.getName() + "\n");
 			}
 
-			auxNodes = SetToolkit.clone(aux.getParents());
+			auxNodes = SetToolkit.clone(decisionNode.getParents());
 			auxNodes.removeAll(decisionNodes);
-			auxNodes.removeAll(eliminationOrder);
+			auxNodes.removeAll(nodeEliminationOrder);
 			for (int j = 0; j < i; j++) {
 				Node decision = (Node) decisionNodes.get(j);
 				auxNodes.removeAll(decision.getParents());
 			}
 
-			while (minimumWeightElimination(auxNodes, net)) ;
+			while (minimumWeightElimination(auxNodes, net, nodeEliminationOrder)) ;
 		}
 		
 		makeAdjacents(net);
+		
+		return nodeEliminationOrder;
+	}
+	
+	
+	/**
+	 * Calls {@link TreeVariable#resetEvidence()} for all nodes in {@link SingleEntityNetwork#getNodesCopy()}.
+	 * @param net
+	 */
+	public void resetEvidences(SingleEntityNetwork net) {
+		for (Node node : net.getNodesCopy()) {
+			if (node instanceof TreeVariable) {
+				((TreeVariable)node).resetEvidence();
+				// OBS utility nodes are not tree variables, so this method will ignore them
+			}
+		}
+	}
+	
+	/**
+	 * Builds a junction tree from a consistent markov net.
+	 * It is expected that {@link #moralize(ProbabilisticNetwork)} and {@link #triangulate(ProbabilisticNetwork)} were
+	 * executed prior to this method.
+	 * @param net : the markov net to compile junction tree from.
+	 * @param nodeEliminationOrder : the ordering of elimination of nodes used in {@link #triangulate(ProbabilisticNetwork)}
+	 * @return the junction tree generated by {@link #getJunctionTreeBuilder()} and then filled accordingly to the specified probabilistic network.
+	 * @throws InstantiationException : if a junction tree could not be instantiated.
+	 * @throws IllegalAccessException : if a junction tree could not be instantiated because of access issues. 
+	 * @see ProbabilisticNetwork#compileJT(IJunctionTree)
+	 * @see #verifyConsistency(Graph)
+	 * @see #moralize(ProbabilisticNetwork)
+	 * @see #triangulate(ProbabilisticNetwork)
+	 */
+	protected IJunctionTree buildJunctionTree(final ProbabilisticNetwork net, List<INode> nodeEliminationOrder) throws InstantiationException, IllegalAccessException  {
+		
+		IJunctionTreeBuilder jtBuilder = getJunctionTreeBuilder();
+		if (jtBuilder == null) {
+			jtBuilder = new DefaultJunctionTreeBuilder();
+			this.setJunctionTreeBuilder(jtBuilder);
+		}
+		IJunctionTree junctionTree = jtBuilder.buildJunctionTree(getNet());
+		
+		resetEvidences(net);
+		
+		this.cliques(net, nodeEliminationOrder, junctionTree);
+		this.strongTreeMethod(net, nodeEliminationOrder, junctionTree);
+		this.sortCliqueNodes(net, nodeEliminationOrder, junctionTree);
+		this.associateCliques(net, nodeEliminationOrder, junctionTree);
+		try {
+			junctionTree.initBeliefs();
+		} catch (Exception e) {
+			// TODO exception translation is not recommended
+			throw new RuntimeException(e);
+		}
+	
+		updateMarginals(net);
+	
+		if (net.isCreateLog()) {
+			Thread t = new Thread(new Runnable() {
+				public void run() {
+					net.makeLog();
+					System.out.println("**Log ended**");
+				}
+			});
+			t.setPriority(Thread.MIN_PRIORITY);
+			t.start();
+		}
+		
+		return junctionTree;
+	}
+	
+	/**
+	 * This method iterates over nodes in {@link ProbabilisticNetwork#getNodesCopy()} and
+	 * updates the cache of marginal probabilities of all such nodes.
+	 * @param net : marginals will be updated for all nodes in the list {@link ProbabilisticNetwork#getNodesCopy()} of this instance.
+	 * @see TreeVariable#marginal()
+	 */
+	public void updateMarginals(ProbabilisticNetwork net) {
+		List<Node> nodesCopy = net.getNodesCopy();
+		if (nodesCopy != null) {
+			for (Node node : nodesCopy) {
+				/* Check if the node represents a numeric attribute */
+				if (node.getStatesSize() == 0) {
+					/* 
+					 * The node represents a numeric attribute which has no
+					 * potential table. Just skip it.
+					 */
+					continue;
+				}
+				((TreeVariable)node).marginal();
+			}
+		}
+	}
+
+	/**
+	 * Adds nodes in {@link Clique#getNodesList()} and {@link Separator#getNodesList()} to 
+	 * their respective clique/separator tables by using {@link PotentialTable#addVariable(INode)},
+	 * and then updates the links {@link Clique#getAssociatedProbabilisticNodesList()} and
+	 * {@link Clique#getAssociatedUtilityNodesList()}, which are inverse links associating
+	 * nodes to smallest clique/separator containing such node.
+	 * This will also build the {@link TreeVariable#getAssociatedClique()}, which
+	 * is the link from node to smallest clique/separator containing the node (this is used in order to make
+	 * marginalization faster, because marginalization in smaller clique/separator tables are faster).
+	 * @param net : net whose junctionTree was generated from
+	 * @param nodeEliminationOrder : ordering used in {@link #triangulate(ProbabilisticNetwork)}.
+	 * @param junctionTree : junction tree where cliques and separators belong.
+	 */
+	protected void associateCliques(ProbabilisticNetwork net,	List<INode> nodeEliminationOrder, IJunctionTree junctionTree) {
+		
+		// TODO clean the code and stop using auxiliary variables reused along the entire method for different purposes.
+		int min;
+		Node auxNode;
+		IProbabilityFunction auxTable, auxUtilTab;
+		Clique auxClique;
+		Clique smallestClique = null;
+	
+		for (int i = junctionTree.getCliques().size() - 1; i >= 0; i--) {
+			auxClique = (Clique) junctionTree.getCliques().get(i);
+			auxTable = auxClique.getProbabilityFunction();
+			auxUtilTab = auxClique.getUtilityTable();
+	
+			int numNodes = auxClique.getNodesList().size();
+			for (int c = 0; c < numNodes; c++) {
+				auxTable.addVariable(auxClique.getNodesList().get(c));
+				auxUtilTab.addVariable(auxClique.getNodesList().get(c));
+			}
+		}
+	
+		for (Separator auxSep : junctionTree.getSeparators()) {
+			auxTable = auxSep.getProbabilityFunction();
+			auxUtilTab = auxSep.getUtilityTable();
+			int numNodes = auxSep.getNodesList().size();
+			for (int c = 0; c < numNodes; c++) {
+				auxTable.addVariable(auxSep.getNodesList().get(c));
+				auxUtilTab.addVariable(auxSep.getNodesList().get(c));
+			}
+		}
+	
+		int numNodes = net.getNodeCount();
+		for (int n = 0; n < numNodes; n++) {
+			if (net.getNodes().get(n).getType() == Node.DECISION_NODE_TYPE) {
+				continue;
+			}
+	
+			min = Integer.MAX_VALUE;
+			auxNode = net.getNodes().get(n);
+	
+			int numCliques = junctionTree.getCliques().size();
+			for (int c = 0; c < numCliques; c++) {
+				auxClique = (Clique) junctionTree.getCliques().get(c);
+	
+				if (auxClique.getProbabilityFunction().tableSize() < min
+					&& SetToolkit.containsAllExact(auxClique.getNodesList(), auxNode.getParents())) {
+					if (auxNode.getType() == Node.PROBABILISTIC_NODE_TYPE
+						&& !SetToolkit.containsExact(auxClique.getNodesList(), auxNode)) {
+						continue;
+					}
+					smallestClique = auxClique;
+					min = smallestClique.getProbabilityFunction().tableSize();
+				}
+			}
+			// insert to proper list
+			if (auxNode instanceof ProbabilisticNode) {
+				smallestClique.getAssociatedProbabilisticNodesList().add(auxNode);
+			} else {
+				smallestClique.getAssociatedUtilityNodesList().add(auxNode);
+			}
+		}
+		
+		// also build the inverse link (from node to cliques)
+		for (Node node : net.getNodesCopy()) {
+			// this code will associate nodes with clique/separator with smallest table size.
+			int smallestTableSize = Integer.MAX_VALUE;
+			
+			// find smallest separator containing the node (because separators are likely to have smaller table size than cliques)
+			if (node instanceof ProbabilisticNode) {
+				for (Separator separator : junctionTree.getSeparators()) {
+					if (separator.getNodesList().contains(node) && (separator.getProbabilityFunction().tableSize() < smallestTableSize)) {
+						((ProbabilisticNode) node).setAssociatedClique(separator);
+						smallestTableSize = separator.getProbabilityFunction().tableSize();
+					}
+				}
+			}
+	
+			// if node was not present in any separator, then associate it with smallest clique.
+			if (smallestTableSize == Integer.MAX_VALUE) {
+				for (Clique clique : junctionTree.getCliques()) {
+					if (clique.getNodesList().contains(node) && (clique.getProbabilityFunction().tableSize() < smallestTableSize)) {
+						if (node instanceof ProbabilisticNode) {
+							((ProbabilisticNode) node).setAssociatedClique(clique);
+						} else {
+							// note: decision nodes should only be associated with cliques, not separators
+							((DecisionNode) node).setAssociatedClique(clique);
+							break;	// no need to be in the smallest clique
+						}
+						smallestTableSize = clique.getProbabilityFunction().tableSize();
+					}
+				}
+			}
+			
+		}	// end of for each node
+	
+	}
+
+	/**
+	 * Sort nodes in cliques and separators accordingly to the provided elimination order.
+	 * @param net : net whose junctionTree was generated from
+	 * @param nodeEliminationOrder : ordering to be considered to sort nodes in cliques.
+	 * @param junctionTree : junction tree where cliques and separators belong.
+	 */
+	protected void sortCliqueNodes(ProbabilisticNetwork net, List<INode> nodeEliminationOrder, IJunctionTree junctionTree) {
+		List cliqueList = junctionTree.getCliques();
+		boolean isID = net.isID();
+		for (int k = 0; k < cliqueList.size(); k++) {
+			Clique clique = (Clique) cliqueList.get(k);
+			ArrayList<Node> nodesInClique = clique.getNodes();
+			boolean hasSwapped = true;
+			// In general, cliques are expected to be small (much less than 100 nodes), so bubble sort should be OK for most of cases.
+			while (hasSwapped) {
+				hasSwapped = false;
+				for (int i = 0; i < nodesInClique.size() - 1; i++) {
+					Node node1 = nodesInClique.get(i);
+					Node node2 = nodesInClique.get(i + 1);
+					if (isID) {
+						if (nodeEliminationOrder.indexOf(node1) > nodeEliminationOrder.indexOf(node2)) {
+							nodesInClique.set(i + 1, node1);
+							nodesInClique.set(i, node2);
+							hasSwapped = true;
+						}
+					} else { 
+						if (node1.getName().compareToIgnoreCase(node2.getName()) > 0 ) {
+							nodesInClique.set(i + 1, node1);
+							nodesInClique.set(i, node2);
+							hasSwapped = true;
+						}	
+					}
+				}
+			}
+		}
+	
+		for (Separator separator : junctionTree.getSeparators()) {
+			ArrayList<Node> nodesInSeparator = separator.getNodes();
+			// In general, separators are expected to be small (even smaller than cliques -- less than 100 nodes), so bubble sort should be OK for most of cases.
+			boolean hasSwapped = true;
+			while (hasSwapped) {
+				hasSwapped = false;
+				for (int i = 0; i < nodesInSeparator.size() - 1; i++) {
+					Node node1 = nodesInSeparator.get(i);
+					Node node2 = nodesInSeparator.get(i + 1);
+					if (node1.getName().compareToIgnoreCase(node2.getName()) > 0 ) {
+						nodesInSeparator.set(i + 1, node1);
+						nodesInSeparator.set(i, node2);
+						hasSwapped = true;
+					}
+				}
+			}
+		}
+	}
+
+	/**
+	 * Sub-method of strong-tree method which uses an alpha-ordering in order to 
+	 * establish some partial ordering of cliques
+	 * @param nodesInClique : list of nodes pertaining to current clique
+	 * @param ordering : list specifying the alpha ordering of nodes. Nodes in smaller indexes in this list has smaller order.
+	 * Alpha-ordering is usually the inverse of elimination order returned by {@link #triangulate(ProbabilisticNetwork)} 
+	 */
+	protected int getCliqueIndexFromAlphaOrder(List<Node> nodesInClique, List<Node> ordering) {
+		
+		// get the maximum index node
+		int maxIndex = -1;
+		Node nodeWithMaxIndex = null;
+		for (Node node : nodesInClique) {
+			int currentIndex = ordering.indexOf(node);
+			if (maxIndex < currentIndex) {
+				maxIndex = currentIndex;
+				nodeWithMaxIndex = node;
+			}
+		}
+	
+		// disconsider the max node
+		nodesInClique.remove(nodeWithMaxIndex);
+		if (nodesInClique.isEmpty()) {
+			return maxIndex;
+		}
+	
+		// Build list of common neighbors of nodes in clique
+		List<Node> neighbors = SetToolkit.clone(nodesInClique.get(0).getAdjacents());
+		int numNodes = nodesInClique.size();
+		for (int i = 1; i < numNodes; i++) {
+			List<Node> intersection = SetToolkit.intersection(neighbors, nodesInClique.get(i).getAdjacents());
+//			neighbors.clear();
+			neighbors = intersection;
+		}
+		neighbors.remove(nodeWithMaxIndex);
+	
+		// return 0 if all neighbors out of this clique has higher index
+		int neighborIndex = 0;
+		for (Node neighbor : neighbors) {
+			if (nodesInClique.contains(neighbor) || (ordering.indexOf(neighbor) > maxIndex)) {
+				continue;
+			}
+			neighborIndex = maxIndex;
+			break;
+		}
+	
+		return neighborIndex;
+	}
+
+	/**
+	 * Assembles the junction tree by using Frank Jensen's strong tree method
+	 * @param net : net containing the nodes and the arcs. Nodes in {@link SingleEntityNetwork#getNodesCopy()} will be referenced by this method.
+	 * @param nodeEliminationOrder : ordering used in {@link #triangulate(ProbabilisticNetwork)}
+	 * @param junctionTree : junction tree to be modified. 
+	 * {@link IJunctionTree#getCliques()} must be already filled by {@link #cliques(ProbabilisticNetwork, List, IJunctionTree)}.
+	 */
+	protected void strongTreeMethod(ProbabilisticNetwork net, List<INode> nodeEliminationOrder, IJunctionTree junctionTree) {
+		int ndx;
+		Clique auxClique;
+		Clique auxClique2;
+		List<Node> uni;
+		List<Node> inter;
+		List<Node> auxList;
+		List<Node> listaNos;
+		Separator sep;
+		List<INode> alpha = new ArrayList<INode>();
+	
+		for (int i = nodeEliminationOrder.size() - 1; i >= 0; i--) {
+			alpha.add(nodeEliminationOrder.get(i));
+		}
+	
+		if (net.getNodesCopy().size() > 1) {
+			int sizeCliques = junctionTree.getCliques().size();
+			for (int i = 0; i < sizeCliques; i++) {
+				auxClique = (Clique) junctionTree.getCliques().get(i);
+				listaNos = SetToolkit.clone(auxClique.getNodesList());
+				//calculate index
+				while ((ndx = getCliqueIndexFromAlphaOrder(listaNos, (List)alpha)) <= 0
+					&& listaNos.size() > 1);
+				if (ndx < 0) {
+					ndx = 0;
+				}
+				auxClique.setIndex(ndx);
+				listaNos.clear();
+			}
+			alpha.clear();
+	
+			Comparator<Clique> comparador = new Comparator<Clique>() {
+				public int compare(Clique o1, Clique o2) {
+					Clique c1 = o1;
+					Clique c2 = o2;
+					if (c1.getIndex() > c2.getIndex()) {
+						return 1;
+					}
+					if (c1.getIndex() < c2.getIndex()) {
+						return -1;
+					}
+					return 0;
+				}
+			};
+	
+			Collections.sort(junctionTree.getCliques(), comparador);
+	
+			auxClique = (Clique) junctionTree.getCliques().get(0);
+			uni = SetToolkit.clone(auxClique.getNodesList());
+	
+			int sizeCliques1 = junctionTree.getCliques().size();
+			for (int i = 1; i < sizeCliques1; i++) {
+				auxClique = (Clique) junctionTree.getCliques().get(i);
+				inter = SetToolkit.intersection(auxClique.getNodesList(), uni);
+				for (int j = 0; j < i; j++) {
+					auxClique2 = (Clique) junctionTree.getCliques().get(j);
+	
+					if (!auxClique2.getNodesList().containsAll(inter)) {
+						continue;
+					}
+	
+					sep = new Separator(auxClique2, auxClique);
+					sep.setNodes(inter);
+					junctionTree.addSeparator(sep);
+	
+					auxList = SetToolkit.union(auxClique.getNodes(), uni);
+					uni.clear();
+					uni = auxList;
+					break;
+				}
+			}
+		}
+	}
+
+	/**
+	 * This method will generate cliques for the provided junction tree
+	 * @param net : markov net to be compiled to a junction tree.
+	 * A bayes net can be converted to markov net by calling {@link #moralize(ProbabilisticNetwork)} and {@link #triangulate(ProbabilisticNetwork)}.
+	 * Nodes in {@link SingleEntityNetwork#getNodesCopy()} will be referenced by this method.
+	 * @param nodeEliminationOrder : ordering used in {@link #triangulate(ProbabilisticNetwork)}
+	 * @param junctionTree : junction tree to be modified. This method will fill {@link IJunctionTree#getCliques()}.
+	 */
+	protected void cliques(ProbabilisticNetwork net, List<INode> nodeEliminationOrder, IJunctionTree junctionTree) {
+		
+		// this will be filled with cliques instantiated so far
+		List<Clique> generatedCliques = new ArrayList<Clique>();
+	
+		for (Node node : net.getNodesCopy()) {
+			int eliminationOrderIndex = nodeEliminationOrder.indexOf(node);
+			Clique newClique = new Clique();
+			newClique.getNodesList().add(node);
+	
+			for (Node adjacentNode : node.getAdjacents()) {
+				if (nodeEliminationOrder.indexOf(adjacentNode) > eliminationOrderIndex) {
+					newClique.getNodesList().add(adjacentNode);
+				}
+			}
+			generatedCliques.add(newClique);
+		}
+	
+		if (!generatedCliques.isEmpty()) {
+//			boolean hasSwapped = true; 
+//			while (hasSwapped) {
+//				hasSwapped = false;
+//				for (int i = 0; i < generatedCliques.size() - 1; i++) {
+//					Clique clique1 = generatedCliques.get(i);
+//					Clique clique2 = generatedCliques.get(i + 1);
+//					if (clique1.getNodesList().size() > clique2.getNodesList().size()) {
+//						generatedCliques.set(i + 1, clique1);
+//						generatedCliques.set(i, clique2);
+//						hasSwapped = true;
+//					}
+//				}
+//			}
+			// the above code was an sub-optimal bubble sort, so it was substituted by the sorting method below (which is supposedly a modified merge sort)
+			Collections.sort(generatedCliques, new Comparator<Clique>() {
+				/** This shall sort by clique size (larger cliques at the end) */
+				public int compare(Clique clique1, Clique clique2) {
+					return clique1.getNodesList().size() - clique2.getNodesList().size();
+				}
+			});
+		}
+	
+		int numCliques = generatedCliques.size();
+	
+		for1 : for (int i = 0; i < numCliques; i++) {
+			Clique clique1 = generatedCliques.get(i);
+			for (int j = i + 1; j < numCliques; j++) {
+				Clique clique2 = generatedCliques.get(j);
+	
+				if (clique2.getNodesList().containsAll(clique1.getNodesList())) {
+					continue for1;
+				}
+			}
+			junctionTree.getCliques().add(clique1);
+		}
+		
+		// dispose the list
+//		generatedCliques.clear();
 	}
 
 	/**
 	 * Sets up node adjacency 
 	 * @param net
 	 */
-	protected void makeAdjacents(ProbabilisticNetwork net) {
+	public void makeAdjacents(ProbabilisticNetwork net) {
 		// resets the adjacency information
     	for (Node node : net.getNodes()) {
 			node.clearAdjacents();
 		}
-    	for (int z = markovArc.size() - 1; z >= 0; z--) {
-			Edge auxArco = markovArc.get(z);
-			auxArco.getOriginNode().getAdjacents().add(
-				auxArco.getDestinationNode());
-			auxArco.getDestinationNode().getAdjacents().add(
-				auxArco.getOriginNode());
+    	for (int z = net.getMarkovArcs().size() - 1; z >= 0; z--) {
+			Edge arc = net.getMarkovArcs().get(z);
+			arc.getOriginNode().getAdjacents().add(arc.getDestinationNode());
+			arc.getDestinationNode().getAdjacents().add(arc.getOriginNode());
 		}
     	
-    	List<Edge> markovArcCpy = this.getMarkovArcCpy();
-    	for (int z = markovArcCpy.size() - 1; z >= 0; z--) {
-			Edge auxArco = markovArcCpy.get(z);
-			if (auxArco.getDestinationNode().getType()
-				== Node.UTILITY_NODE_TYPE) {
-				markovArcCpy.remove(z);
+    	List<Edge> edgesCopy = net.getEdgesCopy();
+    	for (int z = edgesCopy.size() - 1; z >= 0; z--) {
+			Edge auxArco = edgesCopy.get(z);
+			if (auxArco.getDestinationNode().getType() == Node.UTILITY_NODE_TYPE) {
+				edgesCopy.remove(z);
 			} else {
-				auxArco.getOriginNode().getAdjacents().add(
-					auxArco.getDestinationNode());
-				auxArco.getDestinationNode().getAdjacents().add(
-					auxArco.getOriginNode());
+				auxArco.getOriginNode().getAdjacents().add(auxArco.getDestinationNode());
+				auxArco.getDestinationNode().getAdjacents().add(auxArco.getOriginNode());
 			}
 		}
     }
 
 	/**
-	 * Sub-routine for {@link #triangularize(ProbabilisticNetwork)}.
+	 * Sub-routine for {@link #triangulate(ProbabilisticNetwork)}.
 	 * It eliminates the nodes in the graph by using minimum weight heuristics.
 	 * First, it eliminates nodes whose adjacent nodes are pairwise connected.
 	 * After that, if there are more nodes in the graph, it eliminates them using the
 	 * minimum weight heuristic.
 	 *
-	 * @param  nodes  collection of nodes.
+	 * @param  nodes  collection of nodes considered here.
+	 * @param nodeEliminationOrder : this is an output argument that will be filled with nodes
+	 * ordered by the order of elimination used by this algorithm for triangulation.
+	 * This list may be referenced later as a heuristic for ordering cliques.
 	 * 
 	 */
-	protected boolean minimumWeightElimination(List<Node> nodes, ProbabilisticNetwork net) {
+	protected boolean minimumWeightElimination(List<Node> nodes, ProbabilisticNetwork net, List<INode> nodeEliminationOrder) {
+		if (nodeEliminationOrder == null) {
+			nodeEliminationOrder = new ArrayList<INode>();
+		}
 		boolean hasSome 	= true;
 		
 		while (hasSome) {
@@ -1046,22 +1537,22 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				}
 				nodes.remove(auxNode);
 				hasSome = true;
-				net.getNodeEliminationOrder().add(auxNode);
+				nodeEliminationOrder.add(auxNode);
 				if (net.isCreateLog()) {
 					net.getLogManager().append(
-						"\t" + net.getNodeEliminationOrder().size() + " " + auxNode.getName() + "\n");
+						"\t" + nodeEliminationOrder.size() + " " + auxNode.getName() + "\n");
 				}
 			}
 		}
 	
 		if (nodes.size() > 0) {
 			Node auxNo = weight(nodes); //auxNo: clique with maximum weight.
-			net.getNodeEliminationOrder().add(auxNo);
+			nodeEliminationOrder.add(auxNo);
 			if (net.isCreateLog()) {
 				net.getLogManager().append(
-					"\t" + net.getNodeEliminationOrder().size() + " " + auxNo.getName() + "\n");
+					"\t" + nodeEliminationOrder.size() + " " + auxNo.getName() + "\n");
 			}
-			eliminateNode(auxNo, nodes, net); //Elimine no e reduza grafo.
+			eliminateNode(auxNo, nodes, net); //Eliminate node and reduce the scope to be considered.
 			return true;
 		}
 		
@@ -1069,7 +1560,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	}
 	
 	/**
-	 * Method used inside {@link #triangularize(ProbabilisticNetwork)}
+	 * Method used inside {@link #triangulate(ProbabilisticNetwork)}
 	 * in order to use the minimum weight heuristic.
 	 *
 	 * @param  nodes  available nodes
@@ -1103,13 +1594,15 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	}
 	
 	/**
-	 * Method used inside {@link #triangularize(ProbabilisticNetwork)}
+	 * Method used inside {@link #triangulate(ProbabilisticNetwork)}
 	 * in order to eliminate nodes and reduce the graph.
 	 * It includes necessary arcs in order to do so.
 	 * 
 	 *@param  node      node to be eliminated
 	 *@param  nodes  available nodes
-	 *
+	 * @see #minimumWeightElimination(List, ProbabilisticNetwork, List)
+	 * @see ProbabilisticNetwork#getMarkovArcs()
+	 * @see Node#getAdjacents()
 	 */
 	private void eliminateNode(Node node, List<Node> nodes, ProbabilisticNetwork net) {	
 		for (int i = node.getAdjacents().size()-1; i > 0; i--) {
@@ -1126,26 +1619,22 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 								+ auxNode2.getName()
 								+ "\n");
 					}
-					getMarkovArc().add(auxArco);
+					net.getMarkovArcs().add(auxArco);
 					auxNode1.getAdjacents().add(auxNode2);
 					auxNode2.getAdjacents().add(auxNode1);			
-					
-//					System.out.println(auxArco);
 				}
 			}
 		}
 	
 		for (int i = node.getAdjacents().size() - 1; i >= 0; i--) {
 			Node auxNo1 = node.getAdjacents().get(i);
-			//boolean removed = auxNo1.getAdjacents().remove(no);
-			//assert removed;
 			auxNo1.getAdjacents().remove(node);
 		}
 		nodes.remove(node);
 	}
 
 	/**
-	 * This method is used inside {@link #triangularize(ProbabilisticNetwork)}
+	 * This method is used inside {@link #triangulate(ProbabilisticNetwork)}
 	 * in order to verify whether we need to insert another arc in order
 	 * to eliminate a node.
 	 * @param auxNo
@@ -1191,18 +1680,10 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	protected void verifyUtility(Graph graph) throws Exception {
 		if (graph instanceof ProbabilisticNetwork) {
 			ProbabilisticNetwork net = (ProbabilisticNetwork) graph;
-			
-			Node aux;
-			
-			int sizeNos = net.getNodeCount();
-			for (int i = 0; i < sizeNos; i++) {
-				aux = (Node) net.getNodes().get(i);
-				if (aux.getType() == Node.UTILITY_NODE_TYPE
-						&& aux.getChildren().size() != 0) {
-					throw new Exception(
-							resource.getString("variableName")
-							+ aux
-							+ resource.getString("hasChildName"));
+			// just check that all utility nodes don't have children
+			for (Node node : net.getNodes()) {
+				if (node.getType() == Node.UTILITY_NODE_TYPE && node.getChildren().size() != 0) {
+					throw new Exception( resource.getString("variableName") + node + resource.getString("hasChildName"));
 				}
 			}
 		}
@@ -2143,7 +2624,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	
 
 	/**
-	 * This method is used in {@link #sortDecisionNodes(Graph)} and {@link #triangularize(ProbabilisticNetwork)} 
+	 * This method is used in {@link #sortDecisionNodes(Graph)} and {@link #triangulate(ProbabilisticNetwork)} 
 	 * in order to trace decision nodes and its order.
 	 * 
 	 * @return the sortedDecisionNodes
@@ -2153,7 +2634,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	}
 
 	/**
-	 * This method is used in {@link #sortDecisionNodes(Graph)} and {@link #triangularize(ProbabilisticNetwork)} 
+	 * This method is used in {@link #sortDecisionNodes(Graph)} and {@link #triangulate(ProbabilisticNetwork)} 
 	 * in order to trace decision nodes and its order.
 	 * 
 	 * @param sortedDecisionNodes the sortedDecisionNodes to set
@@ -2198,37 +2679,37 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		public UndoableJTCommandException(Throwable cause) {super(cause);}
 	}
 
-	/**
-	 * This is the edges of a moralized bayesian network
-	 * @see JunctionTreeAlgorithm#moralize(ProbabilisticNetwork)
-	 * @return the markovArc
-	 */
-	public List<Edge> getMarkovArc() {
-		return markovArc;
-	}
+//	/**
+//	 * This is the edges of a moralized bayesian network
+//	 * @see JunctionTreeAlgorithm#moralize(ProbabilisticNetwork)
+//	 * @return the markovArc
+//	 */
+//	public List<Edge> getMarkovArc() {
+//		return markovArc;
+//	}
+//
+//	/**
+//	 * This is the edges of a moralized bayesian network
+//	 * @see JunctionTreeAlgorithm#moralize(ProbabilisticNetwork)
+//	 * @param markovArc the markovArc to set
+//	 */
+//	public void setMarkovArc(List<Edge> markovArc) {
+//		this.markovArc = markovArc;
+//	}
 
-	/**
-	 * This is the edges of a moralized bayesian network
-	 * @see JunctionTreeAlgorithm#moralize(ProbabilisticNetwork)
-	 * @param markovArc the markovArc to set
-	 */
-	public void setMarkovArc(List<Edge> markovArc) {
-		this.markovArc = markovArc;
-	}
-
-	/**
-	 * @return the markovArcCpy
-	 */
-	public List<Edge> getMarkovArcCpy() {
-		return markovArcCpy;
-	}
-
-	/**
-	 * @param markovArcCpy the markovArcCpy to set
-	 */
-	public void setMarkovArcCpy(List<Edge> markovArcCpy) {
-		this.markovArcCpy = markovArcCpy;
-	}
+//	/**
+//	 * @return the markovArcCpy
+//	 */
+//	public List<Edge> getMarkovArcCpy() {
+//		return markovArcCpy;
+//	}
+//
+//	/**
+//	 * @param markovArcCpy the markovArcCpy to set
+//	 */
+//	public void setMarkovArcCpy(List<Edge> markovArcCpy) {
+//		this.markovArcCpy = markovArcCpy;
+//	}
 
 	/*
 	 * (non-Javadoc)
