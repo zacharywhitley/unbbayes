@@ -1246,7 +1246,7 @@ public interface MarkovEngineInterface {
 	 * If the specified question/node did not exist, they shall be created before calculating the complexity metric.
 	 * Setting this to null will return the complexity metric of current Bayes net.
 	 * This method shall not actually modify the original Bayes net.
-	 * If the arc exists, then the returned value will be a metric of the complexity after removing the existing arc.
+	 * If an arc exists (regardless of the direction), then this method will return the complexity factor after REMOVING such link.
 	 * @return a number indicating the complexity after changing network structure (i.e. after adding new arcs). In Junction tree algorithm, this will be the tree width.
 	 * @see #getNetStatistics()
 	 * @see #getComplexityFactor(List, List)
@@ -1260,7 +1260,7 @@ public interface MarkovEngineInterface {
 	 * created just in order to keep the signature compatible with {@link #addQuestionAssumption(Long, Date, long, List, List)}.
 	 * @param childQuestionId : the question to be considered as the argument childQuestionId in {@link #addQuestionAssumption(Long, Date, long, List, List)}.
 	 * If this is null, then it will return {@link #getComplexityFactor(Map)} with null argument.
-	 * If the arc exists, then the returned value will be a metric of the complexity after removing the existing arc.
+	 * If an arc exists (regardless of the direction), then this method will return the complexity factor after REMOVING such link.
 	 * @param parentQuestionIds : the questions to be considered as the "parents" (dependencies) in {@link #addQuestionAssumption(Long, Date, long, List, List)}
 	 * If the arc exists, then the returned value will be a metric of the complexity
 	 * after removing the existing arc.
@@ -1290,6 +1290,7 @@ public interface MarkovEngineInterface {
 	 * </pre>
 	 * Implementations may consider a special case when childQuestionIds is larger than parentQuestionIds.
 	 * In this case, one option is to check if there are inexisting nodes in the rest of childQuestionIds and create them if so.
+	 * If an arc exists (regardless of the direction), then this method will return the complexity factor after REMOVING such link.
 	 * @param childQuestionIds: arcs will be pointing to this node. If the arc exists, then the returned value will be a metric of the complexity
 	 * after removing the existing arc.
 	 * @param parentQuestionIds: arcs will come from this node. If the arc exists, then the returned value will be a metric of the complexity
@@ -1309,7 +1310,7 @@ public interface MarkovEngineInterface {
 	 * therefore this method can be used to provide a sorted list which indicates which assumptions are less likely to compromise performance
 	 * (the first few assumptions have less impact -- i.e. better -- and the last ones have greater impact -- i.e. worse). 
 	 * <br/> <br/>
-	 * If an arc exists, then this method will return the complexity factor after REMOVING such link.
+	 * If an arc exists (regardless of the direction), then this method will return the complexity factor after REMOVING such link.
 	 * @param childIds : the questions in which arc/link will be pointing to. In a Bayes net structure, this will identify the child node.
 	 * If this is set to null, then all arcs/links related to assumptionIds will be considered.
 	 * If this is null and assumptionIds is also null, then all existing arcs will be considered.
@@ -1329,7 +1330,7 @@ public interface MarkovEngineInterface {
 	 * If false, the ordering of the input argument (assumptionIds) will be kept.
 	 * @return a list with pairs (pair of nodes -- i.e. the link ; complexity factor). 
 	 * {@link Entry#getKey()} is the pair or nodes representing the link, and {@link Entry#getValue()} is the complexity factor.
-	 * In the link, {@link Entry#getKey()}  is the parent -- the node an arc is coming from -- and {@link Entry#getValue()} is the parent. 
+	 * In the link, {@link Entry#getKey()}  is the parent -- the node an arc is coming from -- and {@link Entry#getValue()} is the child. 
 	 * @see #getComplexityFactor(Long, List)
 	 * @see #getComplexityFactors(Map)
 	 * @see #getComplexityFactorPerAssumption(Long, List, int, boolean)
@@ -1354,7 +1355,7 @@ public interface MarkovEngineInterface {
 	 * If false, the ordering of the input argument (assumptionIds) will be kept.
 	 * @return a list with pairs (pair of nodes -- i.e. the link ; complexity factor). 
 	 * {@link Entry#getKey()} is the pair or nodes representing the link, and {@link Entry#getValue()} is the complexity factor.
-	 * In the link, {@link Entry#getKey()}  is the parent -- the node an arc is coming from -- and {@link Entry#getValue()} is the parent. 
+	 * In the link, {@link Entry#getKey()}  is the parent -- the node an arc is coming from -- and {@link Entry#getValue()} is the child. 
 	 * @see #getComplexityFactorPerAssumption(List, List, int, boolean)
 	 */
 	public List<Entry<Entry<Long,Long>, Integer>>  getComplexityFactorPerAssumption(Long childId, List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor);
