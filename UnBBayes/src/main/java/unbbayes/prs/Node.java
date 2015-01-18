@@ -827,8 +827,12 @@ public abstract class Node implements Serializable,
 	 * @see unbbayes.prs.INode#getAdjacentNodeList()
 	 */
 	public List<INode> getAdjacentNodes() {
-		this.makeAdjacents();
-		return (List)this.getAdjacents();
+		ArrayList<Node> ret = this.getAdjacents();
+		if (ret == null || ret.isEmpty()) {
+			this.makeAdjacents();
+			ret = this.getAdjacents();
+		}
+		return (List)ret;
 	}
 
 	/* (non-Javadoc)
