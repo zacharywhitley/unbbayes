@@ -1552,7 +1552,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				net.getLogManager().append(
 					"\t" + nodeEliminationOrder.size() + " " + auxNo.getName() + "\n");
 			}
-			eliminateNode(auxNo, nodes, net); //Eliminate node and reduce the scope to be considered.
+			eliminateNodeInTriangulation(auxNo, nodes, net); //Eliminate node and reduce the scope to be considered.
 			return true;
 		}
 		
@@ -1604,7 +1604,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 * @see ProbabilisticNetwork#getMarkovArcs()
 	 * @see Node#getAdjacents()
 	 */
-	private void eliminateNode(Node node, List<Node> nodes, ProbabilisticNetwork net) {	
+	protected void eliminateNodeInTriangulation(Node node, List<Node> nodes, ProbabilisticNetwork net) {	
 		for (int i = node.getAdjacents().size()-1; i > 0; i--) {
 			Node auxNode1 = node.getAdjacents().get(i);
 	
