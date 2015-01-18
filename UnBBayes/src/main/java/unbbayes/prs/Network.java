@@ -106,7 +106,7 @@ public class Network implements Graph{
 	 *@return    how many nodes this network contains.
 	 */
 	public int getNodeCount() {
-		return nodeList.size();
+		return nodeList==null?0:nodeList.size();
 	}
 
 	/**
