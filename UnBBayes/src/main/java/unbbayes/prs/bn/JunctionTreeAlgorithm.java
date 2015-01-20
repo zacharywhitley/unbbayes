@@ -1457,6 +1457,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	
 		int numCliques = generatedCliques.size();
 	
+		// only consider cliques that are not entirely contained in another clique (e.g. if there are clique {A,B} and {A,B,C}, consider only {A,B,C} and discard {A,B})
 		for1 : for (int i = 0; i < numCliques; i++) {
 			Clique clique1 = generatedCliques.get(i);
 			for (int j = i + 1; j < numCliques; j++) {
