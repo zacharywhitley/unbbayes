@@ -742,7 +742,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		List<Entry<Set<INode>, Set<Clique>>>  ret = new ArrayList<Map.Entry<Set<INode>,Set<Clique>>>(jt.getCliques().size());
 		
 		for (Clique clique : jt.getCliques()) {
-			if (jt.getParents(clique).isEmpty()) {
+			if (!jt.getParents(clique).isEmpty()) {
 				continue;	// only consider cliques with no parent (i.e. root of subtree)
 			}
 			// found a clique with no parent. This is the root of the subtree.
@@ -1498,11 +1498,12 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 				}
 				
 				// This will compile a junction tree for the subnet. 
-				JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(subnet);	// do not use dynamic junction tree compilation for the subnets
+				IncrementalJunctionTreeAlgorithm algorithm = new IncrementalJunctionTreeAlgorithm(subnet);	// but do not use dynamic junction tree compilation for the subnets
 				// Make sure ordinal junction tree compilation is used (i.e. we don't call dynamic compilation again)
-//				algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// this shall guarantee that dynamic compilation is disabled
-				algorithm.setJunctionTreeBuilder(getJunctionTreeBuilder());				// reuse the same builder of junction tree.
-				subnet.setJunctionTree(null);											// this will also guarantee dynamic compilation to be disabled
+				algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	  // this shall guarantee that dynamic compilation is disabled
+				subnet.setJunctionTree(null);											  // this will also guarantee dynamic compilation to be disabled
+				algorithm.setJunctionTreeBuilder(getJunctionTreeBuilder());				  // reuse the same builder of junction tree.
+				algorithm.setLoopyBPCliqueSizeThreshold(getLoopyBPCliqueSizeThreshold()); // reuse same configuration for loopy BP
 				// finally, compile the subnet
 				algorithm.run();
 				// assert that junction tree was compiled
@@ -1977,6 +1978,12 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
     	
     	// then, delete all old (modified) cliques
     	originalJunctionTree.removeCliques(modifiedCliques);
+    	
+    	// if we join a loopy junction tree to the original junction tree, then the original junction tree will also become loopy
+    	if ((primeSubgraphJunctionTree instanceof LoopyJunctionTree ) && ((LoopyJunctionTree)primeSubgraphJunctionTree).isLoopy() ) {
+    		// TODO handle case when original junction tree is not a LoopyJunctionTree
+    		((LoopyJunctionTree)originalJunctionTree).setLoopy(true);
+    	}
     	
 	}
 

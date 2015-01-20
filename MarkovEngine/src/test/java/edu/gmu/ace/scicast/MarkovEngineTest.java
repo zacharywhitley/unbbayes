@@ -34790,6 +34790,59 @@ public class MarkovEngineTest extends TestCase {
 		
 		// create network 1->3<-2; 1->4->5->2 ; 3->999 ; 
 		// If triangulation is present, either 1-5 or 2-4 would be created
+		Long transactionKey = null;
+		engine.addQuestion(transactionKey, new Date(), 1L, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 2L, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 3L, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 4L, 5, null);
+		engine.addQuestion(transactionKey, new Date(), 5L, 5, null);
+		engine.addQuestion(transactionKey, new Date(), 999L, 29, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 3L, Collections.singletonList(1L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 3L, Collections.singletonList(2L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 4L, Collections.singletonList(1L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 5L, Collections.singletonList(4L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 2L, Collections.singletonList(5L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 999L, Collections.singletonList(3L), null);
+		// include subnet 11->13<-12; 11->14->15->12 ; 13->999 
+		// If triangulation is present, either 11-15 or 12-14 would be created
+		engine.addQuestion(transactionKey, new Date(), 11L, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 12L, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 13L, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 14L, 5, null);
+		engine.addQuestion(transactionKey, new Date(), 15L, 5, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 13L, Collections.singletonList(11L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 13L, Collections.singletonList(12L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 14L, Collections.singletonList(11L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 15L, Collections.singletonList(14L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 12L, Collections.singletonList(15L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 999L, Collections.singletonList(13L), null);
+//		engine.commitNetworkActions(transactionKey);
+		
+		assertTrue(engine.isLoopy());
+		
+		// check that for a node, all parents are in the same clique
+		
+		// make some random trades
+		
+		// check if dynamic JT compilation will lead to loopy
+		
+		engine.setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThreshold);
+	}
+	
+	/**
+	 * Test some special cases that will make {@link IncrementalJunctionTreeAlgorithm#isLoopy()} == true,
+	 * and consequently trigger loopy BP algorithm.
+	 * @throws URISyntaxException 
+	 * @throws IOException 
+	 * @throws LoadException 
+	 */
+	public final void testLoopyBPSingleTransaction() {
+		// store backup
+		int loopyBPCliqueSizeThreshold = engine.getLoopyBPCliqueSizeThreshold();
+		engine.setLoopyBPCliqueSizeThreshold(2*5*5-1);
+		
+		// create network 1->3<-2; 1->4->5->2 ; 3->999 ; 
+		// If triangulation is present, either 1-5 or 2-4 would be created
 		long transactionKey = engine.startNetworkActions();
 		engine.addQuestion(transactionKey, new Date(), 1L, 2, null);
 		engine.addQuestion(transactionKey, new Date(), 2L, 2, null);
@@ -34823,6 +34876,8 @@ public class MarkovEngineTest extends TestCase {
 		// check that for a node, all parents are in the same clique
 		
 		// make some random trades
+		
+		// check if dynamic JT compilation will lead to loopy
 		
 		engine.setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThreshold);
 	}
