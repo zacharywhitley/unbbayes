@@ -3,6 +3,7 @@
  */
 package unbbayes.prs.bn;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,6 +58,20 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	
 	private int loopyBPCliqueSizeThreshold = Integer.MAX_VALUE; //16384;
 	
+	
+	private ICliqueSplitter cliqueSplitter = SINGLE_CYCLE_HALF_SIZE_SEPARATOR_CLIQUE_SPLITTER;
+	
+	private boolean isToSplitVirtualNodeClique = false;
+	
+	private boolean isToCreateVirtualNode = false;
+	
+	/** By default, disable dynamic jt compilation if it is using loopy bp */
+	private boolean isToCompileNormallyWhenLoopy = true;
+	
+	/** If true, the loopy BP algorithm and JT compilation does not guarantee that a node and all its parents will be in the same clique */
+	private boolean isToUseAgressiveLoopyBP = false;
+	
+
 	/**
 	 * This clique splitter will split the clique in the way that
 	 * the 1st clique will have the first N variables that fills desired size,
@@ -140,12 +155,6 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 			return ret;
 		}
 	};
-	
-	private ICliqueSplitter cliqueSplitter = SINGLE_CYCLE_HALF_SIZE_SEPARATOR_CLIQUE_SPLITTER;
-	
-	private boolean isToSplitVirtualNodeClique = false;
-	
-	private boolean isToCreateVirtualNode = false;
 	
 	/**
 	 * Default constructor.
@@ -257,6 +266,22 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 									|| getJunctionTree().getCliques() == null
 									|| getJunctionTree().getCliques().isEmpty();
 		
+		// TODO run incremental JT compilation for influence diagrams as well
+//		if (!isToCompileNormally
+//				&& getNet().isID()) {
+//			isToCompileNormally = true;
+//		}
+		
+		// disable incremental/dynamic compilation if this is loopy and it is configured to disable it in such case
+		if (!isToCompileNormally
+				&& isToCompileNormallyWhenLoopy()
+				&& (getJunctionTree() instanceof LoopyJunctionTree)
+				&& ((LoopyJunctionTree)getJunctionTree()).isLoopy()) {
+			isToCompileNormally = true;
+//			((LoopyJunctionTree)getJunctionTree()).setLoopy(false);	// reset the configuration, so that this becomes true only when explicitly set to true
+			// the above line is not necessary, because when compiling normally the old instance of LoopyJunctionTree is discarded anyway
+		}
+		
 		// check if we should use dynamic junction tree compilation
 		if ( !isToCompileNormally ) {
 			try {
@@ -292,13 +317,10 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 			super.run();
 		}
 		
-		// activate loopy BP if clique size got too large
-		List<Clique> largestCliques = getLargestCliques(getNet());
-		if (largestCliques != null && 
-				!largestCliques.isEmpty() 
-				&& ( largestCliques.get(0).getProbabilityFunction().tableSize() > getLoopyBPCliqueSizeThreshold() ) ) {
+		if (isConditionForClusterLoopyBPSatisfied(getNet())) {
 			this.buildLoopyCliques(getNet());
 		}
+		
 		
 		// update backup of network if necessary
 		if (this.getNet().getNodes().size() > getDynamicJunctionTreeNetSizeThreshold()) {
@@ -307,6 +329,189 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		
 	}
 	
+
+	/**
+	 * This method extends the superclass method in order to keep track of which arcs were included during
+	 * triangulation (i.e. during elimination). If clique sizes gets larger than {@link #getLoopyBPCliqueSizeThreshold()}
+	 * due to these arcs, then such arcs will be removed, {@link SingleEntityNetwork#getMarkovArcs()}
+	 * and {@link Node#getAdjacents()} will be properly updated. 
+	 * Deletion of such triangulation arcs may cause cliques not to be connected in {@link #strongTreeMethod(ProbabilisticNetwork, List, IJunctionTree)},
+	 * so {@link #buildLoopyCliques(ProbabilisticNetwork)} shall be called afterwards in such cases.
+	 * @see unbbayes.prs.bn.JunctionTreeAlgorithm#triangulate(unbbayes.prs.bn.ProbabilisticNetwork)
+	 * @see SingleEntityNetwork#getMarkovArcs()
+	 * @see Node#getAdjacents()
+	 * @see LoopyJunctionTree#setLoopy(boolean)
+	 */
+	public List<INode> triangulate(ProbabilisticNetwork net) {
+		
+		// influence diagram (ID) is not supported by loopy BP anyway, so check if this is an ID
+		boolean isInfluenceDiagram = net.isID();
+		
+		// backup the content of markov arcs, because we'll check what are the new arcs included during triangulation
+		Set<Edge> markovArcsBeforeTriangulation = Collections.EMPTY_SET;
+		if (!isInfluenceDiagram) {
+			markovArcsBeforeTriangulation = new HashSet<Edge>(net.getMarkovArcs());
+		}
+		
+		// run triangulation
+		List<INode> nodeEliminationOrder = super.triangulate(net);
+		
+		if (isInfluenceDiagram) {
+			// don't do anything special if this is an influence diagram.
+			return nodeEliminationOrder;
+		}
+		
+		// obtain the arcs created during triangulation
+		List<Edge> arcsCreatedInTriangulation = new ArrayList<Edge>(net.getMarkovArcs().size()-markovArcsBeforeTriangulation.size());
+		for (Edge arc : net.getMarkovArcs()) {
+			if (!markovArcsBeforeTriangulation.contains(arc)) {
+				arcsCreatedInTriangulation.add(arc);
+			}
+		}
+		
+		// check if the size of cliques related to the triangulation arcs are likely to cause large clique sizes
+		boolean isTriangulationCausingLargeCliques = false;
+		for (Edge arc : arcsCreatedInTriangulation) {
+			// the largest clique caused by this arc is the product space of all nodes adjacent to the node connected by this arc
+			
+			// first, check with one of the node in arc
+			Node nodeInArc = arc.getOriginNode();
+			
+			// this will be the size of the product space of states of current node and all nodes adjacent to it
+			int stateSpace = nodeInArc.getStatesSize(); 
+			int eliminationOrderOfNodeInArc = nodeEliminationOrder.indexOf(nodeInArc);	// this is the order of elimination used when triangulating this node
+			for (Node adjacentNode : nodeInArc.getAdjacents()) {
+				if (nodeEliminationOrder.indexOf(adjacentNode) > eliminationOrderOfNodeInArc) { // only nodes in later position in elimination order are included in cliques
+					stateSpace *= adjacentNode.getStatesSize(); 
+				}
+			}
+			
+			// if any triangulation arc can cause a clique to be larger than a threshold, then it is sufficient condition to start loopy BP
+			if (stateSpace > getLoopyBPCliqueSizeThreshold()) {
+				isTriangulationCausingLargeCliques = true;
+				break;
+			}
+			
+			// well, check the same condition with the other node in arc too
+			nodeInArc = arc.getDestinationNode();
+			stateSpace = nodeInArc.getStatesSize(); 
+			eliminationOrderOfNodeInArc = nodeEliminationOrder.indexOf(nodeInArc);	// this is the order of elimination used when triangulating this node
+			for (Node adjacentNode : nodeInArc.getAdjacents()) {
+				if (nodeEliminationOrder.indexOf(adjacentNode) > eliminationOrderOfNodeInArc) { // only nodes in later position in elimination order are included in cliques
+					stateSpace *= adjacentNode.getStatesSize();
+				}
+			}
+			
+			// if any triangulation arc can cause a clique to be larger than a threshold, then it is sufficient condition to start loopy BP
+			if (stateSpace > getLoopyBPCliqueSizeThreshold()) {
+				isTriangulationCausingLargeCliques = true;
+				break;
+			}
+			
+		}
+		
+		// a condition to trigger loopy BP in cluster structure was satisfied, so undo the triangulation
+		if (isTriangulationCausingLargeCliques) {
+			// remove the arcs created during triangulation
+//			net.getMarkovArcs().removeAll(arcsCreatedInTriangulation);
+			/*
+			 * if we are using leaf->root ordering of node elimination, then we don't need the moralization,
+			 * because a child node is always explicitly connected with all its parents, and if it is eliminated first,
+			 * then the corresponding #clique method will first generate cliques of nodes adjacent to nodes eliminated first
+			 * (and nodes adjacent to nodes eliminated first -- i.e. leaves/children -- are always the entire set of its parents).
+			 */
+			net.getMarkovArcs().clear(); 
+			
+			// rebuild the list of neighbors/adjacency of each node, considering that some arcs were removed
+			// by removing the arcs and rebuilding the adjacency information, the other methods won't consider arcs created by triangulation
+			makeAdjacents(net);
+			
+			// extract all probabilistic nodes
+			List<Node> nodesYetToAddress = new ArrayList<Node>(net.getNodes());
+			
+			// convert the node elimination order to consider leaves/children first, and then the parents/root
+			nodeEliminationOrder.clear();
+			while (!nodesYetToAddress.isEmpty()) {
+				
+				// find a leaf node
+				int numNodes = nodesYetToAddress.size();	// extract the size it in advance, so that we don't call the getter on every iteration
+				INode leaf = null; 	// the node to look for
+				int indexOfLeaf;	// index (in the list nodesYetToAddress) of the node to look for
+				for (indexOfLeaf = 0; indexOfLeaf < numNodes; indexOfLeaf++) {
+					
+					leaf = nodesYetToAddress.get(indexOfLeaf);	// current node in iteration
+					
+					// check if this is really a leaf node
+					if (leaf.getChildNodes().isEmpty()) { 
+						// if this is a leaf in original BN, this is immediately a leaf
+						break;	// just use the 1st one we found
+					} else {
+						// or if it becomes a leaf by removing all eliminated nodes from list of children, then it is also a leaf in current scope.
+						List<INode> children = new ArrayList<INode>(leaf.getChildNodes());	// use a copy, so that we don't modify the original
+						children.retainAll(nodesYetToAddress);	// remove all eliminated nodes
+						if (children.isEmpty()) {
+							break; // just use the 1st one we found
+						}
+					}
+					
+				}
+				
+				// eliminate it
+				nodeEliminationOrder.add(leaf);
+				nodesYetToAddress.remove(indexOfLeaf);
+			}
+		}
+		
+		return nodeEliminationOrder;	
+	}
+	
+	
+	/**
+	 * Checks for conditions to activate cluster (clique) loopy BP.
+	 * If conditions could not be tested, this will return false anyway.
+	 * @param net : network to check for conditions.
+	 * @return true if conditions are satisfied. False otherwise.
+	 * @see #setLoopy(boolean)
+	 * @see #isToUseAgressiveLoopyBP()
+	 * @see #triangulate(ProbabilisticNetwork)
+	 */
+	public boolean isConditionForClusterLoopyBPSatisfied( ProbabilisticNetwork net) {
+		
+		// basic assertions
+		if (net == null || net.getJunctionTree() == null || net.getJunctionTree().getCliques() == null) {
+			return false;	// false is the default value.
+		}
+		
+		if (isToUseAgressiveLoopyBP()) {
+			// activate loopy BP if clique size got too large
+			List<Clique> largestCliques = getLargestCliques(net);
+			if (largestCliques != null &&  !largestCliques.isEmpty() 
+					&& ( largestCliques.get(0).getProbabilityFunction().tableSize() > getLoopyBPCliqueSizeThreshold() ) ) {
+				return true;
+			}
+		} else {
+			// if we are not using aggressive loopy BP structure, then the condition for a loopy structure
+			// is to have some cliques disconnected from other cliques due to #triangulate removing arcs created by node elimination 
+			if (net.getJunctionTree().getCliques().size() > 1) {
+				// count the number of cliques with null parents. If more than 1, then there are cliques disconnected from the rest (a condition to require #buildLoopyCliques)
+				int numCliquesWithNoParents = 0;
+				for (Clique clique : net.getJunctionTree().getCliques()) {
+					if (clique.getParent() == null) {
+						numCliquesWithNoParents++;
+					}
+				}
+				return numCliquesWithNoParents > 1;
+			}
+		}
+		
+		// by default, loopy BP shall not be used
+		return false;
+	}
+
+	
+	
+
+
 	/**
 	 * This method will update {@link #setNetPreviousRun(ProbabilisticNetwork)}
 	 * with a clone of the current network in {@link #getNet()}.
@@ -369,11 +574,15 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	}
 
 	/**
-	 * This method will call {@link #splitCliqueAndAddToJT(Clique, LoopyJunctionTree, int)} in order
-	 * to reduce the maximum size of cliques and generate cliques with loops.
-	 * It will also call {@link LoopyJunctionTree#setLoopy(boolean)} to true in order
+	 * If {@link #isToUseAgressiveLoopyBP()} is true, then this method will call {@link #splitCliqueAndAddToJT(Clique, LoopyJunctionTree, int)} in order
+	 * to reduce the maximum size of cliques and generate cliques with loops. In the same case, this will also call {@link LoopyJunctionTree#setLoopy(boolean)} to true in order
 	 * to explicitly indicate that the clique structures are loopy now.
+	 * <br/>
+	 * <br/>
+	 * If {@link #isToUseAgressiveLoopyBP()} is false, then this method will connect cliques that remained disconnected after {@link #strongTreeMethod(ProbabilisticNetwork, List, IJunctionTree)}
+	 * due to presence of loopy cliques caused by arcs not included in {@link #addChordAndEliminateNode(Node, List, ProbabilisticNetwork)} 
 	 * @param probabilisticNetwork
+	 * @see #triangulate(ProbabilisticNetwork)
 	 */
 	public void buildLoopyCliques(ProbabilisticNetwork probabilisticNetwork) {
 		// extract the junction tree
@@ -382,25 +591,198 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 			jt = (LoopyJunctionTree) probabilisticNetwork.getJunctionTree();
 		} catch (ClassCastException e) {
 			throw new UnsupportedOperationException("Current version only allows loopy BP in clique/cluster structure if the network is associated with an instance of " + LoopyJunctionTree.class.getName(), e);
-//			e.printStackTrace();
-//			// needs to recompile JT using LoopyJunctionTree
-//			getNet().setJunctionTreeBuilder(DEFAULT_LOOPY_JT_BUILDER);
-//			super.run();	// recompile the whole structure
-//			// now, the junction tree is supposedly an instance of LoopyJunctionTree
-//			try {
-//				jt = (LoopyJunctionTree) getJunctionTree();
-//			} catch (ClassCastException e2) {
-//				throw new RuntimeException("Unable to create a special instance of junction tree for loopy BP.", e2);
-//			}
+		}
+		
+		if (jt == null) {
+			throw new IllegalStateException("No junction tree was compiled prior to this method's invokation. Please provide a network which was compiled already.");
 		}
 		
 		// explicitly indicate that this junction tree is not a tree, and it has loops...
 		jt.setLoopy(true);	// this should enable loopy BP
 		
-		// split largest cliques
-		for (Clique largeClique : getLargestCliques(probabilisticNetwork)) {
-			this.splitCliqueAndAddToJT(largeClique, jt, getLoopyBPCliqueSizeThreshold());
+		if (isToUseAgressiveLoopyBP()) {
+			
+			// split largest cliques
+			for (Clique largeClique : getLargestCliques(probabilisticNetwork)) {
+				this.splitCliqueAndAddToJT(largeClique, jt, getLoopyBPCliqueSizeThreshold());
+			}
+			
+		} else { // search for disconnected cliques and connect them to proper cliques (this may lead to loops in cluster structure);
+			// search for empty separators
+			List<Separator> emptySeparators = new ArrayList<Separator>(jt.getSeparators().size());
+			for (Separator separator : jt.getSeparators()) {
+				if (separator.getNodesList().isEmpty()) {
+					emptySeparators.add(separator);
+				}
+			}
+			// 1. Delete empty separators
+			for (Separator emptySeparator : emptySeparators) {
+				// disconnect relation child->parents
+				jt.removeParent(emptySeparator.getClique1(), emptySeparator.getClique2());
+				// disconnect relation parent->children
+				emptySeparator.getClique1().removeChild(emptySeparator.getClique2());
+				// delete the separator from JT and from all its indexes
+				jt.removeSeparator(emptySeparator);
+			}
+			
+			// 2. Identify groups of disconnected sub-tree. Make index of joint variables
+			List<Entry<Set<INode>,Set<Clique>>> nodesInSubtreeToCliquesInSubreeMap = getDisconnectedSubtreeFromJT(jt);
+			
+			// 3. For each pair of block (subtree), check if there is intersection. If so, connect a clique in block to a clique in another block. 
+			for (int i = 0; i < nodesInSubtreeToCliquesInSubreeMap.size()-1; i++) {
+				for (int j = i+1; j < nodesInSubtreeToCliquesInSubreeMap.size(); j++) {
+					
+					// iterate the data for current pair of subtrees
+					Set<INode> nodesInSubTree1 = nodesInSubtreeToCliquesInSubreeMap.get(i).getKey();
+					Set<INode> nodesInSubTree2 = nodesInSubtreeToCliquesInSubreeMap.get(j).getKey();
+					
+					// if there is no intersection, then we can ignore this pair
+					if (!Collections.disjoint(nodesInSubTree1, nodesInSubTree2)) {
+						Set<Clique> cliquesInSubTree1 = nodesInSubtreeToCliquesInSubreeMap.get(i).getValue();
+						Set<Clique> cliquesInSubTree2 = nodesInSubtreeToCliquesInSubreeMap.get(j).getValue();
+						// pairwise connect cliques in subtree 1 to subtree 2
+						for (Clique parentClique : cliquesInSubTree1) {
+							for (Clique childClique : cliquesInSubTree2) {
+								// obtain the intersection of these two cliques
+								List<Node> intersection = new ArrayList<Node>(parentClique.getNodesList());
+								intersection.retainAll(childClique.getNodesList());
+								
+								// ignore cliques not having any common node
+								if (intersection.isEmpty()) {
+									continue;	
+								}
+								
+								// Direction of separator must follow same order of cliques (i.e. alpha order -- the order it appears in the list in JT).
+								if (jt.getCliques().indexOf(parentClique) > jt.getCliques().indexOf(childClique)) {
+									// just swap child and parent cliques
+									Clique varForSwap = childClique;
+									childClique = parentClique;
+									parentClique = varForSwap;
+								}
+								
+								// create the new separator
+								Separator newSeparator = new Separator(parentClique, childClique, false);	// false := don't update list of parents/children of these cliques yet
+								newSeparator.setNodes(intersection);
+								jt.addSeparator(newSeparator);
+								
+								// set parentClique a parent of childClique
+								jt.addParent(parentClique, childClique);
+								// set childClique a child of parentClique
+								parentClique.addChild(childClique);
+								
+							}	// end of for each clique
+						}	// end of for  each clique
+					}	// else subtrees are disjoint
+				} // end of for each subtree
+			}	// end of for each subtree
+			
+			// 4. if there are more than 1 root yet, pick 1st root (alpha order) and create empty Separator to another root.
+			List<Clique> rootCliques =  getCliquesWithNoParents(jt);
+			
+			if (rootCliques != null && !rootCliques.isEmpty()) {
+				
+				Clique parentClique = rootCliques.get(0);	// the 1st clique is supposedly to be the 1st one appearing in jt
+				
+				for (int i = 1; i < rootCliques.size(); i++) {
+					
+					Clique childClique = rootCliques.get(i);
+					
+					// create the new empty separator
+					jt.addSeparator(new Separator(parentClique, childClique, false));	// false := don't update list of parents/children of these cliques yet
+					
+					// set parentClique a parent of childClique by updating the list of parents in childClique
+					jt.addParent(parentClique, childClique);
+					
+					// set childClique a child of parentClique by updating the list of children in parent clique
+					parentClique.addChild(childClique);
+				}
+			}
 		}
+		
+	}
+	
+	/**
+	 * @param jt : instance of {@link JunctionTree} whose {@link Clique} will be accessed.
+	 * @return : cliques whose {@link JunctionTree#getParents(Clique)} is empty.
+	 * The order in {@link JunctionTree#getCliques()} will be kept.
+	 */
+	public List<Clique> getCliquesWithNoParents(JunctionTree jt) {
+		
+		// basic assertion
+		if (jt == null || jt.getCliques() == null) {
+			return Collections.EMPTY_LIST;
+		}
+		
+		// prepare the list to be returned
+		List<Clique> ret = new ArrayList<Clique>();
+		
+		// search for cliques which satisfy condition. Keep original order
+		for (Clique clique : jt.getCliques()) {
+			if (jt.getParents(clique).isEmpty()) {
+				ret.add(clique);
+			}
+		}
+		
+		return ret;
+	}
+
+	/**
+	 * @param jt : junction tree to look for cliques. 
+	 * @return
+	 * a list of pairs representing a disconnected subtree in the junction tree. 
+	 * The 1st element in the pair is the set of all nodes contained in the subtree.
+	 * The 2nd element in the pair is the set of cliques in the subtree.
+	 * A disconnected subtree is a subtree whose root is a clique with null parent.
+	 * @see #buildLoopyCliques(ProbabilisticNetwork)
+	 */
+	private List<Entry<Set<INode>, Set<Clique>>> getDisconnectedSubtreeFromJT( LoopyJunctionTree jt) {
+		if (jt == null || jt.getCliques() == null || jt.getCliques().isEmpty()) {
+			return Collections.EMPTY_LIST;
+		}
+		List<Entry<Set<INode>, Set<Clique>>>  ret = new ArrayList<Map.Entry<Set<INode>,Set<Clique>>>(jt.getCliques().size());
+		
+		for (Clique clique : jt.getCliques()) {
+			if (jt.getParents(clique).isEmpty()) {
+				continue;	// only consider cliques with no parent (i.e. root of subtree)
+			}
+			// found a clique with no parent. This is the root of the subtree.
+			// prepare set to be filled with nodes contained in this subtree
+			Set<INode> nodesInSubtree = new HashSet<INode>();
+			// obtain all cliques that can be reached from this root, and also fill set of nodes contained in subtree
+			Set<Clique> cliquesInSubtree = getCliquesInSubtreeRecursively(clique, nodesInSubtree);
+			// include the new entry in the list to be returned
+			ret.add(new AbstractMap.SimpleEntry<Set<INode>, Set<Clique>>(nodesInSubtree, cliquesInSubtree));
+		}
+		
+		return ret;
+	}
+
+	/**
+	 * Recursively visits the hierarchy below {@link Clique#getChildren()}.
+	 * @param root : root of the subtree to look for children.
+	 * @param nodesInSubtree : this is an output argument to be filled with all nodes contained in the subtree.
+	 * @return : a set of all cliques found below the provided clique, with the clique inclusively.
+	 */
+	private Set<Clique> getCliquesInSubtreeRecursively(Clique root, Set<INode> nodesInSubtree) {
+		
+		Set<Clique> ret = new HashSet<Clique>();	// prepare the set to return
+		
+		ret.add(root);	// the set to return must include the provided root
+		
+		// visit the root (i.e. fill the set of nodes in this root)
+		if (nodesInSubtree != null) {
+			for (Node node : root.getNodesList()) {
+				nodesInSubtree.add(node);
+			}
+		}
+		
+		// recursively visit children
+		for (Clique child : root.getChildren()) {
+			// this should also properly fill nodesInSubtree
+			ret.addAll(this.getCliquesInSubtreeRecursively(child, nodesInSubtree));
+		}
+		
+		return ret;
 	}
 
 	/**
@@ -479,7 +861,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		}
 		
 		// extract children of original clique
-		List<Clique> childCliques = originalClique.getChildren();
+		List<Clique> childCliques = new ArrayList<Clique>(originalClique.getChildren());	// use a clone to avoid concurrent modification
 		// disconnect clique from children
 		if (childCliques != null) {
 			for (Clique childClique : childCliques) {
@@ -2636,41 +3018,64 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	 * @throws ClassCastException if {@link #getJunctionTree()} is not an instance of {@link LoopyJunctionTree}.
 	 */
 	public void setLoopy(boolean isLoopy) {
-		if (!isLoopy() && isLoopy) {	// changing from non-loopy to loopy
-			// force loopy BP if clique size got too large
-			List<Clique> largestCliques = getLargestCliques(getNet());
-			if (largestCliques != null && 
-					!largestCliques.isEmpty() 
-					&& ( largestCliques.get(0).getProbabilityFunction().tableSize() > getLoopyBPCliqueSizeThreshold() ) ) {
-				this.buildLoopyCliques(getNet());
-			}
-		} else if (isLoopy() && !isLoopy) {	// changing from loopy to non-loopy
-			
-			// make sure we use CPTs that are up-to-date (accordingly to clique potentials)
-			updateCPTBasedOnCliques();
-			
-			// disable dynamic JT compilation
-			setNetPreviousRun(null);
-			
-			int loopyBPCliqueSizeThresholdBakup = this.getLoopyBPCliqueSizeThreshold();	// keep backup, in order to restore later
-			// disable loopy BP
+//		if (!isLoopy() && isLoopy) {	// changing from non-loopy to loopy
+////			// force loopy BP if clique size got too large
+////			if (isConditionForClusterLoopyBPSatisfied(getNet())) {
+////				if (isToUseAgressiveLoopyBP()) {
+////					this.buildLoopyCliques(getNet());
+////				} else {
+////					this.setNetPreviousRun(null);	// this will ensure no cache will be used in this compilation (thus, dynamic JT compilation will not run)
+////					this.run();
+////				}
+////			}
+//			// make sure we use CPTs that are up-to-date (accordingly to clique potentials)
+//			updateCPTBasedOnCliques();
+//			this.setNetPreviousRun(null);	// this will ensure no cache will be used in this compilation (thus, dynamic JT compilation will not run)
+//			this.run();
+//		} else if (isLoopy() && !isLoopy) {	// changing from loopy to non-loopy
+//			
+//			// make sure we use CPTs that are up-to-date (accordingly to clique potentials)
+//			updateCPTBasedOnCliques();
+//			
+//			// disable dynamic JT compilation
+//			setNetPreviousRun(null);
+//			
+//			int loopyBPCliqueSizeThresholdBakup = this.getLoopyBPCliqueSizeThreshold();	// keep backup, in order to restore later
+//			// disable loopy BP
+//			this.setLoopyBPCliqueSizeThreshold(Integer.MAX_VALUE);
+//			
+//			// recompile JT
+//			this.run();
+//			
+//			// restore backup
+//			this.setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThresholdBakup);
+//		}
+		
+		if (isLoopy() == isLoopy) {
+			// there were no change in configuration, so don't do anything
+			return;
+		}
+		
+		// just recompile network, instead of doing the above check (because isConditionForClusterLoopyBPSatisfied(getNet()) recompiles the JT anyway, so it's better than compiling twice)
+		// make sure we use CPTs that are up-to-date (accordingly to clique potentials)
+		updateCPTBasedOnCliques();
+		
+		// disable dynamic JT compilation
+		setNetPreviousRun(null);
+		
+		int loopyBPCliqueSizeThresholdBakup = this.getLoopyBPCliqueSizeThreshold();	// keep backup, in order to restore later
+		
+		// disable loopy BP if changing from loopy to non-loopy
+		if (!isLoopy) {
 			this.setLoopyBPCliqueSizeThreshold(Integer.MAX_VALUE);
-			
-			// recompile JT
-			this.run();
-			
-			// restore backup
-			this.setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThresholdBakup);
 		}
 		
-
+		// recompile JT
+		this.run();
 		
-		IJunctionTree jt = getJunctionTree();
-		if ((jt != null)
-				&& (jt instanceof LoopyJunctionTree)) {
-			((LoopyJunctionTree) jt).setLoopy(isLoopy);;
-		}
-		// if it is not associated with a LoopyJunctionTree, then just ignore
+		// restore backup
+		this.setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThresholdBakup);
+		
 	}
 
 	/* (non-Javadoc)
@@ -2739,38 +3144,38 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	 * @see #setLoopy(boolean)
 	 */
 	public boolean returnToExactJunctionTree() {
-		
 		if (!isLoopy()) {
 			// do nothing if we are not doing loopy BP
 			return false;
 		}
 		
 		// other basic assertions
-		if (getNet() == null
-				|| getNet().getJunctionTree() == null) {
+		if (getNet() == null || getNet().getJunctionTree() == null) {
 			return false;
 		}
 		
 		// check for conditions to stop loopy-BP. The conditions are the inverse of starting loopy-BP
 		ProbabilisticNetwork netToCheck = this.cloneProbabilisticNetwork(getNet());	// use a clone, so that we don't change original
 		
-		// compile the junction tree without using incremental or loopy JT
-		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(netToCheck);
+		// compile the junction tree without using incremental JT, but potentially using loopy JT
+		IncrementalJunctionTreeAlgorithm algorithm = new IncrementalJunctionTreeAlgorithm(netToCheck);
+		algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);		// this will ensure dynamic JT is never used
+		algorithm.setNetPreviousRun(null);											// this will also ensyre dynamic JT is not used
+		if (isToUseAgressiveLoopyBP()) {
+			algorithm.setLoopyBPCliqueSizeThreshold(Integer.MAX_VALUE);					// disable loopy JT structure if we want to use aggressive loopy BP
+		} else {
+			algorithm.setLoopyBPCliqueSizeThreshold(getLoopyBPCliqueSizeThreshold());	// reuse the same configuration
+		}
 		algorithm.run();
 		
-		// check clique sizes
-		List<Clique> largestCliques = getLargestCliques(algorithm.getNet());
-		if (largestCliques != null && !largestCliques.isEmpty()) {
-			// check if the largest clique table size is below the threshold. If so, stop using loopy bp
-			if (largestCliques.get(0).getProbabilityFunction().tableSize() <= getLoopyBPCliqueSizeThreshold()) {
-				
-				// TODO compiling a clone to check clique size, and then using setLoopy(false) to recompile exact JT is redundant
-				
-				// setting isLoopy from true to false this should recompile junction tree in non-loopy and non-incremental mode
-				this.setLoopy(false);
-				
-				return true;	// indicate that there were changes
-			} // table size still larger than threshold, so don't return to exact inference
+		// check conditions to use loopy BP in cluster structure
+		if (!isConditionForClusterLoopyBPSatisfied(algorithm.getNet())) {
+			// TODO compiling a clone to check clique size, and then using setLoopy(false) to recompile exact JT is redundant
+			
+			// setting isLoopy from true to false this should recompile junction tree in non-loopy and non-incremental mode
+			this.setLoopy(false);
+			
+			return true;	// indicate that there were changes
 		} else {
 			Debug.println(getClass(), "Unable to compile junction tree without using loopy or incremental JT");
 		}
@@ -2895,6 +3300,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		
 		// split the clique we just created if necessary. 
 		if (isToSplitVirtualNodeClique()
+				&& isToUseAgressiveLoopyBP()
 				&& cliqueOfVirtualNode.getProbabilityFunction().tableSize()/2 > getLoopyBPCliqueSizeThreshold()) {	// /2 because I don't want to consider the virtual node -- with 2 states
 			// This supposedly deletes the cliques and separators we created previously, so just return the new cliques/separtors;
 			return this.splitCliqueAndAddToJT(cliqueOfVirtualNode, junctionTree, getLoopyBPCliqueSizeThreshold());
@@ -3103,5 +3509,52 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	public void setToCreateVirtualNode(boolean isToCreateVirtualNode) {
 		this.isToCreateVirtualNode = isToCreateVirtualNode;
 	}
+
+	/**
+	 * @return true if {@link #run()} must disable dynamic JT compilation when {@link LoopyJunctionTree#isLoopy()} is true. False otherwise.
+	 */
+	public boolean isToCompileNormallyWhenLoopy() {
+		return isToCompileNormallyWhenLoopy;
+	}
+
+	/**
+	 * @param isToCompileNormallyWhenLoopy : set to true if {@link #run()} must disable dynamic JT compilation when 
+	 * {@link LoopyJunctionTree#isLoopy()} is true. Set to false otherwise.
+	 */
+	public void setToCompileNormallyWhenLoopy(boolean isToCompileNormallyWhenLoopy) {
+		this.isToCompileNormallyWhenLoopy = isToCompileNormallyWhenLoopy;
+	}
+
+	/**
+	 * @return If true, the loopy BP algorithm and JT compilation does not guarantee that a node and all its parents will be in the same clique.
+	 * If false, then only cliques resulting from new chords added during triangulation will be potentially split.
+	 * @see #splitCliqueAndAddToJT(Clique, LoopyJunctionTree, int)
+	 * @see #addChordAndEliminateNode(Node, List, ProbabilisticNetwork)
+	 * @see #run()
+	 * @see #returnToExactJunctionTree()
+	 * @see #isConditionForClusterLoopyBPSatisfied(ProbabilisticNetwork)
+	 * @see #buildLoopyCliques(ProbabilisticNetwork)
+	 * @see #strongTreeMethod(ProbabilisticNetwork, List, IJunctionTree)
+	 */
+	public boolean isToUseAgressiveLoopyBP() {
+		return isToUseAgressiveLoopyBP;
+	}
+
+	/**
+	 * @param isToUseAgressiveLoopyBP : If true, the loopy BP algorithm and JT compilation does not guarantee that a node and all its parents will be in the same clique.
+	 * If false, then only cliques resulting from new chords added during triangulation will be potentially split.
+	 * @see #splitCliqueAndAddToJT(Clique, LoopyJunctionTree, int)
+	 * @see #addChordAndEliminateNode(Node, List, ProbabilisticNetwork)
+	 * @see #run()
+	 * @see #returnToExactJunctionTree()
+	 * @see #isConditionForClusterLoopyBPSatisfied(ProbabilisticNetwork)
+	 * @see #buildLoopyCliques(ProbabilisticNetwork)
+	 * @see #strongTreeMethod(ProbabilisticNetwork, List, IJunctionTree)
+	 */
+	public void setToUseAgressiveLoopyBP(boolean isToUseAgressiveLoopyBP) {
+		this.isToUseAgressiveLoopyBP = isToUseAgressiveLoopyBP;
+	}
+
+
 
 }
