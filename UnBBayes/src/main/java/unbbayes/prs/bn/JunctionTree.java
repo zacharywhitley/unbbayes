@@ -46,7 +46,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	private static final long serialVersionUID = 0;
 	
 	
-	private boolean initialized;
+	private boolean initialized = false;
 
 	private float totalEstimatedProb;
 
@@ -278,6 +278,9 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 
 		if (!isInitialization) {
 			totalEstimatedProb *= clique.normalize();
+		} else if (clique.getChildren().isEmpty()) {
+			// leaf cliques may not have been normalized in initialization
+			clique.normalize();
 		}
 	}
 
@@ -401,10 +404,11 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	
 	/**
 	 * This method also updates the {@link IRandomVariable#getInternalIdentificator()}
+	 * and {@link #isInitialized()}
 	 * @see unbbayes.prs.bn.IJunctionTree#initBeliefs()
 	 */
 	public void initBeliefs() throws Exception {
-		if (! initialized) {
+		if (!isInitialized()) {
 			Clique auxClique;
 	
 			int sizeCliques = cliques.size();
@@ -428,7 +432,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			copyTableData();
 			// TODO uncomment the following after replacing the routine for updating the internal ids
 //			this.updateCliqueAndSeparatorInternalIdentificators();
-			initialized = true;
+			setInitialized(true);
 		} else {
 			restoreTableData();						
 		}
@@ -1224,6 +1228,30 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 */
 	public void setUsingSafeOrdering(boolean isUsingSafeOrdering) {
 		this.isUsingSafeOrdering = isUsingSafeOrdering;
+	}
+
+	/**
+	 * This value indicates whether the belief tables of this junction tree were initialized or not.
+	 * If they were initialized already, implementations can use cached values instead of re-initializing beliefs again.
+	 * @return if true, {@link #initBeliefs()} will simply call {@link #restoreTableData()} to get beliefs from cache.
+	 * If false, then {@link #initBeliefs()} will  perform the full initialization process: 
+	 * call {@link #initBelief(Clique)}, call {@link #initBelief(Separator)}, call {@link #initConsistency()}, 
+	 * and {@link #copyTableData()}.
+	 */
+	public boolean isInitialized() {
+		return initialized;
+	}
+
+	/**
+	 * This value indicates whether the belief tables of this junction tree were initialized or not.
+	 * If they were initialized already, implementations can use cached values instead of re-initializing beliefs again.
+	 * @param initialized : if true, {@link #initBeliefs()} will simply call {@link #restoreTableData()} to get beliefs from cache.
+	 * If false, then {@link #initBeliefs()} will  perform the full initialization process: 
+	 * call {@link #initBelief(Clique)}, call {@link #initBelief(Separator)}, call {@link #initConsistency()}, 
+	 * and {@link #copyTableData()}.
+	 */
+	protected void setInitialized(boolean initialized) {
+		this.initialized = initialized;
 	}
 
 //	/**
