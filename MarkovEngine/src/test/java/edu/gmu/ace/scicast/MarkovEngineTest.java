@@ -34790,45 +34790,405 @@ public class MarkovEngineTest extends TestCase {
 		
 		// create network 1->3<-2; 1->4->5->2 ; 3->999 ; 
 		// If triangulation is present, either 1-5 or 2-4 would be created
-		Long transactionKey = null;
-		engine.addQuestion(transactionKey, new Date(), 1L, 2, null);
-		engine.addQuestion(transactionKey, new Date(), 2L, 2, null);
-		engine.addQuestion(transactionKey, new Date(), 3L, 2, null);
-		engine.addQuestion(transactionKey, new Date(), 4L, 5, null);
-		engine.addQuestion(transactionKey, new Date(), 5L, 5, null);
-		engine.addQuestion(transactionKey, new Date(), 999L, 29, null);
-		engine.addQuestionAssumption(transactionKey, new Date(), 3L, Collections.singletonList(1L), null);
-		engine.addQuestionAssumption(transactionKey, new Date(), 3L, Collections.singletonList(2L), null);
-		engine.addQuestionAssumption(transactionKey, new Date(), 4L, Collections.singletonList(1L), null);
-		engine.addQuestionAssumption(transactionKey, new Date(), 5L, Collections.singletonList(4L), null);
-		engine.addQuestionAssumption(transactionKey, new Date(), 2L, Collections.singletonList(5L), null);
-		engine.addQuestionAssumption(transactionKey, new Date(), 999L, Collections.singletonList(3L), null);
+		engine.addQuestion(null, new Date(), 1L, 2, null);
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		engine.addQuestion(null, new Date(), 2L, 2, null);
+		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		probLists = engine.getProbLists(null, null, null);
+		engine.addQuestion(null, new Date(), 3L, 2, null);
+		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestion(null, new Date(), 4L, 5, null);
+		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestion(null, new Date(), 5L, 5, null);
+		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestion(null, new Date(), 999L, 29, null);
+		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 3L, Collections.singletonList(1L), null);
+		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 3L, Collections.singletonList(2L), null);
+		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 4L, Collections.singletonList(1L), null);
+		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 5L, Collections.singletonList(4L), null);
+		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 2L, Collections.singletonList(5L), null);
+		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 999L, Collections.singletonList(3L), null);
+		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
 		// include subnet 11->13<-12; 11->14->15->12 ; 13->999 
 		// If triangulation is present, either 11-15 or 12-14 would be created
-		engine.addQuestion(transactionKey, new Date(), 11L, 2, null);
-		engine.addQuestion(transactionKey, new Date(), 12L, 2, null);
-		engine.addQuestion(transactionKey, new Date(), 13L, 2, null);
-		engine.addQuestion(transactionKey, new Date(), 14L, 5, null);
-		engine.addQuestion(transactionKey, new Date(), 15L, 5, null);
-		engine.addQuestionAssumption(transactionKey, new Date(), 13L, Collections.singletonList(11L), null);
-		engine.addQuestionAssumption(transactionKey, new Date(), 13L, Collections.singletonList(12L), null);
-		engine.addQuestionAssumption(transactionKey, new Date(), 14L, Collections.singletonList(11L), null);
-		engine.addQuestionAssumption(transactionKey, new Date(), 15L, Collections.singletonList(14L), null);
-		engine.addQuestionAssumption(transactionKey, new Date(), 12L, Collections.singletonList(15L), null);
-		engine.addQuestionAssumption(transactionKey, new Date(), 999L, Collections.singletonList(13L), null);
-//		engine.commitNetworkActions(transactionKey);
 		
-		assertTrue(engine.isLoopy());
-		
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestion(null, new Date(), 11L, 2, null);
+		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestion(null, new Date(), 12L, 2, null);
+		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestion(null, new Date(), 13L, 2, null);
+		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestion(null, new Date(), 14L, 5, null);
+		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestion(null, new Date(), 15L, 5, null);
+		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 13L, Collections.singletonList(11L), null);
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 13L, Collections.singletonList(12L), null);
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 14L, Collections.singletonList(11L), null);
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 15L, Collections.singletonList(14L), null);
+		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 12L, Collections.singletonList(15L), null);
+		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// change probabilities (conditionals too)
+		makeRandomTradesOnExistingQuestions(engine, 10);
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 999L, Collections.singletonList(13L), null);
+		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+
 		// check that for a node, all parents are in the same clique
+		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+			// this will be the set of node and all its parent (there must be a clique containing all these nodes simultaneously)
+			Set<Long> questionIdsExpectedInAClique = new HashSet<Long>();	
+			// fill the set with question ID of current node and all its parents
+			questionIdsExpectedInAClique.add(Long.parseLong(node.getName()));
+			for (INode parentNode : node.getParentNodes()) {
+				questionIdsExpectedInAClique.add(Long.parseLong(parentNode.getName()));
+			}
+			// check if there is a clique for this set of questions
+			boolean hasFound = false;	// becomes true if a clique with all the questions is found
+			for (List<Long> clique : engine.getQuestionAssumptionGroups()) {
+				if (clique.containsAll(questionIdsExpectedInAClique)) {
+					hasFound = true;
+					break;
+				}
+			}
+			assertTrue(questionIdsExpectedInAClique + " not in " + engine.getQuestionAssumptionGroups(), hasFound);
+		}
 		
-		// make some random trades
 		
-		// check if dynamic JT compilation will lead to loopy
+		// check that deleting the arcs that caused the loop will turn the loopy structure to a JT again
+		engine.removeQuestionAssumption(null, new Date(), 2L, Collections.singletonList(5L));
+		assertTrue(engine.isLoopy());	// it should be loopy yet
+		engine.removeQuestionAssumption(null, new Date(), 12L, Collections.singletonList(15L));
+		assertFalse(engine.isLoopy());	// now, it should not be loopy anymore
+		
+		// re-include the arcs again in order to get the loopy structure
+
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 12L, Collections.singletonList(15L), null);
+		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		// backup probabilities before making changes in structure
+		probLists = engine.getProbLists(null, null, null);	
+		engine.addQuestionAssumption(null, new Date(), 2L, Collections.singletonList(5L), null);
+		assertTrue(engine.isLoopy());	// make sure it kept using loopy BP
+		// check that marginals did not change
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
+			assertEquals(entry.getValue().size(), engine.getProbList(entry.getKey(), null, null).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(entry.getValue().get(i), engine.getProbList(entry.getKey(), null, null).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+
+		// again, check that for a node, all parents are in the same clique
+		for (Node node : engine.getProbabilisticNetwork().getNodes()) {
+			// this will be the set of node and all its parent (there must be a clique containing all these nodes simultaneously)
+			Set<Long> questionIdsExpectedInAClique = new HashSet<Long>();	
+			// fill the set with question ID of current node and all its parents
+			questionIdsExpectedInAClique.add(Long.parseLong(node.getName()));
+			for (INode parentNode : node.getParentNodes()) {
+				questionIdsExpectedInAClique.add(Long.parseLong(parentNode.getName()));
+			}
+			// check if there is a clique for this set of questions
+			boolean hasFound = false;	// becomes true if a clique with all the questions is found
+			for (List<Long> clique : engine.getQuestionAssumptionGroups()) {
+				if (clique.containsAll(questionIdsExpectedInAClique)) {
+					hasFound = true;
+					break;
+				}
+			}
+			assertTrue(questionIdsExpectedInAClique + " not in " + engine.getQuestionAssumptionGroups(), hasFound);
+		}
+		
+		// check that resolving a question will turn loopy structure back to JT
+		engine.resolveQuestion(null, new Date(), 2L, 1);
+		assertTrue(engine.isLoopy());	// it should be loopy yet
+		engine.resolveQuestion(null, new Date(), 12L, 0);
+		assertFalse(engine.isLoopy());	// now, it should not be loopy anymore
 		
 		engine.setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThreshold);
 	}
 	
+	private void makeRandomTradesOnExistingQuestions(MarkovEngineImpl engine2,
+			int i) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	/**
 	 * Test some special cases that will make {@link IncrementalJunctionTreeAlgorithm#isLoopy()} == true,
 	 * and consequently trigger loopy BP algorithm.
