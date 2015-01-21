@@ -697,6 +697,14 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					parentClique.addChild(childClique);
 				}
 			}
+			
+			// make sure the belief tables are updated after cliques are connected
+			try {
+				jt.setInitialized(false);	// force it to stop using cache
+				jt.initBeliefs();
+			} catch (Exception e) {
+				throw new RuntimeException(e); // TODO stop using exception translation
+			}
 		}
 		
 	}

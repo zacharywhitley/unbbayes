@@ -59,16 +59,37 @@ public class LoopyJunctionTree extends JunctionTree {
 	 * @see unbbayes.prs.bn.JunctionTree#initConsistency()
 	 */
 	protected void initConsistency() throws Exception {
-		// just make sure the modification of the last call won't affect current call.
-		this.setModified(false);
-		super.initConsistency();
+		
+		this.setModified(false); // just to make sure the modification of the last call won't affect current call.
+
+		if (isLoopy()) {
+			long startTime = System.currentTimeMillis();
+			int numIterations = 0;
+			for (; numIterations < maxLoopyBPIteration; numIterations++) {
+				this.setModified(false);
+				super.initConsistency();
+				if (!isModified()							// there were no considerable change in probability in last loop
+						|| (System.currentTimeMillis() - startTime) > maxLoopyBPTimeMillis) {	// time exceeded limit
+					if (isModified()) {
+						Debug.println(getClass(), "Loopy BP interrupted in " + (System.currentTimeMillis() - startTime) + " ms, because exceeded time limit: " + maxLoopyBPTimeMillis + " ms. ");
+					} else {
+						Debug.println(getClass(), "Loopy BP converged in " + (System.currentTimeMillis() - startTime) + " ms.");
+					}
+					break;
+				}
+			}
+			Debug.println(getClass(), "Loopy BP finished in " + numIterations + " iterations.");
+		} else {
+			// a single loop is enough for convergence
+			super.initConsistency();
+		}
+	
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.bn.JunctionTree#consistency(unbbayes.prs.bn.Clique, boolean)
 	 */
-	public void consistency(Clique rootClique, boolean isToContinueOnEmptySep)
-			throws Exception {
+	public void consistency(Clique rootClique, boolean isToContinueOnEmptySep) throws Exception {
 		if (isLoopy()) {
 			long startTime = System.currentTimeMillis();
 			int numIterations = 0;
