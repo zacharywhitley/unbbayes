@@ -1254,6 +1254,128 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		this.initialized = initialized;
 	}
 
+	/**
+	 * @see unbbayes.prs.bn.IJunctionTree#getCliquesConnectedToNodes(java.util.Collection, java.util.Collection)
+	 * @see Collection#contains(Object)
+	 */
+	public Collection<Clique> getCliquesConnectedToNodes( Collection<INode> nodes, Collection<Clique> cliquesToIgnore) {
+		// TODO this method is sub-optimal due to recursive calls, although recursive procedures are usually easier to analyze/maintain
+		
+		// basic assertion
+		if (nodes == null || nodes.isEmpty()) {
+			return Collections.EMPTY_SET;
+		}
+		
+		// make sure the collection of cliques to ignore is non-null, because we'll use it as a common context between searches for each node.
+		if (cliquesToIgnore == null) {
+			cliquesToIgnore = Collections.EMPTY_SET;
+		}
+		
+		// this will be the set to be returned by this method
+		Collection<Clique> ret = new HashSet<Clique>();
+		
+		if (nodes.size() == 1) {
+			// first, search for a clique containing the node, 
+			
+			// this is the node to look for
+			INode node = nodes.iterator().next();
+			
+			// find 1st clique containing node, so that we can use it as a pivot
+			Clique pivot = null;
+			// don't use TreeVariable#getAssociatedClique, because we don't know if this node is associated with a clique in this junction tree
+			// #getCliquesContainingAllNodes(nodes, maxCount) uses TreeVariable#getAssociatedClique internally, so I don't want to use it.
+			for (Clique clique : getCliques()) {
+				if (clique.getNodesList().contains(node)) {
+					pivot = clique;
+					break;
+				}
+			}
+			
+			// ret will be used as an input/output argument for the next method. 
+			// The input is the cliquesToIgnore, and the output will be the new cliques inserted to ret.
+			ret.addAll(cliquesToIgnore);
+			
+			// visit neighbor cliques recursively. Stop if we reached any clique in cliquesToIgnore;
+			// insert connected cliques (those that can be reached without passing through empty separator) into the collection to return;
+			this.visitConnectedCliquesRecursive(pivot, ret); 
+			
+			// we don't want cliquesToIgnore to be in the collection to return
+			ret.removeAll(cliquesToIgnore);
+			
+		} else {
+			// for multiple nodes, just run this method for each node, but incrementing cliquesToIgnore
+			// use a copy, because we'll modify the content, but we don't want to change the original
+			cliquesToIgnore = new HashSet<Clique>(cliquesToIgnore);
+			
+			for (INode node : nodes) {
+				Collection<Clique> cliquesCurrentIteration = this.getCliquesConnectedToNodes(Collections.singletonList(node), cliquesToIgnore);
+				// the value to return is the aggregation of cliques returned by calling this method for each node
+				ret.addAll(cliquesCurrentIteration);
+				// don't consider these cliques in next iteration, because they were considered already and don't need to be re-added
+				cliquesToIgnore.addAll(cliquesCurrentIteration);	
+			}
+		}
+		
+		return ret;
+	}
+
+	/**
+	 * Obtains a collection of cliques that can be reached from a pivot
+	 * without passing through an empty separator.
+	 * @param pivot : the clique to start recursive search
+	 * @param visitedCliques : this is an input/output argument that will be filled
+	 * with the cliques that could be reached from pivot without reaching an empty separator.
+	 * If a clique in this collection was reached, the recursive search will stop
+	 * (thus this can also avoid double-visiting the same subtree).
+	 */
+	private void visitConnectedCliquesRecursive(Clique pivot, Collection<Clique> visitedCliques) {
+		// basic assertion
+		if (pivot == null) {
+			return;
+		}
+		
+		// stop condition
+		if (visitedCliques == null || visitedCliques.contains(pivot)) {
+			return; // visited already, or cannot fill output argument anyway, so stop
+		}
+		
+		// mark pivot as visited already, so that recursive calls to parent/children won't visit this again
+		visitedCliques.add(pivot);
+		
+		// recursively visit parent(s)
+		List<Clique> parents = getParents(pivot);
+		if (parents != null) {
+			// This list will have more than 1 element if instance of JunctionTree is not actually a tree 
+			// (e.g. when the instance is actually a directed graph of cliques).
+			for (Clique parent : parents) {
+				// check separator between the cliques
+				Separator separator = getSeparator(parent, pivot);
+				if (separator == null || separator.getNodesList() == null || separator.getNodesList().isEmpty()) {
+					// don't consider path that contains an empty separator (i.e. don't consider subtree of junction tree disconnected from pivot)
+					continue;
+				}
+				// this will fill visitedCliques with all cliques that we can reach from parent, without passing through empty separators
+				visitConnectedCliquesRecursive(parent, visitedCliques);
+			}
+		}
+		
+		// recursively visit children too
+		List<Clique> children = pivot.getChildren();
+		if (children != null) {
+			for (Clique child : children) {
+				// check separator between the cliques
+				Separator separator = getSeparator(pivot , child);
+				if (separator == null || separator.getNodesList() == null || separator.getNodesList().isEmpty()) {
+					// don't consider path that contains an empty separator (i.e. don't consider subtree of junction tree disconnected from pivot)
+					continue;
+				}
+				// this will fill visitedCliques with all cliques that we can reach from parent, without passing through empty separators
+				visitConnectedCliquesRecursive(child, visitedCliques);
+			}
+		}
+		
+	}
+
 //	/**
 //	 * @param separatorsMap the separatorsMap to set
 //	 */

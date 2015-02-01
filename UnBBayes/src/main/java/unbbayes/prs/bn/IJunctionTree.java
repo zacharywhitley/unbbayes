@@ -148,5 +148,16 @@ public interface IJunctionTree {
 	 * @see #getSeparatorsContainingAllNodes(Collection, int)
 	 */
 	public Separator getSeparatorAt(int index);
+	
+	/**
+	 * Implementations should search for cliques containing the specified nodes (not necessarily simultaneously), and
+	 * return all cliques that can have a path to such clique with no empty separators in the path.
+	 * @param nodes : nodes to be considered
+	 * @param cliquesToIgnore : cliques contained in this collection will not be considered in the search.
+	 * Implementations may choose to stop search when these cliques are found.
+	 * @return : cliques containing the specified nodes (not necessarily simultaneously), and
+	 * all cliques that can have a path to such clique with no empty separators in the path.
+	 */
+	public Collection<Clique> getCliquesConnectedToNodes(Collection<INode> nodes, Collection<Clique> cliquesToIgnore);
 
 }
