@@ -30,6 +30,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.IJunctionTree;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm;
 import unbbayes.prs.bn.JunctionTree;
@@ -34777,6 +34778,141 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	/**
+	 * Tests methods related to complexity factors with local visibility
+	 * (i.e. ignores portions of the junction tree not connected -- or connected by empty separators -- to a clique containing a specified node)
+	 */
+	public final void testLocalComplexityFactor() {
+		Long transactionKey = engine.startNetworkActions();
+		
+		// create a single disconnected node
+		engine.addQuestion(transactionKey, new Date(), 666L, 10, null);
+		
+		// create the asia network
+		engine.addQuestion(transactionKey, new Date(), 1L, 2, null);	// asia
+		engine.addQuestion(transactionKey, new Date(), 2L, 3, null);	// tuberculosis
+		engine.addQuestion(transactionKey, new Date(), 3L, 5, null);	// smoker
+		engine.addQuestion(transactionKey, new Date(), 4L, 7, null);	// lung cancer
+		engine.addQuestion(transactionKey, new Date(), 5L, 11, null);	// bronchitis
+		engine.addQuestion(transactionKey, new Date(), 6L, 13, null);	// tuberculosis or cancer
+		engine.addQuestion(transactionKey, new Date(), 7L, 17, null);	// x-ray
+		engine.addQuestion(transactionKey, new Date(), 8L, 19, null);	// dyspnea
+		engine.addQuestionAssumption(transactionKey, new Date(), 2, Collections.singletonList(1L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 4, Collections.singletonList(3L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 5, Collections.singletonList(3L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 6, Collections.singletonList(2L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 6, Collections.singletonList(4L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 8, Collections.singletonList(5L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 7, Collections.singletonList(6L), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 8, Collections.singletonList(6L), null);
+		
+		// include def network disconnected from asia
+		engine.addQuestion(transactionKey, new Date(), 0x0DL, 2, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0EL, 3, null);
+		engine.addQuestion(transactionKey, new Date(), 0x0FL, 5, null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(transactionKey, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		
+		engine.commitNetworkActions(transactionKey);
+		
+		// the net
+		ProbabilisticNetwork net = engine.getProbabilisticNetwork();
+		
+		// extract the JT
+		IJunctionTree jt = net.getJunctionTree();
+		
+		// try to get clique of disconnected node, but ignoring the clique that contains the disconnected node
+		Collection<INode> nodes = (Collection)Collections.singleton(net.getNode("666"));
+		Collection<Clique> cliques = jt.getCliquesConnectedToNodes(nodes, Collections.singletonList((Clique)((TreeVariable)net.getNode("666")).getAssociatedClique()));
+		assertNotNull(cliques);
+		assertTrue(cliques.isEmpty());
+		
+		// get clique of disconnected node
+		nodes = (Collection)Collections.singleton(net.getNode("666"));
+		cliques = jt.getCliquesConnectedToNodes(nodes, null);
+		assertNotNull(cliques);
+		assertFalse(cliques.isEmpty());
+		assertEquals(1, cliques.size());
+		assertEquals(cliques.iterator().next().getNodesList().size(), 1);
+		assertTrue(cliques.iterator().next().getNodesList().contains(net.getNode("666")));
+		
+		// get cliques in asia network
+		// single node
+		nodes = (Collection)Collections.singleton(net.getNode("6"));
+		cliques = jt.getCliquesConnectedToNodes(nodes, null);
+		assertNotNull(cliques);
+		assertFalse(cliques.isEmpty());
+		assertEquals(6, cliques.size());
+		
+		
+		// multiple node
+		nodes = new ArrayList<INode>();
+		nodes.add(net.getNode("1"));
+		nodes.add(net.getNode("8"));
+		cliques = jt.getCliquesConnectedToNodes(nodes, null);
+		assertNotNull(cliques);
+		assertFalse(cliques.isEmpty());
+		assertEquals(6, cliques.size());
+		
+		
+		// get cliques in def network
+		// single node
+		nodes = (Collection)Collections.singleton(net.getNode(Long.toString(0x0EL)));
+		cliques = jt.getCliquesConnectedToNodes(nodes, null);
+		assertNotNull(cliques);
+		assertFalse(cliques.isEmpty());
+		assertEquals(2, cliques.size());
+		
+		
+		// multiple node
+		nodes = new ArrayList<INode>();
+		nodes.add(net.getNode(Long.toString(0x0EL)));
+		nodes.add(net.getNode(Long.toString(0x0FL)));
+		cliques = jt.getCliquesConnectedToNodes(nodes, null);
+		assertNotNull(cliques);
+		assertFalse(cliques.isEmpty());
+		assertEquals(2, cliques.size());
+		
+		// get cliques in asia and def
+		nodes = new ArrayList<INode>();
+		nodes.add(net.getNode("7"));
+		nodes.add(net.getNode(Long.toString(0x0DL)));
+		cliques = jt.getCliquesConnectedToNodes(nodes, null);
+		assertNotNull(cliques);
+		assertFalse(cliques.isEmpty());
+		assertEquals(6+2, cliques.size());
+		
+		// get cliques in asia and disconnected node
+		nodes = new ArrayList<INode>();
+		nodes.add(net.getNode("666"));
+		nodes.add(net.getNode("6"));
+		cliques = jt.getCliquesConnectedToNodes(nodes, null);
+		assertNotNull(cliques);
+		assertFalse(cliques.isEmpty());
+		assertEquals(6+1, cliques.size());
+		
+		// get cliques in def and disconnected node
+		nodes = new ArrayList<INode>();
+		nodes.add(net.getNode("666"));
+		nodes.add(net.getNode(Long.toString(0x0FL)));
+		cliques = jt.getCliquesConnectedToNodes(nodes, null);
+		assertNotNull(cliques);
+		assertFalse(cliques.isEmpty());
+		assertEquals(2+1, cliques.size());
+		
+		// get cliques in all 3 subnets
+		nodes = new ArrayList<INode>();
+		nodes.add(net.getNode("666"));
+		nodes.add(net.getNode("2"));
+		nodes.add(net.getNode(Long.toString(0x0EL)));
+		cliques = jt.getCliquesConnectedToNodes(nodes, null);
+		assertNotNull(cliques);
+		assertFalse(cliques.isEmpty());
+		assertEquals(6+2+1, cliques.size());
+		
+		
+	}
+	
+	/**
 	 * Test some special cases that will make {@link IncrementalJunctionTreeAlgorithm#isLoopy()} == true,
 	 * and consequently trigger loopy BP algorithm.
 	 * @throws URISyntaxException 
@@ -34795,7 +34931,7 @@ public class MarkovEngineTest extends TestCase {
 		makeRandomTradesOnExistingQuestions(engine, 10);
 		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
 		engine.addQuestion(null, new Date(), 2L, 2, null);
-		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		assertFalse(engine.isRunningApproximation());	// make sure it's not using loopy BP yet
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34808,7 +34944,7 @@ public class MarkovEngineTest extends TestCase {
 		makeRandomTradesOnExistingQuestions(engine, 10);
 		probLists = engine.getProbLists(null, null, null);
 		engine.addQuestion(null, new Date(), 3L, 2, null);
-		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		assertFalse(engine.isRunningApproximation());	// make sure it's not using loopy BP yet
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34822,7 +34958,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestion(null, new Date(), 4L, 5, null);
-		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		assertFalse(engine.isRunningApproximation());	// make sure it's not using loopy BP yet
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34836,7 +34972,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestion(null, new Date(), 5L, 5, null);
-		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		assertFalse(engine.isRunningApproximation());	// make sure it's not using loopy BP yet
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34850,7 +34986,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestion(null, new Date(), 999L, 29, null);
-		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		assertFalse(engine.isRunningApproximation());	// make sure it's not using loopy BP yet
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34864,7 +35000,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestionAssumption(null, new Date(), 3L, Collections.singletonList(1L), null);
-		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		assertFalse(engine.isRunningApproximation());	// make sure it's not using loopy BP yet
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34878,7 +35014,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestionAssumption(null, new Date(), 3L, Collections.singletonList(2L), null);
-		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		assertFalse(engine.isRunningApproximation());	// make sure it's not using loopy BP yet
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34892,7 +35028,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestionAssumption(null, new Date(), 4L, Collections.singletonList(1L), null);
-		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		assertFalse(engine.isRunningApproximation());	// make sure it's not using loopy BP yet
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34906,7 +35042,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestionAssumption(null, new Date(), 5L, Collections.singletonList(4L), null);
-		assertFalse(engine.isLoopy());	// make sure it's not using loopy BP yet
+		assertFalse(engine.isRunningApproximation());	// make sure it's not using loopy BP yet
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34920,7 +35056,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestionAssumption(null, new Date(), 2L, Collections.singletonList(5L), null);
-		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		assertTrue(engine.isRunningApproximation());	// make sure it started using loopy BP
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34934,7 +35070,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestionAssumption(null, new Date(), 999L, Collections.singletonList(3L), null);
-		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		assertTrue(engine.isRunningApproximation());	// make sure it started using loopy BP
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34952,7 +35088,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestion(null, new Date(), 11L, 2, null);
-		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		assertTrue(engine.isRunningApproximation());	// make sure it started using loopy BP
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34966,7 +35102,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestion(null, new Date(), 12L, 2, null);
-		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		assertTrue(engine.isRunningApproximation());	// make sure it started using loopy BP
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34980,7 +35116,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestion(null, new Date(), 13L, 2, null);
-		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		assertTrue(engine.isRunningApproximation());	// make sure it started using loopy BP
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -34994,7 +35130,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestion(null, new Date(), 14L, 5, null);
-		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		assertTrue(engine.isRunningApproximation());	// make sure it started using loopy BP
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -35008,7 +35144,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestion(null, new Date(), 15L, 5, null);
-		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		assertTrue(engine.isRunningApproximation());	// make sure it started using loopy BP
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size()-1);
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -35061,7 +35197,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestionAssumption(null, new Date(), 15L, Collections.singletonList(14L), null);
-		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		assertTrue(engine.isRunningApproximation());	// make sure it started using loopy BP
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -35075,7 +35211,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestionAssumption(null, new Date(), 12L, Collections.singletonList(15L), null);
-		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		assertTrue(engine.isRunningApproximation());	// make sure it started using loopy BP
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -35089,7 +35225,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestionAssumption(null, new Date(), 999L, Collections.singletonList(13L), null);
-		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		assertTrue(engine.isRunningApproximation());	// make sure it started using loopy BP
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -35122,16 +35258,16 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that deleting the arcs that caused the loop will turn the loopy structure to a JT again
 		engine.removeQuestionAssumption(null, new Date(), 2L, Collections.singletonList(5L));
-		assertTrue(engine.isLoopy());	// it should be loopy yet
+		assertTrue(engine.isRunningApproximation());	// it should be loopy yet
 		engine.removeQuestionAssumption(null, new Date(), 12L, Collections.singletonList(15L));
-		assertFalse(engine.isLoopy());	// now, it should not be loopy anymore
+		assertFalse(engine.isRunningApproximation());	// now, it should not be loopy anymore
 		
 		// re-include the arcs again in order to get the loopy structure
 
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestionAssumption(null, new Date(), 12L, Collections.singletonList(15L), null);
-		assertTrue(engine.isLoopy());	// make sure it started using loopy BP
+		assertTrue(engine.isRunningApproximation());	// make sure it started using loopy BP
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -35143,7 +35279,7 @@ public class MarkovEngineTest extends TestCase {
 		// backup probabilities before making changes in structure
 		probLists = engine.getProbLists(null, null, null);	
 		engine.addQuestionAssumption(null, new Date(), 2L, Collections.singletonList(5L), null);
-		assertTrue(engine.isLoopy());	// make sure it kept using loopy BP
+		assertTrue(engine.isRunningApproximation());	// make sure it kept using loopy BP
 		// check that marginals did not change
 		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
 		for (Entry<Long, List<Float>> entry : probLists.entrySet()) {
@@ -35176,17 +35312,16 @@ public class MarkovEngineTest extends TestCase {
 		
 		// check that resolving a question will turn loopy structure back to JT
 		engine.resolveQuestion(null, new Date(), 2L, 1);
-		assertTrue(engine.isLoopy());	// it should be loopy yet
+		assertTrue(engine.isRunningApproximation());	// it should be loopy yet
 		engine.resolveQuestion(null, new Date(), 12L, 0);
-		assertFalse(engine.isLoopy());	// now, it should not be loopy anymore
+		assertFalse(engine.isRunningApproximation());	// now, it should not be loopy anymore
 		
 		engine.setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThreshold);
 	}
 	
-	private void makeRandomTradesOnExistingQuestions(MarkovEngineImpl engine2,
-			int i) {
-		// TODO Auto-generated method stub
-		
+	private void makeRandomTradesOnExistingQuestions(MarkovEngineImpl engine, int numTradesPerQuestion) {
+		//TODO;
+		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
 	/**
@@ -35231,7 +35366,7 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestionAssumption(transactionKey, new Date(), 999L, Collections.singletonList(13L), null);
 		engine.commitNetworkActions(transactionKey);
 		
-		assertTrue(engine.isLoopy());
+		assertTrue(engine.isRunningApproximation());
 		
 		// check that for a node, all parents are in the same clique
 		
@@ -35337,8 +35472,8 @@ public class MarkovEngineTest extends TestCase {
 		}
 
 		// make sure this is not loopy yet
-		assertFalse(engine.isLoopy());
-		assertFalse(engineNoLoopyBP.isLoopy());
+		assertFalse(engine.isRunningApproximation());
+		assertFalse(engineNoLoopyBP.isRunningApproximation());
 		
 		// make sure probabilities are correctly initialized before adding links
 		if (!isToUse1Transaction) {
@@ -35428,8 +35563,8 @@ public class MarkovEngineTest extends TestCase {
 		}
 		
 		// make sure this is loopy now
-		assertTrue(engine.isLoopy());
-		assertFalse(engineNoLoopyBP.isLoopy());	// make sure the baseline engine is not loopy
+		assertTrue(engine.isRunningApproximation());
+		assertFalse(engineNoLoopyBP.isRunningApproximation());	// make sure the baseline engine is not loopy
 		
 		// make sure probabilities are kept unchanged after all links were added
 		probLists = engine.getProbLists(null, null, null);

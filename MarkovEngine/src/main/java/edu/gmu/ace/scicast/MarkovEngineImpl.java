@@ -5979,7 +5979,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			throw new InexistingQuestionException("Question " + questionId + " not found.", questionId);
 		}
 		
-		if (this.isLoopy()) { // if we are using loopy BP, then only allow trades on directly connected nodes
+		if (this.isRunningApproximation()) { // if we are using loopy BP, then only allow trades on directly connected nodes
 			// TODO implement a more clean condition to allow trade with loopy BP
 			
 			synchronized (getProbabilisticNetwork()) {
@@ -12519,7 +12519,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		ret.setMaxCliqueTableSize(maxCliqueTableSize);
 		ret.setNumberOfNonEmptyCliques(this.getQuestionAssumptionGroups().size());
 		
-		// extract statistics of parents of nodes
+		// extract statistics regarding whether it is running approximation or not
+		ret.setRunningApproximation(isRunningApproximation());
+		
+		// TODO extract statistics of parents of nodes
+		
 		
 		return ret;
 	}
@@ -13701,8 +13705,20 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see #getComplexityFactors(Map)
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE
 	 */
+	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies, boolean isLocal, boolean isSum, boolean isComplexityBeforeModification) {
+		if (isSum) {
+			// return the factor identified by COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE (i.e. the sum of clique table sizes) 
+			return this.getComplexityFactors(newDependencies, isLocal, isComplexityBeforeModification).get(COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE).intValue();
+		}
+		return this.getComplexityFactors(newDependencies, isLocal, isComplexityBeforeModification).get(getDefaultComplexityFactorName()).intValue();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactor(java.util.Map)
+	 */
 	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies) {
-		return this.getComplexityFactors(newDependencies).get(getDefaultComplexityFactorName()).intValue();
+		return this.getComplexityFactor(newDependencies, false, false, false);
 	}
 	
 	/**
@@ -13712,7 +13728,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE
 	 */
-	public Map<String,Double> getComplexityFactors(Map<Long, Collection<Long>> newDependencies) {
+	public Map<String,Double> getComplexityFactors(Map<Long, Collection<Long>> newDependencies, boolean isLocal, boolean isComplexityBeforeModification) {
 		
 		ProbabilisticNetwork netToCheck = null;	// this will hold a copy of the Bayes net whose complexity will be checked
 		AssetAwareInferenceAlgorithm algorithm = getDefaultInferenceAlgorithm();	// this will be used to clone the probabilistic network
@@ -13728,23 +13744,26 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //				sharedBn = getProbabilisticNetwork();
 //			}
 			synchronized (sharedBn) {
-				// clone the network
+				// clone the network. Use a clone regardless of whether we'll change it or not, because we may have parallel engine access
 				netToCheck = algorithm.cloneProbabilisticNetwork(sharedBn);
 				// TODO do not clone clique/separator potentials
 			}
 		} // we don't need to keep the lock anymore, because we are working with a clone
 		
+		// nodes in this collection will be considered for local (in respect to each disconnected subnets) complexity
+		Collection<INode> nodesToConsiderForLocalComplexityFactor = new HashSet<INode>();
+		
 		// check if new arcs shall be considered
 		if (newDependencies != null && !newDependencies.isEmpty()) {
 			boolean isModified = false;	// this is used to check if there was any modification in net structure
-			// add arcs 
+			// add arcs if necessary
 			for (Entry<Long, Collection<Long>> entry : newDependencies.entrySet()) {
 				if (entry.getKey() == null) {
 					continue; // ignore null keys
 				}
 				// the key of the entry is the destination (i.e. target, child, or the node where the arc is pointing to), 
 				Node destinationNode = netToCheck.getNode(entry.getKey().toString());
-				if (destinationNode == null) {
+				if (!isComplexityBeforeModification && destinationNode == null) {
 					// create node if it does not exist. 
 					destinationNode = new ProbabilisticNode();
 					destinationNode.setName(entry.getKey().toString());
@@ -13772,6 +13791,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					isModified = true;	// mark this net as modified
 				}
 				
+				// whech whether we shall obtain complexity metrics of the disconnected subnet containing this node
+				if (isLocal && destinationNode != null) {	// make sure we don't add null nodes
+					nodesToConsiderForLocalComplexityFactor.add(destinationNode);
+				}
+				
 				// values are the node the arc is pointing from (i.e. parent, or the origin of the arc)
 				if (entry.getValue() != null) {
 					for (Long originNodeId : entry.getValue()) {
@@ -13780,7 +13804,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 						}
 						// extract the origin node
 						Node originNode = netToCheck.getNode(originNodeId.toString());
-						if (originNode == null) {
+						if (!isComplexityBeforeModification && originNode == null) {
 							// create node if it does not exist. 
 							originNode = new ProbabilisticNode();
 							originNode.setName(originNodeId.toString());
@@ -13807,33 +13831,44 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 							netToCheck.addNode(originNode);	// make sure it is included in the network
 							// no need to set isModified = true here, because it will be set after this if-clause anyway (since we'll add new edge for sure)
 						}
-						// only include new arc if it does not exist
-						if ((netToCheck.hasEdge(originNode, destinationNode) < 0)
-								&& (netToCheck.hasEdge(destinationNode, originNode) < 0)) {		// just checking existence of link for both direction
-							// TODO hasEdge seems to be a redundant check, because something similar is done in addEdge
-							try {
-								// finally, include the new arc
-								netToCheck.addEdge(new Edge(originNode, destinationNode));
-							} catch (InvalidParentException e) {
-								throw new IllegalArgumentException(e);
-							}
-							isModified = true;	// mark this net as modified
-						} else { // the edge exists (either originNode->destinationNode, or the opposite)
-							// extract the existing edge
-							Edge edgeToRemove = netToCheck.getEdge(originNode, destinationNode);
-							if (edgeToRemove == null) { // just checking if it was in the opposite direction
-								edgeToRemove = netToCheck.getEdge(destinationNode, originNode);
-							}
-							if (edgeToRemove == null) {
-								// Network#hasEdge and Network#getEdge are inconsistent each other (the prior is saying that there is a link, but the latter cannot retrieve it)
-								throw new IllegalStateException("The network cloned from the shared BN indicates existence of link between  nodes " 
-										+ originNode + " and " + destinationNode 
-										+ ", but the link cannot be retrieved. This is probably a bug in UnBBayes core, or in some plug-in. Please, check the version you are using.");
-							}
-							//remove the edge in case the edge exists;
-							netToCheck.removeEdge(edgeToRemove);	// simply remove the edge, without caring about the CPT (because we just need the JT structure, not the probabilities)
-							isModified = true; // needs to mark this net as modified
+						
+
+						// whech whether we shall obtain complexity metrics of the disconnected subnet containing this node
+						if (isLocal && originNode != null) {	// make sure we don't add null nodes
+							nodesToConsiderForLocalComplexityFactor.add(originNode);
 						}
+						
+						// only include/exclude arcs if flag to disable modification is off
+						if (!isComplexityBeforeModification) {
+							// only include new arc if it does not exist
+							if ((netToCheck.hasEdge(originNode, destinationNode) < 0)
+									&& (netToCheck.hasEdge(destinationNode, originNode) < 0)) {		// just checking existence of link for both direction
+								// TODO hasEdge seems to be a redundant check, because something similar is done in addEdge
+								try {
+									// finally, include the new arc
+									netToCheck.addEdge(new Edge(originNode, destinationNode));
+								} catch (InvalidParentException e) {
+									throw new IllegalArgumentException(e);
+								}
+								isModified = true;	// mark this net as modified
+							} else { 
+								// the edge exists (either originNode->destinationNode, or the opposite)
+								// extract the existing edge
+								Edge edgeToRemove = netToCheck.getEdge(originNode, destinationNode);
+								if (edgeToRemove == null) { // just checking if it was in the opposite direction
+									edgeToRemove = netToCheck.getEdge(destinationNode, originNode);
+								}
+								if (edgeToRemove == null) {
+									// Network#hasEdge and Network#getEdge are inconsistent each other (the prior is saying that there is a link, but the latter cannot retrieve it)
+									throw new IllegalStateException("The network cloned from the shared BN indicates existence of link between  nodes " 
+											+ originNode + " and " + destinationNode 
+											+ ", but the link cannot be retrieved. This is probably a bug in UnBBayes core, or in some plug-in. Please, check the version you are using.");
+								}
+								//remove the edge in case the edge exists;
+								netToCheck.removeEdge(edgeToRemove);	// simply remove the edge, without caring about the CPT (because we just need the JT structure, not the probabilities)
+								isModified = true; // needs to mark this net as modified
+							}
+						}	// end of if flag to disable arc inclusion/exclusion is off
 					}	// end of for
 				}	// end of if (entry.getValue() != null)
 			}	// end of for each entry in map
@@ -13895,9 +13930,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 				}	
 			}
 		} // end of if (newDependencies != null && !newDependencies.isEmpty())
-		
-		// return the maximum number of variables
-		return this.getComplexityFactor(netToCheck);
+	
+		// return the maximum number of variables. 
+		return this.getComplexityFactor(netToCheck, nodesToConsiderForLocalComplexityFactor); // nodesToConsiderForLocalComplexityFactor is empty if isLocal == false
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactors(java.util.Map)
+	 */
+	public Map<String,Double> getComplexityFactors(Map<Long, Collection<Long>> newDependencies) {
+		return this.getComplexityFactors(newDependencies, false, false);
 	}
 	
 	
@@ -13906,7 +13949,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * This is used in {@link #getComplexityFactors(Map)} in order to return the maximum table size of a clique,
 	 * and the sum of clique table sizes.
 	 * Subclasses can overwrite this method in order to make {@link #getComplexityFactors(Map)} to return desired metrics from a {@link ProbabilisticNetwork}.
-	 * @param net : network to be evaluated (we can use {@link ProbabilisticNetwork#getJunctionTree()} to retrieve junction tree) 
+	 * @param net : network to be evaluated (we can use {@link ProbabilisticNetwork#getJunctionTree()} to retrieve junction tree)
+	 * @param nodesToConsiderForLocalComplexityFactor : if this is non-null and non-empty,
+	 * then only the complexity factors local to disconnected subnets containing these nodes will be considered.
 	 * @return maximum clique table size (identified with key {@link edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE});
 	 * and the sum of clique table sizes (identified with key {@link edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE})
 	 * If the network does not have cliques, then 0 will be returned by default.
@@ -13914,7 +13959,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE
 	 */
-	protected Map<String,Double> getComplexityFactor(ProbabilisticNetwork net) {
+	protected Map<String,Double> getComplexityFactor(ProbabilisticNetwork net, Collection<INode> nodesToConsiderForLocalComplexityFactor) {
 		// TODO remove redundancy with #getNetStatistics().
 		
 		// the map to return
@@ -13931,8 +13976,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		int maxCliqueTableSize = 0;	 // maximum clique table size found so far
 		long sumCliqueTableSize = 0; // sum of clique table sizes known so far
 		
-		// iterate on cliques in order to get the maximum
-		for (Clique clique : net.getJunctionTree().getCliques()) {
+		// extract the cliques to be considered in order to estimate the metrics of complexity
+		Collection<Clique> cliquesToConsider = net.getJunctionTree().getCliques();	// the default is to consider all cliques.
+		if (nodesToConsiderForLocalComplexityFactor != null && !nodesToConsiderForLocalComplexityFactor.isEmpty()) {
+			// if nodes were specified, only consider cliques local (i.e. in the same disconnected subnet) to such nodes
+			cliquesToConsider =  net.getJunctionTree().getCliquesConnectedToNodes(nodesToConsiderForLocalComplexityFactor, null);
+		}
+		
+		// iterate on cliques in order to get the metrics
+		for (Clique clique : cliquesToConsider) {
 //			// clique.getNodesList().size() is supposedly the number of variables/nodes in this clique,
 //			// but I prefer to use clique.getProbabilityFunction().getVariablesSize(), which is the number of variables/nodes in the clique table (this is more reliable).
 //			int valueInThisClique = clique.getProbabilityFunction().getVariablesSize();	// the number of variables/nodes in current clique
@@ -13962,29 +14014,37 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 	/*
 	 * (non-Javadoc)
-	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getNewComplexityFactor(java.lang.Long, java.util.List)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactor(java.lang.Long, java.util.List, boolean, boolean, boolean)
 	 */
-	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds) {
+	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds, boolean isLocal, boolean isSum, boolean isComplexityBeforeModification) {
 		if (childQuestionId == null) {
 			// special case: we want the current complexity, not the complexity after including new arcs
-			return this.getComplexityFactor((Map)null);
+			return this.getComplexityFactor((Map)null, isLocal, isSum, isComplexityBeforeModification);
 		}
 //		if (parentQuestionIds == null) {
 //			// make sure we don't pass null to map's value
 //			parentQuestionIds = Collections.EMPTY_LIST;
 //		}
-		return this.getComplexityFactor((Map)Collections.singletonMap(childQuestionId, parentQuestionIds));
+		return this.getComplexityFactor((Map)Collections.singletonMap(childQuestionId, parentQuestionIds), isLocal, isSum, isComplexityBeforeModification);
 	}
 	
 	/*
 	 * (non-Javadoc)
-	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactor(java.util.List, java.util.List)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactor(java.lang.Long, java.util.List)
 	 */
-	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds) {
+	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds) {
+		return this.getComplexityFactor(childQuestionId, parentQuestionIds, false, false, false);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactor(java.util.List, java.util.List, boolean, boolean, boolean)
+	 */
+	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds, boolean isLocal, boolean isSum, boolean isComplexityBeforeModification) {
 		// initial assertions to avoid NullPointerException
 		if (childQuestionIds == null /*|| parentQuestionIds == null*/) {
 			// special case: we want the current complexity, not the complexity after including new arcs
-			return this.getComplexityFactor((Map)null);
+			return this.getComplexityFactor((Map)null, isLocal, isSum, isComplexityBeforeModification);
 		}
 		if (parentQuestionIds == null) {
 			// make sure we don't use null
@@ -14023,7 +14083,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		// delegate to #getComplexityFactor(Map).
-		return getComplexityFactor(newDependencies);
+		return getComplexityFactor(newDependencies, isLocal, isSum, isComplexityBeforeModification);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactor(java.util.List, java.util.List)
+	 */
+	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds) {
+		return this.getComplexityFactor(childQuestionIds, parentQuestionIds, false, false, false);
 	}
 
 	/**
@@ -14551,7 +14619,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	/**
 	 * @return it will just delegate to {@link IncrementalJunctionTreeAlgorithm#isLoopy()}.
 	 */
-	public boolean isLoopy() {
+	public boolean isRunningApproximation() {
 		try {
 			return ((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).isLoopy();
 		} catch (ClassCastException e) {
@@ -14624,10 +14692,10 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	/*
 	 * (non-Javadoc)
-	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactorPerAssumption(java.util.List, java.util.List, int, boolean)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactorPerAssumption(java.util.List, java.util.List, int, boolean, boolean, boolean, boolean)
 	 */
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public List<Entry<Entry<Long,Long>, Integer>> getComplexityFactorPerAssumption(List<Long> childIds, List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor) {
+	public List<Entry<Entry<Long,Long>, Integer>> getComplexityFactorPerAssumption(List<Long> childIds, List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor,
+			boolean isLocal, boolean isSum, boolean isComplexityBeforeModification) {
 		
 		// make sure we don't have null lists
 		if (childIds == null) {
@@ -14707,7 +14775,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			Long parentId = parentIds.get(i);
 			
 			// get complexity factor for current arc parentId -> childId
-			int complexityFactor = this.getComplexityFactor(Collections.singletonList(childId), Collections.singletonList(parentId));
+			int complexityFactor = this.getComplexityFactor(Collections.singletonList(childId), Collections.singletonList(parentId), isLocal, isSum, isComplexityBeforeModification);
 			// ignore assumptions with complexity larger than the threshold
 			if (complexityFactor > complexityFactorLimit) {
 				continue;
@@ -14736,9 +14804,18 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	/*
 	 * (non-Javadoc)
-	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactorPerAssumption(java.lang.Long, java.util.List, int, boolean)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactorPerAssumption(java.util.List, java.util.List, int, boolean)
 	 */
-	public List<Entry<Entry<Long,Long>, Integer>> getComplexityFactorPerAssumption(final Long childId, final List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor) {
+	public List<Entry<Entry<Long,Long>, Integer>> getComplexityFactorPerAssumption(List<Long> childIds, List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor) {
+		return getComplexityFactorPerAssumption(childIds, parentIds, complexityFactorLimit, sortByComplexityFactor, false, false, false);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactorPerAssumption(java.lang.Long, java.util.List, int, boolean, boolean, boolean, boolean)
+	 */
+	public List<Entry<Entry<Long,Long>, Integer>> getComplexityFactorPerAssumption(final Long childId, final List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor,
+			boolean isLocal, boolean isSum, boolean isComplexityBeforeModification) {
 		
 		// simply wrap #getComplexityFactorPerAssumption(java.util.List, java.util.List, int, boolean)
 		
@@ -14747,7 +14824,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			// create a list virtually containing parentIds.size() copies of childId
 			childIds = new SingleValueList<Long>(childId, ((parentIds==null)?0:parentIds.size()));
 		}
-		return this.getComplexityFactorPerAssumption(childIds, parentIds, complexityFactorLimit, sortByComplexityFactor);
+		return this.getComplexityFactorPerAssumption(childIds, parentIds, complexityFactorLimit, sortByComplexityFactor, isLocal, isSum, isComplexityBeforeModification);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getComplexityFactorPerAssumption(java.lang.Long, java.util.List, int, boolean)
+	 */
+	public List<Entry<Entry<Long,Long>, Integer>> getComplexityFactorPerAssumption(final Long childId, final List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor){
+		return this.getComplexityFactorPerAssumption(childId, parentIds, complexityFactorLimit, sortByComplexityFactor, false, false, false);
 	}
 	
 

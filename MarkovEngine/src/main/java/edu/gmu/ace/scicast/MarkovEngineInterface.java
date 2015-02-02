@@ -1247,11 +1247,27 @@ public interface MarkovEngineInterface {
 	 * Setting this to null will return the complexity metric of current Bayes net.
 	 * This method shall not actually modify the original Bayes net.
 	 * If an arc exists (regardless of the direction), then this method will return the complexity factor after REMOVING such link.
+	 * @param isLocal : if this is true and the underlying model has disconnected subnets, then this method
+	 * will calculate the metrics of complexity only for the subnets containing the questions provided in the other argument.
+	 * If this is false, then the entire network (in other words, all the disconnected subnets) will be considered.
+	 * If no questions were specified, the result will be equivalent to when this argument is <code>false</code> anyway.
+	 * @param isSum : if this is true, then this method will return the complexity metric identified by the key {@link #COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE}
+	 * in the map returned by the method {@link #getComplexityFactors(Map, boolean, boolean)}. If false,
+	 * then the metric identified by the key {@link #getDefaultComplexityFactorName()} will be used by default.
+	 * @param isComplexityBeforeModification : if this is true, then the questions and links will not actually be included to the network model
+	 * for calculating the complexity metrics. This is only useful when estimating the metrics locally for the disconnected subnet (i.e. when isLocal == true)
+	 * without changing the network structure.
 	 * @return a number indicating the complexity after changing network structure (i.e. after adding new arcs). In Junction tree algorithm, this will be the tree width.
 	 * @see #getNetStatistics()
 	 * @see #getComplexityFactor(List, List)
 	 * @see #getComplexityFactor(Long, List)
 	 * @throws IllegalArumentException if the new arcs to be added are invalid.
+	 */
+	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies, boolean isLocal, boolean isSum, boolean isComplexityBeforeModification);
+	
+	/**
+	 * This method is equivalent to {@link #getComplexityFactor(Map, boolean, boolean, boolean)},
+	 * with the 3 boolean arguments having the value <code>false</code>.
 	 */
 	public int getComplexityFactor(Map<Long, Collection<Long>> newDependencies);
 	
@@ -1264,11 +1280,28 @@ public interface MarkovEngineInterface {
 	 * @param parentQuestionIds : the questions to be considered as the "parents" (dependencies) in {@link #addQuestionAssumption(Long, Date, long, List, List)}
 	 * If the arc exists, then the returned value will be a metric of the complexity
 	 * after removing the existing arc.
+	 * @param isLocal : if this is true and the underlying model has disconnected subnets, then this method
+	 * will calculate the metrics of complexity only for the subnets containing the questions provided in the other argument.
+	 * If this is false, then the entire network (in other words, all the disconnected subnets) will be considered.
+	 * If no questions were specified, the result will be equivalent to when this argument is <code>false</code> anyway.
+	 * @param isSum : if this is true, then this method will return the complexity metric identified by the key {@link #COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE}
+	 * in the map returned by the method {@link #getComplexityFactors(Map, boolean, boolean)}. If false,
+	 * then the metric identified by the key {@link #getDefaultComplexityFactorName()} will be used by default.
+	 * @param isComplexityBeforeModification : if this is true, then the questions and links will not actually be included to the network model
+	 * for calculating the complexity metrics. This is only useful when estimating the metrics locally for the disconnected subnet (i.e. when isLocal == true)
+	 * without changing the network structure.
 	 * @return  a number indicating the complexity after changing network structure. In Junction tree algorithm, this will be the tree width.
 	 * @see #getNetStatistics()
 	 * @see #getComplexityFactor(List, List)
 	 * @see #getComplexityFactor(Map)
 	 * @throws IllegalArumentException if the new arcs to be added are invalid.
+	 */
+	
+	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds, boolean isLocal, boolean isSum, boolean isComplexityBeforeModification);
+	
+	/**
+	 * This method is equivalent to {@link #getComplexityFactor(List, List, boolean, boolean, boolean)},
+	 * with the 3 boolean arguments having the value <code>false</code>.
 	 */
 	public int getComplexityFactor(Long childQuestionId, List<Long> parentQuestionIds);
 	
@@ -1291,15 +1324,31 @@ public interface MarkovEngineInterface {
 	 * Implementations may consider a special case when childQuestionIds is larger than parentQuestionIds.
 	 * In this case, one option is to check if there are inexisting nodes in the rest of childQuestionIds and create them if so.
 	 * If an arc exists (regardless of the direction), then this method will return the complexity factor after REMOVING such link.
-	 * @param childQuestionIds: arcs will be pointing to this node. If the arc exists, then the returned value will be a metric of the complexity
+	 * @param childQuestionIds : arcs will be pointing to this node. If the arc exists, then the returned value will be a metric of the complexity
 	 * after removing the existing arc.
-	 * @param parentQuestionIds: arcs will come from this node. If the arc exists, then the returned value will be a metric of the complexity
+	 * @param parentQuestionIds : arcs will come from this node. If the arc exists, then the returned value will be a metric of the complexity
 	 * after removing the existing arc.
+	 * @param isLocal : if this is true and the underlying model has disconnected subnets, then this method
+	 * will calculate the metrics of complexity only for the subnets containing the questions provided in the other argument.
+	 * If this is false, then the entire network (in other words, all the disconnected subnets) will be considered.
+	 * If no questions were specified, the result will be equivalent to when this argument is <code>false</code> anyway.
+	 * @param isSum : if this is true, then this method will return the complexity metric identified by the key {@link #COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE}
+	 * in the map returned by the method {@link #getComplexityFactors(Map, boolean, boolean)}. If false,
+	 * then the metric identified by the key {@link #getDefaultComplexityFactorName()} will be used by default.
+	 * @param isComplexityBeforeModification : if this is true, then the questions and links will not actually be included to the network model
+	 * for calculating the complexity metrics. This is only useful when estimating the metrics locally for the disconnected subnet (i.e. when isLocal == true)
+	 * without changing the network structure.
 	 * @return a number indicating the complexity after changing network structure. In Junction tree algorithm, this will be the tree width.
 	 * @see #getNetStatistics()
 	 * @see #getComplexityFactor(Long, List)
 	 * @see #getComplexityFactor(Map)
 	 * @throws IllegalArumentException if the new arcs to be added are invalid.
+	 */
+	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds, boolean isLocal, boolean isSum, boolean isComplexityBeforeModification);
+	
+	/**
+	 * This method is equivalent to {@link #getComplexityFactor(List, List, boolean, boolean, boolean)},
+	 * with the 3 boolean arguments having the value <code>false</code>.
 	 */
 	public int getComplexityFactor(List<Long> childQuestionIds, List<Long> parentQuestionIds);
 	
@@ -1328,12 +1377,29 @@ public interface MarkovEngineInterface {
 	 * @param sortByComplexityFactor : 
 	 * if true, the returned list will be sorted by complexity factor. 
 	 * If false, the ordering of the input argument (assumptionIds) will be kept.
+	 * @param isLocal : if this is true and the underlying model has disconnected subnets, then this method
+	 * will calculate the metrics of complexity only for the subnets containing the questions provided in the other argument.
+	 * If this is false, then the entire network (in other words, all the disconnected subnets) will be considered.
+	 * If no questions were specified, the result will be equivalent to when this argument is <code>false</code> anyway.
+	 * @param isSum : if this is true, then this method will return the complexity metric identified by the key {@link #COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE}
+	 * in the map returned by the method {@link #getComplexityFactors(Map, boolean, boolean)}. If false,
+	 * then the metric identified by the key {@link #getDefaultComplexityFactorName()} will be used by default.
+	 * @param isComplexityBeforeModification : if this is true, then the questions and links will not actually be included to the network model
+	 * for calculating the complexity metrics. This is only useful when estimating the metrics locally for the disconnected subnet (i.e. when isLocal == true)
+	 * without changing the network structure.
 	 * @return a list with pairs (pair of nodes -- i.e. the link ; complexity factor). 
 	 * {@link Entry#getKey()} is the pair or nodes representing the link, and {@link Entry#getValue()} is the complexity factor.
 	 * In the link, {@link Entry#getKey()}  is the parent -- the node an arc is coming from -- and {@link Entry#getValue()} is the child. 
 	 * @see #getComplexityFactor(Long, List)
 	 * @see #getComplexityFactors(Map)
 	 * @see #getComplexityFactorPerAssumption(Long, List, int, boolean)
+	 */
+	public List<Entry<Entry<Long,Long>, Integer>> getComplexityFactorPerAssumption(List<Long> childIds, List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor,
+			boolean isLocal, boolean isSum, boolean isComplexityBeforeModification);
+	
+	/**
+	 * This method is equivalent to {@link #getComplexityFactorPerAssumption(List, List, int, boolean, boolean, boolean, boolean)},
+	 * with the last 3 boolean arguments having the value <code>false</code>.
 	 */
 	public List<Entry<Entry<Long,Long>, Integer>> getComplexityFactorPerAssumption(List<Long> childIds, List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor);
 	
@@ -1353,14 +1419,29 @@ public interface MarkovEngineInterface {
 	 * @param sortByComplexityFactor : 
 	 * if true, the returned list will be sorted by complexity factor. 
 	 * If false, the ordering of the input argument (assumptionIds) will be kept.
+	 * @param isLocal : if this is true and the underlying model has disconnected subnets, then this method
+	 * will calculate the metrics of complexity only for the subnets containing the questions provided in the other argument.
+	 * If this is false, then the entire network (in other words, all the disconnected subnets) will be considered.
+	 * If no questions were specified, the result will be equivalent to when this argument is <code>false</code> anyway.
+	 * @param isSum : if this is true, then this method will return the complexity metric identified by the key {@link #COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE}
+	 * in the map returned by the method {@link #getComplexityFactors(Map, boolean, boolean)}. If false,
+	 * then the metric identified by the key {@link #getDefaultComplexityFactorName()} will be used by default.
+	 * @param isComplexityBeforeModification : if this is true, then the questions and links will not actually be included to the network model
+	 * for calculating the complexity metrics. This is only useful when estimating the metrics locally for the disconnected subnet (i.e. when isLocal == true)
+	 * without changing the network structure.
 	 * @return a list with pairs (pair of nodes -- i.e. the link ; complexity factor). 
 	 * {@link Entry#getKey()} is the pair or nodes representing the link, and {@link Entry#getValue()} is the complexity factor.
 	 * In the link, {@link Entry#getKey()}  is the parent -- the node an arc is coming from -- and {@link Entry#getValue()} is the child. 
 	 * @see #getComplexityFactorPerAssumption(List, List, int, boolean)
 	 */
+	public List<Entry<Entry<Long,Long>, Integer>>  getComplexityFactorPerAssumption(Long childId, List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor,
+			boolean isLocal, boolean isSum, boolean isComplexityBeforeModification);
+	
+	/**
+	 * This method is equivalent to {@link #getComplexityFactorPerAssumption(Long, List, int, boolean, boolean, boolean, boolean)},
+	 * with the last 3 boolean arguments having the value <code>false</code>.
+	 */
 	public List<Entry<Entry<Long,Long>, Integer>>  getComplexityFactorPerAssumption(Long childId, List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor);
-	
-	
 	
 	
 	/**
@@ -1374,6 +1455,13 @@ public interface MarkovEngineInterface {
 	 * If the specified question/node did not exist, they shall be created before calculating the complexity metric.
 	 * Setting this to null will return the complexity metric of current Bayes net.
 	 * This method shall not actually modify the original Bayes net.
+	 * @param isLocal : if this is true and the underlying model has disconnected subnets, then this method
+	 * will calculate the metrics of complexity only for the subnets containing the questions provided in the other argument.
+	 * If this is false, then the entire network (in other words, all the disconnected subnets) will be considered.
+	 * If no questions were specified, the result will be equivalent to when this argument is <code>false</code> anyway.
+	 * @param isComplexityBeforeModification : if this is true, then the questions and links will not actually be included to the network model
+	 * for calculating the complexity metrics. This is only useful when estimating the metrics locally for the disconnected subnet (i.e. when isLocal == true)
+	 * without changing the network structure.
 	 * @return a map from a name of the metric to the value of the metric. 
 	 * For instance, an implementation using junction trees would return the following mapping:
 	 * <br/> <br/>
@@ -1389,7 +1477,14 @@ public interface MarkovEngineInterface {
 	 * @see #COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE
 	 * @throws IllegalArumentException if the new arcs to be added are invalid.
 	 */
+	public Map<String,Double> getComplexityFactors(Map<Long, Collection<Long>> newDependencies, boolean isLocal, boolean isComplexityBeforeModification);
+
+	/**
+	 * This method is equivalent to {@link #getComplexityFactors(Map, boolean, boolean)},
+	 * with the 2 boolean arguments having the value <code>false</code>.
+	 */
 	public Map<String,Double> getComplexityFactors(Map<Long, Collection<Long>> newDependencies);
+	
 	
 	/** This is the name of the key in the map returned by {@link #getComplexityFactors(Map)} which represents the maximum clique table size. */
 	public static final String COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE = "MaxCliqueTableSize";
@@ -1397,6 +1492,23 @@ public interface MarkovEngineInterface {
 	public static final String COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE = "SumCliqueTableSize";
 	
 	
-	
+
+	/**
+	 * @return the key of {@link #getComplexityFactors(Map)} returned by default by {@link #getComplexityFactor(Map)}.
+	 * @see #getComplexityFactor(List, List)
+	 * @see #getComplexityFactor(Long, List)
+	 * @see MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE
+	 * @see MarkovEngineInterface#COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE
+	 */
+	public String getDefaultComplexityFactorName();
+
+	/**
+	 * @param defaultComplexityFactorName : the key of {@link #getComplexityFactors(Map)} returned by default by {@link #getComplexityFactor(Map)}.
+	 * @see #getComplexityFactor(List, List)
+	 * @see #getComplexityFactor(Long, List)
+	 * @see MarkovEngineInterface#COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE
+	 * @see MarkovEngineInterface#COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE
+	 */
+	public void setDefaultComplexityFactorName(String defaultComplexityFactorName);
 	
 }
