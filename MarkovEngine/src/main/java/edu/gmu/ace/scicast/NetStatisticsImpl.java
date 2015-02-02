@@ -27,6 +27,7 @@ public class NetStatisticsImpl implements NetStatistics {
 	private int numberOfNonEmptyCliques = 0;
 	private int maxNumParents = 0;
 	private int numArcs = 0;
+	private boolean isRunningApproximation = false;
 	
 	
 	
@@ -341,6 +342,24 @@ public class NetStatisticsImpl implements NetStatistics {
 	 */
 	public void setNumArcs(int numArcs) {
 		this.numArcs = numArcs;
+	}
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.NetStatistics#isRunningApproximation()
+	 */
+	public boolean isRunningApproximation() {
+		return isRunningApproximation;
+	}
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.NetStatistics#setRunningApproximation(boolean)
+	 */
+	public void setRunningApproximation(boolean isRunningApproximation) {
+		this.isRunningApproximation = isRunningApproximation;
 	}
 
 

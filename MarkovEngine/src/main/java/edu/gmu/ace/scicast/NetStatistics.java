@@ -9,7 +9,11 @@ import java.util.Map;
 /**
  * This is a common interface for objects
  * containing statistics about the probabilistic network managed by
- * {@link MarkovEngineInterface}
+ * {@link MarkovEngineInterface}.
+ * <br/>
+ * <br/>
+ * Calling {@link Object#toString()} for implementations of this interface
+ * shall return a human-readable text/report with the statistics.
  * @author Shou Matsumoto
  *
  */
@@ -219,6 +223,21 @@ public interface NetStatistics extends Serializable {
 	 */
 	public void setNumArcs(int numArcs);
 	
+	/**
+	 * @return implementations must return a human-readable report of the statistics represented by this object.
+	 */
+	public String toString();
 	
+	/**
+	 * @return true if the current network is running some kind of approximate inference algorithm.
+	 * False if the network is running exact inference.
+	 */
+	public boolean isRunningApproximation();
+	
+	/**
+	 * @param isRunningApproximation : true if the current network is running some kind of approximate inference algorithm.
+	 * False if the network is running exact inference.
+	 */
+	public void setRunningApproximation(boolean isRunningApproximation);
 	
 }
