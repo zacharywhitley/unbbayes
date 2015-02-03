@@ -305,7 +305,9 @@ public class NetStatisticsImpl implements NetStatistics {
 		ret += "Maximum clique table size (size of largest clique table): " + getMaxCliqueTableSize() + "\n\n";
 		
 		// maximum number of parents per node
-		ret += "Maximum number of parents per node: " + getMaxNumParents();
+		ret += "Maximum number of parents per node: " + getMaxNumParents() + "\n\n";
+		
+		ret += "Using approximation: " + this.isRunningApproximation();
 		
 		return ret;
 	}
