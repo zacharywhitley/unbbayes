@@ -15252,6 +15252,131 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// simply delegate
 		((IncrementalJunctionTreeAlgorithm)getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setToCreateVirtualNode(isToCreateVirtualNode);
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getLinkComplexitySuggestions(java.util.List, java.util.List, int, boolean, boolean)
+	 */
+	public List<LinkSuggestion> getLinkComplexitySuggestions( List<Long> questionIds1, List<Long> questionIds2, int complexityFactorLimit, 
+			boolean isToForceDirection, boolean sortByComplexityFactor) {
+		
+		// basic assertions
+		if (questionIds1 == null || questionIds2 == null || complexityFactorLimit <= 0) {
+			return Collections.emptyList();
+		}
+		
+		// check how many pairs of nodes (i.e. how many arcs) were specified completely in the argument
+		int numPairs = Math.min(questionIds1.size(), questionIds2.size());
+		if (numPairs <= 0) {
+			// there is no arc to handle
+			return Collections.emptyList();
+		}
+		
+		// this is the list to be returned. Its max size is the number of arcs.
+		List<LinkSuggestion> ret = new ArrayList<LinkSuggestion>(numPairs); 
+		// fill the list for each pair of nodes
+		for (int i = 0; i < numPairs; i++) {
+			
+			// extract the ids of current pair of questions
+			Long parentId = questionIds1.get(i);
+			Long childId = questionIds2.get(i);
+			
+			// create an instance of LinkSuggestion for the arc question1->question2
+			LinkSuggestion bestLinkSuggestion = null;	// this object will hold the best suggestion we know so far
+			try {
+				List<Long> listWith1Id = Collections.singletonList(parentId);	// this is just because the interface expects a list instead of a single value
+				bestLinkSuggestion = LinkSugestionImpl.getInstance(
+						this.getComplexityFactor(childId, listWith1Id, true, true, true), 	// true*3 := local complexity, using sum of clique sizes, before modification
+						this.getComplexityFactor(childId, listWith1Id, true, true, false), 	// true,true,true := local complexity, using sum of clique sizes, after modification
+						parentId,
+						childId
+					);
+				// ignore suggestions that has higher complexity than the specified limit
+				if (bestLinkSuggestion.getPosteriorComplexity() > complexityFactorLimit) {
+					bestLinkSuggestion = null;
+				}
+			} catch (Exception e) {
+				Debug.println(getClass(), "Failed to fill link suggestion: " + parentId + " -> " + childId, e);
+			}
+			
+			
+			if (!isToForceDirection) {
+				// check if an arc with inverse direction yields better result
+				parentId = questionIds2.get(i);
+				childId = questionIds1.get(i);
+				try {
+					// create an instance of LinkSuggestion for the arc with direction question2->question1
+					List<Long> listWith1Id = Collections.singletonList(parentId);	// this is just because the interface expects a list instead of a single value
+					LinkSuggestion inverseLinkSuggestion = LinkSugestionImpl.getInstance(
+							this.getComplexityFactor(childId, listWith1Id, true, true, true), 	// true*3 := local complexity, using sum of clique sizes, before modification
+							this.getComplexityFactor(childId, listWith1Id, true, true, false), 	// true,true,true := local complexity, using sum of clique sizes, after modification
+							parentId,
+							childId
+						);
+					// ignore suggestions that has higher complexity than the specified limit 
+					if (inverseLinkSuggestion.getPosteriorComplexity() > complexityFactorLimit) {
+						inverseLinkSuggestion = null;
+					}
+					// pick the best suggestion
+					if (bestLinkSuggestion == null) {
+						// if inverse is also worse than the limit, then both directions yields bad links (so keep best link suggestion on null)
+						bestLinkSuggestion = inverseLinkSuggestion;
+					} else if ( (inverseLinkSuggestion != null) 
+							&& inverseLinkSuggestion.getPosteriorComplexity() < bestLinkSuggestion.getPosteriorComplexity()) {
+						// the inverse link yields better result than the previous one
+						bestLinkSuggestion = inverseLinkSuggestion;
+					}	// or else, new suggestion is either null or worse than the old suggestion, so keep the old suggestion 
+					
+				} catch (Exception e) {
+					Debug.println(getClass(), "Failed to fill link suggestion: " + parentId + " -> " + childId, e);
+				}
+				
+			}
+			
+			// include the link suggestion if it is valid (i.e. better than specified limit)
+			if (bestLinkSuggestion != null) {	// if worse than specified limit, it is null. Don't add null values.
+				ret.add(bestLinkSuggestion);
+			} else {
+				Debug.println(getClass(), "Questions " + questionIds1 + " and " + questionIds2 + " cannot be connected without exceeding complexity factor " + complexityFactorLimit);
+			}
+		}
+		
+		// sort the results if necessary
+		if (sortByComplexityFactor) {
+			// just reorder by complexity factor
+			Collections.sort(ret, new Comparator<LinkSuggestion>() {
+				public int compare(LinkSuggestion o1, LinkSuggestion o2) {
+					// this should let the Collections#sort to sort by LinkSuggestion#getPosteriorComplexity()
+					int complexity1 = Integer.MAX_VALUE;
+					if (o1 != null) {
+						complexity1 = o1.getPosteriorComplexity();
+					}
+					int complexity2 = Integer.MAX_VALUE;
+					if (o2 != null) {
+						complexity2 = o2.getPosteriorComplexity();
+					}
+					return complexity1 - complexity2;
+				}
+			});
+		}
+		
+		return ret;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getLinkComplexitySuggestion(java.lang.Long, java.lang.Long, int, boolean)
+	 */
+	public LinkSuggestion getLinkComplexitySuggestion(Long questionId1, Long questionId2, int complexityFactorLimit, boolean isToForceDirection) {
+		// just call the other method, but passing to it a list with only 1 element.
+		List<LinkSuggestion> ret = this.getLinkComplexitySuggestions(Collections.singletonList(questionId1), Collections.singletonList(questionId2), complexityFactorLimit, isToForceDirection, false);
+		if (ret != null && !ret.isEmpty()) {
+			// return anything that was returned (so, just return the 1st element).
+			return ret.get(0);
+		}
+		// if nothing was returned, then return null
+		return null;
+	}
 	
 	
 //	/**

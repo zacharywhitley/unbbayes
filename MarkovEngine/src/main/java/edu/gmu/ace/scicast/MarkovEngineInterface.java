@@ -1443,6 +1443,31 @@ public interface MarkovEngineInterface {
 	 */
 	public List<Entry<Entry<Long,Long>, Integer>>  getComplexityFactorPerAssumption(Long childId, List<Long> parentIds, int complexityFactorLimit, boolean sortByComplexityFactor);
 	
+	/**
+	 * This method can be used to get a tuple of complexity before adding arc, complexity after adding arc (whichever direction yielding a better result),
+	 * and the direction of the arc which yielded better result (parent is {@link LinkSuggestion#getSuggestedParentId()}, and child is {@link LinkSuggestion#getSuggestedChildId()}).
+	 * @param questionIds1 : one of the questions to be considered in the arc. The arc will be constituted by the question in index <code>i</code> of this list and in index
+	 * <code>i</code> of questionIds2.
+	 * @param questionIds2 : the other question to be considered in the arc. The arc will be constituted by the question in index <code>i</code> of this list and in index
+	 * <code>i</code> of questionIds1.
+	 * @param complexityFactorLimit : links with complexity factor exceeding this amount will be ignored.
+	 * See {@link LinkSuggestion#getSuggestedChildId()} and {@link LinkSuggestion#getSuggestedParentId()} to retrieve which arcs were not ignored.
+	 * Use {@link Integer#MAX_VALUE} here if you don't want arcs to be ignored.
+	 * @param isToForceDirection : if this is true, then questionIds1 will always be considered as the parent.
+	 * @param sortByComplexityFactor : if true, the returned list will be sorted by {@link LinkSuggestion#getPosteriorComplexity()}.
+	 * @return : a list containing instances of {@link LinkSuggestion}, which is a tuple of complexity before adding arc {@link LinkSuggestion#getPriorComplexity()}, 
+	 * after adding arc ({@link LinkSuggestion#getPosteriorComplexity()}) in a direction yielding better result, and the direction of the arc which yielded
+	 * better result (direction: {@link LinkSuggestion#getSuggestedParentId()} -> {@link LinkSuggestion#getSuggestedChildId()})
+	 * @see LinkSugestionImpl
+	 * @see #getComplexityFactor(Long, List, boolean, boolean, boolean)
+	 */
+	public List<LinkSuggestion> getLinkComplexitySuggestions(List<Long> questionIds1, List<Long> questionIds2, int complexityFactorLimit, boolean isToForceDirection, boolean sortByComplexityFactor);
+	
+	/**
+	 * This is just a wrapper for {@link #getLinkComplexitySuggestions(List, List, int, boolean, boolean)} with only 1 pair of question ids.
+	 */
+	public LinkSuggestion getLinkComplexitySuggestion(Long questionId1, Long questionId2, int complexityFactorLimit, boolean isToForceDirection);
+	
 	
 	/**
 	 * This method can be used to get a collection of metrics that are related to the complexity (e.g. time complexity) of the 
