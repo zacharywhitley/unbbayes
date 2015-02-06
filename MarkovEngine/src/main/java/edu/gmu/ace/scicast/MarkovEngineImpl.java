@@ -13743,10 +13743,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 //				// this should be unnecessary, but just for backward compatibility and to make sure
 //				sharedBn = getProbabilisticNetwork();
 //			}
-			synchronized (sharedBn) {
-				// clone the network. Use a clone regardless of whether we'll change it or not, because we may have parallel engine access
-				netToCheck = algorithm.cloneProbabilisticNetwork(sharedBn);
-				// TODO do not clone clique/separator potentials
+			if (isComplexityBeforeModification) {
+				// TODO this is not thread safe
+				netToCheck = sharedBn;
+			} else {
+				synchronized (sharedBn) {
+					// clone the network. Use a clone regardless of whether we'll change it or not, because we may have parallel engine access
+					netToCheck = algorithm.cloneProbabilisticNetwork(sharedBn);
+					// TODO do not clone clique/separator potentials
+				}
 			}
 		} // we don't need to keep the lock anymore, because we are working with a clone
 		
