@@ -663,12 +663,42 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 								// create the new separator
 								Separator newSeparator = new Separator(parentClique, childClique, false);	// false := don't update list of parents/children of these cliques yet
 								newSeparator.setNodes(intersection);
+								
+								// we also need to update the separator table, or else algorithms will think the separator is empty
+								PotentialTable probabilityTable = newSeparator.getProbabilityFunction();	// initialize table of probabilities
+								PotentialTable utilityTable = newSeparator.getUtilityTable();				// also init utility table for backward compatibility
+								// include the variables to both tables
+								for (Node node : intersection) {
+									probabilityTable.addVariable(node);
+									utilityTable.addVariable(node);
+								}
+								jt.initBelief(newSeparator);	// initialize the content of tables
+								
+								// don't forget to include the new separator to the junction tree object
 								jt.addSeparator(newSeparator);
 								
 								// set parentClique a parent of childClique
 								jt.addParent(parentClique, childClique);
 								// set childClique a child of parentClique
 								parentClique.addChild(childClique);
+								
+								// associate nodes to new separator if separator is smaller than clique/separator whose node is currently associated
+								for (Node node : intersection) {
+									if (node instanceof TreeVariable) {
+										TreeVariable var = (TreeVariable) node;
+										// extract clique or separator associated with this node (i.e. smallest clique/separator containing this node known so far)
+										IRandomVariable cliqueOrSeparator = var.getAssociatedClique();
+										// check if it is still smaller than the separator we just created
+										if (cliqueOrSeparator.getProbabilityFunction() instanceof PotentialTable) {
+											PotentialTable table = (PotentialTable) cliqueOrSeparator.getProbabilityFunction();
+											if (table.tableSize() > probabilityTable.tableSize()) {
+												// the clique/separator associated with this node is larger than new separator,
+												// so this node should now be associated to new separator (smaller) so that marginalization gets faster
+												var.setAssociatedClique(newSeparator);
+											}
+										}
+									}
+								}
 								
 							}	// end of for each clique
 						}	// end of for  each clique
@@ -700,8 +730,11 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 			
 			// make sure the belief tables are updated after cliques are connected
 			try {
-				jt.setInitialized(false);	// force it to stop using cache
-				jt.initBeliefs();
+//				jt.setInitialized(false);	// force it to stop using cache
+//				jt.initBeliefs();
+				jt.initConsistency();	// instead of reseting all beliefs (which was supposedly done when the jt was compiled), we just need to propagate and set global consistency
+				// we also need to initialize the cache of marginals, because they may have been changed
+				updateMarginals(probabilisticNetwork);
 			} catch (Exception e) {
 				throw new RuntimeException(e); // TODO stop using exception translation
 			}
@@ -3184,7 +3217,9 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		algorithm.run();
 		
 		// check conditions to use loopy BP in cluster structure
-		if (!isConditionForClusterLoopyBPSatisfied(algorithm.getNet())) {
+		if (!algorithm.isLoopy() 	// if it got loopy yet, then we did not satisfy condition
+//				&& !isConditionForClusterLoopyBPSatisfied(algorithm.getNet())  // just to double-check
+					) {	
 			// TODO compiling a clone to check clique size, and then using setLoopy(false) to recompile exact JT is redundant
 			
 			// setting isLoopy from true to false this should recompile junction tree in non-loopy and non-incremental mode
