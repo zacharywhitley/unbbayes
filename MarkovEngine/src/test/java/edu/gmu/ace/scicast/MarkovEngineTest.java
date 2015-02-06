@@ -34785,7 +34785,7 @@ public class MarkovEngineTest extends TestCase {
 		Long transactionKey = engine.startNetworkActions();
 		
 		// create a single disconnected node
-		engine.addQuestion(transactionKey, new Date(), 666L, 10, null);
+		engine.addQuestion(transactionKey, new Date(), 666L, 23, null);
 		
 		// create the asia network
 		engine.addQuestion(transactionKey, new Date(), 1L, 2, null);	// asia
@@ -34909,7 +34909,105 @@ public class MarkovEngineTest extends TestCase {
 		assertFalse(cliques.isEmpty());
 		assertEquals(6+2+1, cliques.size());
 		
+		// now test the local complexity factor methods
 		
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		
+		// create cycle
+		LinkSuggestion suggestion = engine.getLinkComplexitySuggestion(8L, 1L, Integer.MAX_VALUE, true);
+		assertNull(suggestion);
+		List<LinkSuggestion> suggestions = engine.getLinkComplexitySuggestions(Collections.singletonList(8L), Collections.singletonList(1L), Integer.MAX_VALUE, true, true);
+		assertTrue(suggestions.isEmpty());
+		
+		// make sure the original net do not contain cycles
+		assertFalse(engine.getProbabilisticNetwork().hasCycle());
+		// make sure marginals remain OK
+		assertEquals(probLists.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			List<Float> prob = probLists.get(entry.getKey());
+			assertEquals(prob.size(), entry.getValue().size());
+			for (int i = 0; i < prob.size(); i++) {
+				assertEquals(prob.get(i), entry.getValue().get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// connect E and F
+		suggestion = engine.getLinkComplexitySuggestion(0x0EL, 0x0FL, 16, false);
+		assertNull(suggestion);
+		suggestion = engine.getLinkComplexitySuggestion(0x0EL, 0x0EL, 9999, false);
+		assertNull(suggestion);
+		suggestion = engine.getLinkComplexitySuggestion(0x0EL, 0x0FL, Integer.MAX_VALUE, false);
+		assertNotNull(suggestion);
+		assertEquals(16, suggestion.getPriorComplexity());
+		assertEquals(2*3*5, suggestion.getPosteriorComplexity());
+		assertTrue(suggestion.getSuggestedChildId().equals(0x0EL) || suggestion.getSuggestedChildId().equals(0x0FL));
+		assertTrue(suggestion.getSuggestedParentId().equals(0x0EL) || suggestion.getSuggestedParentId().equals(0x0FL));
+		assertFalse(suggestion.getSuggestedParentId().equals(suggestion.getSuggestedChildId()));
+		
+		List<Long> questionIds1 = new ArrayList<Long>();
+		questionIds1.add(0x0EL);
+		questionIds1.add(0x0FL);
+		List<Long> questionIds2 = new ArrayList<Long>();
+		questionIds2.add(0x0FL);
+		questionIds2.add(0x0EL);
+		suggestions = engine.getLinkComplexitySuggestions(questionIds1, questionIds2, 16, false, true);
+		assertTrue(suggestions.isEmpty());
+		suggestions = engine.getLinkComplexitySuggestions(questionIds1, questionIds2, Integer.MAX_VALUE, false, true);
+		assertEquals(2,suggestions.size());
+		for (LinkSuggestion sug : suggestions) {
+			assertEquals(16, sug.getPriorComplexity());
+			assertEquals(2*3*5, sug.getPosteriorComplexity());
+			assertTrue(sug.getSuggestedChildId().equals(0x0EL) || sug.getSuggestedChildId().equals(0x0FL));
+			assertTrue(sug.getSuggestedParentId().equals(0x0EL) || sug.getSuggestedParentId().equals(0x0FL));
+			assertFalse(sug.getSuggestedParentId().equals(sug.getSuggestedChildId()));
+		}
+		
+		// connect 666 to asia
+		suggestion = engine.getLinkComplexitySuggestion(666L, 1L, 16, false);
+		assertNull(suggestion);
+		suggestion = engine.getLinkComplexitySuggestion(666L, 666L, 9999, false);
+		assertNull(suggestion);
+		suggestion = engine.getLinkComplexitySuggestion(666L, 1L, Integer.MAX_VALUE, false);
+		assertNotNull(suggestion);
+		assertEquals(4603 + 23, suggestion.getPriorComplexity());
+		assertEquals(4603+23*2, suggestion.getPosteriorComplexity());
+		assertTrue(suggestion.getSuggestedChildId().equals(666L) || suggestion.getSuggestedChildId().equals(1L));
+		assertTrue(suggestion.getSuggestedParentId().equals(666L) || suggestion.getSuggestedParentId().equals(1L));
+		assertFalse(suggestion.getSuggestedParentId().equals(suggestion.getSuggestedChildId()));
+		
+		// connect 666 to asia and F to Asia
+		questionIds1 = new ArrayList<Long>();
+		questionIds1.add(666L);
+		questionIds1.add(0x0FL);
+		questionIds2 = new ArrayList<Long>();
+		questionIds2.add(1L);
+		questionIds2.add(1L);
+		suggestions = engine.getLinkComplexitySuggestions(questionIds1, questionIds2, 16, false, true);
+		assertTrue(suggestions.isEmpty());
+		suggestions = engine.getLinkComplexitySuggestions(questionIds1, questionIds2, Integer.MAX_VALUE, false, false);	// dont sort
+		assertEquals(2,suggestions.size());
+		assertEquals(4603 + 23, suggestions.get(0).getPriorComplexity());
+		assertEquals(4603+23*2, suggestions.get(0).getPosteriorComplexity());
+		assertTrue(suggestions.get(0).getSuggestedChildId().equals(666L) || suggestions.get(0).getSuggestedChildId().equals(1L));
+		assertTrue(suggestions.get(0).getSuggestedParentId().equals(666L) || suggestions.get(0).getSuggestedParentId().equals(1L));
+		assertFalse(suggestions.get(0).getSuggestedParentId().equals(suggestions.get(0).getSuggestedChildId()));
+		assertEquals(4603 + 2*3+2*5, suggestions.get(1).getPriorComplexity());
+		assertEquals(4603+2*3+2*5+2*5, suggestions.get(1).getPosteriorComplexity());
+		assertTrue(suggestions.get(1).getSuggestedChildId().equals(0x0FL) || suggestions.get(1).getSuggestedChildId().equals(1L));
+		assertTrue(suggestions.get(1).getSuggestedParentId().equals(0x0FL) || suggestions.get(1).getSuggestedParentId().equals(1L));
+		assertFalse(suggestions.get(1).getSuggestedParentId().equals(suggestions.get(1).getSuggestedChildId()));
+		suggestions = engine.getLinkComplexitySuggestions(questionIds1, questionIds2, Integer.MAX_VALUE, false, true);	// sort
+		assertEquals(2,suggestions.size());
+		assertEquals(4603 + 23, suggestions.get(1).getPriorComplexity());
+		assertEquals(4603+23*2, suggestions.get(1).getPosteriorComplexity());
+		assertTrue(suggestions.get(1).getSuggestedChildId().equals(666L) || suggestions.get(1).getSuggestedChildId().equals(1L));
+		assertTrue(suggestions.get(1).getSuggestedParentId().equals(666L) || suggestions.get(1).getSuggestedParentId().equals(1L));
+		assertFalse(suggestions.get(1).getSuggestedParentId().equals(suggestions.get(1).getSuggestedChildId()));
+		assertEquals(4603 + 2*3+2*5, suggestions.get(0).getPriorComplexity());
+		assertEquals(4603+2*3+2*5+2*5, suggestions.get(0).getPosteriorComplexity());
+		assertTrue(suggestions.get(0).getSuggestedChildId().equals(0x0FL) || suggestions.get(0).getSuggestedChildId().equals(1L));
+		assertTrue(suggestions.get(0).getSuggestedParentId().equals(0x0FL) || suggestions.get(0).getSuggestedParentId().equals(1L));
+		assertFalse(suggestions.get(0).getSuggestedParentId().equals(suggestions.get(0).getSuggestedChildId()));
 	}
 	
 	/**
