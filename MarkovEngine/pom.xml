@@ -6,7 +6,7 @@
 	<name>Markov Engine for Combo Trades in Combinatorial Prediction Market</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->
-	<version>1.4.10</version>
+	<version>1.5.10</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
