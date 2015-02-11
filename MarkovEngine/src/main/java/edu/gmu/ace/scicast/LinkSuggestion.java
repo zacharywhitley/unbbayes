@@ -36,4 +36,5 @@ public interface LinkSuggestion extends Serializable {
 	 */
 	public Long getSuggestedChildId();
 	
+	
 }

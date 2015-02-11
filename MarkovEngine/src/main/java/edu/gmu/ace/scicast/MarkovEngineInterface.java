@@ -1536,4 +1536,11 @@ public interface MarkovEngineInterface {
 	 */
 	public void setDefaultComplexityFactorName(String defaultComplexityFactorName);
 	
+	
+	public float getLinkStrength(Long questionId1, Long questionId2);
+	
+	public List<Float> getLinkStrengthList(List<Long> questionIds1, List<Long> questionIds2);
+	
+	public List<LinkStrength> getLinkStrengthAll();
+	
 }

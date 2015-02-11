@@ -395,6 +395,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private int dynamicJunctionTreeNetSizeThreshold = 1;
 	
 	private String defaultComplexityFactorName = COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE; //COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE;
+
+	private boolean isToUseMaxForSubnetsInLinkSuggestion = true;
 	
 	
 	/**
@@ -13948,7 +13950,13 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		return this.getComplexityFactors(newDependencies, false, false);
 	}
 	
-	
+	/**
+	 * @deprecated this is only kept for backward compatibility. Use {@link #getComplexityFactor(ProbabilisticNetwork, Collection)} instead.
+	 */
+	@Deprecated
+	protected Map<String,Double> getComplexityFactor(ProbabilisticNetwork net) {
+		return this.getComplexityFactor(net, (List)Collections.emptyList());
+	}
 	
 	/**
 	 * This is used in {@link #getComplexityFactors(Map)} in order to return the maximum table size of a clique,
@@ -13981,33 +13989,66 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		int maxCliqueTableSize = 0;	 // maximum clique table size found so far
 		long sumCliqueTableSize = 0; // sum of clique table sizes known so far
 		
+		
+		
 		// extract the cliques to be considered in order to estimate the metrics of complexity
-		Collection<Clique> cliquesToConsider = net.getJunctionTree().getCliques();	// the default is to consider all cliques.
+//		Collection<Clique> cliquesToConsider = net.getJunctionTree().getCliques();	// the default is to consider all cliques.
+//		if (nodesToConsiderForLocalComplexityFactor != null && !nodesToConsiderForLocalComplexityFactor.isEmpty()) {
+//			// if nodes were specified, only consider cliques local (i.e. in the same disconnected subnet) to such nodes
+//			cliquesToConsider =  net.getJunctionTree().getCliquesConnectedToNodes(nodesToConsiderForLocalComplexityFactor, null);
+//		}
+		Collection<Collection<Clique>> cliquesToConsider = new ArrayList<Collection<Clique>>();
 		if (nodesToConsiderForLocalComplexityFactor != null && !nodesToConsiderForLocalComplexityFactor.isEmpty()) {
 			// if nodes were specified, only consider cliques local (i.e. in the same disconnected subnet) to such nodes
-			cliquesToConsider =  net.getJunctionTree().getCliquesConnectedToNodes(nodesToConsiderForLocalComplexityFactor, null);
+			if (isToUseMaxForSubnetsInLinkSuggestion()) {
+				// we'll calculate the max of complexity of the subnet of each node, so separate the set by cliques connected to each node
+				for (INode node : nodesToConsiderForLocalComplexityFactor) {
+					// each set of cliques represents the set of cliques connected to current node
+					cliquesToConsider.add(net.getJunctionTree().getCliquesConnectedToNodes(Collections.singletonList(node), null));
+				}
+			} else {
+				// calculate the integrated complexity of the subnet of all node (if disconnected, consider both together)
+				cliquesToConsider.add(net.getJunctionTree().getCliquesConnectedToNodes(nodesToConsiderForLocalComplexityFactor, null));
+			}
+		} else {
+			// the default is to consider all cliques together (i.e. get global complexity).
+			cliquesToConsider.add(net.getJunctionTree().getCliques()); 
 		}
 		
-		// iterate on cliques in order to get the metrics
-		for (Clique clique : cliquesToConsider) {
+		// iterate on each set of cliques. If global complexity is calculated, or if !isToUseMaxForSubnetsInLinkSuggestion(), then there is only 1 set with all the cliques to consider
+		for (Collection<Clique> cliques : cliquesToConsider) {
+			// prepare variables to get max and sum clique sizes for current set of cliques
+			int currentMaxCliqueTableSize = 0;
+			int currentSumCliqueTableSize = 0;
+			// iterate on cliques in order to get the metrics
+			for (Clique clique : cliques) {
 //			// clique.getNodesList().size() is supposedly the number of variables/nodes in this clique,
 //			// but I prefer to use clique.getProbabilityFunction().getVariablesSize(), which is the number of variables/nodes in the clique table (this is more reliable).
 //			int valueInThisClique = clique.getProbabilityFunction().getVariablesSize();	// the number of variables/nodes in current clique
-			// using table size instead
-			int valueInThisClique = clique.getProbabilityFunction().tableSize();	// this is also the state space of current clique
+				// using table size instead
+				int valueInThisClique = clique.getProbabilityFunction().tableSize();	// this is also the state space of current clique
 //			// we may be using a junction tree builder that does not fill clique tables, so needs to calculate state space on the fly
 //			int valueInThisClique = 1;
 //			for (Node node : clique.getNodesList()) {
 //				valueInThisClique *= node.getStatesSize();
 //			}
-			// update the max
-			if (valueInThisClique > maxCliqueTableSize) {
-				// this is the maximum we know so far
-				maxCliqueTableSize = valueInThisClique;
+				// update the max
+				if (valueInThisClique > currentMaxCliqueTableSize) {
+					// this is the maximum we know so far
+					currentMaxCliqueTableSize = valueInThisClique;
+				}
+				
+				// also update the sum
+				currentSumCliqueTableSize += valueInThisClique;
 			}
 			
-			// also update the sum
-			sumCliqueTableSize += valueInThisClique;
+			// store the largest (of all set of cliques) of the sum/max clique sizes 
+			if (currentSumCliqueTableSize > sumCliqueTableSize) {
+				sumCliqueTableSize = currentSumCliqueTableSize;
+			}
+			if (currentMaxCliqueTableSize > maxCliqueTableSize) {
+				maxCliqueTableSize = currentMaxCliqueTableSize;
+			}
 		}
 		
 		// put the obtained values into the map to be returned, and return it
@@ -15381,6 +15422,58 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		// if nothing was returned, then return null
 		return null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getLinkStrength(java.lang.Long, java.lang.Long)
+	 */
+	public float getLinkStrength(Long questionId1, Long questionId2) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getLinkStrengthList(java.util.List, java.util.List)
+	 */
+	public List<Float> getLinkStrengthList(List<Long> questionIds1,
+			List<Long> questionIds2) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getLinkStrengthAll()
+	 */
+	public List<LinkStrength> getLinkStrengthAll() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	/**
+	 * @return the isToUseMaxForSubnetsInLinkSuggestion : if true,
+	 * then {@link #getComplexityFactor(ProbabilisticNetwork, Collection)} will
+	 * return the max of complexity factors of cliques local to each node one by one, 
+	 * instead of considering all the cliques connected to the specified nodes together.
+	 * <br/>
+	 * <br/>
+	 * For instance, if two disconnected nodes are provided (i.e. each node belongs to
+	 * different cliques which are disconnected each other, and such cliques contain only 1 node each) and this is false, then
+	 * {@link #getComplexityFactor(ProbabilisticNetwork, Collection)} will return
+	 * the sum of clique table sizes 
+	 */
+	public boolean isToUseMaxForSubnetsInLinkSuggestion() {
+		return isToUseMaxForSubnetsInLinkSuggestion;
+	}
+
+	/**
+	 * @param isToUseMaxForSubnetsInLinkSuggestion the isToUseMaxForSubnetsInLinkSuggestion to set
+	 */
+	public void setToUseMaxForSubnetsInLinkSuggestion(
+			boolean isToUseMaxForSubnetsInLinkSuggestion) {
+		this.isToUseMaxForSubnetsInLinkSuggestion = isToUseMaxForSubnetsInLinkSuggestion;
 	}
 	
 	

@@ -34969,7 +34969,11 @@ public class MarkovEngineTest extends TestCase {
 		assertNull(suggestion);
 		suggestion = engine.getLinkComplexitySuggestion(666L, 1L, Integer.MAX_VALUE, false);
 		assertNotNull(suggestion);
-		assertEquals(4603 + 23, suggestion.getPriorComplexity());
+		if (engine.isToUseMaxForSubnetsInLinkSuggestion()) {
+			assertEquals(4603, suggestion.getPriorComplexity());
+		} else {
+			assertEquals(4603 + 23, suggestion.getPriorComplexity());
+		}
 		assertEquals(4603+23*2, suggestion.getPosteriorComplexity());
 		assertTrue(suggestion.getSuggestedChildId().equals(666L) || suggestion.getSuggestedChildId().equals(1L));
 		assertTrue(suggestion.getSuggestedParentId().equals(666L) || suggestion.getSuggestedParentId().equals(1L));
@@ -34986,24 +34990,40 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(suggestions.isEmpty());
 		suggestions = engine.getLinkComplexitySuggestions(questionIds1, questionIds2, Integer.MAX_VALUE, false, false);	// dont sort
 		assertEquals(2,suggestions.size());
-		assertEquals(4603 + 23, suggestions.get(0).getPriorComplexity());
+		if (engine.isToUseMaxForSubnetsInLinkSuggestion()) {
+			assertEquals(4603, suggestions.get(0).getPriorComplexity());
+		} else {
+			assertEquals(4603 + 23, suggestions.get(0).getPriorComplexity());
+		}
 		assertEquals(4603+23*2, suggestions.get(0).getPosteriorComplexity());
 		assertTrue(suggestions.get(0).getSuggestedChildId().equals(666L) || suggestions.get(0).getSuggestedChildId().equals(1L));
 		assertTrue(suggestions.get(0).getSuggestedParentId().equals(666L) || suggestions.get(0).getSuggestedParentId().equals(1L));
 		assertFalse(suggestions.get(0).getSuggestedParentId().equals(suggestions.get(0).getSuggestedChildId()));
-		assertEquals(4603 + 2*3+2*5, suggestions.get(1).getPriorComplexity());
+		if (engine.isToUseMaxForSubnetsInLinkSuggestion()) {
+			assertEquals(4603, suggestions.get(1).getPriorComplexity());
+		} else {
+			assertEquals(4603 + 2*3+2*5, suggestions.get(1).getPriorComplexity());
+		}
 		assertEquals(4603+2*3+2*5+2*5, suggestions.get(1).getPosteriorComplexity());
 		assertTrue(suggestions.get(1).getSuggestedChildId().equals(0x0FL) || suggestions.get(1).getSuggestedChildId().equals(1L));
 		assertTrue(suggestions.get(1).getSuggestedParentId().equals(0x0FL) || suggestions.get(1).getSuggestedParentId().equals(1L));
 		assertFalse(suggestions.get(1).getSuggestedParentId().equals(suggestions.get(1).getSuggestedChildId()));
 		suggestions = engine.getLinkComplexitySuggestions(questionIds1, questionIds2, Integer.MAX_VALUE, false, true);	// sort
 		assertEquals(2,suggestions.size());
-		assertEquals(4603 + 23, suggestions.get(1).getPriorComplexity());
+		if (engine.isToUseMaxForSubnetsInLinkSuggestion()) {
+			assertEquals(4603, suggestions.get(1).getPriorComplexity());
+		} else {
+			assertEquals(4603 + 23, suggestions.get(1).getPriorComplexity());
+		}
 		assertEquals(4603+23*2, suggestions.get(1).getPosteriorComplexity());
 		assertTrue(suggestions.get(1).getSuggestedChildId().equals(666L) || suggestions.get(1).getSuggestedChildId().equals(1L));
 		assertTrue(suggestions.get(1).getSuggestedParentId().equals(666L) || suggestions.get(1).getSuggestedParentId().equals(1L));
 		assertFalse(suggestions.get(1).getSuggestedParentId().equals(suggestions.get(1).getSuggestedChildId()));
-		assertEquals(4603 + 2*3+2*5, suggestions.get(0).getPriorComplexity());
+		if (engine.isToUseMaxForSubnetsInLinkSuggestion()) {
+			assertEquals(4603, suggestions.get(0).getPriorComplexity());
+		} else {
+			assertEquals(4603 + 2*3+2*5, suggestions.get(0).getPriorComplexity());
+		}
 		assertEquals(4603+2*3+2*5+2*5, suggestions.get(0).getPosteriorComplexity());
 		assertTrue(suggestions.get(0).getSuggestedChildId().equals(0x0FL) || suggestions.get(0).getSuggestedChildId().equals(1L));
 		assertTrue(suggestions.get(0).getSuggestedParentId().equals(0x0FL) || suggestions.get(0).getSuggestedParentId().equals(1L));
