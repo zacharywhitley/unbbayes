@@ -652,6 +652,12 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 									continue;	
 								}
 								
+								//don't connect cliques if there is a path between them containing the intersection already;
+								if (!jt.getPathContainingNodes(childClique, parentClique, (List)intersection).isEmpty()) {
+									continue;
+								}
+								
+								
 								// Direction of separator must follow same order of cliques (i.e. alpha order -- the order it appears in the list in JT).
 								if (jt.getCliques().indexOf(parentClique) > jt.getCliques().indexOf(childClique)) {
 									// just swap child and parent cliques

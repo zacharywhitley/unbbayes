@@ -35525,7 +35525,8 @@ public class MarkovEngineTest extends TestCase {
 			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
 		}
 		// force loopy BP to be enabled even with very small clique size
-		engine.setLoopyBPCliqueSizeThreshold((2*3*5)-1);	// strictly smaller than state space of 3 questions with smallest number of states
+//		engine.setLoopyBPCliqueSizeThreshold((2*3*5)-1);	// strictly smaller than state space of 3 questions with smallest number of states
+		engine.setLoopyBPCliqueSizeThreshold(1);	
 		
 		// create another engine (without loopy BP) for comparison
 		MarkovEngineImpl engineNoLoopyBP = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
@@ -35588,6 +35589,7 @@ public class MarkovEngineTest extends TestCase {
 //				}
 			}
 		}
+		
 
 		// make sure this is not loopy yet
 		assertFalse(engine.isRunningApproximation());
@@ -35713,6 +35715,16 @@ public class MarkovEngineTest extends TestCase {
 //		}
 
 		// TODO make some random trades and compare results
+		
+		// include subnet U<-V->W disconnected from asia
+		engine.addQuestion(null, new Date(), (long)'U', 2, null);
+		engine.addQuestion(null, new Date(), (long)'V', 2, null);
+		engine.addQuestion(null, new Date(), (long)'W', 2, null);
+		engine.addQuestionAssumption(null, new Date(), (long)'U', Collections.singletonList((long)'V'), null);
+		engine.addQuestionAssumption(null, new Date(), (long)'W', Collections.singletonList((long)'V'), null);
+		
+		// connect the U<-V->W to X
+		engine.addQuestionAssumption(null, new Date(), (long)'V', Collections.singletonList((long)Character.getNumericValue('X')), null);
 		
 		// use backups in order to revert changes in config
 		if (isToHaltOnDynamicJunctionTreeFailure != null) {

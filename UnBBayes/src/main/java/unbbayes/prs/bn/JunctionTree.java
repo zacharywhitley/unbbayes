@@ -1375,6 +1375,100 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		}
 		
 	}
+	
+	/**
+	 * Checks whether there is a path between two cliques in current junction tree
+	 * whose all separators in the path contains the specified node.
+	 * @param from : the clique to start search from
+	 * @param to : the clique to search. If this is equal to the clique to start search from,
+	 * then this method will immediately return the list <code> [from,to] </code>.
+	 * @param nodesInPath : all the separators between the two cliques must contain these nodes.
+	 * If null or empty, then the separators can be arbitrary.
+	 * @return The path if it exists. Empty otherwise.
+	 */
+	public List<Clique> getPathContainingNodes(Clique from, Clique to, Collection<INode> nodesInPath) {
+		// basic assertions
+//		if (from == null || to == null) {
+//			return Collections.emptyList();
+//		}
+//		if (from.equals(to)) {
+//			return Collections.singletonList(from);
+//		}
+//		
+		// the above code was migrated to recursive search
+		
+		// make sure nodesInPath is non-null
+		if (nodesInPath == null) {
+			nodesInPath = Collections.emptyList();
+		}
+		
+		// do a recursive search
+		List<Clique> path = new ArrayList<Clique>();
+		if (hasPathContainingNodesRecursive(from, to, nodesInPath, path)) {
+			// found path
+			return path;
+		}
+		
+		// did not find path
+		return Collections.emptyList();
+	}
+	
+	/**
+	 * This is a recursive search used in {@link #getPathContainingNodes(Clique, Clique, Collection)}
+	 */
+	protected boolean hasPathContainingNodesRecursive(Clique from, Clique to, Collection<INode> nodesInPath, List<Clique> currentPath) {
+		// basic assertions
+		if (from == null || to == null) {
+			return false;
+		}
+		
+		// make current clique as visited
+		currentPath.add(from);
+		
+		if (from.equals(to)) {
+			return true;
+		}
+		
+		// call recursive for parents
+		for (Clique parent : this.getParents(from)) {
+			Separator separator = this.getSeparator(parent, from);
+			if (separator == null || !separator.getNodesList().containsAll(nodesInPath)) {
+				continue;	// ignore path not containing nodes
+			}
+			if (currentPath.contains(parent)) {
+				continue;	// ignore path we already visited
+			}
+			
+			List<Clique> newPath = new ArrayList<Clique>(currentPath);
+			if (hasPathContainingNodesRecursive(parent, to, nodesInPath, newPath)) {
+				// add all new cliques we found in newPath to currentPath
+				currentPath.addAll(newPath.subList(currentPath.size(), newPath.size()));
+				return true;
+			}
+		}
+		
+		// call recursive for children
+		List<Clique> newPath = new ArrayList<Clique>();
+		for (Clique child : from.getChildren()) {
+			Separator separator = this.getSeparator(from, child);
+			if (separator == null || !separator.getNodesList().containsAll(nodesInPath)) {
+				continue;	// ignore path not containing nodes
+			}
+			if (currentPath.contains(child)) {
+				continue;	// ignore path we already visited
+			}
+			
+			newPath.clear();
+			newPath.addAll(currentPath);
+			if (hasPathContainingNodesRecursive(child, to, nodesInPath, newPath)) {
+				// add all new cliques we found in newPath to currentPath
+				currentPath.addAll(newPath.subList(currentPath.size(), newPath.size()));
+				return true;
+			}
+		}
+		
+		return false;
+	}
 
 //	/**
 //	 * @param separatorsMap the separatorsMap to set
