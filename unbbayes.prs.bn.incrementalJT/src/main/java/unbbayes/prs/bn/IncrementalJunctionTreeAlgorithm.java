@@ -1087,7 +1087,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	 * @see #getCompiledPrimeDecompositionSubnets(Collection)
 	 * @see #aggregateJunctionTree(IJunctionTree, IJunctionTree, Collection, IJunctionTree, Map)
 	 */
-    protected void runDynamicJunctionTreeCompilation() throws InvalidParentException {
+	protected void runDynamicJunctionTreeCompilation() throws InvalidParentException {
 		// do dynamic junction tree compilation if number of nodes is above a threshold and the previous junction tree is there
 		
 		
@@ -1287,18 +1287,17 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		
 		this.updateCliqueAndSeparatorInternalIdentificators(junctionTree);
 		
-		// make sure the junction tree is still globally consistent
-//		try {
-//			if (junctionTree instanceof JunctionTree) {
-//				// a special type of propagation that is optimized for assuring global consistency at the 1st-time we run compilatin
-//				((JunctionTree) junctionTree).initConsistency();
-//			} else {
-//				// ordinal junction tree propagation to assure global consistency
-//				junctionTree.consistency();
-//			}
-//		} catch (Exception e) {
-//			throw new RuntimeException("Failed to assure global consistency of dynamically compiled junction tree.", e);
-//		}
+		// needs to make clique/separator potentials globally consistent again.
+		try {
+			this.removeRedundantAssociatedNodes(junctionTree);
+			if (junctionTree instanceof JunctionTree) {
+				((JunctionTree) junctionTree).setInitialized(false);
+			}
+			junctionTree.initBeliefs();
+		} catch (Exception e) {
+			throw new RuntimeException("Unable to initialize beliefs after aggregating local junction trees.", e);
+		}
+		
 		
 		// make sure marginals are up to date
 //		getNet().resetNodesCopy();
@@ -1319,8 +1318,51 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	}
     
     
+	/**
+	 * This method will clean cliques from nodes belonging to {@link Clique#getAssociatedProbabilisticNodesList()}
+	 * of multiple cliques (because two cliques must not have intersection of {@link Clique#getAssociatedProbabilisticNodesList()}).
+	 * @param junctionTree : junction tree from where the cliques will be extracted from
+	 */
+    protected void removeRedundantAssociatedNodes(IJunctionTree junctionTree) {
+    	
+    	// keep track of what is the smallest clique containing the node known so far
+		Map<INode, Clique> nodeToSmallestAssociatedCliqueMap = new HashMap<INode, Clique>();
+		
+		// iterate on cliques to check for redundancy
+		for (Clique currentClique : junctionTree.getCliques()) {
+			// iterate on for associated nodes
+			for (Node associatedNode : new ArrayList<Node>(currentClique.getAssociatedProbabilisticNodesList())) {	// iterate on a clone, because we'll modify the original
+				
+				// if clique does not contain all the parents of this node, then immediately remove it, because it's inconsistent
+				if (!currentClique.getNodesList().containsAll(associatedNode.getParentNodes())) {
+					currentClique.getAssociatedProbabilisticNodesList().remove(associatedNode);
+					continue;	// no need to handle this node anymore, because it is like it did not exist from the beginning
+				}
+				
+				// check if there is a mapping already. If so, current node was present in some previous clique, so we need to remove from one of them
+				Clique cliqueInMap = nodeToSmallestAssociatedCliqueMap.get(associatedNode);
+				if (cliqueInMap != null) { // current node was found in more than 1 clique.
+					// check which clique is smaller, and remove node from larger
+					if (currentClique.getProbabilityFunction().tableSize() < cliqueInMap.getProbabilityFunction().tableSize()) {
+						// remove node from mapped clique
+						cliqueInMap.getAssociatedProbabilisticNodesList().remove(associatedNode);
+						// update mapping, because current clique is the smallest clique (containing the node) we know so far
+						nodeToSmallestAssociatedCliqueMap.put(associatedNode, currentClique);
+					} else {
+						// remove node from current clique, because the clique we found previously is smaller than current one
+						currentClique.getAssociatedProbabilisticNodesList().remove(associatedNode);
+						// and keep the map untouched, because the map still has the smallest clique associated with the node
+					}
+				} else {
+					// simply add new mapping
+					nodeToSmallestAssociatedCliqueMap.put(associatedNode, currentClique);
+				}
+			}
+		}
+	}
+    
 
-    /**
+	/**
      * Recursively collects nodes of current cluster and connected clusters marked in clustersToCompile.
      * Connected clusters are clusters related with {@link Clique#getParent()} and {@link Clique#getChildren()}.
      * @param cluster : current cluster in recursive call
@@ -1363,6 +1405,8 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		return ret;
 	}
 
+
+	
 	/**
 	 * For nodes in each connected clusters marked for modification, compile a junction tree.
      * @param clustersToCompile : these are the clusters in prime subgraph decomposition tree to be used
@@ -1551,8 +1595,10 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 				subnet.setJunctionTree(null);											  // this will also guarantee dynamic compilation to be disabled
 				algorithm.setJunctionTreeBuilder(getJunctionTreeBuilder());				  // reuse the same builder of junction tree.
 				algorithm.setLoopyBPCliqueSizeThreshold(getLoopyBPCliqueSizeThreshold()); // reuse same configuration for loopy BP
+//				algorithm.setToInitBeliefs(false);										  // disable default belief initialization (which multiplies CPT and runs belief propagation once)
 				// finally, compile the subnet
 				algorithm.run();
+//				algorithm.initBeliefsWithoutPropagation();								  // simply initialize content of cliques and separators by using null values and product of CPT
 				// assert that junction tree was compiled
 				if (algorithm.getJunctionTree() == null || algorithm.getJunctionTree() != subnet.getJunctionTree()) {
 					throw new RuntimeException("Unable to compile max prime subnet of cluster " + cluster);
@@ -1580,7 +1626,15 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					cliqueNodes = clique.getAssociatedProbabilisticNodesList();
 					for (int i = 0; i < cliqueNodes.size(); i++) {
 						// just replace the current variable with instance in original net
-						cliqueNodes.set(i, net.getNode(cliqueNodes.get(i).getName()));
+						Node originalNode = net.getNode(cliqueNodes.get(i).getName());
+						// however, don't include nodes whose parents are not totally included in this clique
+//						if (clique.getNodesList().containsAll(originalNode.getParentNodes())) {
+							cliqueNodes.set(i, originalNode );
+//						} else {
+//							Debug.println(getClass(), "Parents of node " + originalNode + " are " + originalNode.getParentNodes() +  ", and they are not totally included in clique " + clique);
+//							cliqueNodes.remove(i);
+//							i--;
+//						}
 					}
 					// the opposite direction (node to associated clique) is processed later
 					

@@ -35733,6 +35733,369 @@ public class MarkovEngineTest extends TestCase {
 		engine.setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThreshold);
 	}
 	
+	public final void testQ156Case() {
+		
+		MarkovEngineImpl base = (MarkovEngineImpl) MarkovEngineImpl.getInstance();
+		base.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);
+		
+		engine.setDynamicJunctionTreeNetSizeThreshold(1);
+		
+		// net: 156
+		engine.addQuestion(null, new Date(), 156, 6, null);
+		base.addQuestion(null, new Date(), 156, 6, null);
+		
+		assertProbs(base, engine);
+		
+		List<Float> newValues = new ArrayList<Float>();
+		newValues.add(.031f);
+		newValues.add(.111f);
+		newValues.add(.121f);
+		newValues.add(.151f);
+		newValues.add(.165f);
+		newValues.add(.421f);
+		engine.addTrade(null, new Date(), "", 1, 156, newValues, null, null, true);
+		base.addTrade(null, new Date(), "", 1, 156, newValues, null, null, true);
+		assertProb(156, null, null, newValues);
+		assertProbs(base, engine);
+		
+		// net: 156 975
+		engine.addQuestion(null, new Date(), 975, 3, null);
+		base.addQuestion(null, new Date(), 975, 3, null);
+		assertProbs(base, engine);
+		
+		// net: 156 975->976
+		engine.addQuestion(null, new Date(), 976, 2, null);
+		engine.addQuestionAssumption(null, new Date(), 976L, Collections.singletonList(975L), null);
+		base.addQuestion(null, new Date(), 976, 2, null);
+		base.addQuestionAssumption(null, new Date(), 976L, Collections.singletonList(975L), null);
+		assertProbs(base, engine);
+		newValues = new ArrayList<Float>();
+		newValues.add(.90f);
+		newValues.add(0,1f-newValues.get(0));
+		engine.addTrade(null, new Date(), "", 1, 976, newValues, Collections.singletonList(975L), Collections.singletonList(0), true);
+		base.addTrade(null, new Date(), "", 1, 976, newValues, Collections.singletonList(975L), Collections.singletonList(0), true);
+		assertProbs(base, engine);
+		assertProb(976, Collections.singletonList(975L), Collections.singletonList(0), newValues);
+		newValues = new ArrayList<Float>();
+		newValues.add(.10f);
+		newValues.add(0,1f-newValues.get(0));
+		engine.addTrade(null, new Date(), "", 1, 976, newValues, Collections.singletonList(975L), Collections.singletonList(1), true);
+		base.addTrade(null, new Date(), "", 1, 976, newValues, Collections.singletonList(975L), Collections.singletonList(1), true);
+		assertProbs(base, engine);
+		assertProb(976, Collections.singletonList(975L), Collections.singletonList(1), newValues);
+		newValues = new ArrayList<Float>();
+		newValues.add(.10f);
+		newValues.add(0,1f-newValues.get(0));
+		engine.addTrade(null, new Date(), "", 1, 976, newValues, Collections.singletonList(975L), Collections.singletonList(2), true);
+		base.addTrade(null, new Date(), "", 1, 976, newValues, Collections.singletonList(975L), Collections.singletonList(2), true);
+		assertProb(976, Collections.singletonList(975L), Collections.singletonList(2), newValues);
+		assertProbs(base, engine);
+		
+		List<Float> expected = new ArrayList<Float>();
+		expected.add(.3666666666f);
+		expected.add(0,1f-expected.get(0));
+		assertProb(976, null, null, expected);
+		
+		// net: 156 975->976->977
+		engine.addQuestion(null, new Date(), 977, 2, null);
+		engine.addQuestionAssumption(null, new Date(), 977L, Collections.singletonList(976L), null);
+		base.addQuestion(null, new Date(), 977, 2, null);
+		base.addQuestionAssumption(null, new Date(), 977L, Collections.singletonList(976L), null);
+		assertProbs(base, engine);
+		newValues = new ArrayList<Float>();
+		newValues.add(.90f);
+		newValues.add(0,1f-newValues.get(0));
+		engine.addTrade(null, new Date(), "", 1, 977, newValues, Collections.singletonList(976L), Collections.singletonList(1), true);
+		base.addTrade(null, new Date(), "", 1, 977, newValues, Collections.singletonList(976L), Collections.singletonList(1), true);
+		assertProbs(base, engine);
+		assertProb(977, Collections.singletonList(976L), Collections.singletonList(1), newValues);
+		newValues = new ArrayList<Float>();
+		newValues.add(.10f);
+		newValues.add(0,1f-newValues.get(0));
+		engine.addTrade(null, new Date(), "", 1, 977, newValues, Collections.singletonList(976L), Collections.singletonList(0), true);
+		base.addTrade(null, new Date(), "", 1, 977, newValues, Collections.singletonList(976L), Collections.singletonList(0), true);
+		assertProbs(base, engine);
+		assertProb(977, Collections.singletonList(976L), Collections.singletonList(0), newValues);
+		expected = new ArrayList<Float>();
+		expected.add(0.39333332f);
+		expected.add(0,1f-expected.get(0));
+		assertProb(977, null, null, expected);
+		
+		// net: 156 975->976->977->978
+		Long questionId = 978L;
+		Long parentId = 977L;
+		engine.addQuestion(null, new Date(), questionId, 2, null);
+		base.addQuestion(null, new Date(), questionId, 2, null);
+		assertProbs(base, engine);
+		base.addQuestionAssumption(null, new Date(), questionId, Collections.singletonList(parentId), null);
+		engine.addQuestionAssumption(null, new Date(), questionId, Collections.singletonList(parentId), null);
+		assertProbs(base, engine);
+		assertFalse(engine.isRunningApproximation());
+		assertProbs(base, engine);
+		newValues = new ArrayList<Float>();
+		newValues.add(.90f);
+		newValues.add(0,1f-newValues.get(0));
+		engine.addTrade(null, new Date(), "", 1, questionId, newValues, Collections.singletonList(parentId), Collections.singletonList(1), true);
+		base.addTrade(null, new Date(), "", 1, questionId, newValues, Collections.singletonList(parentId), Collections.singletonList(1), true);
+		assertProbs(base, engine);
+		assertProb(questionId, Collections.singletonList(parentId), Collections.singletonList(1), newValues);
+		newValues = new ArrayList<Float>();
+		newValues.add(.10f);
+		newValues.add(0,1f-newValues.get(0));
+		engine.addTrade(null, new Date(), "", 1, questionId, newValues, Collections.singletonList(parentId), Collections.singletonList(0), true);
+		base.addTrade(null, new Date(), "", 1, questionId, newValues, Collections.singletonList(parentId), Collections.singletonList(0), true);
+		assertProbs(base, engine);
+		assertProb(questionId, Collections.singletonList(parentId), Collections.singletonList(0), newValues);
+		expected = new ArrayList<Float>();
+		expected.add(0.4147f);
+		expected.add(0,1f-expected.get(0));
+		assertProb(questionId, null, null, expected);
+
+		
+		
+		
+		
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(.45f);
+		newValues.add(.45f);
+		engine.addTrade(null, new Date(), "", 1, 975, newValues, null, null, true);
+		base.addTrade(null, new Date(), "", 1, 975, newValues, null, null, true);
+		assertProb(975, null, null, newValues);
+		
+		expected = new ArrayList<Float>();
+		expected.add(.18f);
+		expected.add(0, 1f-expected.get(0));
+		assertProb(976, null, null, expected);
+		expected = new ArrayList<Float>();
+		expected.add(.244f);
+		expected.add(0, 1f-expected.get(0));
+		assertProb(977, null, null, expected);
+		expected = new ArrayList<Float>();
+		expected.add(.295f);
+		expected.add(0, 1f-expected.get(0));
+		assertProb(978, null, null, expected);
+		
+		newValues = new ArrayList<Float>();
+		newValues.add(.1f);
+		newValues.add(0,1f-newValues.get(0));
+		engine.addTrade(null, new Date(), "", 1, 978, newValues, null, null, true);
+		base.addTrade(null, new Date(), "", 1, 978, newValues, null, null, true);
+		assertProb(978, null, null, newValues);
+		
+		expected = new ArrayList<Float>();
+		expected.add(.11f);
+		expected.add(0, 1f-expected.get(0));
+		assertProb(977, null, null, expected);
+		expected = new ArrayList<Float>();
+		expected.add(.09f);
+		expected.add(0, 1f-expected.get(0));
+		assertProb(976, null, null, expected);
+		expected = new ArrayList<Float>();
+		expected.add(.06f);
+		expected.add(.47f);
+		expected.add(.47f);
+		assertProb(975, null, null, expected);
+		
+		questionId = 977L;
+		parentId = 976L;
+		expected = new ArrayList<Float>();
+		expected.add(0.77f);
+		expected.add(0,1f-expected.get(0));
+		assertProb(questionId, Collections.singletonList(parentId), Collections.singletonList(1), expected);
+		newValues = new ArrayList<Float>();
+		newValues.add(.8f);
+		newValues.add(0,1f-newValues.get(0));
+		engine.addTrade(null, new Date(), "", 1, questionId, newValues, Collections.singletonList(parentId), Collections.singletonList(1), true);
+		base.addTrade(null, new Date(), "", 1, questionId, newValues, Collections.singletonList(parentId), Collections.singletonList(1), true);
+		assertProb(questionId, Collections.singletonList(parentId), Collections.singletonList(1), newValues);
+		expected = new ArrayList<Float>();
+		expected.add(0.11f);
+		expected.add(0,1f-expected.get(0));
+		assertProb(questionId, null, null, expected);
+		
+		
+		expected = new ArrayList<Float>();
+		expected.add(.03f);
+		expected.add(.11f);
+		expected.add(.12f);
+		expected.add(.15f);
+		expected.add(.17f);
+		expected.add(.42f);
+		assertProb(156, null, null, expected);
+		
+		
+
+		questionId = 318L;
+		engine.addQuestion(null, new Date(), questionId, 5, null);
+		base.addQuestion(null, new Date(), questionId, 5, null);
+		newValues = new ArrayList<Float>();
+		newValues.add(.31f);
+		newValues.add(.44f);
+		newValues.add(.20f);
+		newValues.add(.03f);
+		newValues.add(.02f);
+		engine.addTrade(null, new Date(), "", 1, questionId, newValues, null, null, true);
+		base.addTrade(null, new Date(), "", 1, questionId, newValues, null, null, true);
+		assertProb(questionId, null, null, newValues);
+		
+		questionId = 411L;
+		engine.addQuestion(null, new Date(), questionId, 2, null);
+		base.addQuestion(null, new Date(), questionId, 2, null);
+		newValues = new ArrayList<Float>();
+		newValues.add(.4f);
+		newValues.add(0,1f-newValues.get(0));
+		engine.addTrade(null, new Date(), "", 1, questionId, newValues, null, null, true);
+		base.addTrade(null, new Date(), "", 1, questionId, newValues, null, null, true);
+		assertProb(questionId, null, null, newValues);
+		
+		questionId = 411L;
+		parentId = 318L;
+		engine.addQuestionAssumption(null, new Date(), questionId, Collections.singletonList(parentId), null);
+		base.addQuestionAssumption(null, new Date(), questionId, Collections.singletonList(parentId), null);
+		expected = new ArrayList<Float>();
+		expected.add(.40f);
+		expected.add(0,1f-expected.get(0));
+		assertProb(questionId, Collections.singletonList(parentId), Collections.singletonList(4), expected);
+		newValues = new ArrayList<Float>();
+		newValues.add(.45f);
+		newValues.add(0,1f-newValues.get(0));
+		engine.addTrade(null, new Date(), "", 1, questionId, newValues, Collections.singletonList(parentId), Collections.singletonList(4), true);
+		base.addTrade(null, new Date(), "", 1, questionId, newValues, Collections.singletonList(parentId), Collections.singletonList(4), true);
+		assertProb(questionId, Collections.singletonList(parentId), Collections.singletonList(4), newValues);
+		
+		engine.addQuestionAssumption(null, new Date(), 411L, Collections.singletonList(156L), null);
+		base.addQuestionAssumption(null, new Date(), 411L, Collections.singletonList(156L), null);
+
+		expected = new ArrayList<Float>();
+		expected.add(.40f);
+		expected.add(0,1f-expected.get(0));
+		assertProb(411, null, null, expected);
+		
+		expected = new ArrayList<Float>();
+		expected.add(.03f);
+		expected.add(.11f);
+		expected.add(.12f);
+		expected.add(.15f);
+		expected.add(.17f);
+		expected.add(.42f);
+		assertProb(156, null, null, expected);
+		assertProb(156, Collections.singletonList(411L), Collections.singletonList(1), expected);
+		
+		newValues = new ArrayList<Float>();
+		newValues.add(0.10f);
+		newValues.add((0.111f*.9f/.969f));
+		newValues.add((0.121f*.9f/.969f));
+		newValues.add((0.151f*.9f/.969f));
+		newValues.add((0.165f*.9f/.969f));
+		newValues.add((0.421f*.9f/.969f));
+		engine.addTrade(null, new Date(), "", 1, 156, newValues, Collections.singletonList(411L), Collections.singletonList(1), true);
+		base.addTrade(null, new Date(), "", 1, 156, newValues, Collections.singletonList(411L), Collections.singletonList(1), true);
+		assertProb(156, Collections.singletonList(411L), Collections.singletonList(1), newValues);
+		
+
+		expected = new ArrayList<Float>();
+		expected.add(.06f);
+		expected.add(.11f);
+		expected.add(.12f);
+		expected.add(.15f);
+		expected.add(.16f);
+		expected.add(.41f);
+		assertProb(156, null, null, expected);
+		
+		expected = new ArrayList<Float>();
+		expected.add(.1f);
+		expected.add(0,1f-expected.get(0));
+		assertProb(978, null, null, expected);
+		
+		if (Math.random() > .5) {
+			Debug.println(getClass(), "Arc 156->978");
+			engine.addQuestionAssumption(null, new Date(), 978L, Collections.singletonList(156L), null);
+			base.addQuestionAssumption(null, new Date(), 978L, Collections.singletonList(156L), null);
+		} else {
+			Debug.println(getClass(), "Arc 978->156");
+			engine.addQuestionAssumption(null, new Date(), 156L, Collections.singletonList(978L), null);
+			base.addQuestionAssumption(null, new Date(), 156L, Collections.singletonList(978L), null);
+		}
+		
+		expected = new ArrayList<Float>();
+		expected.add(.1f);
+		expected.add(0,1f-expected.get(0));
+		assertProb(978, null, null, expected);
+		
+		expected = new ArrayList<Float>();
+		expected.add(.06f);
+		expected.add(.11f);
+		expected.add(.12f);
+		expected.add(.15f);
+		expected.add(.16f);
+		expected.add(.41f);
+		assertProb(156, null, null, expected);
+		assertProb(156, Collections.singletonList(978L), Collections.singletonList(1), expected);
+		
+		Map<Long, List<Float>> probBefore = engine.getProbLists(null, null, null);
+		
+		List<Float> oldValues = engine.getProbList(156L, Collections.singletonList(978L), Collections.singletonList(1));
+		newValues = new ArrayList<Float>();
+		newValues.add(0.13f);
+		for (int i = 1; i < oldValues.size(); i++) {
+			newValues.add(oldValues.get(i)*(1f-newValues.get(0))/(1f-oldValues.get(0)));
+		}
+		engine.addTrade(null, new Date(), "", 1, 156, newValues, Collections.singletonList(978L), Collections.singletonList(1), true);
+		base.addTrade(null, new Date(), "", 1, 156, newValues, Collections.singletonList(978L), Collections.singletonList(1), true);
+		assertProb(156, Collections.singletonList(978L), Collections.singletonList(1), newValues);
+		
+		// check that probabilities did not have drastic changes
+		assertEquals(probBefore.size(), engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			oldValues = probBefore.get(entry.getKey());
+			assertEquals(probBefore.toString() + entry, oldValues.size(), entry.getValue().size());
+			for (int i = 0; i < oldValues.size(); i++) {
+				assertEquals(probBefore.toString() + entry, oldValues.get(i), entry.getValue().get(i), 0.015);
+			}
+		}
+		
+	}
+	
+	public void assertProbs(MarkovEngineImpl expected, MarkovEngineImpl actual) {
+		// force marginals to be up-to-date
+		for (Node node : expected.getProbabilisticNetwork().getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				ProbabilisticNode probabilisticNode = (ProbabilisticNode) node;
+				probabilisticNode.updateMarginal();
+			}
+		}
+		for (Node node : actual.getProbabilisticNetwork().getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				ProbabilisticNode probabilisticNode = (ProbabilisticNode) node;
+				probabilisticNode.updateMarginal();
+			}
+		}
+		
+		// compare marginals
+		Map<Long, List<Float>> probListsExpected = expected.getProbLists(null, null, null);
+		Map<Long, List<Float>> probListsActual = actual.getProbLists(null, null, null);
+		assertEquals(probListsExpected + " ; " + probListsActual, probListsExpected.size(), probListsActual.size());
+		for (Entry<Long, List<Float>> entry : probListsExpected.entrySet()) {
+			assertEquals(probListsExpected + " ; " + probListsActual, entry.getValue().size(), probListsActual.get(entry.getKey()).size());
+			for (int i = 0; i < entry.getValue().size(); i++) {
+				assertEquals(probListsExpected + " ; " + probListsActual, entry.getValue().get(i), probListsActual.get(entry.getKey()).get(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		
+	}
+	
+	public void assertProb(long questionId, List<Long> assumptionIds, List<Integer> assumedStates, List<Float> expected) {
+		assertNotNull("Q"+questionId, expected);
+		List<Float> actual = engine.getProbList(questionId, assumptionIds, assumedStates);
+		assertNotNull("[Q"+questionId + "] " + expected, actual);
+		assertEquals("[Q"+questionId + "] " + expected + " ; " + actual, expected.size(), actual.size());
+		for (int i = 0; i < expected.size(); i++) {
+			assertEquals("[Q"+questionId + "] " + expected + " ; " + actual, expected.get(i), actual.get(i), .005);
+		}
+	}
+	
 	
 	
 }
