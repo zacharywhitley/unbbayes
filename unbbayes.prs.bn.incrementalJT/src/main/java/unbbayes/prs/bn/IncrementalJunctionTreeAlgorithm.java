@@ -1210,7 +1210,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		// no need for the above code, because Separator#isComplete(Collection) is considering moralized arcs
 		
 		// This algorithm also needs to track which moral connections (i.e. implicit connections between parents with common child) were created because of new arcs.
-		if (!edgesToAdd.isEmpty()) { // I'm assuming that if we never included any edge, there is no new moral arc too
+		if (!allConsideredEdges.isEmpty()) { // I'm assuming that if we never included any edge, there is no new moral arc too
 			edgesToAdd.addAll(getIncludedMoralArcs(oldNet, newNet, allConsideredEdges));
 		}
 		
@@ -2768,7 +2768,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 						// check if they have had some children in common. If so, they were already moralized in old net (so we don't need new moral arc)
 						// use an array list, so that internal comparison uses Object#equals(Object), because it will do name comparison
 						List<Node> childrenInCommon = new ArrayList<Node>((List)oldParent.getChildNodes());
-						childrenInCommon.removeAll((List)oldParentToBeMoralized.getChildNodes());
+						childrenInCommon.retainAll((List)oldParentToBeMoralized.getChildNodes());
 						if (!childrenInCommon.isEmpty()) {
 							// they had some child in common, so no need to treat this pair. Go to next pair of parents
 							continue;
