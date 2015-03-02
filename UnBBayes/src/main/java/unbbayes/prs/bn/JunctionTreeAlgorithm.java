@@ -3183,6 +3183,63 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	
 
 	/**
+	 * Obtains the mutual information between two nodes.
+	 * In probability theory and information theory, 
+	 * the mutual information (MI) or (formerly) transinformation of two random variables is a measure of the variables' mutual dependence.
+	 * The mutual information for nodes X and Y is the expected value of log(P(X,Y) / P(X)P(Y)). In other words,
+	 * it is the SUM [ P(X,Y) * log(P(X,Y) / P(X)P(Y)) ] for all states of X and Y.
+	 * @param node1 : one of the node to estimate mutual informatioan. It is assumed that {@link ProbabilisticNode#getMarginalAt(int)}
+	 * is correctly initialized with its marginal probability.
+	 * @param node2 : the other node to estimate mutual information. It is assumed that {@link ProbabilisticNode#getMarginalAt(int)}
+	 * is correctly initialized with its marginal probability.
+	 * @return : the mutual information. In other words, the expected log(P(X,Y) / P(X)P(Y)).
+	 * @see #getJointProbability(Map)
+	 * @see ProbabilisticNode#getMarginalAt(int)
+	 * @see JunctionTree#getPath(Clique, Clique)
+	 */
+	public double getMutualInformation(ProbabilisticNode node1, ProbabilisticNode node2) {
+		// basic assertion
+		if (node1 == null || node2 == null) {
+			return Double.NaN;	// there is no way to calculate mutual information of null
+		}
+		
+		// prepare the value to return
+		double ret = 0;		// this will be a sum, so initialize with 0.
+		
+		// prepare a map which will be used as an argument to the method to calclulate the joint probability
+		Map<ProbabilisticNode, Integer> nodesAndStatesForJointProb = new HashMap<ProbabilisticNode, Integer>();
+		
+		// keep track of how many states the nodes have
+		int numStatesNode1 = node1.getStatesSize();
+		int numStatesNode2 = node2.getStatesSize();
+		
+		// iterate on all state space
+		for (int stateNode1 = 0; stateNode1 < numStatesNode1; stateNode1++) {
+			
+			nodesAndStatesForJointProb.put(node1, stateNode1);	// this map is going to be used to calculate joint probability
+			
+			for (int stateNode2 = 0; stateNode2 < numStatesNode2; stateNode2++) {
+				
+				nodesAndStatesForJointProb.put(node2, stateNode2);	// this map is going to be used to calculate joint probability
+				
+				// extract the joint probability of current combination of states
+				float joint = getJointProbability(nodesAndStatesForJointProb); // TODO optimize for sequential access of joint probabilities
+				
+				// ret will be the expected (across joint probabilities) of log2(joint/productOfMarginals).
+				// which is equal to sum of joint* log2((joint/marginal1)/marginal2)) = log2(joint/marginal1) -log2(marginal2) = log2(joint)-log2(marginal1)-log2(marginal2) 
+				ret += joint * (
+					(Math.log(joint) / Math.log(2)) 								// dividing by log(2) is equivalent of calculating log with base 2
+					- (Math.log(node1.getMarginalAt(stateNode1)) / Math.log(2) ) 
+					- (Math.log(node2.getMarginalAt(stateNode2)) / Math.log(2) )
+				);
+			}
+		}
+		
+		return ret;
+	}
+	
+
+	/**
 	 * If this is true, then {@link #setAsPermanentEvidence(Map, boolean)} will attempt
 	 * to connect parent of resolved nodes when it is configured to remove/absorb resolved nodes.
 	 * @return the isToConnectParentsWhenAbsorbingNode
