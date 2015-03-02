@@ -58,6 +58,7 @@ import unbbayes.prs.bn.IJunctionTreeBuilder;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
+import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -14238,7 +14239,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getVersionInfo()
 	 */
 	public String getVersionInfo() {
-		return "UnBBayes SciCast Markov Engine 1.5.10";
+		return "UnBBayes SciCast Markov Engine 1.5.11";
 	}
 
 	/**
@@ -15429,18 +15430,87 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getLinkStrength(java.lang.Long, java.lang.Long)
 	 */
 	public float getLinkStrength(Long questionId1, Long questionId2) {
-		// TODO Auto-generated method stub
-		return 0;
+		
+		// basic assertion
+		if (questionId1 == null || questionId2 == null) {
+			return Float.NaN;
+		}
+		
+		// return the mutual information between the two nodes
+		float mutualInfo = Float.NaN;	// initialize with an invalid value
+		
+		// always lock the algorithm first before locking the net to avoid deadlock
+		AssetAwareInferenceAlgorithm algorithm = getDefaultInferenceAlgorithm();
+		synchronized (algorithm) {
+			
+			// check that we can use the junction tree algorithm to extract the mutual information
+			if (!(algorithm.getProbabilityPropagationDelegator() instanceof JunctionTreeAlgorithm)) {
+				throw new IllegalStateException("Unable to calculate mutual information because there was no instance of " + JunctionTreeAlgorithm.class.getName() + ".");
+			}
+			// extract the algorithm to be used to calculate mutual information
+			JunctionTreeAlgorithm junctionTreeAlgorithm = (JunctionTreeAlgorithm) algorithm.getProbabilityPropagationDelegator();
+			
+			// extract the network and the nodes
+			ProbabilisticNetwork net = algorithm.getNet();	// this is supposedly the same net handled by the junctionTreeAlgorithm and by the ME
+			
+			synchronized (net) {
+				try {
+					// extract the nodes from the network
+					ProbabilisticNode node1 = (ProbabilisticNode) net.getNode(Long.toString(questionId1));
+					if (node1 == null) {
+						Debug.println(getClass(), "Unable to extract node " + questionId1);
+						return Float.NaN;
+					}
+					ProbabilisticNode node2 = (ProbabilisticNode) net.getNode(Long.toString(questionId2));
+					if (node2 == null) {
+						Debug.println(getClass(), "Unable to extract node " + questionId2);
+						return Float.NaN;
+					}
+					
+					mutualInfo = (float) junctionTreeAlgorithm.getMutualInformation(node1, node2);
+					
+				} catch (Exception e) {
+					Debug.println(getClass(), "Unable to get mutual information between questions " + questionId1 + " and " + questionId2, e);
+				}
+			}
+		}
+		
+		return mutualInfo;
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getLinkStrengthList(java.util.List, java.util.List)
 	 */
-	public List<Float> getLinkStrengthList(List<Long> questionIds1,
-			List<Long> questionIds2) {
-		// TODO Auto-generated method stub
-		return null;
+	public List<Float> getLinkStrengthList(List<Long> questionIds1, List<Long> questionIds2) {
+		
+		// basic assertion
+		if (questionIds1 == null || questionIds2 == null) {
+			return Collections.EMPTY_LIST;
+		}
+		
+		// this is the list to be filled and returned
+		List<Float> ret = new ArrayList<Float>();
+		
+		// extract the size of the smaller list, because we can only iterate on pairs (one question in each list)
+		int numPairs = Math.min(questionIds1.size(), questionIds2.size());
+		
+		// iterate on each pair of questions
+		for (int i = 0; i < numPairs; i++) {
+			// extract the pair of question ids
+			Long questionId1 = questionIds1.get(i);
+			Long questionId2 = questionIds2.get(i);
+			
+			// ignore null values
+			if (questionId1 == null || questionId2 == null) {
+				continue;
+			}
+			
+			// simply call the wrapped method
+			ret.add(this.getLinkStrength(questionId1, questionId2));
+		}
+	
+		return ret;
 	}
 
 	/*
@@ -15448,8 +15518,36 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getLinkStrengthAll()
 	 */
 	public List<LinkStrength> getLinkStrengthAll() {
-		// TODO Auto-generated method stub
-		return null;
+		
+		// prepare the list to be returned
+		List<LinkStrength> ret = new ArrayList<LinkStrength>();
+		
+		// this is the Bayes net model used by the engine
+		ProbabilisticNetwork net = getProbabilisticNetwork();
+		
+		synchronized (net) {
+			// iterate on all existing arcs
+			for (Edge edge : net.getEdges()) {
+				try {
+					// extract the ids of the nodes connected by current arc
+					Long parentId = Long.parseLong(edge.getOriginNode().getName());
+					Long childId = Long.parseLong(edge.getDestinationNode().getName());
+					// just add to the ret the link strength
+					ret.add(
+							// the following should instantiate an object of LinkStrength
+							LinkStrengthImpl.getInstance(
+									parentId, 									// id of one of the question linked by this arc
+									childId, 									// the other question Id
+									this.getLinkStrength(parentId, childId)		// the metric for the strength of the link between the 2 questions
+							)
+					);
+				} catch (Exception e) {
+					Debug.println(getClass(), "Unable to handle arc " + edge, e);
+				}
+			}
+		}
+		
+		return ret;
 	}
 
 	/**

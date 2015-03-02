@@ -1536,11 +1536,35 @@ public interface MarkovEngineInterface {
 	 */
 	public void setDefaultComplexityFactorName(String defaultComplexityFactorName);
 	
-	
+	/**
+	 * This method estimates the strength of a link between two questions.
+	 * The link doesn't have to exist.
+	 * Implementations may use metrics like mutual information for this value.
+	 * @param questionId1
+	 * @param questionId2
+	 * @return a numeric value which is close to zero if the link is weak.
+	 */
 	public float getLinkStrength(Long questionId1, Long questionId2);
 	
+	/**
+	 * This method is similar to {@link #getLinkStrength(Long, Long)}, but it 
+	 * calculates the strength of a collection of links.
+	 * @param questionIds1 : list of one of the questions. The i-th element of this list
+	 * will be matched with the i-th element of the other list.
+	 * @param questionIds2 : the other list of questions. The i-th element of this list
+	 * will be matched with the i-th element of the other list.
+	 * @return a list of numeric values which are close to zero if link is weak.
+	 * The i-th element in this list represents the metric for the i-th question in questionIds1 and
+	 * i-th question in questionIds2.
+	 */
 	public List<Float> getLinkStrengthList(List<Long> questionIds1, List<Long> questionIds2);
 	
+	/**
+	 * @return : this method is similar to {@link #getLinkStrength(Long, Long)} or {@link #getLinkStrengthList(List, List)},
+	 * but it is executed for all arcs currently present in the system.
+	 * @see #getLinkStrength(Long, Long)
+	 * @see #getLinkStrengthList(List, List)
+	 */
 	public List<LinkStrength> getLinkStrengthAll();
 	
 }
