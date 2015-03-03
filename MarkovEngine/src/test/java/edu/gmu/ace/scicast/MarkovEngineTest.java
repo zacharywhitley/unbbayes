@@ -36096,6 +36096,190 @@ public class MarkovEngineTest extends TestCase {
 		}
 	}
 	
+	/**
+	 * Just normalizes the content of the list so that the sum is 1.
+	 * @param newValues : the list to be normalized
+	 */
+	public void normalize(List<Float> newValues) {
+		assertNotNull(newValues);
+		float sum = 0f;
+		for (Float p : newValues) {
+			assertTrue(p >= 0f);
+			sum += p;
+		}
+		assertTrue(sum > 0f);
+		for (int i = 0; i < newValues.size(); i++) {
+			newValues.set(i, newValues.get(i)/sum);
+		}
+		sum = 0f;
+		for (Float p : newValues) {
+			sum += p;
+		}
+		assertEquals(1f, sum, PROB_ERROR_MARGIN);
+	}
+	
+	/**
+	 * Test case for {@link MarkovEngineInterface#getLinkStrength(Long, Long)} family of methods.
+	 * @throws IOException 
+	 */
+	public final void testLinkStrength() throws IOException {
+		long seed = System.currentTimeMillis();
+		Random rand = new Random(seed);
+		System.out.println("Seed="+seed);
+		
+		// test for simple network first. Create E<-D->F A
+		engine.addQuestion(null, new Date(), 0x0DL, 2, null);
+		engine.addQuestion(null, new Date(), 0x0EL, 3, null);
+		engine.addQuestion(null, new Date(), 0x0FL, 5, null);
+		engine.addQuestion(null, new Date(), 0x0AL, 7, null);
+		engine.addQuestionAssumption(null, new Date(), 0x0EL, Collections.singletonList(0x0DL), null);
+		engine.addQuestionAssumption(null, new Date(), 0x0FL, Collections.singletonList(0x0DL), null);
+		
+		// just add trade on A to make sure its probability is not uniform
+		List<Float> newValues = new ArrayList<Float>(7);
+		newValues.add(.1f);
+		newValues.add(.2f);
+		newValues.add(.3f);
+		newValues.add(.4f);
+		newValues.add(.5f);
+		newValues.add(.6f);
+		newValues.add(.7f);
+		normalize(newValues);
+		engine.addTrade(null, new Date(), "", 0L, 0x0AL, newValues, null, null, true);
+		
+		// add trades to make D,E,F numerically dependent
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);	// extract probabilities just to know the number of states of questions
+		for (int i = 0; i < 90; i++) {
+			try {
+				// randomly pick question to trade from D,E,F
+				Long questionToTrade = rand.nextInt(3) + 0x0DL;
+				
+				// randomly generate probability
+				newValues = new ArrayList<Float>(probLists.get(questionToTrade).size());
+				for (int j = 0; j < probLists.get(questionToTrade).size(); j++) {
+					newValues.add(rand.nextFloat());
+				}
+				normalize(newValues);	// normalize the probability
+				
+				// pick assumption
+				Long assumptionId  = 0x0DL;
+				if (questionToTrade == 0x0DL) {
+					// randomly pick E or F as assumption
+					assumptionId = rand.nextBoolean()?0x0EL:0x0FL;
+				}
+				// randomly pick state of assumption
+				int assumedState = rand.nextInt(probLists.get(assumptionId).size());
+				
+				// make the trade
+				engine.addTrade(null, new Date(), "", 0L, questionToTrade, newValues, Collections.singletonList(assumptionId), Collections.singletonList(assumedState), true);
+			} catch (Exception e) {
+				throw new RuntimeException("Seed=" + seed + ". Failed on iteration " + i, e);
+			}
+		}
+		
+		// make sure that calling the method for same node won't throw exception
+		float linkStrength = engine.getLinkStrength(0x0DL, 0x0DL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		linkStrength = engine.getLinkStrength(0x0EL, 0x0EL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		linkStrength = engine.getLinkStrength(0x0FL, 0x0FL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		linkStrength = engine.getLinkStrength(0x0AL, 0x0AL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		
+		// make sure dependent questions have non-zero link strength
+		linkStrength = engine.getLinkStrength(0x0DL, 0x0EL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		linkStrength = engine.getLinkStrength(0x0DL, 0x0FL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		linkStrength = engine.getLinkStrength(0x0EL, 0x0DL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		linkStrength = engine.getLinkStrength(0x0FL, 0x0DL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		linkStrength = engine.getLinkStrength(0x0EL, 0x0FL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		linkStrength = engine.getLinkStrength(0x0FL, 0x0EL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		
+		// make sure independent questions have zero link strength
+		linkStrength = engine.getLinkStrength(0x0AL, 0x0DL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		assertEquals("Seed=" + seed + ". Strength = " + linkStrength , 0f, linkStrength, PROB_ERROR_MARGIN);
+		linkStrength = engine.getLinkStrength(0x0AL, 0x0EL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		assertEquals("Seed=" + seed + ". Strength = " + linkStrength , 0f, linkStrength, PROB_ERROR_MARGIN);
+		linkStrength = engine.getLinkStrength(0x0AL, 0x0FL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		assertEquals("Seed=" + seed + ". Strength = " + linkStrength , 0f, linkStrength, PROB_ERROR_MARGIN);
+		linkStrength = engine.getLinkStrength(0x0DL, 0x0AL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		assertEquals("Seed=" + seed + ". Strength = " + linkStrength , 0f, linkStrength, PROB_ERROR_MARGIN);
+		linkStrength = engine.getLinkStrength(0x0EL, 0x0AL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		assertEquals("Seed=" + seed + ". Strength = " + linkStrength , 0f, linkStrength, PROB_ERROR_MARGIN);
+		linkStrength = engine.getLinkStrength(0x0FL, 0x0AL);
+		assertTrue("Seed=" + seed + ". Strength = " + linkStrength , linkStrength > 0f );
+		assertEquals("Seed=" + seed + ". Strength = " + linkStrength , 0f, linkStrength, PROB_ERROR_MARGIN);
+		
+		// load the scicast network from state file
+		String netString = "";
+		// read file
+		InputStream stream = getClass().getResourceAsStream("/140925.net");
+		int content;
+		while ((content = stream.read()) != -1) {
+			// convert to char and display it
+			netString += (char) content;
+		}
+		engine.importState(netString);
+		
+		// get the link strength of all existing arcs
+		List<LinkStrength> linkStrengthAll = engine.getLinkStrengthAll();
+		
+		// make sure we had obtained the strength of all arcs
+		assertEquals("Seed="+seed , engine.getProbabilisticNetwork().getEdges().size(), linkStrengthAll.size());
+		
+		// check basic consistency
+		LinkStrength maxLinkStrength = null;	// keep track of link with maximum strength
+		LinkStrength minLinkStrength = null;	// keep track of link with miniumum strength
+		for (int i = 0; i < linkStrengthAll.size(); i++) {
+			Edge edge = engine.getProbabilisticNetwork().getEdges().get(i);
+			assertEquals("["+i+"]Seed="+seed + "; edge=" + edge + "; strength=" + linkStrengthAll.get(i) , Long.parseLong(edge.getOriginNode().getName()), linkStrengthAll.get(i).getParent().longValue());
+			assertEquals("["+i+"]Seed="+seed + "; edge=" + edge + "; strength=" + linkStrengthAll.get(i) , Long.parseLong(edge.getDestinationNode().getName()), linkStrengthAll.get(i).getChild().longValue());
+			assertTrue("["+i+"]Seed="+seed + "; edge=" + edge + "; strength=" + linkStrengthAll.get(i) , linkStrengthAll.get(i).getLinkStrength() >= 0f);
+			if (maxLinkStrength == null
+					|| linkStrengthAll.get(i).getLinkStrength() > maxLinkStrength.getLinkStrength()) {
+				maxLinkStrength = linkStrengthAll.get(i);
+			}
+			if (minLinkStrength == null
+					|| linkStrengthAll.get(i).getLinkStrength() < minLinkStrength.getLinkStrength()) {
+				minLinkStrength = linkStrengthAll.get(i);
+			}
+		}
+		// make sure at least one arc has strength larger than 0
+		assertTrue("Strength=" + maxLinkStrength , maxLinkStrength.getLinkStrength() > 0f);
+		if (linkStrengthAll.size() > 1) {
+			// assert that the minimum link strength is smaller than the maximum link strength
+			assertTrue("max=" + maxLinkStrength + " ; min=" + minLinkStrength , maxLinkStrength.getLinkStrength() > minLinkStrength.getLinkStrength());
+		}
+		
+		// this will be used to check d-separation
+		MSeparationUtility util = MSeparationUtility.newInstance();
+		
+		// make sure the link strength of d-separated nodes are zero (or at least approximately zero by some error margin)
+		for (int i = 0; i < 50; i++) {
+			// randomly pick 2 nodes
+			Node node1 = engine.getProbabilisticNetwork().getNodeAt(rand.nextInt(engine.getProbabilisticNetwork().getNodeCount()));
+			Node node2 = engine.getProbabilisticNetwork().getNodeAt(rand.nextInt(engine.getProbabilisticNetwork().getNodeCount()));
+			linkStrength = engine.getLinkStrength(Long.parseLong(node1.getName()), Long.parseLong(node2.getName()));
+			if (node1.equals(node2)) {
+				continue;	// don't check same node
+			} else if (util.isDSeparated(new HashSet<INode>(engine.getProbabilisticNetwork().getNodes()), (Set)Collections.singleton(node1), (Set)Collections.singleton(node2), null)) { // check if nodes/questions are independent
+				assertEquals("["+i+"]Seed="+seed + "; node1=" + node1 + "; node2=" + node2 + "; strength=" + linkStrength, 0f, linkStrength, PROB_ERROR_MARGIN);
+			} else {
+				assertTrue("["+i+"]Seed="+seed + "; node1=" + node1 + "; node2=" + node2 + "; strength=" + linkStrength, linkStrength > 0f);
+			}
+		}
+	}
 	
 	
 }

@@ -11,6 +11,8 @@ package edu.gmu.ace.scicast;
 public class LinkStrengthImpl implements LinkStrength {
 
 	
+	private static final long serialVersionUID = 5920065723499317743L;
+	
 	private Long parent = null;
 	private Long child = null;
 	private float linkStrength = Float.NaN;
@@ -76,5 +78,14 @@ public class LinkStrengthImpl implements LinkStrength {
 	public void setLinkStrength(float linkStrength) {
 		this.linkStrength = linkStrength;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
+	public String toString() {
+		return "[" + getLinkStrength() + "]" + getParent() + "->"+getChild();
+	}
+	
+	
 
 }
