@@ -106,6 +106,11 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	
 
 	private boolean isToDeleteEmptyCliques = false;
+
+//	/**
+//	 * Joint probability calculation with up to this amount of nodes will use optimization.
+//	 */
+//	private int numNodesJointProbabilityOptimizationThreshold = 3;
 	
 
 
@@ -2157,7 +2162,42 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			}
 		}
 		
-		// if nodes are distributed across cliques, we need to propagate findings.
+		// if nodes are distributed across cliques, we may need to propagate findings.
+		
+//		// but before that, check if the nodes are independent. If so, we can just return the product of marginals.
+//		if (nodesAndStatesToConsider.size() < getNumNodesJointProbabilityOptimizationThreshold()) {
+//			// this is used to check if nodes belong to disconnected subnets
+//			MSeparationUtility utility = MSeparationUtility.newInstance();	
+//			// convert the set of keys (nodes) to a list, so that we can quickly access them by index (we'll be picking pairs of nodes from it)
+//			List<ProbabilisticNode> listOfNodesToCalculateJoint = new ArrayList<ProbabilisticNode>(nodesAndStatesToConsider.keySet());
+//			// pairwise check if nodes are connected (directly or indirectly)
+//			boolean isConnected = false;
+//			for (int i = 0; i < listOfNodesToCalculateJoint.size()-1; i++) {
+//				ProbabilisticNode node1 = listOfNodesToCalculateJoint.get(i);
+//				for (int j = i+1; j < listOfNodesToCalculateJoint.size(); j++) {
+//					ProbabilisticNode node2 = listOfNodesToCalculateJoint.get(j);
+//					// check if there is a route between the two nodes
+//					if (!utility.getRoutes(node1, node2).isEmpty() || !utility.getRoutes(node2, node1).isEmpty()) {
+//						// found 1 dependent pair of nodes, so joint probability may be different from product of marginals.
+//						isConnected = true;
+//						break;
+//					}
+//				}
+//			}
+//			if (!isConnected) {	// no pair of nodes are connected (directly or indirectly)
+//				Debug.println(getClass(), "Nodes " + listOfNodesToCalculateJoint + " belong to different disconnected subnets, so calculating joint as product of marginals...");
+//				// all variables are pairwise independent, so return the product of marginals
+//				float prod = 1f;	// initialize with the null value of multiplication
+//				// iterate on all nodes/states in joint probability
+//				for (Entry<ProbabilisticNode, Integer> nodeAndState : nodesAndStatesToConsider.entrySet()) {
+//					// extract the marginal and multiply to prod
+//					prod *= nodeAndState.getKey().getMarginalAt(nodeAndState.getValue());	// key is the node, and value is the state	
+//				}
+//				return prod;
+//			}
+//		}
+		
+		// some nodes are dependent each other, so we need to propagate findings
 		
 		// backup original network, so that we can revert to it later
 		ProbabilisticNetwork originalNetwork = this.getNet();
@@ -3188,6 +3228,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 * the mutual information (MI) or (formerly) transinformation of two random variables is a measure of the variables' mutual dependence.
 	 * The mutual information for nodes X and Y is the expected value of log(P(X,Y) / P(X)P(Y)). In other words,
 	 * it is the SUM [ P(X,Y) * log(P(X,Y) / P(X)P(Y)) ] for all states of X and Y.
+	 * It uses natural logarithm.
 	 * @param node1 : one of the node to estimate mutual informatioan. It is assumed that {@link ProbabilisticNode#getMarginalAt(int)}
 	 * is correctly initialized with its marginal probability.
 	 * @param node2 : the other node to estimate mutual information. It is assumed that {@link ProbabilisticNode#getMarginalAt(int)}
@@ -3201,6 +3242,11 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		// basic assertion
 		if (node1 == null || node2 == null) {
 			return Double.NaN;	// there is no way to calculate mutual information of null
+		}
+		
+		// the mutual information of same node is its entropy
+		if (node1.equals(node2)) {
+			return this.getEntropy(node1);
 		}
 		
 		// prepare the value to return
@@ -3227,17 +3273,42 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				
 				// ret will be the expected (across joint probabilities) of log2(joint/productOfMarginals).
 				// which is equal to sum of joint* log2((joint/marginal1)/marginal2)) = log2(joint/marginal1) -log2(marginal2) = log2(joint)-log2(marginal1)-log2(marginal2) 
-				ret += joint * (
-					(Math.log(joint) / Math.log(2)) 								// dividing by log(2) is equivalent of calculating log with base 2
-					- (Math.log(node1.getMarginalAt(stateNode1)) / Math.log(2) ) 
-					- (Math.log(node2.getMarginalAt(stateNode2)) / Math.log(2) )
-				);
+//				ret += joint * (
+//					(Math.log(joint) / Math.log(2)) 								// dividing by log(2) is equivalent of calculating log with base 2
+//					- (Math.log(node1.getMarginalAt(stateNode1)) / Math.log(2) ) 
+//					- (Math.log(node2.getMarginalAt(stateNode2)) / Math.log(2) )
+//				);
+				ret += joint * (Math.log(joint) - Math.log(node1.getMarginalAt(stateNode1)) - Math.log(node2.getMarginalAt(stateNode2)) );
 			}
 		}
 		
-		return ret;
+		return Math.abs(ret);
 	}
 	
+
+	/**
+	 * This method calculates the entropy of a node, which is -SUM[P(x)*log(P(x))] for each state x of the variable.
+	 * @param node : the node to calculate entropy. It is assumed that {@link ProbabilisticNode#getMarginalAt(int)} has its correct marginal probability.
+	 * @return the entropy of the node
+	 */
+	public double getEntropy(ProbabilisticNode node) {
+		if (node == null) {
+			return Float.NaN;
+		}
+		
+		// this will be the variable to be returned
+		double sum = 0f;
+		
+		// calculate the SUM[P(x)*log(P(x))] for each state
+		int numStates = node.getStatesSize();
+		for (int state = 0; state < numStates; state++) {
+			float marginal = node.getMarginalAt(state);	// extract the marginal probability of current state
+			sum += marginal * Math.log(marginal);		// P(x)*log(P(x))
+		}
+		
+		// entropy is -SUM[P(x)*log(P(x))]
+		return -sum;
+	}
 
 	/**
 	 * If this is true, then {@link #setAsPermanentEvidence(Map, boolean)} will attempt
@@ -3297,6 +3368,23 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	public void setToDeleteEmptyCliques(boolean isToDeleteEmptyCliques) {
 		this.isToDeleteEmptyCliques = isToDeleteEmptyCliques;
 	}
+
+//	/**
+//	 * @return the numNodesJointProbabilityOptimizationThreshold : Joint probability calculation with up to this amount of nodes will use optimization.
+//	 * @see #getJointProbability(Map)
+//	 */
+//	public int getNumNodesJointProbabilityOptimizationThreshold() {
+//		return numNodesJointProbabilityOptimizationThreshold;
+//	}
+//
+//	/**
+//	 * @param numNodesJointProbabilityOptimizationThreshold the numNodesJointProbabilityOptimizationThreshold to set : Joint probability calculation with up to this amount of nodes will use optimization.
+//	 * @see #getJointProbability(Map)
+//	 */
+//	public void setNumNodesJointProbabilityOptimizationThreshold(
+//			int numNodesJointProbabilityOptimizationThreshold) {
+//		this.numNodesJointProbabilityOptimizationThreshold = numNodesJointProbabilityOptimizationThreshold;
+//	}
 
 	
 }
