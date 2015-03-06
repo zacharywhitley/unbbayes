@@ -3269,7 +3269,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				nodesAndStatesForJointProb.put(node2, stateNode2);	// this map is going to be used to calculate joint probability
 				
 				// extract the joint probability of current combination of states
-				float joint = getJointProbability(nodesAndStatesForJointProb); // TODO optimize for sequential access of joint probabilities
+				float joint = getJointProbability(nodesAndStatesForJointProb); 
+				// TODO optimize for sequential access of joint probabilities
 				
 				// ret will be the expected (across joint probabilities) of log2(joint/productOfMarginals).
 				// which is equal to sum of joint* log2((joint/marginal1)/marginal2)) = log2(joint/marginal1) -log2(marginal2) = log2(joint)-log2(marginal1)-log2(marginal2) 
@@ -3278,7 +3279,11 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 //					- (Math.log(node1.getMarginalAt(stateNode1)) / Math.log(2) ) 
 //					- (Math.log(node2.getMarginalAt(stateNode2)) / Math.log(2) )
 //				);
-				ret += joint * (Math.log(joint) - Math.log(node1.getMarginalAt(stateNode1)) - Math.log(node2.getMarginalAt(stateNode2)) );
+				double factorCurrentState =  joint * (Math.log(joint) - Math.log(node1.getMarginalAt(stateNode1)) - Math.log(node2.getMarginalAt(stateNode2)) );
+				if (!Double.isNaN(factorCurrentState)) {
+					// ignore zero probabilities which will cause log to be NaN
+					ret += factorCurrentState;
+				}
 			}
 		}
 		
@@ -3303,7 +3308,9 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		int numStates = node.getStatesSize();
 		for (int state = 0; state < numStates; state++) {
 			float marginal = node.getMarginalAt(state);	// extract the marginal probability of current state
-			sum += marginal * Math.log(marginal);		// P(x)*log(P(x))
+			if (marginal > 0f ) {	// ignore impossible states
+				sum += marginal * Math.log(marginal);		// P(x)*log(P(x))
+			}
 		}
 		
 		// entropy is -SUM[P(x)*log(P(x))]

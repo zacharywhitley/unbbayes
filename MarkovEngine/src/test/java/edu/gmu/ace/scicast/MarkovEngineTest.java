@@ -36137,7 +36137,7 @@ public class MarkovEngineTest extends TestCase {
 		
 		// just add trade on A to make sure its probability is not uniform
 		List<Float> newValues = new ArrayList<Float>(7);
-		newValues.add(.1f);
+		newValues.add(0f);
 		newValues.add(.2f);
 		newValues.add(.3f);
 		newValues.add(.4f);

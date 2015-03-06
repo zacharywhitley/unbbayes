@@ -6,7 +6,7 @@
 	<name>Markov Engine for Combo Trades in Combinatorial Prediction Market</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->
-	<version>1.5.10</version>
+	<version>1.6.12</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
@@ -239,21 +239,21 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes</artifactId>
-				<version>4.20.11</version>
+				<version>4.21.13</version>
 			</dependency>
 			
 			<!-- This also depends on MPE/LPE and value tree algorithms -->
 			<dependency>
 				<groupId>edu.gmu</groupId>
 				<artifactId>unbbayes.prs.bn.inference.extension.JunctionTreeLPEAlgorithm</artifactId>
-				<version>1.2.0</version>
+				<version>1.2.1</version>
 			</dependency>
 			
 			<!-- This is for dynamic JT compilation algorithm -->
 			<dependency>
 				<groupId>edu.gmu</groupId>
 				<artifactId>unbbayes.prs.bn.incrementalJT</artifactId>
-				<version>1.0.0</version>
+				<version>1.0.1</version>
 			</dependency>
 			
 			<!-- This is for loopy belief propagation in clusters -->
