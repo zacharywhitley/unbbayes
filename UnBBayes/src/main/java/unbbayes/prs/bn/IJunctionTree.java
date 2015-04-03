@@ -159,5 +159,31 @@ public interface IJunctionTree {
 	 * all cliques that can have a path to such clique with no empty separators in the path.
 	 */
 	public Collection<Clique> getCliquesConnectedToNodes(Collection<INode> nodes, Collection<Clique> cliquesToIgnore);
+	
+	/**
+	 * Checks whether the first clique is an predecessor of the other
+	 * @param predecessorToTest : the method will whether this clique is a predecessor of the other
+	 * @param clique : predecessor of this clique will be retrieved for the check.
+	 * @return : true if predecessorToTest is a predecessor of clique. False otherwise
+	 * @see Clique#getParent()
+	 */
+	public boolean isPredecessor(Clique predecessorToTest, Clique clique);
+	
+	
+	/**
+	 * @return true if the implementation is using some sort of approximation (e.g. approximate structure). 
+	 * False otherwise.
+	 */
+	public boolean isUsingApproximation();
+	
+	/**
+     * Finds the shortest path between two cliques.
+     * @param from : a clique to start from. This needs to be a clique in this junction tree.
+     * @param to : a clique to finish search. This also needs to be in this junction tree.
+     * @return : a list of sequence of cliques that forms a path between the two cliques in this junction tree.
+     * The clique "from" must be the 1st element, and the clique "to" must be the last element in the returned list
+     * (please, notice that if "to" == "from", then implementations may have either 1 or 2 elements in the returned list).
+     */
+    public List<Clique> getPath(Clique from, Clique to);
 
 }

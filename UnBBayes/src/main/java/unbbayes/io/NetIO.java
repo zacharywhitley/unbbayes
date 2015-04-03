@@ -68,7 +68,7 @@ import unbbayes.util.Debug;
  * @author Michael S. Onishi
  * @author Mario Henrique Paes Vieira (mariohpv@bol.com.br)
  * @author Shou Matsumoto
- * @version 2.0
+ * @version 2.1
  */
 public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 
@@ -1076,6 +1076,10 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 			int sizeVa1 = auxTabPot.variableCount();
 
 			stream.print(" data = ");
+			
+//			TODO _if _this is an utility node, then we can simply write a space/tab separated list of utility;
+//			(it doesnt have to be hierarchical with parenthesis anymore);
+			
 			int[] coord;
 			boolean[] paren = new boolean[sizeVa1];
 

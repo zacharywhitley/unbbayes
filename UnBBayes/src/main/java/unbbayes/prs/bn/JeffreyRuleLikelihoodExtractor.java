@@ -22,7 +22,8 @@ public class JeffreyRuleLikelihoodExtractor implements ILikelihoodExtractor {
 //	/** Differences below this value will be considered as not different */
 //	public static final float PROB_ERROR_MARGIN = 0.00005f;
 	
-	private IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = InCliqueConditionalProbabilityExtractor.newInstance();
+//	private IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = InCliqueConditionalProbabilityExtractor.newInstance();
+	private IArbitraryConditionalProbabilityExtractor conditionalProbabilityExtractor = InCliqueConditionalProbabilityExtractor.newInstance(true);	// true will use multiple cliques if asking for out-of-clique cond. prob.
 
 	/**
 	 * Default constructor is protected in order to at least allow inheritance.

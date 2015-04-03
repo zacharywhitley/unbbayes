@@ -216,8 +216,25 @@ public class InCliqueConditionalProbabilityExtractor implements
 			
 			// check that we found cliques and the cliques are a complete set (i.e. contains main node and all parents if considered together)
 			if (cliquesAlsoWithSomeOfTheParents.isEmpty() || !remainingParents.isEmpty()) {
-				throw new NoCliqueException("There is no complete set of cliques containing main node " + mainNode + " and any of the parents  " + parentNodes + " simultaneously. "
+				if (!isToJoinCliquesWhenNoCliqueFound()) {
+					throw new IllegalStateException("There is no complete set of cliques containing main node " + mainNode + " and any of the parents  " + parentNodes + " simultaneously. "
+							+ (remainingParents==null?"":("Parents not found: " + remainingParents)));
+				}
+				Debug.println("There is no complete set of cliques containing main node " + mainNode + " and any of the parents  " + parentNodes + " simultaneously. "
 						+ (remainingParents==null?"":("Parents not found: " + remainingParents)));
+				// I'm assuming that the remaining parents are independent, so any clique containing the parent should be OK
+				// begin FIXME
+				if (cliquesAlsoWithSomeOfTheParents.isEmpty()) {
+					cliquesAlsoWithSomeOfTheParents.add(cliquesWithMainNode.iterator().next());
+				}
+				for (INode parent : remainingParents) { 
+					Clique cliqueWithParent = getCliqueContainingAllNodes((SingleEntityNetwork) net, Collections.singletonList(parent));
+					if (cliqueWithParent == null) {
+						throw new NullPointerException("Unable to find clique containing node " + parent + ", a parent of " + mainNode);
+					}
+					cliquesAlsoWithSomeOfTheParents.add(cliqueWithParent);
+				} 
+				// end FIXME
 			}
 			
 			// get a clone of the the 1st clique in the set, because we'll join the other cliques in it.

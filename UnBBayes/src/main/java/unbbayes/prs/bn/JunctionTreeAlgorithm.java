@@ -48,7 +48,7 @@ import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
  *
  */
 public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgorithm, IPermanentEvidenceInferenceAlgorithm {
-	
+//	 TODO fix ID bug;
 	private static ResourceBundle generalResource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.controller.resources.ControllerResources.class.getName(),
 			Locale.getDefault(),
@@ -1069,7 +1069,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		this.cliques(net, nodeEliminationOrder, junctionTree);
 		this.strongTreeMethod(net, nodeEliminationOrder, junctionTree);
 		this.sortCliqueNodes(net, nodeEliminationOrder, junctionTree);
-		this.associateCliques(net, nodeEliminationOrder, junctionTree);
+		this.addVariablesToCliqueAndSeparatorTables(net, junctionTree);
+		this.associateCliques(net, junctionTree);
 		try {
 			junctionTree.initBeliefs();
 		} catch (Exception e) {
@@ -1118,25 +1119,14 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 
 	/**
 	 * Adds nodes in {@link Clique#getNodesList()} and {@link Separator#getNodesList()} to 
-	 * their respective clique/separator tables by using {@link PotentialTable#addVariable(INode)},
-	 * and then updates the links {@link Clique#getAssociatedProbabilisticNodesList()} and
-	 * {@link Clique#getAssociatedUtilityNodesList()}, which are inverse links associating
-	 * nodes to smallest clique/separator containing such node.
-	 * This will also build the {@link TreeVariable#getAssociatedClique()}, which
-	 * is the link from node to smallest clique/separator containing the node (this is used in order to make
-	 * marginalization faster, because marginalization in smaller clique/separator tables are faster).
-	 * @param net : net whose junctionTree was generated from
-	 * @param nodeEliminationOrder : ordering used in {@link #triangulate(ProbabilisticNetwork)}.
+	 * their respective clique/separator tables by using {@link PotentialTable#addVariable(INode)}.
+	 *	@param net : net whose junctionTree was generated from
 	 * @param junctionTree : junction tree where cliques and separators belong.
 	 */
-	protected void associateCliques(ProbabilisticNetwork net,	List<INode> nodeEliminationOrder, IJunctionTree junctionTree) {
-		
+	protected void addVariablesToCliqueAndSeparatorTables(ProbabilisticNetwork net,	IJunctionTree junctionTree) {
 		// TODO clean the code and stop using auxiliary variables reused along the entire method for different purposes.
-		int min;
-		Node auxNode;
 		IProbabilityFunction auxTable, auxUtilTab;
 		Clique auxClique;
-		Clique smallestClique = null;
 	
 		for (int i = junctionTree.getCliques().size() - 1; i >= 0; i--) {
 			auxClique = (Clique) junctionTree.getCliques().get(i);
@@ -1159,6 +1149,32 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				auxUtilTab.addVariable(auxSep.getNodesList().get(c));
 			}
 		}
+	}
+	
+	/**
+	 * Updates the links {@link Clique#getAssociatedProbabilisticNodesList()} and
+	 * {@link Clique#getAssociatedUtilityNodesList()}, which are inverse links associating
+	 * nodes to smallest clique/separator containing such node.
+	 * This will also build the {@link TreeVariable#getAssociatedClique()}, which
+	 * is the link from node to smallest clique/separator containing the node (this is used in order to make
+	 * marginalization faster, because marginalization in smaller clique/separator tables are faster).
+	 * @param net : net whose junctionTree was generated from
+	 * @param junctionTree : junction tree where cliques and separators belong.
+	 */
+	protected void associateCliques(ProbabilisticNetwork net, IJunctionTree junctionTree) {
+		
+		// TODO clean the code and stop using auxiliary variables reused along the entire method for different purposes.
+		int min;
+		Node auxNode;
+		Clique auxClique;
+		Clique smallestClique = null;
+	
+		// reset the lists {@link Clique#getAssociatedUtilityNodesList()} and {@link Clique#getAssociatedProbabilisticNodesList()}
+		for (Clique clique : junctionTree.getCliques()) {
+			clique.getAssociatedProbabilisticNodesList().clear();
+			clique.getAssociatedUtilityNodesList().clear();
+		}
+	
 	
 		int numNodes = net.getNodeCount();
 		for (int n = 0; n < numNodes; n++) {
@@ -1200,6 +1216,13 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			if (node instanceof ProbabilisticNode) {
 				for (Separator separator : junctionTree.getSeparators()) {
 					if (separator.getNodesList().contains(node) && (separator.getProbabilityFunction().tableSize() < smallestTableSize)) {
+						if (!separator.getClique1().getNodesList().contains(node)
+								|| !separator.getClique2().getNodesList().contains(node)) {
+//							throw new IllegalStateException("Separator " + separator + " is not an intersection between the cliques it connects.");
+							Debug.println(getClass(),"Separator " + separator + " is not an intersection between the cliques it connects.");
+							// ignore this separator, because it is in some inconsistent state
+							continue;
+						}
 						((ProbabilisticNode) node).setAssociatedClique(separator);
 						smallestTableSize = separator.getProbabilityFunction().tableSize();
 					}
@@ -2548,8 +2571,9 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				}
 			}
 			if (isToDeleteEmptyCliques() && !emptyCliques.isEmpty()) {
+				IJunctionTree jt = getNet().getJunctionTree();
 				// if we are only using probabilities, then we don't need the empty cliques anymore
-				getNet().getJunctionTree().removeCliques(emptyCliques);
+				jt.removeCliques(emptyCliques);
 //				this.deleteEmptyCliques(emptyCliques, getNet().getJunctionTree());
 			}
 		}

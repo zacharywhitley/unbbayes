@@ -616,13 +616,129 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		this.separators = separators;
 	}
 	
+	/**
+	 *  Finds all paths between two cliques.
+	 *  If the clique structure is a tree, then this method should be equivalent to {@link #getPath(Clique, Clique)}.
+	 *  If the clique structure is a graph (i.e. it has loops), then this method finds all paths connecting the two cliques.
+     * @param from : a clique to start from. This needs to be a clique in this junction tree.
+     * @param to : a clique to finish search. This also needs to be in this junction tree.
+     * @return : a collection of lists representing the sequence of cliques that forms a path between the two cliques provided in the arguments.
+     * The first element should be the "from" argument, and the last element shall be the "to" argument.
+     * @see #getParents(Clique)
+     * @see Clique#getChildren()
+	 */
+	public Collection<List<Clique>> getPaths(Clique from, Clique to) {
+		// basic assertions
+		if (from == null || to == null) {
+			return Collections.emptySet();
+		}
+		// don't search for a path if the two cliques are the same
+		if (from.equals(to)) {
+			return Collections.singleton(Collections.singletonList(from));
+		}
+		
+		// initiate a recursive call
+		return this.getRoutesRec(from, to, new ArrayList<Clique>(), new HashSet<Clique>());
+	}
+	
+	/**
+	 * This is used in {@link #getPaths(Clique, Clique)}
+	 * It makes a recursive visit to the cliques in this junction tree.
+	 * @param processingPath (input): registers the cliques already visited, in order to prevent cycles. This must be non null.
+	 * The initial call to this recursive method shall set this argument as an empty, modifiable list.
+	 * @param deadCliques : nodes that we are certain that there is no route to to. The initial call to this recursive method shall set
+	 * this argument as an empty, modifiable set.
+	 * @return a set of all path from "from" to "to". The path is represented as a list containing all
+	 * cliques included in the path.
+	 */
+	protected Collection<List<Clique>> getRoutesRec(Clique from, Clique to, List<Clique> processingPath, Set<Clique> deadCliques) {
+		
+		Collection<List<Clique>> ret = new HashSet<List<Clique>>(); // Initialize the collection (of paths) to return
+		
+		
+		// mark the current clique as "evaluated", but don't use processingPath directly, since we don't want it to be an output parameter
+		List<Clique> processingPathCurrentScope = new ArrayList<Clique>(processingPath);
+		processingPathCurrentScope.add(from);
+		
+		
+		// initialize a set of dead clique for my scope
+		// note that if a node is dead for my scope (currently processing path), it may not be dead for my upper scope (another path)
+		// that's why I must create deadNodes for my scope
+		Set<Clique> deadNodesForMyScope = new HashSet<Clique>(deadCliques);
+		
+		// iterate on parents
+		for (Clique parent : getParents(from)) {
+			
+			if (deadCliques.contains(parent)) {
+				// we know dead cliques have no path to the "to" clique... So ignore
+				continue;
+			}
+			if (processingPathCurrentScope.contains(parent)) {
+				// this is a cycle. Ignore this sub-path
+				continue;
+			}
+			if (to.equals(parent)) {
+				// path found!
+				List<Clique> path = new ArrayList<Clique>(processingPathCurrentScope);
+				path.add(parent);
+				ret.add(path);
+				
+				// we should find more routes, so lets continue 
+				continue;	 // no need to make recursive call
+			}
+			
+			// recursive call
+			Collection<List<Clique>> rec = this.getRoutesRec(parent, to, processingPathCurrentScope, deadNodesForMyScope);
+			if (rec.isEmpty()) {
+				// we recursively know that there is no path from adjacent to setTo, so, it is dead
+				deadNodesForMyScope.add(parent);
+			} // else, we found some path
+			ret.addAll(rec);
+		}
+		
+		// iterate on children;
+		for (Clique child : from.getChildren()) {
+			
+			if (deadCliques.contains(child)) {
+				// we know dead cliques have no path to the "to" clique... So ignore
+				continue;
+			}
+			if (processingPathCurrentScope.contains(child)) {
+				// this is a cycle. Ignore this sub-path
+				continue;
+			}
+			if (to.equals(child)) {
+				// path found!
+				List<Clique> path = new ArrayList<Clique>(processingPathCurrentScope);
+				path.add(child);
+				ret.add(path);
+				
+				// we should find more routes, so lets continue 
+				continue;	 // no need to make recursive call
+			}
+			
+			// recursive call
+			Collection<List<Clique>> rec = this.getRoutesRec(child, to, processingPathCurrentScope, deadNodesForMyScope);
+			if (rec.isEmpty()) {
+				// we recursively know that there is no path from adjacent to setTo, so, it is dead
+				deadNodesForMyScope.add(child);
+			} // else, we found some path
+			ret.addAll(rec);
+		}
+		
+		return ret;
+	}
+	
     /**
      * Finds the shortest path between two cliques.
      * This method assumes that both cliques have a common root
      * (i.e. the junction tree is actually a single tree, with a path present between all pairs of cliques).
+     * This method should work faster than {@link #getPaths(Clique, Clique)},
+     * because it uses several assumptions, like unique path assumption between cliques.
      * @param from : a clique to start from. This needs to be a clique in this junction tree.
      * @param to : a clique to finish search. This also needs to be in this junction tree.
      * @return : a list of sequence of cliques that forms a path between two cliques in this junction tree.
+     * @see #getPaths(Clique, Clique)
      */
     public List<Clique> getPath(Clique from, Clique to) {
     	
@@ -1091,6 +1207,19 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
     	}
 	}
 	
+	/**
+	 * Simply updates {@link Clique#getParent()}
+	 * @param parent : the clique to become parent
+	 * @param child : the clique to become child
+	 * @return true if there was some change. False otherwise.
+	 * @see #getParents(Clique)
+	 */
+	public boolean addParent(Clique parent, Clique child) {
+		Clique oldParent = child.getParent();
+		child.setParent(parent);
+		return parent == oldParent;
+	}
+	
 	/*
 	 * (non-Javadoc)
 	 * @see unbbayes.prs.bn.IJunctionTree#removeCliques(java.util.Collection)
@@ -1125,18 +1254,29 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 				if (!children.isEmpty()) {
 					// make each children to point to parent, instead of to the clique that will be deleted
 					for (Clique child : children) {
+						// extract/create the old/new separators in advance
+						Separator separatorToRemove = this.getSeparator(cliqueToRemove, child);
+						Separator separatorToInclude = new Separator(parent, child, false);	// false:=don't update relationship between child and parent
+						separatorToInclude.setInternalIdentificator(separatorToRemove.getInternalIdentificator());	// reuse ID
+//						separatorToInclude.setNodes(separatorToRemove.getNodesList());
+//						separatorToInclude.setProbabilityFunction(separatorToRemove.getProbabilityFunction());
+						
 						// delete separators between empty clique and its children
-						this.removeSeparator(this.getSeparator(cliqueToRemove, child));
+						this.removeSeparator(separatorToRemove);
+						
+						// update the references of parent/child
+						this.addParent(parent, child);
+						parent.addChild(child);
+						
 						// create empty separators from parent clique to children
-						// Separator(Clique,Clique) will also update Clique#getParent() of child clique, and Clique#getChildren() of parent clique
-						this.addSeparator(new Separator(parent, child));
+						this.addSeparator(separatorToInclude);
 					}
 				} // or else, there was no children. Empty clique was a leaf, so no need to process children.
 			}
 			
 			// handle case when clique to delete is a root
 			if ( (parents == null || parents.isEmpty())
-					&& !children.isEmpty()) { 
+					&& !children.isEmpty()) {
 				// parent is null, and there are children
 				
 				// the empty clique was a root (but it will be removed), so pick one (any) children to become a new root
@@ -1155,11 +1295,28 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 				
 				// connect remaining children (i.e. brothers) to new root, by using empty separators
 				for (Clique child : children) {
-					// create separator from parent to children. 
-					// Separator(Clique,Clique) will also update Clique#getParent() of child clique, and Clique#getChildren() of parent clique
-					this.addSeparator(new Separator(parent, child));
-					// also make sure the separator between this child and empty clique is removed
-					this.removeSeparator(this.getSeparator(cliqueToRemove, child));
+//					// create separator from parent to children. 
+//					// Separator(Clique,Clique) will also update Clique#getParent() of child clique, and Clique#getChildren() of parent clique
+//					this.addSeparator(new Separator(parent, child));
+//					// also make sure the separator between this child and empty clique is removed
+//					this.removeSeparator(this.getSeparator(cliqueToRemove, child));
+					
+					// extract/create the old/new separators in advance
+					Separator separatorToRemove = this.getSeparator(cliqueToRemove, child);
+					Separator separatorToInclude = new Separator(parent, child, false);	// false:=don't update relationship between child and parent
+					separatorToInclude.setInternalIdentificator(separatorToRemove.getInternalIdentificator());	// reuse ID
+//					separatorToInclude.setNodes(separatorToRemove.getNodesList());
+//					separatorToInclude.setProbabilityFunction(separatorToRemove.getProbabilityFunction());
+					
+					// delete separators between empty clique and its children
+					this.removeSeparator(separatorToRemove);
+					
+					// update the references of parent/child
+					this.addParent(parent, child);
+					parent.addChild(child);
+					
+					// create empty separators from parent clique to children
+					this.addSeparator(separatorToInclude);
 				}
 				
 				// some algorithms require the root clique to be the 1st in list, so reorder
@@ -1184,12 +1341,45 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		return ret;
 		
 	}
+	
+	/**
+	 * This method will look for predecessor by recursively checking {@link #getParents(Clique)}.
+	 * @see unbbayes.prs.bn.IJunctionTree#isPredecessor(unbbayes.prs.bn.Clique, unbbayes.prs.bn.Clique)
+	 */
+	public boolean isPredecessor(Clique predecessorToTest, Clique clique) {
+		
+		// basic assertions
+		if (clique == null || predecessorToTest == null) {
+			return false;
+		}
+		
+		// check for parents
+		List<Clique> parents = getParents(clique);	// this is empty if current clique is a root
+		if (parents != null) {	// this check should not be necessary, but I'm doing it just for precaution (because classes extending getParents may return null here)
+			for (Clique parent : parents) {
+				
+				// if it is a parent, then it is also a predecessor
+				if (parent.equals(predecessorToTest)) {
+					return true;
+				}
+				
+				// check predecessors recursively
+				if (isPredecessor(predecessorToTest, parent)) {
+					// predecessorToTest is a predecessor of my parent, so it is also my predecessor
+					return true;
+				}
+			}
+		}
+		
+		// at this point, we did not find predecessorToTest in the set of all predecessors of clique
+		return false;
+	}
 
 	/**
 	 * Extracts the parent of the provided clique.
 	 * This is useful when the {@link IJunctionTree} structure
 	 * allows multiple parents (e.g. loopy clique structures)
-	 * @param clique
+	 * @param clique : parents of this clique will be searched.
 	 * @return parents of the clique. In a tree structure, this will contain only 1 element.
 	 * @see Clique#getParent()
 	 */
@@ -1467,6 +1657,14 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			}
 		}
 		
+		return false;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#isUsingApproximation()
+	 */
+	public boolean isUsingApproximation() {
 		return false;
 	}
 
