@@ -1567,4 +1567,14 @@ public interface MarkovEngineInterface {
 	 */
 	public List<LinkStrength> getLinkStrengthAll();
 	
+	
+	/**
+	 * This method is a convenience method for {@link #getLinkStrengthAll()} and {@link #getComplexityFactor(Long, List)}.
+	 * It virtually returns the link strength of all arcs present in the system (as in {@link #getLinkStrengthAll()}),
+	 * but the returned objects will also contain a field representing the complexity factor you would get by removing such link,
+	 * (as in {@link #getComplexityFactor(Long, List)}).
+	 * @return a list of {@link LinkStrengthComplexity}
+	 * @see LinkStrengthComplexity#getComplexityFactor()
+	 */
+	public List<LinkStrengthComplexity> getLinkStrengthComplexityAll();
 }

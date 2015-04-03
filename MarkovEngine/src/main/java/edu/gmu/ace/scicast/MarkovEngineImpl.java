@@ -59,6 +59,7 @@ import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
+import unbbayes.prs.bn.LoopyJunctionTree;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -398,6 +399,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private String defaultComplexityFactorName = COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE; //COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE;
 
 	private boolean isToUseMaxForSubnetsInLinkSuggestion = true;
+	
+	/** If false, dynamic/incremental junction tree compilation will be disabled when value trees are used */
+	private boolean isToUseDynamicJunctionTreeWithValueTrees = false;
 	
 	
 	/**
@@ -2060,6 +2064,11 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 */
 		public void execute(ProbabilisticNetwork net,
 				boolean isToUpdateJunctionTreeAndAssetNets) {
+			
+			if (!isToUseDynamicJunctionTreeWithValueTrees()) {
+				setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);
+			}
+			
 			if (!isToAddArcsOnlyToProbabilisticNetwork()) {
 				throw new UnsupportedOperationException("Current implementation of value trees cannot be used with assets, so please turn on the flag \"isToAddArcsOnlyToProbabilisticNetwork\"");
 			}
@@ -14239,7 +14248,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getVersionInfo()
 	 */
 	public String getVersionInfo() {
-		return "UnBBayes SciCast Markov Engine 1.6.12";
+		return "UnBBayes SciCast Markov Engine 1.6.13";
 	}
 
 	/**
@@ -15534,12 +15543,12 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					Long childId = Long.parseLong(edge.getDestinationNode().getName());
 					// just add to the ret the link strength
 					ret.add(
-							// the following should instantiate an object of LinkStrength
-							LinkStrengthImpl.getInstance(
-									parentId, 									// id of one of the question linked by this arc
-									childId, 									// the other question Id
-									this.getLinkStrength(parentId, childId)		// the metric for the strength of the link between the 2 questions
-							)
+						// the following should instantiate an object of LinkStrength
+						LinkStrengthImpl.getInstance(
+							parentId, 									// id of one of the question linked by this arc
+							childId, 									// the other question Id
+							this.getLinkStrength(parentId, childId)		// the metric for the strength of the link between the 2 questions
+						)
 					);
 				} catch (Exception e) {
 					Debug.println(getClass(), "Unable to handle arc " + edge, e);
@@ -15548,6 +15557,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		}
 		
 		return ret;
+	
 	}
 
 	/**
@@ -15573,6 +15583,101 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			boolean isToUseMaxForSubnetsInLinkSuggestion) {
 		this.isToUseMaxForSubnetsInLinkSuggestion = isToUseMaxForSubnetsInLinkSuggestion;
 	}
+	
+	/**
+	 * @return true if {@link #run()} must disable dynamic JT compilation when {@link LoopyJunctionTree#isLoopy()} is true. False otherwise.
+	 * @see IncrementalJunctionTreeAlgorithm#isToCompileNormallyWhenLoopy()
+	 */
+	public boolean isToCompileNormallyWhenLoopy() {
+		AssetAwareInferenceAlgorithm algorithm = getDefaultInferenceAlgorithm();
+		synchronized (algorithm) {
+			if (algorithm.getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+				return ((IncrementalJunctionTreeAlgorithm)algorithm.getProbabilityPropagationDelegator()).isToCompileNormallyWhenLoopy();
+			} else {
+				Debug.println(getClass(), "Unable to find associated instance of " + IncrementalJunctionTreeAlgorithm.class.getName());
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param isToCompileNormallyWhenLoopy : set to true if {@link #run()} must disable dynamic JT compilation when 
+	 * {@link LoopyJunctionTree#isLoopy()} is true. Set to false otherwise.
+	 * @see IncrementalJunctionTreeAlgorithm#setToCompileNormallyWhenLoopy(boolean)
+	 */
+	public void setToCompileNormallyWhenLoopy(boolean isToCompileNormallyWhenLoopy) {
+		AssetAwareInferenceAlgorithm algorithm = getDefaultInferenceAlgorithm();
+		synchronized (algorithm) {
+			if (algorithm.getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+				((IncrementalJunctionTreeAlgorithm)algorithm.getProbabilityPropagationDelegator()).setToCompileNormallyWhenLoopy(isToCompileNormallyWhenLoopy);
+			} else {
+				Debug.println(getClass(), "Unable to find associated instance of " + IncrementalJunctionTreeAlgorithm.class.getName());
+			}
+		}
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getLinkStrengthComplexityAll()
+	 */
+	public List<LinkStrengthComplexity> getLinkStrengthComplexityAll() {
+
+		
+		// prepare the list to be returned
+		List<LinkStrengthComplexity> ret = new ArrayList<LinkStrengthComplexity>();
+		
+		// this is the Bayes net model used by the engine
+		ProbabilisticNetwork net = getProbabilisticNetwork();
+		
+		synchronized (net) {
+			// iterate on all existing arcs
+			for (Edge edge : net.getEdges()) {
+				try {
+					// extract the ids of the nodes connected by current arc
+					Long parentId = Long.parseLong(edge.getOriginNode().getName());
+					Long childId = Long.parseLong(edge.getDestinationNode().getName());
+					// just add to the ret the link strength
+					ret.add(
+						// the following should instantiate an object of LinkStrength
+						LinkStrengthComplexityImpl.getInstance(
+							parentId, 									// id of one of the question linked by this arc
+							childId, 									// the other question Id
+							this.getLinkStrength(parentId, childId),	// the metric for the strength of the link between the 2 questions
+							this.getComplexityFactor(childId, Collections.singletonList(parentId))	// the complexity factor you'll get if you drop this link
+						)
+					);
+				} catch (Exception e) {
+					Debug.println(getClass(), "Unable to handle arc " + edge, e);
+				}
+			}
+		}
+		
+		return ret;
+	
+	
+	}
+
+	/**
+	 * If false, dynamic/incremental junction tree compilation will be disabled when value trees are used
+	 * @return the isToUseDynamicJunctionTreeWithValueTrees
+	 * @see AddValueTreeQuestionNetworkAction#execute(ProbabilisticNetwork, boolean)
+	 */
+	public boolean isToUseDynamicJunctionTreeWithValueTrees() {
+		return isToUseDynamicJunctionTreeWithValueTrees;
+	}
+
+	/**
+	 * If false, dynamic/incremental junction tree compilation will be disabled when value trees are used
+	 * @param isToUseDynamicJunctionTreeWithValueTrees the isToUseDynamicJunctionTreeWithValueTrees to set
+	 * @see AddValueTreeQuestionNetworkAction#execute(ProbabilisticNetwork, boolean)
+	 */
+	public void setToUseDynamicJunctionTreeWithValueTrees(
+			boolean isToUseDynamicJunctionTreeWithValueTrees) {
+		this.isToUseDynamicJunctionTreeWithValueTrees = isToUseDynamicJunctionTreeWithValueTrees;
+	}
+
+	
+	
 	
 	
 //	/**

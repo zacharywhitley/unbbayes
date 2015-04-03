@@ -61,6 +61,7 @@ import edu.gmu.ace.scicast.MarkovEngineImpl.VirtualTradeAction;
 import edu.gmu.ace.scicast.ScoreSummary.SummaryContribution;
 
 /**
+ * TODO create a test method which will check the execution time of clique sizes of million
  * @author Shou Matsumoto
  *
  */
@@ -25672,131 +25673,6 @@ public class MarkovEngineTest extends TestCase {
 	
 	
 	/**
-	 * Verifies the behavior of balancing trades when 10 variables are present in the same clique.
-	 * A network with 30 variables, comprised of 3 subnets of 10 variables with 2 states, fully connected (so, there will be
-	 * 3 Disconnected cliques with 10 variables).
-	 */
-	public final void testBalanceTrade10Vars() {
-		// backup config
-		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
-		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
-		boolean isToTraceHistory = engine.isToTraceHistory();
-		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
-		engine.setToAddArcsWithoutReboot(false);
-		engine.setToTraceHistory(true);
-		
-		// set up engine
-		engine.setDefaultInitialAssetTableValue(1000f);
-		engine.initialize();
-		
-		// generate the 30 nodes
-		long transactionKey = engine.startNetworkActions();
-		for (int i = 0; i < 30; i++) {
-			engine.addQuestion(transactionKey, new Date(i), (long)i, 2, null);
-		}
-		// fully connect 10 by 10
-		for (int i = 0; i < 3; i++) {
-			for (int j = 10*i; j < 10*i+9; j++) {
-				List<Long> parentQuestionIds = Collections.singletonList((long)j);
-				for (int k = j+1; k < 10*i+10; k++) {
-					engine.addQuestionAssumption(transactionKey, new Date(), (long)k, parentQuestionIds, null);
-				}
-			}
-		}
-		
-		// commit the transaction
-		engine.commitNetworkActions(transactionKey);
-		
-		// check that the generated network is correct
-		assertEquals(3, engine.getQuestionAssumptionGroups().size());
-		assertEquals(30, engine.getProbLists(null, null, null).size());
-		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
-			for (Float prob : entry.getValue()) {
-				assertEquals(0.5f, prob, PROB_ERROR_MARGIN); 
-			}
-		}
-		// check low level consistency too
-		assertEquals(3, engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size());
-		for (Clique clique : engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
-			assertEquals(10, clique.getNodesList().size());
-		}
-		for (Separator sep : engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getJunctionTree().getSeparators()) {
-			assertEquals(0, sep.getNodes().size());
-		}
-		
-		// assert that initial asset is 1000
-		assertEquals(1000, engine.getCash(Long.MAX_VALUE, null, null), PROB_ERROR_MARGIN);
-		
-		long seed = new Date().getTime();
-		Random random = new Random(seed );
-		System.out.println("seed = " + seed);
-		
-		// make trades in all 3 cliques
-		for (int i = 0; i < 3; i++) {
-			for (int j = 10*i; j < 10*i+9; j++) {
-				List<Long> assumptionIds = Collections.singletonList((long)j);
-				for (int k = j+1; k < 10*i+10; k++) {
-					
-					// specify the assumptions of the trade
-					List<Integer> assumedStates = Collections.singletonList(0);
-					
-					// randomly generate trade value accordingly to trade limit
-					List<Float> limits = engine.getEditLimits(Long.MAX_VALUE, k, 0, assumptionIds, assumedStates);
-					float prob = limits.get(0) + (limits.get(1)-limits.get(0))*random.nextFloat(); // randomly pick a value between the edit limit
-					List<Float> newValues = new ArrayList<Float>();
-					newValues.add(prob); newValues.add(1-prob);	
-					if (Math.abs(limits.get(1) - limits.get(0)) > PROB_ERROR_MARGIN) {
-						// only make trade if there can be a trade
-						engine.addTrade(null, new Date(), "", Long.MAX_VALUE, k, newValues, assumptionIds, assumedStates, false);
-					}
-					
-					
-					// another trade on another state of the same assumption
-					assumedStates = Collections.singletonList(1);
-					limits = engine.getEditLimits(Long.MAX_VALUE, k, 0, assumptionIds, assumedStates);
-					prob = limits.get(0) + (limits.get(1)-limits.get(0))*random.nextFloat(); // randomly pick a value between the edit limit
-					newValues = new ArrayList<Float>();
-					newValues.add(prob); newValues.add(1-prob);	
-					if (Math.abs(limits.get(1) - limits.get(0)) > PROB_ERROR_MARGIN) {
-						// only make trade if there can be a trade
-						engine.addTrade(null, new Date(), "", Long.MAX_VALUE, k, newValues, assumptionIds, assumedStates, false);
-					}
-				}
-			}
-		}
-		
-		assertTrue(engine.getCash(Long.MAX_VALUE, null, null) > 0);
-		
-		// balance all questions
-		for (int i = 0; i < 30; i++) {
-			long before = System.currentTimeMillis();
-			engine.doBalanceTrade(null, new Date(), "Balance", Long.MAX_VALUE, i, null, null);
-			System.out.println("Time (ms) spent to balance question " + i + " = " + (System.currentTimeMillis() - before));
-			List<Float> assetsIfStates = engine.getAssetsIfStates(Long.MAX_VALUE, i, null, null);
-			for (Float asset : assetsIfStates) {
-				assertEquals(assetsIfStates.get(0), asset, 1);
-			}
-		}
-		
-		assertEquals(1000, engine.getCash(Long.MAX_VALUE, null, null), 1);
-		
-		for (int i = 0; i < 30; i++) {
-			List<Float> assetsIfStates = engine.getAssetsIfStates(Long.MAX_VALUE, i, null, null);
-			for (Float asset : assetsIfStates) {
-				assertEquals(assetsIfStates.get(0), asset, 1);
-			}
-		}
-
-		
-		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
-		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
-		engine.setToTraceHistory(isToTraceHistory);
-
-		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
-		
-	}
-	
-	/**
 	 * Test method for {@link MarkovEngineImpl#resolveQuestion(Long, Date, long, List)},
 	 * but this test will resolve a question to a state other than 100% (and 0%).
 	 */
@@ -29819,149 +29695,6 @@ public class MarkovEngineTest extends TestCase {
 	
 	
 	/**
-	 * Check if underflow will not happen when cliques have many large cliques
-	 */
-	public final void testUnderflows() {
-		MarkovEngineImpl me = (MarkovEngineImpl) MarkovEngineImpl.getInstance(2, 100, 1000);
-		
-		for (int i = 617; i <= 639; i++) {
-			me.addQuestion(null, new Date(), i, 20, null);
-		}
-		
-		System.out.println(me.exportState());
-		me.addQuestionAssumption(null, new Date(), 618, Collections.singletonList(617L), null);
-		System.out.println(me.exportState());
-		
-		for (int i = 619; i <= 639; i++) {	
-			me.addQuestionAssumption(null, new Date(), i, Collections.singletonList(617L), null);
-			for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
-				float sum = 0f;
-				for (Float value : entry.getValue()) {
-					assertEquals(i+":"+entry.toString(), 1f/20f, value.floatValue(), 0.0001f);
-					sum += value;
-				}
-				assertEquals(entry.toString(), 1f, sum, 0.0001f);
-			}
-			me.addQuestionAssumption(null, new Date(), i, Collections.singletonList(618L), null);
-			for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
-				float sum = 0f;
-				for (Float value : entry.getValue()) {
-					assertEquals(i+":"+entry.toString(), 1f/20f, value.floatValue(), 0.0001f);
-					sum += value;
-				}
-				assertEquals(entry.toString(), 1f, sum, 0.0001f);
-			}
-		}
-
-		System.out.println(me.exportState());
-		
-		for (int i = 0; i < 20; i++) {
-			List<Float> newValues = new ArrayList<Float>();
-			for (int j = 0; j < 20; j++) {
-				if (i == j) {
-					newValues.add(0f);
-				} else {
-					newValues.add(1f/19);
-				}
-			}
-			me.addTrade(null, new Date(), "", 0L, 618L, newValues , Collections.singletonList(617L), Collections.singletonList(i), true);		
-		}
-		
-		System.out.println(me.exportState());
-		for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
-			float sum = 0f;
-			for (Float value : entry.getValue()) {
-				assertTrue(entry.toString(), 0f< value && value <= 1f);
-				sum += value;
-			}
-			assertEquals(entry.toString(), 1f, sum, 0.0001f);
-		}
-		
-		for (long nodeIndex = 0; nodeIndex < 20; nodeIndex++) {
-			for (int parentStateIndex = 0; parentStateIndex < 20; parentStateIndex++) {
-				List<Float> newValues = new ArrayList<Float>();
-				for (int stateIndex = 0; stateIndex < 20; stateIndex++) {
-					if (stateIndex == 0) {
-						if (nodeIndex == parentStateIndex) {
-							newValues.add(1f);
-						} else {
-							newValues.add(0f);
-						}
-					} else {
-						if (nodeIndex == parentStateIndex) {
-							newValues.add(0f);
-						} else {
-							newValues.add(1f/19f);
-						}
-					}
-				}
-				me.addTrade(null, new Date(), "", 0L, nodeIndex+619, newValues , Collections.singletonList(617L), Collections.singletonList(parentStateIndex), true);	
-				for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
-					float sum = 0f;
-					for (Float value : entry.getValue()) {
-						assertTrue(nodeIndex+","+parentStateIndex+"."+entry.toString(), -0.0001f< value && value <= 1.0001);
-						sum += value;
-					}
-					assertEquals(nodeIndex+","+parentStateIndex+"."+entry.toString(), 1f, sum, 0.0002f);
-				}
-			}
-		}
-		for (long nodeIndex = 0; nodeIndex < 20; nodeIndex++) {
-			for (int parentStateIndex = 0; parentStateIndex < 20; parentStateIndex++) {
-				List<Float> newValues = new ArrayList<Float>();
-				for (int stateIndex = 0; stateIndex < 20; stateIndex++) {
-					if (stateIndex == 1) {
-						if (nodeIndex == parentStateIndex) {
-							newValues.add(1f);
-						} else {
-							newValues.add(0f);
-						}
-					} else {
-						if (nodeIndex == parentStateIndex) {
-							newValues.add(0f);
-						} else {
-							newValues.add(1f/19f);
-						}
-					}
-				}
-				me.addTrade(null, new Date(), "", 0L, nodeIndex+619, newValues , Collections.singletonList(618L), Collections.singletonList(parentStateIndex), true);	
-				for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
-					float sum = 0f;
-					for (Float value : entry.getValue()) {
-						assertTrue(nodeIndex+","+parentStateIndex+"."+entry.toString(), -0.0001f< value && value <= 1.0001);
-						sum += value;
-					}
-					assertEquals(nodeIndex+","+parentStateIndex+"."+entry.toString(), 1f, sum, 0.0001f);
-				}
-			}
-		}
-		
-		System.out.println(me.exportState());
-		
-		for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
-			float sum = 0f;
-			for (Float value : entry.getValue()) {
-				assertTrue(entry.toString(), -0.0001f< value && value <= 1.0001);
-				sum += value;
-			}
-			assertEquals(entry.toString(), 1f, sum, 0.0001f);
-		}
-		
-		me.importState(me.exportState());
-		for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
-			float sum = 0f;
-			for (Float value : entry.getValue()) {
-				assertTrue(entry.toString(), -0.0001f< value && value <= 1.0001);
-				sum += value;
-			}
-			assertEquals(entry.toString(), 1f, sum, 0.0001f);
-		}
-
-		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
-		
-	}
-	
-	/**
 	 * Check if we can move a 0% state out from 0%
 	 */
 	public final void testChangeProbabilityFromZero() {
@@ -31358,260 +31091,6 @@ public class MarkovEngineTest extends TestCase {
 	}
 	
 	/**
-	 * Test method for {@link MarkovEngineImpl#exportState()}
-	 * and {@link MarkovEngineImpl#importState(String)}
-	 * for 2000 vars and randomly created arcs (max 10 parents)
-	 */
-	public final void testExportImport2000Vars() {
-		int numNodes = 1000;//2000;	// total quantity of nodes in the network
-		int maxNumStates = 2;//5;	// how many states a node can have at most. The minimum is expected to be 2, but this var should not be set to 2
-		int maxNumParents = 10;	// maximum number of parents per node 
-		float probAddArcs = .00065f;	// what is the probability to add arcs. The higher, more arcs are likely to be created.
-		float probTrade = 1f;//.05f;	// how many nodes will be traded
-		boolean isToMakeAllTrades = true;	// if false, trades will be cancelled if they are taking too much time
-		float probAddAssumption = 0.2f;//;.15f;	// what is the probability to add assumptions in trades. The higher, more assumptions are likely to be used.
-		long seed = new Date().getTime();
-		Random random = new Random(seed);
-		float probTradeBeforeArcs = 0f;//0.05f;
-		
-		Debug.setDebug(true);
-		
-		
-		// backup config
-		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
-		if (!isToAddArcsOnlyToProbabilisticNetwork) {
-			engine.setToAddArcsOnlyToProbabilisticNetwork(true);
-		}
-		
-		System.out.println("[testExportImport2000Vars] Random seed = " + seed);
-		
-		
-		// create the nodes
-		long transactionKey = engine.startNetworkActions();
-		for (int i = 0; i < numNodes; i++) {
-			// random quantity of states: from 2 to ( 2 + (4-1) ) = 5
-			if (maxNumStates > 2) {
-				engine.addQuestion(transactionKey, new Date(), i, 2+random.nextInt(maxNumStates-2), null);
-			} else {
-				engine.addQuestion(transactionKey, new Date(), i, 2, null);
-			}
-		}
-		engine.commitNetworkActions(transactionKey);
-		
-		// vector representing how many parents a node has
-		int[] numParentsPerNode = new int[numNodes];
-		// initialize vector
-		for (int i = 0; i < numParentsPerNode.length; i++) {
-			numParentsPerNode[i] = 0;
-		}
-		
-		// this map will store what was traded before adding arcs, for later comparison
-		Map<Long, List<Float>> tradedProbs = new HashMap<Long, List<Float>>();
-		
-		// create arcs randomly
-		transactionKey = engine.startNetworkActions();
-		for (int i = 0; i < numNodes-1; i++) {
-			// generate trade before adding arcs
-			if (random.nextFloat() < probTradeBeforeArcs) {
-				ProbabilisticNode node = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode(Long.toString(i));
-				// the trade to be performed
-				List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
-				float sumForNormalization = 0f;
-				for (int j = 0; j < node.getStatesSize(); j++) {
-					newValues.add(random.nextFloat());
-					sumForNormalization += newValues.get(j);
-				}
-				// normalize the newValues
-				for (int j = 0; j < newValues.size(); j++) {
-					newValues.set(j, newValues.get(j)/sumForNormalization);
-				}
-				
-				// run trade
-				engine.addTrade(
-							null, 
-							new Date(), 
-							"P(" + i + ") = " + newValues, 
-							0, 
-							i, 
-							newValues, 
-							null, 
-							null, 
-							true
-						);
-				tradedProbs.put((long) i, newValues);
-			}
-			for (int j = i+1; j < numNodes; j++) {
-				if (random.nextFloat() > probAddArcs) {
-					continue;	// only create arcs with probability probAddArcs
-				}
-				// check if number of parents reached maximum
-				if (numParentsPerNode[j] < maxNumParents) {
-					engine.addQuestionAssumption(transactionKey, new Date(), j, Collections.singletonList((long)i), null);
-					numParentsPerNode[j]++;
-				}
-			}
-		}
-		numParentsPerNode = null;	// try disposing it, because it won't be used anymore
-		engine.commitNetworkActions(transactionKey);
-		
-		
-		System.out.println(engine.getNetStatistics().toString());
-		System.out.println("seed = " + seed);
-		
-		// check that the marginals matches traded probs
-		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
-			List<Float> probBefore = tradedProbs.get(entry.getKey());
-			if (probBefore != null) {
-				assertEquals(probBefore.size(), entry.getValue().size());
-				for (int j = 0; j < probBefore.size(); j++) {
-					assertEquals(probBefore.get(j), entry.getValue().get(j), PROB_ERROR_MARGIN);
-				}
-			}
-		}
-		
-		// store current time in order to see how long the trades took
-		long timeMillis = System.currentTimeMillis();
-		
-		// make trades on all variables
-		long numTrades = 0;	// how many trades were performed
-		for (long questionId = 0; questionId < numNodes; questionId++) {
-			ProbabilisticNode node = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode(Long.toString(questionId));
-			assertNotNull(node);
-			
-			if (!node.getParentNodes().isEmpty()) {
-				if (random.nextFloat() > probTrade) {
-					continue;
-				}
-			}
-			// the trade to be performed
-			List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
-			float sumForNormalization = 0f;
-			for (int i = 0; i < node.getStatesSize(); i++) {
-				newValues.add(random.nextFloat());
-				sumForNormalization += newValues.get(i);
-			}
-			// normalize the newValues
-			for (int i = 0; i < newValues.size(); i++) {
-				newValues.set(i, newValues.get(i)/sumForNormalization);
-			}
-			
-			List<Long> assumptionIds = new ArrayList<Long>(node.getParentNodes().size());
-			List<Integer> assumedStates = new ArrayList<Integer>(node.getParentNodes().size());
-			
-			// randomly select assumptions
-			for (INode parent : node.getParentNodes()) {
-				// use prob to add assumption
-				if (random.nextFloat() < probAddAssumption) {
-					assumptionIds.add(Long.parseLong(parent.getName()));
-					assumedStates.add(random.nextInt(parent.getStatesSize()));	// random state from 0 to parent.getStatesSize()-1
-				}
-			}
-			
-			long time = System.currentTimeMillis();
-			engine.addTrade(
-					null, 
-					new Date(), 
-					"P(" + questionId + " | " + assumptionIds + "=" + assumedStates+") = " + newValues, 
-					0, 
-					questionId, 
-					newValues, 
-					assumptionIds, 
-					assumedStates, 
-					true
-				);
-			numTrades++;
-			if (!isToMakeAllTrades && System.currentTimeMillis() - time >= 1000) {
-				// do not add more trades if it is more than 1s
-				break;
-			}
-			if (!isToMakeAllTrades && System.currentTimeMillis() - time >= 100) {
-				// trade on less questions if its more than half second
-				probTrade = probTrade/2;
-			}
-		}
-		
-		System.out.println("Number of trades = " + numTrades);
-		System.out.println("Elapsed time for trades (ms) = " + (System.currentTimeMillis() - timeMillis));
-		
-		// settle some question which has 2 or more parents
-		for (int i = 0; i < engine.getProbabilisticNetwork().getNodes().size();i++) {
-			Node node = engine.getProbabilisticNetwork().getNodes().get(i);
-			if (node.getParentNodes() != null && node.getParentNodes().size() >= 2 && !engine.getResolvedQuestions().containsKey(Long.parseLong(node.getName()))) {
-				engine.resolveQuestion(null, new Date(), Long.parseLong(node.getName()), 0);
-				i--;
-			}
-		}
-		
-		// backup network to check afterwards
-		ProbabilisticNetwork cloneNet = null;
-		try {
-			cloneNet = (ProbabilisticNetwork) engine.getDefaultInferenceAlgorithm().clone(false).getNetwork(); // do not clone asset net
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
-			fail();
-		}	
-		assertNotNull(cloneNet);
-		
-		engine.addCash(null, new Date(), 1L, 10, "Shall be ignored");
-		
-		
-		System.out.println(engine.getNetStatistics().toString());
-		System.out.println("seed = " + seed);
-		// store network as a string
-		long timeBefore = System.currentTimeMillis();
-		String netAsString = engine.exportState();
-		System.out.println("Time (ms) to export network = " + (System.currentTimeMillis() - timeBefore));
-		System.out.println("seed = " + seed);
-		
-		assertNotNull(netAsString);
-		assertFalse(netAsString.trim().isEmpty());
-		
-		System.out.println(netAsString);
-		
-		// load network from the obtained string
-		timeBefore = System.currentTimeMillis();
-		engine.importState(netAsString);
-		System.out.println("Time (ms) to import network = " + (System.currentTimeMillis() - timeBefore));
-		System.out.println("seed = " + seed);
-		
-		// check if the loaded network matches previous network
-		assertNotNull(engine.getProbabilisticNetwork());
-		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree());
-		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree().getCliques());
-		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree().getSeparators());
-		
-		// check number of nodes and arcs
-		assertEquals(cloneNet.getNodeCount(), engine.getProbabilisticNetwork().getNodeCount());
-		assertEquals(cloneNet.getEdges().size(), engine.getProbabilisticNetwork().getEdges().size());
-		
-		// check parents and marginals
-		for (Node oldNode : cloneNet.getNodes()) {
-			Node newNode = engine.getProbabilisticNetwork().getNode(oldNode.getName());
-			assertNotNull(oldNode + " not found.", newNode);
-			// if number of parents matches and all parents in old node are included in parents of new node, then they are equal
-			assertEquals(oldNode.getParentNodes().size(), newNode.getParentNodes().size());
-			for (INode oldParent : oldNode.getParentNodes()) {
-				assertTrue(oldParent + " is supposed to be a parent of " + newNode, newNode.getParentNodes().contains(oldParent));
-			}
-			// check that number of states are the same
-			assertEquals(oldNode.getName(), oldNode.getStatesSize(), newNode.getStatesSize());
-			// at least, check if marginals are the same
-			for (int i = 0; i < oldNode.getStatesSize(); i++) {
-				assertEquals(oldNode.getName(), ((ProbabilisticNode)oldNode).getMarginalAt(i), ((ProbabilisticNode)newNode).getMarginalAt(i), PROB_ERROR_MARGIN);
-			}
-		}
-		
-		// Note: cliques and separators are not mandatory to be precisely equal, because they are built by heuristics
-		
-		
-		// restore backup 
-		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
-
-		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
-		
-	}
-	
-	/**
 	 * Test if I can change probability from [0,X,0,Y,0] to [0,X',0,Y',0]
 	 */
 	public final void testMultipleChoiceSomeStatesInZero() {
@@ -31949,211 +31428,6 @@ public class MarkovEngineTest extends TestCase {
 				throw e;
 			}
 		}
-
-		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
-		
-	}
-	
-	/**
-	 * Test method for {@link MarkovEngineImpl#exportState()}
-	 * and {@link MarkovEngineImpl#importState(String)}
-	 * for 1000 vars and randomly created arcs (max 10 parents)
-	 */
-	public final void testExportImport1000VarsTW10() {
-		int numNodes = 1000;//2000;	// total quantity of nodes in the network
-		int maxNumStates = 2;//5;	// how many states a node can have at most. The minimum is expected to be 2, but this var should not be set to 2
-		int maxNumParents = 10;	// maximum number of parents per node 
-		float probTrade = 1f;//.05f;	// how many nodes will be traded
-		boolean isToMakeAllTrades = true;	// if false, trades will be cancelled if they are taking too much time
-		float probAddAssumption = 0.2f;//;.15f;	// what is the probability to add assumptions in trades. The higher, more assumptions are likely to be used.
-		long seed = new Date().getTime();
-		Random random = new Random(seed);
-		
-		Debug.setDebug(true);
-		
-		
-		// backup config
-		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
-		if (!isToAddArcsOnlyToProbabilisticNetwork) {
-			engine.setToAddArcsOnlyToProbabilisticNetwork(true);
-		}
-		
-		System.out.println("[testExportImport1000VarsTW10] Random seed = " + seed);
-		
-		
-		// create the nodes
-		long transactionKey = engine.startNetworkActions();
-		for (int i = 0; i < numNodes; i++) {
-			// random quantity of states: from 2 to ( 2 + (4-1) ) = 5
-			if (maxNumStates > 2) {
-				engine.addQuestion(transactionKey, new Date(), i, 2+random.nextInt(maxNumStates-2), null);
-			} else {
-				engine.addQuestion(transactionKey, new Date(), i, 2, null);
-			}
-		}
-//		engine.commitNetworkActions(transactionKey);
-		
-		// create arcs randomly
-//		transactionKey = engine.startNetworkActions();
-		for (int i = maxNumParents; i < numNodes; i+=maxNumParents) {
-			List<Long> parentIds = new ArrayList<Long>(maxNumParents);
-			for (int j = 0; j < maxNumParents; j++) {
-				parentIds.add((long) (i-(1+j)));
-			}
-			engine.addQuestionAssumption(transactionKey, new Date(), i, parentIds, null);
-		}
-		// connect the last few questions (the rest which did not complete maxNumParent nodes)
-		// there are (numNodes-1) % maxNumParents remaining unconnected nodes
-		if ((numNodes-1) % maxNumParents != 0) {
-			// there are remaining nodes
-			List<Long> remainingNodesIds = new ArrayList<Long>((numNodes-1) % maxNumParents);
-			for (long i = 0; i < ((numNodes-1) % maxNumParents); i++) {
-				remainingNodesIds.add(numNodes-(2+i));
-			}
-			engine.addQuestionAssumption(transactionKey, new Date(), (numNodes-1), remainingNodesIds, null);
-		}
-		
-		
-		engine.commitNetworkActions(transactionKey);
-		
-		
-		System.out.println(engine.getNetStatistics().toString());
-		System.out.println("seed = " + seed);
-		
-		// check that the marginals are initialized
-		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
-			for (int j = 0; j < entry.getValue().size(); j++) {
-				assertEquals(entry.toString(),1f/entry.getValue().size(), entry.getValue().get(j), PROB_ERROR_MARGIN);
-			}
-		}
-		
-		// store current time in order to see how long the trades took
-		long timeMillis = System.currentTimeMillis();
-		
-		// make trades on all variables
-		long numTrades = 0;	// how many trades were performed
-		for (long questionId = 0; questionId < numNodes; questionId++) {
-			ProbabilisticNode node = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode(Long.toString(questionId));
-			assertNotNull(node);
-			
-			if (!node.getParentNodes().isEmpty()) {
-				if (random.nextFloat() > probTrade) {
-					continue;
-				}
-			}
-			// the trade to be performed
-			List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
-			float sumForNormalization = 0f;
-			for (int i = 0; i < node.getStatesSize(); i++) {
-				newValues.add(random.nextFloat());
-				sumForNormalization += newValues.get(i);
-			}
-			// normalize the newValues
-			for (int i = 0; i < newValues.size(); i++) {
-				newValues.set(i, newValues.get(i)/sumForNormalization);
-			}
-			
-			List<Long> assumptionIds = new ArrayList<Long>(node.getParentNodes().size());
-			List<Integer> assumedStates = new ArrayList<Integer>(node.getParentNodes().size());
-			
-			// randomly select assumptions
-			for (INode parent : node.getParentNodes()) {
-				// use prob to add assumption
-				if (random.nextFloat() < probAddAssumption) {
-					assumptionIds.add(Long.parseLong(parent.getName()));
-					assumedStates.add(random.nextInt(parent.getStatesSize()));	// random state from 0 to parent.getStatesSize()-1
-				}
-			}
-			
-			long time = System.currentTimeMillis();
-			engine.addTrade(
-					null, 
-					new Date(), 
-					"P(" + questionId + " | " + assumptionIds + "=" + assumedStates+") = " + newValues, 
-					0, 
-					questionId, 
-					newValues, 
-					assumptionIds, 
-					assumedStates, 
-					true
-					);
-			numTrades++;
-			if (!isToMakeAllTrades && System.currentTimeMillis() - time >= 1000) {
-				// do not add more trades if it is more than 1s
-				break;
-			}
-			if (!isToMakeAllTrades && System.currentTimeMillis() - time >= 100) {
-				// trade on less questions if its more than half second
-				probTrade = probTrade/2;
-			}
-		}
-		
-		System.out.println("Number of trades = " + numTrades);
-		System.out.println("Elapsed time for trades (ms) = " + (System.currentTimeMillis() - timeMillis));
-		
-		// backup network to check afterwards
-		ProbabilisticNetwork cloneNet = null;
-		try {
-			cloneNet = (ProbabilisticNetwork) engine.getDefaultInferenceAlgorithm().clone(false).getNetwork(); // do not clone asset net
-		} catch (CloneNotSupportedException e) {
-			e.printStackTrace();
-			fail();
-		}	
-		assertNotNull(cloneNet);
-		
-		
-		System.out.println(engine.getNetStatistics().toString());
-		System.out.println("seed = " + seed);
-		
-		// store network as a string
-		long timeBefore = System.currentTimeMillis();
-		String netAsString = engine.exportState();
-		System.out.println("Time (ms) to export network = " + (System.currentTimeMillis() - timeBefore));
-		System.out.println("seed = " + seed);
-		
-		assertNotNull(netAsString);
-		assertFalse(netAsString.trim().isEmpty());
-		
-		System.out.println(netAsString);
-		
-		// load network from the obtained string
-		timeBefore = System.currentTimeMillis();
-		engine.importState(netAsString);
-		System.out.println("Time (ms) to import network = " + (System.currentTimeMillis() - timeBefore));
-		System.out.println("seed = " + seed);
-		
-		// check if the loaded network matches previous network
-		assertNotNull(engine.getProbabilisticNetwork());
-		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree());
-		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree().getCliques());
-		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree().getSeparators());
-		
-		// check number of nodes and arcs
-		assertEquals(cloneNet.getNodeCount(), engine.getProbabilisticNetwork().getNodeCount());
-		assertEquals(cloneNet.getEdges().size(), engine.getProbabilisticNetwork().getEdges().size());
-		
-		// check parents and marginals
-		for (Node oldNode : cloneNet.getNodes()) {
-			Node newNode = engine.getProbabilisticNetwork().getNode(oldNode.getName());
-			assertNotNull(oldNode + " not found.", newNode);
-			// if number of parents matches and all parents in old node are included in parents of new node, then they are equal
-			assertEquals(oldNode.getParentNodes().size(), newNode.getParentNodes().size());
-			for (INode oldParent : oldNode.getParentNodes()) {
-				assertTrue(oldParent + " is supposed to be a parent of " + newNode, newNode.getParentNodes().contains(oldParent));
-			}
-			// check that number of states are the same
-			assertEquals(oldNode.getName(), oldNode.getStatesSize(), newNode.getStatesSize());
-			// at least, check if marginals are the same
-			for (int i = 0; i < oldNode.getStatesSize(); i++) {
-				assertEquals(oldNode.getName(), ((ProbabilisticNode)oldNode).getMarginalAt(i), ((ProbabilisticNode)newNode).getMarginalAt(i), PROB_ERROR_MARGIN);
-			}
-		}
-		
-		// Note: cliques and separators are not mandatory to be precisely equal, because they are built by heuristics
-		
-		
-		// restore backup 
-		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
 
 		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
@@ -32524,37 +31798,80 @@ public class MarkovEngineTest extends TestCase {
 						for (int i = 0; i < entry.getValue().size(); i++) {
 							assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
 									entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
-									0.00001															// error margin
+									0.000005															// error margin
 								);
 						}
 					}
 					
 					// then, make trades that will copy cpt of ground truth to engine
-					List<Float> newValues = new ArrayList<Float>();	// this will be filled with values in the CPT
-					for (int i = 0; i < cpt.tableSize(); i++) {
-						newValues.add(cpt.getValue(i));
-					}
-					
-					// passing null as assumed states will make the newValues to be interpreted as the CPT for all states of child and parents
-					engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, parentQuestionIds, null, true);
+//					List<Float> newValues = new ArrayList<Float>();	// this will be filled with values in the CPT
+//					for (int i = 0; i < cpt.tableSize(); i++) {
+//						newValues.add(cpt.getValue(i));
+//					}
+//					
+//					// passing null as assumed states will make the newValues to be interpreted as the CPT for all states of child and parents
+//					engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, parentQuestionIds, null, true);
 					
 				}
 			}
 			
-			// for each modification, check marginals again
-			probLists = engine.getProbLists(null, null, null);
-			assertEquals(groundTruth.getNodeCount(), probLists.size());
-			for (Node node : groundTruth.getNodes()) {
-				if (node instanceof ProbabilisticNode) {
-					List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
-					assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
-					for (int i = 0; i < prob.size(); i++) {
-						assertEquals("After adding arcs to child " + childNode + "; " + node.toString() + ", failed to match marginal: " + probLists.toString(), 
-								((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 
-								0.005
-//								0.0001
-								);
-					}
+//			// for each modification, check marginals again
+//			probLists = engine.getProbLists(null, null, null);
+//			assertEquals(groundTruth.getNodeCount(), probLists.size());
+//			for (Node node : groundTruth.getNodes()) {
+//				if (node instanceof ProbabilisticNode) {
+//					List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
+//					assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
+//					for (int i = 0; i < prob.size(); i++) {
+//						assertEquals("After adding arcs to child " + childNode + "; " + node.toString() + ", failed to match marginal: " + probLists.toString(), 
+//								((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 
+//								0.01
+////								0.0001
+//								);
+//					}
+//				}
+//			}
+		}
+		
+		// update conditional probabilities accordingly to ground truth
+		for (Node childNode : groundTruth.getNodes()) {
+			if (childNode instanceof ProbabilisticNode) {
+				// this is the question ID of the respective node
+				Long childQuestionId = Long.valueOf(Character.getNumericValue(childNode.getName().charAt(0)));
+				
+				// extract cpt
+				PotentialTable cpt = ((ProbabilisticNode) childNode).getProbabilityFunction();	
+				
+				// extract ids of parents
+				List<Long> parentQuestionIds = new ArrayList<Long>(childNode.getParentNodes().size());
+				// fill list with ids of parent
+				for (int i = 1; i < cpt.getVariablesSize(); i++) {	// start from index 1, because index 0 is the child node itself
+					// Parents will be inserted in the order of appearance in cpt
+					parentQuestionIds.add(Long.valueOf(Character.getNumericValue(cpt.getVariableAt(i).getName().charAt(0)))); 
+				}
+				
+				
+				// make trades that will copy cpt of ground truth to engine
+				List<Float> newValues = new ArrayList<Float>();	// this will be filled with values in the CPT
+				for (int i = 0; i < cpt.tableSize(); i++) {
+					newValues.add(cpt.getValue(i));
+				}
+				
+				// passing null as assumed states will make the newValues to be interpreted as the CPT for all states of child and parents
+				engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, parentQuestionIds, null, true);
+			}
+			
+		}
+		
+		// after modification, check marginals again
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(groundTruth.getNodeCount(), probLists.size());
+		for (Node node : groundTruth.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
+				assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
+				for (int i = 0; i < prob.size(); i++) {
+					assertEquals("Node = " + node +  "; marginals: " + probLists.toString(), ((ProbabilisticNode) node).getMarginalAt(i), prob.get(i),  0.00005 );
 				}
 			}
 		}
@@ -32626,6 +31943,11 @@ public class MarkovEngineTest extends TestCase {
 		List<Clique> cliquesBefore = new ArrayList<Clique>(engine.getProbabilisticNetwork().getJunctionTree().getCliques());
 		probLists = engine.getProbLists(null, null, null);
 		
+		//backup some conditional probabilities
+		Map<Long, List<Float>> condProbLists = engine.getProbLists(null, Collections.singletonList(Long.valueOf(Character.getNumericValue('I'))), Collections.singletonList(0));
+		Map<Long, List<Float>> condProbLists2 = engine.getProbLists(null, Collections.singletonList(Long.valueOf(Character.getNumericValue('I'))), Collections.singletonList(1));
+		Map<Long, List<Float>> condProbLists3 = engine.getProbLists(null, Collections.singletonList(Long.valueOf(Character.getNumericValue('I'))), Collections.singletonList(2));
+		
 		// create arc H->J
 		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('J')), Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))), null);
 		
@@ -32655,10 +31977,6 @@ public class MarkovEngineTest extends TestCase {
 		// backup clique structure for later comparison
 		List<List<Long>> questionAssumptionGroups = engine.getQuestionAssumptionGroups();
 		
-		//backup some conditional probabilities
-		Map<Long, List<Float>> condProbLists = engine.getProbLists(null, Collections.singletonList(Long.valueOf(Character.getNumericValue('I'))), Collections.singletonList(0));
-		Map<Long, List<Float>> condProbLists2 = engine.getProbLists(null, Collections.singletonList(Long.valueOf(Character.getNumericValue('I'))), Collections.singletonList(1));
-		Map<Long, List<Float>> condProbLists3 = engine.getProbLists(null, Collections.singletonList(Long.valueOf(Character.getNumericValue('I'))), Collections.singletonList(2));
 		
 		// remove arc j-h (which overrides a moralization arc)
 		engine.removeQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('J')), Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))));
@@ -32977,6 +32295,124 @@ public class MarkovEngineTest extends TestCase {
 		
 	}
 	
+
+	/**
+	 * Check for separators that are connecting cliques not present in junction tree
+	 * @param probabilisticNetwork : net from where cliques and separators will be extracted from
+	 * @return separators related to cliques not present in junction tree
+	 */
+	public Collection<Separator> getInconsistentSeparators( ProbabilisticNetwork probabilisticNetwork) {
+		// basic assertion
+		if (probabilisticNetwork == null 
+				|| probabilisticNetwork.getNodes() == null || probabilisticNetwork.getNodes().isEmpty()
+				|| probabilisticNetwork.getJunctionTree() == null 
+				|| probabilisticNetwork.getJunctionTree().getCliques() == null || probabilisticNetwork.getJunctionTree().getCliques().isEmpty()
+				|| probabilisticNetwork.getJunctionTree().getSeparators() == null || probabilisticNetwork.getJunctionTree().getSeparators().isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		Collection<Separator> ret = new HashSet<Separator>();
+		
+		for (Separator sep : probabilisticNetwork.getJunctionTree().getSeparators()) {
+			// check that clique 1 and 2 are present in the junction tree
+			boolean isPresent1 = false;	// becomes true if clique 1 was found in junction tree
+			boolean isPresent2 = false;	// becomes true if clique 2 was found in junction tree
+			for (Clique clique : probabilisticNetwork.getJunctionTree().getCliques()) {
+				if (clique == sep.getClique1()) {	// use exact object comparison instead of Object#equals()
+					isPresent1 = true;
+				}
+				if (clique == sep.getClique2()) {	// use exact object comparison instead of Object#equals()
+					isPresent2 = true;
+				}
+				if (isPresent1 && isPresent2) {
+					break;	// no need to search for more cliques, because we found both
+				}
+			}
+			if (!isPresent1 || !isPresent2) {
+				ret.add(sep);
+			}
+		}
+		
+		return ret;
+	}
+
+	/**
+	 * Check that all nodes are associated to only 1 clique (for initializing beliefs), and such associated cliques contain the node and all its parents.
+	 * If a node does not satisfy the above property, then its association is inconsistent, and this method will detect it.
+	 * It will also check that all nodes has {@link TreeVariable#getAssociatedClique()} to some clique in the junction tree.
+	 * @param probabilisticNetwork : the network with the nodes and with the cliques to check.
+	 * @return All nodes that are inconsistently associated. If all nodes are consistent, then this method returns empty collection.
+	 */
+	public Collection<INode> getInconsistentlyAssociatedNodes( ProbabilisticNetwork probabilisticNetwork) {
+		
+		// basic assertion
+		if (probabilisticNetwork == null 
+				|| probabilisticNetwork.getNodes() == null || probabilisticNetwork.getNodes().isEmpty()
+				|| probabilisticNetwork.getJunctionTree() == null 
+				|| probabilisticNetwork.getJunctionTree().getCliques() == null || probabilisticNetwork.getJunctionTree().getCliques().isEmpty()) {
+			return Collections.emptyList();
+		}
+		
+		// prepare the variable to return
+		Collection<INode> ret = new HashSet<INode>();
+		
+		// check consistency for all nodes in network
+		for (INode node : probabilisticNetwork.getNodes()) {
+			// ignore utility nodes
+			// only check for probabilistic nodes
+			// TODO support decision/utility nodes
+			if (node instanceof ProbabilisticNode) {
+				// check that there is a reference from clique to node, and such reference is unique
+				boolean isAssociated = false;
+				for (Clique clique : probabilisticNetwork.getJunctionTree().getCliques()) {
+					if (clique.getAssociatedProbabilisticNodesList().contains(node)) {
+						if (isAssociated) {
+							// it was associated already, so it is not unique
+							ret.add(node);
+							break;
+						} else {
+							// this is the first time we found a clique associated to this node
+							isAssociated = true;
+							// continue to check if there are other associations
+						}
+					}
+				}
+				if (!isAssociated) {
+					// this is not associated with any node
+					ret.add(node);
+				}
+				// also check that node is associated to a clique or separator in the current junction tree
+				isAssociated = false;	// TODO stop reusing variables
+				IRandomVariable associatedCliqueOrSeparator = ((ProbabilisticNode) node).getAssociatedClique();
+				// check if this is associated with a separator first (because separators are smaller than cliques, thus likely to be associated)
+				for (Separator separator : probabilisticNetwork.getJunctionTree().getSeparators()) {
+					// use strict object comparison
+					if (separator == associatedCliqueOrSeparator) {
+						isAssociated = true;
+						break;
+					}
+				}
+				if (!isAssociated) {
+					// it was not associated with a separator. Thus, check if it is associated with a clique
+					for (Clique clique : probabilisticNetwork.getJunctionTree().getCliques()) {
+						// use strict object comparison
+						if (clique == associatedCliqueOrSeparator) {
+							isAssociated = true;
+							break;
+						}
+					}
+				}
+				if (!isAssociated) {
+					// this is not associated with a clique in junction tree
+					ret.add(node);
+				}
+			}
+		}
+		
+		return ret;
+	}
+
+	
 	/**
 	 * A black box test on dynamic junction tree compilation.
 	 * @throws URISyntaxException 
@@ -33060,6 +32496,11 @@ public class MarkovEngineTest extends TestCase {
 			}
 		}
 		
+		Collection<INode> inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		Collection<Separator> inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+		
 		
 		// create arcs in markov engine accordingly to the ground truth
 		for (Node childNode : groundTruth.getNodes()) {
@@ -33088,6 +32529,12 @@ public class MarkovEngineTest extends TestCase {
 					// actually create arc
 					engine.addQuestionAssumption(null, new Date(), childQuestionId, parentQuestionIds, null);
 					
+
+					inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+					assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+					inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+					assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+					
 					// check that adding a new arc does not affect probabilities
 					Map<Long, List<Float>> newProbs = engine.getProbLists(null, null, null);
 					assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
@@ -33103,32 +32550,70 @@ public class MarkovEngineTest extends TestCase {
 						}
 					}
 					
-					// then, make trades that will copy cpt of ground truth to engine
-					List<Float> newValues = new ArrayList<Float>();	// this will be filled with values in the CPT
-					for (int i = 0; i < cpt.tableSize(); i++) {
-						newValues.add(cpt.getValue(i));
-					}
-					
-					// passing null as assumed states will make the newValues to be interpreted as the CPT for all states of child and parents
-					engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, parentQuestionIds, null, true);
+//					// then, make trades that will copy cpt of ground truth to engine
+//					List<Float> newValues = new ArrayList<Float>();	// this will be filled with values in the CPT
+//					for (int i = 0; i < cpt.tableSize(); i++) {
+//						newValues.add(cpt.getValue(i));
+//					}
+//					
+//					// passing null as assumed states will make the newValues to be interpreted as the CPT for all states of child and parents
+//					engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, parentQuestionIds, null, true);
 					
 				}
 			}
 			
-			// for each modification, check marginals again
-			probLists = engine.getProbLists(null, null, null);
-			assertEquals(groundTruth.getNodeCount(), probLists.size());
-			for (Node node : groundTruth.getNodes()) {
-				if (node instanceof ProbabilisticNode) {
-					List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
-					assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
-					for (int i = 0; i < prob.size(); i++) {
-						assertEquals("After adding arcs to child " + childNode + "; " + node.toString() + ", failed to match marginal: " + probLists.toString(), 
-								((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 
-								0.005
-//								0.0001
-								);
-					}
+		}
+		
+
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+
+		// update conditional probabilities accordingly to ground truth
+		for (Node childNode : groundTruth.getNodes()) {
+			if (childNode instanceof ProbabilisticNode) {
+				// this is the question ID of the respective node
+				Long childQuestionId = Long.valueOf(Character.getNumericValue(childNode.getName().charAt(0)));
+				
+				// extract cpt
+				PotentialTable cpt = ((ProbabilisticNode) childNode).getProbabilityFunction();	
+				
+				// extract ids of parents
+				List<Long> parentQuestionIds = new ArrayList<Long>(childNode.getParentNodes().size());
+				// fill list with ids of parent
+				for (int i = 1; i < cpt.getVariablesSize(); i++) {	// start from index 1, because index 0 is the child node itself
+					// Parents will be inserted in the order of appearance in cpt
+					parentQuestionIds.add(Long.valueOf(Character.getNumericValue(cpt.getVariableAt(i).getName().charAt(0)))); 
+				}
+				
+				
+				// make trades that will copy cpt of ground truth to engine
+				List<Float> newValues = new ArrayList<Float>();	// this will be filled with values in the CPT
+				for (int i = 0; i < cpt.tableSize(); i++) {
+					newValues.add(cpt.getValue(i));
+				}
+				
+				// passing null as assumed states will make the newValues to be interpreted as the CPT for all states of child and parents
+				engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, parentQuestionIds, null, true);
+			}
+			
+		}
+
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+		
+		// after modification, check marginals again
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(groundTruth.getNodeCount(), probLists.size());
+		for (Node node : groundTruth.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
+				assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
+				for (int i = 0; i < prob.size(); i++) {
+					assertEquals("Node = " + node +  "; marginals: " + probLists.toString(), ((ProbabilisticNode) node).getMarginalAt(i), prob.get(i),  0.00005 );
 				}
 			}
 		}
@@ -33143,6 +32628,12 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('H')), 2, null);
 		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('I')), 3, null);
 		engine.addQuestion(null, new Date(), Long.valueOf(Character.getNumericValue('J')), 4, null);
+		
+
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
 		
 		// check that adding nodes did not affect probabilities
 		Map<Long, List<Float>> newProbs = engine.getProbLists(null, null, null);
@@ -33165,6 +32656,12 @@ public class MarkovEngineTest extends TestCase {
 		// Create H->I<-J
 		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('I')), Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))), null);
 		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('I')), Collections.singletonList(Long.valueOf(Character.getNumericValue('J'))), null);
+		
+
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
 		
 		// check that adding arcs did not affect probabilities
 		newProbs = engine.getProbLists(null, null, null);
@@ -33203,6 +32700,12 @@ public class MarkovEngineTest extends TestCase {
 		// create arc H->J
 		engine.addQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('J')), Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))), null);
 		
+
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+		
 		// check that cliques did not change
 		List<Clique> cliquesAfter = engine.getProbabilisticNetwork().getJunctionTree().getCliques();
 		assertEquals(cliquesBefore.size(), cliquesAfter.size());
@@ -33231,6 +32734,12 @@ public class MarkovEngineTest extends TestCase {
 		
 		// remove arc j-h (which overrides a moralization arc)
 		engine.removeQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('J')), Collections.singletonList(Long.valueOf(Character.getNumericValue('H'))));
+		
+
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
 		
 		// make sure the arc was deleted
 		assertTrue(engine.getProbabilisticNetwork().hasEdge(engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('H')), engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('J'))) < 0);
@@ -33270,6 +32779,12 @@ public class MarkovEngineTest extends TestCase {
 		assumptionIds.add(Long.valueOf(Character.getNumericValue('H')));
 		assumptionIds.add(Long.valueOf(Character.getNumericValue('J')));
 		engine.removeQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('I')), assumptionIds);
+		
+
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
 		
 		// make sure the arcs were deleted
 		assertTrue(engine.getProbabilisticNetwork().hasEdge(engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('H')), engine.getProbabilisticNetwork().getNode(""+Character.getNumericValue('I'))) < 0);
@@ -33326,6 +32841,11 @@ public class MarkovEngineTest extends TestCase {
 		// remove arc from A(10) to T(29)
 		engine.removeQuestionAssumption(null, new Date(), Long.valueOf(Character.getNumericValue('A')), Collections.singletonList(Long.valueOf(Character.getNumericValue('T'))));
 				
+
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
 		
 		// resolve T(29), A(10), and E(14)
 		engine.resolveQuestion(null, new Date(), 14L, 1);
@@ -33360,8 +32880,7 @@ public class MarkovEngineTest extends TestCase {
 				for (int i = 0; i < prob.size(); i++) {
 					assertEquals(node.toString() + ", failed to match marginal: " + probLists.toString(), 
 							((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 
-							0.005
-//							0.0001
+							0.0001
 							);
 				}
 			}
@@ -33610,340 +33129,6 @@ public class MarkovEngineTest extends TestCase {
 		
 	}
 	
-	
-	/**
-	 * Randomly creates a network and checks performance of dynamic/incremental junction tree compilation.
-	 */
-	public final void testDynamicJTCompilationPerformanceRandomNet()  {
-		long seed = System.currentTimeMillis();
-		Random rand = new Random(seed);
-		Debug.println("Seed = " + seed);
-		
-		int averageNumArcs = 50;
-//		float probAddArcs = .25f;
-		float probRemoveArc = .6f;
-		
-		boolean isToUseSingleTransaction = false;//rand.nextBoolean();
-		Debug.println("Single transaction = " + isToUseSingleTransaction);
-		
-		int maxNumStates = 3;
-		
-		int initialNumNodes = 100;	// size of network to test initially
-		int steps = 50; //50;	
-		int maxNodes = 2000;
-		
-		// force engine to throw exception if dynamic JT compilation fails
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
-			IncrementalJunctionTreeAlgorithm algorithm = (IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
-			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
-		}
-
-		Debug.setDebug(false);	// temporary disable debug
-
-		System.out.println("nodes , arcs , classic , incremental");
-		for (int numNodes = initialNumNodes; numNodes <= maxNodes; numNodes+=steps) {
-			
-			// first, run without dynamic junction tree compilation
-			engine.initialize();
-			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
-				((IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);
-			}
-			assertEquals(0 , engine.getProbLists(null, null, null).size());
-			assertTrue(engine.getProbabilisticNetwork().getNodeCount() == 0);
-			assertTrue(engine.getProbabilisticNetwork().getJunctionTree() == null || engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
-			
-			// randomly generate the network structure to be compiled by both approaches
-			List<Integer> sizesOfNodesToCreate = new ArrayList<Integer>(numNodes);
-			Map<Long, List<Long>> arcsToCreate = new HashMap<Long, List<Long>>();
-			
-			// include nodes with random size
-			for (int currentNumNodes = 0; currentNumNodes < numNodes; currentNumNodes++) {
-				sizesOfNodesToCreate.add(2 + rand.nextInt(maxNumStates-1));
-			}
-			
-			// randomly create arcs from previously created nodes
-			for (long parentId = 0; parentId < numNodes-1; parentId++) {
-				for (long childId = parentId+1; childId < numNodes; childId++) {
-					if ( //(rand.nextFloat() < probAddArcs) && 
-							( rand.nextFloat() < (float)averageNumArcs/((float)numNodes*numNodes) ) ) {
-						List<Long> parents = arcsToCreate.get(childId);
-						if (parents == null) {
-							parents = new ArrayList<Long>();
-							arcsToCreate.put(childId, parents);
-						}
-						parents.add(parentId);
-					}
-				}
-			}
-			
-			Long transactionKey = null;
-			if (isToUseSingleTransaction) {
-				transactionKey = engine.startNetworkActions();
-			}
-			
-			// start timer
-			long timeBeforeExecution = System.currentTimeMillis();
-			
-			
-			// create the nodes
-			for (int nodeId = 0; nodeId < sizesOfNodesToCreate.size(); nodeId++) {
-				engine.addQuestion(transactionKey, new Date(), nodeId, sizesOfNodesToCreate.get(nodeId), null);
-			}
-			
-			// create arcs
-			for (Entry<Long, List<Long>> entry : arcsToCreate.entrySet()) {
-				engine.addQuestionAssumption(transactionKey, new Date(), entry.getKey(), entry.getValue(), null);
-				// eventually remove and re-create arc
-				if (rand.nextFloat() < probRemoveArc) {
-					engine.removeQuestionAssumption(transactionKey,  new Date(), entry.getKey(), entry.getValue());
-					engine.addQuestionAssumption(transactionKey, new Date(), entry.getKey(), entry.getValue(), null);
-				}
-			}
-			
-			
-			if (isToUseSingleTransaction) {
-				engine.commitNetworkActions(transactionKey);
-			}
-			
-			// stop timer
-			long executionTime = System.currentTimeMillis() - timeBeforeExecution;
-			
-			assertEquals(numNodes, engine.getProbLists(null, null, null).size());
-			assertFalse(engine.getProbabilisticNetwork().getJunctionTree() == null);
-			assertFalse(engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
-			
-			// enable dynamic JT compilation (in debug mode)
-			engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(true);
-			engine.initialize();
-			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
-				((IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(0);
-			}
-			assertTrue(engine.isToThrowExceptionOnDynamicJunctionTreeCompilationFailure());
-			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
-				assertTrue(((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).isToHaltOnDynamicJunctionTreeFailure());
-			}
-			assertEquals(0 , engine.getProbLists(null, null, null).size());
-			assertTrue(engine.getProbabilisticNetwork().getNodeCount() == 0);
-			assertTrue(engine.getProbabilisticNetwork().getJunctionTree() == null || engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
-			
-			// do the same test
-			
-			transactionKey = null;
-			if (isToUseSingleTransaction) {
-				transactionKey = engine.startNetworkActions();
-			}
-			
-			// start timer
-			timeBeforeExecution = System.currentTimeMillis();
-
-			// create the nodes
-			for (int nodeId = 0; nodeId < sizesOfNodesToCreate.size(); nodeId++) {
-				engine.addQuestion(transactionKey, new Date(), nodeId, sizesOfNodesToCreate.get(nodeId), null);
-			}
-			
-			// create arcs
-			for (Entry<Long, List<Long>> entry : arcsToCreate.entrySet()) {
-				engine.addQuestionAssumption(transactionKey, new Date(), entry.getKey(), entry.getValue(), null);
-			}
-			
-			if (isToUseSingleTransaction) {
-				engine.commitNetworkActions(transactionKey);
-			}
-			
-			// stop timer
-			long executionTimeDynamic = System.currentTimeMillis() - timeBeforeExecution;
-
-			assertEquals(numNodes, engine.getProbLists(null, null, null).size());
-			assertFalse(engine.getProbabilisticNetwork().getJunctionTree() == null);
-			assertFalse(engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
-			
-			System.out.println(numNodes + " , " + arcsToCreate.size() + " , " + executionTime + " , " + executionTimeDynamic);
-		}
-
-		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
-		
-	}
-	
-	/**
-	 * Check that performance of dynamic JT compilation is better than recompiling everything, 
-	 * if network is sufficiently large.
-	 * @throws URISyntaxException 
-	 * @throws IOException 
-	 * @throws LoadException 
-	 */
-	public final void testDynamicJTCompilationPerformanceSciCastNet() throws LoadException, IOException, URISyntaxException {
-		
-		long seed = System.currentTimeMillis();
-		Random rand = new Random(seed);
-		Debug.println("Seed = " + seed);
-		
-		float probRemoveArc = .6f;
-		int initialNumNodes = 50; //100;	// size of network to test initially
-		int steps = 10; //50;				
-		
-		// force engine to throw exception if dynamic JT compilation fails
-		Boolean isToHaltOnDynamicJunctionTreeFailure = null;
-		Integer dynamicJunctionTreeNetSizeThreshold = null;
-		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
-			IncrementalJunctionTreeAlgorithm algorithm = (IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
-			isToHaltOnDynamicJunctionTreeFailure = algorithm.isToHaltOnDynamicJunctionTreeFailure();
-			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
-			dynamicJunctionTreeNetSizeThreshold = algorithm.getDynamicJunctionTreeNetSizeThreshold();
-			algorithm.setDynamicJunctionTreeNetSizeThreshold(0);
-		}
-		
-
-		// load the ground truth model
-		ProbabilisticNetwork groundTruth = (ProbabilisticNetwork) engine.getNetIOToExportSharedNetToString().load(new File(getClass().getResource("/140925.net").toURI()));
-		assertNotNull(groundTruth);
-		// check that at least the first and last nodes are present
-		assertTrue(groundTruth.getNodeIndex("2") >= 0);
-		assertTrue(groundTruth.getNodeIndex("923") >= 0);
-		
-//		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(groundTruth);
-//		// make sure the ground truth does not use dynamic JT compilation
-//		algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// large values of this attribute disables dynamic compilation
-//		
-//		// compile the ground truth model
-//		algorithm.run();
-//		assertNotNull(groundTruth.getJunctionTree());
-//		assertNotNull(groundTruth.getJunctionTree().getCliques());
-		
-		int threashold = -1;	// number of nodes when dynamic compilation gets faster than classic compilation
-		
-		long maxTime = 0;
-		long maxTimeDynamic = 0;
-		Debug.setDebug(false);	// temporary disable debug
-		for (int numNodes = initialNumNodes; numNodes <= groundTruth.getNodeCount(); numNodes+=steps) {
-			List<Node> availableNodes = new ArrayList<Node>(groundTruth.getNodes());	// all nodes that can be potentially included to engine
-			List<Node> nodesToInclude = new ArrayList<Node>(numNodes);					// nodes that were actually included in engine
-			
-			// first, run without dynamic junction tree compilation
-			engine.initialize();
-			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
-				((IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);
-			}
-			assertEquals(0 , engine.getProbLists(null, null, null).size());
-			assertTrue(engine.getProbabilisticNetwork().getNodeCount() == 0);
-			assertTrue(engine.getProbabilisticNetwork().getJunctionTree() == null || engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
-			
-			// randomly decide which nodes to include
-			while (nodesToInclude.size() < numNodes) {
-				int indexOfNodeToAdd = rand.nextInt(availableNodes.size());
-				nodesToInclude.add(availableNodes.get(indexOfNodeToAdd));
-				availableNodes.remove(indexOfNodeToAdd);
-			}
-			
-			List<Node> nodesToConnect = new ArrayList<Node>(nodesToInclude);
-			
-			Debug.println("Nodes = " + nodesToInclude);
-			
-			// start timer
-			long timeBeforeExecution = System.currentTimeMillis();
-			
-			// add nodes
-			for (Node node : nodesToInclude) {
-				engine.addQuestion(null, new Date(), Long.parseLong(node.getName()), node.getStatesSize(), null);
-			}
-			
-			Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
-			assertEquals(nodesToInclude.size(), probLists.size());
-			
-			// create arcs between nodes that were included;
-			while (!nodesToConnect.isEmpty()) {
-				int indexOfNode = rand.nextInt(nodesToConnect.size());
-				Node node = nodesToConnect.get(indexOfNode);
-				for (INode parent : node.getParentNodes()) {
-					if (probLists.containsKey(Long.parseLong(parent.getName()))) {
-						engine.addQuestionAssumption(null, new Date(), Long.parseLong(node.getName()), Collections.singletonList(Long.parseLong(parent.getName())), null);
-						// eventually remove and re-create arc
-						if (rand.nextFloat() < probRemoveArc) {
-							engine.removeQuestionAssumption(null,  new Date(), Long.parseLong(node.getName()), Collections.singletonList(Long.parseLong(parent.getName())));
-							engine.addQuestionAssumption(null, new Date(), Long.parseLong(node.getName()), Collections.singletonList(Long.parseLong(parent.getName())), null);
-						}
-					}
-				}
-				nodesToConnect.remove(indexOfNode);
-			}
-			
-			// stop timer
-			long executionTime = System.currentTimeMillis() - timeBeforeExecution;
-			if (executionTime > maxTime) {
-				maxTime = executionTime;
-			}
-			assertEquals(nodesToInclude.size(), engine.getProbLists(null, null, null).size());
-			assertFalse(engine.getProbabilisticNetwork().getJunctionTree() == null);
-			assertFalse(engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
-			
-			// run with dynamic compilation
-			engine.initialize();
-			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
-				((IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(0);
-			}
-			assertEquals(0 , engine.getProbLists(null, null, null).size());
-			assertTrue(engine.getProbabilisticNetwork().getNodeCount() == 0);
-			assertTrue(engine.getProbabilisticNetwork().getJunctionTree() == null || engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
-			
-			// do the same test
-			nodesToConnect = new ArrayList<Node>(nodesToInclude);
-			
-			// start timer
-			timeBeforeExecution = System.currentTimeMillis();
-			
-			// add nodes
-			for (Node node : nodesToInclude) {
-				engine.addQuestion(null, new Date(), Long.parseLong(node.getName()), node.getStatesSize(), null);
-			}
-			
-			probLists = engine.getProbLists(null, null, null);
-			assertEquals(nodesToInclude.size(), probLists.size());
-			
-			// create arcs between nodes that were included;
-			while (!nodesToConnect.isEmpty()) {
-				int indexOfNode = rand.nextInt(nodesToConnect.size());
-				Node node = nodesToConnect.get(indexOfNode);
-				for (INode parent : node.getParentNodes()) {
-					if (probLists.containsKey(Long.parseLong(parent.getName()))) {
-						engine.addQuestionAssumption(null, new Date(), Long.parseLong(node.getName()), Collections.singletonList(Long.parseLong(parent.getName())), null);
-					}
-				}
-				nodesToConnect.remove(indexOfNode);
-			}
-			
-			
-			long executionTimeDynamic = System.currentTimeMillis() - timeBeforeExecution;
-			if (executionTimeDynamic > maxTimeDynamic) {
-				maxTimeDynamic = executionTimeDynamic;
-			}
-			
-			assertEquals(nodesToInclude.size(), engine.getProbLists(null, null, null).size());
-			assertFalse(engine.getProbabilisticNetwork().getJunctionTree() == null);
-			assertFalse(engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
-			
-			
-			if (threashold < 0 && executionTimeDynamic < executionTime) {
-				threashold = numNodes;
-			} else if (executionTimeDynamic >= executionTime) {
-				threashold = -1;	// old threashold was not precise. reset
-			}
-			
-			System.out.println(numNodes + " , " + executionTime + " , " + executionTimeDynamic + " , ");
-		}
-		Debug.setDebug(true);
-		System.out.println("Threashold = " + threashold + " nodes.");
-		assertTrue("Classic=" + maxTime + "; dynamic=" + maxTimeDynamic, maxTimeDynamic < maxTime);
-		
-		// revert changes in config
-		if (isToHaltOnDynamicJunctionTreeFailure != null) {
-			engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(isToHaltOnDynamicJunctionTreeFailure);
-		}
-		if (dynamicJunctionTreeNetSizeThreshold != null) {
-			((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
-		}
-
-		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
-		
-	}
 	
 	/**
 	 * Simply runs dynamic JT compilation in A E<-D->F net, by changing it to D->{A,E,F}.
@@ -35495,6 +34680,16 @@ public class MarkovEngineTest extends TestCase {
 		engine.setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThreshold);
 	}
 	
+	
+	/**
+	 * Test some special cases that will make {@link IncrementalJunctionTreeAlgorithm#isLoopy()} == true,
+	 * and also use incremental junction tree compilation to estimate the max prime subgraph decomposition.
+	 * @see IncrementalJunctionTreeAlgorithm#getMaximumPrimeSubgraphDecompositionTree(IJunctionTree, Map, Map)
+	 */
+	public final void testLoopyMaxPrimeSubgraphDecomposition() {
+//		IncrementalJunctionTreeAlgorithm#getMaximumPrimeSubgraphDecompositionTree(IJunctionTree, Map, Map);
+		throw new UnsupportedOperationException("Not implemented yet");
+	}
 	/**
 	 * Test some special cases that will make {@link IncrementalJunctionTreeAlgorithm#isLoopy()} == true,
 	 * and consequently trigger loopy BP algorithm.
@@ -36279,6 +35474,1072 @@ public class MarkovEngineTest extends TestCase {
 				assertTrue("["+i+"]Seed="+seed + "; node1=" + node1 + "; node2=" + node2 + "; strength=" + linkStrength, linkStrength > 0f);
 			}
 		}
+	}
+	
+
+	/**
+	 * Check if underflow will not happen when cliques have many large cliques
+	 */
+	public final void testUnderflows() {
+		MarkovEngineImpl me = (MarkovEngineImpl) MarkovEngineImpl.getInstance(2, 100, 1000);
+		
+		for (int i = 617; i <= 639; i++) {
+			me.addQuestion(null, new Date(), i, 20, null);
+		}
+		
+		System.out.println(me.exportState());
+		me.addQuestionAssumption(null, new Date(), 618, Collections.singletonList(617L), null);
+		System.out.println(me.exportState());
+		
+		for (int i = 619; i <= 639; i++) {	
+			me.addQuestionAssumption(null, new Date(), i, Collections.singletonList(617L), null);
+			for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+				float sum = 0f;
+				for (Float value : entry.getValue()) {
+					assertEquals(i+":"+entry.toString(), 1f/20f, value.floatValue(), 0.0001f);
+					sum += value;
+				}
+				assertEquals(entry.toString(), 1f, sum, 0.0005f);
+			}
+			me.addQuestionAssumption(null, new Date(), i, Collections.singletonList(618L), null);
+			for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+				float sum = 0f;
+				for (Float value : entry.getValue()) {
+					assertEquals(i+":"+entry.toString(), 1f/20f, value.floatValue(), 0.0001f);
+					sum += value;
+				}
+				assertEquals(entry.toString(), 1f, sum, 0.0005f);
+			}
+		}
+
+		System.out.println(me.exportState());
+		
+		for (int i = 0; i < 20; i++) {
+			List<Float> newValues = new ArrayList<Float>();
+			for (int j = 0; j < 20; j++) {
+				if (i == j) {
+					newValues.add(0f);
+				} else {
+					newValues.add(1f/19);
+				}
+			}
+			me.addTrade(null, new Date(), "", 0L, 618L, newValues , Collections.singletonList(617L), Collections.singletonList(i), true);		
+		}
+		
+		System.out.println(me.exportState());
+		for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+			float sum = 0f;
+			for (Float value : entry.getValue()) {
+				assertTrue(entry.toString(), 0f< value && value <= 1f);
+				sum += value;
+			}
+			assertEquals(entry.toString(), 1f, sum, 0.0001f);
+		}
+		
+		for (long nodeIndex = 0; nodeIndex < 20; nodeIndex++) {
+			for (int parentStateIndex = 0; parentStateIndex < 20; parentStateIndex++) {
+				List<Float> newValues = new ArrayList<Float>();
+				for (int stateIndex = 0; stateIndex < 20; stateIndex++) {
+					if (stateIndex == 0) {
+						if (nodeIndex == parentStateIndex) {
+							newValues.add(1f);
+						} else {
+							newValues.add(0f);
+						}
+					} else {
+						if (nodeIndex == parentStateIndex) {
+							newValues.add(0f);
+						} else {
+							newValues.add(1f/19f);
+						}
+					}
+				}
+				me.addTrade(null, new Date(), "", 0L, nodeIndex+619, newValues , Collections.singletonList(617L), Collections.singletonList(parentStateIndex), true);	
+				for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+					float sum = 0f;
+					for (Float value : entry.getValue()) {
+						assertTrue(nodeIndex+","+parentStateIndex+"."+entry.toString(), -0.0001f< value && value <= 1.0001);
+						sum += value;
+					}
+					assertEquals(nodeIndex+","+parentStateIndex+"."+entry.toString(), 1f, sum, 0.0002f);
+				}
+			}
+		}
+		for (long nodeIndex = 0; nodeIndex < 20; nodeIndex++) {
+			for (int parentStateIndex = 0; parentStateIndex < 20; parentStateIndex++) {
+				List<Float> newValues = new ArrayList<Float>();
+				for (int stateIndex = 0; stateIndex < 20; stateIndex++) {
+					if (stateIndex == 1) {
+						if (nodeIndex == parentStateIndex) {
+							newValues.add(1f);
+						} else {
+							newValues.add(0f);
+						}
+					} else {
+						if (nodeIndex == parentStateIndex) {
+							newValues.add(0f);
+						} else {
+							newValues.add(1f/19f);
+						}
+					}
+				}
+				me.addTrade(null, new Date(), "", 0L, nodeIndex+619, newValues , Collections.singletonList(618L), Collections.singletonList(parentStateIndex), true);	
+				for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+					float sum = 0f;
+					for (Float value : entry.getValue()) {
+						assertTrue(nodeIndex+","+parentStateIndex+"."+entry.toString(), -0.0001f< value && value <= 1.0001);
+						sum += value;
+					}
+					assertEquals(nodeIndex+","+parentStateIndex+"."+entry.toString(), 1f, sum, 0.0001f);
+				}
+			}
+		}
+		
+		System.out.println(me.exportState());
+		
+		for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+			float sum = 0f;
+			for (Float value : entry.getValue()) {
+				assertTrue(entry.toString(), -0.0001f< value && value <= 1.0001);
+				sum += value;
+			}
+			assertEquals(entry.toString(), 1f, sum, 0.0001f);
+		}
+		
+		me.importState(me.exportState());
+		for (Entry<Long, List<Float>> entry : me.getProbLists(null, null, null).entrySet()) {
+			float sum = 0f;
+			for (Float value : entry.getValue()) {
+				assertTrue(entry.toString(), -0.0001f< value && value <= 1.0001);
+				sum += value;
+			}
+			assertEquals(entry.toString(), 1f, sum, 0.0001f);
+		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
+	}
+	
+
+	/**
+	 * Verifies the behavior of balancing trades when 10 variables are present in the same clique.
+	 * A network with 30 variables, comprised of 3 subnets of 10 variables with 2 states, fully connected (so, there will be
+	 * 3 Disconnected cliques with 10 variables).
+	 */
+	public final void testBalanceTrade10Vars() {
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		boolean isToAddArcsWithoutReboot = engine.isToAddArcsWithoutReboot();
+		boolean isToTraceHistory = engine.isToTraceHistory();
+		engine.setToAddArcsOnlyToProbabilisticNetwork(false);
+		engine.setToAddArcsWithoutReboot(false);
+		engine.setToTraceHistory(true);
+		
+		// set up engine
+		engine.setDefaultInitialAssetTableValue(1000f);
+		engine.initialize();
+		
+		// generate the 30 nodes
+		long transactionKey = engine.startNetworkActions();
+		for (int i = 0; i < 30; i++) {
+			engine.addQuestion(transactionKey, new Date(i), (long)i, 2, null);
+		}
+		// fully connect 10 by 10
+		for (int i = 0; i < 3; i++) {
+			for (int j = 10*i; j < 10*i+9; j++) {
+				List<Long> parentQuestionIds = Collections.singletonList((long)j);
+				for (int k = j+1; k < 10*i+10; k++) {
+					engine.addQuestionAssumption(transactionKey, new Date(), (long)k, parentQuestionIds, null);
+				}
+			}
+		}
+		
+		// commit the transaction
+		engine.commitNetworkActions(transactionKey);
+		
+		// check that the generated network is correct
+		assertEquals(3, engine.getQuestionAssumptionGroups().size());
+		assertEquals(30, engine.getProbLists(null, null, null).size());
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			for (Float prob : entry.getValue()) {
+				assertEquals(0.5f, prob, PROB_ERROR_MARGIN); 
+			}
+		}
+		// check low level consistency too
+		assertEquals(3, engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getJunctionTree().getCliques().size());
+		for (Clique clique : engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getJunctionTree().getCliques()) {
+			assertEquals(10, clique.getNodesList().size());
+		}
+		for (Separator sep : engine.getDefaultInferenceAlgorithm().getRelatedProbabilisticNetwork().getJunctionTree().getSeparators()) {
+			assertEquals(0, sep.getNodes().size());
+		}
+		
+		// assert that initial asset is 1000
+		assertEquals(1000, engine.getCash(Long.MAX_VALUE, null, null), PROB_ERROR_MARGIN);
+		
+		long seed = new Date().getTime();
+		Random random = new Random(seed );
+		System.out.println("seed = " + seed);
+		
+		// make trades in all 3 cliques
+		for (int i = 0; i < 3; i++) {
+			for (int j = 10*i; j < 10*i+9; j++) {
+				List<Long> assumptionIds = Collections.singletonList((long)j);
+				for (int k = j+1; k < 10*i+10; k++) {
+					
+					// specify the assumptions of the trade
+					List<Integer> assumedStates = Collections.singletonList(0);
+					
+					// randomly generate trade value accordingly to trade limit
+					List<Float> limits = engine.getEditLimits(Long.MAX_VALUE, k, 0, assumptionIds, assumedStates);
+					float prob = limits.get(0) + (limits.get(1)-limits.get(0))*random.nextFloat(); // randomly pick a value between the edit limit
+					List<Float> newValues = new ArrayList<Float>();
+					newValues.add(prob); newValues.add(1-prob);	
+					if (Math.abs(limits.get(1) - limits.get(0)) > PROB_ERROR_MARGIN) {
+						// only make trade if there can be a trade
+						engine.addTrade(null, new Date(), "", Long.MAX_VALUE, k, newValues, assumptionIds, assumedStates, false);
+					}
+					
+					
+					// another trade on another state of the same assumption
+					assumedStates = Collections.singletonList(1);
+					limits = engine.getEditLimits(Long.MAX_VALUE, k, 0, assumptionIds, assumedStates);
+					prob = limits.get(0) + (limits.get(1)-limits.get(0))*random.nextFloat(); // randomly pick a value between the edit limit
+					newValues = new ArrayList<Float>();
+					newValues.add(prob); newValues.add(1-prob);	
+					if (Math.abs(limits.get(1) - limits.get(0)) > PROB_ERROR_MARGIN) {
+						// only make trade if there can be a trade
+						engine.addTrade(null, new Date(), "", Long.MAX_VALUE, k, newValues, assumptionIds, assumedStates, false);
+					}
+				}
+			}
+		}
+		
+		assertTrue(engine.getCash(Long.MAX_VALUE, null, null) > 0);
+		
+		// balance all questions
+		for (int i = 0; i < 30; i++) {
+			long before = System.currentTimeMillis();
+			engine.doBalanceTrade(null, new Date(), "Balance", Long.MAX_VALUE, i, null, null);
+			System.out.println("Time (ms) spent to balance question " + i + " = " + (System.currentTimeMillis() - before));
+			List<Float> assetsIfStates = engine.getAssetsIfStates(Long.MAX_VALUE, i, null, null);
+			for (Float asset : assetsIfStates) {
+				assertEquals(assetsIfStates.get(0), asset, 1);
+			}
+		}
+		
+		assertEquals(1000, engine.getCash(Long.MAX_VALUE, null, null), 1);
+		
+		for (int i = 0; i < 30; i++) {
+			List<Float> assetsIfStates = engine.getAssetsIfStates(Long.MAX_VALUE, i, null, null);
+			for (Float asset : assetsIfStates) {
+				assertEquals(assetsIfStates.get(0), asset, 1);
+			}
+		}
+
+		
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+		engine.setToAddArcsWithoutReboot(isToAddArcsWithoutReboot);
+		engine.setToTraceHistory(isToTraceHistory);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
+	}
+	
+
+	/**
+	 * Test method for {@link MarkovEngineImpl#exportState()}
+	 * and {@link MarkovEngineImpl#importState(String)}
+	 * for 2000 vars and randomly created arcs (max 10 parents)
+	 */
+	public final void testExportImport2000Vars() {
+		int numNodes = 1000;//2000;	// total quantity of nodes in the network
+		int maxNumStates = 2;//5;	// how many states a node can have at most. The minimum is expected to be 2, but this var should not be set to 2
+		int maxNumParents = 10;	// maximum number of parents per node 
+		float probAddArcs = .00065f;	// what is the probability to add arcs. The higher, more arcs are likely to be created.
+		float probTrade = 1f;//.05f;	// how many nodes will be traded
+		boolean isToMakeAllTrades = true;	// if false, trades will be cancelled if they are taking too much time
+		float probAddAssumption = 0.2f;//;.15f;	// what is the probability to add assumptions in trades. The higher, more assumptions are likely to be used.
+		long seed = new Date().getTime();
+		Random random = new Random(seed);
+		float probTradeBeforeArcs = 0f;//0.05f;
+		
+		Debug.setDebug(true);
+		
+		
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		if (!isToAddArcsOnlyToProbabilisticNetwork) {
+			engine.setToAddArcsOnlyToProbabilisticNetwork(true);
+		}
+		
+		System.out.println("[testExportImport2000Vars] Random seed = " + seed);
+		
+		
+		// create the nodes
+		long transactionKey = engine.startNetworkActions();
+		for (int i = 0; i < numNodes; i++) {
+			// random quantity of states: from 2 to ( 2 + (4-1) ) = 5
+			if (maxNumStates > 2) {
+				engine.addQuestion(transactionKey, new Date(), i, 2+random.nextInt(maxNumStates-2), null);
+			} else {
+				engine.addQuestion(transactionKey, new Date(), i, 2, null);
+			}
+		}
+		engine.commitNetworkActions(transactionKey);
+		
+		// vector representing how many parents a node has
+		int[] numParentsPerNode = new int[numNodes];
+		// initialize vector
+		for (int i = 0; i < numParentsPerNode.length; i++) {
+			numParentsPerNode[i] = 0;
+		}
+		
+		// this map will store what was traded before adding arcs, for later comparison
+		Map<Long, List<Float>> tradedProbs = new HashMap<Long, List<Float>>();
+		
+		// create arcs randomly
+		transactionKey = engine.startNetworkActions();
+		for (int i = 0; i < numNodes-1; i++) {
+			// generate trade before adding arcs
+			if (random.nextFloat() < probTradeBeforeArcs) {
+				ProbabilisticNode node = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode(Long.toString(i));
+				// the trade to be performed
+				List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
+				float sumForNormalization = 0f;
+				for (int j = 0; j < node.getStatesSize(); j++) {
+					newValues.add(random.nextFloat());
+					sumForNormalization += newValues.get(j);
+				}
+				// normalize the newValues
+				for (int j = 0; j < newValues.size(); j++) {
+					newValues.set(j, newValues.get(j)/sumForNormalization);
+				}
+				
+				// run trade
+				engine.addTrade(
+							null, 
+							new Date(), 
+							"P(" + i + ") = " + newValues, 
+							0, 
+							i, 
+							newValues, 
+							null, 
+							null, 
+							true
+						);
+				tradedProbs.put((long) i, newValues);
+			}
+			for (int j = i+1; j < numNodes; j++) {
+				if (random.nextFloat() > probAddArcs) {
+					continue;	// only create arcs with probability probAddArcs
+				}
+				// check if number of parents reached maximum
+				if (numParentsPerNode[j] < maxNumParents) {
+					engine.addQuestionAssumption(transactionKey, new Date(), j, Collections.singletonList((long)i), null);
+					numParentsPerNode[j]++;
+				}
+			}
+		}
+		numParentsPerNode = null;	// try disposing it, because it won't be used anymore
+		engine.commitNetworkActions(transactionKey);
+		
+		
+		System.out.println(engine.getNetStatistics().toString());
+		System.out.println("seed = " + seed);
+		
+		// check that the marginals matches traded probs
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			List<Float> probBefore = tradedProbs.get(entry.getKey());
+			if (probBefore != null) {
+				assertEquals(probBefore.size(), entry.getValue().size());
+				for (int j = 0; j < probBefore.size(); j++) {
+					assertEquals(probBefore.get(j), entry.getValue().get(j), PROB_ERROR_MARGIN);
+				}
+			}
+		}
+		
+		// store current time in order to see how long the trades took
+		long timeMillis = System.currentTimeMillis();
+		
+		// make trades on all variables
+		long numTrades = 0;	// how many trades were performed
+		for (long questionId = 0; questionId < numNodes; questionId++) {
+			ProbabilisticNode node = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode(Long.toString(questionId));
+			assertNotNull(node);
+			
+			if (!node.getParentNodes().isEmpty()) {
+				if (random.nextFloat() > probTrade) {
+					continue;
+				}
+			}
+			// the trade to be performed
+			List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
+			float sumForNormalization = 0f;
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				newValues.add(random.nextFloat());
+				sumForNormalization += newValues.get(i);
+			}
+			// normalize the newValues
+			for (int i = 0; i < newValues.size(); i++) {
+				newValues.set(i, newValues.get(i)/sumForNormalization);
+			}
+			
+			List<Long> assumptionIds = new ArrayList<Long>(node.getParentNodes().size());
+			List<Integer> assumedStates = new ArrayList<Integer>(node.getParentNodes().size());
+			
+			// randomly select assumptions
+			for (INode parent : node.getParentNodes()) {
+				// use prob to add assumption
+				if (random.nextFloat() < probAddAssumption) {
+					assumptionIds.add(Long.parseLong(parent.getName()));
+					assumedStates.add(random.nextInt(parent.getStatesSize()));	// random state from 0 to parent.getStatesSize()-1
+				}
+			}
+			
+			long time = System.currentTimeMillis();
+			engine.addTrade(
+					null, 
+					new Date(), 
+					"P(" + questionId + " | " + assumptionIds + "=" + assumedStates+") = " + newValues, 
+					0, 
+					questionId, 
+					newValues, 
+					assumptionIds, 
+					assumedStates, 
+					true
+				);
+			numTrades++;
+			if (!isToMakeAllTrades && System.currentTimeMillis() - time >= 1000) {
+				// do not add more trades if it is more than 1s
+				break;
+			}
+			if (!isToMakeAllTrades && System.currentTimeMillis() - time >= 100) {
+				// trade on less questions if its more than half second
+				probTrade = probTrade/2;
+			}
+		}
+		
+		System.out.println("Number of trades = " + numTrades);
+		System.out.println("Elapsed time for trades (ms) = " + (System.currentTimeMillis() - timeMillis));
+		
+		// settle some question which has 2 or more parents
+		for (int i = 0; i < engine.getProbabilisticNetwork().getNodes().size();i++) {
+			Node node = engine.getProbabilisticNetwork().getNodes().get(i);
+			if (node.getParentNodes() != null && node.getParentNodes().size() >= 2 && !engine.getResolvedQuestions().containsKey(Long.parseLong(node.getName()))) {
+				engine.resolveQuestion(null, new Date(), Long.parseLong(node.getName()), 0);
+				i--;
+			}
+		}
+		
+		// backup network to check afterwards
+		ProbabilisticNetwork cloneNet = null;
+		try {
+			cloneNet = (ProbabilisticNetwork) engine.getDefaultInferenceAlgorithm().clone(false).getNetwork(); // do not clone asset net
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			fail();
+		}	
+		assertNotNull(cloneNet);
+		
+		engine.addCash(null, new Date(), 1L, 10, "Shall be ignored");
+		
+		
+		System.out.println(engine.getNetStatistics().toString());
+		System.out.println("seed = " + seed);
+		// store network as a string
+		long timeBefore = System.currentTimeMillis();
+		String netAsString = engine.exportState();
+		System.out.println("Time (ms) to export network = " + (System.currentTimeMillis() - timeBefore));
+		System.out.println("seed = " + seed);
+		
+		assertNotNull(netAsString);
+		assertFalse(netAsString.trim().isEmpty());
+		
+		System.out.println(netAsString);
+		
+		// load network from the obtained string
+		timeBefore = System.currentTimeMillis();
+		engine.importState(netAsString);
+		System.out.println("Time (ms) to import network = " + (System.currentTimeMillis() - timeBefore));
+		System.out.println("seed = " + seed);
+		
+		// check if the loaded network matches previous network
+		assertNotNull(engine.getProbabilisticNetwork());
+		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree());
+		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree().getCliques());
+		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree().getSeparators());
+		
+		// check number of nodes and arcs
+		assertEquals(cloneNet.getNodeCount(), engine.getProbabilisticNetwork().getNodeCount());
+		assertEquals(cloneNet.getEdges().size(), engine.getProbabilisticNetwork().getEdges().size());
+		
+		// check parents and marginals
+		for (Node oldNode : cloneNet.getNodes()) {
+			Node newNode = engine.getProbabilisticNetwork().getNode(oldNode.getName());
+			assertNotNull(oldNode + " not found.", newNode);
+			// if number of parents matches and all parents in old node are included in parents of new node, then they are equal
+			assertEquals(oldNode.getParentNodes().size(), newNode.getParentNodes().size());
+			for (INode oldParent : oldNode.getParentNodes()) {
+				assertTrue(oldParent + " is supposed to be a parent of " + newNode, newNode.getParentNodes().contains(oldParent));
+			}
+			// check that number of states are the same
+			assertEquals(oldNode.getName(), oldNode.getStatesSize(), newNode.getStatesSize());
+			// at least, check if marginals are the same
+			for (int i = 0; i < oldNode.getStatesSize(); i++) {
+				assertEquals(oldNode.getName(), ((ProbabilisticNode)oldNode).getMarginalAt(i), ((ProbabilisticNode)newNode).getMarginalAt(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// Note: cliques and separators are not mandatory to be precisely equal, because they are built by heuristics
+		
+		
+		// restore backup 
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
+	}
+	
+	
+	/**
+	 * Test method for {@link MarkovEngineImpl#exportState()}
+	 * and {@link MarkovEngineImpl#importState(String)}
+	 * for 1000 vars and randomly created arcs (max 10 parents)
+	 */
+	public final void testExportImport1000VarsTW10() {
+		int numNodes = 1000;//2000;	// total quantity of nodes in the network
+		int maxNumStates = 2;//5;	// how many states a node can have at most. The minimum is expected to be 2, but this var should not be set to 2
+		int maxNumParents = 10;	// maximum number of parents per node 
+		float probTrade = 1f;//.05f;	// how many nodes will be traded
+		boolean isToMakeAllTrades = true;	// if false, trades will be cancelled if they are taking too much time
+		float probAddAssumption = 0.2f;//;.15f;	// what is the probability to add assumptions in trades. The higher, more assumptions are likely to be used.
+		long seed = new Date().getTime();
+		Random random = new Random(seed);
+		
+		Debug.setDebug(true);
+		
+		
+		// backup config
+		boolean isToAddArcsOnlyToProbabilisticNetwork = engine.isToAddArcsOnlyToProbabilisticNetwork();
+		if (!isToAddArcsOnlyToProbabilisticNetwork) {
+			engine.setToAddArcsOnlyToProbabilisticNetwork(true);
+		}
+		
+		System.out.println("[testExportImport1000VarsTW10] Random seed = " + seed);
+		
+		
+		// create the nodes
+		long transactionKey = engine.startNetworkActions();
+		for (int i = 0; i < numNodes; i++) {
+			// random quantity of states: from 2 to ( 2 + (4-1) ) = 5
+			if (maxNumStates > 2) {
+				engine.addQuestion(transactionKey, new Date(), i, 2+random.nextInt(maxNumStates-2), null);
+			} else {
+				engine.addQuestion(transactionKey, new Date(), i, 2, null);
+			}
+		}
+//		engine.commitNetworkActions(transactionKey);
+		
+		// create arcs randomly
+//		transactionKey = engine.startNetworkActions();
+		for (int i = maxNumParents; i < numNodes; i+=maxNumParents) {
+			List<Long> parentIds = new ArrayList<Long>(maxNumParents);
+			for (int j = 0; j < maxNumParents; j++) {
+				parentIds.add((long) (i-(1+j)));
+			}
+			engine.addQuestionAssumption(transactionKey, new Date(), i, parentIds, null);
+		}
+		// connect the last few questions (the rest which did not complete maxNumParent nodes)
+		// there are (numNodes-1) % maxNumParents remaining unconnected nodes
+		if ((numNodes-1) % maxNumParents != 0) {
+			// there are remaining nodes
+			List<Long> remainingNodesIds = new ArrayList<Long>((numNodes-1) % maxNumParents);
+			for (long i = 0; i < ((numNodes-1) % maxNumParents); i++) {
+				remainingNodesIds.add(numNodes-(2+i));
+			}
+			engine.addQuestionAssumption(transactionKey, new Date(), (numNodes-1), remainingNodesIds, null);
+		}
+		
+		
+		engine.commitNetworkActions(transactionKey);
+		
+		
+		System.out.println(engine.getNetStatistics().toString());
+		System.out.println("seed = " + seed);
+		
+		// check that the marginals are initialized
+		for (Entry<Long, List<Float>> entry : engine.getProbLists(null, null, null).entrySet()) {
+			for (int j = 0; j < entry.getValue().size(); j++) {
+				assertEquals(entry.toString(),1f/entry.getValue().size(), entry.getValue().get(j), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// store current time in order to see how long the trades took
+		long timeMillis = System.currentTimeMillis();
+		
+		// make trades on all variables
+		long numTrades = 0;	// how many trades were performed
+		for (long questionId = 0; questionId < numNodes; questionId++) {
+			ProbabilisticNode node = (ProbabilisticNode) engine.getProbabilisticNetwork().getNode(Long.toString(questionId));
+			assertNotNull(node);
+			
+			if (!node.getParentNodes().isEmpty()) {
+				if (random.nextFloat() > probTrade) {
+					continue;
+				}
+			}
+			// the trade to be performed
+			List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
+			float sumForNormalization = 0f;
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				newValues.add(random.nextFloat());
+				sumForNormalization += newValues.get(i);
+			}
+			// normalize the newValues
+			for (int i = 0; i < newValues.size(); i++) {
+				newValues.set(i, newValues.get(i)/sumForNormalization);
+			}
+			
+			List<Long> assumptionIds = new ArrayList<Long>(node.getParentNodes().size());
+			List<Integer> assumedStates = new ArrayList<Integer>(node.getParentNodes().size());
+			
+			// randomly select assumptions
+			for (INode parent : node.getParentNodes()) {
+				// use prob to add assumption
+				if (random.nextFloat() < probAddAssumption) {
+					assumptionIds.add(Long.parseLong(parent.getName()));
+					assumedStates.add(random.nextInt(parent.getStatesSize()));	// random state from 0 to parent.getStatesSize()-1
+				}
+			}
+			
+			long time = System.currentTimeMillis();
+			engine.addTrade(
+					null, 
+					new Date(), 
+					"P(" + questionId + " | " + assumptionIds + "=" + assumedStates+") = " + newValues, 
+					0, 
+					questionId, 
+					newValues, 
+					assumptionIds, 
+					assumedStates, 
+					true
+					);
+			numTrades++;
+			if (!isToMakeAllTrades && System.currentTimeMillis() - time >= 1000) {
+				// do not add more trades if it is more than 1s
+				break;
+			}
+			if (!isToMakeAllTrades && System.currentTimeMillis() - time >= 100) {
+				// trade on less questions if its more than half second
+				probTrade = probTrade/2;
+			}
+		}
+		
+		System.out.println("Number of trades = " + numTrades);
+		System.out.println("Elapsed time for trades (ms) = " + (System.currentTimeMillis() - timeMillis));
+		
+		// backup network to check afterwards
+		ProbabilisticNetwork cloneNet = null;
+		try {
+			cloneNet = (ProbabilisticNetwork) engine.getDefaultInferenceAlgorithm().clone(false).getNetwork(); // do not clone asset net
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+			fail();
+		}	
+		assertNotNull(cloneNet);
+		
+		
+		System.out.println(engine.getNetStatistics().toString());
+		System.out.println("seed = " + seed);
+		
+		// store network as a string
+		long timeBefore = System.currentTimeMillis();
+		String netAsString = engine.exportState();
+		System.out.println("Time (ms) to export network = " + (System.currentTimeMillis() - timeBefore));
+		System.out.println("seed = " + seed);
+		
+		assertNotNull(netAsString);
+		assertFalse(netAsString.trim().isEmpty());
+		
+		System.out.println(netAsString);
+		
+		// load network from the obtained string
+		timeBefore = System.currentTimeMillis();
+		engine.importState(netAsString);
+		System.out.println("Time (ms) to import network = " + (System.currentTimeMillis() - timeBefore));
+		System.out.println("seed = " + seed);
+		
+		// check if the loaded network matches previous network
+		assertNotNull(engine.getProbabilisticNetwork());
+		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree());
+		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree().getCliques());
+		assertNotNull(engine.getProbabilisticNetwork().getJunctionTree().getSeparators());
+		
+		// check number of nodes and arcs
+		assertEquals(cloneNet.getNodeCount(), engine.getProbabilisticNetwork().getNodeCount());
+		assertEquals(cloneNet.getEdges().size(), engine.getProbabilisticNetwork().getEdges().size());
+		
+		// check parents and marginals
+		for (Node oldNode : cloneNet.getNodes()) {
+			Node newNode = engine.getProbabilisticNetwork().getNode(oldNode.getName());
+			assertNotNull(oldNode + " not found.", newNode);
+			// if number of parents matches and all parents in old node are included in parents of new node, then they are equal
+			assertEquals(oldNode.getParentNodes().size(), newNode.getParentNodes().size());
+			for (INode oldParent : oldNode.getParentNodes()) {
+				assertTrue(oldParent + " is supposed to be a parent of " + newNode, newNode.getParentNodes().contains(oldParent));
+			}
+			// check that number of states are the same
+			assertEquals(oldNode.getName(), oldNode.getStatesSize(), newNode.getStatesSize());
+			// at least, check if marginals are the same
+			for (int i = 0; i < oldNode.getStatesSize(); i++) {
+				assertEquals(oldNode.getName(), ((ProbabilisticNode)oldNode).getMarginalAt(i), ((ProbabilisticNode)newNode).getMarginalAt(i), PROB_ERROR_MARGIN);
+			}
+		}
+		
+		// Note: cliques and separators are not mandatory to be precisely equal, because they are built by heuristics
+		
+		
+		// restore backup 
+		engine.setToAddArcsOnlyToProbabilisticNetwork(isToAddArcsOnlyToProbabilisticNetwork);
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
+	}
+	
+
+	/**
+	 * Randomly creates a network and checks performance of dynamic/incremental junction tree compilation.
+	 */
+	public final void testDynamicJTCompilationPerformanceRandomNet()  {
+		long seed = System.currentTimeMillis();
+		Random rand = new Random(seed);
+		Debug.println("Seed = " + seed);
+		
+		int averageNumArcs = 50;
+//		float probAddArcs = .25f;
+		float probRemoveArc = .6f;
+		
+		boolean isToUseSingleTransaction = false;//rand.nextBoolean();
+		Debug.println("Single transaction = " + isToUseSingleTransaction);
+		
+		int maxNumStates = 3;
+		
+		int initialNumNodes = 100;	// size of network to test initially
+		int steps = 50; //50;	
+		int maxNodes = 2000;
+		
+		// force engine to throw exception if dynamic JT compilation fails
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			IncrementalJunctionTreeAlgorithm algorithm = (IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
+		}
+
+		Debug.setDebug(false);	// temporary disable debug
+
+		System.out.println("nodes , arcs , classic , incremental");
+		for (int numNodes = initialNumNodes; numNodes <= maxNodes; numNodes+=steps) {
+			
+			// first, run without dynamic junction tree compilation
+			engine.initialize();
+			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+				((IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);
+			}
+			assertEquals(0 , engine.getProbLists(null, null, null).size());
+			assertTrue(engine.getProbabilisticNetwork().getNodeCount() == 0);
+			assertTrue(engine.getProbabilisticNetwork().getJunctionTree() == null || engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
+			
+			// randomly generate the network structure to be compiled by both approaches
+			List<Integer> sizesOfNodesToCreate = new ArrayList<Integer>(numNodes);
+			Map<Long, List<Long>> arcsToCreate = new HashMap<Long, List<Long>>();
+			
+			// include nodes with random size
+			for (int currentNumNodes = 0; currentNumNodes < numNodes; currentNumNodes++) {
+				sizesOfNodesToCreate.add(2 + rand.nextInt(maxNumStates-1));
+			}
+			
+			// randomly create arcs from previously created nodes
+			for (long parentId = 0; parentId < numNodes-1; parentId++) {
+				for (long childId = parentId+1; childId < numNodes; childId++) {
+					if ( //(rand.nextFloat() < probAddArcs) && 
+							( rand.nextFloat() < (float)averageNumArcs/((float)numNodes*numNodes) ) ) {
+						List<Long> parents = arcsToCreate.get(childId);
+						if (parents == null) {
+							parents = new ArrayList<Long>();
+							arcsToCreate.put(childId, parents);
+						}
+						parents.add(parentId);
+					}
+				}
+			}
+			
+			Long transactionKey = null;
+			if (isToUseSingleTransaction) {
+				transactionKey = engine.startNetworkActions();
+			}
+			
+			// start timer
+			long timeBeforeExecution = System.currentTimeMillis();
+			
+			
+			// create the nodes
+			for (int nodeId = 0; nodeId < sizesOfNodesToCreate.size(); nodeId++) {
+				engine.addQuestion(transactionKey, new Date(), nodeId, sizesOfNodesToCreate.get(nodeId), null);
+			}
+			
+			// create arcs
+			for (Entry<Long, List<Long>> entry : arcsToCreate.entrySet()) {
+				engine.addQuestionAssumption(transactionKey, new Date(), entry.getKey(), entry.getValue(), null);
+				// eventually remove and re-create arc
+				if (rand.nextFloat() < probRemoveArc) {
+					engine.removeQuestionAssumption(transactionKey,  new Date(), entry.getKey(), entry.getValue());
+					engine.addQuestionAssumption(transactionKey, new Date(), entry.getKey(), entry.getValue(), null);
+				}
+			}
+			
+			
+			if (isToUseSingleTransaction) {
+				engine.commitNetworkActions(transactionKey);
+			}
+			
+			// stop timer
+			long executionTime = System.currentTimeMillis() - timeBeforeExecution;
+			
+			assertEquals(numNodes, engine.getProbLists(null, null, null).size());
+			assertFalse(engine.getProbabilisticNetwork().getJunctionTree() == null);
+			assertFalse(engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
+			
+			// enable dynamic JT compilation (in debug mode)
+			engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(true);
+			engine.initialize();
+			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+				((IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(0);
+			}
+			assertTrue(engine.isToThrowExceptionOnDynamicJunctionTreeCompilationFailure());
+			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+				assertTrue(((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).isToHaltOnDynamicJunctionTreeFailure());
+			}
+			assertEquals(0 , engine.getProbLists(null, null, null).size());
+			assertTrue(engine.getProbabilisticNetwork().getNodeCount() == 0);
+			assertTrue(engine.getProbabilisticNetwork().getJunctionTree() == null || engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
+			
+			// do the same test
+			
+			transactionKey = null;
+			if (isToUseSingleTransaction) {
+				transactionKey = engine.startNetworkActions();
+			}
+			
+			// start timer
+			timeBeforeExecution = System.currentTimeMillis();
+
+			// create the nodes
+			for (int nodeId = 0; nodeId < sizesOfNodesToCreate.size(); nodeId++) {
+				engine.addQuestion(transactionKey, new Date(), nodeId, sizesOfNodesToCreate.get(nodeId), null);
+			}
+			
+			// create arcs
+			for (Entry<Long, List<Long>> entry : arcsToCreate.entrySet()) {
+				engine.addQuestionAssumption(transactionKey, new Date(), entry.getKey(), entry.getValue(), null);
+			}
+			
+			if (isToUseSingleTransaction) {
+				engine.commitNetworkActions(transactionKey);
+			}
+			
+			// stop timer
+			long executionTimeDynamic = System.currentTimeMillis() - timeBeforeExecution;
+
+			assertEquals(numNodes, engine.getProbLists(null, null, null).size());
+			assertFalse(engine.getProbabilisticNetwork().getJunctionTree() == null);
+			assertFalse(engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
+			
+			System.out.println(numNodes + " , " + arcsToCreate.size() + " , " + executionTime + " , " + executionTimeDynamic);
+		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
+	}
+	
+	/**
+	 * Check that performance of dynamic JT compilation is better than recompiling everything, 
+	 * if network is sufficiently large.
+	 * @throws URISyntaxException 
+	 * @throws IOException 
+	 * @throws LoadException 
+	 */
+	public final void testDynamicJTCompilationPerformanceSciCastNet() throws LoadException, IOException, URISyntaxException {
+		
+		long seed = System.currentTimeMillis();
+		Random rand = new Random(seed);
+		Debug.println("Seed = " + seed);
+		
+		float probRemoveArc = .6f;
+		int initialNumNodes = 50; //100;	// size of network to test initially
+		int steps = 10; //50;				
+		
+		// force engine to throw exception if dynamic JT compilation fails
+		Boolean isToHaltOnDynamicJunctionTreeFailure = null;
+		Integer dynamicJunctionTreeNetSizeThreshold = null;
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			IncrementalJunctionTreeAlgorithm algorithm = (IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+			isToHaltOnDynamicJunctionTreeFailure = algorithm.isToHaltOnDynamicJunctionTreeFailure();
+			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
+			dynamicJunctionTreeNetSizeThreshold = algorithm.getDynamicJunctionTreeNetSizeThreshold();
+			algorithm.setDynamicJunctionTreeNetSizeThreshold(0);
+		}
+		
+
+		// load the ground truth model
+		ProbabilisticNetwork groundTruth = (ProbabilisticNetwork) engine.getNetIOToExportSharedNetToString().load(new File(getClass().getResource("/140925.net").toURI()));
+		assertNotNull(groundTruth);
+		// check that at least the first and last nodes are present
+		assertTrue(groundTruth.getNodeIndex("2") >= 0);
+		assertTrue(groundTruth.getNodeIndex("923") >= 0);
+		
+//		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(groundTruth);
+//		// make sure the ground truth does not use dynamic JT compilation
+//		algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// large values of this attribute disables dynamic compilation
+//		
+//		// compile the ground truth model
+//		algorithm.run();
+//		assertNotNull(groundTruth.getJunctionTree());
+//		assertNotNull(groundTruth.getJunctionTree().getCliques());
+		
+		int threashold = -1;	// number of nodes when dynamic compilation gets faster than classic compilation
+		
+		long maxTime = 0;
+		long maxTimeDynamic = 0;
+		Debug.setDebug(false);	// temporary disable debug
+		for (int numNodes = initialNumNodes; numNodes <= groundTruth.getNodeCount(); numNodes+=steps) {
+			List<Node> availableNodes = new ArrayList<Node>(groundTruth.getNodes());	// all nodes that can be potentially included to engine
+			List<Node> nodesToInclude = new ArrayList<Node>(numNodes);					// nodes that were actually included in engine
+			
+			// first, run without dynamic junction tree compilation
+			engine.initialize();
+			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+				((IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);
+			}
+			assertEquals(0 , engine.getProbLists(null, null, null).size());
+			assertTrue(engine.getProbabilisticNetwork().getNodeCount() == 0);
+			assertTrue(engine.getProbabilisticNetwork().getJunctionTree() == null || engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
+			
+			// randomly decide which nodes to include
+			while (nodesToInclude.size() < numNodes) {
+				int indexOfNodeToAdd = rand.nextInt(availableNodes.size());
+				nodesToInclude.add(availableNodes.get(indexOfNodeToAdd));
+				availableNodes.remove(indexOfNodeToAdd);
+			}
+			
+			List<Node> nodesToConnect = new ArrayList<Node>(nodesToInclude);
+			
+			Debug.println("Nodes = " + nodesToInclude);
+			
+			// start timer
+			long timeBeforeExecution = System.currentTimeMillis();
+			
+			// add nodes
+			for (Node node : nodesToInclude) {
+				engine.addQuestion(null, new Date(), Long.parseLong(node.getName()), node.getStatesSize(), null);
+			}
+			
+			Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+			assertEquals(nodesToInclude.size(), probLists.size());
+			
+			// create arcs between nodes that were included;
+			while (!nodesToConnect.isEmpty()) {
+				int indexOfNode = rand.nextInt(nodesToConnect.size());
+				Node node = nodesToConnect.get(indexOfNode);
+				for (INode parent : node.getParentNodes()) {
+					if (probLists.containsKey(Long.parseLong(parent.getName()))) {
+						engine.addQuestionAssumption(null, new Date(), Long.parseLong(node.getName()), Collections.singletonList(Long.parseLong(parent.getName())), null);
+						// eventually remove and re-create arc
+						if (rand.nextFloat() < probRemoveArc) {
+							engine.removeQuestionAssumption(null,  new Date(), Long.parseLong(node.getName()), Collections.singletonList(Long.parseLong(parent.getName())));
+							engine.addQuestionAssumption(null, new Date(), Long.parseLong(node.getName()), Collections.singletonList(Long.parseLong(parent.getName())), null);
+						}
+					}
+				}
+				nodesToConnect.remove(indexOfNode);
+			}
+			
+			// stop timer
+			long executionTime = System.currentTimeMillis() - timeBeforeExecution;
+			if (executionTime > maxTime) {
+				maxTime = executionTime;
+			}
+			assertEquals(nodesToInclude.size(), engine.getProbLists(null, null, null).size());
+			assertFalse(engine.getProbabilisticNetwork().getJunctionTree() == null);
+			assertFalse(engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
+			
+			// run with dynamic compilation
+			engine.initialize();
+			if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+				((IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(0);
+			}
+			assertEquals(0 , engine.getProbLists(null, null, null).size());
+			assertTrue(engine.getProbabilisticNetwork().getNodeCount() == 0);
+			assertTrue(engine.getProbabilisticNetwork().getJunctionTree() == null || engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
+			
+			// do the same test
+			nodesToConnect = new ArrayList<Node>(nodesToInclude);
+			
+			// start timer
+			timeBeforeExecution = System.currentTimeMillis();
+			
+			// add nodes
+			for (Node node : nodesToInclude) {
+				engine.addQuestion(null, new Date(), Long.parseLong(node.getName()), node.getStatesSize(), null);
+			}
+			
+			probLists = engine.getProbLists(null, null, null);
+			assertEquals(nodesToInclude.size(), probLists.size());
+			
+			// create arcs between nodes that were included;
+			while (!nodesToConnect.isEmpty()) {
+				int indexOfNode = rand.nextInt(nodesToConnect.size());
+				Node node = nodesToConnect.get(indexOfNode);
+				for (INode parent : node.getParentNodes()) {
+					if (probLists.containsKey(Long.parseLong(parent.getName()))) {
+						engine.addQuestionAssumption(null, new Date(), Long.parseLong(node.getName()), Collections.singletonList(Long.parseLong(parent.getName())), null);
+					}
+				}
+				nodesToConnect.remove(indexOfNode);
+			}
+			
+			
+			long executionTimeDynamic = System.currentTimeMillis() - timeBeforeExecution;
+			if (executionTimeDynamic > maxTimeDynamic) {
+				maxTimeDynamic = executionTimeDynamic;
+			}
+			
+			assertEquals(nodesToInclude.size(), engine.getProbLists(null, null, null).size());
+			assertFalse(engine.getProbabilisticNetwork().getJunctionTree() == null);
+			assertFalse(engine.getProbabilisticNetwork().getJunctionTree().getCliques().isEmpty());
+			
+			
+			if (threashold < 0 && executionTimeDynamic < executionTime) {
+				threashold = numNodes;
+			} else if (executionTimeDynamic >= executionTime) {
+				threashold = -1;	// old threashold was not precise. reset
+			}
+			
+			System.out.println(numNodes + " , " + executionTime + " , " + executionTimeDynamic + " , ");
+		}
+		Debug.setDebug(true);
+		System.out.println("Threashold = " + threashold + " nodes.");
+		assertTrue("Classic=" + maxTime + "; dynamic=" + maxTimeDynamic, maxTimeDynamic < maxTime);
+		
+		// revert changes in config
+		if (isToHaltOnDynamicJunctionTreeFailure != null) {
+			engine.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(isToHaltOnDynamicJunctionTreeFailure);
+		}
+		if (dynamicJunctionTreeNetSizeThreshold != null) {
+			((IncrementalJunctionTreeAlgorithm)engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator()).setDynamicJunctionTreeNetSizeThreshold(dynamicJunctionTreeNetSizeThreshold);
+		}
+
+		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
+		
 	}
 	
 	
