@@ -604,7 +604,9 @@ public class LoopyJunctionTree extends JunctionTree {
 	public void removeSeparator(Separator sep) {
 		super.removeSeparator(sep);
 		// also remove mapping of parents
-		this.removeParent(sep.getClique1(), sep.getClique2());
+		if (sep != null) {
+			this.removeParent(sep.getClique1(), sep.getClique2());
+		}
 	}
 
 	/* (non-Javadoc)
@@ -759,6 +761,14 @@ public class LoopyJunctionTree extends JunctionTree {
 			}
 		}
 		return addedQuantity;
+	}
+
+	/**
+	 * Simply delegates to {@link #isLoopy()}
+	 * @see unbbayes.prs.bn.JunctionTree#isUsingApproximation()
+	 */
+	public boolean isUsingApproximation() {
+		return isLoopy();
 	}
 
 	
