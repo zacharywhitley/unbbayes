@@ -6,7 +6,7 @@
 	<name>Least and Most Probable Explanation Algorithms and Value Tree</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->
-	<version>1.0.0</version>
+	<version>1.2.1</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
@@ -239,15 +239,23 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes</artifactId>
-				<version>4.18.10</version>
+				<version>4.21.14</version>
+			</dependency>
+			
+			
+			<!-- This is for dynamic JT compilation algorithm -->
+			<dependency>
+				<groupId>edu.gmu</groupId>
+				<artifactId>unbbayes.prs.bn.incrementalJT</artifactId>
+				<version>1.0.2</version>
 			</dependency>
 			
 			<!-- This is for reading csv files -->
-			<dependency>
-				<groupId>net.sf.opencsv</groupId>
-				<artifactId>opencsv</artifactId>
-				<version>2.3</version>
-			</dependency>
+<!-- 			<dependency> -->
+<!-- 				<groupId>net.sf.opencsv</groupId> -->
+<!-- 				<artifactId>opencsv</artifactId> -->
+<!-- 				<version>2.3</version> -->
+<!-- 			</dependency> -->
 			
 			<!-- This is for Base64 encoding using javax -->
 <!-- 			<dependency> -->
@@ -257,11 +265,11 @@
 <!-- 			</dependency> -->
 
 			<!-- This is for Base 64 encoding using apache commons -->
-			<dependency>
-				<groupId>commons-codec</groupId>
-				<artifactId>commons-codec</artifactId>
-				<version>1.9</version>
-			</dependency>
+<!-- 			<dependency> -->
+<!-- 				<groupId>commons-codec</groupId> -->
+<!-- 				<artifactId>commons-codec</artifactId> -->
+<!-- 				<version>1.9</version> -->
+<!-- 			</dependency> -->
 			
 			<!-- JUNIT -->
 			<!--

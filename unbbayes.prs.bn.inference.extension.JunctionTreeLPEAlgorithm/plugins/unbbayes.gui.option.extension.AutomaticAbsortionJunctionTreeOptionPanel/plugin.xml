@@ -2,7 +2,7 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- This is a plugin descriptor for Inference module which absorbs all evidences -->
 <!-- This is not a new plugin, because it only adds special config into existing algorithm -->
-<plugin id="unbbayes.gui.option.extension.AutomaticAbsortionJunctionTreeOptionPanel" version="1.0.0">
+<plugin id="unbbayes.gui.option.extension.AutomaticAbsortionJunctionTreeOptionPanel" version="1.1.0">
     <requires>
         <import plugin-id="unbbayes.util.extension.core" plugin-version="4.11.5"/>
     </requires>
