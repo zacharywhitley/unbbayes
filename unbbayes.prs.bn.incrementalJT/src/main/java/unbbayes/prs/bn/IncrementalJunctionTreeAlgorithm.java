@@ -3259,6 +3259,10 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					
 					// we are going to merge child to current clique, so move all mapping of the child to the mapping of current clique
 					decompositionToJunctionTreeMap.get(currentClusterToFill).addAll(decompositionToJunctionTreeMap.get(childCliqueToFill));
+					for (Clique originalCliques : decompositionToJunctionTreeMap.get(childCliqueToFill)) {
+						cliqueToGeneratedClusterMap.put(originalCliques, currentClusterToFill);
+					}
+					
 					decompositionToJunctionTreeMap.remove(childCliqueToFill);	// remove child from mapping
 					
 					// merge child to current clique (the current clique will become a large clique containing nodes from both cliques)
