@@ -68,7 +68,14 @@ public interface IJunctionTree {
 	/**
 	 * Deletes a clique from this junction tree
 	 * @param cliques : list of cliques to delete
+	 * @param isToUpdateIndexes : if true, any internal indexes must be updated. False otherwise.
 	 * @return true if this method has resulted in modification. False otherwise.
+	 */
+	public abstract boolean removeCliques(Collection<Clique> cliques, boolean isToUpdateIndexes);
+	
+	/**
+	 * This method should be equivalent to {@link #removeCliques(Collection, boolean)} with true as the second argument.
+	 * @deprecated use {@link #removeCliques(Collection, boolean)} instead
 	 */
 	public abstract boolean removeCliques(Collection<Clique> cliques);
 	

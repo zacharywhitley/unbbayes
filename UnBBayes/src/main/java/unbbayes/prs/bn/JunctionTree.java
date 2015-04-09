@@ -1225,6 +1225,13 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 	 * @see unbbayes.prs.bn.IJunctionTree#removeCliques(java.util.Collection)
 	 */
 	public boolean removeCliques(Collection<Clique> cliques) {
+		return this.removeCliques(cliques, true);
+	}
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#removeCliques(java.util.Collection)
+	 */
+	public boolean removeCliques(Collection<Clique> cliques, boolean isToUpdateIndexes) {
 		// basic assertion
 		if (cliques == null || cliques.isEmpty()) {
 			return false;	// there was nothing to remove
@@ -1336,7 +1343,9 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		}	// end of for each empty clique
 		
 		// rebuild indexes, because some methods assumes that internal identificators and indexes are the same
-		this.updateCliqueAndSeparatorInternalIdentificators();
+		if (isToUpdateIndexes) {
+			this.updateCliqueAndSeparatorInternalIdentificators();
+		}
 		
 		return ret;
 		
