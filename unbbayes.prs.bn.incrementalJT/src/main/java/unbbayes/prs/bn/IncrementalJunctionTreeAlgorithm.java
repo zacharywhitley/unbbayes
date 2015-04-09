@@ -3235,17 +3235,20 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 							nodesNotInSeparatorToMerge.removeAll(newSeparator.getNodesList());	// this now contains nodes in oldSeparator that are not in newSeparator
 							newSeparator.getNodesList().addAll(nodesNotInSeparatorToMerge);
 							// TODO check which internal identificator (old or reused) must be used here
+							// now, remove the old separator
+							junctionTreeToFill.removeSeparator(oldSeparator);
 						} else {
 							// create new instance of separator, because unfortunately we cannot change existing separator
 							newSeparator = new StubSeparator(currentClusterToFill, grandChild);	// new separator is from current clique to grandchild
 							newSeparator.setInternalIdentificator(oldSeparator.getInternalIdentificator());		// just for backward compatibility
 							newSeparator.setNodes(new ArrayList<Node>(oldSeparator.getNodes()));	// use a clone, just for precaution
+							// now, remove the old separator
+							junctionTreeToFill.removeSeparator(oldSeparator);
+							// needs to remove the old separator before adding the new separator, because they use the same ID
 							junctionTreeToFill.addSeparator(newSeparator);
 						}
 						
 						
-						// now, remove the old separator
-						junctionTreeToFill.removeSeparator(oldSeparator);
 						
 //						TODO we shall also check _for parents of merged cluster and connect to _new cluster;
 //						
@@ -3275,7 +3278,9 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 						childCliqueToFill.setParent(null);
 					}
 					childCliqueToFill.getChildren().clear();
-					junctionTreeToFill.removeCliques(Collections.singletonList(childCliqueToFill));
+					
+					// argument false means: don't update internal indexes and ids (because they must be kept synchronized with original jt)
+					junctionTreeToFill.removeCliques(Collections.singletonList(childCliqueToFill), false); 
 					
 				} else {	// no need to merge cliques
 					// TODO check _if we can reuse separator;

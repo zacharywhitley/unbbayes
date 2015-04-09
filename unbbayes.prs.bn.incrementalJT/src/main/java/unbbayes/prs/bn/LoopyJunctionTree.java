@@ -609,11 +609,12 @@ public class LoopyJunctionTree extends JunctionTree {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.bn.JunctionTree#removeCliques(java.util.Collection)
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.bn.IJunctionTree#removeCliques(java.util.Collection, boolean)
 	 */
-	public boolean removeCliques(Collection<Clique> cliques) {
-		boolean isModified = super.removeCliques(cliques);
+	public boolean removeCliques(Collection<Clique> cliques, boolean isToUpdateIndexes) {
+		boolean isModified = super.removeCliques(cliques, isToUpdateIndexes);
 		if (isModified) {
 			// also remove reference in mapping
 			Map<Clique, List<Clique>> map = this.getCliqueParentMap();
