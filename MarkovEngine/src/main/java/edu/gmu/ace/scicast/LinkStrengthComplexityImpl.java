@@ -65,4 +65,13 @@ public class LinkStrengthComplexityImpl extends LinkStrengthImpl implements Link
 		this.complexityFactor = complexityFactor;
 	}
 
+	/* (non-Javadoc)
+	 * @see edu.gmu.ace.scicast.LinkStrengthImpl#toString()
+	 */
+	public String toString() {
+		return getParent() + "->" + getChild() + " ; " + getLinkStrength() + " ; " + getComplexityFactor();
+	}
+	
+	
+
 }

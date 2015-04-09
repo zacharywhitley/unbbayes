@@ -402,6 +402,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	
 	/** If false, dynamic/incremental junction tree compilation will be disabled when value trees are used */
 	private boolean isToUseDynamicJunctionTreeWithValueTrees = false;
+
+	private Map<String,Map<String,Double>> singleExistingArcComplexityCache = new HashMap<String, Map<String,Double>>();
 	
 	
 	/**
@@ -623,8 +625,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.setToAddArcsOnlyToProbabilisticNetwork(true);
 		}
 		
+		// reset cache of complexity factors of each existing arc
+		Map<String, Map<String, Double>> arcComplexityCache = getSingleExistingArcComplexityCache();
+		if (arcComplexityCache == null) {
+			setSingleExistingArcComplexityCache(new HashMap<String, Map<String,Double>>());
+		} else {
+			arcComplexityCache.clear();
+		}
+		
 		// for debugging
 		this.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(isToThrowExceptionOnDynamicJunctionTreeCompilationFailure());
+		
 		
 		return true;
 	}
@@ -1863,6 +1874,15 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * @see MarkovEngineImpl#getProbabilisticNetwork()
 		 */
 		public void execute() {
+
+			// reset cache of complexity factors of each existing arc
+			Map<String, Map<String, Double>> arcComplexityCache = getSingleExistingArcComplexityCache();
+			if (arcComplexityCache == null) {
+				setSingleExistingArcComplexityCache(new HashMap<String, Map<String,Double>>());
+			} else {
+				arcComplexityCache.clear();
+			}
+			
 			this.execute(getProbabilisticNetwork());
 		}
 		/**
@@ -1931,6 +1951,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 */
 		public void execute(ProbabilisticNetwork net, boolean isToUpdateJunctionTreeAndAssetNets) {
 			
+
 			INode node = null;	// the new node 
 			synchronized (getDefaultInferenceAlgorithm()) {
 				node = getDefaultInferenceAlgorithm().createNodeInProbabilisticNetwork(Long.toString(this.questionId), numberStates, initProbs, isToUpdateJunctionTreeAndAssetNets, net,null);
@@ -2064,6 +2085,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 */
 		public void execute(ProbabilisticNetwork net,
 				boolean isToUpdateJunctionTreeAndAssetNets) {
+			
+
+			// reset cache of complexity factors of each existing arc
+			Map<String, Map<String, Double>> arcComplexityCache = getSingleExistingArcComplexityCache();
+			if (arcComplexityCache == null) {
+				setSingleExistingArcComplexityCache(new HashMap<String, Map<String,Double>>());
+			} else {
+				arcComplexityCache.clear();
+			}
+			
 			
 			if (!isToUseDynamicJunctionTreeWithValueTrees()) {
 				setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);
@@ -2628,6 +2659,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 */
 		public void execute(ProbabilisticNetwork network) {
 			long currentTimeMillis = System.currentTimeMillis();
+			
 			if (isToAddArcsOnlyToProbabilisticNetwork() || isToAddArcsWithoutReboot()) {
 				if (this.cpd != null && !this.cpd.isEmpty()) {
 					throw new UnsupportedOperationException("The current version of the Markov Engine does not allow replacement of the arcs, so a null/empty cpd must be provided");
@@ -4413,6 +4445,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 */
 		public void execute() {
 			
+
+			// reset cache of complexity factors of each existing arc
+			Map<String, Map<String, Double>> arcComplexityCache = getSingleExistingArcComplexityCache();
+			if (arcComplexityCache == null) {
+				setSingleExistingArcComplexityCache(new HashMap<String, Map<String,Double>>());
+			} else {
+				arcComplexityCache.clear();
+			}
+			
+			
 			// change probability of each target, but not changing probability of targets already traded
 			Set<IValueTreeNode> targetsHandled = new HashSet<IValueTreeNode>(getTargetPaths().size());
 			
@@ -4551,7 +4593,19 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 			this.settlement = settlement;
 		}
 		public void execute() {
+			
 			long currentTimeMillis = System.currentTimeMillis();
+			
+
+			// reset cache of complexity factors of each existing arc
+			Map<String, Map<String, Double>> arcComplexityCache = getSingleExistingArcComplexityCache();
+			if (arcComplexityCache == null) {
+				setSingleExistingArcComplexityCache(new HashMap<String, Map<String,Double>>());
+			} else {
+				arcComplexityCache.clear();
+			}
+			
+			
 			TreeVariable probNode = null;
 			synchronized (getProbabilisticNetwork()) {
 				probNode = (TreeVariable) getProbabilisticNetwork().getNode(Long.toString(questionId));
@@ -4813,6 +4867,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		/** @see edu.gmu.ace.scicast.MarkovEngineImpl.ResolveQuestionNetworkAction#execute() */
 		public void execute() {
 			long currentTimeMillis = System.currentTimeMillis();
+			
+
+			// reset cache of complexity factors of each existing arc
+			Map<String, Map<String, Double>> arcComplexityCache = getSingleExistingArcComplexityCache();
+			if (arcComplexityCache == null) {
+				setSingleExistingArcComplexityCache(new HashMap<String, Map<String,Double>>());
+			} else {
+				arcComplexityCache.clear();
+			}
+			
+			
 			// mapping to be used to update history of resolved nodes at the end of this action
 			Map<Long, StatePair> mapForHistory = new HashMap<Long, MarkovEngineImpl.StatePair>();
 			
@@ -13469,6 +13534,16 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * human-readable format.
 	 */
 	public synchronized void importState(final String netString) throws IllegalArgumentException {
+
+		// reset cache of complexity factors of each existing arc
+		Map<String, Map<String, Double>> arcComplexityCache = getSingleExistingArcComplexityCache();
+		if (arcComplexityCache == null) {
+			setSingleExistingArcComplexityCache(new HashMap<String, Map<String,Double>>());
+		} else {
+			arcComplexityCache.clear();
+		}
+		
+		
 		// indicate that we are only using probabilistic net
 		this.setToAddArcsOnlyToProbabilisticNetwork(true);
 		// this shall also reset existing users
@@ -13770,6 +13845,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// nodes in this collection will be considered for local (in respect to each disconnected subnets) complexity
 		Collection<INode> nodesToConsiderForLocalComplexityFactor = new HashSet<INode>();
 		
+		// this will be used for caching complexity factors. If this is non-null, it means that we should include complexity factor in cache
+		Edge keyOfComplexityCache = null;	
+		
 		// check if new arcs shall be considered
 		if (newDependencies != null && !newDependencies.isEmpty()) {
 			boolean isModified = false;	// this is used to check if there was any modification in net structure
@@ -13881,6 +13959,17 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 											+ originNode + " and " + destinationNode 
 											+ ", but the link cannot be retrieved. This is probably a bug in UnBBayes core, or in some plug-in. Please, check the version you are using.");
 								}
+								if (newDependencies.size() <= 1) {
+									// by setting key of cache to non-null, the complexity factor will be cached if no cache is found
+									keyOfComplexityCache = edgeToRemove;
+									// check cache
+									Map<String, Map<String, Double>> complexityCache = getSingleExistingArcComplexityCache();
+									if (complexityCache != null && complexityCache.containsKey(keyOfComplexityCache.toString())) {
+										// simply return cached entry;
+										return complexityCache.get(keyOfComplexityCache.toString());
+									} // else cache doesn't exist, and complexity factor will be cached later (keyOfComplexityCache != null is a flag to force caching)
+								}
+								
 								//remove the edge in case the edge exists;
 								netToCheck.removeEdge(edgeToRemove);	// simply remove the edge, without caring about the CPT (because we just need the JT structure, not the probabilities)
 								isModified = true; // needs to mark this net as modified
@@ -13889,6 +13978,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					}	// end of for
 				}	// end of if (entry.getValue() != null)
 			}	// end of for each entry in map
+			
 			
 			// only re-compile junction tree if we really modified network structure.
 			if (isModified) {
@@ -13949,7 +14039,24 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		} // end of if (newDependencies != null && !newDependencies.isEmpty())
 	
 		// return the maximum number of variables. 
-		return this.getComplexityFactor(netToCheck, nodesToConsiderForLocalComplexityFactor); // nodesToConsiderForLocalComplexityFactor is empty if isLocal == false
+		Map<String, Double> complexityFactor = this.getComplexityFactor(netToCheck, nodesToConsiderForLocalComplexityFactor); // nodesToConsiderForLocalComplexityFactor is empty if isLocal == false
+		
+		// check if we should update cache of complexity factors for single existing arcs
+		if (keyOfComplexityCache != null) {	
+			// if this variable is non-null, then the condition to use cache was satisfied. 
+			// But if the program reached this point, then the cache did not exist, so overwrite cache
+			Map<String, Map<String, Double>> cache = getSingleExistingArcComplexityCache();
+			if (cache != null) {
+				Map<String, Double> oldCachedValue = cache.put(keyOfComplexityCache.toString(), complexityFactor);
+				if (oldCachedValue != null) {
+					Debug.println(getClass(), "Cache was not supposed to exist for " + keyOfComplexityCache + ", but found " + oldCachedValue);
+					Debug.println(getClass(), "Resetting cache due to desync... ");
+					cache.clear();
+				}
+			}
+		}
+		
+		return complexityFactor;
 	}
 	
 	/*
@@ -15196,6 +15303,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		 * @see edu.gmu.ace.scicast.MarkovEngineImpl.StructureChangeNetworkAction#execute(unbbayes.prs.bn.ProbabilisticNetwork)
 		 */
 		public void execute(ProbabilisticNetwork net) {
+			
+			
 			if (!isToAddArcsOnlyToProbabilisticNetwork()) {
 				throw new UnsupportedOperationException("Current version cannot remove arcs when assets are managed by Markov Engine");
 			}
@@ -15674,6 +15783,44 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public void setToUseDynamicJunctionTreeWithValueTrees(
 			boolean isToUseDynamicJunctionTreeWithValueTrees) {
 		this.isToUseDynamicJunctionTreeWithValueTrees = isToUseDynamicJunctionTreeWithValueTrees;
+	}
+
+	/**
+	 * @return the singleExistingArcComplexityCache : a cache for {@link #getComplexityFactors(Map, boolean, boolean)} for cases when
+	 * the argument is a single (1) existing arc. If {@link #getComplexityFactors(Map, boolean, boolean)} is called with a single entry,
+	 * and that entry is an existing arc in {@link #getProbabilisticNetwork()}, then this cache is used.
+	 * The key is a string representation of an arc.
+	 * @see #initialize()
+	 * @see ResolveQuestionNetworkAction
+	 * @see ResolveSetOfQuestionsNetworkAction
+	 * @see ResolveValueTreeNetworkAction
+	 * @see AddQuestionAssumptionNetworkAction
+	 * @see AddValueTreeQuestionNetworkAction
+	 * @see AddQuestionNetworkAction
+	 * @see RemoveQuestionAssumptionNetworkAction
+	 * @see #importState(String)
+	 */
+	public Map<String,Map<String,Double>> getSingleExistingArcComplexityCache() {
+		return singleExistingArcComplexityCache;
+	}
+
+	/**
+	 * @param singleExistingArcComplexityCache : : a cache for {@link #getComplexityFactors(Map, boolean, boolean)} for cases when
+	 * the argument is a single (1) existing arc. If {@link #getComplexityFactors(Map, boolean, boolean)} is called with a single entry,
+	 * and that entry is an existing arc in {@link #getProbabilisticNetwork()}, then this cache is used.
+	 * @see #initialize()
+	 * @see ResolveQuestionNetworkAction
+	 * @see ResolveSetOfQuestionsNetworkAction
+	 * @see ResolveValueTreeNetworkAction
+	 * @see AddQuestionAssumptionNetworkAction
+	 * @see AddValueTreeQuestionNetworkAction
+	 * @see AddQuestionNetworkAction
+	 * @see RemoveQuestionAssumptionNetworkAction
+	 * @see #importState(String)
+	 */
+	public void setSingleExistingArcComplexityCache(
+			Map<String,Map<String,Double>> singleExistingArcComplexityCache) {
+		this.singleExistingArcComplexityCache = singleExistingArcComplexityCache;
 	}
 
 	

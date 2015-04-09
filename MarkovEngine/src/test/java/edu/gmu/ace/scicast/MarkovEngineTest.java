@@ -34682,6 +34682,362 @@ public class MarkovEngineTest extends TestCase {
 	
 	
 	/**
+	 * Test method for {@link MarkovEngineImpl#getLinkStrengthComplexityAll()}
+	 * @throws URISyntaxException 
+	 * @throws IOException 
+	 * @throws LoadException 
+	 */
+	public final void testGetLinkStrengthComplexityAll() throws LoadException, IOException, URISyntaxException {
+		// create asia network
+		
+
+		// force engine to throw exception if dynamic JT compilation fails
+		Boolean isToHaltOnDynamicJunctionTreeFailure = null;
+		Integer dynamicJunctionTreeNetSizeThreshold = null;
+		if (engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator() instanceof IncrementalJunctionTreeAlgorithm) {
+			IncrementalJunctionTreeAlgorithm algorithm = (IncrementalJunctionTreeAlgorithm) engine.getDefaultInferenceAlgorithm().getProbabilityPropagationDelegator();
+			isToHaltOnDynamicJunctionTreeFailure = algorithm.isToHaltOnDynamicJunctionTreeFailure();
+			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
+			dynamicJunctionTreeNetSizeThreshold = algorithm.getDynamicJunctionTreeNetSizeThreshold();
+			algorithm.setDynamicJunctionTreeNetSizeThreshold(0);
+		}
+		
+		// load the ground truth model
+		ProbabilisticNetwork groundTruth = (ProbabilisticNetwork) new NetIO().load(new File(getClass().getResource("/asia.net").toURI()));
+		assertNotNull(groundTruth);
+		
+		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(groundTruth);
+		// make sure the ground truth does not use dynamic JT compilation
+//		algorithm.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE);	// large values of this attribute disables dynamic compilation
+		
+		// compile the ground truth model
+		algorithm.run();
+		assertNotNull(groundTruth.getJunctionTree());
+		assertNotNull(groundTruth.getJunctionTree().getCliques());
+		assertEquals(6, groundTruth.getJunctionTree().getCliques().size());
+		
+		/*
+		 * create nodes in markov engine accordingly to the ground truth:
+		 * 
+		 * Ids = nodes in ground truth (var name between parenthesis), and their marginals:
+		 * 33 = Positive X-ray? (X),   		[0.11029005, 0.88971]
+		 * 21 = Has lung cancer (L), 		[0.055000007, 0.945]
+		 * 10 = Visit to Asia? (A), 		[0.009999999, 0.98999995]
+		 * 11 = Has bronchitis (B), 		[0.45000002, 0.55]
+		 * 29 = Has tuberculosis (T), 		[0.010399999, 0.9896]
+		 * 28 = Smoker? (S), 				[0.5, 0.5]
+		 * 13 = Dyspnoea? (D), 				[0.43597063, 0.5640294]
+		 * 14 = Tuberculosis or cancer (E),	[0.06482801, 0.935172]
+		 * 
+		 * Respective IDs in markov engine:
+		 * 	X = 33; B = 11; D = 13; A = 10; S = 28; L = 21; T = 29; E = 14
+		 */
+		for (Node node : groundTruth.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				Long nodeId = (long) Character.getNumericValue(node.getName().charAt(0));
+				try {
+					engine.addQuestion(null, new Date(), nodeId, node.getStatesSize(), null);
+				} catch (RuntimeException e) {
+					throw new RuntimeException("Failed to create node " + node, e);
+				}
+				try {
+					// also set the marginals now
+					List<Float> newValues = new ArrayList<Float>(node.getStatesSize());
+					for (int i = 0; i < node.getStatesSize(); i++) {
+						newValues.add(((ProbabilisticNode) node).getMarginalAt(i));
+					}
+					engine.addTrade(null, new Date(), node.toString(), 0, nodeId, newValues , null, null, true);
+				} catch (RuntimeException e) {
+					throw new RuntimeException("Failed to set marginals of node " + node, e);
+				}
+			}
+		}
+		
+		// check if marginals matches
+		Map<Long, List<Float>> probLists = engine.getProbLists(null, null, null);
+		assertEquals(groundTruth.getNodeCount(), probLists.size());
+		for (Node node : groundTruth.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
+				assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
+				for (int i = 0; i < prob.size(); i++) {
+					assertEquals(node.toString() + "; " + probLists.toString(), ((ProbabilisticNode) node).getMarginalAt(i), prob.get(i), 0.00001);
+				}
+			}
+		}
+		
+		Collection<INode> inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		Collection<Separator> inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+		
+		
+		// create arcs in markov engine accordingly to the ground truth
+		for (Node childNode : groundTruth.getNodes()) {
+			if (childNode instanceof ProbabilisticNode) {
+				// this is the question ID of the respective node
+				Long childQuestionId = Long.valueOf(Character.getNumericValue(childNode.getName().charAt(0)));
+				
+				// add arcs that points to child node (i.e. check presence of parents)
+				if (childNode.getParentNodes() != null
+						&& !childNode.getParentNodes().isEmpty()) {
+					
+					// backup marginals, before adding new arc, for later comparison
+					probLists = engine.getProbLists(null, null, null);
+					
+					// extract cpt
+					PotentialTable cpt = ((ProbabilisticNode) childNode).getProbabilityFunction();	
+					
+					// for each parent in ground truth, create parent in engine too. 
+					List<Long> parentQuestionIds = new ArrayList<Long>(childNode.getParentNodes().size());
+					// fill list with ids of parent
+					for (int i = 1; i < cpt.getVariablesSize(); i++) {	// start from index 1, because index 0 is the child node itself
+						// Parents will be inserted in the order of appearance in cpt
+						parentQuestionIds.add(Long.valueOf(Character.getNumericValue(cpt.getVariableAt(i).getName().charAt(0)))); 
+					}
+					
+					// actually create arc
+					engine.addQuestionAssumption(null, new Date(), childQuestionId, parentQuestionIds, null);
+					
+
+					inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+					assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+					inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+					assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+					
+					// check that adding a new arc does not affect probabilities
+					Map<Long, List<Float>> newProbs = engine.getProbLists(null, null, null);
+					assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
+					for (Entry<Long, List<Float>> entry : probLists.entrySet()) {	// key in entry is question ID, value in entry is the prob
+						// check number of states for current question
+						assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), entry.getValue().size(), newProbs.get(entry.getKey()).size());
+						// check values
+						for (int i = 0; i < entry.getValue().size(); i++) {
+							assertEquals("old="+ entry + "; new=" + newProbs.get(entry.getKey()), 	// message to show in case of failure
+									entry.getValue().get(i), newProbs.get(entry.getKey()).get(i), 	// pair to compare
+									0.00001															// error margin
+									);
+						}
+					}
+					
+//					// then, make trades that will copy cpt of ground truth to engine
+//					List<Float> newValues = new ArrayList<Float>();	// this will be filled with values in the CPT
+//					for (int i = 0; i < cpt.tableSize(); i++) {
+//						newValues.add(cpt.getValue(i));
+//					}
+//					
+//					// passing null as assumed states will make the newValues to be interpreted as the CPT for all states of child and parents
+//					engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, parentQuestionIds, null, true);
+					
+				}
+			}
+			
+		}
+		
+
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+
+		// update conditional probabilities accordingly to ground truth
+		for (Node childNode : groundTruth.getNodes()) {
+			if (childNode instanceof ProbabilisticNode) {
+				// this is the question ID of the respective node
+				Long childQuestionId = Long.valueOf(Character.getNumericValue(childNode.getName().charAt(0)));
+				
+				// extract cpt
+				PotentialTable cpt = ((ProbabilisticNode) childNode).getProbabilityFunction();	
+				
+				// extract ids of parents
+				List<Long> parentQuestionIds = new ArrayList<Long>(childNode.getParentNodes().size());
+				// fill list with ids of parent
+				for (int i = 1; i < cpt.getVariablesSize(); i++) {	// start from index 1, because index 0 is the child node itself
+					// Parents will be inserted in the order of appearance in cpt
+					parentQuestionIds.add(Long.valueOf(Character.getNumericValue(cpt.getVariableAt(i).getName().charAt(0)))); 
+				}
+				
+				
+				// make trades that will copy cpt of ground truth to engine
+				List<Float> newValues = new ArrayList<Float>();	// this will be filled with values in the CPT
+				for (int i = 0; i < cpt.tableSize(); i++) {
+					newValues.add(cpt.getValue(i));
+				}
+				
+				// passing null as assumed states will make the newValues to be interpreted as the CPT for all states of child and parents
+				engine.addTrade(null, new Date(), "", 0, childQuestionId, newValues, parentQuestionIds, null, true);
+			}
+			
+		}
+
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+		
+		// after modification, check marginals again
+		probLists = engine.getProbLists(null, null, null);
+		assertEquals(groundTruth.getNodeCount(), probLists.size());
+		for (Node node : groundTruth.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				List<Float> prob = probLists.get(Long.valueOf(Character.getNumericValue(node.getName().charAt(0))));
+				assertEquals(probLists.toString(), node.getStatesSize(), prob.size());
+				for (int i = 0; i < prob.size(); i++) {
+					assertEquals("Node = " + node +  "; marginals: " + probLists.toString(), ((ProbabilisticNode) node).getMarginalAt(i), prob.get(i),  0.00005 );
+				}
+			}
+		}
+		
+		// make sure cache of complexity is not initialized
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertTrue(engine.getSingleExistingArcComplexityCache().isEmpty());
+		
+		List<LinkStrengthComplexity> linkStrengthComplexityAll = engine.getLinkStrengthComplexityAll();
+		
+		// check that the number of elements is consistent
+		assertEquals(engine.getProbabilisticNetwork().getEdges().size(), linkStrengthComplexityAll.size());
+		
+		// check that cache is initialized
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertFalse(engine.getSingleExistingArcComplexityCache().isEmpty());
+		assertEquals(engine.getProbabilisticNetwork().getEdges().size(), engine.getSingleExistingArcComplexityCache().size());
+		
+		// backup cache for later comparison
+		Map<String, Map<String, Double>> cacheBackup = new HashMap<String, Map<String,Double>>(engine.getSingleExistingArcComplexityCache());
+		
+		engine.getSingleExistingArcComplexityCache().clear(); // clear cache so that calls to complexity factor methods are clean from cache
+		
+		// check that content match with what we would get by calling the complexity factor and arc cost methods
+		for (LinkStrengthComplexity linkStrengthComplexity : linkStrengthComplexityAll) {
+			// get pair of nodes that identifies the arc
+			Node parent = engine.getProbabilisticNetwork().getNode(Long.toString(linkStrengthComplexity.getParent()));
+			Node child = engine.getProbabilisticNetwork().getNode(Long.toString(linkStrengthComplexity.getChild()));
+			// compare link strength
+			float expectedLinkStrength = engine.getLinkStrength(linkStrengthComplexity.getParent(), linkStrengthComplexity.getChild());
+			assertEquals(linkStrengthComplexity.toString(), expectedLinkStrength, linkStrengthComplexity.getLinkStrength(), PROB_ERROR_MARGIN);
+			// compare complexity factor
+			float expectedComplexity = engine.getComplexityFactor(linkStrengthComplexity.getChild(), Collections.singletonList(linkStrengthComplexity.getParent()));
+			assertEquals(linkStrengthComplexity.toString(), expectedComplexity, linkStrengthComplexity.getComplexityFactor(), PROB_ERROR_MARGIN);
+		}
+		
+
+		// make sure cache is initialized
+		engine.getLinkStrengthComplexityAll();
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertFalse(engine.getSingleExistingArcComplexityCache().isEmpty());
+		assertEquals(engine.getProbabilisticNetwork().getEdges().size(), engine.getSingleExistingArcComplexityCache().size());
+		
+		// check that cached content match with what we would get by calling the complexity factor and arc cost methods
+		for (LinkStrengthComplexity linkStrengthComplexity : engine.getLinkStrengthComplexityAll()) {
+			engine.getSingleExistingArcComplexityCache().clear(); // clear cache so that calls to complexity factor methods are clean from cache
+			// get pair of nodes that identifies the arc
+			Node parent = engine.getProbabilisticNetwork().getNode(Long.toString(linkStrengthComplexity.getParent()));
+			Node child = engine.getProbabilisticNetwork().getNode(Long.toString(linkStrengthComplexity.getChild()));
+			// compare link strength
+			float expectedLinkStrength = engine.getLinkStrength(linkStrengthComplexity.getParent(), linkStrengthComplexity.getChild());
+			assertEquals(linkStrengthComplexity.toString(), expectedLinkStrength, linkStrengthComplexity.getLinkStrength(), PROB_ERROR_MARGIN);
+			// compare complexity factor
+			float expectedComplexity = engine.getComplexityFactor(linkStrengthComplexity.getChild(), Collections.singletonList(linkStrengthComplexity.getParent()));
+			assertEquals(linkStrengthComplexity.toString(), expectedComplexity, linkStrengthComplexity.getComplexityFactor(), PROB_ERROR_MARGIN);
+		}
+		
+		
+		
+		// check time to get link complexity with and without cache
+		engine.getSingleExistingArcComplexityCache().clear(); // clear cache so that calls to complexity factor methods are clean from cache
+		
+		// get time to get data without cache
+		long timeBefore = System.currentTimeMillis();
+		linkStrengthComplexityAll = engine.getLinkStrengthComplexityAll();
+		long timeWithoutCache = System.currentTimeMillis() - timeBefore;
+		
+		// check that cache is initialized
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertFalse(engine.getSingleExistingArcComplexityCache().isEmpty());
+		assertEquals(engine.getProbabilisticNetwork().getEdges().size(), engine.getSingleExistingArcComplexityCache().size());
+		
+		// get time to get data with cache
+		timeBefore = System.currentTimeMillis();
+		linkStrengthComplexityAll = engine.getLinkStrengthComplexityAll();
+		long timeWithCache = System.currentTimeMillis() - timeBefore;
+		
+		Debug.println("Time without cache = " + timeWithoutCache + "; time with cache = " + timeWithCache);
+		assertTrue("Time without cache = " + timeWithoutCache + "; time with cache = " + timeWithCache, timeWithCache <= timeWithoutCache);
+		
+		// make sure cache is initialized
+		engine.getLinkStrengthComplexityAll();
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertFalse(engine.getSingleExistingArcComplexityCache().isEmpty());
+		assertEquals(engine.getProbabilisticNetwork().getEdges().size(), engine.getSingleExistingArcComplexityCache().size());
+		
+		// check that adding a node clears cache 
+		engine.addQuestion(null, new Date(), Long.MAX_VALUE, 11, null);
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertTrue(engine.getSingleExistingArcComplexityCache().isEmpty());
+		
+		// initialize cache again
+		engine.getLinkStrengthComplexityAll();
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertFalse(engine.getSingleExistingArcComplexityCache().isEmpty());
+		assertEquals(engine.getProbabilisticNetwork().getEdges().size(), engine.getSingleExistingArcComplexityCache().size());
+		
+		// check that adding arc clears cache 
+		engine.addQuestionAssumption(null, new Date(), Long.MAX_VALUE, Collections.singletonList(Long.parseLong(engine.getProbabilisticNetwork().getNodes().get(0).getName())), null);
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertTrue(engine.getSingleExistingArcComplexityCache().isEmpty());
+		
+		// initialize cache again
+		engine.getLinkStrengthComplexityAll();
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertFalse(engine.getSingleExistingArcComplexityCache().isEmpty());
+		assertEquals(engine.getProbabilisticNetwork().getEdges().size(), engine.getSingleExistingArcComplexityCache().size());
+		
+		
+		// check that deleting arc clears cache 
+		engine.removeQuestionAssumption(null, new Date(), Long.MAX_VALUE, Collections.singletonList(Long.parseLong(engine.getProbabilisticNetwork().getNodes().get(0).getName())));
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertTrue(engine.getSingleExistingArcComplexityCache().isEmpty());
+		
+		// initialize cache again
+		engine.getLinkStrengthComplexityAll();
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertFalse(engine.getSingleExistingArcComplexityCache().isEmpty());
+		assertEquals(engine.getProbabilisticNetwork().getEdges().size(), engine.getSingleExistingArcComplexityCache().size());
+		
+		
+		// check that resolving node clears cache 
+		engine.resolveQuestion(null, new Date(), Long.MAX_VALUE, 0);
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertTrue(engine.getSingleExistingArcComplexityCache().isEmpty());
+		
+
+		// initialize cache again
+		engine.getLinkStrengthComplexityAll();
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertFalse(engine.getSingleExistingArcComplexityCache().isEmpty());
+		assertEquals(engine.getProbabilisticNetwork().getEdges().size(), engine.getSingleExistingArcComplexityCache().size());
+		
+		
+		// check that importing state clears cache
+		engine.importState(engine.exportState());
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertTrue(engine.getSingleExistingArcComplexityCache().isEmpty());
+		
+		
+		// initialize cache again
+		engine.getLinkStrengthComplexityAll();
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertFalse(engine.getSingleExistingArcComplexityCache().isEmpty());
+		assertEquals(engine.getProbabilisticNetwork().getEdges().size(), engine.getSingleExistingArcComplexityCache().size());
+		
+		// check that initializing ME clears cache
+		engine.initialize();
+		assertNotNull(engine.getSingleExistingArcComplexityCache());
+		assertTrue(engine.getSingleExistingArcComplexityCache().isEmpty());
+		
+	}
+	
+	/**
 	 * Test some special cases that will make {@link IncrementalJunctionTreeAlgorithm#isLoopy()} == true,
 	 * and also use incremental junction tree compilation to estimate the max prime subgraph decomposition.
 	 * @see IncrementalJunctionTreeAlgorithm#getMaximumPrimeSubgraphDecompositionTree(IJunctionTree, Map, Map)
