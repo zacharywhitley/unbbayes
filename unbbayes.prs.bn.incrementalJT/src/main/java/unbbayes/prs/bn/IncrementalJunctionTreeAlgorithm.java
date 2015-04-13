@@ -71,6 +71,12 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	/** If true, the loopy BP algorithm and JT compilation does not guarantee that a node and all its parents will be in the same clique */
 	private boolean isToUseAgressiveLoopyBP = false;
 	
+	/** if true, then {@link #runDynamicJunctionTreeCompilation()} will
+	 * compile the junction tree normally without using incremental junction tree compilation if
+	 * {@link LoopyJunctionTree#isLoopy()} and the changes are only arc removals. If false, then
+	 * {@link #runDynamicJunctionTreeCompilation()} will run incremental junction tree compilation always. */
+	private boolean isToCompileNormallyWhenLoopyAndDeletingArcs = true;
+	
 
 	/**
 	 * This clique splitter will split the clique in the way that
@@ -1249,6 +1255,18 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 //				originalCliqueToClusterMap.put(originalClique, clusterToOriginalCliques.getKey());
 //			}
 //		}
+		
+		// check if we satisfy some conditions to compile the network without using dynamic/incremental compilation in order to return to non-approximate structure
+		if (isToCompileNormallyWhenLoopyAndDeletingArcs() && junctionTree.isUsingApproximation()) { // junctionTree.isUsingApproximation() should be more generic than LoopyJunctionTree#isLoopy()
+			if (nodesToAdd.isEmpty()
+					&& nodesToDelete.isEmpty()
+					&& edgesToAdd.isEmpty()
+					&& !edgesToDelete.isEmpty()) {
+				// if the only changes are arc removal, then compile normally
+				super.run();
+				return;
+			}
+		}
 		
 		// this set will be filled with clusters in the maximum prime subgraph decomposition tree which needs to be modified.
 		Set<Clique> clustersToModify = new HashSet<Clique>();
@@ -3978,6 +3996,28 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	 */
 	public void setToUseAgressiveLoopyBP(boolean isToUseAgressiveLoopyBP) {
 		this.isToUseAgressiveLoopyBP = isToUseAgressiveLoopyBP;
+	}
+
+	/**
+	 * @return the isToCompileNormallyWhenLoopyAndDeletingArcs : if true, then {@link #runDynamicJunctionTreeCompilation()} will
+	 * compile the junction tree normally without using incremental junction tree compilation if
+	 * {@link IJunctionTree#isUsingApproximation()} and the changes are only arc removals. If false, then
+	 * {@link #runDynamicJunctionTreeCompilation()} will run incremental junction tree compilation always.
+	 */
+	public boolean isToCompileNormallyWhenLoopyAndDeletingArcs() {
+		return isToCompileNormallyWhenLoopyAndDeletingArcs;
+	}
+
+	/**
+	 * @param isToCompileNormallyWhenLoopyAndDeletingArcs the isToCompileNormallyWhenLoopyAndDeletingArcs to set.
+	 * If true, then {@link #runDynamicJunctionTreeCompilation()} will
+	 * compile the junction tree normally without using incremental junction tree compilation if
+	 * {@link IJunctionTree#isUsingApproximation()} and the changes are only arc removals. If false, then
+	 * {@link #runDynamicJunctionTreeCompilation()} will run incremental junction tree compilation always.
+	 */
+	public void setToCompileNormallyWhenLoopyAndDeletingArcs(
+			boolean isToCompileNormallyWhenLoopyAndDeletingArcs) {
+		this.isToCompileNormallyWhenLoopyAndDeletingArcs = isToCompileNormallyWhenLoopyAndDeletingArcs;
 	}
 
 
