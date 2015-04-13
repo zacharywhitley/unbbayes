@@ -66,7 +66,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 	private boolean isToCreateVirtualNode = false;
 	
 	/** By default, disable dynamic jt compilation if it is using loopy bp */
-	private boolean isToCompileNormallyWhenLoopy = true;
+	private boolean isToCompileNormallyWhenLoopy = false;//true;
 	
 	/** If true, the loopy BP algorithm and JT compilation does not guarantee that a node and all its parents will be in the same clique */
 	private boolean isToUseAgressiveLoopyBP = false;
@@ -614,6 +614,10 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					emptySeparators.add(separator);
 				}
 			}
+			
+			// this will be the ID of the next separator to be created by this method. 
+			int nextSeparatorId = -(jt.getSeparators().size() + 1); // Each time this value is used, it shall be updated (to avoid duplicate ids)
+			
 			// 1. Delete empty separators
 			for (Separator emptySeparator : emptySeparators) {
 				// disconnect relation child->parents
@@ -667,7 +671,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 								
 								// create the new separator
 								Separator newSeparator = new Separator(parentClique, childClique, false);	// false := don't update list of parents/children of these cliques yet
-								newSeparator.setInternalIdentificator(-jt.getSeparators().size()-1);
+								newSeparator.setInternalIdentificator(nextSeparatorId--);
 								newSeparator.setNodes(intersection);
 								
 								// we also need to update the separator table, or else algorithms will think the separator is empty
@@ -725,7 +729,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					
 					// create the new empty separator
 					Separator newSeparator = new Separator(parentClique, childClique, false);
-					newSeparator.setInternalIdentificator(-jt.getSeparators().size()-1);
+					newSeparator.setInternalIdentificator(nextSeparatorId--);
 					jt.addSeparator(newSeparator );	// false := don't update list of parents/children of these cliques yet
 					
 					// set parentClique a parent of childClique by updating the list of parents in childClique
@@ -1263,6 +1267,12 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 			clustersToModify.addAll(this.treatRemoveEdge(deletedEdge, junctionTree, decompositionTree, originalCliqueToClusterMap));
 		}
 		
+		// if all clusters are marked for modification, simply run ordinary junction tree compilation
+		if (clustersToModify.size() == decompositionTree.getCliques().size()) {
+			super.run();
+			return;
+		}
+		
 		// We don't need the list of modification in net structure anymore. 
 		// Release them, because we'll have a memory-intense operation (compilation of junction trees of max prime subgraphs) now
 //		nodesToAdd.clear(); 
@@ -1278,11 +1288,12 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 //		allConsideredEdges.clear(); 
 		allConsideredEdges = null;
 		
+		
 		// for each connected marked clusters, retrieve the nodes in prime subnet decomposition and compile junction tree for each of subnets
 		Map<IJunctionTree, Collection<Clique>> compiledSubnetToClusterMap = this.getCompiledPrimeDecompositionSubnets(clustersToModify, decompositionTree, originalCliqueToClusterMap);
 
 		// this shall change the ids of the separators in the newly generated junction trees, so that the ids are globally unique (this shall improve code safety)
-		this.setUniqueIDsToSeparators(compiledSubnetToClusterMap, junctionTree);
+		this.setUniqueIDsToCliquesAndSeparators(compiledSubnetToClusterMap, junctionTree);
 		
 		// aggregate the junction tree of the subnets to the original junction tree (removing unnecessary cliques)
 		for (Entry<IJunctionTree, Collection<Clique>> entry : compiledSubnetToClusterMap.entrySet()) {
@@ -1327,28 +1338,40 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
     
 	/**
 	 * This method iterates on all junction trees in the parameter compiledSubnetToClusterMap in order to change
-	 * the {@link Separator#getInternalIdentificator()}, so that they become globally unique
-	 * @param compiledSubnetToClusterMap : separators in these junction trees will be treated.
+	 * the {@link Separator#getInternalIdentificator()} and {@link Clique#getInternalIdentificator()}, so that they become globally unique
+	 * @param compiledSubnetToClusterMap : cliques and separators in these junction trees will be treated.
 	 * @param junctionTree : this is the junction tree where the junction trees in compiledSubnetToClusterMap will be
 	 * aggregated to by the method {@link #aggregateJunctionTree(IJunctionTree, IJunctionTree, Collection, Map, Map)}.
 	 * This will be referenced because the new IDs shall not conflict with the IDs in this junction tree.
 	 */
-	private void setUniqueIDsToSeparators( Map<IJunctionTree, Collection<Clique>> compiledSubnetToClusterMap, IJunctionTree junctionTree) {
+	private void setUniqueIDsToCliquesAndSeparators( Map<IJunctionTree, Collection<Clique>> compiledSubnetToClusterMap, IJunctionTree junctionTree) {
 		
-		// get a reasonable estimate for the 1st globally exclusive id
-		int globalId = -1;
-		if (junctionTree != null && junctionTree.getSeparators() != null) {
-			globalId = -(junctionTree.getSeparators().size() + 1);
+		// get a reasonable estimate for the 1st globally exclusive id for cliques and separators
+		int globalCliqueId = 0;
+		int globalSeparatorId = -1;
+		if (junctionTree != null && junctionTree.getCliques() != null) {
+			globalCliqueId = junctionTree.getCliques().size();
+			globalSeparatorId = -(junctionTree.getSeparators().size() + 1);
 		}
 		
 		// iterate on all junction trees
 		if (compiledSubnetToClusterMap != null) {
 			for (IJunctionTree newJunctionTree : compiledSubnetToClusterMap.keySet()) {
-				// iterate on all separators
-				if (newJunctionTree != null && newJunctionTree.getSeparators() != null) {
-					for (Separator separator : newJunctionTree.getSeparators()) {
-						// change the id to a global id
-						separator.setInternalIdentificator(globalId--);	// the id of the next separator will be "current id - 1"
+				if (newJunctionTree != null) {
+					// iterate on all cliques
+					if (newJunctionTree.getCliques() != null) {
+						for (Clique clique : newJunctionTree.getCliques()) {
+							// change the id to a global id
+							clique.setInternalIdentificator(globalCliqueId++);	// the id of the next clique will be "current id + 1"
+						}
+					}
+					
+					// similarly, iterate on all separators
+					if (newJunctionTree.getSeparators() != null) {
+						for (Separator separator : newJunctionTree.getSeparators()) {
+							// change the id to a global id
+							separator.setInternalIdentificator(globalSeparatorId--);	// the id of the next separator will be "current id - 1"
+						}
 					}
 				}
 			}
@@ -2025,14 +2048,11 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 			} else {
 				// case 2 - new clique becomes a parent of original unchanged clique
 				
-				// disconnect unchanged clique (child) from its current parent
-				if (unchangedOriginalClique.getParent() != null) {
-					Clique parent = unchangedOriginalClique.getParent();
-					// remove link from child to parent
-					((LoopyJunctionTree)originalJunctionTree).removeParent(parent, unchangedOriginalClique);
-					// remove link from parent to child (the opposite direction)
-					parent.removeChild(unchangedOriginalClique);
-				}
+				// disconnect unchanged clique (child) from its parent to be substituted
+				// remove link from child to parent
+				((LoopyJunctionTree)originalJunctionTree).removeParent(modifiedOriginalClique, unchangedOriginalClique);
+				// remove link from parent to child (the opposite direction)
+				modifiedOriginalClique.removeChild(unchangedOriginalClique);
 				
 				// if new clique and border separator are the same (i.e. represents same joint space), then join original (unchanged) clique and new clique;
 				if (borderSeparator.getNodes().size() == newCliqueInMaxPrimeJunctionTree.getNodesList().size()
@@ -3209,7 +3229,12 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					// move children of the child (being merged) to my children (i.e. convert grand children to children)
 					for (Clique grandChild : new ArrayList<Clique>(childCliqueToFill.getChildren())) {	// use a cloned list, because the content of original list may be changed in this loop
 						// link current clique to/from grand child
-						currentClusterToFill.addChild(grandChild); 	// add grandchild to my list of children
+						if (!junctionTreeToRead.isUsingApproximation()
+								|| !currentClusterToFill.getChildren().contains(grandChild)) {
+							// if we are not using approximation, insert immediately. 
+							// If we are using approximation, but the clusters are not connected already, then connect them
+							currentClusterToFill.addChild(grandChild); 	// add grandchild to my list of children
+						}
 						if (junctionTreeToFill instanceof LoopyJunctionTree) {
 							LoopyJunctionTree loopyJunctionTree = (LoopyJunctionTree) junctionTreeToFill;
 							loopyJunctionTree.removeParent(childCliqueToFill, grandChild);
@@ -3221,7 +3246,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 							grandChild.setParent(currentClusterToFill);	// set current clique as parent of grandchild
 						}
 						
-						// prepare to replace separator
+						// prepare to replace separator. Extract the one to be replaced.
 						Separator oldSeparator = junctionTreeToFill.getSeparator(childCliqueToFill, grandChild);	// the separtor to be replaced
 						if (oldSeparator == null) {
 							throw new IllegalArgumentException("Clique " + grandChild + " is expected to be a child of clique " + childCliqueToFill + ", but no separator was created in previous recursive call.");
@@ -3230,13 +3255,18 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 						// check if a separator between current clique and grand child already exists. This can happen if cliques are loopy
 						Separator newSeparator = junctionTreeToFill.getSeparator(currentClusterToFill, grandChild);
 						if (newSeparator != null) { // reuse existing one, because we don't want two separators connecting the same cliques
+							if (!junctionTreeToRead.isUsingApproximation()) {
+								// this is inconsistent, because this means there are two path to same clique
+								throw new IllegalArgumentException("Separator " + newSeparator + " causes a duplicate path (loop), but the instance of " 
+										+ IJunctionTree.class.getName() + " returns isUsingApproximation = false. This is inconsistent." );
+							}
 							// we are virtually merging two separators. Check which nodes need to be included to merged separator
 							Set<Node> nodesNotInSeparatorToMerge = new HashSet<Node>(oldSeparator.getNodesList());
 							nodesNotInSeparatorToMerge.removeAll(newSeparator.getNodesList());	// this now contains nodes in oldSeparator that are not in newSeparator
 							newSeparator.getNodesList().addAll(nodesNotInSeparatorToMerge);
-							// TODO check which internal identificator (old or reused) must be used here
+							// the internal identificator of the new separator should be different from the one we are removing right now
 							// now, remove the old separator
-							junctionTreeToFill.removeSeparator(oldSeparator);
+							junctionTreeToFill.removeSeparator(oldSeparator);	// this may fail if there are duplicate separators with same internal identificators
 						} else {
 							// create new instance of separator, because unfortunately we cannot change existing separator
 							newSeparator = new StubSeparator(currentClusterToFill, grandChild);	// new separator is from current clique to grandchild
@@ -3248,15 +3278,73 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 							junctionTreeToFill.addSeparator(newSeparator);
 						}
 						
+					} // end of for each grand children
+					
+					// in case of loopy clique structures, the child may also have parents which are not the current clique (a parent of my child may not be necessarily me)
+					// so need to connect these parents to me, because the child will be deleted (merged) to me.
+					if ((junctionTreeToRead instanceof LoopyJunctionTree)
+							&& ((LoopyJunctionTree)junctionTreeToRead).isLoopy()	// original JT was loopy
+							&& ((LoopyJunctionTree) junctionTreeToFill).getParents(childCliqueToFill).size() > 1) { // if there are parent clusters other than the currentClusterToFill, then we shall connect them
 						
+						for (Clique parentOfChildToFill : ((LoopyJunctionTree)junctionTreeToFill).getParents(childCliqueToFill)) {
+							if (parentOfChildToFill.equals(currentClusterToFill)) {
+								continue;	// iterate on all parents of my (currentClusterToFill's) child, but don't treat myself
+							}
+							
+							// _if parent of merged cluster is antecessor of _new cluster, keep it an antecessor in order to avoid cycle;
+							// one of the following will be the cluster to fill, and the other will be the parent of its child.
+							Clique parentInSeparator = currentClusterToFill; 	// this will become a parent when the separator is created
+							Clique childInSeparator = parentOfChildToFill; 		// this will become a child when the separator is created
+							if (junctionTreeToFill.isPredecessor(parentOfChildToFill, currentClusterToFill)) {
+								// invert the order if parentOfChildToFill is a predecessor already.
+								parentInSeparator = parentOfChildToFill;		// this will become a parent when the separator is created
+								childInSeparator = currentClusterToFill;		// this will become a child when the separator is created
+							}
+							
+							// link the current cluster with the parent of its child
+							if (!parentInSeparator.getChildren().contains(childInSeparator)) {
+								parentInSeparator.addChild(childInSeparator); 	// this is either setting current cluster as a child of the parent of its child, or the inverse.
+							}
+							
+							// if reached this point, they are expected to be an instance of loopy junction tree, so do a cast without a type check
+							LoopyJunctionTree loopyJunctionTree = (LoopyJunctionTree) junctionTreeToFill;
+							loopyJunctionTree.removeParent(parentOfChildToFill, childCliqueToFill);	// disconnect the child to its parent
+							if (!loopyJunctionTree.getParents(childInSeparator).contains(parentInSeparator)) {
+								// avoid duplicate insertion
+								loopyJunctionTree.addParent(parentInSeparator, childInSeparator);
+							}
+
+							// extract the separator to be replaced 
+							Separator oldSeparator = junctionTreeToFill.getSeparator(parentOfChildToFill, childCliqueToFill);	// the separtor to be replaced
+							if (oldSeparator == null) {
+								throw new IllegalArgumentException("Clique " + parentOfChildToFill + " is expected to be a parent of clique " + childCliqueToFill + ", but no separator was created in previous recursive call.");
+							}
+							
+							
+							// check if a separator between current clique and parent of its child already exists. This can happen if cliques are loopy
+							Separator newSeparator = junctionTreeToFill.getSeparator(parentInSeparator, childInSeparator);
+							if (newSeparator != null) { // reuse existing one, because we don't want two separators connecting the same cliques
+								// we are virtually merging two separators. Check which nodes need to be included to merged separator
+								Set<Node> nodesNotInSeparatorToMerge = new HashSet<Node>(oldSeparator.getNodesList());
+								nodesNotInSeparatorToMerge.removeAll(newSeparator.getNodesList());	// this now contains nodes in oldSeparator that are not in newSeparator
+								newSeparator.getNodesList().addAll(nodesNotInSeparatorToMerge);
+								// now, remove the old separator
+								junctionTreeToFill.removeSeparator(oldSeparator);
+							} else {
+								// create new instance of separator
+								newSeparator = new StubSeparator(parentInSeparator, childInSeparator);	
+								newSeparator.setInternalIdentificator(oldSeparator.getInternalIdentificator());		// just for backward compatibility
+								newSeparator.setNodes(new ArrayList<Node>(oldSeparator.getNodes()));	// use a clone, just for precaution
+								// now, remove the old separator before adding the new one, because we made them to have the same ids
+								junctionTreeToFill.removeSeparator(oldSeparator);
+								// finally, add the new separator
+								junctionTreeToFill.addSeparator(newSeparator);
+							}
 						
-//						TODO we shall also check _for parents of merged cluster and connect to _new cluster;
-//						
-//						TODO _if parent of merged cluster is antecessor of _new cluster, keep it an antecessor in order to avoid cycle;
-//						if (junctionTreeToFill.isPredecessor(predecessorToTest, clique)) {
-//							
-//						}
+						}	// end of for each parent of my child
+						
 					}
+					
 					
 					// no need to disassociate child clique from current clique, because we never associated them anyway (they are only associated in the else clause below)
 					
@@ -3283,23 +3371,29 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 					junctionTreeToFill.removeCliques(Collections.singletonList(childCliqueToFill), false); 
 					
 				} else {	// no need to merge cliques
-					// TODO check _if we can reuse separator;
-					// create separator between the current clique and child clique
-					StubSeparator newSeparator = new StubSeparator(currentClusterToFill, childCliqueToFill);	// new separator is from current clique to grandchild
-					newSeparator.setInternalIdentificator(separatorToRead.getInternalIdentificator());		// just for backward compatibility
-					newSeparator.setNodes(new ArrayList<Node>(separatorToRead.getNodes()));	// use a clone, just for precaution
-					
-					// add separator to the junction tree being filled
-					junctionTreeToFill.addSeparator(newSeparator);
-					
-					// creating new separators won't automatically associate the current clique with child clique, so associate them
-					currentClusterToFill.addChild(childCliqueToFill);
-					if (junctionTreeToFill instanceof LoopyJunctionTree) {
-						((LoopyJunctionTree) junctionTreeToFill).addParent(currentClusterToFill, childCliqueToFill);
-					} else {
-						childCliqueToFill.setParent(currentClusterToFill);
-					}
-					
+					// Check if a separator exists. This can happen when the cliques are loopy.
+					Separator newSeparator = junctionTreeToFill.getSeparator(currentClusterToFill, childCliqueToFill);
+					if (newSeparator == null) {
+						// create separator between the current clique and child clique
+						newSeparator = new StubSeparator(currentClusterToFill, childCliqueToFill);	// new separator is from current clique to grandchild
+						newSeparator.setInternalIdentificator(separatorToRead.getInternalIdentificator());		// just for backward compatibility
+						newSeparator.setNodes(new ArrayList<Node>(separatorToRead.getNodes()));	// use a clone, just for precaution
+						
+						// add separator to the junction tree being filled
+						junctionTreeToFill.addSeparator(newSeparator);
+						
+						// creating new separators won't automatically associate the current clique with child clique, so associate them
+						currentClusterToFill.addChild(childCliqueToFill);
+						if (junctionTreeToFill instanceof LoopyJunctionTree) {
+							((LoopyJunctionTree) junctionTreeToFill).addParent(currentClusterToFill, childCliqueToFill);
+						} else {
+							childCliqueToFill.setParent(currentClusterToFill);
+						}
+					} else if (!junctionTreeToRead.isUsingApproximation()) {
+						// this is inconsistent, because this means there are two path to same clique
+						throw new IllegalArgumentException("Separator " + newSeparator + " causes a duplicate path (loop), but the instance of " 
+								+ IJunctionTree.class.getName() + " returns isUsingApproximation = false. This is inconsistent." );
+					} // else we don't need to add new separator again
 				}
 				
 			}

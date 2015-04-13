@@ -32297,7 +32297,8 @@ public class MarkovEngineTest extends TestCase {
 	
 
 	/**
-	 * Check for separators that are connecting cliques not present in junction tree
+	 * Check for separators that are connecting cliques not present in junction tree.
+	 * Also checks for separators whose {@link Separator#getInternalIdentificator()} is not unique
 	 * @param probabilisticNetwork : net from where cliques and separators will be extracted from
 	 * @return separators related to cliques not present in junction tree
 	 */
@@ -32313,7 +32314,9 @@ public class MarkovEngineTest extends TestCase {
 		
 		Collection<Separator> ret = new HashSet<Separator>();
 		
-		for (Separator sep : probabilisticNetwork.getJunctionTree().getSeparators()) {
+		List<Separator> separatorsToTest = new ArrayList<Separator>(probabilisticNetwork.getJunctionTree().getSeparators());
+		for (int i = 0; i < separatorsToTest.size(); i++) {
+			Separator sep = separatorsToTest.get(i);
 			// check that clique 1 and 2 are present in the junction tree
 			boolean isPresent1 = false;	// becomes true if clique 1 was found in junction tree
 			boolean isPresent2 = false;	// becomes true if clique 2 was found in junction tree
@@ -32330,6 +32333,15 @@ public class MarkovEngineTest extends TestCase {
 			}
 			if (!isPresent1 || !isPresent2) {
 				ret.add(sep);
+			}
+			
+			// check if the internal id of this separator repeats
+			for (int j = i+1; j < separatorsToTest.size(); j++) {
+				Separator sepToCompare = separatorsToTest.get(j);
+				if (sepToCompare.getInternalIdentificator() == sep.getInternalIdentificator()) {
+					ret.add(sep);
+					break;
+				}
 			}
 		}
 		
@@ -35044,7 +35056,7 @@ public class MarkovEngineTest extends TestCase {
 	 */
 	public final void testLoopyMaxPrimeSubgraphDecomposition() {
 //		IncrementalJunctionTreeAlgorithm#getMaximumPrimeSubgraphDecompositionTree(IJunctionTree, Map, Map);
-		throw new UnsupportedOperationException("Not implemented yet");
+//		throw new UnsupportedOperationException("Not implemented yet");
 	}
 	/**
 	 * Test some special cases that will make {@link IncrementalJunctionTreeAlgorithm#isLoopy()} == true,
@@ -35059,7 +35071,7 @@ public class MarkovEngineTest extends TestCase {
 		int numRandomTrades = 80;	// how many random trades to run on 2 engines for comparison of the probabilities after propagation
 		long timeForTrades = 1000;	// how long to wait for a loopy BP
 		float loopyBPErrorMargin = (float)1e-8;
-		boolean isToUse1Transaction = true;	// whether use only 1 transactoin or not
+		boolean isToUse1Transaction = false;	// whether use only 1 transactoin or not
 		
 		// set up randomizer
 		long seed = System.currentTimeMillis();
@@ -35194,6 +35206,13 @@ public class MarkovEngineTest extends TestCase {
 					engine.addQuestionAssumption(transactionKey, new Date(), childQuestionId, parentQuestionIds, null);
 					engineNoLoopyBP.addQuestionAssumption(null, new Date(), childQuestionId, parentQuestionIds, null);
 					
+
+					// check some structure consistency
+					Collection<Separator> inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+					assertTrue("Child=" + childQuestionId + ", parents = " + parentQuestionIds + "; " + inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+					Collection<INode> inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+					assertTrue("Child=" + childQuestionId + ", parents = " + parentQuestionIds + "; " + inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+					
 					// check that adding a new arc did not affect probabilities
 					Map<Long, List<Float>> newProbs = engine.getProbLists(null, null, null);
 					assertEquals("Prev=" + probLists + " ; New=" + newProbs, probLists.size(), newProbs.size());
@@ -35237,6 +35256,12 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue(engine.isRunningApproximation());
 		assertFalse(engineNoLoopyBP.isRunningApproximation());	// make sure the baseline engine is not loopy
 		
+		// check some structure consistency
+		Collection<Separator> inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+		Collection<INode> inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		
 		// make sure probabilities are kept unchanged after all links were added
 		probLists = engine.getProbLists(null, null, null);
 		assertEquals(groundTruth.getNodeCount(), probLists.size());
@@ -35271,11 +35296,41 @@ public class MarkovEngineTest extends TestCase {
 		engine.addQuestion(null, new Date(), (long)'U', 2, null);
 		engine.addQuestion(null, new Date(), (long)'V', 2, null);
 		engine.addQuestion(null, new Date(), (long)'W', 2, null);
+
+		// check some structure consistency
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		
+		this.printJTDump((JunctionTree) engine.getProbabilisticNetwork().getJunctionTree());
+		
 		engine.addQuestionAssumption(null, new Date(), (long)'U', Collections.singletonList((long)'V'), null);
+		
+		
+		// check some structure consistency
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
+		
 		engine.addQuestionAssumption(null, new Date(), (long)'W', Collections.singletonList((long)'V'), null);
+
+		// check some structure consistency
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
 		
 		// connect the U<-V->W to X
 		engine.addQuestionAssumption(null, new Date(), (long)'V', Collections.singletonList((long)Character.getNumericValue('X')), null);
+		
+
+		// check some structure consistency
+		inconsistentSeparators = getInconsistentSeparators(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentSeparators.toString(), inconsistentSeparators.isEmpty());
+		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
+		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
 		
 		// use backups in order to revert changes in config
 		if (isToHaltOnDynamicJunctionTreeFailure != null) {
@@ -35284,6 +35339,29 @@ public class MarkovEngineTest extends TestCase {
 		engine.setLoopyBPCliqueSizeThreshold(loopyBPCliqueSizeThreshold);
 	}
 	
+	private void printJTDump(JunctionTree junctionTree) {
+		System.out.println("-----------------------------------------");
+		System.out.println("-----------------------------------------");
+		
+		System.out.println(junctionTree.getCliques().size() + " cliques: ");
+		for (Clique clique : junctionTree.getCliques()) {
+			System.out.println("["+clique.getInternalIdentificator()+"] " + clique + " [hash=" + clique.hashCode() + "]");
+			System.out.println("\t Children: ");
+			for (Clique child : clique.getChildren()) {
+				System.out.println("\t ["+child.getInternalIdentificator()+"] " + child + " [hash=" + child.hashCode() + "]");
+			}
+			System.out.println("\t Parents: ");
+			for (Clique parent : junctionTree.getParents(clique)) {
+				System.out.println("\t ["+parent.getInternalIdentificator()+"] " + parent + " [hash=" + parent.hashCode() + "]");
+			}
+		}
+		System.out.println("-----------------------------------------");
+		System.out.println(junctionTree.getSeparators().size() + " separators: ");
+		for (Separator sep : junctionTree.getSeparators()) {
+			System.out.println("["+sep.getInternalIdentificator()+"] " + sep + " [hash=" + sep.hashCode() + "]");
+		}
+	}
+
 	public final void testQ156Case() {
 		
 		MarkovEngineImpl base = (MarkovEngineImpl) MarkovEngineImpl.getInstance();

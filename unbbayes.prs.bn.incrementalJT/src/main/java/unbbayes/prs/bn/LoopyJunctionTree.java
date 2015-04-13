@@ -530,7 +530,7 @@ public class LoopyJunctionTree extends JunctionTree {
 		
 		// extract the parent clique, so that we can set it as a child of current clique
 		List<Clique> parentCliques = new ArrayList(getParents(cliqueToBecomeRoot)); // use a clone of the list, because we will make modifications, and ordinal list doesn't allow concurrent modification.
-		if (parentCliques == null || parentCliques.isEmpty()) {
+		if (parentCliques.isEmpty()) {
 			return;	// it is already a root, so there is nothing to do
 			// This is a redundant check, but Clique#getParent() may be desync with getParents(Clique), so I'm double checking anyway
 		}
