@@ -3,6 +3,7 @@
  */
 package unbbayes.util;
 
+import java.io.FileInputStream;
 import java.io.Serializable;
 import java.util.Properties;
 
@@ -22,13 +23,18 @@ public class ApplicationPropertyHolder implements
 	private static Properties property;
 	private static String applicationPropertyPath = "application.properties";
 	
-	
-
 	static {
+		reloadProperties();
+	}
+	
+	/**
+	 * Reloads the property file
+	 */
+	public static void reloadProperties() {
 		// initialize property using default values
 		property = new Properties();
 		try {
-			property.load(ApplicationPropertyHolder.class.getClassLoader().getResourceAsStream(new java.io.File(applicationPropertyPath).toURI().getPath()));
+			property.load(new FileInputStream(new java.io.File(applicationPropertyPath)));
 		} catch (Exception e) {
 			try {
 				property.load(ApplicationPropertyHolder.class.getClassLoader().getResourceAsStream(applicationPropertyPath));
@@ -50,8 +56,6 @@ public class ApplicationPropertyHolder implements
 			}
 		}
 	}
-	
-
 
 	/**
 	 * @return the property

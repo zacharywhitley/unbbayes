@@ -16,6 +16,8 @@ import java.io.PrintStream;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -91,6 +93,7 @@ import unbbayes.prs.bn.valueTree.ValueTreeNode;
 import unbbayes.prs.bn.valueTree.ValueTreeProbabilisticNode;
 import unbbayes.prs.builder.INodeBuilder;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
 import unbbayes.util.SingleValueList;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
@@ -233,6 +236,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 
 
 	private boolean isToIntegrateConsecutiveResolutions = true;
+	
+	private boolean isToAggregateAddQuestionAction = false; //true;
 
 
 	private boolean isToRetriveOnlyTradeHistory = true;
@@ -636,8 +641,114 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 		// for debugging
 		this.setToThrowExceptionOnDynamicJunctionTreeCompilationFailure(isToThrowExceptionOnDynamicJunctionTreeCompilationFailure());
 		
+		this.loadApplicationPropertyFile();
 		
 		return true;
+	}
+
+	/**
+	 * This method will look for "application.property" file and will read some attributes from it.
+	 * @see ApplicationPropertyHolder
+	 */
+	public void loadApplicationPropertyFile() {
+		try {
+			// make sure the property is fresh
+			ApplicationPropertyHolder.reloadProperties();
+			// extract the application property object
+			Properties property = ApplicationPropertyHolder.getProperty();
+			if (property != null) {
+				// iterate on all specified properties
+				for (Entry<Object, Object> propertyEntry : property.entrySet()) {
+					try {
+						// the prefix for properties designed for this class is the name of this class with a period for separating the name.
+						if (propertyEntry.getKey().toString().startsWith(this.getClass().getName()+".")) {
+							// extract the name of the key without the prefix
+							String name = propertyEntry.getKey().toString().substring(this.getClass().getName().length()+1);
+							
+							try {
+								// first, try a getter/setter
+								// extract the getter, so that we can extract the corresponding setter later
+								// the name of the getter method
+								String getterName = "get" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+								Method getterMethod = null;
+								try {
+									getterMethod = this.getClass().getMethod(getterName);
+								} catch (NoSuchMethodException e) {
+									try {
+										Debug.println(getClass(), "Getter " + getterName + " did not exist. Trying " + name +"...", e);
+										// try the name directly
+										getterName = name;
+										getterMethod = this.getClass().getMethod(getterName);
+									} catch (NoSuchMethodException e2) {
+										// use "is" instead.
+										getterName = "is" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+										Debug.println(getClass(), "Getter " + name + " did not exist. Trying " + getterName + " instead...", e);
+										getterMethod = this.getClass().getMethod(getterName);
+									}
+								}
+								// find the corresponding setter method. The type of argument will be extracted from the type of getter
+								if (getterMethod != null) {
+									String setterName = "set" + Character.toUpperCase(name.charAt(0)) + name.substring(1);
+									Method setterMethod = null;
+									try {
+										setterMethod = this.getClass().getMethod(setterName, getterMethod.getReturnType());
+									} catch (NoSuchMethodException e) {
+										Debug.println(getClass(), "Setter " + setterName + " didn't exist.", e);
+										setterName = "set" + name.substring(2);
+										Debug.println(getClass(), "Trying " + setterName + " instead...", e);
+										setterMethod = this.getClass().getMethod(setterName, getterMethod.getReturnType());
+									}
+									// call the setter
+									if (getterMethod.getReturnType().isAssignableFrom(boolean.class)) {
+										setterMethod.invoke(this, Boolean.parseBoolean(propertyEntry.getValue().toString()));
+									} else if (getterMethod.getReturnType().isAssignableFrom(int.class)) {
+										setterMethod.invoke(this, Integer.parseInt(propertyEntry.getValue().toString()));
+									} else if (getterMethod.getReturnType().isAssignableFrom(long.class)) {
+										setterMethod.invoke(this, Long.parseLong(propertyEntry.getValue().toString()));
+									} else if (getterMethod.getReturnType().isAssignableFrom(float.class)) {
+										setterMethod.invoke(this, Float.parseFloat(propertyEntry.getValue().toString()));
+									} else if (getterMethod.getReturnType().isAssignableFrom(double.class)) {
+										setterMethod.invoke(this, Double.parseDouble(propertyEntry.getValue().toString()));
+									} else if (getterMethod.getReturnType().isAssignableFrom(String.class)) {
+										setterMethod.invoke(this, propertyEntry.getValue().toString());
+									} else {
+										System.err.println("Unknown method in application.properties: " + propertyEntry);
+									}
+								}
+							} catch (Exception e) {
+								Debug.println(getClass(), propertyEntry + " was not specifying a valid method.", e);
+								// if it was not a getter/setter, check if the property is a field
+								try {
+									Field field = this.getClass().getField(name);
+									if (field.getType().isAssignableFrom(boolean.class)) {
+										field.set(this, Boolean.parseBoolean(propertyEntry.getValue().toString()));
+									} else if (field.getType().isAssignableFrom(int.class)) {
+										field.set(this, Integer.parseInt(propertyEntry.getValue().toString()));
+									} else if (field.getType().isAssignableFrom(long.class)) {
+										field.set(this, Long.parseLong(propertyEntry.getValue().toString()));
+									} else if (field.getType().isAssignableFrom(float.class)) {
+										field.set(this, Float.parseFloat(propertyEntry.getValue().toString()));
+									} else if (field.getType().isAssignableFrom(double.class)) {
+										field.set(this, Double.parseDouble(propertyEntry.getValue().toString()));
+									} else if (field.getType().isAssignableFrom(String.class)) {
+										field.set(this, propertyEntry.getValue().toString());
+									} else {
+										System.err.println("Unknown field in application.properties: " + propertyEntry);
+									}
+								} catch (NoSuchFieldException e2) {
+									e2.printStackTrace();
+								}
+							}
+							
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -721,7 +832,8 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 					isToRebuildFromHistory = true;
 				}
 				if (action.isStructureConstructionAction()) {
-					if (!isToRebuildFromHistory 
+					if (isToAggregateAddQuestionAction()
+							&& !isToRebuildFromHistory 
 							&& isToAddArcsOnlyToProbabilisticNetwork()
 							&& (action instanceof AddQuestionAssumptionNetworkAction)) {
 						// currently, we can only aggregate AddQuestionAssumption under these conditions
@@ -15821,6 +15933,23 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public void setSingleExistingArcComplexityCache(
 			Map<String,Map<String,Double>> singleExistingArcComplexityCache) {
 		this.singleExistingArcComplexityCache = singleExistingArcComplexityCache;
+	}
+
+	/**
+	 * @return the isToAggregateAddQuestionAction : if true, a sequence of {@link AddQuestionAssumptionNetworkAction} 
+	 * will be aggregated into a single call of {@link AggregatedQuestionAssumptionNetworkAction}.
+	 */
+	public boolean isToAggregateAddQuestionAction() {
+		return isToAggregateAddQuestionAction;
+	}
+
+	/**
+	 * @param isToAggregateAddQuestionAction the isToAggregateAddQuestionAction to set: if true, a sequence of {@link AddQuestionAssumptionNetworkAction} 
+	 * will be aggregated into a single call of {@link AggregatedQuestionAssumptionNetworkAction}.
+	 */
+	public void setToAggregateAddQuestionAction(
+			boolean isToAggregateAddQuestionAction) {
+		this.isToAggregateAddQuestionAction = isToAggregateAddQuestionAction;
 	}
 
 	

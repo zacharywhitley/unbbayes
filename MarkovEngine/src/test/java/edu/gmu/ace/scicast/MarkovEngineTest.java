@@ -35322,6 +35322,7 @@ public class MarkovEngineTest extends TestCase {
 		inconsistentlyAssociatedNodes = getInconsistentlyAssociatedNodes(engine.getProbabilisticNetwork());
 		assertTrue(inconsistentlyAssociatedNodes.toString(), inconsistentlyAssociatedNodes.isEmpty());
 		
+		printJTDump((JunctionTree) engine.getProbabilisticNetwork().getJunctionTree());
 		// connect the U<-V->W to X
 		engine.addQuestionAssumption(null, new Date(), (long)'V', Collections.singletonList((long)Character.getNumericValue('X')), null);
 		
