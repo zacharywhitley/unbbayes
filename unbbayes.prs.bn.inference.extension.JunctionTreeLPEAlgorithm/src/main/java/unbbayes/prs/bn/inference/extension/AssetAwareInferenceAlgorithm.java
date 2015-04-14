@@ -30,6 +30,7 @@ import unbbayes.prs.bn.ILikelihoodExtractor;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.IncrementalJunctionTreeAlgorithm;
 import unbbayes.prs.bn.JeffreyRuleLikelihoodExtractor;
+import unbbayes.prs.bn.JunctionTree;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -2655,6 +2656,10 @@ public class AssetAwareInferenceAlgorithm extends AbstractAssetNetAlgorithm impl
 						
 						// extract the junction tree of the net
 						IJunctionTree junctionTree = net.getJunctionTree();
+						if (junctionTree instanceof JunctionTree) {
+							// make sure cliques and separators' internal IDs are fine
+							((JunctionTree)junctionTree).updateCliqueAndSeparatorInternalIdentificators();
+						}
 						
 						// create clique for the virtual node and parents
 						Clique cliqueOfNewNode = new Clique();

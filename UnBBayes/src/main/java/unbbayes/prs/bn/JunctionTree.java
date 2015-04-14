@@ -1239,10 +1239,16 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		
 		boolean ret = false;
 		
+		// keep track of cliques that were removed already, so that we don't have problems when there are duplicate cliques in the argument
+		Set<Clique> removedCliques = new HashSet<Clique>();
+		
 		// we need to remove each clique and connect children to parent
 		for (Clique cliqueToRemove : cliques) {
 			if (cliqueToRemove == null) {
 				continue;
+			}
+			if (removedCliques.contains(cliqueToRemove)) {
+				continue;	// ignore cliques that were already removed by this method 
 			}
 			// extract children
 			List<Clique> children = cliqueToRemove.getChildren();
@@ -1253,6 +1259,9 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			// handle parent
 			List<Clique> parents = new ArrayList(getParents(cliqueToRemove));
 			for (Clique parent : parents) {
+				if (parent == null || removedCliques.contains(parent)) {
+					continue;	// ignore null or cliques that were already removed by this method 
+				}
 				// disconnect from parent
 				parent.removeChild(cliqueToRemove);
 				// delete separator between empty clique to delete and its parent
@@ -1261,73 +1270,124 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 				if (!children.isEmpty()) {
 					// make each children to point to parent, instead of to the clique that will be deleted
 					for (Clique child : children) {
+						if (child == null || removedCliques.contains(child)) {
+							continue;	// ignore null or cliques that were already removed by this method 
+						}
 						// extract/create the old/new separators in advance
 						Separator separatorToRemove = this.getSeparator(cliqueToRemove, child);
-						Separator separatorToInclude = new Separator(parent, child, false);	// false:=don't update relationship between child and parent
-						separatorToInclude.setInternalIdentificator(separatorToRemove.getInternalIdentificator());	// reuse ID
-//						separatorToInclude.setNodes(separatorToRemove.getNodesList());
-//						separatorToInclude.setProbabilityFunction(separatorToRemove.getProbabilityFunction());
+						if (separatorToRemove == null) {
+							if (getParents(child).contains(cliqueToRemove)) {
+								// this is an inconsistent state
+								throw new NullPointerException("Unable to find separator from + " + cliqueToRemove + " and " + child);
+							}
+							// otherwise, it is inconsistent, but still tolerable.
+							System.err.println("Unable to find separator from " + cliqueToRemove + " and " + child);
+							continue;
+						}
+						
+						// this is the new separator to replace the old one
+						Separator separatorToInclude = null;
+						// check if separator between the cliques already exists, because when loopy we may have connected them already;
+						if (!isUsingApproximation() || this.getSeparator(parent, child) == null) {  // if not using approximation, we can immediately create new one, because there is no multiple path between two cliques
+							separatorToInclude = new Separator(parent, child, false);	// false:=don't update relationship between child and parent
+							separatorToInclude.setInternalIdentificator(separatorToRemove.getInternalIdentificator());	// reuse ID
+//							separatorToInclude.setNodes(separatorToRemove.getNodesList());
+//							separatorToInclude.setProbabilityFunction(separatorToRemove.getProbabilityFunction());
+						}
 						
 						// delete separators between empty clique and its children
-						this.removeSeparator(separatorToRemove);
-						
-						// update the references of parent/child
-						this.addParent(parent, child);
-						parent.addChild(child);
-						
+						this.removeSeparator(separatorToRemove);	// need to remove separator before adding new one, because we are reusing ids
+
 						// create empty separators from parent clique to children
-						this.addSeparator(separatorToInclude);
+						if (separatorToInclude != null) {
+							// update the references of parent/child
+							this.addParent(parent, child);
+							parent.addChild(child);
+							this.addSeparator(separatorToInclude);
+						}
 					}
 				} // or else, there was no children. Empty clique was a leaf, so no need to process children.
 			}
 			
 			// handle case when clique to delete is a root
-			if ( (parents == null || parents.isEmpty())
+			if ( (parents.isEmpty())
 					&& !children.isEmpty()) {
 				// parent is null, and there are children
 				
-				// the empty clique was a root (but it will be removed), so pick one (any) children to become a new root
-				Clique parent = children.get(0);
-				parent.setParent(null);	  // this will make sure the new parent is a root, and also disconnect it from empty clique.
+				// the empty clique was a root (but it will be removed), so pick one children to become a new root
+				Clique newRoot = null;
+				// pick a children which is guaranteed to have only 1 parent (the old root), because that's easier to handle
+				for (Clique candidateForRoot : children) {
+					if (candidateForRoot == null || removedCliques.contains(candidateForRoot)) {
+						continue;	// ignore null or cliques that were already removed by this method 
+					}
+					// Even when the clique structure is loopy, if the junction tree has only 1 root, then there must be a child with only 1 parent.
+					if (getParents(candidateForRoot).size() <= 1) {
+						newRoot = candidateForRoot;
+						break;
+					}
+				}
+				if (newRoot == null) {
+					throw new NullPointerException(cliqueToRemove + " was expected to be a unique a root, but all its children had more than 1 parent: " + children);
+				}
+				this.clearParents(newRoot); // this will make sure the new parent is a root, and also disconnect it from empty clique.
 				
 				// also make sure the separator between the new root and empty clique is removed
-				this.removeSeparator(this.getSeparator(cliqueToRemove, parent));
+				this.removeSeparator(this.getSeparator(cliqueToRemove, newRoot));
 				
 				// get the remaining children
-				if (children.size() > 1) {
-					children = children.subList(1, children.size());  // don't modify original list
-				} else {	// there was only 1 child, and it became a parent
-					children = Collections.emptyList();	// there is no remaining children
-				}
+//				if (children.size() > 1) {
+//					children = children.subList(1, children.size());  // don't modify original list
+//				} else {	// there was only 1 child, and it became a parent
+//					children = Collections.emptyList();	// there is no remaining children
+//				}
 				
 				// connect remaining children (i.e. brothers) to new root, by using empty separators
 				for (Clique child : children) {
+					if (child == null || removedCliques.contains(child)) {
+						continue;	// ignore null or cliques that were already removed by this method 
+					}
 //					// create separator from parent to children. 
 //					// Separator(Clique,Clique) will also update Clique#getParent() of child clique, and Clique#getChildren() of parent clique
 //					this.addSeparator(new Separator(parent, child));
 //					// also make sure the separator between this child and empty clique is removed
 //					this.removeSeparator(this.getSeparator(cliqueToRemove, child));
 					
+					if (child == newRoot) {
+						continue;	// don't consider the new root, because we removed the separator to/from it already
+					}
+					
 					// extract/create the old/new separators in advance
 					Separator separatorToRemove = this.getSeparator(cliqueToRemove, child);
-					Separator separatorToInclude = new Separator(parent, child, false);	// false:=don't update relationship between child and parent
-					separatorToInclude.setInternalIdentificator(separatorToRemove.getInternalIdentificator());	// reuse ID
-//					separatorToInclude.setNodes(separatorToRemove.getNodesList());
-//					separatorToInclude.setProbabilityFunction(separatorToRemove.getProbabilityFunction());
+					if (separatorToRemove == null) {
+						throw new NullPointerException("Unable to find separator from + " + cliqueToRemove + " and " + child);
+					}
+					
+					// the separator to substitute the old one
+					Separator separatorToInclude = null;
+					// check if separator between the cliques already exists, because when loopy we may have connected them already;
+					if (!isUsingApproximation() || this.getSeparator(newRoot, child) == null) { // if not using approximation, we can immediately create new one, because there is no multiple path between two cliques
+						separatorToInclude = new Separator(newRoot, child, false);	// false:=don't update relationship between child and parent
+						separatorToInclude.setInternalIdentificator(separatorToRemove.getInternalIdentificator());	// reuse ID
+//						separatorToInclude.setNodes(separatorToRemove.getNodesList());
+//						separatorToInclude.setProbabilityFunction(separatorToRemove.getProbabilityFunction());
+					}
 					
 					// delete separators between empty clique and its children
-					this.removeSeparator(separatorToRemove);
+					this.removeSeparator(separatorToRemove);	// need to remove separator before including new one, because we are reusing ids.
 					
-					// update the references of parent/child
-					this.addParent(parent, child);
-					parent.addChild(child);
-					
+
 					// create empty separators from parent clique to children
-					this.addSeparator(separatorToInclude);
+					if (separatorToInclude != null) {
+						// update the references of parent/child
+						this.addParent(newRoot, child);
+						newRoot.addChild(child);
+						this.addSeparator(separatorToInclude);
+					}
 				}
 				
 				// some algorithms require the root clique to be the 1st in list, so reorder
-				int indexOfNewRoot = this.getCliques().indexOf(parent);
+				int indexOfNewRoot = this.getCliques().indexOf(newRoot);
 				if (indexOfNewRoot > 0) {
 					// swap with clique at index 0 (probably, this will swap with empty clique)
 					Collections.swap(this.getCliques(), 0, indexOfNewRoot);	
@@ -1339,7 +1399,7 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 			if (this.getCliques().remove(cliqueToRemove)) {
 				ret = true;
 			}
-			
+			removedCliques.add(cliqueToRemove);
 		}	// end of for each empty clique
 		
 		// rebuild indexes, because some methods assumes that internal identificators and indexes are the same
@@ -1349,6 +1409,23 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		
 		return ret;
 		
+	}
+	
+	/**
+	 * Clears the list of parents of the provided child.
+	 * It will also set {@link Clique#getParent()} to null.
+	 * It does not update separators.
+	 * @param child : clique to have list of parents cleared.
+	 * @see #addParent(Clique, Clique)
+	 */
+	public void clearParents(Clique child) {
+		// basic assertion
+		if (child == null) {
+			return;
+		}
+		
+		// make sure this reference is also cleared
+		child.setParent(null);
 	}
 	
 	/**

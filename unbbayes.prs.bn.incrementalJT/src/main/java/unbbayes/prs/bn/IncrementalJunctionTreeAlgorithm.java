@@ -1870,7 +1870,13 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 			// find clique in new prime subgraph junction tree whose intersection with the unmodified clique is maximal
     		Clique newCliqueInMaxPrimeJunctionTree = null;
 			try {
-				newCliqueInMaxPrimeJunctionTree = primeSubgraphJunctionTree.getCliquesContainingMostOfNodes((Collection)unchangedOriginalClique.getNodesList()).get(0);
+				if (borderSeparator.getNodesList().isEmpty()) {
+					// Just get an arbitrary clique. Don't pass empty argument, because empty argument will simply return empty collection.
+					newCliqueInMaxPrimeJunctionTree = primeSubgraphJunctionTree.getCliquesContainingMostOfNodes((Collection)unchangedOriginalClique.getNodesList()).get(0);
+				} else {
+					// Try to find clique to maximize intersection with separator.
+					newCliqueInMaxPrimeJunctionTree = primeSubgraphJunctionTree.getCliquesContainingMostOfNodes((Collection)borderSeparator.getNodesList()).get(0);
+				}
 			} catch (Exception e) {
 				throw new RuntimeException("Unable to find clique in max prime subgraph decomposition junction tree containing at least one node in " + unchangedOriginalClique);
 			}
