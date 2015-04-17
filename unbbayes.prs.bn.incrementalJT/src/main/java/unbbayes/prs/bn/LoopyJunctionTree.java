@@ -374,7 +374,7 @@ public class LoopyJunctionTree extends JunctionTree {
 	 * It does not update separators.
 	 * @param parent : the clique to be removed from the list of parents
 	 * @param child : clique with the list of parents to be altered.
-	 * @return the removed object
+	 * @return true if there were changes. False otherwise.
 	 * @see #getCliqueParentMap()
 	 * @see #setCliqueParentMap(Map)
 	 * @see #clearParents(Clique)
@@ -510,6 +510,33 @@ public class LoopyJunctionTree extends JunctionTree {
 		child.setParent(null);
 	}
 	
+
+	public void printJTDump() {
+
+		System.out.println("-----------------------------------------");
+		System.out.println("-----------------------------------------");
+		JunctionTree junctionTree = (JunctionTree) this;
+		
+		System.out.println(junctionTree .getCliques().size() + " cliques: ");
+		for (Clique clique : junctionTree.getCliques()) {
+			System.out.println("["+clique.getInternalIdentificator()+"] " + clique + " [hash=" + clique.hashCode() + "]");
+			System.out.println("\t Children: ");
+			for (Clique child : clique.getChildren()) {
+				System.out.println("\t ["+child.getInternalIdentificator()+"] " + child + " [hash=" + child.hashCode() + "]");
+			}
+			System.out.println("\t Parents: ");
+			for (Clique parent : junctionTree.getParents(clique)) {
+				System.out.println("\t ["+parent.getInternalIdentificator()+"] " + parent + " [hash=" + parent.hashCode() + "]");
+			}
+		}
+		System.out.println("-----------------------------------------");
+		System.out.println(junctionTree.getSeparators().size() + " separators: ");
+		for (Separator sep : junctionTree.getSeparators()) {
+			System.out.println("["+sep.getInternalIdentificator()+"] " + sep + " [hash=" + sep.hashCode() + "]");
+		}
+	
+	}
+	
 	/**
 	 * Reorganizes the junction tree hierarchy so that the given cluster becomes the root of the subtree it belongs.
 	 * The difference from superclass is that this method assumes that the cluster structure does not necessarily
@@ -527,7 +554,7 @@ public class LoopyJunctionTree extends JunctionTree {
 			return;	// there is nothing to do
 		}
 		
-		
+		this.printJTDump();
 		// extract the parent clique, so that we can set it as a child of current clique
 		List<Clique> parentCliques = new ArrayList(getParents(cliqueToBecomeRoot)); // use a clone of the list, because we will make modifications, and ordinal list doesn't allow concurrent modification.
 		if (parentCliques.isEmpty()) {
@@ -547,6 +574,11 @@ public class LoopyJunctionTree extends JunctionTree {
 			// some of the algorithms expects the 1st clique of separator to be a parent, and the other to be a child, 
 			// so we need to revert order in separator too. Separator does not allow such changes, so we need to substitute separator
 			Separator oldSeparator = getSeparator(parentClique, cliqueToBecomeRoot);	// this represents the link parentClique->cliqueToBecomeRoot
+			if (oldSeparator == null) {
+				Debug.println(getClass(), "A dangling reference from child clique " + cliqueToBecomeRoot + " and parent clique " + cliqueToBecomeRoot + " found.");
+				// this is a dangling reference to a parent
+				continue;	// ignore this parent
+			}
 			removeSeparator(oldSeparator);	// delete this separator, so that we can include a new one
 			
 			// make current parent to become a child of cliqueToBecomeRoot

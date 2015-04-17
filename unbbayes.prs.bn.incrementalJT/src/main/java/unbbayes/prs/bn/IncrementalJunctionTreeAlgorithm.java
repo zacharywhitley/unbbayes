@@ -2231,6 +2231,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 
 
 
+
 	/**
      * This method identifies which clusters in a maximum prime subgraph decomposition tree needs to be modified
      * by a new edge/arc.

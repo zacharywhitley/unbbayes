@@ -1395,6 +1395,13 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 				
 			}	// or else, the empty clique was the only clique in the junction tree
 			
+			// remove connection from child to parent
+			if (children != null) {
+				for (Clique child : children) {
+					this.removeParent(cliqueToRemove, child);
+				}
+			}
+			
 			// finally, remove the empty clique from the list of cliques in junction tree
 			if (this.getCliques().remove(cliqueToRemove)) {
 				ret = true;
@@ -1409,6 +1416,32 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		
 		return ret;
 		
+	}
+	
+
+	/**
+	 * Disconnect a parent clique from its child.
+	 * It does not update separators.
+	 * This is equivalent to calling {@link Clique#setParent(Clique)} to null if the parent to be removed is really a parent,
+	 * but classes extending this class may also include other special routines, so call this method instead of
+	 * {@link Clique#setParent(Clique)}.
+	 * @param parent : the parent clique to be removed
+	 * @param child : clique whose parent will be removed.
+	 * @return true if there were any changes. False otherwise.
+	 * @see #clearParents(Clique)
+	 * @see #addParent(Clique, Clique)
+	 * @see #getParents(Clique)
+	 * @see Clique#getParent()
+	 * @see Clique#setParent(Clique)
+	 */
+	public boolean removeParent(Clique parent, Clique child) {
+		if (child != null) {
+			if (child.getParent().equals(parent)) {
+				child.setParent(null);
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**

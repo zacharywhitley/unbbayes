@@ -409,6 +409,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	private boolean isToUseDynamicJunctionTreeWithValueTrees = false;
 
 	private Map<String,Map<String,Double>> singleExistingArcComplexityCache = new HashMap<String, Map<String,Double>>();
+
+	/** If false, then {@link #loadApplicationPropertyFile()} will be disabled. The default is true. */
+	private boolean isToLoadApplicationPropertyFile = true;
 	
 	
 	/**
@@ -651,6 +654,9 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see ApplicationPropertyHolder
 	 */
 	public void loadApplicationPropertyFile() {
+		if (!isToLoadApplicationPropertyFile()) {
+			return;
+		}
 		try {
 			// make sure the property is fresh
 			ApplicationPropertyHolder.reloadProperties();
@@ -14467,7 +14473,7 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	 * @see edu.gmu.ace.scicast.MarkovEngineInterface#getVersionInfo()
 	 */
 	public String getVersionInfo() {
-		return "UnBBayes SciCast Markov Engine 1.6.13";
+		return "UnBBayes SciCast Markov Engine 1.6.14";
 	}
 
 	/**
@@ -15950,6 +15956,21 @@ public class MarkovEngineImpl implements MarkovEngineInterface, IQValuesToAssets
 	public void setToAggregateAddQuestionAction(
 			boolean isToAggregateAddQuestionAction) {
 		this.isToAggregateAddQuestionAction = isToAggregateAddQuestionAction;
+	}
+
+	/**
+	 * @return the isToLoadApplicationPropertyFile : If false, then {@link #loadApplicationPropertyFile()} will be disabled. The default is true.
+	 */
+	public boolean isToLoadApplicationPropertyFile() {
+		return isToLoadApplicationPropertyFile;
+	}
+
+	/**
+	 * @param isToLoadApplicationPropertyFile the isToLoadApplicationPropertyFile to set : If false, then {@link #loadApplicationPropertyFile()} will be disabled. The default is true.
+	 */
+	public void setToLoadApplicationPropertyFile(
+			boolean isToLoadApplicationPropertyFile) {
+		this.isToLoadApplicationPropertyFile = isToLoadApplicationPropertyFile;
 	}
 
 	

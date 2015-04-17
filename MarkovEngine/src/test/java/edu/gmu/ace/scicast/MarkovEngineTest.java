@@ -33449,6 +33449,11 @@ public class MarkovEngineTest extends TestCase {
 			isToHaltOnDynamicJunctionTreeFailure = algorithm.isToHaltOnDynamicJunctionTreeFailure();
 			algorithm.setToHaltOnDynamicJunctionTreeFailure(true);
 		}
+		
+		// force engine to ignore configuration loaded from application.properties file
+		boolean isToLoadApplicationPropertyFile = engine.isToLoadApplicationPropertyFile();	// backup config
+		engine.setToLoadApplicationPropertyFile(false);
+		
 		Integer dynamicJunctionTreeNetSizeThreshold = engine.getDynamicJunctionTreeNetSizeThreshold();
 		engine.setDynamicJunctionTreeNetSizeThreshold(Integer.MAX_VALUE); // indicate that we shall never use dynamic junction tree compilation
 		
@@ -33916,6 +33921,7 @@ public class MarkovEngineTest extends TestCase {
 
 		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
+		engine.setToLoadApplicationPropertyFile(isToLoadApplicationPropertyFile);
 	}
 	
 	/**
