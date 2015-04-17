@@ -511,31 +511,6 @@ public class LoopyJunctionTree extends JunctionTree {
 	}
 	
 
-	public void printJTDump() {
-
-		System.out.println("-----------------------------------------");
-		System.out.println("-----------------------------------------");
-		JunctionTree junctionTree = (JunctionTree) this;
-		
-		System.out.println(junctionTree .getCliques().size() + " cliques: ");
-		for (Clique clique : junctionTree.getCliques()) {
-			System.out.println("["+clique.getInternalIdentificator()+"] " + clique + " [hash=" + clique.hashCode() + "]");
-			System.out.println("\t Children: ");
-			for (Clique child : clique.getChildren()) {
-				System.out.println("\t ["+child.getInternalIdentificator()+"] " + child + " [hash=" + child.hashCode() + "]");
-			}
-			System.out.println("\t Parents: ");
-			for (Clique parent : junctionTree.getParents(clique)) {
-				System.out.println("\t ["+parent.getInternalIdentificator()+"] " + parent + " [hash=" + parent.hashCode() + "]");
-			}
-		}
-		System.out.println("-----------------------------------------");
-		System.out.println(junctionTree.getSeparators().size() + " separators: ");
-		for (Separator sep : junctionTree.getSeparators()) {
-			System.out.println("["+sep.getInternalIdentificator()+"] " + sep + " [hash=" + sep.hashCode() + "]");
-		}
-	
-	}
 	
 	/**
 	 * Reorganizes the junction tree hierarchy so that the given cluster becomes the root of the subtree it belongs.
@@ -554,7 +529,6 @@ public class LoopyJunctionTree extends JunctionTree {
 			return;	// there is nothing to do
 		}
 		
-		this.printJTDump();
 		// extract the parent clique, so that we can set it as a child of current clique
 		List<Clique> parentCliques = new ArrayList(getParents(cliqueToBecomeRoot)); // use a clone of the list, because we will make modifications, and ordinal list doesn't allow concurrent modification.
 		if (parentCliques.isEmpty()) {
