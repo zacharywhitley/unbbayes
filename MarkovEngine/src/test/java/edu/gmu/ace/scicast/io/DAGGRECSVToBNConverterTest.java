@@ -5,6 +5,7 @@ package edu.gmu.ace.scicast.io;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.List;
 
 import edu.gmu.ace.scicast.io.DAGGRECSVToBNConverter;
@@ -64,9 +65,10 @@ public class DAGGRECSVToBNConverterTest extends TestCase {
 	 * To control for background procesess, do 3-5 runs each and take the minimum time.
 	 * 
 	 * The file contains at least 196 nodes and 3148 users.
+	 * @throws URISyntaxException 
 	 * 
 	 */
-	public void test5per5NetCreation() {
+	public void test5per5NetCreation() throws URISyntaxException {
 		assertNotNull(this.converter);
 		
 		// adjust converter to create 5per5 node network
@@ -149,7 +151,7 @@ public class DAGGRECSVToBNConverterTest extends TestCase {
 		
 		
 		assertNotNull(this.netSaver);
-		File csvFile = new File("examples/DAGGRE.csv");
+		File csvFile = new File(getClass().getResource("DAGGRE.csv").toURI());
 		assertNotNull(csvFile);
 		assertTrue(csvFile.exists());
 		Graph net = null;
@@ -193,12 +195,13 @@ public class DAGGRECSVToBNConverterTest extends TestCase {
 	 * To control for background procesess, do 3-5 runs each and take the minimum time.
 	 * 
 	 * The file contains at least 196 nodes and 3148 users.
+	 * @throws URISyntaxException 
 	 * 
 	 */
-	public void testDisconnectedNetCreation() {
+	public void testDisconnectedNetCreation() throws URISyntaxException {
 		assertNotNull(this.converter);
 		assertNotNull(this.netSaver);
-		File csvFile = new File("examples/DAGGRE.csv");
+		File csvFile = new File(getClass().getResource("DAGGRE.csv").toURI());
 		assertNotNull(csvFile);
 		assertTrue(csvFile.exists());
 		Graph net = null;
