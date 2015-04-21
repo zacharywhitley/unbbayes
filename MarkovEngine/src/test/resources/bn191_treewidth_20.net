@@ -1,0 +1,2652 @@
+net
+{
+     node_size = (0 0);
+     name = "bn191_treewidth_20";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node N0
+{
+     label = "";
+     position = (530 314);
+     states = ("state0" "state1");
+}
+
+node N1
+{
+     label = "";
+     position = (668 35);
+     states = ("state0" "state1");
+}
+
+node N2
+{
+     label = "";
+     position = (223 797);
+     states = ("state0" "state1");
+}
+
+node N3
+{
+     label = "";
+     position = (787 153);
+     states = ("state0" "state1");
+}
+
+node N4
+{
+     label = "";
+     position = (345 194);
+     states = ("state0" "state1");
+}
+
+node N5
+{
+     label = "";
+     position = (955 820);
+     states = ("state0" "state1");
+}
+
+node N6
+{
+     label = "";
+     position = (907 126);
+     states = ("state0" "state1");
+}
+
+node N7
+{
+     label = "";
+     position = (118 335);
+     states = ("state0" "state1");
+}
+
+node N8
+{
+     label = "";
+     position = (1163 671);
+     states = ("state0" "state1");
+}
+
+node N9
+{
+     label = "";
+     position = (857 396);
+     states = ("state0" "state1");
+}
+
+node N10
+{
+     label = "";
+     position = (543 346);
+     states = ("state0" "state1");
+}
+
+node N11
+{
+     label = "";
+     position = (411 451);
+     states = ("state0" "state1");
+}
+
+node N12
+{
+     label = "";
+     position = (765 167);
+     states = ("state0" "state1");
+}
+
+node N13
+{
+     label = "";
+     position = (239 1149);
+     states = ("state0" "state1");
+}
+
+node N14
+{
+     label = "";
+     position = (748 397);
+     states = ("state0" "state1");
+}
+
+node N15
+{
+     label = "";
+     position = (598 134);
+     states = ("state0" "state1");
+}
+
+node N16
+{
+     label = "";
+     position = (363 145);
+     states = ("state0" "state1");
+}
+
+node N17
+{
+     label = "";
+     position = (1034 145);
+     states = ("state0" "state1");
+}
+
+node N18
+{
+     label = "";
+     position = (165 513);
+     states = ("state0" "state1");
+}
+
+node N19
+{
+     label = "";
+     position = (98 1083);
+     states = ("state0" "state1");
+}
+
+node N20
+{
+     label = "";
+     position = (1021 753);
+     states = ("state0" "state1");
+}
+
+node N21
+{
+     label = "";
+     position = (129 109);
+     states = ("state0" "state1");
+}
+
+node N22
+{
+     label = "";
+     position = (979 521);
+     states = ("state0" "state1");
+}
+
+node N23
+{
+     label = "";
+     position = (954 1143);
+     states = ("state0" "state1");
+}
+
+node N24
+{
+     label = "";
+     position = (148 921);
+     states = ("state0" "state1");
+}
+
+node N25
+{
+     label = "";
+     position = (206 58);
+     states = ("state0" "state1");
+}
+
+node N26
+{
+     label = "";
+     position = (686 188);
+     states = ("state0" "state1");
+}
+
+node N27
+{
+     label = "";
+     position = (776 496);
+     states = ("state0" "state1");
+}
+
+node N28
+{
+     label = "";
+     position = (969 418);
+     states = ("state0" "state1");
+}
+
+node N29
+{
+     label = "";
+     position = (153 584);
+     states = ("state0" "state1");
+}
+
+node N30
+{
+     label = "";
+     position = (676 837);
+     states = ("state0" "state1");
+}
+
+node N31
+{
+     label = "";
+     position = (961 1074);
+     states = ("state0" "state1");
+}
+
+node N32
+{
+     label = "";
+     position = (387 504);
+     states = ("state0" "state1");
+}
+
+node N33
+{
+     label = "";
+     position = (842 645);
+     states = ("state0" "state1");
+}
+
+node N34
+{
+     label = "";
+     position = (693 45);
+     states = ("state0" "state1");
+}
+
+node N35
+{
+     label = "";
+     position = (588 1167);
+     states = ("state0" "state1");
+}
+
+node N36
+{
+     label = "";
+     position = (608 1091);
+     states = ("state0" "state1");
+}
+
+node N37
+{
+     label = "";
+     position = (810 56);
+     states = ("state0" "state1");
+}
+
+node N38
+{
+     label = "";
+     position = (677 546);
+     states = ("state0" "state1");
+}
+
+node N39
+{
+     label = "";
+     position = (500 413);
+     states = ("state0" "state1");
+}
+
+node N40
+{
+     label = "";
+     position = (972 738);
+     states = ("state0" "state1");
+}
+
+node N41
+{
+     label = "";
+     position = (1160 999);
+     states = ("state0" "state1");
+}
+
+node N42
+{
+     label = "";
+     position = (769 772);
+     states = ("state0" "state1");
+}
+
+node N43
+{
+     label = "";
+     position = (279 921);
+     states = ("state0" "state1");
+}
+
+node N44
+{
+     label = "";
+     position = (1163 931);
+     states = ("state0" "state1");
+}
+
+node N45
+{
+     label = "";
+     position = (237 90);
+     states = ("state0" "state1");
+}
+
+node N46
+{
+     label = "";
+     position = (630 818);
+     states = ("state0" "state1");
+}
+
+node N47
+{
+     label = "";
+     position = (426 757);
+     states = ("state0" "state1");
+}
+
+node N48
+{
+     label = "";
+     position = (31 154);
+     states = ("state0" "state1");
+}
+
+node N49
+{
+     label = "";
+     position = (175 849);
+     states = ("state0" "state1");
+}
+
+node N50
+{
+     label = "";
+     position = (553 1150);
+     states = ("state0" "state1");
+}
+
+node N51
+{
+     label = "";
+     position = (598 806);
+     states = ("state0" "state1");
+}
+
+node N52
+{
+     label = "";
+     position = (530 1144);
+     states = ("state0" "state1");
+}
+
+node N53
+{
+     label = "";
+     position = (1166 391);
+     states = ("state0" "state1");
+}
+
+node N54
+{
+     label = "";
+     position = (738 198);
+     states = ("state0" "state1");
+}
+
+node N55
+{
+     label = "";
+     position = (34 155);
+     states = ("state0" "state1");
+}
+
+node N56
+{
+     label = "";
+     position = (899 1079);
+     states = ("state0" "state1");
+}
+
+node N57
+{
+     label = "";
+     position = (740 676);
+     states = ("state0" "state1");
+}
+
+node N58
+{
+     label = "";
+     position = (1046 932);
+     states = ("state0" "state1");
+}
+
+node N59
+{
+     label = "";
+     position = (307 596);
+     states = ("state0" "state1");
+}
+
+node N60
+{
+     label = "";
+     position = (1102 943);
+     states = ("state0" "state1");
+}
+
+node N61
+{
+     label = "";
+     position = (250 1105);
+     states = ("state0" "state1");
+}
+
+node N62
+{
+     label = "";
+     position = (397 1072);
+     states = ("state0" "state1");
+}
+
+node N63
+{
+     label = "";
+     position = (784 1031);
+     states = ("state0" "state1");
+}
+
+node N64
+{
+     label = "";
+     position = (465 881);
+     states = ("state0" "state1");
+}
+
+node N65
+{
+     label = "";
+     position = (721 470);
+     states = ("state0" "state1");
+}
+
+node N66
+{
+     label = "";
+     position = (789 71);
+     states = ("state0" "state1");
+}
+
+node N67
+{
+     label = "";
+     position = (725 360);
+     states = ("state0" "state1");
+}
+
+node N68
+{
+     label = "";
+     position = (373 1090);
+     states = ("state0" "state1");
+}
+
+node N69
+{
+     label = "";
+     position = (653 51);
+     states = ("state0" "state1");
+}
+
+node N70
+{
+     label = "";
+     position = (1117 756);
+     states = ("state0" "state1");
+}
+
+node N71
+{
+     label = "";
+     position = (35 1025);
+     states = ("state0" "state1");
+}
+
+node N72
+{
+     label = "";
+     position = (823 625);
+     states = ("state0" "state1");
+}
+
+node N73
+{
+     label = "";
+     position = (1080 399);
+     states = ("state0" "state1");
+}
+
+node N74
+{
+     label = "";
+     position = (900 72);
+     states = ("state0" "state1");
+}
+
+node N75
+{
+     label = "";
+     position = (426 446);
+     states = ("state0" "state1");
+}
+
+node N76
+{
+     label = "";
+     position = (333 248);
+     states = ("state0" "state1");
+}
+
+node N77
+{
+     label = "";
+     position = (810 413);
+     states = ("state0" "state1");
+}
+
+node N78
+{
+     label = "";
+     position = (652 1144);
+     states = ("state0" "state1");
+}
+
+node N79
+{
+     label = "";
+     position = (601 52);
+     states = ("state0" "state1");
+}
+
+node N80
+{
+     label = "";
+     position = (682 878);
+     states = ("state0" "state1");
+}
+
+node N81
+{
+     label = "";
+     position = (798 721);
+     states = ("state0" "state1");
+}
+
+node N82
+{
+     label = "";
+     position = (870 1138);
+     states = ("state0" "state1");
+}
+
+node N83
+{
+     label = "";
+     position = (798 239);
+     states = ("state0" "state1");
+}
+
+node N84
+{
+     label = "";
+     position = (132 823);
+     states = ("state0" "state1");
+}
+
+node N85
+{
+     label = "";
+     position = (1096 845);
+     states = ("state0" "state1");
+}
+
+node N86
+{
+     label = "";
+     position = (117 559);
+     states = ("state0" "state1");
+}
+
+node N87
+{
+     label = "";
+     position = (980 928);
+     states = ("state0" "state1");
+}
+
+node N88
+{
+     label = "";
+     position = (361 480);
+     states = ("state0" "state1");
+}
+
+node N89
+{
+     label = "";
+     position = (180 995);
+     states = ("state0" "state1");
+}
+
+node N90
+{
+     label = "";
+     position = (758 775);
+     states = ("state0" "state1");
+}
+
+node N91
+{
+     label = "";
+     position = (1136 68);
+     states = ("state0" "state1");
+}
+
+node N92
+{
+     label = "";
+     position = (945 986);
+     states = ("state0" "state1");
+}
+
+node N93
+{
+     label = "";
+     position = (1138 495);
+     states = ("state0" "state1");
+}
+
+node N94
+{
+     label = "";
+     position = (500 455);
+     states = ("state0" "state1");
+}
+
+node N95
+{
+     label = "";
+     position = (137 772);
+     states = ("state0" "state1");
+}
+
+node N96
+{
+     label = "";
+     position = (577 59);
+     states = ("state0" "state1");
+}
+
+node N97
+{
+     label = "";
+     position = (116 727);
+     states = ("state0" "state1");
+}
+
+node N98
+{
+     label = "";
+     position = (39 633);
+     states = ("state0" "state1");
+}
+
+node N99
+{
+     label = "";
+     position = (305 538);
+     states = ("state0" "state1");
+}
+
+node N100
+{
+     label = "";
+     position = (502 894);
+     states = ("state0" "state1");
+}
+
+node N101
+{
+     label = "";
+     position = (316 1134);
+     states = ("state0" "state1");
+}
+
+node N102
+{
+     label = "";
+     position = (193 46);
+     states = ("state0" "state1");
+}
+
+node N103
+{
+     label = "";
+     position = (455 698);
+     states = ("state0" "state1");
+}
+
+node N104
+{
+     label = "";
+     position = (536 596);
+     states = ("state0" "state1");
+}
+
+node N105
+{
+     label = "";
+     position = (966 823);
+     states = ("state0" "state1");
+}
+
+node N106
+{
+     label = "";
+     position = (163 1165);
+     states = ("state0" "state1");
+}
+
+node N107
+{
+     label = "";
+     position = (862 572);
+     states = ("state0" "state1");
+}
+
+node N108
+{
+     label = "";
+     position = (622 789);
+     states = ("state0" "state1");
+}
+
+node N109
+{
+     label = "";
+     position = (1128 1018);
+     states = ("state0" "state1");
+}
+
+node N110
+{
+     label = "";
+     position = (289 689);
+     states = ("state0" "state1");
+}
+
+node N111
+{
+     label = "";
+     position = (297 261);
+     states = ("state0" "state1");
+}
+
+node N112
+{
+     label = "";
+     position = (227 198);
+     states = ("state0" "state1");
+}
+
+node N113
+{
+     label = "";
+     position = (1021 1062);
+     states = ("state0" "state1");
+}
+
+node N114
+{
+     label = "";
+     position = (380 1121);
+     states = ("state0" "state1");
+}
+
+node N115
+{
+     label = "";
+     position = (858 450);
+     states = ("state0" "state1");
+}
+
+node N116
+{
+     label = "";
+     position = (493 590);
+     states = ("state0" "state1");
+}
+
+node N117
+{
+     label = "";
+     position = (448 152);
+     states = ("state0" "state1");
+}
+
+node N118
+{
+     label = "";
+     position = (754 529);
+     states = ("state0" "state1");
+}
+
+node N119
+{
+     label = "";
+     position = (1096 224);
+     states = ("state0" "state1");
+}
+
+node N120
+{
+     label = "";
+     position = (331 549);
+     states = ("state0" "state1");
+}
+
+node N121
+{
+     label = "";
+     position = (489 468);
+     states = ("state0" "state1");
+}
+
+node N122
+{
+     label = "";
+     position = (1091 501);
+     states = ("state0" "state1");
+}
+
+node N123
+{
+     label = "";
+     position = (557 1060);
+     states = ("state0" "state1");
+}
+
+node N124
+{
+     label = "";
+     position = (907 449);
+     states = ("state0" "state1");
+}
+
+node N125
+{
+     label = "";
+     position = (944 474);
+     states = ("state0" "state1");
+}
+
+node N126
+{
+     label = "";
+     position = (783 996);
+     states = ("state0" "state1");
+}
+
+node N127
+{
+     label = "";
+     position = (362 209);
+     states = ("state0" "state1");
+}
+
+node N128
+{
+     label = "";
+     position = (431 91);
+     states = ("state0" "state1");
+}
+
+node N129
+{
+     label = "";
+     position = (908 1114);
+     states = ("state0" "state1");
+}
+
+node N130
+{
+     label = "";
+     position = (353 838);
+     states = ("state0" "state1");
+}
+
+node N131
+{
+     label = "";
+     position = (230 867);
+     states = ("state0" "state1");
+}
+
+node N132
+{
+     label = "";
+     position = (188 515);
+     states = ("state0" "state1");
+}
+
+node N133
+{
+     label = "";
+     position = (173 638);
+     states = ("state0" "state1");
+}
+
+node N134
+{
+     label = "";
+     position = (903 254);
+     states = ("state0" "state1");
+}
+
+node N135
+{
+     label = "";
+     position = (203 581);
+     states = ("state0" "state1");
+}
+
+node N136
+{
+     label = "";
+     position = (686 1021);
+     states = ("state0" "state1");
+}
+
+node N137
+{
+     label = "";
+     position = (647 488);
+     states = ("state0" "state1");
+}
+
+node N138
+{
+     label = "";
+     position = (181 239);
+     states = ("state0" "state1");
+}
+
+node N139
+{
+     label = "";
+     position = (406 495);
+     states = ("state0" "state1");
+}
+
+node N140
+{
+     label = "";
+     position = (557 53);
+     states = ("state0" "state1");
+}
+
+node N141
+{
+     label = "";
+     position = (670 886);
+     states = ("state0" "state1");
+}
+
+node N142
+{
+     label = "";
+     position = (55 513);
+     states = ("state0" "state1");
+}
+
+node N143
+{
+     label = "";
+     position = (798 523);
+     states = ("state0" "state1");
+}
+
+node N144
+{
+     label = "";
+     position = (598 946);
+     states = ("state0" "state1");
+}
+
+node N145
+{
+     label = "";
+     position = (839 336);
+     states = ("state0" "state1");
+}
+
+node N146
+{
+     label = "";
+     position = (742 826);
+     states = ("state0" "state1");
+}
+
+node N147
+{
+     label = "";
+     position = (889 1008);
+     states = ("state0" "state1");
+}
+
+node N148
+{
+     label = "";
+     position = (89 762);
+     states = ("state0" "state1");
+}
+
+node N149
+{
+     label = "";
+     position = (1141 412);
+     states = ("state0" "state1");
+}
+
+node N150
+{
+     label = "";
+     position = (69 555);
+     states = ("state0" "state1");
+}
+
+node N151
+{
+     label = "";
+     position = (541 132);
+     states = ("state0" "state1");
+}
+
+node N152
+{
+     label = "";
+     position = (951 295);
+     states = ("state0" "state1");
+}
+
+node N153
+{
+     label = "";
+     position = (734 681);
+     states = ("state0" "state1");
+}
+
+node N154
+{
+     label = "";
+     position = (601 368);
+     states = ("state0" "state1");
+}
+
+node N155
+{
+     label = "";
+     position = (427 937);
+     states = ("state0" "state1");
+}
+
+node N156
+{
+     label = "";
+     position = (1145 399);
+     states = ("state0" "state1");
+}
+
+node N157
+{
+     label = "";
+     position = (233 1010);
+     states = ("state0" "state1");
+}
+
+node N158
+{
+     label = "";
+     position = (825 186);
+     states = ("state0" "state1");
+}
+
+node N159
+{
+     label = "";
+     position = (35 1086);
+     states = ("state0" "state1");
+}
+
+node N160
+{
+     label = "";
+     position = (200 924);
+     states = ("state0" "state1");
+}
+
+node N161
+{
+     label = "";
+     position = (795 680);
+     states = ("state0" "state1");
+}
+
+node N162
+{
+     label = "";
+     position = (881 456);
+     states = ("state0" "state1");
+}
+
+node N163
+{
+     label = "";
+     position = (890 447);
+     states = ("state0" "state1");
+}
+
+node N164
+{
+     label = "";
+     position = (743 263);
+     states = ("state0" "state1");
+}
+
+node N165
+{
+     label = "";
+     position = (330 721);
+     states = ("state0" "state1");
+}
+
+node N166
+{
+     label = "";
+     position = (334 847);
+     states = ("state0" "state1");
+}
+
+node N167
+{
+     label = "";
+     position = (125 179);
+     states = ("state0" "state1");
+}
+
+node N168
+{
+     label = "";
+     position = (435 34);
+     states = ("state0" "state1");
+}
+
+node N169
+{
+     label = "";
+     position = (55 351);
+     states = ("state0" "state1");
+}
+
+node N170
+{
+     label = "";
+     position = (1112 355);
+     states = ("state0" "state1");
+}
+
+node N171
+{
+     label = "";
+     position = (224 916);
+     states = ("state0" "state1");
+}
+
+node N172
+{
+     label = "";
+     position = (602 878);
+     states = ("state0" "state1");
+}
+
+node N173
+{
+     label = "";
+     position = (321 62);
+     states = ("state0" "state1");
+}
+
+node N174
+{
+     label = "";
+     position = (465 498);
+     states = ("state0" "state1");
+}
+
+node N175
+{
+     label = "";
+     position = (1139 160);
+     states = ("state0" "state1");
+}
+
+node N176
+{
+     label = "";
+     position = (804 1035);
+     states = ("state0" "state1");
+}
+
+node N177
+{
+     label = "";
+     position = (465 1136);
+     states = ("state0" "state1");
+}
+
+node N178
+{
+     label = "";
+     position = (889 248);
+     states = ("state0" "state1");
+}
+
+node N179
+{
+     label = "";
+     position = (394 422);
+     states = ("state0" "state1");
+}
+
+node N180
+{
+     label = "";
+     position = (1123 223);
+     states = ("state0" "state1");
+}
+
+node N181
+{
+     label = "";
+     position = (221 525);
+     states = ("state0" "state1");
+}
+
+node N182
+{
+     label = "";
+     position = (1092 867);
+     states = ("state0" "state1");
+}
+
+node N183
+{
+     label = "";
+     position = (520 405);
+     states = ("state0" "state1");
+}
+
+node N184
+{
+     label = "";
+     position = (1010 735);
+     states = ("state0" "state1");
+}
+
+node N185
+{
+     label = "";
+     position = (644 245);
+     states = ("state0" "state1");
+}
+
+node N186
+{
+     label = "";
+     position = (837 709);
+     states = ("state0" "state1");
+}
+
+node N187
+{
+     label = "";
+     position = (80 401);
+     states = ("state0" "state1");
+}
+
+node N188
+{
+     label = "";
+     position = (995 706);
+     states = ("state0" "state1");
+}
+
+node N189
+{
+     label = "";
+     position = (781 1072);
+     states = ("state0" "state1");
+}
+
+node N190
+{
+     label = "";
+     position = (1098 883);
+     states = ("state0" "state1");
+}
+
+potential (N0)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (N1 | N0)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N2 | N1)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N3 | N2)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N4 | N3)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N5 | N4)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N6 | N5)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N7)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (N8 | N7)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N9 | N8)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N10 | N9)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N11 | N30 N10)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N12 | N11)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N13 | N12)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N14)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (N15 | N14)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N16 | N15)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N17 | N16)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N18 | N16 N17)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N19 | N18)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N20 | N19 N42)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N21 | N20)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N22 | N21)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N23 | N22)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N24 | N23)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N25)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (N26 | N25 N0)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N27 | N26)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N28 | N27 N45)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N29 | N28)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N30 | N29)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N31 | N30)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N32 | N31)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N33 | N99 N32)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N34 | N33)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N35 | N34)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N36 | N35)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N37 | N36 N10)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N38 | N37 N25)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N39 | N38 N89)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N40 | N39 N118)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N41)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (N42 | N41)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N43)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (N44 | N43)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N45)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (N46 | N45)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N47 | N46)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N48 | N12 N47)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N49 | N48)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N50 | N7 N49)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N51 | N50 N29)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N52 | N51)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N53 | N52)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N54 | N53 N27)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N55 | N54 N47)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N56 | N55)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N57 | N56)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N58 | N57)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N59 | N58 N31)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N60 | N59)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N61 | N145 N60)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N62 | N61)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N63 | N62)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N64 | N63)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N65 | N64)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N66 | N41 N65)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N67 | N66 N24)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N68 | N67 N58)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N69 | N9 N68)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N70 | N69 N32)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N71 | N70 N63)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N72 | N71)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N73)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (N74 | N73)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N75 | N74)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N76 | N75)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N77 | N76)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N78)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (N79 | N78)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N80 | N79)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N81 | N80)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N82 | N81)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N83 | N82)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N84 | N83)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N85 | N84)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N86 | N85)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N87 | N86)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N88 | N87 N78)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N89 | N78 N88)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N90 | N21)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N91 | N90)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N92 | N91 N93)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N93)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (N94)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (N95 | N94 N92)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N96 | N95)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N97 | N96)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N98 | N97)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N99 | N98)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N100 | N97 N99)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N101 | N100)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N102 | N111 N101)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N103 | N84 N102)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N104 | N103 N87)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N105)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (N106 | N91 N105)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N107 | N106)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N108 | N107 N19)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N109 | N108 N44)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N110 | N98 N109)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N111 | N110)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N112 | N111)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N113 | N112)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N114 | N113 N56)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N115 | N114)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N116 | N115)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N117 | N116)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N118 | N117)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N119 | N118 N104)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N120 | N43 N119)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N121 | N120)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N122 | N121)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N123 | N122 N52)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N124 | N123)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N125 | N74 N124)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N126 | N4 N125)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N127 | N126)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N128 | N127)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N129 | N128 N73)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N130 | N73 N129)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N131)
+{
+ data = ( 0.5 0.5 );
+}
+
+potential (N132 | N130 N131)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N133 | N132 N13)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N134 | N133 N35)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N135 | N134 N49)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N136 | N135)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N137 | N136)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N138 | N137 N6)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N139 | N138)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N140 | N139)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N141 | N140)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N142 | N141)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N143 | N142 N41)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N144 | N3 N143)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N145 | N144)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N146 | N145)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N147 | N137 N146)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N148 | N147 N1)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N149 | N148)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N150 | N149 N172)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N151 | N150 N94)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N152 | N86)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N153 | N152)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N154 | N153 N122)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N155 | N149 N154)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N156 | N155 N131)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N157 | N156 N131)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N158 | N157)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N159 | N158)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N160 | N44)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N161 | N160 N159)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N162 | N161 N116)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N163 | N162 N105)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N164 | N163 N136)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N165 | N164 N127)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N166 | N62 N165)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N167 | N166 N53 N65)
+{
+ data = (((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )))
+((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 ))));
+}
+
+potential (N168 | N8 N142)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N169 | N168 N139)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N170 | N169 N36)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N171 | N75 N170)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N172 | N171)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N173 | N23 N172)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N174 | N173 N124)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N175 | N174)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N176 | N175 N113)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N177 | N176 N79)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N178 | N177)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N179 | N178 N81)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N180 | N179 N160)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N181 | N117 N180)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N182 | N181 N93)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N183 | N14 N182)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N184 | N93 N183)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N185 | N184 N6)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N186 | N185)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N187 | N186)
+{
+ data = (( 0.5 0.5 )
+( 0.5 0.5 ));
+}
+
+potential (N188 | N187 N0)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N189 | N188 N128)
+{
+ data = ((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )));
+}
+
+potential (N190 | N146 N101 N189)
+{
+ data = (((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 )))
+((( 0.5 0.5 )
+( 0.5 0.5 ))
+(( 0.5 0.5 )
+( 0.5 0.5 ))));
+}
+
