@@ -56,6 +56,7 @@ import unbbayes.prs.builder.impl.DefaultProbabilisticNetworkBuilder;
 import unbbayes.prs.builder.impl.DefaultProbabilisticNodeBuilder;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.hybridbn.ContinuousNode;
+import unbbayes.prs.id.UtilityNode;
 import unbbayes.util.ArrayMap;
 import unbbayes.util.Debug;
 
@@ -1074,6 +1075,9 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 			PotentialTable auxTabPot =
 				(PotentialTable)((IRandomVariable) node).getProbabilityFunction();
 			int sizeVa1 = auxTabPot.variableCount();
+			
+			// stores whether this node is an utility.
+			boolean isUtilityNode = (node instanceof UtilityNode);
 
 			stream.print(" data = ");
 			
@@ -1084,17 +1088,27 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 			boolean[] paren = new boolean[sizeVa1];
 
 			int sizeDados = auxTabPot.tableSize();
-			for (int c2 = 0; c2 < sizeDados; c2++) {
-				coord = auxTabPot.getMultidimensionalCoord(c2);
+			for (int tableCellIndex = 0; tableCellIndex < sizeDados; tableCellIndex++) {	// iterating on each cell of the table
+				coord = auxTabPot.getMultidimensionalCoord(tableCellIndex);
 
-				for (int c3 = 0; c3 < sizeVa1; c3++) {
-					if ((coord[c3] == 0) && (!paren[c3])) {
+				int tableVarIndex = 0;		// index to be used to iterate on variables in the table
+				if (isUtilityNode 			// this is an utility node
+						&& sizeVa1 > 1 ) {	// node has 1 or more parents (sizeVa1 == 1 means no parent: i.e. the table has only 1 node -- the node itself)
+					// if this is an utility node with 1 or more parents, then utility node has only 1 state, but the table has more than 1 cell.
+					// if we add parenthesis in this scenario, each number will come between parenthesis, like "(((100) (50)) ((10) (-10))))"
+					// Since Hugin cannot open such specification, this should be converted to "((100 50) (10 -10)))"
+					tableVarIndex = 1;		// start index from 1 (ignore the 0-th variable  -- the utility node itself -- when opening the parenthesis)
+//					paren[0] = true;		// but mark utility node as visited, for compatibility
+				}
+				// include open parenthesis
+				for (; tableVarIndex < sizeVa1; tableVarIndex++) {
+					if ((coord[tableVarIndex] == 0) && (!paren[tableVarIndex])) {
 						stream.print("(");
-						paren[c3] = true;
+						paren[tableVarIndex] = true;
 					}
 				}
-				stream.print(" " + auxTabPot.getValue(c2));
-				if ((c2 % node.getStatesSize())
+				stream.print(" " + auxTabPot.getValue(tableCellIndex));
+				if ((tableCellIndex % node.getStatesSize())
 					== node.getStatesSize() - 1) {
 					stream.print(" ");
 				}
@@ -1102,19 +1116,29 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 				int celulas = 1;
 
 				Node auxNo2;
-				for (int c3 = 0; c3 < sizeVa1; c3++) {
-					auxNo2 = (Node)auxTabPot.getVariableAt(c3);
+				
+				tableVarIndex = 0;	// make sure index is reset
+				// check if we should close parenthesis when this is an utility node
+				if (isUtilityNode 			// this is an utility node
+						&& sizeVa1 > 1 ) {	// node has 1 or more parents (sizeVa1 == 1 means no parent: i.e. the table has only 1 node -- the node itself)
+					tableVarIndex = 1;		// start index from 1 (ignore the 0-th variable  -- the utility node itself -- when opening the parenthesis)
+//					paren[tableVarIndex] = false;	// simply reset flag and don't add parenthesis
+				} 
+				for (; tableVarIndex < sizeVa1; tableVarIndex++) {
+					auxNo2 = (Node)auxTabPot.getVariableAt(tableVarIndex);
 					celulas *= auxNo2.getStatesSize();
-					if (((c2 + 1) % celulas) == 0) {
+					// check for condition to close parenthesis
+					if (((tableCellIndex + 1) % celulas) == 0) {
+						// close parenthesis
 						stream.print(")");
-						if (c3 == sizeVa1 - 1) {
+						if (tableVarIndex == sizeVa1 - 1) {
 							stream.print(";");
 						}
-						paren[c3] = false;
+						paren[tableVarIndex] = false;
 					}
 				}
 
-				if (((c2 + 1) % node.getStatesSize()) == 0) {
+				if (((tableCellIndex + 1) % node.getStatesSize()) == 0) {
 					stream.println();
 				}
 			}
