@@ -526,6 +526,7 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
 	 * @throws ClassNotFoundException
 	 */
 	protected void forceFrameworkToLoadClasses() throws ClassNotFoundException{
+		this.getFramework().getClass().getClassLoader().loadClass(ProtegeApplication.class.getName());
 		this.getFramework().getClass().getClassLoader().loadClass(ProtegeManager.class.getName());
 		this.getFramework().getClass().getClassLoader().loadClass(EditorKit.class.getName());
 		this.getFramework().getClass().getClassLoader().loadClass(Workspace.class.getName());

@@ -2084,7 +2084,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					}
 				}
 				
-				expressionToParse += isSubjectIn?"":"inverse " + this.extractName(property) + " some Thing ";
+				expressionToParse += isSubjectIn?"inverse ":"" + this.extractName(property) + " some Thing ";
 				if (iterator.hasNext()) {
 					// if this is not the last argument, we shall join expressions with an "and" operation
 					expressionToParse += " and ";
@@ -2464,6 +2464,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// 9.1. const = nonBooleanNode(<2+ argument>)
 			// 10. nonBooleanNode(<2+ argument>) = ov
 			// 10.1. nonBooleanNode(<2+ argument>) = const
+			// 10.2. not (nonBooleanNode(<2+ argument>) = const)
 			// 11. booleanNode(<3+ arguments>)
 			// 12. not booleanNode(<3+ arguments>)
 			// TODO implement other types of formulas.
@@ -2571,7 +2572,6 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				}
 			}
 			
-//			 9. TODO
 			
 			
 			// the "not" cases can be solved recursively by passing "not isToSolveAsPositiveOperation" as argument
@@ -2581,6 +2581,8 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					// 4. not booleanNode(<1 or 2 arguments>)
 					// 7. not (ov = nonBooleanNode(<1 argument>))
 					// 8. not (nonBooleanNode(<1 argument>) = ov)
+					// 10.2. not (nonBooleanNode(<2+ argument>) = const)
+					// 12. not booleanNode(<3+ arguments>)
 					return this.solveFormulaTree(formulaTree.getChildren().get(0), knownValues, context, !isToSolveAsPositiveOperation, false);
 				}
 			} catch (Exception e) {

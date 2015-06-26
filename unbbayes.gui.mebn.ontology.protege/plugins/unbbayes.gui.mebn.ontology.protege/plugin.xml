@@ -61,7 +61,7 @@
         	<export prefix="*"/>
         </library>
 -->
-        <library id="org.semanticweb.HermiT" path="lib/org.semanticweb.hermit-1.2.5.927.jar" type="code" >
+        <library id="org.semanticweb.HermiT" path="lib/org.semanticweb.HermiT-1.2.5.927.jar" type="code" >
         	<export prefix="*"/>
         </library>
         <library id="org.semanticweb.owl.owlapi" path="lib/org.semanticweb.owl.owlapi-3.1.0.1602.jar" type="code" >

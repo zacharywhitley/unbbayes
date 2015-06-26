@@ -52,6 +52,10 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 	private JPanel protege41ReasonerOptionPanel;
 	private JLabel owlAPIReasonerLabel;
 	
+
+	private boolean isToHideEntityButtons = true;
+//	private boolean isToHideEntityButtons = false;
+	
 	
 //	private JRadioButtonMenuItem previouslySelectedReasonerItem;
 	
@@ -339,10 +343,12 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 				// disable/enable entity panel, individuals panel and finding panel
 				owl2KnowledgeBase.getClearKBCommandList().add(new OWL2KnowledgeBase.IClearKBCommand() {
 					public void doCommand() {
-						mediator.getMebnEditionPane().getBtnTabOptionEntity().setEnabled(false);
-						mediator.getMebnEditionPane().getBtnTabOptionEntityFinding().setEnabled(false);
-						mediator.getMebnEditionPane().getBtnTabOptionNodeFinding().setEnabled(false);
-						mediator.getMebnEditionPane().getBtnTabOptionTree().doClick(); // change view to MTheoryTree
+						if (isToHideEntityButtons()) {
+							mediator.getMebnEditionPane().getBtnTabOptionEntity().setEnabled(false);
+							mediator.getMebnEditionPane().getBtnTabOptionEntityFinding().setEnabled(false);
+							mediator.getMebnEditionPane().getBtnTabOptionNodeFinding().setEnabled(false);
+							mediator.getMebnEditionPane().getBtnTabOptionTree().doClick(); // change view to MTheoryTree
+						}
 					}
 					public void undoCommand() {
 						mediator.getMebnEditionPane().getBtnTabOptionEntity().setEnabled(true);
@@ -462,6 +468,21 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 	 */
 	public void setOWLAPIReasonerLabel(JLabel oWLAPIReasonerLabel) {
 		owlAPIReasonerLabel = oWLAPIReasonerLabel;
+	}
+
+	/**
+	 * @return if true, {@link #setKB(KnowledgeBase)} will attempt to hide buttons related to entities (because entities will be editted in protege panel)
+	 * 
+	 */
+	public boolean isToHideEntityButtons() {
+		return isToHideEntityButtons;
+	}
+
+	/**
+	 * @param isToHideEntityButtons: if true, {@link #setKB(KnowledgeBase)} will attempt to hide buttons related to entities (because entities will be editted in protege panel)
+	 */
+	public void setToHideEntityButtons(boolean isToHideEntityButtons) {
+		this.isToHideEntityButtons = isToHideEntityButtons;
 	}
 
 	
