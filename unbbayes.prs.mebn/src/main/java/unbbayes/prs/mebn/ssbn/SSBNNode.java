@@ -74,6 +74,8 @@ public class SSBNNode implements INode {
 	
 	private boolean isRecursive = false; 
 	private List<OVInstance> argumentsResidentMFrag; 
+	
+	/** @deprecated This is wrong, because it fails when there are 2 or more input nodes (of same domain resident node) in the same MFrag */
 	private Map<MFrag, List<OVInstance>> argumentsForMFrag; 
 	
 	
@@ -1405,6 +1407,10 @@ public class SSBNNode implements INode {
 	
 	}
 	
+	/**
+	 * @param mFrag
+	 * @param listArgumentsOfMFrag
+	 */
 	public void addArgumentsForMFrag(MFrag mFrag, List<OVInstance> listArgumentsOfMFrag){
 		if (mFrag != null 
 				&& mFrag.equals(this.getResident().getMFrag())	// the new mfrag is the same as the resident's one
@@ -1415,6 +1421,7 @@ public class SSBNNode implements INode {
 			this.setRecursiveOVInstanceList(listArgumentsOfMFrag);
 			return;
 		}
+		
 		argumentsForMFrag.put(mFrag, listArgumentsOfMFrag); 
 	
 	}
@@ -1436,6 +1443,7 @@ public class SSBNNode implements INode {
 	 * @return true if the arguments changed with sucess
 	 *         false if don't have arguments for the Mfrag (the arguments isn't 
 	 *         changed). 
+	 * @deprecated This is wrong, because it fails when there are 2 or more input nodes (of same domain resident node) in the same MFrag.
 	 */
 	public boolean turnArgumentsForMFrag(MFrag mFrag){
 		

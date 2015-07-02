@@ -30,7 +30,7 @@ import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
-import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
+import unbbayes.prs.mebn.entity.ObjectEntityContainer;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
@@ -90,9 +90,11 @@ public class ResidentNode extends MultiEntityNode
 	
 	private int internalIdentificator = Integer.MIN_VALUE;
 	
-	//DON'T USE THIS CONSTRUCTOR! IS ONLY TEMPORARY FOR CLEAR THE TESTS
-	public ResidentNode(){
-	}
+	/**
+	 * @deprecated DON'T USE THIS CONSTRUCTOR! IS ONLY TEMPORARY FOR CLEAR THE TESTS.
+	 * Use {@link #ResidentNode(String, MFrag)} instead.
+	 */
+	protected ResidentNode(){}
 	
 	public ResidentNode(String name, MFrag mFrag){
 		super(); 
@@ -503,7 +505,7 @@ public class ResidentNode extends MultiEntityNode
 	public List<OrdinaryVariable> getOrdinaryVariablesOrdereables(){
 		
 		List<OrdinaryVariable> ovOrdereableList = new ArrayList<OrdinaryVariable>();
-		ObjectEntityConteiner oeConteiner = this.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer();
+		ObjectEntityContainer oeConteiner = this.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer();
 		
 		for(OrdinaryVariable ov: this.getOrdinaryVariableList()){
 			ObjectEntity oe = oeConteiner.getObjectEntityByType(ov.getValueType()); 

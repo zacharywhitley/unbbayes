@@ -31,7 +31,8 @@ import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.BooleanStatesEntityContainer;
 import unbbayes.prs.mebn.entity.CategoricalStatesEntityContainer;
-import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
+import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.ObjectEntityContainer;
 import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
@@ -60,7 +61,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	
 	/* Entidades */
 	TypeContainer typeContainer; 
-	ObjectEntityConteiner objectEntityContainer; 
+	private ObjectEntityContainer objectEntityContainer; 
 	
 	BooleanStatesEntityContainer booleanStatesEntityContainer; 
 	CategoricalStatesEntityContainer categoricalStatesEntityContainer; 
@@ -98,7 +99,7 @@ public class MultiEntityBayesianNetwork extends Network {
 		builtInRVList = new ArrayList<BuiltInRV>(); 
 		
 		typeContainer = new TypeContainer(); 
-		objectEntityContainer = new ObjectEntityConteiner(typeContainer); 
+		objectEntityContainer = new ObjectEntityContainer(typeContainer); 
 		booleanStatesEntityContainer = new BooleanStatesEntityContainer(); 
 		categoricalStatesEntityContainer = new CategoricalStatesEntityContainer(); 
 		namesUsed = new TreeSet<String>();
@@ -326,8 +327,18 @@ public class MultiEntityBayesianNetwork extends Network {
 		return categoricalStatesEntityContainer;
 	}
 
-	public ObjectEntityConteiner getObjectEntityContainer() {
+	/**
+	 * @return an object that controls how instances of {@link ObjectEntity} are created and managed.
+	 */
+	public ObjectEntityContainer getObjectEntityContainer() {
 		return objectEntityContainer;
+	}
+	
+	/**
+	 * @param container : this object controls how instances of {@link ObjectEntity} are created and managed.
+	 */
+	public void setObjectEntityContainer(ObjectEntityContainer container) {
+		this.objectEntityContainer = container;
 	}
 
 	public TypeContainer getTypeContainer() {

@@ -9,7 +9,7 @@ import java.util.ResourceBundle;
 import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.exception.InvalidParentException;
-import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -18,11 +18,9 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.kb.SearchResult;
 import unbbayes.prs.mebn.resources.ResourcesSSBNAlgorithmLog;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
-import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.util.Debug;
@@ -399,22 +397,36 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		for(InputNode inputNodeParent: resident.getParentInputNodesList()){
 			
-			if(inputNodeParent.getResidentNodePointer().getResidentNode().equals(resident)){
+			if(inputNodeParent.getResidentNodePointer().getResidentNode().equals(resident) ){
 				//Special case: the recursivity.
 				if (logManager != null) {
 					logManager.printText(level4, false, " Recursivity treatment: " + resident);
 				}
 				
-				SimpleSSBNNode newNode = createRecursiveParents(node, ovFilledArray, 
-						entityFilledArray, inputNodeParent);
+				// check if there is any argument tagged as "ordenable"
+				boolean isOrdered = false;
+				for (Argument arg : inputNodeParent.getArgumentList()) {
+					if (arg.getOVariable().getValueType().hasOrder()) {
+						isOrdered = true;
+						break;
+					}
+				}
 				
-				if(newNode != null){
-					evaluateNodeInMFragInstance(mFragInstance, newNode); 
+				if (isOrdered) {
+					// assume that one of the arguments has linear order property (i.e. automatically assume T0 < T1 < T2 < ...)
+					SimpleSSBNNode newNode = createRecursiveParents(node, ovFilledArray, 
+							entityFilledArray, inputNodeParent);
+					
+					if(newNode != null){
+						evaluateNodeInMFragInstance(mFragInstance, newNode); 
+					}
+				} else {
+					// treat it the same way of any other node. Users must use context nodes and findings in order to guarantee acyclic network
+					createParents(node, ovFilledArray,  entityFilledArray, inputNodeParent);
 				}
 				
 			}else{
-				List<SimpleSSBNNode> createdNodesList = createParents(node, ovFilledArray, 
-						entityFilledArray, inputNodeParent);	
+				createParents(node, ovFilledArray, entityFilledArray, inputNodeParent);	
 			}
 			
 		}

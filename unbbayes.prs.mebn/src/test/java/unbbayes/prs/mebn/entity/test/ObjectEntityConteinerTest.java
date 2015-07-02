@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.entity.ObjectEntity;
-import unbbayes.prs.mebn.entity.ObjectEntityConteiner;
+import unbbayes.prs.mebn.entity.ObjectEntityContainer;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.TypeContainer;
@@ -23,7 +23,7 @@ import unbbayes.prs.mebn.entity.TypeContainer;
 public class ObjectEntityConteinerTest {
 
 	MultiEntityBayesianNetwork mebn = null;
-	ObjectEntityConteiner container = null;
+	ObjectEntityContainer container = null;
 	
 	/**
 	 * @throws java.lang.Exception
@@ -42,11 +42,11 @@ public class ObjectEntityConteinerTest {
 
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.entity.ObjectEntityConteiner#clearAllInstances(unbbayes.prs.mebn.entity.ObjectEntity)}.
+	 * Test method for {@link unbbayes.prs.mebn.entity.ObjectEntityContainer#clearAllInstances(unbbayes.prs.mebn.entity.ObjectEntity)}.
 	 */
 	@Test
 	public final void testClearAllInstances() {
-		ObjectEntityConteiner container = this.mebn.getObjectEntityContainer();
+		ObjectEntityContainer container = this.mebn.getObjectEntityContainer();
 		ObjectEntity entity1 = null;
 		ObjectEntity entity2 = null;
 		try {
