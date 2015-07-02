@@ -53,8 +53,8 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 	private JLabel owlAPIReasonerLabel;
 	
 
-	private boolean isToHideEntityButtons = true;
-//	private boolean isToHideEntityButtons = false;
+//	private boolean isToHideEntityButtons = true;
+	private boolean isToHideEntityButtons = false;
 	
 	
 //	private JRadioButtonMenuItem previouslySelectedReasonerItem;

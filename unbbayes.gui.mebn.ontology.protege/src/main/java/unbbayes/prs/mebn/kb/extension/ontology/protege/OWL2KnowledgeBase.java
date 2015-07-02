@@ -568,154 +568,154 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#insertRandomVariableFinding(unbbayes.prs.mebn.RandomVariableFinding)
 	 */
 	public void insertRandomVariableFinding( RandomVariableFinding randomVariableFinding) {
-		return;
-//		// initial assertion
-//		if (randomVariableFinding == null) {
-//			Debug.println(this.getClass(), "Attempted to add null as random variable finding");
-//			return;	// just ignore
-//		}
-//		
-//		// check if the number of arguments is compatible (this version does not support OWL properties representing n-ary relationships with n > 2 or n < 1)
-//		// TODO implement n-ary relationships
-//		if ((randomVariableFinding.getArguments() == null)
-//				|| (randomVariableFinding.getArguments().length > 2)
-//				|| (randomVariableFinding.getArguments().length < 1)) {
-//			throw new IllegalArgumentException("This version does not support findings with " + randomVariableFinding.getArguments().length + " argument(s) yet.");
-//		}
-//		
-//		// extract the IRI of the related OWL property
-//		IRI iri = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(this.getDefaultMEBN(), randomVariableFinding.getNode());
-//		
-//		// verify if MEBN contains IRI definition of the OWL property related to this resident node
-//		if (iri == null) {
-//			throw new IllegalStateException(this.getDefaultMEBN() + " does not specify the OWL property's IRI for resident node " + randomVariableFinding);
-//		}
-//		
-//		// check if the currently managed ontology contains the extracted owl property's IRI 
-//		if (!this.getDefaultOWLReasoner().getRootOntology().containsObjectPropertyInSignature(iri, true) 
-//				&& !this.getDefaultOWLReasoner().getRootOntology().containsDataPropertyInSignature(iri, true) ) {
-//			throw new IllegalStateException("Ontology " + this.getDefaultOWLReasoner().getRootOntology() + " does not provide property " + iri);
-//		}
-//		
-//		
-//		// extract the data factory to obtain the owl property
-//		OWLDataFactory factory = this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().getOWLDataFactory();
-//		
-//		// this variable will hold the axioms to be added to ontology (this axiom will represent a particular owl triple "argument -> property -> value" )
-//		OWLAxiom axiom = null;
-//		
-//		// TODO check if we should also add negative axioms (because OWL has open-world assumption, but our SSBN algorithm assumes closed-world assumptions at few points)
-////		OWLAxiom negativeAxiom = null;	// because OWL uses open-world assumption, we should sometimes add a negative axiom to make sure the opposite never happens
-//		
-//		
-//		// extract the IRI of the subject of OWL property (which is the 1st argument)
-//		IRI subjectIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(this.getDefaultMEBN(), randomVariableFinding.getArguments()[0]);
-//		if (subjectIRI == null ) {
-//			throw new IllegalStateException("MEBN " + this.getDefaultMEBN() + " does not provide the IRI of object entity individual " + randomVariableFinding.getArguments()[0]);
-//		}
-//		if (!this.getDefaultOWLReasoner().getRootOntology().containsIndividualInSignature(subjectIRI, true)) {
-//			throw new IllegalStateException("Ontology " + this.getDefaultOWLReasoner().getRootOntology() + " does not provide individual " + subjectIRI);
-//		}
-//		
-//		// extract the actual owl individual that represents the subject (1st argument of resident node finding)
-//		OWLIndividual subject = factory.getOWLNamedIndividual(subjectIRI);
-//		if (subject == null) {
-//			// this is unlikely to happen, but some factory implementations may return null individuals...
-//			throw new IllegalStateException("Could not extract OWL individual with IRI " + subjectIRI);
-//		}
-//		
-//		// verify if we should use data property (boolean node with 1 argument) or object property (default)
-//		if(randomVariableFinding.getNode().getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES) {
-//			
-//			// this finding may be a data property (if node has only 1 argument) or a non-functional property (if it represents relationships between 2 individuals)
-//			if (randomVariableFinding.getArguments().length <= 1) {
-//				
-//				// This is a data property relating an individual to a boolean value
-//				OWLDataProperty property = factory.getOWLDataProperty(iri);
-//				
-//				// create data property assertion to insert a particular boolean value as property range
-//				Boolean value = true; // assume that boolean findings are either true or false (there is no finding for absurd)
-//				if("false".equalsIgnoreCase(randomVariableFinding.getState().getName()) || randomVariableFinding.getState().getName().endsWith("false")){
-//					// actually, false findings are less likely to happen (that's why we are comparing to "false" instead of "true")
-//					value = false;
-//				} 
-//				
-//				axiom = factory.getOWLDataPropertyAssertionAxiom(property.asOWLDataProperty(), subject, value);
-//				
-//				
-//			} else { // there are 2 or more arguments: this is a non-functional relation between 2 individuals
-//				// extract object property
-//				OWLObjectProperty property = factory.getOWLObjectProperty(iri);
-//				
-//				// extract the object (range, or the second argument)
-//				// TODO implement findings with more than 2 arguments
-//				IRI objectIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(this.getDefaultMEBN(), randomVariableFinding.getArguments()[1]);
-//				if (objectIRI == null ) {
-//					throw new IllegalStateException("MEBN " + this.getDefaultMEBN() + " does not provide the IRI of object entity individual " + randomVariableFinding.getArguments()[1]);
-//				}
-//				if (!this.getDefaultOWLReasoner().getRootOntology().containsIndividualInSignature(objectIRI, true)) {
-//					throw new IllegalStateException("Ontology " + this.getDefaultOWLReasoner().getRootOntology() + " does not provide individual " + objectIRI);
-//				}
-//				
-//				// extract the actual owl individual that represents the range (2nd argument of resident node finding)
-//				OWLIndividual object = factory.getOWLNamedIndividual(objectIRI);
-//				if (object == null) {
-//					// this is unlikely to happen, but some factory implementations may return null individuals...
-//					throw new IllegalStateException("Could not extract OWL individual with IRI " + objectIRI);
-//				}
-//				
-//				// create object property assertion to relate 2 individuals. 
-//				if(randomVariableFinding.getState().getName().equalsIgnoreCase("false")){
-//					// in this case, the axiom should be negative (it makes explicit that the relationship does not happen at all)
-//					axiom = factory.getOWLNegativeObjectPropertyAssertionAxiom(property.asOWLObjectProperty(), subject, object);
-//				} else {
-//					// in this case, the axiom should be positive (it makes explicit that the relationship happens - this case happens in most cases)
-//					axiom = factory.getOWLObjectPropertyAssertionAxiom(property.asOWLObjectProperty(), subject, object);
-//				}
-//			}
-//		} else if (randomVariableFinding.getArguments().length <= 1) { 
-//			// extract object property
-//			OWLObjectProperty property = factory.getOWLObjectProperty(iri);
-//			
-//			// This seems to be a random variable with "functional" format ( e.g. F(x) = y ) )
-//			Debug.println(this.getClass(), "Property " + property + " seems to be a function from " + subject + " to " + randomVariableFinding.getState());
-//			
-//			// extract the object (value)
-//			IRI objectIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(this.getDefaultMEBN(), randomVariableFinding.getState());
-//			if (objectIRI == null ) {
-//				throw new IllegalStateException("MEBN " + this.getDefaultMEBN() + " does not provide the IRI of categorical entity " + randomVariableFinding.getState());
-//			}
-//			if (!this.getDefaultOWLReasoner().getRootOntology().containsIndividualInSignature(objectIRI, true)) {
-//				throw new IllegalStateException("Ontology " + this.getDefaultOWLReasoner().getRootOntology() + " does not provide individual " + objectIRI);
-//			}
-//			
-//			// extract the actual owl individual that represents the range (2nd argument of resident node finding)
-//			OWLIndividual object = factory.getOWLNamedIndividual(objectIRI);
-//			if (object == null) {
-//				// this is unlikely to happen, but some factory implementations may return null individuals...
-//				throw new IllegalStateException("Could not extract OWL individual with IRI " + objectIRI);
-//			}
-//			
-//			axiom = factory.getOWLObjectPropertyAssertionAxiom(property.asOWLObjectProperty(), subject, object);
-//			
-//			// Note: if property is really functional, then the negative axioms should be automatically inferred by reasoner
-//		} else {
-//			// this is a functional ternary relation
-//			// TODO implement ternary function
-//			throw new IllegalArgumentException("This version does not support ternary functions (a property mapping 2 individuals to 1 individual) like " + iri);
-//		}
-//		
-//		// add axioms and apply changes
-//		if (axiom != null) {
-//			this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().addAxiom(this.getDefaultOWLReasoner().getRootOntology(), axiom);
-//			try {
-//				Debug.println(this.getClass(), "Added finding " + randomVariableFinding + " to property " + iri + " and subject " + subject);
-//			} catch (Throwable t) {
-//				t.printStackTrace();
-//			}
-//		} else {
-//			Debug.println(this.getClass(), "No axiom could be generated from random variable finding " + randomVariableFinding);
-//		}
+//		return;
+		// initial assertion
+		if (randomVariableFinding == null) {
+			Debug.println(this.getClass(), "Attempted to add null as random variable finding");
+			return;	// just ignore
+		}
+		
+		// check if the number of arguments is compatible (this version does not support OWL properties representing n-ary relationships with n > 2 or n < 1)
+		// TODO implement n-ary relationships
+		if ((randomVariableFinding.getArguments() == null)
+				|| (randomVariableFinding.getArguments().length > 2)
+				|| (randomVariableFinding.getArguments().length < 1)) {
+			throw new IllegalArgumentException("This version does not support findings with " + randomVariableFinding.getArguments().length + " argument(s) yet.");
+		}
+		
+		// extract the IRI of the related OWL property
+		IRI iri = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(this.getDefaultMEBN(), randomVariableFinding.getNode());
+		
+		// verify if MEBN contains IRI definition of the OWL property related to this resident node
+		if (iri == null) {
+			throw new IllegalStateException(this.getDefaultMEBN() + " does not specify the OWL property's IRI for resident node " + randomVariableFinding);
+		}
+		
+		// check if the currently managed ontology contains the extracted owl property's IRI 
+		if (!this.getDefaultOWLReasoner().getRootOntology().containsObjectPropertyInSignature(iri, true) 
+				&& !this.getDefaultOWLReasoner().getRootOntology().containsDataPropertyInSignature(iri, true) ) {
+			throw new IllegalStateException("Ontology " + this.getDefaultOWLReasoner().getRootOntology() + " does not provide property " + iri);
+		}
+		
+		
+		// extract the data factory to obtain the owl property
+		OWLDataFactory factory = this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().getOWLDataFactory();
+		
+		// this variable will hold the axioms to be added to ontology (this axiom will represent a particular owl triple "argument -> property -> value" )
+		OWLAxiom axiom = null;
+		
+		// TODO check if we should also add negative axioms (because OWL has open-world assumption, but our SSBN algorithm assumes closed-world assumptions at few points)
+//		OWLAxiom negativeAxiom = null;	// because OWL uses open-world assumption, we should sometimes add a negative axiom to make sure the opposite never happens
+		
+		
+		// extract the IRI of the subject of OWL property (which is the 1st argument)
+		IRI subjectIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(this.getDefaultMEBN(), randomVariableFinding.getArguments()[0]);
+		if (subjectIRI == null ) {
+			throw new IllegalStateException("MEBN " + this.getDefaultMEBN() + " does not provide the IRI of object entity individual " + randomVariableFinding.getArguments()[0]);
+		}
+		if (!this.getDefaultOWLReasoner().getRootOntology().containsIndividualInSignature(subjectIRI, true)) {
+			throw new IllegalStateException("Ontology " + this.getDefaultOWLReasoner().getRootOntology() + " does not provide individual " + subjectIRI);
+		}
+		
+		// extract the actual owl individual that represents the subject (1st argument of resident node finding)
+		OWLIndividual subject = factory.getOWLNamedIndividual(subjectIRI);
+		if (subject == null) {
+			// this is unlikely to happen, but some factory implementations may return null individuals...
+			throw new IllegalStateException("Could not extract OWL individual with IRI " + subjectIRI);
+		}
+		
+		// verify if we should use data property (boolean node with 1 argument) or object property (default)
+		if(randomVariableFinding.getNode().getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES) {
+			
+			// this finding may be a data property (if node has only 1 argument) or a non-functional property (if it represents relationships between 2 individuals)
+			if (randomVariableFinding.getArguments().length <= 1) {
+				
+				// This is a data property relating an individual to a boolean value
+				OWLDataProperty property = factory.getOWLDataProperty(iri);
+				
+				// create data property assertion to insert a particular boolean value as property range
+				Boolean value = true; // assume that boolean findings are either true or false (there is no finding for absurd)
+				if("false".equalsIgnoreCase(randomVariableFinding.getState().getName()) || randomVariableFinding.getState().getName().endsWith("false")){
+					// actually, false findings are less likely to happen (that's why we are comparing to "false" instead of "true")
+					value = false;
+				} 
+				
+				axiom = factory.getOWLDataPropertyAssertionAxiom(property.asOWLDataProperty(), subject, value);
+				
+				
+			} else { // there are 2 or more arguments: this is a non-functional relation between 2 individuals
+				// extract object property
+				OWLObjectProperty property = factory.getOWLObjectProperty(iri);
+				
+				// extract the object (range, or the second argument)
+				// TODO implement findings with more than 2 arguments
+				IRI objectIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(this.getDefaultMEBN(), randomVariableFinding.getArguments()[1]);
+				if (objectIRI == null ) {
+					throw new IllegalStateException("MEBN " + this.getDefaultMEBN() + " does not provide the IRI of object entity individual " + randomVariableFinding.getArguments()[1]);
+				}
+				if (!this.getDefaultOWLReasoner().getRootOntology().containsIndividualInSignature(objectIRI, true)) {
+					throw new IllegalStateException("Ontology " + this.getDefaultOWLReasoner().getRootOntology() + " does not provide individual " + objectIRI);
+				}
+				
+				// extract the actual owl individual that represents the range (2nd argument of resident node finding)
+				OWLIndividual object = factory.getOWLNamedIndividual(objectIRI);
+				if (object == null) {
+					// this is unlikely to happen, but some factory implementations may return null individuals...
+					throw new IllegalStateException("Could not extract OWL individual with IRI " + objectIRI);
+				}
+				
+				// create object property assertion to relate 2 individuals. 
+				if(randomVariableFinding.getState().getName().equalsIgnoreCase("false")){
+					// in this case, the axiom should be negative (it makes explicit that the relationship does not happen at all)
+					axiom = factory.getOWLNegativeObjectPropertyAssertionAxiom(property.asOWLObjectProperty(), subject, object);
+				} else {
+					// in this case, the axiom should be positive (it makes explicit that the relationship happens - this case happens in most cases)
+					axiom = factory.getOWLObjectPropertyAssertionAxiom(property.asOWLObjectProperty(), subject, object);
+				}
+			}
+		} else if (randomVariableFinding.getArguments().length <= 1) { 
+			// extract object property
+			OWLObjectProperty property = factory.getOWLObjectProperty(iri);
+			
+			// This seems to be a random variable with "functional" format ( e.g. F(x) = y ) )
+			Debug.println(this.getClass(), "Property " + property + " seems to be a function from " + subject + " to " + randomVariableFinding.getState());
+			
+			// extract the object (value)
+			IRI objectIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(this.getDefaultMEBN(), randomVariableFinding.getState());
+			if (objectIRI == null ) {
+				throw new IllegalStateException("MEBN " + this.getDefaultMEBN() + " does not provide the IRI of categorical entity " + randomVariableFinding.getState());
+			}
+			if (!this.getDefaultOWLReasoner().getRootOntology().containsIndividualInSignature(objectIRI, true)) {
+				throw new IllegalStateException("Ontology " + this.getDefaultOWLReasoner().getRootOntology() + " does not provide individual " + objectIRI);
+			}
+			
+			// extract the actual owl individual that represents the range (2nd argument of resident node finding)
+			OWLIndividual object = factory.getOWLNamedIndividual(objectIRI);
+			if (object == null) {
+				// this is unlikely to happen, but some factory implementations may return null individuals...
+				throw new IllegalStateException("Could not extract OWL individual with IRI " + objectIRI);
+			}
+			
+			axiom = factory.getOWLObjectPropertyAssertionAxiom(property.asOWLObjectProperty(), subject, object);
+			
+			// Note: if property is really functional, then the negative axioms should be automatically inferred by reasoner
+		} else {
+			// this is a functional ternary relation
+			// TODO implement ternary function
+			throw new IllegalArgumentException("This version does not support ternary functions (a property mapping 2 individuals to 1 individual) like " + iri);
+		}
+		
+		// add axioms and apply changes
+		if (axiom != null) {
+			this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().addAxiom(this.getDefaultOWLReasoner().getRootOntology(), axiom);
+			try {
+				Debug.println(this.getClass(), "Added finding " + randomVariableFinding + " to property " + iri + " and subject " + subject);
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+		} else {
+			Debug.println(this.getClass(), "No axiom could be generated from random variable finding " + randomVariableFinding);
+		}
 
 	}
 

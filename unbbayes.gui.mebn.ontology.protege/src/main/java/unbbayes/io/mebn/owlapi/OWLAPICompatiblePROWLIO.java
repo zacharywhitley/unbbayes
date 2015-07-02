@@ -86,6 +86,7 @@ import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
+import unbbayes.prs.mebn.entity.ontology.owlapi.OWLAPIObjectEntityContainer;
 import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 import unbbayes.prs.mebn.ontology.protege.IOWLClassExpressionParserFacade;
 import unbbayes.prs.mebn.ontology.protege.OWLClassExpressionParserFacade;
@@ -262,6 +263,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		// populate MEBN
 		this.loadMEBNFromOntology(mebn, this.getLastOWLOntology(), this.getLastOWLReasoner());
 		
+		
 		return mebn;
 	}
 	
@@ -280,6 +282,12 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 			Debug.println(this.getClass(), "There is no ontology to load...");
 			return;
 		}
+		
+		// fill the storage implementor of MEBN (a reference to an object that loaded/saved the mebn last time)
+		mebn.setStorageImplementor(OWLAPIStorageImplementorDecorator.newInstance(ontology));
+		
+		// use an ObjectEntityContainer which also handles OWL classes and individuals
+		mebn.setObjectEntityContainer(new OWLAPIObjectEntityContainer(mebn));
 		
 		// Reset the non-PR-OWL classes extractor (this)
 		this.resetNonPROWLClassExtractor();
@@ -352,8 +360,6 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 			throw new IllegalArgumentException("Failed to load ontology " + ontology, e);
 		}
 		
-		// fill the storage implementor of MEBN (a reference to an object that loaded/saved the mebn last time)
-		mebn.setStorageImplementor(OWLAPIStorageImplementorDecorator.newInstance(this.getLastOWLOntology()));
 		
 //		return mebn;
 	}

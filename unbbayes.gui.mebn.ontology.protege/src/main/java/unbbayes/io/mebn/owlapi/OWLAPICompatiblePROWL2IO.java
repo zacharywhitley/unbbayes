@@ -83,6 +83,7 @@ import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
+import unbbayes.prs.mebn.entity.ontology.owlapi.OWLAPIObjectEntityContainer;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.ArgumentOVariableAlreadySetException;
 import unbbayes.util.Debug;
@@ -291,6 +292,12 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			return;
 		}
 		
+		// fill the storage implementor of MEBN (a reference to an object that loaded/saved the mebn last time)
+		mebn.setStorageImplementor(OWLAPIStorageImplementorDecorator.newInstance(ontology));
+
+		// use an ObjectEntityContainer which also handles OWL classes and individuals
+		mebn.setObjectEntityContainer(new OWLAPIObjectEntityContainer(mebn));
+		
 		
 		// Reset the non-PR-OWL classes extractor (this)
 		this.resetNonPROWLClassExtractor();
@@ -372,8 +379,6 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			throw new IllegalArgumentException("Failed to load ontology " + ontology, e);
 		}
 		
-		// fill the storage implementor of MEBN (a reference to an object that loaded/saved the mebn last time)
-		mebn.setStorageImplementor(OWLAPIStorageImplementorDecorator.newInstance(this.getLastOWLOntology()));
 		
 	}
 	
@@ -2241,6 +2246,9 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 
 			// create a reference from MEBN to the new ontology
 			mebn.setStorageImplementor(OWLAPIStorageImplementorDecorator.newInstance(ontology));
+			
+			// replace the manager of object entity to an instance which also manages OWL entities.
+			mebn.setObjectEntityContainer(new OWLAPIObjectEntityContainer(mebn));
 		}
 		
 		// do not allow current ontology to use pr-owl (1) URI
