@@ -322,6 +322,9 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().applyChange(addAxiom);
 		}
 		
+		// make sure the IRI gets mapped
+		((IRIAwareMultiEntityBayesianNetwork)this.getDefaultMEBN()).addIRIToMEBN(this.getDefaultMEBN(), entity, iri);
+		
 		// put to cache
 		if (this.getEntityCache() != null) {
 			this.getEntityCache().put(entity, iri);
@@ -501,8 +504,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			t.printStackTrace();
 		}
 		
-		// only create new instance if it does not exist yet, but we can check it only if MEBN was set.
+		// extract owl factory in advance
+		OWLDataFactory factory = this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().getOWLDataFactory();
 		
+		// only create new instance if it does not exist yet, but we can check it only if MEBN was set.
 		
 		// extract IRI to check if instance exists
 		IRI iri = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(this.getDefaultMEBN(), entityInstance);
@@ -515,21 +520,24 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				throw new IllegalStateException("No OWL reasoner found.");
 			}
 			
-			// extract factory
-			OWLDataFactory factory = this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().getOWLDataFactory();
-			
 			// create IRI of owl individual
 			iri = IRI.create(this.getOntologyPrefixManager(this.getDefaultOWLReasoner().getRootOntology()).getDefaultPrefix() + entityInstance.getName());
-
-			// crate owl individual
+			
+			// if everything went OK, register entity instance in the MEBN
+			IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(this.getDefaultMEBN(), entityInstance, iri);
+		}
+		
+//		if (!this.getDefaultOWLReasoner().getRootOntology().containsIndividualInSignature(iri, true)) {
+			// crate owl individual if it does not exist
+			
 			OWLIndividual individual = factory.getOWLNamedIndividual(iri);
 			
 			// obtain class to add individual. Use the same of the related object entity
 			OWLClass entityClass = null;
 			IRI classIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(this.getDefaultMEBN(), entityInstance.getInstanceOf());
 			if (classIRI == null || !this.getDefaultOWLReasoner().getRootOntology().containsClassInSignature(classIRI)) {		
-				// use owl:Thing if we could not find the proper class
-				entityClass = factory.getOWLThing();
+				// try using abbreviated IRI in order to extract the class of this individual
+				entityClass = factory.getOWLClass(entityInstance.getInstanceOf().getName(), this.getOntologyPrefixManager(this.getDefaultOWLReasoner().getRootOntology()));
 				classIRI = entityClass.getIRI();
 				try {
 					Debug.println(this.getClass(), "Could not find proper class for individual " + individual + ". Class set to " + entityClass);
@@ -551,10 +559,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			
 			// add axiom and apply change
 			this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().addAxiom(this.getDefaultOWLReasoner().getRootOntology(), classAssertionAxiom);
-			
-			// if everything goes OK, register entity instance in the MEBN
-			IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(this.getDefaultMEBN(), entityInstance, iri);
-		}
+//		}
 		
 		try {
 			Debug.println(this.getClass(), "The entity instance " + entityInstance.getName() + " is pointing to OWL individual " + iri);
@@ -726,7 +731,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @see #saveFindings(MultiEntityBayesianNetwork, File)
 	 */
 	public void saveGenerativeMTheory(MultiEntityBayesianNetwork mebn, File file) {
-		this.saveFindings(mebn, file);
+//		this.saveFindings(mebn, file);
 	}
 
 	/* (non-Javadoc)

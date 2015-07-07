@@ -267,78 +267,79 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 		
 		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(getMEBN(), this, temporaryOWLClass.getIRI());
 	}
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.entity.ObjectEntity#addInstance(java.lang.String)
-	 */
-	public ObjectEntityInstance addInstance(String name) throws TypeException {
-		 ObjectEntityInstance entityInstance = super.addInstance(name);
-		 if (entityInstance == null) {
-			 return null;
-		 }
-		 
-		 // extract some variables which will be used as shortcuts
-		 MultiEntityBayesianNetwork mebn = getMEBN();
-		 OWLOntology ontology = getOWLOntology();
-
-		 // ignore entityInstances that were already stored in this ontology (we are not going to save them twice)
-		 {
-			 IRI storedIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, entityInstance);
-			 if (storedIRI != null && ontology.containsIndividualInSignature(storedIRI, true)) {
-				 try {
-					 Debug.println(this.getClass(), entityInstance + " is already included in " + ontology + ". IRI = " + storedIRI);
-				 } catch (Throwable t) {
-					 t.printStackTrace();
-				 }
-				 return entityInstance;
-			 }
-		 }
-		 
-		 // extract the prefix manager to be used to control  the namespace of OWL individual
-		 PrefixManager currentPrefix = getOntologyPrefixManager(ontology);
-		 // this is the prefix of PR-OWL2 definitions
-		 PrefixManager prowl2Prefix = getOntologyPrefixManager(null);
-		 
-		 // extract/create new OWL individual
-		 OWLNamedIndividual owlIndividual = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNamedIndividual(entityInstance.getName(), currentPrefix);
-		 // if it does not exist, create it as an individual of entity
-		 if (!ontology.containsIndividualInSignature(owlIndividual.asOWLNamedIndividual().getIRI(), true)) {
-			 try {
-				Debug.println(this.getClass(), owlIndividual + ", and individual of " + this.getAssociatedOWLEntity() + " is going to be added into " + ontology);
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
-			// create axiom asserting that individual's type is currentOWLEntity and commit change
-			ontology.getOWLOntologyManager().addAxiom(	// add axiom and commit change
-					 ontology, 	// ontology where axiom will be inserted
-					 ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClassAssertionAxiom(this.getAssociatedOWLEntity().asOWLClass(), owlIndividual)	// individual's type is the associated owl class
-			);
-			
-			// fill some required properties (e.g. hasUID)
-			try {
-				ontology.getOWLOntologyManager().addAxiom(	// add axiom and commit
-						ontology, 	// where to add axiom
-						ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataPropertyAssertionAxiom(	// axiom to add datatype property to an individual
-								ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(IPROWL2ModelUser.HASUID, prowl2Prefix), // get hasUID datatype property
-								owlIndividual, 					// individual having the hasUID property
-								"!" + entityInstance.getName()	// value
-						)
-				);
-			} catch (Exception e) {
-				// Current version of this IO should work with or without the unique ID
-				try {
-					Debug.println(this.getClass(), "Could not set UID for " + owlIndividual + " : " + e.getMessage(), e);
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
-			}
-			
-		 }
-		 
-		 // add individual in the IRI mapping
-		 IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, entityInstance, owlIndividual.getIRI());
-		 
-		 return entityInstance;
-	}
+	
+//	/* (non-Javadoc)
+//	 * @see unbbayes.prs.mebn.entity.ObjectEntity#addInstance(java.lang.String)
+//	 */
+//	public ObjectEntityInstance addInstance(String name) throws TypeException {
+//		 ObjectEntityInstance entityInstance = super.addInstance(name);
+//		 if (entityInstance == null) {
+//			 return null;
+//		 }
+//		 
+//		 // extract some variables which will be used as shortcuts
+//		 MultiEntityBayesianNetwork mebn = getMEBN();
+//		 OWLOntology ontology = getOWLOntology();
+//
+//		 // ignore entityInstances that were already stored in this ontology (we are not going to save them twice)
+//		 {
+//			 IRI storedIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, entityInstance);
+//			 if (storedIRI != null && ontology.containsIndividualInSignature(storedIRI, true)) {
+//				 try {
+//					 Debug.println(this.getClass(), entityInstance + " is already included in " + ontology + ". IRI = " + storedIRI);
+//				 } catch (Throwable t) {
+//					 t.printStackTrace();
+//				 }
+//				 return entityInstance;
+//			 }
+//		 }
+//		 
+//		 // extract the prefix manager to be used to control  the namespace of OWL individual
+//		 PrefixManager currentPrefix = getOntologyPrefixManager(ontology);
+//		 // this is the prefix of PR-OWL2 definitions
+//		 PrefixManager prowl2Prefix = getOntologyPrefixManager(null);
+//		 
+//		 // extract/create new OWL individual
+//		 OWLNamedIndividual owlIndividual = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNamedIndividual(entityInstance.getName(), currentPrefix);
+//		 // if it does not exist, create it as an individual of entity
+//		 if (!ontology.containsIndividualInSignature(owlIndividual.asOWLNamedIndividual().getIRI(), true)) {
+//			 try {
+//				Debug.println(this.getClass(), owlIndividual + ", and individual of " + this.getAssociatedOWLEntity() + " is going to be added into " + ontology);
+//			} catch (Throwable t) {
+//				t.printStackTrace();
+//			}
+//			// create axiom asserting that individual's type is currentOWLEntity and commit change
+//			ontology.getOWLOntologyManager().addAxiom(	// add axiom and commit change
+//					 ontology, 	// ontology where axiom will be inserted
+//					 ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClassAssertionAxiom(this.getAssociatedOWLEntity().asOWLClass(), owlIndividual)	// individual's type is the associated owl class
+//			);
+//			
+//			// fill some required properties (e.g. hasUID)
+//			try {
+//				ontology.getOWLOntologyManager().addAxiom(	// add axiom and commit
+//						ontology, 	// where to add axiom
+//						ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataPropertyAssertionAxiom(	// axiom to add datatype property to an individual
+//								ontology.getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(IPROWL2ModelUser.HASUID, prowl2Prefix), // get hasUID datatype property
+//								owlIndividual, 					// individual having the hasUID property
+//								"!" + entityInstance.getName()	// value
+//						)
+//				);
+//			} catch (Exception e) {
+//				// Current version of this IO should work with or without the unique ID
+//				try {
+//					Debug.println(this.getClass(), "Could not set UID for " + owlIndividual + " : " + e.getMessage(), e);
+//				} catch (Throwable t) {
+//					t.printStackTrace();
+//				}
+//			}
+//			
+//		 }
+//		 
+//		 // add individual in the IRI mapping
+//		 IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, entityInstance, owlIndividual.getIRI());
+//		 
+//		 return entityInstance;
+//	}
 	
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.entity.ObjectEntity#removeInstance(unbbayes.prs.mebn.entity.ObjectEntityInstance)
