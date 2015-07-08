@@ -107,10 +107,12 @@ public class ProtegeStorageImplementorDecorator extends OWLAPIStorageImplementor
 	 */
 	public void setOWLReasoner(OWLReasoner owlReasoner) {
 		OWLReasonerManager owlReasonerManager = this.getOWLEditorKit().getOWLModelManager().getOWLReasonerManager();
+		String oldReasonerID = owlReasonerManager.getCurrentReasonerFactoryId();	// remember what was the previous reasoner ID
 		owlReasonerManager.setCurrentReasonerFactoryId(owlReasoner.getReasonerName());
 		// synchronize reasoner if this is a valid reasoner.
 		// We assume that instances of NoOpReasoner are invalid.
-		if (!(owlReasoner instanceof NoOpReasoner)) {
+		if (!(owlReasoner instanceof NoOpReasoner)
+				|| !owlReasoner.getReasonerName().equalsIgnoreCase(oldReasonerID)) {
 			try {
 				owlReasonerManager.classifyAsynchronously(owlReasonerManager.getReasonerPreferences().getPrecomputedInferences());
 			} catch (Exception e) {
@@ -120,7 +122,8 @@ public class ProtegeStorageImplementorDecorator extends OWLAPIStorageImplementor
 			// So, do polling and wait until the new reasoner is initialized
 			// TODO find out how to stop using polling.
 			for (int i = 0; i < 120; i++) {
-				if (ReasonerStatus.INITIALIZED.equals(owlReasonerManager.getReasonerStatus())) {
+				if (ReasonerStatus.INITIALIZED.equals(owlReasonerManager.getReasonerStatus())
+						||  ReasonerStatus.NO_REASONER_FACTORY_CHOSEN.equals(owlReasonerManager.getReasonerStatus())) {
 					// stop polling if reasoner has initialized
 					break;
 				}
@@ -139,7 +142,8 @@ public class ProtegeStorageImplementorDecorator extends OWLAPIStorageImplementor
 					e.printStackTrace();
 				}
 			}
-			if (!ReasonerStatus.INITIALIZED.equals(owlReasonerManager.getReasonerStatus())) {
+			if (!ReasonerStatus.INITIALIZED.equals(owlReasonerManager.getReasonerStatus())
+					&& !ReasonerStatus.NO_REASONER_FACTORY_CHOSEN.equals(owlReasonerManager.getReasonerStatus())) {
 				throw new RuntimeException("Failed to initialize reasoner " + owlReasoner.getReasonerName() + ", this reasoner may be incompatible with current version.");
 			}
 		}

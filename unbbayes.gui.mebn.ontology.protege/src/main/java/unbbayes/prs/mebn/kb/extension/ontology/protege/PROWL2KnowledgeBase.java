@@ -3,11 +3,18 @@
  */
 package unbbayes.prs.mebn.kb.extension.ontology.protege;
 
+import java.util.List;
+
+import org.protege.editor.owl.model.OWLModelManager;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.PrefixManager;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.io.mebn.owlapi.DefaultNonPROWL2ClassExtractor;
+import unbbayes.io.mebn.owlapi.IPROWL2ModelUser;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.entity.ontology.owlapi.OWLReasonerInfo;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 
 /**
@@ -48,4 +55,80 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 		ret.setDefaultMEBN(mebn);
 		return ret;
 	}
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBase#getDefaultOWLReasoner()
+	 */
+	public OWLReasoner getDefaultOWLReasoner() {
+		// TODO Auto-generated method stub
+		return super.getDefaultOWLReasoner();
+	}
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBase#getOWLModelManager()
+	 */
+	public OWLModelManager getOWLModelManager() {
+		// TODO Auto-generated method stub
+		return super.getOWLModelManager();
+	}
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBase#getProwlModelUserDelegator()
+	 */
+	public IPROWL2ModelUser getProwlModelUserDelegator() {
+		// TODO Auto-generated method stub
+		return super.getProwlModelUserDelegator();
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBase#setDefaultOWLReasoner(org.semanticweb.owlapi.reasoner.OWLReasoner)
+	 */
+	public void setDefaultOWLReasoner(OWLReasoner defaultOWLReasoner) {
+		// TODO Auto-generated method stub
+		super.setDefaultOWLReasoner(defaultOWLReasoner);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBase#getAvailableOWLReasonersInfo()
+	 */
+	public List<OWLReasonerInfo> getAvailableOWLReasonersInfo() {
+		// TODO Auto-generated method stub
+		return super.getAvailableOWLReasonersInfo();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBase#buildOWLReasoner(unbbayes.prs.mebn.entity.ontology.owlapi.OWLReasonerInfo)
+	 */
+	public OWLReasoner buildOWLReasoner(OWLReasonerInfo reasonerInfo) {
+		// TODO Auto-generated method stub
+		return super.buildOWLReasoner(reasonerInfo);
+	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBase#supportsLocalFile(boolean)
+	 */
+	public boolean supportsLocalFile(boolean isLoad) {
+		// TODO Auto-generated method stub
+		return super.supportsLocalFile(isLoad);
+	}
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBase#getSupportedLocalFileExtension(boolean)
+	 */
+	public String[] getSupportedLocalFileExtension(boolean isLoad) {
+		// TODO Auto-generated method stub
+		return super.getSupportedLocalFileExtension(isLoad);
+	}
+	
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBase#getSupportedLocalFileDescription(boolean)
+	 */
+	public String getSupportedLocalFileDescription(boolean isLoad) {
+		// TODO Auto-generated method stub
+		return super.getSupportedLocalFileDescription(isLoad);
+	}
+	
+	
+	
+	
 }

@@ -17,6 +17,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.protege.editor.owl.model.OWLModelManager;
+import org.protege.editor.owl.model.inference.NoOpReasoner;
+import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.protege.editor.owl.model.inference.ReasonerStatus;
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
@@ -69,6 +71,8 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.entity.TypeContainer;
+import unbbayes.prs.mebn.entity.ontology.owlapi.OWLReasonerInfo;
+import unbbayes.prs.mebn.entity.ontology.owlapi.ProtegeOWLReasonerInfoAdapter;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.SearchResult;
 import unbbayes.prs.mebn.ontology.protege.IOWLClassExpressionParserFacade;
@@ -4141,6 +4145,84 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		Debug.println(this.getClass(), "Boolean evaluation of context node formula is not implemented yet. Returning default value: " + ret);
 		return ret;
 	}
+	
+	/**
+	 * @return a list of OWL reasoners (description logic reasoners) that can be used by this knowledge base and thus listed by
+	 * {@link unbbayes.gui.mebn.extension.kb.protege.OWL2KnowledgeBaseOptionPanelBuilder}.
+	 * This information will be used by {@link #buildOWLReasoner(OWLReasonerInfo)} in order to actually instantiate {@link OWLReasoner}.
+	 * @see ProtegeOWLReasonerInfoAdapter
+	 */
+	public List<OWLReasonerInfo> getAvailableOWLReasonersInfo() {
+
+		// extract MEBN
+		MultiEntityBayesianNetwork mebn = getDefaultMEBN();
+		
+		
+		// only create component if mebn is carring a protege storage implementor.
+		if (mebn == null 
+				|| mebn.getStorageImplementor() == null
+				|| !(mebn.getStorageImplementor() instanceof ProtegeStorageImplementorDecorator)) {
+			return null;
+		}
+		
+		// extract implementor (if code reaches here, storage implementor is not null)
+		ProtegeStorageImplementorDecorator protegeStorageImplementor = (ProtegeStorageImplementorDecorator)mebn.getStorageImplementor();
+		
+		// obtain reasoner info
+		Set<ProtegeOWLReasonerInfo> installedReasonerFactories = protegeStorageImplementor.getOWLEditorKit().getOWLModelManager().getOWLReasonerManager().getInstalledReasonerFactories();
+		if (installedReasonerFactories == null) {
+			return Collections.EMPTY_LIST;
+		}
+		
+		// prepare the list to be returned
+		List<OWLReasonerInfo> ret = new ArrayList<OWLReasonerInfo>(installedReasonerFactories.size());
+		
+		// fill the list to be returned
+		for (ProtegeOWLReasonerInfo installedReasoner : installedReasonerFactories) {
+			// use an adapter to convert protege's interface to the desired interface 
+			ret.add(ProtegeOWLReasonerInfoAdapter.getInstance(installedReasoner));
+		}
+		
+		return ret;
+	}
+	
+	/**
+	 * 
+	 * @param reasonerInfo : information about a reasoner, listed in {@link #getAvailableOWLReasonersInfo()}.
+	 * @return : an instance of {@link OWLReasoner} build from the information available in reasonerInfo.
+	 */
+	public OWLReasoner buildOWLReasoner(OWLReasonerInfo reasonerInfo){
+		if (reasonerInfo == null || reasonerInfo.getReasonerId() == null) {
+			return null;
+		}
+
+		// extract MEBN in order to extract storage implementor
+		MultiEntityBayesianNetwork mebn = getDefaultMEBN();
+		if (mebn == null 
+				|| mebn.getStorageImplementor() == null
+				|| !(mebn.getStorageImplementor() instanceof ProtegeStorageImplementorDecorator)) {
+			Debug.println(this.getClass(), "No Storage implementor to commit...");
+			return null;
+		}
+		
+		final String reasonerID = reasonerInfo.getReasonerId();
+
+		// create a stub OWLReasoner which its name is a Protege plugin ID (this is similar to a bundle ID in OSGi vocabulary).
+		// This is a workaround in order to send a protege plugin ID as an argument to ProtegeStorageImplementorDecorator#setOWLReasoner() without changing its interface
+		// It was needed because protege seems not to offer enough services to consistently change reasoners that was not previously loaded as a Protege plugin
+		// (so, only the reasoners already loaded by Protege/OSGi can be used).
+		// TODO find out a better solution to update Protege's reasoner 
+		OWLReasoner stubReasonerJustToSendAProtegePluginID = new NoOpReasoner(((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee()) {
+			/** It returns the reasonerID. If reasonerID is null, it just delegates to the superclass */
+			public String getReasonerName() { return (reasonerID==null)?(super.getReasonerName()):reasonerID; }
+		};
+		
+		// update current reasoner using storage implementor (it is deprecated, but it does what we want - delegate to protege plug-ins)...
+		((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).setOWLReasoner(stubReasonerJustToSendAProtegePluginID);
+		
+		// now that the reasoner managed by the storage implementor is up to date, return it
+		return ((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getOWLReasoner();
+	}
 
 	/**
 	 * This is the reasoner to be used by this knowledge base in order to perform inference.
@@ -4172,6 +4254,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		}
 		return defaultOWLReasoner;
 	}
+	
 
 	/**
 	 * This is the reasoner to be used by this knowledge base in order to perform inference.

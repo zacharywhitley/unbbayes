@@ -12,6 +12,7 @@ import java.util.Enumeration;
 
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -23,15 +24,12 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.TitledBorder;
 
-import org.protege.editor.owl.model.inference.NoOpReasoner;
-import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import unbbayes.controller.IconController;
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder;
-import unbbayes.io.mebn.protege.ProtegeStorageImplementorDecorator;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.entity.ontology.owlapi.OWLReasonerInfo;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBaseBuilder;
@@ -135,6 +133,23 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 		return this.createDefaultErrorPanel();
 //		return null;
 	}
+	
+	/**
+	 * This is just an extension of {@link JRadioButtonMenuItem} which also holds an instance of {@link OWLReasonerInfo}.s
+	 * @author Shou Matsumoto
+	 */
+	class JRadioButtonMenuItemWithReasonerInfo extends JRadioButtonMenuItem {
+		private static final long serialVersionUID = -2542776227138651025L;
+		private OWLReasonerInfo reasonerInfo;
+		public JRadioButtonMenuItemWithReasonerInfo(OWLReasonerInfo reasonerInfo, ImageIcon icon, boolean selected) {
+			super(reasonerInfo.getReasonerName(), icon, selected);
+			this.reasonerInfo = reasonerInfo;
+			// the name will store the reasoner ID
+			this.setName(reasonerInfo.getReasonerId());
+			this.setToolTipText(reasonerInfo.getReasonerId());
+		}
+		public OWLReasonerInfo getReasonerInfo() { return reasonerInfo; }
+	}
 
 	/**
 	 * Set up option panel for Protege 4.1 reasoners
@@ -147,22 +162,24 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 			return this.createDefaultErrorPanel();
 		}
 		
-		// extract MEBN
-		MultiEntityBayesianNetwork mebn = ((OWL2KnowledgeBase)this.getKB()).getDefaultMEBN();
+//		// extract MEBN
+//		MultiEntityBayesianNetwork mebn = ((OWL2KnowledgeBase)this.getKB()).getDefaultMEBN();
+//		
+//		
+//		// only create component if mebn is carring a protege storage implementor.
+//		if (mebn == null 
+//				|| mebn.getStorageImplementor() == null
+//				|| !(mebn.getStorageImplementor() instanceof ProtegeStorageImplementorDecorator)) {
+//			return null;
+//		}
+//		
+//		// extract implementor (if code reaches here, storage implementor is not null)
+//		ProtegeStorageImplementorDecorator protegeStorageImplementor = (ProtegeStorageImplementorDecorator)mebn.getStorageImplementor();
 		
-		
-		// only create component if mebn is carring a protege storage implementor.
-		if (mebn == null 
-				|| mebn.getStorageImplementor() == null
-				|| !(mebn.getStorageImplementor() instanceof ProtegeStorageImplementorDecorator)) {
-			return null;
-		}
-		
-		// extract implementor (if code reaches here, storage implementor is not null)
-		ProtegeStorageImplementorDecorator protegeStorageImplementor = (ProtegeStorageImplementorDecorator)mebn.getStorageImplementor();
+		OWL2KnowledgeBase owl2KB = ((OWL2KnowledgeBase)this.getKB());
 		
 		// extract current OWL reasoner to compare to the loaded reasoners
-		OWLReasoner currentReasoner = ((OWL2KnowledgeBase)this.getKB()).getDefaultOWLReasoner();
+		OWLReasoner currentReasoner = owl2KB.getDefaultOWLReasoner();
 		
 		// this is the return of this method
 		this.setProtege41ReasonerOptionPanel(new JPanel(new GridLayout(0, 1)));
@@ -172,18 +189,17 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 		// create radio boxes to select a reasoner.
 		try {
 			// reset previously selected reasoner option
-			for (ProtegeOWLReasonerInfo installedReasoner : protegeStorageImplementor.getOWLEditorKit().getOWLModelManager().getOWLReasonerManager().getInstalledReasonerFactories()) {
+//			for (ProtegeOWLReasonerInfo installedReasoner : protegeStorageImplementor.getOWLEditorKit().getOWLModelManager().getOWLReasonerManager().getInstalledReasonerFactories()) {
+			for (OWLReasonerInfo reasonerInfo : owl2KB.getAvailableOWLReasonersInfo()) {
 				JRadioButtonMenuItem radioItem = null;
 				try {
 					// create radio item representing a reasoner installed in protege
-					radioItem = new JRadioButtonMenuItem(installedReasoner.getReasonerName(), 
+					radioItem = new JRadioButtonMenuItemWithReasonerInfo(
+										reasonerInfo, 
 										IconController.getInstance().getEntityInstance(),
-										installedReasoner.getReasonerName().equals(currentReasoner.getReasonerName())	// test name equality
-										|| installedReasoner.getReasonerFactory().createReasoner(currentReasoner.getRootOntology()).getClass().equals(currentReasoner.getClass())  // test class equality
+										reasonerInfo.getReasonerName().equals(currentReasoner.getReasonerName())	// just test name equality
+//										|| reasonerInfo.getReasonerFactory().createReasoner(currentReasoner.getRootOntology()).getClass().equals(currentReasoner.getClass())  // test class equality
 								);	
-					// the name will store the reasoner ID
-					radioItem.setName(installedReasoner.getReasonerId());
-					radioItem.setToolTipText(installedReasoner.getReasonerId());
 					radioItem.setBackground(Color.WHITE);
 					// This is strange, but Swing is not "marking" the selected radio Items (even when the item is selected, its radio button is not visually "selected")
 //					if (radioItem.isSelected()) {
@@ -250,39 +266,42 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 			return;
 		}
 		
-		// extract MEBN in order to extract storage implementor
-		MultiEntityBayesianNetwork mebn = ((OWL2KnowledgeBase)this.getKB()).getDefaultMEBN();
-		if (mebn == null 
-				|| mebn.getStorageImplementor() == null
-				|| !(mebn.getStorageImplementor() instanceof ProtegeStorageImplementorDecorator)) {
-			Debug.println(this.getClass(), "No Storage implementor to commit...");
-			return;
-		}
+//		// extract MEBN in order to extract storage implementor
+//		MultiEntityBayesianNetwork mebn = ((OWL2KnowledgeBase)this.getKB()).getDefaultMEBN();
+//		if (mebn == null 
+//				|| mebn.getStorageImplementor() == null
+//				|| !(mebn.getStorageImplementor() instanceof ProtegeStorageImplementorDecorator)) {
+//			Debug.println(this.getClass(), "No Storage implementor to commit...");
+//			return;
+//		}
 		
 		try {
 			Enumeration<AbstractButton> buttonGroupElements = this.getReasonerButtonGroup().getElements();
 			while (buttonGroupElements.hasMoreElements()) {
-				JRadioButtonMenuItem selectedMenu = (JRadioButtonMenuItem)buttonGroupElements.nextElement();
+				JRadioButtonMenuItemWithReasonerInfo selectedMenu = (JRadioButtonMenuItemWithReasonerInfo)buttonGroupElements.nextElement();
 				
 				if (selectedMenu.isSelected()) {
 					// extract the reasoner ID from the selected radio button (it is stored in its name)
-					final String reasonerID = selectedMenu.getName();
+//					final String reasonerID = selectedMenu.getName();
 					
-					// create a stub OWLReasoner which its name is a Protege plugin ID (this is similar to a bundle ID in OSGi vocabulary).
-					// This is a workaround in order to send a protege plugin ID as an argument to ProtegeStorageImplementorDecorator#setOWLReasoner() without changing its interface
-					// It was needed because protege seems not to offer enough services to consistently change reasoners that was not previously loaded as a Protege plugin
-					// (so, only the reasoners already loaded by Protege/OSGi can be used).
-					// TODO find out a better solution to update Protege's reasoner 
-					OWLReasoner stubReasonerJustToSendAProtegePluginID = new NoOpReasoner(((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee()) {
-						/** It returns the reasonerID. If reasonerID is null, it just delegates to the superclass */
-						public String getReasonerName() { return (reasonerID==null)?(super.getReasonerName()):reasonerID; }
-					};
-					
-					// update current reasoner using storage implementor (it is deprecated, but it does what we want - delegate to protege plug-ins)...
-					((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).setOWLReasoner(stubReasonerJustToSendAProtegePluginID);
+//					// create a stub OWLReasoner which its name is a Protege plugin ID (this is similar to a bundle ID in OSGi vocabulary).
+//					// This is a workaround in order to send a protege plugin ID as an argument to ProtegeStorageImplementorDecorator#setOWLReasoner() without changing its interface
+//					// It was needed because protege seems not to offer enough services to consistently change reasoners that was not previously loaded as a Protege plugin
+//					// (so, only the reasoners already loaded by Protege/OSGi can be used).
+//					// TODO find out a better solution to update Protege's reasoner 
+//					OWLReasoner stubReasonerJustToSendAProtegePluginID = new NoOpReasoner(((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee()) {
+//						/** It returns the reasonerID. If reasonerID is null, it just delegates to the superclass */
+//						public String getReasonerName() { return (reasonerID==null)?(super.getReasonerName()):reasonerID; }
+//					};
+//					
+//					// update current reasoner using storage implementor (it is deprecated, but it does what we want - delegate to protege plug-ins)...
+//					((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).setOWLReasoner(stubReasonerJustToSendAProtegePluginID);
 					
 //					// because our knowledge base may not use the same reasoner from the storage implementor, we must explicitly make them synchronized.
-					((OWL2KnowledgeBase)this.getKB()).setDefaultOWLReasoner(((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getOWLReasoner());
+//					((OWL2KnowledgeBase)this.getKB()).setDefaultOWLReasoner(((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getOWLReasoner());
+					
+					// let the KB to build the reasoner
+					((OWL2KnowledgeBase)this.getKB()).setDefaultOWLReasoner(((OWL2KnowledgeBase)this.getKB()).buildOWLReasoner(selectedMenu.getReasonerInfo()));
 					
 					// we do need to check if the new reasoner is equal to the last one, because we want that re-selecting the reasoner re-triggers the initialization again.
 					// (i.e. the above ProtegeStorageImplementorDecorator#setOWLReasoner() is going to call OWLReasonerManager#classifyAsynchronously too)
