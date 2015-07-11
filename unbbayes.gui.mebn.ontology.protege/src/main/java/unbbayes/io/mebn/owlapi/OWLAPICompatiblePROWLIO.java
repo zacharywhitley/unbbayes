@@ -305,7 +305,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 
 		// load MTheory. The nameToMFragMap maps a name to a MFrag.
 		try {
-			this.setMapNameToMFrag(this.loadMTheoryAndMFrags(this.getLastOWLOntology(), mebn));
+			this.setMapNameToMFrag(this.loadMTheoryAndMFrags(ontology, mebn));
 		} catch (IOMebnException e) {
 			// the ontology does not contain PR-OWL specific elements. Stop loading PR-OWL and return an empty mebn.
 			e.printStackTrace();
@@ -313,40 +313,40 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		}
 		
 		// load object entities and fill the mapping of object entities
-		this.setMapLabelToObjectEntity(this.loadObjectEntity(this.getLastOWLOntology(), mebn));
+		this.setMapLabelToObjectEntity(this.loadObjectEntity(ontology, mebn));
 
 		// load meta entities and fill the mapping of types
-		this.setMapNameToType(this.loadMetaEntitiesClasses(this.getLastOWLOntology(), mebn));
+		this.setMapNameToType(this.loadMetaEntitiesClasses(ontology, mebn));
 		
 		// load categorical entities. The mapCategoricalStateGloballyExclusiveNodes stores globally exclusive nodes (a map of state -> nodes)
-		this.setMapCategoricalStates(this.loadCategoricalStateEntity(this.getLastOWLOntology(), mebn));
+		this.setMapCategoricalStates(this.loadCategoricalStateEntity(ontology, mebn));
 		
 		// load boolean states. Reuse mapCategoricalStateGloballyExclusiveNodes.
-		this.setMapBooleanStates(this.loadBooleanStateEntity(this.getLastOWLOntology(), mebn));
+		this.setMapBooleanStates(this.loadBooleanStateEntity(ontology, mebn));
 		
 		// load content of MFrag (nodes, ordinary variables, etc...)
 		try {
-			this.setMapLoadedNodes(this.loadDomainMFragContents(this.getLastOWLOntology(), mebn));
+			this.setMapLoadedNodes(this.loadDomainMFragContents(ontology, mebn));
 			// load built in random variables. Reuse mapLoadedNodes.
-			this.setMapBuiltInRV(this.loadBuiltInRV(this.getLastOWLOntology(), mebn));
+			this.setMapBuiltInRV(this.loadBuiltInRV(ontology, mebn));
 			
 			// load content of context nodes. The mapIsContextInstanceOf mapps Context nodes to either BuiltInRV or ResidentNode. The mapArgument mapps a name to an argument
-			this.setMapTopLevelContextNodes(this.loadContextNode( this.getLastOWLOntology(), mebn));
+			this.setMapTopLevelContextNodes(this.loadContextNode( ontology, mebn));
 			
 			// load content of resident nodes
-			this.setMapFilledResidentNodes(this.loadDomainResidentNode(this.getLastOWLOntology(), mebn));
+			this.setMapFilledResidentNodes(this.loadDomainResidentNode(ontology, mebn));
 			
 			// load content of input nodes
-			this.setMapFilledInputNodes(this.loadGenerativeInputNode(this.getLastOWLOntology(), mebn));
+			this.setMapFilledInputNodes(this.loadGenerativeInputNode(ontology, mebn));
 			
 			// load content of ordinary variables
-			this.setMapFilledOrdinaryVariables(this.loadOrdinaryVariable(this.getLastOWLOntology(), mebn));
+			this.setMapFilledOrdinaryVariables(this.loadOrdinaryVariable(ontology, mebn));
 			
 			// load generic arguments relationships
-			this.setMapFilledArguments(this.loadArgRelationship(this.getLastOWLOntology(), mebn));
+			this.setMapFilledArguments(this.loadArgRelationship(ontology, mebn));
 			
 			// load simple arguments
-			this.setMapFilledSimpleArguments(this.loadSimpleArgRelationship(this.getLastOWLOntology(), mebn));
+			this.setMapFilledSimpleArguments(this.loadSimpleArgRelationship(ontology, mebn));
 			
 			// adjust the order of arguments (the appearance order of arguments may not be the correct order)
 			this.ajustArgumentOfNodes(mebn);
@@ -355,7 +355,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 			this.buildFormulaTrees(this.getMapTopLevelContextNodes(), mebn);
 			
 			// Load individuals of object entities (ObjectEntityInstances)
-			this.setMapLoadedObjectEntityIndividuals(loadObjectEntityIndividuals(this.getLastOWLOntology(), mebn));
+			this.setMapLoadedObjectEntityIndividuals(loadObjectEntityIndividuals(ontology, mebn));
 		} catch (Exception e) {
 			throw new IllegalArgumentException("Failed to load ontology " + ontology, e);
 		}
