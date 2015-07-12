@@ -120,6 +120,7 @@ public class ObjectEntity extends Entity {
 	}
 	
 	public ObjectEntityInstance getInstanceByName(String name){
+		// TODO use a hashtable or map instead of linear search
         for(ObjectEntityInstance instance: this.listObjectEntityInstance){
                 if(instance.getName().equalsIgnoreCase(name)){
                         return instance;

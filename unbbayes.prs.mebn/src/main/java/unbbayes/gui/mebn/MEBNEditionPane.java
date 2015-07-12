@@ -1031,7 +1031,9 @@ public class MEBNEditionPane extends JPanel {
 						File file = chooser.getSelectedFile();
 						
 						try {
+							mebnController.getMebnEditionPane().setCursor(new Cursor(Cursor.WAIT_CURSOR));
 							mebnController.loadFindingsFile(file);
+							mebnController.getMebnEditionPane().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileLoadOK"));
 						} catch (UBIOException e) {
 							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e.getMessage());
