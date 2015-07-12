@@ -362,7 +362,7 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 			// init reasoner
 			this.setDefaultOWLReasoner(buildOWLReasoner(ProtegeOWLReasonerInfoAdapter.getInstance(currentReasonerInfo)));
 			
-			// force this KB to use a class expression parser which 
+			// force this KB to use a class expression parser which is linked to finding ontology
 			this.setOwlClassExpressionParserDelegator(OWLClassExpressionParserFacade.getInstance(((ProtegeStorageImplementorDecorator)findingMEBN.getStorageImplementor()).getOWLEditorKit().getModelManager()));
 			
 		} catch (IOException e) {

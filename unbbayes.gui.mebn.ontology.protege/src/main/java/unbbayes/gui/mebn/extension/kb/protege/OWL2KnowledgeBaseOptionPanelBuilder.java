@@ -13,6 +13,7 @@ import java.util.Enumeration;
 import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -33,6 +34,7 @@ import unbbayes.prs.mebn.entity.ontology.owlapi.OWLReasonerInfo;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBaseBuilder;
+import unbbayes.prs.mebn.kb.extension.ontology.protege.PROWL2KnowledgeBase;
 import unbbayes.util.Debug;
 
 /**
@@ -53,6 +55,8 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 
 //	private boolean isToHideEntityButtons = true;
 	private boolean isToHideEntityButtons = false;
+
+	private JCheckBox chooseFileCheckBox = null;
 	
 	
 //	private JRadioButtonMenuItem previouslySelectedReasonerItem;
@@ -181,6 +185,13 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 		// extract current OWL reasoner to compare to the loaded reasoners
 		OWLReasoner currentReasoner = owl2KB.getDefaultOWLReasoner();
 		
+		// extract the current reasoner name
+		String reasonerName = currentReasoner.getReasonerName();
+		if (owl2KB instanceof PROWL2KnowledgeBase) {
+			// a factory name is a more precise identification, so use it if available
+			reasonerName = ((PROWL2KnowledgeBase)owl2KB).getOWLModelManager().getOWLReasonerManager().getCurrentReasonerFactory().getReasonerName();
+		}
+		
 		// this is the return of this method
 		this.setProtege41ReasonerOptionPanel(new JPanel(new GridLayout(0, 1)));
 		this.getProtege41ReasonerOptionPanel().setBackground(Color.WHITE);
@@ -197,7 +208,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 					radioItem = new JRadioButtonMenuItemWithReasonerInfo(
 										reasonerInfo, 
 										IconController.getInstance().getEntityInstance(),
-										reasonerInfo.getReasonerName().equals(currentReasoner.getReasonerName())	// just test name equality
+										reasonerInfo.getReasonerName().equals(reasonerName)	// just test name equality
 //										|| reasonerInfo.getReasonerFactory().createReasoner(currentReasoner.getRootOntology()).getClass().equals(currentReasoner.getClass())  // test class equality
 								);	
 					radioItem.setBackground(Color.WHITE);
@@ -235,6 +246,41 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 		
 		return this.getProtege41ReasonerOptionPanel();
 	}
+	
+	/**
+	 * Set up a panel with an option to whether select a separate owl file for findings or not
+	 * @param kb
+	 * @return the panel
+	 */
+	protected JComponent chooseFileOptionPanel(KnowledgeBase kb2) {
+		if (this.getKB() == null
+				|| !(this.getKB() instanceof PROWL2KnowledgeBase)) {
+			return null;
+		}
+		
+		
+		PROWL2KnowledgeBase kb = ((PROWL2KnowledgeBase)this.getKB());
+		
+		
+		
+		// this is the return of this method
+		JPanel ret = new JPanel(new GridLayout(0, 1));
+		ret.setBackground(Color.WHITE);
+		ret.setBorder(new TitledBorder("File configuration"));
+		
+		// instantiate the check box
+		JCheckBox checkBox = new JCheckBox(
+				"Choose a separate file for findings.", 
+//				IconController.getInstance().getFolderSmallIcon(), 
+				!kb.isToUseSameOntology()
+			);
+		checkBox.setBackground(Color.WHITE);
+		setChooseFileCheckBox(checkBox);	// make sure the checkbox is an attribute which is accessible from other methods
+		
+		// return the check box
+		ret.add(checkBox);
+		return ret;
+	}
 
 	/**
 	 * Sets up default panel (which displays error messages)
@@ -259,12 +305,16 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 		
 //		System.gc();
 		
+		
 		// initial assertion
 		if (this.getKB() == null
 				|| !(this.getKB() instanceof OWL2KnowledgeBase)) {
 			Debug.println(this.getClass(), "No KB to commit...");
 			return;
 		}
+		
+		// extract the KB
+		OWL2KnowledgeBase kb = (OWL2KnowledgeBase)this.getKB();
 		
 //		// extract MEBN in order to extract storage implementor
 //		MultiEntityBayesianNetwork mebn = ((OWL2KnowledgeBase)this.getKB()).getDefaultMEBN();
@@ -301,7 +351,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 //					((OWL2KnowledgeBase)this.getKB()).setDefaultOWLReasoner(((ProtegeStorageImplementorDecorator)mebn.getStorageImplementor()).getOWLReasoner());
 					
 					// let the KB to build the reasoner
-					((OWL2KnowledgeBase)this.getKB()).setDefaultOWLReasoner(((OWL2KnowledgeBase)this.getKB()).buildOWLReasoner(selectedMenu.getReasonerInfo()));
+					kb.setDefaultOWLReasoner(kb.buildOWLReasoner(selectedMenu.getReasonerInfo()));
 					
 					// we do need to check if the new reasoner is equal to the last one, because we want that re-selecting the reasoner re-triggers the initialization again.
 					// (i.e. the above ProtegeStorageImplementorDecorator#setOWLReasoner() is going to call OWLReasonerManager#classifyAsynchronously too)
@@ -319,6 +369,13 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 				}
 				
 			}
+			
+			// handle the checkbox if we can
+			if (kb instanceof PROWL2KnowledgeBase) {
+				JCheckBox chooseFileCheckBox = getChooseFileCheckBox();
+				((PROWL2KnowledgeBase) kb).setToUseSameOntology(!chooseFileCheckBox.isSelected());
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(
@@ -335,8 +392,41 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 	 * @see unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder#discardChanges()
 	 */
 	public void discardChanges() {
-		// do nothing.
-		Debug.println(this.getClass(), "Nothing is nedded to undo changes in reasoners.");
+
+		// check if this panel is aggregated to some OWL2KnowledgeBase
+		if (this.getKB() == null
+				|| !(this.getKB() instanceof OWL2KnowledgeBase)) {
+			return;	// do nothing if no OWL2KnowledgeBase is set
+		}
+		
+		// extract the kb
+		OWL2KnowledgeBase owl2KB = ((OWL2KnowledgeBase)this.getKB());
+		
+		// extract current OWL reasoner to compare to the loaded reasoners
+		OWLReasoner currentReasoner = owl2KB.getDefaultOWLReasoner();
+		
+		// extract the current reasoner name
+		String reasonerName = currentReasoner.getReasonerName();
+		if (owl2KB instanceof PROWL2KnowledgeBase) {
+			// a factory name is a more precise identification, so use it if available
+			reasonerName = ((PROWL2KnowledgeBase)owl2KB).getOWLModelManager().getOWLReasonerManager().getCurrentReasonerFactory().getReasonerName();
+			
+			// also revert changes in the choose file checkbox
+			getChooseFileCheckBox().setSelected(!((PROWL2KnowledgeBase) owl2KB).isToUseSameOntology());
+			getChooseFileCheckBox().updateUI();
+			getChooseFileCheckBox().repaint();
+		}
+		
+		// iterate on all button elements to check which one should be set as selected
+		Enumeration<AbstractButton> buttonGroupElements = this.getReasonerButtonGroup().getElements();
+		while (buttonGroupElements.hasMoreElements()) {
+			JRadioButtonMenuItemWithReasonerInfo menu = (JRadioButtonMenuItemWithReasonerInfo)buttonGroupElements.nextElement();
+			menu.setSelected(menu.getReasonerInfo().getReasonerName().equals(reasonerName));	// just test name equality
+			menu.updateUI();
+			menu.repaint();
+		}
+		
+		
 	}
 
 	/*
@@ -414,6 +504,15 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 			JComponent protege41component = this.createProtege41ReasonerOptionPanel(this.getKB());
 			if (protege41component != null) {
 				newView.add(protege41component);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		try {
+			JComponent chooseFileComponent = this.chooseFileOptionPanel(this.getKB());
+			if (chooseFileComponent != null) {
+				newView.add(chooseFileComponent);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -502,6 +601,20 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 	 */
 	public void setToHideEntityButtons(boolean isToHideEntityButtons) {
 		this.isToHideEntityButtons = isToHideEntityButtons;
+	}
+
+	/**
+	 * @return the chooseFileCheckBox : this is the checkbox which indicates whether the user should specify a separate file for findigns (if checked) or not (if unchecked).
+	 */
+	public JCheckBox getChooseFileCheckBox() {
+		return chooseFileCheckBox;
+	}
+
+	/**
+	 * @param chooseFileCheckBox : this is the checkbox which indicates whether the user should specify a separate file for findigns (if checked) or not (if unchecked).
+	 */
+	public void setChooseFileCheckBox(JCheckBox chooseFileCheckBox) {
+		this.chooseFileCheckBox = chooseFileCheckBox;
 	}
 
 	
