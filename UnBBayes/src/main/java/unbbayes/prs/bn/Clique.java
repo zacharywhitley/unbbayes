@@ -139,26 +139,26 @@ public class Clique implements IRandomVariable, java.io.Serializable {
      *@return       normalization ratio
      */
     public float normalize() throws Exception {
-        boolean fixo[] = new boolean[nodes.size()];
-        ArrayList<Node> decisoes = new ArrayList<Node>();
-        for (int i = 0; i < nodes.size(); i++) {        	
-            if (nodes.get(i).getType() == Node.DECISION_NODE_TYPE) {
-                decisoes.add(nodes.get(i));
-                fixo[i] = true;
-            }
-        }
-
-        if (decisoes.size() == 0) {
+//        boolean fixo[] = new boolean[nodes.size()];
+//        ArrayList<Node> decisoes = new ArrayList<Node>();
+//        for (int i = 0; i < nodes.size(); i++) {        	
+//            if (nodes.get(i).getType() == Node.DECISION_NODE_TYPE) {
+//                decisoes.add(nodes.get(i));
+//                fixo[i] = true;
+//            }
+//        }
+//
+//        if (decisoes.size() == 0) {
             return potentialTable.normalize();
-        }
-
-        int index[] = new int[decisoes.size()];
-        for (int i = 0; i < index.length; i++) {
-            index[i] = nodes.indexOf(decisoes.get(i));
-        }
-        normalizeID(0, decisoes, fixo, index, new int[nodes.size()]);
-        /** @todo retornar a constante de normalizacao correta */
-        return 0;
+//        }
+//
+//        int index[] = new int[decisoes.size()];
+//        for (int i = 0; i < index.length; i++) {
+//            index[i] = nodes.indexOf(decisoes.get(i));
+//        }
+//        normalizeID(0, decisoes, fixo, index, new int[nodes.size()]);
+//        /** @todo retornar a constante de normalizacao correta */
+//        return 0;
     }
 
     

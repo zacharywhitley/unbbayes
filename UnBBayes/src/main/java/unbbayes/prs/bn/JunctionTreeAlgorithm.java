@@ -1268,7 +1268,10 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				for (int i = 0; i < nodesInClique.size() - 1; i++) {
 					Node node1 = nodesInClique.get(i);
 					Node node2 = nodesInClique.get(i + 1);
+					// Note: cliques and separators must follow same node ordering patterns, so if you change something here, 
+					// make sure to make the same changes for the block of code which treats separators.
 					if (isID) {
+						// TODO verify why ID and BN needs to use different ordering schemes
 						if (nodeEliminationOrder.indexOf(node1) > nodeEliminationOrder.indexOf(node2)) {
 							nodesInClique.set(i + 1, node1);
 							nodesInClique.set(i, node2);
@@ -1294,7 +1297,14 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				for (int i = 0; i < nodesInSeparator.size() - 1; i++) {
 					Node node1 = nodesInSeparator.get(i);
 					Node node2 = nodesInSeparator.get(i + 1);
-					if (node1.getName().compareToIgnoreCase(node2.getName()) > 0 ) {
+					// Note: cliques and separators must follow same node ordering patterns, so if you make any change here, make sure the cliques are also following the same scheme.
+					if (isID) {
+						if (nodeEliminationOrder.indexOf(node1) > nodeEliminationOrder.indexOf(node2)) {
+							nodesInSeparator.set(i + 1, node1);
+							nodesInSeparator.set(i, node2);
+							hasSwapped = true;
+						}
+					} else if (node1.getName().compareToIgnoreCase(node2.getName()) > 0 ) {
 						nodesInSeparator.set(i + 1, node1);
 						nodesInSeparator.set(i, node2);
 						hasSwapped = true;
