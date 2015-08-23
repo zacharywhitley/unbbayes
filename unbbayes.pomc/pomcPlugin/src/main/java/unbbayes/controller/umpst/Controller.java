@@ -13,6 +13,10 @@ import unbbayes.model.umpst.group.GroupModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.rule.RuleModel;
 
+/**
+ * General controller linking model and user interface (MVC architecture)
+ *
+ */
 public class Controller {
 
 	private static Controller singleton;
