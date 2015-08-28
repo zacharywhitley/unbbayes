@@ -29,6 +29,7 @@
         <include>individual.gif</include>
         <include>properties.png</include>
         <include>properties2node.png</include>
+        <include>tango-symbolic-link.png</include>
       </includes>
     </fileSet>
     <fileSet>

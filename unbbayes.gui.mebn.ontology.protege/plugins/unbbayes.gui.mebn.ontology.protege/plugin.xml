@@ -127,6 +127,13 @@
         <parameter id="description" value="Convert OWL2 properties to MEBN resident nodes" />
     </extension>
     
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="OWLImportTree">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.OWLImportTreePanelBuilder" />
+        <parameter id="name" value="Imports" />
+        <parameter id="icon" value="tango-symbolic-link.png" />
+        <parameter id="description" value="Ontologies imported to this project." />
+    </extension>
+    
     <!-- DL reasoner for PR-OWL1 in OWL2 -->
     <!-- Ignore this reasoner because it is not a standard
     <extension plugin-id="unbbayes.prs.mebn" point-id="KnowledgeBase" id="Protege41Reasoners4PROWL1">

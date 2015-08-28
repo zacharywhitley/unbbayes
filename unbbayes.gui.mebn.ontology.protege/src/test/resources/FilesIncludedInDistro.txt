@@ -5,6 +5,7 @@ class.gif
 individual.gif
 properties.png
 properties2node.png
+tango-symbolic-link.png
 
 These files/folders must not be migrated to src/main/resources, because maven, by default, will include
 them in the main JAR file if we do so (we want these resources to be in a separate folder instead).
