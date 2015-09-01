@@ -601,8 +601,11 @@ public class UnBBayesFrame extends JFrame {
 				// Choose a file
 				File file = chooseFile(filterMessage, nets);
 				currentWindow.setFile(file);
-				// Save the network in a file
-				saveNetwork(currentWindow, file);
+				
+				// Save the network in file
+				if (file != null) {
+					saveNetwork(currentWindow, file);
+				}
 
 				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
