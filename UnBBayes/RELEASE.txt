@@ -1,4 +1,15 @@
-UNBBAYES VERSION 4.21.15
+UNBBAYES VERSION 4.21.16   - WORKING 
+-----------------------------
+FEATURE LIST
+Number	Request ID	Summary
+
+BUG LIST
+Number	Request ID	Summary
+16          Remove wrong error message when user cancel SaveAs operation. 
+
+
+UNBBAYES VERSION 4.21.15   - RELEASED
+----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
 19	121  		Dynamic junction tree compilation feature migrated to a plugin.
