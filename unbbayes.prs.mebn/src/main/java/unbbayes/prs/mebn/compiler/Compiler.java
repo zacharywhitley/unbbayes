@@ -1508,7 +1508,7 @@ public class Compiler implements ICompiler {
 			this.currentHeader.addCell(currentCell);
 		}
 		// Debug.println("Adding cell: " + currentCell.getPossibleValue().getName() + " = " + ret.toString());
-		
+
 		// consistency check C09
 		// a single state shall never have prob range out from [0,1]
 		if ( (retValue < 0.0) || (1.0 < retValue)) {
@@ -1527,19 +1527,30 @@ public class Compiler implements ICompiler {
 				retValue += temp.getProbability();
 			}
 		} else {
-			// this is the last assignment. If there are undeclared states, force their values to 0%.
+			// this is the last assignment. If there are undeclared states, distribute the remaining probability uniformly.
 			// obtain undeclared states = possibleStates - declaredStates
 			Collection<Entity> undeclaredStates = new HashSet<Entity>(possibleStates);
 			undeclaredStates.removeAll(declaredStates);
+			
+			// distribute the remaining probability (1-retValue) uniformly across the non-declared states
+			float probOfUndeclaredState = (1f-retValue)/undeclaredStates.size();
+			float sumProbUndeclaredStates = 0f;	// sum of probabilities of undeclared states
 			for (Entity entity : undeclaredStates) {
 				if (entity != null) {
-					// add assignment: <undeclared state> = 0.0,
-					this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(0.0f)));
+					sumProbUndeclaredStates += probOfUndeclaredState;
+					if (!Float.isNaN(retValue)) {
+						// distribute the remaining probability (1-retValue) uniformly across the non-declared states
+						this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(probOfUndeclaredState )));
+					} else {
+						// add assignment: <undeclared state> = 0.0 if retValue could not be obtained
+						this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(0.0f)));
+					}
 					declaredStates.add(entity);
 				}
 				// we do not need to update retValue (the total probability),
 				// because it would be something like retValue += 0.0 (that is, it will not be altered at all);
 			}
+			retValue += sumProbUndeclaredStates;
 		}
 		
 		// Debug.println("Returned expression value = " + retValue);
