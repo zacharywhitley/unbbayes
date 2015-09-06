@@ -1415,6 +1415,25 @@ public class Compiler implements ICompiler {
 				
 				this.assignment(declaredStates, possibleStates);
 				
+				// After the assignment, if there are undeclared states, distribute the remaining probability uniformly.
+				// obtain undeclared states = possibleStates - declaredStates
+				Collection<Entity> undeclaredStates = new HashSet<Entity>(possibleStates);
+				undeclaredStates.removeAll(declaredStates);
+				if (undeclaredStates.size() > 0) {
+					// get the current (without the undeclared states) sum of probabilities
+					float sumOfDeclaredProb = currentHeader.getProbCellSum();
+					
+					// distribute the remaining probability (1-sumOfDeclaredProb) uniformly across the non-declared states
+					float probOfUndeclaredState = (1f-sumOfDeclaredProb)/undeclaredStates.size();
+					for (Entity entity : undeclaredStates) {
+						if (entity != null) {
+							// distribute the remaining probability (1-retValue) uniformly across the non-declared states, but substitute NaN with 0
+							this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(Float.isNaN(probOfUndeclaredState)?0f:probOfUndeclaredState )));
+							declaredStates.add(entity);
+						}
+					}
+				}
+				
 				if (this.node != null) {
 					// Consistency check C09
 					// Verify if all states has probability declared
@@ -1526,31 +1545,31 @@ public class Compiler implements ICompiler {
 			} else {
 				retValue += temp.getProbability();
 			}
-		} else {
-			// this is the last assignment. If there are undeclared states, distribute the remaining probability uniformly.
-			// obtain undeclared states = possibleStates - declaredStates
-			Collection<Entity> undeclaredStates = new HashSet<Entity>(possibleStates);
-			undeclaredStates.removeAll(declaredStates);
-			
-			// distribute the remaining probability (1-retValue) uniformly across the non-declared states
-			float probOfUndeclaredState = (1f-retValue)/undeclaredStates.size();
-			float sumProbUndeclaredStates = 0f;	// sum of probabilities of undeclared states
-			for (Entity entity : undeclaredStates) {
-				if (entity != null) {
-					sumProbUndeclaredStates += probOfUndeclaredState;
-					if (!Float.isNaN(retValue)) {
-						// distribute the remaining probability (1-retValue) uniformly across the non-declared states
-						this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(probOfUndeclaredState )));
-					} else {
-						// add assignment: <undeclared state> = 0.0 if retValue could not be obtained
-						this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(0.0f)));
-					}
-					declaredStates.add(entity);
-				}
-				// we do not need to update retValue (the total probability),
-				// because it would be something like retValue += 0.0 (that is, it will not be altered at all);
-			}
-			retValue += sumProbUndeclaredStates;
+//		} else {
+//			// this is the last assignment. If there are undeclared states, distribute the remaining probability uniformly.
+//			// obtain undeclared states = possibleStates - declaredStates
+//			Collection<Entity> undeclaredStates = new HashSet<Entity>(possibleStates);
+//			undeclaredStates.removeAll(declaredStates);
+//			
+//			// distribute the remaining probability (1-retValue) uniformly across the non-declared states
+//			float probOfUndeclaredState = (1f-retValue)/undeclaredStates.size();
+//			float sumProbUndeclaredStates = 0f;	// sum of probabilities of undeclared states
+//			for (Entity entity : undeclaredStates) {
+//				if (entity != null) {
+//					sumProbUndeclaredStates += probOfUndeclaredState;
+//					if (!Float.isNaN(retValue)) {
+//						// distribute the remaining probability (1-retValue) uniformly across the non-declared states
+//						this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(probOfUndeclaredState )));
+//					} else {
+//						// add assignment: <undeclared state> = 0.0 if retValue could not be obtained
+//						this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(0.0f)));
+//					}
+//					declaredStates.add(entity);
+//				}
+//				// we do not need to update retValue (the total probability),
+//				// because it would be something like retValue += 0.0 (that is, it will not be altered at all);
+//			}
+//			retValue += sumProbUndeclaredStates;
 		}
 		
 		// Debug.println("Returned expression value = " + retValue);
