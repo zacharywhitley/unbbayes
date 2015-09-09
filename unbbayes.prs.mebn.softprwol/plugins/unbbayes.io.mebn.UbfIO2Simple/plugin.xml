@@ -1,0 +1,14 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is a I/O plugin for manipulating OWL2 ontologies.  -->
+<plugin id="unbbayes.io.mebn.UbfIO2Simple" version="0.0.1">
+    <requires>
+        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.13.10"/>
+        <import plugin-id="unbbayes.io.mebn.UbfIO" plugin-version="1.0.0"/>
+        <import plugin-id="unbbayes.gui.mebn.ontology.protege"/>
+    </requires>
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNIO" id="UbfIO2Simple">
+        <parameter id="class" value="unbbayes.io.mebn.UbfIO2Simple" />
+        <parameter id="name" value="PR-OWL 2.0 (simple mode)" />
+    </extension>
+</plugin>
