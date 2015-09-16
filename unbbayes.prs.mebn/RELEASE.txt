@@ -3,6 +3,8 @@ UNBBAYES MEBN PLUGIN - VERSION 1.14.11
 FEATURE LIST		
 Number	Request ID	Summary
 14					Setting the UbfIO to handle I/O requests for saving a file with no extension.
+					LPD compiler automatically sets undeclared states with uniform distribution.
+					Some changes in API regarding the relationship between MultiEntityBayesianNetwork and ObjectEntityContainer
 
 UNBBAYES MEBN PLUGIN - VERSION 1.13.11
 ----------------------------
