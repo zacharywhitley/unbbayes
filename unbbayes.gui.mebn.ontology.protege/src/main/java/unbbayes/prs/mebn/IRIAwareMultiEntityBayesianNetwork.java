@@ -125,9 +125,10 @@ public class IRIAwareMultiEntityBayesianNetwork extends
 	 * This is an adaptor to add a key-value to {@link #getIsSubjectOfMap()} if mebn is a {@link IRIAwareMultiEntityBayesianNetwork}.
 	 * The "isSubjectOf" property (the one that maps an argument to the domain of an OWL property) of the PR-OWL2 definition will be implemented
 	 * by this map.
-	 * @param mebn
-	 * @param key
-	 * @param value
+	 * @param mebn : the {@link MultiEntityBayesianNetwork} we are working with. If it is a {@link IRIAwareMultiEntityBayesianNetwork},
+	 * then {@link IRIAwareMultiEntityBayesianNetwork#getIsSubjectOfMap()} will be referenced.
+	 * @param key  : argument in {@link ResidentNode#getArgumentList()}
+	 * @param value : IRI of an OWL property referenced by isSubjectOf (with a symbolic link)
 	 * @deprecated static methods are deprecated
 	 */
 	public static void addSubjectToMEBN(MultiEntityBayesianNetwork mebn, Argument key, IRI value) {
