@@ -1,3 +1,16 @@
+UNBBAYES PR-OWL 2 PLUGIN - VERSION 1.X.X
+----------------------------
+
+FEATURE LIST		
+Number	Request ID	Summary
+					Included a panel to see and manage the ontology's import hierarchy.
+					Findings and entity instances can now be included without using the Protege panel.
+
+BUG LIST		
+Number	Request ID	Summary
+					Fixed a bug that was causing n-ary relationships not being properly handled.
+
+
 UNBBAYES PR-OWL 2 PLUGIN - VERSION 1.1.4
 ----------------------------
 
