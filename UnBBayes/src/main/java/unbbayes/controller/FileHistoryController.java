@@ -66,6 +66,7 @@ public class FileHistoryController
 	{	 if (singleton == null)
 		{	 singleton = new FileHistoryController();
 		}
+		// TODO change this to a thread-safe singleton implementation
 		return singleton;
 	}
 
