@@ -33,6 +33,9 @@ public interface IPROWL2ModelUser {
 	/** A string to be used as suffixes of MExpressions which are also types of individuals of MExpressionArgument */
 	public static final String INNERMEXPRESSION_SUFFIX = "_inner";
 	
+	/** This is simply a prefix on OWL named individuals which represents findings (usually for n-tuples) */
+	public static final String FINDING_PREFIX = "FINDING_"; 
+	
 	/** 
 	 * A string to be used as suffixes of object entity's types, when MEBN or ontology uses Types internally. 
 	 * @deprecated Typer will not be used in future releases ]

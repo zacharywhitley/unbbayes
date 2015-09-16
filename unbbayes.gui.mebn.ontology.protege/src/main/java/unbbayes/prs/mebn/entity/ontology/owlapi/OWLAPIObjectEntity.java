@@ -139,6 +139,7 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 	 */
 	public void setAssociatedOWLEntity(OWLEntity associatedOWLEntity) {
 		this.associatedOWLEntity = associatedOWLEntity;
+		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, this, associatedOWLEntity.getIRI());
 	}
 
 	/**
@@ -264,10 +265,11 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 		
 		// substitute with the existing class
 		this.setAssociatedOWLEntity(temporaryOWLClass);
-		
-		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(getMEBN(), this, temporaryOWLClass.getIRI());
+		// the following is called in setAssociatedOWLEntity(temporaryOWLClass)
+//		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(getMEBN(), this, temporaryOWLClass.getIRI());
 	}
 	
+	// do not add now. We want the instances to be added when we synchronize with KB
 //	/* (non-Javadoc)
 //	 * @see unbbayes.prs.mebn.entity.ObjectEntity#addInstance(java.lang.String)
 //	 */
@@ -377,6 +379,8 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 		OWLEntityRemover remover = new OWLEntityRemover(manager, Collections.singleton(ontology));
 		remover.visit(individualToRemove);
 		manager.applyChanges(remover.getChanges());	// commit
+		
+		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, instance, null);
 	}
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.entity.ObjectEntity#removeAllInstances()
@@ -411,6 +415,8 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 		OWLEntityRemover remover = new OWLEntityRemover(manager, Collections.singleton(ontology));
 		remover.visit(associatedOWLEntity.asOWLClass());
 		manager.applyChanges(remover.getChanges());	// commit
+		
+		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, this, null);
 		
 	}
 	

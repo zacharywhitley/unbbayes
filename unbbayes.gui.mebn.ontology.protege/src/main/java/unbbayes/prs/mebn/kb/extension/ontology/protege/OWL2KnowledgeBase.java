@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.inference.NoOpReasoner;
@@ -33,6 +34,7 @@ import org.semanticweb.owlapi.model.OWLLiteral;
 import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyChange;
 import org.semanticweb.owlapi.model.OWLOntologyChangeListener;
@@ -56,6 +58,8 @@ import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.DefaultMappingArgumentExtractor;
 import unbbayes.prs.mebn.IMappingArgumentExtractor;
 import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.IResidentNode;
+import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.RandomVariableFinding;
@@ -577,6 +581,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#insertRandomVariableFinding(unbbayes.prs.mebn.RandomVariableFinding)
 	 */
 	public void insertRandomVariableFinding( RandomVariableFinding randomVariableFinding) {
+		// TODO make this method smaller by creating multiple protected template methods
 //		return;
 		// initial assertion
 		if (randomVariableFinding == null) {
@@ -585,19 +590,21 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		}
 		
 		// check if the number of arguments is compatible (this version does not support OWL properties representing n-ary relationships with n > 2 or n < 1)
-		// TODO implement n-ary relationships
-		if ((randomVariableFinding.getArguments() == null)
-				|| (randomVariableFinding.getArguments().length > 2)
-				|| (randomVariableFinding.getArguments().length < 1)) {
-			throw new IllegalArgumentException("This version does not support findings with " + randomVariableFinding.getArguments().length + " argument(s) yet.");
-		}
+//		if ((randomVariableFinding.getArguments() == null)
+//				|| (randomVariableFinding.getArguments().length > 2)
+//				|| (randomVariableFinding.getArguments().length < 1)) {
+//			throw new IllegalArgumentException("This version does not support findings with " + randomVariableFinding.getArguments().length + " argument(s) yet.");
+//		}
+		
+		// extract the instance of MEBN we are working with
+		MultiEntityBayesianNetwork mebn = getDefaultMEBN();
 		
 		// extract the IRI of the related OWL property
-		IRI iri = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(this.getDefaultMEBN(), randomVariableFinding.getNode());
+		IRI iri = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(mebn, randomVariableFinding.getNode());
 		
 		// verify if MEBN contains IRI definition of the OWL property related to this resident node
 		if (iri == null) {
-			throw new IllegalStateException(this.getDefaultMEBN() + " does not specify the OWL property's IRI for resident node " + randomVariableFinding);
+			throw new IllegalStateException(mebn + " does not specify the OWL property's IRI for resident node " + randomVariableFinding);
 		}
 		
 		// check if the currently managed ontology contains the extracted owl property's IRI 
@@ -611,16 +618,16 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		OWLDataFactory factory = this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().getOWLDataFactory();
 		
 		// this variable will hold the axioms to be added to ontology (this axiom will represent a particular owl triple "argument -> property -> value" )
-		OWLAxiom axiom = null;
+		Set<OWLAxiom> axiomsToInclude = new HashSet<OWLAxiom>();
 		
 		// TODO check if we should also add negative axioms (because OWL has open-world assumption, but our SSBN algorithm assumes closed-world assumptions at few points)
 //		OWLAxiom negativeAxiom = null;	// because OWL uses open-world assumption, we should sometimes add a negative axiom to make sure the opposite never happens
 		
 		
 		// extract the IRI of the subject of OWL property (which is the 1st argument)
-		IRI subjectIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(this.getDefaultMEBN(), randomVariableFinding.getArguments()[0]);
+		IRI subjectIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, randomVariableFinding.getArguments()[0]);
 		if (subjectIRI == null ) {
-			throw new IllegalStateException("MEBN " + this.getDefaultMEBN() + " does not provide the IRI of object entity individual " + randomVariableFinding.getArguments()[0]);
+			throw new IllegalStateException("MEBN " + mebn + " does not provide the IRI of object entity individual " + randomVariableFinding.getArguments()[0]);
 		}
 		if (!this.getDefaultOWLReasoner().getRootOntology().containsIndividualInSignature(subjectIRI, true)) {
 			throw new IllegalStateException("Ontology " + this.getDefaultOWLReasoner().getRootOntology() + " does not provide individual " + subjectIRI);
@@ -649,18 +656,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					value = false;
 				} 
 				
-				axiom = factory.getOWLDataPropertyAssertionAxiom(property.asOWLDataProperty(), subject, value);
+				axiomsToInclude.add(factory.getOWLDataPropertyAssertionAxiom(property.asOWLDataProperty(), subject, value));
 				
 				
-			} else { // there are 2 or more arguments: this is a non-functional relation between 2 individuals
+			} else if (randomVariableFinding.getArguments().length == 2) { // there are 2 arguments: this is a non-functional relation between 2 individuals
 				// extract object property
 				OWLObjectProperty property = factory.getOWLObjectProperty(iri);
 				
 				// extract the object (range, or the second argument)
-				// TODO implement findings with more than 2 arguments
-				IRI objectIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(this.getDefaultMEBN(), randomVariableFinding.getArguments()[1]);
+				IRI objectIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, randomVariableFinding.getArguments()[1]);
 				if (objectIRI == null ) {
-					throw new IllegalStateException("MEBN " + this.getDefaultMEBN() + " does not provide the IRI of object entity individual " + randomVariableFinding.getArguments()[1]);
+					throw new IllegalStateException("MEBN " + mebn + " does not provide the IRI of object entity individual " + randomVariableFinding.getArguments()[1]);
 				}
 				if (!this.getDefaultOWLReasoner().getRootOntology().containsIndividualInSignature(objectIRI, true)) {
 					throw new IllegalStateException("Ontology " + this.getDefaultOWLReasoner().getRootOntology() + " does not provide individual " + objectIRI);
@@ -676,11 +682,112 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				// create object property assertion to relate 2 individuals. 
 				if(randomVariableFinding.getState().getName().equalsIgnoreCase("false")){
 					// in this case, the axiom should be negative (it makes explicit that the relationship does not happen at all)
-					axiom = factory.getOWLNegativeObjectPropertyAssertionAxiom(property.asOWLObjectProperty(), subject, object);
+					axiomsToInclude.add(factory.getOWLNegativeObjectPropertyAssertionAxiom(property.asOWLObjectProperty(), subject, object));
 				} else {
 					// in this case, the axiom should be positive (it makes explicit that the relationship happens - this case happens in most cases)
-					axiom = factory.getOWLObjectPropertyAssertionAxiom(property.asOWLObjectProperty(), subject, object);
+					axiomsToInclude.add(factory.getOWLObjectPropertyAssertionAxiom(property.asOWLObjectProperty(), subject, object));
 				}
+			} else {
+				// TODO add support for owl data properties
+				// this is a n-ary relationship represented as a boolean with 3 or more arguments.
+				
+				// extract the manager that will control prefixes of individuals to be created in ontology
+				PrefixManager prefixManager = getOntologyPrefixManager(getDefaultOWLReasoner().getRootOntology());
+				
+				// build a name for an OWL individual which will represent the n-tuple. 
+				// N-tuple with n>2 needs an individual to hold multiple OWL property assertions, because by default OWL property assertions relate 2 individuals only.
+				// Therefore, we are creating a stub individual to use N OWL property assertions in order to indicate that the individuals related to this stub
+				// are related by an n-tuple relationship.
+				String nTupleName = FINDING_PREFIX + randomVariableFinding.getNode().getName() + "_";
+				// append the arguments
+				for (ObjectEntityInstance findingArgument : randomVariableFinding.getArguments()) {
+					nTupleName += findingArgument.getName() + "_";
+				}
+				// append the state of the node. At this point, the name should be ending at "_", so there is no need to append additional "_"
+				nTupleName += randomVariableFinding.getState().getName();
+				
+				// extract the OWL individual with this name. We don't care if it exists already or not.
+				OWLNamedIndividual nTupleIndividual = factory.getOWLNamedIndividual(nTupleName, prefixManager);
+				
+				// extract the main object property. At least one argument should be mapped to it, but if there is some unmapped argument, we'll use this as the default
+				OWLObjectProperty mainProperty = factory.getOWLObjectProperty(iri);
+				
+				// TODO check that at least one argument is mapped to the owl property specified by definesUncertaintyOf, and all arguments are mapped
+				// extract the OWL properties associated with each argument by isSubjectIn and isObjectOf
+				int numArgumentsMappedWithMainProperty = 0;	// this will count how many arguments were using (mapped with) the main property.
+				
+				List<Argument> argumentList = randomVariableFinding.getNode().getArgumentList();
+				Collection<OWLAxiom> nTupleAxioms = new ArrayList<OWLAxiom>();		// set of axioms for this n-tuple
+				for (int i = 0; i < argumentList.size(); i++) {
+					Argument argument = argumentList.get(i);
+					
+					// extract the IRI of the value of current argument (not the argument itself)
+					IRI argumentValueIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, randomVariableFinding.getArguments()[i]);	// argument of node and finding are supposedly synchronized by index
+					
+					
+					
+					OWLObjectProperty propertyToUse = mainProperty;		// by default arguments with no mapping will be using mainProperty
+					subject = nTupleIndividual;							// by default, the n-tuple individual is the subject of the property assertion
+					OWLIndividual object = factory.getOWLNamedIndividual(argumentValueIRI);	// consider by default that the argument is the object
+					
+					// extract the properties mapped with this argument
+					Collection<IRI> owlPropertiesObjectOf = IRIAwareMultiEntityBayesianNetwork.getIsObjectFromMEBN(mebn, argument);
+					Collection<IRI> owlPropertiesSubjectIn = IRIAwareMultiEntityBayesianNetwork.getIsSubjectFromMEBN(mebn, argument);
+					if (owlPropertiesObjectOf != null && !owlPropertiesObjectOf.isEmpty()) {
+						// check consistency
+						if (owlPropertiesSubjectIn != null && !owlPropertiesSubjectIn.isEmpty()) {
+							// this argument is double-mapped (both as object of and subject in)
+							System.err.println("Argument " + argument + " of node " + randomVariableFinding 
+									+ " is mapped  both as object of " + owlPropertiesObjectOf
+									+ ", and subject in " + owlPropertiesSubjectIn);
+							// ignore and just prioritize isObjectOf
+						}
+						Iterator<IRI> iterator = owlPropertiesObjectOf.iterator();
+						propertyToUse = factory.getOWLObjectProperty(iterator.next());
+						if (iterator.hasNext()) {
+							// this argument is mapped twice
+							System.err.println("Argument " + argument + " of node " + randomVariableFinding 
+									+ " is mapped  multiple times as object of " + owlPropertiesObjectOf);
+						}
+						// there is no need to change the subject and object, because the argument is the object and the tuple is the subject already
+					} else if (owlPropertiesSubjectIn != null && !owlPropertiesSubjectIn.isEmpty()) {
+						Iterator<IRI> iterator = owlPropertiesSubjectIn.iterator();
+						propertyToUse = factory.getOWLObjectProperty(iterator.next());
+						if (iterator.hasNext()) {
+							// this argument is mapped twice
+							System.err.println("Argument " + argument + " of node " + randomVariableFinding 
+									+ " is mapped  multiple times as subject in " + owlPropertiesSubjectIn);
+						}
+						subject = object; // the subject is the argument
+						object = nTupleIndividual;	// the object is the tuple 
+					}
+					
+					if (propertyToUse == null
+							|| subject == null
+							|| object == null) {
+						System.err.println("Could not find valid mapping for argument " + argument + " in " + randomVariableFinding);
+						nTupleAxioms.clear();			// we should not add this ntuple
+						break; // ignore this finding
+					}
+					
+					if (propertyToUse.getIRI().equals(mainProperty.getIRI())) {
+						// we found an argument which is mapped to mainProperty
+						numArgumentsMappedWithMainProperty++;
+					}
+					
+					nTupleAxioms.add(factory.getOWLObjectPropertyAssertionAxiom(propertyToUse.asOWLObjectProperty(), subject, object));
+				}
+				
+				// check consistency
+				if (numArgumentsMappedWithMainProperty != 1) {
+					// the number of arguments 
+					System.err.println("There were " + numArgumentsMappedWithMainProperty + " mappings to OWL property " + mainProperty + " in " + randomVariableFinding);
+					nTupleAxioms.clear();	// we should not add this ntuple
+				}
+				
+				// add the axioms of this n-tuple to axioms to be included in ontology
+				axiomsToInclude.addAll(nTupleAxioms);
+				
 			}
 		} else if (randomVariableFinding.getArguments().length <= 1) { 
 			// extract object property
@@ -690,9 +797,9 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			Debug.println(this.getClass(), "Property " + property + " seems to be a function from " + subject + " to " + randomVariableFinding.getState());
 			
 			// extract the object (value)
-			IRI objectIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(this.getDefaultMEBN(), randomVariableFinding.getState());
+			IRI objectIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, randomVariableFinding.getState());
 			if (objectIRI == null ) {
-				throw new IllegalStateException("MEBN " + this.getDefaultMEBN() + " does not provide the IRI of categorical entity " + randomVariableFinding.getState());
+				throw new IllegalStateException("MEBN " + mebn + " does not provide the IRI of categorical entity " + randomVariableFinding.getState());
 			}
 			if (!this.getDefaultOWLReasoner().getRootOntology().containsIndividualInSignature(objectIRI, true)) {
 				throw new IllegalStateException("Ontology " + this.getDefaultOWLReasoner().getRootOntology() + " does not provide individual " + objectIRI);
@@ -705,18 +812,122 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				throw new IllegalStateException("Could not extract OWL individual with IRI " + objectIRI);
 			}
 			
-			axiom = factory.getOWLObjectPropertyAssertionAxiom(property.asOWLObjectProperty(), subject, object);
+			axiomsToInclude.add(factory.getOWLObjectPropertyAssertionAxiom(property.asOWLObjectProperty(), subject, object));
 			
 			// Note: if property is really functional, then the negative axioms should be automatically inferred by reasoner
 		} else {
-			// this is a functional ternary relation
-			// TODO implement ternary function
-			throw new IllegalArgumentException("This version does not support ternary functions (a property mapping 2 individuals to 1 individual) like " + iri);
+			// this is a functional n-ary relation (the node is a function with 2 or more arguments)
+			// TODO add support for owl data properties
+			
+			// extract the manager that will control prefixes of individuals to be created in ontology
+			PrefixManager prefixManager = getOntologyPrefixManager(getDefaultOWLReasoner().getRootOntology());
+			
+			// build a name for an OWL individual which will represent the n-tuple. 
+			// N-tuple with n>2 needs an individual to hold multiple OWL property assertions, because by default OWL property assertions relate 2 individuals only.
+			// Therefore, we are creating a stub individual to use N OWL property assertions in order to indicate that the individuals related to this stub
+			// are related by an n-tuple relationship.
+			String nTupleName = FINDING_PREFIX + randomVariableFinding.getNode().getName() + "_";
+			// append the arguments
+			for (ObjectEntityInstance findingArgument : randomVariableFinding.getArguments()) {
+				nTupleName += findingArgument.getName() + "_";
+			}
+			// append the state of the node. At this point, the name should be ending at "_", so there is no need to append additional "_"
+			nTupleName += randomVariableFinding.getState().getName();
+			
+			// extract the OWL individual with this name. We don't care if it exists already or not.
+			OWLNamedIndividual nTupleIndividual = factory.getOWLNamedIndividual(nTupleName, prefixManager);
+			
+			// extract the main object property. At least one argument should be mapped to it, but if there is some unmapped argument, we'll use this as the default
+			OWLObjectProperty mainProperty = factory.getOWLObjectProperty(iri);
+			
+			// extract the OWL properties associated with each argument by isSubjectIn and isObjectOf
+			List<Argument> argumentList = randomVariableFinding.getNode().getArgumentList();
+			Collection<OWLAxiom> nTupleAxioms = new ArrayList<OWLAxiom>();		// set of axioms for this n-tuple
+			for (int i = 0; i < argumentList.size(); i++) {
+				Argument argument = argumentList.get(i);
+				
+				// extract the IRI of the value of current argument (not the argument itself)
+				IRI argumentValueIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, randomVariableFinding.getArguments()[i]);	// argument of node and finding are supposedly synchronized by index
+				
+				
+				OWLObjectProperty propertyToUse = mainProperty;		// by default arguments with no mapping will be using mainProperty
+				subject = nTupleIndividual;							// by default, the n-tuple individual is the subject of the property assertion
+				OWLIndividual object = factory.getOWLNamedIndividual(argumentValueIRI);	// consider by default that the argument is the object
+				
+				// extract the properties mapped with this argument
+				Collection<IRI> owlPropertiesObjectOf = IRIAwareMultiEntityBayesianNetwork.getIsObjectFromMEBN(mebn, argument);
+				Collection<IRI> owlPropertiesSubjectIn = IRIAwareMultiEntityBayesianNetwork.getIsSubjectFromMEBN(mebn, argument);
+				if (owlPropertiesObjectOf != null && !owlPropertiesObjectOf.isEmpty()) {
+					// check consistency
+					if (owlPropertiesSubjectIn != null && !owlPropertiesSubjectIn.isEmpty()) {
+						// this argument is double-mapped (both as object of and subject in)
+						System.err.println("Argument " + argument + " of node " + randomVariableFinding 
+								+ " is mapped  both as object of " + owlPropertiesObjectOf
+								+ ", and subject in " + owlPropertiesSubjectIn);
+						// ignore and just prioritize isObjectOf
+					}
+					Iterator<IRI> iterator = owlPropertiesObjectOf.iterator();
+					propertyToUse = factory.getOWLObjectProperty(iterator.next());
+					if (iterator.hasNext()) {
+						// this argument is mapped twice
+						System.err.println("Argument " + argument + " of node " + randomVariableFinding 
+								+ " is mapped  multiple times as object of " + owlPropertiesObjectOf);
+					}
+					// there is no need to change the subject and object, because the argument is the object and the tuple is the subject already
+				} else if (owlPropertiesSubjectIn != null && !owlPropertiesSubjectIn.isEmpty()) {
+					Iterator<IRI> iterator = owlPropertiesSubjectIn.iterator();
+					propertyToUse = factory.getOWLObjectProperty(iterator.next());
+					if (iterator.hasNext()) {
+						// this argument is mapped twice
+						System.err.println("Argument " + argument + " of node " + randomVariableFinding 
+								+ " is mapped  multiple times as subject in " + owlPropertiesSubjectIn);
+					}
+					subject = object; // the subject is the argument
+					object = nTupleIndividual;	// the object is the tuple 
+				}
+				
+				if (propertyToUse == null
+						|| subject == null
+						|| object == null) {
+					System.err.println("Could not find valid mapping for argument " + argument + " in " + randomVariableFinding);
+					nTupleAxioms.clear();			// we should not add this ntuple
+					break; // ignore this finding
+				}
+				
+				if (propertyToUse.getIRI().equals(mainProperty.getIRI())) {
+					// we found an argument which is mapped to mainProperty. This should not happen in arguments (because main property is reserved for the state of the node)
+					System.err.println("Argument " + argument + " in " + randomVariableFinding 
+							+ " is mapped to a property specified in " + DEFINESUNCERTAINTYOF + ". Property = " + mainProperty);
+					nTupleAxioms.clear();			// we should not add this ntuple
+					break; // ignore this finding
+				}
+				
+				nTupleAxioms.add(factory.getOWLObjectPropertyAssertionAxiom(propertyToUse.asOWLObjectProperty(), subject, object));
+			}	// end of for
+			
+			// extract the IRI of the owl individual which represents the state of this finding
+			IRI objectIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, randomVariableFinding.getState());
+			// extract the owl individual from this IRI
+			OWLNamedIndividual object = null;
+			if (objectIRI != null) {
+				object = factory.getOWLNamedIndividual(objectIRI);
+			} else {
+				// create a new one if it did not exist
+				object = factory.getOWLNamedIndividual(randomVariableFinding.getState().getName(), prefixManager);
+				objectIRI = object.getIRI();
+				IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, randomVariableFinding.getState(), objectIRI);
+			}
+			
+			// add axiom to connect tuple with the state of the node;
+			nTupleAxioms.add(factory.getOWLObjectPropertyAssertionAxiom(mainProperty.asOWLObjectProperty(), nTupleIndividual, object));
+			
+			// add the axioms of this n-tuple to axioms to be included in ontology
+			axiomsToInclude.addAll(nTupleAxioms);
 		}
 		
 		// add axioms and apply changes
-		if (axiom != null) {
-			this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().addAxiom(this.getDefaultOWLReasoner().getRootOntology(), axiom);
+		if (!axiomsToInclude.isEmpty()) {
+			this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().addAxioms(this.getDefaultOWLReasoner().getRootOntology(), axiomsToInclude);
 			try {
 				Debug.println(this.getClass(), "Added finding " + randomVariableFinding + " to property " + iri + " and subject " + subject);
 			} catch (Throwable t) {
@@ -747,6 +958,33 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
+		
+		// clear garbage
+		clearKnowledgeBase();
+
+		// refill definitions
+		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
+			this.createEntityDefinition(entity);
+		}
+		for(MFrag mfrag: mebn.getDomainMFragList()){
+			for(ResidentNode resident: mfrag.getResidentNodeList()){
+				this.createRandomVariableDefinition(resident);
+			}
+		}
+		
+		// re-insert removed entity instances and findings
+		for(ObjectEntityInstance instance: mebn.getObjectEntityContainer().getListEntityInstances()){
+			 this.insertEntityInstance(instance); 
+		}
+		// TODO use a map instead of cubic search
+		for(MFrag mfrag: mebn.getDomainMFragList()){
+			for(IResidentNode residentNode : mfrag.getResidentNodeList()){
+				for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
+					this.insertRandomVariableFinding(finding); 
+				}
+			}
+		}
+		
 		if (file == null) {
 			try {
 				this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().saveOntology(this.getDefaultOWLReasoner().getRootOntology());
@@ -936,7 +1174,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		// extract the factory to obtain the owl property
 		OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
 		
-		// by now, the resident node has either 1 or 2 arguments
+		// do different handling accordingly to number of parameters and type of the states of node
 		if (listArguments.size() <= 1) {
 			// this is either a functional format (e.g. F(x) = y) or a boolean data property
 			
@@ -1144,7 +1382,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					}
 				}
 				
-				expressionToParse += isSubjectIn?"":"inverse " + this.extractName(property) + " value " + argInstance.getEntity().getInstanceName();
+				expressionToParse += isSubjectIn?"inverse ":"" + this.extractName(property) + " value " + argInstance.getEntity().getInstanceName();
 				if (iterator.hasNext()) {
 					// if this is not the last argument, we shall join expressions with an "and" operation
 					expressionToParse += " and ";
@@ -1226,7 +1464,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// from the mapping, create an expression that returns the subject if the subject has a link to object.
 			// example 1: inverse MTI some  (MTI_RPT value Rpt1 and MTI_T value T1)
 			// example 2: inverse MTI some  (inverse inv_MTI_RPT value Rpt2 and inverse inv_MTI_T value T1)
-			String expressionToParse = "inverse " + mainProperty + " some ( ";
+			String expressionToParse = "inverse " + this.extractName(mainProperty) + " some ( ";
 			// Note: we already checked at the beginning of this method that listArgument.size() == resident.getArgumentList().size()
 			for (Iterator<OVInstance> iterator = listArguments.iterator(); iterator.hasNext(); ) {
 				// I'm using an explicit iterator, because expressionToParse shall not include an "and" at the end of expression
@@ -1256,7 +1494,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					throw new IllegalArgumentException("Argument " + argInstance + " of " + resident + " has no mapping to OWL property.");
 				}
 				
-				expressionToParse += isSubjectIn?"":"inverse " + this.extractName(property) + " value " + argInstance.getEntity().getInstanceName();
+				expressionToParse += isSubjectIn?"inverse ":"" + this.extractName(property) + " value " + argInstance.getEntity().getInstanceName();
 				if (iterator.hasNext()) {
 					// if this is not the last argument, we shall join expressions with an "and" operation
 					expressionToParse += " and ";
@@ -1496,7 +1734,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	}
 
 	/**
-	 * this method adds random variable findings to resident node (thus, "resident" is both Input and Output argument).
+	 * this method adds random variable findings to resident node (thus, the argument "resident" of this method is used for both Input and Output).
 	 *  Actually, this method seems to be insignificant now, 
 	 *  because the findings can be added directly to the deterministic ontology using protege panel.
 	 *  ...But the SSBN algorithm seems to use informations obtained from this method instead of querying the knowledge base, 
@@ -1562,8 +1800,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		// extract the factory to obtain property and other OWL objects
 		OWLDataFactory factory = ontology.getOWLOntologyManager().getOWLDataFactory();
 		
-		// only 3 options available: boolean node with 1 argument, categorical node with 1 argument, and boolean node with 2 arguments.
-		// TODO add support for n-ary relationships
+		// we need different treatment accordingly to different number of arguments and different node type (e.g. whether it is a boolean resident node or not)
 		if (resident.getArgumentList().size() == 1) {
 			// boolean node with 1 argument or categorical node with 1 argument
 			if (resident.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES) {
@@ -1844,17 +2081,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			}
 
 			// Create expression that returns all n-tuples using the property
-			// Example 1: MTI some Thing and MTI_RPT some Thing and MTI_T some Thing
-			// Example 2: inverse inv_MTI some Thing and inverse inv_MTI_RPT some Thing and inverse inv_MTI_T some Thing
+			// Example 1: MTI some Thing or MTI_RPT some Thing or MTI_T some Thing
+			// Example 2: inverse inv_MTI some Thing or inverse inv_MTI_RPT or Thing and inverse inv_MTI_T or Thing
 			String expressionToParse = "";
 			// Note: we already checked at the beginning of this method that listArgument.size() == resident.getArgumentList().size()
 			for (Iterator<Entry<Argument, Map<OWLProperty, Integer>>> iterator = propertiesPerArgument.entrySet().iterator(); iterator.hasNext(); ) {
 				// I'm using an explicit iterator, because expressionToParse shall not include an "and" at the end of expression
 				Entry<Argument, Map<OWLProperty, Integer>> argumentEntry = iterator.next();
 				
-				// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
+				// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isObjectIn)
 				OWLProperty property = mainProperty;
-				boolean isSubjectIn = true;
+				boolean isSubjectIn = false;	// isSubjectIn = false means isObjectIn=true.
 				// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
 				if (argumentEntry.getValue() != null) {
 					// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
@@ -1874,8 +2111,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				
 				expressionToParse += isSubjectIn?"":"inverse " + this.extractName(property) + " some Thing ";
 				if (iterator.hasNext()) {
-					// if this is not the last argument, we shall join expressions with an "and" operation
-					expressionToParse += " and ";
+					// if this is not the last argument, we shall join expressions with an "or" operation
+					expressionToParse += " or ";
+					// Because we are also querying for negative findings, we are joining with OR instead of AND. 
+					// This is because a query like "MTI some Thing" will not detect findings using "MTI" in negative property assertions.
 				}
 			}
 			
@@ -1883,6 +2122,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			
 			// execute query to obtain all n-tuples using that property
 			for (OWLIndividual tuple : getOWLIndividuals(expressionToParse, reasoner,ontology)) {
+				// this individual is simply using any of the mapped properties. There is no guarantee that all properties are used, nor that one of them is the main property
 				if (!tuple.isNamed()) {
 					Debug.println(getClass(), "Current version cannot use anonymous OWL individuals in order to fill findings.");
 					continue;
@@ -1891,15 +2131,15 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					// This will be the list of instances of the arguments of the resident node
 					List<ObjectEntityInstance> argumentInstancesList = new ArrayList<ObjectEntityInstance>();
 					
-					
 					// for each triple, extract associated values and create resident node's finding
+					boolean isPositiveFinding = true;	// this will become false if we find a negative finding (an assertion for the random variable to be false)
 					for (Entry<Argument, Map<OWLProperty, Integer>> propertyEntry : propertiesPerArgument.entrySet()) {
 						// note: we assume each tuple represents a single finding (i.e. an n-tuple relates only n entities, by using n OWL properties). 
 						// Therefore, pick only 1 associated OWL object per argument.
 						
-						// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
+						// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isObjectIn)
 						OWLProperty property = mainProperty;
-						boolean isSubjectIn = true;
+						boolean isSubjectIn = false; // isSubjectIn = false means isObjectIn=true.
 						
 						// pick the OWL property to query.
 						for (Entry<OWLProperty, Integer> entry : propertyEntry.getValue().entrySet()) {
@@ -1922,6 +2162,23 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 							// as previously stated, we assume each tuple represents only 1 finding, so use only the 1st entity
 							ObjectEntityInstance entityInstance = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(this.extractName(entityOWLIndividuals.getFlattened().iterator().next()));
 							argumentInstancesList.add(entityInstance);
+						} else {
+							// check if this tuple is declaring a negative finding.
+							// a negative finding is supposedly a negative property assertion for the mainProperty.
+							// TODO use a inferred value instead of retrieving only the 
+							Map<OWLObjectPropertyExpression, Set<OWLIndividual>> negativeObjectPropertyValues = new TreeMap<OWLObjectPropertyExpression, Set<OWLIndividual>>();
+							for (OWLOntology loadedOntology : reasoner.getRootOntology().getOWLOntologyManager().getOntologies()) {
+								// collect negative finding declarations for this tuple, in loaded ontologies
+								negativeObjectPropertyValues.putAll(tuple.getNegativeObjectPropertyValues(loadedOntology));
+							}
+							// extract the one defined by the mainProperty
+							Set<OWLIndividual> negativeFindings = negativeObjectPropertyValues.get(mainProperty);
+							if (negativeFindings != null && !negativeFindings.isEmpty()) {
+								isPositiveFinding = false; // this tuple is actually a negative finding
+								// we also need to add this argument in the list of argument instances. Just use the 1st (each tuple must declare only 1 finding)
+								ObjectEntityInstance entityInstance = resident.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getEntityInstanceByName(this.extractName(negativeFindings.iterator().next()));
+								argumentInstancesList.add(entityInstance);
+							}
 						}
 						
 					}
@@ -1932,7 +2189,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						RandomVariableFinding finding = new RandomVariableFinding(
 								resident, 
 								argumentInstancesList.toArray(new ObjectEntityInstance[argumentInstancesList.size()]), 
-								resident.getPossibleValueByName("true").getState(), 			// in "negative" finding, this will be set to "false"
+								resident.getPossibleValueByName(Boolean.toString(isPositiveFinding)).getState(), // in "negative" finding, this will be set to "false". In normal finding, this is set to "true"
 								this.getDefaultMEBN()
 								);
 						// add finding
@@ -1950,6 +2207,9 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					System.err.println("But the system will attempt to load other findings.");
 				}
 			}
+			
+//			TODO negative findings of n-tuples should be queried like (((MTI some Thing) or (MTI_hasReport some Thing) or (MTI_hasTimeStep some Thing)) that MTI_hasReport value Rpt3)
+//			and then queried _for negative property assertions;
 			
 			// Similarly, execute query to obtain all n-tuples of negative findings (those explicitly stating that the tuples won't happen)
 			expressionToParse = "not ( " + expressionToParse + " )";
@@ -2192,7 +2452,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				}
 			}
 		
-			// TODO find out an effective way to obtain negative findings
+			// TODO find out an effective way to obtain negative findings (negative findings are supported by BN, but SSBN compilation algorithm doesn't seem to be using it properly)
 			System.err.println("WARNING: negative finding not supported yet - assertions that " + mainProperty + " will NOT happen is NOT being loaded...");
 		
 		}
@@ -2423,8 +2683,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	/**
 	 * This is a recursive method that evaluates formulaTree and fills knownSearchResults. 
 	 * @param formulaTree : the expression to evaluate
-	 * @param knownValues : these are known values of ordinary variables.
-	 * @param knownSearchResults : an Input/Output argument that holds the evaluated values.
+	 * @param knownValues : these are known values of ordinary variables. This is an Input/Output argument that holds the evaluated values.
 	 * It seems that the expected format of SearchResult is: <br />
 	 * 		- SearchResult#getOrdinaryVariableSequence() contains only the unknown OVs;<br />
 	 * 		- ret.getValuesResultList() contains arrays which its index is synchronized with the SearchResult#getOrdinaryVariableSequence().<br />
@@ -2482,6 +2741,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			if (!( (formulaTree.getNodeVariable() instanceof ResidentNode) || (formulaTree.getNodeVariable() instanceof ResidentNodePointer))
 					&& !(formulaTree.getNodeVariable() instanceof BuiltInRVEqualTo)
 					&& !(formulaTree.getNodeVariable() instanceof BuiltInRVNot)) {
+				System.err.println("This version is unable to handle context nodes not starting with \"=\", not, or some node.");
 				return null;
 			}
 			
@@ -2616,14 +2876,13 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 
 
 	/**
-	 * Solve formulas in the following format:
-	 * booleanNode(<1 or 2 arguments>);
+	 * Solve formulas in the following format: booleanNode(<1 or more arguments>);
 	 * CAUTION: because OWL reasoners assumes open-world assumption, the "not" operator can retrieve less values than you may expect
-	 * (because unless you explicitly say that "not booleanNode(<1 or 2 arguments>)" is valid, OWL reasoners will not consider that two individuals are different).
+	 * (because unless you explicitly say that "not booleanNode(<1 or more arguments>)" is valid, OWL reasoners will not consider that two individuals are different).
 	 * This is called inside {@link #solveFormulaTree(NodeFormulaTree, List, ContextNode, boolean, boolean)}
 	 * @param formulaTreeBooleanNode : this is a subtree of the top formula (which uses composite pattern), and it represents the "booleanNode" in booleanNode(<1 or 2 arguments>);
 	 * @param knownValues : the known OV values (values in this list will not be queried to KB)
-	 * @param isToSolveAsPositiveOperation : if set to false, not(booleanNode(<1 or 2 arguments>)) will be evaluated instead. 
+	 * @param isToSolveAsPositiveOperation : if set to false, not(booleanNode(<1 or more arguments>)) will be evaluated instead. 
 	 * @param isToAddKnownValuesToSearchResult : if true, the values in knownValues will be added to the returned value.
 	 * @param context : the context node being evaluated
 	 * @return the SearchResult or null if the formula could not be solved by this method.
@@ -2728,7 +2987,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// expression of the query
 			String expression = "";
 			
-			// there are only  possible cases:
+			// there are only these possible cases:
 			// case 1 . Immediate case -- booleanNode has only 1 argument, and argument1OV is known. In OWL, this is a boolean data property assertion.
 			// case 2 . booleanNode has only 1 argument, and argument1OV is unknown. In OWL, this is a boolean data property assertion.
 			// case 3. there are only 2 arguments, and both are unknown;
@@ -2834,7 +3093,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				return null;
 			}
 			
-			// check cases 3, 4, 5.
+			// check cases 3, 4, 5 (this is not a n-tuple with n > 2 yet).
 			if (originalArgumentList.size() == 2) {
 
 				// extract the ordinary variable argument2OV (the ov of the 2nd argument)
@@ -2992,7 +3251,6 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				// triples, quaduples, quintuples, etc. needs to be simulated by a individual which represents the tuple (like an entry in table-based entity-relationship
 				// database in which there is a table whose entries are references to actual entities).
 				// Extract such tuple objects here.
-				
 				return this.buildNTupleSearchResultFromNode(
 						booleanResidentNode,
 						booleanNodeProperty,
@@ -3024,10 +3282,18 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @param possibleStateOV
 	 */
 	private SearchResult buildNTupleSearchResultFromNode(
-			ResidentNode residentNode, OWLProperty nodeProperty,
+			ResidentNode residentNode, @SuppressWarnings("rawtypes") OWLProperty nodeProperty,
 			boolean isToSolveAsPositiveOperation, OWLReasoner reasoner,
 			List<OVInstance> knownValues,
 			OrdinaryVariable[] ordinaryVariableSequence, OrdinaryVariable possibleStateOV) {
+		// this is how to get a value of some argument (example is t of MTI(rpt,t), where rpt = RPT1)
+		// inverse MTI_hasTimeStep some ((MTI some Thing) that MTI_hasReport value RPT1)
+		// if MTI is a predicate (e.g. MTI(rpt,t,speed)::boolean), and speed is object of OWL property MTI, then 
+		// inverse MTI_hasTimeStep some ((MTI some Speed) that MTI_hasReport value RPT1)
+		
+		// this is how to get a value of a function
+		// inverse MTI some ((MTI some Thing) that MTI_hasReport value Rpt1)
+		// So the part (MTI some Thing) returns findings of MTI, the part "that MTI_hasReport value Rpt1" adds restrictions, and "inverse MTI some" extracts the value you want
 		
 		SearchResult ret = new SearchResult(ordinaryVariableSequence);
 	
