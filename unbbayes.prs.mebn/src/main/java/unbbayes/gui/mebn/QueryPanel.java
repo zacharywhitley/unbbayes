@@ -50,7 +50,6 @@ import unbbayes.gui.ParcialStateException;
 import unbbayes.gui.UnBBayesFrame;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
 import unbbayes.gui.mebn.util.OrganizerUtils;
-import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
