@@ -73,7 +73,7 @@ public class Resources extends ListResourceBundle {
 				
 		//ImplementationRestrictionException
 		{"OnlyOneOVInstanceForOV", "Should have only one instance for each ordinary variable."},
-		{"MoreThanOneContextNodeSearh","More then one context node search found for the ord. variable. This implementation treat only the trival case of one node"}, 
+		{"MoreThanOneContextNodeSearh","More than one context node search found for the ord. variable. This implementation treat only the trival case of one node"}, 
 		{"MoreThanOneValueForOVSearchFormula","More than one value for ordinary variable used in a search formula."}, 
 		
 		//SSBNWarning
