@@ -22,6 +22,7 @@ package unbbayes.prs.mebn.compiler;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,6 +41,7 @@ import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.compiler.exception.InconsistentTableSemanticsException;
 import unbbayes.prs.mebn.compiler.exception.InstanceException;
@@ -49,6 +51,8 @@ import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredExcepti
 import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
 import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
 import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
@@ -618,6 +622,7 @@ public class Compiler implements ICompiler {
 		for( int i = 0; i < this.cpt.tableSize(); i += this.ssbnnode.getProbNode().getStatesSize()) {
 			//	clears and initializes map
 			map = new HashMap<String, List<EntityAndArguments>>();
+			// fill map with SSBN nodes (i.e. parent nodes)
 			for (SSBNNode ssbnnode : parents) {
 				if (ssbnnode.getResident().isToLimitQuantityOfParentsInstances()) {
 					// do not add nodes in the chain which limits the max quantity of parents.
@@ -628,7 +633,6 @@ public class Compiler implements ICompiler {
 				    map.put(ssbnnode.getResident().getName(), new ArrayList<EntityAndArguments>());
 			    }
 			}
-			
 			
 			// fill map at this loop. Note that parents.size, currentIteratorValue.size, and
 			// valueCombinationiterators are the same
@@ -655,7 +659,29 @@ public class Compiler implements ICompiler {
 				EntityAndArguments val = new EntityAndArguments(currentIteratorValue.get(j),new ArrayList<OVInstance>(parentSSBNNode.getArguments()));
 				map.get(key).add(val);
 			}
-			
+
+			// fill map with ordinary variables in this mfrag (these are like identity nodes -- function that returns the value of its argument)
+			for (OrdinaryVariable ov : this.getNode().getMFrag().getOrdinaryVariableList()) {
+				if (ov == null || ov.getValueType() == null || ov.getName() == null) {
+					Debug.println(getClass(), ov + " is a null ordinary variable, or it is an ordinary variable with no type. It will be ignored.");
+					continue;	// ignore this ov
+				}
+				if (!map.containsKey(ov.getName())) {
+					// extract the object entity associated with this ov
+					ObjectEntity objectEntity = mebn.getObjectEntityContainer().getObjectEntityByType(ov.getValueType());
+					if (objectEntity == null) {
+						Debug.println(getClass(), ov.getValueType().getName() + " is not a known object entity. " + ov + " will be ignored.");
+						continue;	// ignore this ov, because it is not associated with an object entity
+					}
+					// fill map with possible values of this ov (i.e. possible instances of this object entity)
+					ArrayList<EntityAndArguments> valueToAssign = new ArrayList<EntityAndArguments>();
+					for (ObjectEntityInstance objectEntityInstance : objectEntity.getInstanceList()) {
+						// again, OVs in LPDs are like identity nodes (i.e. something like Id(OV1) = OV1)
+						valueToAssign.add(new EntityAndArguments(objectEntityInstance, Collections.singletonList(OVInstance.getInstance(ov, objectEntityInstance))));
+					}
+				    map.put(ov.getName(), valueToAssign);
+			    }
+			}
 			
 			// updates iterators
 			for (int j = 0; j < valueCombinationIterators.size(); j++) {
@@ -973,12 +999,12 @@ public class Compiler implements ICompiler {
 		case 'a':
 			// Debug.println("ALL VERIFIED");
 			// sets the table header w/ this parameters (empty list,false,false): empty list (no verified parents), is not ANY and is not default
-			this.currentHeader = new TempTableHeaderCell(new ArrayList<TempTableHeaderParent>(), false, false, this.ssbnnode);
+			this.currentHeader = new TempTableHeaderCell(new ArrayList<TempTableHeader>(), false, false, this.ssbnnode);
 			break;
 		case 'y':
 			// Debug.println("ANY VERIFIED");
 			//	sets the table header w/ this parameters (empty list,true,false): empty list (no verified parents), is ANY and is not default
-			this.currentHeader = new TempTableHeaderCell(new ArrayList<TempTableHeaderParent>(), true, false, this.ssbnnode);
+			this.currentHeader = new TempTableHeaderCell(new ArrayList<TempTableHeader>(), true, false, this.ssbnnode);
 			break;
 		default:
 			expected("ALL or ANY");
@@ -1200,6 +1226,11 @@ public class Compiler implements ICompiler {
 
 	/**
 	 * b_factor ::= ident "=" ident | "(" b_expression ")"
+	 * <br/>
+	 * <br/>
+	 * For example: Node = state
+	 * <br/>
+	 * Another example: OV = entityInstance
 	 * 
 	 */
 	private ICompilerBooleanValue bFactor() throws InvalidConditionantException,
@@ -1253,7 +1284,7 @@ public class Compiler implements ICompiler {
 			
 			// consistency check C09: verify whether conditionant has valid values
 			if (this.node != null) {
-				if (!this.isValidConditionantValue(this.mebn,conditionantName,this.noCaseChangeValue)) {
+				if (!this.isValidConditionantValue(this.mebn,this.node,conditionantName,this.noCaseChangeValue)) {
 					throw new InvalidConditionantException();
 				}
 			}
@@ -1267,40 +1298,60 @@ public class Compiler implements ICompiler {
 		}
 		
 		// if code reached here, the condicionant check is ok
+		
+		TempTableHeader header = null;	// this will be the value to return
 
-		//	prepare to add current temp table's header's parent (condicionant list)
+		//	prepare to add current temp table's header's parent node (condicionant list)
 		ResidentNode resident = this.mebn.getDomainResidentNode(conditionantName);
-		// If not found, its an error!		
-		if (resident == null) {
-			try{
-				expected("Identifier");
-			} catch (TableFunctionMalformedException e) {
-				throw new InvalidConditionantException(e);
+		if (resident != null) {
+			
+			Entity condvalue = null;
+			// search for an entity with a name this.noCaseChangeValue
+			for (Entity possibleValue : resident.getPossibleValueListIncludingEntityInstances()) {
+				if (possibleValue.getName().equalsIgnoreCase(this.value)) {
+					condvalue = possibleValue;
+					break;
+				}
 			}
-		}
-		Entity condvalue = null;
-		// search for an entity with a name this.noCaseChangeValue
-		for (Entity possibleValue : resident.getPossibleValueListIncludingEntityInstances()) {
-			if (possibleValue.getName().equalsIgnoreCase(this.value)) {
-				condvalue = possibleValue;
-				break;
+			// If not found, its an error!		
+			if (condvalue == null) {
+				try{
+					expected("Identifier");
+				} catch (TableFunctionMalformedException e) {
+					throw new InvalidConditionantException(e);
+				}
 			}
-		}
-		// If not found, its an error!		
-		if (condvalue == null) {
-			try{
-				expected("Identifier");
-			} catch (TableFunctionMalformedException e) {
-				throw new InvalidConditionantException(e);
+			// Set temp table's header condicionant
+			// TODO optimize above code, because its highly redundant (condvalue should be found anyway on that portion of code)
+			header = new TempTableHeaderParent(resident, condvalue);
+		} else {
+			// we did not find a parent node with the specified name. It may be an ordinary variable
+			OrdinaryVariable ov = this.node.getMFrag().getOrdinaryVariableByName(conditionantName);
+			// If we did not find either one (node or OV), its an error!		
+			if (ov == null) {
+				try{
+					expected("Identifier");
+				} catch (TableFunctionMalformedException e) {
+					throw new InvalidConditionantException(e);
+				}
 			}
+			if (ov.getValueType() == null) {
+				throw new InvalidConditionantException(ov + " has no associated value.");
+			}
+			
+			// extract the type of this OV
+			ObjectEntity objectEntity = this.mebn.getObjectEntityContainer().getObjectEntityByType(ov.getValueType());
+			
+			// extract the actual instance of this type
+			Entity value = objectEntity.getInstanceByName(this.noCaseChangeValue);
+			
+			header = new TempTableHeaderOV(ov, value);
 		}
-		// Set temp table's header condicionant
-		TempTableHeaderParent headerParent = new TempTableHeaderParent(resident, condvalue);
-		// TODO optimize above code, because its highly redundant (condvalue should be found anyway on that portion of code)
 		
-		this.currentHeader.addParent(headerParent);	// store it as a conditionant declared inside a boolean expression
 		
-		return headerParent;
+		this.currentHeader.addParent(header);	// store it as a conditionant declared inside a boolean expression
+		
+		return header;
 	}
 	
 	
@@ -2000,7 +2051,8 @@ public class Compiler implements ICompiler {
 	
 	/**
 	 * Consistency check C09
-	 * Conditionants must be parents referenced by this.node	
+	 * Conditionants must be parents referenced by this.node,
+	 * or ordinary variables in the same MFrag
 	 * @return if node with name == nodeName is a valid conditionant.
 	 */
 	private boolean isValidConditionant(MultiEntityBayesianNetwork mebn, ResidentNode node, String conditionantName) {
@@ -2031,9 +2083,14 @@ public class Compiler implements ICompiler {
 			// TODO verify if it isn't a redundant check, since context node might not be
 			// parents of all resident nodes
 			
+			
+			return false;	// this is a node, but not a parent
 		}
 		
-		return false;
+		// conditionant may be an ordinary variable
+		OrdinaryVariable ov = node.getMFrag().getOrdinaryVariableByName(conditionantName);
+		return ov != null;	// return true if we found an OV. Return false if we did not.
+			
 	}
 	
 	/**
@@ -2041,7 +2098,7 @@ public class Compiler implements ICompiler {
 	 * Conditionants must have a consistent possible value
 	 * @return whether conditionantValue is a valid state for a conditionant with name conditionantName
 	 */
-	private boolean isValidConditionantValue(MultiEntityBayesianNetwork mebn, String conditionantName, String conditionantValue) {
+	private boolean isValidConditionantValue(MultiEntityBayesianNetwork mebn, ResidentNode node, String conditionantName, String conditionantValue) {
 		Node conditionant = mebn.getNode(conditionantName);
 		if (conditionant == null) {
 			// Debug.println("No conditionant of name " + conditionantName);
@@ -2051,11 +2108,24 @@ public class Compiler implements ICompiler {
 		if ( conditionant instanceof IResidentNode) {
 			// Debug.println("IS MULTIENTITYNODE");
 			return ((IResidentNode)conditionant).getPossibleValueByName(conditionantValue) != null;
-		} else {
-			// Debug.println("Conditionant is not a resident node");
 		}
-			
-		return false;
+		// Debug.println("Conditionant is not a resident node");
+		
+		// the name of the conditionant may be an OV
+		OrdinaryVariable ov = node.getMFrag().getOrdinaryVariableByName(conditionantName);
+		if (ov == null || ov.getValueType() == null) {
+			return false;
+		}
+		
+		// extract the object entity related to this OV's type
+		ObjectEntity objectEntity = mebn.getObjectEntityContainer().getObjectEntityByType(ov.getValueType());
+		if (objectEntity == null) {
+			return false;
+		}
+		
+		// return true if there is an instance (for that OV) with the specified value. False otherwise
+		return objectEntity.getInstanceByName(conditionantValue) != null;
+		
 	}
 	
 	
@@ -2284,10 +2354,10 @@ public class Compiler implements ICompiler {
 		
 		
 		/**
-		 * Initializes the "isKnownValue" attributes of TempTableHeaderParent objects
+		 * Initializes the "isKnownValue" attributes of TempTableHeader objects
 		 * by recursively calling this method for all nested causes.
 		 * @param ssbnnode
-		 * @see TempTableHeaderParent
+		 * @see TempTableHeader
 		 * @throws NullPointerException if ssbnnode is null
 		 */
 		public void cleanUpKnownValues(SSBNNode ssbnnode);
@@ -2402,7 +2472,7 @@ public class Compiler implements ICompiler {
 	
 	private class TempTableHeaderCell implements INestedIfElseClauseContainer {
 		private ICompilerBooleanValue booleanExpressionTree = null; // core of the if statement
-		private List<TempTableHeaderParent> parents = null;	// this is also the leaf of boolean expression tree
+		private List<TempTableHeader> parents = null;	// this is also the leaf of boolean expression tree
 
 		private String varsetname = "";
 		
@@ -2430,7 +2500,7 @@ public class Compiler implements ICompiler {
 		 * @param isAny
 		 * @param isDefault
 		 */
-		TempTableHeaderCell (List<TempTableHeaderParent> parents , boolean isAny, boolean isDefault, SSBNNode currentSSBNNode) {
+		TempTableHeaderCell (List<TempTableHeader> parents , boolean isAny, boolean isDefault, SSBNNode currentSSBNNode) {
 			this.parents = parents;
 			this.isAny = isAny;
 			this.isDefault = isDefault;
@@ -2444,7 +2514,7 @@ public class Compiler implements ICompiler {
 		 * within a boolean expression inside a if clause)
 		 * @return List of expected parents within if-clause
 		 */		
-		public List<TempTableHeaderParent> getParents() {
+		public List<TempTableHeader> getParents() {
 			return parents;
 		}
 
@@ -2468,11 +2538,11 @@ public class Compiler implements ICompiler {
 			this.validParentSetCount++;
 		}
 		
-		public void setParents(List<TempTableHeaderParent> parents) {
+		public void setParents(List<TempTableHeader> parents) {
 			this.parents = parents;
 		}
 		
-		public void addParent(TempTableHeaderParent parent) {
+		public void addParent(TempTableHeader parent) {
 			this.parents.add(parent);
 		}
 		
@@ -2658,7 +2728,7 @@ public class Compiler implements ICompiler {
 			// reset cardinality counter
 			this.setValidParentSetCount(0);
 			
-			List<TempTableHeaderParent> parentsList = this.getParents();
+			List<TempTableHeader> parentsList = this.getParents();
 			
 			//	return is initialized with a boolean neutral value (on OR/ANY, its "false"; on AND/ALL, its "true")
 			boolean ret = !this.isAny();	// this method will return this value
@@ -2666,13 +2736,13 @@ public class Compiler implements ICompiler {
 			// start evaluation. We should run through leafs again... TODO: optimize?
 			
 			// "pointer" 
-			TempTableHeaderParent pointer = null;
+			TempTableHeader pointer = null;
 			
 			// prepare leafs
 			
 			// run inside parent list (they are the declared condicionants within boolean expression),
 			// which also are the leafs of that expression!
-			for (TempTableHeaderParent leaf : parentsList) {
+			for (TempTableHeader leaf : parentsList) {
 				if (!leaf.isKnownValue()) {
 					// if leaf is not set to be a constant value, then we should set it to 
 					// evaluate a combination of entities
@@ -2754,9 +2824,9 @@ public class Compiler implements ICompiler {
 		 * @return
 		 */
 		private boolean isSameOVsameEntity() {
-			List<TempTableHeaderParent> leaves = this.getParents(); // leaves of boolean expression evaluation tree
+			List<TempTableHeader> leaves = this.getParents(); // leaves of boolean expression evaluation tree
 			
-			for (TempTableHeaderParent leaf : leaves) {
+			for (TempTableHeader leaf : leaves) {
 				if (leaf.isKnownValue()) {
 					continue;
 				}
@@ -2824,7 +2894,7 @@ public class Compiler implements ICompiler {
 			boolean found = false;
 			
 			// extract condicionants declared within the expression
-			for (TempTableHeaderParent headParent : this.getParents()) {
+			for (TempTableHeader headParent : this.getParents()) {
 				 found = false;
 				 // look for headParent inside parents (set of similar parents)
 				 for (SSBNNode node : parents) {
@@ -3091,8 +3161,14 @@ public class Compiler implements ICompiler {
 		
 	}
 	
-	private class TempTableHeaderParent implements ICompilerBooleanValue {
-		private ResidentNode parent = null;
+	/**
+	 * This class represents an entry in the LPD script in the format of "ident = ident" inside an if-clause.
+	 * @author Shou Matsumoto
+	 * @see TempTableHeader
+	 * @see TempTableHeaderOV
+	 */
+	private abstract class TempTableHeader implements ICompilerBooleanValue{
+		private Node parent = null;
 		private Entity value = null;
 		
 		private List<EntityAndArguments> evaluationList = null;
@@ -3104,33 +3180,13 @@ public class Compiler implements ICompiler {
 		private boolean isKnownValue = false;	// if this leaf is "absurd", then its value is known = false.
 		
 		/**
-		 * Represents a parent and its expected single value
-		 * at that table entry/collumn
-		 * @param parent
-		 * @param value
-		 */
-		TempTableHeaderParent (ResidentNode parent , Entity value) {
-			this.parent = parent;
-			this.value = value;
-			this.evaluationList = null;
-			//this.evaluationList = new ArrayList<EntityAndArguments>();
-			this.currentEvaluationIndex = -1;
-		}
-		
-		TempTableHeaderParent (ResidentNode parent , Entity value, List<EntityAndArguments>evaluationList) {
-			this.parent = parent;
-			this.value = value;
-			this.setEvaluationList(evaluationList);
-		}
-		
-		/**
 		 * 
 		 * @return which parent this leaf represents
 		 */
-		public ResidentNode getParent() {
+		public Node getParent() {
 			return parent;
 		}
-		public void setParent(ResidentNode parent) {
+		public void setParent(Node parent) {
 			this.parent = parent;
 		}
 		public Entity getValue() {
@@ -3144,8 +3200,8 @@ public class Compiler implements ICompiler {
 		 */
 		@Override
 		public boolean equals(Object arg0) {
-			if (arg0 instanceof TempTableHeaderParent) {
-				TempTableHeaderParent arg = (TempTableHeaderParent)arg0;
+			if (arg0 instanceof TempTableHeader) {
+				TempTableHeader arg = (TempTableHeader)arg0;
 				if (this.parent.getName().equalsIgnoreCase(arg.getParent().getName())) {
 					if (this.value.getName().equalsIgnoreCase(arg.getValue().getName())) {
 						return true;
@@ -3302,6 +3358,69 @@ public class Compiler implements ICompiler {
 				this.setEvaluationList(null);
 				//this.setEvaluationList(new ArrayList<EntityAndArguments>());
 			}
+		}
+	}
+	
+	/**
+	 * This class represents a content of an if-clause in the format of "Node=value"
+	 * @author Shou Matsumoto
+	 *
+	 */
+	private class TempTableHeaderOV extends TempTableHeader {
+
+		public TempTableHeaderOV(OrdinaryVariable ov , Entity value) {
+			this.setParent(ov);
+			this.setValue(value);
+		}
+		public OrdinaryVariable getOV() {
+			return (OrdinaryVariable)this.getParent();
+		}
+		public void setOV(OrdinaryVariable ov) {
+			this.setParent(ov);
+		}
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.TempTableHeader#isKnownValue()
+		 */
+		public boolean isKnownValue() {
+			return false;	// by default, indicate that this is never a known value until we resolve the values corectly.
+		}
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.TempTableHeader#setKnownValue(boolean)
+		 */
+		public void setKnownValue(boolean isKnownValue) {
+			// do nothing
+		}
+	}
+	
+	/**
+	 * This class represents a content of an if-clause in the format of "Node=state"
+	 * @author Shou Matsumoto
+	 *
+	 */
+	private class TempTableHeaderParent extends TempTableHeader {
+		
+		/**
+		 * Represents a parent and its expected single value
+		 * at that table entry/collumn
+		 * @param parent
+		 * @param value
+		 */
+		TempTableHeaderParent (ResidentNode parent , Entity value) {
+			this.setParent(parent);
+			this.setValue(value);
+		}
+		
+		TempTableHeaderParent (ResidentNode parent , Entity value, List<EntityAndArguments>evaluationList) {
+			this(parent, value);
+			this.setEvaluationList(evaluationList);
+		}
+		
+		/**
+		 * 
+		 * @return which parent this leaf represents
+		 */
+		public ResidentNode getParent() {
+			return (ResidentNode)super.getParent();
 		}
 		
 	}
@@ -3554,6 +3673,15 @@ public class Compiler implements ICompiler {
 
 	}
 
+	/**
+	 * An alternative (compact) way to represent a particular state of
+	 * a SSBNNode, by storing its current value (entity) and its current 
+	 * arguments (arguments).
+	 * For instance, if SSBNNode = DangerToSelf((st,ST0),(t,T0)) = [Phaser2Range |
+	 * PulseCannonRange | TorpedoRange], then a possible value of EntityAndArguments 
+	 * would be (Phaser2Range;[(st,ST0),(t,T0)]), which means that DangerToSelf
+	 * is at value Phaser2Range when its arguments st=T0 and t=T0.
+	 */
 	private class EntityAndArguments {
 		public Entity entity = null;
 		public List<OVInstance> arguments = null;
