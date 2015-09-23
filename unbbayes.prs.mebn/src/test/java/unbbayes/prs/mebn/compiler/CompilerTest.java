@@ -6,17 +6,16 @@ package unbbayes.prs.mebn.compiler;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import junit.framework.TestCase;
-import unbbayes.gui.table.GUIPotentialTable;
+import unbbayes.TextModeRunner;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
-import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -24,10 +23,11 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.compiler.exception.InvalidProbabilityRangeException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
-import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.exception.MEBNException;
+import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
+import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
-import unbbayes.prs.mebn.ssbn.SSBNNode;
+import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.util.Debug;
 
 /*
@@ -537,6 +537,167 @@ public class CompilerTest extends TestCase {
 			fail(e.getMessage());
 		}
 		
+		
+	}
+	
+	public void testEmbeddedIdentity() {
+		UbfIO io = UbfIO.getInstance();
+		
+		MultiEntityBayesianNetwork mebn = null;
+		try {
+			mebn = io.loadMebn(new File("./src/test/resources/mebn/EmbeddedIDTest.ubf"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+		assertNotNull(mebn);
+		
+		TextModeRunner runner = new TextModeRunner();
+		
+		ResidentNode resident = mebn.getDomainResidentNode("EmbeddedID");
+		OrdinaryVariable ov = resident.getOrdinaryVariableByName("ov");
+		
+		String stateToCheck = "c";
+		
+		OVInstance ovInstance = OVInstance.getInstance(ov , LiteralEntityInstance.getInstance(stateToCheck, ov.getValueType()));
+		Query query = new Query(resident, Collections.singletonList(ovInstance ));
+		ProbabilisticNetwork result = null;
+		try {
+			result = runner.executeQueryLaskeyAlgorithm(Collections.singletonList(query), PowerLoomKB.getNewInstanceKB(), mebn);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		assertNotNull(result);
+		assertEquals(1, result.getNodeCount());
+		ProbabilisticNode node = (ProbabilisticNode) result.getNodeAt(0);
+		assertNotNull(node);
+		
+		// find the state c
+		int indexOfStateC = 0;
+		for (; indexOfStateC < node.getStatesSize(); indexOfStateC++) {
+			if (node.getStateAt(indexOfStateC).equalsIgnoreCase(stateToCheck)) {
+				break;
+			}
+		}
+		assertTrue(indexOfStateC < node.getStatesSize());
+		assertEquals(stateToCheck, node.getStateAt(indexOfStateC));
+		
+		assertEquals(.9, node.getMarginalAt(indexOfStateC), .00005);
+		
+		
+		stateToCheck = "a";
+		
+		ovInstance = OVInstance.getInstance(ov , LiteralEntityInstance.getInstance(stateToCheck, ov.getValueType()));
+		query = new Query(resident, Collections.singletonList(ovInstance ));
+		result = null;
+		try {
+			result = runner.executeQueryLaskeyAlgorithm(Collections.singletonList(query), PowerLoomKB.getNewInstanceKB(), mebn);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		assertNotNull(result);
+		assertEquals(1, result.getNodeCount());
+		node = (ProbabilisticNode) result.getNodeAt(0);
+		assertNotNull(node);
+		
+		// find the state c
+		indexOfStateC = 0;
+		for (; indexOfStateC < node.getStatesSize(); indexOfStateC++) {
+			if (node.getStateAt(indexOfStateC).equalsIgnoreCase(stateToCheck)) {
+				break;
+			}
+		}
+		assertTrue(indexOfStateC < node.getStatesSize());
+		assertEquals(stateToCheck, node.getStateAt(indexOfStateC));
+		
+		assertEquals(.9, node.getMarginalAt(indexOfStateC), .00005);
+		
+		
+		stateToCheck = "b";
+		
+		ovInstance = OVInstance.getInstance(ov , LiteralEntityInstance.getInstance(stateToCheck, ov.getValueType()));
+		query = new Query(resident, Collections.singletonList(ovInstance ));
+		result = null;
+		try {
+			result = runner.executeQueryLaskeyAlgorithm(Collections.singletonList(query), PowerLoomKB.getNewInstanceKB(), mebn);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		assertNotNull(result);
+		assertEquals(1, result.getNodeCount());
+		node = (ProbabilisticNode) result.getNodeAt(0);
+		assertNotNull(node);
+		
+		// find the state c
+		indexOfStateC = 0;
+		for (; indexOfStateC < node.getStatesSize(); indexOfStateC++) {
+			if (node.getStateAt(indexOfStateC).equalsIgnoreCase(stateToCheck)) {
+				break;
+			}
+		}
+		assertTrue(indexOfStateC < node.getStatesSize());
+		assertEquals(stateToCheck, node.getStateAt(indexOfStateC));
+		
+		assertEquals(.9, node.getMarginalAt(indexOfStateC), .00005);
+		
+		stateToCheck = "d";
+		
+		ovInstance = OVInstance.getInstance(ov , LiteralEntityInstance.getInstance(stateToCheck, ov.getValueType()));
+		query = new Query(resident, Collections.singletonList(ovInstance ));
+		result = null;
+		try {
+			result = runner.executeQueryLaskeyAlgorithm(Collections.singletonList(query), PowerLoomKB.getNewInstanceKB(), mebn);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		assertNotNull(result);
+		assertEquals(1, result.getNodeCount());
+		node = (ProbabilisticNode) result.getNodeAt(0);
+		assertNotNull(node);
+		
+		// find the state c
+		indexOfStateC = 0;
+		for (; indexOfStateC < node.getStatesSize(); indexOfStateC++) {
+			if (node.getStateAt(indexOfStateC).equalsIgnoreCase(stateToCheck)) {
+				break;
+			}
+		}
+		assertTrue(indexOfStateC < node.getStatesSize());
+		assertEquals(stateToCheck, node.getStateAt(indexOfStateC));
+		
+		assertEquals(.9, node.getMarginalAt(indexOfStateC), .00005);
+		
+		stateToCheck = "e";
+		
+		ovInstance = OVInstance.getInstance(ov , LiteralEntityInstance.getInstance(stateToCheck, ov.getValueType()));
+		query = new Query(resident, Collections.singletonList(ovInstance ));
+		result = null;
+		try {
+			result = runner.executeQueryLaskeyAlgorithm(Collections.singletonList(query), PowerLoomKB.getNewInstanceKB(), mebn);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		
+		assertNotNull(result);
+		assertEquals(1, result.getNodeCount());
+		node = (ProbabilisticNode) result.getNodeAt(0);
+		assertNotNull(node);
+		
+		// find the state c
+		indexOfStateC = 0;
+		for (; indexOfStateC < node.getStatesSize(); indexOfStateC++) {
+			if (node.getStateAt(indexOfStateC).equalsIgnoreCase(stateToCheck)) {
+				break;
+			}
+		}
+		assertTrue(indexOfStateC < node.getStatesSize());
+		assertEquals(stateToCheck, node.getStateAt(indexOfStateC));
+		
+		assertEquals(1f, node.getMarginalAt(indexOfStateC), .00005);
 		
 	}
 	

@@ -706,9 +706,12 @@ public class Compiler implements ICompiler {
 			// also, if no parents are declared, use default distro...
 			boolean thereAreNoParents = false;
 			if(this.getSSBNNode().getParents() == null) {
-				thereAreNoParents = true;
+//				thereAreNoParents = true;
+				// if table also does not use the embedded node feature (i.e. parents that are not explicit in MFrag, but used in LPD), then there are no parents.
+				// E.g. we can use OVs in the if-clause. In this case, the LPD behaves like when we have identity nodes (node that returns its argument) as parents.
+				thereAreNoParents = !this.tempTable.hasEmbeddedNodeDeclaration();
 			} else if (this.getSSBNNode().getParents().size() == 0) {
-				thereAreNoParents = true;
+				thereAreNoParents = !this.tempTable.hasEmbeddedNodeDeclaration();
 			}
 			if (thereAreNoParents || this.getSSBNNode().isUsingDefaultCPT()) {
 				// we assume the default distro is the last block on pseudocode
@@ -2083,8 +2086,8 @@ public class Compiler implements ICompiler {
 			// TODO verify if it isn't a redundant check, since context node might not be
 			// parents of all resident nodes
 			
-			
-			return false;	// this is a node, but not a parent
+			// OVs can be nodes
+//			return false;	// this is a node, but not a parent
 		}
 		
 		// conditionant may be an ordinary variable
@@ -2100,14 +2103,15 @@ public class Compiler implements ICompiler {
 	 */
 	private boolean isValidConditionantValue(MultiEntityBayesianNetwork mebn, ResidentNode node, String conditionantName, String conditionantValue) {
 		Node conditionant = mebn.getNode(conditionantName);
-		if (conditionant == null) {
-			// Debug.println("No conditionant of name " + conditionantName);
-			return false;
-		}
-		//// Debug.println("Conditionant node found: " + conditionant.getName());
-		if ( conditionant instanceof IResidentNode) {
-			// Debug.println("IS MULTIENTITYNODE");
-			return ((IResidentNode)conditionant).getPossibleValueByName(conditionantValue) != null;
+		if (conditionant != null) {
+			//// Debug.println("Conditionant node found: " + conditionant.getName());
+			if ( conditionant instanceof IResidentNode) {
+				// Debug.println("IS MULTIENTITYNODE");
+				return ((IResidentNode)conditionant).getPossibleValueByName(conditionantValue) != null;
+			}
+			// it was a node, but not a resident node...
+			// OVs can be nodes
+//			return false;
 		}
 		// Debug.println("Conditionant is not a resident node");
 		
@@ -2300,10 +2304,17 @@ public class Compiler implements ICompiler {
 	
 	// Some inner classes that might be useful for temporaly table creation (organize the table parsed from pseudocode)
 	
+	private interface IEmbeddedNodeUser {
+		/**
+		 * @return true if at least one (nested) if-clause is using an embedded node feature.
+		 */
+		public boolean hasEmbeddedNodeDeclaration();
+	}
+	
 	/**
 	 * Container of a if-else-clause
 	 */
-	private interface INestedIfElseClauseContainer {
+	private interface INestedIfElseClauseContainer extends IEmbeddedNodeUser {
 		/**
 		 * registers an if-clause (or else-clause) as an inner clause of this clause
 		 * @param nestedClause
@@ -2361,6 +2372,7 @@ public class Compiler implements ICompiler {
 		 * @throws NullPointerException if ssbnnode is null
 		 */
 		public void cleanUpKnownValues(SSBNNode ssbnnode);
+		
 	}
 	
 	
@@ -2374,6 +2386,22 @@ public class Compiler implements ICompiler {
 		public TempTable() {
 			super();
 			this.clauses = new ArrayList<TempTableHeaderCell>();
+		}
+
+		/**
+		 * @return true if at least one if-clause is using an embedded node feature.
+		 * @see TempTableHeaderCell#hasEmbeddedNodeDeclaration()
+		 */
+		public boolean hasEmbeddedNodeDeclaration() {
+			for (TempTableHeaderCell clause : getNestedClauses()) {
+				if (clause.hasEmbeddedNodeDeclaration()) {
+					// if we found at least one if-clause using an embedded node feature, then return true immediately
+					return true;
+				}
+			}
+			
+			// at this point, no if-clause had embedded node.
+			return false;
 		}
 
 		/* (non-Javadoc)
@@ -2469,6 +2497,7 @@ public class Compiler implements ICompiler {
 		
 		
 	}
+	
 	
 	private class TempTableHeaderCell implements INestedIfElseClauseContainer {
 		private ICompilerBooleanValue booleanExpressionTree = null; // core of the if statement
@@ -3004,6 +3033,33 @@ public class Compiler implements ICompiler {
 			}
 		}
 		
+		/**
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#hasEmbeddedNodeDeclaration()
+		 * @see TempTableHeader#hasEmbeddedNodeDeclaration()
+		 */
+		public boolean hasEmbeddedNodeDeclaration() {
+			if (parents != null) {
+				for (TempTableHeader header : parents) {
+					if (header.hasEmbeddedNodeDeclaration()) {
+						// if at least one is an embedded node, then return true immediately
+						return true;
+					}
+				}
+			}
+			// if did not find embedded node yet, check for nested ifs
+			if (nestedIfs != null) {
+				for (TempTableHeaderCell nestedClause : nestedIfs) {
+					if (nestedClause.hasEmbeddedNodeDeclaration()) {
+						// again, immediately return true if found at least one
+						return true;
+					}
+				}
+			}
+			
+			// at this point, we did not find any embedded node declaration in the if-clause
+			return false;
+		}
+		
 		
 		
 		
@@ -3024,7 +3080,6 @@ public class Compiler implements ICompiler {
 			return false;
 		}
 		*/
-		
 		
 		
 		
@@ -3167,7 +3222,7 @@ public class Compiler implements ICompiler {
 	 * @see TempTableHeader
 	 * @see TempTableHeaderOV
 	 */
-	private abstract class TempTableHeader implements ICompilerBooleanValue{
+	private abstract class TempTableHeader implements ICompilerBooleanValue, IEmbeddedNodeUser{
 		private Node parent = null;
 		private Entity value = null;
 		
@@ -3216,6 +3271,8 @@ public class Compiler implements ICompiler {
 			}
 			//return false;
 		}
+		
+		
 		/**
 		 * evaluates this leaf boolean value and returns it.
 		 * @return : evaluated value. If isKnownValue is set to true, 
@@ -3390,6 +3447,14 @@ public class Compiler implements ICompiler {
 		public void setKnownValue(boolean isKnownValue) {
 			// do nothing
 		}
+		
+		/**
+		 * This will return true, because OVs are like embedded identity node.
+		 * @see unbbayes.prs.mebn.compiler.Compiler.IEmbeddedNodeUser#hasEmbeddedNodeDeclaration()
+		 */
+		public boolean hasEmbeddedNodeDeclaration() {
+			return true;
+		}
 	}
 	
 	/**
@@ -3421,6 +3486,14 @@ public class Compiler implements ICompiler {
 		 */
 		public ResidentNode getParent() {
 			return (ResidentNode)super.getParent();
+		}
+
+		/**
+		 * Returns false by default, because all nodes declared here should be explicit (not embedded) in the MFrag.
+		 * @see unbbayes.prs.mebn.compiler.Compiler.IEmbeddedNodeUser#hasEmbeddedNodeDeclaration()
+		 */
+		public boolean hasEmbeddedNodeDeclaration() {
+			return false;
 		}
 		
 	}
