@@ -30,13 +30,13 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 public class OVInstance {
 	
 	private OrdinaryVariable ov = null;
-	private LiteralEntityInstance entity = null;
+	private ILiteralEntityInstance entity = null;
 	
 	private OVInstance() {
 		super();
 	}
 	
-	public static OVInstance getInstance(OrdinaryVariable ov , LiteralEntityInstance ei) {
+	public static OVInstance getInstance(OrdinaryVariable ov , ILiteralEntityInstance ei) {
 		OVInstance ovi = new OVInstance();
 		ovi.setOv(ov);
 		ovi.setEntity(ei);
@@ -46,13 +46,13 @@ public class OVInstance {
 	/**
 	 * @return the entity
 	 */
-	public LiteralEntityInstance getEntity() {
+	public ILiteralEntityInstance getEntity() {
 		return entity;
 	}
 	/**
 	 * @param entity the entity to set
 	 */
-	private void setEntity(LiteralEntityInstance entity) {
+	private void setEntity(ILiteralEntityInstance entity) {
 		this.entity = entity;
 	}
 	/**

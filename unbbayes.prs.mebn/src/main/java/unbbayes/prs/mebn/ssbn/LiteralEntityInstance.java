@@ -26,7 +26,7 @@ import unbbayes.prs.mebn.entity.Type;
  * @author Shou Matsumoto
  *
  */
-public class LiteralEntityInstance {
+public class LiteralEntityInstance implements ILiteralEntityInstance {
 	private String instanceName = null;
 	private Type type = null;
 	
@@ -41,29 +41,29 @@ public class LiteralEntityInstance {
 		return ei;
 	}
 
-	/**
-	 * @return the instanceName
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ssbn.ILiteralEntityInstance#getInstanceName()
 	 */
 	public String getInstanceName() {
 		return instanceName;
 	}
 
-	/**
-	 * @param instanceName the instanceName to set
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ssbn.ILiteralEntityInstance#setInstanceName(java.lang.String)
 	 */
 	public void setInstanceName(String instanceName) {
 		this.instanceName = instanceName;
 	}
 
-	/**
-	 * @return the type
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ssbn.ILiteralEntityInstance#getType()
 	 */
 	public Type getType() {
 		return type;
 	}
 
-	/**
-	 * @param type the type to set
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ssbn.ILiteralEntityInstance#setType(unbbayes.prs.mebn.entity.Type)
 	 */
 	public void setType(Type type) {
 		this.type = type;
@@ -75,8 +75,8 @@ public class LiteralEntityInstance {
 			return true;
 		}
 		
-		if((obj != null)&&(obj instanceof LiteralEntityInstance)){
-			LiteralEntityInstance entityInstance = (LiteralEntityInstance) obj;
+		if((obj != null)&&(obj instanceof ILiteralEntityInstance)){
+			ILiteralEntityInstance entityInstance = (ILiteralEntityInstance) obj;
 		   return ((entityInstance.getInstanceName().equalsIgnoreCase(this.getInstanceName())) && //The knowledge information is upper case
 		            (entityInstance.getType().equals(this.getType())));
 		}else{

@@ -637,13 +637,13 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 
 		
 		List<String> result = null;
-		List<LiteralEntityInstance> list =  avaliator.searchEntitiesForOrdinaryVariable(referenceUncertainOV); 
+		List<ILiteralEntityInstance> list =  avaliator.searchEntitiesForOrdinaryVariable(referenceUncertainOV); 
 		
 		if((list == null)||(list.size()==0)){
 			return null; 
 		}else{
 			result = new ArrayList<String>(); 
-			for(LiteralEntityInstance lei: list){
+			for(ILiteralEntityInstance lei: list){
 				result.add(lei.getInstanceName()); 
 			}
 		}

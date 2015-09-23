@@ -259,7 +259,7 @@ public class EntityTreeTest extends TestCase{
 		OrdinaryVariable[] knownOVArray = new OrdinaryVariable[1]; 
 		knownOVArray[0] = ovArray[0]; //OV1
 		
-		LiteralEntityInstance[] knownEntityArray = new LiteralEntityInstance[1];
+		ILiteralEntityInstance[] knownEntityArray = new ILiteralEntityInstance[1];
 		knownEntityArray[0] = LiteralEntityInstance.getInstance("ENT01", ovArray[0].getValueType()); 
 		
 		OrdinaryVariable[] ovSearchArray = new OrdinaryVariable[1];

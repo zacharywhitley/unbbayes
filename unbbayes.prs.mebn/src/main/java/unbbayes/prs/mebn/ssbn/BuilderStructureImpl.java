@@ -361,7 +361,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		}
 		
 		OrdinaryVariable[] ovFilledArray = node.getOvArray(); 
-		LiteralEntityInstance[] entityFilledArray = node.getEntityArray(); 
+		ILiteralEntityInstance[] entityFilledArray = node.getEntityArray(); 
 	
 		if (logManager != null) {
 			logManager.printText(level4, false, " 1) Evaluate the resident node parents");
@@ -452,7 +452,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 * @throws SSBNNodeGeneralException 
 	 */
 	private List<SimpleSSBNNode> createParents(SimpleSSBNNode node,
-			OrdinaryVariable[] ovFilledArray, LiteralEntityInstance[] entityFilledArray,
+			OrdinaryVariable[] ovFilledArray, ILiteralEntityInstance[] entityFilledArray,
 			ResidentNode residentNodeParent) throws ImplementationRestrictionException, SSBNNodeGeneralException {
 		
 		//fix a unknown Bug (mistic)... 
@@ -477,7 +477,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 * @throws SSBNNodeGeneralException 
 	 */
 	private  List<SimpleSSBNNode> createParents(SimpleSSBNNode node,
-			OrdinaryVariable[] ovFilledArray, LiteralEntityInstance[] entityFilledArray,
+			OrdinaryVariable[] ovFilledArray, ILiteralEntityInstance[] entityFilledArray,
 			InputNode inputNodeParent) throws ImplementationRestrictionException, SSBNNodeGeneralException {
 
 		
@@ -498,7 +498,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 * @throws SSBNNodeGeneralException 
 	 */	
 	private  List<SimpleSSBNNode> createParents(SimpleSSBNNode node,
-			OrdinaryVariable[] ovFilledArray, LiteralEntityInstance[] entityFilledArray,
+			OrdinaryVariable[] ovFilledArray, ILiteralEntityInstance[] entityFilledArray,
 			JacketNode nodeParent) throws ImplementationRestrictionException, SSBNNodeGeneralException {
 		
 //		if(internalDebug){
@@ -767,7 +767,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	// (RESIDENTCHILD is the reference of the input INPUTNODE_A
 	
 	private  SimpleSSBNNode createRecursiveParents(SimpleSSBNNode node,
-			OrdinaryVariable[] ovFilledArray, LiteralEntityInstance[] entityFilledArray,
+			OrdinaryVariable[] ovFilledArray, ILiteralEntityInstance[] entityFilledArray,
 			InputNode inputNodeParent) 
 	             throws ImplementationRestrictionException, 
 	                    SSBNNodeGeneralException {
@@ -794,7 +794,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
                         getMultiEntityBayesianNetwork().getObjectEntityContainer().
                         getObjectEntityByType(ovOrdereable.getValueType()); 
 	
-		LiteralEntityInstance ovOrdereableActualValue = node.getEntityForOv(ovOrdereable); 
+		ILiteralEntityInstance ovOrdereableActualValue = node.getEntityForOv(ovOrdereable); 
 		OVInstance ovInstanceOrdereable = OVInstance.getInstance(ovOrdereable, ovOrdereableActualValue); 
 		
 		if(ovInstanceOrdereable == null){
@@ -819,7 +819,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				ssbn.getLogManager().printText(level5, false, "Previous node = " + prev + " (" + objectEntityInstanceOrdereable + ")");
 			}
 			
-			LiteralEntityInstance ovOrdereablePreviusValue = 
+			ILiteralEntityInstance ovOrdereablePreviusValue = 
 				LiteralEntityInstance.getInstance(prev.getName(), ovOrdereable.getValueType());
 
 			//3) Mount the father 

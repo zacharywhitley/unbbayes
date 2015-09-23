@@ -47,6 +47,7 @@ import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.ContextFatherSSBNNode;
 import unbbayes.prs.mebn.ssbn.ContextNodeEvaluator;
+import unbbayes.prs.mebn.ssbn.ILiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
@@ -358,7 +359,7 @@ public abstract class AbstractSSBNGenerator implements IMediatorAwareSSBNGenerat
 
 						List<SSBNNode> nodes = new ArrayList<SSBNNode>();
 
-						for(LiteralEntityInstance entity: contextFatherSSBNNode.getPossibleValues()){
+						for(ILiteralEntityInstance entity: contextFatherSSBNNode.getPossibleValues()){
 
 							SSBNNode node =  createSSBNNodeForEntitySearch(originNode.getProbabilisticNetwork(), 
 									fatherNode, ovInstances, ovProblematic, entity.getInstanceName());
@@ -501,7 +502,7 @@ public abstract class AbstractSSBNGenerator implements IMediatorAwareSSBNGenerat
 						
 						List<SSBNNodeJacket> nodes = new ArrayList<SSBNNodeJacket>();
 						
-						for(LiteralEntityInstance entity: contextFatherSSBNNode.getPossibleValues()){
+						for(ILiteralEntityInstance entity: contextFatherSSBNNode.getPossibleValues()){
 							SSBNNodeJacket ssbnNodeJacket =  createSSBNNodeForEntitySearch(originNode, 
 									fatherNode, ov, entity.getInstanceName());
 							nodes.add(ssbnNodeJacket); 
@@ -1053,7 +1054,7 @@ public abstract class AbstractSSBNGenerator implements IMediatorAwareSSBNGenerat
 			ContextFatherSSBNNode contextFather = ssbnNode.getContextFatherSSBNNode();
 			OrdinaryVariable ovProblematic = contextFather.getOvProblematic(); 
 			
-			for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
+			for(ILiteralEntityInstance entity: contextFather.getPossibleValues()){
 				mapParentsByEntity.put(entity.getInstanceName(), new ArrayList<SSBNNode>()); 
 			}
 			
@@ -1084,7 +1085,7 @@ public abstract class AbstractSSBNGenerator implements IMediatorAwareSSBNGenerat
 			//Step 2: Construir as tabelas para os diversos grupos de pais
 			int position = 1; 
 			
-			for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
+			for(ILiteralEntityInstance entity: contextFather.getPossibleValues()){
 				
 				ArrayList<SSBNNode> groupParents = new ArrayList<SSBNNode>(); 
 				

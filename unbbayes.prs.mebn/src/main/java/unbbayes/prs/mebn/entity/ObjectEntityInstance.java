@@ -20,13 +20,15 @@
  */
 package unbbayes.prs.mebn.entity;
 
+import unbbayes.prs.mebn.ssbn.ILiteralEntityInstance;
+
 
 /**
  * Instance of one Object Entity. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
-public class ObjectEntityInstance extends Entity{
+public class ObjectEntityInstance extends Entity implements ILiteralEntityInstance{
 
 	private ObjectEntity instanceOf; 
 	
@@ -66,4 +68,21 @@ public class ObjectEntityInstance extends Entity{
 		return false; //obj == null && this != null 
 		
 	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ssbn.ILiteralEntityInstance#getInstanceName()
+	 */
+	public String getInstanceName() {
+		return this.getName();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ssbn.ILiteralEntityInstance#setInstanceName(java.lang.String)
+	 */
+	public void setInstanceName(String instanceName) {
+		this.setName(instanceName);
+	}
+
 }

@@ -37,7 +37,7 @@ public class SimpleSSBNNode implements INode {
 	private List<SimpleContextNodeFatherSSBNNode> contextParents; 
 	
 	private OrdinaryVariable                    ovArray[];       //ordinary variables for the home mfrag (The order of the resident node)
-	private LiteralEntityInstance               entityArray[];   //evaluation of the ov  
+	private ILiteralEntityInstance               entityArray[];   //evaluation of the ov  
 	private Map<MFrag, OrdinaryVariable[]>      ovArrayForMFrag; //correspondency between the ov of the home mFrag with the ov of the external MFrags. 
 
 	private Entity state;	//if state != null this node is a finding
@@ -71,7 +71,7 @@ public class SimpleSSBNNode implements INode {
 			index++; 
 		}
 		
-		entityArray = new LiteralEntityInstance[residentNode.getOrdinaryVariableList().size()]; 
+		entityArray = new ILiteralEntityInstance[residentNode.getOrdinaryVariableList().size()]; 
 		ovArrayForMFrag = new HashMap<MFrag, OrdinaryVariable[]>(); 
 		
 	}
@@ -258,7 +258,7 @@ public class SimpleSSBNNode implements INode {
 	 * Set the value of ov how the entity if this node have the ov how argument. 
 	 * If it don't have, don't do anything. 
 	 */
-	public void setEntityForOv(OrdinaryVariable ov, LiteralEntityInstance lei){
+	public void setEntityForOv(OrdinaryVariable ov, ILiteralEntityInstance lei){
 		
 		for(int i = 0; i < ovArray.length; i++){
 			if(ovArray[i].equals(ov)){
@@ -272,13 +272,13 @@ public class SimpleSSBNNode implements INode {
 		return ovArray;
 	}
 
-	public LiteralEntityInstance[] getEntityArray() {
+	public ILiteralEntityInstance[] getEntityArray() {
 		return entityArray;
 	}
 
-	public LiteralEntityInstance getEntityForOv(OrdinaryVariable ov){
+	public ILiteralEntityInstance getEntityForOv(OrdinaryVariable ov){
 		
-		LiteralEntityInstance entity = null;
+		ILiteralEntityInstance entity = null;
 		
 		for(int i = 0; i < ovArray.length; i++){
 			if(ovArray[i].equals(ov)){

@@ -226,7 +226,7 @@ public class MFragInstance {
 	 */
 	public List<String[]> recoverCombinationsEntitiesPossibles(
 			OrdinaryVariable[] knownOVArray,
-			LiteralEntityInstance[] knownEntityArray,
+			ILiteralEntityInstance[] knownEntityArray,
 			OrdinaryVariable[] ovSearchArray){
 		
 		return entityTree.recoverCombinationsEntitiesPossibles(knownOVArray, 

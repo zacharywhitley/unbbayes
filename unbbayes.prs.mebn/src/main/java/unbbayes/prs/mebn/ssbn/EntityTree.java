@@ -149,7 +149,7 @@ public class EntityTree{
 	 */
 	public List<String[]> recoverCombinationsEntitiesPossibles(
 			OrdinaryVariable[] knownOVArray,
-			LiteralEntityInstance[] knownEntityArray,
+			ILiteralEntityInstance[] knownEntityArray,
 			OrdinaryVariable[] ovSearchArray){
 		
 		List<String[]> combinationList = new ArrayList<String[]>(); 
@@ -248,7 +248,7 @@ public class EntityTree{
 		
 		List<EntityNode> entityNodeList = getTreeHowList(); 
 		for(EntityNode entityNode: entityNodeList){
-			LiteralEntityInstance lei = LiteralEntityInstance.getInstance(
+			ILiteralEntityInstance lei = LiteralEntityInstance.getInstance(
 					entityNode.getEntityName(), entityNode.getOv().getValueType()); 
 			
 			OVInstance ovInstance = OVInstance.getInstance(entityNode.getOv(), 
@@ -270,7 +270,7 @@ public class EntityTree{
 		List<EntityNode> entityNodeList = getNodesOfLevel(ov);
 		
 		for(EntityNode entityNode: entityNodeList){
-			LiteralEntityInstance lei = LiteralEntityInstance.getInstance(
+			ILiteralEntityInstance lei = LiteralEntityInstance.getInstance(
 					entityNode.getEntityName(), entityNode.getOv().getValueType()); 
 			
 			OVInstance ovInstance = OVInstance.getInstance(entityNode.getOv(), 

@@ -52,14 +52,14 @@ public class ContextNodeEvaluator {
 	private KnowledgeBase kb; 
 	private SSBNAlgorithmInterationHelper interationHelper; 
 	
-	private Map<String, List<LiteralEntityInstance>> valuesEntityMap; 
+	private Map<String, List<ILiteralEntityInstance>> valuesEntityMap; 
 	
 	public ContextNodeEvaluator(KnowledgeBase kb){
 		
 		this.kb = kb; 
 		
 		//Inicialization of the lists
-		this.valuesEntityMap = new TreeMap<String, List<LiteralEntityInstance>>(); 
+		this.valuesEntityMap = new TreeMap<String, List<ILiteralEntityInstance>>(); 
 		
 	}
 	
@@ -385,14 +385,14 @@ OUT_LOOP:  for(ContextNode context: cnList){
 	 * @param ov
 	 * @return
 	 */
-	public List<LiteralEntityInstance> searchEntitiesForOrdinaryVariable(OrdinaryVariable ov){
+	public List<ILiteralEntityInstance> searchEntitiesForOrdinaryVariable(OrdinaryVariable ov){
 		
-		List<LiteralEntityInstance> entityList = null; 
+		List<ILiteralEntityInstance> entityList = null; 
 		
 		if((entityList = valuesEntityMap.get(ov.getValueType().getName())) == null){
 			
 			List<String> entityStringList = kb.getEntityByType(ov.getValueType().getName());
-			entityList = new ArrayList<LiteralEntityInstance>(); 
+			entityList = new ArrayList<ILiteralEntityInstance>(); 
 			for(String entity: entityStringList){
 				entityList.add(LiteralEntityInstance.getInstance(entity, ov.getValueType())); 
 			}

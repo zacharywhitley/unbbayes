@@ -46,7 +46,7 @@ public class ContextFatherSSBNNode {
 	private ProbabilisticNode  probNode;	// stores the UnBBayes BN ordinal node which represents this SSBNNode
 	private ProbabilisticNetwork pnet;
 	
-	private Collection<LiteralEntityInstance> possibleValues; // this is the possible values of this node at that moment (might be one, if there is an evidence)
+	private Collection<ILiteralEntityInstance> possibleValues; // this is the possible values of this node at that moment (might be one, if there is an evidence)
 	
 	private OrdinaryVariable ovProblematic; 
 	
@@ -73,7 +73,7 @@ public class ContextFatherSSBNNode {
 		probNode.setDescription(contextNode.getName());
 		pnet.addNode(probNode);
 		
-		possibleValues = new ArrayList<LiteralEntityInstance>();
+		possibleValues = new ArrayList<ILiteralEntityInstance>();
 	}
 	
 	/**
@@ -127,7 +127,7 @@ public class ContextFatherSSBNNode {
 		this.ovProblematic = ovProblematic;
 	}
 
-	public void addPossibleValue(LiteralEntityInstance e){
+	public void addPossibleValue(ILiteralEntityInstance e){
 		Debug.println(this.contextNode.getFormula() + " --> Acrescentado estado ao ssbn context node = "  + e.toString());
 		if(possibleValues != null){
 			possibleValues.add(e);
@@ -135,7 +135,7 @@ public class ContextFatherSSBNNode {
 		}
 	}
 	
-	public Collection<LiteralEntityInstance> getPossibleValues() {
+	public Collection<ILiteralEntityInstance> getPossibleValues() {
 		return possibleValues;
 	}
 	

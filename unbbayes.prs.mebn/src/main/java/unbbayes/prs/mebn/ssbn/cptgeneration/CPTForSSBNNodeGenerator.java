@@ -14,7 +14,7 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.ContextFatherSSBNNode;
-import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
+import unbbayes.prs.mebn.ssbn.ILiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.InvalidOperationException;
@@ -206,7 +206,7 @@ public class CPTForSSBNNodeGenerator {
 		Map<String, PotentialTable> mapCPTByEntity = new HashMap<String, PotentialTable>(); 
 
 		ContextFatherSSBNNode contextFather = ssbnNode.getContextFatherSSBNNode();
-		for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
+		for(ILiteralEntityInstance entity: contextFather.getPossibleValues()){
 			mapParentsByEntity.put(entity.getInstanceName().toUpperCase(), new ArrayList<SSBNNode>()); 
 		}
 
@@ -307,7 +307,7 @@ public class CPTForSSBNNodeGenerator {
 
 		int indexEntity = -1; 
 
-		for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
+		for(ILiteralEntityInstance entity: contextFather.getPossibleValues()){
 
 
 			List<SSBNNode> parentsByEntityList = mapParentsByEntity.get(entity.getInstanceName().toUpperCase()); 
@@ -595,7 +595,7 @@ public class CPTForSSBNNodeGenerator {
 		Map<String, PotentialTable> mapCPTByEntity = new HashMap<String, PotentialTable>(); 
 		
 		ContextFatherSSBNNode contextFather = ssbnNode.getContextFatherSSBNNode();
-		for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
+		for(ILiteralEntityInstance entity: contextFather.getPossibleValues()){
 			mapParentsByEntity.put(entity.getInstanceName().toUpperCase(), new ArrayList<SSBNNode>()); 
 		}
 		
@@ -650,7 +650,7 @@ public class CPTForSSBNNodeGenerator {
 		//Step 2: Build the CPT's for the diverses groups of parents. 
 		int parentPosition = 1; 
 		
-		for(LiteralEntityInstance entity: contextFather.getPossibleValues()){
+		for(ILiteralEntityInstance entity: contextFather.getPossibleValues()){
 			
 			ArrayList<SSBNNode> parentsForEntityList = new ArrayList<SSBNNode>(); 
 			

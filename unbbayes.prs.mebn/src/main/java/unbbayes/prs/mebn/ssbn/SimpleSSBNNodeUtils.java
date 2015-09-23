@@ -135,12 +135,12 @@ public class SimpleSSBNNodeUtils {
 					if(contextFather == null){
 						contextFather = new ContextFatherSSBNNode(pn, contextNode);
 						
-						List<LiteralEntityInstance> possibleValueList = new ArrayList<LiteralEntityInstance>(); 
+						List<ILiteralEntityInstance> possibleValueList = new ArrayList<ILiteralEntityInstance>(); 
 						for(String entity: simpleContextNodeList.get(0).getPossibleValues()){
 							possibleValueList.add(LiteralEntityInstance.getInstance(entity, simpleContextNodeList.get(0).getOvProblematic().getValueType())); 
 						}
 						
-						for(LiteralEntityInstance lei: possibleValueList){
+						for(ILiteralEntityInstance lei: possibleValueList){
 							contextFather.addPossibleValue(lei);
 						}
 						
