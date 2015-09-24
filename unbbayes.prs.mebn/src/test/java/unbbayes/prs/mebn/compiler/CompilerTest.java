@@ -16,6 +16,7 @@ import unbbayes.TextModeRunner;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -698,6 +699,145 @@ public class CompilerTest extends TestCase {
 		assertEquals(stateToCheck, node.getStateAt(indexOfStateC));
 		
 		assertEquals(1f, node.getMarginalAt(indexOfStateC), .00005);
+		
+	}
+	
+	public void testLooseStrongOV() {
+		UbfIO io = UbfIO.getInstance();
+		
+		MultiEntityBayesianNetwork mebn = null;
+		try {
+			mebn = io.loadMebn(new File("./src/test/resources/mebn/VarSetNameTest.ubf"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+		assertNotNull(mebn);
+		
+		TextModeRunner runner = new TextModeRunner();
+		
+		ResidentNode resident = mebn.getDomainResidentNode("NodeDistance");
+		OrdinaryVariable n1 = resident.getOrdinaryVariableByName("n1");
+		OrdinaryVariable n2 = resident.getOrdinaryVariableByName("n2");
+		
+		
+		List<OVInstance> queryArguments = new ArrayList<OVInstance>(2);
+		queryArguments.add(OVInstance.getInstance(n1 , LiteralEntityInstance.getInstance("N1", n1.getValueType())));
+		queryArguments.add(OVInstance.getInstance(n2 , LiteralEntityInstance.getInstance("N2", n2.getValueType())));
+		Query query = new Query(resident, queryArguments);
+		ProbabilisticNetwork result = null;
+		try {
+			result = runner.executeQueryLaskeyAlgorithm(Collections.singletonList(query), PowerLoomKB.getNewInstanceKB(), mebn);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		assertNotNull(result);
+		
+		// extract node to check for probabilities
+		ProbabilisticNode node = (ProbabilisticNode) result.getNode("NodeDistance__N1_N2");
+		assertNotNull(node);
+		
+		// extract nodes to insert finding
+		ProbabilisticNode isLocatedIn__N1_R1 = (ProbabilisticNode) result.getNode("isLocatedIn__N1_R1");
+		assertNotNull(isLocatedIn__N1_R1);
+		ProbabilisticNode isLocatedIn__N1_R2 = (ProbabilisticNode) result.getNode("isLocatedIn__N1_R2");
+		assertNotNull(isLocatedIn__N1_R2);
+		ProbabilisticNode isLocatedIn__N2_R1 = (ProbabilisticNode) result.getNode("isLocatedInCopy__N2_R1");
+		assertNotNull(isLocatedIn__N2_R1);
+		ProbabilisticNode isLocatedIn__N2_R2 = (ProbabilisticNode) result.getNode("isLocatedInCopy__N2_R2");
+		assertNotNull(isLocatedIn__N2_R2);
+		
+		// check that indexes of states are OK
+		assertEquals("true", isLocatedIn__N1_R1.getStateAt(0));
+		assertEquals("true", isLocatedIn__N1_R2.getStateAt(0));
+		assertEquals("true", isLocatedIn__N2_R1.getStateAt(0));
+		assertEquals("true", isLocatedIn__N2_R2.getStateAt(0));
+		assertEquals("false", isLocatedIn__N1_R1.getStateAt(1));
+		assertEquals("false", isLocatedIn__N1_R2.getStateAt(1));
+		assertEquals("false", isLocatedIn__N2_R1.getStateAt(1));
+		assertEquals("false", isLocatedIn__N2_R2.getStateAt(1));
+		
+		// prepare a junction tree algorithm in order to add findings to node
+		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(result);
+		algorithm.run();
+		
+		// check the case when IP nodes N1 and N2 are in different regions
+		
+		// set that N1 is located in R1, and N2 in R2
+		isLocatedIn__N1_R1.addFinding(0);
+		isLocatedIn__N1_R2.addFinding(1);
+		isLocatedIn__N2_R1.addFinding(1);
+		isLocatedIn__N2_R2.addFinding(0);
+		
+		// propagate finding
+		algorithm.propagate();
+		
+		// find the state "long"
+		int indexOfLong = 0;
+		for (; indexOfLong < node.getStatesSize(); indexOfLong++) {
+			if (node.getStateAt(indexOfLong).equalsIgnoreCase("long")) {
+				break;
+			}
+		}
+		assertTrue(indexOfLong < node.getStatesSize());
+		assertEquals("long", node.getStateAt(indexOfLong));
+		
+		// check that the distance between the IP nodes is long now
+		assertEquals(1, node.getMarginalAt(indexOfLong), .00005);
+		
+		algorithm.reset();  // now, reset the probability
+		
+		// set that N1 is located in R2, and N2 in R1
+		isLocatedIn__N1_R1.addFinding(1);
+		isLocatedIn__N1_R2.addFinding(0);
+		isLocatedIn__N2_R1.addFinding(0);
+		isLocatedIn__N2_R2.addFinding(1);
+		
+		// propagate finding
+		algorithm.propagate();
+		
+		// check that the distance between the IP nodes is long
+		assertEquals(1, node.getMarginalAt(indexOfLong), .00005);
+		
+		algorithm.reset();  // reset the probability now
+		
+		// do the same check with a configuration when both N1 and N2 are in same regions
+		
+		// set both IP nodes to R1
+		isLocatedIn__N1_R1.addFinding(0);
+		isLocatedIn__N1_R2.addFinding(1);
+		isLocatedIn__N2_R1.addFinding(0);
+		isLocatedIn__N2_R2.addFinding(1);
+		
+		// propagate finding
+		algorithm.propagate();
+		
+		// find the state "long"
+		int indexOfShort = 0;
+		for (; indexOfShort < node.getStatesSize(); indexOfShort++) {
+			if (node.getStateAt(indexOfShort).equalsIgnoreCase("short")) {
+				break;
+			}
+		}
+		assertTrue(indexOfShort < node.getStatesSize());
+		assertEquals("short", node.getStateAt(indexOfShort));
+		
+		// check that the distance between the IP nodes is short now
+		assertEquals(1, node.getMarginalAt(indexOfShort), .00005);
+		
+		algorithm.reset();  // reset the probability now
+		
+		// set both IP nodes to R2
+		isLocatedIn__N1_R1.addFinding(1);
+		isLocatedIn__N1_R2.addFinding(0);
+		isLocatedIn__N2_R1.addFinding(1);
+		isLocatedIn__N2_R2.addFinding(0);
+		
+		// propagate finding
+		algorithm.propagate();
+		
+		// check that the distance between the IP nodes is still short
+		assertEquals(1, node.getMarginalAt(indexOfShort), .00005);
 		
 	}
 	
