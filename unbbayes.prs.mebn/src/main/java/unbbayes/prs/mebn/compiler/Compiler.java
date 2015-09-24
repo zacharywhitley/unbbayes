@@ -306,6 +306,9 @@ public class Compiler implements ICompiler {
 	
 	private int originalTextLength = 0;	// stores the length of the original text before deleting extra spaces
 	
+	// if true, varSetName must use exact match for strong OVs. If false, then all parents containing at least one of the OVs will be considered
+	private boolean isExactMatchStrongOV = false;	
+	
 	/**
 	 * Because at least one constructor must be visible to subclasses in order to allow
 	 * inheritance, we use protected instead of private.
@@ -2608,11 +2611,20 @@ public class Compiler implements ICompiler {
 		 * @return
 		 */
 		public boolean isParentSetName(String varsetname) {
-			if (this.currentSSBNNode.getParentSetByStrongOVWithWeakOVCheck(varsetname.split("\\.")).size() > 0) {
-				return true;
+			Collection<SSBNNode> parentSet = null;
+			if (isExactMatchStrongOV()) {
+				parentSet = this.currentSSBNNode.getParentSetByStrongOVWithWeakOVCheck(varsetname.split("\\" + this.currentSSBNNode.getStrongOVSeparator()));
 			} else {
-				return false;
+				// we just need to find at least one parent matching this ov
+				parentSet = new ArrayList<SSBNNode>();
+				for (String ovName : varsetname.split("\\" + this.currentSSBNNode.getStrongOVSeparator())) {
+					parentSet = this.currentSSBNNode.getParentSetByStrongOV(false, ovName);
+					if (!parentSet.isEmpty()) {
+						return true;
+					}
+				}
 			}
+			return parentSet.size() > 0;
 		}
 		/**
 		 * @return the varsetname
@@ -2917,8 +2929,21 @@ public class Compiler implements ICompiler {
 			}
 			
 			// extracts parents' similar sets by strong OV names
-			Collection<SSBNNode> parents =  baseSSBNNode.getParentSetByStrongOVWithWeakOVCheck(
-					this.getVarsetname().split("\\" + baseSSBNNode.getStrongOVSeparator()));
+			Collection<SSBNNode> parents = null;
+			if (isExactMatchStrongOV()) {
+				parents = baseSSBNNode.getParentSetByStrongOVWithWeakOVCheck(
+						this.getVarsetname().split("\\" + baseSSBNNode.getStrongOVSeparator()));
+			} else { // consider all parents that has at least one of the specified OVs in its argument
+				parents = new HashSet<SSBNNode>();
+				// search parents for each specified OV
+				for (String ovName : this.getVarsetname().split("\\" + baseSSBNNode.getStrongOVSeparator())) {
+					parents.addAll(baseSSBNNode.getParentSetByStrongOV(
+							false,						// not an exact match
+							ovName
+						)
+					);
+				}
+			}
 			
 			boolean found = false;
 			
@@ -3853,6 +3878,30 @@ public class Compiler implements ICompiler {
 	public void setCacheParentsComparator(
 			Comparator<List<INode>> cacheParentsComparator) {
 		this.cacheParentsComparator = cacheParentsComparator;
+	}
+
+
+	/**
+	 * @return : true if varSetName must use exact match for strong OVs. 
+	 * False if all parents containing at least one of the OVs will be considered.
+	 * @see TempTableHeaderCell#cleanUpByVarSetName(SSBNNode)
+	 * @see TempTableHeaderCell#isParentSetName(String)
+	 * @see #varsetname()
+	 */
+	public boolean isExactMatchStrongOV() {
+		return isExactMatchStrongOV;
+	}
+
+
+	/**
+	 * @param isExactMatchStrongOV : true if varSetName must use exact match for strong OVs. 
+	 * False if all parents containing at least one of the OVs will be considered.
+	 * @see TempTableHeaderCell#cleanUpByVarSetName(SSBNNode)
+	 * @see TempTableHeaderCell#isParentSetName(String)
+	 * @see #varsetname()
+	 */
+	public void setExactMatchStrongOV(boolean isExactMatchStrongOV) {
+		this.isExactMatchStrongOV = isExactMatchStrongOV;
 	}
 
 
