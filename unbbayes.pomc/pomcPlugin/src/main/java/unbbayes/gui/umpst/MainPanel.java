@@ -39,6 +39,7 @@ import unbbayes.gui.umpst.goal.GoalsMainPanel;
 import unbbayes.gui.umpst.group.GroupsMainPanel;
 import unbbayes.gui.umpst.rule.RulesMainPanel;
 import unbbayes.io.umpst.FileLoadObject;
+import unbbayes.io.umpst.FileSave;
 import unbbayes.io.umpst.FileSaveObject;
 import unbbayes.model.umpst.project.UMPSTProject;
 
@@ -178,10 +179,12 @@ public class MainPanel extends IUMPSTPanel{
 				if (fileExtension.equals(FILE_EXTENSION)){
 
 					FileLoadObject io = new FileLoadObject();
+//					FileLoad io = new FileLoad();
 
 					try {
 						controller = Controller.getInstance(null); 
 						setUmpstProject(io.loadUbf(loadFile,getUmpstProject())) ;
+//						setUmpstProject(io.loadAsNewFormat(loadFile,getUmpstProject()));
 						controller.setUMPSTProject(getUmpstProject()); 
 						
 						createTabPanels(getUmpstProject(), iconController, tabbedPane);
@@ -203,11 +206,16 @@ public class MainPanel extends IUMPSTPanel{
 					catch (IOException e1) {
 						controller.showErrorMessageDialog(
 								resource.getString("erLoadFatal")); 
-						e1.printStackTrace();
+						e1.printStackTrace();					
+//					} catch (ParserConfigurationException pce) {
+//						// it is not necessary build error window
+//						System.err.println(pce.getMessage());
+//					} catch (SAXException se) {
+//						// it is not necessary build error window
+//						System.err.println(se.getMessage());
+//					}
 					}
-
-				}
-				else{
+				} else{
 					controller.showErrorMessageDialog(
 							resource.getString("erNotUmpFormat")); 
 				}
@@ -220,7 +228,8 @@ public class MainPanel extends IUMPSTPanel{
 				
 				File newFile = null;
 				
-				FileSaveObject file = new FileSaveObject();
+//				FileSaveObject file = new FileSaveObject();
+				FileSave file = new FileSave();
 
 				JFileChooser fc =  new JFileChooser();  
 				fc.setCurrentDirectory (new File ("."));
@@ -233,7 +242,8 @@ public class MainPanel extends IUMPSTPanel{
 
 				if (newFile!=null)	{
 					try {
-						file.saveUbf(newFile,getUmpstProject());
+//						file.saveUbf(newFile,getUmpstProject());
+						file.saveAsNewFormat(newFile,getUmpstProject());
 						controller.showSucessMessageDialog(resource.getString("msSaveSuccessfull")); 
 					} catch (FileNotFoundException e1) {
 						controller.showErrorMessageDialog(resource.getString("erFileNotFound")); 
