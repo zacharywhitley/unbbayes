@@ -22,9 +22,11 @@ package unbbayes.prs.id;
 
 import java.awt.Color;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.TreeVariable;
+import unbbayes.prs.hybridbn.ContinuousNode;
 import unbbayes.util.SetToolkit;
 
 /**
@@ -115,5 +117,12 @@ public class DecisionNode extends TreeVariable implements java.io.Serializable {
             }
         }
     }
+
+	@Override
+	public DecisionNode getClone() {
+		DecisionNode cloned = new DecisionNode();
+		super.clone(cloned);
+		return cloned;
+	}
     
 }

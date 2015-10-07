@@ -65,7 +65,6 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.cpt.IProbabilityFunctionAdapter;
-import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.extension.IPluginNode;
 import unbbayes.prs.hybridbn.ContinuousNode;
 import unbbayes.prs.id.DecisionNode;
@@ -88,10 +87,8 @@ import unbbayes.util.extension.manager.CorePluginNodeManager;
  */
 public class GraphPane extends UCanvas {
 	/** Move y pixels to the new node. */
-	private int yPixelsToCopy = 100;
 
 	/** Move x pixels to the new node. */
-	private int xPixesToCopy = 100;
 
 	private static final int DEFAULT_DIMENSION = 1500;
 
@@ -214,97 +211,30 @@ public class GraphPane extends UCanvas {
 	 *            with key = original node, and value = generated nodes.
 	 * @return a new cloned node.
 	 */
-	private Node addClonedNode(final Node originalNode,
-			HashMap<Node, Node> sharedNodes) {
+	protected Node addClonedNode(final Node originalNode,
+			int xPixelsToCopy, int yPixelsToCopy){
 		Debug.println("Cloning " + originalNode);
 
-		// A new cloned node to create.
 		Node clonedNode;
 
-		double positionX = originalNode.getPosition().getX() + xPixesToCopy;
+		double positionX = originalNode.getPosition().getX() + xPixelsToCopy;
 		double positionY = originalNode.getPosition().getY() + yPixelsToCopy;
-		// Validate if the node is new.
-		if (sharedNodes.get(originalNode) == null) {
+		
+		clonedNode = originalNode.getClone();
+		clonedNode.setPosition(positionX, positionY);
 
-			// FIXME this if else if else if can be improved.
-			if (originalNode instanceof ProbabilisticNode) {
-				clonedNode = controller.insertProbabilisticNode(positionX,
-						positionY);
-			} else if (originalNode instanceof UtilityNode) {
-				clonedNode = controller.insertUtilityNode(positionX, positionY);
-			} else if (originalNode instanceof DecisionNode) {
-				clonedNode = controller
-						.insertDecisionNode(positionX, positionY);
-			} else {
-				// TODO extend to any type of node.
-				// TODO throw new exception "unsupported type of node".
-				return null;
-			}
-
-			// add new node to shared nodes.
-			sharedNodes.put(originalNode, clonedNode);
-		} else {
-			clonedNode = sharedNodes.get(originalNode);
-			return clonedNode;
-		}
 
 		// // Set general attributes
 		// Name
 		String newName = originalNode.getName() + "_1";
 		newName = getUniqueName(newName);
 		clonedNode.setName(newName);
+		controller.insertNode(clonedNode);
 		System.out.println("newNome=" + newName);
-		// Description
-		clonedNode.setDescription(originalNode.getDescription());
 		
 		// Create a new shape for a new node
 		createNode(clonedNode);
-		getNodeUShape(clonedNode).setState(UShape.STATE_SELECTED, null);
-
-
-		// Clear the default states
-		clonedNode.removeStates();
-
-		// Copy states
-		int numStates = originalNode.getStatesSize();
-		for (int i = 0; i < numStates; i++) {
-			clonedNode.appendState(originalNode.getStateAt(i));
-		}
-
-		// add children recursively.
-		List<Node> children = originalNode.getChildren();
-		// Validate that every children is selected
-		for (Node childNode : children) {
-
-			// If child node is not selected then
-			if (!getNodeUShape(childNode).getState().equals(
-					UShape.STATE_SELECTED)) {
-				continue;
-			}
-
-			// Create child recursively.
-			Node clonedChild = addClonedNode(childNode, sharedNodes);
-
-			try {
-				clonedNode.addChildNode(childNode);
-
-				// Add a line between parent and new child.
-				UShapeLine line = new UShapeLine(this,
-						getNodeUShape(clonedNode), getNodeUShape(clonedChild));
-
-				Edge edge = new Edge(clonedNode, clonedChild);
-				line.setEdge(edge);
-
-				line.setLearningLineSelection(false);
-				addShape(line);
-				insertEdge(edge);
-				onDrawConnectLineReleased(line, 0, 0);
-
-			} catch (InvalidParentException e) {
-				Debug.println(GraphPane.class, "Node did not add as a child", e);
-			}
-		}
-
+		selectNode(clonedNode);
 		return clonedNode;
 
 	}
@@ -318,7 +248,7 @@ public class GraphPane extends UCanvas {
 	 *            first new proposed unique node name.
 	 * @return a unique node name.
 	 */
-	private String getUniqueName(String newName) {
+	public String getUniqueName(String newName) {
 		List<Node> nodes = controller.getGraph().getNodes();
 		for (Node node : nodes) {
 			if (newName.equals(node.getName())) {
@@ -1258,14 +1188,33 @@ public class GraphPane extends UCanvas {
 	public void setToUseSelectionForLines(boolean toUseSelectionForLines) {
 		this.toUseSelectionForLines = toUseSelectionForLines;
 	}
-
-	class CopyPasteKeyManager implements KeyListener {
+	private void unselectAllNodes(){
+		for(Node node: nodeList){
+			node.setSelected(false);
+			getNodeUShape(node).setState(UShape.STATE_NONE, null);
+		}
+	}
+	public class CopyPasteKeyManager implements KeyListener {
 
 		public void keyTyped(KeyEvent e) {
 		}
 
 		public void keyReleased(KeyEvent e) {
-			// Capture Ctr+C = Copy
+			//Capture Ctrt+A = Select All
+			if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_A){
+				List<Node> nodeList = controller.getGraph().getNodes();
+				for(Node node: nodeList){
+					getNodeUShape(node).setState(UShape.STATE_SELECTED, null);
+				}
+			}
+			// Capture Ctr+X = Copy & Delete
+			if(e.isControlDown() && e.getKeyCode() == KeyEvent.VK_X){
+				Debug.println("Copy Delete");
+				
+				List<Node> group = getSelectedGroup();
+				InternalClipboard.getInstance().putToClipboard(group);
+				GraphPane.super.DeleteSelectedShape();
+			}
 			if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_C) {
 				Debug.println("Copy");
 
@@ -1295,63 +1244,88 @@ public class GraphPane extends UCanvas {
 
 		private void pasteAndDrawNodes(List<Node> group) {
 
+			int yPixelsToCopy = 100, xPixelsToCopy = 100;
+			
 			// Relative node position based on the mouse position.
 			if (group.size() > 0) {
 				Node firstNode = group.get(0);
-				xPixesToCopy = (int) (mouseX - firstNode.getPosition().getX() - firstNode
+				xPixelsToCopy = (int) (mouseX - firstNode.getPosition().getX() - firstNode
 						.getSize().getX() / 2);
 				yPixelsToCopy = (int) (mouseY - firstNode.getPosition().getY() - firstNode
 						.getSize().getY() / 2);
 			}
 
-			// Nodes to copy are noly parents.
-			List<Node> parentNodesToCopy = new ArrayList<Node>();
+			// Nodes to copy are only parents.
+//			List<Node> parentNodesToCopy = new ArrayList<Node>();
 
 			// Find parent nodes or nodes without selected parents
-			for (Node node : group) {
-				List<Node> parents = node.getParents();
+//			for (Node node : group) {
+//				List<Node> parents = node.getParents();
+//
+//				boolean hasParents = false;
+//				for (Node parent : parents) {
+//					if(getNodeUShape(parent) != null){
+//						if (getNodeUShape(parent).getState().equals(
+//								UShape.STATE_SELECTED)) {
+//							hasParents = true;
+//							break;
+//						}
+//					}
+//				}
+//				// If node has parents then continue.
+//				if (hasParents) {
+//					continue;
+//				}
+//
+//				parentNodesToCopy.add(node);
+//			}
 
-				boolean hasParents = false;
-				for (Node parent : parents) {
-
-					if (getNodeUShape(parent).getState().equals(
-							UShape.STATE_SELECTED)) {
-						hasParents = true;
-						break;
-					}
-				}
-				// If node has parents then continue.
-				if (hasParents) {
-					continue;
-				}
-
-				parentNodesToCopy.add(node);
-			}
-
-			HashMap<Node, Node> sharedNodes = new HashMap<Node, Node>();
-
+			HashMap<Node, Node> originalClonedHash = new HashMap<Node, Node>();
+			unselectAllNodes();
 			// copy nodes
-			// FIXME this for could be inside the last for
-			for (Node rootNode : parentNodesToCopy) {
+			for (Node node : group) {
 
 				// No root identified.
-				if (rootNode == null) {
+				if (node == null) {
 					Debug.println("Root node not identified");
 					return;
 				}
 
-				// Des-select initial node.
-				getNodeUShape(rootNode).setState(UShape.STATE_NONE, null);
-
 				// Clone the root and their children recursively
-				addClonedNode(rootNode, sharedNodes);
+				Node clonedNode = addClonedNode(node, xPixelsToCopy, yPixelsToCopy);
+				originalClonedHash.put(node, clonedNode);
 			}
 			
+			//re-iterate to draw the edges
+			for (Entry<Node, Node> entry : originalClonedHash.entrySet()) {
+				Node fatherOriginal = entry.getKey();
+				Node fatherCloned = entry.getValue();
+				List<Node> originalChildNodes = fatherOriginal.getChildren();
+				for(Node originalChildNode: originalChildNodes){
+					Node childCloned = originalClonedHash.get(originalChildNode);
+					if(childCloned != null){
+							UShapeLine line = new UShapeLine(GraphPane.this,
+									getNodeUShape(fatherCloned), getNodeUShape(childCloned));
+
+							Edge edge = new Edge(fatherCloned, childCloned);
+							line.setEdge(edge);
+
+							line.setLearningLineSelection(false);
+							addShape(line);
+							insertEdge(edge);
+							onDrawConnectLineReleased(line, 0, 0);
+
+					}
+				}	
+			}
+			onSelectionChanged();
 			// note: at this point, values at sharedNodes stores all nodes that were cloned 
 			// copy cpt for each node
-			for (Entry<Node, Node> entry : sharedNodes.entrySet()) {
+			for (Entry<Node, Node> entry : originalClonedHash.entrySet()) {
 				Node original = entry.getKey();
 				Node cloned = entry.getValue();
+				
+				
 				if (cloned instanceof IProbabilityFunctionAdapter && original instanceof IRandomVariable) {
 					// adapt and clone the probability function (which stores probability for probabilistic nodes, and utility for utility nodes)
 					((IProbabilityFunctionAdapter) cloned).loadProbabilityFunction(((IRandomVariable)original).getProbabilityFunction());

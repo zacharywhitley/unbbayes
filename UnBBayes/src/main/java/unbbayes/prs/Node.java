@@ -31,10 +31,12 @@ import java.util.List;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.ArrayMap;
 import unbbayes.util.Debug;
 import unbbayes.util.SerializablePoint2D;
+import unbbayes.util.SetToolkit;
 
 /**
  * A class representing a generic node containing graphical/visual information.
@@ -381,7 +383,20 @@ public abstract class Node implements Serializable,
 	public ArrayMap<String, ExplanationPhrase> getPhrasesMap() {
 		return this.phrasesMap;
 	}
-
+	
+	public Node getClone(){
+		return null;
+	}
+	
+	public void clone(Node clone){
+		clone.setName(this.getName());
+		clone.setDescription(this.getDescription());
+		clone.setSelected(this.isSelected());
+		clone.setExplanationDescription(this.getExplanationDescription());
+		clone.setPhrasesMap(this.getPhrasesMap());
+		clone.setInformationType(this.getInformationType());	
+	}
+	
 	/**
 	 * Used within dalgo2
 	 */

@@ -100,7 +100,15 @@ public class ProbabilisticNode extends TreeVariable implements IRandomVariable, 
 		no.tabelaPot = (ProbabilisticTable) this.tabelaPot.clone();
 		return no;
 	}
-
+	
+	@Override
+	public ProbabilisticNode getClone(){
+		ProbabilisticNode clone = new ProbabilisticNode();
+		super.clone(clone);
+		clone.tabelaPot = (ProbabilisticTable) this.tabelaPot.clone();
+		return clone;
+	}
+	
 	public Object clone() {
 		ProbabilisticNode cloned = new ProbabilisticNode();
 		cloned.tabelaPot = (ProbabilisticTable) this.tabelaPot.clone();

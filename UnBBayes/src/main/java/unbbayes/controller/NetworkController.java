@@ -60,6 +60,8 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.hybridbn.ContinuousNode;
+import unbbayes.prs.id.DecisionNode;
+import unbbayes.prs.id.UtilityNode;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import unbbayes.util.graphics.DropShadowDemo;
@@ -294,6 +296,11 @@ public class NetworkController implements KeyListener, INetworkMediator {
 		}
 	}
 
+	public Node insertNode(Node newNode){
+		if(senController != null)
+			return senController.insertNode(newNode);
+		return null;
+	}
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -341,6 +348,7 @@ public class NetworkController implements KeyListener, INetworkMediator {
 			return senController.insertUtilityNode(x, y);
 		return null;
 	}
+	
 
 	/*
 	 * (non-Javadoc)
@@ -947,6 +955,8 @@ public class NetworkController implements KeyListener, INetworkMediator {
 	public void setScreen(NetworkWindow screen) {
 		this.screen = screen;
 	}
+
+	
 
 	/****************** END GENERIC METHODS *********************/
 }

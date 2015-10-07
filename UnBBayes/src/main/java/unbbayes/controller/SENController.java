@@ -320,7 +320,12 @@ public class SENController {
 		
 		return node;
 	}
-
+	
+	public Node insertNode(Node newNode){
+		singleEntityNetwork.addNode(newNode);
+		return newNode;
+	}
+	
 	/**
 	 * Inserts the desired node inside the network creating default state, symbol and description
 	 * @param x The x position.

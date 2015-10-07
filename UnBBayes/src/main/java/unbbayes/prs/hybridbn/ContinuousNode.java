@@ -113,4 +113,11 @@ public class ContinuousNode extends TreeVariable implements Serializable {
 		cnNormalDistribution.refreshParents();
 	}
 
+	@Override
+	public ContinuousNode getClone() {
+		ContinuousNode node = new ContinuousNode();
+		super.clone(node);
+		return node;
+	}
+
 }

@@ -27,6 +27,8 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.IProbabilityFunction;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.cpt.IProbabilityFunctionAdapter;
 
 /**
@@ -150,6 +152,16 @@ public class UtilityNode extends Node implements IRandomVariable, IProbabilityFu
 			// overwrite my table
 			myTable.setValues(temp);	
 		}
+	}
+
+
+	@Override
+	public UtilityNode getClone() {
+		UtilityNode clone = new UtilityNode();
+		super.clone(clone);
+		clone.loadProbabilityFunction(this.getProbabilityFunction());
+//		clone.tabelaPot = (ProbabilisticTable) this.tabelaPot.clone();
+		return clone;
 	}
     
 }
