@@ -109,6 +109,9 @@ public class OWLImportTreePanelBuilder extends JPanel implements IMEBNEditionPan
 		this.setMEBN(mebn);
 		this.setMediator(mediator);
 		this.initComponents();
+		if (getRootOntologyNode() == null) {
+			return null;
+		}
 		return this;
 	}
 	
@@ -284,6 +287,10 @@ public class OWLImportTreePanelBuilder extends JPanel implements IMEBNEditionPan
 		
 		// init root ontology node (a node representing the prowl 2 project currently being edited)
 		setRootOntologyNode(this.buildRootOntologyNode(getMEBN(), getMediator()));
+		if (getRootOntologyNode() == null) {
+			// there is nothing to render
+			return;
+		}
 		
 		// set the new node as the root of JTree
 		// instantiate tree. Force JTree to use default tree model (so that we guarantee that method insertNodeInto is implemented)

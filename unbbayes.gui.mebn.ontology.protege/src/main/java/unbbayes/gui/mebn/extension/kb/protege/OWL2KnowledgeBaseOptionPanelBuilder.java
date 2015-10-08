@@ -184,6 +184,9 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 		
 		// extract current OWL reasoner to compare to the loaded reasoners
 		OWLReasoner currentReasoner = owl2KB.getDefaultOWLReasoner();
+		if (currentReasoner == null) {
+			return this.createDefaultErrorPanel();
+		}
 		
 		// extract the current reasoner name
 		String reasonerName = currentReasoner.getReasonerName();
