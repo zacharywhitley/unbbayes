@@ -378,15 +378,20 @@ public class MSeparationUtility implements IDSeparationUtility {
 	 * @param nodesToStop : the recursive search for further ancestors will stop if any of those nodes are detected as direct ancestor.
 	 *                      Only the current recursion will stop, so, only the nodes which are exclusively ancestors
 	 *                      of nodesToStop will be ignored.
+	 * @param visited : nodes that were visited already. This will be used to avoid cycles.
 	 * @return set of nodes
 	 */
-	private Set<INode> getAllAncestorsRec(INode node, Set<INode> nodesToStop) {
-		Set<INode> ret = new HashSet<INode>();		
+	private Set<INode> getAllAncestorsRec(INode node, Set<INode> nodesToStop, Set<INode> visited) {
+		Set<INode> ret = new HashSet<INode>();	
 		try {
+			if (visited.contains(node)) {
+				throw new IllegalArgumentException("Cycle found at " + node + ". Visited: " + visited);
+			}
+			visited.add(node);
 			for (INode parent : node.getParentNodes()) {
 				if (!nodesToStop.contains(parent)) {
 					ret.add(parent);
-					ret.addAll(this.getAllAncestorsRec(parent, nodesToStop));
+					ret.addAll(this.getAllAncestorsRec(parent, nodesToStop, new HashSet<INode>(visited)));
 				}
 			}
 		} catch (NullPointerException npe) {
@@ -456,7 +461,7 @@ public class MSeparationUtility implements IDSeparationUtility {
 		}
 		for (INode node : nodes) {
 			// searches recursivelly
-			ret.addAll(this.getAllAncestorsRec(node, nodesToStop));	
+			ret.addAll(this.getAllAncestorsRec(node, nodesToStop, new HashSet<INode>()));	
 		}
 		return ret;
 	}
