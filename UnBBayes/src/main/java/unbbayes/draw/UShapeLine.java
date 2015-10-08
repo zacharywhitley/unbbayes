@@ -385,7 +385,7 @@ public class UShapeLine extends UShape implements IEdgeHolderShape {
 	public int getDirection() {
 		// force sincronization of UShapeLine's direction and edge's direction,
 		// since it was not being done at TAN...
-		if (this.edge.hasDirection() == false) {
+		if (this.edge == null || !this.edge.hasDirection()) {
 			direction = 0;
 		} else {
 			// there is direction, force sincronization
