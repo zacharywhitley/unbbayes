@@ -1,0 +1,27 @@
+UNBBAYES MEBN PLUGIN - VERSION 1.11.9
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+1	3317524		MEBN I/O extension point.
+2	3317526		MEBN Knowledge Base extension point.
+3	3317529		Allow KB builder to choose which MEBN to use.
+4	3317532		MEBN new type of node extension point.
+5	3317533		MEBN SSBN generation extension point.
+6	3317536		Allow user feedback during SSBN construction.
+7	3013971		Add plugin support for new MEBN edition panel.
+8	3317538		Make it easier to extend existing GUI.
+9	3315492		Remove type filtering to allow use of subtypes.
+10	3315504		Save MFrag and SSBN as images.
+11	3317031		Panel with MTheory view.
+
+BUG LIST		
+Number	Request ID	Summary
+1	3317516		MEBN CPT evaluation error.
+2	3132582 	Order of nodes/mfrags/states not preserved when saving MEBN.
+3	3317520		PowerLoom KB thread synchronization error
+4	3260712		SSBN is not saved with correct CPT.
+5	2985472		CPT for XOR is wrong.
+6	3278359		Weird entity names in the SSBN.
+7	3317522		Problem with CPT generation for undeclared states.
+8	3307484		MEBN cannot compile complex LPD.
+9	2985473		Reference Uncertainty Error in SSBN.

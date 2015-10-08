@@ -1,0 +1,188 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is the plugin descriptor for UnBBayes-MEBN extension to add protege functions and OWL2/PR-OWL2 features. -->
+<!-- This version uses Protege4.1 as a library, but because protege4.1 does not work in non OSGI environments, several adaptations had to be made... -->
+<plugin id="unbbayes.gui.mebn.ontology.protege" version="1.1.4">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core" plugin-version="4.11.4" />
+        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.13.10"/>
+    </requires>
+    <runtime>
+       	<!-- Because dist.xml creates the resources folder, we must include it -->
+        <library type="resources" path="resources/" id="resources">
+            <!-- This folder contains JARS that Protege4.1 loads using OSGI. Because OSGI and JPF uses different (sometimes incompatible) mechanisms for plug-ins, they must be separated -->
+        	<export prefix="*"/>
+        </library>
+        <library type="resources" path="conf/" id="conf">
+        	<export prefix="*"/>
+        </library>
+        <library type="code" path="lib/" id="lib">
+        	<!-- This is where protege resources resides -->
+        	<export prefix="*"/>
+        </library>
+        <!-- It seems that loaders does not work as expected on jar files -->
+        <!-- If you change/add the libraries, change/add these library declaration too -->
+        <library id="unbbayes.gui.mebn.ontology.protege" path="unbbayes.gui.mebn.ontology.protege-1.1.4.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <!-- TODO JPF seems to fail on importing JARs if it is not specifically mentioned (wildcards on folders seems to fail) -->
+
+        <library id="jxp" path="lib/org.onemind.jxp-1.2.0.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="looks" path="lib/looks-2.2.1.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="mdock" path="lib/org.coode.mdock-1.0.0.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="org.coode.dlquery" path="lib/org.coode.dlquery-1.1.0.2010_09_03_0304.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+<!--
+        <library id="org.coode.owlviz" path="lib/org.coode.owlviz.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+-->
+        <library id="org.eclipse.equinox.supplement" path="lib/org.eclipse.equinox.supplement-1.2.0.v20090518.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="org.protege.common" path="lib/org.protege.common-4.1.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="org.protege.editor.core.application" path="lib/org.protege.editor.core.application-4.1.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="org.protege.editor.owl" path="lib/org.protege.editor.owl-4.1.0.b209_2010_09_03_0303.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+<!--
+        <library id="org.protege.ontograf" path="lib/org.protege.ontograf.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+-->
+        <library id="org.semanticweb.HermiT" path="lib/org.semanticweb.HermiT-1.2.5.927.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <!-- The following is declared just in case HermiT's developers decide not to release jar files with capital letters anymore -->
+        <library id="org.semanticweb.HermiT.lowerCase" path="lib/org.semanticweb.hermit-1.2.5.927.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="org.semanticweb.owl.owlapi" path="lib/org.semanticweb.owl.owlapi-3.1.0.1602.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="protege-owlapi-extensions" path="lib/org.protege.owlapi.extensions-1.0.0.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="swing-worker" path="lib/org.jdesktop.swingworker-1.0.0.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="xmlcatalog" path="lib/org.protege.xmlcatalog-1.0.0.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="jaxb-api" path="lib/jaxb-api-2.2.1.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="jaxb-impl" path="lib/jaxb-impl-2.2.1.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="org.eclipse.equinox.common" path="lib/org.eclipse.equinox.common-3.5.0.v20090520-1800.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="org.eclipse.equinox.registry" path="lib/org.eclipse.equinox.registry-3.4.100.v20090520-1800.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+
+        <library id="org.apache.felix.bundlerepository" path="lib/org.apache.felix.bundlerepository-1.4.2.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="org.apache.felix.framework" path="lib/org.apache.felix.framework-2.0.4.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+
+        <library id="org.apache.felix.main" path="lib/org.apache.felix.main-2.0.4.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+
+        <library id="org.apache.felix.shell" path="lib/org.apache.felix.shell-1.4.2.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+
+        <library id="org.apache.felix.shell.tui" path="lib/org.apache.felix.shell.tui-1.4.1.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+    </runtime>
+     
+     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="Protege41Entities">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.Protege41EntityPanelBuilder" />
+        <parameter id="name" value="OWL2Entities" />
+        <parameter id="description" value="Edit OWL2 entities using Protégé 4.1 editor" />
+        <parameter id="icon" value="class.gif" />
+    </extension>
+    
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="OWL2Properties2Node">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.OWL2PropertyImportPanelBuilder" />
+        <parameter id="name" value="Property2Node" />
+        <parameter id="icon" value="properties2node.png" />
+        <parameter id="description" value="Convert OWL2 properties to MEBN resident nodes" />
+    </extension>
+    
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="OWLImportTree">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.OWLImportTreePanelBuilder" />
+        <parameter id="name" value="Imports" />
+        <parameter id="icon" value="tango-symbolic-link.png" />
+        <parameter id="description" value="Ontologies imported to this project." />
+    </extension>
+    
+    <!-- DL reasoner for PR-OWL1 in OWL2 -->
+    <!-- Ignore this reasoner because it is not a standard
+    <extension plugin-id="unbbayes.prs.mebn" point-id="KnowledgeBase" id="Protege41Reasoners4PROWL1">
+        <parameter id="class" value="unbbayes.prs.mebn.kb.extension.ontology.protege.OWL2KnowledgeBaseBuilder"/>
+        <parameter id="name" value="Protégé reasoners (for PR-OWL1 in OWL2)"/>
+        <parameter id="optionPanel" value="unbbayes.gui.mebn.extension.kb.protege.OWL2KnowledgeBaseOptionPanelBuilder"/>
+    </extension>
+     -->
+    
+    <!-- DL reasoner for PR-OWL2 in OWL2 -->
+    <extension plugin-id="unbbayes.prs.mebn" point-id="KnowledgeBase" id="Protege41Reasoners4PROWL2">
+        <parameter id="class" value="unbbayes.prs.mebn.kb.extension.ontology.protege.PROWL2KnowledgeBaseBuilder"/>
+        <parameter id="name" value="Protégé reasoners (for PR-OWL 2)"/>
+        <parameter id="optionPanel" value="unbbayes.gui.mebn.extension.kb.protege.OWL2KnowledgeBaseOptionPanelBuilder"/>
+    </extension>
+    <!-- 
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="Properties2Node">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.OWLPropertyImportPanelBuilder" />
+        <parameter id="name" value="Properties2Node" />
+        <parameter id="icon" value="properties2node.png" />
+        <parameter id="description" value="Convert OWL properties to MEBN resident node" />
+    </extension>
+    
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="ProtegeClasses">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.ProtegeOWLClassPanelBuilder" />
+        <parameter id="name" value="OWLClasses" />
+        <parameter id="description" value="Edit OWL classes using Protégé editor" />
+        <parameter id="icon" value="class.gif" />
+    </extension>
+    
+     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="ProtegeProperties">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.ProtegeOWLPropertyPanelBuilder" />
+        <parameter id="name" value="OWLProperties" />
+        <parameter id="icon" value="properties.png" />
+        <parameter id="description" value="Edit OWL properties using Protégé editor" />
+    </extension>
+    
+     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNEditorPanel" id="ProtegeIndividuals">
+        <parameter id="class" value="unbbayes.gui.mebn.extension.ProtegeOWLIndividualsPanelBuilder" />
+        <parameter id="name" value="OWLIndividuals" />
+        <parameter id="description" value="Edit OWL individuals using Protégé editor" />
+        <parameter id="icon" value="individual.gif" />
+    </extension>
+     -->
+    <!-- Uncomment the following extension point if you are experiencing I/O problems after reloading plugins -->
+    <!-- 
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNIO" id="DefaultMEBNIO">
+        <parameter id="class" value="unbbayes.io.mebn.UbfIO" />
+        <parameter id="name" value="UnBBayes File" />
+    </extension>
+     -->
+</plugin>
