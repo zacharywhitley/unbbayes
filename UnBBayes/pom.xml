@@ -337,13 +337,13 @@
 		<!-- PLOT-GRAPHICS -->
 		<!-- Used for plotting some graphics. -->
 		<!-- This is unbbayes.datamining plugin's dependency
-		-->
+		
 		<dependency>
 			<groupId>guess</groupId>
 			<artifactId>plot</artifactId>
 			<version>1.0</version>
 		</dependency>
-		
+		-->
 		<!-- CLONE -->
 		<!-- Used for Clonning nodes. -->
 		<!-- This is unbbayes.datamining plugin's dependency -->
