@@ -6,6 +6,7 @@ package unbbayes.prs.medg;
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.prs.mebn.IMultiEntityNode;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.compiler.ICompiler;
 
 /**
  * Classes implementing this interface represent nodes specific to MEDG
@@ -21,5 +22,13 @@ public interface IMEDGNode extends IMultiEntityNode {
 	 */
 	ResidentNode asResidentNode();
 	
+	/**
+	 * Obtains the controller associated with this node
+	 */
 	IMEBNMediator getMediator();
+
+	/**
+	 * @param comp : the compiler responsible for parsing the local distribution.
+	 */
+	void setCompiler(ICompiler comp);
 }

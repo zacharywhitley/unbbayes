@@ -10,6 +10,7 @@ import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.ProbabilisticNodeWrapper;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.ResidentNode;
@@ -30,8 +31,8 @@ public class SSIDNode extends SSBNNode {
 	 * @param nodeInstance
 	 */
 	protected SSIDNode(ProbabilisticNetwork pnet, ResidentNode resident, INode nodeInstance) { 
-		super(pnet, resident, null);
-		this.setNodeInstance(nodeInstance);
+		super(pnet, resident, new ProbabilisticNodeWrapper(nodeInstance));
+		this.nodeInstance = nodeInstance;
 	}
 	
 
@@ -49,6 +50,10 @@ public class SSIDNode extends SSBNNode {
 		this.nodeInstance = nodeInstance;
 		if (nodeInstance instanceof ProbabilisticNode) {
 			this.setProbNode((ProbabilisticNode) nodeInstance);
+		} else {
+			nodeInstance.setName(getName());
+			nodeInstance.setDescription(getDescription());
+			this.setProbNode(new ProbabilisticNodeWrapper(nodeInstance));
 		}
 	}
 	
@@ -60,6 +65,13 @@ public class SSIDNode extends SSBNNode {
 	 * @return a new instance.
 	 */
 	public static INode getInstance(ProbabilisticNetwork network, ResidentNode resident, INode nodeInstance) {
+		return new SSIDNode(network, resident, nodeInstance);
+	}
+	
+	/**
+	 * @see SSBNNode#getInstance(ProbabilisticNetwork, ResidentNode, ProbabilisticNode)
+	 */
+	public static SSBNNode getInstance(ProbabilisticNetwork network, ResidentNode resident, ProbabilisticNode nodeInstance) {
 		return new SSIDNode(network, resident, nodeInstance);
 	}
 
@@ -158,5 +170,20 @@ public class SSIDNode extends SSBNNode {
 		// TODO Auto-generated method stub
 		super.appendState(state);
 	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ssbn.SSBNNode#setProbNode(unbbayes.prs.bn.ProbabilisticNode)
+	 */
+	public void setProbNode(ProbabilisticNode probNode) {
+		super.setProbNode(probNode);
+		if (probNode instanceof ProbabilisticNodeWrapper) {
+			// don't add the wrapper. Add the wrapped node directly
+			ProbabilisticNodeWrapper wrapper = (ProbabilisticNodeWrapper) probNode;
+			this.getProbabilisticNetwork().removeNode(wrapper);
+			this.getProbabilisticNetwork().addNode((Node) wrapper.getWrappedNode());
+		}
+	}
+	
 
 }

@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 
 import unbbayes.controller.mebn.IMEBNMediator;
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.id.DecisionNode;
@@ -166,6 +167,8 @@ public class MultiEntityDecisionNode extends ResidentNode implements IMEBNPlugin
 			}
 		}
 	}
+	
+	
 
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.ResidentNode#addPossibleValueLink(unbbayes.prs.mebn.entity.Entity)
@@ -218,5 +221,20 @@ public class MultiEntityDecisionNode extends ResidentNode implements IMEBNPlugin
 	public ResidentNode asResidentNode() {
 		return this;
 	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Node#addChild(unbbayes.prs.Node)
+	 */
+	public void addChild(Node child) throws InvalidParentException {
+		super.addChild(child);
+		if ((child instanceof ResidentNode) && !getResidentNodeChildList().contains(child)) {
+			this.addResidentNodeChild((ResidentNode) child);
+//			ResidentNode residentNode = (ResidentNode) child;
+//			if (!residentNode.getResidentNodeFatherList().contains(this)) {
+//				residentNode.getResidentNodeFatherList().add(this);
+//			}
+		} 
+	}
+
 	
 }

@@ -26,6 +26,7 @@ import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.id.DecisionNode;
+import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -138,7 +139,12 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 			
 			// extract controller from BN module
 			NetworkController controller = bnModule.getController();
-			algorithm.setMediator(controller);
+			try {
+				algorithm.setMediator(controller);
+			} catch (Exception e) {
+				// algorithm should work without mediator, so let's ignore and try going on
+				e.printStackTrace();
+			}
 			controller.setInferenceAlgorithm(algorithm);
 			
 			// Make sure the tree (JTree in the left side of compilation panel) is updated with the network changes, if there is any.
@@ -308,7 +314,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 		
 		SSID ssid = null; 
 		
-		//Step 1: 
+		//Step 1: instantiate SSID, queries and findings.
 		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION))){
 			ssid = initialization(queryList, knowledgeBase); 
 			ssid.setParameters(parameters); 
@@ -317,7 +323,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 		
 		ISSBNLogManager logManager = ssid.getLogManager();
 		
-		//Step 2: 
+		//Step 2: build the network from queries and findings
 		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_BUILDER))){
 			
 			if (logManager != null) {
@@ -343,7 +349,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 			
 		}
 		
-		//Step 3: 
+		//Step 3: run pruners
 		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_PRUNE))){
 			
 			if (logManager != null) {
@@ -368,7 +374,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 			}
 		}
 		
-		//Step 4: 
+		//Step 4: translate SimpleSSBNNode to SSBNNode, and then compile LPDs
 		if(Boolean.valueOf(parameters.getParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION))){
 			
 			if (logManager != null) {
@@ -440,6 +446,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 	 * @param ssid
 	 */
 	public void reorderDecisionNodes(SSID ssid) {
+		// it looks like JT doesn't require decision nodes to be fully ordered/connected.
 	}
 
 	/**
@@ -573,9 +580,9 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 			logManager.printSectionSeparation(); 
 		}
 		
-		// TODO add continuous nodes to the list of initial nodes
+		// TODO add utility nodes to the list of initial nodes
 		for(MFrag mfrag: mebn.getMFragList()){
-			// we are creating one continuous SSBN node per each possible combination of arguments in a continuous resident node
+			// we are creating one utility node per each possible combination of arguments in a continuous resident node
 			for (Node node : mfrag.getNodes()) {
 				if (node instanceof MultiEntityUtilityNode) {
 					
@@ -645,6 +652,14 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 						}
 						
 						ssid.addSSBNNodeIfItDontAdded(ssbnNode);
+						
+						List<OVInstance> arguments = new ArrayList<OVInstance>();
+						for (Argument residentArgument : ssbnNode.getResidentNode().getArgumentList()) {
+							arguments.add(OVInstance.getInstance(residentArgument.getOVariable(), ssbnNode.getEntityForOv(residentArgument.getOVariable())));
+						}
+						Query query = new Query(ssbnNode.getResidentNode(), arguments);
+						query.setSSBNNode(ssbnNode);	// force the simpleSSBNNode to be the same instance
+						ssid.addQueryToTheQueryList(query);
 						
 						// update indexes and check condition to end loop (it ends when all possible combinations were visited)
 						for (int i = 0; i < combinator.size(); i++) {	

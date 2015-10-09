@@ -16,6 +16,7 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.id.DecisionNode;
+import unbbayes.prs.id.UtilityNode;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -30,6 +31,7 @@ import unbbayes.prs.mebn.ssbn.SimpleSSBNNodeUtils;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.medg.MultiEntityDecisionNode;
+import unbbayes.prs.medg.MultiEntityUtilityNode;
 
 /**
  * This is a rewrite of {@link SimpleSSBNNodeUtils}, but with more
@@ -373,6 +375,8 @@ public class SSIDNodeTranslator implements ISimpleSSIDNodeTranslator, INodeTrans
 		ResidentNode resident = ((SimpleSSBNNode)node).getResidentNode();
 		if (resident instanceof MultiEntityDecisionNode) {
 			return SSIDNode.getInstance((ProbabilisticNetwork)network, resident, new DecisionNode());
+		} else if (resident instanceof MultiEntityUtilityNode) {
+			return SSIDNode.getInstance((ProbabilisticNetwork)network, resident, new UtilityNode());
 		}
 		return SSIDNode.getInstance((ProbabilisticNetwork)network, resident, new ProbabilisticNode());
 	}

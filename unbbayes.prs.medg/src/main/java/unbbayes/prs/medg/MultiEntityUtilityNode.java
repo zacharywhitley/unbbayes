@@ -168,7 +168,9 @@ public class MultiEntityUtilityNode extends ResidentNode implements IMEBNPluginN
 		super.addParent(parent);
 		if (parent instanceof ResidentNode) {
 			ResidentNode residentNode = (ResidentNode) parent;
-			residentNode.addResidentNodeChild(this); // this will automatically add parent to this.getResidentNodeFatherList()
+			if (!residentNode.getResidentNodeChildList().contains(this)) {
+				residentNode.addResidentNodeChild(this); // this will automatically add parent to this.getResidentNodeFatherList()
+			}
 		} else if (parent instanceof InputNode) {
 			InputNode inputNode = (InputNode) parent;
 			inputNode.addResidentNodeChild(this);
