@@ -92,6 +92,8 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 	private IReaderBuilder readerBuilder = this;
 	
 	private String defaultNodeNamePrefix = "";
+
+	private boolean isToDisableDirection = false;
 	
 	/**
 	 *  Loads a NET format file using default node/network builder.
@@ -118,6 +120,12 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 		ProbabilisticNetwork net = networkBuilder.buildNetwork(id);
 		
 		load(input, net, networkBuilder);
+		
+		if (isToDisableDirection()) {
+			for (Edge edge : net.getEdges()) {
+				edge.setDirection(false);
+			}
+		}
 		return net;		
 	}
 	
@@ -1321,6 +1329,22 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 	 */
 	public void setDefaultNodeNamePrefix(String defaultNodeNamePrefix) {
 		this.defaultNodeNamePrefix = defaultNodeNamePrefix;
+	}
+
+	/**
+	 * @return the isToDisableDirection : if set to true, then {@link #load(File)} will set {@link Edge#setDirection(boolean)} to false for all
+	 * arcs in the network being returned. This is false by default.
+	 */
+	public boolean isToDisableDirection() {
+		return isToDisableDirection;
+	}
+
+	/**
+	 * @param isToDisableDirection the isToDisableDirection to set: if set to true, then {@link #load(File)} will set {@link Edge#setDirection(boolean)} to false for all
+	 * arcs in the network being returned. This is false by default.
+	 */
+	public void setToDisableDirection(boolean isToDisableDirection) {
+		this.isToDisableDirection = isToDisableDirection;
 	}
 	
 }
