@@ -541,6 +541,55 @@ public class CompilerTest extends TestCase {
 		
 	}
 	
+	public void testUnnormalized() {
+		
+		// make a backup, so that we can restore later
+		boolean backup = tableParser.isToNormalize();
+		
+		// force this compiler not to consider normalized number (i.e. start considering non-probability values)
+		tableParser.setToNormalize(false);
+		assertFalse(tableParser.isToNormalize());
+		
+		String tableString =  
+				"[ if any st1 have( OperatorSpecies = Cardassian & (HarmPotential = true) )  [ " + 
+						" if any st11 have ( ~ OperatorSpecies = Cardassian ) " +
+						"  [ Un = 0 , Hi = 0 , Medium = 100 , Low = .9 ]  " +
+						" else [ Un = MIN ( .9 ; CARDINALITY(st.t) ) , Hi = 1000 , Medium = -10 , Low = 1 - Un ] " +
+						" ] else if any st2 have( (OperatorSpecies = Romulan & HarmPotential = true) ) " +
+						"  [ Un = -10 , Hi = 100 , Medium = .01 , Low = -.99 ]  " +
+						" else if any st3 have( (OperatorSpecies = Unknown & HarmPotential = true) | (OperatorSpecies = Unknown & HarmPotential = true) ) " + 
+						"  [ Un = 0 , Hi = -10 , Medium = -.01 , Low = .99 ]  " +
+						" else if any st4 have( OperatorSpecies = Klingon & ~ HarmPotential = true ) [ " +
+						" if any st41 have ( ~ OperatorSpecies = Klingon ) [ " +
+						" if any st411 have ( ~ OperatorSpecies = Cardassian ) " +
+						"  [ Un = 0 , Hi = 9999 , Medium = .01 , Low = .99 ]  " +
+						" else [ Un = MIN ( 1 ; 1+CARDINALITY(sr) ) , Hi = 0 , Medium = 0 , Low = 1 - Un ] " +
+						" ] else if any st42 have ( ~ OperatorSpecies = Klingon ) [ " +
+						" if any st421 have ( ~ OperatorSpecies = Cardassian ) " +
+						"  [ Un = 0 , Hi = 0 , Medium = .0 , Low = 0 ]  " +
+						" else [ Un = MIN ( .9 ; CARDINALITY(sr) ) , Hi = 0 , Medium = 0 , Low = 1 - Un ] " +
+						" ] else [ Un = MIN ( .9 ; CARDINALITY(sr.st) ) , Hi = 0 , Medium = 0 , Low = 1 - Un ] "  +
+						" ] else if any st5 have( OperatorSpecies = Friend & HarmPotential = true ) " +
+						"  [ Un = 10  ] " +
+						" else [ " +
+						" if any stelse have ( ~ OperatorSpecies = Cardassian ) " +
+						"  [ Un = -100  ]  " +
+						" else [ Un = 0  ] " +
+						" ] ]";
+		
+		
+		try  {
+			tableParser.parse(tableString);			
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(tableParser.getIndex() + ", "+e.getMessage());
+			
+		} finally {
+			tableParser.setToNormalize(backup);
+		}
+		
+	}
+	
 	public void testEmbeddedIdentity() {
 		UbfIO io = UbfIO.getInstance();
 		

@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
@@ -69,7 +70,7 @@ import unbbayes.util.Debug;
  	"if" allop varsetname "have" "(" b_expression ")" statement 
  	"else" else_statement 
  allop ::= "any" | "all"
- varsetname ::= ident ["." ident]*
+ varsetname ::= varsetname ::= ident[["."|","]ident]*
  b_expression ::= b_term [ "|" b_term ]*
  b_term ::= not_factor [ "&" not_factor ]*
  not_factor ::= [ "~" ] b_factor
@@ -139,56 +140,64 @@ import unbbayes.util.Debug;
  						myprob2 = 0.1
  					]
  				]
- 			@Author Shou Matsumoto (cardialfly@[gmail,yahoo].com)
  			</pre>
  
  	@version 07/09/2008:
  			Description: BNF fails to describe a complex boolean expression
- 			@Author Shou Matsumoto (cardialfly@[gmail,yahoo].com)
+ 	<br/>
+ 	<br/>
  	
  	@version 06/15/2008:
  			Description: a boolean expression was returning a boolean neutral value (false in "Any" 
  			and true in "All") when no valid expression (involving parents) was evaluated. It
  			is now returning false when no expression was valid
- 			@Author Shou Matsumoto (cardialfly@[gmail,yahoo].com)
+ 	<br/>
+ 	<br/>
  
  	@version 03/03/2008:
  			Description: compiler was trying to parse a table even when node was
  			known to be a finding (a finding doesn't need a cpt). This condition now 
  			is tested before parsing a ssbn node.
- 			@Author Shou Matsumoto (cardialfly@[gmail,yahoo].com)
+ 	<br/>
+ 	<br/>
  
  	@version 12/28/2007:
  			Description: fixed the BNF definition of factor, and
  			added the " char before and after ;.
- 			@Author Rommel Carvalho (rommel.carvalho@gmail.com)
+ 	<br/>
+ 	<br/>
  
  	@version 11/27/2007:
  			Description: term ::= signed_factor [ mulop factor ]* changed to
  				term ::= signed_factor [ mulop signed_factor ]*,
  				and CPT generation is in alpha state now.
- 			@Author Shou Matsumoto
+ 	<br/>
+ 	<br/>
  
  	@version 11/25/2007:
  			Description: added non-terminal variable "possibleVal" to the grammar (and its implementation).
- 			@Author Shou Matsumoto
+ 	<br/>
+ 	<br/>
  	
  	@version 10/07/2007:
  			Description: "varsetname" has been added to the grammar (and implemented inside the class)
  				in order to allow us to declare parent set by strong OV.
- 			@Author Shou Matsumoto
+ 	<br/>
+ 	<br/>
  	
  
  	@version 06/24/2007:
  			Description: The top level BNF Grammar class was changed from 
  				if_statement to table, in order to make possible a probability
  				table without an if clause.
-			@Author Shou Matsumoto
+ 	<br/>
+ 	<br/>
  
  	@version 06/10/2007: 
  			Description: Added cardinality(), min() and max() functions
  			syntax analyzer.
- 			@Author Shou Matsumoto 
+ 	<br/>
+ 	<br/>
 
  	@version 05/29/2007: 
  			Description: the else clause is now required, in order to
@@ -199,11 +208,33 @@ import unbbayes.util.Debug;
  				of states were provided and the last else
  				must be related to the first if every time - since
  				we don't have a block sentence yet, it is not possible).
- 			@Author Shou Matsumoto
+ 	<br/>
+ 	<br/>
+ 				
  	@version 06/03/2014: 
  			Description: CARDINALITY() was included. That is, if CARDINALITY
  			is called with no argument, then it will return the number of all parents.
- 			@Author Shou Matsumoto
+ 	<br/>
+ 	<br/>
+ 			
+ 	@version 09/30/2015:
+ 			Description: restrictions in varsetname were loosen. 
+ 			Previously, if I declare x.y.z, then only the nodes containing all x,y,
+ 			and z ordinary variables in their arguments were considered.
+ 			Now, all nodes containing at least x, y, or z ordinary variables
+ 			in their arguments are being considered.
+ 			Additionally, we can separate varsetname with commas (',').
+ 	<br/>
+ 	<br/>
+ 			
+ 	@version 10/08/2015:
+ 			Description: Included support for unnormalized values (i.e. declaration of values that doesn't need to sum up to 1).
+ 			{@link #setToNormalize(boolean)} can be used to disable/enable this feature.
+ 	<br/>
+ 	<br/>
+    
+	@Author Shou Matsumoto (cardialfly@[gmail,yahoo].com)
+	@Author Rommel Carvalho (rommel.carvalho@gmail.com)		
  */
 public class Compiler implements ICompiler {
 	
@@ -241,7 +272,10 @@ public class Compiler implements ICompiler {
 	
 	// resource files
 	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
-			unbbayes.prs.mebn.compiler.resources.Resources.class.getName());
+			unbbayes.prs.mebn.compiler.resources.Resources.class.getName(),
+			Locale.getDefault(),
+			Compiler.class.getClassLoader()
+		);
 
 	
 	/* A previously read character (lookahead) */
@@ -272,7 +306,7 @@ public class Compiler implements ICompiler {
 	
 	
 	// Informations used by this class to check pre-SSBN consistency
-	private MultiEntityBayesianNetwork mebn = null;
+//	private MultiEntityBayesianNetwork mebn = null;
 	private ResidentNode node = null;
 	
 
@@ -307,7 +341,9 @@ public class Compiler implements ICompiler {
 	private int originalTextLength = 0;	// stores the length of the original text before deleting extra spaces
 	
 	// if true, varSetName must use exact match for strong OVs. If false, then all parents containing at least one of the OVs will be considered
-	private boolean isExactMatchStrongOV = false;	
+	private boolean isExactMatchStrongOV = false;
+
+	private boolean isToNormalize = true;
 	
 	/**
 	 * Because at least one constructor must be visible to subclasses in order to allow
@@ -458,7 +494,7 @@ public class Compiler implements ICompiler {
 	public void init(SSBNNode ssbnnode) {
 		this.setSSBNNode(ssbnnode);
 		//this.node = ssbnnode.getResident();	//setSSBNNode already does it.
-		this.mebn = this.node.getMFrag().getMultiEntityBayesianNetwork();
+//		this.mebn = this.node.getMFrag().getMultiEntityBayesianNetwork();
 		String pseudocode = this.node.getTableFunction();
 		
 		if (this.ssbnnode.getProbNode() != null) {
@@ -663,6 +699,8 @@ public class Compiler implements ICompiler {
 				map.get(key).add(val);
 			}
 
+			MultiEntityBayesianNetwork mebn = getMEBN();
+			
 			// fill map with ordinary variables in this mfrag (these are like identity nodes -- function that returns the value of its argument)
 			for (OrdinaryVariable ov : this.getNode().getMFrag().getOrdinaryVariableList()) {
 				if (ov == null || ov.getValueType() == null || ov.getName() == null) {
@@ -734,7 +772,7 @@ public class Compiler implements ICompiler {
 			
 			// populate column
 			for (int j = 0; j < possibleValues.size() ; j++) {
-				float value = -1.0f;
+				float value = 0f;
 				
 				// extract the value to set
 				for (TempTableProbabilityCell cell : header.getCellList()) {
@@ -745,8 +783,9 @@ public class Compiler implements ICompiler {
 						break;
 					}
 				}
-				// consistency check, allow only values between 0 and 1
-				if ((value < 0) || (value > 1)) {
+				// consistency check, allow only values between 0 and 1 (if we should use normalized values)
+				if (isToNormalize()
+						&& ((value < 0) || (value > 1))) {
 					throw new InvalidProbabilityRangeException();
 				}
 				this.cpt.setValue(i+j, value );
@@ -791,7 +830,7 @@ public class Compiler implements ICompiler {
 		this.currentHeader = null;
 		this.kwcode = null;
 		this.kwlist = null;
-		this.mebn = null;
+//		this.mebn = null;
 		this.noCaseChangeValue = null;
 		this.node = null;
 		this.ssbnnode = null;
@@ -935,10 +974,16 @@ public class Compiler implements ICompiler {
 	 */
 	public IProbabilityFunction generateLinearDistroCPT(ProbabilisticNode probNode) {
 		float value = 1.0F / probNode.getStatesSize();
+		if (!isToNormalize()) {
+			// if we don't need to normalize, then fill everything with zeros
+			value = 1f;
+		}
 		PotentialTable table = probNode.getProbabilityFunction();
-		for (int i = 0; i < probNode.getProbabilityFunction().tableSize(); i++) {
-			 // TODO in float operation, since 1/3 + 1/3 + 1/3 might not be 1, implement some precision control
-			 table.setValue(i, value);
+		if (table != null) {
+			for (int i = 0; i < table.tableSize(); i++) {
+				// TODO in float operation, since 1/3 + 1/3 + 1/3 might not be 1, implement some precision control
+				table.setValue(i, value);
+			}
 		}
 		return table;
 	}
@@ -946,7 +991,7 @@ public class Compiler implements ICompiler {
 	/**
 	 *  table := statement | if_statement
 	 */
-	private void table() throws NoDefaultDistributionDeclaredException,
+	protected void table() throws NoDefaultDistributionDeclaredException,
 	  							InvalidConditionantException,
 	  							SomeStateUndeclaredException,
 	  							InvalidProbabilityRangeException,
@@ -987,7 +1032,7 @@ public class Compiler implements ICompiler {
 	 * by this parameter. If this is a temporary table, this if-clause is the upper-most if-clause within CPT pseudocode.
 	 * If it is null, it will assume tempTable is the upper container
 	 */
-	private void ifStatement(INestedIfElseClauseContainer upperIf) 
+	protected void ifStatement(INestedIfElseClauseContainer upperIf) 
 							   throws NoDefaultDistributionDeclaredException,
 									  InvalidConditionantException,
 									  SomeStateUndeclaredException,
@@ -1112,9 +1157,9 @@ public class Compiler implements ICompiler {
 	
 	/**
 	 *   It skippes white spaces after evaluation.
-	 *   varsetname ::= ident["."ident]*
+	 *   varsetname ::= ident[["."|","]ident]*
 	 */
-	private String varsetname() throws TableFunctionMalformedException {
+	protected String varsetname() throws TableFunctionMalformedException {
 		
 		// we don't have to set header's varsetname here because ifStatement (upper caller) would do so.
 		
@@ -1122,7 +1167,10 @@ public class Compiler implements ICompiler {
 		
 		// scan for the ident
 		do {
-			scanNoSkip();	// no white spaces should stay between ident and "." and next ident
+			
+//			scanNoSkip();	// no white spaces should stay between ident and "." and next ident
+			scan();	
+			
 			if (token == 'x') {
 				// Debug.println("SCANING IDENTIFIER " + value);
 				ret += this.noCaseChangeValue;
@@ -1131,7 +1179,7 @@ public class Compiler implements ICompiler {
 			}	
 			
 			// search for ["." ident]* loop
-			if (this.look == '.') {
+			if (this.look == '.' || this.look == ',') {
 				this.nextChar();
 				if (this.ssbnnode != null) {
 					ret += this.ssbnnode.getStrongOVSeparator();	// adds a separator (a dot ".")
@@ -1152,7 +1200,7 @@ public class Compiler implements ICompiler {
 	 * b_expression ::= b_term [ "|" b_term ]*
 	 * 
 	 */
-	private ICompilerBooleanValue bExpression() throws InvalidConditionantException,
+	protected ICompilerBooleanValue bExpression() throws InvalidConditionantException,
 									  TableFunctionMalformedException{
 		
 		ICompilerBooleanValue val1 = bTerm();
@@ -1180,7 +1228,7 @@ public class Compiler implements ICompiler {
 	 * b_term ::= not_factor [ "&" not_factor ]*
 	 * 
 	 */
-	private ICompilerBooleanValue bTerm() throws InvalidConditionantException,
+	protected ICompilerBooleanValue bTerm() throws InvalidConditionantException,
 							    TableFunctionMalformedException{
 		
 		ICompilerBooleanValue val1 = notFactor();
@@ -1205,7 +1253,7 @@ public class Compiler implements ICompiler {
 	 * not_factor ::= [ "~" ] b_factor
 	 * 
 	 */
-	private ICompilerBooleanValue notFactor() throws InvalidConditionantException,
+	protected ICompilerBooleanValue notFactor() throws InvalidConditionantException,
 									TableFunctionMalformedException{
 		
 		boolean isNot = false;	// tests if '~' was found previously.
@@ -1239,7 +1287,7 @@ public class Compiler implements ICompiler {
 	 * Another example: OV = entityInstance
 	 * 
 	 */
-	private ICompilerBooleanValue bFactor() throws InvalidConditionantException,
+	protected ICompilerBooleanValue bFactor() throws InvalidConditionantException,
 								  TableFunctionMalformedException{
 		
 		String conditionantName = null;
@@ -1260,11 +1308,12 @@ public class Compiler implements ICompiler {
 		// SCAN FOR CONDITIONANTS
 		scan();
 		
+		MultiEntityBayesianNetwork mebn = getMEBN();
 		if (token == 'x') {
 			conditionantName = this.noCaseChangeValue;
 			// consistency check C09: verify whether is conditionant of the node
 			if (this.node != null) {
-				if (!this.isValidConditionant(this.mebn, this.node, conditionantName )) {
+				if (!this.isValidConditionant(mebn , this.node, conditionantName )) {
 					// Debug.println("->" + getNode());
 					throw new InvalidConditionantException();
 				}
@@ -1290,7 +1339,7 @@ public class Compiler implements ICompiler {
 			
 			// consistency check C09: verify whether conditionant has valid values
 			if (this.node != null) {
-				if (!this.isValidConditionantValue(this.mebn,this.node,conditionantName,this.noCaseChangeValue)) {
+				if (!this.isValidConditionantValue(mebn,this.node,conditionantName,this.noCaseChangeValue)) {
 					throw new InvalidConditionantException();
 				}
 			}
@@ -1308,7 +1357,7 @@ public class Compiler implements ICompiler {
 		TempTableHeader header = null;	// this will be the value to return
 
 		//	prepare to add current temp table's header's parent node (condicionant list)
-		ResidentNode resident = this.mebn.getDomainResidentNode(conditionantName);
+		ResidentNode resident = mebn.getDomainResidentNode(conditionantName);
 		if (resident != null) {
 			
 			Entity condvalue = null;
@@ -1346,7 +1395,7 @@ public class Compiler implements ICompiler {
 			}
 			
 			// extract the type of this OV
-			ObjectEntity objectEntity = this.mebn.getObjectEntityContainer().getObjectEntityByType(ov.getValueType());
+			ObjectEntity objectEntity = mebn.getObjectEntityContainer().getObjectEntityByType(ov.getValueType());
 			
 			// extract the actual instance of this type
 			Entity value = objectEntity.getInstanceByName(this.noCaseChangeValue);
@@ -1367,7 +1416,7 @@ public class Compiler implements ICompiler {
 	 * by this parameter. If this is a temporary table, this if-clause is the upper-most if-clause within CPT pseudocode.
 	 * If it is null, it will assume tempTable is the upper container
 	 */
-	private void else_statement(INestedIfElseClauseContainer upperIf) throws NoDefaultDistributionDeclaredException,
+	protected void else_statement(INestedIfElseClauseContainer upperIf) throws NoDefaultDistributionDeclaredException,
 									InvalidConditionantException,
 									SomeStateUndeclaredException,
 									InvalidProbabilityRangeException,									
@@ -1405,7 +1454,7 @@ public class Compiler implements ICompiler {
 	 * Since assignment_or_if might start a nested if/else-clause, this parameter
 	 * helps us keep track where the new if/else-clause is contained.
 	 */
-	private void statement(INestedIfElseClauseContainer upperIf) 
+	protected void statement(INestedIfElseClauseContainer upperIf) 
 							 throws NoDefaultDistributionDeclaredException,
 									InvalidConditionantException,
 									SomeStateUndeclaredException,
@@ -1447,7 +1496,7 @@ public class Compiler implements ICompiler {
 	 * @thwows NoDefaultDistributionDeclaredException
 	 * @throws InvalidConditionantException
 	 */
-	private void assignmentOrIf(INestedIfElseClauseContainer upperIf) 
+	protected void assignmentOrIf(INestedIfElseClauseContainer upperIf) 
 			throws InvalidProbabilityRangeException, 
 				   TableFunctionMalformedException,
 				   SomeStateUndeclaredException,
@@ -1482,28 +1531,36 @@ public class Compiler implements ICompiler {
 					
 					// distribute the remaining probability (1-sumOfDeclaredProb) uniformly across the non-declared states
 					float probOfUndeclaredState = (1f-sumOfDeclaredProb)/undeclaredStates.size();
+					if (!isToNormalize()) {
+						// if we don't need to normalize, then simply set all undeclared states to zero
+						probOfUndeclaredState = 0f;
+					}
 					for (Entity entity : undeclaredStates) {
 						if (entity != null) {
 							// distribute the remaining probability (1-retValue) uniformly across the non-declared states, but substitute NaN with 0
 							this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(Float.isNaN(probOfUndeclaredState)?0f:probOfUndeclaredState )));
-							declaredStates.add(entity);
+							// the following may be irrelevant now, since we fill all undeclared states automatically anyway
+//							declaredStates.add(entity);
 						}
 					}
 				}
 				
-				if (this.node != null) {
-					// Consistency check C09
-					// Verify if all states has probability declared
-					if (!declaredStates.containsAll(possibleStates)) {
-						throw new SomeStateUndeclaredException();
-					}
-				}
+				// the following check may be irrelevant now, since we fill all undeclared states automatically anyway
+//				if (this.node != null) {
+//					// Consistency check C09
+//					// Verify if all states has probability declared
+//					if (!declaredStates.containsAll(possibleStates)) {
+//						throw new SomeStateUndeclaredException();
+//					}
+//				}
+				
 				
 				// Consistency check C09
 				// Verify if sum of all declared states' probability is 1
 				
 				// runtime probability bound check (on SSBN generation time)
-				if (!this.currentHeader.isSumEquals1()) {
+				if (isToNormalize()
+						&& !this.currentHeader.isSumEquals1()) {
 					// Debug.println("Testing cell's probability value's sum: " + currentHeader.getProbCellSum());
 					if (!Float.isNaN(this.currentHeader.getProbCellSum())) {
 						throw new InvalidProbabilityRangeException();
@@ -1517,7 +1574,7 @@ public class Compiler implements ICompiler {
 			 * catching ArrayIndexOutOfBoundsException means that the keyword "IF"
 			 * was not found the list of keywords. It is an horrible implementation error!!
 			 */
-			throw new RuntimeException(this.resource.getString("FatalError"),e);
+			throw new RuntimeException(this.getResource().getString("FatalError"),e);
 		}
 		
 		// any other exception should not be treated by this scope (equivalent to "catch(Exception e){throw e}")
@@ -1536,7 +1593,7 @@ public class Compiler implements ICompiler {
 	 * returns the sum of all declared states' probability after this assignment recursion phase
 	 * 
 	 */
-	private IProbabilityValue assignment(List<Entity> declaredStates, List<Entity> possibleStates) 
+	protected IProbabilityValue assignment(List<Entity> declaredStates, List<Entity> possibleStates) 
 					throws InvalidProbabilityRangeException, 
 						   TableFunctionMalformedException,
 						   SomeStateUndeclaredException{
@@ -1586,8 +1643,9 @@ public class Compiler implements ICompiler {
 		// Debug.println("Adding cell: " + currentCell.getPossibleValue().getName() + " = " + ret.toString());
 
 		// consistency check C09
-		// a single state shall never have prob range out from [0,1]
-		if ( (retValue < 0.0) || (1.0 < retValue)) {
+		// a single state shall never have prob range out from [0,1] (if it is configured to normalize such values)
+		if ( isToNormalize()
+				&& ((retValue < 0.0) || (1.0 < retValue))) {
 			throw new InvalidProbabilityRangeException();
 		}
 		
@@ -1630,7 +1688,7 @@ public class Compiler implements ICompiler {
 		}
 		
 		// Debug.println("Returned expression value = " + retValue);
-		if (retValue < 0) {
+		if (isToNormalize() && (retValue < 0)) {
 			throw new InvalidProbabilityRangeException();
 		}
 		return new SimpleProbabilityValue(retValue);
@@ -1641,7 +1699,7 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private IProbabilityValue expression() throws TableFunctionMalformedException,
+	protected IProbabilityValue expression() throws TableFunctionMalformedException,
 												  InvalidProbabilityRangeException,
 												  SomeStateUndeclaredException{
 		
@@ -1694,7 +1752,7 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private IProbabilityValue term() throws TableFunctionMalformedException,
+	protected IProbabilityValue term() throws TableFunctionMalformedException,
 											InvalidProbabilityRangeException,
 											SomeStateUndeclaredException{
 		IProbabilityValue temp1 = signedFactor();
@@ -1745,7 +1803,7 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private IProbabilityValue signedFactor() throws TableFunctionMalformedException,
+	protected IProbabilityValue signedFactor() throws TableFunctionMalformedException,
 													InvalidProbabilityRangeException,
 													SomeStateUndeclaredException{
 
@@ -1777,7 +1835,7 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private IProbabilityValue factor() throws TableFunctionMalformedException,
+	protected IProbabilityValue factor() throws TableFunctionMalformedException,
 											  InvalidProbabilityRangeException,
 											  SomeStateUndeclaredException{
 		IProbabilityValue ret = null;
@@ -1798,7 +1856,7 @@ public class Compiler implements ICompiler {
 	 * ident ::= letter [ letter | digit ]*
 	 * 
 	 */
-	private void getName()throws TableFunctionMalformedException {
+	protected void getName()throws TableFunctionMalformedException {
 		//// Debug.println("RESETING VALUE FROM " + value);
 		value = "";
 		//// Debug.println("LOOKAHEAD IS " + look);
@@ -1826,7 +1884,7 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private IProbabilityValue possibleVal()throws TableFunctionMalformedException,
+	protected IProbabilityValue possibleVal()throws TableFunctionMalformedException,
 												  SomeStateUndeclaredException {
 
 		this.getName();
@@ -1857,7 +1915,7 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	private IProbabilityValue getNum() throws TableFunctionMalformedException {
+	protected IProbabilityValue getNum() throws TableFunctionMalformedException {
 		value = "";
 
 		if (!((isNumeric(look)) || ((look == '.') && (value.indexOf('.') == -1))))
@@ -1880,7 +1938,7 @@ public class Compiler implements ICompiler {
 	 * Scan the text and skippes white space
 	 * @throws TableFunctionMalformedException
 	 */
-	private void scan() throws TableFunctionMalformedException {
+	protected void scan() throws TableFunctionMalformedException {
 			
 		int kw;
 		
@@ -1898,7 +1956,7 @@ public class Compiler implements ICompiler {
 	 * Scan the text but doesnt skip white spaces
 	 * @throws TableFunctionMalformedException
 	 */
-	private void scanNoSkip() throws TableFunctionMalformedException {
+	protected void scanNoSkip() throws TableFunctionMalformedException {
 			
 		int kw;
 		
@@ -1916,7 +1974,7 @@ public class Compiler implements ICompiler {
 	 * Performs a scan and revert attributes (value, token, look, index, noCaseChangeValue)
 	 * @return: token of the scanned element
 	 */
-	private char tokenLookAhead () throws TableFunctionMalformedException {
+	protected char tokenLookAhead () throws TableFunctionMalformedException {
 		int originalIndex = this.index;
 		char originalLook = this.look;
 		String originalValue = new String(this.value);
@@ -1944,7 +2002,7 @@ public class Compiler implements ICompiler {
 	 * @param s: a keyword to look for
 	 * @return kwlist's index where the keyword resides. -1 if not found.
 	 */
-	private int lookup(String s) {
+	protected int lookup(String s) {
 		int i;
 
 		for (i = 0; i < kwlist.length; i++) {
@@ -1958,7 +2016,7 @@ public class Compiler implements ICompiler {
 	/**
 	 *  reads the next input character (updates lookup character)
 	 */
-	private void nextChar() {
+	protected void nextChar() {
 		
 //		if (index < text.length) {
 //			look = text[index++];
@@ -1968,19 +2026,19 @@ public class Compiler implements ICompiler {
 		look = (index < text.length)?(text[index++]):(' ');
 	}
 
-	private void skipWhite() {
+	protected void skipWhite() {
 		while ((index < text.length) && (look == ' '))
 			nextChar();
 	}
 
 	/* Sends an alert telling that we expected some particular input */
-	private void expected(String error) throws TableFunctionMalformedException {
+	protected void expected(String error) throws TableFunctionMalformedException {
 		System.err.println("Error: " + error + " expected!");
 		throw new TableFunctionMalformedException();
 	}
 
 	/* Verifies if an input is an expected one */
-	private void match(char c) throws TableFunctionMalformedException {
+	protected void match(char c) throws TableFunctionMalformedException {
 		
 		//Debug.println("Matching " + c + " ");
 		if (look != c)
@@ -1989,12 +2047,12 @@ public class Compiler implements ICompiler {
 		skipWhite();
 	}
 
-	private void matchString(String s) throws TableFunctionMalformedException {
+	protected void matchString(String s) throws TableFunctionMalformedException {
 		if (!value.equalsIgnoreCase(s))
 			expected(s);
 	}
 
-	private boolean isAlpha(final char c) {
+	protected boolean isAlpha(final char c) {
 //		if ((c >= 'a') && (c <= 'z'))
 //			return true; // lowercase
 //		if ((c >= 'A') && (c <= 'Z'))
@@ -2008,7 +2066,7 @@ public class Compiler implements ICompiler {
 					|| (c == '_');
 	}
 
-	private boolean isAlphaNumeric(final char c) {
+	protected boolean isAlphaNumeric(final char c) {
 		if (isAlpha(c)) {
 			return true; // uppercase
 		} else	if (isNumeric(c)) {
@@ -2017,17 +2075,17 @@ public class Compiler implements ICompiler {
 		return false;
 	}
 
-	private boolean isNumeric(final char c) {
+	protected boolean isNumeric(final char c) {
 		return (((c >= '0') && (c <= '9')));
 	}
 
-	/* reconhece operador aditivo */
-	private boolean isAddOp(char c) {
+	/** identifies the + or - symbols */
+	protected boolean isAddOp(char c) {
 		return (c == '+' || c == '-');
 	}
 	
-	// identifies the "negative" simbol
-	private boolean isMinus(char c) {
+	/** identifies the "negative" simbol*/
+	protected boolean isMinus(char c) {
 		return c == '-';
 	}
 
@@ -2050,9 +2108,9 @@ public class Compiler implements ICompiler {
 	 */
 	public void setNode(ResidentNode node) {
 		this.node = node;
-		if (this.node != null && this.node.getMFrag() != null) {
-			this.mebn = this.node.getMFrag().getMultiEntityBayesianNetwork();
-		}
+//		if (this.node != null && this.node.getMFrag() != null) {
+//			this.mebn = this.node.getMFrag().getMultiEntityBayesianNetwork();
+//		}
 	}
 	
 	/**
@@ -2061,7 +2119,7 @@ public class Compiler implements ICompiler {
 	 * or ordinary variables in the same MFrag
 	 * @return if node with name == nodeName is a valid conditionant.
 	 */
-	private boolean isValidConditionant(MultiEntityBayesianNetwork mebn, ResidentNode node, String conditionantName) {
+	protected boolean isValidConditionant(MultiEntityBayesianNetwork mebn, ResidentNode node, String conditionantName) {
 		
 		Node conditionant = mebn.getNode(conditionantName);
 		
@@ -2104,7 +2162,7 @@ public class Compiler implements ICompiler {
 	 * Conditionants must have a consistent possible value
 	 * @return whether conditionantValue is a valid state for a conditionant with name conditionantName
 	 */
-	private boolean isValidConditionantValue(MultiEntityBayesianNetwork mebn, ResidentNode node, String conditionantName, String conditionantValue) {
+	protected boolean isValidConditionantValue(MultiEntityBayesianNetwork mebn, ResidentNode node, String conditionantName, String conditionantValue) {
 		Node conditionant = mebn.getNode(conditionantName);
 		if (conditionant != null) {
 			//// Debug.println("Conditionant node found: " + conditionant.getName());
@@ -2145,7 +2203,7 @@ public class Compiler implements ICompiler {
 	 * @return numeric value expected for the function
 	 * @throws TableFunctionMalformedException
 	 */
-	private IProbabilityValue function()throws TableFunctionMalformedException,
+	protected IProbabilityValue function()throws TableFunctionMalformedException,
 											   InvalidProbabilityRangeException,
 											   SomeStateUndeclaredException{
 		IProbabilityValue ret = this.possibleVal();
@@ -2159,7 +2217,7 @@ public class Compiler implements ICompiler {
 				return max();
 			} else {
 				// Debug.println("UNKNOWN FUNCTION FOUND: " + this.value);
-				throw new TableFunctionMalformedException(this.resource.getString("UnexpectedTokenFound")
+				throw new TableFunctionMalformedException(this.getResource().getString("UnexpectedTokenFound")
 						+ ": " + value);
 			}
 		}
@@ -2174,7 +2232,7 @@ public class Compiler implements ICompiler {
 	 * @return
 	 * @throws TableFunctionMalformedException
 	 */
-	private IProbabilityValue cardinality()throws TableFunctionMalformedException {
+	protected IProbabilityValue cardinality()throws TableFunctionMalformedException {
 		IProbabilityValue ret = null;
 		match('(');
 		
@@ -2198,7 +2256,7 @@ public class Compiler implements ICompiler {
 	 * @return
 	 * @throws TableFunctionMalformedException
 	 */
-	private IProbabilityValue min()throws TableFunctionMalformedException,
+	protected IProbabilityValue min()throws TableFunctionMalformedException,
 										  InvalidProbabilityRangeException,
 										  SomeStateUndeclaredException{
 		// Debug.println("ANALISING MIN FUNCTION");
@@ -2229,7 +2287,7 @@ public class Compiler implements ICompiler {
 	 * @return
 	 * @throws TableFunctionMalformedException
 	 */
-	private IProbabilityValue max()throws TableFunctionMalformedException,
+	protected IProbabilityValue max()throws TableFunctionMalformedException,
 										  InvalidProbabilityRangeException,
 										  SomeStateUndeclaredException{
 		// Debug.println("ANALISING MAX FUNCTION");
@@ -2307,7 +2365,7 @@ public class Compiler implements ICompiler {
 	
 	// Some inner classes that might be useful for temporaly table creation (organize the table parsed from pseudocode)
 	
-	private interface IEmbeddedNodeUser {
+	protected interface IEmbeddedNodeUser {
 		/**
 		 * @return true if at least one (nested) if-clause is using an embedded node feature.
 		 */
@@ -2317,7 +2375,7 @@ public class Compiler implements ICompiler {
 	/**
 	 * Container of a if-else-clause
 	 */
-	private interface INestedIfElseClauseContainer extends IEmbeddedNodeUser {
+	protected interface INestedIfElseClauseContainer extends IEmbeddedNodeUser {
 		/**
 		 * registers an if-clause (or else-clause) as an inner clause of this clause
 		 * @param nestedClause
@@ -2379,7 +2437,7 @@ public class Compiler implements ICompiler {
 	}
 	
 	
-	private class TempTable implements INestedIfElseClauseContainer{
+	protected class TempTable implements INestedIfElseClauseContainer{
 
 		private List<TempTableHeaderCell> clauses = null;
 		
@@ -2502,7 +2560,7 @@ public class Compiler implements ICompiler {
 	}
 	
 	
-	private class TempTableHeaderCell implements INestedIfElseClauseContainer {
+	protected class TempTableHeaderCell implements INestedIfElseClauseContainer {
 		private ICompilerBooleanValue booleanExpressionTree = null; // core of the if statement
 		private List<TempTableHeader> parents = null;	// this is also the leaf of boolean expression tree
 
@@ -2611,6 +2669,11 @@ public class Compiler implements ICompiler {
 		 * @return
 		 */
 		public boolean isParentSetName(String varsetname) {
+			// remove undesired characters
+			varsetname = varsetname.replaceAll("\\s","");
+			// make sure ',' can also be used as separators
+			varsetname = varsetname.replace(',', this.currentSSBNNode.getStrongOVSeparator().charAt(0));
+			
 			Collection<SSBNNode> parentSet = null;
 			if (isExactMatchStrongOV()) {
 				parentSet = this.currentSSBNNode.getParentSetByStrongOVWithWeakOVCheck(varsetname.split("\\" + this.currentSSBNNode.getStrongOVSeparator()));
@@ -2693,6 +2756,9 @@ public class Compiler implements ICompiler {
 		 * @return
 		 */
 		public boolean isSumEquals1() throws InvalidProbabilityRangeException {
+//			if (!isToNormalize()) {
+//				return true;	// just return a default value if we don't need normalization
+//			}
 			float value = this.getProbCellSum();
 			// (this.leastCellValue/2) is the error margin
 			if ( (value >= 1f - (this.leastCellValue/2f)) && (value <= 1f + (this.leastCellValue/2f)) ) {
@@ -2864,7 +2930,7 @@ public class Compiler implements ICompiler {
 		 * Tests also between this ssbnnode and the leaves
 		 * @return
 		 */
-		private boolean isSameOVsameEntity() {
+		public boolean isSameOVsameEntity() {
 			List<TempTableHeader> leaves = this.getParents(); // leaves of boolean expression evaluation tree
 			
 			for (TempTableHeader leaf : leaves) {
@@ -2921,7 +2987,7 @@ public class Compiler implements ICompiler {
 		 * if this SSBNNode is really the expected one. This argument is used by this method
 		 * in order to obtain the "similar" parent set at a given moment.
 		 */
-		private void cleanUpByVarSetName(SSBNNode baseSSBNNode) {
+		public void cleanUpByVarSetName(SSBNNode baseSSBNNode) {
 			
 			// no cleanup is necessary when this is a default distro - no boolean evaluation is present
 			if (this.isDefault()) {
@@ -3110,7 +3176,7 @@ public class Compiler implements ICompiler {
 		
 	}
 	
-	private interface ICompilerBooleanValue {
+	protected interface ICompilerBooleanValue {
 		/**
 		 * Obtains recursively a boolean value
 		 * @return true or false
@@ -3118,7 +3184,7 @@ public class Compiler implements ICompiler {
 		public boolean evaluate();
 	}
 	
-	private class CompilerNotValue implements ICompilerBooleanValue{
+	protected class CompilerNotValue implements ICompilerBooleanValue{
 		private ICompilerBooleanValue value = null;
 		/**
 		 * implements "not" operation on ISSBNBooleanValue
@@ -3151,7 +3217,7 @@ public class Compiler implements ICompiler {
 		
 	}
 	
-	private class CompilerOrValue implements ICompilerBooleanValue{
+	protected class CompilerOrValue implements ICompilerBooleanValue{
 		private ICompilerBooleanValue value1 = null;
 		private ICompilerBooleanValue value2 = null;
 		/**
@@ -3196,7 +3262,7 @@ public class Compiler implements ICompiler {
 		
 	}
 	
-	private class CompilerAndValue implements ICompilerBooleanValue{
+	protected class CompilerAndValue implements ICompilerBooleanValue{
 		private ICompilerBooleanValue value1 = null;
 		private ICompilerBooleanValue value2 = null;
 		/**
@@ -3247,7 +3313,7 @@ public class Compiler implements ICompiler {
 	 * @see TempTableHeader
 	 * @see TempTableHeaderOV
 	 */
-	private abstract class TempTableHeader implements ICompilerBooleanValue, IEmbeddedNodeUser{
+	protected abstract class TempTableHeader implements ICompilerBooleanValue, IEmbeddedNodeUser{
 		private Node parent = null;
 		private Entity value = null;
 		
@@ -3448,7 +3514,7 @@ public class Compiler implements ICompiler {
 	 * @author Shou Matsumoto
 	 *
 	 */
-	private class TempTableHeaderOV extends TempTableHeader {
+	protected class TempTableHeaderOV extends TempTableHeader {
 
 		public TempTableHeaderOV(OrdinaryVariable ov , Entity value) {
 			this.setParent(ov);
@@ -3487,7 +3553,7 @@ public class Compiler implements ICompiler {
 	 * @author Shou Matsumoto
 	 *
 	 */
-	private class TempTableHeaderParent extends TempTableHeader {
+	protected class TempTableHeaderParent extends TempTableHeader {
 		
 		/**
 		 * Represents a parent and its expected single value
@@ -3523,7 +3589,7 @@ public class Compiler implements ICompiler {
 		
 	}
 	
-	private class TempTableProbabilityCell {
+	protected class TempTableProbabilityCell {
 		private Entity possibleValue = null;
 		private IProbabilityValue probability = null;
 		
@@ -3554,7 +3620,7 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	private abstract class IProbabilityValue {
+	protected abstract class IProbabilityValue {
 		/**
 		 * 
 		 * @return: a value between [0,1] which represents a probability
@@ -3569,7 +3635,7 @@ public class Compiler implements ICompiler {
 		public boolean isFixedValue = true;
 	}
 	
-	private class SimpleProbabilityValue extends IProbabilityValue {
+	protected class SimpleProbabilityValue extends IProbabilityValue {
 		private float value = Float.NaN;
 		/**
 		 * Represents a simple float value for a probability
@@ -3587,7 +3653,7 @@ public class Compiler implements ICompiler {
 		
 	}
 	
-	private abstract class MathOperationProbabilityValue extends IProbabilityValue {
+	protected abstract class MathOperationProbabilityValue extends IProbabilityValue {
 		protected IProbabilityValue op1 = null;
 		protected IProbabilityValue op2 = null;
 		
@@ -3598,7 +3664,7 @@ public class Compiler implements ICompiler {
 
 	}
 	
-	private class AddOperationProbabilityValue extends MathOperationProbabilityValue {
+	protected class AddOperationProbabilityValue extends MathOperationProbabilityValue {
 		AddOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
@@ -3610,7 +3676,7 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	private class SubtractOperationProbabilityValue extends MathOperationProbabilityValue {
+	protected class SubtractOperationProbabilityValue extends MathOperationProbabilityValue {
 		SubtractOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
@@ -3623,7 +3689,7 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	private class MultiplyOperationProbabilityValue extends MathOperationProbabilityValue {
+	protected class MultiplyOperationProbabilityValue extends MathOperationProbabilityValue {
 		MultiplyOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
@@ -3635,7 +3701,7 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	private class DivideOperationProbabilityValue extends MathOperationProbabilityValue {
+	protected class DivideOperationProbabilityValue extends MathOperationProbabilityValue {
 		DivideOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
@@ -3647,7 +3713,7 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	private class NegativeOperationProbabilityValue extends MathOperationProbabilityValue {
+	protected class NegativeOperationProbabilityValue extends MathOperationProbabilityValue {
 		NegativeOperationProbabilityValue(IProbabilityValue op1) {
 			this.op1 = op1;
 			this.op2 = op1;
@@ -3659,7 +3725,7 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	private class CardinalityProbabilityValue extends IProbabilityValue {
+	protected class CardinalityProbabilityValue extends IProbabilityValue {
 		//private float value = Float.NaN;
 		private String varSetName = null;		
 		//private SSBNNode thisNode = null;
@@ -3716,7 +3782,7 @@ public class Compiler implements ICompiler {
 	}
 	
 	
-	private class ComparisionProbabilityValue extends IProbabilityValue {
+	protected class ComparisionProbabilityValue extends IProbabilityValue {
 		private IProbabilityValue arg0 = null;
 		private IProbabilityValue arg1 = null;
 		private boolean isMax = false;
@@ -3780,7 +3846,7 @@ public class Compiler implements ICompiler {
 	 * would be (Phaser2Range;[(st,ST0),(t,T0)]), which means that DangerToSelf
 	 * is at value Phaser2Range when its arguments st=T0 and t=T0.
 	 */
-	private class EntityAndArguments {
+	protected class EntityAndArguments {
 		public Entity entity = null;
 		public List<OVInstance> arguments = null;
 		/**
@@ -3902,6 +3968,269 @@ public class Compiler implements ICompiler {
 	 */
 	public void setExactMatchStrongOV(boolean isExactMatchStrongOV) {
 		this.isExactMatchStrongOV = isExactMatchStrongOV;
+	}
+	
+
+	/**
+	 * This is just a wrapper method.
+	 * @return this.getNode().getMFrag().getMultiEntityBayesianNetwork()
+	 */
+	public MultiEntityBayesianNetwork getMEBN() {
+		try {
+			return this.getNode().getMFrag().getMultiEntityBayesianNetwork();
+		} catch (NullPointerException npe) {
+			try {
+				Debug.println(this.getClass(), this.getNode() + " has no link to MEBN.", npe);
+			} catch (Throwable t) {
+				npe.printStackTrace();
+				t.printStackTrace();
+			}
+		}
+		return null;
+	}
+	
+
+	/**
+	 * This method is can be used with {@link #restoreMemento()}
+	 * in order to undo changes.
+	 * If you implement this method, you should also implement {@link #restoreMemento(Object)}
+	 * in order to treat the returned object consistently.
+	 * E.g. <br/>
+	 *   memento = getMemento();<br/>
+	 *   // do changes<br/>
+	 *   restoreMemento(memento);// undo changes<br/>
+	 * @return the current state of the compiler.
+	 */
+	public Object getMemento() {
+		Map<String, Object> memento = new HashMap<String, Object>();
+		memento.put("index", this.index);
+		memento.put("look", this.look);
+		memento.put("value", new String(this.value));
+		memento.put("noCaseChangeValue", new String(this.noCaseChangeValue));
+		memento.put("token", this.token);
+		return memento;
+	}
+	
+
+	/**
+	 * This method can be used with {@link #getMemento()} in order to undo changes.
+	 * If you implement this method, you should also implement {@link #getMemento()}
+	 * in order to treat the parameter object consistently.
+	 * E.g. <br/>
+	 *   memento = getMemento();<br/>
+	 *   // do changes<br/>
+	 *   restoreMemento(memento);// undo changes<br/>
+	 * @param memento
+	 */
+	public void restoreMemento(Object memento) {
+		Map<String, Object> temp = (Map<String, Object>)memento;
+		this.index = (Integer)(temp.get("index"));
+		this.look = (Character) temp.get("look");
+		this.value = (String) temp.get("value");
+		this.noCaseChangeValue = (String) temp.get("noCaseChangeValue");
+		this.token = (Character) temp.get("token");
+	}
+
+
+	/**
+	 * @return the resource
+	 */
+	public static ResourceBundle getResource() {
+		return resource;
+	}
+
+
+	/**
+	 * @param resource the resource to set
+	 */
+	public static void setResource(ResourceBundle resource) {
+		Compiler.resource = resource;
+	}
+
+
+	/**
+	 * @return the look
+	 */
+	protected char getLook() {
+		return this.look;
+	}
+
+
+	/**
+	 * @param look the look to set
+	 */
+	protected void setLook(char look) {
+		this.look = look;
+	}
+
+
+	/**
+	 * @return the text
+	 */
+	protected char[] getText() {
+		return this.text;
+	}
+
+
+	/**
+	 * @param text the text to set
+	 */
+	protected void setText(char[] text) {
+		this.text = text;
+	}
+
+
+	/**
+	 * @return the kwlist
+	 */
+	protected String[] getKwlist() {
+		return this.kwlist;
+	}
+
+
+	/**
+	 * @param kwlist the kwlist to set
+	 */
+	protected void setKwlist(String[] kwlist) {
+		this.kwlist = kwlist;
+	}
+
+
+	/**
+	 * @return the kwcode
+	 */
+	protected char[] getKwcode() {
+		return this.kwcode;
+	}
+
+
+	/**
+	 * @param kwcode the kwcode to set
+	 */
+	protected void setKwcode(char[] kwcode) {
+		this.kwcode = kwcode;
+	}
+
+
+	/**
+	 * @return the token
+	 */
+	protected char getToken() {
+		return this.token;
+	}
+
+
+	/**
+	 * @param token the token to set
+	 */
+	protected void setToken(char token) {
+		this.token = token;
+	}
+
+
+	/**
+	 * @return the value
+	 */
+	protected String getValue() {
+		return this.value;
+	}
+
+
+	/**
+	 * @param value the value to set
+	 */
+	protected void setValue(String value) {
+		this.value = value;
+	}
+
+
+	/**
+	 * @return the noCaseChangeValue
+	 */
+	protected String getNoCaseChangeValue() {
+		return this.noCaseChangeValue;
+	}
+
+
+	/**
+	 * @param noCaseChangeValue the noCaseChangeValue to set
+	 */
+	protected void setNoCaseChangeValue(String noCaseChangeValue) {
+		this.noCaseChangeValue = noCaseChangeValue;
+	}
+
+
+	/**
+	 * @return the ssbnnode
+	 */
+	protected SSBNNode getSsbnnode() {
+		return this.ssbnnode;
+	}
+
+
+	/**
+	 * @param ssbnnode the ssbnnode to set
+	 */
+	protected void setSsbnnode(SSBNNode ssbnnode) {
+		this.ssbnnode = ssbnnode;
+	}
+
+
+	/**
+	 * @return the tempTable
+	 */
+	protected TempTable getTempTable() {
+		return this.tempTable;
+	}
+
+
+	/**
+	 * @param tempTable the tempTable to set
+	 */
+	protected void setTempTable(TempTable tempTable) {
+		this.tempTable = tempTable;
+	}
+
+
+	/**
+	 * @return the originalTextLength
+	 */
+	protected int getOriginalTextLength() {
+		return this.originalTextLength;
+	}
+
+
+	/**
+	 * @param originalTextLength the originalTextLength to set
+	 */
+	protected void setOriginalTextLength(int originalTextLength) {
+		this.originalTextLength = originalTextLength;
+	}
+
+
+	/**
+	 * @param index the index to set
+	 */
+	protected void setIndex(int index) {
+		this.index = index;
+	}
+
+
+	/**
+	 * @return if true, then this compiler is assuming declaration of normalized values (i.e. probabilities).
+	 * If false, then this compiler is assuming declaration of non-normalized values (e.g. utility)
+	 */
+	public boolean isToNormalize() {
+		return isToNormalize;
+	}
+
+
+	/**
+	 * @param isToNormalize : if true, then this compiler is assuming declaration of normalized values (i.e. probabilities).
+	 * If false, then this compiler is assuming declaration of non-normalized values (e.g. utility)
+	 */
+	public void setToNormalize(boolean isToNormalize) {
+		this.isToNormalize = isToNormalize;
 	}
 
 
