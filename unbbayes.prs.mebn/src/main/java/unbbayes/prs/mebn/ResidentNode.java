@@ -191,8 +191,16 @@ public class ResidentNode extends MultiEntityNode
     
 	
 	
-	
-	
+	public ResidentNode clone(){
+		ResidentNode cloned = new ResidentNode(this.getName(), this.getMFrag());
+		cloned.setAdjacents(this.getAdjacents());
+		cloned.setChildren(this.getChildren());
+		cloned.setDescription(this.getDescription());
+		cloned.setExplanationDescription(this.getExplanationDescription());
+		cloned.setOrdinaryVariableList(this.getOrdinaryVariableList());
+//		cloned.
+		return cloned;
+	}
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.IResidentNode#getProbabilityFunction()
 	 */
@@ -780,7 +788,7 @@ public class ResidentNode extends MultiEntityNode
 	/**
 	 * @param ordinaryVariableList the ordinaryVariableList to set
 	 */
-	protected void setOrdinaryVariableList(List<OrdinaryVariable> ordinaryVariableList) {
+	public void setOrdinaryVariableList(List<OrdinaryVariable> ordinaryVariableList) {
 		this.ordinaryVariableList = ordinaryVariableList;
 	}
 

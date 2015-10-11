@@ -44,7 +44,9 @@ import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.CycleFoundException;
+import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 import unbbayes.util.ArrayMap;
 
 /**
@@ -119,6 +121,16 @@ public class InputInstanceOfTree extends JTree{
 									ce.getMessage(),
 								    "MEBN Construction Error",
 								    JOptionPane.ERROR_MESSAGE);	
+						} catch (OVDontIsOfTypeExpected e1) {
+							JOptionPane.showMessageDialog(null,
+									e1.getMessage(),
+								    "MEBN Construction Error",
+								    JOptionPane.ERROR_MESSAGE);	
+						} catch (ArgumentNodeAlreadySetException e1) {
+							JOptionPane.showMessageDialog(null,
+									e1.getMessage(),
+								    "MEBN Construction Error",
+								    JOptionPane.ERROR_MESSAGE);
 						}
 						
 					} else if (e.getClickCount() == 1) {

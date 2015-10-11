@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Vector;
 
 import unbbayes.prs.mebn.entity.Type;
+import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
+import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 import unbbayes.util.Debug;
 
 public class InputNode extends MultiEntityNode {
@@ -157,8 +159,10 @@ public class InputNode extends MultiEntityNode {
 	/** 
 	 * set the input instance of this node for the ResidentNode or BuiltInRV
 	 * @param node
+	 * @throws OVDontIsOfTypeExpected 
+	 * @throws ArgumentNodeAlreadySetException 
 	 */
-	public void setInputInstanceOf(ResidentNode node){
+	public void setInputInstanceOf(ResidentNode node) throws OVDontIsOfTypeExpected, ArgumentNodeAlreadySetException{
 		
 		if(inputInstanceOfNode != null){
 			if(inputInstanceOfNode == node){
@@ -173,6 +177,16 @@ public class InputNode extends MultiEntityNode {
 		inputInstanceOfNode = node; 
 		
 		residentNodePointer = new ResidentNodePointer(node, this);
+//		residentNodePointer.
+		int i = 0;
+		for(OrdinaryVariable ovar: node.getOrdinaryVariableList()){
+			Argument arg = new Argument("", this);
+			arg.setOVariable(ovar);
+			arg.setArgNumber(i);
+			this.addArgument(arg);
+			residentNodePointer.addOrdinaryVariable(ovar, i);
+			i++;
+		}
 		node.addInputInstanceFromList(this); 
 		updateLabel(); 
 	}	

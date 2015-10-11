@@ -107,9 +107,9 @@ public class ResidentNodePointer {
 	}
 	
 	/**
-	 * Add a ordinary variable in the list of arguments of this input node.  
+	 * Add an ordinary variable in the list of arguments of this input node.  
 	 * 
-	 * @throws OVDontIsOfTypeExpected The type don't is equal to the type of argument expected in the
+	 * @throws OVDontIsOfTypeExpected The type isn't equal to the type of argument expected in the
 	 *                                node father of this input node. 
 	 */
 	

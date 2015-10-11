@@ -330,8 +330,9 @@ public class MTheoryTree extends JTree {
 	
 	public void removeNode(Node node){
 		DefaultMutableTreeNode treeNode = inverseNodeMap.get(node); 
-		((DefaultTreeModel)getModel()).removeNodeFromParent(treeNode); 
-
+		if(treeNode.getParent() != null){
+			((DefaultTreeModel)getModel()).removeNodeFromParent(treeNode); 
+		}
 		repaint(); 
 	}
 	

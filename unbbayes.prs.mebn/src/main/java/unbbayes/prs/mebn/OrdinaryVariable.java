@@ -150,10 +150,10 @@ public class OrdinaryVariable extends Node{
 	
 	/**
 	 * Add a node in the list of nodes (if the node already is in the list, 
-	 * don't do nothing). 
+	 * do nothing). 
 	 * @param node Node to be added.
 	 */
-	protected void addIsOVariableOfList(Node node){
+	public void addIsOVariableOfList(Node node){
 	   if(!isOVariableOfList.contains(node)){
 	      isOVariableOfList.add(node);
 	   }
@@ -167,7 +167,7 @@ public class OrdinaryVariable extends Node{
 		isOVariableOfList.remove(node);
 	}
 	
-	protected void addIsArgumentOfList(ResidentNodePointer pointer){
+	public void addIsArgumentOfList(ResidentNodePointer pointer){
 		if(!isArgumentOfList.contains(pointer)){
 			isArgumentOfList.add(pointer); 
 		}

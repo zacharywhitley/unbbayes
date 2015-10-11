@@ -93,6 +93,7 @@ import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
+import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 import unbbayes.prs.mebn.exception.ReservedWordException;
 import unbbayes.prs.mebn.extension.IMEBNPluginNode;
@@ -621,7 +622,17 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	}
 
 	
-	
+	@Override
+	public Node insertNode(Node newNode) {
+		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
+
+		if (currentMFrag == null) {
+			return null;
+		}
+
+		MFrag domainMFrag = (MFrag) currentMFrag;
+		return newNode;
+	}
 	/*-------------------------------------------------------------------------*/
 	/* Resident Node                                                           */
 	/*-------------------------------------------------------------------------*/
@@ -756,7 +767,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 */
     public boolean existPossibleValue(String name){
 		
-    	//TODO uma versﾃ｣o decente...
+    	//TODO uma versï¾ƒï½£o decente...
 		try {
 			multiEntityBayesianNetwork.getCategoricalStatesEntityContainer().getCategoricalState(name);
 			return true; 
@@ -879,7 +890,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#setInputInstanceOf(unbbayes.prs.mebn.InputNode, unbbayes.prs.mebn.ResidentNode)
 	 */
-	public void setInputInstanceOf(InputNode input, ResidentNode resident) throws CycleFoundException{
+	public void setInputInstanceOf(InputNode input, ResidentNode resident) throws CycleFoundException, OVDontIsOfTypeExpected, ArgumentNodeAlreadySetException{
 
 		input.setInputInstanceOf((ResidentNode)resident);
 		mebnEditionPane.getInputNodePane().updateArgumentPane();
@@ -1249,6 +1260,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#insertOrdinaryVariable(double, double)
 	 */
+	
 	public OrdinaryVariable insertOrdinaryVariable(double x, double y) throws MFragDoesNotExistException {
 
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
@@ -1258,9 +1270,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		}
 
 		MFrag domainMFrag = (MFrag) currentMFrag;
-		
-		String name = null; 
-		
+		String name = null;
 		while (name == null){
 			name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum(); 
 			if(domainMFrag.getOrdinaryVariableByName(name) != null){
@@ -1287,9 +1297,8 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		 mebnEditionPane.getEditOVariableTab().update(); 
 		
 	    return ov;
-
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#renameOrdinaryVariable(unbbayes.prs.mebn.OrdinaryVariable, java.lang.String)
 	 */
@@ -2280,12 +2289,12 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	
 	
 	/*--------------------------------------------------------------------------
-	 * ATENﾃ�グ: ESTES Mﾃ欝ODOS Sﾃグ Cﾃ撤IAS DOS Mﾃ欝ODOS PRESENTES EM SENCONTROLLER...
-	 * DEVIDO A FALTA DE TEMPO, AO INVﾃ唄 DE FAZER UM REFACTORY PARA COLOCﾃ´OS NO
+	 * ATENï¾ƒï¿½ã‚°: ESTES Mï¾ƒæ¬�ODOS Sï¾ƒã‚° Cï¾ƒæ’¤IAS DOS Mï¾ƒæ¬�ODOS PRESENTES EM SENCONTROLLER...
+	 * DEVIDO A FALTA DE TEMPO, AO INVï¾ƒå”„ DE FAZER UM REFACTORY PARA COLOCï¾ƒÂ´OS NO
 	 * NETWORKCONTROLLER, DEIXANDO ACESSIVEL AO SENCONTROLLER E AO MEBNCONTROLLER, 
-	 * VOU APENAS ADAPTﾃ´OS AQUI PARA O USO NO MEBNCONTROLLER... MAS DEPOIS ISTO
-	 * NECESSITARﾃ�DE UM REFACTORY PARA MANTER AS BOAS PRﾃゝICAS DA PROGRAMAﾃ�グ 
-	 * E PARA FACILITAR A MANUTENﾃ�グ. (laecio santos)
+	 * VOU APENAS ADAPTï¾ƒÂ´OS AQUI PARA O USO NO MEBNCONTROLLER... MAS DEPOIS ISTO
+	 * NECESSITARï¾ƒï¿½DE UM REFACTORY PARA MANTER AS BOAS PRï¾ƒã‚�ICAS DA PROGRAMAï¾ƒï¿½ã‚° 
+	 * E PARA FACILITAR A MANUTENï¾ƒï¿½ã‚°. (laecio santos)
 	 *--------------------------------------------------------------------------/
 	
 		/** Load resource file from this package */
@@ -2308,8 +2317,8 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 			return false;
 		}
 
-		/* isto serﾃ｡ feito dentro do changeToSSBNCompilationPane */
-//		screen.getEvidenceTree().updateTree();  hehe... ainda nﾃ｣o temos uma evidence tree... sorry!
+		/* isto serï¾ƒï½¡ feito dentro do changeToSSBNCompilationPane */
+//		screen.getEvidenceTree().updateTree();  hehe... ainda nï¾ƒï½£o temos uma evidence tree... sorry!
 		
 
 		this.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
@@ -2366,7 +2375,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	
 	
 	/*--------------------------------------------------------------------------
-	 * FIM DOS Mﾃ欝ODOS Cﾃ撤IA
+	 * FIM DOS Mï¾ƒæ¬�ODOS Cï¾ƒæ’¤IA
 	 *-------------------------------------------------------------------------/
 	
 	

@@ -63,6 +63,7 @@ import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.exception.MEBNConstructionException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
+import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 import unbbayes.prs.mebn.exception.OVariableAlreadyExistsInArgumentList;
 import unbbayes.prs.mebn.exception.ReservedWordException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
@@ -233,9 +234,11 @@ public interface IMEBNMediator extends INetworkMediator  {
 	 * @param input
 	 * @param resident
 	 * @throws CycleFoundException
+	 * @throws OVDontIsOfTypeExpected 
+	 * @throws ArgumentNodeAlreadySetException 
 	 */
 	public abstract void setInputInstanceOf(InputNode input,
-			ResidentNode resident) throws CycleFoundException;
+			ResidentNode resident) throws CycleFoundException, OVDontIsOfTypeExpected, ArgumentNodeAlreadySetException;
 
 	public abstract void updateArgumentsOfObject(Object node);
 

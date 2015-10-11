@@ -1,13 +1,13 @@
 % UBF file header
-Version=0.03
+Version=0.04
 PrOwl="StarTrek_Simple_TwoSTs.owl"
 
 % UBF MTheory declaration
 MTheory=Starship_MTheory
 NextMFrag=12
-NextResident=25
-NextInput=19
-NextContext=15
+NextResident=33
+NextInput=23
+NextContext=17
 NextEntity=1
 
 % UBF MFrags and Nodes declaration
@@ -24,6 +24,7 @@ Type=DomainResidentNode
 Position=376.0,313.0
 Size=80,60
 Color=-66914
+PossibleValuesOrder=false,true,absurd
 
 % Input nodes
 
@@ -82,6 +83,7 @@ Type=DomainResidentNode
 Position=366.0,341.0
 Size=153,60
 Color=-66914
+PossibleValuesOrder=Un,Medium,Low,Hi
 
 % Input nodes
 
@@ -146,6 +148,7 @@ Type=DomainResidentNode
 Position=271.0,337.0
 Size=108,60
 Color=-66914
+PossibleValuesOrder=true,absurd,false
 
 % Input nodes
 
@@ -198,6 +201,7 @@ Type=DomainResidentNode
 Position=275.0,157.0
 Size=80,60
 Color=-66914
+PossibleValuesOrder=Starship
 
 % Ordinary Variables
 
@@ -220,12 +224,14 @@ Type=DomainResidentNode
 Position=285.0,245.0
 Size=148,60
 Color=-66914
+PossibleValuesOrder=absurd,false,true
 
 Node=StarshipZone
 Type=DomainResidentNode
 Position=282.0,191.0
 Size=142,60
 Color=-66914
+PossibleValuesOrder=Zone
 
 % Context nodes
 
@@ -257,24 +263,28 @@ Type=DomainResidentNode
 Position=460.0,456.0
 Size=80,60
 Color=-66914
+PossibleValuesOrder=C0,MoreThan3,C3,C2,C1
 
 Node=ZoneMD
 Type=DomainResidentNode
 Position=302.0,368.0
 Size=80,60
 Color=-66914
+PossibleValuesOrder=High,Low,Medium
 
 Node=ZoneNature
 Type=DomainResidentNode
 Position=459.0,367.0
 Size=80,60
 Color=-66914
+PossibleValuesOrder=DeepSpace,BlackHoleBoundary,PlanetarySystem
 
 Node=ZoneFShips
 Type=DomainResidentNode
 Position=304.0,458.0
 Size=80,60
 Color=-66914
+PossibleValuesOrder=C0,C1,C2,C3,MoreThan3
 
 % Input nodes
 
@@ -339,30 +349,35 @@ Type=DomainResidentNode
 Position=480.0,336.0
 Size=163,60
 Color=-66914
+PossibleValuesOrder=Romulan,Friend,Cardassian,Klingon,Absurd,Unknown
 
 Node=HarmPotential
 Type=DomainResidentNode
 Position=216.0,474.0
 Size=161,60
 Color=-66914
+PossibleValuesOrder=false,true,absurd
 
 Node=CloakMode
 Type=DomainResidentNode
 Position=495.0,474.0
 Size=132,60
 Color=-66914
+PossibleValuesOrder=absurd,true,false
 
 Node=StarshipClass
 Type=DomainResidentNode
 Position=364.0,403.0
 Size=144,60
 Color=-66914
+PossibleValuesOrder=Absurd,WarBird,Frigate,Freighter,Cruiser,Explorer
 
 Node=DistFromOwn
 Type=DomainResidentNode
 Position=218.0,336.0
 Size=156,60
 Color=-66914
+PossibleValuesOrder=Phaser2Range,Phaser1Range,TorpedoRange,OutOfRange,PulseCanonRange,Absurd
 
 % Input nodes
 
@@ -435,22 +450,80 @@ Color=-5178237
 
 % MFrag
 MFrag=SensorReport_MFrag
-NextOrdinaryVar=6
+NextOrdinaryVar=9
 
 % Resident nodes
 
 
 Node=SRDistance
 Type=DomainResidentNode
-Position=489.0,267.0
+Position=472.0,268.0
 Size=144,60
 Color=-66914
+PossibleValuesOrder=PulseCanonRange,Phaser1Range,TorpedoRange,Phaser2Range,Nothing,OutOfRange
 
 Node=SRClass
 Type=DomainResidentNode
-Position=120.0,266.0
-Size=125,60
+Position=103.0,267.0
+Size=128,60
 Color=-66914
+PossibleValuesOrder=Cruiser,Frigate,Nothing,Explorer,Freighter,WarBird
+
+Node=SRDistance_1
+Type=DomainResidentNode
+Position=199.0,360.0
+Size=158,60
+Color=-66914
+PossibleValuesOrder=
+
+Node=SRDistance_2
+Type=DomainResidentNode
+Position=381.0,375.0
+Size=158,60
+Color=-66914
+PossibleValuesOrder=
+
+Node=SRDistance_3
+Type=DomainResidentNode
+Position=531.0,378.0
+Size=158,60
+Color=-66914
+PossibleValuesOrder=
+
+Node=SRDistance_4
+Type=DomainResidentNode
+Position=673.0,292.0
+Size=80,60
+Color=-66914
+PossibleValuesOrder=
+
+Node=SRDistance_5
+Type=DomainResidentNode
+Position=712.0,376.0
+Size=80,60
+Color=-66914
+PossibleValuesOrder=
+
+Node=SRDistance_6
+Type=DomainResidentNode
+Position=684.0,456.0
+Size=80,60
+Color=-66914
+PossibleValuesOrder=
+
+Node=SRDistance_7
+Type=DomainResidentNode
+Position=764.0,334.0
+Size=80,60
+Color=-66914
+PossibleValuesOrder=
+
+Node=SRDistance_8
+Type=DomainResidentNode
+Position=769.0,217.0
+Size=80,60
+Color=-66914
+PossibleValuesOrder=
 
 % Input nodes
 
@@ -458,25 +531,25 @@ Color=-66914
 Node=IX15
 Type=GenerativeInputNode
 Position=226.0,192.0
-Size=132,60
+Size=130,60
 Color=-2302756
 
 Node=IX16
 Type=GenerativeInputNode
 Position=485.0,130.0
-Size=152,60
+Size=150,60
 Color=-2302756
 
 Node=IX14
 Type=GenerativeInputNode
 Position=384.0,192.0
-Size=108,60
+Size=107,60
 Color=-2302756
 
 Node=IX13
 Type=GenerativeInputNode
 Position=110.0,135.0
-Size=144,60
+Size=147,60
 Color=-2302756
 
 % Context nodes
@@ -485,13 +558,13 @@ Color=-2302756
 Node=CX14
 Type=ContextNode
 Position=292.0,62.0
-Size=155,60
+Size=147,60
 Color=-5178237
 
 Node=CX13
 Type=ContextNode
 Position=394.0,15.0
-Size=178,60
+Size=173,60
 Color=-5178237
 
 % Ordinary Variables
@@ -500,19 +573,19 @@ Color=-5178237
 Node=sr
 Type=OrdinalVar
 Position=174.0,17.0
-Size=201,60
+Size=166,60
 Color=-5178237
 
 Node=t
 Type=OrdinalVar
 Position=463.0,60.0
-Size=171,60
+Size=134,60
 Color=-5178237
 
 Node=st
 Type=OrdinalVar
 Position=103.0,62.0
-Size=169,60
+Size=134,60
 Color=-5178237
 
 % Object Entity Instances
