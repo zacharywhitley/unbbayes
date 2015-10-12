@@ -81,7 +81,7 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
   	private static final String SELECTION_PANE = "SelectionPane"; 
   	private static final String EDITION_PANE = "EditionPane"; 
   	
-  	private RandomVariableFinding instanceSelected = null; 
+  	private List<RandomVariableFinding> instanceSelected = new ArrayList<RandomVariableFinding>(); 
   	private IResidentNode residentSelected = null; 
 	private boolean editingInstance = false; //user adding a new instance or only editing a instance previous created. 
 	
@@ -199,8 +199,9 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 				public void actionPerformed(ActionEvent e) {
 					if(residentSelected != null){
 						if(instanceSelected!=null){
-							residentSelected.removeRandomVariableFinding(instanceSelected); 
-							instanceSelected = null; 
+							for(RandomVariableFinding instaSelected: instanceSelected)
+								residentSelected.removeRandomVariableFinding(instaSelected); 
+							instanceSelected = new ArrayList<RandomVariableFinding>(); 
 							showRandomVariableInstanceListPane(residentSelected); 
 						}
 					}
@@ -397,7 +398,7 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
         			new ListSelectionListener(){
         				public void valueChanged(ListSelectionEvent e) {
         				     editingInstance = true; 
-        				     instanceSelected = (RandomVariableFinding)jlistFindings.getSelectedValue();  
+        				     instanceSelected = (List<RandomVariableFinding>)jlistFindings.getSelectedValuesList();  
         				     
         				     if(randomVariableListPane != null){
         				    	 randomVariableListPane.enableBtnRemoveInstance(); 
