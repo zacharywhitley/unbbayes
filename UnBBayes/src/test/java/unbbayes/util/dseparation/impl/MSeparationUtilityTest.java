@@ -2,14 +2,18 @@
 package unbbayes.util.dseparation.impl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import junit.framework.TestCase;
 import unbbayes.prs.INode;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.prs.id.DecisionNode;
 
 /**
  * @author Shou Matsumoto
@@ -453,9 +457,60 @@ public class MSeparationUtilityTest extends TestCase {
 	}
 
 	/**
+	 * Test method for {@link unbbayes.util.dseparation.impl.MSeparationUtility#getAllAncestors(java.util.Set)},
+	 * with cycles.
+	 */
+	public void testGetAllAncestorsCycle() {
+		
+		// create a chain with cycles
+		INode leaf = new ProbabilisticNode();
+		leaf.setName("leaf");
+
+		// create a chain of 100 more nodes
+		INode child = leaf;
+		for (int i = 0; i < 100; i++) {
+			INode parent = null;
+			if (new Random().nextBoolean()) {
+				parent = new ProbabilisticNode();
+			} else {
+				parent = new DecisionNode();
+			}
+			parent.setName("Node_"+i);
+			try {
+				child.addParentNode(parent);
+			} catch (InvalidParentException e) {
+				throw new RuntimeException(parent + " -> " + child, e);
+			}
+			child = parent;
+		}
+		
+		// insert loop
+		try {
+			child.addParentNode(leaf);
+		} catch (InvalidParentException e) {
+			throw new RuntimeException(e);
+		}
+		
+		
+		// get ancestors of leaf
+		Set<INode> ancestors = null;
+		
+		try {
+			this.classUnderTest.getAllAncestors(Collections.singleton(leaf));
+			fail("Should detect cycle");
+		} catch (IllegalArgumentException e) {
+			assertTrue(e.getMessage().toLowerCase().contains("cycle"));
+		} catch (VirtualMachineError e) {
+			throw e;
+		}
+		
+	
+	}
+
+	/**
 	 * Test method for {@link unbbayes.util.dseparation.impl.MSeparationUtility#getAllAncestors(java.util.Set)}.
 	 */
-	public   void testGetAllAncestors() {
+	public void testGetAllAncestors() {
 		
 		Set<INode> param = new HashSet<INode>();;
 		
@@ -523,8 +578,9 @@ public class MSeparationUtilityTest extends TestCase {
 		assertTrue("Ancestors of {0,2,3,5} should be equal to ancestors of 5", 
 				ancestors0235.equals(ancestors5));
 	
+	
+		
 	}
-
 	/**
 	 * Test method for {@link unbbayes.util.dseparation.impl.MSeparationUtility#isDSeparated(unbbayes.prs.Graph, java.util.Set, java.util.Set, java.util.Set)}.
 	 */
