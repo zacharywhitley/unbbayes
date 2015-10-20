@@ -27,6 +27,7 @@ import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.id.DecisionNode;
+import unbbayes.prs.id.IInfluenceDiagramInferenceAlgorithm;
 import unbbayes.util.Debug;
 import unbbayes.util.SetToolkit;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
@@ -47,7 +48,7 @@ import unbbayes.util.extension.bn.inference.InferenceAlgorithmOptionPanel;
  * @author Shou Matsumoto
  *
  */
-public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgorithm, IPermanentEvidenceInferenceAlgorithm {
+public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgorithm, IPermanentEvidenceInferenceAlgorithm, IInfluenceDiagramInferenceAlgorithm {
 //	 TODO fix ID bug;
 	private static ResourceBundle generalResource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.controller.resources.ControllerResources.class.getName(),
@@ -106,6 +107,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	
 
 	private boolean isToDeleteEmptyCliques = false;
+
+	private boolean isDecisionTotalOrderRequired = true;
 
 //	/**
 //	 * Joint probability calculation with up to this amount of nodes will use optimization.
@@ -621,13 +624,13 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 
 
 	/**
+	 * 
 	 * This method will initialize {@link #getSortedDecisionNodes()}
 	 * @param graph
 	 * @throws Exception  : if the ordering of decision nodes could not be established.
 	 * @returns decision nodes properly ordered
 	 */
-	protected List<INode> sortDecisionNodes(Graph graph) throws Exception {
-
+	public List<INode> sortDecisionNodes(Graph graph) throws Exception {
 		if (!(graph instanceof ProbabilisticNetwork)) {
 			return null;
 		}
@@ -708,6 +711,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			}
 		}
 	
+		final boolean  isTotalOrderRequired = isDecisionTotalOrderRequired();
 		for (int i = 0; i < decisionNodes.size(); i++) {
 			Node decisionNode = null;
 			try {
@@ -722,7 +726,11 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			}
 			if (decisionNode != null
 					&& ( decisionNode.getAdjacents().size() != decisionNodes.size() - i - 1) ) {
-				throw new Exception(resource.getString("DecisionOrderException"));
+				if (isTotalOrderRequired) {
+					throw new Exception(resource.getString("DecisionOrderException"));
+				} else {
+					// TODO check if JT algorithm really requires total order. If so, then guarantee total order here by connecting decision nodes with arc.
+				}
 			}
 		}
 	
@@ -3408,6 +3416,23 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 */
 	public void setToDeleteEmptyCliques(boolean isToDeleteEmptyCliques) {
 		this.isToDeleteEmptyCliques = isToDeleteEmptyCliques;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.id.IInfluenceDiagramInferenceAlgorithm#isDecisionTotalOrderRequired()
+	 */
+	public boolean isDecisionTotalOrderRequired() {
+		return this.isDecisionTotalOrderRequired;
+	}
+
+	/**
+	 * @param isDecisionTotalOrderRequired the isDecisionTotalOrderRequired to set
+	 * @see #isDecisionTotalOrderRequired()
+	 * @see #sortDecisionNodes(Graph)
+	 */
+	public void setDecisionTotalOrderRequired(boolean isDecisionTotalOrderRequired) {
+		this.isDecisionTotalOrderRequired = isDecisionTotalOrderRequired;
 	}
 
 //	/**
