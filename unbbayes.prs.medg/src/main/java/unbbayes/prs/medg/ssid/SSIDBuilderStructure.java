@@ -1062,7 +1062,7 @@ public class SSIDBuilderStructure implements IBuilderStructure {
 			
 			e.printStackTrace();
 			
-			throw new RuntimeException(e.getMessage()); 
+			throw new UnsupportedOperationException(e); 
 		} 
 	}
 	

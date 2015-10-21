@@ -25,7 +25,6 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.bn.TreeVariable;
 import unbbayes.prs.exception.InvalidParentException;
-import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -92,11 +91,11 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 	private IInferenceAlgorithm bnInferenceAlgorithm = new JunctionTreeAlgorithm();
 
 	/**
-	 * @param _parameters
+	 * @param parameters
 	 */
-	public SSIDGenerator(LaskeyAlgorithmParameters _parameters) {
-		super(_parameters);
-		this.parameters = _parameters;
+	public SSIDGenerator(LaskeyAlgorithmParameters parameters) { // NOPMD by Shou Matsumoto on 15/10/16 10:14
+		super(parameters);
+		this.parameters = parameters;
 		this.setBuilderStructure(SSIDBuilderStructure.newInstance());
 		this.setBuildLocalDistribution(SSIDBuilderLocalDistribution.getInstance());
 		// disable debug info by default
@@ -212,7 +211,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 	protected void setUpFindings(SSBN ssbn, IInferenceAlgorithm algorithm) throws SSBNNodeGeneralException {
 		// initial assertion
 		if (ssbn == null || algorithm == null) {
-			throw new SSBNNodeGeneralException(new NullPointerException(this.getClass() + ": SSBN == " + ssbn + "; algorithm == " + algorithm));
+			throw new SSBNNodeGeneralException(new IllegalArgumentException(this.getClass() + ": SSBN == " + ssbn + "; algorithm == " + algorithm)); // NOPMD by Shou Matsumoto on 15/10/16 10:13
 		}
 
 		// TODO check if a reset is necessary
@@ -231,26 +230,31 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 		}
 
 		ProbabilisticNetwork net = (ProbabilisticNetwork) g;
-		for(SimpleSSBNNode ssbnFindingNode: ssbn.getFindingList()){
-			//Not all findings nodes are at the network. 
-			if(ssbnFindingNode.getProbNode()!= null){ 
-				// extract node and finding state from the network managed by the algorithm
-				TreeVariable node = (TreeVariable)net.getNode(ssbnFindingNode.getProbNode().getName());
-				String stateName = ssbnFindingNode.getState().getName(); 
-				
-				// add discrete findings directly to the network managed by the inference algorithm
-				// unfortunately, the network managed by the algorithm and the one linked to the SSBN may not be the same (because algorithm may instantiate another network)
-				boolean isStateInNode = false; 	// indicates if node contains the specified state (true if evidence is to a valid state)
-				for(int i = 0; i < node.getStatesSize(); i++){
-					// check if the name of the state in the SSID node is the same in the node in actual network managed by the algorithm
-					if(node.getStateAt(i).equals(stateName)){
-						node.addFinding(i);
-						isStateInNode = true; 
-						break; 
+		boolean isToPropagate = false;	// this will become true if at least 1 valid finding was found
+		if (ssbn.getFindingList() != null) {
+			for(SimpleSSBNNode ssbnFindingNode: ssbn.getFindingList()){
+				//Not all findings nodes are at the network. 
+				if(ssbnFindingNode.getProbNode()!= null){ 
+					// extract node and finding state from the network managed by the algorithm
+					TreeVariable node = (TreeVariable)net.getNode(ssbnFindingNode.getProbNode().getName());
+					String stateName = ssbnFindingNode.getState().getName(); 
+					
+					// add discrete findings directly to the network managed by the inference algorithm
+					// unfortunately, the network managed by the algorithm and the one linked to the SSBN may not be the same (because algorithm may instantiate another network)
+					boolean isStateInNode = false; 	// indicates if node contains the specified state (true if evidence is to a valid state)
+					for(int i = 0; i < node.getStatesSize(); i++){
+						// check if the name of the state in the SSID node is the same in the node in actual network managed by the algorithm
+						if(node.getStateAt(i).equals(stateName)){
+							node.addFinding(i);
+							isStateInNode = true; 
+							isToPropagate = true;
+							break; 
+						}
 					}
-				}
-				if(!isStateInNode){
-					throw new SSBNNodeGeneralException(node + " has no state for finding: " + stateName); 
+					if(!isStateInNode){
+						throw new SSBNNodeGeneralException(node + " has no state for finding: " + stateName); 
+					}
+					
 				}
 			}
 		}
@@ -258,7 +262,9 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 		
 		
 		// update evidences
-		algorithm.propagate();
+		if (isToPropagate) {
+			algorithm.propagate();
+		}
 		ssbn.setState(State.FINDINGS_PROPAGATED); 
 	
 	
@@ -446,7 +452,12 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 	 * @param ssid
 	 */
 	public void reorderDecisionNodes(SSID ssid) {
-		// it looks like JT doesn't require decision nodes to be fully ordered/connected.
+		
+		
+		// reorder internally by entity
+		
+		// reorder by multi-entity decision nodes
+		
 	}
 
 	/**
@@ -476,7 +487,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 			ssid.setLogManager(null);
 		}
 		
-		MultiEntityBayesianNetwork mebn = null; 
+//		MultiEntityBayesianNetwork mebn = null; 
 
 		//log
 		ISSBNLogManager logManager = ssid.getLogManager();
@@ -499,7 +510,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 		ssid.setKnowledgeBase(knowledgeBase); 
 		
 		//We assume that all the queries is referent to the same MEBN
-		mebn = queryList.get(0).getMebn(); 
+		MultiEntityBayesianNetwork mebn = queryList.get(0).getMebn(); 
 		
 		//Parameters: 
 
