@@ -3,6 +3,10 @@
  */
 package unbbayes.io.medg;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -27,29 +31,41 @@ import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
 import unbbayes.prs.medg.MultiEntityDecisionNode;
+import unbbayes.prs.medg.MultiEntityUtilityNode;
 import unbbayes.util.Debug;
+
+import com.hp.hpl.jena.util.FileUtils;
+
+import edu.stanford.smi.protegex.owl.jena.JenaOWLModel;
 import edu.stanford.smi.protegex.owl.model.OWLDatatypeProperty;
 import edu.stanford.smi.protegex.owl.model.OWLIndividual;
 import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
 import edu.stanford.smi.protegex.owl.model.RDFIndividual;
+import edu.stanford.smi.protegex.owl.repository.impl.LocalFileRepository;
 
 /**
  * This is an IO class for storing and loading PR-OWL 1 with continuous LPD scripts.
  * @author Shou Matsumoto
  *
  */
-public class PROWLDecisionIO extends PrOwlIO {
+public class PROWLDecisionIO extends PrOwlIO implements IPROWLDecisionModelUser {
 	
-	public static final String MEDG_DECISION_NODE = "MEDG_DECISION_NODE";
+	public static final String MEDG_DECISION_NODE = "Domain_Decision";
+	public static final String MEDG_UTILITY_NODE = "Domain_Utility";
+	
+	/** This is the default location of PR-OWL Decision model/definition file. */
+	public static final String DEFAULT_PROWL_DECISION_MODELFILE = "pr-owl/pr-owl-decision.owl";
 
+	private String prowlDecisionModelFile = DEFAULT_PROWL_DECISION_MODELFILE;
+	
 	/**
 	 * @deprecated default constructor is protected only to allow inheritance.
 	 * Use {@link #getInstance()} instead.
 	 */
 	protected PROWLDecisionIO() {
 		try {
-			this.setLoader(new PROWLDLIOLoader());
+			this.setLoader(new PROWLDecisionIOLoader());
 		} catch (Exception e) {
 			try {
 				Debug.println(getClass(), e.getMessage() ,e);
@@ -58,7 +74,7 @@ public class PROWLDecisionIO extends PrOwlIO {
 			}
 		}
 		try {
-			this.setSaver(new PROWLDLIOSaver());
+			this.setSaver(new PROWLDecisionIOSaver());
 		} catch (Exception e) {
 			try {
 				Debug.println(getClass(), e.getMessage() ,e);
@@ -82,7 +98,7 @@ public class PROWLDecisionIO extends PrOwlIO {
 	 * @see unbbayes.io.mebn.PrOwlIO#getNamesOfAllModifiedPROWLClasses()
 	 */
 	public Collection<String> getNamesOfAllModifiedPROWLClasses() {
-		// by overriding this method, we can make sure that individuals of continuous nodes
+		// by overriding this method, we can make sure that individuals of decision/utility nodes
 		// are cleared (so that old instances do not appear after saving ontology again)
 		Collection<String> ret = super.getNamesOfAllModifiedPROWLClasses();
 		ret.add(MEDG_DECISION_NODE);
@@ -90,12 +106,30 @@ public class PROWLDecisionIO extends PrOwlIO {
 	}
 	
 	/**
-	 * This is a customization of {@link LoaderPrOwlIO} which
-	 * Handles MEDG.
-	 * @author Shou Matsumoto
-	 * @see PROWLDLIOSaver
+	 * @return the prowlDecisionModelFile : this is the location of the pr-owl-decision.owl, file which will be
+	 *  used by {@link PROWLDecisionIOSaver#loadPrOwlModel(JenaOWLModel)}
+	 * in order to load the PR-OWL Decision definitions/schemes.
 	 */
-	public class PROWLDLIOLoader extends LoaderPrOwlIO {
+	public String getPROWLDecisionModelFile() {
+		return prowlDecisionModelFile;
+	}
+
+	/**
+	 * @param prowlDecisionModelFile the prowlDecisionModelFile to set : this is the location of the pr-owl-decision.owl, file which will be
+	 *  used by {@link PROWLDecisionIOSaver#loadPrOwlModel(JenaOWLModel)}
+	 * in order to load the PR-OWL Decision definitions/schemes.
+	 */
+	public void setPROWLDecisionModelFile(String prowlDecisionModelFile) {
+		this.prowlDecisionModelFile = prowlDecisionModelFile;
+	}
+
+	/**
+	 * This is a customization of {@link LoaderPrOwlIO} which
+	 * handles MEDG.
+	 * @author Shou Matsumoto
+	 * @see PROWLDecisionIOSaver
+	 */
+	public class PROWLDecisionIOLoader extends LoaderPrOwlIO {
 		
 		/*
 		 * (non-Javadoc)
@@ -120,8 +154,7 @@ public class PROWLDecisionIO extends PrOwlIO {
 			for (Iterator it = instances.iterator(); it.hasNext();) {
 
 				individualOne = (RDFIndividual) it.next();
-				domainResidentNode = getMapDomainResidentNode().get(individualOne
-						.getBrowserText());
+				domainResidentNode = getMapDomainResidentNode().get(individualOne.getBrowserText());
 				if (domainResidentNode == null) {
 					throw new IOMebnException(
 							getResource().getString("DomainResidentNotExistsInMTheory"),
@@ -134,8 +167,7 @@ public class PROWLDecisionIO extends PrOwlIO {
 				domainResidentNode.setDescription(getDescription(individualOne));
 
 				/* -> isResidentNodeIn */
-				objectProperty = (OWLObjectProperty) getOwlModel()
-						.getOWLObjectProperty("isResidentNodeIn");
+				objectProperty = (OWLObjectProperty) getOwlModel().getOWLObjectProperty("isResidentNodeIn");
 				instances = individualOne.getPropertyValues(objectProperty);
 				Iterator itAux = instances.iterator();
 				individualTwo = (RDFIndividual) itAux.next();
@@ -150,13 +182,11 @@ public class PROWLDecisionIO extends PrOwlIO {
 						+ individualTwo.getBrowserText());
 
 				/* -> hasArgument */
-				objectProperty = (OWLObjectProperty) getOwlModel()
-						.getOWLObjectProperty("hasArgument");
+				objectProperty = (OWLObjectProperty) getOwlModel().getOWLObjectProperty("hasArgument");
 				instances = individualOne.getPropertyValues(objectProperty);
 				for (Iterator itIn = instances.iterator(); itIn.hasNext();) {
 					individualTwo = (RDFIndividual) itIn.next();
-					argument = new Argument(individualTwo.getBrowserText(),
-							domainResidentNode);
+					argument = new Argument(individualTwo.getBrowserText(),	domainResidentNode);
 					domainResidentNode.addArgument(argument);
 					getMapArgument().put(individualTwo.getBrowserText(), argument);
 					Debug.println("-> " + individualOne.getBrowserText() + ": "
@@ -165,15 +195,12 @@ public class PROWLDecisionIO extends PrOwlIO {
 				}
 
 				/* -> hasParent */
-				objectProperty = (OWLObjectProperty) getOwlModel()
-						.getOWLObjectProperty("hasParent");
+				objectProperty = (OWLObjectProperty) getOwlModel().getOWLObjectProperty("hasParent");
 				instances = individualOne.getPropertyValues(objectProperty);
 				for (Iterator itIn = instances.iterator(); itIn.hasNext();) {
 					individualTwo = (RDFIndividual) itIn.next();
-					if (getMapDomainResidentNode().containsKey(individualTwo
-							.getBrowserText())) {
-						ResidentNode aux = getMapDomainResidentNode().get(individualTwo
-								.getBrowserText());
+					if (getMapDomainResidentNode().containsKey(individualTwo.getBrowserText())) {
+						ResidentNode aux = getMapDomainResidentNode().get(individualTwo.getBrowserText());
 
 						Edge auxEdge = new Edge(aux, domainResidentNode);
 						try {
@@ -182,10 +209,8 @@ public class PROWLDecisionIO extends PrOwlIO {
 							Debug.println("Erro: arco invalido!!!");
 						}
 					} else {
-						if (getMapGenerativeInputNode().containsKey(individualTwo
-								.getBrowserText())) {
-							InputNode aux = getMapGenerativeInputNode()
-									.get(individualTwo.getBrowserText());
+						if (getMapGenerativeInputNode().containsKey(individualTwo.getBrowserText())) {
+							InputNode aux = getMapGenerativeInputNode().get(individualTwo.getBrowserText());
 
 							Edge auxEdge = new Edge(aux, domainResidentNode);
 							try {
@@ -206,14 +231,12 @@ public class PROWLDecisionIO extends PrOwlIO {
 				}
 
 				/* -> hasInputInstance */
-				objectProperty = (OWLObjectProperty) getOwlModel()
-						.getOWLObjectProperty("hasInputInstance");
+				objectProperty = (OWLObjectProperty) getOwlModel().getOWLObjectProperty("hasInputInstance");
 				instances = individualOne.getPropertyValues(objectProperty);
 
 				for (Iterator itIn = instances.iterator(); itIn.hasNext();) {
 					individualTwo = (RDFIndividual) itIn.next();
-					generativeInputNode = getMapGenerativeInputNode().get(individualTwo
-							.getBrowserText());
+					generativeInputNode = getMapGenerativeInputNode().get(individualTwo.getBrowserText());
 					try {
 						generativeInputNode.setInputInstanceOf(domainResidentNode);
 					} catch (Exception e) {
@@ -225,14 +248,12 @@ public class PROWLDecisionIO extends PrOwlIO {
 				}
 
 				/* -> isInnerTermOf */
-				objectProperty = (OWLObjectProperty) getOwlModel()
-						.getOWLObjectProperty("isInnerTermOf");
+				objectProperty = (OWLObjectProperty) getOwlModel().getOWLObjectProperty("isInnerTermOf");
 				instances = individualOne.getPropertyValues(objectProperty);
 				itAux = instances.iterator();
 				for (Iterator itIn = instances.iterator(); itIn.hasNext();) {
 					individualTwo = (RDFIndividual) itIn.next();
-					multiEntityNode = getMapMultiEntityNode().get(individualTwo
-							.getBrowserText());
+					multiEntityNode = getMapMultiEntityNode().get(individualTwo.getBrowserText());
 					domainResidentNode.addInnerTermFromList(multiEntityNode);
 					multiEntityNode.addInnerTermOfList(domainResidentNode);
 					Debug.println("-> " + individualOne.getBrowserText() + ": "
@@ -243,8 +264,7 @@ public class PROWLDecisionIO extends PrOwlIO {
 				/* -> hasPossibleValues */
 				{
 					CategoricalStateEntity state = null;
-					objectProperty = (OWLObjectProperty) getOwlModel()
-							.getOWLObjectProperty("hasPossibleValues");
+					objectProperty = (OWLObjectProperty) getOwlModel().getOWLObjectProperty("hasPossibleValues");
 					instances = individualOne.getPropertyValues(objectProperty);
 					itAux = instances.iterator();
 					for (Object instance : instances) {
@@ -252,85 +272,59 @@ public class PROWLDecisionIO extends PrOwlIO {
 						String stateName = individualTwo.getBrowserText();
 						/* case 1: booleans states */
 						if (stateName.equals("true")) {
-							StateLink link = domainResidentNode
-									.addPossibleValueLink(getMebn()
-											.getBooleanStatesEntityContainer()
-											.getTrueStateEntity());
-							List<String> globallyObjects = getMapBooleanStateGloballyObjects()
-									.get("true");
-							if (globallyObjects.contains(domainResidentNode
-									.getName())) {
+							StateLink link = domainResidentNode.addPossibleValueLink(
+									getMebn().getBooleanStatesEntityContainer().getTrueStateEntity());
+							List<String> globallyObjects = getMapBooleanStateGloballyObjects().get("true");
+							if (globallyObjects.contains(domainResidentNode.getName())) {
 								link.setGloballyExclusive(true);
 							} else {
 								link.setGloballyExclusive(false);
 							}
-							domainResidentNode
-									.setTypeOfStates(IResidentNode.BOOLEAN_RV_STATES);
+							domainResidentNode.setTypeOfStates(IResidentNode.BOOLEAN_RV_STATES);
 						} else {
 							if (stateName.equals("false")) {
-								StateLink link = domainResidentNode
-										.addPossibleValueLink(getMebn()
-												.getBooleanStatesEntityContainer()
-												.getFalseStateEntity());
-								List<String> globallyObjects = getMapBooleanStateGloballyObjects()
-										.get("false");
-								if (globallyObjects.contains(domainResidentNode
-										.getName())) {
+								StateLink link = domainResidentNode.addPossibleValueLink(
+										getMebn().getBooleanStatesEntityContainer().getFalseStateEntity());
+								List<String> globallyObjects = getMapBooleanStateGloballyObjects().get("false");
+								if (globallyObjects.contains(domainResidentNode.getName())) {
 									link.setGloballyExclusive(true);
 								} else {
 									link.setGloballyExclusive(false);
 								}
-								domainResidentNode
-										.setTypeOfStates(IResidentNode.BOOLEAN_RV_STATES);
+								domainResidentNode.setTypeOfStates(IResidentNode.BOOLEAN_RV_STATES);
 							} else {
 								if (stateName.equals("absurd")) {
-									StateLink link = domainResidentNode
-											.addPossibleValueLink(getMebn()
-													.getBooleanStatesEntityContainer()
-													.getAbsurdStateEntity());
-									List<String> globallyObjects = getMapBooleanStateGloballyObjects()
-											.get("absurd");
-									if (globallyObjects.contains(domainResidentNode
-											.getName())) {
+									StateLink link = domainResidentNode.addPossibleValueLink(
+											getMebn().getBooleanStatesEntityContainer().getAbsurdStateEntity());
+									List<String> globallyObjects = getMapBooleanStateGloballyObjects().get("absurd");
+									if (globallyObjects.contains(domainResidentNode.getName())) {
 										link.setGloballyExclusive(true);
 									} else {
 										link.setGloballyExclusive(false);
 									}
-									domainResidentNode
-											.setTypeOfStates(IResidentNode.BOOLEAN_RV_STATES);
+									domainResidentNode.setTypeOfStates(IResidentNode.BOOLEAN_RV_STATES);
 								} else {
 									if (getMapTypes().get(stateName) != null) {
 
 										/* case 2:object entities */
 
-										StateLink link = domainResidentNode
-												.addPossibleValueLink(getMapTypes()
-														.get(stateName));
-										domainResidentNode
-												.setTypeOfStates(IResidentNode.OBJECT_ENTITY);
+										StateLink link = domainResidentNode.addPossibleValueLink(getMapTypes().get(stateName));
+										domainResidentNode.setTypeOfStates(IResidentNode.OBJECT_ENTITY);
 
 									} else {
 										/* case 3: categorical states */
 										try {
-											state = getMebn()
-													.getCategoricalStatesEntityContainer()
-													.getCategoricalState(
-															individualTwo
-																	.getBrowserText());
-											StateLink link = domainResidentNode
-													.addPossibleValueLink(state);
+											state = getMebn().getCategoricalStatesEntityContainer().getCategoricalState(
+															individualTwo.getBrowserText());
+											StateLink link = domainResidentNode.addPossibleValueLink(state);
 
-											List<String> globallyObjects = getMapCategoricalStateGloballyObjects()
-													.get(state.getName());
-											if (globallyObjects
-													.contains(domainResidentNode
-															.getName())) {
+											List<String> globallyObjects = getMapCategoricalStateGloballyObjects().get(state.getName());
+											if (globallyObjects.contains(domainResidentNode.getName())) {
 												link.setGloballyExclusive(true);
 											} else {
 												link.setGloballyExclusive(false);
 											}
-											domainResidentNode
-													.setTypeOfStates(IResidentNode.CATEGORY_RV_STATES);
+											domainResidentNode.setTypeOfStates(IResidentNode.CATEGORY_RV_STATES);
 										} catch (CategoricalStateDoesNotExistException e) {
 											// TODO Auto-generated catch block
 											e.printStackTrace();
@@ -346,10 +340,8 @@ public class PROWLDecisionIO extends PrOwlIO {
 
 				/* hasProbDist */
 
-				OWLObjectProperty hasProbDist = (OWLObjectProperty) getOwlModel()
-						.getOWLObjectProperty("hasProbDist");
-				OWLDatatypeProperty hasDeclaration = getOwlModel()
-						.getOWLDatatypeProperty("hasDeclaration");
+				OWLObjectProperty hasProbDist = (OWLObjectProperty) getOwlModel().getOWLObjectProperty("hasProbDist");
+				OWLDatatypeProperty hasDeclaration = getOwlModel().getOWLDatatypeProperty("hasDeclaration");
 				String cpt = null;
 				for (Iterator iter = individualOne.getPropertyValues(hasProbDist)
 						.iterator(); iter.hasNext();) {
@@ -405,8 +397,7 @@ public class PROWLDecisionIO extends PrOwlIO {
 				domainMFrag.setDescription(getDescription(individualOne));
 
 				/* -> hasResidentNode */
-				objectProperty = (OWLObjectProperty) getOwlModel()
-						.getOWLObjectProperty("hasResidentNode");
+				objectProperty = (OWLObjectProperty) getOwlModel().getOWLObjectProperty("hasResidentNode");
 				instances = individualOne.getPropertyValues(objectProperty);
 				for (Iterator itIn = instances.iterator(); itIn.hasNext();) {
 					Object itInNext = itIn.next();
@@ -432,15 +423,19 @@ public class PROWLDecisionIO extends PrOwlIO {
 						}
 					}
 
-					// instanciate a continuous resident node instead of resident node, if individual is assignable to a continuous node
 					if (individualTwo.hasRDFType(getOwlModel().getOWLNamedClass(MEDG_DECISION_NODE), true)) {
+						// Instantiate a decision resident node instead of resident node, if individual is assignable to a decision node
 						domainResidentNode = new MultiEntityDecisionNode(name, domainMFrag);
 //						try {
 //							((MultiEntityDecisionNode)domainResidentNode).onAddToMFrag(domainMFrag);
 //						} catch (MFragDoesNotExistException e) {
 //							e.printStackTrace();
 //						}
+					} else if (individualTwo.hasRDFType(getOwlModel().getOWLNamedClass(MEDG_UTILITY_NODE), true)) {
+						// Instantiate an utility resident node instead of resident node, if individual is assignable to a utility node
+						domainResidentNode = new MultiEntityUtilityNode(name, domainMFrag);
 					} else {
+						// or else, by default it is a probabilistic resident node
 						domainResidentNode = new ResidentNode(name, domainMFrag);
 					}
 					getMebn().getNamesUsed().add(name);
@@ -458,8 +453,7 @@ public class PROWLDecisionIO extends PrOwlIO {
 				}
 
 				/* -> hasInputNode */
-				objectProperty = (OWLObjectProperty) getOwlModel()
-						.getOWLObjectProperty("hasInputNode");
+				objectProperty = (OWLObjectProperty) getOwlModel().getOWLObjectProperty("hasInputNode");
 				instances = individualOne.getPropertyValues(objectProperty);
 				for (Iterator itIn = instances.iterator(); itIn.hasNext();) {
 					individualTwo = (RDFIndividual) itIn.next();
@@ -533,12 +527,18 @@ public class PROWLDecisionIO extends PrOwlIO {
 	 * 
 	 * This is a customization of {@link SaverPrOwlIO} which handles MEDG.
 	 * @author Shou Matsumoto
-	 * @see PROWLDLIOLoader
+	 * @see PROWLDecisionIOLoader
 	 */
-	public class PROWLDLIOSaver extends SaverPrOwlIO {
+	public class PROWLDecisionIOSaver extends SaverPrOwlIO {
 		
-		/*
-		 * (non-Javadoc)
+		
+
+		/**
+		 * We are extending the {@link unbbayes.io.mebn.SaverPrOwlIO#saveMTheory()} so that decision nodes
+		 * and utility nodes are properly stored.
+		 * There are some copy-pasted code here, but that's because the superclass did not make template methods
+		 * available.
+		 * 
 		 * @see unbbayes.io.mebn.SaverPrOwlIO#saveMTheory()
 		 */
 		protected void saveMTheory(){
@@ -557,7 +557,7 @@ public class PROWLDecisionIO extends PrOwlIO {
 				}
 				
 				/* hasMFrag */
-				
+				// TODO remove magic strings from SaverPrOwlIO (the following code was copied/pasted from SaverPrOwlIO)
 				OWLObjectProperty hasMFragProperty = (OWLObjectProperty)getOwlModel().getOWLObjectProperty("hasMFrag"); 	
 				List<MFrag> listDomainMFrag = getMebn().getDomainMFragList(); 
 				
@@ -591,18 +591,25 @@ public class PROWLDecisionIO extends PrOwlIO {
 								// if new, create it
 								OWLNamedClass domainResClass = null;
 								if (residentNode instanceof MultiEntityDecisionNode) {
-									// get owl class for continuous nodes
+									// get owl class for decision nodes
 									domainResClass = getOwlModel().getOWLNamedClass(MEDG_DECISION_NODE);
 									if (domainResClass == null) {
-										// if CONTINUOUS_RESIDENT_NODE does not exist, create it
+										// if MEDG_DECISION_NODE does not exist, create it
 										domainResClass = getOwlModel().createOWLNamedSubclass(MEDG_DECISION_NODE, getOwlModel().getOWLNamedClass(DOMAIN_RESIDENT));
+									}
+								} else if (residentNode instanceof MultiEntityUtilityNode) {
+									// get owl class for utility nodes
+									domainResClass = getOwlModel().getOWLNamedClass(MEDG_UTILITY_NODE);
+									if (domainResClass == null) {
+										// if MEDG_UTILITY_NODE does not exist, create it
+										domainResClass = getOwlModel().createOWLNamedSubclass(MEDG_UTILITY_NODE, getOwlModel().getOWLNamedClass(DOMAIN_RESIDENT));
 									}
 								} else {
 									// get owl class for resident nodes
 									domainResClass = getOwlModel().getOWLNamedClass(DOMAIN_RESIDENT); 
 								}
 								
-								domainResIndividual = domainResClass.createOWLIndividual(this.RESIDENT_NAME_PREFIX + residentNode.getName());
+								domainResIndividual = domainResClass.createOWLIndividual(RESIDENT_NAME_PREFIX + residentNode.getName());
 							}
 							domainMFragIndividual.addPropertyValue(hasResidentNodeProperty, domainResIndividual); 	
 							getMapDomainResident().put(residentNode, domainResIndividual); 
@@ -669,7 +676,54 @@ public class PROWLDecisionIO extends PrOwlIO {
 				}    	
 		    }
 
-	}	// end public class PROWLDLIOSaver
+		/* (non-Javadoc)
+		 * @see unbbayes.io.mebn.PROWLModelUser#loadPrOwlModel(edu.stanford.smi.protegex.owl.jena.JenaOWLModel)
+		 */
+		public JenaOWLModel loadPrOwlModel(JenaOWLModel owlModel) throws IOException {
+			// first, load pr-owl model and keep it in memory, because pr-owl model is imported by pr-owl decision profile model.
+			super.loadPrOwlModel(owlModel);
+			File filePrOwl = null;
+			try {
+				filePrOwl = new File(this.getClass().getClassLoader().getResource(getPROWLDecisionModelFile()).toURI());
+			} catch (Exception e1) {
+				Debug.println(this.getClass(), "Could not load pr-owl-decision definitions from resource. Retry...", e1);
+				try {
+					// retrying using file on root instead
+					filePrOwl = new File(getPROWLDecisionModelFile());
+					if (!filePrOwl.exists()) {
+						filePrOwl = null;
+					}
+				} catch (Exception e) {
+					e1.printStackTrace();
+					e.printStackTrace();
+					throw new IOException(e.toString()); 
+				}
+			}
+			
+			owlModel.getRepositoryManager().addProjectRepository(new LocalFileRepository(filePrOwl, true));
+			
+			InputStream inputStreamOwl; 
+			try{
+				inputStreamOwl = this.getClass().getClassLoader().getResourceAsStream(getPROWLDecisionModelFile());
+				if (inputStreamOwl == null) {
+					inputStreamOwl = new FileInputStream(getPROWLDecisionModelFile());
+				}
+				owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);   
+			} catch (Exception e){
+				Debug.println(this.getClass(), "Could not load pr-owl-decision definitions from resource. Retry...", e);
+				try {
+					// retrying using file on root instead
+					inputStreamOwl = new FileInputStream(getPROWLDecisionModelFile());
+					owlModel.load(inputStreamOwl, FileUtils.langXMLAbbrev);   
+				} catch (Exception e2) {
+					e2.printStackTrace();
+					throw new IOException(e2.toString()); 
+				}
+			}			
+			return owlModel;
+		}
+
+	}	// end public class PROWLDecisionIOSaver
 
 	
 

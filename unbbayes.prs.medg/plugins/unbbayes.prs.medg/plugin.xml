@@ -44,6 +44,10 @@
         <parameter id="class" value="unbbayes.io.medg.MEDGUBFIO" />
         <parameter id="name" value="PR-OWL Decision" />
     </extension>
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNIO" id="MEDGUBFIO2">
+        <parameter id="class" value="unbbayes.io.medg.MEDGUBFIO2" />
+        <parameter id="name" value="PR-OWL 2 Decision" />
+    </extension>
     <extension plugin-id="unbbayes.prs.mebn" point-id="SSBN" id="SSIDGenerator">
         <parameter id="class" value="unbbayes.prs.medg.ssid.SSIDGeneratorBuilder" />
         <parameter id="name" value="SSID generator" />

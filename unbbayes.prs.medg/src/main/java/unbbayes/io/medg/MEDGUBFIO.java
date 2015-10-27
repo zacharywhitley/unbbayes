@@ -17,6 +17,7 @@ public class MEDGUBFIO extends UbfIO {
 	public MEDGUBFIO() {
 		super();
 		this.setProwlIO(PROWLDecisionIO.getInstance());
+		this.setName("PR-OWL Decision");
 	}
 	
 	/** This method was added in order to make sure {@link MEDGUBFIO#getInstance()} returns this class instead of {@link UbfIO} */
