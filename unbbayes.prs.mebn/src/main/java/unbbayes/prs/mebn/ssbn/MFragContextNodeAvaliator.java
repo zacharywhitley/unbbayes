@@ -1,7 +1,6 @@
 package unbbayes.prs.mebn.ssbn;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -31,9 +30,9 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 	
 	/**
 	 * Evaluate the context nodes of a MFrag using the ordinary variables already
-	 * instanciated. <b>
+	 * Instantiated. <b>
 	 * 
-	 * - Ordinary variables don't instanciated yet will be instanciated. <b>
+	 * - Ordinary variables don't instantiated yet will be instantiated. <b>
 	 * - Should have more than one reference for a ordinary variable <b>
 	 * - Should have reference uncertainty problem (how return this problem) <b>
 	 * - Should have ordinary variables that don't have instance for it <b>
@@ -41,11 +40,11 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 	 * Cases: 
 	 * - Trivial case
 	 * - Simple Search (one entity for ov)
-	 * - Compost Search (more than one entity)
+	 * - Compose Search (more than one entity)
 	 * - Undefined Context (more than one possible result)
 	 * 
 	 * @param mfrag MFrag evaluated
-	 * @param ovInstances Ordinary variables already instanciated. 
+	 * @param ovInstances Ordinary variables already instantiated. 
 	 * @throws SSBNNodeGeneralException 
 	 * @throws ImplementationRestrictionException 
 	 * @throws OVInstanceFaultException 
@@ -128,6 +127,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 								"The uncertain reference is possible. ");
 					}
 					possibleReferenceUncertainNodes.add(contextNode); 
+					//This nodes will be evaluated out of the loop
 					continue; 
 				}
 				
@@ -178,7 +178,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 						}
 						
 						//Here, the context node fail adding the values for a ordinary variable
-						//fault. This fail impossibilite the evaluation of the rest of the MFragInstance, 
+						//fault. This fail impossibility the evaluation of the rest of the MFragInstance, 
 						//because, this node, used to recover the possible values, fail. 
 						throw e; 
 					}
@@ -187,8 +187,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 
 				}else{
 
-					//TODO Implement the iteration strategy, where the user gives 
-					//values for the ordinary variables not filled yet. 
+					//TODO Implement the interactive strategy (user inform values)
 
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
 							ContextNodeEvaluationState.EVALUATION_FAIL); 
@@ -233,6 +232,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 		}
 		
 		List<OrdinaryVariable> ovDontFoundYetList = new ArrayList<OrdinaryVariable>(); 
+		
 		for(OrdinaryVariable ov: mFragInstance.getMFragOrigin().getOrdinaryVariableList()){
 			if(mFragInstance.getOVInstanceListForOrdinaryVariable(ov).size() == 0){
 				ovDontFoundYetList.add(ov);
@@ -241,9 +241,8 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 		
 		//Evaluate this ordinary variables
 		for(OrdinaryVariable ov: ovDontFoundYetList){
-			//no context node about this ov... the value is unknown, we should 
-			//consider all the possible values. Note the use of the Closed Word
-			//Asspetion. 
+			//No context node about this ov... the value is unknown, we should 
+			//consider all possible values (use of Closed Word Assumption)
 			if (logManager != null) {
 				logManager.printText(level4, false,"Evaluate IsA for OV " + ov.getName());
 			}
@@ -269,7 +268,6 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 			try {
 				mFragInstance.addOVValuesCombination(ovArray, entityValuesArray);
 			} catch (MFragContextFailException e) {
-//				e.printStackTrace(); 
 				Debug.println(this.getClass(), "", e);
 				mFragInstance.setUseDefaultDistribution(true); 
 			}
@@ -298,7 +296,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 
 	/**
 	 * Try to solve the possible reference uncertain nodes (nodes in format 
-	 * ResidentNode(ov1)=ov2, where ov1 or ov2, or both are unkown. The evaluation
+	 * ResidentNode(ov1)=ov2, where ov1 or ov2, or both are unknown. The evaluation
 	 * is considered OK only if have only one possible result for the ordinary 
 	 * variables of the node. 
 	 * 
@@ -388,7 +386,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 								}
 
 								//Here, the context node fail adding the values for a ordinary variable
-								//fault. This fail impossibilite the evaluation of the rest of the MFragInstance, 
+								//fault. This fail impossibility the evaluation of the rest of the MFragInstance, 
 								//because, this node, used to recover the possible values, fail. 
 								//								throw e; 
 							}
@@ -414,7 +412,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 	
 	/**
 	 * Try to solve the possible reference uncertain nodes (nodes in format 
-	 * ResidentNode(ov1)=ov2, where ov1 or ov2, or both are unkown. The evaluation
+	 * ResidentNode(ov1)=ov2, where ov1 or ov2, or both are unknown. The evaluation
 	 * is considered OK only if have only one possible result for the ordinary 
 	 * variables of the node. 
 	 * 
@@ -502,7 +500,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 	}
 	
 	/**
-	 * For the possible reference uncertain nodes candidates that scape from the
+	 * For the possible reference uncertain nodes candidates that escape from the
 	 * other two tests, try to use the uncertain reference strategy. 
 	 * 
 	 * @param mFragInstance
