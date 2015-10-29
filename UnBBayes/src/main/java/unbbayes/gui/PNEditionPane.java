@@ -548,9 +548,12 @@ public class PNEditionPane extends JPanel {
 			if (jspTable.getVisibleRect().width < distributionPane
 					.getPreferredSize().width) {
 				jspTable.createHorizontalScrollBar();
-				location += jspTable.getHorizontalScrollBar().getHeight() + 2;
+				location += jspTable.getHorizontalScrollBar().getHeight() - 10;
 			}
 		}
+		//max height so the BN will not disappear
+		if (location >= (netWindow.getHeight() / 3))
+			location = (netWindow.getHeight() / 3);
 		centerPanel.setDividerLocation(location);
 	}
 
