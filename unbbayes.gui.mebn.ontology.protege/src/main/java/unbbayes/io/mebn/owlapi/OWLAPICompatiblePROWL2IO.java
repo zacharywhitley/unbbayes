@@ -136,6 +136,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 	private OWLOntologyIRIMapper prowl2DefinitionIRIMapper;
 	
 	private String prowl2ModelFilePath = "pr-owl/pr-owl2.owl";
+	
 
 	private Map<ResidentNode, OWLIndividual> mappingArgumentCache;
 	
@@ -216,12 +217,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 //		} catch (Throwable t) {
 //			t.printStackTrace();
 //		}
-		// explicitly initialize prowl2ModelFilePath as "pr-owl/pr-owl2.owl" before initializing IRI mapper
-		try {
-			this.setPROWL2ModelFilePath("pr-owl/pr-owl2.owl");
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
+		
 		
 		// initialize IRI mapper, so that requests for PR-OWL2 IRIs is delegated to local files
 		try {
@@ -2421,7 +2417,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		
 		// iterate over categorical entities
 		for(CategoricalStateEntity entity: mebn.getCategoricalStatesEntityContainer().getListEntity()){
-			if(entity.getName().equalsIgnoreCase("absurd")) {
+			if(entity.getName().equalsIgnoreCase(ABSURD_INDIVIDUAL)) {
 				// ignore absurd, because it is implicitly added by default
 				continue;
 			} 
@@ -2435,7 +2431,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				}
 				// update cache anyway
 				this.getCategoricalStatesCache().put(entity, ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNamedIndividual(iriWhenLoaded)); 
-			} else {
+			} else if (getCategoricalStatesCache().get(entity) == null) {	// only handle this if it is not cached already
 				// This is a new individual. Get it.
 				OWLIndividual categoricalStateIndividual = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNamedIndividual(entity.getName(), currentPrefix);
 				// if individual does not exist, create axiom and add it to ontology
