@@ -737,7 +737,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	}
 	
 	/**
-	 * Simply delegates to 
+	 * Simply delegates to {@link #getNonPROWLClassExtractor()}
 	 * @see unbbayes.io.mebn.owlapi.INonPROWLClassExtractor#getNonPROWLClasses(org.semanticweb.owlapi.model.OWLOntology)
 	 */
 	public Collection<OWLClassExpression> getNonPROWLClasses(OWLOntology ontology) {
@@ -745,11 +745,27 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	}
 	
 	/**
-	 * Simply delegates to 
+	 * Simply delegates to {@link #getNonPROWLClassExtractor()}
 	 * @see unbbayes.io.mebn.owlapi.INonPROWLClassExtractor#getPROWLClasses(org.semanticweb.owlapi.model.OWLOntology)
 	 */
 	public Collection<OWLClassExpression> getPROWLClasses(OWLOntology ontology) {
 		return this.getNonPROWLClassExtractor().getPROWLClasses(ontology);
+	}
+	
+	/**
+	 * Simply delegates to {@link #getNonPROWLClassExtractor()}
+	 * @see unbbayes.io.mebn.owlapi.INonPROWLClassExtractor#getPROWLOntologyNamespaceURIs()
+	 */
+	public Collection<String> getPROWLOntologyNamespaceURIs() {
+		return this.getNonPROWLClassExtractor().getPROWLOntologyNamespaceURIs();
+	}
+
+	/**
+	 * Simply delegates to {@link #getNonPROWLClassExtractor()}
+	 * @see unbbayes.io.mebn.owlapi.INonPROWLClassExtractor#setPROWLOntologyNamespaceURIs(java.util.Collection)
+	 */
+	public void setPROWLOntologyNamespaceURIs(Collection<String> prowlOntologyNamespaceURIs) {
+		this.getNonPROWLClassExtractor().setPROWLOntologyNamespaceURIs(prowlOntologyNamespaceURIs);
 	}
 
 	/**

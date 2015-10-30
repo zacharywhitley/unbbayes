@@ -16,13 +16,17 @@ import org.semanticweb.owlapi.model.OWLOntology;
  *
  */
 public class DefaultNonPROWL2ClassExtractor extends DefaultNonPROWLClassExtractor {
+	
 
 	/**
 	 * The default constructor is only visible for subclasses to allow inheritance.
 	 * @deprecated use {@link #getInstance()} instead
 	 */
 	protected DefaultNonPROWL2ClassExtractor() {
-		// TODO Auto-generated constructor stub
+		// change the namespace of the scheme file to point to correct PR-OWL 2 URI
+		HashSet<String> prowlOntologyNamespaceURIs = new HashSet<String>();
+		prowlOntologyNamespaceURIs.add(IPROWL2ModelUser.PROWL2_NAMESPACEURI);
+		setPROWLOntologyNamespaceURIs(prowlOntologyNamespaceURIs);
 	}
 	
 	/**
@@ -59,17 +63,7 @@ public class DefaultNonPROWL2ClassExtractor extends DefaultNonPROWLClassExtracto
 			// remove all classes that are part of PR-OWL 2 specification
 			Collection<OWLClassExpression> classesToRemove = new HashSet<OWLClassExpression>();
 			classesToRemove.add(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing());
-			for (OWLClassExpression classToRemove : ret) {
-				try {
-					// compare the prefix of the class' URI and PR-OWL2's URI to determine if this class is a PR-OWL2 class
-					if (classToRemove.asOWLClass().getIRI().toString().startsWith(IPROWL2ModelUser.PROWL2_NAMESPACEURI)) {
-						classesToRemove.add(classToRemove);
-					}
-				} catch (Throwable e) {
-					e.printStackTrace();
-					continue;
-				}
-			}
+			classesToRemove.addAll(getPROWLClasses(ontology));
 			
 			// remove all detected classes
 			ret.removeAll(classesToRemove);
@@ -83,6 +77,36 @@ public class DefaultNonPROWL2ClassExtractor extends DefaultNonPROWLClassExtracto
 		// do not return ret itself, because it will allow direct access to cache
 		return new HashSet<OWLClassExpression>(ret);
 	}
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.mebn.owlapi.DefaultNonPROWLClassExtractor#getPROWLClasses(org.semanticweb.owlapi.model.OWLOntology)
+	 */
+	public Collection<OWLClassExpression> getPROWLClasses(OWLOntology ontology) {
+		Collection<OWLClassExpression> ret = new HashSet<OWLClassExpression>();
+		for (OWLClassExpression classToRemove : ontology.getClassesInSignature(true)) {
+			// check if the URI of classToRemove starts with at least one of the URIs specified in getPROWLOntologyNamespaceURIs
+			Collection<String> prowlSchemeURIs = getPROWLOntologyNamespaceURIs();
+			if (prowlSchemeURIs != null) {
+				// check URIs one by one
+				for (String prowlSchemeURI : prowlSchemeURIs) {
+					try {
+						// compare the prefix of the class' URI and PR-OWL2's URI to determine if this class is a PR-OWL2 class
+						if (classToRemove.asOWLClass().getIRI().toString().startsWith(prowlSchemeURI)) {
+							ret.add(classToRemove);
+							break;	// if we found at least one, then we don't need to check other URIs
+						}
+					} catch (Throwable e) {
+						e.printStackTrace();
+						continue;
+					}
+				}
+			}
+		}
+		return ret;
+	}
+
+	
+
 
 
 }

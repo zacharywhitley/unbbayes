@@ -7,7 +7,6 @@ import java.util.Collection;
 
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 /**
  * Classes implementing this interface can extract non-PR-OWL classes from an ontology.
@@ -38,6 +37,17 @@ public interface INonPROWLClassExtractor {
 	 * This method will reset objects of this interface (e.g. clear caches).
 	 */
 	public void resetNonPROWLClassExtractor();
+	
+	/**
+	 * @return the prowlOntologyNamespaceURIs : OWL classes with URIs starting with these URIs will be considered as part of PR-OWL scheme in {@link #getPROWLClasses(OWLOntology)}.
+	 * @see #getPROWLClasses(OWLOntology)
+	 */
+	public Collection<String> getPROWLOntologyNamespaceURIs();
+
+	/**
+	 * @param prowlOntologyNamespaceURIs : OWL classes with URIs starting with these URIs will be considered as part of PR-OWL scheme in {@link #getPROWLClasses(OWLOntology)}
+	 */
+	public void setPROWLOntologyNamespaceURIs(Collection<String> prowlOntologyNamespaceURIs);
 	
 	
 }

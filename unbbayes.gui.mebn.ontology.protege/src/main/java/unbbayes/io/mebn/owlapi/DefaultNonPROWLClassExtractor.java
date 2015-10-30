@@ -20,8 +20,15 @@ import unbbayes.util.Debug;
 public class DefaultNonPROWLClassExtractor implements INonPROWLClassExtractor {
 	
 	private String prowlOntologyNamespaceURI = "http://www.pr-owl.org/pr-owl.owl";
+	private Collection<String> prowlOntologyNamespaceURIs = new HashSet<String>();
+	{
+		// by default, initialize it with 1 element
+		prowlOntologyNamespaceURIs.add("http://www.pr-owl.org/pr-owl.owl");
+	}
 	
 	private Collection<OWLClassExpression> nonPROWLClassesCache = new HashSet<OWLClassExpression>();
+	
+
 	
 	/**
 	 * The default constructor is only visible for subclasses to allow inheritance.
@@ -133,18 +140,33 @@ public class DefaultNonPROWLClassExtractor implements INonPROWLClassExtractor {
 		this.setNonPROWLClassesCache(null);
 	}
 
+
 	/**
-	 * @return the prowlOntologyNamespaceURI
+	 * @deprecated use {@link #getPROWLOntologyNamespaceURIs()} instead
+	 * @see unbbayes.io.mebn.owlapi.DefaultNonPROWLClassExtractor#getProwlOntologyNamespaceURI()
 	 */
+	@Deprecated
 	public String getProwlOntologyNamespaceURI() {
+		Collection<String> uris = getPROWLOntologyNamespaceURIs();
+		if (uris != null && !uris.isEmpty()) {
+			// just return the 1st element
+			return uris.iterator().next();
+		}
 		return prowlOntologyNamespaceURI;
 	}
 
 	/**
-	 * @param prowlOntologyNamespaceURI the prowlOntologyNamespaceURI to set
+	 * @deprecated use {@link #setPROWLOntologyNamespaceURIs(Collection)} or add elements in {@link #getPROWLOntologyNamespaceURIs()} instead.
+	 * @see unbbayes.io.mebn.owlapi.DefaultNonPROWLClassExtractor#setProwlOntologyNamespaceURI(java.lang.String)
 	 */
+	@Deprecated
 	public void setProwlOntologyNamespaceURI(String prowlOntologyNamespaceURI) {
-		this.prowlOntologyNamespaceURI = prowlOntologyNamespaceURI;
+		Collection<String> uris = getPROWLOntologyNamespaceURIs();
+		if (uris != null) {
+			// just add new element
+			uris.add(prowlOntologyNamespaceURI);
+		}
+		prowlOntologyNamespaceURI = prowlOntologyNamespaceURI;
 	}
 
 	/*
@@ -229,5 +251,23 @@ public class DefaultNonPROWLClassExtractor implements INonPROWLClassExtractor {
 		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
 		
 		return ret;
+	}
+	
+	/**
+	 * @return the prowlOntologyNamespaceURIs : OWL classes with URIs starting with these URIs will be considered as part of PR-OWL scheme.
+	 * @see #getProwlOntologyNamespaceURI()
+	 * @see #getPROWLClasses(OWLOntology)
+	 */
+	public Collection<String> getPROWLOntologyNamespaceURIs() {
+		return prowlOntologyNamespaceURIs;
+	}
+
+	/**
+	 * @param prowlOntologyNamespaceURIs : OWL classes with URIs starting with these URIs will be considered as part of PR-OWL scheme.
+	 * @see #getProwlOntologyNamespaceURI()
+	 * @see #getPROWLClasses(OWLOntology)
+	 */
+	public void setPROWLOntologyNamespaceURIs(Collection<String> prowlOntologyNamespaceURIs) {
+		this.prowlOntologyNamespaceURIs = prowlOntologyNamespaceURIs;
 	}
 }
