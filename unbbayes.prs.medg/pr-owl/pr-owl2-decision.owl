@@ -51,9 +51,44 @@
     
 
 
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasMExpression -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl2;hasMExpression"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isParentOf -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl2;isParentOf"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#typeOfMExpression -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl2;typeOfMExpression"/>
+    
+
+
     <!-- http://www.w3.org/2002/07/owl#topObjectProperty -->
 
     <owl:ObjectProperty rdf:about="&owl;topObjectProperty"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues -->
+
+    <owl:DatatypeProperty rdf:about="&pr-owl2;hasPossibleValues"/>
     
 
 
@@ -89,6 +124,22 @@
 
     <owl:Class rdf:about="&pr-owl2-decision;DomainUtilityNode">
         <rdfs:subClassOf rdf:resource="&pr-owl2;DomainResidentNode"/>
+        <rdfs:subClassOf>
+            <owl:Class>
+                <owl:complementOf>
+                    <owl:Restriction>
+                        <owl:onProperty rdf:resource="&pr-owl2;isParentOf"/>
+                        <owl:someValuesFrom rdf:resource="&pr-owl2;Node"/>
+                    </owl:Restriction>
+                </owl:complementOf>
+            </owl:Class>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasMExpression"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl2-decision;UtilityMExpression"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">This class represents an utility node in MEDG. Utility nodes are 
     theoretically different from a domain resident node. For instance, utility 
     nodes don&#39;t have &amp;quot;possible states&amp;quot;, and LPDs of utility nodes are not 
@@ -104,9 +155,55 @@
     
 
 
+    <!-- http://www.pr-owl.org/pr-owl2-decision.owl#UtilityMExpression -->
+
+    <owl:Class rdf:about="&pr-owl2-decision;UtilityMExpression">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;typeOfMExpression"/>
+                <owl:someValuesFrom rdf:resource="&pr-owl2-decision;UtilityVariable"/>
+            </owl:Restriction>
+        </owl:equivalentClass>
+        <rdfs:subClassOf rdf:resource="&pr-owl2;SimpleMExpression"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2-decision.owl#UtilityVariable -->
+
+    <owl:Class rdf:about="&pr-owl2-decision;UtilityVariable">
+        <owl:equivalentClass>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;hasPossibleValues"/>
+                <owl:hasValue rdf:datatype="&xsd;anyURI">http://www.pr-owl.org/pr-owl2-decision.owl#utility</owl:hasValue>
+            </owl:Restriction>
+        </owl:equivalentClass>
+        <rdfs:subClassOf rdf:resource="&pr-owl2;RandomVariable"/>
+    </owl:Class>
+    
+
+
     <!-- http://www.pr-owl.org/pr-owl2.owl#DomainResidentNode -->
 
     <owl:Class rdf:about="&pr-owl2;DomainResidentNode"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#Node -->
+
+    <owl:Class rdf:about="&pr-owl2;Node"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#RandomVariable -->
+
+    <owl:Class rdf:about="&pr-owl2;RandomVariable"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#SimpleMExpression -->
+
+    <owl:Class rdf:about="&pr-owl2;SimpleMExpression"/>
     
 
 

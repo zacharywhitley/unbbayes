@@ -53,6 +53,40 @@
     nodes with non-normalized LPD), utility nodes in pr-owl-decision profile 
     were modeled as subclasses of Domain_Res.</rdfs:comment>
     <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#Domain_Res"/>
+    <rdfs:subClassOf>
+      <owl:Class>
+        <owl:complementOf>
+          <owl:Restriction>
+            <owl:someValuesFrom rdf:resource="http://www.pr-owl.org/pr-owl.owl#Node"/>
+            <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#isParentOf"/>
+          </owl:Restriction>
+        </owl:complementOf>
+      </owl:Class>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasPossibleValues"/>
+        <owl:hasValue>
+          <pr-owl:CategoricalRVState rdf:ID="utility">
+            <rdfs:comment xml:lang="en">This is a categoritcal entity which represents a default state of utility nodes. For backward compatibility, utility nodes in PR-OWL2 Decision profile is virtually handled as a resident node with only 1 possible state, and this individual is such state.</rdfs:comment>
+            <pr-owl:hasType>
+              <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#CategoryLabel">
+                <pr-owl:isTypeOf rdf:resource="#utility"/>
+              </rdf:Description>
+            </pr-owl:hasType>
+            <pr-owl:hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
+            >!utility</pr-owl:hasUID>
+          </pr-owl:CategoricalRVState>
+        </owl:hasValue>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+        <owl:onProperty rdf:resource="http://www.pr-owl.org/pr-owl.owl#hasPossibleValues"/>
+        <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#int"
+        >1</owl:cardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
   </owl:Class>
   <owl:DatatypeProperty rdf:about="http://www.w3.org/2000/01/rdf-schema#range"/>
   <owl:DatatypeProperty rdf:about="http://www.pr-owl-decision.org/pr-owl-decision.owl#isDefault">
@@ -95,20 +129,6 @@ The datatype itself is a nonNegativeInteger. We used this instead of a positiveI
     <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
     >This datatype property is used to store the actual probability of an individual ProbAssign. Currently, OWL has no support for user defined datatypes, so instead of using owl-p:prob datatype (which includes all decimals between 0 and 1 inclusive) we are using xsd:decimal for compatibility purposes.</rdfs:comment>
   </owl:FunctionalProperty>
-  <rdf:Description rdf:about="http://www.pr-owl-decision.org/pr-owl-decision.owl#Domain_Decision">
-    <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-    >This class represents a</rdfs:comment>
-  </rdf:Description>
-  <rdf:Description rdf:about="http://www.pr-owl.org/pr-owl.owl#CategoryLabel">
-    <pr-owl:isTypeOf>
-      <pr-owl:CategoricalRVState rdf:ID="utility">
-        <rdfs:comment xml:lang="en">This is a categoritcal entity which represents a default state of utility nodes. For backward compatibility, utility nodes in PR-OWL2 Decision profile is virtually handled as a resident node with only 1 possible state, and this individual is such state.</rdfs:comment>
-        <pr-owl:hasType rdf:resource="http://www.pr-owl.org/pr-owl.owl#CategoryLabel"/>
-        <pr-owl:hasUID rdf:datatype="http://www.w3.org/2001/XMLSchema#string"
-        >!utility</pr-owl:hasUID>
-      </pr-owl:CategoricalRVState>
-    </pr-owl:isTypeOf>
-  </rdf:Description>
 </rdf:RDF>
 
 <!-- Created with Protege (with OWL Plugin 3.4, Build 533)  http://protege.stanford.edu -->
