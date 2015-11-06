@@ -638,7 +638,7 @@ public class ResidentNode extends MultiEntityNode
 	 * @param possibleValueList
 	 * @see #getPossibleValueLinkList()
 	 */
-	protected void setPossibleValueLinkList(List<StateLink> possibleValueList){
+	public void setPossibleValueLinkList(List<StateLink> possibleValueList){
 		this.possibleValueList = possibleValueList ; 
 	}
 	
@@ -791,7 +791,7 @@ public class ResidentNode extends MultiEntityNode
 	public void setOrdinaryVariableList(List<OrdinaryVariable> ordinaryVariableList) {
 		this.ordinaryVariableList = ordinaryVariableList;
 	}
-
+	
 	/**
 	 * @param mFrag the mFrag to set
 	 */

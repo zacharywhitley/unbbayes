@@ -76,7 +76,7 @@ public class EntityFindingEditionPane extends JPanel {
 
 	private MEBNController mebnController; 
 	
-	private Object selected; 
+	private List<Object> selected = new ArrayList<Object>(); 
 	
 	private ObjectEntityInstanceOrdereable last; 
 	
@@ -365,21 +365,23 @@ public class EntityFindingEditionPane extends JPanel {
 		}
 		
 		private void removeInstance(){
-			if(selected != null){
+			if(!selected.isEmpty()){
 				if(!isAdding){
-					if(selected instanceof ObjectEntityInstanceOrdereable){
-						mebnController.removeEntityInstanceOrdereable((ObjectEntityInstanceOrdereable)selected); 
+					for(Object selec: selected){
+						if(selec instanceof ObjectEntityInstanceOrdereable){
+							mebnController.removeEntityInstanceOrdereable((ObjectEntityInstanceOrdereable)selec); 
+						}
+						else{
+							mebnController.removeEntityInstance((ObjectEntityInstance)selec); 						
+						}
+						   objectEntityInstanceListPane.update();  
 					}
-					else{
-						mebnController.removeEntityInstance((ObjectEntityInstance)selected); 						
-					}
-					   objectEntityInstanceListPane.update();  
-					}
+				}
 				}
 		}
 		
 		private void upInstance(){
-			if(selected != null){
+			if(!selected.isEmpty()){
 				if(!isAdding){
 					   mebnController.upEntityInstance((ObjectEntityInstanceOrdereable)selected); 
 					   objectEntityInstanceListPane.update();  
@@ -461,7 +463,7 @@ public class EntityFindingEditionPane extends JPanel {
 			jlistEntity.addListSelectionListener(
 		            new ListSelectionListener(){
 		                public void valueChanged(ListSelectionEvent e) {
-		                	selected = (ObjectEntity)jlistEntity.getSelectedValue(); 
+		                	selected = (List<Object>)jlistEntity.getSelectedValuesList(); 
 		                	isAdding = true; 
 		                	if(selected != null){
 		                	    objectEntityInstancePane.updateReference(); 
@@ -536,7 +538,7 @@ public class EntityFindingEditionPane extends JPanel {
 		            new ListSelectionListener(){
 		                public void valueChanged(ListSelectionEvent e) {
 		                	
-		                	selected = jlistEntity.getSelectedValue(); 
+		                	selected = jlistEntity.getSelectedValuesList(); 
 		                	isAdding = false; 
 		                	
 		                	if(selected != null){
