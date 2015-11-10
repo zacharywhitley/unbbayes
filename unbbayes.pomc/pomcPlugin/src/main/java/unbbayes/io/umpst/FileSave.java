@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Date;
+import java.util.EmptyStackException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -18,7 +20,9 @@ import javax.xml.transform.stream.StreamResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.model.umpst.project.UMPSTProject;
+import unbbayes.util.CommonDataUtil;
 
 public class FileSave {
 
@@ -60,6 +64,7 @@ public class FileSave {
 		 */
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		try {
+			
 			/* Use factory to get an instance of document builder */
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			doc = db.newDocument();
@@ -67,7 +72,7 @@ public class FileSave {
 			FileBuildNodeHierarchy build = new FileBuildNodeHierarchy();
 			FileSaveHeader hd = new FileSaveHeader();
 
-			/* Root element */
+			/* Root elements */
 			root = doc.createElement("newFormat");
 			root.setAttribute("version", "0");
 			root.setAttribute("newFormatInfs",
@@ -75,9 +80,29 @@ public class FileSave {
 			doc.appendChild(root);
 
 			/* ------------------- Header ------------------- */
+			
+			/* OBS. Needs throw an exception when one of the header attributes is null */			
+			String modelName = fileName;
+			if(index >= 0) {
+				modelName = modelName.substring(0, index);				
+			}
+			
+			/* OBS. The model author is the last author of some object if the model was
+			 * not loaded */
+			String modelAuthor = umpstProject.getAuthorModel();
+			if(modelAuthor == null) {
+				modelAuthor = CommonDataUtil.getInstance().getAuthorName();
+			}
+			
+			String modelCreateDate = umpstProject.getDate();
+			String modelUploadDate = CommonDataUtil.getInstance().getActualDate();
+			if(modelCreateDate == null) {
+				modelCreateDate = modelUploadDate;
+			}
+						
 			Element headerTag = hd.renderHeader(doc, root, "0", "0",
-					"Modelo teste", "diego", "23/08/2015", "24/08/2015");
-			root.appendChild(headerTag);
+					modelName, modelAuthor, modelCreateDate, modelUploadDate);
+			root.appendChild(headerTag);			
 
 			/* ------------------- Model ------------------- */
 			Element modelTag = doc.createElement("model");
@@ -117,20 +142,13 @@ public class FileSave {
 				/* Send DOM to file */
 				tr.transform(new DOMSource(doc), new StreamResult(
 						new FileOutputStream(file)));
-
 			} catch (TransformerException te) {
 				System.out.println(te.getMessage());
-
 			} catch (IOException ioe) {
 				System.out.println(ioe.getMessage());
-
 			}
-
 		} catch (ParserConfigurationException pce) {
-			System.out
-					.println("UsersXML: Error trying to instantiate DocumentBuilder "
-							+ pce);
-
+			System.out.println("UsersXML: Error trying to instantiate DocumentBuilder "	+ pce);
 		}		
 	}
 }

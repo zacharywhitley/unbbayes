@@ -38,9 +38,11 @@ public class FileLoadNodeAttribute {
 			Node node = list.item(i);
 
 			if (node.getNodeType() == Node.ELEMENT_NODE) {				
-				elem = (Element) node;				
-				String id = elem.getElementsByTagName("id").item(0).getTextContent();
-				String atributeName = elem.getElementsByTagName("atributeName").item(0).getTextContent();
+				elem = (Element) node;
+//				String id = elem.getElementsByTagName("id").item(0).getTextContent();
+				String attributeId = elem.getElementsByTagName("attributeId").item(0).getTextContent();
+//				String atributeName = elem.getElementsByTagName("atributeName").item(0).getTextContent();
+				String name = elem.getElementsByTagName("name").item(0).getTextContent();
 				String comments = elem.getElementsByTagName("comments").item(0).getTextContent();
 				String author = elem.getElementsByTagName("author").item(0).getTextContent();
 				String date = elem.getElementsByTagName("date").item(0).getTextContent();
@@ -56,19 +58,19 @@ public class FileLoadNodeAttribute {
 						subAttribute.add(repeatNodes.item(j).getTextContent());
 						
 					}
-					FileIndexChildNode iAttribute = new FileIndexChildNode(id, subAttribute);
+					FileIndexChildNode iAttribute = new FileIndexChildNode(attributeId, subAttribute);
 					listOfSubAttributeNode.add(iAttribute);
 					
 		
 				}
-				attribute = new AttributeModel(id, atributeName, comments, author, date, null, null, 
+				attribute = new AttributeModel(attributeId, name, comments, author, date, null, null, 
 						null, null, null, null);
 				
 				/* add entity related to attribute */
 				attribute.getEntityRelated().add(entityRelated);
 				
 				/* relate attribute object model to entity */
-				entityRelated.getMapAtributes().put(id, attribute);
+				entityRelated.getMapAtributes().put(attributeId, attribute);
 				
 				mapAttribute.put(attribute.getId(), attribute);				
 			}
@@ -76,7 +78,7 @@ public class FileLoadNodeAttribute {
 
 		/* Verify list of subAttributes and put then into a mapAttribute */		
 		for (int j = 0; j < listOfSubAttributeNode.size(); j++) {
-			String attributeId = listOfSubAttributeNode.get(j).getIndex();
+			String _attributeId = listOfSubAttributeNode.get(j).getIndex();
 			Map<String, AttributeModel> mapSubAttribute = new HashMap<String, AttributeModel>();
 
 			if (listOfSubAttributeNode.get(j).getListOfNodes() != null) {			
@@ -86,7 +88,7 @@ public class FileLoadNodeAttribute {
 					mapSubAttribute.put(subAttributeId, subAttribute);
 					
 				}
-				mapAttribute.get(attributeId).setMapSubAtributes(mapSubAttribute);
+				mapAttribute.get(_attributeId).setMapSubAtributes(mapSubAttribute);
 			}		
 		}		
 		

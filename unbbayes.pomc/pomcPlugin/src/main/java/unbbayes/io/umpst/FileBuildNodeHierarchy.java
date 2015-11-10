@@ -22,10 +22,10 @@ import unbbayes.model.umpst.rule.RuleModel;
  * @author Diego Marques
  */
 
-public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
+public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy {
 	
 	private Set<String> keys;
-	private Set<String> subKeys;
+	private Set<String> subKeys, _subKeys;
 	private TreeSet<String> sortedKeys;
 	private TreeSet<String> subSortedKeys;
 	
@@ -47,7 +47,9 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 			sortedKeys = new TreeSet<String>(keys);
 			
 			bn.setNameNode("goal");
-			bn.setNameObject("goalName");
+//			bn.setNameObject("goalName");
+			bn.setIdNode("goalId");
+			bn.setNameObject("name");
 			
 			for (String key : sortedKeys) {
 				goal = umpstProject.getMapGoal().get(key);
@@ -58,28 +60,37 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 					subKeys = goal.getSubgoals().keySet();
 					subSortedKeys = new TreeSet<String>(subKeys);
 					
+					Element subgoals = doc.createElement("subgoals");
+					node.appendChild(subgoals);
 					for (String subKey : subSortedKeys) {
 						subGoal = umpstProject.getMapGoal().get(subKey);
 						
-						Element subgoals = doc.createElement("subgoals");
-						subgoals.appendChild(doc.createTextNode(subGoal.getId()));
-						node.appendChild(subgoals);
-					}					
+//						Element subgoals = doc.createElement("subgoals");
+						Element goalId = doc.createElement("goalId");
+						goalId.appendChild(doc.createTextNode(subGoal.getId()));
+						subgoals.appendChild(goalId);
+//						goalId.appendChild(goalId);
+					}
 				}
 				
 				/* Hypothesis List*/				
-				if (!umpstProject.getMapHypothesis().isEmpty()) {
-					subKeys = umpstProject.getMapHypothesis().keySet();
+				if (!goal.getMapHypothesis().isEmpty()) {
+					subKeys = goal.getMapHypothesis().keySet();
 					subSortedKeys = new TreeSet<String>(subKeys);
 					
+					Element hypothesisList = doc.createElement("hypothesisList");
+					node.appendChild(hypothesisList);
 					for (String subKey : subSortedKeys) {
-						hypothesis = umpstProject.getMapHypothesis().get(subKey);
+//						hypothesis = umpstProject.getMapHypothesis().get(subKey);
+						hypothesis = goal.getMapHypothesis().get(subKey);
 						
-						if (hypothesis.getGoalRelated().contains(goal)) {
-							Element hypothesisList = doc.createElement("hypothesisList");
-							hypothesisList.appendChild(doc.createTextNode(hypothesis.getId()));
-							node.appendChild(hypothesisList);
-						}
+//						if (hypothesis.getGoalRelated().contains(goal)) {
+//							Element hypothesisList = doc.createElement("hypothesisList");
+							Element hypothesisId = doc.createElement("hypothesisId");
+							hypothesisId.appendChild(doc.createTextNode(hypothesis.getId()));
+							hypothesisList.appendChild(hypothesisId);
+//							node.appendChild(hypothesisId);
+//						}
 					}
 				}
 				
@@ -103,7 +114,9 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 			sortedKeys = new TreeSet<String>(keys);
 					
 			bn.setNameNode("hypothesis");
-			bn.setNameObject("hypothesisName");
+//			bn.setNameObject("hypothesisName");
+			bn.setIdNode("hypothesisId");
+			bn.setNameObject("name");
 			
 			for(String key : sortedKeys) {
 				hypothesis = umpstProject.getMapHypothesis().get(key);
@@ -128,12 +141,15 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 					subKeys = hypothesis.getMapSubHypothesis().keySet();
 					subSortedKeys = new TreeSet<String>(subKeys);
 					
+					Element subHypothesisElem = doc.createElement("subHypothesis");
+					node.appendChild(subHypothesisElem);					
 					for (String subKey : subSortedKeys) {
 						subHypothesis = umpstProject.getMapHypothesis().get(subKey);
 						
-						Element subHypothesisList = doc.createElement("hypothesisList");
-						subHypothesisList.appendChild(doc.createTextNode(subHypothesis.getId()));
-						node.appendChild(subHypothesisList);
+//						Element subHypothesisList = doc.createElement("hypothesisList");
+						Element subHypothesisId = doc.createElement("hypothesisId");
+						subHypothesisId.appendChild(doc.createTextNode(subHypothesis.getId()));
+						subHypothesisElem.appendChild(subHypothesisId);
 					}					
 				}
 				parent.appendChild(node);
@@ -150,15 +166,18 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 			sortedKeys = new TreeSet<String>(keys);
 			
 			for (String key : sortedKeys) {
-				bn.setNameNode("entity");
-				bn.setNameObject("entityName");
+				bn.setNameNode("entity");				
+				bn.setIdNode("entityId");
+				bn.setNameObject("name");
 
 				entity = umpstProject.getMapEntity().get(key);
 				node = bn.buildNode(doc, parent, entity);				
 				parent.appendChild(node);
 	
-				/* verify node dependencies */
-//				buildAttributesDependency(umpstProject, doc, node, entity);
+				/* verify node dependencies 
+				 * OBS. This format does not need attribute list node
+				 * */
+//				buildAttributeDependency(entity, doc, node);
 				
 				/* Attributes List */
 				if (!umpstProject.getMapAtribute().isEmpty()) {
@@ -195,11 +214,44 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 						Element hipothesisId = doc.createElement("backtrackingHypothesisList");
 						hipothesisId.appendChild(doc.createTextNode(elem.getId()));
 						node.appendChild(hipothesisId);
-					}					
+					}			
 				}
 			}
 		}		
 	}
+
+	/* Verify entity dependencies and build attribute nodes */
+	/* TODO Save in format below
+	 * 		<entity>
+	 * 			<attribute>
+	 * 
+	 * */
+//	public void buildAttributeDependency(EntityModel entity, Document doc, Element node) {
+//		Element nodeDependencyFather = null;
+//		Element nodeDependency = null;
+//		AttributeModel attribute;
+//		
+//		if (!entity.getMapAtributes().isEmpty()) {		
+//			keys = entity.getMapAtributes().keySet();
+//			sortedKeys = new TreeSet<String>(keys);
+//					
+//			bn.setNameNode("attribute");
+//			bn.setIdNode("attributeId");
+//			bn.setNameObject("name");
+//			
+//			for(String key : sortedKeys) {
+//				attribute = entity.getMapAtributes().get(key);				
+//				nodeDependency = bn.buildNode(doc, node, attribute);
+//				if(attribute.getFather() != null) {
+//					nodeDependencyFather = bn.getNodeFather();
+//					nodeDependencyFather.appendChild(nodeDependency);
+//				} else {
+//					node.appendChild(nodeDependency);
+//				}
+//				bn.setNodeFather(nodeDependency);				
+//			}
+//		}
+//	}
 	
 	public void attributeNodeHierarchy(Document doc, Element parent, UMPSTProject umpstProject) {
 		Element node = null;
@@ -209,7 +261,9 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 			sortedKeys = new TreeSet<String>(keys);
 			
 			bn.setNameNode("attribute");
-			bn.setNameObject("atributeName");
+//			bn.setNameObject("attributeName");
+			bn.setIdNode("attributeId");
+			bn.setNameObject("name");
 			
 			for(String key : sortedKeys) {
 				attribute = umpstProject.getMapAtribute().get(key);
@@ -257,7 +311,9 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 		if (umpstProject.getMapRelationship().size() > 0) {
 			for (String key : sortedKeys) {
 				bn.setNameNode("relationship");
-				bn.setNameObject("relationshipName");
+//				bn.setNameObject("relationshipName");
+				bn.setIdNode("relationshipId");
+				bn.setNameObject("name");
 
 				relationship = umpstProject.getMapRelationship().get(key);
 				node = bn.buildNode(doc, parent, relationship);				
@@ -267,10 +323,14 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!relationship.getEntityList().isEmpty()) {
 					List<EntityModel> listEntities = relationship.getEntityList();
 					
+					Element btEntityElem = doc.createElement("backtrackingEntitiesList");
+					node.appendChild(btEntityElem);
 					for(EntityModel elem : listEntities) {
-						Element entityId = doc.createElement("backtrackingEntitiesList");
+//						Element entityId = doc.createElement("backtrackingEntitiesList");
+						Element entityId = doc.createElement("entityId");
 						entityId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(entityId);
+						btEntityElem.appendChild(entityId);
+//						node.appendChild(entityId);
 					}					
 				}	
 				
@@ -278,10 +338,13 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!relationship.getBacktrackingGoal().isEmpty()) {
 					List<GoalModel> listGoals = relationship.getBacktrackingGoal();
 					
+					Element btGoalElem = doc.createElement("backtrackingGoalsList");
+					node.appendChild(btGoalElem);
 					for(GoalModel elem : listGoals) {
-						Element goalId = doc.createElement("backtrackingGoalsList");
+//						Element goalId = doc.createElement("backtrackingGoalsList");
+						Element goalId = doc.createElement("goalId");
 						goalId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(goalId);
+						btGoalElem.appendChild(goalId);
 					}					
 				}
 				
@@ -289,14 +352,17 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!relationship.getBacktrackingHypothesis().isEmpty()) {
 					List<HypothesisModel> listHypothesis = relationship.getBacktrackingHypothesis();
 					
+					Element btHypothesisElem = doc.createElement("backtrackingHypothesisList");
+					node.appendChild(btHypothesisElem);
 					for(HypothesisModel elem : listHypothesis) {
-						Element hypothesislId = doc.createElement("backtrackingHypothesisList");
+//						Element hypothesislId = doc.createElement("backtrackingHypothesisList");
+						Element hypothesislId = doc.createElement("hypothesisId");
 						hypothesislId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(hypothesislId);
-					}					
+						btHypothesisElem.appendChild(hypothesislId);
+					}				
 				}
 			}
-		}		
+		}
 	}
 	
 	public void ruleNodeHierarchy(Document doc, Element parent, UMPSTProject umpstProject) {		
@@ -308,7 +374,9 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 		if (umpstProject.getMapRules().size() > 0) {
 			for (String key : sortedKeys) {
 				bn.setNameNode("rule");
-				bn.setNameObject("rulesName");
+//				bn.setNameObject("rulesName");
+				bn.setIdNode("ruleId");
+				bn.setNameObject("name");
 
 				rule = umpstProject.getMapRules().get(key);
 				node = bn.buildNode(doc, parent, rule);
@@ -323,10 +391,13 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!rule.getEntityList().isEmpty()) {
 					List<EntityModel> listEntities = rule.getEntityList();
 					
+					Element entityListElem = doc.createElement("entityList");
+					node.appendChild(entityListElem);
 					for(EntityModel elem : listEntities) {
-						Element entityId = doc.createElement("entityList");
+						Element entityId = doc.createElement("entityId");
 						entityId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(entityId);
+						entityListElem.appendChild(entityId);
+//						node.appendChild(entityId);
 					}					
 				}
 				
@@ -334,10 +405,13 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!rule.getAttributeList().isEmpty()) {
 					List<AttributeModel> listAttributes = rule.getAttributeList();
 					
+					Element attributeListElem = doc.createElement("attributeList");
+					node.appendChild(attributeListElem);
 					for(AttributeModel elem : listAttributes) {
-						Element attributeId = doc.createElement("attributeList");
+						Element attributeId = doc.createElement("attributeId");
 						attributeId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(attributeId);
+						attributeListElem.appendChild(attributeId);
+//						node.appendChild(attributeId);
 					}					
 				}
 				
@@ -345,10 +419,13 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!rule.getRelationshipList().isEmpty()) {
 					List<RelationshipModel> listRelationship = rule.getRelationshipList();
 					
+					Element relationshipListElem = doc.createElement("relationshipList");
+					node.appendChild(relationshipListElem);
 					for(RelationshipModel elem : listRelationship) {
-						Element relationshipId = doc.createElement("relationshipList");
+						Element relationshipId = doc.createElement("relationshipId");
 						relationshipId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(relationshipId);
+						relationshipListElem.appendChild(relationshipId);
+//						node.appendChild(relationshipId);
 					}					
 				}
 				
@@ -356,10 +433,12 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!rule.getGroupList().isEmpty()) {
 					List<GroupModel> listGroup = rule.getGroupList();
 					
+					Element groupListElem = doc.createElement("groupList");
+					node.appendChild(groupListElem);
 					for(GroupModel elem : listGroup) {
-						Element groupId = doc.createElement("groupList");
+						Element groupId = doc.createElement("groupId");
 						groupId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(groupId);
+						groupListElem.appendChild(groupId);
 					}					
 				}
 				
@@ -367,10 +446,12 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!rule.getChildrenRuleList().isEmpty()) {
 					List<RuleModel> listRuleChildren = rule.getChildrenRuleList();
 					
+					Element chListElem = doc.createElement("childrenRuleList");
+					node.appendChild(chListElem);
 					for(RuleModel elem : listRuleChildren) {
-						Element ruleChildrenId = doc.createElement("childrenRuleList");
+						Element ruleChildrenId = doc.createElement("ruleId");
 						ruleChildrenId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(ruleChildrenId);
+						chListElem.appendChild(ruleChildrenId);
 					}					
 				}
 				
@@ -378,10 +459,12 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!rule.getBacktrackingGoalList().isEmpty()) {
 					List<GoalModel> listGoals = rule.getBacktrackingGoalList();
 					
+					Element btGoalElem = doc.createElement("backtrackingGoalsList");
+					node.appendChild(btGoalElem);
 					for(GoalModel elem : listGoals) {
-						Element goalId = doc.createElement("backtrackingGoalsList");
+						Element goalId = doc.createElement("goalId");
 						goalId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(goalId);
+						btGoalElem.appendChild(goalId);
 					}					
 				}
 				
@@ -389,10 +472,12 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!rule.getBacktrackingHypothesis().isEmpty()) {
 					List<HypothesisModel> listHypothesis = rule.getBacktrackingHypothesis();
 					
+					Element btHypothesisElem = doc.createElement("backtrackingHypothesisList");
+					node.appendChild(btHypothesisElem);
 					for(HypothesisModel elem : listHypothesis) {
-						Element hypothesisId = doc.createElement("backtrackingHypothesisList");
+						Element hypothesisId = doc.createElement("hypothesisId");
 						hypothesisId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(hypothesisId);
+						btHypothesisElem.appendChild(hypothesisId);
 					}					
 				}
 			}
@@ -408,7 +493,9 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 		if (umpstProject.getMapGroups().size() > 0) {
 			for (String key : sortedKeys) {
 				bn.setNameNode("group");
-				bn.setNameObject("groupName");
+//				bn.setNameObject("groupName");
+				bn.setIdNode("groupId");
+				bn.setNameObject("name");
 
 				group = umpstProject.getMapGroups().get(key);
 				node = bn.buildNode(doc, parent, group);
@@ -418,10 +505,12 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!group.getBacktrackingGoal().isEmpty()) {
 					List<GoalModel> listGoals = group.getBacktrackingGoal();
 					
+					Element btGoalElem = doc.createElement("backtrackingGoalsList");
+					node.appendChild(btGoalElem);
 					for(GoalModel elem : listGoals) {
-						Element goalId = doc.createElement("backtrackingGoalsList");
+						Element goalId = doc.createElement("goalId");
 						goalId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(goalId);
+						btGoalElem.appendChild(goalId);
 					}					
 				}
 				
@@ -429,10 +518,12 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!group.getBacktrackingHypothesis().isEmpty()) {
 					List<HypothesisModel> listHypothesis = group.getBacktrackingHypothesis();
 					
+					Element btHypothesisElem = doc.createElement("backtrackingHypothesisList");
+					node.appendChild(btHypothesisElem);
 					for(HypothesisModel elem : listHypothesis) {
-						Element hypothesisId = doc.createElement("backtrackingHypothesisList");
+						Element hypothesisId = doc.createElement("hypothesisId");
 						hypothesisId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(hypothesisId);
+						btHypothesisElem.appendChild(hypothesisId);
 					}					
 				}
 				
@@ -440,10 +531,12 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!group.getBacktrackingRules().isEmpty()) {
 					List<RuleModel> listRules = group.getBacktrackingRules();
 					
+					Element btRuleElem = doc.createElement("backtrackingRulesList");
+					node.appendChild(btRuleElem);
 					for(RuleModel elem : listRules) {
-						Element ruleId = doc.createElement("backtrackingRulesList");
+						Element ruleId = doc.createElement("ruleId");
 						ruleId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(ruleId);
+						btRuleElem.appendChild(ruleId);
 					}					
 				}
 				
@@ -451,10 +544,12 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!group.getBacktrackingEntities().isEmpty()) {
 					List<EntityModel> listEntity = group.getBacktrackingEntities();
 					
+					Element btEntityElem = doc.createElement("backtrackingEntitiesList");
+					node.appendChild(btEntityElem);
 					for(EntityModel elem : listEntity) {
-						Element entityId = doc.createElement("backtrackingEntitiesList");
+						Element entityId = doc.createElement("entityId");
 						entityId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(entityId);
+						btEntityElem.appendChild(entityId);
 					}					
 				}
 				
@@ -462,10 +557,12 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!group.getBacktrackingAtributes().isEmpty()) {
 					List<AttributeModel> listAttributes = group.getBacktrackingAtributes();
 					
+					Element btAttributeElem = doc.createElement("backtrackingAttributesList");
+					node.appendChild(btAttributeElem);
 					for(AttributeModel elem : listAttributes) {
-						Element attributeId = doc.createElement("backtrackingAttributesList");
+						Element attributeId = doc.createElement("attributeId");
 						attributeId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(attributeId);
+						btAttributeElem.appendChild(attributeId);
 					}					
 				}
 				
@@ -473,10 +570,12 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy{
 				if(!group.getBacktrackingRelationship().isEmpty()) {
 					List<RelationshipModel> listRelationship = group.getBacktrackingRelationship();
 					
+					Element btRelationshipElem = doc.createElement("backtrackingRelationshipList");
+					node.appendChild(btRelationshipElem);
 					for(RelationshipModel elem : listRelationship) {
-						Element relationshipId = doc.createElement("backtrackingRelationshipList");
+						Element relationshipId = doc.createElement("relationshipId");
 						relationshipId.appendChild(doc.createTextNode(elem.getId()));
-						node.appendChild(relationshipId);
+						btRelationshipElem.appendChild(relationshipId);
 					}					
 				}
 			}

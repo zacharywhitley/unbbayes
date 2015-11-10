@@ -8,22 +8,34 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.xalan.xsltc.runtime.Node;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import unbbayes.model.umpst.project.UMPSTProject;
+import unbbayes.util.CommonDataUtil;
 
 /**
  * Load all objects and its properties saved in New Format File
  * 
  * @author Diego Marques
- *
  */
-
-public class FileLoad {	
+public class FileLoad {
 	
+//	private String creationModelDate = null;	
+	
+	/** 
+	 * @param file
+	 * @param _umpstProject
+	 * @return umpstProject
+	 * @throws InvalidClassException
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 */
 	public  UMPSTProject loadAsNewFormat(File file,UMPSTProject _umpstProject) 
 			throws InvalidClassException, IOException, ClassNotFoundException, 
 			ParserConfigurationException, SAXException {
@@ -35,8 +47,7 @@ public class FileLoad {
 		FileLoadNodeAttribute loadAttribute = new FileLoadNodeAttribute();
 		FileLoadNodeRelationship loadRelationship = new FileLoadNodeRelationship();
 		FileLoadNodeRule loadRule = new FileLoadNodeRule();
-		FileLoadNodeGroup loadGroup = new FileLoadNodeGroup();
-		
+		FileLoadNodeGroup loadGroup = new FileLoadNodeGroup();		
 		
 		// Get document builder
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -47,6 +58,16 @@ public class FileLoad {
 			
 		// Document root node
 		Element root = dom.getDocumentElement();
+		
+		// Keep data header
+		NodeList listHeader = root.getElementsByTagName("header");
+		NodeList nodeHeader = listHeader.item(0).getChildNodes();
+		Element elemHeader = (Element) nodeHeader;
+		
+		String date = elemHeader.getElementsByTagName("date").item(0).getTextContent();
+		umpstProject.setDate(date);		
+		String author = elemHeader.getElementsByTagName("author").item(0).getTextContent();
+		umpstProject.setAuthorModel(author);		
 		
 		// Load goals
 		NodeList listGoals = root.getElementsByTagName("goal");
@@ -76,7 +97,22 @@ public class FileLoad {
 		NodeList listGroups = root.getElementsByTagName("group");
 		umpstProject.setMapGroups(loadGroup.getMapGroup(listGroups, umpstProject));
 		
-		return umpstProject;
-		
+		return umpstProject;		
 	}
+
+	/**
+	 * @return the creationModelDate
+	 */
+//	public String getCreationModelDate() {
+//		return creationModelDate;
+//	}
+
+	/**
+	 * @param creationModelDate the creationModelDate to set
+	 */
+//	public void setCreationModelDate(String creationModelDate) {
+//		this.creationModelDate = creationModelDate;
+//	}
+	
+	
 }

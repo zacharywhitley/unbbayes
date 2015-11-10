@@ -12,6 +12,7 @@ import unbbayes.model.umpst.ObjectModel;
  */
 public class FileBuildNode {
 	
+	private String idNode = null;
 	private String nameNode = null;
 	private String nameObject = null;
 	private Element nodeFather = null;
@@ -24,16 +25,16 @@ public class FileBuildNode {
 	 * @return rootNode
 	 */
 	
-	protected Element buildNode (Document doc, Element parent, ObjectModel type) {		
+	protected Element buildNode(Document doc, Element parent, ObjectModel type) {		
 		
 		Element rootNode = doc.createElement(nameNode);
 		parent.appendChild(rootNode);
 		
-		Element nodeId = doc.createElement("id");		
+		Element nodeId = doc.createElement(idNode);		
 		nodeId.appendChild(doc.createTextNode(type.getId()));
 		rootNode.appendChild(nodeId);
 		
-		Element nodeName = doc.createElement(nameObject);		
+		Element nodeName = doc.createElement(nameObject);
 		nodeName.appendChild(doc.createTextNode(type.getName()));
 		rootNode.appendChild(nodeName);
 		
@@ -52,35 +53,59 @@ public class FileBuildNode {
 		return rootNode;
 	}
 	
+	/**
+	 * @param nameNode the nameNode to set
+	 */
 	protected void setNameNode(String nameNode) {
 		this.nameNode = nameNode;
 	}
 	
+	/** 
+	 * @return the nameNode
+	 */
 	protected String getNameNode() {
 		return nameNode;
 	}
 	
+	/** 
+	 * @param nameObject the nameObject to set
+	 */
 	protected void setNameObject(String nameObject) {
 		this.nameObject = nameObject;
 	}
 	
+	/**
+	 * @return the nameObject
+	 */
 	protected String getNameObject() {
 		return nameObject;
 	}
 
-	public void setNodeFather(Element nodeFather) {
+	/**
+	 * @param nodeFather the nodeFather to set
+	 */
+	protected void setNodeFather(Element nodeFather) {
 		this.nodeFather = nodeFather;
 	}
-
-	public Element getNodeFather() {
+	
+	/** 
+	 * @return the nodeFather
+	 */
+	protected Element getNodeFather() {
 		return nodeFather;
+	}	
+
+	/**
+	 * @return the idNode
+	 */
+	protected String getIdNode() {
+		return idNode;
 	}
-	
-	protected void setFatherNodeElement(Element nodeFather) {
-		this.nodeFather = nodeFather;		
-	}
-	
-	protected Element getFatherNodeElement() {
-		return nodeFather;		
+
+	/**
+	 * @param idNode the idNode to set
+	 */
+	protected void setIdNode(String idNode) {
+		this.idNode = idNode;
 	}
 }

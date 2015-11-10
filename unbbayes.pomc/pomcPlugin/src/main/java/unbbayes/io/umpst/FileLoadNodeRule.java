@@ -54,19 +54,25 @@ public class FileLoadNodeRule {
 			ArrayList<String> childrenRuleList = new ArrayList<String>();
 
 			if (node.getNodeType() == Node.ELEMENT_NODE) {				
-				elem = (Element) node;				
-				String id = elem.getElementsByTagName("id").item(0).getTextContent();
-				String rulesName = elem.getElementsByTagName("rulesName").item(0).getTextContent();
+				elem = (Element) node;
+//				String id = elem.getElementsByTagName("id").item(0).getTextContent();
+				String ruleId = elem.getElementsByTagName("ruleId").item(0).getTextContent();
+//				String rulesName = elem.getElementsByTagName("rulesName").item(0).getTextContent();
+				String name = elem.getElementsByTagName("name").item(0).getTextContent();
 				String comments = elem.getElementsByTagName("comments").item(0).getTextContent();
 				String author = elem.getElementsByTagName("author").item(0).getTextContent();
 				String date = elem.getElementsByTagName("date").item(0).getTextContent();
 				String ruleType = elem.getElementsByTagName("ruleType").item(0).getTextContent();
 				
-				rule = new RuleModel(id, rulesName, ruleType, comments, author, date);
+				rule = new RuleModel(ruleId, name, ruleType, comments, author, date);
 				
 				/* Add all backtracking entity (entityList) related to rule */				
-				repeatNodes = elem.getElementsByTagName("entityList");
-				if (repeatNodes.getLength() > 0) {
+//				repeatNodes = elem.getElementsByTagName("entityList");
+				NodeList entityNodes = elem.getElementsByTagName("entityList");
+				if (entityNodes.getLength() > 0) {
+					NodeList entityIdNodes = entityNodes.item(0).getChildNodes();
+					Element entityIdElem = (Element) entityIdNodes;								
+					repeatNodes = entityIdElem.getElementsByTagName("entityId");
 					for (int j = 0; j < repeatNodes.getLength(); j++) {		
 						entity = umpstProject.getMapEntity().get(repeatNodes.item(j).getTextContent());						
 						rule.getEntityList().add(entity);
@@ -77,9 +83,13 @@ public class FileLoadNodeRule {
 				}
 				
 				/* Add all backtracking attribute (attributeList) related to rule */
-				repeatNodes = elem.getElementsByTagName("attributeList");
-				if (repeatNodes.getLength() > 0) {
-					for (int j = 0; j < repeatNodes.getLength(); j++) {		
+//				repeatNodes = elem.getElementsByTagName("attributeList");
+				NodeList attributeNodes = elem.getElementsByTagName("attributeList");
+				if (attributeNodes.getLength() > 0) {
+					NodeList attributeIdNodes = attributeNodes.item(0).getChildNodes();
+					Element attributeIdElem = (Element) attributeIdNodes;								
+					repeatNodes = attributeIdElem.getElementsByTagName("attributeId");
+					for (int j = 0; j < repeatNodes.getLength(); j++) {
 						attribute = umpstProject.getMapAtribute().get(repeatNodes.item(j).getTextContent());						
 						rule.getAttributeList().add(attribute);
 						
@@ -89,8 +99,12 @@ public class FileLoadNodeRule {
 				}				
 				
 				/* Add all backtracking relationship (relationshipList) related to rule */
-				repeatNodes = elem.getElementsByTagName("relationshipList");
-				if (repeatNodes.getLength() > 0) {
+//				repeatNodes = elem.getElementsByTagName("relationshipList");
+				NodeList relationshipNodes = elem.getElementsByTagName("relationshipList");
+				if (relationshipNodes.getLength() > 0) {
+					NodeList relationshipIdNodes = relationshipNodes.item(0).getChildNodes();
+					Element relationshipIdElem = (Element) relationshipIdNodes;
+					repeatNodes = relationshipIdElem.getElementsByTagName("relationshipId");
 					for (int j = 0; j < repeatNodes.getLength(); j++) {					
 						relationship = umpstProject.getMapRelationship().get(repeatNodes.item(j).getTextContent());						
 						rule.getRelationshipList().add(relationship);
@@ -101,8 +115,12 @@ public class FileLoadNodeRule {
 				}
 				
 				/* Add all backtracking group (groupList) related to rule */
-				repeatNodes = elem.getElementsByTagName("groupList");
-				if (repeatNodes.getLength() > 0) {
+//				repeatNodes = elem.getElementsByTagName("groupList");
+				NodeList groupNodes = elem.getElementsByTagName("groupList");
+				if (groupNodes.getLength() > 0) {
+					NodeList groupIdNodes = groupNodes.item(0).getChildNodes();
+					Element groupIdElem = (Element) groupIdNodes;
+					repeatNodes = groupIdElem.getElementsByTagName("groupId");
 					for (int j = 0; j < repeatNodes.getLength(); j++) {
 						group = umpstProject.getMapGroups().get(repeatNodes.item(j).getTextContent());
 						rule.getGroupList().add(group);
@@ -113,18 +131,26 @@ public class FileLoadNodeRule {
 				 * 
 				 * Needs first all rules inside map rules. Because of that, id is saved and 
 				 * then is searched in rules map */
-				repeatNodes = elem.getElementsByTagName("childrenRuleList");
-				if (repeatNodes.getLength() > 0) {
-					for (int j = 0; j < repeatNodes.getLength(); j++) {						
+//				repeatNodes = elem.getElementsByTagName("childrenRuleList");
+				NodeList childrenRuleNodes = elem.getElementsByTagName("childrenRuleList");
+				if (childrenRuleNodes.getLength() > 0) {
+					NodeList childrenRuleIdNodes = childrenRuleNodes.item(0).getChildNodes();
+					Element childrenRuleIdElem = (Element) childrenRuleIdNodes;
+					repeatNodes = childrenRuleIdElem.getElementsByTagName("ruleId");
+					for (int j = 0; j < repeatNodes.getLength(); j++) {
 						childrenRuleList.add(repeatNodes.item(j).getTextContent());
 					}
-					FileIndexChildNode iChildrenRules = new FileIndexChildNode(id, childrenRuleList);
-					listOfRuleNode.add(iChildrenRules);					
+					FileIndexChildNode iChildrenRules = new FileIndexChildNode(ruleId, childrenRuleList);
+					listOfRuleNode.add(iChildrenRules);
 				}
 				
 				/* Add all backtracking goal related to rule */
-				repeatNodes = elem.getElementsByTagName("backtrackingGoalsList");
-				if (repeatNodes.getLength() > 0) {
+//				repeatNodes = elem.getElementsByTagName("backtrackingGoalsList");
+				NodeList btGoalNodes = elem.getElementsByTagName("backtrackingGoalsList");
+				if (btGoalNodes.getLength() > 0) {
+					NodeList btGoalIdNodes = btGoalNodes.item(0).getChildNodes();
+					Element btGoalIdElem = (Element) btGoalIdNodes;
+					repeatNodes = btGoalIdElem.getElementsByTagName("goalId");
 					for (int j = 0; j < repeatNodes.getLength(); j++) {					
 						goal = umpstProject.getMapGoal().get(repeatNodes.item(j).getTextContent());						
 						rule.getBacktrackingGoalList().add(goal);
@@ -135,8 +161,12 @@ public class FileLoadNodeRule {
 				}
 				
 				/* Add all backtracking hypothesis (relationshipList) related to rule */
-				repeatNodes = elem.getElementsByTagName("backtrackingHypothesisList");
-				if (repeatNodes.getLength() > 0) {
+//				repeatNodes = elem.getElementsByTagName("backtrackingHypothesisList");
+				NodeList btHypothesisNodes = elem.getElementsByTagName("backtrackingHypothesisList");
+				if (btHypothesisNodes.getLength() > 0) {
+					NodeList btHypothesisIdNodes = btHypothesisNodes.item(0).getChildNodes();
+					Element btHypothesisIdElem = (Element) btHypothesisIdNodes;
+					repeatNodes = btHypothesisIdElem.getElementsByTagName("hypothesisId");
 					for (int j = 0; j < repeatNodes.getLength(); j++) {
 						hypothesis = umpstProject.getMapHypothesis().get(repeatNodes.item(j).getTextContent());						
 						rule.getBacktrackingHypothesis().add(hypothesis);
@@ -150,9 +180,9 @@ public class FileLoadNodeRule {
 			}			
 		}
 		
-		/* Verify list of attributes and put then into a mapAttribute */		
+		/* Verify list of attributes and put then into a mapAttribute */
 		for (int j = 0; j < listOfRuleNode.size(); j++) {			
-			String ruleId = listOfRuleNode.get(j).getIndex();
+			String _ruleId = listOfRuleNode.get(j).getIndex();
 
 			if (listOfRuleNode.get(j).getListOfNodes() != null) {
 				
@@ -161,16 +191,15 @@ public class FileLoadNodeRule {
 					String childrenRuleId = listOfRuleNode.get(j).getListOfNodes().get(i);					
 					
 					/* Add father rule in rule children */
-					rule = mapRule.get(ruleId);
+					rule = mapRule.get(_ruleId);
 					mapRule.get(childrenRuleId).getFatherRuleList().add(rule);
 					
 					/* Add children in rule father */
 					childrenRule = mapRule.get(childrenRuleId);
-					mapRule.get(ruleId).getChildrenRuleList().add(childrenRule);
+					mapRule.get(_ruleId).getChildrenRuleList().add(childrenRule);
 				}
 			}
-		}
-		
+		}		
 		return mapRule;
 	}
 }

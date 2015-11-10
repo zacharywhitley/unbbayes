@@ -52,26 +52,41 @@ public class FileLoadNodeEntity {
 			Node node = list.item(i);
 
 			if (node.getNodeType() == Node.ELEMENT_NODE) {				
-				elem = (Element) node;				
-				String id = elem.getElementsByTagName("id").item(0).getTextContent();
-				String entityName = elem.getElementsByTagName("entityName").item(0).getTextContent();
+				elem = (Element) node;
+//				String id = elem.getElementsByTagName("id").item(0).getTextContent();
+				String entityId = elem.getElementsByTagName("entityId").item(0).getTextContent();
+//				String entityName = elem.getElementsByTagName("entityName").item(0).getTextContent();
+				String name = elem.getElementsByTagName("name").item(0).getTextContent();
 				String comments = elem.getElementsByTagName("comments").item(0).getTextContent();
 				String author = elem.getElementsByTagName("author").item(0).getTextContent();
 				String date = elem.getElementsByTagName("date").item(0).getTextContent();
 				
-				entity = new EntityModel(id, entityName, comments, author, date);
+				entity = new EntityModel(entityId, name, comments, author, date);
 
 				/* Put all attribute related to entity into a list of index */
 				/* It is necessary because entity methods only accept map of 
 				 * attributes as argument*/
-				repeatNodes = elem.getElementsByTagName("atributesList");
+				repeatNodes = elem.getElementsByTagName("atributesList");				
 				if (repeatNodes.getLength() > 0) {
 					for (int j = 0; j < repeatNodes.getLength(); j++) {						
 						attributeList.add(repeatNodes.item(j).getTextContent());
 					}
-					FileIndexChildNode iEntity = new FileIndexChildNode(id, attributeList);
+					FileIndexChildNode iEntity = new FileIndexChildNode(entityId, attributeList);
 					listOfAttributeNode.add(iEntity);					
 				}
+				
+				/* TODO load structure
+				 * 		<entity>
+				 * 			<attribute> 
+				 * 
+				 * */
+//				loadAttributeNode(entity, elem);
+//				NodeList attributeNodes = elem.getElementsByTagName("attribute");
+//				if (attributeNodes.getLength() > 0) {
+//					NodeList attributeChildNodes = attributeNodes.item(0).getChildNodes();
+//					Element attributeElem = (Element) attributeChildNodes;					
+//					repeatNodes = attributeElem.getElementsByTagName("attributeId");
+//				}
 				
 				/* Add all backtracking goal related to entity */				
 				repeatNodes = elem.getElementsByTagName("backtrackingGoalsList");
@@ -102,7 +117,7 @@ public class FileLoadNodeEntity {
 
 		/* Verify list of attributes and put then into a mapAttribute */		
 		for (int j = 0; j < listOfAttributeNode.size(); j++) {			
-			String entityId = listOfAttributeNode.get(j).getIndex();
+			String _entityId = listOfAttributeNode.get(j).getIndex();
 
 			if (listOfAttributeNode.get(j).getListOfNodes() != null) {
 				Map<String, AttributeModel> mapAttribute = new HashMap<String, AttributeModel>();
@@ -112,11 +127,14 @@ public class FileLoadNodeEntity {
 					attribute = umpstProject.getMapAtribute().get(attributeId);
 					mapAttribute.put(attributeId, attribute);
 				}
-				mapEntity.get(entityId).setMapAtributes(mapAttribute);
+				mapEntity.get(_entityId).setMapAtributes(mapAttribute);
 				
 			}
-		}
-		
+		}		
 		return mapEntity;
-	}	
+	}
+	
+	public void loadAttributeNode(EntityModel entity, NodeList node) {
+		
+	}
 }

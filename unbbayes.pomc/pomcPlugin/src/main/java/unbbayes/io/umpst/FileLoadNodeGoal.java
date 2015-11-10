@@ -18,7 +18,6 @@ import unbbayes.model.umpst.project.UMPSTProject;
  * @author Diego Marques
  *
  */
-
 public class FileLoadNodeGoal {
 
 	private GoalModel goal, subGoal;
@@ -40,43 +39,51 @@ public class FileLoadNodeGoal {
 
 			if (node.getNodeType() == Node.ELEMENT_NODE) {				
 				elem = (Element) node;				
-				String id = elem.getElementsByTagName("id").item(0).getTextContent();
-				String goalName = elem.getElementsByTagName("goalName").item(0).getTextContent();
+//				String id = elem.getElementsByTagName("id").item(0).getTextContent();
+				String goalId = elem.getElementsByTagName("goalId").item(0).getTextContent();
+//				String goalName = elem.getElementsByTagName("goalName").item(0).getTextContent();
+				String name = elem.getElementsByTagName("name").item(0).getTextContent();
 				String comments = elem.getElementsByTagName("comments").item(0).getTextContent();
 				String author = elem.getElementsByTagName("author").item(0).getTextContent();
 				String date = elem.getElementsByTagName("date").item(0).getTextContent();				
 
 				/* Put all subgoals from goal into a list of index. It is necessary because
-				 * has goals that not exists */				
-				repeatNodes = elem.getElementsByTagName("subgoals");
-				if (repeatNodes.getLength() > 0) {
-					for (int j = 0; j < repeatNodes.getLength(); j++) {						
+				 * there are goals that not exists */
+				NodeList subGoalsNodes = elem.getElementsByTagName("subgoals");				
+				if (subGoalsNodes.getLength() > 0) {
+					NodeList goalIdNodes = subGoalsNodes.item(0).getChildNodes();
+					Element goalIdElem = (Element) goalIdNodes;								
+					repeatNodes = goalIdElem.getElementsByTagName("goalId");
+					for (int j = 0; j < repeatNodes.getLength(); j++) {				
 						subGoalsList.add(repeatNodes.item(j).getTextContent());
-
 					}
-					FileIndexChildNode iSubGoal = new FileIndexChildNode(id, subGoalsList);
-					listOfSubGoalNode.add(iSubGoal);					
+					FileIndexChildNode iSubGoal = new FileIndexChildNode(goalId, subGoalsList);
+					listOfSubGoalNode.add(iSubGoal);
 				}
 
 				/* Put all hypothesis related to goal into a list of index */				
-				repeatNodes = elem.getElementsByTagName("hypothesisList");
-				if (repeatNodes.getLength() > 0) {
+//				repeatNodes = elem.getElementsByTagName("hypothesisList");
+				NodeList hypothesisNodes = elem.getElementsByTagName("hypothesisList");
+				if (hypothesisNodes.getLength() > 0) {
+					NodeList hypothesisIdNodes = hypothesisNodes.item(0).getChildNodes();
+					Element hypothesisIdElem = (Element) hypothesisIdNodes;								
+					repeatNodes = hypothesisIdElem.getElementsByTagName("hypothesisId");
 					for (int j = 0; j < repeatNodes.getLength(); j++) {						
 						hypothesisList.add(repeatNodes.item(j).getTextContent());
 
 					}
-					FileIndexChildNode iHypothesis = new FileIndexChildNode(id, hypothesisList);
+					FileIndexChildNode iHypothesis = new FileIndexChildNode(goalId, hypothesisList);
 					listOfHypothesisNode.add(iHypothesis);					
 				}
 
-				goal = new GoalModel(id, goalName, comments, author, date, null);
+				goal = new GoalModel(goalId, name, comments, author, date, null);
 				mapGoal.put(goal.getId(), goal);				
 			}
 		}
 
 		/* Verify list of subgoals and put then into a mapGoal */		
 		for (int j = 0; j < listOfSubGoalNode.size(); j++) {
-			String idGoal = listOfSubGoalNode.get(j).getIndex();
+			String _goalId = listOfSubGoalNode.get(j).getIndex();
 			Map<String, GoalModel> mapSubGoal = new HashMap<String, GoalModel>();
 
 			if (listOfSubGoalNode.get(j).getListOfNodes() != null) {			
@@ -88,13 +95,13 @@ public class FileLoadNodeGoal {
 					/* Set subgoals related to goal */
 //					mapGoal.get(idGoal).getGoalsRelated().add(subGoal);
 				}
-				mapGoal.get(idGoal).setSubgoals(mapSubGoal);
+				mapGoal.get(_goalId).setSubgoals(mapSubGoal);
 			}			
 		}
 
 		/* Verify list of hypothesis and put then into a mapHypothesis */		
 		for (int j = 0; j < listOfHypothesisNode.size(); j++) {			
-			String idGoal = listOfHypothesisNode.get(j).getIndex();
+			String _goalId = listOfHypothesisNode.get(j).getIndex();
 			Map<String, HypothesisModel> mapHypothesis = new HashMap<String, HypothesisModel>();
 
 			if (listOfHypothesisNode.get(j).getListOfNodes() != null) {
@@ -104,10 +111,9 @@ public class FileLoadNodeGoal {
 					mapHypothesis.put(idHypothesis, hypothesis);		
 
 				}
-				mapGoal.get(idGoal).setMapHypothesis(mapHypothesis);
+				mapGoal.get(_goalId).setMapHypothesis(mapHypothesis);
 			}
 		}
-
 		return mapGoal;
 	}
 }

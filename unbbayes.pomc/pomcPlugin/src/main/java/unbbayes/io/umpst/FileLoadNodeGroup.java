@@ -50,14 +50,16 @@ public class FileLoadNodeGroup {
 			Node node = list.item(i);
 
 			if (node.getNodeType() == Node.ELEMENT_NODE) {				
-				elem = (Element) node;				
-				String id = elem.getElementsByTagName("id").item(0).getTextContent();
-				String groupName = elem.getElementsByTagName("groupName").item(0).getTextContent();
+				elem = (Element) node;
+//				String id = elem.getElementsByTagName("id").item(0).getTextContent();
+				String groupId = elem.getElementsByTagName("groupId").item(0).getTextContent();
+//				String groupName = elem.getElementsByTagName("groupName").item(0).getTextContent();
+				String name = elem.getElementsByTagName("name").item(0).getTextContent();
 				String comments = elem.getElementsByTagName("comments").item(0).getTextContent();
 				String author = elem.getElementsByTagName("author").item(0).getTextContent();
 				String date = elem.getElementsByTagName("date").item(0).getTextContent();
 
-				group = new GroupModel(id, groupName, comments, author, date);
+				group = new GroupModel(groupId, name, comments, author, date);
 				
 //				/* Add all backtracking goal related to group */
 //				repeatNodes = elem.getElementsByTagName("backtrackingGoalsList");
@@ -82,8 +84,12 @@ public class FileLoadNodeGroup {
 				 * Obs: implementation part will define this
 				 * 
 				 * Add all backtracking rule related to group */				
-				repeatNodes = elem.getElementsByTagName("backtrackingRulesList");
-				if (repeatNodes.getLength() > 0) {
+//				repeatNodes = elem.getElementsByTagName("backtrackingRulesList");
+				NodeList ruleNodes = elem.getElementsByTagName("backtrackingRulesList");
+				if (ruleNodes.getLength() > 0) {
+					NodeList ruleIdNodes = ruleNodes.item(0).getChildNodes();
+					Element ruleIdElem = (Element) ruleIdNodes;								
+					repeatNodes = ruleIdElem.getElementsByTagName("ruleId");
 					for (int j = 0; j < repeatNodes.getLength(); j++) {		
 						rule = umpstProject.getMapRules().get(repeatNodes.item(j).getTextContent());						
 						group.getBacktrackingRules().add(rule);
@@ -91,8 +97,12 @@ public class FileLoadNodeGroup {
 				}
 				
 				/* Add all backtracking entity related to group */				
-				repeatNodes = elem.getElementsByTagName("backtrackingEntitiesList");
-				if (repeatNodes.getLength() > 0) {
+//				repeatNodes = elem.getElementsByTagName("backtrackingEntitiesList");
+				NodeList entityNodes = elem.getElementsByTagName("backtrackingEntitiesList");
+				if (entityNodes.getLength() > 0) {
+					NodeList entityIdNodes = entityNodes.item(0).getChildNodes();
+					Element entityIdElem = (Element) entityIdNodes;								
+					repeatNodes = entityIdElem.getElementsByTagName("entityId");
 					for (int j = 0; j < repeatNodes.getLength(); j++) {		
 						entity = umpstProject.getMapEntity().get(repeatNodes.item(j).getTextContent());						
 						group.getBacktrackingEntities().add(entity);
@@ -123,8 +133,12 @@ public class FileLoadNodeGroup {
 				}
 				
 				/* Add all backtracking attribute related to group */
-				repeatNodes = elem.getElementsByTagName("backtrackingAttributesList");
-				if (repeatNodes.getLength() > 0) {
+//				repeatNodes = elem.getElementsByTagName("backtrackingAttributesList");
+				NodeList attributeNodes = elem.getElementsByTagName("backtrackingAttributesList");
+				if (attributeNodes.getLength() > 0) {
+					NodeList attributeIdNodes = attributeNodes.item(0).getChildNodes();
+					Element attributeIdElem = (Element) attributeIdNodes;					
+					repeatNodes = attributeIdElem.getElementsByTagName("attributeId");
 					for (int j = 0; j < repeatNodes.getLength(); j++) {		
 						attribute = umpstProject.getMapAtribute().get(repeatNodes.item(j).getTextContent());						
 						group.getBacktrackingAtributes().add(attribute);
@@ -135,8 +149,12 @@ public class FileLoadNodeGroup {
 				}				
 				
 				/* Add all backtracking relationship (relationshipList) related to rule */
-				repeatNodes = elem.getElementsByTagName("backtrackingRelationshipList");
-				if (repeatNodes.getLength() > 0) {
+//				repeatNodes = elem.getElementsByTagName("backtrackingRelationshipList");
+				NodeList relationshipNodes = elem.getElementsByTagName("backtrackingRelationshipList");
+				if (relationshipNodes.getLength() > 0) {
+					NodeList relationshipIdNodes = relationshipNodes.item(0).getChildNodes();
+					Element relationshipIdElem = (Element) relationshipIdNodes;					
+					repeatNodes = relationshipIdElem.getElementsByTagName("relationshipId");
 					for (int j = 0; j < repeatNodes.getLength(); j++) {					
 						relationship = umpstProject.getMapRelationship().get(repeatNodes.item(j).getTextContent());						
 						group.getBacktrackingRelationship().add(relationship);
@@ -148,8 +166,7 @@ public class FileLoadNodeGroup {
 				
 				mapGroup.put(group.getId(), group);				
 			}			
-		}
-		
+		}		
 		return mapGroup;
 	}
 }

@@ -12,7 +12,8 @@ public class ObjectModel implements Serializable {
 	private String author;
 	private String date;
 
-	private String type; 
+	private String type;
+	private String authorModel;
 	
 	public ObjectModel(String id,String name,
 			String comments,
@@ -108,6 +109,22 @@ public class ObjectModel implements Serializable {
 
 	protected void setType(String type) {
 		this.type = type;
+	}
+
+
+	/**
+	 * @return the authorModel
+	 */
+	public String getAuthorModel() {
+		return authorModel;
+	}
+
+
+	/**
+	 * @param authorModel the authorModel to set
+	 */
+	public void setAuthorModel(String authorModel) {
+		this.authorModel = authorModel;
 	}
 	
 }

@@ -41,19 +41,25 @@ public class FileLoadNodeRelationship {
 			Node node = list.item(i);
 
 			if (node.getNodeType() == Node.ELEMENT_NODE) {				
-				elem = (Element) node;				
-				String id = elem.getElementsByTagName("id").item(0).getTextContent();
-				String relationshipName = elem.getElementsByTagName("relationshipName").item(0).getTextContent();
+				elem = (Element) node;
+//				String id = elem.getElementsByTagName("id").item(0).getTextContent();
+				String relationshipId = elem.getElementsByTagName("relationshipId").item(0).getTextContent();
+//				String relationshipName = elem.getElementsByTagName("relationshipName").item(0).getTextContent();
+				String name = elem.getElementsByTagName("name").item(0).getTextContent();
 				String comments = elem.getElementsByTagName("comments").item(0).getTextContent();
 				String author = elem.getElementsByTagName("author").item(0).getTextContent();
 				String date = elem.getElementsByTagName("date").item(0).getTextContent();
 				
-				relationship = new RelationshipModel(id, relationshipName, comments, author, date, 
+				relationship = new RelationshipModel(relationshipId, name, comments, author, date, 
 						null, null, null, null, null, null);				
 				
-				/* Add all backtracking goal related to relationship */				
-				repeatNodes = elem.getElementsByTagName("backtrackingGoalsList");
-				if (repeatNodes.getLength() > 0) {
+				/* Add all backtracking goal related to relationship */		
+//				repeatNodes = elem.getElementsByTagName("backtrackingGoalsList");
+				NodeList btGoalNodes = elem.getElementsByTagName("backtrackingGoalsList");
+				if (btGoalNodes.getLength() > 0) {
+					NodeList goalIdNodes = btGoalNodes.item(0).getChildNodes();
+					Element goalIdElem = (Element) goalIdNodes;								
+					repeatNodes = goalIdElem.getElementsByTagName("goalId");
 					for (int j = 0; j < repeatNodes.getLength(); j++) {					
 						goal = umpstProject.getMapGoal().get(repeatNodes.item(j).getTextContent());						
 						relationship.getBacktrackingGoal().add(goal);
@@ -61,9 +67,13 @@ public class FileLoadNodeRelationship {
 				}
 
 				/* Add all backtracking hypothesis related to relationship */				
-				repeatNodes = elem.getElementsByTagName("backtrackingHypothesisList");
-				if (repeatNodes.getLength() > 0) {
-					for (int j = 0; j < repeatNodes.getLength(); j++) {		
+//				repeatNodes = elem.getElementsByTagName("backtrackingHypothesisList");
+				NodeList btHypothesisNodes = elem.getElementsByTagName("backtrackingHypothesisList");
+				if (btHypothesisNodes.getLength() > 0) {
+					NodeList hypothesisIdNodes = btHypothesisNodes.item(0).getChildNodes();
+					Element hypothesisIdElem = (Element) hypothesisIdNodes;								
+					repeatNodes = hypothesisIdElem.getElementsByTagName("hypothesisId");
+					for (int j = 0; j < repeatNodes.getLength(); j++) {
 						hypothesis = umpstProject.getMapHypothesis().get(repeatNodes.item(j).getTextContent());						
 						relationship.getBacktrackingHypothesis().add(hypothesis);
 					}
@@ -71,9 +81,13 @@ public class FileLoadNodeRelationship {
 				
 				/* Add all backtracking entity related to relationship */				
 //				repeatNodes = elem.getElementsByTagName("backtrackingEntity");
-				repeatNodes = elem.getElementsByTagName("backtrackingEntitiesList");
-				if (repeatNodes.getLength() > 0) {
-					for (int j = 0; j < repeatNodes.getLength(); j++) {		
+//				repeatNodes = elem.getElementsByTagName("backtrackingEntitiesList");
+				NodeList btEntityNodes = elem.getElementsByTagName("backtrackingEntitiesList");
+				if (btEntityNodes.getLength() > 0) {
+					NodeList entityIdNodes = btEntityNodes.item(0).getChildNodes();
+					Element entityIdElem = (Element) entityIdNodes;								
+					repeatNodes = entityIdElem.getElementsByTagName("entityId");
+					for (int j = 0; j < repeatNodes.getLength(); j++) {
 						entity = umpstProject.getMapEntity().get(repeatNodes.item(j).getTextContent());						
 						relationship.getEntityList().add(entity);
 						
@@ -87,12 +101,10 @@ public class FileLoadNodeRelationship {
 							attribute.getFowardTrackingRelationship().add(relationship);
 						}
 					}
-				}
-				
+				}				
 				mapRelationship.put(relationship.getId(), relationship);				
 			}
-		}
-		
+		}		
 		return mapRelationship;
 	}
 }

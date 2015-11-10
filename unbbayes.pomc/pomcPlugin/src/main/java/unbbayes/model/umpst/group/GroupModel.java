@@ -80,7 +80,7 @@ public class GroupModel extends ObjectModel {
 	/**
 	 * @return the backtrackingHypothesis
 	 */
-	public List getBacktrackingHypothesis() {
+	public List<HypothesisModel> getBacktrackingHypothesis() {
 		return backtrackingHypothesis;
 	}
 

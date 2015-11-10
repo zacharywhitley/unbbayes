@@ -32,7 +32,7 @@ public class RelationshipModel extends ObjectModel{
 			String author, 
 			String date,
 			List<EntityModel> backtrackingEntity, 
-			List<AttributeModel> backtrackingAtribute,
+			List<AttributeModel> backtrackingAtribute,	// Define in implementation part
 			List<GoalModel> backtrackingGoal,
 			List<HypothesisModel> backtrackingHypothesis,
 			Set<RuleModel> fowardtrackingRules,

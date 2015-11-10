@@ -37,19 +37,19 @@ public class GoalModel extends ObjectModel{
 		
 		this.goalFather = father;
 				
-		this.setSubgoals(new HashMap<String, GoalModel>());
+		this.setSubgoals(new HashMap<String, GoalModel>()); //List of Subgoals
 		
-		this.setMapHypothesis(new HashMap<String, HypothesisModel>());
+		this.setMapHypothesis(new HashMap<String, HypothesisModel>()); //List of hypothesis
 		
-		this.setFowardTrackingEntity(new HashSet<EntityModel>());
+		this.setFowardTrackingEntity(new HashSet<EntityModel>()); // Traceability
 		
-		this.setFowardTrackingGroups(new HashSet<GroupModel>());
+		this.setFowardTrackingGroups(new HashSet<GroupModel>()); // Traceability
 		
-		this.fowardTrackingRules = new HashSet<RuleModel>(); 
+		this.setFowardTrackingRules(new HashSet<RuleModel>()); // Traceability
 		
 		this.setGoalsRelated(new HashSet<GoalModel>());
 		
-		super.setType("Goal"); 
+		super.setType("Goal");
 		
 	}
 
@@ -93,7 +93,7 @@ public class GoalModel extends ObjectModel{
 
 
 	/**
-	 * @param fowardTrackingEntity the fowardTrackingEntity to set
+	 * @param the fowardTrackingEntity the fowardTrackingEntity to set
 	 */
 	public void setFowardTrackingEntity(Set<EntityModel> fowardTrackingEntity) {
 		this.fowardTrackingEntity = fowardTrackingEntity;
@@ -101,17 +101,17 @@ public class GoalModel extends ObjectModel{
 
 
 	/**
-	 * @return the fowardTrackingEntity
+	 * @return the fowardTrackingRules
 	 */
 	public Set<RuleModel> getFowardTrackingRules() {
 		return fowardTrackingRules;
 	}
 
 
-	/**
-	 * @param fowardTrackingEntity the fowardTrackingEntity to set
+	/** 
+	 * @param fowardTrackingRule
 	 */
-	public void setFowardTrackingRule(Set<RuleModel> fowardTrackingRule) {
+	public void setFowardTrackingRules(Set<RuleModel> fowardTrackingRule) {
 		this.fowardTrackingRules = fowardTrackingRule;
 	}
 	

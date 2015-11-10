@@ -22,7 +22,7 @@ public class RuleModel extends ObjectModel{
 	private List<AttributeModel>    attributeList;
 	private List<RelationshipModel> relationshipList;	
 	
-	private List<RuleModel>          fatherRuleList; 
+	private List<RuleModel>          fatherRuleList;	// Rule that appear at traceability painel
 	private List<RuleModel>          childrenRuleList; 
 	private List<GroupModel>         groupList;
 
@@ -44,7 +44,7 @@ public class RuleModel extends ObjectModel{
 		attributeList    = new ArrayList<AttributeModel>(); 
 		relationshipList = new ArrayList<RelationshipModel>(); 
 		groupList        = new ArrayList<GroupModel>(); 
-		fatherRuleList   = new ArrayList<RuleModel>(); 
+		fatherRuleList   = new ArrayList<RuleModel>();
 		childrenRuleList = new ArrayList<RuleModel>(); 
 		
 		backtrackingGoalsList = new ArrayList<GoalModel>();

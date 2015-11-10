@@ -45,8 +45,10 @@ public class FileLoadNodeHypothesis {
 
 			if (node.getNodeType() == Node.ELEMENT_NODE) {				
 				elem = (Element) node;				
-				String id = elem.getElementsByTagName("id").item(0).getTextContent();
-				String hypothesisName = elem.getElementsByTagName("hypothesisName").item(0).getTextContent();
+//				String id = elem.getElementsByTagName("id").item(0).getTextContent();
+				String hypothesisId = elem.getElementsByTagName("hypothesisId").item(0).getTextContent();
+//				String hypothesisName = elem.getElementsByTagName("hypothesisName").item(0).getTextContent();
+				String name = elem.getElementsByTagName("name").item(0).getTextContent();
 				String comments = elem.getElementsByTagName("comments").item(0).getTextContent();
 				String author = elem.getElementsByTagName("author").item(0).getTextContent();
 				String date = elem.getElementsByTagName("date").item(0).getTextContent();
@@ -56,24 +58,28 @@ public class FileLoadNodeHypothesis {
 				goalRelated = umpstProject.getMapGoal().get(goalRelatedId);
 
 				/* Put all subHypothesis related to hypothesis into a list of index */				
-				repeatNodes = elem.getElementsByTagName("hypothesisList");
-				if (repeatNodes.getLength() > 0) {
-					for (int j = 0; j < repeatNodes.getLength(); j++) {						
+//				repeatNodes = elem.getElementsByTagName("hypothesisList");
+				NodeList subHypothesisNodes = elem.getElementsByTagName("subHypothesis");
+				if (subHypothesisNodes.getLength() > 0) {
+					NodeList hypothesisIdNodes = subHypothesisNodes.item(0).getChildNodes();
+					Element hypothesisIdElem = (Element) hypothesisIdNodes;								
+					repeatNodes = hypothesisIdElem.getElementsByTagName("hypothesisId");
+					for (int j = 0; j < repeatNodes.getLength(); j++) {		
 						subHypothesisList.add(repeatNodes.item(j).getTextContent());
 
 					}
-					FileIndexChildNode iHypothesis = new FileIndexChildNode(id, subHypothesisList);
+					FileIndexChildNode iHypothesis = new FileIndexChildNode(hypothesisId, subHypothesisList);
 					listOfHypothesisNode.add(iHypothesis);					
 				}
 
-				hypothesis = new HypothesisModel(id, hypothesisName, comments, author, date, null, 
+				hypothesis = new HypothesisModel(hypothesisId, name, comments, author, date, null, 
 						null, null);
 
 				/* add goal related to hypothesis */
 				hypothesis.getGoalRelated().add(goalRelated);
 
 				/* relate hypothesis object model to goal */
-				goalRelated.getMapHypothesis().put(id, hypothesis);
+				goalRelated.getMapHypothesis().put(hypothesisId, hypothesis);
 
 				mapHypothesis.put(hypothesis.getId(), hypothesis);				
 			}
@@ -81,7 +87,7 @@ public class FileLoadNodeHypothesis {
 
 		/* Verify list of subHypothesis and put then into a mapHypothesis */		
 		for (int j = 0; j < listOfHypothesisNode.size(); j++) {			
-			String hypothesisId = listOfHypothesisNode.get(j).getIndex();
+			String _hypothesisId = listOfHypothesisNode.get(j).getIndex();
 
 			if (listOfHypothesisNode.get(j).getListOfNodes() != null) {
 				Map<String, HypothesisModel> mapSubHypothesis = new HashMap<String, HypothesisModel>();
@@ -92,10 +98,9 @@ public class FileLoadNodeHypothesis {
 					mapSubHypothesis.put(subHypothesisId, subHypothesis);
 
 					/* Set hypothesis father */
-					mapHypothesis.get(subHypothesisId).setFather(mapHypothesis.get(hypothesisId));
-
+					mapHypothesis.get(subHypothesisId).setFather(mapHypothesis.get(_hypothesisId));
 				}
-				mapHypothesis.get(hypothesisId).setMapSubHypothesis(mapSubHypothesis);
+				mapHypothesis.get(_hypothesisId).setMapSubHypothesis(mapSubHypothesis);
 			}
 		}
 		return mapHypothesis;
