@@ -215,27 +215,34 @@ public class GraphPane extends UCanvas {
 			int xPixelsToCopy, int yPixelsToCopy){
 		Debug.println("Cloning " + originalNode);
 
-		Node clonedNode;
+		Node clonedNode = null;
 
 		double positionX = originalNode.getPosition().getX() + xPixelsToCopy;
 		double positionY = originalNode.getPosition().getY() + yPixelsToCopy;
 		
-		clonedNode = originalNode.getClone();
-		clonedNode.setPosition(positionX, positionY);
-
-
-		// // Set general attributes
-		// Name
-		String newName = originalNode.getName() + "_1";
-		newName = getUniqueName(newName);
-		clonedNode.setName(newName);
-		controller.insertNode(clonedNode);
-		System.out.println("newNome=" + newName);
 		
-		// Create a new shape for a new node
-		createNode(clonedNode);
-		selectNode(clonedNode);
-		return clonedNode;
+		try {
+			clonedNode = originalNode.getClone();
+		
+			clonedNode.setPosition(positionX, positionY);
+	
+	
+			// // Set general attributes
+			// Name
+			String newName = originalNode.getName() + "_1";
+			newName = getUniqueName(newName);
+			clonedNode.setName(newName);
+			controller.insertNode(clonedNode);
+			System.out.println("newNome=" + newName);
+			
+			// Create a new shape for a new node
+			createNode(clonedNode);
+			selectNode(clonedNode);
+		}
+		catch (CloneNotSupportedException e) {
+			Debug.println(e.getMessage());
+		}
+		return clonedNode; 
 
 	}
 
@@ -1255,30 +1262,6 @@ public class GraphPane extends UCanvas {
 						.getSize().getY() / 2);
 			}
 
-			// Nodes to copy are only parents.
-//			List<Node> parentNodesToCopy = new ArrayList<Node>();
-
-			// Find parent nodes or nodes without selected parents
-//			for (Node node : group) {
-//				List<Node> parents = node.getParents();
-//
-//				boolean hasParents = false;
-//				for (Node parent : parents) {
-//					if(getNodeUShape(parent) != null){
-//						if (getNodeUShape(parent).getState().equals(
-//								UShape.STATE_SELECTED)) {
-//							hasParents = true;
-//							break;
-//						}
-//					}
-//				}
-//				// If node has parents then continue.
-//				if (hasParents) {
-//					continue;
-//				}
-//
-//				parentNodesToCopy.add(node);
-//			}
 
 			HashMap<Node, Node> originalClonedHash = new HashMap<Node, Node>();
 			unselectAllNodes();

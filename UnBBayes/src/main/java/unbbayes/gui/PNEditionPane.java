@@ -21,17 +21,23 @@
 package unbbayes.gui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.List;
+import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.EventObject;
+import java.util.Iterator;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeSet;
@@ -55,12 +61,28 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.JViewport;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+
+import com.esotericsoftware.kryo.Kryo;
 
 import unbbayes.controller.CompilationThread;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
+import unbbayes.gui.table.ColumnGroup;
+import unbbayes.gui.table.GUIPotentialTable;
+import unbbayes.gui.table.GroupableTableCellRenderer;
+import unbbayes.gui.table.GroupableTableColumnModel;
+import unbbayes.gui.table.GroupableTableHeader;
+import unbbayes.gui.table.ReplaceTextCellEditor;
 import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.gui.util.SplitToggleButton;
 import unbbayes.prs.Node;
@@ -566,7 +588,7 @@ public class PNEditionPane extends JPanel {
 	 * @param tableOwner
 	 *            : the node owning table
 	 */
-	public void setTable(JTable table, Node tableOwner) {
+	public void setTable(final JTable table, Node tableOwner) {
 
 		this.table = table;
 
@@ -589,10 +611,75 @@ public class PNEditionPane extends JPanel {
 		// tPanel.setLayout(new BoxLayout(tPanel, BoxLayout.Y_AXIS));
 		// btnCPS.setAlignmentX(Component.LEFT_ALIGNMENT);
 		// tPanel.add ( btnCPS ) ;
+		
+		//this will be the RowHeader of the scroll view
+		//it is made so the States name won't be scrolled
+		final TableModel frozenModel = new DefaultTableModel(table.getRowCount(), 1);
+		
+		//populate the frozen model
+		for (int i = 0; i < table.getRowCount(); i++) {
+			String value = (String) table.getValueAt(i, 0);
+			frozenModel.setValueAt(value, i, 0);
+		}
+		frozenModel.addTableModelListener(new TableModelListener(){
+			public void tableChanged(TableModelEvent e) {
+				table.setValueAt(frozenModel.getValueAt(e.getLastRow(), e.getColumn()), e.getFirstRow(), e.getColumn());
+			}
+		});
+	    JTable frozenTable = new JTable(frozenModel);
+	    
+	    //This bit of code get the name of the parent nodes recursively and builds the header table with it
+	    GroupableTableColumnModel cm = (GroupableTableColumnModel)table.getColumnModel();
+        TableColumn tableColumn = (TableColumn) cm.getColumns().nextElement();
+        TableModel header = new DefaultTableModel(tableOwner.getParents().size(), 1);
+         
+        if(tableOwner.getParents().size() == 0){ 
+        	((DefaultTableModel) header).addRow(new Object[] {});
+        }
+         
+        header.setValueAt(tableColumn.getHeaderValue(), 0, 0);  // este eh o nome do primeiro pai
+        Iterator iterator = cm.getColumnGroups(tableColumn);
+        int i=1;
+        while (iterator != null && iterator.hasNext()) {
+            ColumnGroup group = (ColumnGroup) iterator.next();
+            header.setValueAt(group.getHeaderValue(), i, 0);  // este eh o nome do ultimo pai, penultimo pai, antepenultimo pai, e assim por diante.
+            i++;
+        }
+        
+        //format cornerTable
+		JTable cornerTable = new JTable(header);
+		cornerTable.getColumnModel().getColumn(0).setCellRenderer(new GroupableTableCellRenderer());
+		cornerTable.setRowHeight((int) table.prepareRenderer(table.getCellRenderer(0,0), 0, 0).getPreferredSize().getHeight());
+		cornerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+	    cornerTable.setEnabled(false);
+	    
+	    //format the frozen table
+	    frozenTable.getColumnModel().getColumn(0).setCellRenderer(new GroupableTableCellRenderer(Color.BLACK, Color.YELLOW));
+	    frozenTable.getColumnModel().getColumn(0).setCellEditor(new ReplaceTextCellEditor());
+	    frozenTable.setSurrendersFocusOnKeystroke(true);
+	    frozenTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+	    frozenTable.setEnabled(true);
+	    
 
+	    //remove the frozen columns from the original table
+	    table.getColumnModel().getColumn(0).setMinWidth(0);
+	    table.getColumnModel().getColumn(0).setPreferredWidth(0);
+	    table.getColumnModel().getColumn(0).setResizable(false);;
+	    
+	    //refill with the Listener
+	    
+	    //set frozen table as row header view
+	    JViewport frozenViewport = new JViewport();
+	    frozenViewport.setView(frozenTable);
+	    frozenViewport.setPreferredSize(frozenTable.getPreferredSize());
+	    
 		jspTable.setViewportView(table);
+		jspTable.setRowHeaderView(frozenViewport);
+		jspTable.setCorner(ScrollPaneConstants.UPPER_LEFT_CORNER, cornerTable);
+		
+		
 		jspTable.setAlignmentX(Component.LEFT_ALIGNMENT);
-
+		
 		cpfPane = this.buildCPFPaneFromPlugin(tableOwner);
 
 		// the line below was moved into buildCPFPaneFromPlugin

@@ -384,8 +384,8 @@ public abstract class Node implements Serializable,
 		return this.phrasesMap;
 	}
 	
-	public Node getClone(){
-		return null;
+	public Node getClone() throws CloneNotSupportedException{
+		throw(new CloneNotSupportedException("Clone Operation not developed for node of type " + this.getType()));
 	}
 	
 	public void clone(Node clone){
