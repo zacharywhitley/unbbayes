@@ -125,16 +125,6 @@
     <owl:Class rdf:about="&pr-owl2-decision;DomainUtilityNode">
         <rdfs:subClassOf rdf:resource="&pr-owl2;DomainResidentNode"/>
         <rdfs:subClassOf>
-            <owl:Class>
-                <owl:complementOf>
-                    <owl:Restriction>
-                        <owl:onProperty rdf:resource="&pr-owl2;isParentOf"/>
-                        <owl:someValuesFrom rdf:resource="&pr-owl2;Node"/>
-                    </owl:Restriction>
-                </owl:complementOf>
-            </owl:Class>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&pr-owl2;hasMExpression"/>
                 <owl:allValuesFrom rdf:resource="&pr-owl2-decision;UtilityMExpression"/>
