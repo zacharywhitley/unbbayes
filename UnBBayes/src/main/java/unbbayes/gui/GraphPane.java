@@ -221,27 +221,42 @@ public class GraphPane extends UCanvas {
 		double positionY = originalNode.getPosition().getY() + yPixelsToCopy;
 		
 		
-		try {
-			clonedNode = originalNode.getClone();
 		
-			clonedNode.setPosition(positionX, positionY);
-	
-	
-			// // Set general attributes
-			// Name
-			String newName = originalNode.getName() + "_1";
-			newName = getUniqueName(newName);
-			clonedNode.setName(newName);
-			controller.insertNode(clonedNode);
-			System.out.println("newNome=" + newName);
-			
-			// Create a new shape for a new node
-			createNode(clonedNode);
-			selectNode(clonedNode);
+		// FIXME this if else if else if can be improved.
+		if (originalNode instanceof ProbabilisticNode) {
+			clonedNode = controller.insertProbabilisticNode(positionX,
+					positionY);
+		} else if (originalNode instanceof UtilityNode) {
+			clonedNode = controller.insertUtilityNode(positionX, positionY);
+		} else if (originalNode instanceof DecisionNode) {
+			clonedNode = controller
+					.insertDecisionNode(positionX, positionY);
+		} else {
+			// TODO extend to any type of node.
+			// TODO throw new exception "unsupported type of node".
+			return null;
 		}
-		catch (CloneNotSupportedException e) {
-			Debug.println(e.getMessage());
+	
+		// // Set general attributes
+		// Name
+		String newName = originalNode.getName() + "_1";
+		newName = getUniqueName(newName);
+		clonedNode.setName(newName);
+		Debug.println("newNome=" + newName);
+		
+	
+		// Copy states
+		clonedNode.removeStates();
+		int numStates = originalNode.getStatesSize();
+		for (int i = 0; i < numStates; i++) {
+			clonedNode.appendState(originalNode.getStateAt(i));
 		}
+		
+		// Create a new shape for a new node
+		createNode(clonedNode);
+		selectNode(clonedNode);
+		getNodeUShape(clonedNode).setState(UShape.STATE_SELECTED, null);
+		
 		return clonedNode; 
 
 	}
@@ -1307,7 +1322,6 @@ public class GraphPane extends UCanvas {
 			for (Entry<Node, Node> entry : originalClonedHash.entrySet()) {
 				Node original = entry.getKey();
 				Node cloned = entry.getValue();
-				
 				
 				if (cloned instanceof IProbabilityFunctionAdapter && original instanceof IRandomVariable) {
 					// adapt and clone the probability function (which stores probability for probabilistic nodes, and utility for utility nodes)
