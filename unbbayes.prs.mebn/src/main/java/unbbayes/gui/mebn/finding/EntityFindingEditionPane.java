@@ -30,6 +30,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -268,12 +269,14 @@ public class EntityFindingEditionPane extends JPanel {
 			
 			
 			//Validations
-			if(!(validName(nameObjectEntity.getText(),(ObjectEntity) selected))){
-				JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
-						resource.getString("nameException"),
-						resource.getString("error"), 
-						JOptionPane.ERROR_MESSAGE);
-				return; 
+			for(Object selec: selected){
+				if(!(validName(nameObjectEntity.getText(),(Entity) selec))){
+					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
+							resource.getString("nameException"),
+							resource.getString("error"), 
+							JOptionPane.ERROR_MESSAGE);
+					return; 
+				}
 			}
 			
 			if((nameObjectEntity.getText() == null) || (nameObjectEntity.getText().trim().length() == 0)){
@@ -284,12 +287,12 @@ public class EntityFindingEditionPane extends JPanel {
 				return; 
 			}
 			
-			//Setting the name
-			if(selected != null){	
+			//Setting the names
+			for(Object selec: selected){
 				
 				if(isAdding){
 					try{
-						ObjectEntity objectEntity = (ObjectEntity)selected; 
+						ObjectEntity objectEntity = (ObjectEntity)selec; 
 						if(!objectEntity.isOrdereable()){
 					 	    try {
 								try {
@@ -340,7 +343,7 @@ public class EntityFindingEditionPane extends JPanel {
 				}else{
 					try{
 						try {
-							mebnController.renameEntityIntance((ObjectEntityInstance)selected, nameObjectEntity.getText());
+							mebnController.renameEntityIntance((ObjectEntityInstance)selec, nameObjectEntity.getText());
 							objectEntityInstanceListPane.update();
 						} catch (DuplicatedNameException e) {
 							JOptionPane.showMessageDialog(mebnController.getScreen(), 
@@ -365,34 +368,33 @@ public class EntityFindingEditionPane extends JPanel {
 		}
 		
 		private void removeInstance(){
-			if(!selected.isEmpty()){
+			for(Object selec: selected){
 				if(!isAdding){
-					for(Object selec: selected){
-						if(selec instanceof ObjectEntityInstanceOrdereable){
-							mebnController.removeEntityInstanceOrdereable((ObjectEntityInstanceOrdereable)selec); 
-						}
-						else{
-							mebnController.removeEntityInstance((ObjectEntityInstance)selec); 						
-						}
-						   objectEntityInstanceListPane.update();  
+					if(selec instanceof ObjectEntityInstanceOrdereable){
+						mebnController.removeEntityInstanceOrdereable((ObjectEntityInstanceOrdereable)selec); 
 					}
+					else{
+						mebnController.removeEntityInstance((ObjectEntityInstance)selec); 						
+					}
+					   objectEntityInstanceListPane.update();
 				}
-				}
+			}
 		}
 		
 		private void upInstance(){
-			if(!selected.isEmpty()){
+			for(Object selec: selected){
 				if(!isAdding){
-					   mebnController.upEntityInstance((ObjectEntityInstanceOrdereable)selected); 
+					   mebnController.upEntityInstance((ObjectEntityInstanceOrdereable)selec); 
 					   objectEntityInstanceListPane.update();  
 					}
 				}
 		}
 		
 		private void downInstance(){
-			if(selected != null){
+			Collections.reverse(selected);
+			for(Object selec: selected){
 				if(!isAdding){
-					   mebnController.downEntityInstance((ObjectEntityInstanceOrdereable)selected); 
+					   mebnController.downEntityInstance((ObjectEntityInstanceOrdereable)selec); 
 					   objectEntityInstanceListPane.update();  
 					}
 				}
@@ -409,15 +411,15 @@ public class EntityFindingEditionPane extends JPanel {
 		}
 		
 		public void updateReference(){
-			if(selected!=null){
+			for(Object selec: selected){
 				if(isAdding){					
-					    typeObjectEntity.setText(((ObjectEntity)selected).getName());
+					    typeObjectEntity.setText(((ObjectEntity)selec).getName());
 					    nameObjectEntity.setText("");
 					    //btnAddInstance.setIcon(iconController.getMoreIcon()); 
 					    btnRemoveInstance.setEnabled(false); 
 				}else{
-					typeObjectEntity.setText(((ObjectEntityInstance)selected).getInstanceOf().getName());
-					nameObjectEntity.setText(((ObjectEntityInstance)selected).getName());
+					typeObjectEntity.setText(((ObjectEntityInstance)selec).getInstanceOf().getName());
+					nameObjectEntity.setText(((ObjectEntityInstance)selec).getName());
 				    //btnAddInstance.setIcon(iconController.getEditIcon());
 				    btnRemoveInstance.setEnabled(true); 
 				}
@@ -465,11 +467,11 @@ public class EntityFindingEditionPane extends JPanel {
 		                public void valueChanged(ListSelectionEvent e) {
 		                	selected = (List<Object>)jlistEntity.getSelectedValuesList(); 
 		                	isAdding = true; 
-		                	if(selected != null){
+		                	for(Object selec: selected){
 		                	    objectEntityInstancePane.updateReference(); 
-				                showEntityInstanceListPane((ObjectEntity)selected);
+				                showEntityInstanceListPane((ObjectEntity)selec);
 				                
-				                if(!((ObjectEntity)selected).isOrdereable()){
+				                if(!((ObjectEntity)selec).isOrdereable()){
 				                	objectEntityInstancePane.disableUpDownButtons(); 
 				                }else{
 				                	objectEntityInstancePane.enableUpDownButtons();
@@ -541,7 +543,7 @@ public class EntityFindingEditionPane extends JPanel {
 		                	selected = jlistEntity.getSelectedValuesList(); 
 		                	isAdding = false; 
 		                	
-		                	if(selected != null){
+		                	if(!selected.isEmpty()){
 		                	   objectEntityInstancePane.updateReference(); 
 		                	}
 		                }
