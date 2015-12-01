@@ -75,7 +75,8 @@ public class SSBNNode implements INode {
 	private boolean isRecursive = false; 
 	private List<OVInstance> argumentsResidentMFrag; 
 	
-	/** @deprecated This is wrong, because it fails when there are 2 or more input nodes (of same domain resident node) in the same MFrag */
+	/** @deprecated This is wrong, because it fails when there are 2 or more 
+	 * input nodes (of same domain resident node) in the same MFrag */
 	private Map<MFrag, List<OVInstance>> argumentsForMFrag; 
 	
 	
@@ -1412,11 +1413,14 @@ public class SSBNNode implements INode {
 	 * @param listArgumentsOfMFrag
 	 */
 	public void addArgumentsForMFrag(MFrag mFrag, List<OVInstance> listArgumentsOfMFrag){
+		
 		if (mFrag != null 
-				&& mFrag.equals(this.getResident().getMFrag())	// the new mfrag is the same as the resident's one
+				&& mFrag.equals(this.getResident().getMFrag())	// the new MFrag is the same as the resident's one
 				&& !(new HashSet<OVInstance>(this.argumentsResidentMFrag).equals(new HashSet<OVInstance>(listArgumentsOfMFrag)))) {
-			// We are trying to set arguments that are different to the resident's one, but we're using the same mfrag
-			// it indicates that this SSBN node is "immediate recursive" (an input node referencing a resident node within the same mfrag)
+			// We are trying to set arguments that are different to the 
+			// resident's one, but we're using the same MFrag it indicates 
+			// that this SSBN node is "immediate recursive" 
+			// (an input node referencing a resident node within the same MFrag)
 			// we must actively set it as recursive
 			this.setRecursiveOVInstanceList(listArgumentsOfMFrag);
 			return;
@@ -1437,19 +1441,23 @@ public class SSBNNode implements INode {
 	}
 	
 	/**
-	 * Turn the arguemnts of the SSBNNode for the arguments that it should 
+	 * Turn the arguments of the SSBNNode for the arguments that it should 
 	 * have in the given mFrag
 	 * 
-	 * @return true if the arguments changed with sucess
-	 *         false if don't have arguments for the Mfrag (the arguments isn't 
+	 * @return TRUE if the arguments changed with success
+	 *         FALSE if don't have arguments for the MFrag (the arguments isn't 
 	 *         changed). 
-	 * @deprecated This is wrong, because it fails when there are 2 or more input nodes (of same domain resident node) in the same MFrag.
+	 *         
+	 * @deprecated This is wrong, because it fails when there are 2 or more 
+	 *             input nodes (of same domain resident node) in the same MFrag.
 	 */
+	//TODO Change this Method for return a exception when failed. 
 	public boolean turnArgumentsForMFrag(MFrag mFrag){
 		
+		//Resident MFrag (take care with the recursivity!) 
 		if(mFrag.equals(this.getResident().getMFrag())){
 			if(isRecursive){
-				arguments = argumentsForMFrag.get(mFrag);
+				setArguments(argumentsForMFrag.get(mFrag));
 				this.setCurrentlySelectedMFragByTurnArguments(mFrag);
 				return true; 
 			}else{
@@ -1459,13 +1467,22 @@ public class SSBNNode implements INode {
 		else{
 			List<OVInstance> argumentsTemp = argumentsForMFrag.get(mFrag); 
 			if(argumentsTemp != null){
-				arguments = argumentsTemp; 
+				setArguments(argumentsTemp); 
 				this.setCurrentlySelectedMFragByTurnArguments(mFrag);
 				return true; 
 			}else{
 				return false; 
 			}
 		}
+	}
+	
+//NEW CODE	
+	public List<OVInstance> getArgumentsForMFrag(MFrag mFrag){
+		return argumentsForMFrag.get(mFrag); 
+	}
+	
+	public Map<MFrag, List<OVInstance>> getArgumentsForMFragMap(){
+		return argumentsForMFrag; 
 	}
 	
 	public void changeArgumentsToResidentMFrag(){

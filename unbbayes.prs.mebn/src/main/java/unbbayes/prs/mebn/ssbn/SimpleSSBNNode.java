@@ -36,11 +36,11 @@ public class SimpleSSBNNode implements INode {
 	private List<INode> children; // we need to store the child nodes to test adjacency
 	private List<SimpleContextNodeFatherSSBNNode> contextParents; 
 	
-	private OrdinaryVariable                    ovArray[];       //ordinary variables for the home mfrag (The order of the resident node)
-	private ILiteralEntityInstance               entityArray[];   //evaluation of the ov  
-	private Map<MFrag, OrdinaryVariable[]>      ovArrayForMFrag; //correspondency between the ov of the home mFrag with the ov of the external MFrags. 
+	private OrdinaryVariable                    ovArray[];       //ordinary variables for the home MFrag 
+	private ILiteralEntityInstance              entityArray[];   //values for each ordinary variable  
+	private Map<MFrag, OrdinaryVariable[]>      ovArrayForMFrag; //correspondence between ov of the Home mFrag with the ov of the input MFrags. 
 
-	private Entity state;	//if state != null this node is a finding
+	private Entity state;	//if <<state != null>> this node is a finding
 	
 	private ProbabilisticNode probNode = null; 
 	
@@ -72,6 +72,7 @@ public class SimpleSSBNNode implements INode {
 		}
 		
 		entityArray = new ILiteralEntityInstance[residentNode.getOrdinaryVariableList().size()]; 
+		
 		ovArrayForMFrag = new HashMap<MFrag, OrdinaryVariable[]>(); 
 		
 	}
@@ -83,8 +84,8 @@ public class SimpleSSBNNode implements INode {
 	/**
 	 * Two SimpleSSBNNode are equals if: 
 	 * 
-	 * 1. It referes to the same Resident Node. 
-	 * 2. The instanciated entity for each ordinary variable are the same. 
+	 * 1. It refers to the same Resident Node. 
+	 * 2. The instantiated entity for each ordinary variable are the same. 
 	 *
 	 */
 	@Override
@@ -290,8 +291,12 @@ public class SimpleSSBNNode implements INode {
 		return entity; 
 	}
 	
-	public Map<MFrag, OrdinaryVariable[]> getOvArrayForMFrag() {
-		return ovArrayForMFrag;
+	public OrdinaryVariable[] getOvArrayForMFrag(MFrag mFrag) {
+		return ovArrayForMFrag.get(mFrag);
+	}
+	
+	public void setOVArrayForMFrag(MFrag mFrag, OrdinaryVariable[] ovArray){
+		this.ovArrayForMFrag.put(mFrag, ovArray); 
 	}
 
 	/*

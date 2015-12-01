@@ -28,13 +28,13 @@ public class SimpleSSBNNodeUtils {
 	public static Map<SimpleSSBNNode, SSBNNode> correspondencyMap;
 	
 	/**
-	 * Translate the SimpleSSBNNode's for the SSBNNode. The SimpleSSBNNode was 
-	 * created for economize memory in the step of build the network. For posterior
-	 * steps, how generation of the CPTs, is necessary more informations that the
-	 * information offer by the SimpleSSBNNode. The SSBNNode contain all the 
-	 * information necessary. This method translate the simpleSSBNNodes to the 
-	 * correspondent SSBNNode and add the informations about parents (context node 
-	 * parents too). 
+	 * Translate the SimpleSSBNNode's for the SSBNNode and add the informations 
+	 * about parents (context node correspondent SSBNNode parents too)
+	 * 
+	 * The SimpleSSBNNode was created for economize memory in the step of build 
+	 * the network. For posterior steps, how generation of the CPTs, is necessary 
+	 * more informations that the information offer by the SimpleSSBNNode. 
+	 * The SSBNNode contain all the information necessary. 
 	 * 
 	 * @param simpleSSBNNodeList
 	 * @param pn The probabilisticNetwork where will be created the ProbabilisticNodes 
@@ -49,8 +49,10 @@ public class SimpleSSBNNodeUtils {
 	 * @throws ImplementationRestrictionException
 	 */
 	public static List<SSBNNode> translateSimpleSSBNNodeListToSSBNNodeList( 
-			List<SimpleSSBNNode> simpleSSBNNodeList, ProbabilisticNetwork pn) throws 
-			                SSBNNodeGeneralException,  ImplementationRestrictionException{
+			List<SimpleSSBNNode> simpleSSBNNodeList, 
+			ProbabilisticNetwork pn) throws 
+			                SSBNNodeGeneralException,  
+			                ImplementationRestrictionException{
 		
 		List<SSBNNode> listSSBNNodes = new ArrayList<SSBNNode>(); 
 		correspondencyMap = new HashMap<SimpleSSBNNode, SSBNNode>(); 
@@ -58,7 +60,7 @@ public class SimpleSSBNNodeUtils {
 		Map<ContextNode, ContextFatherSSBNNode> mapContextNode = 
 			    new HashMap<ContextNode, ContextFatherSSBNNode>(); 
 		
-		//1 Create all the nodes with its states 
+		//1 Create all nodes with its states 
 		
 		for(SimpleSSBNNode simple: simpleSSBNNodeList){
 			
@@ -86,16 +88,23 @@ public class SimpleSSBNNodeUtils {
 			
 			ssbnNode.setPermanent(true); 
 			
-			//The values of the ordinary variables are different dependeing on what MFrag we are dealing
+			//The values of the ordinary variables are different depending in 
+			//which MFrag we are dealing.  
 			
-			// lets deal first at resident node's MFrag
-			OrdinaryVariable[] residentOvArray = ssbnNode.getResident().getOrdinaryVariableList().toArray(
-															new OrdinaryVariable[ssbnNode.getResident().getOrdinaryVariableList().size()]
-												  ); 
+			//The key for do the match is the order of the arguments. The order
+			//should be the same in every MFrags of the node. 
+			
+			//Lets deal first with Resident MFrag
+
+			OrdinaryVariable[] residentOvArray = 
+					ssbnNode.getResident().getOrdinaryVariableList().toArray(
+							new OrdinaryVariable[ssbnNode.getResident().getOrdinaryVariableList().size()]
+							); 
 			
 			List<OVInstance> argumentsForResidentMFrag = new ArrayList<OVInstance>(); 
 			for(int i = 0; i < residentOvArray.length; i++){
-				OVInstance ovInstance = OVInstance.getInstance(residentOvArray[i], simple.getEntityArray()[i]); 
+				OVInstance ovInstance = OVInstance.getInstance(residentOvArray[i], 
+						simple.getEntityArray()[i]); 
 				argumentsForResidentMFrag.add(ovInstance); 
 			}
 			
@@ -104,17 +113,31 @@ public class SimpleSSBNNodeUtils {
 					argumentsForResidentMFrag); 
 			
 			
-			// lets map OVs of every input node pointing to current SSBNNode
+			// Lets map OVs of every input node pointing to current SSBNNode
+			
+			// TODO Here we have a problem with MFrags that have two references to 
+			// the same resident node. 
+			
 			for(InputNode inputNode: simple.getResidentNode().getInputInstanceFromList()){
+				
 				OrdinaryVariable[] ovArray = 
 					inputNode.getResidentNodePointer().getOrdinaryVariableArray(); 
 				
-				List<OVInstance> argumentsForMFrag = new ArrayList<OVInstance>(); 
+				List<OVInstance> argumentsForMFrag = new ArrayList<OVInstance>();
+				
 				for(int i = 0; i < ovArray.length; i++){
-					OVInstance ovInstance = OVInstance.getInstance(ovArray[i], simple.getEntityArray()[i]); 
+// OLD CODE
+//					OVInstance ovInstance = OVInstance.getInstance(ovArray[i], simple.getEntityArray()[i]); 
+// NEW CODE
+					OrdinaryVariable ov = simple.getOvArrayForMFrag(inputNode.getMFrag())[i]; 
+					OVInstance ovInstance = OVInstance.getInstance(ov,simple.getEntityArray()[i]); 					
 					argumentsForMFrag.add(ovInstance); 
 				}
 				
+// NEW CODE 				
+				//TODO Bug: here we don't consider that the SSBNNode was 
+				//instantiated by different MFrags, and in each of them setted
+				//the correct values for the arguments... 
 				ssbnNode.addArgumentsForMFrag(
 						inputNode.getMFrag(), 
 						argumentsForMFrag); 
@@ -135,9 +158,13 @@ public class SimpleSSBNNodeUtils {
 					if(contextFather == null){
 						contextFather = new ContextFatherSSBNNode(pn, contextNode);
 						
-						List<ILiteralEntityInstance> possibleValueList = new ArrayList<ILiteralEntityInstance>(); 
+						List<ILiteralEntityInstance> possibleValueList = 
+								new ArrayList<ILiteralEntityInstance>(); 
+						
 						for(String entity: simpleContextNodeList.get(0).getPossibleValues()){
-							possibleValueList.add(LiteralEntityInstance.getInstance(entity, simpleContextNodeList.get(0).getOvProblematic().getValueType())); 
+							possibleValueList.add(LiteralEntityInstance.getInstance(
+									entity, 
+									simpleContextNodeList.get(0).getOvProblematic().getValueType())); 
 						}
 						
 						for(ILiteralEntityInstance lei: possibleValueList){

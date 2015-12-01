@@ -591,6 +591,7 @@ public class Compiler implements ICompiler {
 		
 		// sets all parents current mfrag as the same of this ssbn node, in order to use same OV names
 		// use a map to store previous states, in order to rollback at the end of CPT generation
+		System.out.println("Node: " + this.getSSBNNode());
 		Map<SSBNNode, MFrag> parentToPreviousMFragMap = new HashMap<SSBNNode, MFrag>();
 		for (SSBNNode parent : this.getSSBNNode().getParents()) {
 			if (parent.getCurrentlySelectedMFragByTurnArguments() != null) {
@@ -601,6 +602,12 @@ public class Compiler implements ICompiler {
 			}
 			try {
 				parent.turnArgumentsForMFrag(this.getSSBNNode().getResident().getMFrag());
+//NEW CODE				
+				System.out.println("parent: " + parent);
+				System.out.println("mFrag:  " + this.getSSBNNode().getResident().getMFrag());
+				for(OVInstance ov: parent.getArguments()){
+					System.out.println("   ovInstance: " + ov);
+				}
 			} catch (Exception e) {
 				Debug.println(this.getClass(), parent.toString(), e);
 			}

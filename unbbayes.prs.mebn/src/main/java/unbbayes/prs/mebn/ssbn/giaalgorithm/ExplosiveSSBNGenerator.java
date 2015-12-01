@@ -92,6 +92,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 			KnowledgeBase kb) throws SSBNNodeGeneralException,
 	ImplementationRestrictionException, MEBNException,
 	OVInstanceFaultException, InvalidParentException {
+		Debug.setDebug(true);
 		SSBN ssbn =  generateSSBN(listQueries.get(0), kb);
 		try {
 			ssbn.compileAndInitializeSSBN();

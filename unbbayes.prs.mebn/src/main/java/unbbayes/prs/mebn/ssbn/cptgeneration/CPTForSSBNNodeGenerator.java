@@ -138,7 +138,11 @@ public class CPTForSSBNNodeGenerator {
 		ssbnNode.changeArgumentsToResidentMFrag(); 
 		
 		for(SSBNNode parent: ssbnNode.getParents()){
-			parent.turnArgumentsForMFrag(ssbnNode.getResident().getMFrag()); 
+			boolean test = parent.turnArgumentsForMFrag(ssbnNode.getResident().getMFrag());
+//NEW CODE 			
+			if(!test){
+				throw new MEBNException("Problem search for the arguments of MFrag!"); 
+			}
 		}
 		
 		if (logManager != null) {

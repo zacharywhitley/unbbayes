@@ -26,6 +26,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.io.File;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
@@ -103,12 +104,15 @@ import unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
+import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.SSBNWarning;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.prs.mebn.ssbn.giaalgorithm.ExplosiveSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
+import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
 import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
@@ -1913,116 +1917,112 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 //		baseCreated = true; 
 	}
 
-//	/**
-//	 * Execute a query. 
-//	 * 
-//	 * @param residentNode
-//	 * @param arguments
-//	 * @return
-//	 * @throws InconsistentArgumentException
-//	 * @throws ImplementationRestrictionException 
-//	 * @throws SSBNNodeGeneralException 
-//	 * @throws OVInstanceFaultException 
-//	 * @throws InvalidParentException 
-//	 */
-//	public ProbabilisticNetwork executeQuery(ResidentNode residentNode, 
-//			ObjectEntityInstance[] arguments)
-//	                           throws InconsistentArgumentException, 
-//	                                  SSBNNodeGeneralException, 
-//	                                  ImplementationRestrictionException, 
-//	                                  MEBNException, 
-//	                                  OVInstanceFaultException, InvalidParentException {
-//		
-//		mebnEditionPane.setStatus(resource.getString("statusGeneratingSSBN")); 
-//		screen.setCursor(new Cursor(Cursor.WAIT_CURSOR));
-//		
-//		ProbabilisticNetwork probabilisticNetwork = null; 
-//		
-//		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode); 
-//		
-//		List<Argument> arglist = residentNode.getArgumentList();
-//		
-//		if (arglist.size() != arguments.length) {
-//			throw new InconsistentArgumentException();
-//		}
-//		
-//		for (int i = 1; i <= arguments.length; i++) {
-//			try {
-//				//TODO It has to get in the right order. For some reason in argList, 
-//				// sometimes the second argument comes first
-//				for (Argument argument : arglist) {
-//					if (argument.getArgNumber() == i) {
-//						queryNode.addArgument(argument.getOVariable(), arguments[i-1].getName());
-//						break;
-//					}
-//				}
-//				
-//			} catch (SSBNNodeGeneralException e) {
-//				
-//				mebnEditionPane.setStatus(resource.getString("statusReady")); 
-//				screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//				
-//				throw new InconsistentArgumentException(e);
-//			}
-//		}
-//		
-//	    createKnowledgeBase(); 	
-//
-//		Query query = new Query(getKnowledgeBase(), queryNode, multiEntityBayesianNetwork);
-//		
-//		ISSBNGenerator ssbngenerator = new ExplosiveSSBNGenerator();
-//
-//		List<Query> listQueries = new ArrayList<Query>(); 
-//		listQueries.add(query); 
-//		
-//		ssbn = ssbngenerator.generateSSBN(listQueries, getKnowledgeBase()); 
-//		
-//		probabilisticNetwork = ssbn.getProbabilisticNetwork();
-//
-//		if(!query.getQueryNode().isFinding()){
-//
-//				showSSBNGraph = true; 
-//				specificSituationBayesianNetwork = probabilisticNetwork;
-//
-//				try {
-//					
-//					ssbn.compileAndInitializeSSBN();
-//					
-//					if (ssbn.getWarningList().size() > 0){
-//						openWarningDialog(); 	
-//					}
-//					
-//					this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
-//
-//					Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
-//					Dimension originalDimension = this.getMebnEditionPane().getNetworkWindow().getGraphPane().getGraphDimension(); 
-//					if((originalDimension.getHeight() < sizeOfGraph.getHeight()) || 
-//							(originalDimension.getWidth() < sizeOfGraph.getWidth())){
-//						dimensionSSBNGraph = sizeOfGraph; 
-//						this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(sizeOfGraph); 
-//						this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
-//					}
-//					
-//				} catch (Exception e) {
-//					e.printStackTrace(); 
-//					screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//					JOptionPane.showMessageDialog(getScreen(), 
-//							e.getMessage());
-//				} 
-//
-//
-//			
-//		}else{
-//			JOptionPane.showMessageDialog(getScreen(), 
-//					query.getQueryNode().getName() + " = " + query.getQueryNode().getValue());
-//	
-//		}
-//
-//		mebnEditionPane.setStatus(resource.getString("statusReady")); 
-//		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
-//		
-//		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
-//	}
+	/**
+	 * Execute a query. 
+	 * 
+	 * @param residentNode
+	 * @param arguments
+	 * @return
+	 * @throws InconsistentArgumentException
+	 * @throws ImplementationRestrictionException 
+	 * @throws SSBNNodeGeneralException 
+	 * @throws OVInstanceFaultException 
+	 * @throws InvalidParentException 
+	 */
+	public ProbabilisticNetwork executeQuery(ResidentNode residentNode, 
+			ObjectEntityInstance[] arguments)
+	                           throws InconsistentArgumentException, 
+	                                  SSBNNodeGeneralException, 
+	                                  ImplementationRestrictionException, 
+	                                  MEBNException, 
+	                                  OVInstanceFaultException, InvalidParentException {
+		
+		mebnEditionPane.setStatus(resource.getString("statusGeneratingSSBN")); 
+		
+		ProbabilisticNetwork probabilisticNetwork = null; 
+		
+		SSBNNode queryNode = SSBNNode.getInstance(null,residentNode); 
+		
+		List<Argument> arglist = residentNode.getArgumentList();
+		
+		if (arglist.size() != arguments.length) {
+			throw new InconsistentArgumentException();
+		}
+		
+		for (int i = 1; i <= arguments.length; i++) {
+			try {
+				//TODO It has to get in the right order. For some reason in argList, 
+				// sometimes the second argument comes first
+				for (Argument argument : arglist) {
+					if (argument.getArgNumber() == i) {
+						queryNode.addArgument(argument.getOVariable(), arguments[i-1].getName());
+						break;
+					}
+				}
+				
+			} catch (SSBNNodeGeneralException e) {
+				
+				mebnEditionPane.setStatus(resource.getString("statusReady")); 
+				
+				throw new InconsistentArgumentException(e);
+			}
+		}
+		
+	    createKnowledgeBase(); 	
+
+		Query query = new Query(getKnowledgeBase(), queryNode, multiEntityBayesianNetwork);
+		
+		ISSBNGenerator ssbngenerator = new ExplosiveSSBNGenerator();
+
+		List<Query> listQueries = new ArrayList<Query>(); 
+		listQueries.add(query); 
+		
+		ssbn = ssbngenerator.generateSSBN(listQueries, getKnowledgeBase()); 
+		
+		probabilisticNetwork = ssbn.getProbabilisticNetwork();
+
+		if(!query.getQueryNode().isFinding()){
+
+				showSSBNGraph = true; 
+				specificSituationBayesianNetwork = probabilisticNetwork;
+
+				try {
+					
+					ssbn.compileAndInitializeSSBN();
+					
+					if (ssbn.getWarningList().size() > 0){
+						openWarningDialog(); 	
+					}
+					
+					this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
+
+					Dimension sizeOfGraph = PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(specificSituationBayesianNetwork); 
+					Dimension originalDimension = this.getMebnEditionPane().getNetworkWindow().getGraphPane().getGraphDimension(); 
+					if((originalDimension.getHeight() < sizeOfGraph.getHeight()) || 
+							(originalDimension.getWidth() < sizeOfGraph.getWidth())){
+						dimensionSSBNGraph = sizeOfGraph; 
+						this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(sizeOfGraph); 
+						this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
+					}
+					
+				} catch (Exception e) {
+					e.printStackTrace(); 
+					JOptionPane.showMessageDialog(getScreen(), 
+							e.getMessage());
+				} 
+
+
+			
+		}else{
+			JOptionPane.showMessageDialog(getScreen(), 
+					query.getQueryNode().getName() + " = " + query.getQueryNode().getValue());
+	
+		}
+
+		mebnEditionPane.setStatus(resource.getString("statusReady")); 
+		
+		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+	}
 	
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#executeQuery(java.util.List)
@@ -2070,7 +2070,6 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 						e.getMessage());
 			}
 		}
-
 
 		mebnEditionPane.setStatus(resource.getString("statusReady")); 
 		this.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
