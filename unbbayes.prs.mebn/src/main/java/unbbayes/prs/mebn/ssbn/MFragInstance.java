@@ -214,15 +214,18 @@ public class MFragInstance {
 	}
 	
 	/**
-	 * Monta uma combinação de todos os resultados possíveis para as variáveis 
-	 * ordinárias contidas em ovSearchArray, utilizando a arvore de entidades onde 
-	 * será utilizada os valores das variáveis já preenchidas. 
+	 * Build a combination of all possible results for the ordinary variables 
+	 * inside ovSearchArray. Uses a tree of entities where it is used the values
+	 * of ordinary variables already filled.  
 	 * 
 	 * @param knownOVArray
 	 * @param knownEntityArray
 	 * @param ovSearchArray
-	 * @return Um array com todos os resultados possíveis para a lista ovSearchArray. 
-	 *         Os elementos do retorno estão na mesma ordem. 
+	 * 
+	 * @return A list of arrays with all possible values for the ovSearchArray. 
+	 *         Each array contains a value for each ordinary variable of ovSearchArray. 
+	 *         This value is the name of the entity. Each array group the elements
+	 *         in the same order of the elements of ovSearchArray. 
 	 */
 	public List<String[]> recoverCombinationsEntitiesPossibles(
 			OrdinaryVariable[] knownOVArray,
@@ -230,7 +233,8 @@ public class MFragInstance {
 			OrdinaryVariable[] ovSearchArray){
 		
 		return entityTree.recoverCombinationsEntitiesPossibles(knownOVArray, 
-				knownEntityArray, ovSearchArray); 
+				knownEntityArray, 
+				ovSearchArray); 
 		
 	}
 	
