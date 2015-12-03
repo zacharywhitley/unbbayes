@@ -1037,8 +1037,13 @@ public class MEBNEditionPane extends JPanel {
 							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileLoadOK"));
 						} catch (UBIOException e) {
 							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e.getMessage());
+							setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 						} catch (MEBNException e2) {
 							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e2.getMessage());
+							setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+						} catch (Exception e3){
+							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e3.getMessage());
+							setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 						}
 					}
 				}
