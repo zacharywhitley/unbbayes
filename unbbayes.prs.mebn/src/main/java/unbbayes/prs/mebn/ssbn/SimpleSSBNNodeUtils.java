@@ -124,17 +124,30 @@ public class SimpleSSBNNodeUtils {
 					inputNode.getResidentNodePointer().getOrdinaryVariableArray(); 
 				
 				List<OVInstance> argumentsForMFrag = new ArrayList<OVInstance>();
-				
-				for(int i = 0; i < ovArray.length; i++){
-// OLD CODE
+
+// OLD CODE				
+//				for(int i = 0; i < ovArray.length; i++){
 //					OVInstance ovInstance = OVInstance.getInstance(ovArray[i], simple.getEntityArray()[i]); 
-// NEW CODE
-					OrdinaryVariable ov = simple.getOvArrayForMFrag(inputNode.getMFrag())[i]; 
-					OVInstance ovInstance = OVInstance.getInstance(ov,simple.getEntityArray()[i]); 					
-					argumentsForMFrag.add(ovInstance); 
+//                  argumentsForMFrag.add(ovInstance); 	
+//				}
+
+// NEW CODE 
+				if( ! (simple.getOvArrayForMFrag(inputNode.getMFrag()) == null )){
+					for(int i = 0; i < ovArray.length; i++){
+						OrdinaryVariable ov = simple.getOvArrayForMFrag(inputNode.getMFrag())[i]; 
+						OVInstance ovInstance = OVInstance.getInstance(ov,simple.getEntityArray()[i]); 					
+						argumentsForMFrag.add(ovInstance); 
+					}
+
+				}else{
+//TODO This is an old bug... when we don't have an input instance of the node, we won't have a MFrag Instance 
+//     for it... what makes the throws of an exception. Solve this problem. 
+					for(int i = 0; i < ovArray.length; i++){
+						OVInstance ovInstance = OVInstance.getInstance(ovArray[i], simple.getEntityArray()[i]);
+						argumentsForMFrag.add(ovInstance); 					
+					}	
 				}
 				
-// NEW CODE 				
 				//TODO Bug: here we don't consider that the SSBNNode was 
 				//instantiated by different MFrags, and in each of them setted
 				//the correct values for the arguments... 

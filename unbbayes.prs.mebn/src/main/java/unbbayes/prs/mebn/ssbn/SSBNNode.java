@@ -1457,6 +1457,7 @@ public class SSBNNode implements INode {
 		//Resident MFrag (take care with the recursivity!) 
 		if(mFrag.equals(this.getResident().getMFrag())){
 			if(isRecursive){
+				//TODO This list is filled??? 
 				setArguments(argumentsForMFrag.get(mFrag));
 				this.setCurrentlySelectedMFragByTurnArguments(mFrag);
 				return true; 

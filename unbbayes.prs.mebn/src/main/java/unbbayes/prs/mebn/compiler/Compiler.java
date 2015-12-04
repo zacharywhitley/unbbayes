@@ -597,7 +597,7 @@ public class Compiler implements ICompiler {
 			if (parent.getCurrentlySelectedMFragByTurnArguments() != null) {
 				parentToPreviousMFragMap.put(parent, parent.getCurrentlySelectedMFragByTurnArguments());
 			} else {
-				//defaults to resident node's mfrag
+				//defaults to resident node's MFrag
 				parentToPreviousMFragMap.put(parent, parent.getResident().getMFrag());
 			}
 			try {
@@ -608,6 +608,7 @@ public class Compiler implements ICompiler {
 				for(OVInstance ov: parent.getArguments()){
 					System.out.println("   ovInstance: " + ov);
 				}
+//END NEW CODE				
 			} catch (Exception e) {
 				Debug.println(this.getClass(), parent.toString(), e);
 			}
