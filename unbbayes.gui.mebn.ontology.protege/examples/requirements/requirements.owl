@@ -28,6 +28,8 @@
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:component-systems="http://www.owl-ontologies.com/requirements/component-systems.owl#">
     <owl:Ontology rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl">
+        <rdfs:comment rdf:datatype="&xsd;string">This is an OWL ontology translated from Tania Tudorache&#39;s engineering ontology (initially written as frame ontology). It is described in Chapter 4 of her PhD dissertation: Employing Ontologies for an Improved Development Process in Collaborative Engineering (2006).</rdfs:comment>
+        <rdfs:seeAlso rdf:datatype="&xsd;anyURI">http://protegewiki.stanford.edu/wiki/Engineering_ontologies</rdfs:seeAlso>
         <owl:imports rdf:resource="http://www.owl-ontologies.com/requirements/component-systems.owl"/>
         <owl:imports rdf:resource="http://www.owl-ontologies.com/requirements/constraints.owl"/>
     </owl:Ontology>
@@ -42,6 +44,7 @@
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
 
+    <owl:AnnotationProperty rdf:about="&rdfs;seeAlso"/>
     <owl:AnnotationProperty rdf:about="&rdfs;label"/>
     <owl:AnnotationProperty rdf:about="&rdfs;comment"/>
     
@@ -216,6 +219,7 @@
 
     <owl:ObjectProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#used_in_requirement">
         <rdfs:label rdf:datatype="&xsd;string">used_in_requirement</rdfs:label>
+        <rdfs:domain rdf:resource="&constraints;Constraint"/>
         <rdfs:range rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
     </owl:ObjectProperty>
     
@@ -345,10 +349,26 @@
     //
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
+
     
 
- 
 
+    <!-- http://www.owl-ontologies.com/requirements/component-systems.owl#CompositeComponent -->
+
+    <owl:Class rdf:about="&component-systems;CompositeComponent"/>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/component-systems.owl#EngineeringComponent -->
+
+    <owl:Class rdf:about="&component-systems;EngineeringComponent"/>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/constraints.owl#Constraint -->
+
+    <owl:Class rdf:about="&constraints;Constraint"/>
+    
 
 
     <!-- http://www.owl-ontologies.com/requirements/requirements.owl#DetailedRequirement -->
@@ -395,19 +415,23 @@
         <rdfs:subClassOf rdf:resource="&owl;Thing"/>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#hasPart"/>
+                <owl:onProperty rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#isPartOf"/>
                 <owl:allValuesFrom rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#TestCase"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#isPartOf"/>
+                <owl:onProperty rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#hasPart"/>
                 <owl:allValuesFrom rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#TestCase"/>
             </owl:Restriction>
         </rdfs:subClassOf>
     </owl:Class>
     
 
+
+    <!-- http://www.w3.org/2002/07/owl#Thing -->
+
+    <owl:Class rdf:about="&owl;Thing"/>
 </rdf:RDF>
 
 

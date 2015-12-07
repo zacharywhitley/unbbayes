@@ -10,12 +10,12 @@
 
 
 <Ontology xmlns="http://www.w3.org/2002/07/owl#"
-     xml:base="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl"
+     xml:base="http://www.pr-owl.org/resources/SPL/unbbayesFeatureModel.owl"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:xml="http://www.w3.org/XML/1998/namespace"
-     ontologyIRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl">
+     ontologyIRI="http://www.pr-owl.org/resources/SPL/unbbayesFeatureModel.owl">
     <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
     <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
     <Prefix name="" IRI="http://www.w3.org/2002/07/owl#"/>
@@ -26,1680 +26,1692 @@
         <Literal datatypeIRI="&xsd;string">This ontology represents the feature model of the UnBBayes Software Product Line. It models features (in most cases, a feature can be mapped directly to a plug-in) and relationships (e.g. mutual exclusion, dependences, inclusion). Reasoning in this model can be performed in order for users to check feature consistency of a particular configuration.</Literal>
     </Annotation>
     <Declaration>
-        <Class IRI="#Configuration"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Configuration"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#FeatureModel"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Feature"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureModel"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#Main"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Main"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#UnBBayesDefaultRelease"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UnBBayesDefaultRelease"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.core"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.core_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.datamining"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.datamining_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege.2"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege.2_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.DneIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.DneIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.NetIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.NetIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.XMLBIFIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.XMLBIFIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.mebn.UbfIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.mebn.UbfIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.xmlbif.version7"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.xmlbif.version7_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.learning"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.learning.incrementalLearning"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.learning.incrementalLearning_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.learning_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.metaphor"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.metaphor.afin"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.metaphor.afin_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.metaphor_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.oobn.resources.ja"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.oobn.resources.ja_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.prs.mebn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.prs.mebn.kb.powerloom"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.prs.mebn.kb.powerloom_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.prs.mebn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.prs.msbn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.prs.msbn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.prs.oobn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.prs.oobn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.prs.prm"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.prs.prm_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.simulation.likelihoodweighting.inference"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.simulation.likelihoodweighting.inference_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.simulation.montecarlo.sampling"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.simulation.montecarlo.sampling_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.simulation.sampling.GibbsSampling"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.simulation.sampling.GibbsSampling_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling_Rule"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#equals"/>
+        <Class IRI="#DynamicFeature"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.core"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_edu.gmu.seor.prognos.unbbayesplugin.cps"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.datamining"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.gui.mebn.ontology.protege"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.datamining"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.gui.mebn.ontology.protege.2"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.gui.mebn.ontology.protege"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.io.DneIO"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.gui.mebn.ontology.protege.2"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.io.NetIO"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.DneIO"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.io.XMLBIFIO"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.NetIO"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.XMLBIFIO"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO2"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.mebn.UbfIO"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.io.xmlbif.version7"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.mebn.UbfIO2"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.learning"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.xmlbif.version7"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.learning.incrementalLearning"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.learning"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.metaphor"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.learning.incrementalLearning"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.metaphor.afin"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.metaphor"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.oobn.resources.ja"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.metaphor.afin"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.prs.mebn"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.oobn.resources.ja"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.prs.mebn.kb.powerloom"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.prs.mebn.ssbn.ssmsbn"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn.kb.powerloom"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.prs.msbn"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn.ssbn.ssmsbn"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.prs.oobn"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.msbn"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.prs.prm"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.oobn"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.simulation.likelihoodweighting.inference"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.prm"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.simulation.montecarlo.sampling"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.likelihoodweighting.inference"/>
     </Declaration>
     <Declaration>
-        <ObjectProperty IRI="#has_unbbayes.simulation.sampling.GibbsSampling"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.montecarlo.sampling"/>
     </Declaration>
     <Declaration>
-        <DataProperty IRI="#hasPluginURL"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.sampling.GibbsSampling"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#UBFIO2"/>
+        <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasPluginURL"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#UnBBayesDefaultReleaseSample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UBFIO2"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#UnBMiner"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UnBBayesDefaultReleaseSample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UnBMiner"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.core_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.datamining_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.gui.mebn.ontology.protege.2_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.gui.mebn.ontology.protege_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.io.DneIO_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.io.NetIO_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.io.XMLBIFIO_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.io.mebn.UbfIO_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.io.xmlbif.version7_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.learning.incrementalLearning_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.learning_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.metaphor.afin_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.metaphor_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.oobn.resources.ja_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.prs.mebn.kb.powerloom_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.prs.mebn.ssbn.ssmsbn_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.prs.mebn_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.prs.msbn_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.prs.oobn_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.prs.prm_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.simulation.likelihoodweighting.inference_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.simulation.montecarlo.sampling_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference_sample"/>
     </Declaration>
     <Declaration>
-        <NamedIndividual IRI="#unbbayes.simulation.sampling.GibbsSampling_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling_sample"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling_sample"/>
     </Declaration>
     <EquivalentClasses>
-        <Class IRI="#Main"/>
-        <Class IRI="#unbbayes.core"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Main"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#UnBBayesDefaultRelease"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UnBBayesDefaultRelease"/>
         <ObjectIntersectionOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_edu.gmu.seor.prognos.unbbayesplugin.cps"/>
-                    <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.datamining"/>
-                    <Class IRI="#unbbayes.datamining"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.datamining"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.gui.mebn.ontology.protege"/>
-                    <Class IRI="#unbbayes.gui.mebn.ontology.protege"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.gui.mebn.ontology.protege"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.gui.mebn.ontology.protege.2"/>
-                    <Class IRI="#unbbayes.gui.mebn.ontology.protege.2"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.gui.mebn.ontology.protege.2"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.io.DneIO"/>
-                    <Class IRI="#unbbayes.io.DneIO"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.DneIO"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO"/>
-                    <Class IRI="#unbbayes.io.mebn.UbfIO"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.mebn.UbfIO"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO2"/>
-                    <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.mebn.UbfIO2"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.io.xmlbif.version7"/>
-                    <Class IRI="#unbbayes.io.xmlbif.version7"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.xmlbif.version7"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.learning"/>
-                    <Class IRI="#unbbayes.learning"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.learning"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.learning.incrementalLearning"/>
-                    <Class IRI="#unbbayes.learning.incrementalLearning"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.learning.incrementalLearning"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.metaphor"/>
-                    <Class IRI="#unbbayes.metaphor"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.metaphor"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.metaphor.afin"/>
-                    <Class IRI="#unbbayes.metaphor.afin"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.metaphor.afin"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.oobn.resources.ja"/>
-                    <Class IRI="#unbbayes.oobn.resources.ja"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.oobn.resources.ja"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.prs.mebn"/>
-                    <Class IRI="#unbbayes.prs.mebn"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.prs.mebn.kb.powerloom"/>
-                    <Class IRI="#unbbayes.prs.mebn.kb.powerloom"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn.kb.powerloom"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.prs.mebn.ssbn.ssmsbn"/>
-                    <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn.ssbn.ssmsbn"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.prs.msbn"/>
-                    <Class IRI="#unbbayes.prs.msbn"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.msbn"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.prs.oobn"/>
-                    <Class IRI="#unbbayes.prs.oobn"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.oobn"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.prs.prm"/>
-                    <Class IRI="#unbbayes.prs.prm"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.prm"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.simulation.likelihoodweighting.inference"/>
-                    <Class IRI="#unbbayes.simulation.likelihoodweighting.inference"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.likelihoodweighting.inference"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.simulation.montecarlo.sampling"/>
-                    <Class IRI="#unbbayes.simulation.montecarlo.sampling"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.montecarlo.sampling"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
-                    <ObjectProperty IRI="#has_unbbayes.simulation.sampling.GibbsSampling"/>
-                    <Class IRI="#unbbayes.simulation.sampling.GibbsSampling"/>
+                    <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.sampling.GibbsSampling"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectSomeValuesFrom>
-                <ObjectProperty IRI="#has_unbbayes.core"/>
-                <Class IRI="#unbbayes.core"/>
+                <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+                <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
             </ObjectSomeValuesFrom>
             <ObjectSomeValuesFrom>
-                <ObjectProperty IRI="#has_unbbayes.io.NetIO"/>
-                <Class IRI="#unbbayes.io.NetIO"/>
+                <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.NetIO"/>
+                <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO"/>
             </ObjectSomeValuesFrom>
             <ObjectSomeValuesFrom>
-                <ObjectProperty IRI="#has_unbbayes.io.XMLBIFIO"/>
-                <Class IRI="#unbbayes.io.XMLBIFIO"/>
+                <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.XMLBIFIO"/>
+                <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO"/>
             </ObjectSomeValuesFrom>
         </ObjectIntersectionOf>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#UnBBayesDefaultRelease"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UnBBayesDefaultRelease"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#UnBBayesDefaultReleaseSample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UnBBayesDefaultReleaseSample"/>
         </ObjectHasValue>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_edu.gmu.seor.prognos.unbbayesplugin.cps"/>
-            <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.core_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.core"/>
-            <Class IRI="#unbbayes.core"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.datamining_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.datamining"/>
-            <Class IRI="#unbbayes.datamining"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.datamining"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege.2_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.gui.mebn.ontology.protege.2"/>
-            <Class IRI="#unbbayes.gui.mebn.ontology.protege.2"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.gui.mebn.ontology.protege.2"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.gui.mebn.ontology.protege"/>
-            <Class IRI="#unbbayes.gui.mebn.ontology.protege"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.gui.mebn.ontology.protege"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.io.DneIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.io.DneIO"/>
-            <Class IRI="#unbbayes.io.DneIO"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.DneIO"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.io.NetIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.io.NetIO"/>
-            <Class IRI="#unbbayes.io.NetIO"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.NetIO"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.io.XMLBIFIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.io.XMLBIFIO"/>
-            <Class IRI="#unbbayes.io.XMLBIFIO"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.XMLBIFIO"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO2"/>
-            <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.mebn.UbfIO2"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.io.mebn.UbfIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO"/>
-            <Class IRI="#unbbayes.io.mebn.UbfIO"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.mebn.UbfIO"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.io.xmlbif.version7_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.io.xmlbif.version7"/>
-            <Class IRI="#unbbayes.io.xmlbif.version7"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.xmlbif.version7"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.learning.incrementalLearning_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.learning.incrementalLearning"/>
-            <Class IRI="#unbbayes.learning.incrementalLearning"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.learning.incrementalLearning"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.learning_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.learning"/>
-            <Class IRI="#unbbayes.learning"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.learning"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.metaphor.afin_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.metaphor.afin"/>
-            <Class IRI="#unbbayes.metaphor.afin"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.metaphor.afin"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.metaphor_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.metaphor"/>
-            <Class IRI="#unbbayes.metaphor"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.metaphor"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.oobn.resources.ja_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.oobn.resources.ja"/>
-            <Class IRI="#unbbayes.oobn.resources.ja"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.oobn.resources.ja"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.prs.mebn.kb.powerloom_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.mebn.kb.powerloom"/>
-            <Class IRI="#unbbayes.prs.mebn.kb.powerloom"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn.kb.powerloom"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.mebn.ssbn.ssmsbn"/>
-            <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn.ssbn.ssmsbn"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.prs.mebn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.mebn"/>
-            <Class IRI="#unbbayes.prs.mebn"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.prs.msbn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.msbn"/>
-            <Class IRI="#unbbayes.prs.msbn"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.msbn"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.prs.oobn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.oobn"/>
-            <Class IRI="#unbbayes.prs.oobn"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.oobn"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.prs.prm_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.prm"/>
-            <Class IRI="#unbbayes.prs.prm"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.prm"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.simulation.likelihoodweighting.inference_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.simulation.likelihoodweighting.inference"/>
-            <Class IRI="#unbbayes.simulation.likelihoodweighting.inference"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.likelihoodweighting.inference"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.simulation.montecarlo.sampling_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.simulation.montecarlo.sampling"/>
-            <Class IRI="#unbbayes.simulation.montecarlo.sampling"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.montecarlo.sampling"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.simulation.sampling.GibbsSampling_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.simulation.sampling.GibbsSampling"/>
-            <Class IRI="#unbbayes.simulation.sampling.GibbsSampling"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.sampling.GibbsSampling"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <SubClassOf>
-        <Class IRI="#Configuration"/>
-        <Class IRI="#FeatureModel"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Configuration"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureModel"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#FeatureRules"/>
-        <Class IRI="#FeatureModel"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Feature"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureModel"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#Features"/>
-        <Class IRI="#FeatureModel"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureModel"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#UnBBayesDefaultRelease"/>
-        <Class IRI="#Configuration"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UnBBayesDefaultRelease"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Configuration"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.core"/>
-            <Class IRI="#unbbayes.core"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.core"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.core"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.core_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.core_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.core_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core_Rule"/>
         <ObjectUnionOf>
             <ObjectSomeValuesFrom>
-                <ObjectProperty IRI="#has_unbbayes.io.DneIO"/>
-                <Class IRI="#unbbayes.io.DneIO"/>
+                <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.DneIO"/>
+                <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO"/>
             </ObjectSomeValuesFrom>
             <ObjectSomeValuesFrom>
-                <ObjectProperty IRI="#has_unbbayes.io.NetIO"/>
-                <Class IRI="#unbbayes.io.NetIO"/>
+                <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.NetIO"/>
+                <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO"/>
             </ObjectSomeValuesFrom>
             <ObjectSomeValuesFrom>
-                <ObjectProperty IRI="#has_unbbayes.io.XMLBIFIO"/>
-                <Class IRI="#unbbayes.io.XMLBIFIO"/>
+                <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.XMLBIFIO"/>
+                <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO"/>
             </ObjectSomeValuesFrom>
         </ObjectUnionOf>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.datamining"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.datamining"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.datamining_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.datamining_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.datamining_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.learning"/>
-            <Class IRI="#unbbayes.learning"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.learning"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege.2"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege.2"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.gui.mebn.ontology.protege.2_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege.2_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege.2_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO2"/>
-            <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.mebn.UbfIO2"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.mebn"/>
-            <Class IRI="#unbbayes.prs.mebn"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.DneIO"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.DneIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.io.DneIO_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.DneIO_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.DneIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.core"/>
-            <Class IRI="#unbbayes.core"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.NetIO"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.NetIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.io.NetIO_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.NetIO_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.NetIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.core"/>
-            <Class IRI="#unbbayes.core"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.XMLBIFIO"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.XMLBIFIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.io.XMLBIFIO_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.XMLBIFIO_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.XMLBIFIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.core"/>
-            <Class IRI="#unbbayes.core"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.io.mebn.UbfIO_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#UBFIO2"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UBFIO2"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.mebn"/>
-            <Class IRI="#unbbayes.prs.mebn"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.mebn"/>
-            <Class IRI="#unbbayes.prs.mebn"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.xmlbif.version7"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.xmlbif.version7"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.io.xmlbif.version7_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.xmlbif.version7_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.xmlbif.version7_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_edu.gmu.seor.prognos.unbbayesplugin.cps"/>
-            <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.xmlbif.version7_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.io.XMLBIFIO"/>
-            <Class IRI="#unbbayes.io.XMLBIFIO"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.XMLBIFIO"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.learning"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.learning"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.learning_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.learning.incrementalLearning"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.learning.incrementalLearning"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.learning.incrementalLearning_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.learning.incrementalLearning_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.learning.incrementalLearning_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.learning"/>
-            <Class IRI="#unbbayes.learning"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.learning"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.learning_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.learning_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.core"/>
-            <Class IRI="#unbbayes.core"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.metaphor"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.metaphor"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.metaphor_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.metaphor.afin"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.metaphor.afin"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.metaphor.afin_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.metaphor.afin_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.metaphor.afin_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.core"/>
-            <Class IRI="#unbbayes.core"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.metaphor_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.metaphor_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.core"/>
-            <Class IRI="#unbbayes.core"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.oobn.resources.ja"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.oobn.resources.ja"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.oobn.resources.ja_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.oobn.resources.ja_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.oobn.resources.ja_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.oobn"/>
-            <Class IRI="#unbbayes.prs.oobn"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.oobn"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.prs.mebn_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn.kb.powerloom"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn.kb.powerloom"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.prs.mebn.kb.powerloom_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn.kb.powerloom_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn.kb.powerloom_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.mebn"/>
-            <Class IRI="#unbbayes.prs.mebn"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.prs.mebn.ssbn.ssmsbn_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.mebn"/>
-            <Class IRI="#unbbayes.prs.mebn"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.msbn"/>
-            <Class IRI="#unbbayes.prs.msbn"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.msbn"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.mebn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.core"/>
-            <Class IRI="#unbbayes.core"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.msbn"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.msbn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.prs.msbn_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.msbn_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.msbn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.core"/>
-            <Class IRI="#unbbayes.core"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.oobn"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.oobn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.prs.oobn_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.oobn_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.oobn_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.prs.msbn"/>
-            <Class IRI="#unbbayes.prs.msbn"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.msbn"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.prm"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.prm"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.prs.prm_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.prm_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.prs.prm_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.core"/>
-            <Class IRI="#unbbayes.core"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.simulation.likelihoodweighting.inference"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.simulation.likelihoodweighting.inference"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.simulation.likelihoodweighting.inference_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.simulation.likelihoodweighting.inference_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.simulation.likelihoodweighting.inference_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.simulation.montecarlo.sampling"/>
-            <Class IRI="#unbbayes.simulation.montecarlo.sampling"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.montecarlo.sampling"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.simulation.montecarlo.sampling"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.simulation.montecarlo.sampling"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.simulation.montecarlo.sampling_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.simulation.montecarlo.sampling_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.simulation.montecarlo.sampling_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.core"/>
-            <Class IRI="#unbbayes.core"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.simulation.sampling.GibbsSampling"/>
-        <Class IRI="#Features"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling"/>
+        <Class IRI="#DynamicFeature"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.simulation.sampling.GibbsSampling"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling"/>
         <ObjectHasValue>
-            <ObjectProperty IRI="#equals"/>
-            <NamedIndividual IRI="#unbbayes.simulation.sampling.GibbsSampling_sample"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.simulation.sampling.GibbsSampling_Rule"/>
-        <Class IRI="#FeatureRules"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.simulation.sampling.GibbsSampling_Rule"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling_Rule"/>
         <ObjectSomeValuesFrom>
-            <ObjectProperty IRI="#has_unbbayes.simulation.montecarlo.sampling"/>
-            <Class IRI="#unbbayes.simulation.montecarlo.sampling"/>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.montecarlo.sampling"/>
+            <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling"/>
         </ObjectSomeValuesFrom>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#DynamicFeature"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Feature"/>
     </SubClassOf>
     <DisjointClasses>
-        <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
-        <Class IRI="#unbbayes.core"/>
-        <Class IRI="#unbbayes.datamining"/>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege"/>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege.2"/>
-        <Class IRI="#unbbayes.io.DneIO"/>
-        <Class IRI="#unbbayes.io.NetIO"/>
-        <Class IRI="#unbbayes.io.XMLBIFIO"/>
-        <Class IRI="#unbbayes.io.mebn.UbfIO"/>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
-        <Class IRI="#unbbayes.io.xmlbif.version7"/>
-        <Class IRI="#unbbayes.learning"/>
-        <Class IRI="#unbbayes.learning.incrementalLearning"/>
-        <Class IRI="#unbbayes.metaphor"/>
-        <Class IRI="#unbbayes.metaphor.afin"/>
-        <Class IRI="#unbbayes.oobn.resources.ja"/>
-        <Class IRI="#unbbayes.prs.mebn"/>
-        <Class IRI="#unbbayes.prs.mebn.kb.powerloom"/>
-        <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn"/>
-        <Class IRI="#unbbayes.prs.msbn"/>
-        <Class IRI="#unbbayes.prs.oobn"/>
-        <Class IRI="#unbbayes.prs.prm"/>
-        <Class IRI="#unbbayes.simulation.likelihoodweighting.inference"/>
-        <Class IRI="#unbbayes.simulation.montecarlo.sampling"/>
-        <Class IRI="#unbbayes.simulation.sampling.GibbsSampling"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling"/>
     </DisjointClasses>
     <ClassAssertion>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
-        <NamedIndividual IRI="#UBFIO2"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UBFIO2"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#UnBBayesDefaultRelease"/>
-        <NamedIndividual IRI="#UnBBayesDefaultReleaseSample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UnBBayesDefaultRelease"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UnBBayesDefaultReleaseSample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.datamining"/>
-        <NamedIndividual IRI="#UnBMiner"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UnBMiner"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
-        <NamedIndividual IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.core"/>
-        <NamedIndividual IRI="#unbbayes.core_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.datamining"/>
-        <NamedIndividual IRI="#unbbayes.datamining_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege.2"/>
-        <NamedIndividual IRI="#unbbayes.gui.mebn.ontology.protege.2_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege"/>
-        <NamedIndividual IRI="#unbbayes.gui.mebn.ontology.protege_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.io.DneIO"/>
-        <NamedIndividual IRI="#unbbayes.io.DneIO_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.io.NetIO"/>
-        <NamedIndividual IRI="#unbbayes.io.NetIO_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.io.XMLBIFIO"/>
-        <NamedIndividual IRI="#unbbayes.io.XMLBIFIO_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.io.mebn.UbfIO"/>
-        <NamedIndividual IRI="#unbbayes.io.mebn.UbfIO_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.io.xmlbif.version7"/>
-        <NamedIndividual IRI="#unbbayes.io.xmlbif.version7_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.learning.incrementalLearning"/>
-        <NamedIndividual IRI="#unbbayes.learning.incrementalLearning_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.learning"/>
-        <NamedIndividual IRI="#unbbayes.learning_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.metaphor.afin"/>
-        <NamedIndividual IRI="#unbbayes.metaphor.afin_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.metaphor"/>
-        <NamedIndividual IRI="#unbbayes.metaphor_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.oobn.resources.ja"/>
-        <NamedIndividual IRI="#unbbayes.oobn.resources.ja_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.prs.mebn.kb.powerloom"/>
-        <NamedIndividual IRI="#unbbayes.prs.mebn.kb.powerloom_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn"/>
-        <NamedIndividual IRI="#unbbayes.prs.mebn.ssbn.ssmsbn_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.prs.mebn"/>
-        <NamedIndividual IRI="#unbbayes.prs.mebn_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.prs.msbn"/>
-        <NamedIndividual IRI="#unbbayes.prs.msbn_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.prs.oobn"/>
-        <NamedIndividual IRI="#unbbayes.prs.oobn_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.prs.prm"/>
-        <NamedIndividual IRI="#unbbayes.prs.prm_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.simulation.likelihoodweighting.inference"/>
-        <NamedIndividual IRI="#unbbayes.simulation.likelihoodweighting.inference_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.simulation.montecarlo.sampling"/>
-        <NamedIndividual IRI="#unbbayes.simulation.montecarlo.sampling_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#unbbayes.simulation.sampling.GibbsSampling"/>
-        <NamedIndividual IRI="#unbbayes.simulation.sampling.GibbsSampling_sample"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling_sample"/>
     </ClassAssertion>
     <SameIndividual>
-        <NamedIndividual IRI="#UnBMiner"/>
-        <NamedIndividual IRI="#unbbayes.datamining_sample"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UnBMiner"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining_sample"/>
     </SameIndividual>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasPluginURL"/>
-        <NamedIndividual IRI="#UBFIO2"/>
+        <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasPluginURL"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UBFIO2"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/download/UBFIO.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasPluginURL"/>
-        <NamedIndividual IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps_sample"/>
+        <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasPluginURL"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/prognos/download/CPS.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasPluginURL"/>
-        <NamedIndividual IRI="#unbbayes.core_sample"/>
+        <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasPluginURL"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/UnBBayes.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasPluginURL"/>
-        <NamedIndividual IRI="#unbbayes.datamining_sample"/>
+        <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasPluginURL"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/UnBMiner.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasPluginURL"/>
-        <NamedIndividual IRI="#unbbayes.gui.mebn.ontology.protege.2_sample"/>
+        <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasPluginURL"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/protegeEditor.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasPluginURL"/>
-        <NamedIndividual IRI="#unbbayes.gui.mebn.ontology.protege_sample"/>
+        <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasPluginURL"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/protegeGUIOLD.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasPluginURL"/>
-        <NamedIndividual IRI="#unbbayes.io.NetIO_sample"/>
+        <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasPluginURL"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/NetIO.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasPluginURL"/>
-        <NamedIndividual IRI="#unbbayes.io.XMLBIFIO_sample"/>
+        <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasPluginURL"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/XMLBIF.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasPluginURL"/>
-        <NamedIndividual IRI="#unbbayes.learning.incrementalLearning_sample"/>
+        <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasPluginURL"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/IncrementalLearning.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasPluginURL"/>
-        <NamedIndividual IRI="#unbbayes.learning_sample"/>
+        <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasPluginURL"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/unbbayes.learning.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasPluginURL"/>
-        <NamedIndividual IRI="#unbbayes.prs.mebn_sample"/>
+        <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasPluginURL"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/UnBBayes-MEBN.zip</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="#hasPluginURL"/>
-        <NamedIndividual IRI="#unbbayes.prs.msbn_sample"/>
+        <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasPluginURL"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn_sample"/>
         <Literal datatypeIRI="&xsd;string">http://www.sourceforge.net/unbbayes/download/unbbayes.prs.msbn.zip</Literal>
     </DataPropertyAssertion>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#equals"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
         <ObjectProperty abbreviatedIRI=":topObjectProperty"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
         <ObjectProperty abbreviatedIRI=":topObjectProperty"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_edu.gmu.seor.prognos.unbbayesplugin.cps"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.core"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.datamining"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.datamining"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.gui.mebn.ontology.protege"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.gui.mebn.ontology.protege"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.gui.mebn.ontology.protege.2"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.gui.mebn.ontology.protege.2"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.io.DneIO"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.DneIO"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.io.NetIO"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.NetIO"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.io.XMLBIFIO"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.XMLBIFIO"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.mebn.UbfIO"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO2"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.mebn.UbfIO2"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.io.xmlbif.version7"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.xmlbif.version7"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.learning"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.learning"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.learning.incrementalLearning"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.learning.incrementalLearning"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.metaphor"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.metaphor"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.metaphor.afin"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.metaphor.afin"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.oobn.resources.ja"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.oobn.resources.ja"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.prs.mebn"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.prs.mebn.kb.powerloom"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn.kb.powerloom"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.prs.mebn.ssbn.ssmsbn"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn.ssbn.ssmsbn"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.prs.msbn"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.msbn"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.prs.oobn"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.oobn"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.prs.prm"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.prm"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.simulation.likelihoodweighting.inference"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.likelihoodweighting.inference"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.simulation.montecarlo.sampling"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.montecarlo.sampling"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SubObjectPropertyOf>
-        <ObjectProperty IRI="#has_unbbayes.simulation.sampling.GibbsSampling"/>
-        <ObjectProperty IRI="#hasFeature"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.sampling.GibbsSampling"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature"/>
     </SubObjectPropertyOf>
     <SymmetricObjectProperty>
-        <ObjectProperty IRI="#equals"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
     </SymmetricObjectProperty>
     <TransitiveObjectProperty>
-        <ObjectProperty IRI="#equals"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
     </TransitiveObjectProperty>
     <ReflexiveObjectProperty>
-        <ObjectProperty IRI="#equals"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
     </ReflexiveObjectProperty>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_edu.gmu.seor.prognos.unbbayesplugin.cps"/>
-        <Class IRI="#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.core"/>
-        <Class IRI="#unbbayes.core"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.core"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.datamining"/>
-        <Class IRI="#unbbayes.datamining"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.datamining"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.gui.mebn.ontology.protege"/>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.gui.mebn.ontology.protege"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.gui.mebn.ontology.protege.2"/>
-        <Class IRI="#unbbayes.gui.mebn.ontology.protege.2"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.gui.mebn.ontology.protege.2"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.io.DneIO"/>
-        <Class IRI="#unbbayes.io.DneIO"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.DneIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.io.NetIO"/>
-        <Class IRI="#unbbayes.io.NetIO"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.NetIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.io.XMLBIFIO"/>
-        <Class IRI="#unbbayes.io.XMLBIFIO"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.XMLBIFIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO"/>
-        <Class IRI="#unbbayes.io.mebn.UbfIO"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.mebn.UbfIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO2"/>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.io.xmlbif.version7"/>
-        <Class IRI="#unbbayes.io.xmlbif.version7"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.xmlbif.version7"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.learning"/>
-        <Class IRI="#unbbayes.learning"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.learning"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.learning.incrementalLearning"/>
-        <Class IRI="#unbbayes.learning.incrementalLearning"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.learning.incrementalLearning"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.metaphor"/>
-        <Class IRI="#unbbayes.metaphor"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.metaphor"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.metaphor.afin"/>
-        <Class IRI="#unbbayes.metaphor.afin"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.metaphor.afin"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.oobn.resources.ja"/>
-        <Class IRI="#unbbayes.oobn.resources.ja"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.oobn.resources.ja"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.prs.mebn"/>
-        <Class IRI="#unbbayes.prs.mebn"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.prs.mebn.kb.powerloom"/>
-        <Class IRI="#unbbayes.prs.mebn.kb.powerloom"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn.kb.powerloom"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.prs.mebn.ssbn.ssmsbn"/>
-        <Class IRI="#unbbayes.prs.mebn.ssbn.ssmsbn"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.mebn.ssbn.ssmsbn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.prs.msbn"/>
-        <Class IRI="#unbbayes.prs.msbn"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.msbn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.prs.oobn"/>
-        <Class IRI="#unbbayes.prs.oobn"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.oobn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.prs.prm"/>
-        <Class IRI="#unbbayes.prs.prm"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.prs.prm"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.simulation.likelihoodweighting.inference"/>
-        <Class IRI="#unbbayes.simulation.likelihoodweighting.inference"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.likelihoodweighting.inference"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.simulation.montecarlo.sampling"/>
-        <Class IRI="#unbbayes.simulation.montecarlo.sampling"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.montecarlo.sampling"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
-        <ObjectProperty IRI="#has_unbbayes.simulation.sampling.GibbsSampling"/>
-        <Class IRI="#unbbayes.simulation.sampling.GibbsSampling"/>
+        <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.simulation.sampling.GibbsSampling"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling"/>
     </ObjectPropertyRange>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#Configuration</IRI>
+        <IRI>http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Configuration</IRI>
         <Literal datatypeIRI="&xsd;string">Put your configuration here to check its consistency</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#FeatureModel</IRI>
+        <IRI>http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Feature</IRI>
+        <Literal datatypeIRI="&xsd;string">This class represents the actual features present in the feature model. Rules applyed to these features are specified in FeatureRule classes</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureModel</IRI>
         <Literal datatypeIRI="&xsd;string">Subclasses of this class composes a feature model of UnBBayes Software Product Line. This OWL Feature model specification follows the one presented in the following work, but it was adapted in order to furfill OWL2 specification.
 Title: Verifying feature models using OWL
 Authors: (a)Hai H. Wang, (b)Yuan Fang Li, (c)Jing Sun, (d)Hongyu Zhang, (e)Jeff Pan
@@ -1716,27 +1728,27 @@ Available online at www.sciencedirect.com, 20 January 2007</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#FeatureRules</IRI>
+        <IRI>http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules</IRI>
         <Literal datatypeIRI="&xsd;string">Subclasses of this class represents rules that describes restrictions on features in the feature model (e.g. dependencies, mandatory or optional fatures, etc).</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#Features</IRI>
-        <Literal datatypeIRI="&xsd;string">This class represents the actual features present in the feature model. Rules applyed to these features are specified in FeatureRule classes</Literal>
-    </AnnotationAssertion>
-    <AnnotationAssertion>
-        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#equals</IRI>
+        <IRI>http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals</IRI>
         <Literal datatypeIRI="&xsd;string">This is a facilitator that represents the relationship of equality between OWL individuals. OWL reasoners can automatically infer equivalent individuals by quering this property.</Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#hasFeature</IRI>
+        <IRI>http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#hasFeature</IRI>
         <Literal datatypeIRI="&xsd;string">Subproperties of this property represents that a given owl entity (e.g. a system configuration) has a given feature in its configuration.</Literal>
+    </AnnotationAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#DynamicFeature</IRI>
+        <Literal datatypeIRI="&xsd;string">These are features that can be dynamically configured (in runtime). For example, plug-ins.</Literal>
     </AnnotationAssertion>
 </Ontology>
 
 
 
-<!-- Generated by the OWL API (version [Not Released]) http://owlapi.sourceforge.net -->
+<!-- Generated by the OWL API (version 3.1.0.20069) http://owlapi.sourceforge.net -->
 
