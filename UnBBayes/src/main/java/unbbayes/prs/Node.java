@@ -27,16 +27,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.util.ArrayMap;
 import unbbayes.util.Debug;
 import unbbayes.util.SerializablePoint2D;
-import unbbayes.util.SetToolkit;
 
 /**
  * A class representing a generic node containing graphical/visual information.
@@ -94,6 +93,8 @@ public abstract class Node implements Serializable,
 	public static final int EXPLANATION_TYPE = 4;
 	
 	public static final int CONTINUOUS_NODE_TYPE = 5;
+	
+	public static final Pattern DEFAULT_NODE_NAME_PATTERN = Pattern.compile("[a-zA-Z_0-9]*"); //Pattern.compile("[a-zA-Z_0-9(),]*");
 
 	/**
 	 * Holds the mean of the values for each class if this is a numeric

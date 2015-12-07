@@ -23,19 +23,15 @@ package unbbayes.gui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.awt.List;
-import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.Iterator;
 import java.util.ResourceBundle;
@@ -68,20 +64,15 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-
-import com.esotericsoftware.kryo.Kryo;
 
 import unbbayes.controller.CompilationThread;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.gui.table.ColumnGroup;
-import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.gui.table.GroupableTableCellRenderer;
 import unbbayes.gui.table.GroupableTableColumnModel;
-import unbbayes.gui.table.GroupableTableHeader;
 import unbbayes.gui.table.ReplaceTextCellEditor;
 import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.gui.util.SplitToggleButton;
@@ -179,7 +170,7 @@ public class PNEditionPane extends JPanel {
 
 	private final JButton btnHierarchy;
 
-	private final Pattern wordPattern = Pattern.compile("[a-zA-Z_0-9(),]*");
+	private final Pattern wordPattern = Node.DEFAULT_NODE_NAME_PATTERN;
 
 	private final Pattern descriptionPattern = Pattern
 			.compile("[ a-zA-Z_0-9áéíóúãõçâêîôûüà(),]*");

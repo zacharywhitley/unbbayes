@@ -341,7 +341,7 @@ public class GuiResources extends ListResourceBundle {
         {"nameDuplicated", "The name already exists..."}, 
         {"nameReserved", "Name is a reserved word."},
         {"nameEmpty","The name cannot be empty"},
-        {"nameError","The name must have only letters, numbers, parentheses, and commas."},
+        {"nameError","The name must have only letters, numbers, and underscores."},
         {"descriptionError","The description must have only letters, numbers, parentheses, commas, and spaces."}, 
         
         /* Resident Panel */

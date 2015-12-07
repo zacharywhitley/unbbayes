@@ -45,6 +45,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.JColorChooser;
@@ -52,6 +54,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -199,6 +202,9 @@ public class UShape extends JComponent implements ActionListener,
 					unbbayes.gui.resources.GuiResources.class.getName());
 
 	static public int iUpdate = 0;
+	
+	
+	private Pattern nodeNamePattern = Node.DEFAULT_NODE_NAME_PATTERN;
 
 	public UShape(UCanvas c, Node pNode, int x, int y, int w, int h) {
 
@@ -672,13 +678,23 @@ public class UShape extends JComponent implements ActionListener,
 
 	public void removeTextBox() {
 		if (textInput != null) {
+			boolean isValidName = true;
 			setName(textInput.getText());
 			Debug.println(textInput.getText());
 
 			if (node != null) {
-				node.setName(textInput.getText());
-
+				// check if name matches with a pattern
+				Matcher matcher = getNodeNamePattern().matcher(textInput.getText());
+				if (matcher.matches()) {
+					// if name was OK, then update node name
+					node.setName(textInput.getText());
+				} else {
+					// revert changes to text field if new name did not match with valid pattern
+					textInput.setText(node.getName());
+					isValidName = false;
+				}
 				getCanvas().onShapeChanged(this);
+
 			}
 
 			remove(textInput);
@@ -687,6 +703,13 @@ public class UShape extends JComponent implements ActionListener,
 			getCanvas().setState(STATE_UPDATE);
 			getCanvas().onSelectionChanged();
 			textInput = null;
+			
+			if (!isValidName) {
+				JOptionPane.showMessageDialog(this.getParent(),
+						resource.getString("nameError"),
+						resource.getString("nameException"),
+						JOptionPane.ERROR_MESSAGE);
+			}
 		}
 	}
 
@@ -1399,5 +1422,23 @@ public class UShape extends JComponent implements ActionListener,
 
 	public void componentShown(ComponentEvent arg0) {
 
+	}
+
+	/**
+	 * @return the nodeNamePattern : the default pattern to be used to check node name validity.
+	 * @see Node#DEFAULT_NODE_NAME_PATTERN
+	 * @see #removeTextBox()
+	 */
+	public Pattern getNodeNamePattern() {
+		return nodeNamePattern;
+	}
+
+	/**
+	 * @param nodeNamePattern : the default pattern to be used to check node name validity.
+	 * @see Node#DEFAULT_NODE_NAME_PATTERN
+	 * @see #removeTextBox()
+	 */
+	public void setNodeNamePattern(Pattern nodeNamePattern) {
+		this.nodeNamePattern = nodeNamePattern;
 	}
 }
