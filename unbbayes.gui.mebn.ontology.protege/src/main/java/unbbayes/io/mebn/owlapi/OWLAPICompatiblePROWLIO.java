@@ -287,19 +287,27 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		mebn.setStorageImplementor(OWLAPIStorageImplementorDecorator.newInstance(ontology));
 		
 		// use an ObjectEntityContainer which also handles OWL classes and individuals
-		mebn.setObjectEntityContainer(new OWLAPIObjectEntityContainer(mebn));
+		OWLAPIObjectEntityContainer owlapiObjectEntityContainer = new OWLAPIObjectEntityContainer(mebn);
+		owlapiObjectEntityContainer.setToCreateOWLEntity(false); // temporary disable automatic creation of entities
+		mebn.setObjectEntityContainer(owlapiObjectEntityContainer);
 		
-		// Reset the non-PR-OWL classes extractor (this)
-		this.resetNonPROWLClassExtractor();
-		
-		// update last owl reasoner
-		if (reasoner != null) {
-			this.setLastOWLReasoner(reasoner);
+		try {
+			// Reset the non-PR-OWL classes extractor (this)
+			this.resetNonPROWLClassExtractor();
+			
+			// update last owl reasoner
+			if (reasoner != null) {
+				this.setLastOWLReasoner(reasoner);
+			}
+			
+			// this is a instance of MEBN to be filled. The name will be updated after loadMTheoryAndMFrags
+//			MultiEntityBayesianNetwork mebn = this.getMEBNFactory().createMEBN(defaultMEBNName);
+			IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, mebn, ontology.getOntologyID().getOntologyIRI());
+			
+		} catch (RuntimeException e) {
+			owlapiObjectEntityContainer.setToCreateOWLEntity(true); // re-enable automatic creation of entities
+			throw e;
 		}
-		
-		// this is a instance of MEBN to be filled. The name will be updated after loadMTheoryAndMFrags
-//		MultiEntityBayesianNetwork mebn = this.getMEBNFactory().createMEBN(defaultMEBNName);
-		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, mebn, ontology.getOntologyID().getOntologyIRI());
 		
 		// Start loading ontology. This is template method design pattern.
 
@@ -309,23 +317,25 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		} catch (IOMebnException e) {
 			// the ontology does not contain PR-OWL specific elements. Stop loading PR-OWL and return an empty mebn.
 			e.printStackTrace();
+			owlapiObjectEntityContainer.setToCreateOWLEntity(true); // re-enable automatic creation of entities
 			return;
 		}
 		
-		// load object entities and fill the mapping of object entities
-		this.setMapLabelToObjectEntity(this.loadObjectEntity(ontology, mebn));
-
-		// load meta entities and fill the mapping of types
-		this.setMapNameToType(this.loadMetaEntitiesClasses(ontology, mebn));
-		
-		// load categorical entities. The mapCategoricalStateGloballyExclusiveNodes stores globally exclusive nodes (a map of state -> nodes)
-		this.setMapCategoricalStates(this.loadCategoricalStateEntity(ontology, mebn));
-		
-		// load boolean states. Reuse mapCategoricalStateGloballyExclusiveNodes.
-		this.setMapBooleanStates(this.loadBooleanStateEntity(ontology, mebn));
-		
-		// load content of MFrag (nodes, ordinary variables, etc...)
 		try {
+			// load object entities and fill the mapping of object entities
+			this.setMapLabelToObjectEntity(this.loadObjectEntity(ontology, mebn));
+			
+			// load meta entities and fill the mapping of types
+			this.setMapNameToType(this.loadMetaEntitiesClasses(ontology, mebn));
+			
+			// load categorical entities. The mapCategoricalStateGloballyExclusiveNodes stores globally exclusive nodes (a map of state -> nodes)
+			this.setMapCategoricalStates(this.loadCategoricalStateEntity(ontology, mebn));
+			
+			// load boolean states. Reuse mapCategoricalStateGloballyExclusiveNodes.
+			this.setMapBooleanStates(this.loadBooleanStateEntity(ontology, mebn));
+			
+			// load content of MFrag (nodes, ordinary variables, etc...)
+			
 			this.setMapLoadedNodes(this.loadDomainMFragContents(ontology, mebn));
 			// load built in random variables. Reuse mapLoadedNodes.
 			this.setMapBuiltInRV(this.loadBuiltInRV(ontology, mebn));
@@ -357,9 +367,12 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 			// Load individuals of object entities (ObjectEntityInstances)
 			this.setMapLoadedObjectEntityIndividuals(loadObjectEntityIndividuals(ontology, mebn));
 		} catch (Exception e) {
+			owlapiObjectEntityContainer.setToCreateOWLEntity(true); // re-enable automatic creation of entities
 			throw new IllegalArgumentException("Failed to load ontology " + ontology, e);
 		}
 		
+
+		owlapiObjectEntityContainer.setToCreateOWLEntity(true); // re-enable automatic creation of entities
 		
 //		return mebn;
 	}

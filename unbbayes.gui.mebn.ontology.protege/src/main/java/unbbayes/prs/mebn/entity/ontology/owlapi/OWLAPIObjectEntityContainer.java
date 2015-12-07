@@ -22,6 +22,8 @@ import unbbayes.prs.mebn.entity.exception.TypeException;
 public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 
 	private MultiEntityBayesianNetwork mebn;
+	
+	private boolean isToCreateOWLEntity = true;
 
 	/**
 	 * Default constructor initializing fields.
@@ -78,14 +80,26 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 		this.getListEntityInstances().addAll(oldContainer.getListEntityInstances());
 		
 	}
+	
+	/**
+	 * @see unbbayes.prs.mebn.entity.ObjectEntityContainer#createObjectEntity(java.lang.String)
+	 * @return an instance created by {@link #createObjectEntity(String, boolean)}. 
+	 * The boolean argument will be filled with the value returned from {@link #isToCreateOWLEntity()} 
+	 */
+	public ObjectEntity createObjectEntity(String name) throws TypeException {
+		return this.createObjectEntity(name, isToCreateOWLEntity());
+	}
 
 	/** 
 	 * This method returns an instance of {@link OWLAPIObjectEntity} instead of {@link ObjectEntity}
+	 * @param name : the name of the new object entity to create.
+	 * @param isToCreateOWLEntity : if true, an OWL entity will be created in the owl ontology.
 	 * @see unbbayes.prs.mebn.entity.ObjectEntityContainer#createObjectEntity(java.lang.String)
+	 * @see OWLAPIObjectEntity#OWLAPIObjectEntity(String, MultiEntityBayesianNetwork, boolean)
 	 */
-	public ObjectEntity createObjectEntity(String name) throws TypeException {
+	public ObjectEntity createObjectEntity(String name, boolean isToCreateOWLEntity) throws TypeException {
 		
-		OWLAPIObjectEntity objEntity = new OWLAPIObjectEntity(name, getMEBN());
+		OWLAPIObjectEntity objEntity = new OWLAPIObjectEntity(name, getMEBN(), isToCreateOWLEntity);
 		objEntity.getType().addUserObject(objEntity); 
 		
 		//	the following line is the same of superclass' private method addEntity(objEntity)
@@ -94,6 +108,24 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 		plusEntityNum(); 
 		
 		return objEntity; 
+	}
+
+	/**
+	 * @return the isToCreateOWLEntity : if true, then an OWL entity will be created in the owl ontology
+	 * when {@link #createObjectEntity(String)} is called.
+	 * @see #createObjectEntity(String, boolean)
+	 */
+	public boolean isToCreateOWLEntity() {
+		return isToCreateOWLEntity;
+	}
+
+	/**
+	 * @param isToCreateOWLEntity : if true, then an OWL entity will be created in the owl ontology
+	 * when {@link #createObjectEntity(String)} is called.
+	 * @see #createObjectEntity(String, boolean)
+	 */
+	public void setToCreateOWLEntity(boolean isToCreateOWLEntity) {
+		this.isToCreateOWLEntity = isToCreateOWLEntity;
 	}
 
 

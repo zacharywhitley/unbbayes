@@ -533,6 +533,9 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			
 			// if everything went OK, register entity instance in the MEBN
 			IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(this.getDefaultMEBN(), entityInstance, iri);
+		} else {
+			Debug.println(this.getClass(),"Entity instance is already defined. Avoiding re-insertion to another place... " + iri);
+			return;
 		}
 		
 //		if (!this.getDefaultOWLReasoner().getRootOntology().containsIndividualInSignature(iri, true)) {
@@ -543,7 +546,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// obtain class to add individual. Use the same of the related object entity
 			OWLClass entityClass = null;
 			IRI classIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(this.getDefaultMEBN(), entityInstance.getInstanceOf());
-			if (classIRI == null || !this.getDefaultOWLReasoner().getRootOntology().containsClassInSignature(classIRI)) {		
+			if (classIRI == null || !this.getDefaultOWLReasoner().getRootOntology().containsClassInSignature(classIRI,true)) {		
 				// try using abbreviated IRI in order to extract the class of this individual
 				entityClass = factory.getOWLClass(entityInstance.getInstanceOf().getName(), this.getOntologyPrefixManager(this.getDefaultOWLReasoner().getRootOntology()));
 				classIRI = entityClass.getIRI();

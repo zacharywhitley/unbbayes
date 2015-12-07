@@ -292,23 +292,30 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		mebn.setStorageImplementor(OWLAPIStorageImplementorDecorator.newInstance(ontology));
 
 		// use an ObjectEntityContainer which also handles OWL classes and individuals
-		mebn.setObjectEntityContainer(new OWLAPIObjectEntityContainer(mebn));
+		OWLAPIObjectEntityContainer owlapiObjectEntityContainer = new OWLAPIObjectEntityContainer(mebn);
+		owlapiObjectEntityContainer.setToCreateOWLEntity(false); // temporary disable automatic creation of entities
+		mebn.setObjectEntityContainer(owlapiObjectEntityContainer);
 		
-		
-		// Reset the non-PR-OWL classes extractor (this)
-		this.resetNonPROWLClassExtractor();
-		
-		// force ontology to delegate requisitions by adding a mapper (usually, it will redirect PR-OWL2 IRIs to a local file)
-		ontology.getOWLOntologyManager().removeIRIMapper(this.getProwl2DefinitionIRIMapper());	// just to avoid duplicate mapper
-		ontology.getOWLOntologyManager().addIRIMapper(this.getProwl2DefinitionIRIMapper());
-		
-		// update last owl reasoner
-		if (reasoner != null) {
-			this.setLastOWLReasoner(reasoner);
+		try {
+			// Reset the non-PR-OWL classes extractor (this)
+			this.resetNonPROWLClassExtractor();
+			
+			// force ontology to delegate requisitions by adding a mapper (usually, it will redirect PR-OWL2 IRIs to a local file)
+			ontology.getOWLOntologyManager().removeIRIMapper(this.getProwl2DefinitionIRIMapper());	// just to avoid duplicate mapper
+			ontology.getOWLOntologyManager().addIRIMapper(this.getProwl2DefinitionIRIMapper());
+			
+			// update last owl reasoner
+			if (reasoner != null) {
+				this.setLastOWLReasoner(reasoner);
+			}
+			
+			// this is a instance of MEBN to be filled. The name will be updated after loadMTheoryAndMFrags
+			IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, mebn, ontology.getOntologyID().getOntologyIRI());
+		} catch (RuntimeException e) {
+			owlapiObjectEntityContainer.setToCreateOWLEntity(true); // re-enable automatic creation of entities
+			throw e;
 		}
 		
-		// this is a instance of MEBN to be filled. The name will be updated after loadMTheoryAndMFrags
-		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, mebn, ontology.getOntologyID().getOntologyIRI());
 		
 		// Start loading ontology. This is template method design pattern.
 
@@ -318,6 +325,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		} catch (IOMebnException e) {
 			// the ontology does not contain PR-OWL specific elements. Stop loading PR-OWL and return an empty mebn.
 			e.printStackTrace();
+			owlapiObjectEntityContainer.setToCreateOWLEntity(true); // re-enable automatic creation of entities
 			return;
 		}
 		
@@ -372,10 +380,12 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			
 			
 		} catch (Exception e) {
+			owlapiObjectEntityContainer.setToCreateOWLEntity(true); // re-enable automatic creation of entities
 			throw new IllegalArgumentException("Failed to load ontology " + ontology, e);
 		}
 		
-		
+
+		owlapiObjectEntityContainer.setToCreateOWLEntity(true); // re-enable automatic creation of entities
 	}
 	
 	/**
