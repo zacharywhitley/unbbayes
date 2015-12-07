@@ -628,14 +628,15 @@ public class PNEditionPane extends JPanel {
         	((DefaultTableModel) header).addRow(new Object[] {});
         }
          
-        header.setValueAt(tableColumn.getHeaderValue(), 0, 0);  // este eh o nome do primeiro pai
+          // este eh o nome do primeiro pai
         Iterator iterator = cm.getColumnGroups(tableColumn);
-        int i=1;
+        int i=0;
         while (iterator != null && iterator.hasNext()) {
             ColumnGroup group = (ColumnGroup) iterator.next();
             header.setValueAt(group.getHeaderValue(), i, 0);  // este eh o nome do ultimo pai, penultimo pai, antepenultimo pai, e assim por diante.
             i++;
         }
+        header.setValueAt(tableColumn.getHeaderValue(), i, 0);
         
         //format cornerTable
 		JTable cornerTable = new JTable(header);
@@ -655,7 +656,7 @@ public class PNEditionPane extends JPanel {
 	    //remove the frozen columns from the original table
 	    table.getColumnModel().getColumn(0).setMinWidth(0);
 	    table.getColumnModel().getColumn(0).setPreferredWidth(0);
-	    table.getColumnModel().getColumn(0).setResizable(false);;
+	    table.getColumnModel().getColumn(0).setResizable(false);
 	    
 	    //refill with the Listener
 	    
