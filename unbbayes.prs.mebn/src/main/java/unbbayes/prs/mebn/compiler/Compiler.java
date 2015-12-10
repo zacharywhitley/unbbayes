@@ -611,7 +611,7 @@ public class Compiler implements ICompiler {
 			this.tempTable.cleanUpKnownValues(this.getSSBNNode());
 		} catch (NullPointerException e) {
 			// The SSBNNode was null...
-			throw new InstanceException(e);
+			throw new InstanceException(getNode().toString(),e);
 		}
 		
 		// extracting base values
@@ -623,14 +623,14 @@ public class Compiler implements ICompiler {
 		} catch (NullPointerException e) {
 			parents = new ArrayList<SSBNNode>();
 		} catch (Exception e) {
-			throw new InconsistentTableSemanticsException(e);
+			throw new InconsistentTableSemanticsException(getNode().toString(),e);
 		}
 		
 		
 		ArrayList<Entity> possibleValues = new ArrayList<Entity>(this.ssbnnode.getActualValues());
 		if (!this.ssbnnode.isFinding() && ( this.ssbnnode.getProbNode().getStatesSize() != possibleValues.size()  )) {
 			// the ssbnnode and the table is not synchronized!!
-			throw new InconsistentTableSemanticsException();
+			throw new InconsistentTableSemanticsException(this.ssbnnode.toString());
 		}
 		
 		
@@ -759,7 +759,7 @@ public class Compiler implements ICompiler {
 				header = this.tempTable.getDefaultClause();
 				// let's just check if this header is really declaring a default distro... Just in case...
 				if (!header.isDefault()) {
-					throw new InconsistentTableSemanticsException();
+					throw new InconsistentTableSemanticsException(getSSBNNode().toString());
 				}
 			} else {
 				//	if not default, look for the column to verify
@@ -786,7 +786,7 @@ public class Compiler implements ICompiler {
 				// consistency check, allow only values between 0 and 1 (if we should use normalized values)
 				if (isToNormalize()
 						&& ((value < 0) || (value > 1))) {
-					throw new InvalidProbabilityRangeException();
+					throw new InvalidProbabilityRangeException(getNode().toString());
 				}
 				this.cpt.setValue(i+j, value );
 			}
@@ -1092,7 +1092,7 @@ public class Compiler implements ICompiler {
 		try {
 			expressionTree = bExpression();
 		} catch (TableFunctionMalformedException e) {
-			throw new InvalidConditionantException(e);
+			throw new InvalidConditionantException(getNode().toString() , e);
 		}
 		//this.nextChar();
 		//this.skipWhite();
@@ -1104,7 +1104,7 @@ public class Compiler implements ICompiler {
 		if (expressionTree != null) {
 			this.currentHeader.setBooleanExpressionTree(expressionTree);
 		} else {
-			throw new InvalidConditionantException();
+			throw new InvalidConditionantException(this.node.toString());
 		}
 		
 		// Debug.println("STARTING STATEMENTS");
@@ -1139,7 +1139,7 @@ public class Compiler implements ICompiler {
 		} else {
 			// No statement was found at all (that means no else statement).
 			// Debug.println("END OF TABLE");
-			throw new NoDefaultDistributionDeclaredException();
+			throw new NoDefaultDistributionDeclaredException(getNode().toString());
 		}
 		
 		if (token == 'l') {
@@ -1148,7 +1148,7 @@ public class Compiler implements ICompiler {
 			else_statement(upperIf);
 		} else {
 			// The statement found was not an else statement
-			throw new NoDefaultDistributionDeclaredException();
+			throw new NoDefaultDistributionDeclaredException(getNode().toString());
 		}
 		
 		// we may have another if/else clause after this...
@@ -1267,7 +1267,7 @@ public class Compiler implements ICompiler {
 
 		ICompilerBooleanValue factor = bFactor();
 		if (factor == null) {
-			throw new TableFunctionMalformedException();
+			throw new TableFunctionMalformedException(getNode().toString());
 		}
 		// Debug.println("EXITING NOT FACTOR");
 		
@@ -1315,14 +1315,14 @@ public class Compiler implements ICompiler {
 			if (this.node != null) {
 				if (!this.isValidConditionant(mebn , this.node, conditionantName )) {
 					// Debug.println("->" + getNode());
-					throw new InvalidConditionantException();
+					throw new InvalidConditionantException(this.node.toString());
 				}
 			}
 		} else {
 			try{
 				expected("Identifier");
 			} catch (TableFunctionMalformedException e) {
-				throw new InvalidConditionantException(e);
+				throw new InvalidConditionantException(getNode().toString() , e);
 			}
 		}
 		
@@ -1340,7 +1340,7 @@ public class Compiler implements ICompiler {
 			// consistency check C09: verify whether conditionant has valid values
 			if (this.node != null) {
 				if (!this.isValidConditionantValue(mebn,this.node,conditionantName,this.noCaseChangeValue)) {
-					throw new InvalidConditionantException();
+					throw new InvalidConditionantException(this.node.toString());
 				}
 			}
 			
@@ -1348,7 +1348,7 @@ public class Compiler implements ICompiler {
 			try{
 				expected("Identifier");
 			} catch (TableFunctionMalformedException e) {
-				throw new InvalidConditionantException(e);
+				throw new InvalidConditionantException(getNode().toString(),e);
 			}
 		}
 		
@@ -1373,7 +1373,7 @@ public class Compiler implements ICompiler {
 				try{
 					expected("Identifier");
 				} catch (TableFunctionMalformedException e) {
-					throw new InvalidConditionantException(e);
+					throw new InvalidConditionantException(getNode().toString(),e);
 				}
 			}
 			// Set temp table's header condicionant
@@ -1387,7 +1387,7 @@ public class Compiler implements ICompiler {
 				try{
 					expected("Identifier");
 				} catch (TableFunctionMalformedException e) {
-					throw new InvalidConditionantException(e);
+					throw new InvalidConditionantException(getNode().toString(),e);
 				}
 			}
 			if (ov.getValueType() == null) {
@@ -1563,7 +1563,7 @@ public class Compiler implements ICompiler {
 						&& !this.currentHeader.isSumEquals1()) {
 					// Debug.println("Testing cell's probability value's sum: " + currentHeader.getProbCellSum());
 					if (!Float.isNaN(this.currentHeader.getProbCellSum())) {
-						throw new InvalidProbabilityRangeException();
+						throw new InvalidProbabilityRangeException(getNode().toString());
 					} else {
 						// Debug.println("=>NaN found!!!");
 					}
@@ -1612,10 +1612,10 @@ public class Compiler implements ICompiler {
 					possibleValue = possibleStates.get(this.node.getPossibleValueIndex(this.noCaseChangeValue));
 				} catch (Exception e) {
 					//throw new TableFunctionMalformedException(e.getMessage());
-					throw new TableFunctionMalformedException(e);
+					throw new TableFunctionMalformedException(this.node.toString(), e);
 				}
 				if (possibleValue == null) {
-					throw new TableFunctionMalformedException();
+					throw new TableFunctionMalformedException(getNode().toString());
 				}
 				declaredStates.add(possibleValue);
 				currentCell.setPossibleValue(possibleValue);
@@ -1646,7 +1646,7 @@ public class Compiler implements ICompiler {
 		// a single state shall never have prob range out from [0,1] (if it is configured to normalize such values)
 		if ( isToNormalize()
 				&& ((retValue < 0.0) || (1.0 < retValue))) {
-			throw new InvalidProbabilityRangeException();
+			throw new InvalidProbabilityRangeException(getNode().toString());
 		}
 		
 		// LOOK FOR , (OPTIONAL)
@@ -1689,7 +1689,7 @@ public class Compiler implements ICompiler {
 		
 		// Debug.println("Returned expression value = " + retValue);
 		if (isToNormalize() && (retValue < 0)) {
-			throw new InvalidProbabilityRangeException();
+			throw new InvalidProbabilityRangeException(getNode().toString());
 		}
 		return new SimpleProbabilityValue(retValue);
 	}
@@ -1901,7 +1901,7 @@ public class Compiler implements ICompiler {
 			}
 		} else {
 			// if null, it means it was called before an assignment
-			throw new SomeStateUndeclaredException();
+			throw new SomeStateUndeclaredException(getNode().toString());
 		}
 		
 
@@ -2034,7 +2034,7 @@ public class Compiler implements ICompiler {
 	/* Sends an alert telling that we expected some particular input */
 	protected void expected(String error) throws TableFunctionMalformedException {
 		System.err.println("Error: " + error + " expected!");
-		throw new TableFunctionMalformedException();
+		throw new TableFunctionMalformedException(getNode().toString());
 	}
 
 	/* Verifies if an input is an expected one */
@@ -2217,7 +2217,7 @@ public class Compiler implements ICompiler {
 				return max();
 			} else {
 				// Debug.println("UNKNOWN FUNCTION FOUND: " + this.value);
-				throw new TableFunctionMalformedException(this.getResource().getString("UnexpectedTokenFound")
+				throw new TableFunctionMalformedException(((getSSBNNode()!=null)?getSSBNNode():getNode()) + " : " + this.getResource().getString("UnexpectedTokenFound")
 						+ ": " + value);
 			}
 		}
@@ -2933,19 +2933,38 @@ public class Compiler implements ICompiler {
 		public boolean isSameOVsameEntity() {
 			List<TempTableHeader> leaves = this.getParents(); // leaves of boolean expression evaluation tree
 			
+			// prepare a set with names of OVs declared in current if-clause, 
+			// We'll use it later in order to check whether the OVs in leaf.getCurrentEntityAndArguments() matches with the ones declared in current if-clause
+			// TODO migrate this set to somewhere else so that we don't have to instantiate the same set several times
+			Collection<String> varSetNamesInCurrentIfClause = new ArrayList<String>();	// Note: we may use HashSet if we expect many OVs declared in a single if-clause	
+			// Note: at this point, getVarsetname() is a string representing the ovs declared in this if-clause, and the ovs are separated by getSSBNNode().getStrongOVSeparator()
+			for (String ovName : getVarsetname().split("\\" + getSSBNNode().getStrongOVSeparator())) {
+				varSetNamesInCurrentIfClause.add(ovName);
+			}
+			
 			for (TempTableHeader leaf : leaves) {
 				if (leaf.isKnownValue()) {
 					continue;
 				}
 				List<OVInstance> args = leaf.getCurrentEntityAndArguments().arguments;
-//				asdf
 				
-				// TODO stop obtaining args from actual SSBNNodes and start analyzing input nodes
+				// at least 1 OV in arguments shall be declared in the varset field of this if-clause, or else current combination of values of parents must be ignored
+				boolean isAtLeast1OVDeclaredInVarsetname = false;
 				
 				// first, test if leaf has same arguments as its ssbnnode (if ssbnnode has same arguments as parents)
 				for (OVInstance argParent : args) {
-					// if it has same OV as ssbnnode, then should be the same entity
+					// check condition to turn isAllOVsDeclaredInVarsetname to false
+					if ( !argParent.getOv().getValueType().hasOrder() ) {	 // we don't need to consider weak ovs
+						// check if the ov of this argument was declared in the varsetname field of current if-clause
+						if (varSetNamesInCurrentIfClause.contains(argParent.getOv().getName())) {
+							isAtLeast1OVDeclaredInVarsetname = true;	// we found at least 1 OV, so turn the flag on
+						} else if (isExactMatchStrongOV()) {
+							// we can immediately return if compiler requires exact match of strong ovs
+							return false;
+						}
+					}
 					
+					// if it has same OV as ssbnnode, then should be the same entity
 					for (OVInstance argChild : this.currentSSBNNode.getArguments()) {
 						if (argChild.getOv().getName().equalsIgnoreCase(argParent.getOv().getName())) {
 							if (!argChild.getEntity().getInstanceName().equalsIgnoreCase(argParent.getEntity().getInstanceName())) {
@@ -2954,6 +2973,12 @@ public class Compiler implements ICompiler {
 						}
 					}
 				}
+				
+				if (!isAtLeast1OVDeclaredInVarsetname) {
+					// current value of parents was not declared in the varsetname field of current if-clause, so we should not consider it.
+					return false;
+				}
+				
 				for (int i = leaves.indexOf(leaf) + 1; i < leaves.size(); i++) {
 					// try all other leaves
 					for (OVInstance argleaf : args) {
