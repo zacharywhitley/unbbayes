@@ -2953,7 +2953,7 @@ public class Compiler implements ICompiler {
 				
 				// first, test if leaf has same arguments as its ssbnnode (if ssbnnode has same arguments as parents)
 				for (OVInstance argParent : args) {
-					// check condition to turn isAllOVsDeclaredInVarsetname to false
+					// check condition to activate the flag (i.e. to change content of isAllOVsDeclaredInVarsetname)
 					if ( !argParent.getOv().getValueType().hasOrder() ) {	 // we don't need to consider weak ovs
 						// check if the ov of this argument was declared in the varsetname field of current if-clause
 						if (varSetNamesInCurrentIfClause.contains(argParent.getOv().getName())) {
