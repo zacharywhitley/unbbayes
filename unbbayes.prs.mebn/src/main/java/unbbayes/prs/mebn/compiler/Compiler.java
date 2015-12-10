@@ -2941,19 +2941,38 @@ public class Compiler implements ICompiler {
 		public boolean isSameOVsameEntity() {
 			List<TempTableHeader> leaves = this.getParents(); // leaves of boolean expression evaluation tree
 			
+			// prepare a set with names of OVs declared in current if-clause, 
+			// We'll use it later in order to check whether the OVs in leaf.getCurrentEntityAndArguments() matches with the ones declared in current if-clause
+			// TODO migrate this set to somewhere else so that we don't have to instantiate the same set several times
+			Collection<String> varSetNamesInCurrentIfClause = new ArrayList<String>();	// Note: we may use HashSet if we expect many OVs declared in a single if-clause	
+			// Note: at this point, getVarsetname() is a string representing the ovs declared in this if-clause, and the ovs are separated by getSSBNNode().getStrongOVSeparator()
+			for (String ovName : getVarsetname().split("\\" + getSSBNNode().getStrongOVSeparator())) {
+				varSetNamesInCurrentIfClause.add(ovName);
+			}
+			
 			for (TempTableHeader leaf : leaves) {
 				if (leaf.isKnownValue()) {
 					continue;
 				}
 				List<OVInstance> args = leaf.getCurrentEntityAndArguments().arguments;
-//				asdf
 				
-				// TODO stop obtaining args from actual SSBNNodes and start analyzing input nodes
+				// at least 1 OV in arguments shall be declared in the varset field of this if-clause, or else current combination of values of parents must be ignored
+				boolean isAtLeast1OVDeclaredInVarsetname = false;
 				
 				// first, test if leaf has same arguments as its ssbnnode (if ssbnnode has same arguments as parents)
 				for (OVInstance argParent : args) {
-					// if it has same OV as ssbnnode, then should be the same entity
+					// check condition to activate the flag (i.e. to change content of isAllOVsDeclaredInVarsetname)
+					if ( !argParent.getOv().getValueType().hasOrder() ) {	 // we don't need to consider weak ovs
+						// check if the ov of this argument was declared in the varsetname field of current if-clause
+						if (varSetNamesInCurrentIfClause.contains(argParent.getOv().getName())) {
+							isAtLeast1OVDeclaredInVarsetname = true;	// we found at least 1 OV, so turn the flag on
+						} else if (isExactMatchStrongOV()) {
+							// we can immediately return if compiler requires exact match of strong ovs
+							return false;
+						}
+					}
 					
+					// if it has same OV as ssbnnode, then should be the same entity
 					for (OVInstance argChild : this.currentSSBNNode.getArguments()) {
 						if (argChild.getOv().getName().equalsIgnoreCase(argParent.getOv().getName())) {
 							if (!argChild.getEntity().getInstanceName().equalsIgnoreCase(argParent.getEntity().getInstanceName())) {
@@ -2962,6 +2981,12 @@ public class Compiler implements ICompiler {
 						}
 					}
 				}
+				
+				if (!isAtLeast1OVDeclaredInVarsetname) {
+					// current value of parents was not declared in the varsetname field of current if-clause, so we should not consider it.
+					return false;
+				}
+				
 				for (int i = leaves.indexOf(leaf) + 1; i < leaves.size(); i++) {
 					// try all other leaves
 					for (OVInstance argleaf : args) {
