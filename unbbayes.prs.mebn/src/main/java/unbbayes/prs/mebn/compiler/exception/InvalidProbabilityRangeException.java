@@ -35,12 +35,12 @@ public class InvalidProbabilityRangeException extends
 	}
 	
 	public InvalidProbabilityRangeException(String msg) {
-		super(msg);
+		super(msg + " : " + resource.getString("InvalidProbabilityRange"));
 		// TODO Auto-generated constructor stub
 	}
 
 	public InvalidProbabilityRangeException(String msg, Throwable cause) {
-		super(msg, cause);
+		super(msg + " : " + resource.getString("InvalidProbabilityRange"), cause);
 		// TODO Auto-generated constructor stub
 	}
 	

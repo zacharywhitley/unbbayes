@@ -35,12 +35,12 @@ public class InvalidConditionantException extends
 	}
 	
 	public InvalidConditionantException(String msg) {
-		super(msg);
+		super(msg + " : " +resource.getString("InvalidConditionantFound"));
 		// TODO Auto-generated constructor stub
 	}
 
 	public InvalidConditionantException(String msg, Throwable cause) {
-		super(msg, cause);
+		super(msg + " : " +resource.getString("InvalidConditionantFound"), cause);
 		// TODO Auto-generated constructor stub
 	}
 	

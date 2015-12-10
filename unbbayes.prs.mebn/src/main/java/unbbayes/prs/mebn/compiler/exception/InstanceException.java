@@ -22,11 +22,11 @@ public class InstanceException extends MEBNException {
 	}
 	
 	public InstanceException(String msg) {
-		super(msg);
+		super(msg + " : " + resource.getString("SSBNInstanceFailure"));
 	}
 	
 	public InstanceException(String msg, Throwable cause) {
-		super(msg, cause);
+		super(msg + " : " + resource.getString("SSBNInstanceFailure"), cause);
 	}
 	
 	public InstanceException(Throwable cause) {

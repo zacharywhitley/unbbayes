@@ -35,12 +35,12 @@ public class SomeStateUndeclaredException extends
 	}
 	
 	public SomeStateUndeclaredException(String msg) {
-		super(msg);
+		super(msg + " : " + resource.getString("SomeStateUndeclared"));
 		// TODO Auto-generated constructor stub
 	}
 
 	public SomeStateUndeclaredException(String msg, Throwable cause) {
-		super(msg, cause);
+		super(msg + " : " + resource.getString("SomeStateUndeclared"), cause);
 		// TODO Auto-generated constructor stub
 	}
 	

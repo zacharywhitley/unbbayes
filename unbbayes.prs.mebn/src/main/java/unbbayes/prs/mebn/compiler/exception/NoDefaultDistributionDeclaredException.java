@@ -42,11 +42,11 @@ public class NoDefaultDistributionDeclaredException extends InconsistentTableSem
 	
 	
 	public NoDefaultDistributionDeclaredException(String msg) {
-		super(msg);
+		super(msg + " : " + resource.getString("NoDefaultDistributionDeclared"));
 	}
 	
 	public NoDefaultDistributionDeclaredException(String msg, Throwable cause) {
-		super(msg, cause);
+		super(msg + " : " + resource.getString("NoDefaultDistributionDeclared"), cause);
 	}
 	
 	public NoDefaultDistributionDeclaredException(Throwable cause) {
