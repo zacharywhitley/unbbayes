@@ -650,7 +650,7 @@ public class PNEditionPane extends JPanel {
 	    
 	    //format the frozen table
 	    frozenTable.addMouseMotionListener(new ColumnResizedListener(frozenTable));
-//	    cornerTable.addMouseMotionListener(new ColumnResizedListener(cornerTable));
+	    cornerTable.addMouseMotionListener(new HeaderResizedListener(cornerTable, frozenTable));
 	    	
 	    
 	    frozenTable.getColumnModel().getColumn(0).setCellRenderer(new GroupableTableCellRenderer(Color.BLACK, Color.YELLOW));
@@ -749,6 +749,36 @@ public class PNEditionPane extends JPanel {
             // then change the pointer back to its default.
             else {
             	rows.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));       
+
+            }
+        }
+    }
+	private class HeaderResizedListener implements MouseMotionListener{
+		JTable header, rows;
+		public HeaderResizedListener(JTable header, JTable rows){
+			super();
+			this.rows = rows;
+			this.header = header;
+		}
+		
+    	public void mouseDragged(MouseEvent e) {
+            // Set the list cell width as mouse is dragged.
+    		rows.getColumnModel().getColumn(0).setPreferredWidth(e.getX());
+    		jspTable.getRowHeader().setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
+    		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
+    		jspTable.validate();
+    		jspTable.repaint();
+      }
+        public void mouseMoved(MouseEvent e) {
+            // If the mouse pointer is near the end region of the 
+            // list cell then change the mouse cursor to a resize cursor.
+        	if ((e.getX()>= (header.getColumnModel().getColumn(0).getWidth() - 5)) && (e.getX()<= header.getColumnModel().getColumn(0).getWidth())){
+        		jspTable.setCursor(new Cursor(Cursor.E_RESIZE_CURSOR));
+            } 
+            // If the mouse pointer is not near the end region of a cell 
+            // then change the pointer back to its default.
+            else {
+            	jspTable.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
 
             }
         }
