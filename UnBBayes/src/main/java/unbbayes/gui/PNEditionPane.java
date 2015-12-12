@@ -1446,7 +1446,6 @@ public class PNEditionPane extends JPanel {
 		
     	public void mouseDragged(MouseEvent e) {
             // Set the list cell width as mouse is dragged.
-    		System.out.println("entrou entrou " + e.getX() + " "+ e.getY());
     		rows.getColumnModel().getColumn(0).setPreferredWidth(e.getX());
     		jspTable.getRowHeader().setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
     		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
@@ -1488,12 +1487,12 @@ public class PNEditionPane extends JPanel {
             // If the mouse pointer is near the end region of the 
             // list cell then change the mouse cursor to a resize cursor.
         	if ((e.getX()>= (header.getColumnModel().getColumn(0).getWidth() - 5)) && (e.getX()<= header.getColumnModel().getColumn(0).getWidth())){
-        		jspTable.setCursor(new Cursor(Cursor.E_RESIZE_CURSOR));
+        		header.setCursor(new Cursor(Cursor.E_RESIZE_CURSOR));
             } 
             // If the mouse pointer is not near the end region of a cell 
             // then change the pointer back to its default.
             else {
-            	jspTable.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
+            	header.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
 
             }
         }
