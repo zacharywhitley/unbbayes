@@ -723,66 +723,7 @@ public class PNEditionPane extends JPanel {
 		return ret;
 	}
 	
-	private class ColumnResizedListener implements MouseMotionListener{
-		JTable rows;
-		public ColumnResizedListener(JTable rows){
-			super();
-			this.rows = rows;
-		}
-		
-    	public void mouseDragged(MouseEvent e) {
-            // Set the list cell width as mouse is dragged.
-    		System.out.println("entrou entrou " + e.getX() + " "+ e.getY());
-    		rows.getColumnModel().getColumn(0).setPreferredWidth(e.getX());
-    		jspTable.getRowHeader().setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
-    		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
-    		jspTable.validate();
-    		jspTable.repaint();
-      }
-        public void mouseMoved(MouseEvent e) {
-            // If the mouse pointer is near the end region of the 
-            // list cell then change the mouse cursor to a resize cursor.
-        	if ((e.getX()>= (rows.getColumnModel().getColumn(0).getWidth() - 5)) && (e.getX()<= rows.getColumnModel().getColumn(0).getWidth())){
-            	rows.setCursor(new Cursor(Cursor.E_RESIZE_CURSOR));
-            } 
-            // If the mouse pointer is not near the end region of a cell 
-            // then change the pointer back to its default.
-            else {
-            	rows.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));       
-
-            }
-        }
-    }
-	private class HeaderResizedListener implements MouseMotionListener{
-		JTable header, rows;
-		public HeaderResizedListener(JTable header, JTable rows){
-			super();
-			this.rows = rows;
-			this.header = header;
-		}
-		
-    	public void mouseDragged(MouseEvent e) {
-            // Set the list cell width as mouse is dragged.
-    		rows.getColumnModel().getColumn(0).setPreferredWidth(e.getX());
-    		jspTable.getRowHeader().setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
-    		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
-    		jspTable.validate();
-    		jspTable.repaint();
-      }
-        public void mouseMoved(MouseEvent e) {
-            // If the mouse pointer is near the end region of the 
-            // list cell then change the mouse cursor to a resize cursor.
-        	if ((e.getX()>= (header.getColumnModel().getColumn(0).getWidth() - 5)) && (e.getX()<= header.getColumnModel().getColumn(0).getWidth())){
-        		jspTable.setCursor(new Cursor(Cursor.E_RESIZE_CURSOR));
-            } 
-            // If the mouse pointer is not near the end region of a cell 
-            // then change the pointer back to its default.
-            else {
-            	jspTable.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
-
-            }
-        }
-    }
+	
 	/**
 	 * Simply reset the content of tabbed pane and fill it with new content.
 	 * This can be used to reset content of tabbed pane created at {@link #buildCPFPaneFromPlugin(Node)}
@@ -1494,5 +1435,67 @@ public class PNEditionPane extends JPanel {
 	public void setCpfPane(JComponent cpfPane) {
 		this.cpfPane = cpfPane;
 	}
+	
+	/*Listeners to deal with the resizing of the first row*/
+	private class ColumnResizedListener implements MouseMotionListener{
+		JTable rows;
+		public ColumnResizedListener(JTable rows){
+			super();
+			this.rows = rows;
+		}
+		
+    	public void mouseDragged(MouseEvent e) {
+            // Set the list cell width as mouse is dragged.
+    		System.out.println("entrou entrou " + e.getX() + " "+ e.getY());
+    		rows.getColumnModel().getColumn(0).setPreferredWidth(e.getX());
+    		jspTable.getRowHeader().setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
+    		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
+    		jspTable.validate();
+    		jspTable.repaint();
+      }
+        public void mouseMoved(MouseEvent e) {
+            // If the mouse pointer is near the end region of the 
+            // list cell then change the mouse cursor to a resize cursor.
+        	if ((e.getX()>= (rows.getColumnModel().getColumn(0).getWidth() - 5)) && (e.getX()<= rows.getColumnModel().getColumn(0).getWidth())){
+            	rows.setCursor(new Cursor(Cursor.E_RESIZE_CURSOR));
+            } 
+            // If the mouse pointer is not near the end region of a cell 
+            // then change the pointer back to its default.
+            else {
+            	rows.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));       
 
+            }
+        }
+    }
+	
+	private class HeaderResizedListener implements MouseMotionListener{
+		JTable header, rows;
+		public HeaderResizedListener(JTable header, JTable rows){
+			super();
+			this.rows = rows;
+			this.header = header;
+		}
+		
+    	public void mouseDragged(MouseEvent e) {
+            // Set the list cell width as mouse is dragged.
+    		rows.getColumnModel().getColumn(0).setPreferredWidth(e.getX());
+    		jspTable.getRowHeader().setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
+    		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
+    		jspTable.validate();
+    		jspTable.repaint();
+      }
+        public void mouseMoved(MouseEvent e) {
+            // If the mouse pointer is near the end region of the 
+            // list cell then change the mouse cursor to a resize cursor.
+        	if ((e.getX()>= (header.getColumnModel().getColumn(0).getWidth() - 5)) && (e.getX()<= header.getColumnModel().getColumn(0).getWidth())){
+        		jspTable.setCursor(new Cursor(Cursor.E_RESIZE_CURSOR));
+            } 
+            // If the mouse pointer is not near the end region of a cell 
+            // then change the pointer back to its default.
+            else {
+            	jspTable.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); 
+
+            }
+        }
+    }
 }
