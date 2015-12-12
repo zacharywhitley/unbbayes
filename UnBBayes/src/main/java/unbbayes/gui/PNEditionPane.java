@@ -31,6 +31,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import java.beans.ConstructorProperties;
 import java.io.IOException;
 import java.util.EventObject;
 import java.util.Iterator;
@@ -117,7 +120,7 @@ public class PNEditionPane extends JPanel {
 	private GlobalOptionsDialog go = null;
 
 	private JTable table;
-
+	
 	private final JTextField txtName;
 
 	private final JTextField txtDescription;
@@ -617,7 +620,7 @@ public class PNEditionPane extends JPanel {
 				table.setValueAt(frozenModel.getValueAt(e.getLastRow(), e.getColumn()), e.getFirstRow(), e.getColumn());
 			}
 		});
-	    JTable frozenTable = new JTable(frozenModel);
+		JTable frozenTable = new JTable(frozenModel);
 	    
 	    //This bit of code get the name of the parent nodes recursively and builds the header table with it
 	    GroupableTableColumnModel cm = (GroupableTableColumnModel)table.getColumnModel();
@@ -639,18 +642,25 @@ public class PNEditionPane extends JPanel {
         header.setValueAt(tableColumn.getHeaderValue(), i, 0);
         
         //format cornerTable
-		JTable cornerTable = new JTable(header);
+        JTable cornerTable = new JTable(header);
 		cornerTable.getColumnModel().getColumn(0).setCellRenderer(new GroupableTableCellRenderer());
 		cornerTable.setRowHeight((int) table.prepareRenderer(table.getCellRenderer(0,0), 0, 0).getPreferredSize().getHeight());
 		cornerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 	    cornerTable.setEnabled(false);
 	    
 	    //format the frozen table
+	    frozenTable.addMouseMotionListener(new ColumnResizedListener(frozenTable));
+//	    cornerTable.addMouseMotionListener(new ColumnResizedListener(cornerTable));
+	    	
+	    
 	    frozenTable.getColumnModel().getColumn(0).setCellRenderer(new GroupableTableCellRenderer(Color.BLACK, Color.YELLOW));
 	    frozenTable.getColumnModel().getColumn(0).setCellEditor(new ReplaceTextCellEditor());
 	    frozenTable.setSurrendersFocusOnKeystroke(true);
 	    frozenTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 	    frozenTable.setEnabled(true);
+
+//	    cornerTable.getColumnModel().getColumn(0).setPreferredWidth(10);
+//	    cornerTable.getColumnModel().getColumn(0).setPreferredWidth(10);
 	    
 
 	    //remove the frozen columns from the original table
@@ -668,9 +678,18 @@ public class PNEditionPane extends JPanel {
 		jspTable.setViewportView(table);
 		jspTable.setRowHeaderView(frozenViewport);
 		jspTable.setCorner(ScrollPaneConstants.UPPER_LEFT_CORNER, cornerTable);
+		jspTable.getRowHeader().setPreferredSize(new Dimension(frozenTable.getColumnModel().getColumn(0).getWidth(), (int) jspTable.getColumnHeader().getSize().getHeight()));
 		
+//		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setSize(new Dimension(100, 100));
 		
 		jspTable.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+//		jspTable.getRowHeader().setPreferredSize(new Dimension(200,100));
+//		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setMaximumSize(new Dimension(100, 100));
+//		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setMinimumSize(new Dimension(100, 100));
+//		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setPreferredSize(new Dimension(100, 100));
+		jspTable.validate();
+		jspTable.repaint();
 		
 		cpfPane = this.buildCPFPaneFromPlugin(tableOwner);
 
@@ -703,8 +722,37 @@ public class PNEditionPane extends JPanel {
 		
 		return ret;
 	}
+	
+	private class ColumnResizedListener implements MouseMotionListener{
+		JTable rows;
+		public ColumnResizedListener(JTable rows){
+			super();
+			this.rows = rows;
+		}
+		
+    	public void mouseDragged(MouseEvent e) {
+            // Set the list cell width as mouse is dragged.
+    		System.out.println("entrou entrou " + e.getX() + " "+ e.getY());
+    		rows.getColumnModel().getColumn(0).setPreferredWidth(e.getX());
+    		jspTable.getRowHeader().setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
+    		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setPreferredSize(new Dimension(e.getX(), (int) jspTable.getColumnHeader().getSize().getHeight()));
+    		jspTable.validate();
+    		jspTable.repaint();
+      }
+        public void mouseMoved(MouseEvent e) {
+            // If the mouse pointer is near the end region of the 
+            // list cell then change the mouse cursor to a resize cursor.
+        	if ((e.getX()>= (rows.getColumnModel().getColumn(0).getWidth() - 5)) && (e.getX()<= rows.getColumnModel().getColumn(0).getWidth())){
+            	rows.setCursor(new Cursor(Cursor.E_RESIZE_CURSOR));
+            } 
+            // If the mouse pointer is not near the end region of a cell 
+            // then change the pointer back to its default.
+            else {
+            	rows.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));       
 
-
+            }
+        }
+    }
 	/**
 	 * Simply reset the content of tabbed pane and fill it with new content.
 	 * This can be used to reset content of tabbed pane created at {@link #buildCPFPaneFromPlugin(Node)}
