@@ -97,7 +97,6 @@
 	</developers>
 	<contributors>
 		<contributor>
-			<id>pcosta</id>
 			<name>Dr. Paulo Cesar G. Costa</name>
 			<email>pcosta@gmu.edu</email>
 			<roles>
@@ -108,7 +107,6 @@
 			<timezone>-5</timezone>
 		</contributor>
 		<contributor>
-			<id>klaskey</id>
 			<name>Dr. Kathryn Blackmond Laskey</name>
 			<email>klaskey@gmu.edu</email>
 			<roles>
