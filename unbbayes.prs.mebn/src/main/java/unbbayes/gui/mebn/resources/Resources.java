@@ -72,7 +72,13 @@ public class Resources extends GuiResources {
         {"newMEBNMn","E"},
 
 		/* Exceptions MEBN */
-		{"withoutMFrag", "No MFrag Found"}, 
+		{"withoutMFrag", "No MFrag Found"},
+		
+		// Entity warnings
+		{"warning","Warning"},
+		{"selectEntityFirst","First select a Entity that you want to add a Child"},
+		{"removingEntityWarning","Removing this node will also remove all its descendants. Continue?"},
+		{"removeRootWarning","Root node cannot be removed!"},
 		
 		//Menus MEBN
 		{"menuDelete", "Delete"}, 

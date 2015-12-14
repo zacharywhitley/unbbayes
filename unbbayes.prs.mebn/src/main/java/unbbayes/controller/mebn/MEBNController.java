@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -77,6 +78,7 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.ObjectEntityContainer;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
@@ -441,12 +443,20 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 
 	}
 
-
-	private void checkName(String name) throws DuplicatedNameException,
-			ReservedWordException {
-		if(multiEntityBayesianNetwork.getNamesUsed().contains(name)){
-			throw new DuplicatedNameException(name); 
-		}
+	// Old version, that not allow duplicated entities
+//	private void checkName(String name) throws DuplicatedNameException,
+//			ReservedWordException {
+//		if(multiEntityBayesianNetwork.getNamesUsed().contains(name)){
+//			throw new DuplicatedNameException(name); 
+//		}
+//		if(mebnFactory.getReservedWords().contains(name)){
+//			throw new ReservedWordException(name); 
+//		}
+//	}
+	
+	// Allows duplicated name in entities
+	private void checkName(String name) throws ReservedWordException {
+		
 		if(mebnFactory.getReservedWords().contains(name)){
 			throw new ReservedWordException(name); 
 		}
@@ -1260,7 +1270,6 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#insertOrdinaryVariable(double, double)
 	 */
-	
 	public OrdinaryVariable insertOrdinaryVariable(double x, double y) throws MFragDoesNotExistException {
 
 		MFrag currentMFrag = multiEntityBayesianNetwork.getCurrentMFrag();
@@ -1270,7 +1279,9 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		}
 
 		MFrag domainMFrag = (MFrag) currentMFrag;
-		String name = null;
+		
+		String name = null; 
+		
 		while (name == null){
 			name = resource.getString("ordinaryVariableName") + domainMFrag.getOrdinaryVariableNum(); 
 			if(domainMFrag.getOrdinaryVariableByName(name) != null){
@@ -1297,8 +1308,9 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		 mebnEditionPane.getEditOVariableTab().update(); 
 		
 	    return ov;
+
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#renameOrdinaryVariable(unbbayes.prs.mebn.OrdinaryVariable, java.lang.String)
 	 */
@@ -1484,7 +1496,8 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	/* Object Entities                                                         */
 	/*-------------------------------------------------------------------------*/
 
-	/* (non-Javadoc)
+	/**
+	 * Using List implementation in ObjectEntityContainer
 	 * @see unbbayes.controller.mebn.IMEBNMediator#createObjectEntity()
 	 */
 	public ObjectEntity createObjectEntity() throws TypeException{
@@ -1509,20 +1522,76 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		
 		return objectEntity;
 	}
+		
+	/**
+	 * Using Tree implementation in {@link ObjectEntityContainer}
+	 * @see unbbayes.controller.mebn.IMEBNMediator#createObjectEntity(unbbayes.prs.mebn.entity.ObjectEntity)
+	 */
+	public ObjectEntity createObjectEntity(ObjectEntity parentObjectEntity) throws TypeException{
+		
+		if(parentObjectEntity == null) {
+			return createObjectEntity();
+		}
+
+		String name = null;
+
+		int entityNum = multiEntityBayesianNetwork.getObjectEntityContainer().getEntityNum();
+
+		while (name == null){
+			name = resource.getString("entityName") +
+			            multiEntityBayesianNetwork.getObjectEntityContainer().getEntityNum();
+			if(multiEntityBayesianNetwork.getNamesUsed().contains(name)){
+				name = null;
+				multiEntityBayesianNetwork.getObjectEntityContainer().setEntityNum(++entityNum);
+			}
+		}
+
+		ObjectEntity objectEntity = multiEntityBayesianNetwork.getObjectEntityContainer().createObjectEntity(name,parentObjectEntity);
+		multiEntityBayesianNetwork.getNamesUsed().add(name); 
+		
+		mebnEditionPane.getToolBarOVariable().updateListOfTypes(); 
+		
+		return objectEntity;
+	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#renameObjectEntity(unbbayes.prs.mebn.entity.ObjectEntity, java.lang.String)
 	 */
-	public void renameObjectEntity(ObjectEntity entity, String name) 
-	            throws TypeAlreadyExistsException, DuplicatedNameException, ReservedWordException{
+	public void renameObjectEntity(ObjectEntity entity, String name)
+				throws TypeAlreadyExistsException, ReservedWordException{
+	            //throws TypeAlreadyExistsException, DuplicatedNameException, ReservedWordException{
 		
-		checkName(name); 
+		Set<String> namesUsed = multiEntityBayesianNetwork.getNamesUsed();
+		ObjectEntityContainer container = multiEntityBayesianNetwork.getObjectEntityContainer();
 		
-		multiEntityBayesianNetwork.getNamesUsed().remove(name); 
-		entity.setName(name);
-		multiEntityBayesianNetwork.getNamesUsed().add(name); 
+		checkName(name);
 		
-		mebnEditionPane.getToolBarOVariable().updateListOfTypes(); 
+		namesUsed.remove(entity.getName());
+		//multiEntityBayesianNetwork.getNamesUsed().remove(name); 
+		
+		if(namesUsed.contains(name)) {
+			
+			for(ObjectEntity parent: container.getParentsOfObjectEntity(entity)) {
+				try {
+					container.createObjectEntity(name,parent);
+				} catch (TypeException e) {
+					e.printStackTrace();
+				}
+			}
+			
+			try {
+				container.removeEntity(entity);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			
+		}
+		else {
+			namesUsed.add(name);
+			container.renameEntity(entity, name);
+			mebnEditionPane.getToolBarOVariable().updateListOfTypes();
+		}
+ 
 	}
 	
 	
@@ -1530,15 +1599,24 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 * @see unbbayes.controller.mebn.IMEBNMediator#removeObjectEntity(unbbayes.prs.mebn.entity.ObjectEntity)
 	 */
 	public void removeObjectEntity(ObjectEntity entity) throws Exception{
-		multiEntityBayesianNetwork.getObjectEntityContainer().removeEntity(entity);
-		multiEntityBayesianNetwork.getNamesUsed().remove(entity.getName());
 		
-		try{
-			multiEntityBayesianNetwork.getTypeContainer().removeType(entity.getType());
+		ObjectEntityContainer container = multiEntityBayesianNetwork.getObjectEntityContainer();
+		
+		List<ObjectEntity> entitiesToBeExcluded = container.getDescendantsAndSelf(entity);
+		container.removeEntity(entity);
+
+		for(ObjectEntity excludedEntity: entitiesToBeExcluded) {
+			multiEntityBayesianNetwork.getNamesUsed().remove(excludedEntity.getName());
 		}
-		catch(Exception e){
-            e.printStackTrace(); 
-		}
+
+		// Will always raise an exception because the getObjectEntityContainer().removeEntity() contains 
+		// a method, called delete(), thats remove the same entity.getType() Type. 
+//		try{
+//			multiEntityBayesianNetwork.getTypeContainer().removeType(entity.getType());
+//		}
+//		catch(Exception e){
+//            e.printStackTrace(); 
+//		}
 		
 		mebnEditionPane.getToolBarOVariable().updateListOfTypes(); 
 	}

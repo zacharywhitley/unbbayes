@@ -119,7 +119,6 @@ public class TypeContainer {
 	 * @throws TypeDoesNotExistException
 	 */
 	public void removeType(Type type) throws TypeDoesNotExistException{
-		
 		if(listOfTypes.contains(type)){
 		   
 		   listOfTypes.remove(type);

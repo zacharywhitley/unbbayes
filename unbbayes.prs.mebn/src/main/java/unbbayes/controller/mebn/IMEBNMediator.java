@@ -351,6 +351,15 @@ public interface IMEBNMediator extends INetworkMediator  {
 	 * what the user has passed as its argument.
 	 */
 	public abstract ObjectEntity createObjectEntity() throws TypeException;
+	
+	// Write a description for this method.
+	/**
+	 * 
+	 * @param parentObjectEntity
+	 * @return ObjectEntity
+	 * @throws TypeException
+	 */
+	public ObjectEntity createObjectEntity(ObjectEntity parentObjectEntity) throws TypeException;
 
 	/**
 	 * Rename a object entity. 

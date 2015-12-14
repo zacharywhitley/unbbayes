@@ -28,6 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.MutableTreeNode;
+
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.mebn.BuiltInRV;
 import unbbayes.prs.mebn.ContextNode;
@@ -237,6 +240,10 @@ public class SaverPrOwlIO extends PROWLModelUser{
 		List<String> listMetaEntities = mebn.getTypeContainer().getTypesNames(); 
 		
 		for(String state: listMetaEntities){
+			
+			if(mebn.getObjectEntityContainer().getRootObjectEntity().getType().getName().equals(state)) {
+				continue;
+			}
 
 			if (!metaEntitiesDefault.contains(state)){
 				   OWLIndividual stateIndividual = metaEntityClass.createOWLIndividual(state); 
@@ -339,20 +346,56 @@ public class SaverPrOwlIO extends PROWLModelUser{
 	 * - ObjectEntity
 	 * 		
 	 */
+	// Using List implementation in ObjectEntityContainer
+//	protected void saveObjectEntitiesClasses(){
+//		
+//		//OWLNamedClass entityClass = owlModel.getOWLNamedClass("ObjectEntity"); 
+//		OWLNamedClass entityClass = owlModel.getOWLNamedClass(OBJECT_ENTITY); 
+//		
+//		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
+//			// check if the entity class exists
+//			OWLNamedClass newEntityClass = owlModel.getOWLNamedClass(entity.getName());
+//			if (newEntityClass == null) {
+//				// if it is a new entity class, create it
+//				newEntityClass = owlModel.createOWLNamedSubclass(entity.getName(), entityClass); 	
+//			}
+//			mapObjectEntityClasses.put(entity, newEntityClass); 
+//		}
+//	}
+	
+	// Using Tree implementation in ObjectEntityContainer
+	private void saveObjectEntityClass(OWLNamedClass entityClass, DefaultMutableTreeNode entityTreeNode){
+
+		DefaultMutableTreeNode childEntityTreeNode;
+		ObjectEntity childEntity;
+
+		for (int i = entityTreeNode.getChildCount() ; i > 0; i--) {
+			
+			childEntityTreeNode = (DefaultMutableTreeNode) entityTreeNode.getChildAt(i - 1);
+			childEntity = (ObjectEntity) childEntityTreeNode.getUserObject();
+			
+			// check if the entity class exists
+			OWLNamedClass childEntityClass = owlModel.getOWLNamedClass(childEntity.getName());
+			if (childEntityClass == null) {
+				// if it is a new entity class, create it
+				childEntityClass = owlModel.createOWLNamedSubclass(childEntity.getName(), entityClass); 	
+			} else {
+				childEntityClass.addSuperclass(entityClass);
+			}
+		
+			mapObjectEntityClasses.put(childEntity, childEntityClass);
+			
+			saveObjectEntityClass(childEntityClass,childEntityTreeNode);
+		}
+	}
+	
+	// Using Tree implementation in ObjectEntityContainer
 	protected void saveObjectEntitiesClasses(){
 		
-		//OWLNamedClass entityClass = owlModel.getOWLNamedClass("ObjectEntity"); 
-		OWLNamedClass entityClass = owlModel.getOWLNamedClass(OBJECT_ENTITY); 
+		DefaultMutableTreeNode root = (DefaultMutableTreeNode) mebn.getObjectEntityContainer().getEntityTreeModel().getRoot();
 		
-		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
-			// check if the entity class exists
-			OWLNamedClass newEntityClass = owlModel.getOWLNamedClass(entity.getName());
-			if (newEntityClass == null) {
-				// if it is a new entity class, create it
-				newEntityClass = owlModel.createOWLNamedSubclass(entity.getName(), entityClass); 	
-			}
-			mapObjectEntityClasses.put(entity, newEntityClass); 
-		}
+		// Check if needs any modification in the getOWLNamedClass parameter.
+		saveObjectEntityClass(owlModel.getOWLNamedClass(OBJECT_ENTITY), root);
 	}
 
 	

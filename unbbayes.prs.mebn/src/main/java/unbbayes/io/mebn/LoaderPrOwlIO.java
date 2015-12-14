@@ -30,6 +30,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.swing.tree.DefaultMutableTreeNode;
+
 import unbbayes.gui.InternalErrorDialog;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
@@ -67,9 +69,9 @@ import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 import unbbayes.util.Debug;
-import unbbayes.util.longtask.LongTaskProgressChangedEvent;
 import unbbayes.util.longtask.ILongTaskProgressObservable;
 import unbbayes.util.longtask.ILongTaskProgressObserver;
+import unbbayes.util.longtask.LongTaskProgressChangedEvent;
 
 import com.hp.hpl.jena.util.FileUtils;
 
@@ -380,42 +382,103 @@ public class LoaderPrOwlIO extends PROWLModelUser implements
 	 * it is create automaticaly when the object entity is created (default name
 	 * for a type of a object entity).
 	 */
-	protected void loadObjectEntity() {
-
+	// Using List implementation in ObjectEntityContainer
+//	protected void loadObjectEntity() {
+//
+//		OWLNamedClass objectEntityClass;
+//		Collection subClasses;
+//		OWLNamedClass subClass;
+//		OWLObjectProperty objectProperty;
+//
+//		OWLObjectProperty isGloballyExclusive = (OWLObjectProperty) owlModel
+//				.getOWLObjectProperty("isGloballyExclusive");
+//
+//		objectEntityClass = owlModel.getOWLNamedClass(OBJECT_ENTITY);
+//
+//		subClasses = objectEntityClass.getSubclasses(true);
+//
+//		for (Object owlClass : subClasses) {
+//
+//			subClass = (OWLNamedClass) owlClass;
+//
+//			objectProperty = (OWLObjectProperty) owlModel
+//					.getOWLObjectProperty("hasType");
+//
+//			try {
+//				ObjectEntity objectEntityMebn = mebn.getObjectEntityContainer()
+//						.createObjectEntity(subClass.getBrowserText());
+//				mapObjectEntity
+//						.put(subClass.getBrowserText(), objectEntityMebn);
+//				mapTypes.put(objectEntityMebn.getType().getName(),
+//						objectEntityMebn);
+//
+//				mebn.getNamesUsed().add(subClass.getBrowserText());
+//			} catch (TypeException typeException) {
+//				typeException.printStackTrace();
+//			}
+//		}
+//	}
+	
+	
+	// Using Tree implementation in ObjectEntityContainer
+	private void loadChildsObjectEntity(OWLNamedClass rootNamedClass, ObjectEntity parent) {
+		
+		int i = 0;
+		
 		OWLNamedClass objectEntityClass;
 		Collection subClasses;
 		OWLNamedClass subClass;
 		OWLObjectProperty objectProperty;
-
+		
 		OWLObjectProperty isGloballyExclusive = (OWLObjectProperty) owlModel
 				.getOWLObjectProperty("isGloballyExclusive");
-
-		objectEntityClass = owlModel.getOWLNamedClass(OBJECT_ENTITY);
-
-		subClasses = objectEntityClass.getSubclasses(true);
-
+		
+		subClasses = rootNamedClass.getSubclasses(false);
+		
 		for (Object owlClass : subClasses) {
 
 			subClass = (OWLNamedClass) owlClass;
-
+			
 			objectProperty = (OWLObjectProperty) owlModel
 					.getOWLObjectProperty("hasType");
-
+			
 			try {
+				
 				ObjectEntity objectEntityMebn = mebn.getObjectEntityContainer()
-						.createObjectEntity(subClass.getBrowserText());
-				mapObjectEntity
-						.put(subClass.getBrowserText(), objectEntityMebn);
-				mapTypes.put(objectEntityMebn.getType().getName(),
-						objectEntityMebn);
+						.createObjectEntity(subClass.getBrowserText(), parent);
+				
+				if(objectEntityMebn != null){
+					
+					mapObjectEntity
+					.put(subClass.getBrowserText(), objectEntityMebn);
+			
+					mapTypes.put(objectEntityMebn.getType().getName(),
+							objectEntityMebn);
 
-				mebn.getNamesUsed().add(subClass.getBrowserText());
+					mebn.getNamesUsed().add(subClass.getBrowserText());
+				}
+				
+				
+				loadChildsObjectEntity(subClass,objectEntityMebn);
+				
+				i++;
+				
 			} catch (TypeException typeException) {
 				typeException.printStackTrace();
 			}
 		}
+		
 	}
+	
+	// Using Tree implementation in ObjectEntityContainer
+	protected void loadObjectEntity() {
 
+		OWLNamedClass objectEntityClass = owlModel.getOWLNamedClass(OBJECT_ENTITY);
+		
+		loadChildsObjectEntity( objectEntityClass,
+				mebn.getObjectEntityContainer().getRootObjectEntity());
+	}
+	
 	protected void loadCategoricalStateEntity() {
 
 		OWLNamedClass categoricalStateClass;

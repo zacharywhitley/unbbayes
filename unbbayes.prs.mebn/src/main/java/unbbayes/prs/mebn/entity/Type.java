@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
+import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeIsInUseException;
 
 /**
@@ -150,10 +151,23 @@ public class Type implements Comparable<Type>{
 			throw new TypeAlreadyExistsException(); 
 		}
 		else{
+			// container.getListOfTypes() is a TreeSet ordered by name.
+			// renaming this type will break the ordering
+			// (TreeSet searches for its content by virtually using binary search with this ordering, so breaking will cause elements not to be found ). 
+			// Therefore we are explicitly removing and adding again
+			// so that the ordering remains consistent.
+			try {
+				container.removeType(this);
+			} catch (TypeDoesNotExistException e) {
+				e.printStackTrace();
+			}
+			
 		    this.name = name;
+		    
+		    container.getListOfTypes().add(this);
 		}
 	
-	}
+	}	
 
 	public List<Object> getIsTypeOfList() {
 		return isTypeOfList;

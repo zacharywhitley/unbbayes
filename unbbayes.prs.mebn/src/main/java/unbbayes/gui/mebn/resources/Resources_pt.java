@@ -75,7 +75,13 @@ public class Resources_pt extends GuiResources_pt {
         {"newMEBNMn","E"},
 
 		/* Exceptions MEBN */
-		{"withoutMFrag", "No existe nenhuma MFrag"}, 
+		{"withoutMFrag", "No existe nenhuma MFrag"},
+		
+		// Entity warnings
+		{"warning","Aviso"},
+		{"selectEntityFirst","Selecione uma entidade para a qual se deseja adicionar uma nova entidade"},
+		{"removingEntityWarning","Remover esta entidade também removerá todos os seus descendentes. Deseja Continuar?"},
+		{"removeRootWarning","Root node cannot be removed!"},
 		
 		//Menus MEBN
 		{"menuDelete", "Delete"}, 
