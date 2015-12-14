@@ -68,6 +68,15 @@ public class ObjectEntityBuilder implements IObjectEntityBuilder {
 		this.typeContainer = typeContainer;
 	}
 
+	/**
+	 * it does nothing
+	 * @see unbbayes.prs.mebn.entity.IObjectEntityBuilder#setToCreateOWLEntity(boolean)
+	 */
+	public void setToCreateOWLEntity(boolean isToCreateOWLEntity) {
+		// TODO Auto-generated method stub
+		
+	}
+
 //	/* (non-Javadoc)
 //	 * @see unbbayes.prs.mebn.entity.IObjectEntityBuilder#setMEBN(unbbayes.prs.mebn.MultiEntityBayesianNetwork)
 //	 */

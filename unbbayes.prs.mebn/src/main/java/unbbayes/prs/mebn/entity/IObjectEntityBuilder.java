@@ -19,6 +19,12 @@ public interface IObjectEntityBuilder {
 	 */
 	public ObjectEntity getObjectEntity(String name);
 	
+	/**
+	 * @param isToCreateOWLEntity : if true, then an OWL entity will be created in the owl ontology
+	 * when {@link #getObjectEntity(String)} is called.
+	 */
+	public void setToCreateOWLEntity(boolean isToCreateOWLEntity);
+	
 //	/**
 //	 * sets the current instance of {@link MultiEntityBayesianNetwork}, which is used by this object in order to instantiate a new {@link ObjectEntity}.
 //	 * @param mebn
