@@ -34,7 +34,7 @@ import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
 
 /**
- * Represent a MFrag instanciated for a set of entities and encapsule the state
+ * Represent a MFrag instantiated for a set of entities and encapsule the state
  * of evaluation of the context nodes of this MFrag for this set of entities. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)

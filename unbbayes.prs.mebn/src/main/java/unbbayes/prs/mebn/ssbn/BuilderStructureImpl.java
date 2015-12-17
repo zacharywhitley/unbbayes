@@ -427,7 +427,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				}
 				
 				if (isOrdered) {
-					// assume that one of the arguments has linear order property (i.e. automatically assume T0 < T1 < T2 < ...)
+					// assume that one of the arguments has linear order property 
+					// (i.e. automatically assume T0 < T1 < T2 < ...)
 					SimpleSSBNNode newNode = createRecursiveParents(node, 
 							ovFilledArray, 
 							entityFilledArray, 
@@ -437,9 +438,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 						evaluateNodeInMFragInstance(mFragInstance, newNode); 
 					}
 				} else {
-					// treat it the same way of any other node. 
-					// Users must use context nodes and findings in order to 
-					// guarantee acyclic network
+					// Treat it the same way of any other node. Users must use 
+					// context nodes and findings in order to guarantee acyclic 
+					// network
 					createParents(node, ovFilledArray,  entityFilledArray, inputNodeParent);
 				}
 				

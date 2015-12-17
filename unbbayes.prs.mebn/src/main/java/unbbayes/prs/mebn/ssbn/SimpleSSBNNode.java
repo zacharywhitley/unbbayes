@@ -49,6 +49,7 @@ public class SimpleSSBNNode implements INode {
 	
 	private int stepsForChainNodeToReachMainNode = 0;	// values <= 0 indicate that this node does not belong to a chain
 	
+	
 	protected SimpleSSBNNode(ResidentNode residentNode){
 		
 		id = this.ssbnNodeCount; 
