@@ -33,7 +33,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
-import java.beans.ConstructorProperties;
 import java.io.IOException;
 import java.util.EventObject;
 import java.util.Iterator;
@@ -606,90 +605,106 @@ public class PNEditionPane extends JPanel {
 		// btnCPS.setAlignmentX(Component.LEFT_ALIGNMENT);
 		// tPanel.add ( btnCPS ) ;
 		
-		//this will be the RowHeader of the scroll view
-		//it is made so the States name won't be scrolled
-		final TableModel frozenModel = new DefaultTableModel(table.getRowCount(), 1);
 		
-		//populate the frozen model
-		for (int i = 0; i < table.getRowCount(); i++) {
-			String value = (String) table.getValueAt(i, 0);
-			frozenModel.setValueAt(value, i, 0);
-		}
-		frozenModel.addTableModelListener(new TableModelListener(){
-			public void tableChanged(TableModelEvent e) {
-				table.setValueAt(frozenModel.getValueAt(e.getLastRow(), e.getColumn()), e.getFirstRow(), e.getColumn());
+		if (table.getColumnModel() instanceof GroupableTableColumnModel) {
+			// this table uses some classes declared in unbbayes.gui.table package, so we can do some special treatments here
+
+			//this will be the RowHeader of the scroll view
+			//it is made so the States name won't be scrolled
+			final TableModel frozenModel = new DefaultTableModel(table.getRowCount(), 1);
+			
+			
+			//populate the frozen model
+			for (int i = 0; i < table.getRowCount(); i++) {
+				String value = (String) table.getValueAt(i, 0);
+				frozenModel.setValueAt(value, i, 0);
 			}
-		});
-		JTable frozenTable = new JTable(frozenModel);
-	    
-	    //This bit of code get the name of the parent nodes recursively and builds the header table with it
-	    GroupableTableColumnModel cm = (GroupableTableColumnModel)table.getColumnModel();
-        TableColumn tableColumn = (TableColumn) cm.getColumns().nextElement();
-        TableModel header = new DefaultTableModel(tableOwner.getParents().size(), 1);
-         
-        if(tableOwner.getParents().size() == 0){ 
-        	((DefaultTableModel) header).addRow(new Object[] {});
-        }
-         
-          // este eh o nome do primeiro pai
-        Iterator iterator = cm.getColumnGroups(tableColumn);
-        int i=0;
-        while (iterator != null && iterator.hasNext()) {
-            ColumnGroup group = (ColumnGroup) iterator.next();
-            header.setValueAt(group.getHeaderValue(), i, 0);  // este eh o nome do ultimo pai, penultimo pai, antepenultimo pai, e assim por diante.
-            i++;
-        }
-        header.setValueAt(tableColumn.getHeaderValue(), i, 0);
-        
-        //format cornerTable
-        JTable cornerTable = new JTable(header);
-		cornerTable.getColumnModel().getColumn(0).setCellRenderer(new GroupableTableCellRenderer());
-		cornerTable.setRowHeight((int) table.prepareRenderer(table.getCellRenderer(0,0), 0, 0).getPreferredSize().getHeight());
-		cornerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-	    cornerTable.setEnabled(false);
-	    
-	    //format the frozen table
-	    frozenTable.addMouseMotionListener(new ColumnResizedListener(frozenTable));
-	    cornerTable.addMouseMotionListener(new HeaderResizedListener(cornerTable, frozenTable));
-	    	
-	    
-	    frozenTable.getColumnModel().getColumn(0).setCellRenderer(new GroupableTableCellRenderer(Color.BLACK, Color.YELLOW));
-	    frozenTable.getColumnModel().getColumn(0).setCellEditor(new ReplaceTextCellEditor());
-	    frozenTable.setSurrendersFocusOnKeystroke(true);
-	    frozenTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-	    frozenTable.setEnabled(true);
-
-//	    cornerTable.getColumnModel().getColumn(0).setPreferredWidth(10);
-//	    cornerTable.getColumnModel().getColumn(0).setPreferredWidth(10);
-	    
-
-	    //remove the frozen columns from the original table
-	    table.getColumnModel().getColumn(0).setMinWidth(0);
-	    table.getColumnModel().getColumn(0).setPreferredWidth(0);
-	    table.getColumnModel().getColumn(0).setResizable(false);
-	    
-	    //refill with the Listener
-	    
-	    //set frozen table as row header view
-	    JViewport frozenViewport = new JViewport();
-	    frozenViewport.setView(frozenTable);
-	    frozenViewport.setPreferredSize(frozenTable.getPreferredSize());
-	    
-		jspTable.setViewportView(table);
-		jspTable.setRowHeaderView(frozenViewport);
-		jspTable.setCorner(ScrollPaneConstants.UPPER_LEFT_CORNER, cornerTable);
-		jspTable.getRowHeader().setPreferredSize(new Dimension(frozenTable.getColumnModel().getColumn(0).getWidth(), (int) jspTable.getColumnHeader().getSize().getHeight()));
-		
-//		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setSize(new Dimension(100, 100));
-		
-		jspTable.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-//		jspTable.getRowHeader().setPreferredSize(new Dimension(200,100));
-//		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setMaximumSize(new Dimension(100, 100));
-//		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setMinimumSize(new Dimension(100, 100));
-//		jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setPreferredSize(new Dimension(100, 100));
-		jspTable.validate();
-		jspTable.repaint();
+			frozenModel.addTableModelListener(new TableModelListener(){
+				public void tableChanged(TableModelEvent e) {
+					table.setValueAt(frozenModel.getValueAt(e.getLastRow(), e.getColumn()), e.getFirstRow(), e.getColumn());
+				}
+			});
+			JTable frozenTable = new JTable(frozenModel);
+		    
+		    //This bit of code get the name of the parent nodes recursively and builds the header table with it
+		    GroupableTableColumnModel cm = (GroupableTableColumnModel)table.getColumnModel();
+	        TableColumn tableColumn = (TableColumn) cm.getColumns().nextElement();
+	        TableModel header = new DefaultTableModel(tableOwner.getParents().size(), 1);
+	         
+	        if(tableOwner.getParents().size() == 0){ 
+	        	((DefaultTableModel) header).addRow(new Object[] {});
+	        }
+	         
+	          // este eh o nome do primeiro pai
+	        Iterator iterator = cm.getColumnGroups(tableColumn);
+	        int i=0;
+	        while (iterator != null && iterator.hasNext()) {
+	            ColumnGroup group = (ColumnGroup) iterator.next();
+	            header.setValueAt(group.getHeaderValue(), i, 0);  // este eh o nome do ultimo pai, penultimo pai, antepenultimo pai, e assim por diante.
+	            i++;
+	        }
+	        header.setValueAt(tableColumn.getHeaderValue(), i, 0);
+	        
+	        //format cornerTable
+	        JTable cornerTable = new JTable(header);
+			cornerTable.getColumnModel().getColumn(0).setCellRenderer(new GroupableTableCellRenderer());
+			cornerTable.setRowHeight((int) table.prepareRenderer(table.getCellRenderer(0,0), 0, 0).getPreferredSize().getHeight());
+			cornerTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		    cornerTable.setEnabled(false);
+		    
+		    //format the frozen table
+		    frozenTable.addMouseMotionListener(new ColumnResizedListener(frozenTable));
+		    cornerTable.addMouseMotionListener(new HeaderResizedListener(cornerTable, frozenTable));
+		    	
+		    
+		    frozenTable.getColumnModel().getColumn(0).setCellRenderer(new GroupableTableCellRenderer(Color.BLACK, Color.YELLOW));
+		    frozenTable.getColumnModel().getColumn(0).setCellEditor(new ReplaceTextCellEditor());
+		    frozenTable.setSurrendersFocusOnKeystroke(true);
+		    frozenTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		    frozenTable.setEnabled(true);
+	
+//	    	cornerTable.getColumnModel().getColumn(0).setPreferredWidth(10);
+//	    	cornerTable.getColumnModel().getColumn(0).setPreferredWidth(10);
+		    
+	
+		    //remove the frozen columns from the original table
+		    table.getColumnModel().getColumn(0).setMinWidth(0);
+		    table.getColumnModel().getColumn(0).setPreferredWidth(0);
+		    table.getColumnModel().getColumn(0).setResizable(false);
+		    
+		    //refill with the Listener
+		    
+		    //set frozen table as row header view
+		    JViewport frozenViewport = new JViewport();
+		    frozenViewport.setView(frozenTable);
+		    frozenViewport.setPreferredSize(frozenTable.getPreferredSize());
+		    
+			jspTable.setViewportView(table);
+			jspTable.setRowHeaderView(frozenViewport);
+			jspTable.setCorner(ScrollPaneConstants.UPPER_LEFT_CORNER, cornerTable);
+			jspTable.getRowHeader().setPreferredSize(new Dimension(frozenTable.getColumnModel().getColumn(0).getWidth(), (int) jspTable.getColumnHeader().getSize().getHeight()));
+			
+//			jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setSize(new Dimension(100, 100));
+			
+			jspTable.setAlignmentX(Component.LEFT_ALIGNMENT);
+	
+//			jspTable.getRowHeader().setPreferredSize(new Dimension(200,100));
+//			jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setMaximumSize(new Dimension(100, 100));
+//			jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setMinimumSize(new Dimension(100, 100));
+//			jspTable.getCorner(ScrollPaneConstants.UPPER_LEFT_CORNER).setPreferredSize(new Dimension(100, 100));
+			jspTable.validate();
+			jspTable.repaint();
+		} else { // we must display the table "as is"
+			
+			// force the frozen table and the corner table to "dissapear", or else the ones form previously selected node will be shown
+			jspTable.setRowHeaderView(null);
+			jspTable.setCorner(ScrollPaneConstants.UPPER_LEFT_CORNER, null);
+			jspTable.getRowHeader().setPreferredSize(new Dimension(0, 0));
+			
+			// simply display the table "as is"
+			jspTable.setViewportView(table);
+			jspTable.setAlignmentX(Component.LEFT_ALIGNMENT);
+		}
 		
 		cpfPane = this.buildCPFPaneFromPlugin(tableOwner);
 
