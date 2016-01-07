@@ -1,6 +1,6 @@
 UNBBAYES PLUGIN - LEARNING VERSION 1.2.2
 ----------------------------
-FEATURE LIST		
+BUG LIST		
 Number	Request ID	Summary
 2			Conditional probability tables are guaranteed to be normalized.
 
