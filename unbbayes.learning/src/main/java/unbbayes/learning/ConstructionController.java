@@ -211,9 +211,9 @@ public class ConstructionController {
 				variables, matrix, vector, caseNumber, pamp, compacted);
 		UnBBayesFrame.getIUnBBayes().setCursor(
 				new Cursor(Cursor.DEFAULT_CURSOR));
-		Date d2 = new Date();
-		long time1 = d2.getTime();
-		long resul = time1 - time;
+//		Date d2 = new Date();
+//		long time1 = d2.getTime();
+//		long resul = time1 - time;
 		/* Efeito de debug */
 //		System.out.println("Resultado = " + resul);
 		/* Gives the probability of each node */

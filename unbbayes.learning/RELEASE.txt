@@ -1,8 +1,15 @@
+UNBBAYES PLUGIN - LEARNING VERSION 1.2.2
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+2			Conditional probability tables are guaranteed to be normalized.
+
+
 UNBBAYES PLUGIN - LEARNING VERSION 1.2.1
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
-2				Support for missing data (with question mark "?").
+2			Support for missing data (with question mark "?").
 
 UNBBAYES PLUGIN - LEARNING VERSION 1.1.1
 ----------------------------

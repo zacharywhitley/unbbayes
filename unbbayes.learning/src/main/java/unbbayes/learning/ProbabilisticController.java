@@ -28,6 +28,9 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 
 
 public class ProbabilisticController extends LearningToolkit{
@@ -71,6 +74,48 @@ for2:       for (int j = 0; j < parentsLength; j++) {
             }
             getProbability(arrayNijk, variable); 
         }                
+        
+        
+        this.normalizeCPTs(net); // normalize the CPT of all nodes in the network
+        
         controller.showProbabilisticNetwork(net);
     }
+
+    /**
+     * This method normalizes the Conditional Probability Table (CPT) of all nodes in a probabilistic network.
+     * <br/>
+     * <br/>
+     * TODO create this method in {@link MainController}, and this method should simply delegate to it.
+     * 
+     * @param net : the network whose 
+     * @see #ProbabilisticController(ArrayList, int[][], int[], long, MainController, boolean)
+     * @see NormalizeTableFunction
+     */
+	protected void normalizeCPTs(ProbabilisticNetwork net) {
+		
+		if (net == null || net.getNodes() == null) {
+			return;	// ignore null networks
+		}
+		
+		// use this table normalizer in order to normalize table
+		NormalizeTableFunction normalizer = new NormalizeTableFunction();
+		
+		// iterate on all nodes
+		for (Node node : net.getNodes()) {
+			if (node == null) {
+				continue;	// ignore invalid nodes
+			}
+			if (node instanceof ProbabilisticNode) {
+				// extract the CPT of this node
+				PotentialTable table = ((ProbabilisticNode) node).getProbabilityFunction();
+				if (table != null 
+						&& (table instanceof ProbabilisticTable)) { // ignore nodes with unknown or invalid CPTs
+					// this should normalize the CPT
+					normalizer.applyFunction((ProbabilisticTable) table);
+				}
+				
+			}
+		}
+		
+	}
 }

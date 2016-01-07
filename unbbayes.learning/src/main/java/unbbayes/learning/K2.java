@@ -55,7 +55,12 @@ public class K2 extends K2Toolkit{
         int parentsLength; 
         try{
         	setMetric(metric);
-            variation = Math.pow(10,Integer.parseInt(param));                                     	        
+//            try {
+            	variation = Math.pow(10,Integer.parseInt(param));                                     	        
+//            } catch (NumberFormatException e) {
+//            	e.printStackTrace();
+//            	variation = 0.05;
+//            }
 	        boolean continueFlag = false;
     	    int length = variables.size();        
             constructPredecessors(variablesVector);                        
