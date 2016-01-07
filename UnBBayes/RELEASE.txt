@@ -6,7 +6,8 @@ Number	Request ID	Summary
 BUG LIST
 Number	Request ID	Summary
 16          Remove wrong error message when user cancel SaveAs operation. 
-
+					GUI avoids users from using wrong names in nodes (this was not being performed when user renamed nodes by clicking at the node itself -- renaming from toolbar was fine)		
+					Scrolling the GUI's CPT table horizontally will cause the 1st column to follow the scroll.
 
 UNBBAYES VERSION 4.21.15   - RELEASED
 ----------------------------
