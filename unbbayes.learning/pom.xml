@@ -239,7 +239,7 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes</artifactId>
-				<version>4.18.10</version>
+				<version>4.21.14</version>
 			</dependency>
 			
 	</dependencies>

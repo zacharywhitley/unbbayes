@@ -1,10 +1,9 @@
-UNBBAYES PLUGIN - LEARNING VERSION 1.1.1
+UNBBAYES PLUGIN - LEARNING VERSION 1.2.1
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
-1				.
+2				Support for missing data (with question mark "?").
 
-
-BUG LIST		
-Number	Request ID	Summary
-1				.
+UNBBAYES PLUGIN - LEARNING VERSION 1.1.1
+----------------------------
+First release after support for plug-ins.
