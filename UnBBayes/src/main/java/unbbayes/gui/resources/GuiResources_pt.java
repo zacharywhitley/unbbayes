@@ -339,7 +339,7 @@ public class GuiResources_pt extends ListResourceBundle {
         {"nameEmpty","O nome não pode ser branco"},
         {"nameDuplicated", "Nome já existe..."}, 
         {"nameReserved", "Nome é uma palavra reservada."}, 
-        {"nameError","O nome só pode ter letras, números, parênteses e vírgulas."},
+        {"nameError","O nome não deve ser vazio, só pode conter letras, números e underscore."},
         {"descriptionError","A descrição só pode ter letras, números, parênteses, vírgulas e espaços."},
         
         /* Resident Panel */
