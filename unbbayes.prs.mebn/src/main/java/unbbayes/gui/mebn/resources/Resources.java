@@ -127,6 +127,8 @@ public class Resources extends GuiResources {
 		{"showRoundBorder" , "Show Round Border"},
 		
 		
+		// miscellaneous messages
+		{"selectOnlyOneEntry" , "Please, select only one entry"},
 		
 
 		

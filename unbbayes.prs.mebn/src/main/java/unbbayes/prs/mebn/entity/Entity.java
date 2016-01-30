@@ -62,6 +62,10 @@ public abstract class Entity{
 		type = _type; 
 		this.getInstanceNameCheckChainOfResponsibility().add(new INameChecker() {
 			public boolean isValidName(String name) {
+				if (name == null || name.trim().length() <= 0) {
+					// do now allow null or empty names
+					return false;
+				}
 				return DEFAULT_INSTANCE_NAME_PATTERN.matcher(name).matches();
 			}
 		});

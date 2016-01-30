@@ -80,7 +80,7 @@ public class Resources_pt extends GuiResources_pt {
 		// Entity warnings
 		{"warning","Aviso"},
 		{"selectEntityFirst","Selecione uma entidade para a qual se deseja adicionar uma nova entidade"},
-		{"removingEntityWarning","Remover esta entidade também removerá todos os seus descendentes. Deseja Continuar?"},
+		{"removingEntityWarning","Remover esta entidade tambï¿½m removerï¿½ todos os seus descendentes. Deseja Continuar?"},
 		{"removeRootWarning","Root node cannot be removed!"},
 		
 		//Menus MEBN
@@ -128,6 +128,10 @@ public class Resources_pt extends GuiResources_pt {
 		{"showTitleBorder" , "Mostrar Borda do TÃ­tulo"},
 		{"showBodyBorder" , "Mostrar Borda do Principal"},
 		{"showRoundBorder" , "Mostrar Borda Arredondada"},
+		
+		
+		// miscellaneous messages
+		{"selectOnlyOneEntry" , "Por favor, selecione somente um Ãºnico elemento."},
 		
 	};
 }

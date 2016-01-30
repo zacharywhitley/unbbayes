@@ -29,7 +29,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -166,23 +169,57 @@ public class EntityFindingEditionPane extends JPanel {
 	  				
 	  				if ((e.getKeyCode() == KeyEvent.VK_ENTER) 
 	  						&& (nameObjectEntity.getText().length()>0)) {
+	  					// user pressed "enter" in order to include new entity instance
+	  					
 	  					try {
 	  						String nameValue = nameObjectEntity.getText(0,nameObjectEntity.getText().length());
 	  						
-	  						if ((selected != null) && ((ObjectEntity) selected).isValidInstanceName(nameValue)) {
-	  							addOrEditInstance(); 
-	  						}  else {
+	  						// check if there is one (only one) entity to include new instance
+	  						if ((selected == null)
+	  								|| !(selected instanceof Collection)
+	  								|| (((Collection)selected).size() != 1)) {
+	  							// selection (of entity to include new instance) was either empty or more than 1 entities were selected
 	  							nameObjectEntity.setBackground(MebnToolkit.getColorTextFieldError()); 
 	  							nameObjectEntity.setForeground(Color.WHITE); 
 	  							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
-	  									resource.getString("nameError"), 
-	  									resource.getString("nameException"), 
+	  									resource.getString("selectOnlyOneEntry"), 
+	  									resource.getString("operationFail"), 
 	  									JOptionPane.ERROR_MESSAGE);
 	  							nameObjectEntity.selectAll();
+	  							return;
 	  						}
-	  					}
-	  					catch (javax.swing.text.BadLocationException ble) {
+	  						
+	  						// at this point, we are sure that only 1 element was selected. Extract it
+  							Object selectedEntity = ((Collection)selected).iterator().next();
+  							
+  							// make sure the selected element is really an entity
+  							if ((selectedEntity instanceof Entity)) {
+  								if (((Entity) selectedEntity).isValidInstanceName(nameValue) ) {
+  									addOrEditInstance(); 
+  								} else {
+  									// invalid name
+  		  							nameObjectEntity.setBackground(MebnToolkit.getColorTextFieldError()); 
+  		  							nameObjectEntity.setForeground(Color.WHITE); 
+  		  							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
+  		  									resource.getString("nameError"), 
+  		  									resource.getString("nameException"), 
+  		  									JOptionPane.ERROR_MESSAGE);
+  		  							nameObjectEntity.selectAll();
+  		  							return;
+  								}
+  							} 
+	  					} catch (Exception ble) {
+	  						// first, print to default console
 	  						ble.printStackTrace();
+	  						// then, print stack trace to a string
+	  						StringWriter sw = new StringWriter();
+	  						ble.printStackTrace(new PrintWriter(sw));
+	  						// show the string (stack trace) to user
+	  						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
+	  									sw.toString(),
+	  									ble.getMessage(), 
+	  									JOptionPane.ERROR_MESSAGE);
+	  						return;
 	  					}
 	  				}
 	  			}
