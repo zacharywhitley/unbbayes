@@ -17,6 +17,7 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.powerloom.PowerLoomKB;
+import unbbayes.prs.mebn.ssbn.ContextFatherSSBNNode;
 
 /**
  * @author Shou Matsumoto
@@ -172,12 +173,11 @@ public class TextModeRunnerTest extends TestCase {
 			);
 		assertNotNull(returnedNet);
 		
-		// if multiplexor is not duplicated, then the returned network must have 8 nodes (9 if duplicated)
-		assertEquals(8, returnedNet.getNodeCount());
-		
 		// names of the multiplexor must not be something like CX1 or CX2
-		assertNull(returnedNet.getNode("CX2"));
-		assertNull(returnedNet.getNode("CX1"));
+		if (ContextFatherSSBNNode.isToGenerateSuggestiveProbabilisticNodeName()) {
+			assertNull(returnedNet.getNode("CX2"));
+			assertNull(returnedNet.getNode("CX1"));
+		}
 		
 		
 		// make sure the CPT of the multiplexed node (child of multiplexor) is correct
@@ -209,6 +209,9 @@ public class TextModeRunnerTest extends TestCase {
 			// 0.00005 is the error margin for comparing two float numbers
 			assertEquals("[" + i + "]", groundTruthNode2.getProbabilityFunction().getValue(i), node2.getProbabilityFunction().getValue(i), 0.00005);
 		}
+		
+		// if multiplexor is not duplicated, then the returned network must have 8 nodes (9 if duplicated)
+		assertEquals(8, returnedNet.getNodeCount());
 		
 	}
 	
