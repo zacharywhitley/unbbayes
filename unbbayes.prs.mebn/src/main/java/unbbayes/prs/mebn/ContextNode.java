@@ -433,16 +433,35 @@ public class ContextNode extends MultiEntityNode {
 		return formulaTree.getVariableList();
 	}
 
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.Node#getCleanName(java.lang.String)
+	/**
+	 * This method will convert a given name to some valid name,
+	 * by removing invalid characters.
+	 * <br/> <br/>
+	 * Basically, the name will be trimmed (i.e. {@link String#trim()}), 
+	 * punctuation characters and whitespaces will be substituted with underscores (i.e. '_'),
+	 * 2 or more consecutive underscores will be substituted to 1 underscore,
+	 * and underscores at the beginning and end of the name will be removed.
+	 * <br/> <br/>
+	 * Classes extending this method may personalize this behavior.
+	 * <br/> <br/>
+	 * The following substitution will be also applied to FOL operation symbols:
+	 * <pre>
+	 * "=" -> "_equals_"
+	 * "¬" -> "_not_"
+	 * "∀" -> "_all_"
+	 * "∃" -> "_exists_"
+	 * "∧" -> "_and_"
+	 * "∨" -> "_or_"
+	 * "→" -> "_implies_"
+	 * "↔" -> "_iff_"
+	 * </pre>
+	 * 
+	 * @param nameToClean : the name to consider.
+	 * @return the converted name.
+	 * @see #getName()
+	 * @see #setName(String)
 	 */
 	public String getCleanName(String nameToClean) {
-		
-		/*
-		 * Note: part of this code is redundant with Node#getCleanName(String).
-		 * However, since I'm not 100% sure that Node#getCleanName(String) is accessible in runtime 
-		 * (because UnBBayes-MEBN is a plug-in), I prefer not to invoke superclass method.
-		 */
 		
 		// return "null" if its null or empty
 		if (nameToClean == null) {
@@ -464,8 +483,8 @@ public class ContextNode extends MultiEntityNode {
 		nameToClean = nameToClean.replace("↔", "_iff_");
 		
 		
-		// replace white space and punctuation with underscores
-		nameToClean = nameToClean.replaceAll("[\\p{Punct}\\p{Space}]", "_");
+		// replace white space and punctuation with underscores. 
+		nameToClean = nameToClean.replaceAll("[\\p{Punct}\\p{Space}]", "_"); // "\p{Punct}" and \p{Space} are POSIX regex classes.
 		
 		// remove redundant underscores
 		nameToClean = nameToClean.replaceAll("_+", "_");
