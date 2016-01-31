@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.bn.PotentialTable;
@@ -166,8 +165,8 @@ public class CPTForSSBNNodeGenerator {
 				}
 			}else{
 				ssbnNode.getCompiler().generateLPD(ssbnNode);
-				PotentialTable cpt = ssbnNode.getProbNode().getProbabilityFunction(); 
-				GUIPotentialTable gpt = new GUIPotentialTable(cpt); 
+//				PotentialTable cpt = ssbnNode.getProbNode().getProbabilityFunction(); 
+//				GUIPotentialTable gpt = new GUIPotentialTable(cpt); 
 //				gpt.showTable("Table for Node " + ssbnNode);
 			}
 		}
@@ -336,11 +335,11 @@ public class CPTForSSBNNodeGenerator {
 			}
 			PotentialTable cpt = tempNode.getCompiler().generateCPT(tempNode); 
 
-			if(debugMethod) {
-				GUIPotentialTable gpt; 
-				gpt = new GUIPotentialTable(cpt); 
-				gpt.showTable("Table for Node " + ssbnNode + " - " + entity);
-			}
+//			if(debugMethod) {
+//				GUIPotentialTable gpt; 
+//				gpt = new GUIPotentialTable(cpt); 
+//				gpt.showTable("Table for Node " + ssbnNode + " - " + entity);
+//			}
 
 			//Remove the temp node of the list of children of the node. 
 			for(SSBNNode parent: parentsForEntityList){
@@ -563,11 +562,11 @@ public class CPTForSSBNNodeGenerator {
 		}
 
 
-		if(debugMethod) {
-			GUIPotentialTable gpt; 
-			gpt = new GUIPotentialTable(ssbnNode.getProbNode().getProbabilityFunction()); 
-			gpt.showTable("Table for Node " + ssbnNode);
-		}
+//		if(debugMethod) {
+//			GUIPotentialTable gpt; 
+//			gpt = new GUIPotentialTable(ssbnNode.getProbNode().getProbabilityFunction()); 
+//			gpt.showTable("Table for Node " + ssbnNode);
+//		}
 
 		if (logManager != null) {
 			logManager.printText(level3, false,"CPT OK");
