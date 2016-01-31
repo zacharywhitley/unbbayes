@@ -991,5 +991,43 @@ public abstract class Node implements Serializable,
 	public int hashCode() {
 		return nameHash;
 	}
+	
+	/**
+	 * This method will convert a given name to some valid name,
+	 * by removing invalid characters.
+	 * Classes extending this method may personalize this behavior.
+	 * @param nameToClean
+	 * @return the name with no invalid characters
+	 */
+	public String getCleanName(String nameToClean) {
+		
+		// return "null" if its null or empty
+		if (nameToClean == null) {
+			return "null";
+		}
+		nameToClean = nameToClean.trim();
+		if (nameToClean.isEmpty()) {
+			return "null";
+		}
+		
+		// replace white space and punctuation with underscores
+		nameToClean = nameToClean.replaceAll("[\\p{Punct}\\p{Space}]", "_");
+		
+		// remove redundant underscores
+		nameToClean = nameToClean.replaceAll("_+", "_");
+		
+		// remove underscores in 1st or last character
+		int beginIndex = 0;
+		if (nameToClean.charAt(0) == '_') {
+			beginIndex++;
+		}
+		int endIndex = nameToClean.length();
+		if (nameToClean.charAt(endIndex-1) == '_') {
+			endIndex--;
+		}
+		nameToClean = nameToClean.substring(beginIndex, endIndex);
+		
+		return nameToClean;
+	}
 
 }
