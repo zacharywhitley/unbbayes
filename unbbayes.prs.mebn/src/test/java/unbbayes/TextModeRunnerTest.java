@@ -10,6 +10,7 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 import unbbayes.TextModeRunner.QueryNodeNameAndArguments;
+import unbbayes.io.NetIO;
 import unbbayes.io.mebn.UbfIO;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -140,6 +141,77 @@ public class TextModeRunnerTest extends TestCase {
 		
 		
 	}
+	
+	/**
+	 * This method checks if multiplexor nodes (which implements some sort of reference uncertainty in context nodes)
+	 * are not duplicated when same context nodes happens in 2 MFrags.
+	 * @throws Exception 
+	 */
+	public final void testDuplicateMultiplexor() throws Exception {
+		TextModeRunner textModeRunner = new TextModeRunner();
+		
+		// load ubf/owl
+		UbfIO ubf = UbfIO.getInstance();
+		MultiEntityBayesianNetwork mebn = ubf.loadMebn(new File("src/test/resources/duplicateMultiplexor.ubf"));
+		
+		// initialize kb
+		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB();
+		kb = textModeRunner.createKnowledgeBase(kb, mebn);
+		
+		// make a query to Main(E1)
+		
+		// check that the node and entity instance to be queried are present
+		assertNotNull(mebn.getObjectEntityContainer().getEntityInstanceByName("E1"));
+		assertNotNull(mebn.getDomainResidentNode("Main"));
+		
+		// single query
+		ProbabilisticNetwork returnedNet = this.textModeRunner.callLaskeyAlgorithm(
+				mebn, 
+				kb, 
+				Collections.singletonList(textModeRunner.new QueryNodeNameAndArguments("Main", "E1"))
+			);
+		assertNotNull(returnedNet);
+		
+		// if multiplexor is not duplicated, then the returned network must have 8 nodes (9 if duplicated)
+		assertEquals(8, returnedNet.getNodeCount());
+		
+		// names of the multiplexor must not be something like CX1 or CX2
+		assertNull(returnedNet.getNode("CX2"));
+		assertNull(returnedNet.getNode("CX1"));
+		
+		
+		// make sure the CPT of the multiplexed node (child of multiplexor) is correct
+		
+		// load the ground truth network for comparison
+		ProbabilisticNetwork groundTruth = (ProbabilisticNetwork) new NetIO().load(new File("src/test/resources/singleMultiplexor.net"));
+		assertNotNull(groundTruth);
+		
+		// extract the children of multiplexor nodes from generated network
+		ProbabilisticNode node1 = (ProbabilisticNode) returnedNet.getNode("Resident1__E1");
+		assertNotNull(node1);
+		ProbabilisticNode node2 = (ProbabilisticNode) returnedNet.getNode("Resident2__E1");
+		assertNotNull(node2);
+
+		// extract the children of multiplexor nodes from ground truth
+		ProbabilisticNode groundTruthNode1 = (ProbabilisticNode) groundTruth.getNode("Resident1__E1");
+		assertNotNull(groundTruthNode1);
+		ProbabilisticNode groundTruthNode2 = (ProbabilisticNode) groundTruth.getNode("Resident2__E1");
+		assertNotNull(groundTruthNode2);
+		
+		// make sure the CPTs are the same
+		assertEquals(groundTruthNode1.getProbabilityFunction().tableSize(), node1.getProbabilityFunction().tableSize());
+		for (int i = 0; i < groundTruthNode1.getProbabilityFunction().tableSize(); i++) {
+			// 0.00005 is the error margin for comparing two float numbers
+			assertEquals("[" + i + "]", groundTruthNode1.getProbabilityFunction().getValue(i), node1.getProbabilityFunction().getValue(i), 0.00005);	
+		}
+		assertEquals(groundTruthNode2.getProbabilityFunction().tableSize(), node2.getProbabilityFunction().tableSize());
+		for (int i = 0; i < groundTruthNode2.getProbabilityFunction().tableSize(); i++) {
+			// 0.00005 is the error margin for comparing two float numbers
+			assertEquals("[" + i + "]", groundTruthNode2.getProbabilityFunction().getValue(i), node2.getProbabilityFunction().getValue(i), 0.00005);
+		}
+		
+	}
+	
 
 
 }

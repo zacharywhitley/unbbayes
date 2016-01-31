@@ -53,7 +53,10 @@ public class ContextFatherSSBNNode {
 	private boolean cptGenerated = false; 
 	
 	private ResourceBundle resource = 
-		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());	
+		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
+	
+	
+	private static boolean isToGenerateSuggestiveProbabilisticNodeName = false;	// true;	
 
 	/**
 	 * 
@@ -67,10 +70,19 @@ public class ContextFatherSSBNNode {
 		this.pnet = pnet;
 		this.contextNode = contextNode;
 		this.probNode = probNode; 
-		probNode.setName(contextNode.getName());
-//		probNode.setDescription(contextNode.getFormula());
-//		probNode.setName("context");
+		
+		if (isToGenerateSuggestiveProbabilisticNodeName()) {
+			// generate a suggestive name for the probabilistic node representing this context node (instead of using CX1, CX2...)
+			probNode.setName(contextNode.getCleanName(contextNode.toString()));
+		} else {
+			probNode.setName(contextNode.getName());
+		}
 		probNode.setDescription(contextNode.getName());
+		
+		// avoid duplicate entry
+		if (pnet.getNode(probNode.getName()) != null) {
+			throw new IllegalArgumentException("Duplicate context node instance: " + probNode.getName());
+		}
 		pnet.addNode(probNode);
 		
 		possibleValues = new ArrayList<ILiteralEntityInstance>();
@@ -176,6 +188,31 @@ public class ContextFatherSSBNNode {
 			return false;  
 		}
 		
+	}
+
+	/**
+	 * If true, then suggestive names will be used for {@link ProbabilisticNode} representing this context node.
+	 * In other words, names like "x_eq_Function_y_" will be used instead of "CX1", "CX2"...
+	 * @return the isToGenerateSuggestiveProbabilisticNodeName :
+	 * if true, then {@link #ContextFatherSSBNNode(ProbabilisticNetwork, ContextNode, ProbabilisticNode)}
+	 * will use {@link ContextNode#getCleanName(String)} in order to generate names of {@link ProbabilisticNode}.
+	 * If false, then {@link ContextNode#getName()} will be used instead.
+	 */
+	public static boolean isToGenerateSuggestiveProbabilisticNodeName() {
+		return isToGenerateSuggestiveProbabilisticNodeName;
+	}
+
+	/**
+	 * If true, then suggestive names will be used for {@link ProbabilisticNode} representing this context node.
+	 * In other words, names like "x_eq_Function_y_" will be used instead of "CX1", "CX2"...
+	 * @param isSuggestiveName the isToGenerateSuggestiveProbabilisticNodeName to set :
+	 * if true, then {@link #ContextFatherSSBNNode(ProbabilisticNetwork, ContextNode, ProbabilisticNode)}
+	 * will use {@link ContextNode#getCleanName(String)} in order to generate names of {@link ProbabilisticNode}.
+	 * If false, then {@link ContextNode#getName()} will be used instead.
+	 */
+	public static void setToGenerateSuggestiveProbabilisticNodeName(
+			boolean isSuggestiveName) {
+		isToGenerateSuggestiveProbabilisticNodeName = isSuggestiveName;
 	}
 
 }

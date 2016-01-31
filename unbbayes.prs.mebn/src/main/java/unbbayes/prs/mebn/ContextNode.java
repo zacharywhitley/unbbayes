@@ -433,5 +433,60 @@ public class ContextNode extends MultiEntityNode {
 		return formulaTree.getVariableList();
 	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.Node#getCleanName(java.lang.String)
+	 */
+	public String getCleanName(String nameToClean) {
+		
+		/*
+		 * Note: part of this code is redundant with Node#getCleanName(String).
+		 * However, since I'm not 100% sure that Node#getCleanName(String) is accessible in runtime 
+		 * (because UnBBayes-MEBN is a plug-in), I prefer not to invoke superclass method.
+		 */
+		
+		// return "null" if its null or empty
+		if (nameToClean == null) {
+			return "null";
+		}
+		nameToClean = nameToClean.trim();
+		if (nameToClean.isEmpty()) {
+			return "null";
+		}
+		
+		// replace some characters with special meaning
+		nameToClean = nameToClean.replace("=", "_eq_");
+		nameToClean = nameToClean.replace("¬", "_not_");
+		nameToClean = nameToClean.replace("∀", "_all_");
+		nameToClean = nameToClean.replace("∃", "_exists_");
+		nameToClean = nameToClean.replace("∧", "_and_");
+		nameToClean = nameToClean.replace("∨", "_or_");
+		nameToClean = nameToClean.replace("→", "_implies_");
+		nameToClean = nameToClean.replace("↔", "_iff_");
+		
+		
+		// replace white space and punctuation with underscores
+		nameToClean = nameToClean.replaceAll("[\\p{Punct}\\p{Space}]", "_");
+		
+		// remove redundant underscores
+		nameToClean = nameToClean.replaceAll("_+", "_");
+		
+
+		// remove underscores in 1st or last character
+		int beginIndex = 0;
+		if (nameToClean.charAt(0) == '_') {
+			beginIndex++;
+		}
+		int endIndex = nameToClean.length();
+		if (nameToClean.charAt(endIndex-1) == '_') {
+			endIndex--;
+		}
+		nameToClean = nameToClean.substring(beginIndex, endIndex);
+		
+		return nameToClean;
+	}
+	
+	
+	
+
 }
  
