@@ -9,6 +9,7 @@ import java.util.Set;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
@@ -133,7 +134,8 @@ public class SimpleSSBNNodeUtils {
 					ContextNode contextNode = simpleContextNodeList.get(0).getContextNode(); 
 					ContextFatherSSBNNode contextFather = mapContextNode.get(contextNode); 
 					if(contextFather == null){
-						contextFather = new ContextFatherSSBNNode(pn, contextNode);
+						contextFather = new ContextFatherSSBNNode(pn, contextNode, new ProbabilisticNode(), 
+								simpleContextNodeList.get(0).getOvProblematic(), simple.getMFragInstance().getOVInstanceList());
 						
 						List<ILiteralEntityInstance> possibleValueList = new ArrayList<ILiteralEntityInstance>(); 
 						for(String entity: simpleContextNodeList.get(0).getPossibleValues()){
@@ -144,7 +146,7 @@ public class SimpleSSBNNodeUtils {
 							contextFather.addPossibleValue(lei);
 						}
 						
-						contextFather.setOvProblematic(simpleContextNodeList.get(0).getOvProblematic()); 
+//						contextFather.setOvProblematic(simpleContextNodeList.get(0).getOvProblematic());
 						mapContextNode.put(contextNode, contextFather); 
 					}
 					

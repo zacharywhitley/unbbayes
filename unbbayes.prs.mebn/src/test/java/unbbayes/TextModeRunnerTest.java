@@ -153,7 +153,7 @@ public class TextModeRunnerTest extends TestCase {
 		
 		// load ubf/owl
 		UbfIO ubf = UbfIO.getInstance();
-		MultiEntityBayesianNetwork mebn = ubf.loadMebn(new File("src/test/resources/duplicateMultiplexor.ubf"));
+		MultiEntityBayesianNetwork mebn = ubf.loadMebn(new File("src/test/resources/duplicateMultiplexor2.ubf"));
 		
 		// initialize kb
 		KnowledgeBase kb = PowerLoomKB.getNewInstanceKB();
