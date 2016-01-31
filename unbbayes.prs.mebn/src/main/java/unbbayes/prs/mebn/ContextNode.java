@@ -454,7 +454,7 @@ public class ContextNode extends MultiEntityNode {
 		}
 		
 		// replace some characters with special meaning
-		nameToClean = nameToClean.replace("=", "_eq_");
+		nameToClean = nameToClean.replace("=", "_equals_");
 		nameToClean = nameToClean.replace("¬", "_not_");
 		nameToClean = nameToClean.replace("∀", "_all_");
 		nameToClean = nameToClean.replace("∃", "_exists_");

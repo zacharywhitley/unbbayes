@@ -56,7 +56,7 @@ public class ContextFatherSSBNNode {
 		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
 	
 	
-	private static boolean isToGenerateSuggestiveProbabilisticNodeName = false;	// true;	
+	private static boolean isToGenerateSuggestiveProbabilisticNodeName = true;	
 
 	/**
 	 * 
@@ -71,17 +71,20 @@ public class ContextFatherSSBNNode {
 		this.contextNode = contextNode;
 		this.probNode = probNode; 
 		
+		String name = contextNode.getName();
 		if (isToGenerateSuggestiveProbabilisticNodeName()) {
 			// generate a suggestive name for the probabilistic node representing this context node (instead of using CX1, CX2...)
-			probNode.setName(contextNode.getCleanName(contextNode.toString()));
-		} else {
-			probNode.setName(contextNode.getName());
-		}
+			name = contextNode.getCleanName(contextNode.toString());
+		} 
+		probNode.setName(name);
 		probNode.setDescription(contextNode.getName());
 		
-		// avoid duplicate entry
-		if (pnet.getNode(probNode.getName()) != null) {
-			throw new IllegalArgumentException("Duplicate context node instance: " + probNode.getName());
+		// avoid duplicate name, because name is the primary identifier of a node in UnBBayes
+		if (pnet.getNode(name) != null) {	
+			// generate a new name, by adding a new number after the name
+			int i = 1;
+			while (pnet.getNode(name + "_" + i) != null) {i++;}	// find a number which was not used yet
+			probNode.setName(name + "_" + i); // finally, use the new name
 		}
 		pnet.addNode(probNode);
 		
