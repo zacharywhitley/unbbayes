@@ -186,11 +186,19 @@ public class TextModeRunnerTest extends TestCase {
 		ProbabilisticNetwork groundTruth = (ProbabilisticNetwork) new NetIO().load(new File("src/test/resources/singleMultiplexor.net"));
 		assertNotNull(groundTruth);
 		
+		// extract the multiplexor node from generated network
+		ProbabilisticNode multiplexorNode = (ProbabilisticNode) returnedNet.getNode("MyEntity_equals_Reference_E1");
+		assertNotNull(multiplexorNode);
+		
 		// extract the children of multiplexor nodes from generated network
 		ProbabilisticNode node1 = (ProbabilisticNode) returnedNet.getNode("Resident1__E1");
 		assertNotNull(node1);
 		ProbabilisticNode node2 = (ProbabilisticNode) returnedNet.getNode("Resident2__E1");
 		assertNotNull(node2);
+		
+		// extract the multiplexor node from ground truth network
+		ProbabilisticNode groundTruthMultiplexorNode = (ProbabilisticNode) groundTruth.getNode("MyEntity_equals_Reference_E1");
+		assertNotNull(groundTruthMultiplexorNode);
 
 		// extract the children of multiplexor nodes from ground truth
 		ProbabilisticNode groundTruthNode1 = (ProbabilisticNode) groundTruth.getNode("Resident1__E1");
@@ -202,16 +210,21 @@ public class TextModeRunnerTest extends TestCase {
 		assertEquals(groundTruthNode1.getProbabilityFunction().tableSize(), node1.getProbabilityFunction().tableSize());
 		for (int i = 0; i < groundTruthNode1.getProbabilityFunction().tableSize(); i++) {
 			// 0.00005 is the error margin for comparing two float numbers
-			assertEquals("[" + i + "]", groundTruthNode1.getProbabilityFunction().getValue(i), node1.getProbabilityFunction().getValue(i), 0.00005);	
+			assertEquals("[" + i + "]", groundTruthNode1.getProbabilityFunction().getValue(i), node1.getProbabilityFunction().getValue(i), 0.000005);	
 		}
 		assertEquals(groundTruthNode2.getProbabilityFunction().tableSize(), node2.getProbabilityFunction().tableSize());
 		for (int i = 0; i < groundTruthNode2.getProbabilityFunction().tableSize(); i++) {
 			// 0.00005 is the error margin for comparing two float numbers
-			assertEquals("[" + i + "]", groundTruthNode2.getProbabilityFunction().getValue(i), node2.getProbabilityFunction().getValue(i), 0.00005);
+			assertEquals("[" + i + "]", groundTruthNode2.getProbabilityFunction().getValue(i), node2.getProbabilityFunction().getValue(i), 0.000005);
+		}
+		assertEquals(groundTruthMultiplexorNode.getProbabilityFunction().tableSize(), multiplexorNode.getProbabilityFunction().tableSize());
+		for (int i = 0; i < groundTruthMultiplexorNode.getProbabilityFunction().tableSize(); i++) {
+			// 0.00005 is the error margin for comparing two float numbers
+			assertEquals("[" + i + "]", groundTruthMultiplexorNode.getProbabilityFunction().getValue(i), multiplexorNode.getProbabilityFunction().getValue(i), 0.000005);
 		}
 		
-		// if multiplexor is not duplicated, then the returned network must have 8 nodes (9 if duplicated)
-		assertEquals(8, returnedNet.getNodeCount());
+		// if multiplexor is not duplicated, then the returned network must have 9 nodes (10 if duplicated)
+		assertEquals(9, returnedNet.getNodeCount());
 		
 	}
 	

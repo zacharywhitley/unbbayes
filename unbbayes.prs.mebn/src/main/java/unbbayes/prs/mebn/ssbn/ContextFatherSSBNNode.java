@@ -27,12 +27,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ssbn.exception.InvalidOperationException;
+import unbbayes.util.Debug;
 
 /**
  * This class represents a ContextNode that is father in the probabilistic 
@@ -64,6 +66,8 @@ public class ContextFatherSSBNNode {
 //	
 	private static boolean isToGenerateSuggestiveProbabilisticNodeName = true;
 	
+	private static boolean isToAutoRename = false;
+	
 	private Collection<OVInstance> knownOVs = Collections.EMPTY_LIST;	
 
 	/**
@@ -71,64 +75,93 @@ public class ContextFatherSSBNNode {
 	 * in a format like y=Function(x).
 	 * @param pnet : the BN where probNode will be included into
 	 * @param contextNode : the context node representing this node
-	 * @param probNode : the equivalent probNode to be included to BN
+	 * @param probNode : the equivalent probNode to be included to BN. 
 	 * @param unknownOV : which OV in contextNode is unknown. For instance, if context node is y=Function(x),
 	 * then either x or y (usually the y) must be this.
 	 * @param knownOVs : what OVs of this MFrag are instantiated already.
 	 * We recommend you to reuse instances of {@link Collection} (instead of duplicating instances), in order to save memory space.
 	 * If context node is y=Function(x), then this must be filled with at least the instantiation of the OV
 	 * other than the unknownOV.
+	 * @param isToAutoRename : if false, then {@link #probNode} will not be included to {@link #pnet} again if a node with same
+	 * name is already in {@link #pnet}. The node specified in {@link #probNode} will be ignored, and {@link #getProbNode()}
+	 * will return the node which was already in {@link #pnet}. If true, then a new unique name will be automatically generated for {@link #probNode}.
 	 * @see #setKnownOVs(Collection)
 	 * @see #setOvProblematic(OrdinaryVariable)
 	 */
 	public ContextFatherSSBNNode (ProbabilisticNetwork pnet, ContextNode contextNode, 
-			ProbabilisticNode probNode, OrdinaryVariable unknownOV, Collection<OVInstance> knownOVs) {
+			ProbabilisticNode probNode, OrdinaryVariable unknownOV, Collection<OVInstance> knownOVs,
+			boolean isToAutoRename) {
 		
 		this.pnet = pnet;
 		this.contextNode = contextNode;
 		this.probNode = probNode;
+		
+		
 		this.setKnownOVs(knownOVs); 
 		
-		String name = contextNode.getName();
-		
-		probNode.setName(name);
-		probNode.setDescription(contextNode.getName());
-		
-		// avoid duplicate name, because name is the primary identifier of a node in UnBBayes
-		if (pnet.getNode(name) != null) {	
-			// generate a new name, by adding a new number after the name
-			int i = 1;
-			while (pnet.getNode(name + "_" + i) != null) {i++;}	// find a number which was not used yet
-			probNode.setName(name + "_" + i); // finally, use the new name
-		}
+		this.probNode.setDescription(contextNode.getName());
 		
 		
 		possibleValues = new ArrayList<ILiteralEntityInstance>();
-//		if (possibleStates != null) {
-//			for (ILiteralEntityInstance knownValue : possibleStates) {
-//				this.addPossibleValue(knownValue);
-//			}
-//			// make sure we are using the same object instance
-////			possibleValues = knownValues;
-//		}
 		
 		this.setOvProblematic(unknownOV);
 		
-		
+		// generate name for this node
+		String name = contextNode.getName();
 		if (isToGenerateSuggestiveProbabilisticNodeName()) {
-			probNode.setName(this.getSuggestiveName());
+			// use a more suggestive name instead
+			name = this.getSuggestiveName();
 		} 
+
+		// avoid duplicate name, because name is the primary identifier of a node in UnBBayes
+		if (isToAutoRename && (pnet.getNode(name) != null)) {	
+			// generate a new name, by adding a new number after the name
+			int i = 1;
+			// find a number which was not used yet
+			while (pnet.getNode(name + "_" + i) != null) {
+				i++;
+			}	
+			name = name + "_" + i;	// append the number to name
+		}
 		
-		pnet.addNode(probNode);
+		// finally, change the name of this node
+		this.probNode.setName(name);
+		
+		// avoid re-inserting the node if it is there already
+		Node nodeInNet = pnet.getNode(this.probNode.getName());
+		if (nodeInNet == null) {
+			// it's a new node, so we can simply add it here
+			pnet.addNode(this.probNode);
+		} else {
+			// avoid adding 2 nodes with same name
+			Debug.println(getClass(), this.probNode + " will not be included to network " + pnet 
+					+ ", because there is already a node with the same name: " + nodeInNet);
+			if (nodeInNet instanceof ProbabilisticNode) {
+				// reuse the one in net
+				this.probNode = (ProbabilisticNode) nodeInNet;
+			}
+		}
+	}
+	
+
+	/**
+	 * This will simply delegate to {@link #ContextFatherSSBNNode(ProbabilisticNetwork, ContextNode, ProbabilisticNode, OrdinaryVariable, Collection, boolean)}
+	 * @see #isToAutoRename()
+	 */
+	public ContextFatherSSBNNode (ProbabilisticNetwork pnet, ContextNode contextNode, 
+			ProbabilisticNode probNode, OrdinaryVariable unknownOV, Collection<OVInstance> knownOVs) {
+		this(pnet, contextNode, probNode, unknownOV, knownOVs, isToAutoRename());
 	}
 	
 	
 	/**
+	 *  This will simply delegate to {@link #ContextFatherSSBNNode(ProbabilisticNetwork, ContextNode, ProbabilisticNode, OrdinaryVariable, Collection)}
 	 * @param pnet
 	 * @param contextNode
 	 * @param probNode
 	 * @see #setKnownOVs(Collection)
 	 * @see #setOvProblematic(OrdinaryVariable)
+	 * @see #isToAutoRename()
 	 * @deprecated use {@link #ContextFatherSSBNNode(ProbabilisticNetwork, ContextNode, ProbabilisticNode, OrdinaryVariable, Collection)} instead
 	 */
 	@Deprecated
@@ -139,6 +172,7 @@ public class ContextFatherSSBNNode {
 
 	
 	/**
+	 * This will simply delegate to {@link #ContextFatherSSBNNode(ProbabilisticNetwork, ContextNode, ProbabilisticNode)}
 	 * @param pnet
 	 * @param contextNode
 	 * @see #setKnownOVs(Collection)
@@ -147,7 +181,7 @@ public class ContextFatherSSBNNode {
 	 */
 	@Deprecated
 	public ContextFatherSSBNNode (ProbabilisticNetwork pnet, ContextNode contextNode) {
-		this(pnet, contextNode, new ProbabilisticNode(), null, null);
+		this(pnet, contextNode, new ProbabilisticNode());
 	}
 	
 	
@@ -261,10 +295,15 @@ public class ContextFatherSSBNNode {
 				if (ov == null || ov.getName() == null) {
 					continue;	// ignore invalid entries
 				}
-				if (!ov.getName().equals(ovProblematic.getName())
-						&& ovNameToLiteralMap.containsKey(ov.getName())) {
-					// substitute occurrences of ov with the value. Because I added underscores in both sides, OVs are guaranteed to have underscores in both sides.
-					name = name.replace("_"+ov.getName()+"_", "_"+ovNameToLiteralMap.get(ov.getName()).getInstanceName()+"_");
+				if (ovNameToLiteralMap.containsKey(ov.getName())) {
+					if (!ov.getName().equals(ovProblematic.getName())) {
+						// substitute occurrences of ov with the value. Because I added underscores in both sides, OVs are guaranteed to have underscores in both sides.
+						name = name.replace("_"+ov.getName()+"_", "_"+ovNameToLiteralMap.get(ov.getName()).getInstanceName()+"_");
+					} else  { // this is the unknown ov
+						// substitute with entity associated with the type of unknown ov
+						name = name.replace("_"+ov.getName()+"_", 
+								"_"+ov.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getObjectEntityByType(ov.getValueType()).getName()+"_");
+					}
 				}
 			}
 			// remove the underscores inserted before considering the OVs
@@ -272,12 +311,12 @@ public class ContextFatherSSBNNode {
 		}
 		
 		// avoid duplicate name, because name is the primary identifier of a node in UnBBayes
-		if (pnet.getNode(name) != null) {	
-			// generate a new name, by adding a new number after the name
-			int i = 1;
-			while (pnet.getNode(name + "_" + i) != null) {i++;}	// find a number which was not used yet
-			name = name + "_" + i;
-		}
+//		if (pnet.getNode(name) != null) {	
+//			// generate a new name, by adding a new number after the name
+//			int i = 1;
+//			while (pnet.getNode(name + "_" + i) != null) {i++;}	// find a number which was not used yet
+//			name = name + "_" + i;
+//		}
 		
 		return name;
 	}
@@ -302,11 +341,15 @@ public class ContextFatherSSBNNode {
 		if(!isCptGenerated()){
 			
 			PotentialTable cpt = probNode.getProbabilityFunction();
-			cpt.addVariable(probNode);
 			
-			float probabilityOfEachState = 1.0f / possibleValues.size(); 
+			// the following was migrated to the moment the node is created or specified
+			if (cpt.getVariableIndex(probNode) < 0) {	// avoid duplicate entry
+				cpt.addVariable(probNode);
+			}
 			
-			for(int i = 0; i < possibleValues.size(); i++){
+			float probabilityOfEachState = 1.0f / probNode.getStatesSize(); 
+			
+			for(int i = 0; i < cpt.tableSize(); i++){
 				cpt.setValue(i, probabilityOfEachState); 	
 			}
 
@@ -329,9 +372,11 @@ public class ContextFatherSSBNNode {
 
 	public void addPossibleValue(ILiteralEntityInstance e){
 //		Debug.println(this.contextNode.getFormula() + " --> Acrescentado estado ao ssbn context node = "  + e.toString());
-		if(possibleValues != null){
+		if(possibleValues != null) {	
 			possibleValues.add(e);
-			probNode.appendState(e.getInstanceName());
+			if (!probNode.hasState(e.getInstanceName())) { // avoid duplicate entries
+				probNode.appendState(e.getInstanceName());
+			}
 		}
 //		setModified(true);
 	}
@@ -435,6 +480,32 @@ public class ContextFatherSSBNNode {
 	 */
 	public void setKnownOVs(Collection<OVInstance> knownOVs) {
 		this.knownOVs = knownOVs;
+	}
+
+
+	/**
+	 * This is the default value in {@link #ContextFatherSSBNNode(ProbabilisticNetwork, ContextNode, ProbabilisticNode, OrdinaryVariable, Collection)}
+	 * which will be used when delegating to {@link #ContextFatherSSBNNode(ProbabilisticNetwork, ContextNode, ProbabilisticNode, OrdinaryVariable, Collection, boolean)}
+	 * @return the isToAutoRename : if false, then {@link #probNode} will not be included to {@link #pnet} again if a node with same
+	 * name is already in {@link #pnet}. The node specified in {@link #probNode} will be ignored, and {@link #getProbNode()}
+	 * will return the node which was already in {@link #pnet}. If true, then a new unique name will be generated for {@link #probNode}.
+	 * @see #ContextFatherSSBNNode(ProbabilisticNetwork, ContextNode, ProbabilisticNode, OrdinaryVariable, Collection, boolean)
+	 */
+	public static boolean isToAutoRename() {
+		return isToAutoRename;
+	}
+
+
+	/**
+	 * This is the default value in {@link #ContextFatherSSBNNode(ProbabilisticNetwork, ContextNode, ProbabilisticNode, OrdinaryVariable, Collection)}
+	 * which will be used when delegating to {@link #ContextFatherSSBNNode(ProbabilisticNetwork, ContextNode, ProbabilisticNode, OrdinaryVariable, Collection, boolean)}
+	 * @param isToAutoRename the isToAutoRename to set : if false, then {@link #probNode} will not be included to {@link #pnet} again if a node with same
+	 * name is already in {@link #pnet}. The node specified in {@link #probNode} will be ignored, and {@link #getProbNode()}
+	 * will return the node which was already in {@link #pnet}. If true, then a new unique name will be generated for {@link #probNode}.
+	 * @see #ContextFatherSSBNNode(ProbabilisticNetwork, ContextNode, ProbabilisticNode, OrdinaryVariable, Collection, boolean)
+	 */
+	public static void setToAutoModifyDuplicateName(boolean isToAutoRename) {
+		ContextFatherSSBNNode.isToAutoRename = isToAutoRename;
 	}
 
 }

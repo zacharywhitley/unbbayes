@@ -343,7 +343,7 @@ public class CPTForSSBNNodeGenerator {
 
 			//Remove the temp node of the list of children of the node. 
 			for(SSBNNode parent: parentsForEntityList){
-				parent.getProbNode().getChildren().remove(tempNode.getProbNode()); 
+				parent.getProbNode().removeChildNode(tempNode.getProbNode()); 
 				parent.removeChildNode(tempNode); 
 			}
 
