@@ -388,7 +388,7 @@ public class Compiler implements ICompiler {
         		comp = new Compiler();
         	}
 		} catch (Exception e) {
-			Debug.println(Compiler.class, "Using default LPD compiler", e);
+//			Debug.println(Compiler.class, "Using default LPD compiler", e);
 			comp = new Compiler();
 		}
 		comp.setNode(node);
@@ -602,7 +602,7 @@ public class Compiler implements ICompiler {
 			try {
 				parent.turnArgumentsForMFrag(this.getSSBNNode().getResident().getMFrag());
 			} catch (Exception e) {
-				Debug.println(this.getClass(), parent.toString(), e);
+//				Debug.println(this.getClass(), parent.toString(), e);
 			}
 		}
 		
@@ -808,6 +808,7 @@ public class Compiler implements ICompiler {
 			try{
 				parent.turnArgumentsForMFrag(parentToPreviousMFragMap.get(parent));
 			} catch (Exception e) {
+//				e.printStackTrace();
 				Debug.println(this.getClass(), parent.toString(), e);
 			}
 		}
@@ -2879,8 +2880,8 @@ public class Compiler implements ICompiler {
 						this.increaseValidParentSetCount();
 					}
 					expressionWasEvaluated = true; // there was a valid header, so, the return value is valid
-				} else {
-					Debug.println(getClass(), "isSameOVsameEntity returned false for node " + getNode());
+//				} else {
+//					Debug.println(getClass(), "isSameOVsameEntity returned false for node " + getNode());
 				}
 				
 				// update leaf's evaluation variables
