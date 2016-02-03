@@ -6,7 +6,7 @@
 	<name>Multi-Entity Bayesian Network</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->
-	<version>1.13.12</version>
+	<version>1.14.13</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
@@ -331,7 +331,7 @@
 		<dependency>
 			<groupId>br.unb.cic</groupId>
 			<artifactId>unbbayes</artifactId>
-			<version>4.17.8</version>
+			<version>4.21.15</version>
 			<optional>false</optional>
 		</dependency>
 		</dependencies>

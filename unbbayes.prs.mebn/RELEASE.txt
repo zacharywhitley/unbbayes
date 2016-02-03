@@ -1,4 +1,4 @@
-UNBBAYES MEBN PLUGIN - VERSION 1.14.12
+UNBBAYES MEBN PLUGIN - VERSION 1.14.13
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
@@ -9,6 +9,7 @@ Number	Request ID	Summary
 BUG LIST		
 Number	Request ID	Summary
 12		132			Fixing a bug which was causing multiplexor nodes to be duplicated and having non-suggestive names.
+13    171     Fixing a bug in evaluation of MFrags with 2 input nodes referencing some resident node 
 
 UNBBAYES MEBN PLUGIN - VERSION 1.13.11
 ----------------------------
