@@ -146,6 +146,7 @@ public class OptionsDialog extends JDialog {
 		setSize(550, 470);
 		
 		this.setTitle(resource.getString("mebnOptionTitle"));
+		setLocationRelativeTo(owner);
 		
 		this.controller = controller;
 		this.buildPanels();
