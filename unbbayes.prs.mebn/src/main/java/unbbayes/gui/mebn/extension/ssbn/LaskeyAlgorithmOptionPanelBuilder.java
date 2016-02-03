@@ -4,6 +4,7 @@
 package unbbayes.gui.mebn.extension.ssbn;
 
 import java.awt.BorderLayout;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,6 @@ import javax.swing.event.ChangeListener;
 
 import unbbayes.gui.mebn.OptionsDialog;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
-import unbbayes.prs.mebn.ssbn.bayesballalgorithm.BayesBallSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.prs.mebn.ssbn.pruner.IPruner;
@@ -105,16 +105,14 @@ public class LaskeyAlgorithmOptionPanelBuilder extends JScrollPane implements IS
 		param.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
 		param.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
 		this.setParameters(param); 
-		
-//		setSSBNGenerator(new LaskeySSBNGenerator(param));
-		setSSBNGenerator(new BayesBallSSBNGenerator()); 
+		setSSBNGenerator(new LaskeySSBNGenerator(param));
 		
 		// assure the initialization of prune structure, using default pruners
 		List<IPruner> pruners = new ArrayList<IPruner>();
 		pruners.add(BARREN_NODE_PRUNER);	// barren node pruning is enabled by default
 		pruners.add(DSEPARATION_PRUNER);	// d-separated node pruning is enabled by default
 		this.setPruneStructure((PruneStructureImpl)PruneStructureImpl.newInstance(pruners));
-//		((LaskeySSBNGenerator)getSSBNGenerator()).setPruneStructure(this.getPruneStructure());
+		((LaskeySSBNGenerator)getSSBNGenerator()).setPruneStructure(this.getPruneStructure());
 	}
 	
 	
