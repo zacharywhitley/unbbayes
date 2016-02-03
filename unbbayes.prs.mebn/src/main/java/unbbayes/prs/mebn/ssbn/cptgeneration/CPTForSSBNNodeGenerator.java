@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.bn.PotentialTable;
@@ -137,7 +138,7 @@ public class CPTForSSBNNodeGenerator {
 		ssbnNode.changeArgumentsToResidentMFrag(); 
 		
 		for(SSBNNode parent: ssbnNode.getParents()){
-			parent.turnArgumentsForMFrag(ssbnNode.getResident().getMFrag()); 
+			parent.turnArgumentsForMFrag(ssbnNode.getResident().getMFrag());
 		}
 		
 		if (logManager != null) {
@@ -849,14 +850,14 @@ public class CPTForSSBNNodeGenerator {
 			return;
 		}
 		// iterate over all nodes
-		for (SSBNNode root : ssbn.getSsbnNodeList()) {
-			if(root.isCptAlreadyGenerated()){
+		for (SSBNNode node : ssbn.getSsbnNodeList()) {
+			if(node.isCptAlreadyGenerated()){
 				// ignore nodes returning true for isCptAlreadyGenerated
 				continue; 
 			}else{
-				generateCPT(root);
+				generateCPT(node);
 				// set flag to ignore next time
-				root.setCptAlreadyGenerated(true); 
+				node.setCptAlreadyGenerated(true); 
 			}
 		}
 	}
