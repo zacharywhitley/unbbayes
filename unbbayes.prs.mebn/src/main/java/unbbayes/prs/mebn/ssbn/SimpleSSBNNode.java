@@ -36,18 +36,21 @@ public class SimpleSSBNNode implements INode {
 	private List<INode> children; // we need to store the child nodes to test adjacency
 	private List<SimpleContextNodeFatherSSBNNode> contextParents; 
 	
-	private OrdinaryVariable                    ovArray[];       //ordinary variables for the home mfrag (The order of the resident node)
-	private ILiteralEntityInstance               entityArray[];   //evaluation of the ov  
-	private Map<MFrag, OrdinaryVariable[]>      ovArrayForMFrag; //correspondency between the ov of the home mFrag with the ov of the external MFrags. 
+	private OrdinaryVariable                    ovArray[];       //ordinary variables for the home MFrag 
+	private ILiteralEntityInstance              entityArray[];   //values for each ordinary variable  
+	private Map<MFrag, OrdinaryVariable[]>      ovArrayForMFrag; //correspondence between ov of the Home mFrag with the ov of the input MFrags. 
 
-	private Entity state;	//if state != null this node is a finding
+	private Entity state;	//if <<state != null>> this node is a finding
 	
+	//TODO This class don't need a reference for a ProbabilisticNode. 
+	//Is necessary same changes because getProbNode is used in SSBN addFindings method 
 	private ProbabilisticNode probNode = null; 
 	
 	private boolean defaultDistribution = false; 
 	private boolean evaluatedForHomeMFrag = false; 
 	
 	private int stepsForChainNodeToReachMainNode = 0;	// values <= 0 indicate that this node does not belong to a chain
+	
 	
 	protected SimpleSSBNNode(ResidentNode residentNode){
 		
@@ -72,6 +75,7 @@ public class SimpleSSBNNode implements INode {
 		}
 		
 		entityArray = new ILiteralEntityInstance[residentNode.getOrdinaryVariableList().size()]; 
+		
 		ovArrayForMFrag = new HashMap<MFrag, OrdinaryVariable[]>(); 
 		
 	}
@@ -83,8 +87,8 @@ public class SimpleSSBNNode implements INode {
 	/**
 	 * Two SimpleSSBNNode are equals if: 
 	 * 
-	 * 1. It referes to the same Resident Node. 
-	 * 2. The instanciated entity for each ordinary variable are the same. 
+	 * 1. It refers to the same Resident Node. 
+	 * 2. The instantiated entity for each ordinary variable are the same. 
 	 *
 	 */
 	@Override
@@ -138,7 +142,11 @@ public class SimpleSSBNNode implements INode {
 					ret+= "(";
 					ret+= ovArray[i].getName();
 					ret+= ","; 
-					ret+= entityArray[i].getInstanceName(); 
+					if(entityArray[i] != null){
+						ret+= entityArray[i].getInstanceName();
+					}else{
+						ret+="?"; 
+					}
 					ret+= ")"; 
 				}
 			} catch (Exception e) {
@@ -246,10 +254,7 @@ public class SimpleSSBNNode implements INode {
 		if(!contextParents.contains(contextNodeParent)){
 			this.contextParents.add(contextNodeParent);
 		}
-		
 	}
-
-	
 	
 	
 	// OV AND ENTITIES METHODS
@@ -290,8 +295,12 @@ public class SimpleSSBNNode implements INode {
 		return entity; 
 	}
 	
-	public Map<MFrag, OrdinaryVariable[]> getOvArrayForMFrag() {
-		return ovArrayForMFrag;
+	public OrdinaryVariable[] getOvArrayForMFrag(MFrag mFrag) {
+		return ovArrayForMFrag.get(mFrag);
+	}
+	
+	public void setOVArrayForMFrag(MFrag mFrag, OrdinaryVariable[] ovArray){
+		this.ovArrayForMFrag.put(mFrag, ovArray); 
 	}
 
 	/*
@@ -349,16 +358,44 @@ public class SimpleSSBNNode implements INode {
 		return this.children;
 	}
 
+	public List<INode> getParentNodes() {
+		return (List)this.getParents();
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#removeChildNode(unbbayes.prs.INode)
+	 */
+	public void removeChildNode(INode child) {
+		this.children.remove(child);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#removeParentNode(unbbayes.prs.INode)
+	 */
+	public void removeParentNode(INode parent) {
+		this.parents.remove(parent);
+	}	
+	
+	public void setChildNodes(List<INode> children) {
+		this.children = children;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.INode#setParentNodes(java.util.List)
+	 */
+	public void setParentNodes(List<INode> parents) {
+		this.parents = (List)parents;
+	}
+	
 	public String getDescription() {
 		return this.toString();
 	}
 
 	public String getName() {
 		return this.toString();
-	}
-
-	public List<INode> getParentNodes() {
-		return (List)this.getParents();
 	}
 
 	/**
@@ -384,14 +421,6 @@ public class SimpleSSBNNode implements INode {
 		return this.getResidentNode().getType();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see unbbayes.prs.INode#removeChildNode(unbbayes.prs.INode)
-	 */
-	public void removeChildNode(INode child) {
-		this.children.remove(child);
-	}
-
 	/**
 	 * @deprecated
 	 */
@@ -399,23 +428,11 @@ public class SimpleSSBNNode implements INode {
 		throw new java.lang.UnsupportedOperationException("removeLastState");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see unbbayes.prs.INode#removeParentNode(unbbayes.prs.INode)
-	 */
-	public void removeParentNode(INode parent) {
-		this.parents.remove(parent);
-	}
-
 	/**
 	 * @deprecated
 	 */
 	public void removeStateAt(int index) {
 		throw new java.lang.UnsupportedOperationException("removeStateAt");
-	}
-
-	public void setChildNodes(List<INode> children) {
-		this.children = children;
 	}
 
 	/**
@@ -430,14 +447,6 @@ public class SimpleSSBNNode implements INode {
 	 */
 	public void setName(String name) {
 		throw new java.lang.UnsupportedOperationException("setName");
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see unbbayes.prs.INode#setParentNodes(java.util.List)
-	 */
-	public void setParentNodes(List<INode> parents) {
-		this.parents = (List)parents;
 	}
 
 	/**

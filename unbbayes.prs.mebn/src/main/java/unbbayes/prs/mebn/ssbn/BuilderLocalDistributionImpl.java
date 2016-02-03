@@ -1,11 +1,13 @@
 package unbbayes.prs.mebn.ssbn;
 
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.cptgeneration.CPTForSSBNNodeGenerator;
 import unbbayes.prs.mebn.ssbn.cptgeneration.CPTForSSBNNodeGeneratorBuilder;
@@ -40,7 +42,7 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 	private ICPTForSSBNNodeGeneratorBuilder cptForSSBNNodeGeneratorBuilder = new CPTForSSBNNodeGeneratorBuilder();	
 	
 	/***
-	 *We need to have at leat one visible contructor to extend this class.
+	 *We need to have at least one visible constructor to extend this class.
 	 */
 	protected BuilderLocalDistributionImpl(){
 		
@@ -107,6 +109,23 @@ public class BuilderLocalDistributionImpl implements IBuilderLocalDistribution {
 			if (logManager != null) {
 				logManager.skipLine();
 			}
+			
+//CODIGO DEBUG 
+//			System.out.println("Arguments for MFrag: ");
+//			System.out.println("---------------------");
+//			System.out.println("");
+//			for(SSBNNode ssbnNode: listSSBNNode){
+//				System.out.println("Node:" + ssbnNode.toString());
+//				Map<MFrag, List<OVInstance>> mapArgumentsForMFrag = ssbnNode.getArgumentsForMFragMap(); 
+//				for(MFrag mFrag: mapArgumentsForMFrag.keySet()){
+//					System.out.println("  MFrag:" + mFrag.getName());
+//					for(OVInstance ovInstance: ssbnNode.getArgumentsForMFrag(mFrag)){
+//						System.out.println("     OVInstance = " + ovInstance.toString());
+//					}
+//				}
+//				System.out.println("");
+//			}
+//			
 			
 		} catch (SSBNNodeGeneralException e) {
 			e.printStackTrace();

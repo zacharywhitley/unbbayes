@@ -45,14 +45,14 @@ public class Query {
 	private ProbabilisticNode probabilisticNode = null; 
 	
 	/*
-	 * Note: For while have two versions of the Query's constructor for mantain the 
-	 * conpatibility for the GIA's Algorithm version and for the Laskey's 
-	 * algorithm version. Solve this after do the refactory in the Gia version. 
+	 * Note: For while have two versions of the Query's constructor for keep the 
+	 * compatibility for the GIA's Algorithm version and for the Laskey's 
+	 * algorithm version. Solve this after do the refactory in the GIA version. 
 	 */
 	
 	/**
 	 * Default query.
-	 * This version is used in Gia's SSBN Algorithm 
+	 * This version is used in GIA's SSBN Algorithm 
 	 */
 	@Deprecated
 	public Query(KnowledgeBase kb, SSBNNode queryNode, MultiEntityBayesianNetwork mebn) {

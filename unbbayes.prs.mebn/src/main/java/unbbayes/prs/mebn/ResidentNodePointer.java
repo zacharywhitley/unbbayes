@@ -27,10 +27,11 @@ import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 
 /** 
- * Esta classe funciona como um ponteiro para um n� residente, sendo
- * os argumentos alterados para outro conjunto de v�riaveis ordin�rias. 
  * 
- * @author Laecio Lima dos Santos
+ * This class work as a pointer to the resident node, setting the correspondent
+ * arguments into the input node. 
+ * 
+ * @author Laecio Lima dos Santos (laecio@gmail.com) 
  *
  */
 
@@ -39,21 +40,16 @@ public class ResidentNodePointer {
 	private ResidentNode residentNode; 
 
 	/*
-	 * O vetor de vari�veis ordin�rias deve possuir 
-	 * uma correspond�ncia com a lista de vari�veis ordin�rias do n� 
-	 * residente do qual ela � input. A correspondencia deve ser da 
-	 * seguinte forma:
-	 * -> Cada elemento com indice i do vetor do n� de input deve ser 
-	 * do mesmo tipo que o elemento de indice i do vetor do n� residente
-	 * -> O vetor do n� de input tem o mesmo tamanho da lita do n� residente. 
-	 * 
-	 * Para tal o vetor <typesOfOrdinaryVariableList> lista os tipos da lista
-	 * de OV do n� residente, enquanto os elementos do vetor <ordinaryVariableList>
-	 * devem sempre corresponder ao tipo do outro vetor.  
+	 * This vector contains the ordinary variables of the input nodes. The 
+	 * vector should have a correspondence with the arguments of the resident 
+	 * node: 
+	 * -> the element of index i of the input node vector should be of the same
+	 *    type of the element of the index i in the resident node vector
+	 * -> the input node argument vector have the same size of the argument vector
+	 *    of the resident node 
 	 */
 	
 	private OrdinaryVariable ordinaryVariableList[]; 	
-	
 	private Type typesOfOrdinaryVariableList[]; 
 	
 	private final int numberArguments; 
@@ -76,6 +72,7 @@ public class ResidentNodePointer {
 		residentNode.addResidentNodePointer(this); 
 		
 		numberArguments = residentNode.getOrdinaryVariableList().size(); 
+		
 		typesOfOrdinaryVariableList = new Type[numberArguments]; 
 	    ordinaryVariableList = new OrdinaryVariable[numberArguments]; 
 	    

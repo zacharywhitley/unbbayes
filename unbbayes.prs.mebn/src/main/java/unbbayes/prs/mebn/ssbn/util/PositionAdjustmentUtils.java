@@ -67,7 +67,7 @@ public class PositionAdjustmentUtils {
 		InfoNode infoNode = new InfoNode(pn); 
 		infoNode.setLevel(initialLevel); 
 		infoNetwork.addInfoNode(infoNode); 
-//		Debug.println("InfoNode: " + pn + " Level:" + initialLevel);
+//		Debug.println("InfoNode: " + pn + " Level:" + initialLevel + " - Num Parents: " + pn.getParents().size());
 		
 		initialLevel++;
 		for(int i=0; i < pn.getParents().size(); i++){

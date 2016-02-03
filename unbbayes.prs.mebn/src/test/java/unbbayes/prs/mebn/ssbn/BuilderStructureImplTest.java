@@ -412,7 +412,7 @@ public class BuilderStructureImplTest extends TestCase{
 			e.printStackTrace();
 		} 
 		
-		assertEquals(true, mFragInstance.isUseDefaultDistribution()); 
+		assertEquals(true, mFragInstance.isUsingDefaultDistribution()); 
 		
 		System.out.println("End the evaluation");
 		System.out.println("-------------------------------------------------\n\n");
@@ -448,7 +448,7 @@ public class BuilderStructureImplTest extends TestCase{
 			e.printStackTrace();
 		} 
 		
-		assertEquals(true, mFragInstance.isUseDefaultDistribution()); 
+		assertEquals(true, mFragInstance.isUsingDefaultDistribution()); 
 		
 		System.out.println("End the evaluation");
 		System.out.println("-------------------------------------------------\n\n");

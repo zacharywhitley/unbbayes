@@ -10,7 +10,6 @@ import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.Argument;
-import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
@@ -214,7 +213,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		node.setMFragInstance(mFragInstance); 
 		
-		//Evaluate the mFragInstances and create the nodes of its.
+		//Evaluate the mFragInstances and create its nodes.
 		evaluateMFragInstance(mFragInstance, node); 
 		
 		node.setFinished(true);
@@ -298,12 +297,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 * <b>
 	 * 
 	 * Pre-Requisites: <b>
-	 * The context node already are evaluated. <b>
+	 * Context nodes already are evaluated. <b>
 	 * 
 	 * Pos-Requisites: <b>
-	 * set the mFragInstance of the node<b>
+	 * Set the mFragInstance of the node<b>
 	 * Set the node how finished<b>
-	 * set the mFragInstance how finished (all nodes parents necessary are generated)<b>
+	 * Set the mFragInstance how finished (all nodes parents necessary are generated)<b>
 	 * 
 	 * Notes: <b>
 	 * - The evaluation of the recursivity should be in this method. 
@@ -325,12 +324,11 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		// Step 1: Verify if node is a finding 
 		//------------------------------------------------------------------------------
 		
-		IResidentNode resident = node.getResidentNode(); 
-		
 		List<OVInstance> argumentList = new ArrayList<OVInstance>(); 
 		
 		for(int i = 0; i < node.getOvArray().length; i++){
-			argumentList.add(OVInstance.getInstance(node.getOvArray()[i], node.getEntityArray()[i])); 
+			argumentList.add(OVInstance.getInstance(node.getOvArray()[i], 
+					node.getEntityArray()[i])); 
 		}
 		
 		StateLink exactValue = kb.searchFinding(
@@ -342,9 +340,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		 * a query or a node that influence the query. 
 		 */
 		if(exactValue!= null){
-			//The node is a finding... 
 			node.setState(exactValue.getState());
-			ssbn.addFindingToTheFindingList(node); 
+			ssbn.addFindingToFindingList(node); 
 			
 			if (logManager != null) {
 				logManager.printText(level4, false, " -> Node " + node + 
@@ -359,14 +356,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		//If the context node of the MFrag don't are evaluated, the creation of 
 		//the parents isn't possible
-		if(mFragInstance.isUseDefaultDistribution()){
-			
+		if(mFragInstance.isUsingDefaultDistribution()){
 			if (logManager != null) {
 				logManager.printText(level4, false, 
-						" -> Node can't be evaluated: mfrag using default distribution");
+						" -> Node can't be evaluated: MFrag using default distribution");
 			}
 			return; 
-		
 		}
 		
 		OrdinaryVariable[] ovFilledArray = node.getOvArray(); 
@@ -376,8 +371,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			logManager.printText(level4, false, " 1) Evaluate the resident node parents");
 		}
 		
-		for(ResidentNode residentNodeParent: resident.getResidentNodeFatherList()){
+		for(ResidentNode residentNodeParent: node.getResidentNode().getResidentNodeFatherList()){
 			
+			//CREATION OF NEW NODES: POINT 1/4
 			List<SimpleSSBNNode> createdNodesList = createParents(node, 
 					ovFilledArray, entityFilledArray, residentNodeParent);
 			
@@ -387,7 +383,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 					residentNodeParent);
 			}
 			
-			int count = 0; 
+			int count = 0;
+			
+			//Evaluate each new node created into the MFrag Instance
 			for(SimpleSSBNNode newNode: createdNodesList){
 				if (logManager != null) {
 					logManager.printText(level4, false, "Evaluate " + count + " - "+ newNode);
@@ -406,15 +404,17 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			logManager.printText(level4, false, " 2) Evaluate the input node parents");
 		}
 		
-		for(InputNode inputNodeParent: resident.getParentInputNodesList()){
+		for(InputNode inputNodeParent: node.getResidentNode().getParentInputNodesList()){
 			
-			if(inputNodeParent.getResidentNodePointer().getResidentNode().equals(resident) ){
-				//Special case: the recursivity.
+			//RECURSIVITY 
+			
+			if(inputNodeParent.getResidentNodePointer().getResidentNode().equals(node.getResidentNode()) ){
+				
 				if (logManager != null) {
-					logManager.printText(level4, false, " Recursivity treatment: " + resident);
+					logManager.printText(level4, false, " Recursivity treatment: " + node.getResidentNode());
 				}
 				
-				// check if there is any argument tagged as "ordenable"
+				// check if there is any argument tagged as "orderable"
 				boolean isOrdered = false;
 				for (Argument arg : inputNodeParent.getArgumentList()) {
 					if (arg.getOVariable().getValueType().hasOrder()) {
@@ -424,19 +424,26 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				}
 				
 				if (isOrdered) {
-					// assume that one of the arguments has linear order property (i.e. automatically assume T0 < T1 < T2 < ...)
-					SimpleSSBNNode newNode = createRecursiveParents(node, ovFilledArray, 
-							entityFilledArray, inputNodeParent);
+					//CREATION OF NEW NODES: POINT 2/4 
+					//Assume that one of the arguments has linear order property 
+					// (i.e. automatically assume T0 < T1 < T2 < ...)
+					SimpleSSBNNode newNode = createRecursiveParents(node, 
+							ovFilledArray, 
+							entityFilledArray, 
+							inputNodeParent);
 					
 					if(newNode != null){
 						evaluateNodeInMFragInstance(mFragInstance, newNode); 
 					}
 				} else {
-					// treat it the same way of any other node. Users must use context nodes and findings in order to guarantee acyclic network
+					//CREATION OF NEW NODES: POINT 3/4
+					//Treat it the same way of any other node. 
+					//Users must use context nodes and findings in order to guarantee acyclic network
 					createParents(node, ovFilledArray,  entityFilledArray, inputNodeParent);
 				}
 				
 			}else{
+				//CREATION OF NEW NODES: POINT 4/4
 				createParents(node, ovFilledArray, entityFilledArray, inputNodeParent);	
 			}
 			
@@ -466,7 +473,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			OrdinaryVariable[] ovFilledArray, ILiteralEntityInstance[] entityFilledArray,
 			ResidentNode residentNodeParent) throws ImplementationRestrictionException, SSBNNodeGeneralException {
 		
-		//fix a unknown Bug (mystic)... 
+		//TODO remove this fix for a unknown Bug (mystic)... 
 		if(residentNodeParent.equals(node.getResidentNode())){
 			return new ArrayList<SimpleSSBNNode>(); 
 		}
@@ -478,6 +485,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 
 	/**
 	 * Create the SSBNNodes parents for a node (version when the parent is a input node)
+	 * Note: this method don't treat recursivity. 
 	 * 
 	 * @param node                    Node for witch the parents will be evaluated
 	 * @param ovFilledArray           Ordinary variables that already are instantiated
@@ -509,8 +517,10 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 * @throws SSBNNodeGeneralException 
 	 */	
 	private  List<SimpleSSBNNode> createParents(SimpleSSBNNode node,
-			OrdinaryVariable[] ovFilledArray, ILiteralEntityInstance[] entityFilledArray,
-			JacketNode nodeParent) throws ImplementationRestrictionException, SSBNNodeGeneralException {
+			OrdinaryVariable[] ovFilledArray, 
+			ILiteralEntityInstance[] entityFilledArray,
+			JacketNode nodeParent) 
+					throws ImplementationRestrictionException, SSBNNodeGeneralException {
 		
 //		if(internalDebug){
 //			Debug.println("[In] CreateParents");
@@ -614,7 +624,8 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		 *                                    
 		 *  Then childOfChain is going to store the last child in the chain.
 		 *  We store the last child, because the child is always created before the parents in the chain 
-		 *  (in the above example, E is created before X, which is created before Y)
+		 *  (in the above example, E is created before X, which is c
+		 *  reated before Y)
 		 */
 		SimpleSSBNNode childOfChain = node;	
 		
@@ -624,13 +635,15 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		Iterator<String[]> iterator = possibleCombinationsForOvFaultList.iterator();
 		
 		while (iterator.hasNext()) {	
-			// using iterator instead of for(T obj : iterable), because there is a place where we need to call iterator.hasNext() inside the loop
+			// using iterator instead of for(T obj : iterable), because there 
+			//is a place where we need to call iterator.hasNext() inside the loop
 			String[] possibleCombination = iterator.next();
-			
-//			Debug.println("Combination=" + possibleCombination);
 			
 			SimpleSSBNNode newNode = SimpleSSBNNode.getInstance(
 					nodeParent.getResidentNode()); 
+			
+			OrdinaryVariable[] ovArrayMFrag = 
+					new OrdinaryVariable[nodeParent.getResidentNode().getOrdinaryVariableList().size()]; 
 			
 			//1. Add the ovInstances of the children that the father also have 
 			for(int i = 0; i < node.getOvArray().length; i++){
@@ -639,14 +652,24 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				//should recover the ordinary variable of the RX1's HomeMFrag that
 				//correspond to the OV of the IX1's MFrag and then set it to the 
 				//SSBNNode. 
-				OrdinaryVariable correspondentOV = 
+				
+				OrdinaryVariable residentNodeOV = 
 					nodeParent.getCorrespondentOrdinaryVariable(node.getOvArray()[i]);
 				
-				if(correspondentOV != null){
+				if(residentNodeOV != null){
 					newNode.setEntityForOv(
-							correspondentOV, 
+							residentNodeOV, 
 							node.getEntityArray()[i]); 
+					
 				}
+				
+				if(nodeParent.isInputNode()){
+					int index = nodeParent.getOrdinaryVariableIndex(node.getOvArray()[i]); 
+					if(index!= -1){
+						ovArrayMFrag[index] = node.getOvArray()[i];
+					}
+				}
+				
 			}
 			
 			//2. Create the new OVInstances for the combination
@@ -656,9 +679,15 @@ public class BuilderStructureImpl implements IBuilderStructure{
 					nodeParent.getCorrespondentOrdinaryVariable(ovFaultForNewNodeList.get(index));
 				
 				newNode.setEntityForOv(
-						correspondentOV, 
-						LiteralEntityInstance.getInstance(possibleCombination[index], 
+						correspondentOV,
+						LiteralEntityInstance.getInstance(
+								possibleCombination[index],
 								ovFaultForNewNodeList.get(index).getValueType())); 
+				
+				if(nodeParent.isInputNode()){
+					int index2 = nodeParent.getOrdinaryVariableIndex(ovFaultForNewNodeList.get(index)); 
+					ovArrayMFrag[index2] = ovFaultForNewNodeList.get(index); 
+				}				
 			}
 			
 			if(numberNodes > maxNumberNodes){
@@ -666,6 +695,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				throw new SSBNNodeGeneralException("Max of nodes created: " + numberNodes); 
 			}
 			
+			//------- CODE EXECUTED ONLY WHEN THE CHAIN STRATEGY IS ACTIVE ---------
 			// check whether we should create chains in order to limit the quantity of parents per node
 			if (node.getResidentNode().isToLimitQuantityOfParentsInstances() 
 					&& (childOfChain.getParentNodes().size() + 1 >= MAX_NUM_PARENTS_IN_CHAIN) 
@@ -677,7 +707,13 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				// do not forget to add new node into the list of nodes created in this method
 				ssbnCreatedList.add(childOfChain);	
 			}
+			
 			newNode = addNodeToMFragInstance(childOfChain, newNode); 
+			
+			//Set reference for the ordinary variables list in input MFrag 
+			if(nodeParent.isInputNode()){
+				newNode.setOVArrayForMFrag(node.getMFragInstance().getMFragOrigin(), ovArrayMFrag);
+			}
 			
 			ssbnCreatedList.add(newNode); 
 		}
@@ -703,7 +739,9 @@ public class BuilderStructureImpl implements IBuilderStructure{
 
 	/**
 	 * 
-	 * If a node is going to have too many parents, and the LPD of node can be represented as a chain like the following network: <br/>
+	 * If a node is going to have too many parents, and the LPD of node 
+	 * can be represented as a chain like the following network: <br/>
+	 * 
 	 * Suppose E is a boolean OR: <br/>
 	 * Parents: A B C D	<br/>
 	 * Child: E                  <br/>
@@ -722,20 +760,29 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	 * <br/>                                    
 	 * This value indicates the maximum quantity of parents for nodes
 	 * E, X and Y in the above example.
-	 * @param childOfChain : this node is node E or X in the above example (i.e. node to be a child of a node in a chain).
-	 * @param newParent :  this is the new parent node being currently created. In the above example, if childOfChain is
-	 * E, then this value should be D. If childOfChain is X, then this value shall be C. If childOfChain, then this value
-	 * shall be B (or alternatively, A). It assumes that the array of OVs and its instances are already filled
-	 * @return : node X in the above example if childOfChain is the node E of above example. If childOfChain
-	 * is the node X, then this method returns the node Y of the example.
-	 * @throws SSBNNodeGeneralException : when the quantity of nodes created by this object exceeds {@link #maxNumberNodes}
+	 * @param childOfChain : this node is node E or X in the above example 
+	 *        (i.e. node to be a child of a node in a chain).
+	 * @param newParent :  this is the new parent node being currently created. 
+	 *        In the above example, if childOfChain is E, then this value should 
+	 *        be D. If childOfChain is X, then this value shall be C. If childOfChain, 
+	 *        then this value shall be B (or alternatively, A). 
+	 *        It assumes that the array of OVs and its instances are already filled
+	 * @return node X in the above example if childOfChain is the node E of 
+	 *        above example. If childOfChain is the node X, then this method 
+	 *        returns the node Y of the example.
+	 * @throws SSBNNodeGeneralException when the quantity of nodes created by 
+	 *        this object exceeds {@link #maxNumberNodes}
 	 */
-	protected SimpleSSBNNode createNodeInAChain(SimpleSSBNNode childOfChain, SimpleSSBNNode newParent) throws SSBNNodeGeneralException {
+	protected SimpleSSBNNode createNodeInAChain(SimpleSSBNNode childOfChain, 
+			SimpleSSBNNode newParent) throws SSBNNodeGeneralException {
+		
 		SimpleSSBNNode newNode = SimpleSSBNNode.getInstance(childOfChain.getResidentNode()); 
 //		SimpleSSBNNode newNode = SimpleSSBNNode.getInstance(newParent.getResidentNode());
 		
-		// add one level to the childOfChain (if childOfChain was not a "virtual" node in a chain, it is going to set to 1).
-		newNode.setStepsForChainNodeToReachMainNode(childOfChain.getStepsForChainNodeToReachMainNode() + 1);
+		// add one level to the childOfChain (if childOfChain was not a "virtual" 
+		// node in a chain, it is going to set to 1).
+		newNode.setStepsForChainNodeToReachMainNode(
+				childOfChain.getStepsForChainNodeToReachMainNode() + 1);
 		
 		// copy some default values from original node
 		newNode.setMFragInstance(childOfChain.getMFragInstance());
@@ -749,11 +796,12 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		// fill OVs with instances
 		
 		for(int i = 0; i < childOfChain.getOvArray().length; i++){
-			// supposedly, new node contains the same OVs of  childOfChain
+			// supposedly, new node contains the same OVs of childOfChain
 			if ( (childOfChain.getOvArray()[i] != null) && (childOfChain.getEntityArray().length > i) ) {
 				newNode.setEntityForOv(childOfChain.getOvArray()[i], childOfChain.getEntityArray()[i]); 
 			} else {
-				Debug.println(getClass(), "Could not extract OV and its instances of node " + childOfChain + " for index " + i);
+				Debug.println(getClass(), "Could not extract OV and its instances of node "
+			    + childOfChain + " for index " + i);
 			}
 		}
 //		for(int i = 0; i < newParent.getOvArray().length; i++){
@@ -771,41 +819,48 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		return newNode;
 	}
 
-	//The format of the MFrag in the recursion is: 
-	//      INPUTNODE_A(NODE_A)(args) -> NODE_A (args)
-	//That follows: 
-	//       RESIDENTCHILD = NODE_A
-	// (RESIDENTCHILD is the reference of the input INPUTNODE_A
 	
-	private  SimpleSSBNNode createRecursiveParents(SimpleSSBNNode node,
+	/**
+	 * Create recursive parents of a node (only for nodes with only a ordereable 
+	 * ordinary variable). 
+	 * 
+	 * @param oldNode
+	 * @param ovFilledArray
+	 * @param entityFilledArray
+	 * @param inputNodeParent
+	 * @return
+	 * @throws ImplementationRestrictionException
+	 * @throws SSBNNodeGeneralException
+	 */
+
+	private  SimpleSSBNNode createRecursiveParents(SimpleSSBNNode oldNode,
 			OrdinaryVariable[] ovFilledArray, ILiteralEntityInstance[] entityFilledArray,
 			InputNode inputNodeParent) 
 	             throws ImplementationRestrictionException, 
 	                    SSBNNodeGeneralException {
 		
-		ResidentNode residentNode = node.getResidentNode(); 
+		ResidentNode residentNode = oldNode.getResidentNode(); 
 		
 		//1) FIND THE ENTITY ORDEREABLE 
-		List<OrdinaryVariable> ovOrdereableList = residentNode.getOrdinaryVariablesOrdereables();
-		
-		if(ovOrdereableList.size() > 1){
-			throw new ImplementationRestrictionException(
-					ImplementationRestrictionException.MORE_THAN_ONE_ORDEREABLE_VARIABLE);
+
+		if(residentNode.getOrdinaryVariablesOrdereables().size() != 1){
+			if(residentNode.getOrdinaryVariablesOrdereables().size() > 1){
+				throw new ImplementationRestrictionException(
+						ImplementationRestrictionException.MORE_THAN_ONE_ORDEREABLE_VARIABLE);
+			}else{
+				throw new ImplementationRestrictionException(
+						ImplementationRestrictionException.RV_NOT_RECURSIVE);
+			}
 		}
 		
-		if(ovOrdereableList.size() < 1){
-			throw new ImplementationRestrictionException(
-					ImplementationRestrictionException.RV_NOT_RECURSIVE);
-		}
-		
-		OrdinaryVariable ovOrdereable = ovOrdereableList.get(0); //Have only one element... 
+		OrdinaryVariable ovOrdereable = residentNode.getOrdinaryVariablesOrdereables().get(0); 
 		
 		//2) FIND THE PREVIOUS ELEMENT. 
 		ObjectEntity objectEntityOrdereable = residentNode.getMFrag().
                         getMultiEntityBayesianNetwork().getObjectEntityContainer().
                         getObjectEntityByType(ovOrdereable.getValueType()); 
 	
-		ILiteralEntityInstance ovOrdereableActualValue = node.getEntityForOv(ovOrdereable); 
+		ILiteralEntityInstance ovOrdereableActualValue = oldNode.getEntityForOv(ovOrdereable); 
 		OVInstance ovInstanceOrdereable = OVInstance.getInstance(ovOrdereable, ovOrdereableActualValue); 
 		
 		if(ovInstanceOrdereable == null){
@@ -833,29 +888,44 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			ILiteralEntityInstance ovOrdereablePreviusValue = 
 				LiteralEntityInstance.getInstance(prev.getName(), ovOrdereable.getValueType());
 
-			//3) Mount the father 
+			//3) BUILD THE FATHER 
 
-			/*
-			 * Note: a little restriction here: the parent and children nodes have to 
-			 * had the same arguments, with exception of the recursive argument. 
-			 * This keep the compatibility with the considerations of the previous
-			 * implemented algorithm.  
-			 */ 
-
+			// Note: the parent and children have to have the same arguments,  
+			// with exception of the recursive ordinary variable.  
+			// (This keep the compatibility with the considerations of the previous
+			// implemented algorithm).  
+			
 			SimpleSSBNNode newNode = SimpleSSBNNode.getInstance(residentNode); 
-			for(int i = 0; i < node.getOvArray().length; i++){
-				if(node.getOvArray()[i].equals(ovOrdereable)){
-					newNode.setEntityForOv(node.getOvArray()[i], ovOrdereablePreviusValue); 
+			
+			for(int i = 0; i < oldNode.getOvArray().length; i++){
+				
+				// The new node is build by the resident node, and not for 
+				// the input node. Because of this, its ordinary variable is the 
+				// ov of the resident node. The input node is only a trick for 
+				// model the recursion in the generative MFrag. 
+				
+				if(oldNode.getOvArray()[i].equals(ovOrdereable)){
+					newNode.setEntityForOv(oldNode.getOvArray()[i], ovOrdereablePreviusValue); 
 				}else{
-					newNode.setEntityForOv(node.getOvArray()[i], node.getEntityArray()[i]); 
+					newNode.setEntityForOv(oldNode.getOvArray()[i], oldNode.getEntityArray()[i]); 
 				}
+				
 			}
+			
+			//Set the ordinary variables for MFrag 
+			OrdinaryVariable[] ovArrayMFrag = 
+					new OrdinaryVariable[residentNode.getOrdinaryVariableList().size()];
+			
+			for(int i = 0; i < residentNode.getOrdinaryVariableList().size(); i++){
+				ovArrayMFrag[i] = inputNodeParent.getOrdinaryVariableByIndex(i); 
+			}
+			newNode.setOVArrayForMFrag(residentNode.getMFrag(), ovArrayMFrag);
 
 			if(numberNodes > maxNumberNodes){
 				//TODO define exception
 				throw new SSBNNodeGeneralException("Max of nodes created: " + numberNodes); 
 			}
-			newNode = addNodeToMFragInstance(node, newNode);
+			newNode = addNodeToMFragInstance(oldNode, newNode);
 
 			return newNode; 
 		
@@ -896,7 +966,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			throw new RuntimeException(e);
 		}
 		child.getMFragInstance().addSSBNNode(parent);
-		child.getMFragInstance().addEdge(new SimpleEdge(parent, child));
+//		child.getMFragInstance().addEdge(new SimpleEdge(parent, child));
 		
 		return parent;
 	
@@ -1002,6 +1072,14 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				return ov; 
 			}else{
 				return inputNode.getResidentNodePointer().getCorrespondentOrdinaryVariable(ov);
+			}
+		}
+		
+		public int getOrdinaryVariableIndex(OrdinaryVariable ov){
+			if(isResidentNode){
+				return residentNode.getOrdinaryVariableIndex(ov); 
+			}else{
+				return inputNode.getResidentNodePointer().getOrdinaryVariableIndex(ov);
 			}
 		}
 		

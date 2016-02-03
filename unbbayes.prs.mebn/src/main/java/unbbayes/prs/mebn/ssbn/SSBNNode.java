@@ -42,6 +42,7 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.util.Debug;
 
@@ -72,12 +73,11 @@ public class SSBNNode implements INode {
 	
 	private List<OVInstance> arguments = null;
 	
+	private List<OVInstance> argumentsResidentMFrag = null; 	
+	private Map<MFrag, List<OVInstance>> argumentsForMFrag = null; //For the same resident node only if node is recursive	
+	private MFrag currentlySelectedMFragByTurnArguments = null;	// currently chosen MFrag, by argumentsForMFrag
+	
 	private boolean isRecursive = false; 
-	private List<OVInstance> argumentsResidentMFrag; 
-	
-	/** @deprecated This is wrong, because it fails when there are 2 or more input nodes (of same domain resident node) in the same MFrag */
-	private Map<MFrag, List<OVInstance>> argumentsForMFrag; 
-	
 	
 	private List<SSBNNode> parents = null;
 	private Collection<SSBNNode> children = null; 
@@ -101,9 +101,6 @@ public class SSBNNode implements INode {
 		unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());	
 	
 	private boolean permanent; //Indicate if the node is permanent or only a node test for the search of findings
-	
-	
-	private MFrag currentlySelectedMFragByTurnArguments = null;	// currently chosen MFrag, by argumentsForMFrag
 	
 	// Constructors	
 	
@@ -361,15 +358,15 @@ public class SSBNNode implements INode {
 	 * @param entityInstanceName: name of a OV instance (ex. !ST4, !Z0, !T1 ...)
 	 */
 	public void addArgument(OrdinaryVariable ov, String entityInstanceName) throws SSBNNodeGeneralException {
+		
+		//TODO put verification if the current argument list is the resident 
+		
 		if (entityInstanceName.length() <= 0) {
-			return;
+			throw new SSBNNodeGeneralException(); 
 		}
 	
 		OVInstance ovInstance = OVInstance.getInstance( ov, LiteralEntityInstance.getInstance(entityInstanceName , ov.getValueType())); 
-		this.arguments.add(ovInstance);
-	    this.argumentsResidentMFrag.add(ovInstance); 
-	    
-		updateProbabilisticNodeName(); 
+		addArgument(ovInstance);
 	}
 	
 	/**
@@ -377,6 +374,7 @@ public class SSBNNode implements INode {
 	 * @param ovInstance
 	 */
 	public void addArgument(OVInstance ovInstance){
+			
 		this.arguments.add(ovInstance); 
 	    this.argumentsResidentMFrag.add(ovInstance); 
 	    
@@ -399,7 +397,7 @@ public class SSBNNode implements INode {
 		
 		OVInstance ovInstance = OVInstance.getInstance( ov, LiteralEntityInstance.getInstance(entityInstanceName , ov.getValueType())); 
 		this.arguments.add(pos, ovInstance);
-		this.argumentsResidentMFrag.add(ovInstance); 
+		this.argumentsResidentMFrag.add(pos, ovInstance); 
 		
 		updateProbabilisticNodeName(); 
 	}
@@ -1044,6 +1042,7 @@ public class SSBNNode implements INode {
 	//------------------- ORDINARY METHODS --------------------------------
 
 	/**
+	 * Set arguments for the resident node. 
 	 * @param arguments the arguments to set
 	 */
 	public void setArguments(List<OVInstance> arguments) {
@@ -1412,11 +1411,15 @@ public class SSBNNode implements INode {
 	 * @param listArgumentsOfMFrag
 	 */
 	public void addArgumentsForMFrag(MFrag mFrag, List<OVInstance> listArgumentsOfMFrag){
+		
 		if (mFrag != null 
-				&& mFrag.equals(this.getResident().getMFrag())	// the new mfrag is the same as the resident's one
-				&& !(new HashSet<OVInstance>(this.argumentsResidentMFrag).equals(new HashSet<OVInstance>(listArgumentsOfMFrag)))) {
-			// We are trying to set arguments that are different to the resident's one, but we're using the same mfrag
-			// it indicates that this SSBN node is "immediate recursive" (an input node referencing a resident node within the same mfrag)
+				&& mFrag.equals(this.getResident().getMFrag())	// the new MFrag is the same as the resident's one
+				&& !(new HashSet<OVInstance>(this.argumentsResidentMFrag).equals(
+						new HashSet<OVInstance>(listArgumentsOfMFrag)))) {
+			// We are trying to set arguments that are different to the 
+			// resident's one, but we're using the same MFrag it indicates 
+			// that this SSBN node is "immediate recursive" 
+			// (an input node referencing a resident node within the same MFrag)
 			// we must actively set it as recursive
 			this.setRecursiveOVInstanceList(listArgumentsOfMFrag);
 			return;
@@ -1437,23 +1440,24 @@ public class SSBNNode implements INode {
 	}
 	
 	/**
-	 * Turn the arguemnts of the SSBNNode for the arguments that it should 
+	 * Turn the arguments of the SSBNNode for the arguments that it should 
 	 * have in the given mFrag
 	 * 
-	 * @return true if the arguments changed with sucess
-	 *         false if don't have arguments for the Mfrag (the arguments isn't 
+	 * @return TRUE if the arguments changed with success
+	 *         FALSE if don't have arguments for the MFrag (the arguments isn't 
 	 *         changed). 
-	 * @deprecated This is wrong, because it fails when there are 2 or more input nodes (of same domain resident node) in the same MFrag.
+	 *         
+	 * @deprecated This is wrong, because it fails when there are 2 or more 
+	 *             input nodes (of same domain resident node) in the same MFrag.
 	 */
-	public boolean turnArgumentsForMFrag(MFrag mFrag){
+	public void turnArgumentsForMFrag(MFrag mFrag) throws MEBNException{
 		
 		if(mFrag.equals(this.getResident().getMFrag())){
 			if(isRecursive){
 				arguments = argumentsForMFrag.get(mFrag);
 				this.setCurrentlySelectedMFragByTurnArguments(mFrag);
-				return true; 
 			}else{
-				return true; 
+				arguments = argumentsResidentMFrag;
 			}
 		}
 		else{
@@ -1461,15 +1465,24 @@ public class SSBNNode implements INode {
 			if(argumentsTemp != null){
 				arguments = argumentsTemp; 
 				this.setCurrentlySelectedMFragByTurnArguments(mFrag);
-				return true; 
 			}else{
-				return false; 
+				throw new MEBNException("Problem search for the arguments of MFrag!"); 
 			}
 		}
 	}
 	
+//NEW CODE	
+	public List<OVInstance> getArgumentsForMFrag(MFrag mFrag){
+		return argumentsForMFrag.get(mFrag); 
+	}
+	
+	public Map<MFrag, List<OVInstance>> getArgumentsForMFragMap(){
+		return argumentsForMFrag; 
+	}
+	
 	public void changeArgumentsToResidentMFrag(){
 		arguments = argumentsResidentMFrag; 
+		this.setCurrentlySelectedMFragByTurnArguments(this.getResident().getMFrag());
 	}
 
 	/*

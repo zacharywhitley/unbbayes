@@ -177,7 +177,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 		SSBN ssbn = new SSBN();
 		ssbn.setProbabilisticNetwork(queryNode.getProbabilisticNetwork()); 
-		ssbn.addQueryToTheQueryList(query); 
+		ssbn.addQueryToQueryList(query); 
 
 		ssbn.setWarningList(this.warningList); 
 

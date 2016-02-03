@@ -43,6 +43,10 @@ import unbbayes.util.Debug;
 /**
  * Implementation of the Laskey's SSBN Algorithm
  * 
+ * (Based on SSBN Algorithm proposed in
+ *  "MEBN - A language for first-order bayesian knowledges bases"
+ *  by Laskey, in Artificial Intelligence #172, 2008)  
+ *  
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  * 
  * @version 2010-05-19 - refactor to implement IMediatorAwareSSBNGenerator
@@ -269,7 +273,8 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 			ssbn.setLogManager(null);
 		}
 		
-		MultiEntityBayesianNetwork mebn = null; 
+		//We assume that all the queries is referent to the same MEBN
+		MultiEntityBayesianNetwork mebn = queryList.get(0).getMebn(); 
 
 		//log
 		ISSBNLogManager logManager = ssbn.getLogManager();
@@ -291,9 +296,6 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 		}
 		ssbn.setKnowledgeBase(knowledgeBase); 
 		
-		//We assume that all the queries is referent to the same MEBN
-		mebn = queryList.get(0).getMebn(); 
-		
 		//Parameters: 
 
 		IdentationLevel in = new IdentationLevel(null); 
@@ -314,7 +316,7 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 			
 			ssbnNode.setFinished(false); 
 			ssbn.addSSBNNodeIfItDontAdded(ssbnNode);
-			ssbn.addQueryToTheQueryList(query); 
+			ssbn.addQueryToQueryList(query); 
 			
 			if (logManager != null) {
 				logManager.printText(in1, false, " - " + ssbnNode); 
@@ -358,7 +360,7 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 						ssbnNode.setState(finding.getState()); 
 						ssbnNode.setFinished(false); 
 						
-						ssbn.addFindingToTheFindingList(ssbnNode); 
+						ssbn.addFindingToFindingList(ssbnNode); 
 					}
 				}
 			}

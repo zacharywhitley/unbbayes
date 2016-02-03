@@ -34,7 +34,7 @@ import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
 
 /**
- * Represent a MFrag instanciated for a set of entities and encapsule the state
+ * Represent a MFrag instantiated for a set of entities and encapsule the state
  * of evaluation of the context nodes of this MFrag for this set of entities. 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
@@ -48,10 +48,10 @@ public class MFragInstance {
 	
 	private MFrag mFragOrigin; 
 	
-	private boolean useDefaultDistribution; 
+	private boolean isUsingDefaultDistribution; 
 	
-	//Teorem: For the same set of ordinary variables instance values, 
-	//        the evaluation of the context node should be the same. 
+	//Theorem: For the same set of ordinary variables instance values, 
+	//         the evaluation of the context node should be the same. 
 	private OrdinaryVariable[] ovList; 
 	private SimpleContextNodeFatherSSBNNode[] contextForOVList; 
 	
@@ -60,7 +60,7 @@ public class MFragInstance {
 	//This three lists contains the evaluation of the MFrag: the nodes and the 
 	//edges generateds. 
 	private List<SimpleSSBNNode> ssbNodeList; 
-	private List<SimpleEdge> edgeList; 
+//	private List<SimpleEdge> edgeList; 
 	
 	private ContextNode[] contextNodeList; 
 	private ContextNodeEvaluationState[] contextNodeEvaluationStateList; 
@@ -100,7 +100,7 @@ public class MFragInstance {
 		this.entityTree = new EntityTree(); 
 		
 		this.ssbNodeList = new ArrayList<SimpleSSBNNode>(); 
-		this.edgeList = new ArrayList<SimpleEdge>(); 
+//		this.edgeList = new ArrayList<SimpleEdge>(); 
 		
 	}
 	
@@ -174,11 +174,11 @@ public class MFragInstance {
 	// GET AND SET'S METHODS
 	
 	public boolean isUsingDefaultDistribution() {
-		return useDefaultDistribution;
+		return isUsingDefaultDistribution;
 	}
 
 	public void setUseDefaultDistribution(boolean useDefaultDistribution) {
-		this.useDefaultDistribution = useDefaultDistribution;
+		this.isUsingDefaultDistribution = useDefaultDistribution;
 	}
 
 	public MFrag getMFragOrigin() {
@@ -323,10 +323,6 @@ public class MFragInstance {
 	public List<ContextNode> getContextNodeList(){
 		return Arrays.asList(contextNodeList); 
 	}
-	
-	public boolean isUseDefaultDistribution() {
-		return useDefaultDistribution;
-	}
 
 	public List<SimpleSSBNNode> getSSBNNodeList() {
 		return ssbNodeList;
@@ -336,13 +332,13 @@ public class MFragInstance {
 		this.ssbNodeList.add(ssbnNode);
 	}
 	
-	public List<SimpleEdge> getEdgeList() {
-		return edgeList;
-	}
+//	public List<SimpleEdge> getEdgeList() {
+//		return edgeList;
+//	}
 
-	public void addEdge(SimpleEdge edge) {
-		this.edgeList.add(edge);
-	}
+//	public void addEdge(SimpleEdge edge) {
+//		this.edgeList.add(edge);
+//	}
 
 	/**
 	 * An MFragInstance is marked how evaluated when all nodes are marked how 

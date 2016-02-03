@@ -242,7 +242,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 		//Evaluate this ordinary variables
 		for(OrdinaryVariable ov: ovDontFoundYetList){
 			//No context node about this ov... the value is unknown, we should 
-			//consider all possible values (use of Closed Word Assumption)
+			//consider all possible values (Closed Word Assumption)
 			if (logManager != null) {
 				logManager.printText(level4, false,"Evaluate IsA for OV " + ov.getName());
 			}
@@ -591,7 +591,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 				//TODO Algorith Error
 			}
 
-			if (!mFragInstance.isUseDefaultDistribution()) {
+			if (!mFragInstance.isUsingDefaultDistribution()) {
 				//test if the uncertainReferenceVariable is the OVFault
 				SimpleContextNodeFatherSSBNNode simpleContextNodeFather = null;
 				try{
