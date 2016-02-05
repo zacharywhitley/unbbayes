@@ -342,7 +342,7 @@ public class ContextFatherSSBNNode {
 			
 			PotentialTable cpt = probNode.getProbabilityFunction();
 			
-			// the following was migrated to the moment the node is created or specified
+			// TODO the following should be done at the moment the node is created
 			if (cpt.getVariableIndex(probNode) < 0) {	// avoid duplicate entry
 				cpt.addVariable(probNode);
 			}
