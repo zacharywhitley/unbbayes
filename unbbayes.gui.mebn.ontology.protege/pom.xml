@@ -122,16 +122,16 @@
 			<timezone>-5</timezone>
 		</contributor>
 	</contributors>
-	<scm>
-		<connection>
-			scm:svn:https://unbbayes.svn.sourceforge.net/svnroot/unbbayes/trunk/unbbayes.datamining
-		</connection>
-		<developerConnection>
-			scm:svn:https://unbbayes.svn.sourceforge.net/svnroot/unbbayes/trunk/unbbayes.datamining
-		</developerConnection>
-		<url>http://unbbayes.svn.sourceforge.net/viewvc/unbbayes/trunk/unbbayes.datamining
-		</url>
-	</scm>
+<!-- 	<scm> -->
+<!-- 		<connection> -->
+<!-- 			scm:svn:https://unbbayes.svn.sourceforge.net/svnroot/unbbayes/trunk/unbbayes.datamining -->
+<!-- 		</connection> -->
+<!-- 		<developerConnection> -->
+<!-- 			scm:svn:https://unbbayes.svn.sourceforge.net/svnroot/unbbayes/trunk/unbbayes.datamining -->
+<!-- 		</developerConnection> -->
+<!-- 		<url>http://unbbayes.svn.sourceforge.net/viewvc/unbbayes/trunk/unbbayes.datamining -->
+<!-- 		</url> -->
+<!-- 	</scm> -->
 	<organization>
 		<name>Universidade de Brasilia - UnB</name>
 		<url>http://www.unb.br</url>
@@ -166,7 +166,7 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes.prs.mebn</artifactId>
-				<version>1.13.12</version>
+				<version>1.14.13</version>
 			</dependency>
 			
 			<!-- Protege 4.1 (it handles OWL2) -->
