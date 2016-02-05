@@ -115,7 +115,7 @@ public class TableGroups extends TableObject{
 		TableButton buttonDel = new TableButton( new TableButton.TableButtonCustomizer(){
 			public void customize(JButton button, int row, int column){
 				button.setIcon(iconController.getDeleteIcon());
-
+				
 			}
 		});
 		TableColumn buttonColumn3 = table.getColumnModel().getColumn(columnNames.length-1);
@@ -133,7 +133,7 @@ public class TableGroups extends TableObject{
 					String key = data[row][0].toString();
 					GroupModel groupToBeDeleted = getUmpstProject().getMapGroups().get(key);
 
-					getUmpstProject().getMapRules().remove(groupToBeDeleted.getId());
+					getUmpstProject().getMapGroups().remove(groupToBeDeleted.getId());
 
 					Object[][] dataDel = new Object[getUmpstProject().getMapGroups().size()][4];
 					Integer i=0;

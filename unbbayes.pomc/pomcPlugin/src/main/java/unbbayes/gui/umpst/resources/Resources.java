@@ -114,6 +114,11 @@ public class Resources extends GuiResources {
 		{"hpEntitiesTab" , "Edit entities, atributtes and relationships"},
 		{"hpRulesTab" , "Edit deterministic and stochastic rules"},
 		{"hpGroupsTab" , "Edit groups"},
+		{"hpImplementationTab" , "Define rule selected"},
+		{"hpOrdinaryVariableTab" , "Edit Ordinary Variables"},
+		{"hpNecessaryConditionTab" , "Edit Necessary Conditions"},
+		{"hpCauseTab" , "Edit Causes"},
+		{"hpEffectTab" , "Edit Effects"},
 		
 		{"hpSearchGoal" , "Search for a goal"},
 		{"hpSearchEntity" , "Search for a entity"},
@@ -180,6 +185,7 @@ public class Resources extends GuiResources {
 		{"ttGroups" , "Groups"},
 		{"ttAttributes" , "Attributes"},
 		{"ttRule" , "Rule"},
+		{"ttOrdinaryVariable" , "Ordinary Variable"},
 		
 		{"ttEntity" , "Entity"},
 		{"ttGoal" , "Goal"},
@@ -188,6 +194,7 @@ public class Resources extends GuiResources {
 		{"ttRelationship" , "Relationship"},
 		{"ttRule" , "Rule"},
 		{"ttGroup" , "Group"},
+		{"ttImplementation", "Implementation"},
 		
 		{"ttType" , "Type: "},
 		{"ttDescription" , "Description: "},

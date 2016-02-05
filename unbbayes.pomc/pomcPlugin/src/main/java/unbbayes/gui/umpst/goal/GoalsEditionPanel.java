@@ -181,7 +181,7 @@ public class GoalsEditionPanel extends IUMPSTPanel implements HypothesisAddition
 		}
 
 		buttonCancel     = new JButton(iconController.getReturnIcon());
-		buttonCancel.setText(resource.getString("btnReturn")); 
+		buttonCancel.setText(resource.getString("btnReturn"));
 		buttonCancel.setToolTipText(resource.getString("HpReturnMainPanel"));
 
 		buttonHypothesis = new JButton(iconController.getListAddIcon());

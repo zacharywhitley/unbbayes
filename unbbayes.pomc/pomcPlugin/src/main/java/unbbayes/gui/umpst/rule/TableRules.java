@@ -158,7 +158,9 @@ public class TableRules extends TableObject{
 					updateUI();
 					repaint();
 
-
+					// Update implementation table
+					pai.getMenuPanel().getImplementationPane().updateSplitPane();
+					pai.getMenuPanel().getImplementationPane().revalidate();
 				}
 			}
 		});

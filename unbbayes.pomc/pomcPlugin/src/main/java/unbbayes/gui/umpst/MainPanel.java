@@ -17,6 +17,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InvalidClassException;
 import java.util.ResourceBundle;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
@@ -30,6 +32,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
 
 import unbbayes.controller.umpst.Controller;
 import unbbayes.controller.umpst.IconController;
@@ -37,10 +42,12 @@ import unbbayes.gui.umpst.entity.EntitiesMainPanel;
 import unbbayes.gui.umpst.goal.GoalsEditionPanel;
 import unbbayes.gui.umpst.goal.GoalsMainPanel;
 import unbbayes.gui.umpst.group.GroupsMainPanel;
+import unbbayes.gui.umpst.implementation.ImplementationMainPanel;
 import unbbayes.gui.umpst.rule.RulesMainPanel;
-import unbbayes.io.umpst.FileLoadObject;
+import unbbayes.io.umpst.FileLoad;
 import unbbayes.io.umpst.FileSave;
 import unbbayes.io.umpst.FileSaveObject;
+import unbbayes.io.umpst.implementation.FileLoadRuleDefinition;
 import unbbayes.model.umpst.project.UMPSTProject;
 
 public class MainPanel extends IUMPSTPanel{
@@ -48,11 +55,13 @@ public class MainPanel extends IUMPSTPanel{
 	private static final long serialVersionUID = 1L;
 
 	private static final String  FILE_EXTENSION = "ump";
+	private static final String	FILE_EXTENSIONTEST = "txt";
 
 	private GoalsMainPanel goalsPane;
 	private EntitiesMainPanel entitiesPane;
 	private RulesMainPanel rulesPane;
 	private GroupsMainPanel groupsPane;
+	private ImplementationMainPanel implementationPane;
 
 	private String fileExtension;
 
@@ -178,13 +187,13 @@ public class MainPanel extends IUMPSTPanel{
 
 				if (fileExtension.equals(FILE_EXTENSION)){
 
-					FileLoadObject io = new FileLoadObject();
-//					FileLoad io = new FileLoad();
+//					FileLoadObject io = new FileLoadObject();
+					FileLoad io = new FileLoad();
 
 					try {
 						controller = Controller.getInstance(null); 
-						setUmpstProject(io.loadUbf(loadFile,getUmpstProject())) ;
-//						setUmpstProject(io.loadAsNewFormat(loadFile,getUmpstProject()));
+//						setUmpstProject(io.loadUbf(loadFile,getUmpstProject())) ;
+						setUmpstProject(io.loadAsNewFormat(loadFile,getUmpstProject()));
 						controller.setUMPSTProject(getUmpstProject()); 
 						
 						createTabPanels(getUmpstProject(), iconController, tabbedPane);
@@ -207,14 +216,36 @@ public class MainPanel extends IUMPSTPanel{
 						controller.showErrorMessageDialog(
 								resource.getString("erLoadFatal")); 
 						e1.printStackTrace();					
-//					} catch (ParserConfigurationException pce) {
-//						// it is not necessary build error window
-//						System.err.println(pce.getMessage());
-//					} catch (SAXException se) {
-//						// it is not necessary build error window
-//						System.err.println(se.getMessage());
-//					}
+					} catch (ParserConfigurationException pce) {
+						// it is not necessary build error window
+						System.err.println(pce.getMessage());
+					} catch (SAXException se) {
+						// it is not necessary build error window
+						System.err.println(se.getMessage());
 					}
+				} else if(fileExtension.equals(FILE_EXTENSIONTEST)) {
+					FileLoadRuleDefinition fd = new FileLoadRuleDefinition();
+
+					try {
+						UMPSTProject umpstProject = new UMPSTProject();		 
+						controller = Controller.getInstance(umpstProject);		
+//						createTabPanels(umpstProject, iconController, tabbedPane);
+						
+						UMPSTProject umpstProjectTest = fd.loadTestFile(
+								loadFile,getUmpstProject());
+						
+						controller.showSucessMessageDialog(resource.getString("msLoadSuccessfull")); 
+						
+					} catch (FileNotFoundException e1) {
+						controller.showErrorMessageDialog(
+								resource.getString("erLoadFatalText")); 
+						e1.printStackTrace();
+					} catch (IOException e2) {
+						controller.showErrorMessageDialog(
+								resource.getString("erLoadFatal")); 
+						e2.printStackTrace();					
+					}
+				
 				} else{
 					controller.showErrorMessageDialog(
 							resource.getString("erNotUmpFormat")); 
@@ -331,7 +362,7 @@ public class MainPanel extends IUMPSTPanel{
 	private void createTabPanels(UMPSTProject umpstProject,
 			IconController iconController, JTabbedPane tabbedPane) {
 
-		tabbedPane.removeAll(); 
+		tabbedPane.removeAll();
 		
 		//GOALS
 		goalsPane = new GoalsMainPanel(getFatherPanel(),umpstProject);
@@ -355,7 +386,7 @@ public class MainPanel extends IUMPSTPanel{
 		tabbedPane.setMnemonicAt(1, KeyEvent.VK_2);
 
 		//RULES
-		rulesPane = new RulesMainPanel(getFatherPanel(),umpstProject);
+		rulesPane = new RulesMainPanel(getFatherPanel(),getUmpstProject());
 		rulesPane.setPreferredSize(new Dimension(1000,500));	        
 		tabbedPane.addTab(resource.getString("ttRules"), 
 				iconController.getAnalysisDesignIcon(), 
@@ -373,6 +404,14 @@ public class MainPanel extends IUMPSTPanel{
 				resource.getString("hpGroupsTab"));
 		tabbedPane.setMnemonicAt(3, KeyEvent.VK_4);
 		
+		//IMPLEMENTATION
+		implementationPane = new ImplementationMainPanel(getFatherPanel(), getUmpstProject());
+		implementationPane.setPreferredSize(new Dimension(1000, 500));
+		tabbedPane.addTab(resource.getString("ttImplementation"),
+				iconController.getImplementingIcon(),
+				implementationPane,
+				resource.getString("hpImplementationTab"));
+		tabbedPane.setMnemonicAt(4, KeyEvent.VK_5);
 	}
 
 	/**
@@ -432,7 +471,7 @@ public class MainPanel extends IUMPSTPanel{
 		this.entitiesPane = entitiesPane;
 	}
 
-	protected JPanel  createInternalPane (JPanel pane){
+	protected JPanel createInternalPane (JPanel pane){
 
 		this.setLayout(new FlowLayout());
 		this.add(new GoalsEditionPanel(getFatherPanel(),getUmpstProject(),null,null));
@@ -447,6 +486,20 @@ public class MainPanel extends IUMPSTPanel{
 		panel.setLayout(new GridLayout(1, 1));
 		panel.add(filler);
 		return panel;
+	}
+	
+	/**
+	 * @return the implementationPane
+	 */
+	public ImplementationMainPanel getImplementationPane() {
+		return implementationPane;
+	}
+
+	/**
+	 * @param implementationPane the implementationPane to set
+	 */
+	public void setImplementationPane(ImplementationMainPanel implementationPane) {
+		this.implementationPane = implementationPane;
 	}
 	
 }

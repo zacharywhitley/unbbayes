@@ -10,6 +10,11 @@ import unbbayes.model.umpst.entity.RelationshipModel;
 import unbbayes.model.umpst.goal.GoalModel;
 import unbbayes.model.umpst.goal.HypothesisModel;
 import unbbayes.model.umpst.group.GroupModel;
+import unbbayes.model.umpst.implementation.CauseVariableModel;
+import unbbayes.model.umpst.implementation.EffectVariableModel;
+import unbbayes.model.umpst.implementation.EventVariableObjectModel;
+import unbbayes.model.umpst.implementation.NecessaryConditionVariableModel;
+import unbbayes.model.umpst.implementation.OrdinaryVariableModel;
 
 
 public class RuleModel extends ObjectModel{
@@ -22,12 +27,18 @@ public class RuleModel extends ObjectModel{
 	private List<AttributeModel>    attributeList;
 	private List<RelationshipModel> relationshipList;	
 	
-	private List<RuleModel>          fatherRuleList;	// Rule that appear at traceability painel
+	private List<RuleModel>          fatherRuleList;	// Rule that appears at traceability painel
 	private List<RuleModel>          childrenRuleList; 
 	private List<GroupModel>         groupList;
 
 	private List<GoalModel> backtrackingGoalsList;
 	private List<HypothesisModel> backtrackingHypothesisList;
+	
+	private List<OrdinaryVariableModel> ordinaryVariableList;
+	private List<CauseVariableModel> causeVariableList;
+	private List<EffectVariableModel> effectVariableList;
+	private List<NecessaryConditionVariableModel> necessaryConditionList;
+	private List<EventVariableObjectModel> eventVariableObjectList;
 	
 	public RuleModel(String id,
 			String rulesName,
@@ -50,7 +61,35 @@ public class RuleModel extends ObjectModel{
 		backtrackingGoalsList = new ArrayList<GoalModel>();
 		backtrackingHypothesisList = new ArrayList<HypothesisModel>();
 		
+		ordinaryVariableList = new ArrayList<OrdinaryVariableModel>();
+		causeVariableList = new ArrayList<CauseVariableModel>();
+		effectVariableList = new ArrayList<EffectVariableModel>();
+		necessaryConditionList = new ArrayList<NecessaryConditionVariableModel>();
+		eventVariableObjectList = new ArrayList<EventVariableObjectModel>();
+		
 		super.setType("Rule");
+	}
+	
+	public void changeEventVariableObject(CauseVariableModel causeVariable) {
+		for (int i = 0; i < getEventVariableObjectList().size(); i++) {
+			if (causeVariable.getId().equals(getEventVariableObjectList().get(i).getId())) {
+				getEventVariableObjectList().get(i).setRelationshipModel(causeVariable.getRelationshipModel());
+				getEventVariableObjectList().get(i).setRelationship(causeVariable.getRelationship());
+				getEventVariableObjectList().get(i).setArgumentList(causeVariable.getArgumentList());
+				break;
+			}
+		}
+	}
+	
+	public void changeEventVariableObject(EffectVariableModel effectVariable) {
+		for (int i = 0; i < getEventVariableObjectList().size(); i++) {
+			if (effectVariable.getId().equals(getEventVariableObjectList().get(i).getId())) {
+				getEventVariableObjectList().get(i).setRelationshipModel(effectVariable.getRelationshipModel());
+				getEventVariableObjectList().get(i).setRelationship(effectVariable.getRelationship());
+				getEventVariableObjectList().get(i).setArgumentList(effectVariable.getArgumentList());
+				break;
+			}
+		}
 	}
 
 	public List<EntityModel> getEntityList() {
@@ -150,4 +189,73 @@ public class RuleModel extends ObjectModel{
 		this.ruleType = ruleType;
 	}
 
+	/**
+	 * @return the ordinaryVariableList
+	 */
+	public List<OrdinaryVariableModel> getOrdinaryVariableList() {
+		return ordinaryVariableList;
+	}
+
+	/**
+	 * @param ordinaryVariableList the ordinaryVariableList to set
+	 */
+	public void setOrdinaryVariableList(List<OrdinaryVariableModel> ordinaryVariableList) {
+		this.ordinaryVariableList = ordinaryVariableList;
+	}
+
+	/**
+	 * @return the causeVariableList
+	 */
+	public List<CauseVariableModel> getCauseVariableList() {
+		return causeVariableList;
+	}
+
+	/**
+	 * @param causeVariableList the causeVariableList to set
+	 */
+	public void setCauseVariableList(List<CauseVariableModel> causeVariableList) {
+		this.causeVariableList = causeVariableList;
+	}
+
+	/**
+	 * @return the effectVariableList
+	 */
+	public List<EffectVariableModel> getEffectVariableList() {
+		return effectVariableList;
+	}
+
+	/**
+	 * @param effectVariableList the effectVariableList to set
+	 */
+	public void setEffectVariableList(List<EffectVariableModel> effectVariableList) {
+		this.effectVariableList = effectVariableList;
+	}
+
+	/**
+	 * @return the eventVariableObjectList
+	 */
+	public List<EventVariableObjectModel> getEventVariableObjectList() {
+		return eventVariableObjectList;
+	}
+
+	/**
+	 * @param eventVariableObjectList the eventVariableObjectList to set
+	 */
+	public void setEventVariableObjectList(List<EventVariableObjectModel> eventVariableObjectList) {
+		this.eventVariableObjectList = eventVariableObjectList;
+	}
+
+	/**
+	 * @return the necessaryConditionList
+	 */
+	public List<NecessaryConditionVariableModel> getNecessaryConditionList() {
+		return necessaryConditionList;
+	}
+
+	/**
+	 * @param necessaryConditionList the necessaryConditionList to set
+	 */
+	public void setNecessaryConditionList(List<NecessaryConditionVariableModel> necessaryConditionList) {
+		this.necessaryConditionList = necessaryConditionList;
+	}	
 }

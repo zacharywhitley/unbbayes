@@ -40,6 +40,7 @@ import unbbayes.gui.umpst.TableButton;
 import unbbayes.gui.umpst.TableObject;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.gui.umpst.entity.EntitiesEditionPanel;
+import unbbayes.gui.umpst.implementation.ImplementationMainPanel;
 import unbbayes.gui.umpst.selection.GoalSelectionPane;
 import unbbayes.gui.umpst.selection.HypothesisSelectionPane;
 import unbbayes.gui.umpst.selection.interfaces.GoalAddition;
@@ -304,7 +305,7 @@ public class RulesEditionPanel extends IUMPSTPanel
 		buttonCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				UmpstModule pai = getFatherPanel();
-				changePanel(pai.getMenuPanel());	
+				changePanel(pai.getMenuPanel());
 			}
 		});
 		
@@ -402,8 +403,7 @@ public class RulesEditionPanel extends IUMPSTPanel
 				}
 			});
 
-			table.getColumnModel().getColumn(COLUMN_ID).setMaxWidth(TableObject.SIZE_COLUMN_INDEX); 
-			
+			table.getColumnModel().getColumn(COLUMN_ID).setMaxWidth(TableObject.SIZE_COLUMN_INDEX);			
 			scrollPane = new JScrollPane(table);
 		}
 
@@ -595,10 +595,10 @@ public class RulesEditionPanel extends IUMPSTPanel
 				mainPropertiesEditionPane.getAuthorText(), 
 				mainPropertiesEditionPane.getDateText());
 
-		CommonDataUtil.getInstance().setAuthorName(mainPropertiesEditionPane.getAuthorText()); 
+		CommonDataUtil.getInstance().setAuthorName(mainPropertiesEditionPane.getAuthorText());
 
-		getUmpstProject().getMapRules().put(rulesAdd.getId(), rulesAdd);	
-
+		getUmpstProject().getMapRules().put(rulesAdd.getId(), rulesAdd);
+		
 		return rulesAdd;
 	}
 
@@ -630,6 +630,10 @@ public class RulesEditionPanel extends IUMPSTPanel
 		rulesTable.getScrollPanePergunta().repaint();
 		rulesTable.updateUI();
 		rulesTable.repaint();
+		
+		// Update implementation table
+		pai.getMenuPanel().getImplementationPane().updateSplitPane();
+		pai.getMenuPanel().getImplementationPane().revalidate();
 	}
 
 	public JPanel createBacktrackingPanel(){

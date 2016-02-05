@@ -26,6 +26,8 @@ public class IconController extends unbbayes.controller.IconController {
 	protected ImageIcon listAdd; 
 	protected ImageIcon reuseAttribute; 
 	
+	protected ImageIcon implementingIcon;
+	
 	protected ImageIcon requirementsIcon; 
 	protected ImageIcon analysisIcon; 
 	
@@ -65,7 +67,17 @@ public class IconController extends unbbayes.controller.IconController {
 		            "/icons/ump.ico"));
 			return umpstIcon;
 		}
-	}	
+	}
+	
+	public ImageIcon getImplementingIcon() {
+		if(implementingIcon != null) {
+			return implementingIcon;
+		} else {
+			implementingIcon = new ImageIcon(getClass().getResource(
+					"/icons/implementing.png"));
+			return implementingIcon;
+		}
+	}
 	
 	public ImageIcon getRequirementsIcon() {
 		if (requirementsIcon != null) {

@@ -41,7 +41,7 @@ public class MainPropertiesEditionPane {
 	
 	private JPanel panel; 
 	
-	private final JButton btnCancel; 
+	private final JButton btnCancel;
 	private final JButton btnOK; 
 	
 	private final int SIZE_COLUMNS_TEXT = 25; 
