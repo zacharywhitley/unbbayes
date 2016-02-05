@@ -179,9 +179,23 @@ public class SSIDNode extends SSBNNode {
 		super.setProbNode(probNode);
 		if (probNode instanceof ProbabilisticNodeWrapper) {
 			// don't add the wrapper. Add the wrapped node directly
+			// this is necessary because the core frequently uses == (i.e. instance comparison) instead of using Object#equals(Object),
+			// TODO change the core so that it uses Object#equals(Object) instead of ==.
 			ProbabilisticNodeWrapper wrapper = (ProbabilisticNodeWrapper) probNode;
 			this.getProbabilisticNetwork().removeNode(wrapper);
 			this.getProbabilisticNetwork().addNode((Node) wrapper.getWrappedNode());
+			
+			// also, do not use the wrapper in the CPTs.
+			// Again, this is necessary because the core (especially the methods which handles CPTs)
+			// frequently uses == (i.e. instance comparison) instead of using Object#equals(Object),
+			// TODO change the core so that it uses Object#equals(Object) instead of ==.
+			if (wrapper.getProbabilityFunction() != null) {	// if this is null, then wrapper is wrapping a node with no table
+				int index = wrapper.getProbabilityFunction().getVariableIndex(wrapper);
+				if (index >= 0) {
+					// substitute the wrapper with the wrapped node
+					wrapper.getProbabilityFunction().setVariableAt(index, wrapper.getWrappedNode());
+				}
+			}
 		}
 	}
 	

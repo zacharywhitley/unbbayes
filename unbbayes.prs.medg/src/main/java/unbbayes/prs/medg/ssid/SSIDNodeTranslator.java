@@ -152,7 +152,9 @@ public class SSIDNodeTranslator implements ISimpleSSIDNodeTranslator, INodeTrans
 					ContextNode contextNode = simpleContextNodeList.get(0).getContextNode(); 
 					ContextFatherSSBNNode contextFather = mapContextNode.get(contextNode); 
 					if(contextFather == null){
-						contextFather = new ContextFatherSSBNNode(pn, contextNode);
+//						contextFather = new ContextFatherSSBNNode(pn, contextNode);
+						contextFather = new ContextFatherSSBNNode(pn, contextNode, new ProbabilisticNode(), 
+								simpleContextNodeList.get(0).getOvProblematic(), simple.getMFragInstance().getOVInstanceList());
 						
 						List<LiteralEntityInstance> possibleValueList = new ArrayList<LiteralEntityInstance>(); 
 						for(String entity: simpleContextNodeList.get(0).getPossibleValues()){
@@ -163,7 +165,8 @@ public class SSIDNodeTranslator implements ISimpleSSIDNodeTranslator, INodeTrans
 							contextFather.addPossibleValue(lei);
 						}
 						
-						contextFather.setOvProblematic(simpleContextNodeList.get(0).getOvProblematic()); 
+//						contextFather.setOvProblematic(simpleContextNodeList.get(0).getOvProblematic()); 
+						
 						mapContextNode.put(contextNode, contextFather); 
 					}
 					

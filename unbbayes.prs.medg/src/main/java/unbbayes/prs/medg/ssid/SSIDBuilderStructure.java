@@ -17,8 +17,6 @@ import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.entity.ObjectEntity;
-import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.SearchResult;
@@ -351,7 +349,7 @@ public class SSIDBuilderStructure implements IBuilderStructure {
 		if(exactValue!= null){
 			//The node is a finding... 
 			node.setState(exactValue.getState());
-			ssbn.addFindingToTheFindingList(node); 
+			ssbn.addFindingToFindingList(node); 
 			
 			if (logManager != null) {
 				logManager.printText(level4, false, " -> Node " + node + 
@@ -363,7 +361,7 @@ public class SSIDBuilderStructure implements IBuilderStructure {
 		//---- 2) Create the parents of node from the resident nodes
 		
 		//If the context node of the MFrag was not evaluated, we cannot create parents anyway
-		if(mFragInstance.isUseDefaultDistribution()){
+		if(mFragInstance.isUsingDefaultDistribution()){
 			if (logManager != null) {
 				logManager.printText(level4, false, " -> Node can't be evaluated: mfrag will be using default distribution");
 			}
@@ -730,7 +728,7 @@ public class SSIDBuilderStructure implements IBuilderStructure {
 			throw new RuntimeException(e);
 		}
 		child.getMFragInstance().addSSBNNode(parent);
-		child.getMFragInstance().addEdge(new SimpleEdge(parent, child));
+//		child.getMFragInstance().addEdge(new SimpleEdge(parent, child));
 		
 		return parent;
 	

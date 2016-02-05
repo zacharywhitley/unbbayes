@@ -35,6 +35,7 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.resources.ResourcesSSBNAlgorithmLog;
+import unbbayes.prs.mebn.ssbn.BuilderStructureImpl;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.Query;
@@ -90,13 +91,16 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 
 	private IInferenceAlgorithm bnInferenceAlgorithm = new JunctionTreeAlgorithm();
 
+	private boolean addFindings = true;;
+
 	/**
 	 * @param parameters
 	 */
 	public SSIDGenerator(LaskeyAlgorithmParameters parameters) { // NOPMD by Shou Matsumoto on 15/10/16 10:14
 		super(parameters);
 		this.parameters = parameters;
-		this.setBuilderStructure(SSIDBuilderStructure.newInstance());
+//		this.setBuilderStructure(SSIDBuilderStructure.newInstance());
+		this.setBuilderStructure(BuilderStructureImpl.newInstance());
 		this.setBuildLocalDistribution(SSIDBuilderLocalDistribution.getInstance());
 		// disable debug info by default
 		try {
@@ -127,7 +131,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 	public void compileSSBNAndPropagateFindings(SSBN ssbn) throws Exception {
 		
 		
-		// use DMP instead of Junction tree.
+		// use specified algorithm.
 		IInferenceAlgorithm algorithm = getBNInferenceAlgorithm();
 		
 		// if we are calling this algorithm from GUI, set up the whole BN module instead of just the inference algorithm
@@ -520,7 +524,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 		IdentationLevel in1 = new IdentationLevel(in); 
 		if (logManager != null) {
 			logManager.printText(in1, true, 
-				getResourceForHybridAlgorithm().getString("011_BuildingSSBNForQueries")); 
+					resourceLog.getString("011_BuildingSSBNForQueries")); 
 		}
 		
 		for(Query query: queryList){
@@ -533,7 +537,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 			
 			ssbnNode.setFinished(false); 
 			ssid.addSSBNNodeIfItDontAdded(ssbnNode);
-			ssid.addQueryToTheQueryList(query); 
+			ssid.addQueryToQueryList(query); 
 			
 			if (logManager != null) {
 				logManager.printText(in1, false, " - " + ssbnNode); 
@@ -547,51 +551,47 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 		
 		//Add findings to the list of nodes
 		
-		in1 = new IdentationLevel(in); 
-		if (logManager != null) {
-			logManager.printText(in1, true, 
-				getResourceForHybridAlgorithm().getString("012_BuildingSSBNForFindings")); 
-		}
-		
-		for(MFrag mFrag: mebn.getMFragList()){
-			for(ResidentNode residentNode: mFrag.getResidentNodeList()){
-				for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
-					
-					if (logManager != null) {
-						logManager.printText(in1, false, " - " + finding); 
+		if (isToAddFindings()) {
+			in1 = new IdentationLevel(in); 
+			if (logManager != null) {
+				logManager.printText(in1, true, 
+						resourceLog.getString("012_BuildingSSBNForFindings")); 
+			}
+			
+			for(MFrag mFrag: mebn.getMFragList()){
+				for(ResidentNode residentNode: mFrag.getResidentNodeList()){
+					for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
+						
+						if (logManager != null) {
+							logManager.printText(in1, false, " - " + finding); 
+						}
+						
+						ObjectEntityInstance arguments[] = finding.getArguments(); 
+						List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
+						for(int i = 0; i < arguments.length ; i++){
+							OrdinaryVariable ov = residentNode.getArgumentNumber(i + 1).getOVariable();
+							LiteralEntityInstance lei = LiteralEntityInstance.getInstance(arguments[i].getName() , ov.getValueType()); 
+							ovInstanceList.add(OVInstance.getInstance(ov, lei)); 
+						}
+						
+						SimpleSSBNNode ssbnNode = SimpleSSBNNode.getInstance(residentNode); 
+						
+						for(OVInstance argument : ovInstanceList){
+							ssbnNode.setEntityForOv(argument.getOv(), argument.getEntity()); 	
+						}
+						ssbnNode = ssid.addSSBNNodeIfItDontAdded(ssbnNode); 
+						
+						ssbnNode.setState(finding.getState()); 
+						ssbnNode.setFinished(false); 
+						
+						ssid.addFindingToFindingList(ssbnNode); 
 					}
-					
-					ObjectEntityInstance arguments[] = finding.getArguments(); 
-					List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
-					for(int i = 0; i < arguments.length ; i++){
-						OrdinaryVariable ov = residentNode.getArgumentNumber(i + 1).getOVariable();
-						LiteralEntityInstance lei = LiteralEntityInstance.getInstance(arguments[i].getName() , ov.getValueType()); 
-						ovInstanceList.add(OVInstance.getInstance(ov, lei)); 
-					}
-					
-					SimpleSSBNNode ssbnNode = SimpleSSBNNode.getInstance(residentNode); 
-					
-					for(OVInstance argument : ovInstanceList){
-						ssbnNode.setEntityForOv(argument.getOv(), argument.getEntity()); 	
-					}
-					ssbnNode = ssid.addSSBNNodeIfItDontAdded(ssbnNode); 
-					
-					ssbnNode.setState(finding.getState()); 
-					ssbnNode.setFinished(false); 
-					
-					ssid.addFindingToTheFindingList(ssbnNode); 
 				}
 			}
+			
 		}
 		
-		if (logManager != null) {
-			logManager.skipLine();
-			logManager.printText(null, false, getResourceForHybridAlgorithm().getString("010_StepFinished")); 
-			logManager.skipLine(); 
-			logManager.printSectionSeparation(); 
-		}
-		
-		// TODO add utility nodes to the list of initial nodes
+		// add utility nodes to the list of initial nodes
 		for(MFrag mfrag: mebn.getMFragList()){
 			// we are creating one utility node per each possible combination of arguments in a continuous resident node
 			for (Node node : mfrag.getNodes()) {
@@ -655,7 +655,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 							ssbnNode.setEntityForOv(
 									medgUtilityNode.getOrdinaryVariableList().get(i), 
 									combinator.get(i).get(indexes.get(i))
-							);
+									);
 						}
 						
 						if (logManager != null) {
@@ -670,7 +670,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 						}
 						Query query = new Query(ssbnNode.getResidentNode(), arguments);
 						query.setSSBNNode(ssbnNode);	// force the simpleSSBNNode to be the same instance
-						ssid.addQueryToTheQueryList(query);
+						ssid.addQueryToQueryList(query);
 						
 						// update indexes and check condition to end loop (it ends when all possible combinations were visited)
 						for (int i = 0; i < combinator.size(); i++) {	
@@ -704,6 +704,8 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 		
 		if (logManager != null) {
 			logManager.skipLine();
+			logManager.printText(null, false, getResourceForHybridAlgorithm().getString("010_StepFinished")); 
+			logManager.skipLine(); 
 			logManager.printSectionSeparation(); 
 		}
 		
@@ -781,6 +783,22 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 	 */
 	public IInferenceAlgorithm getBNInferenceAlgorithm() {
 		return bnInferenceAlgorithm;
+	}
+
+	/**
+	 * @return the addFindings : if true, then {@link #initialization(List, KnowledgeBase)} will consider findings.
+	 * If false, they will ignore findings.
+	 */
+	public boolean isToAddFindings() {
+		return addFindings;
+	}
+
+	/**
+	 * @param addFindings the addFindings to set :  if true, then {@link #initialization(List, KnowledgeBase)} will consider findings.
+	 * If false, they will ignore findings.
+	 */
+	public void setToAddFindings(boolean addFindings) {
+		this.addFindings = addFindings;
 	}
 	
 
