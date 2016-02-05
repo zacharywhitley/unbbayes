@@ -2,21 +2,21 @@ UNBBAYES MEBN PLUGIN - VERSION 1.14.13
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
-14					Setting the UbfIO to handle I/O requests for saving a file with no extension (it adds new extension).
-					LPD compiler automatically sets undeclared states with uniform distribution.
-					Some changes in API regarding the relationship between MultiEntityBayesianNetwork and ObjectEntityContainer
+14			Setting the UbfIO to handle I/O requests for saving a file with no extension (it adds new extension).
+			LPD compiler automatically sets undeclared states with uniform distribution.
+			Some changes in API regarding the relationship between MultiEntityBayesianNetwork and ObjectEntityContainer
 
 BUG LIST		
 Number	Request ID	Summary
-12		132			Fixing a bug which was causing multiplexor nodes to be duplicated and having non-suggestive names.
-13    171     Fixing a bug in evaluation of MFrags with 2 input nodes referencing some resident node 
+12	132		Fixed a bug which was causing multiplexor nodes to be duplicated and having non-suggestive names.
+13	171		Fixed a bug in evaluation of MFrags with 2 input nodes referencing some resident node 
 
 UNBBAYES MEBN PLUGIN - VERSION 1.13.11
 ----------------------------
 
 BUG LIST		
 Number	Request ID	Summary
-11					Some owl files were failing to load due to duplicate ids.
+11			Some owl files were failing to load due to duplicate ids.
 
 UNBBAYES MEBN PLUGIN - VERSION 1.13.10
 ----------------------------
@@ -29,7 +29,7 @@ Also performed some minor refactoring.
 
 BUG LIST		
 Number	Request ID	Summary
-10		3435816		MEBN Nullpointer exception when application.properties is invalid.
+10	3435816		MEBN Nullpointer exception when application.properties is invalid.
 
 UNBBAYES MEBN PLUGIN - VERSION 1.11.9
 ----------------------------
