@@ -453,21 +453,21 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 				// this will act like a parameter for the commands
 				final IMEBNMediator mediator = owl2KnowledgeBase.getDefaultMediator();
 				// disable/enable entity panel, individuals panel and finding panel
-				owl2KnowledgeBase.getClearKBCommandList().add(new OWL2KnowledgeBase.IClearKBCommand() {
-					public void doCommand() {
-						if (isToHideEntityButtons()) {
-							mediator.getMebnEditionPane().getBtnTabOptionEntity().setEnabled(false);
-							mediator.getMebnEditionPane().getBtnTabOptionEntityFinding().setEnabled(false);
-							mediator.getMebnEditionPane().getBtnTabOptionNodeFinding().setEnabled(false);
-							mediator.getMebnEditionPane().getBtnTabOptionTree().doClick(); // change view to MTheoryTree
-						}
-					}
-					public void undoCommand() {
-						mediator.getMebnEditionPane().getBtnTabOptionEntity().setEnabled(true);
-						mediator.getMebnEditionPane().getBtnTabOptionEntityFinding().setEnabled(true);
-						mediator.getMebnEditionPane().getBtnTabOptionNodeFinding().setEnabled(true);
-					}
-				});
+//				owl2KnowledgeBase.getClearKBCommandList().add(new OWL2KnowledgeBase.IClearKBCommand() {
+//					public void doCommand() {
+//						if (isToHideEntityButtons()) {
+//							mediator.getMebnEditionPane().getBtnTabOptionEntity().setEnabled(false);
+//							mediator.getMebnEditionPane().getBtnTabOptionEntityFinding().setEnabled(false);
+//							mediator.getMebnEditionPane().getBtnTabOptionNodeFinding().setEnabled(false);
+//							mediator.getMebnEditionPane().getBtnTabOptionTree().doClick(); // change view to MTheoryTree
+//						}
+//					}
+//					public void undoCommand() {
+//						mediator.getMebnEditionPane().getBtnTabOptionEntity().setEnabled(true);
+//						mediator.getMebnEditionPane().getBtnTabOptionEntityFinding().setEnabled(true);
+//						mediator.getMebnEditionPane().getBtnTabOptionNodeFinding().setEnabled(true);
+//					}
+//				});
 			}
 		}
 		
