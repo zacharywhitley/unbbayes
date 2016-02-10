@@ -2,18 +2,27 @@ package unbbayes.io.umpst;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import unbbayes.io.umpst.implementation.FileLoadRuleImplementation;
 import unbbayes.model.umpst.entity.AttributeModel;
 import unbbayes.model.umpst.entity.EntityModel;
 import unbbayes.model.umpst.entity.RelationshipModel;
 import unbbayes.model.umpst.goal.GoalModel;
 import unbbayes.model.umpst.goal.HypothesisModel;
 import unbbayes.model.umpst.group.GroupModel;
+import unbbayes.model.umpst.implementation.EventType;
+import unbbayes.model.umpst.implementation.EventVariableObjectModel;
+import unbbayes.model.umpst.implementation.OrdinaryVariableModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.rule.RuleModel;
 
@@ -48,6 +57,8 @@ public class FileLoadNodeRule {
 
 		Map<String, RuleModel> mapRule = umpstProject.getMapRules();
 		ArrayList<FileIndexChildNode> listOfRuleNode = new ArrayList<FileIndexChildNode>();
+		
+		FileLoadRuleImplementation lri = new FileLoadRuleImplementation();
 
 		for (int i = 0; i < list.getLength(); i++) {
 			Node node = list.item(i);
@@ -176,6 +187,59 @@ public class FileLoadNodeRule {
 					}
 				}
 				
+				// IMPLEMENTATION
+				NodeList btImplementation = elem.getElementsByTagName("implementation");
+				if (btImplementation.getLength() > 0) {
+					NodeList btImplementationNodes = btImplementation.item(0).getChildNodes();
+					Element btImplementationElem = (Element) btImplementationNodes;
+					
+					// OV
+					NodeList ovNodeList = btImplementationElem.getElementsByTagName("ordinaryVariableList");
+					if (ovNodeList.getLength() > 0) {
+						
+						lri.loadOVNode(rule, ovNodeList);
+						for (int j = 0; j < lri.getOrdinaryVariableList().size(); j++) {
+							rule.getOrdinaryVariableList().add(
+									lri.getOrdinaryVariableList().get(j));							
+						}
+					}					
+					
+					// Cause
+					NodeList causeNodeList = btImplementationElem.getElementsByTagName("causeVariableList");
+					if (causeNodeList.getLength() > 0) {
+						lri.loadCauseNode(rule, causeNodeList);
+						for (int j = 0; j < lri.getCauseVariableList().size(); j++) {
+							rule.getCauseVariableList().add(
+									lri.getCauseVariableList().get(j));
+							rule.getEventVariableObjectList().add(
+									lri.getCauseVariableList().get(j));
+						}
+					}
+					
+					// Effect
+					NodeList effectNodeList = btImplementationElem.getElementsByTagName("effectVariableList");
+					if (effectNodeList.getLength() > 0) {
+						lri.loadEffectNode(rule, effectNodeList);
+						for (int j = 0; j < lri.getEffectVariableList().size(); j++) {
+							rule.getEffectVariableList().add(
+									lri.getEffectVariableList().get(j));
+							rule.getEventVariableObjectList().add(
+									lri.getEffectVariableList().get(j));
+						}
+					}
+					
+					// NecessaryCondition
+					NodeList ncNodeList = btImplementationElem.getElementsByTagName("necessaryConditionList");
+					if (ncNodeList.getLength() > 0) {
+						
+						lri.loadNCNode(umpstProject, rule, ncNodeList);
+						for (int j = 0; j < lri.getNecessaryConditionList().size(); j++) {
+							rule.getNecessaryConditionList().add(
+									lri.getNecessaryConditionList().get(j));							
+						}
+					}
+				}
+				
 				mapRule.put(rule.getId(), rule);				
 			}			
 		}
@@ -201,5 +265,5 @@ public class FileLoadNodeRule {
 			}
 		}		
 		return mapRule;
-	}
+	}	
 }

@@ -12,6 +12,7 @@ import unbbayes.model.umpst.goal.HypothesisModel;
 import unbbayes.model.umpst.group.GroupModel;
 import unbbayes.model.umpst.implementation.CauseVariableModel;
 import unbbayes.model.umpst.implementation.EffectVariableModel;
+import unbbayes.model.umpst.implementation.EventType;
 import unbbayes.model.umpst.implementation.EventVariableObjectModel;
 import unbbayes.model.umpst.implementation.NecessaryConditionVariableModel;
 import unbbayes.model.umpst.implementation.OrdinaryVariableModel;
@@ -72,22 +73,52 @@ public class RuleModel extends ObjectModel{
 	
 	public void changeEventVariableObject(CauseVariableModel causeVariable) {
 		for (int i = 0; i < getEventVariableObjectList().size(); i++) {
-			if (causeVariable.getId().equals(getEventVariableObjectList().get(i).getId())) {
-				getEventVariableObjectList().get(i).setRelationshipModel(causeVariable.getRelationshipModel());
-				getEventVariableObjectList().get(i).setRelationship(causeVariable.getRelationship());
-				getEventVariableObjectList().get(i).setArgumentList(causeVariable.getArgumentList());
-				break;
+			if (getEventVariableObjectList().get(i).getTypeEvent() == EventType.CAUSE) {
+			
+				if (causeVariable.getId().equals(getEventVariableObjectList().get(i).getId())) {
+					getEventVariableObjectList().get(i).setRelationshipModel(causeVariable.getRelationshipModel());
+					getEventVariableObjectList().get(i).setRelationship(causeVariable.getRelationship());
+					getEventVariableObjectList().get(i).setArgumentList(causeVariable.getArgumentList());
+					break;
+				}
 			}
 		}
 	}
 	
 	public void changeEventVariableObject(EffectVariableModel effectVariable) {
 		for (int i = 0; i < getEventVariableObjectList().size(); i++) {
-			if (effectVariable.getId().equals(getEventVariableObjectList().get(i).getId())) {
-				getEventVariableObjectList().get(i).setRelationshipModel(effectVariable.getRelationshipModel());
-				getEventVariableObjectList().get(i).setRelationship(effectVariable.getRelationship());
-				getEventVariableObjectList().get(i).setArgumentList(effectVariable.getArgumentList());
-				break;
+			if (getEventVariableObjectList().get(i).getTypeEvent() == EventType.EFFECT) {	
+			
+				if (effectVariable.getId().equals(getEventVariableObjectList().get(i).getId())) {
+					getEventVariableObjectList().get(i).setRelationshipModel(effectVariable.getRelationshipModel());
+					getEventVariableObjectList().get(i).setRelationship(effectVariable.getRelationship());
+					getEventVariableObjectList().get(i).setArgumentList(effectVariable.getArgumentList());
+					break;
+				}
+			}
+		}
+	}
+	
+	public void removeEventVariableObject(CauseVariableModel causeVariable) {
+		for (int i = 0; i < getEventVariableObjectList().size(); i++) {
+			if (getEventVariableObjectList().get(i).getTypeEvent() == EventType.CAUSE) {
+				
+				if (causeVariable.getId().equals(getEventVariableObjectList().get(i).getId())) {
+					getEventVariableObjectList().remove(i);
+					break;
+				}
+			}
+		}
+	}
+	
+	public void removeEventVariableObject(EffectVariableModel effectVariable) {
+		for (int i = 0; i < getEventVariableObjectList().size(); i++) {
+			if (getEventVariableObjectList().get(i).getTypeEvent() == EventType.EFFECT) {
+				
+				if (effectVariable.getId().equals(getEventVariableObjectList().get(i).getId())) {
+					getEventVariableObjectList().remove(i);
+					break;
+				}
 			}
 		}
 	}

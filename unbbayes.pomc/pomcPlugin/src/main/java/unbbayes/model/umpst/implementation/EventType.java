@@ -28,6 +28,7 @@ package unbbayes.model.umpst.implementation;
 public enum EventType{
 	
 		CAUSE,
-		EFFECT
+		EFFECT,
+		OTHER
 		
 }

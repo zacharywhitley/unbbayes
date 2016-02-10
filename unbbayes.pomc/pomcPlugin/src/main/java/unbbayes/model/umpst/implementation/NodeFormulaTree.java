@@ -174,7 +174,7 @@ public class NodeFormulaTree{
 			
 			case NODE:
 				EventNCPointer eventPointer = (EventNCPointer)nodeVariable;
-				System.out.println(eventPointer.getOvArgumentList().size());
+//				System.out.println(eventPointer.getOvArgumentList().size());
 //				ResidentNodePointer pointer = (ResidentNodePointer)nodeVariable;
 //				String returnName = name + "(";
 //				int numberAguments = pointer.getNumberArguments(); 

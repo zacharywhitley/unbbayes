@@ -123,7 +123,7 @@ public class FileSave {
 			/* Relationship */
 			build.relationshipNodeHierarchy(doc, modelTag, umpstProject);
 
-			/* Rule */
+			/* Rule and Implementation */
 			build.ruleNodeHierarchy(doc, modelTag, umpstProject);
 
 			/* Group */

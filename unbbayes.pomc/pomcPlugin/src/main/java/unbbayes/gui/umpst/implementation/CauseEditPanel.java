@@ -524,7 +524,8 @@ public class CauseEditPanel extends IUMPSTPanel{
 				boolean flag = false;
 				while((i < rule.getCauseVariableList().size()) && (!flag)) {
 					if(variableRow.equals(rule.getCauseVariableList().get(i).getId())) {
-						flag = true;
+						flag = true;						
+						rule.removeEventVariableObject(rule.getCauseVariableList().get(i));
 						rule.getCauseVariableList().remove(i);
 					} else {
 						i++;
@@ -700,7 +701,7 @@ public class CauseEditPanel extends IUMPSTPanel{
 	 * Set ID according to the last necessary condition ID created.
 	 */
 	public void setID() {
-		int greaterID = 0;
+		int greaterID = -1;
 		boolean beginID = true; // created to set ID = 0
 		for (int i = 0; i < rule.getCauseVariableList().size(); i++) {
 			if (greaterID < Integer.parseInt(rule.getCauseVariableList().get(i).getId())) {

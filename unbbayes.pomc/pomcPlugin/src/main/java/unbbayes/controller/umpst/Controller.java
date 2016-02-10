@@ -10,6 +10,7 @@ import unbbayes.model.umpst.entity.RelationshipModel;
 import unbbayes.model.umpst.goal.GoalModel;
 import unbbayes.model.umpst.goal.HypothesisModel;
 import unbbayes.model.umpst.group.GroupModel;
+import unbbayes.model.umpst.implementation.OrdinaryVariableModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.rule.RuleModel;
 
@@ -267,6 +268,12 @@ public class Controller {
 		group.getBacktrackingEntities().remove(entity); 
 		entity.getFowardTrackingGroups().remove(group); 
 		
+	}
+	
+	public void removeOrdinaryVariableFromOrdinaryVariableList(OrdinaryVariableModel ordinaryVariable, 
+			RuleModel rule){
+		
+		rule.getOrdinaryVariableList().remove(ordinaryVariable.getId());
 	}
 	
 	public String getAuthor() {

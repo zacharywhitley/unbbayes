@@ -17,8 +17,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InvalidClassException;
 import java.util.ResourceBundle;
-import java.util.Set;
-import java.util.TreeSet;
 
 import javax.help.HelpSet;
 import javax.help.JHelp;
@@ -47,7 +45,6 @@ import unbbayes.gui.umpst.rule.RulesMainPanel;
 import unbbayes.io.umpst.FileLoad;
 import unbbayes.io.umpst.FileSave;
 import unbbayes.io.umpst.FileSaveObject;
-import unbbayes.io.umpst.implementation.FileLoadRuleDefinition;
 import unbbayes.model.umpst.project.UMPSTProject;
 
 public class MainPanel extends IUMPSTPanel{
@@ -55,7 +52,7 @@ public class MainPanel extends IUMPSTPanel{
 	private static final long serialVersionUID = 1L;
 
 	private static final String  FILE_EXTENSION = "ump";
-	private static final String	FILE_EXTENSIONTEST = "txt";
+//	private static final String	FILE_EXTENSIONTEST = "txt";
 
 	private GoalsMainPanel goalsPane;
 	private EntitiesMainPanel entitiesPane;
@@ -223,28 +220,28 @@ public class MainPanel extends IUMPSTPanel{
 						// it is not necessary build error window
 						System.err.println(se.getMessage());
 					}
-				} else if(fileExtension.equals(FILE_EXTENSIONTEST)) {
-					FileLoadRuleDefinition fd = new FileLoadRuleDefinition();
-
-					try {
-						UMPSTProject umpstProject = new UMPSTProject();		 
-						controller = Controller.getInstance(umpstProject);		
-//						createTabPanels(umpstProject, iconController, tabbedPane);
-						
-						UMPSTProject umpstProjectTest = fd.loadTestFile(
-								loadFile,getUmpstProject());
-						
-						controller.showSucessMessageDialog(resource.getString("msLoadSuccessfull")); 
-						
-					} catch (FileNotFoundException e1) {
-						controller.showErrorMessageDialog(
-								resource.getString("erLoadFatalText")); 
-						e1.printStackTrace();
-					} catch (IOException e2) {
-						controller.showErrorMessageDialog(
-								resource.getString("erLoadFatal")); 
-						e2.printStackTrace();					
-					}
+//				} else if(fileExtension.equals(FILE_EXTENSIONTEST)) {
+//					FileLoadRuleDefinition fd = new FileLoadRuleDefinition();
+//
+//					try {
+//						UMPSTProject umpstProject = new UMPSTProject();		 
+//						controller = Controller.getInstance(umpstProject);		
+////						createTabPanels(umpstProject, iconController, tabbedPane);
+//						
+//						UMPSTProject umpstProjectTest = fd.loadTestFile(
+//								loadFile,getUmpstProject());
+//						
+//						controller.showSucessMessageDialog(resource.getString("msLoadSuccessfull")); 
+//						
+//					} catch (FileNotFoundException e1) {
+//						controller.showErrorMessageDialog(
+//								resource.getString("erLoadFatalText")); 
+//						e1.printStackTrace();
+//					} catch (IOException e2) {
+//						controller.showErrorMessageDialog(
+//								resource.getString("erLoadFatal")); 
+//						e2.printStackTrace();					
+//					}
 				
 				} else{
 					controller.showErrorMessageDialog(

@@ -3,6 +3,8 @@
  */
 package unbbayes.model.umpst.implementation;
 
+import unbbayes.model.umpst.entity.EntityModel;
+
 
 /**
  * Ordinary variable object
@@ -13,17 +15,20 @@ public class OrdinaryVariableModel {
 	private String id;
 	private String variable;
 	private String typeEntity;
+	private EntityModel entityObject;
 
 	/**
 	 * Constructor to ordinary variable object
 	 */
 	public OrdinaryVariableModel(String id,
 			String variable,
-			String typeEntity) {
+			String typeEntity,
+			EntityModel entityObject) {
 		
 		this.id = id;
 		this.variable = variable;
-		this.typeEntity = typeEntity;		
+		this.typeEntity = typeEntity;
+		this.entityObject = entityObject;
 	}
 
 	/**
@@ -66,6 +71,20 @@ public class OrdinaryVariableModel {
 	 */
 	public void setTypeEntity(String typeEntity) {
 		this.typeEntity = typeEntity;
+	}
+
+	/**
+	 * @return the entityObject
+	 */
+	public EntityModel getEntityObject() {
+		return entityObject;
+	}
+
+	/**
+	 * @param entityObject the entityObject to set
+	 */
+	public void setEntityObject(EntityModel entityObject) {
+		this.entityObject = entityObject;
 	}
 
 }

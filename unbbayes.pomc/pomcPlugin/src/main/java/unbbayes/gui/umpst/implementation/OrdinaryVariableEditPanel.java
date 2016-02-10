@@ -57,11 +57,14 @@ public class OrdinaryVariableEditPanel extends IUMPSTPanel{
 
 	private JPanel titlePanel;
 	private JScrollPane variablePane;
+	private JSplitPane panelSet;
+	private JSplitPane ordinaryVariablePanel;
 	
 	private String[] entitiesNames = null;
 	private String variableEdited = null;
 	private String entitySelected = null;
 	private String ordinaryVariableRow;
+	private EntityModel entityObject = null;
 	
 	private IconController iconController = new IconController().getInstance();
 	
@@ -85,6 +88,11 @@ public class OrdinaryVariableEditPanel extends IUMPSTPanel{
 		titlePanel = mainPropertiesEditionPane.createTitleLabel("Ordinary Variables");
 		variablePane = createOrdinaryVariableTableAndEdit(rule.getOrdinaryVariableList());
 		
+		panelSet = new JSplitPane(JSplitPane.VERTICAL_SPLIT); // panel to edit ov
+		ordinaryVariablePanel = createOrdinaryVariablePanel();
+		createSubEditPane();
+		
+		
 		JSplitPane mainPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		mainPane.setPreferredSize(new Dimension(480, 380));
 		mainPane.add(createEditPane());
@@ -96,15 +104,13 @@ public class OrdinaryVariableEditPanel extends IUMPSTPanel{
 	public JSplitPane createEditPane() {
 		JSplitPane editPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		editPane.add(titlePanel);
-		editPane.add(createSubEditPane());		
+		editPane.add(panelSet);		
 		return editPane;
 	}
 	
-	public JSplitPane createSubEditPane() {
-		JSplitPane panelSet = new JSplitPane(JSplitPane.VERTICAL_SPLIT);		
-		panelSet.add(createOrdinaryVariable());
+	public void createSubEditPane() {
+		panelSet.add(ordinaryVariablePanel);
 		panelSet.add(variablePane);
-		return panelSet;
 	}
 	
 	public JPanel createAddUpdateButton() {
@@ -132,12 +138,14 @@ public class OrdinaryVariableEditPanel extends IUMPSTPanel{
 			public void actionPerformed(ActionEvent e) {
 				String variableEdited = getVariableEdited();
 				String entitySelected = getEntitySelected();
+				EntityModel entityObject = getEntityObject();
 				if(variableEdited == null || entitySelected == null) {
 					System.err.println("Error. Select entity or edit variable!");
 				} else {					
 					String key = Integer.toString(ID);
 					ordinaryVariable = new OrdinaryVariableModel(key, variableEdited,
-							entitySelected);					
+							entitySelected, entityObject);
+					
 					rule.getOrdinaryVariableList().add(ordinaryVariable);
 					updateOrdinaryVariableTable();
 					ID++;
@@ -173,7 +181,7 @@ public class OrdinaryVariableEditPanel extends IUMPSTPanel{
 	}
 	
 	// Edit variable and set type entity
-	public JSplitPane createOrdinaryVariable() {
+	public JSplitPane createOrdinaryVariablePanel() {
 		final List<EntityModel> entityList = rule.getEntityList();
 		
 		final JTextField variable = new JTextField(SIZE_COLUMNS_TEXT);
@@ -211,6 +219,7 @@ public class OrdinaryVariableEditPanel extends IUMPSTPanel{
 			public void actionPerformed(ActionEvent e) {
 				int index = typeEntitiesBox.getSelectedIndex();
 				setEntitySelected(entityList.get(index).getName());
+				setEntityObject(entityList.get(index));
 			}
 		});
 		
@@ -349,7 +358,7 @@ public class OrdinaryVariableEditPanel extends IUMPSTPanel{
 	 * Set ID according to the last necessary condition ID created.
 	 */
 	public void setID() {
-		int greaterID = 0;
+		int greaterID = -1;
 		boolean beginID = true; // created to set ID = 0
 		for (int i = 0; i < rule.getOrdinaryVariableList().size(); i++) {
 			if (greaterID < Integer.parseInt(rule.getOrdinaryVariableList().get(i).getId())) {
@@ -416,5 +425,19 @@ public class OrdinaryVariableEditPanel extends IUMPSTPanel{
 	 */
 	public void setOrdinaryVariableSelected(OrdinaryVariableModel ordinaryVariableSelected) {
 		this.ordinaryVariableSelected = ordinaryVariableSelected;
+	}
+
+	/**
+	 * @return the entityObject
+	 */
+	public EntityModel getEntityObject() {
+		return entityObject;
+	}
+
+	/**
+	 * @param entityObject the entityObject to set
+	 */
+	public void setEntityObject(EntityModel entityObject) {
+		this.entityObject = entityObject;
 	}
 }

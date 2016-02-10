@@ -492,6 +492,7 @@ public class EffectEditPanel extends IUMPSTPanel{
 				while((i < rule.getEffectVariableList().size()) && (!flag)) {
 					if(variableRow.equals(rule.getEffectVariableList().get(i).getId())) {
 						flag = true;
+						rule.removeEventVariableObject(rule.getEffectVariableList().get(i));
 						rule.getEffectVariableList().remove(i);
 					} else {
 						i++;
@@ -667,7 +668,7 @@ public class EffectEditPanel extends IUMPSTPanel{
 	 * Set ID according to the last necessary condition ID created.
 	 */
 	public void setID() {
-		int greaterID = 0;
+		int greaterID = -1;
 		boolean beginID = true; // created to set ID = 0
 		for (int i = 0; i < rule.getEffectVariableList().size(); i++) {
 			if (greaterID < Integer.parseInt(rule.getEffectVariableList().get(i).getId())) {

@@ -4,15 +4,25 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import unbbayes.io.umpst.implementation.FileBuildImplementationNode;
 import unbbayes.model.umpst.entity.AttributeModel;
 import unbbayes.model.umpst.entity.EntityModel;
 import unbbayes.model.umpst.entity.RelationshipModel;
 import unbbayes.model.umpst.goal.GoalModel;
 import unbbayes.model.umpst.goal.HypothesisModel;
 import unbbayes.model.umpst.group.GroupModel;
+import unbbayes.model.umpst.implementation.CauseVariableModel;
+import unbbayes.model.umpst.implementation.EffectVariableModel;
+import unbbayes.model.umpst.implementation.EnumSubType;
+import unbbayes.model.umpst.implementation.EnumType;
+import unbbayes.model.umpst.implementation.EventNCPointer;
+import unbbayes.model.umpst.implementation.NecessaryConditionVariableModel;
+import unbbayes.model.umpst.implementation.NodeFormulaTree;
+import unbbayes.model.umpst.implementation.OrdinaryVariableModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.rule.RuleModel;
 
@@ -38,6 +48,7 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy {
 	private GroupModel group;
 	
 	FileBuildNode bn = new FileBuildNode();
+	FileBuildImplementationNode bin = new FileBuildImplementationNode();
 	
 	public void goalNodeHierarchy(Document doc, Element parent, UMPSTProject umpstProject) {
 		Element node = null;
@@ -480,8 +491,208 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy {
 						btHypothesisElem.appendChild(hypothesisId);
 					}					
 				}
+				
+				/* Implementation */
+				Element implementationTag = doc.createElement("implementation");
+				node.appendChild(implementationTag);
+				
+				// OrdinaryVariable
+				if (!rule.getOrdinaryVariableList().isEmpty()) {
+					List<OrdinaryVariableModel> listOV = rule.getOrdinaryVariableList();
+					
+					Element ovList = doc.createElement("ordinaryVariableList");
+					implementationTag.appendChild(ovList);
+					
+					
+					for(OrdinaryVariableModel ov : listOV) {
+						Element ordinaryVariable = doc.createElement("ordinaryVariable");
+						ovList.appendChild(ordinaryVariable);
+						
+						Element ovId = doc.createElement("ovId");
+						ovId.appendChild(doc.createTextNode(ov.getId()));
+						ordinaryVariable.appendChild(ovId);
+						
+						Element ovInstance = doc.createElement("ovInstance");
+						ovInstance.appendChild(doc.createTextNode(ov.getVariable()));
+						ordinaryVariable.appendChild(ovInstance);
+						
+						Element ovEntity = doc.createElement("entityId");
+						ovEntity.appendChild(doc.createTextNode(ov.getEntityObject().getId()));
+						ordinaryVariable.appendChild(ovEntity);					
+					}
+				}
+				
+				// NecessaryCondition
+				if (!rule.getNecessaryConditionList().isEmpty()) {
+					List<NecessaryConditionVariableModel> listNC = rule.getNecessaryConditionList();
+					
+					Element ncList = doc.createElement("necessaryConditionList");
+					implementationTag.appendChild(ncList);
+					for(NecessaryConditionVariableModel nc : listNC) {
+						Element ncVariable = doc.createElement("necessaryCondition");
+						ncList.appendChild(ncVariable);
+						
+						
+						Element ncId = doc.createElement("ncId");
+						ncId.appendChild(doc.createTextNode(nc.getId()));
+						ncVariable.appendChild(ncId);
+						
+						// NodeFormulaTree
+						Element ncNodeFormulaTree = doc.createElement("ncNodeFormulaTree");
+						ncVariable.appendChild(ncNodeFormulaTree);
+						
+						NodeFormulaTree root = nc.getFormulaTree();			
+						buildNodeFormula(doc, ncNodeFormulaTree, root);	
+					}
+				}
+				
+				// Cause
+				if (!rule.getCauseVariableList().isEmpty()) {
+					List<CauseVariableModel> listCause = rule.getCauseVariableList();
+					
+					Element ncCause = doc.createElement("causeVariableList");
+					implementationTag.appendChild(ncCause);
+					for(CauseVariableModel cause : listCause) {
+						Element causeVariable = doc.createElement("causeVariable");
+						ncCause.appendChild(causeVariable);
+						
+						Element causeId = doc.createElement("causeId");
+						causeId.appendChild(doc.createTextNode(cause.getId()));
+						causeVariable.appendChild(causeId);
+						
+						Element causeRelationship = doc.createElement("causeRelationship");
+						causeRelationship.appendChild(doc.createTextNode(cause.getRelationship()));
+						causeVariable.appendChild(causeRelationship);
+						
+						Element causeArgumentList = doc.createElement("causeArgumentList");
+						causeVariable.appendChild(causeArgumentList);
+						
+						for (int i = 0; i < cause.getArgumentList().size(); i++) {
+							
+							Element causeArgument = doc.createElement("causeArgument");
+							String arg = cause.getArgumentList().get(i);
+							causeArgument.appendChild(doc.createTextNode(arg));
+							causeArgumentList.appendChild(causeArgument);
+						}
+						
+						Element causeRelationshipModel = doc.createElement("causeRelationshipModel");
+						causeVariable.appendChild(causeRelationshipModel);
+						
+						Element relationshipId = doc.createElement("relationshipId");
+						relationshipId.appendChild(doc.createTextNode(cause.getRelationshipModel().getId()));
+						causeRelationshipModel.appendChild(relationshipId);
+						
+					}
+				}
+				
+				// Effect
+				if (!rule.getEffectVariableList().isEmpty()) {
+					List<EffectVariableModel> listEffect = rule.getEffectVariableList();
+					
+					Element ncEffect = doc.createElement("effectVariableList");
+					implementationTag.appendChild(ncEffect);
+					for(EffectVariableModel effect : listEffect) {
+						Element effectVariable = doc.createElement("effectVariable");
+						ncEffect.appendChild(effectVariable);
+						
+						Element effectId = doc.createElement("effectId");
+						effectId.appendChild(doc.createTextNode(effect.getId()));
+						effectVariable.appendChild(effectId);
+						
+						Element effectRelationship = doc.createElement("effectRelationship");
+						effectRelationship.appendChild(doc.createTextNode(effect.getRelationship()));
+						effectVariable.appendChild(effectRelationship);
+						
+						Element effectArgumentList = doc.createElement("effectArgumentList");
+						effectVariable.appendChild(effectArgumentList);
+						
+						for (int i = 0; i < effect.getArgumentList().size(); i++) {
+							
+							Element effectArgument = doc.createElement("effectArgument");
+							String arg = effect.getArgumentList().get(i);
+							effectArgument.appendChild(doc.createTextNode(arg));
+							effectArgumentList.appendChild(effectArgument);
+						}
+						
+						Element effectRelationshipModel = doc.createElement("effectRelationshipModel");
+						effectVariable.appendChild(effectRelationshipModel);
+						
+						Element relationshipId = doc.createElement("relationshipId");
+						relationshipId.appendChild(doc.createTextNode(effect.getRelationshipModel().getId()));
+						effectRelationshipModel.appendChild(relationshipId);
+						
+					}
+				}
 			}
 		}		
+	}
+	
+	public void buildNodeFormula(Document doc, Element parent, NodeFormulaTree fatherNode) {
+		
+		Element ncNode = doc.createElement("ncNode");	
+		parent.appendChild(ncNode);
+		
+		if (fatherNode.getChildren().size() > 0) {
+			
+			if (fatherNode.getTypeNode() == EnumType.SIMPLE_OPERATOR) {
+				ncNode.appendChild(bin.buildNodeName(doc, fatherNode));
+				ncNode.appendChild(bin.buildNodeMnemonic(doc, fatherNode));
+				ncNode.appendChild(bin.buildSentenceNodeVariable(doc, fatherNode));
+				ncNode.appendChild(bin.buildSentenceNodeVariableOperands(doc, fatherNode));
+				ncNode.appendChild(bin.buildTypeNode(doc, fatherNode));
+				ncNode.appendChild(bin.buildSubTypeNode(doc, fatherNode));
+				
+			} else if (fatherNode.getTypeNode() == EnumType.QUANTIFIER_OPERATOR) {
+				
+				ncNode.appendChild(bin.buildNodeName(doc, fatherNode));
+				ncNode.appendChild(bin.buildNodeMnemonic(doc, fatherNode));
+				ncNode.appendChild(bin.buildSentenceNodeVariable(doc, fatherNode));
+				ncNode.appendChild(bin.buildSentenceNodeVariableOperands(doc, fatherNode));
+				ncNode.appendChild(bin.buildTypeNode(doc, fatherNode));
+				ncNode.appendChild(bin.buildSubTypeNode(doc, fatherNode));
+				
+			} else if (fatherNode.getTypeNode() == EnumType.FORMULA) {
+				
+				ncNode.appendChild(bin.buildNodeName(doc, fatherNode));
+				ncNode.appendChild(bin.buildNodeMnemonic(doc, fatherNode));
+				ncNode.appendChild(bin.buildSentenceNodeVariable(doc, fatherNode));
+				ncNode.appendChild(bin.buildSentenceNodeVariableOperands(doc, fatherNode));
+				ncNode.appendChild(bin.buildTypeNode(doc, fatherNode));
+				ncNode.appendChild(bin.buildSubTypeNode(doc, fatherNode));
+				
+			} else if (fatherNode.getTypeNode() == EnumType.VARIABLE_SEQUENCE) {
+				
+				ncNode.appendChild(bin.buildNodeName(doc, fatherNode));
+				ncNode.appendChild(bin.buildSentenceNodeVariable(doc, fatherNode));
+				ncNode.appendChild(bin.buildSentenceNodeVariableOperands(doc, fatherNode));
+				ncNode.appendChild(bin.buildTypeNode(doc, fatherNode));
+				ncNode.appendChild(bin.buildSubTypeNode(doc, fatherNode));
+				
+			}
+				
+			buildChildNode(doc, ncNode, fatherNode);
+			
+		} else if (fatherNode.getTypeNode() == EnumType.OPERAND) {
+			
+			ncNode.appendChild(bin.buildNodeName(doc, fatherNode));
+			ncNode.appendChild(bin.buildUnitNodeVariable(doc, fatherNode));
+			ncNode.appendChild(bin.buildTypeNode(doc, fatherNode));
+			ncNode.appendChild(bin.buildSubTypeNode(doc, fatherNode));
+			
+		} else if (fatherNode.getTypeNode() == EnumType.VARIABLE) {
+			
+			ncNode.appendChild(bin.buildNodeName(doc, fatherNode));
+			ncNode.appendChild(bin.buildUnitNodeVariable(doc, fatherNode));
+			ncNode.appendChild(bin.buildTypeNode(doc, fatherNode));
+			ncNode.appendChild(bin.buildSubTypeNode(doc, fatherNode));
+		}
+	}
+	
+	public void buildChildNode(Document doc, Element parent, NodeFormulaTree fatherNode) {
+		
+		for(NodeFormulaTree child: fatherNode.getChildren()) {			
+			buildNodeFormula(doc, parent, child);
+		}
 	}
 	
 	public void groupNodeHierarchy(Document doc, Element parent, UMPSTProject umpstProject) {		

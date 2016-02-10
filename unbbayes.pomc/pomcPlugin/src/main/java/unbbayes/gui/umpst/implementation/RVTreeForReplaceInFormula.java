@@ -5,7 +5,11 @@ import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.JButton;
 import javax.swing.JScrollPane;
@@ -20,12 +24,15 @@ import javax.swing.tree.TreePath;
 import unbbayes.controller.umpst.FormulaTreeController;
 import unbbayes.controller.umpst.IconController;
 import unbbayes.gui.umpst.TableButton;
+import unbbayes.model.umpst.entity.EntityModel;
+import unbbayes.model.umpst.entity.RelationshipModel;
 import unbbayes.model.umpst.implementation.CauseVariableModel;
 import unbbayes.model.umpst.implementation.EffectVariableModel;
+import unbbayes.model.umpst.implementation.EventType;
 import unbbayes.model.umpst.implementation.EventVariableObjectModel;
-import unbbayes.model.umpst.implementation.NecessaryConditionVariableModel;
+import unbbayes.model.umpst.implementation.OrdinaryVariableModel;
+import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.rule.RuleModel;
-import unbbayes.prs.Node;
 import unbbayes.util.ArrayMap;
 
 public class RVTreeForReplaceInFormula extends JTree{
@@ -38,6 +45,7 @@ public class RVTreeForReplaceInFormula extends JTree{
 	private static final long serialVersionUID = 1L;
 	private IconController iconController;
 	private RuleModel rule;
+	private UMPSTProject umpstProject;
 	
 	private FormulaTreeController formulaTreeController;
 	private FormulaEditionPane formulaEditionPane;
@@ -45,12 +53,14 @@ public class RVTreeForReplaceInFormula extends JTree{
 	private DefaultMutableTreeNode root;
 	private DefaultMutableTreeNode causes;
 	private DefaultMutableTreeNode effects;
+	private DefaultMutableTreeNode others;
 	private DefaultTreeModel model;
 	
 	
-	public RVTreeForReplaceInFormula(RuleModel rule, FormulaEditionPane formulaEditionPane) {
+	public RVTreeForReplaceInFormula(UMPSTProject umpstProject, RuleModel rule, FormulaEditionPane formulaEditionPane) {
 		super();
-		this.rule = rule;		
+		this.umpstProject = umpstProject;
+		this.rule = rule;
 		this.formulaEditionPane = formulaEditionPane;
 		this.setLayout(new BorderLayout());
 		
@@ -58,19 +68,23 @@ public class RVTreeForReplaceInFormula extends JTree{
 		randomVariableMap = new ArrayMap<Object, Object>();
 		
 		root = new DefaultMutableTreeNode("RV");
-		causes = new DefaultMutableTreeNode("Causes");
+//		causes = new DefaultMutableTreeNode("Causes");
 		effects = new DefaultMutableTreeNode("Effects");
-		root.add(causes);
-		root.add(effects);
+		// All relationship that are not in cause or effect event
+		others = new DefaultMutableTreeNode("Others");
+//		root.add(causes);
+//		root.add(effects);
+		root.add(others);
 		
-		createCausesTree();
-		createEffectsTree();
+//		createCausesTree();
+//		createEffectsTree();
+		createOthersTree();
 		
 		model = new DefaultTreeModel(root);
 		setModel(model);
 		this.setRootVisible(false); 
 		
-		addListeners();		
+		addListeners();
 		super.treeDidChange();
 	
 	}
@@ -198,6 +212,63 @@ public class RVTreeForReplaceInFormula extends JTree{
 		scrollpane.setPreferredSize(new Dimension(80, 80));
 				
 		return scrollpane;
+	}
+	
+	/**
+	 * All relationship from umpstProject that have the same entities
+	 * present in rule ordinaryVariableList.
+	 */
+	public void createOthersTree() {
+		others.removeAllChildren();
+
+		Map<String, RelationshipModel> relationshipMap = new HashMap<String, RelationshipModel>(); 
+		relationshipMap = umpstProject.getMapRelationship();
+				
+		List<EventVariableObjectModel> othersEventVariableList = new ArrayList<EventVariableObjectModel>();
+		
+		Set<String> keys = relationshipMap.keySet();
+		TreeSet<String> sortedKeys = new TreeSet<String>(keys);
+		
+		for (String key : sortedKeys) {
+			
+			if (canParticipate(relationshipMap.get(key))) {
+				String id = relationshipMap.get(key).getId();
+				String name = relationshipMap.get(key).getName();
+			
+				EventVariableObjectModel event = new EventVariableObjectModel(id, EventType.OTHER);
+				event.setRelationship(name);
+				event.setRelationshipModel(relationshipMap.get(key));
+				
+				othersEventVariableList.add(event);
+				
+				DefaultMutableTreeNode node = new DefaultMutableTreeNode(name);
+				others.add(node);
+				randomVariableMap.put(node, event);
+			}
+		}
+		updateTree();
+	}
+	
+	/**
+	 * This function evaluates if relationshipModel can be eventVariableObjectModel. 
+	 * @param relationship
+	 * @return
+	 */
+	public boolean canParticipate(RelationshipModel relationship) {		
+		
+		List<OrdinaryVariableModel> ordinaryVariableList = new ArrayList<OrdinaryVariableModel>();
+		ordinaryVariableList = rule.getOrdinaryVariableList();
+		
+		for (int i = 0; i < relationship.getEntityList().size(); i++) {
+			
+			EntityModel entity = relationship.getEntityList().get(i);
+			for (int j = 0; j < ordinaryVariableList.size(); j++) {
+				if (!(entity.getId().equals(ordinaryVariableList.get(j).getEntityObject().getId()))) {
+					return false;
+				}
+			}
+		}
+		return true;
 	}
 	
 	public void createEffectsTree() {		

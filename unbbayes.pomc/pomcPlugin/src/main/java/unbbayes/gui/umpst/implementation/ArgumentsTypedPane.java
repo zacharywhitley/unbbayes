@@ -53,18 +53,7 @@ public class ArgumentsTypedPane extends JPanel {
 		this.eventNCPointer = eventNCPointer;
 		this.eventVariable = eventNCPointer.getEventVariable();
 		
-		 
-		ovSelected = new OrdinaryVariableModel[eventVariable.getArgumentList().size()];
-		
-		// The node name is searched just in eventVariableObjectList but it can be
-		// in other domain like relationshipList that is not in any rule
-//		for (int i = 0; i < rule.getEventVariableObjectList().size(); i++) {
-//			if (nodeName.equals(rule.getEventVariableObjectList().get(i).getRelationship())) {
-//				eventVariable = rule.getEventVariableObjectList().get(i);
-//				break;
-//			}
-//		}
-		
+		ovSelected = new OrdinaryVariableModel[eventVariable.getRelationshipModel().getEntityList().size()];
 		createArgumentsTypedPane();
 	}
 	
@@ -72,7 +61,7 @@ public class ArgumentsTypedPane extends JPanel {
 		final JFrame frame = new JFrame("Adding argument");
 		argPane = new JPanel(new BorderLayout());
 		
-		int numberArguments = eventVariable.getArgumentList().size();
+		int numberArguments = eventVariable.getRelationshipModel().getEntityList().size();
 		
 		JPanel listPane =  new JPanel(new BorderLayout());
 		listPane.setLayout(new GridLayout(numberArguments + 1, 1));

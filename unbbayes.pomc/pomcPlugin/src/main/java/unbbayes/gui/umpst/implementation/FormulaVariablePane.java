@@ -15,6 +15,7 @@ import java.util.ResourceBundle;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 
 import unbbayes.model.umpst.project.UMPSTProject;
@@ -39,6 +40,9 @@ public class FormulaVariablePane extends JPanel {
 	private JPanel rvPanel;
 	private JPanel ovPanel;
 	private JPanel attPanel;
+	
+	private JScrollPane jspRVTree;
+	private JScrollPane jspOVTree;
 	
 	private JPanel jpArgTree;
 	private JToolBar jtbVariable;
@@ -113,14 +117,17 @@ public class FormulaVariablePane extends JPanel {
 	
 	public void replaceByRVPanel() {
 		rvPanel = new JPanel(new BorderLayout());
-		rvTree = new RVTreeForReplaceInFormula(rule, formulaEditionPane);
-		rvPanel.add(rvTree);
+		rvTree = new RVTreeForReplaceInFormula(umpstProject, rule, formulaEditionPane);
+		jspRVTree = new JScrollPane(rvTree); 
+		rvPanel.add(jspRVTree); 
+//		rvPanel.add(rvTree);
 	}
 	
 	public void replaceByOVPanel() {
 		ovPanel = new JPanel(new BorderLayout());
 		ovTree = new OVTreeForReplaceInFormula(rule, formulaEditionPane);
-		ovPanel.add(ovTree);
+		jspOVTree = new JScrollPane(ovTree); 
+		ovPanel.add(jspOVTree);
 	}
 	
 	public JPanel replaceByAttPanel() {
@@ -135,9 +142,13 @@ public class FormulaVariablePane extends JPanel {
 //				rvPanel.remove(rvTree);
 //				RVTreeForReplaceInFormula rv = new RVTreeForReplaceInFormula(rule);
 //				rvPanel.add(rv);
-				rvPanel.remove(rvTree);
-				rvTree = new RVTreeForReplaceInFormula(rule, formulaEditionPane);
-				rvPanel.add(rvTree);
+				
+				rvPanel.remove(jspRVTree);
+				jspRVTree.remove(rvTree);
+				rvTree = new RVTreeForReplaceInFormula(umpstProject, rule, formulaEditionPane);
+				jspRVTree = new JScrollPane(rvTree); 
+				rvPanel.add(jspRVTree); 
+//				rvPanel.add(rvTree);
 				rvPanel.revalidate();
 				jpArgTree.revalidate();
 				cardLayout.show(jpArgTree, "RVTree");
@@ -147,9 +158,11 @@ public class FormulaVariablePane extends JPanel {
 		
 		btnOV.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent ae){
-				ovPanel.remove(ovTree);
+				ovPanel.remove(jspOVTree);
+				jspOVTree.remove(ovPanel);
 				ovTree = new OVTreeForReplaceInFormula(rule, formulaEditionPane);
-				ovPanel.add(ovTree);
+				jspOVTree = new JScrollPane(ovTree); 
+				ovPanel.add(jspOVTree);
 				ovPanel.revalidate();
 				jpArgTree.revalidate();
 				cardLayout.show(jpArgTree, "OVTree");

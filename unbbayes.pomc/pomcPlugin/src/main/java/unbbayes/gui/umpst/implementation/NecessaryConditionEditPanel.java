@@ -78,7 +78,7 @@ public class NecessaryConditionEditPanel extends IUMPSTPanel{
 		this.umpstProject = umpstProject;
 		this.rule = rule;		
 		this.setLayout(new FlowLayout());		
-		setID();
+		setID();		
 		
 //		cnEditionPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 //		rvListPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
@@ -384,7 +384,7 @@ public class NecessaryConditionEditPanel extends IUMPSTPanel{
 	 * Set ID according to the last necessary condition ID created.
 	 */
 	public void setID() {
-		int greaterID = 0;
+		int greaterID = -1;
 		boolean beginID = true; // created to set ID = 0
 		for (int i = 0; i < rule.getNecessaryConditionList().size(); i++) {
 			if (greaterID < Integer.parseInt(rule.getNecessaryConditionList().get(i).getId())) {

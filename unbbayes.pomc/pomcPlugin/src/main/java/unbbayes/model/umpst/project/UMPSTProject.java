@@ -23,6 +23,9 @@ import unbbayes.model.umpst.entity.RelationshipModel;
 import unbbayes.model.umpst.goal.GoalModel;
 import unbbayes.model.umpst.goal.HypothesisModel;
 import unbbayes.model.umpst.group.GroupModel;
+import unbbayes.model.umpst.implementation.CauseVariableModel;
+import unbbayes.model.umpst.implementation.EffectVariableModel;
+import unbbayes.model.umpst.implementation.OrdinaryVariableModel;
 import unbbayes.model.umpst.rule.RuleModel;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
@@ -32,13 +35,16 @@ public class UMPSTProject extends ObjectModel implements Graph, Serializable  {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private java.util.Map<String,GoalModel>          mapGoal;
-	private java.util.Map<String,HypothesisModel>    mapHypothesis;
-	private java.util.Map<String,EntityModel>        mapEntity;
-	private java.util.Map<String,AttributeModel>     mapAtribute;
-	private java.util.Map<String,RelationshipModel>  mapRelationship;
-	private java.util.Map<String, RuleModel>         mapRules;
-	private java.util.Map<String, GroupModel>        mapGroups;
+	private java.util.Map<String, GoalModel>			mapGoal;
+	private java.util.Map<String, HypothesisModel>		mapHypothesis;
+	private java.util.Map<String, EntityModel>			mapEntity;
+	private java.util.Map<String, AttributeModel>		mapAtribute;
+	private java.util.Map<String, RelationshipModel>	mapRelationship;
+	private java.util.Map<String, RuleModel>			mapRules;
+	private java.util.Map<String, GroupModel>			mapGroups;
+	private java.util.Map<String, OrdinaryVariableModel>	mapOrdinaryVariable;
+	private java.util.Map<String, CauseVariableModel>	mapCauseVariable;
+	private java.util.Map<String, EffectVariableModel>	mapEffectVariable;
 
 	private String fileName; 
 	
@@ -53,7 +59,10 @@ public class UMPSTProject extends ObjectModel implements Graph, Serializable  {
 		this.setMapRelationship(new HashMap<String, RelationshipModel>());
 		this.setMapRules(new HashMap<String, RuleModel>());
 		this.setMapGroups(new HashMap<String, GroupModel>());
-	
+		
+		this.setMapOrdinaryVariable(new HashMap<String, OrdinaryVariableModel>());
+		this.setMapCauseVariable(new HashMap<String, CauseVariableModel>());
+		this.setMapEffectVariable(new HashMap<String, EffectVariableModel>());
 	}
 	
 	/**
@@ -227,6 +236,48 @@ public class UMPSTProject extends ObjectModel implements Graph, Serializable  {
 
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
+	}
+
+	/**
+	 * @return the mapOrdinaryVariable
+	 */
+	public java.util.Map<String, OrdinaryVariableModel> getMapOrdinaryVariable() {
+		return mapOrdinaryVariable;
+	}
+
+	/**
+	 * @param mapOrdinaryVariable the mapOrdinaryVariable to set
+	 */
+	public void setMapOrdinaryVariable(java.util.Map<String, OrdinaryVariableModel> mapOrdinaryVariable) {
+		this.mapOrdinaryVariable = mapOrdinaryVariable;
+	}
+
+	/**
+	 * @return the mapCauseVariable
+	 */
+	public java.util.Map<String, CauseVariableModel> getMapCauseVariable() {
+		return mapCauseVariable;
+	}
+
+	/**
+	 * @param mapCauseVariable the mapCauseVariable to set
+	 */
+	public void setMapCauseVariable(java.util.Map<String, CauseVariableModel> mapCauseVariable) {
+		this.mapCauseVariable = mapCauseVariable;
+	}
+
+	/**
+	 * @return the mapEffectVariable
+	 */
+	public java.util.Map<String, EffectVariableModel> getMapEffectVariable() {
+		return mapEffectVariable;
+	}
+
+	/**
+	 * @param mapEffectVariable the mapEffectVariable to set
+	 */
+	public void setMapEffectVariable(java.util.Map<String, EffectVariableModel> mapEffectVariable) {
+		this.mapEffectVariable = mapEffectVariable;
 	}
 
 }
