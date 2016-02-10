@@ -2,6 +2,7 @@ UNBBAYES VERSION 4.21.16   - WORKING
 -----------------------------
 FEATURE LIST
 Number	Request ID	Summary
+					Included an option in the global option to choose whether to group CPT headers or not.
 
 BUG LIST
 Number	Request ID	Summary

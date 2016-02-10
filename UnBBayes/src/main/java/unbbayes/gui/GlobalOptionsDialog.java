@@ -43,6 +43,7 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.TitledBorder;
@@ -77,7 +78,7 @@ public class GlobalOptionsDialog extends JDialog {
     private NetworkController controller;
 	private JTabbedPane jtp;
     private JPanel confirmationPanel;
-    private JPanel logPanel;
+    private JPanel miscellaneousPanel;
     private JComponent algorithmMainPanel;
     private JPanel algorithmRadioPanel;
     private JButton confirm;
@@ -101,6 +102,10 @@ public class GlobalOptionsDialog extends JDialog {
 
   	private UnBBayesPluginContextHolder unbbayesPluginContextHolder = UnBBayesPluginContextHolder.newInstance();
 
+	private JCheckBox groupCPTHeader;
+
+	private boolean groupCPTHeaderBoolean;
+
     /**
      *  Constroi a estrutura da janela que mostra as opcoes globais
      *
@@ -122,10 +127,13 @@ public class GlobalOptionsDialog extends JDialog {
         
         // create log
         createLogBoolean       = controller.getSingleEntityNetwork().isCreateLog();
+        
+        // group cpt headers
+        setGroupCPTHeaderBoolean(controller.getSENController().isToGroupCPTHeaders());
       
 		jtp                       = new JTabbedPane();
         confirmationPanel         = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        logPanel                  = new JPanel();
+        miscellaneousPanel        = new JPanel(new GridLayout(0, 1, 10, 10));
         algorithmMainPanel        = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         
         
@@ -143,6 +151,7 @@ public class GlobalOptionsDialog extends JDialog {
                 public void actionPerformed(ActionEvent e) {
                 	
                     controller.getSingleEntityNetwork().setCreateLog(createLog.isSelected());
+                    controller.getSENController().setToGroupCPTHeaders(groupCPTHeader.isSelected());
                     
                     // commit changes (made at each option panel) on inference algorithm
                     InferenceAlgorithmOptionPanel currentPanel = getSelectedAlgorithmOptionPanel();
@@ -187,6 +196,15 @@ public class GlobalOptionsDialog extends JDialog {
                     }
                     
                     controller.getSingleEntityNetwork().setCreateLog(createLogBoolean);
+                    createLog.setSelected(createLogBoolean);
+                    createLog.updateUI();
+                    createLog.repaint();
+                    
+                    controller.getSENController().setToGroupCPTHeaders(isGroupCPTHeaderBoolean());
+                    groupCPTHeader.setSelected(isGroupCPTHeaderBoolean());
+                    groupCPTHeader.updateUI();
+                    groupCPTHeader.repaint();
+                    
                     repaint();
                 }
             });
@@ -217,7 +235,12 @@ public class GlobalOptionsDialog extends JDialog {
                 }
             });
 
-		logPanel.add(createLog);
+		miscellaneousPanel.add(createLog);
+		
+		
+		// handling the check box to group CPT headers by default.
+		groupCPTHeader = new JCheckBox(resource.getString("groupCPTHeaderLabel"), controller.getSENController().isToGroupCPTHeaders());
+		miscellaneousPanel.add(groupCPTHeader);
 		
         // adding radio buttons to the same radio button group (algorithmGroup) and same panel (algorithmRadioPanel)
 		for (JRadioButtonMenuItem radioItem : this.getAlgorithmToOptionMap().keySet()) {
@@ -246,7 +269,7 @@ public class GlobalOptionsDialog extends JDialog {
 	    });
         
 		jtp.addTab(resource.getString("algorithmTab"), algorithmMainPanel);
-		jtp.addTab(resource.getString("logTab"), logPanel);
+		jtp.addTab(resource.getString("miscellaneousTab"), new JScrollPane(miscellaneousPanel));
         contentPane.add(jtp, BorderLayout.CENTER);
         contentPane.add(confirmationPanel, BorderLayout.SOUTH);
     }
@@ -600,6 +623,34 @@ public class GlobalOptionsDialog extends JDialog {
 	public void setUnBBayesPluginContextHolder(
 			UnBBayesPluginContextHolder unbbayesPluginContextHolder) {
 		this.unbbayesPluginContextHolder = unbbayesPluginContextHolder;
+	}
+
+	/**
+	 * @return the groupCPTHeader
+	 */
+	public JCheckBox getGroupCPTHeader() {
+		return groupCPTHeader;
+	}
+
+	/**
+	 * @param groupCPTHeader the groupCPTHeader to set
+	 */
+	public void setGroupCPTHeader(JCheckBox groupCPTHeader) {
+		this.groupCPTHeader = groupCPTHeader;
+	}
+
+	/**
+	 * @return the groupCPTHeaderBoolean
+	 */
+	public boolean isGroupCPTHeaderBoolean() {
+		return groupCPTHeaderBoolean;
+	}
+
+	/**
+	 * @param groupCPTHeaderBoolean the groupCPTHeaderBoolean to set
+	 */
+	public void setGroupCPTHeaderBoolean(boolean groupCPTHeaderBoolean) {
+		this.groupCPTHeaderBoolean = groupCPTHeaderBoolean;
 	}
 }
 

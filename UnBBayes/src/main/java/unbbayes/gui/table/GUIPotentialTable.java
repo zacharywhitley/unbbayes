@@ -43,12 +43,29 @@ import unbbayes.util.Debug;
 public class GUIPotentialTable {
 	
 	private PotentialTable potentialTable;
+
+	private boolean isToGroupHeaders = true;
 	
 	private static ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.controller.resources.ControllerResources.class.getName(), Locale.getDefault(), GUIPotentialTable.class.getClassLoader());
 	
+	/**
+	 * Constructor which initializes {@link #isToGroupHeaders()} with false.
+	 * @see #GUIPotentialTable(PotentialTable, boolean)
+	 */
 	public GUIPotentialTable(PotentialTable potentialTable) {
+		this(potentialTable, true);
+	}
+	
+	/**
+	 * Default constructor initializing fields
+	 * @param potentialTable : the conditional probability table that will be displayed by {@link #makeTable()}
+	 * @param isToGroupHeaders : {@link #setToGroupHeaders(boolean)} will be initialized this value. If true, then 
+	 * headers may occupy more than one column. If false, then headers will occupy only 1 column.
+	 */
+	public GUIPotentialTable(PotentialTable potentialTable, boolean isToGroupHeaders) {
 		this.potentialTable = potentialTable;
+		this.isToGroupHeaders = isToGroupHeaders;
 	}
 	/**
 	 * This method is responsible to represent the potential table as a JTable.
@@ -65,16 +82,16 @@ public class GUIPotentialTable {
 		df.setMaximumFractionDigits(4);
 
 		// calculate the number of states by multiplying the number of
-		// states that each father (variables) has. Where variable 0 is the
+		// states that each parent (variables) has. Where variable 0 is the
 		// node itself. That is why we divide the table size by the number 
 		// of states in the node itself. 
 		/*
 		 * Ex: states = 12 / 3;
 		 * 
 		 * |------------------------------------------------------| 
-		 * | Father 2     |      State 1      |      State 2      |
+		 * | Parent 2     |      State 1      |      State 2      |
 		 * |--------------|-------------------|-------------------| 
-		 * | Father 1     | State 1 | State 2 | State 1 | State 2 |
+		 * | Parent 1     | State 1 | State 2 | State 1 | State 2 |
 		 * |------------------------------------------------------| 
 		 * | Node State 1 |    1    |    1    |    1    |    1    | 
 		 * | Node State 2 |    0    |    0    |    0    |    0    |
@@ -88,7 +105,7 @@ public class GUIPotentialTable {
 		int rows = node.getStatesSize();
 
 		// the number of columns is the number of states that we calculated
-		// before plus one that is the column where the fathers names and
+		// before plus one that is the column where the parents names and
 		// the states of the node itself will be placed.
 		int columns = nStates + 1;
 		
@@ -108,13 +125,13 @@ public class GUIPotentialTable {
 		 * Ex: Following the example above this is the first header's row. 
 		 * 
 		 * |--------------|-------------------|-------------------| 
-		 * | Father 1     | State 1 | State 2 | State 1 | State 2 |
+		 * | Parent 1     | State 1 | State 2 | State 1 | State 2 |
 		 * |------------------------------------------------------| 
 		 * 
 		 */
 		String[] column = new String[data[0].length];
-		Node firtHeaderNode;
-		// If there is no father, this is going to be the first header's 
+		Node firstHeaderNode;
+		// If there is no parent, this is going to be the first header's 
 		// row:
 		/*
 		 * |-----------|---------------| 
@@ -126,17 +143,17 @@ public class GUIPotentialTable {
 			column[0] = "State";
 			column[1] = "Probability";
 		} else {
-			firtHeaderNode = (Node)potentialTable.getVariableAt(1);
+			firstHeaderNode = (Node)potentialTable.getVariableAt(1);
 			/*
-			 * Ex: Here we get the variable "Father 1" and set its name in 
+			 * Ex: Here we get the variable "Parent 1" and set its name in 
 			 *     the header. 
 			 * 
 			 * |--------------| 
-			 * | Father 1     |
+			 * | Parent 1     |
 			 * |--------------- 
 			 * 
 			 */
-			column[0] = firtHeaderNode.getName();
+			column[0] = firstHeaderNode.getName();
 			for (int i = 0; i < data[0].length - 1; i++) {
 				if (nVariables > 1) {
 					// Reapeats all states in the node until there are cells to
@@ -149,7 +166,7 @@ public class GUIPotentialTable {
 					 * ----------------------------------------| 
 					 * 
 					 */
-					column[i + 1] = firtHeaderNode.getStateAt(i % firtHeaderNode.getStatesSize());
+					column[i + 1] = firstHeaderNode.getStateAt(i % firstHeaderNode.getStatesSize());
 				}
 			}
 		}
@@ -199,7 +216,7 @@ public class GUIPotentialTable {
 		 * Ex: The table so far, following the example above.
 		 * 
 		 * |--------------|-------------------|-------------------| 
-		 * | Father 1     | State 1 | State 2 | State 1 | State 2 |
+		 * | Parent 1     | State 1 | State 2 | State 1 | State 2 |
 		 * |------------------------------------------------------| 
 		 * | Node State 1 |    1    |    1    |    1    |    1    | 
 		 * | Node State 2 |    0    |    0    |    0    |    0    |
@@ -213,8 +230,11 @@ public class GUIPotentialTable {
 		
 		// Setup to allow grouping the header.
 		table.setColumnModel(new GroupableTableColumnModel());
+		
+		// if isToGroupHeaders() == true, then headers will be grouped. If false, then values in headers will repeat
 		table.setTableHeader(new GroupableTableHeader(
-				(GroupableTableColumnModel) table.getColumnModel()));
+				(GroupableTableColumnModel) table.getColumnModel(), new GroupableTableHeaderUI(isToGroupHeaders())));
+		
 		table.setModel(model);
 		
 		// Setup Column Groups
@@ -231,9 +251,9 @@ public class GUIPotentialTable {
 		// Sets default color for parents name in first column.
 		/*
 		 * |--------------- 
-		 * | Father 2     |
+		 * | Parent 2     |
 		 * |--------------| 
-		 * | Father 1     |
+		 * | Parent 1     |
 		 * |--------------- 
 		 * 
 		 */
@@ -249,8 +269,8 @@ public class GUIPotentialTable {
 		 */
 		cModel.getColumn(0).setCellRenderer(new GroupableTableCellRenderer(Color.BLACK, Color.YELLOW));
 		// Fill all other headers, but the first (that has already been 
-		// set). It ignores k = 0 (the node itself) and k = 1 (the fist 
-		// father).
+		// set). It ignores k = 0 (the node itself) and k = 1 (the first 
+		// parent).
 		for (int k = 2; k < nVariables; k++) {
 			Node parent = (Node)potentialTable.getVariableAt(k);
 			int nPreviousParentStates = potentialTable.getVariableAt(k-1).getStatesSize();
@@ -416,6 +436,20 @@ public class GUIPotentialTable {
 	 */
 	public void setPotentialTable(PotentialTable potentialTable) {
 		this.potentialTable = potentialTable;
+	}
+	/**
+	 * @return the isToGroupHeaders : if true, then {@link #makeTable()} will generate grouped table headers (i.e. some headers will occupy the width of several columns).
+	 * If false, the headers will not be grouped (i.e. the width of headers will be always 1 column).
+	 */
+	public boolean isToGroupHeaders() {
+		return isToGroupHeaders;
+	}
+	/**
+	 * @param isToGroupHeaders the isToGroupHeaders to set : if true, then {@link #makeTable()} will generate grouped table headers (i.e. some headers will occupy the width of several columns).
+	 * If false, the headers will not be grouped (i.e. the width of headers will be always 1 column).
+	 */
+	public void setToGroupHeaders(boolean isToGroup) {
+		isToGroupHeaders = isToGroup;
 	}
 
 }

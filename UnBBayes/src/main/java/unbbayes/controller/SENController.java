@@ -75,6 +75,8 @@ public class SENController {
 
 	private int counterForNodeName = 0;
 
+	private boolean isToGroupCPTHeaders = true;
+
 	public IInferenceAlgorithm getInferenceAlgorithm() {
 		return inferenceAlgorithm;
 	}
@@ -610,7 +612,7 @@ public class SENController {
 		if (node instanceof IRandomVariable) {
 			potTab = (PotentialTable)((IRandomVariable) node).getProbabilityFunction();
 
-			table = new GUIPotentialTable(potTab).makeTable();
+			table = new GUIPotentialTable(potTab, isToGroupCPTHeaders()).makeTable();
 			
 			// the following was migrated to GUIPotentialTable(potTab).makeTable()
 //			// (feature:3315773) Allow copy/paste between JTable and Excel
@@ -936,6 +938,27 @@ public class SENController {
 	 */
 	public void setCounterForNodeName(int counterForNodeName) {
 		this.counterForNodeName = counterForNodeName;
+	}
+
+	/**
+	 * @return the isToGroupCPTHeaders : if true, then headers of CPT will be grouped (i.e. each column may have shared headers). 
+	 * If false, then each column will have their own headers.
+	 * @see #makeTable(Node)
+	 * @see GUIPotentialTable#GUIPotentialTable(PotentialTable, boolean)
+	 */
+	public boolean isToGroupCPTHeaders() {
+		return isToGroupCPTHeaders;
+	}
+
+	/**
+	 * @param isToGroupCPTHeaders the isToGroupCPTHeaders to set : 
+	 * if true, then headers of CPT will be grouped (i.e. each column may have shared headers). 
+	 * If false, then each column will have their own headers.
+	 * @see #makeTable(Node)
+	 * @see GUIPotentialTable#GUIPotentialTable(PotentialTable, boolean)
+	 */
+	public void setToGroupCPTHeaders(boolean isToGroupCPTHeaders) {
+		this.isToGroupCPTHeaders = isToGroupCPTHeaders;
 	}
 
 }

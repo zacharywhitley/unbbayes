@@ -22,6 +22,7 @@ package unbbayes.gui.table;
 
 import java.util.Iterator;
 
+import javax.swing.plaf.TableHeaderUI;
 import javax.swing.table.JTableHeader;
 
 
@@ -31,7 +32,10 @@ import javax.swing.table.JTableHeader;
  */
 public class GroupableTableHeader extends JTableHeader {
 
-    /**
+	/** Auto generated serial version ID */
+	private static final long serialVersionUID = 4839112759939089674L;
+	
+	/**
      * Identifies the UI class which draws the header.
      */    
     private static final String uiClassID = "GroupableTableHeaderUI";
@@ -41,11 +45,24 @@ public class GroupableTableHeader extends JTableHeader {
      * column model. If cm is null this method will initialize the table header
      * with a default TableColumnModel.
      * @param model the column model for the table
+     * @see #GroupableTableHeader(GroupableTableColumnModel, TableHeaderUI)
+     * @see GroupableTableHeaderUI
      */    
     public GroupableTableHeader(GroupableTableColumnModel model) {
-        super(model);
-        setUI(new GroupableTableHeaderUI());
-        setReorderingAllowed(false);
+        this(model, new GroupableTableHeaderUI());
+    }
+    
+    /**
+     * Constructs a GroupableTableHeader which is initialized with cm as the
+     * column model. If cm is null this method will initialize the table header
+     * with a default TableColumnModel.
+     * @param model the column model for the table
+     * @param ui : the class responsible for rendering (painting) the header columns.
+     */    
+    public GroupableTableHeader(GroupableTableColumnModel model, TableHeaderUI ui) {
+    	super(model);
+    	setUI(ui);
+    	setReorderingAllowed(false);
     }
     
     

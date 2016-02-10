@@ -25,9 +25,10 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.Vector;
+import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.plaf.basic.BasicTableHeaderUI;
@@ -42,18 +43,33 @@ import javax.swing.table.TableColumnModel;
  */
 public class GroupableTableHeaderUI extends BasicTableHeaderUI {
     
-    /**
-     * Contains a list of ColumnGroups that have already been painted
-     * in the current paint request.
-     */
-    protected Vector paintedGroups = new Vector();
+    
+	private boolean groupHeaders;
     
     /**
+     * Default constructor will call {@link #GroupableTableHeaderUI(boolean)} with true as its argument
+     */
+    public GroupableTableHeaderUI() {
+    	this(true);	// group headers by default
+    }
+    
+    /**
+     * Default constructor initializing fields
+     * @param groupHeaders : this value initializes {@link #setToGroupHeaders(boolean)}
+     */
+    public GroupableTableHeaderUI(boolean groupHeaders) {
+		this.groupHeaders = groupHeaders;
+	}
+
+	/**
      * Paint a representation of the table header.
      * @param g the Graphics context in which to paint
      * @param c the component being painted; this argument is often ignored
      */
     public void paint(Graphics g, JComponent c) {
+    	// this variable will hold what column groups were already handled in this paint request
+    	Set<ColumnGroup> paintedGroups = new HashSet<ColumnGroup>();	// using a hash set, because it behaves like a hash table
+    	
         Rectangle clipBounds = g.getClipBounds();
         GroupableTableColumnModel cm = (GroupableTableColumnModel)header.getColumnModel();
         if (cm == null) return;
@@ -63,6 +79,9 @@ public class GroupableTableHeaderUI extends BasicTableHeaderUI {
         Rectangle cellRect  = new Rectangle(0, 0, size.width, size.height);
         Hashtable h = new Hashtable();
         int columnMargin = cm.getColumnMargin();
+        
+        // prepare a local variable to hold the value of isToGroupHeaders(), because we'll access it several times in next loop
+        boolean isToGroupHeaders = isToGroupHeaders();
         
         Enumeration columns = cm.getColumns();
         while (columns.hasMoreElements()) {
@@ -74,17 +93,34 @@ public class GroupableTableHeaderUI extends BasicTableHeaderUI {
                 int groupHeight = 0;
                 while (colGrpIter.hasNext()) {
                     ColumnGroup cGroup = (ColumnGroup)colGrpIter.next();
-                    Rectangle groupRect = (Rectangle)h.get(cGroup);
-                    if (groupRect == null) {
+                    
+                    // groupRect == null if we are not going to group headers, or this is the 1st time we create a group
+                    Rectangle groupRect = isToGroupHeaders?((Rectangle)h.get(cGroup)):null; 
+                    if (groupRect == null) {  
+                    	// if we are not grouping headers, create a header for each column now
+                    	// if we are grouping headers, but this is the 1st time we create the header group, then create it now anyway
                         groupRect = new Rectangle(cellRect);
                         Dimension d = cGroup.getSize(header.getTable());
-                        groupRect.width  = d.width;
+                        if (isToGroupHeaders) {
+                        	// if we are grouping headers, then the width shall be the sum of the width of all grouped columns
+                        	groupRect.width  = d.width;
+                        } else {
+                        	// if we are not grouping headers, then the width is the same of just 1 column
+                        	groupRect.width  = aColumn.getWidth();
+                        }
                         groupRect.height = d.height;
-                        h.put(cGroup, groupRect);
-                    }
+                        if (isToGroupHeaders) {
+                        	h.put(cGroup, groupRect);
+                        }
+                    }	// if we are creating groups and the group was created previously, then reuse it
+                    // avoid painting the same group twice
                     if(!paintedGroups.contains(cGroup)) {
                         paintCell(g, groupRect, cGroup);
-                        paintedGroups.add(cGroup);
+                        // we need to keep track of which groups were painted already, 
+                        // but we don't need to keep such track if we are not grouping headers (because in such case there will be no redundancy)
+                        if (isToGroupHeaders) {
+                        	paintedGroups.add(cGroup);
+                        }
                     }
                     groupHeight += groupRect.height;
                     cellRect.height = size.height - groupHeight;
@@ -98,6 +134,8 @@ public class GroupableTableHeaderUI extends BasicTableHeaderUI {
             cellRect.x += cellRect.width;
             column++;
         }
+        
+        // make sure the set is clean
         paintedGroups.clear();
     }
     
@@ -191,5 +229,19 @@ public class GroupableTableHeaderUI extends BasicTableHeaderUI {
         }
         return createHeaderSize(width);
     }
+
+	/**
+	 * @return the groupHeaders
+	 */
+	public boolean isToGroupHeaders() {
+		return groupHeaders;
+	}
+
+	/**
+	 * @param groupHeaders the groupHeaders to set
+	 */
+	public void setToGroupHeaders(boolean groupHeaders) {
+		this.groupHeaders = groupHeaders;
+	}
 }
 

@@ -127,7 +127,9 @@ public class GuiResources extends ListResourceBundle {
 		{"colorControllerTab","Color Controller"},
 		{"sizeControllerTab","Size Controller"},
 		{"logTab","Log"},
+		{"miscellaneousTab","Miscellaneous"},
 		{"createLogLabel","Create Log"},
+		{"groupCPTHeaderLabel","Group headers of conditional probability tables"},
 		{"nodeGraphName","Node"},
 		{"closeButton", "Close"},
 		
