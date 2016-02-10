@@ -184,6 +184,8 @@ public class PNEditionPane extends JPanel {
 	/** This is a pane to edit conditional probability functions */
 	private JComponent cpfPane;
 
+	private boolean useFloatingColumn = true;
+
 	/** Load resource file from this package */
 	private static ResourceBundle resource = unbbayes.util.ResourceController
 			.newInstance().getBundle(
@@ -606,7 +608,8 @@ public class PNEditionPane extends JPanel {
 		// tPanel.add ( btnCPS ) ;
 		
 		
-		if (table.getColumnModel() instanceof GroupableTableColumnModel) {
+		if (isUseFloatingColumn()
+				&& (table.getColumnModel() instanceof GroupableTableColumnModel)) {
 			// this table uses some classes declared in unbbayes.gui.table package, so we can do some special treatments here
 
 			//this will be the RowHeader of the scroll view
@@ -1451,6 +1454,22 @@ public class PNEditionPane extends JPanel {
 		this.cpfPane = cpfPane;
 	}
 	
+	/**
+	 * @return the useFloatingColumn : if true, then {@link #setTable(JTable, Node)} will force the 1st column of the JTable to follow the scroll pane
+	 * (i.e. the 1st column will "float"). If false, then the table at {@link #setTable(JTable, Node)} will be displayed as-is.
+	 */
+	public boolean isUseFloatingColumn() {
+		return useFloatingColumn;
+	}
+
+	/**
+	 * @param useFloatingColumn the useFloatingColumn to set : if true, then {@link #setTable(JTable, Node)} will force the 1st column of the JTable to follow the scroll pane
+	 * (i.e. the 1st column will "float"). If false, then the table at {@link #setTable(JTable, Node)} will be displayed as-is.
+	 */
+	public void setUseFloatingColumn(boolean useFloatingColumn) {
+		this.useFloatingColumn = useFloatingColumn;
+	}
+
 	/*Listeners to deal with the resizing of the first row*/
 	private class ColumnResizedListener implements MouseMotionListener{
 		JTable rows;

@@ -129,6 +129,7 @@ public class GuiResources_pt extends ListResourceBundle {
 		{"miscellaneousTab","Diversos"},
 		{"createLogLabel","Gerar Log"},
 		{"groupCPTHeaderLabel","Agrupar cabeçalhos das tabelas de probabilidade condicional"},
+		{"floatingColumnLabel","Flutuar primeira coluna da CPT (a coluna acompanhará a barra de rolagem)."},
 		{"nodeGraphName","Nó"},
 		{"closeButton", "Fechar"},
 	

@@ -106,6 +106,10 @@ public class GlobalOptionsDialog extends JDialog {
 
 	private boolean groupCPTHeaderBoolean;
 
+	private boolean isToUseFloatingCPTColumn;
+
+	private JCheckBox useFloatingCPTColumnCheckBox;
+
     /**
      *  Constroi a estrutura da janela que mostra as opcoes globais
      *
@@ -128,8 +132,13 @@ public class GlobalOptionsDialog extends JDialog {
         // create log
         createLogBoolean       = controller.getSingleEntityNetwork().isCreateLog();
         
-        // group cpt headers
+        // store initial (default) value of checkbox to group cpt headers (so that we can restore later)
         setGroupCPTHeaderBoolean(controller.getSENController().isToGroupCPTHeaders());
+        
+        // similarly, store initial value of checkbox to float 1st column of CPT
+        
+        setToUseFloatingCPTColumn(controller.getScreen().getNetWindowEdition().isUseFloatingColumn());
+        
       
 		jtp                       = new JTabbedPane();
         confirmationPanel         = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -151,7 +160,8 @@ public class GlobalOptionsDialog extends JDialog {
                 public void actionPerformed(ActionEvent e) {
                 	
                     controller.getSingleEntityNetwork().setCreateLog(createLog.isSelected());
-                    controller.getSENController().setToGroupCPTHeaders(groupCPTHeader.isSelected());
+                    controller.getSENController().setToGroupCPTHeaders(getGroupCPTHeader().isSelected());
+                    controller.getScreen().getNetWindowEdition().setUseFloatingColumn(getUseFloatingCPTColumnCheckBox().isSelected());
                     
                     // commit changes (made at each option panel) on inference algorithm
                     InferenceAlgorithmOptionPanel currentPanel = getSelectedAlgorithmOptionPanel();
@@ -205,6 +215,12 @@ public class GlobalOptionsDialog extends JDialog {
                     groupCPTHeader.updateUI();
                     groupCPTHeader.repaint();
                     
+
+                    controller.getScreen().getNetWindowEdition().setUseFloatingColumn(isToUseFloatingCPTColumn());
+                    useFloatingCPTColumnCheckBox.setSelected(isToUseFloatingCPTColumn());
+                    useFloatingCPTColumnCheckBox.updateUI();
+                    useFloatingCPTColumnCheckBox.repaint();
+                    
                     repaint();
                 }
             });
@@ -241,6 +257,9 @@ public class GlobalOptionsDialog extends JDialog {
 		// handling the check box to group CPT headers by default.
 		groupCPTHeader = new JCheckBox(resource.getString("groupCPTHeaderLabel"), controller.getSENController().isToGroupCPTHeaders());
 		miscellaneousPanel.add(groupCPTHeader);
+		
+		useFloatingCPTColumnCheckBox = new JCheckBox(resource.getString("floatingColumnLabel"), controller.getScreen().getNetWindowEdition().isUseFloatingColumn());
+		miscellaneousPanel.add(useFloatingCPTColumnCheckBox);
 		
         // adding radio buttons to the same radio button group (algorithmGroup) and same panel (algorithmRadioPanel)
 		for (JRadioButtonMenuItem radioItem : this.getAlgorithmToOptionMap().keySet()) {
@@ -651,6 +670,35 @@ public class GlobalOptionsDialog extends JDialog {
 	 */
 	public void setGroupCPTHeaderBoolean(boolean groupCPTHeaderBoolean) {
 		this.groupCPTHeaderBoolean = groupCPTHeaderBoolean;
+	}
+
+	/**
+	 * @return the isToUseFloatingCPTColumn
+	 */
+	public boolean isToUseFloatingCPTColumn() {
+		return isToUseFloatingCPTColumn;
+	}
+
+	/**
+	 * @param isToUseFloatingCPTColumn the isToUseFloatingCPTColumn to set
+	 */
+	public void setToUseFloatingCPTColumn(boolean isToUseFloatingCPTColumn) {
+		this.isToUseFloatingCPTColumn = isToUseFloatingCPTColumn;
+	}
+
+	/**
+	 * @return the useFloatingCPTColumnCheckBox
+	 */
+	public JCheckBox getUseFloatingCPTColumnCheckBox() {
+		return useFloatingCPTColumnCheckBox;
+	}
+
+	/**
+	 * @param useFloatingCPTColumnCheckBox the useFloatingCPTColumnCheckBox to set
+	 */
+	public void setUseFloatingCPTColumnCheckBox(
+			JCheckBox useFloatingCPTColumnCheckBox) {
+		this.useFloatingCPTColumnCheckBox = useFloatingCPTColumnCheckBox;
 	}
 }
 

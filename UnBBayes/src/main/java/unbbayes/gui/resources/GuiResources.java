@@ -130,6 +130,7 @@ public class GuiResources extends ListResourceBundle {
 		{"miscellaneousTab","Miscellaneous"},
 		{"createLogLabel","Create Log"},
 		{"groupCPTHeaderLabel","Group headers of conditional probability tables"},
+		{"floatingColumnLabel","Freeze 1st column of CPT (1st column will follow the scroll bar)."},
 		{"nodeGraphName","Node"},
 		{"closeButton", "Close"},
 		
