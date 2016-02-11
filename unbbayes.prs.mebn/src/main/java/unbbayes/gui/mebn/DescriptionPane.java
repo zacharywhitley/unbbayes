@@ -47,6 +47,7 @@ public class DescriptionPane extends JPanel{
 
 	private JTextArea textArea;
 	private JToolBar toolBar; 
+	private JScrollPane scrollPane; 
 	
 	private final MEBNController mebnController; 
 
@@ -55,24 +56,16 @@ public class DescriptionPane extends JPanel{
 		super(new BorderLayout());
 
 		this.mebnController = mebnController; 
-		
-//		TitledBorder titledBorder;
-//
-//		titledBorder = BorderFactory.createTitledBorder(
-//				BorderFactory.createLineBorder(Color.BLUE),
-//				resource.getString("descriptionLabel"));
-//		titledBorder.setTitleColor(Color.BLUE);
-//		titledBorder.setTitleJustification(TitledBorder.CENTER);
-//
-//		setBorder(titledBorder);
-//		setBorder(BorderFactory.createLineBorder(Color.blue)); 
 
 		textArea = new JTextArea(5, 10);
-		JScrollPane scrollPane =
+		scrollPane =
 			new JScrollPane(textArea,
 					JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-					JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+					JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		textArea.setEditable(true);
+		
+		textArea.setLineWrap(true);
+		textArea.setWrapStyleWord(true);
 
 		textArea.addFocusListener(new FocusListener(){
 
@@ -112,7 +105,6 @@ public class DescriptionPane extends JPanel{
 
 		btn.setBackground(Color.WHITE); 
 		btn.setSize(20, 20); 
-//		btn.se
 
 		JLabel labelDescription = new JLabel(" " + resource.getString("descriptionLabel")); 
 		labelDescription.setBackground(Color.WHITE); 
@@ -120,6 +112,10 @@ public class DescriptionPane extends JPanel{
 		toolBar.removeAll(); 
 		toolBar.add(btn); 
 		toolBar.add(labelDescription); 
+		
+		textArea.setCaretPosition(0);
+		
+		
 	}
 	
 	/**
