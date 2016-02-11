@@ -26,6 +26,7 @@ import unbbayes.model.umpst.group.GroupModel;
 import unbbayes.model.umpst.implementation.CauseVariableModel;
 import unbbayes.model.umpst.implementation.EffectVariableModel;
 import unbbayes.model.umpst.implementation.OrdinaryVariableModel;
+import unbbayes.model.umpst.implementation.algorithm.MTheoryModel;
 import unbbayes.model.umpst.rule.RuleModel;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
@@ -45,8 +46,11 @@ public class UMPSTProject extends ObjectModel implements Graph, Serializable  {
 	private java.util.Map<String, OrdinaryVariableModel>	mapOrdinaryVariable;
 	private java.util.Map<String, CauseVariableModel>	mapCauseVariable;
 	private java.util.Map<String, EffectVariableModel>	mapEffectVariable;
+	
+	private MTheoryModel mtheory;
 
-	private String fileName; 
+	private String fileName;
+	private String modelName; // it is equal of filename
 	
 	public UMPSTProject() {
 
@@ -71,9 +75,7 @@ public class UMPSTProject extends ObjectModel implements Graph, Serializable  {
 	public java.util.Map<String, GroupModel> getMapGroups() {
 		return mapGroups;
 	}
-
-
-
+	
 	/**
 	 * @param mapGroups the mapGroups to set
 	 */
@@ -278,6 +280,20 @@ public class UMPSTProject extends ObjectModel implements Graph, Serializable  {
 	 */
 	public void setMapEffectVariable(java.util.Map<String, EffectVariableModel> mapEffectVariable) {
 		this.mapEffectVariable = mapEffectVariable;
+	}
+
+	/**
+	 * @return the modelName
+	 */
+	public String getModelName() {
+		return modelName;
+	}
+
+	/**
+	 * @param modelName the modelName to set
+	 */
+	public void setModelName(String modelName) {
+		this.modelName = modelName;
 	}
 
 }

@@ -208,7 +208,7 @@ public class EffectEditPanel extends IUMPSTPanel{
 	 * Create relationshipBox splitPane with its arguments 
 	 */
 	public void createRelationshipBox() {
-		relationshipBox = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		relationshipBox = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		
 		// Relationship Box
 		int relationshipListSize = rule.getRelationshipList().size();

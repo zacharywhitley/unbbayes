@@ -40,6 +40,7 @@ public class RuleModel extends ObjectModel{
 	private List<EffectVariableModel> effectVariableList;
 	private List<NecessaryConditionVariableModel> necessaryConditionList;
 	private List<EventVariableObjectModel> eventVariableObjectList;
+	private List<EventVariableObjectModel> othersVariableObjectList;
 	
 	public RuleModel(String id,
 			String rulesName,
@@ -67,6 +68,7 @@ public class RuleModel extends ObjectModel{
 		effectVariableList = new ArrayList<EffectVariableModel>();
 		necessaryConditionList = new ArrayList<NecessaryConditionVariableModel>();
 		eventVariableObjectList = new ArrayList<EventVariableObjectModel>();
+		othersVariableObjectList = new ArrayList<EventVariableObjectModel>();
 		
 		super.setType("Rule");
 	}
@@ -288,5 +290,19 @@ public class RuleModel extends ObjectModel{
 	 */
 	public void setNecessaryConditionList(List<NecessaryConditionVariableModel> necessaryConditionList) {
 		this.necessaryConditionList = necessaryConditionList;
+	}
+
+	/**
+	 * @return the othersVariableObjectList
+	 */
+	public List<EventVariableObjectModel> getOthersVariableObjectList() {
+		return othersVariableObjectList;
+	}
+
+	/**
+	 * @param othersVariableObjectList the othersVariableObjectList to set
+	 */
+	public void setOthersVariableObjectList(List<EventVariableObjectModel> othersVariableObjectList) {
+		this.othersVariableObjectList = othersVariableObjectList;
 	}	
 }

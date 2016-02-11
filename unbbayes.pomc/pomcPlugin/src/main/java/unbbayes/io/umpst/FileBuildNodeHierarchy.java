@@ -381,7 +381,7 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy {
 		
 		keys = umpstProject.getMapRules().keySet();
 		sortedKeys = new TreeSet<String>(keys);
-
+		
 		if (umpstProject.getMapRules().size() > 0) {
 			for (String key : sortedKeys) {
 				bn.setNameNode("rule");
@@ -391,6 +391,8 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy {
 
 				rule = umpstProject.getMapRules().get(key);
 				node = bn.buildNode(doc, parent, rule);
+				
+//				System.out.println(rule.getId());
 				
 				Element ruleType = doc.createElement("ruleType");
 				ruleType.appendChild(doc.createTextNode(rule.getRuleType()));
@@ -501,8 +503,7 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy {
 					List<OrdinaryVariableModel> listOV = rule.getOrdinaryVariableList();
 					
 					Element ovList = doc.createElement("ordinaryVariableList");
-					implementationTag.appendChild(ovList);
-					
+					implementationTag.appendChild(ovList);					
 					
 					for(OrdinaryVariableModel ov : listOV) {
 						Element ordinaryVariable = doc.createElement("ordinaryVariable");
@@ -549,7 +550,7 @@ public class FileBuildNodeHierarchy implements IBuildTypeNodeHierarchy {
 				// Cause
 				if (!rule.getCauseVariableList().isEmpty()) {
 					List<CauseVariableModel> listCause = rule.getCauseVariableList();
-					
+														
 					Element ncCause = doc.createElement("causeVariableList");
 					implementationTag.appendChild(ncCause);
 					for(CauseVariableModel cause : listCause) {

@@ -10,8 +10,8 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.util.Set;
-import java.util.TreeSet;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -21,8 +21,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
 
+import unbbayes.controller.umpst.GenerateMTheoryController;
 import unbbayes.gui.umpst.IUMPSTPanel;
-import unbbayes.gui.umpst.TableObject;
 import unbbayes.gui.umpst.UmpstModule;
 import unbbayes.model.umpst.project.UMPSTProject;
 
@@ -33,10 +33,14 @@ import unbbayes.model.umpst.project.UMPSTProject;
 public class ImplementationMainPanel extends IUMPSTPanel{
 	
 	private JSplitPane splitPane;
+	private JSplitPane btnPane;
 	private TableImplementation implementationPanel;
 	private ImplementationSearchPanel implementationSearch;
 	private JTextArea descriptionArea;
 	private JPanel descriptionPanel;
+	private JPanel generatePanel;
+	
+	private GenerateMTheoryController generateMtheoryController;
 	
 	private String ruleDescriptionText = " ";
 	
@@ -53,50 +57,44 @@ public class ImplementationMainPanel extends IUMPSTPanel{
 		descriptionPanel = createRuleDescriptionPanel();
 		implementationPanel = new TableImplementation(getFatherPanel(), getUmpstProject());
 		
+		createAddUpdateButton();
+		btnPane =  new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+				implementationPanel, generatePanel);
+		btnPane.setDividerLocation(260);
+		
 		splitPane =  new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-				descriptionPanel, implementationPanel);
-		splitPane.setDividerLocation(200);
+				descriptionPanel, btnPane);		
+		
+		splitPane.setDividerLocation(170);
 		splitPane.setPreferredSize(new Dimension(800, 600));
 		splitPane.setBackground(new Color(0x4169AA));
 		
 		this.add(splitPane);	
 		
 	}
+	
+	public void createAddUpdateButton() {
+		generatePanel = new JPanel();
+		generatePanel.setLayout(new GridBagLayout());
+		
+		GridBagConstraints c = new GridBagConstraints();
+		c.anchor = GridBagConstraints.PAGE_START;
+		
+		JButton btnGenerate = new JButton("Generate Model");
+		c.fill = GridBagConstraints.BOTH;
+		c.gridx = 0;
+		c.gridy = 0;
+		c.gridwidth = 1;
+		generatePanel.add(btnGenerate, c);
+		
+		btnGenerate.addActionListener(new ActionListener() {			
+			public void actionPerformed(ActionEvent e) {
+				
+				generateMtheoryController = new GenerateMTheoryController(getUmpstProject());
+			}
+		});
+	}
 
-//	/**
-//	 * Set the panel size and its properties
-//	 * @return splitPane
-//	 */
-//	public JSplitPane getSplitPane() {
-//		if (splitPane == null) {			
-//			splitPane =  new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-//					createRuleDescriptionPanel(), getImplementationTable());
-//			splitPane.setDividerLocation(200);
-//			splitPane.setPreferredSize(new Dimension(800, 600));
-//			splitPane.setBackground(new Color(0x4169AA));
-//		}
-//		return splitPane;
-//	}
-	
-//	/**
-//	 * @return the implementationSearch
-//	 */
-//	public ImplementationSearchPanel getImplementationSearchPanel() {
-//		if (implementationSearch == null) {
-//			implementationSearch = new ImplementationSearchPanel(getFatherPanel(), 
-//					getUmpstProject());
-////			implementationSearch.setBackground(new Color(0xffffff));
-//		}
-//		return implementationSearch;
-//	}
-//	
-//	public JSplitPane createSelectRulePanel() {
-//		JSplitPane rulePanel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-//		rulePanel.add(getImplementationTable());
-//		rulePanel.add(createRuleDescriptionPanel());
-//		return rulePanel;
-//	}
-	
 	public JPanel createRuleDescriptionPanel() {
 		descriptionPanel = new JPanel(new BorderLayout());		
 		descriptionPanel.setLayout(new GridBagLayout());
@@ -151,10 +149,11 @@ public class ImplementationMainPanel extends IUMPSTPanel{
 	 * Update table of rules (implementationPanel)
 	 */
 	public void updateSplitPane() {
-		splitPane.remove(implementationPanel);
+		btnPane.remove(implementationPanel);
 		implementationPanel = new TableImplementation(getFatherPanel(), getUmpstProject());
-		splitPane.add(implementationPanel);
-		splitPane.revalidate();
+		btnPane.add(implementationPanel);
+		btnPane.revalidate();
+		btnPane.setDividerLocation(260);
 	}
 
 	/**

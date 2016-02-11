@@ -63,6 +63,7 @@ public class CauseEditPanel extends IUMPSTPanel{
 	private JPanel titleLabel;
 	private JSplitPane variableBox;
 	private JSplitPane selectPane;
+	private JSplitPane selectEditonPane;
 	private JSplitPane relationshipBox;
 	private JSplitPane argumentBox;
 	private JSplitPane attributeBox;
@@ -162,6 +163,10 @@ public class CauseEditPanel extends IUMPSTPanel{
 		selectPane.add(variableBox);
 		return selectPane;
 	}
+//	
+//	public JSplitPane createEditionBox() {
+//		selectEditonPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+//	}
 	
 	public void updateAttributeBox() {
 		if (getWasRelationshipBox()) {
@@ -214,7 +219,7 @@ public class CauseEditPanel extends IUMPSTPanel{
 	 * Create relationshipBox splitPane with its arguments 
 	 */
 	public void createRelationshipBox() {
-		relationshipBox = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);		
+		relationshipBox = new JSplitPane(JSplitPane.VERTICAL_SPLIT);		
 		
 		// Relationship Box	
 		int relationshipListSize = rule.getRelationshipList().size();
@@ -263,7 +268,7 @@ public class CauseEditPanel extends IUMPSTPanel{
 				setAttributeSelected(null);				
 				setRelationshipSelected(relatedRelationshipList.get(index));
 				setVariableRelationshipName(relationshipNames[index]);
-				
+								
 				UmpstModule janelaPai = getFatherPanel();
 				ImplementationEditPanel ipanel = janelaPai.getMenuPanel().getImplementationPane().getImplementationTable().
 						getImplementationEditPanel();
@@ -319,6 +324,7 @@ public class CauseEditPanel extends IUMPSTPanel{
 			});
 			argumentBox.add(argumentComboBox);
 		} else if (boxArray.size() == 2){
+			
 			final String[] elementBox = new String[boxArray.get(0).size()];
 			for (int i = 0; i < boxArray.get(0).size(); i++) {
 				elementBox[i] = boxArray.get(0).get(i);
@@ -420,11 +426,13 @@ public class CauseEditPanel extends IUMPSTPanel{
 	}	
 	
 	public JScrollPane createCauseVariableTableAndEdit(List<CauseVariableModel> causeVariableList) {
+		
 		Object[] columnNames = {"ID", "Cause Variable", "", ""};		
 		Object[][] data = new Object[causeVariableList.size()][NUM_COLUMNS_ICON];
 		
 		String sentence = null;
 		for (int i = 0; i < causeVariableList.size(); i++) {
+			
 			if (causeVariableList.get(i).getRelationship() != null) {
 				sentence = causeVariableList.get(i).getRelationship() + "(";
 				for (int j = 0; j < causeVariableList.get(i).getArgumentList().size(); j++) {				

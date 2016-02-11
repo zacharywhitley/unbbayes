@@ -45,6 +45,7 @@ public class FileLoadRuleImplementation {
 	private List<NecessaryConditionVariableModel> necessaryConditionList;
 	
 	private List<EventVariableObjectModel> othersEventVariableList;
+	private List<RelationshipModel> relationshipModelList;
 	
 	private NodeFormulaTree rootFormula;
 	private List<NodeFormulaTree> nodeFormulaFather;
@@ -259,10 +260,11 @@ public class FileLoadRuleImplementation {
 		return nodeFormula;
 	}
 	
-	public void loadCauseNode (RuleModel rule, NodeList causeNodeList) {
+	public void loadCauseNode (RuleModel rule, NodeList causeNodeList, List<RuleModel> ruleChildrenList) {
 		
 		causeVariableList = new ArrayList<CauseVariableModel>();
 		ArrayList<String> argumentList;
+		createAllRelationshipModelList(rule, ruleChildrenList);
 		
 		NodeList btCauseNodeList = causeNodeList.item(0).getChildNodes();
 		Element btCauseElemList = (Element) btCauseNodeList;
@@ -307,14 +309,19 @@ public class FileLoadRuleImplementation {
 			causeVariable.setRelationshipModel(
 					searchRelationshipModel(rule, relationshipId));
 			
+//			System.out.println(causeVariable.getRelationshipModel().getName());
+//			System.out.println(causeVariable.getRelationshipModel().getEntityList().size());
+//			System.out.println(causeVariable.getArgumentList().size());
+			
 			causeVariableList.add(causeVariable);
 		}
 	}
 	
-	public void loadEffectNode (RuleModel rule, NodeList effectNodeList) {
+	public void loadEffectNode (RuleModel rule, NodeList effectNodeList, List<RuleModel> ruleChildrenList) {
 		
-		effectVariableList = new ArrayList<EffectVariableModel>();
+		effectVariableList = new ArrayList<EffectVariableModel>();		
 		ArrayList<String> argumentList;
+		createAllRelationshipModelList(rule, ruleChildrenList);
 		
 		NodeList btEffectNodeList = effectNodeList.item(0).getChildNodes();
 		Element btEffectElemList = (Element) btEffectNodeList;
@@ -403,15 +410,20 @@ public class FileLoadRuleImplementation {
 		List<OrdinaryVariableModel> ordinaryVariableList = new ArrayList<OrdinaryVariableModel>();
 		ordinaryVariableList = rule.getOrdinaryVariableList();
 		
+		int flag = 0;
+		
 		for (int i = 0; i < relationship.getEntityList().size(); i++) {
-			
 			EntityModel entity = relationship.getEntityList().get(i);
-			for (int j = 0; j < ordinaryVariableList.size(); j++) {
-				if (!(entity.getId().equals(ordinaryVariableList.get(j).getEntityObject().getId()))) {
-					return false;
+
+			for (int j = 0; j < rule.getOrdinaryVariableList().size(); j++) {			
+				if (entity.getId().equals(rule.getOrdinaryVariableList().get(j).getEntityObject().getId())) {
+					flag++;
 				}
 			}
 		}
+		if (flag >= relationship.getEntityList().size()) {
+			return true;
+		}		
 		return true;
 	}
 	
@@ -461,13 +473,39 @@ public class FileLoadRuleImplementation {
 		return null;
 	}
 	
-	public RelationshipModel searchRelationshipModel(RuleModel rule, String id) {
-		for (int i = 0; i < rule.getRelationshipList().size(); i++) {
-			if (rule.getRelationshipList().get(i).getId().equals(id)) {
-				return rule.getRelationshipList().get(i);
+	/**
+	 * All relationship model from rule and their children.
+	 * @param rule
+	 * @param id
+	 * @return
+	 */
+	public void createAllRelationshipModelList(RuleModel rule, List<RuleModel> ruleChildrenList) {
+		
+		relationshipModelList = new ArrayList<RelationshipModel>();
+		
+		if (ruleChildrenList.size() > 0) {
+			for (int i = 0; i < ruleChildrenList.size(); i++) {
+				
+				RuleModel ruleChild = ruleChildrenList.get(i);
+				for (int j = 0; j < ruleChild.getRelationshipList().size(); j++) {
+					relationshipModelList.add(ruleChild.getRelationshipList().get(j));
+				}
 			}
 		}
-		System.err.println("Null pointer. Entity not found.");
+		
+		for (int i = 0; i < rule.getRelationshipList().size(); i++) {
+			relationshipModelList.add(rule.getRelationshipList().get(i));
+		}
+	}
+	
+	public RelationshipModel searchRelationshipModel(RuleModel rule, String id) {
+		
+		for (int i = 0; i < relationshipModelList.size(); i++) {
+			if (relationshipModelList.get(i).getId().equals(id)) {
+				return relationshipModelList.get(i);
+			}
+		}
+		System.err.println("Null pointer. RelatinshipModel not found." + " | Id: " + id);
 		return null;
 	}
 	

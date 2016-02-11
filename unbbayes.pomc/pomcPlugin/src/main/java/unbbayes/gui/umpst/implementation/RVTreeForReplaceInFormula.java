@@ -259,15 +259,20 @@ public class RVTreeForReplaceInFormula extends JTree{
 		List<OrdinaryVariableModel> ordinaryVariableList = new ArrayList<OrdinaryVariableModel>();
 		ordinaryVariableList = rule.getOrdinaryVariableList();
 		
+		int flag = 0;
+		
 		for (int i = 0; i < relationship.getEntityList().size(); i++) {
-			
 			EntityModel entity = relationship.getEntityList().get(i);
-			for (int j = 0; j < ordinaryVariableList.size(); j++) {
-				if (!(entity.getId().equals(ordinaryVariableList.get(j).getEntityObject().getId()))) {
-					return false;
+
+			for (int j = 0; j < rule.getOrdinaryVariableList().size(); j++) {			
+				if (entity.getId().equals(rule.getOrdinaryVariableList().get(j).getEntityObject().getId())) {
+					flag++;
 				}
 			}
 		}
+		if (flag >= relationship.getEntityList().size()) {
+			return true;
+		}		
 		return true;
 	}
 	

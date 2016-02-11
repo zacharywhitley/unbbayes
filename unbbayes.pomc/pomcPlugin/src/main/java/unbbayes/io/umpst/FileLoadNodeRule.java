@@ -1,13 +1,8 @@
 package unbbayes.io.umpst;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -20,9 +15,6 @@ import unbbayes.model.umpst.entity.RelationshipModel;
 import unbbayes.model.umpst.goal.GoalModel;
 import unbbayes.model.umpst.goal.HypothesisModel;
 import unbbayes.model.umpst.group.GroupModel;
-import unbbayes.model.umpst.implementation.EventType;
-import unbbayes.model.umpst.implementation.EventVariableObjectModel;
-import unbbayes.model.umpst.implementation.OrdinaryVariableModel;
 import unbbayes.model.umpst.project.UMPSTProject;
 import unbbayes.model.umpst.rule.RuleModel;
 
@@ -56,6 +48,7 @@ public class FileLoadNodeRule {
 		NodeList repeatNodes = null;
 
 		Map<String, RuleModel> mapRule = umpstProject.getMapRules();
+		List<String> listOfImplementationNodes = new ArrayList<String>();
 		ArrayList<FileIndexChildNode> listOfRuleNode = new ArrayList<FileIndexChildNode>();
 		
 		FileLoadRuleImplementation lri = new FileLoadRuleImplementation();
@@ -187,57 +180,10 @@ public class FileLoadNodeRule {
 					}
 				}
 				
-				// IMPLEMENTATION
+				// Map rules that have implementation rule defined
 				NodeList btImplementation = elem.getElementsByTagName("implementation");
 				if (btImplementation.getLength() > 0) {
-					NodeList btImplementationNodes = btImplementation.item(0).getChildNodes();
-					Element btImplementationElem = (Element) btImplementationNodes;
-					
-					// OV
-					NodeList ovNodeList = btImplementationElem.getElementsByTagName("ordinaryVariableList");
-					if (ovNodeList.getLength() > 0) {
-						
-						lri.loadOVNode(rule, ovNodeList);
-						for (int j = 0; j < lri.getOrdinaryVariableList().size(); j++) {
-							rule.getOrdinaryVariableList().add(
-									lri.getOrdinaryVariableList().get(j));							
-						}
-					}					
-					
-					// Cause
-					NodeList causeNodeList = btImplementationElem.getElementsByTagName("causeVariableList");
-					if (causeNodeList.getLength() > 0) {
-						lri.loadCauseNode(rule, causeNodeList);
-						for (int j = 0; j < lri.getCauseVariableList().size(); j++) {
-							rule.getCauseVariableList().add(
-									lri.getCauseVariableList().get(j));
-							rule.getEventVariableObjectList().add(
-									lri.getCauseVariableList().get(j));
-						}
-					}
-					
-					// Effect
-					NodeList effectNodeList = btImplementationElem.getElementsByTagName("effectVariableList");
-					if (effectNodeList.getLength() > 0) {
-						lri.loadEffectNode(rule, effectNodeList);
-						for (int j = 0; j < lri.getEffectVariableList().size(); j++) {
-							rule.getEffectVariableList().add(
-									lri.getEffectVariableList().get(j));
-							rule.getEventVariableObjectList().add(
-									lri.getEffectVariableList().get(j));
-						}
-					}
-					
-					// NecessaryCondition
-					NodeList ncNodeList = btImplementationElem.getElementsByTagName("necessaryConditionList");
-					if (ncNodeList.getLength() > 0) {
-						
-						lri.loadNCNode(umpstProject, rule, ncNodeList);
-						for (int j = 0; j < lri.getNecessaryConditionList().size(); j++) {
-							rule.getNecessaryConditionList().add(
-									lri.getNecessaryConditionList().get(j));							
-						}
-					}
+					listOfImplementationNodes.add(rule.getId());
 				}
 				
 				mapRule.put(rule.getId(), rule);				
@@ -264,6 +210,75 @@ public class FileLoadNodeRule {
 				}
 			}
 		}		
+		
+		for (int i = 0; i < list.getLength(); i++) {
+			Node node = list.item(i);
+			ArrayList<String> childrenRuleList = new ArrayList<String>();
+
+			if (node.getNodeType() == Node.ELEMENT_NODE) {				
+				elem = (Element) node;
+				
+				String ruleId = elem.getElementsByTagName("ruleId").item(0).getTextContent();
+				RuleModel ruleModified = mapRule.get(ruleId);
+				
+				
+				// IMPLEMENTATION
+				NodeList btImplementation = elem.getElementsByTagName("implementation");
+				if (btImplementation.getLength() > 0) {
+					NodeList btImplementationNodes = btImplementation.item(0).getChildNodes();
+					Element btImplementationElem = (Element) btImplementationNodes;
+					
+					// OV
+					NodeList ovNodeList = btImplementationElem.getElementsByTagName("ordinaryVariableList");
+					if (ovNodeList.getLength() > 0) {
+						
+						lri.loadOVNode(ruleModified, ovNodeList);
+						for (int j = 0; j < lri.getOrdinaryVariableList().size(); j++) {
+							ruleModified.getOrdinaryVariableList().add(
+									lri.getOrdinaryVariableList().get(j));							
+						}
+					}					
+					
+					// Cause
+					NodeList causeNodeList = btImplementationElem.getElementsByTagName("causeVariableList");
+					if (causeNodeList.getLength() > 0) {
+						lri.loadCauseNode(ruleModified, causeNodeList, ruleModified.getChildrenRuleList());
+						for (int j = 0; j < lri.getCauseVariableList().size(); j++) {
+							ruleModified.getCauseVariableList().add(
+									lri.getCauseVariableList().get(j));
+//							ruleModified.getEventVariableObjectList().add(
+//									lri.getCauseVariableList().get(j));
+						}
+					}
+					
+					// Effect
+					NodeList effectNodeList = btImplementationElem.getElementsByTagName("effectVariableList");
+					if (effectNodeList.getLength() > 0) {
+						lri.loadEffectNode(ruleModified, effectNodeList, ruleModified.getChildrenRuleList());
+						for (int j = 0; j < lri.getEffectVariableList().size(); j++) {
+							ruleModified.getEffectVariableList().add(
+									lri.getEffectVariableList().get(j));
+//							ruleModified.getEventVariableObjectList().add(
+//									lri.getEffectVariableList().get(j));
+						}
+					}
+					
+					// NecessaryCondition
+					NodeList ncNodeList = btImplementationElem.getElementsByTagName("necessaryConditionList");
+					if (ncNodeList.getLength() > 0) {
+						
+						lri.loadNCNode(umpstProject, ruleModified, ncNodeList);
+						for (int j = 0; j < lri.getNecessaryConditionList().size(); j++) {
+							ruleModified.getNecessaryConditionList().add(
+									lri.getNecessaryConditionList().get(j));							
+						}
+					}	
+					
+					mapRule.put(ruleId, ruleModified);
+				}
+			}
+		}
+		
 		return mapRule;
 	}	
 }

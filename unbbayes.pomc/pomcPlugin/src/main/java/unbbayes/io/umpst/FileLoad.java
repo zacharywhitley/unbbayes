@@ -64,10 +64,13 @@ public class FileLoad {
 		NodeList nodeHeader = listHeader.item(0).getChildNodes();
 		Element elemHeader = (Element) nodeHeader;
 		
+		String modelName = elemHeader.getElementsByTagName("modelName").item(0).getTextContent();
+		umpstProject.setModelName(modelName);
+		
 		String date = elemHeader.getElementsByTagName("date").item(0).getTextContent();
 		umpstProject.setDate(date);		
 		String author = elemHeader.getElementsByTagName("author").item(0).getTextContent();
-		umpstProject.setAuthorModel(author);		
+		umpstProject.setAuthorModel(author);	
 		
 		// Load goals
 		NodeList listGoals = root.getElementsByTagName("goal");
