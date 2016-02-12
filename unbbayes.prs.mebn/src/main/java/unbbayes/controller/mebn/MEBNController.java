@@ -1290,7 +1290,9 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 			}
 		}
 		
-		Type type = TypeContainer.getDefaultType();
+//		Type type = TypeContainer.getDefaultType();
+		Type type = getInitialType();
+		
 		OrdinaryVariable ov = new OrdinaryVariable(name, type, domainMFrag);
 
 		ov.setPosition(x, y);
@@ -1309,6 +1311,70 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		
 	    return ov;
 
+	}
+	
+	/**
+	 * @return this method will return a type which may be considered as the initial type 
+	 * when entities are created. This method will basically return the first type
+	 * which is not {@link TypeContainer#typeBoolean}, {@link TypeContainer#typeCategoryLabel}, {@link TypeContainer#typeLabel},
+	 * or the root type.
+	 * @see TypeContainer#getDefaultType()
+	 * @see #insertOrdinaryVariable(double, double)
+	 */
+	public Type getInitialType() {
+		
+		// extract some containers we'll be using to check types
+		TypeContainer typeContainer = multiEntityBayesianNetwork.getTypeContainer();	// this is the main container of types
+		ObjectEntityContainer objectEntityContainer = multiEntityBayesianNetwork.getObjectEntityContainer();	// this will be later to check hierarchy of entities
+		if (typeContainer == null || objectEntityContainer == null) {
+			return TypeContainer.getDefaultType();
+		}
+		
+		// only consider types we know about
+		Set<Type> knownTypes = typeContainer.getListOfTypes();
+		if (knownTypes == null) {
+			return TypeContainer.getDefaultType();
+		}
+		
+		// search for some reasonable type
+		for (Type type : knownTypes) {
+			
+			// ignore invalid types
+			if (type == null) {
+				continue;
+			}
+			
+			// ignore boolean, type label, and categorical at this point
+			if (type.equals(typeContainer.typeBoolean)
+					|| type.equals(typeContainer.typeCategoryLabel)
+					|| type.equals(typeContainer.typeLabel)) {
+				continue;
+			}
+			
+			// check if this is a root type
+			// TODO avoid using object entities to check for type hierarchy
+			boolean isRoot = false;
+			for (Object entity : type.getIsTypeOfList()) {
+				if (entity instanceof ObjectEntity) {
+					List<ObjectEntity> parents = objectEntityContainer.getParentsOfObjectEntity((ObjectEntity) entity);
+					if (parents == null || parents.isEmpty()) {
+						isRoot = true;
+						break;
+					}
+				}
+			}
+			
+			// do not return root types
+			if (isRoot) {
+				continue;
+			}
+			
+			return type;
+		}
+		
+		
+		// if nothing was found, use the default
+		return TypeContainer.getDefaultType();
 	}
 
 	/* (non-Javadoc)
