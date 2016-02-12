@@ -2,6 +2,13 @@ package unbbayes.io.log;
 
 public class IdentationLevel {
 
+	public static final IdentationLevel LEVEL_1 = new IdentationLevel(null);  
+	public static final IdentationLevel LEVEL_2 = new IdentationLevel(LEVEL_1); 
+	public static final IdentationLevel LEVEL_3 = new IdentationLevel(LEVEL_2); 
+	public static final IdentationLevel LEVEL_4 = new IdentationLevel(LEVEL_3); 
+	public static final IdentationLevel LEVEL_5 = new IdentationLevel(LEVEL_4); 	
+	public static final IdentationLevel LEVEL_6 = new IdentationLevel(LEVEL_5); 
+	
 	public static int SPACES_FOR_IDENTATION = 4;  
 	private static char SEPARATOR = '.'; 
 	
@@ -11,7 +18,7 @@ public class IdentationLevel {
 	
 	private IdentationLevel father;
 
-	private int childrenQuant = 0; 
+	private int childrenQuant = 0; 	
 	
 	public IdentationLevel(IdentationLevel _father){
 		this.father = _father;
