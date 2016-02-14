@@ -22,6 +22,7 @@ package unbbayes.prs.mebn;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import unbbayes.prs.bn.IRandomVariable;
@@ -468,6 +469,19 @@ public class ResidentNode extends MultiEntityNode
 	 */
 	public List<OrdinaryVariable> getOrdinaryVariableList(){
 		return ordinaryVariableList; 
+	}
+	
+	/**
+	 * This method is equivalent to {@link #getOrdinaryVariableList()}
+	 * @see unbbayes.prs.mebn.MultiEntityNode#getOrdinaryVariablesInArgument()
+	 * @see #getOrdinaryVariableList()
+	 */
+	public List<OrdinaryVariable> getOrdinaryVariablesInArgument() {
+		List<OrdinaryVariable> list = getOrdinaryVariableList();
+		if (list == null) {
+			return Collections.EMPTY_LIST;
+		}
+		return list;
 	}
 
 	/* (non-Javadoc)

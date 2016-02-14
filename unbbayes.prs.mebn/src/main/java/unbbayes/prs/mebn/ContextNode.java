@@ -23,6 +23,7 @@ package unbbayes.prs.mebn;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -430,9 +431,22 @@ public class ContextNode extends MultiEntityNode {
 		if (formulaTree == null) {
 			return null;
 		}
+		// TODO the method's name suggests this is a list, so it should return a list
 		return formulaTree.getVariableList();
 	}
 	
+	/**
+	 * This method will return ordinary variables in {@link #getFormulaTree()} instead
+	 * @see unbbayes.prs.mebn.MultiEntityNode#getOrdinaryVariablesInArgument()
+	 * @see NodeFormulaTree#getVariableList()
+	 */
+	public List<OrdinaryVariable> getOrdinaryVariablesInArgument() {
+		Set<OrdinaryVariable> variableList = this.getVariableList();
+		if (variableList == null) {
+			return Collections.EMPTY_LIST;
+		}
+		return new ArrayList<OrdinaryVariable>(variableList);
+	}
 	
 
 }

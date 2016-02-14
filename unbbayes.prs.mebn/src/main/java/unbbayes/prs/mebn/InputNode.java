@@ -22,6 +22,7 @@ package unbbayes.prs.mebn;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
@@ -235,9 +236,26 @@ public class InputNode extends MultiEntityNode {
 		return residentNodeChildList; 
 	}
 	
-	
+	/**
+	 * This method will simply delegate to {@link #getResidentNodePointer()}
+	 * @return : the list of ordinary variables used in the arguments of this input node
+	 * @see #getOrdinaryVariablesInArguments()
+	 */
 	public Vector<OrdinaryVariable> getOrdinaryVariableList() {
 		return residentNodePointer.getOrdinaryVariableList();
+	}
+	
+	/**
+	 * This method will simply delegate to {@link #getOrdinaryVariableList()}
+	 * @see unbbayes.prs.mebn.MultiEntityNode#getOrdinaryVariablesInArgument()
+	 * @see #getOrdinaryVariableList()
+	 */
+	public List<OrdinaryVariable> getOrdinaryVariablesInArgument() {
+		Vector<OrdinaryVariable> ordinaryVariableList = getOrdinaryVariableList();
+		if (ordinaryVariableList == null) {
+			return Collections.EMPTY_LIST;
+		}
+		return ordinaryVariableList;
 	}
 	
 	public OrdinaryVariable getOrdinaryVariableByIndex(int index){

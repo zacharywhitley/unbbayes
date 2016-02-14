@@ -29,7 +29,6 @@ import java.util.List;
 
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.entity.Entity;
-import unbbayes.util.SerializablePoint2D;
 
 public class MultiEntityNode extends Node implements IMultiEntityNode {
  
@@ -344,6 +343,19 @@ public class MultiEntityNode extends Node implements IMultiEntityNode {
 
 		return size;
 
+	}
+	
+	/**
+	 * @return a list of all ordinary variables found in the arguments of this node
+	 */
+	public List<OrdinaryVariable> getOrdinaryVariablesInArgument() {
+		List<OrdinaryVariable> ret = new ArrayList<OrdinaryVariable>();
+		for (Argument arg : getArgumentList()) {
+			if (arg.getOVariable() != null) {
+				ret.add(arg.getOVariable());
+			}
+		}
+		return ret;
 	}
 	
 }
