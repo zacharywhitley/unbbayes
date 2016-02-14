@@ -1003,9 +1003,9 @@ public class CompilerTest extends TestCase {
 //		while(true);
 //	}
 	
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.compiler.Compiler#main(java.lang.String[])}.
-	 */
+//	/**
+//	 * Test method for {@link unbbayes.prs.mebn.compiler.Compiler#main(java.lang.String[])}.
+//	 */
 //	public void testMain() {
 //		ProbabilisticNetwork rede = new ProbabilisticNetwork("MEBN Table Test");
 //

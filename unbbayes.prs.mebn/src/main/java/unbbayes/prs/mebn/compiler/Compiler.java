@@ -42,8 +42,10 @@ import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.ResidentNodePointer;
 import unbbayes.prs.mebn.compiler.exception.InconsistentTableSemanticsException;
 import unbbayes.prs.mebn.compiler.exception.InstanceException;
 import unbbayes.prs.mebn.compiler.exception.InvalidConditionantException;
@@ -70,11 +72,12 @@ import unbbayes.util.Debug;
  	"if" allop varsetname "have" "(" b_expression ")" statement 
  	"else" else_statement 
  allop ::= "any" | "all"
- varsetname ::= varsetname ::= ident[["."|","]ident]*
+ varsetname ::= ident[["."|","]ident]*
  b_expression ::= b_term [ "|" b_term ]*
  b_term ::= not_factor [ "&" not_factor ]*
  not_factor ::= [ "~" ] b_factor
- b_factor ::= ident "=" ident | "(" b_expression ")"
+ b_factor ::= ident ["(" arguments ")"]  "=" ident | "(" b_expression ")"
+ arguments ::= ident[["."|","]ident]*
  else_statement ::= statement | if_statement
  statement ::= "[" assignment_or_if "]" 
  assignment_or_if ::= assignment | if_statement
@@ -230,6 +233,11 @@ import unbbayes.util.Debug;
  	@version 10/08/2015:
  			Description: Included support for unnormalized values (i.e. declaration of values that doesn't need to sum up to 1).
  			{@link #setToNormalize(boolean)} can be used to disable/enable this feature.
+ 	<br/>
+ 	<br/>
+ 	
+ 	@version 02/13/2016:
+ 			Description: Included arguments in b_factor
  	<br/>
  	<br/>
     
@@ -634,7 +642,7 @@ public class Compiler implements ICompiler {
 		}
 		
 		
-		Map<String, List<EntityAndArguments>> map = null; // parameter of boolean expression evaluation method
+		Map<String, List<EntityAndArguments>> residentNameToCurrentValueMap = null; // parameter of boolean expression evaluation method
 		
 		// this iterators helps us combine parents' possible values
 		// e.g. (True,Alpha), (True,Beta), (False,Alpha), (False,Beta).
@@ -660,7 +668,7 @@ public class Compiler implements ICompiler {
 		//List<Entity> entityList = null;
 		for( int i = 0; i < this.cpt.tableSize(); i += this.ssbnnode.getProbNode().getStatesSize()) {
 			//	clears and initializes map
-			map = new HashMap<String, List<EntityAndArguments>>();
+			residentNameToCurrentValueMap = new HashMap<String, List<EntityAndArguments>>();
 			// fill map with SSBN nodes (i.e. parent nodes)
 			for (SSBNNode ssbnnode : parents) {
 				if (ssbnnode.getResident().isToLimitQuantityOfParentsInstances()) {
@@ -668,8 +676,8 @@ public class Compiler implements ICompiler {
 					// this is because such parents must be considered as instances of the other parent
 					continue;
 				}
-			    if (!map.containsKey(ssbnnode.getResident().getName())) {
-				    map.put(ssbnnode.getResident().getName(), new ArrayList<EntityAndArguments>());
+			    if (!residentNameToCurrentValueMap.containsKey(ssbnnode.getResident().getName())) {
+				    residentNameToCurrentValueMap.put(ssbnnode.getResident().getName(), new ArrayList<EntityAndArguments>());
 			    }
 			}
 			
@@ -696,7 +704,7 @@ public class Compiler implements ICompiler {
 					}
 				}
 				EntityAndArguments val = new EntityAndArguments(currentIteratorValue.get(j),new ArrayList<OVInstance>(parentSSBNNode.getArguments()));
-				map.get(key).add(val);
+				residentNameToCurrentValueMap.get(key).add(val);
 			}
 
 			MultiEntityBayesianNetwork mebn = getMEBN();
@@ -707,7 +715,7 @@ public class Compiler implements ICompiler {
 					Debug.println(getClass(), ov + " is a null ordinary variable, or it is an ordinary variable with no type. It will be ignored.");
 					continue;	// ignore this ov
 				}
-				if (!map.containsKey(ov.getName())) {
+				if (!residentNameToCurrentValueMap.containsKey(ov.getName())) {
 					// extract the object entity associated with this ov
 					ObjectEntity objectEntity = mebn.getObjectEntityContainer().getObjectEntityByType(ov.getValueType());
 					if (objectEntity == null) {
@@ -720,7 +728,7 @@ public class Compiler implements ICompiler {
 						// again, OVs in LPDs are like identity nodes (i.e. something like Id(OV1) = OV1)
 						valueToAssign.add(new EntityAndArguments(objectEntityInstance, Collections.singletonList(OVInstance.getInstance(ov, objectEntityInstance))));
 					}
-				    map.put(ov.getName(), valueToAssign);
+				    residentNameToCurrentValueMap.put(ov.getName(), valueToAssign);
 			    }
 			}
 			
@@ -764,7 +772,7 @@ public class Compiler implements ICompiler {
 			} else {
 				//	if not default, look for the column to verify
 				// the first expression to return true is the one we want
-				header = this.tempTable.getFirstTrueClause(map);
+				header = this.tempTable.getFirstTrueClause(residentNameToCurrentValueMap);
 				// note that default (else) expression should allways return true!
 				
 			}
@@ -1280,7 +1288,7 @@ public class Compiler implements ICompiler {
 	}
 
 	/**
-	 * b_factor ::= ident "=" ident | "(" b_expression ")"
+	 * b_factor ::= ident [( arguments )] "=" ident | "(" b_expression ")"
 	 * <br/>
 	 * <br/>
 	 * For example: Node = state
@@ -1325,6 +1333,14 @@ public class Compiler implements ICompiler {
 			} catch (TableFunctionMalformedException e) {
 				throw new InvalidConditionantException(getNode().toString() , e);
 			}
+		}
+		
+		// check if node has arguments specified
+		List<OrdinaryVariable> arguments = null;
+		if (look == '(') {
+			match('(');
+			arguments = this.arguments(conditionantName);
+			match(')');
 		}
 		
 		// LOOK FOR = OPERATOR
@@ -1379,7 +1395,7 @@ public class Compiler implements ICompiler {
 			}
 			// Set temp table's header condicionant
 			// TODO optimize above code, because its highly redundant (condvalue should be found anyway on that portion of code)
-			header = new TempTableHeaderParent(resident, condvalue);
+			header = new TempTableHeaderParent(resident, condvalue, arguments, null);
 		} else {
 			// we did not find a parent node with the specified name. It may be an ordinary variable
 			OrdinaryVariable ov = this.node.getMFrag().getOrdinaryVariableByName(conditionantName);
@@ -1410,7 +1426,153 @@ public class Compiler implements ICompiler {
 		return header;
 	}
 	
+	/**
+	 * @param nodesToConsider : only these nodes will be considered
+	 * @param parentOV : nodes with OV as the argument at a given index will be retrieved. 
+	 * If null, then this method will return an empty list.
+	 * @param parentOVIndex : argument (OV) at this index will be checked. 
+	 * If negative, then any index will be considered.
+	 * @return non-null collection of all nodes having parentOV at the position parentOVIndex.
+	 */
+	protected Collection<MultiEntityNode> getNodesByOV(Collection<MultiEntityNode> nodesToConsider, OrdinaryVariable parentOV, int parentOVIndex) {
+		
+		// initial assertion
+		if (nodesToConsider == null
+				|| parentOV == null) {
+			return Collections.EMPTY_LIST;
+		}
+		
+		Collection<MultiEntityNode> ret = new ArrayList<MultiEntityNode>();
+		
+		for (MultiEntityNode multiEntityNode : nodesToConsider) {
+			try {
+				if (parentOVIndex < 0) {
+					// if parentOVIndex is negative, then we shall consider all indexes
+					if (multiEntityNode.getOrdinaryVariablesInArgument().contains(parentOV)) {
+						ret.add(multiEntityNode);
+					}
+				} else if (multiEntityNode.getOrdinaryVariablesInArgument().get(parentOVIndex).equals(parentOV)) { // only consider this index
+					ret.add(multiEntityNode);
+				}
+			} catch (RuntimeException e) {
+				// ignore errors at this method, because they are irrelevant for the purpose of this method
+//				e.printStackTrace();
+			}
+		}
+		
+		return ret;
+	}
 	
+	/**
+	 * arguments ::= ident[["."|","]ident]*
+	 * @param parentName : name of the node (usually a parent of {@link #getNode()}) specified in {@link #bFactor()}.
+	 * Consistency of this name will not be checked here, because such check is a responsibility 
+	 * of {@link #isValidConditionant(MultiEntityBayesianNetwork, ResidentNode, String)}
+	 * @return : ordinary variables representing the arguments
+	 * @throws TableFunctionMalformedException  this is thrown by {@link #expected(String)}
+	 * @throws InvalidConditionantException   if ident is invalid (because it's not an OV or the OV is never used by any parent).
+	 */
+	protected List<OrdinaryVariable> arguments(String parentName) throws TableFunctionMalformedException, InvalidConditionantException {
+		
+		// this is the value to return
+		List<OrdinaryVariable> ret = new ArrayList<OrdinaryVariable>();
+		
+		// extract all parents that will be checked for arguments
+		Collection<MultiEntityNode> parentsToConsider = new ArrayList<MultiEntityNode>();
+		// we need to look for resident nodes and input nodes separately, due to restriction of implementation
+		// TODO create common methods in MultiEntityNode
+		for (ResidentNode parent : this.getNode().getResidentNodeFatherList()) {
+			if (parent == null || parent.getName() == null) {
+				continue;
+			}
+			if (parent.getName().equalsIgnoreCase(parentName)) {
+				parentsToConsider.add(parent);
+			}
+		}
+		// similarly, look for input nodes
+		for (InputNode parent : this.getNode().getParentInputNodesList()) {
+			if (parent == null || parent.getResidentNodePointer() == null) {
+				continue;
+			}
+			// extract the resident node being pointed by the input node
+			ResidentNodePointer residentNodePointer = parent.getResidentNodePointer();
+			if (residentNodePointer.getResidentNode() == null || residentNodePointer.getResidentNode().getName() == null) {
+				continue;
+			}
+			if (residentNodePointer.getResidentNode().getName().equalsIgnoreCase(parentName)) {
+				parentsToConsider.add(parent);
+			}
+		}
+		
+		// scan for the ident
+		// in the next for-clause, the test for condition "index < text.length" (to end loop) is never executed, because of breaks and continues
+		// argIndex represents the index of parent node's argument.
+		// If parent node is Parent(x,y,z), then argIndex == 0 points to x, argIndex == 2 points to y, and argIndex == 2 points to z  
+		int argIndex = 0;	// this will be pointing to last argument after exitting the for-loop
+		for (; index < text.length; argIndex++) { 
+			
+			scan();	
+			
+			if (token == 'x') {
+				// found an identifier. Check if it is a valid OV
+				OrdinaryVariable ov = this.getNode().getMFrag().getOrdinaryVariableByName(this.noCaseChangeValue);
+				if (ov == null) {
+					// build message to display. It's something like "Parent( _ , _ , "x" , ... ) is an invalid conditionant"
+					String message = parentName + "( ";
+					for (int i = 0; i < argIndex; i++) {
+						message += "_ , ";
+					}
+					message +=  "\"" + this.noCaseChangeValue + "\" , ... )";
+					throw new InvalidConditionantException(message);
+				}
+				
+				// check if there are parents with such OV at current argument index.
+				// also update parentsToConsider, because in next iteration we don't need to consider parents with no such OV at current index
+				parentsToConsider = this.getNodesByOV(parentsToConsider, ov, argIndex);
+				if (parentsToConsider.isEmpty()) {
+					// build message to display. It's something like "Parent( _ , _ , "x" , ... ) is an invalid conditionant"
+					String message = parentName + "( ";
+					for (int i = 0; i < argIndex; i++) {
+						message += "_ , ";
+					}
+					message +=  "\"" + this.noCaseChangeValue + "\" , ... )";
+					throw new InvalidConditionantException(message);
+				}
+				
+				ret.add(ov);
+			} else {
+				expected("Identifier");
+			}	
+			
+			// search for ["." ident]* loop
+			if (this.look == '.' || this.look == ',') {
+				this.nextChar();
+				continue;
+			} else {
+				break;
+			}
+		}
+		
+		// make sure all the arguments were considered
+		for (MultiEntityNode multiEntityNode : parentsToConsider) {
+			// argIndex will be pointing to last argument
+			if (argIndex < multiEntityNode.getOrdinaryVariablesInArgument().size()-1) {
+				// the declaration in LPD had less arguments than the actual number of arguments in the node.
+				// build message to display. It's something like "Parent( _ , _ , ...  is an invalid conditionant"
+				String message = parentName + "( ";
+				for (int i = 0; i < argIndex; i++) {
+					message += "_ , ";
+				}
+				message +=  " ... ";
+				throw new InvalidConditionantException(message);
+			}
+		}
+		
+		skipWhite();
+		return ret;
+	}
+
+
 	/**
 	 *  else_statement ::= statement | if_statement
 	 *  @param upperIf: if this if clause is an inner if, the upper if-clause should be referenced
@@ -3358,6 +3520,7 @@ public class Compiler implements ICompiler {
 		public Node getParent() {
 			return parent;
 		}
+		
 		public void setParent(Node parent) {
 			this.parent = parent;
 		}
@@ -3372,6 +3535,9 @@ public class Compiler implements ICompiler {
 		 */
 		@Override
 		public boolean equals(Object arg0) {
+			if (this == arg0) {
+				return true;
+			}
 			if (arg0 instanceof TempTableHeader) {
 				TempTableHeader arg = (TempTableHeader)arg0;
 				if (this.parent.getName().equalsIgnoreCase(arg.getParent().getName())) {
@@ -3431,13 +3597,21 @@ public class Compiler implements ICompiler {
 				// isKnownValue = true indicates that expression as value "false" no matter when, where or how it is evaluated
 				this.isKnownValue  = true; // we assume if set to null, then false immediately
 			}
+			
 		}
+		
 		
 		/**
 		 * @return the currentEvaluation (currently evaluated entity value on boolean
 		 * expression - comparing a parent with its value)
+		 * @see #getCurrentEntityAndArguments()
 		 */
 		public Entity getCurrentEvaluation() {
+//			EntityAndArguments entityAndArguments = this.getCurrentEntityAndArguments();
+//			if (entityAndArguments == null) {
+//				return null;
+//			}
+//			return entityAndArguments.entity;
 			if (this.evaluationList == null) {
 				return null;
 			}
@@ -3536,7 +3710,7 @@ public class Compiler implements ICompiler {
 	}
 	
 	/**
-	 * This class represents a content of an if-clause in the format of "Node=value"
+	 * This class represents a content of an if-clause in the format of "OV=value"
 	 * @author Shou Matsumoto
 	 *
 	 */
@@ -3581,20 +3755,40 @@ public class Compiler implements ICompiler {
 	 */
 	protected class TempTableHeaderParent extends TempTableHeader {
 		
+		private List<OrdinaryVariable> expectedArgumentOVs = null;
+
 		/**
-		 * Represents a parent and its expected single value
-		 * at that table entry/collumn
-		 * @param parent
-		 * @param value
+		 * Constructor initializing fields.
+		 * <br/> <br/>
+		 * This object represents a parent and its expected single value
+		 * at that table entry/column
+		 * @param parent : see {@link #setParent(Node)}
+		 * @param value : see {@link #setValue(Entity)}
+		 * @param expectedArgumentOVs : see {@link #setExpectedArgumentOVs(List)}
+		 * @param evaluationList : see {@link #setEvaluationList(List)}
+		 * 
 		 */
-		TempTableHeaderParent (ResidentNode parent , Entity value) {
+		TempTableHeaderParent (ResidentNode parent , Entity value, 
+				List<OrdinaryVariable> expectedArgumentOVs,
+				List<EntityAndArguments>evaluationList) {
 			this.setParent(parent);
 			this.setValue(value);
+			this.setExpectedArgumentOVs(expectedArgumentOVs);
+			this.setEvaluationList(evaluationList);
 		}
 		
+		/**
+		 * Constructor with fewer fields are kept here for backward compatibility.
+		 */
 		TempTableHeaderParent (ResidentNode parent , Entity value, List<EntityAndArguments>evaluationList) {
-			this(parent, value);
-			this.setEvaluationList(evaluationList);
+			this(parent, value, null, null);
+		}
+		
+		/**
+		 * Constructor with fewer fields are kept here for backward compatibility.
+		 */
+		TempTableHeaderParent (ResidentNode parent , Entity value) {
+			this(parent, value, null);
 		}
 		
 		/**
@@ -3612,6 +3806,94 @@ public class Compiler implements ICompiler {
 		public boolean hasEmbeddedNodeDeclaration() {
 			return false;
 		}
+		
+		/* (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.TempTableHeader#setEvaluationList(java.util.List)
+		 */
+		public void setEvaluationList(List<EntityAndArguments> evaluationList) {
+			// make sure the evaluation list is compatible with the arguments of this node
+			super.setEvaluationList(this.removeIncompatibleOVs(evaluationList));
+		}
+		
+		/**
+		 * This method will filter out values whose ordinary variables don't match
+		 * {@link #getExpectedArgumentOVs()}. If null, then this will be ignored. This is particularly important when the resident node
+		 * has 2 input nodes as its parents, but these input nodes are related to the same resident node 
+		 * (so the LPD compiler can distinguish them only from its arguments -- namely the OVs).
+		 * @param evaluationList : the list to have elements filtered out
+		 * @return non-null list generated after filtering out incompatible entries.
+		 * @see #setEvaluationList(List)
+		 * @see #setExpectedArgumentOVs(List)
+		 */
+		public List<EntityAndArguments> removeIncompatibleOVs(List<EntityAndArguments> evaluationList) {
+			
+			// initial assertions
+			if (evaluationList == null) {
+				return Collections.EMPTY_LIST;
+			}
+			
+			// this is the filter to be applied
+			// TODO check if we need to use hash tables for optimization (but we need to be careful about the difference between hash comparison and Object#equals(Object)) in lists
+			List<OrdinaryVariable> expectedArgumentOVs = getExpectedArgumentOVs();
+			
+			if (evaluationList.isEmpty() 	// if there is nothing to filter from
+					|| expectedArgumentOVs == null || expectedArgumentOVs.isEmpty()) {	// or if the filter is absent
+				// then return the same list instance
+				return evaluationList;
+			}
+			
+			// this is the value to be returned
+			List<EntityAndArguments> ret = new ArrayList<Compiler.EntityAndArguments>();
+			
+			// only include the entries in evaluationList which are compatible with the OVs in filter
+			for (EntityAndArguments evaluation : evaluationList) {
+				if (evaluation == null) {
+					continue;	// ignore null values
+				}
+				
+				// this will keep track if evaluation contains any argument incompatible with filter.
+				boolean hasInvalidArgument = false;
+				
+				// iterate on arguments of current value in evaluation list, and check if there is any invalid argument/OV
+				for (OVInstance argument : evaluation.arguments) {
+					if (!expectedArgumentOVs.contains(argument.getOv())) {
+						// if there is at least one invalid argument, then we can immediately stop searching
+						hasInvalidArgument = true;
+						break;
+					}
+				}
+				
+				if (!hasInvalidArgument) {
+					ret.add(evaluation);
+				}
+			}
+			
+			return ret;
+		}
+
+		/**
+		 * @return the expectedArgumentOVs : this list will be used by {@link #removeIncompatibleOVs()} 
+		 * in order to filter out from {@link #getEvaluationList()} those values whose ordinary variables don't match
+		 * this list. If null, then this will be ignored. This is particularly important when the resident node
+		 * has 2 input nodes as its parents, but these input nodes are related to the same resident node 
+		 * (so the LPD compiler can distinguish them only from its arguments -- namely the OVs).
+		 */
+		public List<OrdinaryVariable> getExpectedArgumentOVs() {
+			return expectedArgumentOVs;
+		}
+
+		/**
+		 * @param expectedArgumentOVs the expectedArgumentOVs to set : this list will be used by {@link #removeIncompatibleOVs()} 
+		 * in order to filter out from {@link #getEvaluationList()} those values whose ordinary variables don't match
+		 * this list. If null, then this will be ignored. This is particularly important when the resident node
+		 * has 2 input nodes as its parents, but these input nodes are related to the same resident node 
+		 * (so the LPD compiler can distinguish them only from its arguments -- namely the OVs).
+		 */
+		public void setExpectedArgumentOVs(List<OrdinaryVariable> expectedArgumentOVs) {
+			this.expectedArgumentOVs = expectedArgumentOVs;
+		}
+
+		
 		
 	}
 	
