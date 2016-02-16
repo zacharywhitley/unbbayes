@@ -3611,7 +3611,9 @@ public class Compiler implements ICompiler {
 			if (arg0 instanceof TempTableHeader) {
 				TempTableHeader arg = (TempTableHeader)arg0;
 				if (this.parent.getName().equalsIgnoreCase(arg.getParent().getName())) {
-					if (this.value.getName().equalsIgnoreCase(arg.getValue().getName())) {
+					if (this.value == null) {
+						return arg.getValue() == null;
+					} else if (this.value.getName().equalsIgnoreCase(arg.getValue().getName())) {
 						return true;
 					} else {
 						return false;
