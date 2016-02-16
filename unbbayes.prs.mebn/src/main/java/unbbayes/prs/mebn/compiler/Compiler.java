@@ -76,7 +76,7 @@ import unbbayes.util.Debug;
  b_expression ::= b_term [ "|" b_term ]*
  b_term ::= not_factor [ "&" not_factor ]*
  not_factor ::= [ "~" ] b_factor
- b_factor ::= ident ["(" arguments ")"]  "=" ident | "(" b_expression ")"
+ b_factor ::= ident ["(" arguments ")"]  "=" ident ["(" arguments ")"] | "(" b_expression ")"
  arguments ::= ident[["."|","]ident]*
  else_statement ::= statement | if_statement
  statement ::= "[" assignment_or_if "]" 
@@ -1288,7 +1288,7 @@ public class Compiler implements ICompiler {
 	}
 
 	/**
-	 * b_factor ::= ident [( arguments )] "=" ident | "(" b_expression ")"
+	 * b_factor ::= ident ["(" arguments ")"]  "=" ident ["(" arguments ")"] | "(" b_expression ")"
 	 * <br/>
 	 * <br/>
 	 * For example: Node = state
@@ -1299,7 +1299,7 @@ public class Compiler implements ICompiler {
 	protected ICompilerBooleanValue bFactor() throws InvalidConditionantException,
 								  TableFunctionMalformedException{
 		
-		String conditionantName = null;
+		String conditionantName1 = null;
 		
 		
 		
@@ -1319,10 +1319,10 @@ public class Compiler implements ICompiler {
 		
 		MultiEntityBayesianNetwork mebn = getMEBN();
 		if (token == 'x') {
-			conditionantName = this.noCaseChangeValue;
+			conditionantName1 = this.noCaseChangeValue;
 			// consistency check C09: verify whether is conditionant of the node
 			if (this.node != null) {
-				if (!this.isValidConditionant(mebn , this.node, conditionantName )) {
+				if (!this.isValidConditionant(mebn , this.node, conditionantName1 )) {
 					// Debug.println("->" + getNode());
 					throw new InvalidConditionantException(this.node.toString());
 				}
@@ -1336,10 +1336,10 @@ public class Compiler implements ICompiler {
 		}
 		
 		// check if node has arguments specified
-		List<OrdinaryVariable> arguments = null;
+		List<OrdinaryVariable> arguments1 = null;	// arguments of 1st conditionant (i.e. left-side of "=")
 		if (look == '(') {
 			match('(');
-			arguments = this.arguments(conditionantName);
+			arguments1 = this.arguments(conditionantName1);
 			match(')');
 		}
 		
@@ -1351,13 +1351,32 @@ public class Compiler implements ICompiler {
 		
 		// Debug.println("SCANED FOR CONDITIONANTS' POSSIBLE STATES");
 		
+		// now, handle the right side of "=". It may be a variable (node or ordinary variable), or a single value
+		
+		String conditionantName2 = this.noCaseChangeValue;
+		boolean isConditionantName2SingleValue = true;	// if true, then conditionantName2 represents a single value. If false, then it represents another node
+		List<OrdinaryVariable> arguments2 = null;	// this will be the arguments of 2nd conditionant (i.e. right-side of "="), if such thing exists
 		if (token == 'x') {
 			// TODO the name of the possible value may contain caracters like dots, but this method cannot handle such characters
 			
 			// consistency check C09: verify whether conditionant has valid values
 			if (this.node != null) {
-				if (!this.isValidConditionantValue(mebn,this.node,conditionantName,this.noCaseChangeValue)) {
-					throw new InvalidConditionantException(this.node.toString());
+				if (!this.isValidConditionantValue(mebn,this.node,conditionantName1,conditionantName2)) {
+					// if it is not a single value, then let's check if it is a variable (node or ordinary variable)
+					if (this.isValidConditionant(mebn , this.node, conditionantName2 )) {
+						// the 2nd conditionant (right side of "=") is a name of another node
+						isConditionantName2SingleValue = false;
+						
+						// check if node has arguments specified
+						if (look == '(') {
+							match('(');
+							arguments2 = this.arguments(conditionantName2);
+							match(')');
+						}
+						
+					} else {
+						throw new InvalidConditionantException(this.node.toString());
+					}
 				}
 			}
 			
@@ -1371,34 +1390,37 @@ public class Compiler implements ICompiler {
 		
 		// if code reached here, the condicionant check is ok
 		
-		TempTableHeader header = null;	// this will be the value to return
+		// this is an object representing either the left-side of "=", or a value attribution if the right side is a vale 
+		TempTableHeader header1 = null;	 // (e.g. Node=state, or OV=value)
 
 		//	prepare to add current temp table's header's parent node (condicionant list)
-		ResidentNode resident = mebn.getDomainResidentNode(conditionantName);
-		if (resident != null) {
+		ResidentNode resident1 = mebn.getDomainResidentNode(conditionantName1);
+		if (resident1 != null) {
 			
 			Entity condvalue = null;
-			// search for an entity with a name this.noCaseChangeValue
-			for (Entity possibleValue : resident.getPossibleValueListIncludingEntityInstances()) {
-				if (possibleValue.getName().equalsIgnoreCase(this.value)) {
-					condvalue = possibleValue;
-					break;
+			if (isConditionantName2SingleValue) {
+				// search for an entity with a name this.noCaseChangeValue
+				for (Entity possibleValue : resident1.getPossibleValueListIncludingEntityInstances()) {
+					if (possibleValue.getName().equalsIgnoreCase(conditionantName2)) {
+						condvalue = possibleValue;
+						break;
+					}
 				}
-			}
-			// If not found, its an error!		
-			if (condvalue == null) {
-				try{
-					expected("Identifier");
-				} catch (TableFunctionMalformedException e) {
-					throw new InvalidConditionantException(getNode().toString(),e);
+				// If not found, its an error!		
+				if (condvalue == null) {
+					try{
+						expected("Identifier");
+					} catch (TableFunctionMalformedException e) {
+						throw new InvalidConditionantException(getNode().toString(),e);
+					}
 				}
+				// TODO optimize above code, because its highly redundant (condvalue should be found anyway on that portion of code)
 			}
-			// Set temp table's header condicionant
-			// TODO optimize above code, because its highly redundant (condvalue should be found anyway on that portion of code)
-			header = new TempTableHeaderParent(resident, condvalue, arguments, null);
+			// Set temp table's header condicionant. condvalue will be null if this is not a declaration like Node=state
+			header1 = new TempTableHeaderParent(resident1, condvalue, arguments1, null);
 		} else {
 			// we did not find a parent node with the specified name. It may be an ordinary variable
-			OrdinaryVariable ov = this.node.getMFrag().getOrdinaryVariableByName(conditionantName);
+			OrdinaryVariable ov = this.node.getMFrag().getOrdinaryVariableByName(conditionantName1);
 			// If we did not find either one (node or OV), its an error!		
 			if (ov == null) {
 				try{
@@ -1415,15 +1437,58 @@ public class Compiler implements ICompiler {
 			ObjectEntity objectEntity = mebn.getObjectEntityContainer().getObjectEntityByType(ov.getValueType());
 			
 			// extract the actual instance of this type
-			Entity value = objectEntity.getInstanceByName(this.noCaseChangeValue);
+			Entity value = null;
+			if (isConditionantName2SingleValue) {
+				value = objectEntity.getInstanceByName(conditionantName2);
+			}
 			
-			header = new TempTableHeaderOV(ov, value);
+			// value will be null if this is not a declaration like OV=value
+			header1 = new TempTableHeaderOV(ov, value);
+		}
+		
+		// Similarly, create an instance of the right-side of "=" if its not a simple value
+		TempTableHeader header2 = null;		// e.g. node=node, or ov=node, or node=ov, or ov=ov
+		
+		if (!isConditionantName2SingleValue) {
+			//	prepare to add current temp table's header's parent node (condicionant list)
+			ResidentNode resident2 = mebn.getDomainResidentNode(conditionantName2);
+			if (resident2 != null) {
+				// Set temp table's header condicionant. Its never a single value, so the second argument is null
+				header2 = new TempTableHeaderParent(resident2, null, arguments2, null);
+			} else {
+				// we did not find a parent node with the specified name. It may be an ordinary variable
+				OrdinaryVariable ov = this.node.getMFrag().getOrdinaryVariableByName(conditionantName2);
+				// If we did not find either one (node or OV), its an error!		
+				if (ov == null) {
+					try{
+						expected("Identifier");
+					} catch (TableFunctionMalformedException e) {
+						throw new InvalidConditionantException(getNode().toString(),e);
+					}
+				}
+				if (ov.getValueType() == null) {
+					throw new InvalidConditionantException(ov + " has no associated value.");
+				}
+				// again, the right-hand side of "=" is never in a format like OV=value, so use null as the value of this OV
+				header2 = new TempTableHeaderOV(ov, null);
+			}
 		}
 		
 		
-		this.currentHeader.addParent(header);	// store it as a conditionant declared inside a boolean expression
+		// store headers as conditionants declared inside a boolean expression.
+		// This record is used later in order to fill the headers with current parent's values (i.e. states of parents in the header of current column in CPT)
+		this.currentHeader.addParent(header1);	
+		if (header2 != null) {
+			// only add the right-side of "=" if it was created.
+			// the right side is created only if the right-side is a variable (not a single value)
+			this.currentHeader.addParent(header2);	
+		}
 		
-		return header;
+		if (isConditionantName2SingleValue) {
+			return header1;
+		} else {
+			return new TempTableHeaderVariableEqualsVariable(header1,header2);
+		}
 	}
 	
 	/**
@@ -2280,7 +2345,10 @@ public class Compiler implements ICompiler {
 	 * Consistency check C09
 	 * Conditionants must be parents referenced by this.node,
 	 * or ordinary variables in the same MFrag
-	 * @return if node with name == nodeName is a valid conditionant.
+	 * @param node : this will be used in order to extract parents or MFrags from (in order to check if OV or node is within same MFrag).
+	 * @param mebn : this will be used to extract nodes by name.
+	 * @param conditionantName : name of node or ordinary variable to check consistency.
+	 * @return if node or ordinary variable with name == conditionantName is a valid conditionant.
 	 */
 	protected boolean isValidConditionant(MultiEntityBayesianNetwork mebn, ResidentNode node, String conditionantName) {
 		
@@ -3524,9 +3592,11 @@ public class Compiler implements ICompiler {
 		public void setParent(Node parent) {
 			this.parent = parent;
 		}
+		/** This can be null if this header represents a declaration which doesn't associate a variable to a single value */
 		public Entity getValue() {
 			return value;
 		}
+		/** This can be null if this header represents a declaration which doesn't associate a variable to a single value */
 		public void setValue(Entity value) {
 			this.value = value;
 		}
@@ -3565,6 +3635,11 @@ public class Compiler implements ICompiler {
 		public boolean evaluate() {
 			if (this.isKnownValue()) {
 				return false;
+			}
+			// handle the case when this.getValue() is null
+			if (this.getValue() == null) {
+				// if the value is null, then we just need to see if expected evaluation is also null
+				return this.getCurrentEvaluation() == null;
 			}
 			// if entities have the same name, they are equals.
 			if (this.getCurrentEvaluation().getName().equalsIgnoreCase(this.getValue().getName())) {
@@ -3710,6 +3785,90 @@ public class Compiler implements ICompiler {
 	}
 	
 	/**
+	 * This class represents a content of an if-clause in the format like 
+	 * "Variable=Variable". For example: Node=Node or Node=OV or OV=Node or OV=OV.
+	 * @author Shou Matsumoto
+	 */
+	protected class TempTableHeaderVariableEqualsVariable implements ICompilerBooleanValue {
+		
+		private TempTableHeader header1;
+		private TempTableHeader header2;
+
+		/** 
+		 * This object represents a content of an if-clause in the format like 
+		 * "Variable=Variable". For example: Node=Node or Node=OV or OV=Node or OV=OV. 
+		 * @param header1 : this is the left-side of "="
+		 * @param header2 : this is the right-side of "="
+		 */
+		public TempTableHeaderVariableEqualsVariable(TempTableHeader header1, TempTableHeader header2) {
+			this.header1 = header1;
+			this.header2 = header2;
+		}
+
+		/** This is the right-side of "=" */
+		public TempTableHeader getHeader2() { return header2; }
+		/** This is the right-side of "=" */
+		public void setHeader2(TempTableHeader header2) { this.header2 = header2; }
+		/** This is the left-side of "=" */
+		public TempTableHeader getHeader1() { return header1; }
+		/** This is the left-side of "=" */
+		public void setHeader1(TempTableHeader header1) { this.header1 = header1; }
+
+		/*
+		 * (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.TempTableHeader#evaluate()
+		 */
+		public boolean evaluate() {
+			return this.header1.getCurrentEvaluation().getName().equalsIgnoreCase(this.header2.getCurrentEvaluation().getName());
+		}
+		
+		public boolean equals(Object arg0) {
+			if (this == arg0) {
+				return true;
+			}
+			if (arg0 instanceof TempTableHeaderVariableEqualsVariable) {
+				TempTableHeaderVariableEqualsVariable arg = (TempTableHeaderVariableEqualsVariable)arg0;
+				if (this.header1.getParent().getName().equalsIgnoreCase(arg.getHeader1().getParent().getName())) {
+					if (this.header2.getParent().getName().equalsIgnoreCase(arg.getHeader2().getParent().getName())) {
+						return true;
+					} else {
+						return false;
+					}
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+			//return false;
+		}
+		
+//		public boolean hasEmbeddedNodeDeclaration() { return getHeader1().hasEmbeddedNodeDeclaration() || getHeader2().hasEmbeddedNodeDeclaration(); }
+//		public Node getParent() { return this.header1.getParent();}
+//		public void setParent(Node parent) { throw new UnsupportedOperationException(); }
+//		public Entity getValue() { return this.header1.getValue(); }
+//		public void setValue(Entity value) { throw new UnsupportedOperationException();  }
+//		public List<EntityAndArguments> getEvaluationList() { return null; }
+//		public void setEvaluationList(List<EntityAndArguments> evaluationList) { throw new UnsupportedOperationException();  }
+//		public Entity getCurrentEvaluation() {return null;}
+//		public EntityAndArguments getCurrentEntityAndArguments() {return null;}
+//		public void setCurrentEvaluation(Entity currentEvaluation) { throw new UnsupportedOperationException();  }
+//		public boolean hasNextEvaluation() { return this.header1.hasNextEvaluation() || this.header2.hasNextEvaluation(); }
+//		public Entity getNextEvaluation() {return null;}
+//		
+//		public void resetEvaluationList() {
+//			this.header1.resetEvaluationList();
+//			this.header2.resetEvaluationList();
+//		}
+//
+//		public boolean isKnownValue() { return this.header1.isKnownValue && this.header2.isKnownValue; }
+//		public void setKnownValue(boolean isKnownValue) {
+//			this.header1.setKnownValue(isKnownValue);
+//			this.header2.setKnownValue(isKnownValue);
+//		}
+	}
+	
+	/**
 	 * This class represents a content of an if-clause in the format of "OV=value"
 	 * @author Shou Matsumoto
 	 *
@@ -3730,7 +3889,7 @@ public class Compiler implements ICompiler {
 		 * @see unbbayes.prs.mebn.compiler.Compiler.TempTableHeader#isKnownValue()
 		 */
 		public boolean isKnownValue() {
-			return false;	// by default, indicate that this is never a known value until we resolve the values corectly.
+			return false;	// by default, indicate that this is never a known value until we resolve the values correctly.
 		}
 		/* (non-Javadoc)
 		 * @see unbbayes.prs.mebn.compiler.Compiler.TempTableHeader#setKnownValue(boolean)

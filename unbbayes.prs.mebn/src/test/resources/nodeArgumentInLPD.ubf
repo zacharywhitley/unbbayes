@@ -1,0 +1,115 @@
+% UBF file header
+Version=0.04
+PrOwl="nodeArgumentInLPD.owl"
+
+% UBF MTheory declaration
+MTheory=MEBN
+NextMFrag=3
+NextResident=3
+NextInput=3
+NextContext=3
+NextEntity=1
+
+% UBF MFrags and Nodes declaration
+
+% MFrag
+MFrag=ChildMFrag
+NextOrdinaryVar=5
+
+% Resident nodes
+
+
+Node=Child
+Type=DomainResidentNode
+Position=175.0,415.0
+Size=96,60
+Color=-66914
+PossibleValuesOrder=MyEntity
+
+% Input nodes
+
+
+Node=IX1
+Type=GenerativeInputNode
+Position=277.0,277.0
+Size=107,60
+Color=-2302756
+
+Node=IX2
+Type=GenerativeInputNode
+Position=89.0,279.0
+Size=100,60
+Color=-2302756
+
+% Context nodes
+
+
+Node=CX1
+Type=ContextNode
+Position=94.0,188.0
+Size=115,60
+Color=-5178237
+
+Node=CX2
+Type=ContextNode
+Position=261.0,184.0
+Size=115,60
+Color=-5178237
+
+% Ordinary Variables
+
+
+Node=v
+Type=OrdinalVar
+Position=90.0,61.0
+Size=126,60
+Color=-5178237
+
+Node=w
+Type=OrdinalVar
+Position=255.0,61.0
+Size=130,60
+Color=-5178237
+
+Node=x
+Type=OrdinalVar
+Position=96.0,121.0
+Size=126,60
+Color=-5178237
+
+Node=y
+Type=OrdinalVar
+Position=255.0,125.0
+Size=126,60
+Color=-5178237
+
+% MFrag
+MFrag=ParentMFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=Parent
+Type=DomainResidentNode
+Position=138.0,216.0
+Size=114,60
+Color=-66914
+PossibleValuesOrder=MyEntity
+
+% Ordinary Variables
+
+
+Node=a
+Type=OrdinalVar
+Position=113.0,79.0
+Size=126,60
+Color=-5178237
+
+Node=b
+Type=OrdinalVar
+Position=250.0,74.0
+Size=128,60
+Color=-5178237
+
+% Object Entity Instances
