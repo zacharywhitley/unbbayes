@@ -331,7 +331,7 @@
 		<dependency>
 			<groupId>br.unb.cic</groupId>
 			<artifactId>unbbayes</artifactId>
-			<version>4.21.15</version>
+			<version>4.21.18</version>
 			<optional>false</optional>
 		</dependency>
 		</dependencies>
