@@ -56,6 +56,7 @@ import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
@@ -2352,8 +2353,7 @@ public class Compiler implements ICompiler {
 	 */
 	protected boolean isValidConditionant(MultiEntityBayesianNetwork mebn, ResidentNode node, String conditionantName) {
 		
-		Node conditionant = mebn.getNode(conditionantName);
-		
+		Node conditionant = mebn.getNode(conditionantName); // fortunately, mebn.getNode(conditionantName) is case-sensitive already (and LPD needs to be case-sensitive)
 		
 		
 		if (conditionant != null) {
@@ -2383,8 +2383,8 @@ public class Compiler implements ICompiler {
 		}
 		
 		// conditionant may be an ordinary variable
-		OrdinaryVariable ov = node.getMFrag().getOrdinaryVariableByName(conditionantName);
-		return ov != null;	// return true if we found an OV. Return false if we did not.
+		// fortunately, node.getMFrag().getOrdinaryVariableByName(conditionantName) is case-sensitive already (and LPD needs to be case-sensitive)
+		return node.getMFrag().getOrdinaryVariableByName(conditionantName) != null;	// return true if we found an OV. Return false if we did not.
 			
 	}
 	
@@ -2399,7 +2399,12 @@ public class Compiler implements ICompiler {
 			//// Debug.println("Conditionant node found: " + conditionant.getName());
 			if ( conditionant instanceof IResidentNode) {
 				// Debug.println("IS MULTIENTITYNODE");
-				return ((IResidentNode)conditionant).getPossibleValueByName(conditionantValue) != null;
+				StateLink possibleValue = ((IResidentNode)conditionant).getPossibleValueByName(conditionantValue);
+				if (possibleValue == null) {
+					return false;
+				}
+				// we need to check name again, because ResidentNode#getPossibleValueByName is case-insensitive, and Compiler needs to be case sensitive.
+				return  possibleValue.getState().getName().equals(conditionantValue);
 			}
 			// it was a node, but not a resident node...
 			// OVs can be nodes
@@ -2409,6 +2414,7 @@ public class Compiler implements ICompiler {
 		
 		// the name of the conditionant may be an OV
 		OrdinaryVariable ov = node.getMFrag().getOrdinaryVariableByName(conditionantName);
+		// fortunately, getOrdinaryVariableByName is case sensitive already
 		if (ov == null || ov.getValueType() == null) {
 			return false;
 		}
@@ -2420,7 +2426,12 @@ public class Compiler implements ICompiler {
 		}
 		
 		// return true if there is an instance (for that OV) with the specified value. False otherwise
-		return objectEntity.getInstanceByName(conditionantValue) != null;
+		ObjectEntityInstance ovInstance = objectEntity.getInstanceByName(conditionantValue);
+		if (ovInstance == null) {
+			return false;
+		}
+		// we need to check again, because objectEntity.getInstanceByName(conditionantValue) is case insensitive, but we need case sensitive
+		return  ovInstance.getInstanceName().equals(conditionantValue);
 		
 	}
 	
