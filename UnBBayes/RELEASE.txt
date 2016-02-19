@@ -7,8 +7,8 @@ Number	Request ID	Summary
 BUG LIST
 Number	Request ID	Summary
 16      177    		Error message was thrown when user chooses Save As and then cancels.
-17	178		GUI was not avoiding users from using wrong names in nodes (was also happening when user renamed nodes by clicking at the node itself).
-18	179 		Global options dialog was not showing check boxes to configure whether to group CPT headers or not, and to let the 1st column of CPT to follow the scroll or not.
+17	178		GUI was not avoiding users from using wrong names in nodes.
+18	179 		Global options dialog was not showing check boxes to configure how to show CPTs.
 
 
 UNBBAYES VERSION 4.21.15
