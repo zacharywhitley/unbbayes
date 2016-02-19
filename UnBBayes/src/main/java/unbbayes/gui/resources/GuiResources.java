@@ -154,9 +154,9 @@ public class GuiResources extends ListResourceBundle {
 		{"saveSucess", "File saved"},
 		
 		{"helpToolTip","UnBBayes help"},
-		{"propagateToolTip","Propagate evidences"},
-		{"expandToolTip","Expand evidences tree"},
-		{"collapseToolTip","Collapse evidences tree"},
+		{"propagateToolTip","Propagate evidence"},
+		{"expandToolTip","Expand evidence tree"},
+		{"collapseToolTip","Collapse evidence tree"},
 		{"editToolTip","Return to edit mode"},
 		{"logToolTip","Information about Compilation (Log)"},
 		{"resetBeliefsToolTip","Reset beliefs"},

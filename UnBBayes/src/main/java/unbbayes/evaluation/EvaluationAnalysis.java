@@ -173,7 +173,7 @@ public class EvaluationAnalysis {
 		
 		Debug.setDebug(true);
 		Debug.println("Target: "+ targetNodeNameList.get(0));
-		Debug.print("Evidences: ");
+		Debug.print("Evidence: ");
 		for (String evidence : evidenceNodeNameList) {
 			Debug.print(evidence + " ");
 		}
@@ -210,7 +210,7 @@ public class EvaluationAnalysis {
 		
 		Debug.setDebug(true);
 		Debug.println("Target: "+ targetNodeNameList.get(0));
-		Debug.print("Evidences: ");
+		Debug.print("Evidence: ");
 		for (String evidence : evidenceNodeNameList) {
 			Debug.print(evidence + " ");
 		}
@@ -552,7 +552,7 @@ public class EvaluationAnalysis {
 	public static void main(String[] args) throws Exception {
 		
 		Debug.setDebug(true);
-		Debug.print("\n%80s , %20s , %20s , %20s , %20s , %20s , %20s , %20s", "Evidences", "States Size", "Exact Pcc", "Sample Size", "Sample / States", "Mean", "Variance", "Time");
+		Debug.print("\n%80s , %20s , %20s , %20s , %20s , %20s , %20s , %20s", "Evidence", "States Size", "Exact Pcc", "Sample Size", "Sample / States", "Mean", "Variance", "Time");
 		Debug.setDebug(false);
 		
 		runWrongAirIDModel();

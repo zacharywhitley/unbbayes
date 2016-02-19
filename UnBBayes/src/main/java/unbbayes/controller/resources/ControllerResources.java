@@ -56,7 +56,7 @@ public class ControllerResources extends ListResourceBundle {
 		{"likelihoodName","Likelihood"},
 		{"likelihoodException","There are only zeros!"},
 		{"statusEvidenceProbabilistic","Total Evidence Probabilistic: "},
-		{"statusEvidenceException","Evidences are not consistent, or there was an underflow"},
+		{"statusEvidenceException","Inconsistent evidence or underflow was found"},
 		{"statusError","Error!"},
 		{"printLogToolTip","Print compilation log"},
 		{"previewLogToolTip","Print preview"},
