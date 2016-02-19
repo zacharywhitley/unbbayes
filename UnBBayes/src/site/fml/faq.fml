@@ -57,7 +57,7 @@
         <p>
           To see how to use the exact inference go to our class in unbbayes.example.TextMode.java. 
           There you will see the basic classes and methods needed to compile, add findings, 
-          propagate (update evidences), and get the marginal of a node.
+          propagate (update evidence), and get the marginal of a node.
         </p>
       </answer>
     </faq>
