@@ -1,16 +1,17 @@
-UNBBAYES VERSION 4.21.16   - WORKING 
+UNBBAYES VERSION 4.21.18
 -----------------------------
 FEATURE LIST
 Number	Request ID	Summary
-					Included an option in the global option to choose whether to group CPT headers or not.
+		
 
 BUG LIST
 Number	Request ID	Summary
-16          Remove wrong error message when user cancel SaveAs operation. 
-					GUI avoids users from using wrong names in nodes (this was not being performed when user renamed nodes by clicking at the node itself -- renaming from toolbar was fine)		
-					Scrolling the GUI's CPT table horizontally will cause the 1st column to follow the scroll.
+16      177    		Error message was thrown when user chooses Save As and then cancels.
+17	178		GUI was not avoiding users from using wrong names in nodes (was also happening when user renamed nodes by clicking at the node itself).
+18	179 		Global options dialog was not showing check boxes to configure whether to group CPT headers or not, and to let the 1st column of CPT to follow the scroll or not.
 
-UNBBAYES VERSION 4.21.15   - RELEASED
+
+UNBBAYES VERSION 4.21.15
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
