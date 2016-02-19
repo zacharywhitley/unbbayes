@@ -293,7 +293,7 @@
 				Indicate presence of finding.
 			</action>
 			<action dev="Paulo Costa" type="add" issue="1908040">
-				Propose new SSBN algorithm considering evidences "below".
+				Propose new SSBN algorithm considering evidence "below".
 			</action>
 			
 			<action dev="Rommel Carvalho" type="fix" issue="2380157">
@@ -327,7 +327,7 @@
 		
 		<release version="3.8.3-BETA" date="2008-07-31" description="Third UnBBayes-MEBN beta release">
 			<action dev="Laécio Lima" type="add" issue="2008231">
-				Implement SSBN algorithm with evidences "below".
+				Implement SSBN algorithm with evidence "below".
 			</action>
 			<action dev="Rommel Carvalho" type="add" issue="2023512">
 				Develop new Web site using Maven.

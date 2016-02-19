@@ -95,7 +95,7 @@
 														<xs:element name="metaphore" minOccurs="0">
 															<xs:annotation>
 																<xs:documentation>
-																Used to explain the conclusions the network gets based on evidences (other variables).
+																Used to explain the conclusions the network gets based on evidence (other variables).
 															</xs:documentation>
 															</xs:annotation>
 															<xs:complexType>
@@ -160,7 +160,7 @@
 									</xs:key>
 									<xs:keyref name="evidenceVariableIdRef" refer="variableId">
 										<xs:annotation>
-											<xs:documentation>The explanation is based on the evidences, which are other variables.</xs:documentation>
+											<xs:documentation>The explanation is based on the evidence, which are other variables.</xs:documentation>
 										</xs:annotation>
 										<xs:selector xpath="./variable/metaphor/explanation" />
 										<xs:field xpath="@evidence" />
