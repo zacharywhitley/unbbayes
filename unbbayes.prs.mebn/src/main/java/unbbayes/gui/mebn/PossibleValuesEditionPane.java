@@ -62,6 +62,7 @@ import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.StateLink;
+import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
 import unbbayes.prs.mebn.exception.DuplicatedNameException;
 import unbbayes.prs.mebn.exception.ReservedWordException;
 
@@ -540,12 +541,35 @@ public class PossibleValuesEditionPane extends JPanel {
 						.length());
 				matcher = wordPattern.matcher(nameValue);
 				if (matcher.matches()) {
-					if(mebnController.existPossibleValue(nameValue)){
-						JOptionPane.showMessageDialog(null, resource
-								.getString("nameException"), resource
-								.getString("nameAlreadyExists"),
-								JOptionPane.ERROR_MESSAGE);
-					}else{
+					CategoricalStateEntity stateEntity = null;
+					try {
+						stateEntity = mebnController.getMultiEntityBayesianNetwork().getCategoricalStatesEntityContainer().getCategoricalState(nameValue);
+					} catch (CategoricalStateDoesNotExistException e1) {
+						// ignore
+					}
+					
+					if (stateEntity != null) { // the state exists already. Reuse
+						
+						// some types of states cannot be used together with categorical entities. Ask user if we need to clean them
+						if (!(residentNode.getPossibleValueLinkList().isEmpty())
+								&& (residentNode.getTypeOfStates() != IResidentNode.CATEGORY_RV_STATES)) {
+							int answer = JOptionPane.showConfirmDialog(
+									mebnController.getMebnEditionPane(),
+									resource.getString("warningDeletStates"),
+									resource.getString("confirmation"),
+									JOptionPane.YES_NO_OPTION);
+							if (answer == JOptionPane.YES_OPTION) {
+								mebnController.removeAllPossibleValues(residentNode);
+								residentNode.setTypeOfStates(IResidentNode.CATEGORY_RV_STATES);	
+							} else {
+								// do not make any changes if user has chosen something other than Yes.
+								return; 					
+							}
+						}
+						
+						mebnController.addPossibleValue(residentNode, stateEntity);
+					} else {
+						// this is a new state. Create.
 						if (!residentNode.existsPossibleValueByName(nameValue)){
 							if (!(residentNode.getPossibleValueLinkList().isEmpty())
 									&& (residentNode.getTypeOfStates() != IResidentNode.CATEGORY_RV_STATES)) {
@@ -667,6 +691,30 @@ public class PossibleValuesEditionPane extends JPanel {
 			barEdition.setFloatable(false);
 			barEdition.add(btnAdd);
 			barEdition.add(comboEntities);
+			
+			try {
+				// make sure the selected element by default is not the root object entity;
+				if (comboEntities.getModel().getSize() > 1) {	// make sure there is more than 1 element to choose from
+					
+					// extract the root object entity, because we will avoid selecting it by default
+					ObjectEntity rootObjectEntity = mebnController.getMultiEntityBayesianNetwork().getObjectEntityContainer().getRootObjectEntity();
+					
+					// iterate on available entries in the drop-down list and pick something other than the root
+					for (int i = 0; i < comboEntities.getModel().getSize(); i++) {		// iterating on all elements in the dropdown list
+						ObjectEntity currentEntity = (ObjectEntity) comboEntities.getItemAt(i);
+						if (!rootObjectEntity.equals(currentEntity)) {
+							// found 1st entity which is not the root. Select it.
+							comboEntities.setSelectedIndex(i);
+							// make sure the GUI is updated after changing selection. 
+							// TODO this might be redundant. Verify.
+							comboEntities.updateUI();
+							comboEntities.repaint();
+							break;
+						}
+					}
+					
+				}
+			} catch (RuntimeException e) { /*ignore*/ }
 
 			JToolBar toolGloballyExclusive = new JToolBar();
 			toolGloballyExclusive.setFloatable(false);
@@ -685,7 +733,7 @@ public class PossibleValuesEditionPane extends JPanel {
 			btnAdd.addActionListener(new ActionListener() {
 
 				public void actionPerformed(ActionEvent e) {
-					if (comboEntities.getSelectedItem() != null) {
+;					if (comboEntities.getSelectedItem() != null) {
 						if (!(residentNode.getPossibleValueLinkList().isEmpty())) {
 							int answer = JOptionPane.showConfirmDialog(
 									mebnController.getMebnEditionPane(),
