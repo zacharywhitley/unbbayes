@@ -184,7 +184,7 @@ public class PNEditionPane extends JPanel {
 	/** This is a pane to edit conditional probability functions */
 	private JComponent cpfPane;
 
-	private boolean useFloatingColumn = true;
+	private boolean useFloatingColumn = false;
 
 	/** Load resource file from this package */
 	private static ResourceBundle resource = unbbayes.util.ResourceController
