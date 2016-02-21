@@ -14,7 +14,6 @@ import javax.swing.LookAndFeel;
 import javax.swing.PopupFactory;
 import javax.swing.UIManager;
 
-import org.apache.log4j.Logger;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -86,7 +85,6 @@ import com.jgoodies.looks.plastic.PlasticLookAndFeel;
  */
 public class ProtegeApplication implements BundleActivator {
 
-    private static final Logger logger = Logger.getLogger(ProtegeApplication.class);
 
     public static final String RUN_ONCE = "PROTEGE_OSGI_RUN_ONCE";
 
@@ -124,7 +122,7 @@ public class ProtegeApplication implements BundleActivator {
     		startApplication();
     	}
     	catch (Throwable t) {
-    		logger.error("Exception caught starting Protege", t);
+    		t.printStackTrace();
     	}
     }
 
@@ -136,7 +134,6 @@ public class ProtegeApplication implements BundleActivator {
         RecentEditorKitManager.getInstance().dispose();
         PluginUtilities.getInstance().dispose();
         ProtegeManager.getInstance().dispose();
-        logger.info("Thank you for using Protege. Goodbye.");
     }
 
 
@@ -152,19 +149,19 @@ public class ProtegeApplication implements BundleActivator {
     private void displayPlatform() {
         Bundle b = context.getBundle();
         Version v = PluginUtilities.getBundleVersion(b);
-        logger.info("Starting Protege 4 OWL Editor (Version "  
-                    +  v.getMajor() + "." + v.getMinor() + "." + v.getMicro()
-                    + ", Build = " + PluginUtilities.getBuildNumber(b) + ")");
-        logger.info("Platform:");
-        logger.info("    Java: JVM " + System.getProperty("java.runtime.version") +
-                    " Memory: " + (Runtime.getRuntime().maxMemory() / 1000000) + "M");
-        logger.info("    Language: " + Locale.getDefault().getLanguage() +
-                    ", Country: " + Locale.getDefault().getCountry());
-        logger.info("    Framework: " + context.getProperty(Constants.FRAMEWORK_VENDOR)
-                    + " (" + context.getProperty(Constants.FRAMEWORK_VERSION) + ")");
-        logger.info("    OS: " + context.getProperty(Constants.FRAMEWORK_OS_NAME)
-                    + " (" + context.getProperty(Constants.FRAMEWORK_OS_VERSION) + ")");
-        logger.info("    Processor: " + context.getProperty(Constants.FRAMEWORK_PROCESSOR));
+//        logger.info("Starting Protege 4 OWL Editor (Version "  
+//                    +  v.getMajor() + "." + v.getMinor() + "." + v.getMicro()
+//                    + ", Build = " + PluginUtilities.getBuildNumber(b) + ")");
+//        logger.info("Platform:");
+//        logger.info("    Java: JVM " + System.getProperty("java.runtime.version") +
+//                    " Memory: " + (Runtime.getRuntime().maxMemory() / 1000000) + "M");
+//        logger.info("    Language: " + Locale.getDefault().getLanguage() +
+//                    ", Country: " + Locale.getDefault().getCountry());
+//        logger.info("    Framework: " + context.getProperty(Constants.FRAMEWORK_VENDOR)
+//                    + " (" + context.getProperty(Constants.FRAMEWORK_VERSION) + ")");
+//        logger.info("    OS: " + context.getProperty(Constants.FRAMEWORK_OS_NAME)
+//                    + " (" + context.getProperty(Constants.FRAMEWORK_OS_VERSION) + ")");
+//        logger.info("    Processor: " + context.getProperty(Constants.FRAMEWORK_PROCESSOR));
     }
 
     protected ProtegeApplication initApplication() throws Exception {
@@ -236,7 +233,7 @@ public class ProtegeApplication implements BundleActivator {
                 }
             }
             catch (Exception e) {
-                logger.error(e);
+                e.printStackTrace();
             }
         }
     }
@@ -258,10 +255,12 @@ public class ProtegeApplication implements BundleActivator {
             UIManager.setLookAndFeel(lookAndFeel);
         }
         catch (ClassNotFoundException e) {
-            logger.warn("Look and feel not found: " + lafName);
+        	e.printStackTrace();
+//            logger.warn("Look and feel not found: " + lafName);
         }
         catch (Exception e) {
-            logger.warn(e.toString());
+        	e.printStackTrace();
+//            logger.warn(e.toString());
         }
     }
 
@@ -271,7 +270,8 @@ public class ProtegeApplication implements BundleActivator {
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             public void uncaughtException(Thread t, Throwable e) {
                 errorLog.uncaughtException(t, e);
-                logger.warn("Uncaught Exception in thread " + t.getName(), e);
+                e.printStackTrace();
+//                logger.warn("Uncaught Exception in thread " + t.getName(), e);
             }
         });
     }
@@ -297,13 +297,13 @@ public class ProtegeApplication implements BundleActivator {
                         commandLineURIs.add(uri);
                     }
                     catch (URISyntaxException e) {
-                        logger.error(e);
+                    	e.printStackTrace();
                     }
                 }
             }
         }
         catch (Throwable t) { // it is not important enough to stop anything.
-            logger.warn("Error processing command line arguments " + t);
+        	t.printStackTrace();
         }
     }
 
@@ -328,7 +328,7 @@ public class ProtegeApplication implements BundleActivator {
             }
         }
         catch (Exception e) {
-            logger.error("Exception caught loading ontology", e);
+        	e.printStackTrace();
         }
         
         // do not perform auto-update ever!
@@ -408,7 +408,7 @@ public class ProtegeApplication implements BundleActivator {
             context.getBundle(0).stop();
         }
         catch (Throwable t) {
-            logger.fatal("Exception caught trying to shut down Protege.", t);
+        	t.printStackTrace();
         }
         
         /*
