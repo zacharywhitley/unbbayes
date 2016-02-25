@@ -57,7 +57,7 @@ public class ObjectEntityContainer {
 	private HashMap<ObjectEntity,List<ObjectEntity>> mapObjectChilds = new HashMap<ObjectEntity,List<ObjectEntity>>();
 	private HashMap<ObjectEntity,List<ObjectEntity>> mapObjectParents = new HashMap<ObjectEntity,List<ObjectEntity>>();
 	
-	private final String OBJECT_ENTITY = "ObjectEntity";
+	public static final String OBJECT_ENTITY = "ObjectEntity";
 	
 	private IObjectEntityBuilder objectEntityBuilder = null;
 	
@@ -91,6 +91,11 @@ public class ObjectEntityContainer {
 				rootObjectEntity = getObjectEntityByName(OBJECT_ENTITY);
 				
 				if(rootObjectEntity == null) {
+					Type objectEntityType = getTypeContainer().getType(OBJECT_ENTITY + "_label");
+					if (objectEntityType != null) {
+						// remove existing type
+						getTypeContainer().removeType(objectEntityType);
+					}
 					
 					rootObjectEntity = new ObjectEntity(OBJECT_ENTITY, getTypeContainer()); 
 					rootObjectEntity.getType().addUserObject(rootObjectEntity); 
@@ -490,6 +495,13 @@ public class ObjectEntityContainer {
 	public ObjectEntity getRootObjectEntity() {
 		return rootObjectEntity;
 	}
+	
+	/**
+	 * @return {@link ObjectEntity} that is the root of {@link DefaultTreeModel}
+	 */
+	protected void setRootObjectEntity(ObjectEntity root) {
+		rootObjectEntity = root;
+	}
 
 	/**
 	 * @return the objectEntityBuilder
@@ -505,5 +517,49 @@ public class ObjectEntityContainer {
 	 */
 	public void setObjectEntityBuilder(IObjectEntityBuilder objectEntityBuilder) {
 		this.objectEntityBuilder = objectEntityBuilder;
+	}
+
+	/**
+	 * @return the mapObjectChilds
+	 */
+	protected HashMap<ObjectEntity, List<ObjectEntity>> getMapObjectChilds() {
+		return this.mapObjectChilds;
+	}
+
+	/**
+	 * @param mapObjectChilds the mapObjectChilds to set
+	 */
+	protected void setMapObjectChilds(
+			HashMap<ObjectEntity, List<ObjectEntity>> mapObjectChilds) {
+		this.mapObjectChilds = mapObjectChilds;
+	}
+
+	/**
+	 * @return the mapObjectParents
+	 */
+	protected HashMap<ObjectEntity, List<ObjectEntity>> getMapObjectParents() {
+		return this.mapObjectParents;
+	}
+
+	/**
+	 * @param mapObjectParents the mapObjectParents to set
+	 */
+	protected void setMapObjectParents(
+			HashMap<ObjectEntity, List<ObjectEntity>> mapObjectParents) {
+		this.mapObjectParents = mapObjectParents;
+	}
+
+	/**
+	 * @return the mapObjectEntity
+	 */
+	protected HashMap<String, ObjectEntity> getMapObjectEntity() {
+		return this.mapObjectEntity;
+	}
+
+	/**
+	 * @param mapObjectEntity the mapObjectEntity to set
+	 */
+	protected void setMapObjectEntity(HashMap<String, ObjectEntity> mapObjectEntity) {
+		this.mapObjectEntity = mapObjectEntity;
 	}
 }
