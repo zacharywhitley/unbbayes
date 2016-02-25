@@ -86,7 +86,7 @@ public class TypeContainer {
 		
 		 for(Type type: listOfTypes){
 			 
-			 if(type.getName() == oldType){
+			 if(type.getName().equals(oldType)){
 				 type.delete(); 
 				 listOfTypes.remove(type); 
 			 }
