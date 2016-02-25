@@ -250,6 +250,10 @@ public class DefaultNonPROWLClassExtractor implements INonPROWLClassExtractor {
 		ret.add(classToAdd);
 		ret.addAll(this.getAssertedDescendants(classToAdd, ontology));
 		
+		// add ObjectEntity
+		classToAdd = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass("ObjectEntity", prefixManager);
+		ret.add(classToAdd);
+		
 		return ret;
 	}
 	

@@ -3,6 +3,10 @@
  */
 package unbbayes.prs.mebn.entity.ontology.owlapi;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityContainer;
@@ -24,6 +28,8 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 	private MultiEntityBayesianNetwork mebn;
 	
 	private boolean isToCreateOWLEntity = true;
+	
+	public static final String THING = OWLAPIObjectEntity.THING;
 
 	/**
 	 * Default constructor initializing fields.
@@ -37,6 +43,10 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 	public OWLAPIObjectEntityContainer(MultiEntityBayesianNetwork mebn) {
 		super(mebn.getTypeContainer());
 		this.setMEBN(mebn);
+		if (getRootObjectEntity() == null) {
+			createRootObjectEntity();
+		}
+			
 	}
 
 	/**
@@ -44,6 +54,50 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 	 */
 	public MultiEntityBayesianNetwork getMEBN() {
 		return mebn;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.entity.ObjectEntityContainer#createRootObjectEntity()
+	 */
+	protected void createRootObjectEntity() {
+		if (getMEBN() == null) {
+			return;
+		}
+		if(getRootObjectEntity() == null) {
+			try {
+				
+				setRootObjectEntity(getObjectEntityByName(THING));
+				ObjectEntity rootObjectEntity = getRootObjectEntity();
+				
+				if(rootObjectEntity == null) {
+					Type objectEntityType = getTypeContainer().getType(THING + "_label");
+					if (objectEntityType != null) {
+						// remove existing type
+						getTypeContainer().removeType(objectEntityType);
+					}
+					
+//					rootObjectEntity = new OWLAPIObjectEntity(OBJECT_ENTITY, getTypeContainer()); 
+					rootObjectEntity = new OWLAPIObjectEntity(THING, getMEBN(), true);	// true will force Thing to become owl:Thing
+					rootObjectEntity.getType().addUserObject(rootObjectEntity); 
+				
+					plusEntityNum();
+					
+					setRootObjectEntity(rootObjectEntity);
+				}
+				
+				addEntity(rootObjectEntity, null);
+	
+				this.getMapObjectChilds().put(rootObjectEntity, new ArrayList<ObjectEntity>());
+				this.getMapObjectParents().put(rootObjectEntity, (List) Collections.emptyList());
+				
+				refreshTreeModel();
+				
+			} catch (TypeException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		
 	}
 
 	/**

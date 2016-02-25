@@ -45,6 +45,8 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 	
 	/** This is the default instance of {@link #getModelUserDelegator()} used by instances of this class */
 	public static final IPROWL2ModelUser DEFAULT_MODEL_USER_DELEGATOR = DefaultPROWL2ModelUser.getInstance();
+
+	public static final String THING = "Thing";
 	
 	private IPROWL2ModelUser modelUserDelegator = DEFAULT_MODEL_USER_DELEGATOR;
 	
@@ -100,7 +102,7 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 			
 			// MEBN entities are represented as OWL classes. Get them
 			OWLClass newEntityClass = null;
-			if ("Thing".equalsIgnoreCase(name)) {
+			if (THING.equalsIgnoreCase(name)) {
 				// Entity with "Thing" as its name must be considered as an owl:Thing
 				newEntityClass = factory.getOWLThing();
 			} else {
