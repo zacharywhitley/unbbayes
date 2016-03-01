@@ -67,9 +67,29 @@ public class ObjectEntityContainer {
 	
 	private int entityNum; 
 	
+	/**
+	 * @param _typeConteiner : the object responsible for managing types (types are not necessarily equal to entities).
+	 * @see #ObjectEntityContainer(TypeContainer, IObjectEntityBuilder)
+	 */
 	public ObjectEntityContainer(TypeContainer _typeConteiner){
+		this(_typeConteiner, ObjectEntityBuilder.getInstance(_typeConteiner));
+	}
+	
+	/**
+	 * Default constructor initializing fields.
+	 * This will also call {@link #createRootObjectEntity()} in order to initialize {@link #getRootObjectEntity()}
+	 * @param _typeConteiner : the object responsible for managing types (types are not necessarily equal to entities).
+	 * @param objectEntityBuilder : builder to be used in order to create new instances of {@link ObjectEntity}
+	 * This should not be null.
+	 * @see #setObjectEntityBuilder(IObjectEntityBuilder)
+	 */
+	public ObjectEntityContainer(TypeContainer _typeConteiner, IObjectEntityBuilder objectEntityBuilder){
+		
 		
 		setTypeContainer(_typeConteiner); 
+		
+		this.setObjectEntityBuilder(objectEntityBuilder);
+		
 		entityNum = 1;
 		
 		// Implementation using List<ObjectEntity>
@@ -97,7 +117,9 @@ public class ObjectEntityContainer {
 						getTypeContainer().removeType(objectEntityType);
 					}
 					
-					rootObjectEntity = new ObjectEntity(OBJECT_ENTITY, getTypeContainer()); 
+//					rootObjectEntity = new ObjectEntity(OBJECT_ENTITY, getTypeContainer()); 
+					// the above line was substituted with the following
+					rootObjectEntity = getObjectEntityBuilder().getObjectEntity(OBJECT_ENTITY) ;
 					rootObjectEntity.getType().addUserObject(rootObjectEntity); 
 				
 					plusEntityNum();
@@ -113,7 +135,7 @@ public class ObjectEntityContainer {
 				
 			} catch (TypeException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
+				throw new RuntimeException(e);
 			}
 		}
 		
@@ -469,7 +491,7 @@ public class ObjectEntityContainer {
 	 */
 	protected void setTypeContainer(TypeContainer typeContainer) {
 		this.typeContainer = typeContainer;
-		this.setObjectEntityBuilder(ObjectEntityBuilder.getInstance(typeContainer));
+		
 	}
 	
 	/**
