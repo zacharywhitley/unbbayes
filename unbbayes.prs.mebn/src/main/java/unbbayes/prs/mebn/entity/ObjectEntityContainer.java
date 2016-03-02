@@ -28,6 +28,7 @@ import java.util.List;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
+import unbbayes.io.mebn.PROWLModelUser;
 import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
@@ -57,7 +58,14 @@ public class ObjectEntityContainer {
 	private HashMap<ObjectEntity,List<ObjectEntity>> mapObjectChilds = new HashMap<ObjectEntity,List<ObjectEntity>>();
 	private HashMap<ObjectEntity,List<ObjectEntity>> mapObjectParents = new HashMap<ObjectEntity,List<ObjectEntity>>();
 	
-	public static final String OBJECT_ENTITY = "ObjectEntity";
+	/** 
+	 * This will be the initial value of {@link #getDefaultRootEntityName()} 
+	 * @see #getDefaultRootEntityName()
+	 * @deprecated use {@link PROWLModelUser#OBJECT_ENTITY} instead.
+	 */
+	public static final String OBJECT_ENTITY = PROWLModelUser.OBJECT_ENTITY;
+	
+	private String defaultRootEntityName = PROWLModelUser.OBJECT_ENTITY;
 	
 	private IObjectEntityBuilder objectEntityBuilder = null;
 	
@@ -108,10 +116,10 @@ public class ObjectEntityContainer {
 		if(rootObjectEntity == null) {
 			try {
 				
-				rootObjectEntity = getObjectEntityByName(OBJECT_ENTITY);
+				rootObjectEntity = getObjectEntityByName(getDefaultRootEntityName());
 				
 				if(rootObjectEntity == null) {
-					Type objectEntityType = getTypeContainer().getType(OBJECT_ENTITY + "_label");
+					Type objectEntityType = getTypeContainer().getType(getDefaultRootEntityName() + "_label");
 					if (objectEntityType != null) {
 						// remove existing type
 						getTypeContainer().removeType(objectEntityType);
@@ -119,7 +127,7 @@ public class ObjectEntityContainer {
 					
 //					rootObjectEntity = new ObjectEntity(OBJECT_ENTITY, getTypeContainer()); 
 					// the above line was substituted with the following
-					rootObjectEntity = getObjectEntityBuilder().getObjectEntity(OBJECT_ENTITY) ;
+					rootObjectEntity = getObjectEntityBuilder().getObjectEntity(getDefaultRootEntityName()) ;
 					rootObjectEntity.getType().addUserObject(rootObjectEntity); 
 				
 					plusEntityNum();
@@ -583,5 +591,23 @@ public class ObjectEntityContainer {
 	 */
 	protected void setMapObjectEntity(HashMap<String, ObjectEntity> mapObjectEntity) {
 		this.mapObjectEntity = mapObjectEntity;
+	}
+
+	/**
+	 * @return the defaultRootEntityName : this will be used in {@link #createRootObjectEntity()}
+	 * as the name of the root object entity.
+	 * @see #getRootObjectEntity()
+	 */
+	public String getDefaultRootEntityName() {
+		return defaultRootEntityName;
+	}
+
+	/**
+	 * @param defaultRootEntityName the defaultRootEntityName to set : this will be used in {@link #createRootObjectEntity()}
+	 * as the name of the root object entity.
+	 * @see #getRootObjectEntity()
+	 */
+	public void setDefaultRootEntityName(String defaultRootEntityName) {
+		this.defaultRootEntityName = defaultRootEntityName;
 	}
 }
