@@ -3,11 +3,9 @@
  */
 package unbbayes.prs.mebn.entity.ontology.owlapi;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import unbbayes.io.mebn.owlapi.IOWLAPIObjectEntityBuilder;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.entity.IObjectEntityBuilder;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityContainer;
 import unbbayes.prs.mebn.entity.Type;
@@ -27,9 +25,8 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 
 	private MultiEntityBayesianNetwork mebn;
 	
-	private boolean isToCreateOWLEntity = true;
+//	private boolean isToCreateOWLEntity = true;
 	
-	public static final String THING = OWLAPIObjectEntity.THING;
 
 	/**
 	 * Default constructor initializing fields.
@@ -41,7 +38,8 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 	 * @see ObjectEntityContainer#ObjectEntityContainer(TypeContainer)
 	 */
 	public OWLAPIObjectEntityContainer(MultiEntityBayesianNetwork mebn) {
-		super(mebn.getTypeContainer());
+		super(mebn.getTypeContainer(),OWLAPIObjectEntityBuilder.getInstance(mebn, true));
+		this.setDefaultRootEntityName(OWLAPIObjectEntity.THING);
 		this.setMEBN(mebn);
 		if (getRootObjectEntity() == null) {
 			createRootObjectEntity();
@@ -64,40 +62,40 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 		if (getMEBN() == null) {
 			return;
 		}
-		if(getRootObjectEntity() == null) {
-			try {
-				
-				setRootObjectEntity(getObjectEntityByName(THING));
-				ObjectEntity rootObjectEntity = getRootObjectEntity();
-				
-				if(rootObjectEntity == null) {
-					Type objectEntityType = getTypeContainer().getType(THING + "_label");
-					if (objectEntityType != null) {
-						// remove existing type
-						getTypeContainer().removeType(objectEntityType);
-					}
-					
-//					rootObjectEntity = new OWLAPIObjectEntity(OBJECT_ENTITY, getTypeContainer()); 
-					rootObjectEntity = new OWLAPIObjectEntity(THING, getMEBN(), true);	// true will force Thing to become owl:Thing
-					rootObjectEntity.getType().addUserObject(rootObjectEntity); 
-				
-					plusEntityNum();
-					
-					setRootObjectEntity(rootObjectEntity);
-				}
-				
-				addEntity(rootObjectEntity, null);
-	
-				this.getMapObjectChilds().put(rootObjectEntity, new ArrayList<ObjectEntity>());
-				this.getMapObjectParents().put(rootObjectEntity, (List) Collections.emptyList());
-				
-				refreshTreeModel();
-				
-			} catch (TypeException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		
+//		if(getRootObjectEntity() == null) {
+//			try {
+//				
+//				setRootObjectEntity(getObjectEntityByName(THING));
+//				ObjectEntity rootObjectEntity = getRootObjectEntity();
+//				
+//				if(rootObjectEntity == null) {
+//					Type objectEntityType = getTypeContainer().getType(THING + "_label");
+//					if (objectEntityType != null) {
+//						// remove existing type
+//						getTypeContainer().removeType(objectEntityType);
+//					}
+//					
+////					rootObjectEntity = new OWLAPIObjectEntity(OBJECT_ENTITY, getTypeContainer()); 
+//					rootObjectEntity = new OWLAPIObjectEntity(THING, getMEBN(), true);	// true will force Thing to become owl:Thing
+//					rootObjectEntity.getType().addUserObject(rootObjectEntity); 
+//				
+//					plusEntityNum();
+//					
+//					setRootObjectEntity(rootObjectEntity);
+//				}
+//				
+//				addEntity(rootObjectEntity, null);
+//	
+//				this.getMapObjectChilds().put(rootObjectEntity, new ArrayList<ObjectEntity>());
+//				this.getMapObjectParents().put(rootObjectEntity, (List) Collections.emptyList());
+//				
+//				refreshTreeModel();
+//				
+//			} catch (TypeException e) {
+//				throw new RuntimeException(e);
+//			}
+//		}
+		super.createRootObjectEntity();
 	}
 
 	/**
@@ -128,21 +126,21 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 		this.getListEntityInstances().clear();
 		
 		// fill this_ container with content of old container;
-		this.setEntityNum(oldContainer.getEntityNum());
 		this.setTypeContainer(oldContainer.getTypeContainer());
-		this.getListEntity().addAll(oldContainer.getListEntity());
-		this.getListEntityInstances().addAll(oldContainer.getListEntityInstances());
+//		this.setEntityNum(oldContainer.getEntityNum());
+//		this.getListEntity().addAll(oldContainer.getListEntity());
+//		this.getListEntityInstances().addAll(oldContainer.getListEntityInstances());
 		
 	}
 	
-	/**
-	 * @see unbbayes.prs.mebn.entity.ObjectEntityContainer#createObjectEntity(java.lang.String)
-	 * @return an instance created by {@link #createObjectEntity(String, boolean)}. 
-	 * The boolean argument will be filled with the value returned from {@link #isToCreateOWLEntity()} 
-	 */
-	public ObjectEntity createObjectEntity(String name) throws TypeException {
-		return this.createObjectEntity(name, isToCreateOWLEntity());
-	}
+//	/**
+//	 * @see unbbayes.prs.mebn.entity.ObjectEntityContainer#createObjectEntity(java.lang.String)
+//	 * @return an instance created by {@link #createObjectEntity(String, boolean)}. 
+//	 * The boolean argument will be filled with the value returned from {@link #isToCreateOWLEntity()} 
+//	 */
+//	public ObjectEntity createObjectEntity(String name) throws TypeException {
+//		return this.createObjectEntity(name, isToCreateOWLEntity());
+//	}
 
 	/** 
 	 * This method returns an instance of {@link OWLAPIObjectEntity} instead of {@link ObjectEntity}
@@ -150,27 +148,30 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 	 * @param isToCreateOWLEntity : if true, an OWL entity will be created in the owl ontology.
 	 * @see unbbayes.prs.mebn.entity.ObjectEntityContainer#createObjectEntity(java.lang.String)
 	 * @see OWLAPIObjectEntity#OWLAPIObjectEntity(String, MultiEntityBayesianNetwork, boolean)
+	 * @deprecated invoke {@link #setToCreateOWLEntity(boolean)} and then use {@link #createObjectEntity(String)}.
 	 */
 	public ObjectEntity createObjectEntity(String name, boolean isToCreateOWLEntity) throws TypeException {
-		
-		OWLAPIObjectEntity objEntity = new OWLAPIObjectEntity(name, getMEBN(), isToCreateOWLEntity);
-		objEntity.getType().addUserObject(objEntity); 
-		
-		//	the following line is the same of superclass' private method addEntity(objEntity)
-		getListEntity().add(objEntity);
-	
-		plusEntityNum(); 
-		
-		return objEntity; 
+//		OWLAPIObjectEntity objEntity = new OWLAPIObjectEntity(name, getMEBN(), isToCreateOWLEntity);
+//		objEntity.getType().addUserObject(objEntity); 
+//		
+//		//	the following line is the same of superclass' private method addEntity(objEntity)
+//		getListEntity().add(objEntity);
+//	
+//		plusEntityNum(); 
+//		
+//		return objEntity; 
+		this.setToCreateOWLEntity(isToCreateOWLEntity);
+		return this.createObjectEntity(name);
 	}
 
 	/**
 	 * @return the isToCreateOWLEntity : if true, then an OWL entity will be created in the owl ontology
 	 * when {@link #createObjectEntity(String)} is called.
 	 * @see #createObjectEntity(String, boolean)
+	 * @see #getOWLAPIObjectEntityBuilder()
 	 */
 	public boolean isToCreateOWLEntity() {
-		return isToCreateOWLEntity;
+		return getOWLAPIObjectEntityBuilder().isToCreateOWLEntity();
 	}
 
 	/**
@@ -179,9 +180,33 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 	 * @see #createObjectEntity(String, boolean)
 	 */
 	public void setToCreateOWLEntity(boolean isToCreateOWLEntity) {
-		this.isToCreateOWLEntity = isToCreateOWLEntity;
+		getOWLAPIObjectEntityBuilder().setToCreateOWLEntity(isToCreateOWLEntity);
 	}
 
-
+	/**
+	 * @return {@link #getOWLAPIObjectEntityBuilder()} cast to {@link IOWLAPIObjectEntityBuilder}.
+	 */
+	public IOWLAPIObjectEntityBuilder getOWLAPIObjectEntityBuilder() {
+		
+		// check if we can retrieve some builder from getObjectEntityBuilder()
+		IObjectEntityBuilder builder = getObjectEntityBuilder();
+		// check if builder is compatible. TODO see if there is a better way of doing this check.
+		if (builder != null && (builder instanceof IOWLAPIObjectEntityBuilder)) {
+			// return the instance itself
+			return (IOWLAPIObjectEntityBuilder) builder;
+		}
+		
+		// return an adapted version of getObjectEntityBuilder()
+		return new IOWLAPIObjectEntityBuilder() {
+			public ObjectEntity getObjectEntity(String name) { return getObjectEntityBuilder().getObjectEntity(name); }
+			public boolean isToCreateOWLEntity() { return false; }
+			public void setToCreateOWLEntity(boolean isToCreateOWLEntity) {
+				if (isToCreateOWLEntity) {
+					// do not allow this to be true
+					throw new UnsupportedOperationException(); 
+				}
+			}
+		};
+	}
 
 }

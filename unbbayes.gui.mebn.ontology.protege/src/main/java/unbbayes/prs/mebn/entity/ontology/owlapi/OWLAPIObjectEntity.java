@@ -46,8 +46,6 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 	/** This is the default instance of {@link #getModelUserDelegator()} used by instances of this class */
 	public static final IPROWL2ModelUser DEFAULT_MODEL_USER_DELEGATOR = DefaultPROWL2ModelUser.getInstance();
 
-	public static final String THING = "Thing";
-	
 	private IPROWL2ModelUser modelUserDelegator = DEFAULT_MODEL_USER_DELEGATOR;
 	
 	private MultiEntityBayesianNetwork mebn;
@@ -74,6 +72,7 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 	public OWLAPIObjectEntity(String name, MultiEntityBayesianNetwork mebn, boolean isToCreateOWLEntity) throws TypeException {
 		super(name, mebn.getTypeContainer());
 		this.setMEBN(mebn);
+		mebn.getNamesUsed().add(name);
 		
 		if (isToCreateOWLEntity) {
 			if (name == null || name.isEmpty()) {

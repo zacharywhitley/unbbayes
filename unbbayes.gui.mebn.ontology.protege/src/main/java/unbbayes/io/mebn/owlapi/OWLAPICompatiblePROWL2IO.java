@@ -528,10 +528,13 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 			subClassesOfObjectEntities = new HashSet<OWLClassExpression>();
 		}
 		
-		// Explicitly add "owl:Thing" as a generic entity
-		if (!subClassesOfObjectEntities.contains(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing())) {
-			subClassesOfObjectEntities.add(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing());
-		}
+		// Explicitly handle "owl:Thing" as a generic entity
+//		if (!subClassesOfObjectEntities.contains(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing())) {
+//			subClassesOfObjectEntities.add(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing());
+//		}
+		// owl:Thing is supposedly automatically created by OWLAPIObjectEntityContainer, so we don't need to handle it again. That's why the above code is commented out
+		// however, we may need owl:Thing to be in the mapping to be returned
+		mapObjectEntityLabels.put(mebn.getObjectEntityContainer().getRootObjectEntity().getType().getName(), mebn.getObjectEntityContainer().getRootObjectEntity()); 
 		
 		// iterate on subclasses of object entities
 		for (OWLClassExpression owlClassExpression : subClassesOfObjectEntities){
@@ -557,7 +560,7 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 					// set the name as "used", in order for UnBBayes to avoid duplicate names.
 					mebn.getNamesUsed().add(objectEntityName); 
 				} else {
-					System.err.println(objectEntityName + " is duplicated.");
+					System.err.println(objectEntityName + " may be duplicated.");
 				}
 			} catch(Exception e){
 				// perform a exception translation because the method's signature does not allow non-runtime exceptions

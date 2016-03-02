@@ -148,6 +148,9 @@ public interface IPROWL2ModelUser {
 	/**  Name of the data property specifying the owl property related to an argument of a random variable in a PR-OWL2 ontology */
 	public static final String ISOBJECTIN = "isObjectIn";
 	
+	/** Name of the object entity representing owl:Thing */
+	public static final String THING = "Thing";
+	
 	/**
 	 * Obtains the default prefix manager, which will be used in order to extract classes by name/ID.
 	 * If ontology == null, it returns {@link #PROWL2_DEFAULTPREFIXMANAGER} 
