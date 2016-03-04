@@ -33,8 +33,8 @@ import java.util.List;
  */
 public class ObjectEntityInstanceOrdereable extends ObjectEntityInstance{
 
-	private ObjectEntityInstanceOrdereable prev; 
-	private ObjectEntityInstanceOrdereable proc; 
+	private ObjectEntityInstanceOrdereable prev = null; 
+	private ObjectEntityInstanceOrdereable proc = null; 
 	
 	protected ObjectEntityInstanceOrdereable(String name, ObjectEntity instanceOf){
 		super(name, instanceOf); 
@@ -93,8 +93,13 @@ public class ObjectEntityInstanceOrdereable extends ObjectEntityInstance{
 		}
 	}
 	
+	/**
+	 * Down the entity one position into the order: 
+	 * Change order A B C D to A C B D, were the entity argument is the B term 
+	 * 
+	 * @param entity
+	 */
 	public static void downEntityInstance(ObjectEntityInstanceOrdereable entity) {
-		// A B C D -> A C B D (entity is the "b" term)
 		
 			ObjectEntityInstanceOrdereable b = entity; 
 			ObjectEntityInstanceOrdereable a = entity.getPrev();

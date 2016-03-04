@@ -31,7 +31,7 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 /**
  * A warning is a situation that don't stop the evaluation of the SSBN algorithm. 
  * The process of generation of algorithm should have some warnings (situations
- * that don't is a error but is important comunicate to the user). 
+ * that don't is a error but is important communicate to the user). 
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  *

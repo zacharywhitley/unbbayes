@@ -26,8 +26,8 @@ public class BayesBallNode extends SimpleSSBNNode {
 
 	private boolean visited; 
 	
-	//Maybe put this code into SimpleSSBNNode... 
-	private List<MFragInstance> inputMFragList; 
+//	//Maybe put this code into SimpleSSBNNode... 
+//	private List<MFragInstance> inputMFragList; 
 	
 	
 	private BayesBallNode(ResidentNode residentNode){
@@ -41,7 +41,7 @@ public class BayesBallNode extends SimpleSSBNNode {
 		this.receivedBallFromParent = false; 
 		this.visited = false; 
 		
-		this.inputMFragList = new ArrayList<MFragInstance>(); 
+//		this.inputMFragList = new ArrayList<MFragInstance>(); 
 		
 	}
 	
@@ -126,31 +126,31 @@ public class BayesBallNode extends SimpleSSBNNode {
 		
 	}
 	
-	/**
-	 * Add a input MFrag Instance to the list of input MFrags, only if still 
-	 * don't exists other MFragInstance for this. 
-	 * @param mFragInstance
-	 */
-	public void addInputMFragInstance(MFragInstance mFragInstance){
-		//TODO throws an exception if already have a MFragInstance for this MFrag. 
-		if(getMFragInstanceForInputMFrag(mFragInstance.getMFragOrigin()) == null){
-			this.inputMFragList.add(mFragInstance); 
-		}
-		
-	}
-	
-	public MFragInstance getMFragInstanceForInputMFrag(MFrag mFrag){
-	
-		for(MFragInstance mFragInstance: inputMFragList){
-			if(mFragInstance.getMFragOrigin().equals(mFragInstance)){
-				return mFragInstance; 
-			}
-		}
-		
-		//Not found 
-		return null; 
-		
-	}
+//	/**
+//	 * Add a input MFrag Instance to the list of input MFrags, only if still 
+//	 * don't exists other MFragInstance for this. 
+//	 * @param mFragInstance
+//	 */
+//	public void addInputMFragInstance(MFragInstance mFragInstance){
+//		//TODO throws an exception if already have a MFragInstance for this MFrag. 
+//		if(getMFragInstanceForInputMFrag(mFragInstance.getMFragOrigin()) == null){
+//			this.inputMFragList.add(mFragInstance); 
+//		}
+//		
+//	}
+//	
+//	public MFragInstance getMFragInstanceForInputMFrag(MFrag mFrag){
+//	
+//		for(MFragInstance mFragInstance: inputMFragList){
+//			if(mFragInstance.getMFragOrigin().equals(mFragInstance)){
+//				return mFragInstance; 
+//			}
+//		}
+//		
+//		//Not found 
+//		return null; 
+//		
+//	}
 	
 	
 }

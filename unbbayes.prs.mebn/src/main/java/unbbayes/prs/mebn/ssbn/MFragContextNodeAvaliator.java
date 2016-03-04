@@ -296,9 +296,13 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 
 	/**
 	 * Try to solve the possible reference uncertain nodes (nodes in format 
-	 * ResidentNode(ov1)=ov2, where ov1 or ov2, or both are unknown. The evaluation
-	 * is considered OK only if have only one possible result for the ordinary 
-	 * variables of the node. 
+	 * ResidentNode(ov1)=ov2, where ov1 or ov2, or both are unknown). 
+	 * 
+	 * The evaluation is considered OK only if have only one possible result for the ordinary 
+	 * variables of the node. A iteration is made in the context nodes list searching 
+	 * for nodes with only one ordinary variable don't filled. With the success in the 
+	 * evaluation of one context node, we try use the information for solve others 
+	 * context nodes. 
 	 * 
 	 * Update the evaluation tree with the values of the ordinary variables found. 
 	 * 
@@ -308,14 +312,6 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 	private List<ContextNode> trySimpleEvaluationOfPossibleReferenceUncertainNodes(
 			MFragInstance mFragInstance, List<ContextNode> possibleReferenceUncertainNodes)
 			throws MFragContextFailException {
-		
-		//Log
-		IdentationLevel level1 = new IdentationLevel(null);  
-		IdentationLevel level2 = new IdentationLevel(level1); 
-		IdentationLevel level3 = new IdentationLevel(level2); 
-		IdentationLevel level4 = new IdentationLevel(level3); 
-		IdentationLevel level5 = new IdentationLevel(level4); 
-		
 		
 		System.out.println("TrySimpleEvaluationOfPossibleReferenceUncertainNodes: " + possibleReferenceUncertainNodes);
 		ISSBNLogManager logManager = ssbn.getLogManager();
@@ -371,7 +367,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 								mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_OK); 
 
 								if (logManager != null) {
-									logManager.printText(level5, false, "Node evaluated OK");
+									logManager.printText(IdentationLevel.LEVEL_5, false, "Node evaluated OK");
 								}
 
 							} catch (MFragContextFailException e) {
@@ -382,7 +378,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 								mFragInstance.setUseDefaultDistribution(true); 
 								evaluated = true; 
 								if (logManager != null) {
-									logManager.printText(level5, false,"Context Node FAIL: use the default distribution");
+									logManager.printText(IdentationLevel.LEVEL_5, false,"Context Node FAIL: use the default distribution");
 								}
 
 								//Here, the context node fail adding the values for a ordinary variable
@@ -398,7 +394,6 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 				if (!evaluated) {
 					auxPossibleReferenceUncertainNodes.add(contextNode); 
 				}
-
 			}
 			
 			possibleReferenceUncertainNodes.clear(); 
@@ -412,7 +407,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 	
 	/**
 	 * Try to solve the possible reference uncertain nodes (nodes in format 
-	 * ResidentNode(ov1)=ov2, where ov1 or ov2, or both are unknown. The evaluation
+	 * ResidentNode(ov1)=ov2, where ov1 or ov2, or both are unknown). The evaluation
 	 * is considered OK only if have only one possible result for the ordinary 
 	 * variables of the node. 
 	 * 
@@ -426,12 +421,6 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 			throws MFragContextFailException {
 		
 		System.out.println("trySearchStrategyForPossibleReferenceUncertainNodes: " + possibleReferenceUncertainNodes);
-		//Log
-		IdentationLevel level1 = new IdentationLevel(null);  
-		IdentationLevel level2 = new IdentationLevel(level1); 
-		IdentationLevel level3 = new IdentationLevel(level2); 
-		IdentationLevel level4 = new IdentationLevel(level3); 
-		IdentationLevel level5 = new IdentationLevel(level4); 
 
 		ISSBNLogManager logManager = ssbn.getLogManager();
 
@@ -442,21 +431,21 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 		for(ContextNode contextNode: possibleReferenceUncertainNodes) {
 
 			System.out.println("ContextNode: " + contextNode);
-
+			
 				//---> 2) Use the Entity Tree Strategy. 
 				SearchResult searchResult = kb.evaluateSearchContextNodeFormula(contextNode, ovInstances); 
-
+				
 				if(searchResult!= null){  
-
+					
 					if (logManager != null) {
-						logManager.printText(level5, false, "Search Result: ");
+						logManager.printText(IdentationLevel.LEVEL_5, false, "Search Result: ");
 						for(String[] result: searchResult.getValuesResultList()){
 							String resultOv = " > "; 
 							for(int i = 0; i < result.length; i++){
 								resultOv += result[i] + " "; 
 							}
 							if (logManager != null) {
-								logManager.printText(level5, false, resultOv);
+								logManager.printText(IdentationLevel.LEVEL_5, false, resultOv);
 							}
 						}
 					}
@@ -471,7 +460,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 						mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_OK); 
 						
 						if (logManager != null) {
-							logManager.printText(level5, false, "Node evaluated OK");
+							logManager.printText(IdentationLevel.LEVEL_5, false, "Node evaluated OK");
 						}
 						
 					} catch (MFragContextFailException e) {
@@ -480,19 +469,18 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 						mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_FAIL); 
 						mFragInstance.setUseDefaultDistribution(true); 
 						if (logManager != null) {
-							logManager.printText(level5, false,"Context Node FAIL: use the default distribution");
+							logManager.printText(IdentationLevel.LEVEL_5, false,"Context Node FAIL: use the default distribution");
 						}
 						
 						//Here, the context node fail adding the values for a ordinary variable
-						//fault. This fail impossibilite the evaluation of the rest of the MFragInstance, 
-						//because, this node, used to recover the possible values, fail. 
+						//fault. This fail make impossible evaluate the rest of MFrag 
+						//because this node, used to recover the possible values, fail. 
 						throw e; 
 					}
 				}else { 
 					//--------  SearchResult == Null
 					auxPossibleReferenceUncertainNodes.add(contextNode); 
 				}
-
 		}
 
 		return auxPossibleReferenceUncertainNodes;
@@ -500,7 +488,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 	}
 	
 	/**
-	 * For the possible reference uncertain nodes candidates that escape from the
+	 * For the possible reference uncertain nodes candidates that dont't pass in
 	 * other two tests, try to use the uncertain reference strategy. 
 	 * 
 	 * @param mFragInstance
@@ -508,13 +496,6 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 	 */
 	private void tryUncertainReferenceStrategy(MFragInstance mFragInstance,
 			List<ContextNode> possibleReferenceUncertainNodes) {
-		
-		//Log
-		IdentationLevel level1 = new IdentationLevel(null);  
-		IdentationLevel level2 = new IdentationLevel(level1); 
-		IdentationLevel level3 = new IdentationLevel(level2); 
-		IdentationLevel level4 = new IdentationLevel(level3); 
-		IdentationLevel level5 = new IdentationLevel(level4); 
 		
 		System.out.println("tryUncertainReferenceStrategy " + possibleReferenceUncertainNodes );
 		
@@ -559,11 +540,11 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 								contextNode, ContextNodeEvaluationState.EVALUATION_FAIL); 
 						mFragInstance.setUseDefaultDistribution(true); 
 						if (logManager != null) {
-							logManager.printText(level5, false,
+							logManager.printText(IdentationLevel.LEVEL_5, false,
 									"> Context node with variable ordinary fault don't attend the restriction");
-							logManager.printText(level5, false,
+							logManager.printText(IdentationLevel.LEVEL_5, false,
 									"> Have more than one ordinary variable without value: " + ov );
-							logManager.printText(level5, false,
+							logManager.printText(IdentationLevel.LEVEL_5, false,
 									"Context Node FAIL: use the default distribution");
 						}
 					}else { // greater than 1 
@@ -571,11 +552,11 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 								ContextNodeEvaluationState.EVALUATION_FAIL); 
 						mFragInstance.setUseDefaultDistribution(true); 
 						if (logManager != null) {
-							logManager.printText(level5, false,
+							logManager.printText(IdentationLevel.LEVEL_5, false,
 									"> Context node with variable ordinary fault don't attend the restriction");
-							logManager.printText(level5, false,
+							logManager.printText(IdentationLevel.LEVEL_5, false,
 									"> Have more than one instance possible for the ordinary variable: " + ov );
-							logManager.printText(level5, false,
+							logManager.printText(IdentationLevel.LEVEL_5, false,
 									"Context Node FAIL: use the default distribution");
 						}
 					}
@@ -602,8 +583,8 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 				catch(ImplementationRestrictionException e){
 					mFragInstance.setUseDefaultDistribution(true); 
 					if (logManager != null) {
-						logManager.printText(level5, false, "Fail: " + e.getMessage());
-						logManager.printText(level5, false,
+						logManager.printText(IdentationLevel.LEVEL_5, false, "Fail: " + e.getMessage());
+						logManager.printText(IdentationLevel.LEVEL_5, false,
 								"Context Node FAIL: use the default distribution");
 					}
 				}
@@ -631,8 +612,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 		
 		ContextNodeEvaluator avaliator = new ContextNodeEvaluator(kb); 
 		
-		//2 Recover alll the entites of the specifc type
-
+		//2 Recover entities of a specific type
 		
 		List<String> result = null;
 		List<ILiteralEntityInstance> list =  avaliator.searchEntitiesForOrdinaryVariable(referenceUncertainOV); 
@@ -646,11 +626,10 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 			}
 		}
 		
-		//3 Analize what entities are possible at the tree and add the result 
-		//at the MFragInstance
+		//3 Analyze what entities are possible at the tree and add the result to the MFragInstance
 		
 		try {
-			//The new ov are at the tree... but, too are at the simple context node parent. 
+			//The new ov is at the tree, but it it too at the simple context node parent. 
 			
 			mFragInstance.addOVValueCombination(referenceUncertainOV, result);
 			mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_SEARCH); 
@@ -667,7 +646,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 			
 		} catch (MFragContextFailException e) {
 			
-			//This exception don't should be throw because we assume that don't 
+			//This exception shouldn't be thrown because we assume that don't 
 			//have value for the ordinary variable at the list of OVInstances 
 			//of the MFrag and for this, don't exists a way to exists a inconsistency
 			//at the addOVValueCombination method.

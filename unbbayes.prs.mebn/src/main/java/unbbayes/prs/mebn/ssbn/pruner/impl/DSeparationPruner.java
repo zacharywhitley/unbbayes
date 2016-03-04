@@ -12,6 +12,7 @@ import unbbayes.prs.INode;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.pruner.IPruner;
+import unbbayes.util.Debug;
 import unbbayes.util.dseparation.IDSeparationUtility;
 import unbbayes.util.dseparation.impl.MSeparationUtility;
 import unbbayes.util.dseparation.impl.MSeparationUtilityIncludingSeparators;
@@ -63,6 +64,7 @@ public class DSeparationPruner implements IPruner {
 	 * @see unbbayes.prs.mebn.ssbn.pruner.IPruner#prune(unbbayes.prs.mebn.ssbn.SSBN)
 	 */
 	public void prune(SSBN ssbn) {
+		System.out.println("Entrou no prune de D-Separation nodes!");
 		// converts a list of findings into a list of INodes
 		List<INode> findingNodes = new ArrayList<INode>(ssbn.getFindingList());
 		Set<INode> findingSet = new HashSet<INode>(findingNodes);
@@ -77,6 +79,9 @@ public class DSeparationPruner implements IPruner {
 		// stores the nodes to be removed and find d-separated nodes
 		Set<INode> nodesToPrune = this.getDSeparationUtility().getAllDSeparatedNodes(new HashSet<INode>(ssbn.getSimpleSsbnNodeList()), querySet, findingSet);
 		
+		for (INode node : nodesToPrune) {
+			Debug.println(this.getClass(), "Removing node: " + node.toString());
+		}
 		
 		// remove d-separated nodes from ssbn
 		// TODO check if it is OK to retain the edges

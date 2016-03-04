@@ -41,6 +41,7 @@ public class BarrenNodePruner implements IPruner {
 	 * @see unbbayes.prs.mebn.ssbn.pruner.IPruner#prune(unbbayes.prs.mebn.ssbn.SSBN)
 	 */
 	public void prune(SSBN ssbn) {
+		System.out.println("Entrou no prune de barren nodes!");
 		MSeparationUtility utility = MSeparationUtility.newInstance();
 		
 		// Set which will contain findings and their ancestors (parents and parents of parents and so on)

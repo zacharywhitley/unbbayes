@@ -447,7 +447,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 				createParents(node, ovFilledArray, entityFilledArray, inputNodeParent);	
 			}
 			
-		}
+		} // End If InputNode List 
 		
 		node.setFinished(true); 
 		if (logManager != null) {

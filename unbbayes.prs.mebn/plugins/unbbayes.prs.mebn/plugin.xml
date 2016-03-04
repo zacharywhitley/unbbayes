@@ -200,4 +200,9 @@
 		<parameter id="icon" value="new-mebn.png" />
 		<parameter id="category" value="bn" />
     </extension>
+    
+   <extension plugin-id="unbbayes.prs.mebn" point-id="SSBN" id="BayesBall">
+        <parameter id="class" value="unbbayes.prs.mebn.ssbn.bayesballalgorithm.BayesBallSSBNGeneratorBuilder" />
+        <parameter id="name" value="Bayes-Ball" />
+    </extension>
 </plugin>
