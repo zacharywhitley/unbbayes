@@ -296,4 +296,18 @@ public class UMPSTProject extends ObjectModel implements Graph, Serializable  {
 		this.modelName = modelName;
 	}
 
+	/**
+	 * @return the mtheory
+	 */
+	public MTheoryModel getMtheory() {
+		return mtheory;
+	}
+
+	/**
+	 * @param mtheory the mtheory to set
+	 */
+	public void setMtheory(MTheoryModel mtheory) {
+		this.mtheory = mtheory;
+	}
+
 }

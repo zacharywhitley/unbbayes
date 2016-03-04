@@ -16,6 +16,7 @@ public class NodeObjectModel {
 	
 	private NodeType nodeType;
 	private List<NodeObjectModel> childrenNode;
+	private List<NodeObjectModel> fatherNode;
 	private Object eventVariable;
 
 	public NodeObjectModel(String id, String name, NodeType nodeType, Object eventVariable) {
@@ -26,6 +27,7 @@ public class NodeObjectModel {
 		this.eventVariable = eventVariable;
 		
 		childrenNode = new ArrayList<NodeObjectModel>();
+		fatherNode = new ArrayList<NodeObjectModel>();
 	}
 	
 	public void addNode(NodeObjectModel node) {		
@@ -113,6 +115,20 @@ public class NodeObjectModel {
 	 */
 	public void setEventVariable(Object eventVariable) {
 		this.eventVariable = eventVariable;
+	}
+
+	/**
+	 * @return the fatherNode
+	 */
+	public List<NodeObjectModel> getFatherNode() {
+		return fatherNode;
+	}
+
+	/**
+	 * @param fatherNode the fatherNode to set
+	 */
+	public void setFatherNode(List<NodeObjectModel> fatherNode) {
+		this.fatherNode = fatherNode;
 	}
 
 }

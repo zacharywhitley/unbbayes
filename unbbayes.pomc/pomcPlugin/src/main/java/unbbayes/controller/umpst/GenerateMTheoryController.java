@@ -1,8 +1,20 @@
 package unbbayes.controller.umpst;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ResourceBundle;
+
+import javax.swing.JFileChooser;
+
+import unbbayes.io.umpst.FileSave;
+import unbbayes.io.umpst.intermediatemtheory.FileBuildIntermediateMTheory;
 import unbbayes.model.umpst.implementation.algorithm.FirstCriterionOfSelection;
 import unbbayes.model.umpst.implementation.algorithm.MFragModel;
 import unbbayes.model.umpst.implementation.algorithm.MTheoryModel;
+import unbbayes.model.umpst.implementation.algorithm.SecondCriterionOfSelection;
+import unbbayes.model.umpst.implementation.node.NodeContextModel;
+import unbbayes.model.umpst.implementation.node.NodeInputModel;
 import unbbayes.model.umpst.implementation.node.NodeObjectModel;
 import unbbayes.model.umpst.implementation.node.NodeResidentModel;
 import unbbayes.model.umpst.project.UMPSTProject;
@@ -18,6 +30,11 @@ public class GenerateMTheoryController {
 	
 	// Run Mode
 	private FirstCriterionOfSelection firstCriterion;
+	private SecondCriterionOfSelection secondCriterion;
+	
+	private Controller controller; 
+	private ResourceBundle resource = unbbayes.util.ResourceController.newInstance().getBundle(
+			unbbayes.gui.umpst.resources.Resources.class.getName());
 	
 	public GenerateMTheoryController (UMPSTProject umpstProject) {
 		
@@ -25,27 +42,68 @@ public class GenerateMTheoryController {
 		
 		mtheory = new MTheoryModel(umpstProject.getModelName(), umpstProject.getAuthorModel());
 		firstCriterion = new FirstCriterionOfSelection(umpstProject, this);
+		secondCriterion = new SecondCriterionOfSelection(umpstProject, this);
 		
+		umpstProject.setMtheory(mtheory);
+		
+//		testMTheory();
 	}
 	
 	/**
 	 * MTHEORY DEBBUG METHOD
 	 */
 	public void testMTheory() {
-		for (int i = 0; i < mtheory.getMFragList().size(); i++) {
-			
-			MFragModel mfragTest = mtheory.getMFragList().get(i);
-			System.out.println("NAME: " + mfragTest.getName());			
-			
-			System.out.println("---- RESIDENT NODE ------");
-			for (int j = 0; j < mfragTest.getNodeResidentList().size(); j++) {
-				System.out.println(mfragTest.getNodeResidentList().get(j).getName());
-			}
-			System.out.println("---- NOT DEFINED NODE ------");
-			for (int j = 0; j < mfragTest.getNodeNotDefinedList().size(); j++) {
-				System.out.println(mfragTest.getNodeNotDefinedList().get(j).getName());
+		File newFile = null;
+		FileBuildIntermediateMTheory file = new FileBuildIntermediateMTheory();
+
+		JFileChooser fc =  new JFileChooser(); 
+		fc.setCurrentDirectory (new File ("."));
+
+		int res = fc.showSaveDialog(null);
+
+		if(res == JFileChooser.APPROVE_OPTION){
+			newFile = fc.getSelectedFile();
+		}
+
+		if (newFile!=null)	{
+			try {
+				controller = Controller.getInstance(null); 
+				
+				file.buildIntermediateMTheory(newFile, umsptProject);
+				controller.showSucessMessageDialog(resource.getString("msSaveSuccessfull"));
+			} catch (FileNotFoundException e1) {
+				controller.showErrorMessageDialog(resource.getString("erFileNotFound")); 
+				e1.printStackTrace();
+			} catch (IOException e2) {
+				controller.showErrorMessageDialog(resource.getString("erSaveFatal")); 
+				e2.printStackTrace();
 			}
 		}
+		else {
+			controller.showErrorMessageDialog(resource.getString("erSaveFatal")); 
+		}
+	}
+	
+	public void updateNodeResidentInMFrag(String idMFrag, NodeResidentModel node) {
+		mtheory.updateResidentNodeInMFrag(idMFrag, node);
+	}
+	
+	/**
+	 * Add node input in a specific MFrag.
+	 * @param idMFrag
+	 * @param node
+	 */
+	public void addNodeInputInMFrag(String idMFrag, NodeInputModel node) {
+		mtheory.addInputNodeInMFrag(idMFrag, node);
+	}
+	
+	/**
+	 * Add node context in a specific MFrag.
+	 * @param idMFrag
+	 * @param node
+	 */
+	public void addNodeContextInMFrag(String idMFrag, NodeContextModel node) {
+		mtheory.addContextNodeInMFrag(idMFrag, node);
 	}
 	
 	/**

@@ -39,6 +39,7 @@ import unbbayes.gui.umpst.MainPropertiesEditionPane;
 import unbbayes.gui.umpst.TableButton;
 import unbbayes.gui.umpst.TableObject;
 import unbbayes.gui.umpst.UmpstModule;
+import unbbayes.gui.umpst.entity.AtributeEditionPanel;
 import unbbayes.gui.umpst.entity.EntitiesEditionPanel;
 import unbbayes.gui.umpst.implementation.ImplementationMainPanel;
 import unbbayes.gui.umpst.selection.GoalSelectionPane;
@@ -643,7 +644,7 @@ public class RulesEditionPanel extends IUMPSTPanel
 
 		final DefaultListModel<EntityModel> listModelEntity            = new DefaultListModel<EntityModel>();
 		final DefaultListModel<AttributeModel> listModelAttribute      = new DefaultListModel<AttributeModel>();
-		final DefaultListModel<RelationshipModel> listModelRelationhip = new DefaultListModel<RelationshipModel>();
+		final DefaultListModel<RelationshipModel> listModelRelationship = new DefaultListModel<RelationshipModel>();
 		final DefaultListModel<RuleModel> listModelRule = new DefaultListModel<RuleModel>();
 		
 		final JList listEntity             ;
@@ -662,7 +663,7 @@ public class RulesEditionPanel extends IUMPSTPanel
 			}
 
 			for (RelationshipModel relationship: rule.getRelationshipList()) {
-				listModelRelationhip.addElement(relationship);
+				listModelRelationship.addElement(relationship);
 			}
 
 			for (RuleModel ruleChildren: rule.getChildrenRuleList()) {
@@ -671,7 +672,7 @@ public class RulesEditionPanel extends IUMPSTPanel
 			
 			listEntity             = new JList(listModelEntity);
 			listAtribute           = new JList(listModelAttribute);
-			listRelationship       = new JList(listModelRelationhip);
+			listRelationship       = new JList(listModelRelationship);
 			listRule               = new JList(listModelRule); 
 
 			dataBacktracking = new Object[listEntity.getModel().getSize() + 
@@ -728,34 +729,60 @@ public class RulesEditionPanel extends IUMPSTPanel
 
 			buttonDel.addHandler(new TableButton.TableButtonPressedHandler() {	
 				public void onButtonPress(int row, int column) {
-					if (row < listEntity.getModel().getSize()){
-						String key = dataBacktracking[row][0].toString();
-						EntityModel entityRemoved = 
-								listModelEntity.remove(listModelEntity.indexOf(key));
-						rule.removeBacktrackingEntity(entityRemoved);
+					
+					if ((dataBacktracking[row][1]).toString().equals("Entity")) {						
+						EntityModel entity = (EntityModel)dataBacktracking[row][0];
+						listModelEntity.removeElement(entity);
+						rule.removeBacktrackingEntity(entity);
 					}
-					else{
-						if (row < (listEntity.getModel().getSize()+listAtribute.getModel().getSize())){
-							String keyAtr = dataBacktracking[row][0].toString();
-							AttributeModel attributeRemoved = 
-									listModelAttribute.remove(listModelAttribute.indexOf(keyAtr));
-							rule.removeBacktrackingAttibute(attributeRemoved);
-						}
-						else{
-							if (row < (listEntity.getModel().getSize()+
-									listAtribute.getModel().getSize()) +
-									listRelationship.getModel().getSize()){
-								String keyAtr = dataBacktracking[row][0].toString();
-								RelationshipModel relationshipRemoved = 
-										listModelRelationhip.remove(listModelRelationhip.indexOf(keyAtr));
-								rule.removeBacktrackingRelationship(relationshipRemoved);
-							}else{
-								String keyAtr = dataBacktracking[row][0].toString();
-								RuleModel ruleRemoved = listModelRule.remove(listModelRelationhip.indexOf(keyAtr));
-								controller.removeRuleFromRuleBackTrackingList(ruleRemoved, rule); 
-							}
-						}
+					else if ((dataBacktracking[row][1]).toString().equals("Atribute")) {
+						AttributeModel attribute = (AttributeModel)dataBacktracking[row][0];
+						listModelAttribute.removeElement(attribute);
+						rule.removeBacktrackingAttibute(attribute);
 					}
+					else if ((dataBacktracking[row][1]).toString().equals("Relationship")) {
+						RelationshipModel relationship = (RelationshipModel)dataBacktracking[row][0];
+						listModelRelationship.removeElement(relationship);
+						rule.removeBacktrackingRelationship(relationship);
+					}
+					else if ((dataBacktracking[row][1]).toString().equals("Rule")) {
+						RuleModel ruleRemoved = (RuleModel)dataBacktracking[row][0];
+						listModelRule.removeElement(ruleRemoved);
+						controller.removeRuleFromRuleBackTrackingList(ruleRemoved, rule);
+					}
+					
+						
+						
+////					if (row < listEntity.getModel().getSize()){
+////						String key = dataBacktracking[row][0].toString();
+////						EntityModel entityRemoved = listModelEntity.get(index);
+////						System.out.println(entityRemoved.getName());
+////						listModelEntity.removeElement(entityRemoved);
+////						System.out.println(entityRemoved.getName());
+////						rule.removeBacktrackingEntity(entityRemoved);
+////					}
+//					else{
+//						if (row < (listEntity.getModel().getSize()+listAtribute.getModel().getSize())){
+//							String keyAtr = dataBacktracking[row][0].toString();
+//							AttributeModel attributeRemoved = 
+//									listModelAttribute.remove(listModelAttribute.indexOf(keyAtr));
+//							rule.removeBacktrackingAttibute(attributeRemoved);
+//						}
+//						else{
+//							if (row < (listEntity.getModel().getSize()+
+//									listAtribute.getModel().getSize()) +
+//									listRelationship.getModel().getSize()){
+//								String keyAtr = dataBacktracking[row][0].toString();
+//								RelationshipModel relationshipRemoved = 
+//										listModelRelationhip.remove(listModelRelationhip.indexOf(keyAtr));
+//								rule.removeBacktrackingRelationship(relationshipRemoved);
+//							}else{
+//								String keyAtr = dataBacktracking[row][0].toString();
+//								RuleModel ruleRemoved = listModelRule.remove(listModelRelationhip.indexOf(keyAtr));
+//								controller.removeRuleFromRuleBackTrackingList(ruleRemoved, rule); 
+//							}
+//						}
+//					}
 					UmpstModule father = getFatherPanel();
 					changePanel(father.getMenuPanel().getRulesPane().getRulesPanel().getRulesAdd(rule));
 				}

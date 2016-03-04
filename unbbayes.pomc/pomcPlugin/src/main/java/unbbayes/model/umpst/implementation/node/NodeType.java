@@ -28,6 +28,7 @@ package unbbayes.model.umpst.implementation.node;
 public enum NodeType{
 	
 		CONTEXT,
+		RESIDENT_CAUSE, // It is related to resident child
 		RESIDENT,
 		INPUT,
 		NOT_DEFINED

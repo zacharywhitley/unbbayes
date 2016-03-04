@@ -9,7 +9,6 @@ import java.util.TreeSet;
 import unbbayes.controller.umpst.GenerateMTheoryController;
 import unbbayes.model.umpst.entity.RelationshipModel;
 import unbbayes.model.umpst.group.GroupModel;
-import unbbayes.model.umpst.implementation.node.NodeObjectModel;
 import unbbayes.model.umpst.implementation.node.NodeResidentModel;
 import unbbayes.model.umpst.implementation.node.NodeType;
 import unbbayes.model.umpst.project.UMPSTProject;
@@ -63,15 +62,6 @@ public class FirstCriterionOfSelection {
 				for (GroupModel group : setGroups) {
 					generateMTheoryController.addNodeResidentInMFrag(group.getId(), nodeResident);
 				}	
-				
-			} else {
-				
-				NodeObjectModel nodeNotDefined = new NodeObjectModel(
-						id, name, NodeType.NOT_DEFINED, relationship);
-				
-				for (GroupModel group : setGroups) {					
-					generateMTheoryController.addNotDefinedNodeInMFrag(group.getId(), nodeNotDefined);
-				}				
 			}
 		}
 	}
@@ -89,7 +79,8 @@ public class FirstCriterionOfSelection {
 			String name = group.getName();
 			
 			MFragModel mfrag = new MFragModel(id, name);
-			generateMTheoryController.addMFrag(mfrag);			
+			// Adds MFrags in MTheory
+			generateMTheoryController.addMFrag(mfrag);	
 		}
 	}
 

@@ -254,11 +254,11 @@ public class Controller {
 		
 	}
 	
-	public void removeRuleFromRuleBackTrackingList(RuleModel ruleModel, 
-			RuleModel rule){
+	public void removeRuleFromRuleBackTrackingList(RuleModel ruleChildren, 
+			RuleModel ruleFather){
 		
-		ruleModel.getFatherRuleList().remove(rule);  
-		rule.getFatherRuleList().remove(ruleModel);  
+		ruleChildren.getFatherRuleList().remove(ruleFather);  
+		ruleFather.getChildrenRuleList().remove(ruleChildren);  
 		
 	}
 	
@@ -267,6 +267,30 @@ public class Controller {
 		
 		group.getBacktrackingEntities().remove(entity); 
 		entity.getFowardTrackingGroups().remove(group); 
+		
+	}
+	
+	public void removeAttributeFromGroupBackTrackingList(AttributeModel attribute, 
+			GroupModel group){
+		
+		group.getBacktrackingAtributes().remove(attribute); 
+		attribute.getFowardTrackingGroups().remove(group); 
+		
+	}
+	
+	public void removeRelationshipFromGroupBackTrackingList(RelationshipModel relationship, 
+			GroupModel group){
+		
+		group.getBacktrackingRelationship().remove(relationship); 
+		relationship.getFowardtrackingGroups().remove(group); 
+		
+	}
+	
+	public void removeRuleFromGroupBackTrackingList(RuleModel rule, 
+			GroupModel group){
+		
+		group.getBacktrackingRules().remove(rule); 
+		rule.getFowardtrackingGroupList().remove(group); 
 		
 	}
 	

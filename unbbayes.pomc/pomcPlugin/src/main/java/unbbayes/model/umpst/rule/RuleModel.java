@@ -35,6 +35,8 @@ public class RuleModel extends ObjectModel{
 	private List<GoalModel> backtrackingGoalsList;
 	private List<HypothesisModel> backtrackingHypothesisList;
 	
+	private List<GroupModel> fowardtrackingGroupList;
+	
 	private List<OrdinaryVariableModel> ordinaryVariableList;
 	private List<CauseVariableModel> causeVariableList;
 	private List<EffectVariableModel> effectVariableList;
@@ -62,6 +64,8 @@ public class RuleModel extends ObjectModel{
 		
 		backtrackingGoalsList = new ArrayList<GoalModel>();
 		backtrackingHypothesisList = new ArrayList<HypothesisModel>();
+		
+		fowardtrackingGroupList = new ArrayList<GroupModel>();
 		
 		ordinaryVariableList = new ArrayList<OrdinaryVariableModel>();
 		causeVariableList = new ArrayList<CauseVariableModel>();
@@ -304,5 +308,19 @@ public class RuleModel extends ObjectModel{
 	 */
 	public void setOthersVariableObjectList(List<EventVariableObjectModel> othersVariableObjectList) {
 		this.othersVariableObjectList = othersVariableObjectList;
+	}
+
+	/**
+	 * @return the fowardtrackingGroupList
+	 */
+	public List<GroupModel> getFowardtrackingGroupList() {
+		return fowardtrackingGroupList;
+	}
+
+	/**
+	 * @param fowardtrackingGroupList the fowardtrackingGroupList to set
+	 */
+	public void setFowardtrackingGroupList(List<GroupModel> fowardtrackingGroupList) {
+		this.fowardtrackingGroupList = fowardtrackingGroupList;
 	}	
 }

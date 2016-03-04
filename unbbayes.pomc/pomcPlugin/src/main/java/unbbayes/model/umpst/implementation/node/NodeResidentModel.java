@@ -16,6 +16,7 @@ public class NodeResidentModel extends NodeObjectModel {
 	
 	private NodeType nodeType;
 	private List<NodeObjectModel> childrenNode;
+	private List<NodeObjectModel> fatherNode;
 	private Object eventVariable;
 
 	public NodeResidentModel(String id, String name, NodeType nodeType, Object eventVariable) {
@@ -28,9 +29,28 @@ public class NodeResidentModel extends NodeObjectModel {
 		this.eventVariable = eventVariable;
 		
 		childrenNode = new ArrayList<NodeObjectModel>();
+		fatherNode = new ArrayList<NodeObjectModel>();
 	}
 	
-	public void addNode(NodeResidentModel node) {		
+	public void addFatherNode(NodeObjectModel node) {		
+		if (node.getNodeType() != NodeType.CONTEXT) {
+			fatherNode.add(node);
+		} else {
+			System.err.println("Error addiction. Incorret node type.");
+		}
+		
+	}
+	
+	public void removeFatherNode(NodeObjectModel node) {		
+		if (node.getNodeType() != NodeType.CONTEXT) {
+			fatherNode.add(node);
+		} else {
+			System.err.println("Error addiction. Incorret node type.");
+		}
+		
+	}
+			
+	public void addChildrenNode(NodeResidentModel node) {		
 		if ((node.getNodeType() != NodeType.CONTEXT) &&
 				(node.getNodeType() != NodeType.INPUT)) {
 			childrenNode.add(node);
@@ -40,7 +60,7 @@ public class NodeResidentModel extends NodeObjectModel {
 		
 	}
 	
-	public void removeNode(NodeResidentModel node) {
+	public void removeChildrenNode(NodeResidentModel node) {
 		if ((node.getNodeType() != NodeType.CONTEXT) &&
 				(node.getNodeType() != NodeType.INPUT)) {
 			childrenNode.remove(node);
@@ -117,6 +137,20 @@ public class NodeResidentModel extends NodeObjectModel {
 	 */
 	public void setEventVariable(Object eventVariable) {
 		this.eventVariable = eventVariable;
+	}
+
+	/**
+	 * @return the fatherNode
+	 */
+	public List<NodeObjectModel> getFatherNode() {
+		return fatherNode;
+	}
+
+	/**
+	 * @param fatherNode the fatherNode to set
+	 */
+	public void setFatherNode(List<NodeObjectModel> fatherNode) {
+		this.fatherNode = fatherNode;
 	}
 
 }

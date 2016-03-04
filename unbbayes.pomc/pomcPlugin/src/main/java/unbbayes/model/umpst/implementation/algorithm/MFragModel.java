@@ -35,6 +35,11 @@ public class MFragModel {
 		nodeNotDefinedList = new ArrayList<NodeObjectModel>();
 	}
 	
+	public void updateResidentNode(NodeResidentModel node) {
+		removeResidentNode(node);
+		addResidentNode(node);
+	}
+	
 	/**
 	 * Include context nodes;
 	 */
