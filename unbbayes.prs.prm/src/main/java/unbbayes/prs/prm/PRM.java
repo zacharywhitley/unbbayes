@@ -4,7 +4,9 @@
 package unbbayes.prs.prm;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import unbbayes.prs.Edge;
 import unbbayes.prs.Node;
@@ -23,6 +25,8 @@ public class PRM implements IPRM {
 	
 
 	private IPRMClassBuilder prmClassBuilder;
+	
+	private Map<String, Object> propertyMap = new HashMap<String, Object>();
 
 	/**
 	 *  At least one constructor is visible for subclasses
@@ -191,6 +195,52 @@ public class PRM implements IPRM {
 	 */
 	public void setPrmClassBuilder(IPRMClassBuilder prmClassBuilder) {
 		this.prmClassBuilder = prmClassBuilder;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Graph#addProperty(java.lang.String, java.lang.Object)
+	 */
+	public void addProperty(String name, Object value) {
+		getPropertyMap().put(name, value);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Graph#removeProperty(java.lang.String)
+	 */
+	public void removeProperty(String name) {
+		getPropertyMap().remove(name);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Graph#clearProperty()
+	 */
+	public void clearProperty() {
+		getPropertyMap().clear();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Graph#getProperty(java.lang.String)
+	 */
+	public Object getProperty(String name) {
+		return getPropertyMap().get(name);
+	}
+
+	/**
+	 * @return the propertyMap
+	 */
+	protected Map<String, Object> getPropertyMap() {
+		return this.propertyMap;
+	}
+
+	/**
+	 * @param propertyMap the propertyMap to set
+	 */
+	protected void setPropertyMap(Map<String, Object> propertyMap) {
+		this.propertyMap = propertyMap;
 	}
 
 	
