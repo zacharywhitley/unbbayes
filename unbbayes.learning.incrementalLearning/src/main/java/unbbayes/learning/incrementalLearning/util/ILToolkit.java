@@ -34,6 +34,29 @@ import unbbayes.prs.bn.LearningNode;
  */
 public class ILToolkit extends LearningToolkit {
 	
+	/**
+	 * @param floatArray
+	 * @return floatArray converted to array of int
+	 * @see Math#round(float)
+	 */
+	public int[][] toIntArray(float[][] floatArray) {
+		if (floatArray == null) {
+			return null;
+		}
+		if (floatArray.length <= 0) {
+			return new int[0][0];
+		}
+		int[][] ret = new int[floatArray.length][floatArray[0].length];
+		
+		for (int i = 0; i < floatArray.length; i++) {
+			for (int j = 0; j < floatArray[0].length; j++) {
+				ret[i][j] = Math.round(floatArray[i][j]);
+			}
+		}
+		
+		return ret;
+	}
+	
 	protected double g(LearningNode variable, ArrayList<Node> parents,int[][]old){
 			double riSum = 0;
 			double qiSum = 0;
@@ -41,7 +64,7 @@ public class ILToolkit extends LearningToolkit {
 			  int  nijk = 0;
 			  int  ri   = variable.getEstadoTamanho();
 			  int  qi   = 1;
-			  int ArrayNijk[][] = getFrequencies(variable,parents);
+			  int ArrayNijk[][] = toIntArray(getFrequencies(variable,parents));
 			  updateFrequencies(ArrayNijk, old);			  
 			  if (parents != null && parents.size() > 0){
 				  qi = getQ(parents);

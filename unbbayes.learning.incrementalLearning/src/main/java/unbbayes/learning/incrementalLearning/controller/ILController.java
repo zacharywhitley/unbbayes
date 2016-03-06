@@ -134,7 +134,7 @@ public class ILController extends ILToolkit {
                 break;
             }
         }
-        int[][] nijk = getFrequencies(v, parents);
+        int[][] nijk = toIntArray(getFrequencies(v, parents));
         parents.add(getTVariavel(lastParent,true));
         return nijk;
     }
@@ -158,7 +158,7 @@ public class ILController extends ILToolkit {
         if (lastParent != null) {
             parents.add(getTVariavel(lastParent, true));
         }
-        int[][] nijk = getFrequencies(v, parents);
+        int[][] nijk = toIntArray(getFrequencies(v, parents));
         if (lastParent != null) {
             parents.remove(parents.size() - 1);
         }
@@ -229,7 +229,7 @@ public class ILController extends ILToolkit {
     }
     
     private boolean isEquivalente(Object[] fronteira, Node node){
-        int[][] novo = getFrequencies(getTVariavel(node,true), getParents(node,(ArrayList) fronteira[1]));
+        int[][] novo = toIntArray(getFrequencies(getTVariavel(node,true), getParents(node,(ArrayList) fronteira[1])));
         int[][] velho = (int[][]) fronteira[2];
         int numeroCelulas = 0;
         double valorQuiQuadrado = 0.0d;
@@ -561,7 +561,7 @@ public class ILController extends ILToolkit {
     private void paramRecalc() {
         for (int i = 0; i < pn.getNodeCount(); i++) {
             LearningNode node = getTVariavel(pn.getNodeAt(i),true);
-            int[][] news = getFrequencies(node, node.getPais());
+            int[][] news = toIntArray(getFrequencies(node, node.getPais()));
             getProbability(news, node);
         }
     }    
