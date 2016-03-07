@@ -3039,19 +3039,41 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 			}
 			
 			// copy edges
-			for (Edge oldEdge : originalNet.getEdges()) {
-				Node node1 = this.getNode(oldEdge.getOriginNode().getName());
-				Node node2 = this.getNode(oldEdge.getDestinationNode().getName());
-				if (node1 == null || node2 == null) {
-					Debug.println(getClass(), oldEdge + " has a node which was not copied to the cloned network.");
+//			for (Edge oldEdge : originalNet.getEdges()) {
+//				Node node1 = this.getNode(oldEdge.getOriginNode().getName());
+//				Node node2 = this.getNode(oldEdge.getDestinationNode().getName());
+//				if (node1 == null || node2 == null) {
+//					Debug.println(getClass(), oldEdge + " has a node which was not copied to the cloned network.");
+//					continue;
+//				}
+//				Edge newEdge = new Edge(node1, node2);
+//				try {
+//					this.addEdge(newEdge);
+//				} catch (InvalidParentException e) {
+//					throw new RuntimeException("Could not clone edge " + oldEdge +" of network " + originalNet , e);
+//				}
+//			}
+			// copy edges, but accordingly to CPT
+			for (Node node : originalNet.getNodes()) {
+				if (!(node instanceof ProbabilisticNode)) {
+					// ignore unknown nodes
+					Debug.println(getClass(), node + " is not a ProbabilisticNode and will not be copied.");
 					continue;
 				}
-				Edge newEdge = new Edge(node1, node2);
-				try {
-					this.addEdge(newEdge);
-				} catch (InvalidParentException e) {
-					throw new RuntimeException("Could not clone edge " + oldEdge +" of network " + originalNet , e);
+				ProbabilisticNode oldNode = (ProbabilisticNode) node;
+				ProbabilisticNode newNode = ((ProbabilisticNode)this.getNode(oldNode.getName()));	
+				// variable at index 0 was supposedly handled already (it's the node itself, so we don't have to handle it again), so handle other nodes (which are parents)
+				for (int i = 1, varSize = oldNode.getProbabilityFunction().getVariablesSize(); i < varSize; i++) {	
+					Node newParent = this.getNode(oldNode.getProbabilityFunction().getVariableAt(i).getName());
+					Edge newEdge = new Edge(newParent, newNode);
+					try {
+						this.addEdge(newEdge);
+					} catch (InvalidParentException e) {
+						throw new RuntimeException("Could not clone edge from " + oldNode.getProbabilityFunction().getVariableAt(i) + 
+								" to " + oldNode +" of network " + originalNet , e);
+					}
 				}
+					
 			}
 			
 			// copy cpt
