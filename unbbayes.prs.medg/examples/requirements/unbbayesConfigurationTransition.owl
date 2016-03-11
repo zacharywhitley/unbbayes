@@ -88,13 +88,46 @@
         <Class IRI="#ApplicationRequirement"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#DataSetRequirement"/>
+        <Class IRI="#CRISPDMRequirement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ContinuousVariableStorageRequirement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#DataDrivenModelRequirement"/>
     </Declaration>
     <Declaration>
         <Class IRI="#DomainRequirement"/>
     </Declaration>
     <Declaration>
+        <Class IRI="#GUIRequirement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#HuginNetFormatRequirement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ModelDivisibleToHierarchicSectionRequirement"/>
+    </Declaration>
+    <Declaration>
         <Class IRI="#OnlineDataSetRequirement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ProbabilisticModelRequirement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#ProtegeEditorCompatibilityRequirement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#RepeatableStructureRequirement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#SensibilityAnalysisRequirement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#StorageFormatRequirement"/>
+    </Declaration>
+    <Declaration>
+        <Class IRI="#XMLBIFRequirement"/>
     </Declaration>
     <Declaration>
         <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#hasRequirement"/>
@@ -136,7 +169,16 @@
         <DataProperty IRI="#hasSuggestionXMLBIFIO"/>
     </Declaration>
     <Declaration>
+        <NamedIndividual IRI="#incremental_learning_requirement"/>
+    </Declaration>
+    <Declaration>
         <NamedIndividual IRI="#learning_requirement"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#mebn_requirement"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#msbn_requirement"/>
     </Declaration>
     <EquivalentClasses>
         <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#CanYourDomainBeDevidedIntoSubDomains"/>
@@ -424,25 +466,47 @@
         <Class IRI="http://www.owl-ontologies.com/requirements/requirements.owl#DetailedRequirement"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#DataSetRequirement"/>
-        <Class IRI="#DomainRequirement"/>
+        <Class IRI="#CRISPDMRequirement"/>
+        <Class IRI="#DataDrivenModelRequirement"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#DataSetRequirement"/>
+        <Class IRI="#CRISPDMRequirement"/>
+        <ObjectHasValue>
+            <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfilled_by"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining_sample"/>
+        </ObjectHasValue>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ContinuousVariableStorageRequirement"/>
+        <Class IRI="#StorageFormatRequirement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ContinuousVariableStorageRequirement"/>
+        <ObjectHasValue>
+            <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfilled_by"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7_sample"/>
+        </ObjectHasValue>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#DataDrivenModelRequirement"/>
+        <Class IRI="#ProbabilisticModelRequirement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#DataDrivenModelRequirement"/>
         <ObjectHasValue>
             <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfilled_by"/>
             <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning_sample"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#DataSetRequirement"/>
+        <Class IRI="#DataDrivenModelRequirement"/>
         <DataHasValue>
             <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#hasDataSet"/>
             <Literal datatypeIRI="&xsd;boolean">true</Literal>
         </DataHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#DataSetRequirement"/>
+        <Class IRI="#DataDrivenModelRequirement"/>
         <DataHasValue>
             <DataProperty IRI="http://www.owl-ontologies.com/requirements/constraints.owl#constraint_statement"/>
             <Literal datatypeIRI="&xsd;string">The system shall be able to build a probabilistic model from a data set specified by the user</Literal>
@@ -453,8 +517,34 @@
         <Class IRI="http://www.owl-ontologies.com/requirements/requirements.owl#InitialRequirement"/>
     </SubClassOf>
     <SubClassOf>
+        <Class IRI="#GUIRequirement"/>
+        <Class IRI="#DomainRequirement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#HuginNetFormatRequirement"/>
+        <Class IRI="#StorageFormatRequirement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#HuginNetFormatRequirement"/>
+        <ObjectHasValue>
+            <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfilled_by"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO_sample"/>
+        </ObjectHasValue>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ModelDivisibleToHierarchicSectionRequirement"/>
+        <Class IRI="#ProbabilisticModelRequirement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ModelDivisibleToHierarchicSectionRequirement"/>
+        <ObjectHasValue>
+            <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfilled_by"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn_sample"/>
+        </ObjectHasValue>
+    </SubClassOf>
+    <SubClassOf>
         <Class IRI="#OnlineDataSetRequirement"/>
-        <Class IRI="#DataSetRequirement"/>
+        <Class IRI="#DataDrivenModelRequirement"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#OnlineDataSetRequirement"/>
@@ -468,6 +558,58 @@
                 <Literal datatypeIRI="&xsd;string">The system shall be able to update an existing probabilistic model from a data set specified by the user</Literal>
             </DataHasValue>
         </ObjectUnionOf>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ProbabilisticModelRequirement"/>
+        <Class IRI="#DomainRequirement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ProtegeEditorCompatibilityRequirement"/>
+        <Class IRI="#GUIRequirement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#ProtegeEditorCompatibilityRequirement"/>
+        <ObjectHasValue>
+            <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfilled_by"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege_sample"/>
+        </ObjectHasValue>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#RepeatableStructureRequirement"/>
+        <Class IRI="#ModelDivisibleToHierarchicSectionRequirement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#RepeatableStructureRequirement"/>
+        <ObjectHasValue>
+            <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfilled_by"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn_sample"/>
+        </ObjectHasValue>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#SensibilityAnalysisRequirement"/>
+        <Class IRI="#ProbabilisticModelRequirement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#SensibilityAnalysisRequirement"/>
+        <ObjectHasValue>
+            <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfilled_by"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining_sample"/>
+        </ObjectHasValue>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#StorageFormatRequirement"/>
+        <Class IRI="#DomainRequirement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#XMLBIFRequirement"/>
+        <Class IRI="#StorageFormatRequirement"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#XMLBIFRequirement"/>
+        <ObjectHasValue>
+            <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfilled_by"/>
+            <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO_sample"/>
+        </ObjectHasValue>
     </SubClassOf>
     <ClassAssertion>
         <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Feature"/>
@@ -566,8 +708,20 @@
         <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling_sample"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class IRI="#DataSetRequirement"/>
+        <Class IRI="#OnlineDataSetRequirement"/>
+        <NamedIndividual IRI="#incremental_learning_requirement"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#DataDrivenModelRequirement"/>
         <NamedIndividual IRI="#learning_requirement"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#RepeatableStructureRequirement"/>
+        <NamedIndividual IRI="#mebn_requirement"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#ModelDivisibleToHierarchicSectionRequirement"/>
+        <NamedIndividual IRI="#msbn_requirement"/>
     </ClassAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
