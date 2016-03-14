@@ -27,6 +27,12 @@
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
         <Literal datatypeIRI="&xsd;string">This is a bridge (mapping) ontology between the imported ontologies: unbbayesFeatureModel and component-systems.</Literal>
     </Annotation>
+    <Declaration>
+        <Class IRI="#unknownFeature"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#unknownFeature_sample"/>
+    </Declaration>
     <SubClassOf>
         <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Feature"/>
         <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#EngineeringComponent"/>
@@ -143,6 +149,58 @@
         <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#System"/>
         <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Configuration"/>
     </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#unknownFeature"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#unknownFeature"/>
+        <Class IRI="http://www.pr-owl.org/resources/SPL/unbbayesFeatureModel.owl#DynamicFeature"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="#unknownFeature"/>
+        <ObjectHasValue>
+            <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#equals"/>
+            <NamedIndividual IRI="#unknownFeature_sample"/>
+        </ObjectHasValue>
+    </SubClassOf>
+    <DisjointClasses>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling"/>
+        <Class IRI="#unknownFeature"/>
+    </DisjointClasses>
+    <ClassAssertion>
+        <Class IRI="#unknownFeature"/>
+        <NamedIndividual IRI="#unknownFeature_sample"/>
+    </ClassAssertion>
+    <AnnotationAssertion>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <IRI>#unknownFeature</IRI>
+        <Literal datatypeIRI="&rdf;PlainLiteral">This feature is just a representation of any feature that was unforeseen during domain engineering. This can be used in upper ontologies in order to represent some need for implementation of new features.</Literal>
+    </AnnotationAssertion>
 </Ontology>
 
 
