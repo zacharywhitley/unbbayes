@@ -3,6 +3,17 @@
   <groupId>SoftPrOWL</groupId>
   <artifactId>SoftPrOWL</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+	<url>http://unbbayes.sourceforge.net
+	</url>
+	<licenses>
+		<license>
+			<name> GNU General Public License, Version 3, 29 June 2007</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.txt
+			</url>
+			<distribution>manual</distribution>
+		</license>
+	</licenses>
+	<inceptionYear>2014</inceptionYear>	  
   <build>
     <plugins>
       <plugin>
@@ -16,12 +27,12 @@
     </plugins>
   </build>
   <dependencies>
+		<!-- This is a plugin project for unbbayes.prs.mebn -->
 		<dependency>
 			<groupId>br.unb.cic</groupId>
-			<artifactId>unbbayes</artifactId>
-			<version>4.18.10</version>
-			<optional>false</optional>
-		</dependency>
+			<artifactId>unbbayes.gui.mebn.ontology.protege</artifactId>
+			<version>1.1.4</version>
+		</dependency>		
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-rio-rdfxml</artifactId>

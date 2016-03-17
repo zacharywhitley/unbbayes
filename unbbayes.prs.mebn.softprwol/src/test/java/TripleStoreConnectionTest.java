@@ -1,6 +1,5 @@
 
 
-import java.sql.Driver;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -73,9 +72,9 @@ public class TripleStoreConnectionTest {
 	}
 
 	/**
-	 * This is the entry point of the example application. First, the command-line parameters are intialised.
+	 * This is the entry point of the example application. First, the command-line parameters are initialized.
 	 * Then these parameters are passed to an instance of the GettingStarted application and used to create,
-	 * initialise and login to the local instance of Sesame.
+	 * Initialize and login to the local instance of Sesame.
 	 * 
 	 * @param args
 	 *            Command line parameters
@@ -181,8 +180,12 @@ public class TripleStoreConnectionTest {
 		params.setDefaultValue(PARAM_DATATYPE_HANDLING, DatatypeHandling.VERIFY.name());
 		params.setDefaultValue(PARAM_CHUNK_SIZE, "500000");
 		
-		params.setDefaultValue(PARAM_URL, "	http://localhost:8080/openrdf-sesame");
-		params.setDefaultValue(PARAM_URL, "	http://localhost:8080/openrdf-workbench");
+//		params.setDefaultValue(PARAM_URL, "	http://localhost:8080/openrdf-sesame");
+//		params.setDefaultValue(PARAM_URL, "	http://localhost:8080/openrdf-workbench");
+		
+		// Graphdb 6.6.3
+		params.setDefaultValue(PARAM_URL, "http://localhost:8080/graphdb-workbench-free");
+		
 		params.setDefaultValue(PARAM_REPOSITORY, "LUBM1RL");
 //		params.setDefaultValue(PARAM_REPOSITORY, "LUBM2-QL");
 		
@@ -226,6 +229,12 @@ public class TripleStoreConnectionTest {
 		}
 	}
 	
+	/**
+	 * Execute the set of queries in a repository already loaded. 
+	 * Conecta através do servidor web (TomCat), que deve estar ligado. 
+	 * 
+	 * @param args
+	 */
 	private static void testLUBMWebRepository(String[] args){
 		// Special handling for JAXP XML parser that limits entity expansion
 		// see
@@ -255,8 +264,13 @@ public class TripleStoreConnectionTest {
 		params.setDefaultValue(PARAM_DATATYPE_HANDLING, DatatypeHandling.VERIFY.name());
 		params.setDefaultValue(PARAM_CHUNK_SIZE, "500000");
 		
-		params.setDefaultValue(PARAM_URL, "	http://localhost:8080/openrdf-sesame");
-		params.setDefaultValue(PARAM_URL, "	http://localhost:8080/openrdf-workbench");
+		// Old versions 
+//		params.setDefaultValue(PARAM_URL, "	http://localhost:8080/openrdf-sesame");
+//		params.setDefaultValue(PARAM_URL, "	http://localhost:8080/openrdf-workbench");
+		
+		// Graphdb 6.6.3
+		params.setDefaultValue(PARAM_URL, "http://localhost:8080/graphdb-workbench-free");
+		
 		params.setDefaultValue(PARAM_REPOSITORY, "LUBM1RL");
 //		params.setDefaultValue(PARAM_REPOSITORY, "LUBM2-QL");
 		

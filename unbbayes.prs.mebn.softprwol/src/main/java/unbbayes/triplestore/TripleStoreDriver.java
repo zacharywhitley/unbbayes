@@ -415,7 +415,8 @@ public class TripleStoreDriver {
 		URI dumyBaseUrl = new URIImpl(file.toURI().toString());
 
 		URI context = null;
-		if(!format.equals(RDFFormat.NQUADS) && !format.equals(RDFFormat.TRIG) && ! format.equals(RDFFormat.TRIX)) {
+		if(!format.equals(RDFFormat.NQUADS) && !format.equals(RDFFormat.TRIG) 
+				&& ! format.equals(RDFFormat.TRIX)) {
 			String contextParam = parameters.get(PARAM_CONTEXT);
 
 			if (contextParam == null) {
@@ -439,7 +440,8 @@ public class TripleStoreDriver {
 			boolean verifyData = isTrue(PARAM_VERIFY);
 			boolean stopAtFirstError = isTrue(PARAM_STOP_ON_ERROR);
 			boolean preserveBnodeIds = isTrue(PARAM_PRESERVE_BNODES);
-			DatatypeHandling datatypeHandling = stringToDatatypeHandling( parameters.get(PARAM_DATATYPE_HANDLING));
+			DatatypeHandling datatypeHandling = 
+					stringToDatatypeHandling( parameters.get(PARAM_DATATYPE_HANDLING));
 			long chunkSize = Long.parseLong(parameters.get(PARAM_CHUNK_SIZE));
 			
 			ParserConfig config = new ParserConfig(verifyData, stopAtFirstError, preserveBnodeIds, datatypeHandling);
