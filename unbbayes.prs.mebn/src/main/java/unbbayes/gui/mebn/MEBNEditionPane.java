@@ -200,6 +200,8 @@ public class MEBNEditionPane extends JPanel {
     private final String FORMULA_TAB = "FormulaEdtion";
     private final String ENTITY_FINDING_TAB = "EntityFindingTab";
     private final String NODE_FINDING_TAB = "NodeFindingTab";
+    
+    private ToolBarGlobalOptions toolBarGlobalOptions; 
 
     /* Control if the table edition panel is being showed */
     private boolean isTableEditionPaneShow = false; 
@@ -277,7 +279,8 @@ public class MEBNEditionPane extends JPanel {
         jtbEdition.setOrientation(JToolBar.VERTICAL);
 
 
-        topPanel.add(new ToolBarGlobalOptions());
+        toolBarGlobalOptions = new ToolBarGlobalOptions(); 
+        topPanel.add(toolBarGlobalOptions);
 
         toolBarMFrag = new ToolBarMFrag();
         toolBarResidentNode = new ToolBarResidentNode();
@@ -306,10 +309,6 @@ public class MEBNEditionPane extends JPanel {
         nodeSelectedToolBar.add(ORDVARIABLE_BAR, toolBarOVariable);
 
         cardLayout.show(nodeSelectedToolBar, EMPTY_BAR);
-
-
-        
-//        topPanel.add(nodeSelectedToolBar);
 
         bottomPanel.add(status);
         
@@ -363,7 +362,9 @@ public class MEBNEditionPane extends JPanel {
 //        tabsPanel.add(BorderLayout.CENTER, jpTabSelected);
 //        tabsPanel.add(BorderLayout.SOUTH, descriptionPane);
         // the following code substitutes the above two lines
-        setJspTabSelectedAndDescription(new JSplitPane(JSplitPane.VERTICAL_SPLIT, jpTabSelected, descriptionPane));
+        setJspTabSelectedAndDescription(new JSplitPane(JSplitPane.VERTICAL_SPLIT, 
+        		jpTabSelected, descriptionPane));
+        
         tabsPanel.add(BorderLayout.CENTER, getJspTabSelectedAndDescription());
         
         tabsPanel.add(BorderLayout.EAST, jtbEdition);
@@ -560,6 +561,11 @@ public class MEBNEditionPane extends JPanel {
 
     public String getNameMTheory(String name){
     	return this.txtNameMTheory.getText();
+    }
+    
+    public void setKBName(String name){
+    	this.toolBarGlobalOptions.setKBName(name);
+    	this.toolBarGlobalOptions.repaint();
     }
 
     /**
@@ -778,10 +784,14 @@ public class MEBNEditionPane extends JPanel {
 	}
 	
 	/**
-	 * Contains geral mebn buttons: 
-	 * - save, load, clear knowledge base
+	 * General MEBN buttons: 
 	 * - execute query
 	 * - turn to ssbn/edition mode
+	 * - knowledge base functions 
+	 * 	 - save 
+	 *   - load 
+	 *   - clear 
+	 * 
 	 */
 	private class ToolBarGlobalOptions extends JToolBar{
 
@@ -800,6 +810,8 @@ public class MEBNEditionPane extends JPanel {
 		private JButton btnSaveNetImage;
 
 		private AbstractButton btnMEBNOption; 
+		
+		private JLabel kbName; 
 	    
 	    public ToolBarGlobalOptions(){
 	    	
@@ -924,12 +936,6 @@ public class MEBNEditionPane extends JPanel {
 
 	        add(btnDoQuery);
 	        
-	        addSeparator(); 
-	        
-	        add(btnLoadKB); 
-	        add(btnSaveKB); 
-	        add(btnClearKB);
-	        
 	        addSeparator(new Dimension(10, 10)); 
 	        
 	        add(btnTurnToSSBNMode); 
@@ -942,6 +948,30 @@ public class MEBNEditionPane extends JPanel {
 	        addSeparator(new Dimension(10, 10));
 	        
 	        add(btnMEBNOption);
+	        
+	        addSeparator(new Dimension(30, 30)); 
+	        
+//	        ButtonLabel btnKnowledgeBase = 
+//	        		new ButtonLabel("PowerLoom", iconController.getCompileIcon());
+//	        btnKnowledgeBase.setEnabled(false);
+	        
+	        JToolBar knowledgeBaseToolBar = new JToolBar(); 
+	        
+	        knowledgeBaseToolBar.add(new JLabel("KB: ")); 
+	        
+	        kbName = new JLabel("PowerLoom"); 
+//	        knowledgeBaseName.setForeground(Color.blue);
+	        
+	        knowledgeBaseToolBar.add(kbName); 
+	        knowledgeBaseToolBar.add(new JLabel(" ")); 
+	        
+	        knowledgeBaseToolBar.add(btnLoadKB); 
+	        knowledgeBaseToolBar.add(btnSaveKB); 
+	        knowledgeBaseToolBar.add(btnClearKB);
+	        knowledgeBaseToolBar.setFloatable(false);
+//	        knowledgeBaseToolBar.setBorder(BorderFactory.createEtchedBorder());
+	        
+	        add(knowledgeBaseToolBar); 
 	        
 	        setFloatable(false);
 	    }; 
@@ -1072,6 +1102,10 @@ public class MEBNEditionPane extends JPanel {
 			this.btnMEBNOption = btnMEBNOption;
 		}
 	    
+		public void setKBName(String name){
+			this.kbName.setText(name);
+		}
+		
 	}
 	
   	public class ToolBarEdition extends JToolBar{

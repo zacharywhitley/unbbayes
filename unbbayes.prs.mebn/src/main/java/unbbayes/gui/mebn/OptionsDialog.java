@@ -301,8 +301,8 @@ public class OptionsDialog extends JDialog {
 		
         kbMainPanel            = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         ((JSplitPane)kbMainPanel).setDividerLocation(DEFAULT_DIVIDER_LOCATION);
-        
-        kbRadioPanel       = new JPanel(new GridLayout(0,3));
+
+        kbRadioPanel       = new JPanel(new GridLayout(2,0));
         kbRadioPanel.setBorder(new TitledBorder(this.resource.getString("availableKB")));
         
         kbOptionPane = new JPanel(new BorderLayout());
@@ -310,6 +310,7 @@ public class OptionsDialog extends JDialog {
         
         // set up plugins (kb) and fill map (this map associates radio button, its additional options and kb)
         this.reloadKBPlugins();
+        
         
 //        // adding radio buttons to the same radio button group (kbGroup) and same panel (kbRadioPanel)
 //		for (JRadioButtonMenuItem radioItem : this.getKbOptionItems()) {
@@ -350,6 +351,7 @@ public class OptionsDialog extends JDialog {
 	                public void actionPerformed(ActionEvent e) {
 	                    
 	                	IKBOptionPanelBuilder selectedKBOptionPanel = getSelectedKBOptionPanel();
+	                	
 	                	// commit changes, only on currently selected KB
 //	                	selectedKBOptionPanel.commitChanges();
 	                	// the following code commits all panels instead.
@@ -364,6 +366,7 @@ public class OptionsDialog extends JDialog {
 	                	
 	                	// updating the inference kb referenced by controller
 	                    controller.setKnowledgeBase(selectedKBOptionPanel.getKB());
+	                    controller.setKnowledgeBaseTypeName(getSelectedKBName()); 
 	                    
 	                }
 	            });
@@ -403,6 +406,22 @@ public class OptionsDialog extends JDialog {
 		return null;
 	}
     
+	/**
+     * Obtains the currently selected (by j option radio button) panel for KB options
+     * @return
+     */
+    private String getSelectedKBName() {
+    	if (this.getKbToOptionMap() == null) {
+    		return "";
+    	}
+		for (JRadioButtonMenuItem option : this.getKbToOptionMap().keySet()) {
+			if (option.isSelected()) {
+				return option.getText();
+			}
+		}
+		return "";
+	}    
+    
     /**
      * Obtains the currently selected (by j option radio button) panel for SSBN generation algorithm's options
      * @return
@@ -426,31 +445,39 @@ public class OptionsDialog extends JDialog {
 	 */
 	protected Map<JRadioButtonMenuItem, IKBOptionPanelBuilder> loadKBAsPlugins() {
 
-		Map<JRadioButtonMenuItem, IKBOptionPanelBuilder> ret = new HashMap<JRadioButtonMenuItem, IKBOptionPanelBuilder>();
+		Map<JRadioButtonMenuItem, IKBOptionPanelBuilder> ret = 
+				new HashMap<JRadioButtonMenuItem, IKBOptionPanelBuilder>();
 		
 		// refresh plugin
 		this.getKbPluginManager().reloadPlugins();
 		
 		// obtains the KB and its panel builder
-		Map<IKnowledgeBaseBuilder, IKBOptionPanelBuilder> kbMap = this.getKbPluginManager().getKbToOptionPanelMap();
+		Map<IKnowledgeBaseBuilder, IKBOptionPanelBuilder> kbMap = 
+				this.getKbPluginManager().getKbToOptionPanelMap();
+		
 		for (IKnowledgeBaseBuilder kbBuilder : kbMap.keySet()) {
 			try {
 				
 				// retrieves the panel builder
 				IKBOptionPanelBuilder panelBuilder = kbMap.get(kbBuilder);
 				if (panelBuilder == null) {
-					// if null, use a default implementaion of panel builder
+					// if null, use a default implementation of panel builder
 					panelBuilder = new EmptyOptionPanelBuilder(null);
 				}
-				
+
 				boolean isOK = false;
 				try {
 					// tells the panel the correct kb to edit
-					panelBuilder.setKB(kbBuilder.buildKB(this.getController().getMultiEntityBayesianNetwork(), this.getController()));
+					panelBuilder.setKB(kbBuilder.buildKB(
+							this.getController().getMultiEntityBayesianNetwork(), 
+							this.getController()));
+					
 					isOK = true;
 				} catch (Throwable e) {
 					e.printStackTrace();
-					System.err.println(kbBuilder.getClass() + ": this plug-in uses old knowledge base class definition. Please, contact the plug-in developer in order to update class definition.");
+					System.err.println(kbBuilder.getClass() + 
+							": this plug-in uses old knowledge base class definition. " + 
+							"Please, contact the plug-in developer in order to update class definition.");
 //					JOptionPane.showMessageDialog(
 //							OptionsDialog.this, 
 //							resource.getString("moduleLoadingError"), 
@@ -597,6 +624,7 @@ public class OptionsDialog extends JDialog {
     	// reset components
     	this.setKbGroup(new ButtonGroup());
     	this.getKbRadioPanel().removeAll();
+    	this.getKbRadioPanel().setLayout(new GridLayout(this.getKbToOptionMap().keySet().size(),0));
     	
     	// adding the plugins if they were not already added
 		for (JRadioButtonMenuItem radioItem : this.getKbToOptionMap().keySet()) {

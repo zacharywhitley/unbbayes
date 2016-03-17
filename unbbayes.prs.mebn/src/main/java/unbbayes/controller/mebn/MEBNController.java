@@ -2805,6 +2805,10 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		this.resetKnowledgeBase();
 	}
 	
+	public void setKnowledgeBaseTypeName(String type){
+		mebnEditionPane.setKBName(type);
+	}
+	
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#resetKnowledgeBase()
 	 */
