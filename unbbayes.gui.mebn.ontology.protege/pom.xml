@@ -166,7 +166,7 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes.prs.mebn</artifactId>
-				<version>1.14.13</version>
+				<version>1.15.13</version>
 			</dependency>
 			
 			<!-- Protege 4.1 (it handles OWL2) -->
@@ -336,13 +336,12 @@
 			<!-- Protege 4.1 depends on log4j. Usually, there is no need to load log4j if we do not want to use it in the top application (log4j was designed in that way), but
 			     because Protege 4.1 loads log4j using OSGI and OSGI seems to (literally) stop loading classes when it cannot find a dependency (i.e. log4j), it destroys one of the major
 			     advantages of log4j (i.e. the option to disable it just by not loading its jar) -->
-			<!-- 
 			<dependency>
 			    <groupId>log4j</groupId>
 			    <artifactId>log4j</artifactId>
 			    <version>1.2.16</version>
 			</dependency>
-			 -->
+			 
 			 <!-- Protege's JAXB to correctly parse XML files -->
 			 <dependency>
 			    <groupId>javax.xml.bind</groupId>
