@@ -1,14 +1,14 @@
-UNBBAYES PR-OWL 2 PLUGIN - VERSION 1.X.X
+UNBBAYES PR-OWL 2 PLUGIN - VERSION 1.2.5
 ----------------------------
 
 FEATURE LIST		
 Number	Request ID	Summary
-					Included a panel to see and manage the ontology's import hierarchy.
-					Findings and entity instances can now be included without using the Protege panel.
+2	82		Included a panel to see and manage the ontology's import hierarchy.
+					
 
 BUG LIST		
 Number	Request ID	Summary
-					Fixed a bug that was causing n-ary relationships not being properly handled.
+5	182		Fixed compatibility issue with UnBBayes-MEBN 1.14.13.
 
 
 UNBBAYES PR-OWL 2 PLUGIN - VERSION 1.1.4
@@ -16,9 +16,9 @@ UNBBAYES PR-OWL 2 PLUGIN - VERSION 1.1.4
 
 BUG LIST		
 Number	Request ID	Summary
-2		159			Fixed a bug that freezes the option panel when non-DL reasoner is chosen.
-3		160			Configured Felix to be able to load Protege 4.1 classes in Java 7.
-4		163			HermiT was not loading in Linux.
+2	159		Fixed a bug that freezes the option panel when non-DL reasoner is chosen.
+3	160		Configured Felix to be able to load Protege 4.1 classes in Java 7.
+4	163		HermiT was not loading in Linux.
 
 UNBBAYES PR-OWL 2 PLUGIN - VERSION 1.1.1
 ----------------------------

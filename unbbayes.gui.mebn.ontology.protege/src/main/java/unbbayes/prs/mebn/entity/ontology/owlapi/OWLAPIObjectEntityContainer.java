@@ -10,6 +10,7 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
+import unbbayes.io.mebn.PROWLModelUser;
 import unbbayes.io.mebn.owlapi.IOWLAPIObjectEntityBuilder;
 import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
@@ -33,6 +34,7 @@ import unbbayes.prs.mebn.entity.exception.TypeException;
 public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 
 	private MultiEntityBayesianNetwork mebn;
+	private String defaultRootEntityName;
 	
 //	private boolean isToCreateOWLEntity = true;
 	
@@ -47,7 +49,9 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 	 * @see ObjectEntityContainer#ObjectEntityContainer(TypeContainer)
 	 */
 	public OWLAPIObjectEntityContainer(MultiEntityBayesianNetwork mebn) {
-		super(mebn.getTypeContainer(),OWLAPIObjectEntityBuilder.getInstance(mebn, true));
+//		super(mebn.getTypeContainer(),OWLAPIObjectEntityBuilder.getInstance(mebn, true));
+		super(mebn.getTypeContainer());
+		setObjectEntityBuilder(OWLAPIObjectEntityBuilder.getInstance(mebn, true));
 		this.setDefaultRootEntityName(OWLAPIObjectEntity.THING);
 		this.setMEBN(mebn);
 		if (getRootObjectEntity() == null) {
@@ -71,41 +75,55 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 		if (getMEBN() == null) {
 			return;
 		}
-//		if(getRootObjectEntity() == null) {
-//			try {
-//				
-//				setRootObjectEntity(getObjectEntityByName(THING));
-//				ObjectEntity rootObjectEntity = getRootObjectEntity();
-//				
-//				if(rootObjectEntity == null) {
-//					Type objectEntityType = getTypeContainer().getType(THING + "_label");
-//					if (objectEntityType != null) {
-//						// remove existing type
-//						getTypeContainer().removeType(objectEntityType);
-//					}
-//					
-////					rootObjectEntity = new OWLAPIObjectEntity(OBJECT_ENTITY, getTypeContainer()); 
-//					rootObjectEntity = new OWLAPIObjectEntity(THING, getMEBN(), true);	// true will force Thing to become owl:Thing
-//					rootObjectEntity.getType().addUserObject(rootObjectEntity); 
-//				
-//					plusEntityNum();
-//					
-//					setRootObjectEntity(rootObjectEntity);
-//				}
-//				
-//				addEntity(rootObjectEntity, null);
-//	
-//				this.getMapObjectChilds().put(rootObjectEntity, new ArrayList<ObjectEntity>());
-//				this.getMapObjectParents().put(rootObjectEntity, (List) Collections.emptyList());
-//				
-//				refreshTreeModel();
-//				
-//			} catch (TypeException e) {
-//				throw new RuntimeException(e);
-//			}
-//		}
+		
+		if(getRootObjectEntity() == null) {
+			try {
+				
+				ObjectEntity rootObjectEntity = getObjectEntityByName(getDefaultRootEntityName());
+				
+				if(rootObjectEntity == null) {
+					Type objectEntityType = getTypeContainer().getType(getDefaultRootEntityName() + "_label");
+					if (objectEntityType != null) {
+						// remove existing type
+						getTypeContainer().removeType(objectEntityType);
+					}
+					
+					rootObjectEntity = getObjectEntityBuilder().getObjectEntity(getDefaultRootEntityName()) ;
+					rootObjectEntity.getType().addUserObject(rootObjectEntity); 
+				
+					plusEntityNum();
+					
+					addEntity(rootObjectEntity, null);
+					
+				}
+				
+				
+			} catch (TypeException e) {
+				// TODO Auto-generated catch block
+				throw new RuntimeException(e);
+			}
+		}
+		
 		super.createRootObjectEntity();
+		
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.entity.ObjectEntityContainer#getObjectEntityByName(java.lang.String)
+	 */
+	public ObjectEntity getObjectEntityByName(String entityName) {
+		try {
+			// force the name "ObjectEntity" to be considered as equivalent to root entity name
+			if (PROWLModelUser.OBJECT_ENTITY.equals(entityName)) {
+				entityName = getDefaultRootEntityName();
+			}
+		} catch (Exception ex){
+			return null;
+		}
+		return super.getObjectEntityByName(entityName);
+	}
+	
 
 	/**
 	 * @param mebn the mebn to set
@@ -296,6 +314,41 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 			}
 		}
 		return ontology;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.entity.ObjectEntityContainer#setTypeContainer(unbbayes.prs.mebn.entity.TypeContainer)
+	 */
+	protected void setTypeContainer(TypeContainer typeContainer) {
+		// do not allow the setTypeContainer of superclass to change the object entity builder
+		IObjectEntityBuilder backup = getObjectEntityBuilder();
+		try {
+			super.setTypeContainer(typeContainer);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		} finally {
+			setObjectEntityBuilder(backup);
+		}
+		
+	}
+	
+	/**
+	 * @return the defaultRootEntityName : this will be used in {@link #createRootObjectEntity()}
+	 * as the name of the root object entity.
+	 * @see #getRootObjectEntity()
+	 */
+	public String getDefaultRootEntityName() {
+		return defaultRootEntityName;
+	}
+
+	/**
+	 * @param defaultRootEntityName the defaultRootEntityName to set : this will be used in {@link #createRootObjectEntity()}
+	 * as the name of the root object entity.
+	 * @see #getRootObjectEntity()
+	 */
+	public void setDefaultRootEntityName(String defaultRootEntityName) {
+		this.defaultRootEntityName = defaultRootEntityName;
 	}
 
 }
