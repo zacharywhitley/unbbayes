@@ -1,3 +1,10 @@
+UNBBAYES MEBN PLUGIN - VERSION 1.15.13
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+15			Changes in LPD grammar to get closer to FOL expressiveness.
+16			Bayes ball algorithm
+
 UNBBAYES MEBN PLUGIN - VERSION 1.14.13
 ----------------------------
 FEATURE LIST		
