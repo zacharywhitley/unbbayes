@@ -3,7 +3,16 @@
  */
 package unbbayes.prs.mebn.entity.ontology.owlapi;
 
+import org.semanticweb.owlapi.apibinding.OWLManager;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
+
 import unbbayes.io.mebn.owlapi.IOWLAPIObjectEntityBuilder;
+import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
+import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.entity.IObjectEntityBuilder;
 import unbbayes.prs.mebn.entity.ObjectEntity;
@@ -160,8 +169,15 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 //		plusEntityNum(); 
 //		
 //		return objEntity; 
-		this.setToCreateOWLEntity(isToCreateOWLEntity);
-		return this.createObjectEntity(name);
+		boolean backup = this.isToCreateOWLEntity();
+		try {
+			this.setToCreateOWLEntity(isToCreateOWLEntity);
+			return this.createObjectEntity(name);
+		} catch (Throwable t) {
+			throw new RuntimeException(t);
+		} finally  {
+			this.setToCreateOWLEntity(backup);
+		}
 	}
 
 	/**
@@ -207,6 +223,79 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 				}
 			}
 		};
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.entity.ObjectEntityContainer#addEntity(unbbayes.prs.mebn.entity.ObjectEntity, unbbayes.prs.mebn.entity.ObjectEntity)
+	 */
+	protected void addEntity(ObjectEntity entity, ObjectEntity parentObjectEntity) {
+		super.addEntity(entity, parentObjectEntity);
+		// we need to handle hierarchy in OWL
+		if (parentObjectEntity == null || getRootObjectEntity().equals(parentObjectEntity)) {
+			return;	// no need to handle hierarchy in OWL if parent was not specified or parent is default (root is the default)
+		}
+		
+		// extract owl ontology where superclass/subclass assertions will be included
+		OWLOntology ontology = getOWLOntology();
+		if (ontology == null) {
+			throw new IllegalArgumentException("Could not extract OWL ontology from MEBN instance: " + getMEBN());
+		}
+		
+		// TODO migrate the following to ObjectEntity or OWLAPIObjectEntity
+		
+		// extract the OWL class of entity, but in order to do so, extract the IRI first
+		IRI entityIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(getMEBN(), entity);
+		if (entityIRI == null) {	// generate IRI if it was not mapped in mebn
+			entityIRI = IRI.create(ontology.getOntologyID().getOntologyIRI().getStart() + "#" + entity.getName());
+			IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(getMEBN(), entity, entityIRI);
+		}
+		OWLClassExpression entityClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(entityIRI);
+		
+		// extract the OWL class of entity
+		IRI parentIRI = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(getMEBN(), parentObjectEntity);
+		if (parentIRI == null) {	// generate IRI if it was not mapped in mebn
+			parentIRI = IRI.create(ontology.getOntologyID().getOntologyIRI().getStart() + "#" + parentObjectEntity.getName());
+			IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(getMEBN(), parentObjectEntity, parentIRI);
+		}
+		OWLClassExpression parentClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(parentIRI);
+		
+		// include "subclassof" assertion
+		ontology.getOWLOntologyManager().addAxiom(	// add axiom and commit
+				ontology, 	// ontology where axiom will be added
+				ontology.getOWLOntologyManager().getOWLDataFactory().getOWLSubClassOfAxiom(	
+						entityClass, 	
+						parentClass		
+				)
+		);
+	}
+	
+	/**
+	 * @return the owlOntology : an ontology will be extracted from {@link IOWLAPIStorageImplementorDecorator#getAdaptee()}
+	 * at {@link MultiEntityBayesianNetwork#getStorageImplementor()}.
+	 * @see #getMEBN();
+	 */
+	private OWLOntology getOWLOntology() {
+		MultiEntityBayesianNetwork mebn = getMEBN();
+		if (mebn == null) {
+			return null;
+		}
+		OWLOntology ontology = null;
+		// extract storage implementor of MEBN 
+		// (a reference to an object that loaded/saved the mebn last time - such object is likely to contain a reference to owl owlOntology)
+		if (mebn.getStorageImplementor() != null  && mebn.getStorageImplementor() instanceof IOWLAPIStorageImplementorDecorator) {
+			ontology = ((IOWLAPIStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee();
+		}  else {
+			System.err.println("Unable to extract OWL ontology from MEBN " + mebn);
+			System.err.println("Creating new ontology...");
+			OWLOntologyManager m = OWLManager.createOWLOntologyManager();
+			try {
+				ontology = m.createOntology();
+			} catch (OWLOntologyCreationException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return ontology;
 	}
 
 }
