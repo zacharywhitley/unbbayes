@@ -3,8 +3,6 @@
  */
 package unbbayes.prs.mebn.ssbn.extension.ssmsbn.laskeyalgorithm;
 
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -302,7 +300,7 @@ public class LaskeySSMSBNGenerator extends LaskeySSBNGenerator {
 			
 			ssbnNode.setFinished(false); 
 			ssbn.addSSBNNodeIfItDontAdded(ssbnNode);
-			ssbn.addQueryToTheQueryList(query); 
+			ssbn.addQueryToQueryList(query); 
 			
 			ssbn.getLogManager().printText(in1, false, " - " + ssbnNode); 
 			
@@ -342,7 +340,7 @@ public class LaskeySSMSBNGenerator extends LaskeySSBNGenerator {
 						ssbnNode.setState(finding.getState()); 
 						ssbnNode.setFinished(false); 
 						
-						ssbn.addFindingToTheFindingList(ssbnNode); 
+						ssbn.addFindingToFindingList(ssbnNode); 
 					}
 				}
 			}
