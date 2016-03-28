@@ -12,11 +12,13 @@ import junit.framework.TestCase;
 import unbbayes.gui.table.GUIPotentialTable;
 import unbbayes.io.BaseIO;
 import unbbayes.io.NetIO;
+import unbbayes.prs.Edge;
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.prs.exception.InvalidParentException;
 
 /**
  * @author Shou Matsumoto
@@ -139,6 +141,21 @@ public class InCliqueConditionalProbabilityExtractorTest extends TestCase {
 			assertTrue("On index " + i, nodeF.getProbabilityFunction().getValue(i) - 0.001 < table.getValue(i) && table.getValue(i) < nodeF.getProbabilityFunction().getValue(i) +  0.001);
 		}
 		new GUIPotentialTable(table).showTable("Test");
+		
+
+		ProbabilisticNode node = new ProbabilisticNode();
+		node.setName("newNode");
+		node.appendState("state");
+		node.getProbabilityFunction().addVariable(node);
+		
+		try {
+			net.addEdge(new Edge(node, net.getNode("F")));
+		} catch (InvalidParentException e) {
+			throw new RuntimeException(e);
+		}
+		
+		new GUIPotentialTable(((ProbabilisticNode)net.getNode("F")).getProbabilityFunction()).showTable("Test");
+		
 	}
 
 }
