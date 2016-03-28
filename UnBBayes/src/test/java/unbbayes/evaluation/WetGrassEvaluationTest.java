@@ -391,7 +391,7 @@ public class WetGrassEvaluationTest {
 		
 		assertEquals(cost, evidenceEvaluation.getCost(), 0);
 		
-		assertEquals(.575/cost, evidenceEvaluation.getMarginalCost(), DELTA/cost);
+		assertEquals(.575/cost, evidenceEvaluation.getIndividualPCC()/evidenceEvaluation.getCost(), DELTA/cost);
 		
 		
 		
@@ -404,7 +404,7 @@ public class WetGrassEvaluationTest {
 		
 		assertEquals(cost, evidenceEvaluation.getCost(), 0);
 		
-		assertEquals(.535/cost, evidenceEvaluation.getMarginalCost(), DELTA/cost);
+		assertEquals(.535/cost, evidenceEvaluation.getIndividualPCC()/evidenceEvaluation.getCost(), DELTA/cost);
 		
 		
 		
@@ -417,7 +417,7 @@ public class WetGrassEvaluationTest {
 		
 		assertEquals(cost, evidenceEvaluation.getCost(), 0);
 		
-		assertEquals(.595/cost, evidenceEvaluation.getMarginalCost(), DELTA/cost);
+		assertEquals(.595/cost, evidenceEvaluation.getIndividualPCC()/evidenceEvaluation.getCost(), DELTA/cost);
 		
 	}
 
