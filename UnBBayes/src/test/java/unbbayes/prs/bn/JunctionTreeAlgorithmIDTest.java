@@ -3,8 +3,15 @@
  */
 package unbbayes.prs.bn;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 import junit.framework.TestCase;
+import unbbayes.io.NetIO;
 import unbbayes.prs.Edge;
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.JunctionTreeAlgorithm.ProbabilisticNetworkClone;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
@@ -34,6 +41,76 @@ public class JunctionTreeAlgorithmIDTest extends TestCase {
 	 */
 	protected void tearDown() throws Exception {
 		super.tearDown();
+	}
+	
+	
+	public final void testCloneProbabilisticNetwork() {
+		ProbabilisticNetwork net = null;
+		try {
+			net = (ProbabilisticNetwork) new NetIO().load(new File(getClass().getClassLoader().getResource("./testCases/asia.net").toURI()));
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		assertNotNull(net);
+		assertFalse(net.getNodes().isEmpty());
+		assertEquals(net.getNodes().size(), net.getNodeCount());
+		
+		JunctionTreeAlgorithm algorithm = new JunctionTreeAlgorithm(net);
+		algorithm.run();
+		
+		assertNotNull(algorithm.getJunctionTree());
+		assertFalse(algorithm.getJunctionTree().getCliques().isEmpty());
+		
+		Map<String, float[]> marginals = new HashMap<String, float[]>();
+		
+		for (Node node : net.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				ProbabilisticNode probabilisticNode = (ProbabilisticNode) node;
+				float[] marginal = new float[probabilisticNode.getStatesSize()];
+				for (int i = 0; i < probabilisticNode.getStatesSize(); i++) {
+					marginal[i] = probabilisticNode.getMarginalAt(i);
+				}
+				marginals.put(probabilisticNode.getName(), marginal);
+			}
+		}
+		
+		assertEquals(net.getNodeCount(), marginals.size());
+		
+		ProbabilisticNetworkClone clone = algorithm.new ProbabilisticNetworkClone(net);
+		assertNotNull(clone);
+		assertEquals(clone.getNodes().size(), clone.getNodeCount());
+		assertEquals(net.getNodeCount(), clone.getNodeCount());
+		assertFalse(net == clone);
+		
+		for (Node node : net.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				ProbabilisticNode oldNode = (ProbabilisticNode) node;
+				ProbabilisticNode newNode = (ProbabilisticNode) clone.getNode(oldNode.getName());
+				assertNotNull(newNode);
+				for (int i = 0; i < oldNode.getProbabilityFunction().getVariablesSize(); i++) {
+					assertEquals("[" + i + "]", oldNode.getProbabilityFunction().getVariableAt(i).getName(), newNode.getProbabilityFunction().getVariableAt(i).getName());
+				}
+			}
+		}
+		
+		JunctionTreeAlgorithm algorithm2 = new JunctionTreeAlgorithm(clone);
+		algorithm2.run();
+		
+		assertNotNull(algorithm2.getJunctionTree());
+		assertFalse(algorithm2.getJunctionTree().getCliques().isEmpty());
+		assertEquals(algorithm.getJunctionTree().getCliques().size(), algorithm2.getJunctionTree().getCliques().size());
+		assertFalse(algorithm.getJunctionTree() == algorithm2.getJunctionTree());
+		
+		for (Node node : clone.getNodes()) {
+			if (node instanceof ProbabilisticNode) {
+				ProbabilisticNode probabilisticNode = (ProbabilisticNode) node;
+				float[] marginal = marginals.get(probabilisticNode.getName());
+				assertNotNull(probabilisticNode.getName() , marginal);
+				for (int i = 0; i < marginal.length; i++) {
+					assertEquals(probabilisticNode.getName() , marginal[i], probabilisticNode.getMarginalAt(i), 0.000005);
+				}
+			}
+		}
 	}
 	
 	/**
