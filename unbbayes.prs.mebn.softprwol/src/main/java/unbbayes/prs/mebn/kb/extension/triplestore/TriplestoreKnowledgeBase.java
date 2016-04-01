@@ -8,6 +8,7 @@ import java.util.Map;
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.RandomVariableFinding;
@@ -61,8 +62,18 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 	}
 
 	@Override
-	public void createGenerativeKnowledgeBase(MultiEntityBayesianNetwork mebn) {
-		// TODO Auto-generated method stub
+	public void createGenerativeKnowledgeBase(
+			MultiEntityBayesianNetwork mebn) {
+		
+		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
+			createEntityDefinition(entity);
+		}
+
+		for(MFrag mfrag: mebn.getDomainMFragList()){
+			for(ResidentNode resident: mfrag.getResidentNodeList()){
+				createRandomVariableDefinition(resident);
+			}
+		}
 		
 	}
 
