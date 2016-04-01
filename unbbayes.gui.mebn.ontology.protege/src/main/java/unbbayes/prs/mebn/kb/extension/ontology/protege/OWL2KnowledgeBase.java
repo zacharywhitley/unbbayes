@@ -267,6 +267,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// clear the non-prowl class extractor.
 			this.getNonPROWLClassExtractor().resetNonPROWLClassExtractor();
 		}
+		
+		
+		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
+			createEntityDefinition(entity);
+		}
+		
+		for(MFrag mfrag: mebn.getDomainMFragList()){
+			for(ResidentNode resident: mfrag.getResidentNodeList()){
+				createRandomVariableDefinition(resident);
+			}
+		}
 	}
 
 	/* (non-Javadoc)
