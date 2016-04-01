@@ -53,58 +53,49 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#addDomainMFrag(unbbayes.prs.mebn.DomainMFrag)}.
 	 */
 	public void testAddDomainMFrag() {
-		try {
-			
-			MFrag mfrag = new MFrag("testAddDomainMFrag",tempMebn);
-			assertEquals(mfrag.getMultiEntityBayesianNetwork(),tempMebn);
-			assertEquals(mfrag,tempMebn.getMFragList().get(0));
-			assertTrue(tempMebn.getMFragList().contains(mfrag));
-			
-			this.mebn.addDomainMFrag(mfrag);
-			List<MFrag> list = mebn.getMFragList();
-			
-			assertEquals(list.get(list.indexOf(mfrag)),mfrag);
-			assertEquals(this.mebn,mfrag.getMultiEntityBayesianNetwork());
-			assertTrue(mebn.getMFragList().contains(mfrag));
-			
-			List<MFrag> tempList = tempMebn.getMFragList();
-			assertTrue(!tempList.contains(mfrag));
-			assertTrue(tempList.isEmpty());
-			
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
+		MFrag mfrag = new MFrag("testAddDomainMFrag",tempMebn);
+		tempMebn.addDomainMFrag(mfrag);
+		assertEquals(mfrag.getMultiEntityBayesianNetwork(),tempMebn);
+		assertEquals(mfrag,tempMebn.getMFragList().get(0));
+		assertTrue(tempMebn.getMFragList().contains(mfrag));
+		
+		this.mebn.addDomainMFrag(mfrag);
+		List<MFrag> list = mebn.getMFragList();
+		
+		assertEquals(list.get(list.indexOf(mfrag)),mfrag);
+		assertFalse(this.mebn.equals(mfrag.getMultiEntityBayesianNetwork()));
+		assertTrue(mebn.getMFragList().contains(mfrag));
+		
+		List<MFrag> tempList = tempMebn.getMFragList();
+		assertFalse(tempList.isEmpty());
+		assertTrue(tempList.contains(mfrag));
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#removeDomainMFrag(unbbayes.prs.mebn.DomainMFrag)}.
 	 */
 	public void testRemoveDomainMFrag() {
-		try {
-			MFrag mfrag = new MFrag("testRemoveDomainMFrag",mebn);
-			assertEquals(mebn.getMFragCount(),1);
-			assertEquals(mebn.getMFragList().get(0),mfrag);
-			assertEquals(mebn,mfrag.getMultiEntityBayesianNetwork());
-			
-			mebn.removeDomainMFrag(mfrag);
-			assertEquals(mebn.getMFragCount(),0);
-			assertTrue(!mebn.getMFragList().contains(mfrag));
-			assertTrue(mebn.getMFragList().isEmpty());
-			assertNull(mfrag.getMultiEntityBayesianNetwork());			
-			
-			
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
+		MFrag mfrag = new MFrag("testRemoveDomainMFrag",mebn);
+		assertEquals(mebn.getMFragCount(),0);
+		mebn.addDomainMFrag(mfrag);
+		assertEquals(mebn.getMFragCount(),1);
+		assertEquals(mebn.getMFragList().get(0),mfrag);
+		assertEquals(mebn,mfrag.getMultiEntityBayesianNetwork());
+		
+		mebn.removeDomainMFrag(mfrag);
+		assertEquals(mebn.getMFragCount(),0);
+		assertTrue(!mebn.getMFragList().contains(mfrag));
+		assertTrue(mebn.getMFragList().isEmpty());
 	}
 
 	/**
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getMFragList()}.
 	 */
 	public void testGetMFragList() {
-		MFrag mfrag1 = new MFrag("mfrag",mebn);
-		MFrag mfrag3 = new MFrag("mfrag",mebn);
-		
+		MFrag mfrag1 = new MFrag("mfrag1",mebn);
+		MFrag mfrag3 = new MFrag("mfrag3",mebn);
+		mebn.addDomainMFrag(mfrag1);
+		mebn.addDomainMFrag(mfrag3);
 		
 		assertTrue(mebn.getMFragList().contains(mfrag1));
 		assertEquals(mebn.getMFragList().get(mebn.getMFragList().indexOf(mfrag1)),mfrag1);
@@ -120,8 +111,10 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getDomainMFragList()}.
 	 */
 	public void testGetDomainMFragList() {
-		MFrag mfrag1 = new MFrag("mfrag",mebn);
-		MFrag mfrag3 = new MFrag("mfrag",mebn);
+		MFrag mfrag1 = new MFrag("mfrag1",mebn);
+		MFrag mfrag3 = new MFrag("mfrag3",mebn);
+		mebn.addDomainMFrag(mfrag1);
+		mebn.addDomainMFrag(mfrag3);
 		
 		assertTrue(mebn.getDomainMFragList().contains(mfrag1));
 		assertEquals(mebn.getDomainMFragList().get(mebn.getMFragList().indexOf(mfrag1)),mfrag1);
@@ -136,8 +129,10 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getMFragCount()}.
 	 */
 	public void testGetMFragCount() {
-		MFrag mfrag1 = new MFrag("mfrag",mebn);
-		MFrag mfrag3 = new MFrag("mfrag",mebn);
+		MFrag mfrag1 = new MFrag("mfrag1",mebn);
+		mebn.addDomainMFrag(mfrag1);
+		MFrag mfrag3 = new MFrag("mfrag3",mebn);
+		mebn.addDomainMFrag(mfrag3);
 		
 		assertEquals(mebn.getMFragCount(),2);
 	}
@@ -191,11 +186,15 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	 */
 	public void testGetNodeList() {
 		MFrag dmfrag = new MFrag("mfrag",mebn);
+		mebn.addDomainMFrag(dmfrag);
+		mebn.setCurrentMFrag(dmfrag);
 		
-		Node node1 = new ResidentNode("resident",(MFrag)dmfrag);
-		Node node2 = new InputNode();
-		mebn.addNode(node2);
-		Node node3 = new ContextNode("context",(MFrag)dmfrag);
+		ResidentNode node1 = new ResidentNode("resident",(MFrag)dmfrag);
+		dmfrag.addResidentNode(node1);
+		InputNode node2 = new InputNode("input",dmfrag);
+		dmfrag.addInputNode(node2);
+		ContextNode node3 = new ContextNode("context",(MFrag)dmfrag);
+		dmfrag.addContextNode(node3);
 		
 		assertNotNull(mebn.getNodeList());
 		assertTrue(mebn.getNodeList().contains(node1));
@@ -204,7 +203,7 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 		
 		
 		MFrag dmfrag2 = new MFrag("mfrag",tempMebn);
-		Node node4 = new ResidentNode("resident",(MFrag)dmfrag2);
+		Node node4 = new ResidentNode("node4",(MFrag)dmfrag2);
 		assertTrue(!mebn.getNodeList().contains(node4));
 		
 		dmfrag.addNode(node4);
