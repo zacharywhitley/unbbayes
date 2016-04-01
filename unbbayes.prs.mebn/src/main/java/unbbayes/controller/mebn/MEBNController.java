@@ -1923,17 +1923,21 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 */
 	private void loadGenerativeMEBNIntoKB(){
 		
-		KnowledgeBase knowledgeBase = getKnowledgeBase();
-
-		for(ObjectEntity entity: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntity()){
-			knowledgeBase.createEntityDefinition(entity);
-		}
-
-		for(MFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
-			for(ResidentNode resident: mfrag.getResidentNodeList()){
-				knowledgeBase.createRandomVariableDefinition(resident);
-			}
-		}
+//		KnowledgeBase knowledgeBase = getKnowledgeBase();
+//
+//		for(ObjectEntity entity: multiEntityBayesianNetwork.getObjectEntityContainer().getListEntity()){
+//			knowledgeBase.createEntityDefinition(entity);
+//		}
+//
+//		for(MFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
+//			for(ResidentNode resident: mfrag.getResidentNodeList()){
+//				knowledgeBase.createRandomVariableDefinition(resident);
+//			}
+//		}
+		
+		// the above code was substituted by the following
+		
+		getKnowledgeBase().createGenerativeKnowledgeBase(multiEntityBayesianNetwork);
 		
 		if(saveDebugFiles){
 			this.saveGenerativeMTheory(new File(MEBNController.NAME_GENERATIVE_FILE)); 
@@ -1974,6 +1978,8 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 				residentNode.cleanRandomVariableFindingList(); 
 			}
 		}
+		
+		clearKnowledgeBase();
 		
 	}
 
