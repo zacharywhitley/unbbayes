@@ -539,6 +539,7 @@ public class MultiEntityBayesianNetwork extends Network {
 	 * @see unbbayes.prs.Network#addNode(unbbayes.prs.Node)
 	 */
 	public void addNode(Node node) {
+		// TODO check if this is really the proper way to overwrite this method, especially because #getNodes() is not returning the content of nodeList anymore...
 		if (node.getName() == null || node.getName().trim().isEmpty() || !nodeIndexes.containsKey(node.getName())) { 
 			// Note: if node.getName() == null || node.getName().trim().isEmpty(), the superclass will supposedly throw the correct exception, with multi-language support for error messages
 			super.addNode(node);

@@ -63,7 +63,7 @@ public class SSBNDebugInformationUtil {
 		}
 		
 		String netName = "";
-		ssbn.getProbabilisticNetwork().setName(netName);
+		
 		
 		//The SSBN information will be save at the directory examples/MEBN/SSBN. 
 		//If this past don't exists, will be created (the examples pastes already 
@@ -81,6 +81,10 @@ public class SSBNDebugInformationUtil {
 			for(OVInstance ov: query.getArguments()){
 				netName+= "_" + ov.getEntity().getInstanceName(); 
 			}
+		}
+		
+		if (ssbn.getProbabilisticNetwork() != null) {
+			ssbn.getProbabilisticNetwork().setName(netName);
 		}
 		
 		nameDirectory = "examples" + File.separator + "MEBN" + File.separator + 
@@ -109,13 +113,17 @@ public class SSBNDebugInformationUtil {
 
 		
 		logManager.appendln("  |\n  |Edges:");
-		for(Edge edge: ssbn.getProbabilisticNetwork().getEdges()){
-			logManager.appendln("  |" + edge.toString());
+		if (ssbn.getProbabilisticNetwork() != null) {
+			for(Edge edge: ssbn.getProbabilisticNetwork().getEdges()){
+				logManager.appendln("  |" + edge.toString());
+			}
 		}
 		
 		logManager.appendln("  |\n  |Nodes:");
-		for(int i = 0; i < ssbn.getProbabilisticNetwork().getNodes().size(); i++){
-			logManager.appendln("  |" + ssbn.getProbabilisticNetwork().getNodeAt(i).toString());
+		if (ssbn.getProbabilisticNetwork() != null) {
+			for(int i = 0; i < ssbn.getProbabilisticNetwork().getNodes().size(); i++){
+				logManager.appendln("  |" + ssbn.getProbabilisticNetwork().getNodeAt(i).toString());
+			}
 		}
 		logManager.appendln("  |-------------------------------------------------------");
 		logManager.appendln("\n"); 
@@ -124,14 +132,14 @@ public class SSBNDebugInformationUtil {
 		
 		try {
 			netIO.save(file, ssbn.getProbabilisticNetwork());
-		} catch (IOException e) {
+		} catch (Exception e) {
 //			e.printStackTrace();
 			Debug.println(SSBNDebugInformationUtil.class, "", e);
 		} 
 		
 		try {
 			logManager.writeToDisk(nameDirectory + File.separator +  netName + ".log", false);
-		} catch (IOException e) {
+		} catch (Exception e) {
 //			e.printStackTrace();
 			Debug.println(SSBNDebugInformationUtil.class, "", e);
 		}
