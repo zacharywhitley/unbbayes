@@ -107,8 +107,8 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#addNode(unbbayes.prs.Node)}.
 	 */
 	public void testAddNode() {
-		Node node = new ResidentNode();
-		Node node2 = new InputNode();
+		Node node = new ResidentNode("node",mfrag);
+		Node node2 = new InputNode("node2",mfrag);
 		Node node3 = new ContextNode("testAddNode",mfrag);
 		
 		mfrag.addNode(node);
@@ -136,8 +136,8 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#removeNode(unbbayes.prs.Node)}.
 	 */
 	public void testRemoveNode() {
-		Node node = new ResidentNode();
-		Node node2 = new InputNode();
+		Node node = new ResidentNode("node",mfrag);
+		Node node2 = new InputNode("node2",mfrag);
 		Node node3 = new ContextNode("testAddNode",mfrag);
 		
 		mfrag.addNode(node);
@@ -190,8 +190,12 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#removeResidentNode(unbbayes.prs.mebn.ResidentNode)}.
 	 */
 	public void testRemoveResidentNode() {
-		ResidentNode resident1 = new ResidentNode("testRemoveResidentNode",mfrag);
-		ResidentNode resident2 = new ResidentNode("testRemoveResidentNode",mfrag);
+		ResidentNode resident1 = new ResidentNode("testRemoveResidentNode1",mfrag);
+		ResidentNode resident2 = new ResidentNode("testRemoveResidentNode2",mfrag);
+		
+		// we need to explicitly add node to mfrag
+		mfrag.addResidentNode(resident1);
+		mfrag.addResidentNode(resident2);
 		
 		assertEquals(mfrag.getNodeCount(),2);
 		assertEquals(mfrag.getDomainResidentNodeCount(),2);
@@ -224,8 +228,11 @@ public class DomainMFragTest extends TestCase {
 	 */
 	public void testRemoveInputNode() {
 		
-		InputNode input1 = new InputNode("testRemoveResidentNode",mfrag);
-		InputNode input2 = new InputNode("testRemoveResidentNode",mfrag);
+		InputNode input1 = new InputNode("testRemoveResidentNode1",mfrag);
+		InputNode input2 = new InputNode("testRemoveResidentNode2",mfrag);
+		
+		mfrag.addInputNode(input1);
+		mfrag.addInputNode(input2);
 		
 		assertEquals(mfrag.getNodeCount(),2);
 		assertEquals(mfrag.getGenerativeInputNodeCount(),2);
@@ -346,8 +353,8 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#containsNode(unbbayes.prs.Node)}.
 	 */
 	public void testContainsNode() {
-		Node node = new ResidentNode();
-		Node node2 = new InputNode();
+		Node node = new ResidentNode("node",mfrag);
+		Node node2 = new InputNode("node2",mfrag);
 		Node node3 = new ContextNode("testAddNode",mfrag);
 		
 		mfrag.addNode(node);
@@ -389,9 +396,9 @@ public class DomainMFragTest extends TestCase {
 		 * 
 		 */
 		
-		Node node1 = new ResidentNode();
-		Node node2 = new InputNode();
-		Node node3 = new ResidentNode();
+		Node node1 = new ResidentNode("Node1", mfrag);
+		Node node2 = new InputNode("Node2", mfrag);
+		Node node3 = new ResidentNode("Node3", mfrag);
 		
 		Edge edge21 = new Edge(node2,node1);
 		Edge edge23 = new Edge(node2,node3);
@@ -402,7 +409,7 @@ public class DomainMFragTest extends TestCase {
 			mfrag.addEdge(edge23);
 			mfrag.addEdge(edge13);
 		} catch (Exception e) {
-			fail (e.getMessage());
+			throw new RuntimeException(e);
 		}
 		
 		assertNotNull(mfrag.getEdges());
@@ -418,13 +425,13 @@ public class DomainMFragTest extends TestCase {
 		assertTrue(mfrag.getEdges().contains(edge13));
 		
 		mfrag.removeEdge(edge23);
-		assertEquals(mfrag.getEdges().size(), 2);
+		assertEquals(mfrag.getEdges().size(), 1);
 		assertTrue(!mfrag.getEdges().contains(edge21));
 		assertTrue(!mfrag.getEdges().contains(edge23));
 		assertTrue(mfrag.getEdges().contains(edge13));
 		
 		mfrag.removeEdge(edge13);
-		assertEquals(mfrag.getEdges().size(), 2);
+		assertEquals(mfrag.getEdges().size(), 0);
 		assertTrue(!mfrag.getEdges().contains(edge21));
 		assertTrue(!mfrag.getEdges().contains(edge23));
 		assertTrue(!mfrag.getEdges().contains(edge13));
@@ -436,8 +443,8 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#getNodes()}.
 	 */
 	public void testGetNodes() {
-		Node node = new ResidentNode();
-		Node node2 = new InputNode();
+		Node node = new ResidentNode("node",mfrag);
+		Node node2 = new InputNode("node2",mfrag);
 		Node node3 = new ContextNode("testAddNode",mfrag);
 		
 		mfrag.addNode(node);
@@ -475,9 +482,13 @@ public class DomainMFragTest extends TestCase {
 		 * 
 		 */
 		
-		Node node1 = new ResidentNode();
-		Node node2 = new InputNode();
-		Node node3 = new ResidentNode();
+		ResidentNode node1 = new ResidentNode("node1",mfrag);
+		InputNode node2 = new InputNode("node2",mfrag);
+		ResidentNode node3 = new ResidentNode("node3",mfrag);
+		
+		mfrag.addResidentNode(node1);
+		mfrag.addInputNode(node2);
+		mfrag.addResidentNode(node3);
 		
 		Edge edge21 = new Edge(node2,node1);
 		Edge edge23 = new Edge(node2,node3);
@@ -550,13 +561,13 @@ public class DomainMFragTest extends TestCase {
 		assertTrue(mfrag.getNodeList().contains(node2));
 		
 		mfrag.removeEdgeByNodes(node2,node3);
-		assertEquals(mfrag.getEdges().size(), 2);
+		assertEquals(mfrag.getEdges().size(), 1);
 		assertTrue(!mfrag.getEdges().contains(edge21));
 		assertTrue(!mfrag.getEdges().contains(edge23));
 		assertTrue(mfrag.getEdges().contains(edge13));
 		
 		mfrag.removeEdgeByNodes(node1,node3);
-		assertEquals(mfrag.getEdges().size(), 2);
+		assertEquals(mfrag.getEdges().size(), 0);
 		assertTrue(!mfrag.getEdges().contains(edge21));
 		assertTrue(!mfrag.getEdges().contains(edge23));
 		assertTrue(!mfrag.getEdges().contains(edge13));
@@ -590,9 +601,9 @@ public class DomainMFragTest extends TestCase {
 		 * 
 		 */
 		
-		Node node1 = new ResidentNode();
-		Node node2 = new InputNode();
-		Node node3 = new ResidentNode();
+		Node node1 = new ResidentNode("node1",mfrag);
+		Node node2 = new InputNode("node2",mfrag);
+		Node node3 = new ResidentNode("node3",mfrag);
 		
 		Edge edge21 = new Edge(node2,node1);
 		Edge edge23 = new Edge(node2,node3);
@@ -608,7 +619,7 @@ public class DomainMFragTest extends TestCase {
 		
 		int edgePos = -1;
 		assertTrue((mfrag.hasEdge(node1,node1)) < 0);
-		assertTrue((mfrag.hasEdge(node1,node2)) < 0);
+		assertTrue((mfrag.hasEdge(node2,node1)) >= 0);
 		assertTrue((edgePos = mfrag.hasEdge(node1,node3)) >= 0);
 		assertEquals(mfrag.getEdges().get(edgePos),edge13);
 		
@@ -619,8 +630,8 @@ public class DomainMFragTest extends TestCase {
 		assertTrue((edgePos = mfrag.hasEdge(node2,node3)) >= 0);
 		assertEquals(mfrag.getEdges().get(edgePos),edge23);
 		
-		assertTrue((mfrag.hasEdge(node3,node1)) < 0);
-		assertTrue((mfrag.hasEdge(node3,node2)) < 0);
+		assertFalse((mfrag.hasEdge(node1,node3)) < 0);
+		assertFalse((mfrag.hasEdge(node2,node3)) < 0);
 		assertTrue((mfrag.hasEdge(node3,node3)) < 0);
 		
 	}
@@ -629,11 +640,13 @@ public class DomainMFragTest extends TestCase {
 	 * Test method for {@link unbbayes.prs.mebn.MFrag#getInputNodeList()}.
 	 */
 	public void testGetInputNodeList() {
-		Node node1 = new ResidentNode();
-		Node node2 = new InputNode("node2",mfrag);
-		Node node3 = new ResidentNode();
+		ResidentNode node1 = new ResidentNode("node1",mfrag);
+		InputNode node2 = new InputNode("node2",mfrag);
+		ResidentNode node3 = new ResidentNode("node3",mfrag);
 		
-		
+		mfrag.addResidentNode(node1);
+		mfrag.addInputNode(node2);
+		mfrag.addResidentNode(node3);
 		
 		assertTrue(mfrag.getInputNodeList().contains(node2));
 		assertTrue(!mfrag.getInputNodeList().contains(node1));
@@ -651,7 +664,7 @@ public class DomainMFragTest extends TestCase {
 		InputNode node3 = new InputNode("node3",placeholder);
 		List<InputNode> list = new ArrayList<InputNode>();
 		
-		assertTrue(mfrag.containsGenerativeInputNode(node1));
+		assertTrue(!mfrag.containsGenerativeInputNode(node1));
 		assertTrue(!mfrag.containsGenerativeInputNode(node2));
 		assertTrue(!mfrag.containsGenerativeInputNode(node3));
 		
@@ -673,13 +686,13 @@ public class DomainMFragTest extends TestCase {
 	 */
 	public void testGetResidentNodeList() {
 		Node node1 = new ResidentNode();
-		Node node2 = new InputNode("node2",mfrag);
+		Node node2 = new InputNode("node2",mfrag);	// this shall not automatically insert input node into mfrag
 		Node node3 = new ResidentNode();
 				
 		
-		assertTrue(mfrag.getResidentNodeList().contains(node1));
-		assertTrue(!mfrag.getResidentNodeList().contains(node2));
-		assertTrue(mfrag.getResidentNodeList().contains(node3));
+		assertFalse(mfrag.getResidentNodeList().contains(node1));
+		assertFalse(mfrag.getResidentNodeList().contains(node2));
+		assertFalse(mfrag.getResidentNodeList().contains(node3));
 	}
 
 	/**
@@ -692,7 +705,7 @@ public class DomainMFragTest extends TestCase {
 		ResidentNode node3 = new ResidentNode("node3",placeholder);
 		List<ResidentNode> list = new ArrayList<ResidentNode>();
 		
-		assertTrue(mfrag.containsDomainResidentNode(node1));
+		assertTrue(!mfrag.containsDomainResidentNode(node1));
 		assertTrue(!mfrag.containsDomainResidentNode(node2));
 		assertTrue(!mfrag.containsDomainResidentNode(node3));
 		
@@ -700,7 +713,7 @@ public class DomainMFragTest extends TestCase {
 		list.add(node3);
 		mfrag.setResidentNodeList(list);
 		
-		assertEquals(mfrag.getInputNodeList(),list);
+		assertEquals(mfrag.getResidentNodeList(),list);
 		
 		assertTrue(!mfrag.containsDomainResidentNode(node1));
 		assertTrue(mfrag.containsDomainResidentNode(node2));
@@ -795,7 +808,7 @@ public class DomainMFragTest extends TestCase {
 		
 		mfrag.addContextNode(context);
 		assertEquals(mfrag.getContextNodeCount(),1);
-		assertEquals(mfrag.getContextNodeNum(),1);
+		assertEquals(mfrag.getContextNodeNum(),2);
 		assertTrue(mfrag.containsContextNode(context));
 		assertTrue(mfrag.containsNode(context));
 		assertEquals(context.getMFrag(),mfrag);
@@ -811,10 +824,10 @@ public class DomainMFragTest extends TestCase {
 		
 		mfrag.addInputNode(node);
 		assertEquals(mfrag.getGenerativeInputNodeCount(),1);
-		assertEquals(mfrag.getGenerativeInputNodeNum(),1);
+		assertEquals(mfrag.getGenerativeInputNodeNum(),2);
 		assertTrue(mfrag.containsGenerativeInputNode(node));
 		assertTrue(mfrag.containsNode(node));
-		assertEquals(node.getMFrag(),mfrag);
+		assertEquals(node.getMFrag(),temp);
 		
 	}
 
@@ -827,10 +840,14 @@ public class DomainMFragTest extends TestCase {
 		
 		mfrag.addResidentNode(node);
 		assertEquals(mfrag.getDomainResidentNodeCount(),1);
-		assertEquals(mfrag.getDomainResidentNodeNum(),1);
+		assertEquals(mfrag.getDomainResidentNodeNum(),2);
 		assertTrue(mfrag.containsDomainResidentNode(node));
 		assertTrue(mfrag.containsNode(node));
-		assertEquals(node.getMFrag(),mfrag);
+		
+		assertEquals(temp.getDomainResidentNodeCount(),0);
+		assertEquals(temp.getDomainResidentNodeNum(),2);	// needs to be the same of mfrag, because both are from same mebn
+		assertFalse(temp.containsDomainResidentNode(node));
+		assertFalse(temp.containsNode(node));
 	}
 
 	/**
@@ -842,7 +859,6 @@ public class DomainMFragTest extends TestCase {
 		mfrag.removeContextNode(node);
 		assertTrue(!mfrag.containsContextNode(node));
 		assertTrue(!mfrag.containsNode(node));
-		assertTrue(!node.getMFrag().equals(mfrag));
 	}
 
 	/**
@@ -850,11 +866,14 @@ public class DomainMFragTest extends TestCase {
 	 */
 	public void testRemoveGenerativeInputNode() {
 		InputNode node = new InputNode("node",mfrag);
+		mfrag.addInputNode(node);
+		assertTrue(mfrag.containsGenerativeInputNode(node));
+		assertTrue(mfrag.containsNode(node));
+		assertTrue(node.getMFrag().equals(mfrag));
 		
 		mfrag.removeInputNode(node);
 		assertTrue(!mfrag.containsGenerativeInputNode(node));
 		assertTrue(!mfrag.containsNode(node));
-		assertTrue(!node.getMFrag().equals(mfrag));
 	}
 
 	/**
@@ -866,7 +885,6 @@ public class DomainMFragTest extends TestCase {
 		mfrag.removeResidentNode(node);
 		assertTrue(!mfrag.containsDomainResidentNode(node));
 		assertTrue(!mfrag.containsNode(node));
-		assertTrue(!node.getMFrag().equals(mfrag));
 	}
 
 	
