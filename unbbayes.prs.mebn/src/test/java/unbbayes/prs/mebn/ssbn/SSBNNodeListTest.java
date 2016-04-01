@@ -47,7 +47,7 @@ public class SSBNNodeListTest extends TestCase {
 		
 		UbfIO ubf = UbfIO.getInstance();
 		try {
-			mebn = ubf.loadMebn(new File("examples/mebn/SSBNNodeTest.ubf"));
+			mebn = ubf.loadMebn(new File(getClass().getResource("/mebn/StarTrek.ubf").toURI()));
 		} catch (Exception e) {
 			fail(e.getMessage());
 			return;
