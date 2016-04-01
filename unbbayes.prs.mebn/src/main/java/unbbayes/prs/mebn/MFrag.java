@@ -496,15 +496,15 @@ public class MFrag implements Graph{
 	}
 
 	/**
-	 *  Verifica exist�ncia de determinado arco.
+	 * Verifies if two nodes are connected.
 	 *
-	 *@param  no1  n� origem.
-	 *@param  no2  n� destino.
-	 *@return      posi��o do arco no vetor ou -1 caso n�o exista tal arco.
+	 *@param  no1  one of the nodes.
+	 *@param  no2  the another node.
+	 *@return      index of arc in {@link #getEdges()}, or -1 if nodes are not connected by arc.
 	 */
 	public int hasEdge(Node no1, Node no2){
 		if (no1 == no2) {
-			return 1;
+			return -1;
 		}
 	
 		int sizeArcos = edgeList.size();
