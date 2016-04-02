@@ -455,7 +455,7 @@ public class ObjectEntityContainer {
 		   this.listEntityInstances.add(entityInstance); 
 		}
 		else{
-			throw new EntityInstanceAlreadyExistsException(); 
+			throw new EntityInstanceAlreadyExistsException(entityInstance.toString()); 
 		}
 	}
 	
