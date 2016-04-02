@@ -61,6 +61,7 @@ import unbbayes.prs.mebn.context.NodeFormulaTree;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
@@ -156,6 +157,8 @@ public class PowerLoomKB implements KnowledgeBase {
 
 	private static final String POSSIBLE_STATE_SUFIX = "_state";
 
+	private MultiEntityBayesianNetwork mebn = null;
+
 	/*
 	 * Create a new instance of PowerLoomKB with the given id. The names of 
 	 * modules of this instance is build using the id.  
@@ -235,15 +238,56 @@ public class PowerLoomKB implements KnowledgeBase {
 		PLI.load(tempFile.getAbsolutePath(), environment);
 		tempFile.delete(); 
 		
+		
 		Debug.println("File load sucefull");
+		
+		// extract MEBN so that we can load entity instances
+		MultiEntityBayesianNetwork mebn = getMEBN();
+		if (mebn == null) {
+			return;
+		}
+		
+		// load entity instances and insert them to mebn
+		for (ObjectEntity entity : mebn.getObjectEntityContainer().getListEntity()) {
+			
+			boolean hasOrder = entity.isOrdereable();	// use a local variable, so that we don't need to call isOrderable in next loop
+			ObjectEntityInstanceOrdereable previousInOrder = null;	// this will be used if we find an entity with ordering
+			
+			for (String instanceName : getEntityByType(entity.getType().getName())) {
+				ObjectEntityInstance instance = entity.getInstanceByName(instanceName);
+				try {
+					if (instance == null) {
+						instance = entity.addInstance(instanceName);
+					}
+					// special treatment if instance has ordering
+					if (hasOrder) {
+						((ObjectEntityInstanceOrdereable)instance).setPrev(previousInOrder);
+						if (previousInOrder != null) {
+							previousInOrder.setProc((ObjectEntityInstanceOrdereable) instance);
+						}
+						previousInOrder = (ObjectEntityInstanceOrdereable) instance;
+					}
+					mebn.getObjectEntityContainer().addEntityInstance(instance);
+					mebn.getNamesUsed().add(instanceName); 
+					Debug.println(getClass(), "Loaded entity instance " + instance);
+				} catch (Exception e) {
+					Debug.println(getClass(), e.getClass().getName(), e);
+				}
+			}
+		}
+		
+		Debug.println("Entity instances loaded from file: " + file);
 	}
 
 	/**
-	 * @see KnowledgeBase
+	 * @see KnowledgeBase#clearKnowledgeBase()
+	 * @see #createGenerativeKnowledgeBase(MultiEntityBayesianNetwork)
 	 */
 	public void clearKnowledgeBase() {
-		PLI.clearModule(moduleFinding);
+		this.clearFindings();
 		PLI.clearModule(moduleGenerative);
+		
+		
 	}
 	
 	/**
@@ -251,6 +295,8 @@ public class PowerLoomKB implements KnowledgeBase {
 	 */
 	public void clearFindings() {
 		PLI.clearModule(moduleFinding);
+		
+		
 	}
 		
 	
@@ -552,6 +598,8 @@ public class PowerLoomKB implements KnowledgeBase {
 
 	public void createGenerativeKnowledgeBase(
 			MultiEntityBayesianNetwork mebn) {
+		
+		this.mebn = mebn;
 		
 		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
 			createEntityDefinition(entity);
@@ -1777,6 +1825,26 @@ public class PowerLoomKB implements KnowledgeBase {
 	 */
 	public void setMaximumQueryAttemptWaitTime(long maximumQueryAttemptWaitTime) {
 		this.maximumQueryAttemptWaitTime = maximumQueryAttemptWaitTime;
+	}
+
+	/**
+	 * @return the mebn
+	 * @see #createGenerativeKnowledgeBase(MultiEntityBayesianNetwork)
+	 * @see #loadModule(File, boolean)
+	 * @see #clearKnowledgeBase()
+	 */
+	public MultiEntityBayesianNetwork getMEBN() {
+		return mebn;
+	}
+
+	/**
+	 * @param mebn the mebn to set
+	 * @see #createGenerativeKnowledgeBase(MultiEntityBayesianNetwork)
+	 * @see #loadModule(File, boolean)
+	 * @see #clearKnowledgeBase()
+	 */
+	public void setMEBN(MultiEntityBayesianNetwork mebn) {
+		this.mebn = mebn;
 	}
 	
 	

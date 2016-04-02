@@ -875,6 +875,9 @@ public class MEBNEditionPane extends JPanel {
 
 				public void actionPerformed(ActionEvent e) {
 					mebnController.clearFindingsIntoGUI(); 
+					if (entityFindingEditionPane != null && entityFindingEditionPane.getObjectEntityInstanceListPane() != null) {
+						entityFindingEditionPane.getObjectEntityInstanceListPane().update();
+					}
 					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("KBClean"));
 				}
 	    		
@@ -913,6 +916,7 @@ public class MEBNEditionPane extends JPanel {
 	    	btnLoadKB.addActionListener(new ActionListener() {
 	    		public void actionPerformed(ActionEvent ae) {
 	    			doLoadKnowledgeBase(); 
+	    			entityFindingEditionPane.getObjectEntityInstanceListPane().update();
 	    		}});
 	    	
 	    	btnSaveNetImage.addActionListener(new ActionListener() {
@@ -1063,12 +1067,11 @@ public class MEBNEditionPane extends JPanel {
 						try {
 							mebnController.getMebnEditionPane().setCursor(new Cursor(Cursor.WAIT_CURSOR));
 							mebnController.loadFindingsFile(file);
-							mebnController.getMebnEditionPane().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileLoadOK"));
-						} catch (UBIOException e) {
+						} catch (Exception e) {
 							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e.getMessage());
-						} catch (MEBNException e2) {
-							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e2.getMessage());
+						} finally {
+							mebnController.getMebnEditionPane().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 						}
 					}
 				}
@@ -1078,10 +1081,8 @@ public class MEBNEditionPane extends JPanel {
 				try {
 					mebnController.loadFindingsFile(null);
 					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileLoadOK"));
-				} catch (UBIOException e) {
+				} catch (Exception e) {
 					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e.getMessage());
-				} catch (MEBNException e2) {
-					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e2.getMessage());
 				}
 			}
 			

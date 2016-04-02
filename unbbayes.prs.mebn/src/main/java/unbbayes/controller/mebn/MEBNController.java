@@ -26,6 +26,7 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.io.File;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
@@ -1973,10 +1974,21 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 */
 	public void clearFindingsIntoGUI(){
 		
+		MultiEntityBayesianNetwork multiEntityBayesianNetwork = getMultiEntityBayesianNetwork();
+		
 		for(MFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
 			for(IResidentNode residentNode : mfrag.getResidentNodeList()){
 				residentNode.cleanRandomVariableFindingList(); 
 			}
+		}
+		
+		
+		// clear instances of all known entities
+		// we need to iterate on all instances, because mebn keeps track of names (so we also need to remove the name from mebn)
+		for (ObjectEntityInstance instance : new ArrayList<ObjectEntityInstance>(multiEntityBayesianNetwork.getObjectEntityContainer().getListEntityInstances())) {
+			multiEntityBayesianNetwork.getObjectEntityContainer().removeEntityInstance(instance);
+			multiEntityBayesianNetwork.getNamesUsed().remove(instance.getName());
+			Debug.println(getClass(), "Removed entity instance: " + instance);
 		}
 		
 		clearKnowledgeBase();
