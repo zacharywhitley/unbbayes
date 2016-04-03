@@ -10,12 +10,12 @@
 
 
 <Ontology xmlns="http://www.w3.org/2002/07/owl#"
-     xml:base="file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl"
+     xml:base="http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:xml="http://www.w3.org/XML/1998/namespace"
-     ontologyIRI="file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl">
+     ontologyIRI="http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl">
     <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
     <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
     <Prefix name="" IRI="http://www.w3.org/2002/07/owl#"/>
@@ -3478,17 +3478,17 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#ImageTypeReport_MFrag.obj"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Object</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Object</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#ImageTypeReport_MFrag.rgn"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#ImageTypeReport_MFrag.rpt"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Report</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Report</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3523,12 +3523,12 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#Object_MFrag.obj"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Object</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Object</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#Object_MFrag.rgn"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3538,22 +3538,22 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
         <NamedIndividual IRI="#RV_GISReport"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#GISReport</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#GISReport</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_GISReport"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#VeryRough</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#VeryRough</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_GISReport"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Road</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Road</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_GISReport"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#OffRoad</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#OffRoad</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3563,27 +3563,27 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubjectIn"/>
         <NamedIndividual IRI="#RV_GISReport_1"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#GISReport</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#GISReport</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
         <NamedIndividual IRI="#RV_ImageTypeReport"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#reportsVehicleType</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#reportsVehicleType</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_ImageTypeReport"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#NonVehicle</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#NonVehicle</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_ImageTypeReport"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Tracked</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Tracked</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_ImageTypeReport"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Wheeled</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Wheeled</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3593,17 +3593,17 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubjectIn"/>
         <NamedIndividual IRI="#RV_ImageTypeReport_1"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#reportsVehicleType</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#reportsVehicleType</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
         <NamedIndividual IRI="#RV_Location"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Location</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Location</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_Location"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3613,32 +3613,32 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubjectIn"/>
         <NamedIndividual IRI="#RV_Location_1"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Location</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Location</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
         <NamedIndividual IRI="#RV_MTI"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#MTI</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#MTI</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_MTI"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Slow</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Slow</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_MTI"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#NoReport</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#NoReport</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_MTI"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Fast</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Fast</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_MTI"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Medium</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Medium</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3648,7 +3648,7 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isObjectIn"/>
         <NamedIndividual IRI="#RV_MTI_1"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#MTI_hasReport</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#MTI_hasReport</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3658,27 +3658,27 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isObjectIn"/>
         <NamedIndividual IRI="#RV_MTI_2"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#MTI_hasTimeStep</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#MTI_hasTimeStep</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
         <NamedIndividual IRI="#RV_ObjectType"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#ObjectType</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#ObjectType</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_ObjectType"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Tracked</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Tracked</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_ObjectType"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Wheeled</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Wheeled</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_ObjectType"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#NonVehicle</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#NonVehicle</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3688,17 +3688,17 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubjectIn"/>
         <NamedIndividual IRI="#RV_ObjectType_1"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#ObjectType</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#ObjectType</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
         <NamedIndividual IRI="#RV_PreviousTime"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#PreviousTime</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#PreviousTime</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_PreviousTime"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#TimeStep</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#TimeStep</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3708,12 +3708,12 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
         <NamedIndividual IRI="#RV_ReportedObject"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#ReportedObject</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#ReportedObject</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_ReportedObject"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Object</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Object</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3723,17 +3723,17 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubjectIn"/>
         <NamedIndividual IRI="#RV_ReportedObject_1"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#ReportedObject</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#ReportedObject</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
         <NamedIndividual IRI="#RV_ReportedRegion"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#ReportedRegion</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#ReportedRegion</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_ReportedRegion"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3743,37 +3743,37 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubjectIn"/>
         <NamedIndividual IRI="#RV_ReportedRegion_1"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#ReportedRegion</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#ReportedRegion</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
         <NamedIndividual IRI="#RV_Speed"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Speed</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Speed</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_Speed"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Stationary</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Stationary</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_Speed"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Fast</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Fast</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_Speed"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Slow</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Slow</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_Speed"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#VeryFast</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#VeryFast</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_Speed"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Medium</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Medium</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3788,22 +3788,22 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
         <NamedIndividual IRI="#RV_TerrainType"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#TerrainType</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#TerrainType</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_TerrainType"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#OffRoad</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#OffRoad</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_TerrainType"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#VeryRough</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#VeryRough</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_TerrainType"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Road</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Road</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3813,22 +3813,22 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubjectIn"/>
         <NamedIndividual IRI="#RV_TerrainType_1"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#TerrainType</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#TerrainType</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
         <NamedIndividual IRI="#RV_Weather"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Weather</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Weather</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_Weather"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Cloudy</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Cloudy</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_Weather"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Clear</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Clear</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3838,27 +3838,27 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubjectIn"/>
         <NamedIndividual IRI="#RV_Weather_1"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Weather</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Weather</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#Reference_MFrag.obj"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Object</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Object</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#Reference_MFrag.rpt"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Report</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Report</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#Reference_MFrag.t"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#TimeStep</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#TimeStep</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#Region_MFrag.rgn"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3908,27 +3908,27 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#Speed_MFrag.obj"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Object</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Object</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#Speed_MFrag.rgn"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#Speed_MFrag.rpt"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Report</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Report</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#Speed_MFrag.t"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#TimeStep</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#TimeStep</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#Speed_MFrag.tPrev"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#TimeStep</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#TimeStep</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3938,12 +3938,12 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#TerrainType_MFrag.rgn"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Region</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubstitutedBy"/>
         <NamedIndividual IRI="#TerrainType_MFrag.rpt"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/Users/Shou%20Matsumoto/workspace/unbbayes.gui.mebn.ontology.protege/examples/VehicleIdentification/VehicleIdentification2.owl#Report</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/examples/pr-owl2/VehicleIdentification/VehicleIdentification2.owl#Report</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
