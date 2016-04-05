@@ -916,7 +916,9 @@ public class MEBNEditionPane extends JPanel {
 	    	btnLoadKB.addActionListener(new ActionListener() {
 	    		public void actionPerformed(ActionEvent ae) {
 	    			doLoadKnowledgeBase(); 
-	    			entityFindingEditionPane.getObjectEntityInstanceListPane().update();
+	    			if (entityFindingEditionPane != null && entityFindingEditionPane.getObjectEntityInstanceListPane() != null) {
+	    				entityFindingEditionPane.getObjectEntityInstanceListPane().update();
+	    			}
 	    		}});
 	    	
 	    	btnSaveNetImage.addActionListener(new ActionListener() {
