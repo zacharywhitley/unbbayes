@@ -1068,6 +1068,8 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			}
 		}
 		
+		// TODO make sure all individuals in same class hierarchy are disjoint
+		
 		// TODO reload Object entities to MEBN
 	}
 
@@ -1256,10 +1258,35 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				// This one has "functional" format (F(x) = y). Let's extract the property (the function "F" in F(x) = y).
 				OWLObjectProperty property = factory.getOWLObjectProperty(propertyIRI);
 				
-				// create an expression that queries the value of "y" in F(x) = y (note: F is the property and x is the 1st argument)
-				// this is done by just asking G(x) where G is the inverse of F
-				String expression = "inverse " + this.extractName(property) + " value " + listArguments.iterator().next().getEntity().getInstanceName();
-				Debug.println(this.getClass(), "Expression: " + expression);
+				String expression = null;	// this variable will be filled with an expression to query the unknown variable
+				
+				// extract the isSubjectIn or isObjectIn relations
+				Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
+				if (argumentMappings != null) {
+					// extract the mapping of the only argument
+					Map<OWLProperty, Integer> singleArgMap = argumentMappings.get(resident.getArgumentList().get(0));
+					if (singleArgMap != null) {
+						// checking consistency
+						if (singleArgMap.size() != 1) {
+							throw new IllegalArgumentException("Found " + singleArgMap.size() + " mappings to arguments of node " + resident);
+						}
+						if (!singleArgMap.keySet().iterator().next().equals(property)) {
+							throw new IllegalArgumentException("Node " + resident + " is defining uncertainty of " + property 
+									+ ", but its argument was mapped to owl property " + singleArgMap.keySet().iterator().next());
+						}
+						// at this pint, we know there are 1 argument and 1 mapping
+						if (singleArgMap.values().iterator().next().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
+							expression = this.extractName(property) + " value " + listArguments.iterator().next().getEntity().getInstanceName();
+						}	// if argument is either subject or unknown, then use default behavior
+					} // Argument was not mapped with isSubjectIn or isObjectIn. Assume default
+				}
+				
+				if (expression == null) {	// use default
+					// create an expression that queries the value of "y" in F(x) = y (note: F is the property and x is the 1st argument)
+					// this is done by just asking G(x) where G is the inverse of F
+					expression = "inverse " + this.extractName(property) + " value " + listArguments.iterator().next().getEntity().getInstanceName();
+					Debug.println(this.getClass(), "Expression: " + expression);
+				}
 				
 				StateLink link = this.getEntityStateLinkFromExpression(expression, reasoner, resident);
 				
@@ -1285,12 +1312,57 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			String objectName = null;
 			
 			// Note that at this point we shall have only 2 arguments
-			
-			// TODO use subjectOf and objectOf in order to decide which one is subject and which one is object
+
+			// extract the values of the arguments
 			Iterator<OVInstance> it = listArguments.iterator();
-			
 			subjectName = it.next().getEntity().getInstanceName();
 			objectName = it.next().getEntity().getInstanceName();
+			
+			
+			// use subjectOf and objectOf in order to decide which one is subject and which one is object
+			
+			// extract the isSubjectIn or isObjectIn relations
+			Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
+			if (argumentMappings != null) {
+				// we know that at this point the resident node has 2 arguments (because the number of arguments in resident and number of entries in listArguments match)
+				Map<OWLProperty, Integer> argMap1 = argumentMappings.get(resident.getArgumentList().get(0)); // extract the mapping of the 1st argument
+				if (argMap1 != null) {
+					// checking consistency
+					if (argMap1.size() != 1) {
+						throw new IllegalArgumentException("Found " + argMap1.size() + " mappings to 1st argument of node " + resident);
+					}
+					if (!argMap1.keySet().iterator().next().equals(property)) {
+						throw new IllegalArgumentException("Node " + resident + " is defining uncertainty of " + property 
+								+ ", but its 1st argument was mapped to owl property " + argMap1.keySet().iterator().next());
+					}
+					// at this point, we know there is 1 mapping to this argument
+					if (argMap1.values().iterator().next().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
+						// 1st argument is object, so swap the subjectName and objectName (because at this point the subject was assumed to be the 1st argument)
+						String temp = objectName;
+						objectName = subjectName;
+						subjectName = temp;
+					}	// if argument is either subject or unknown, then use default behavior
+				} 
+				Map<OWLProperty, Integer> argMap2 = argumentMappings.get(resident.getArgumentList().get(1)); // extract the mapping of the 2nd argument
+				if (argMap2 != null) {
+					// checking consistency
+					if (argMap2.size() != 1) {
+						throw new IllegalArgumentException("Found " + argMap2.size() + " mappings to 2nd argument of node " + resident);
+					}
+					if (!argMap2.keySet().iterator().next().equals(property)) {
+						throw new IllegalArgumentException("Node " + resident + " is defining uncertainty of " + property 
+								+ ", but its 2nd argument was mapped to owl property " + argMap2.keySet().iterator().next());
+					}
+					// at this point, we know there is 1 mapping to this argument
+					if (argMap2.values().iterator().next().equals(IMappingArgumentExtractor.SUBJECT_CODE)) {
+						// 2nd argument is subject, so swap the subjectName and objectName (because at this point the subject was assumed to be the 1st argument)
+						String temp = objectName;
+						objectName = subjectName;
+						subjectName = temp;
+					}	// if argument is either subject or unknown, then use default behavior
+				}
+			}
+			
 			
 			// create an expression that returns the subject if the subject has a link to object. Empty otherwise
 			String expressionToParse = "{" +  subjectName + "}" + " that " + this.extractName(property) + " value " + objectName ;
@@ -2147,7 +2219,9 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					
 					// for each triple, extract associated values and create resident node's finding
 					boolean isPositiveFinding = true;	// this will become false if we find a negative finding (an assertion for the random variable to be false)
-					for (Entry<Argument, Map<OWLProperty, Integer>> propertyEntry : propertiesPerArgument.entrySet()) {
+					
+					for (Argument argument : resident.getArgumentList()) {	// use the same ordering of arguments in resident node
+					
 						// note: we assume each tuple represents a single finding (i.e. an n-tuple relates only n entities, by using n OWL properties). 
 						// Therefore, pick only 1 associated OWL object per argument.
 						
@@ -2156,7 +2230,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						boolean isSubjectIn = false; // isSubjectIn = false means isObjectIn=true.
 						
 						// pick the OWL property to query.
-						for (Entry<OWLProperty, Integer> entry : propertyEntry.getValue().entrySet()) {
+						for (Entry<OWLProperty, Integer> entry : propertiesPerArgument.get(argument).entrySet()) {
 							if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 								isSubjectIn = false;
 								property = entry.getKey();
@@ -2387,7 +2461,8 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					List<ObjectEntityInstance> argumentInstancesList = new ArrayList<ObjectEntityInstance>();
 					
 					// for each triple, extract associated values and create resident node's finding
-					for (Entry<Argument, Map<OWLProperty, Integer>> propertyEntry : propertiesPerArgument.entrySet()) {
+					for (Argument argument : resident.getArgumentList()) {	// use the same ordering of arguments from resident node
+						
 						// note: we assume each tuple represents a single finding (i.e. an n-tuple relates only n entities, by using n OWL properties). 
 						// Therefore, pick only 1 associated OWL object per argument.
 						
@@ -2396,7 +2471,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						boolean isSubjectIn = true;
 						
 						// pick the OWL property to query.
-						for (Entry<OWLProperty, Integer> entry : propertyEntry.getValue().entrySet()) {
+						for (Entry<OWLProperty, Integer> entry : propertiesPerArgument.get(argument).entrySet()) {
 							if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 								isSubjectIn = false;
 								property = entry.getKey();
@@ -2953,7 +3028,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				return null;
 			}
 			
-			// assertion: we can only treat boolean nodes with 1 or 2 variables
+			// assertion: we can only treat boolean nodes with 1 or more variables
 			if (originalArgumentList.size() < 1) {
 				try {
 					Debug.println(this.getClass(), "This KB cannot handle variables with no arguments: " + booleanResidentNode);
@@ -3014,21 +3089,22 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			
 			// extract the ordinary variable of the 1st argument. It's going to be used in cases 1-5
 			// extract by argument number (this is a number starting from 1), because the list of argument may not be in correct order
-			OrdinaryVariable argumentOV1 = ((ResidentNodePointer)formulaTreeBooleanNode.getNodeVariable()).getArgument(0);// booleanResidentNode.getArgumentNumber(1).getOVariable();
+			OrdinaryVariable argument1OV = ((ResidentNodePointer)formulaTreeBooleanNode.getNodeVariable()).getArgument(0);// booleanResidentNode.getArgumentNumber(1).getOVariable();
 			
 			// extract the object entity related to the type of argument 1 (this is necessary because we cannot directly navigate from OV's type to an Entity...)
-			Entity argumentEntity1 = this.getDefaultMEBN().getObjectEntityContainer().getObjectEntityByType(argumentOV1.getValueType());
+			Entity argument1Entity = this.getDefaultMEBN().getObjectEntityContainer().getObjectEntityByType(argument1OV.getValueType());
 			
 			// check cases 1 and 2
 			if (originalArgumentList.size() == 1) {	// NOTE: we did a check to assure originalArgumentList.size() >= 1
 				// booleanNode has only 1 argument - in OWL, this is represented as a (boolean) data property assertion
-				if (!missingOV.contains(argumentOV1)) {
+				// note: we are not checking if argument is object or subject in property, because this is a data property with 1 argument, so argument has to be the subject
+				if (!missingOV.contains(argument1OV)) {
 					// case 1 . Immediate case -- booleanNode has only 1 argument, and argument1OV is known. In OWL, this is a boolean data property assertion.
 					
 					// extract the value of argument
 					OVInstance ovInstanceOfArg1 = null;
 					for (OVInstance instance : knownValues) {
-						if (instance.getOv().equals(argumentOV1)) {
+						if (instance.getOv().equals(argument1OV)) {
 							ovInstanceOfArg1 = instance;
 							break;
 						}
@@ -3036,7 +3112,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					// check if it is valid
 					if (ovInstanceOfArg1 == null || ovInstanceOfArg1.getEntity() == null) {
 						try {
-							Debug.println(getClass(), argumentOV1 + " is not set as \"missing\", but could not find an actual value for it.");
+							Debug.println(getClass(), argument1OV + " is not set as \"missing\", but could not find an actual value for it.");
 						} catch (Throwable t) {
 							t.printStackTrace();
 						}
@@ -3047,7 +3123,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					String instanceName = ovInstanceOfArg1.getEntity().getInstanceName();
 					if (instanceName == null || instanceName.trim().length() <= 0) {
 						try {
-							Debug.println(getClass(), argumentOV1 + " is not set as \"missing\", but could not find an actual value for it.");
+							Debug.println(getClass(), argument1OV + " is not set as \"missing\", but could not find an actual value for it.");
 						} catch (Throwable t) {
 							t.printStackTrace();
 						}
@@ -3078,7 +3154,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					// case 2 . booleanNode has only 1 argument, and argument1OV is unknown. In OWL, this is a boolean data property assertion.
 					// query all individuals having boolean
 					// the expression is something like "<EntityName> that <booleanNodeProperty> value true"
-					expression = argumentEntity1.getName() 
+					expression = argument1Entity.getName() 
 								+ " that " 										
 								+ this.extractName(booleanNodeProperty) 
 								+ " value "
@@ -3091,7 +3167,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 								isToAddKnownValuesToSearchResult, 
 								knownValues, 
 								knownSearchResults.getOrdinaryVariableSequence(), 
-								argumentOV1 
+								argument1OV 
 							);
 				}
 			}
@@ -3125,6 +3201,61 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					argument2Entity = this.getDefaultMEBN().getObjectEntityContainer().getObjectEntityByType(argument2OV.getValueType());
 				}
 				
+
+				// extract the isSubjectIn or isObjectIn relations
+				Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
+							booleanResidentNode, 
+							booleanResidentNode.getMFrag().getMultiEntityBayesianNetwork(), 
+							reasoner.getRootOntology()
+						);
+				
+				if (argumentMappings != null) {
+					// we know that at this point the resident node has 2 arguments
+					Map<OWLProperty, Integer> argMap1 = argumentMappings.get(booleanResidentNode.getArgumentList().get(0)); // extract the mapping of the 1st argument
+					if (argMap1 != null) {
+						// checking consistency
+						if (argMap1.size() != 1) {
+							throw new IllegalArgumentException("Found " + argMap1.size() + " mappings to 1st argument of node " + booleanResidentNode);
+						}
+						if (!argMap1.keySet().iterator().next().equals(booleanNodeProperty)) {
+							throw new IllegalArgumentException("Node " + booleanResidentNode + " is defining uncertainty of " + booleanNodeProperty 
+									+ ", but its 1st argument was mapped to owl property " + argMap1.keySet().iterator().next());
+						}
+						// at this point, we know there is 1 mapping to this argument
+						if (argMap1.values().iterator().next().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
+							// 1st argument is object, so swap the argumentOV1/argument2OV and argumentEntity1/argument2Entity (because at this point the subject was assumed to be the 1st argument)
+							OrdinaryVariable tempOV = argument1OV;
+							argument1OV = argument2OV;
+							argument2OV = tempOV;
+							Entity tempEntity = argument1Entity;
+							argument1Entity = argument2Entity;
+							argument2Entity = tempEntity;
+						}	// if argument is either subject or unknown, then use default behavior
+					} 
+
+					Map<OWLProperty, Integer> argMap2 = argumentMappings.get(booleanResidentNode.getArgumentList().get(1)); // extract the mapping of the 2nd argument
+					if (argMap2 != null) {
+						// checking consistency
+						if (argMap2.size() != 1) {
+							throw new IllegalArgumentException("Found " + argMap2.size() + " mappings to 2nd argument of node " + booleanResidentNode);
+						}
+						if (!argMap2.keySet().iterator().next().equals(booleanNodeProperty)) {
+							throw new IllegalArgumentException("Node " + booleanResidentNode + " is defining uncertainty of " + booleanNodeProperty 
+									+ ", but its 2nd argument was mapped to owl property " + argMap2.keySet().iterator().next());
+						}
+						// at this point, we know there is 1 mapping to this argument
+						if (argMap2.values().iterator().next().equals(IMappingArgumentExtractor.SUBJECT_CODE)) {
+							// 2nd argument is subject, so swap the argumentOV1/argument2OV and argumentEntity1/argument2Entity (because at this point the subject was assumed to be the 1st argument)
+							OrdinaryVariable tempOV = argument1OV;
+							argument1OV = argument2OV;
+							argument2OV = tempOV;
+							Entity tempEntity = argument1Entity;
+							argument1Entity = argument2Entity;
+							argument2Entity = tempEntity;
+						}	// if argument is either object or unknown, then use default behavior
+					}
+				}
+				
 				// ov to be queried
 				OrdinaryVariable queryOV = null; // this value may be either argument1OV or argument2OV
 				// ov not to be queried (it is a known value)
@@ -3133,10 +3264,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				Entity queryEntity = null; // this value may be either ovEntity or argumentEntity
 				
 				// check case 3: there are only 2 arguments, and both are unknown;
-				if (missingOV.contains(argumentOV1) && missingOV.contains(argument2OV)) {
+				if (missingOV.contains(argument1OV) && missingOV.contains(argument2OV)) {
 					// first, query the arguments that is associated to some entity by the owl property
 					// the expression is something like "<OWLClassName> that (<OWLPropertyName> some <OWLClassName>)"
-					expression = argumentEntity1.getName() 				
+					expression = argument1Entity.getName() 				
 							+ " that ( " 										
 							+ this.extractName(booleanNodeProperty) 
 							+ " some "
@@ -3165,7 +3296,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 							List<OVInstance> updatedKnownValuesList = new ArrayList<OVInstance>(knownValues);
 							
 							// add the results of the query to the updated list
-							OVInstance instance = OVInstance.getInstance(argumentOV1, LiteralEntityInstance.getInstance(name, argumentEntity1.getType()));
+							OVInstance instance = OVInstance.getInstance(argument1OV, LiteralEntityInstance.getInstance(name, argument1Entity.getType()));
 							if (!updatedKnownValuesList.contains(instance)) {
 								updatedKnownValuesList.add(instance);	// avoid redundancy
 							}
@@ -3199,15 +3330,15 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					}
 					return null;
 					
-				} else if (missingOV.contains(argumentOV1)) {
+				} else if (missingOV.contains(argument1OV)) {
 					// case 4. 2nd argument is known and 1st argument is unknown;
-					queryOV = argumentOV1;	// we must query the argument 1...
+					queryOV = argument1OV;	// we must query the argument 1...
 					knownOV = argument2OV;	// based on the value of argument 2 (which is known)
-					queryEntity = argumentEntity1;
+					queryEntity = argument1Entity;
 				} else {
 					// case 5. 1st is known and 2nd is unknown;
 					queryOV = argument2OV;
-					knownOV = argumentOV1;
+					knownOV = argument1OV;
 					queryEntity = argument2Entity;
 				}
 
@@ -3234,7 +3365,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					+ (isToSolveAsPositiveOperation?" ( ":"not ( ") 
 					// if the query is for the argument, we query the domain of property. If not, we query the image of the property 
 					// (in this case, we use "inverse OWLProperty value knownValue" to tell that the domain of that property must be the knownValue)
-					+ (queryOV.equals(argumentOV1)?"":" inverse ")	// if queryOV is the range, then add inverse
+					+ (queryOV.equals(argument1OV)?"":" inverse ")	// if queryOV is the range, then add inverse
 					+ this.extractName(booleanNodeProperty) 
 					+ " value "
 					+ knownValue.getEntity().getInstanceName()
@@ -3300,6 +3431,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			boolean isToSolveAsPositiveOperation, OWLReasoner reasoner,
 			List<OVInstance> knownValues,
 			OrdinaryVariable[] ordinaryVariableSequence, OrdinaryVariable possibleStateOV) {
+		
 		// this is how to get a value of some argument (example is t of MTI(rpt,t), where rpt = RPT1)
 		// inverse MTI_hasTimeStep some ((MTI some Thing) that MTI_hasReport value RPT1)
 		// if MTI is a predicate (e.g. MTI(rpt,t,speed)::boolean), and speed is object of OWL property MTI, then 
@@ -4067,10 +4199,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 
 	/**
 	 * This method solves a formula in the following format:
-	 * ov = nonBooleanNode(arg); or CONSTANT = nonBooleanNode(arg);
+	 * ov = nonBooleanNode(args); or CONSTANT = nonBooleanNode(args);
 	 * This is called inside {@link #solveFormulaTree(NodeFormulaTree, List, ContextNode, boolean, boolean)}
-	 * @param treeRepresentingOVOrConstant : this is a subtree of the top formula (which uses composite pattern), and it represents the "ov" in ov = nonBooleanNode(arg)
-	 * @param treeRepresentingNonBooleanNode : this is a subtree of the top formula (which uses composite pattern), and it represents the "nonBooleanNode(arg)" in ov = nonBooleanNode(arg)
+	 * @param treeRepresentingOVOrConstant : this is a subtree of the top formula (which uses composite pattern), and it represents the "ov" in ov = nonBooleanNode(args)
+	 * @param treeRepresentingNonBooleanNode : this is a subtree of the top formula (which uses composite pattern), and it represents the "nonBooleanNode(args)" in ov = nonBooleanNode(args)
 	 * @param knownValues : the known OV values (values in this list will not be queried to KB)
 	 * @param isToSolveAsPositiveOperation : if set to false, ov != nonBooleanNode(arg) will be evaluated instead. 
 	 * @param isToAddKnownValuesToSearchResult : if true, the values in knownValues will be added to the returned value.
@@ -4166,6 +4298,40 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						ov
 						);
 			}
+			
+
+			// extract the isSubjectIn or isObjectIn relations
+			Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
+						residentNode, 
+						residentNode.getMFrag().getMultiEntityBayesianNetwork(), 
+						reasoner.getRootOntology()
+					);
+			
+			if (argumentMappings != null) {
+				// we know that at this point the resident node has 1 argument
+				Map<OWLProperty, Integer> argMap = argumentMappings.get(residentNode.getArgumentList().get(0)); // extract the mapping of the only argument
+				if (argMap != null) {
+					// checking consistency
+					if (argMap.size() != 1) {
+						throw new IllegalArgumentException("Found " + argMap.size() + " mappings to argument of node " + residentNode);
+					}
+					if (!argMap.keySet().iterator().next().equals(nonBooleanNodeProperty)) {
+						throw new IllegalArgumentException("Node " + residentNode + " is defining uncertainty of " + nonBooleanNodeProperty 
+								+ ", but its argument was mapped to owl property " + argMap.keySet().iterator().next());
+					}
+					// at this point, we know there is 1 mapping to this argument
+					if (argMap.values().iterator().next().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
+						// argument is object, so swap the argumentOV/ov and argumentEntity/ovEntity (because at this point the subject was assumed to be the argument)
+						OrdinaryVariable tempOV = argumentOV;
+						argumentOV = ov;
+						ov = tempOV;
+						Entity tempEntity = argumentEntity;
+						argumentEntity = ovEntity;
+						ovEntity = tempEntity;
+					}	// if argument is either subject or unknown, then use default behavior
+				} 
+			}
+			
 			
 			// expression of the query
 			String expression = "";
