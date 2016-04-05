@@ -709,13 +709,15 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			}
 			
 			newNode = addNodeToMFragInstance(childOfChain, newNode); 
-			
-			//Set reference for the ordinary variables list in input MFrag 
-			if(nodeParent.isInputNode()){
-				newNode.setOVArrayForMFrag(node.getMFragInstance().getMFragOrigin(), ovArrayMFrag);
+			if (newNode != null) {
+				//Set reference for the ordinary variables list in input MFrag 
+				if(nodeParent.isInputNode()){
+					newNode.setOVArrayForMFrag(node.getMFragInstance().getMFragOrigin(), ovArrayMFrag);
+				}
+				
+				ssbnCreatedList.add(newNode); 
 			}
 			
-			ssbnCreatedList.add(newNode); 
 		}
 		
 		ISSBNLogManager logManager = ssbn.getLogManager();
@@ -951,7 +953,14 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		
 		parent = ssbn.addSSBNNodeIfItDontAdded(testNode);
 		
+		if (parent.equals(child)) {
+			ssbn.getLogManager().printText(level5, false, "Attempted to include " + parent + " as parent of " + child + ". Returning...");
+			return null;
+		}
+		
 		if(parent == testNode){
+			
+			
 			numberNodes++; 
 			if (ssbn.getLogManager() != null) {
 				ssbn.getLogManager().printText(level5, false, "Created new node: " + parent);

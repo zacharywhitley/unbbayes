@@ -334,6 +334,11 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 				System.out.println("ContextNode: " + contextNode);
 
 				List<OrdinaryVariable> ovInstancesFaultList = contextNode.getOVFaultForOVInstanceSet(ovInstances); 
+				if (ovInstancesFaultList == null || ovInstancesFaultList.isEmpty()) {
+					// we don't need to solve this node, because there is no unknown OV
+					// TODO need to check why this block is executed when there are two context nodes filtering the same OV. For instance, not(t = tPrev) and tPrev = Previous(t)
+					evaluated = true;
+				}
 
 				List<OVInstance>  temporaryOVInstanceList = new ArrayList<OVInstance>(); 
 				temporaryOVInstanceList.addAll(ovInstances); 
