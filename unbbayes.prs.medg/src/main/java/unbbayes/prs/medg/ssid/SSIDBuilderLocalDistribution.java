@@ -88,16 +88,18 @@ public class SSIDBuilderLocalDistribution extends BuilderLocalDistributionImpl {
 				logManager.skipLine(); 
 			}
 			
-			// Generating the SSBN network.
-			if (logManager != null) {
-				logManager.printText(level1, false, "Generating the SSBN network");
-			}
-			pn =  new ProbabilisticNetwork(this.getHybridResource().getString("DefaultNetworkName"));
-			List<SSBNNode> listSSBNNode = this.getSimpleSSBNNodeTranslator().translateSimpleSSBNNodeListToSSBNNodeList(ssbn.getSimpleSsbnNodeList(), pn);
-			ssbn.setSsbnNodeList(listSSBNNode); 
-			ssbn.setProbabilisticNetwork(pn); 
-			if (logManager != null) {
-				logManager.skipLine();
+			if (ssbn.getNetwork() == null) {
+				// Generating the SSBN network, because it was not generated yet.
+				if (logManager != null) {
+					logManager.printText(level1, false, "Generating the SSBN network");
+				}
+				pn =  new ProbabilisticNetwork(this.getHybridResource().getString("DefaultNetworkName"));
+				List<SSBNNode> listSSBNNode = this.getSimpleSSBNNodeTranslator().translateSimpleSSBNNodeListToSSBNNodeList(ssbn.getSimpleSsbnNodeList(), pn);
+				ssbn.setSsbnNodeList(listSSBNNode); 
+				ssbn.setProbabilisticNetwork(pn); 
+				if (logManager != null) {
+					logManager.skipLine();
+				}
 			}
 			
 		} catch (SSBNNodeGeneralException e) {

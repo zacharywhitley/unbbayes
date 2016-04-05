@@ -11,6 +11,7 @@ import java.util.ResourceBundle;
 
 import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.io.log.IdentationLevel;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.IResidentNode;
@@ -30,9 +31,10 @@ import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.MFragInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.SSBN;
+import unbbayes.prs.mebn.ssbn.SSBNNode;
 import unbbayes.prs.mebn.ssbn.SimpleContextNodeFatherSSBNNode;
-import unbbayes.prs.mebn.ssbn.SimpleEdge;
 import unbbayes.prs.mebn.ssbn.SimpleSSBNNode;
+import unbbayes.prs.mebn.ssbn.SimpleSSBNNodeUtils;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
@@ -194,6 +196,12 @@ public class SSIDBuilderStructure implements IBuilderStructure {
 			iteration++; 
 			
 		}
+	
+		// convert ssbn nodes to probabilistic nodes
+		ProbabilisticNetwork pn =  new ProbabilisticNetwork("SSBN");
+		List<SSBNNode> listSSBNNode = SimpleSSBNNodeUtils.translateSimpleSSBNNodeListToSSBNNodeList(ssbn.getSimpleSsbnNodeList(), pn);
+		ssbn.setSsbnNodeList(listSSBNNode); 
+		ssbn.setNetwork(pn); 
 	}
 
 	/**
@@ -606,12 +614,15 @@ public class SSIDBuilderStructure implements IBuilderStructure {
 				// hence, we must create another level in the chain
 				// create new node in a chain, and set new node as a pivot for next chain
 				childOfChain = this.createNodeInAChain(childOfChain, newNode);
-				// do not forget to add new node into the list of nodes created in this method
-				ssbnCreatedList.add(childOfChain);	
+				if (childOfChain != null) {
+					// do not forget to add new node into the list of nodes created in this method
+					ssbnCreatedList.add(childOfChain);	
+				}
 			}
 			newNode = addNodeToMFragInstance(childOfChain, newNode); 
-			
-			ssbnCreatedList.add(newNode); 
+			if (newNode != null) {
+				ssbnCreatedList.add(newNode); 
+			}
 		}
 		
 		//Add the context node parent if it exists
@@ -712,6 +723,11 @@ public class SSIDBuilderStructure implements IBuilderStructure {
 		SimpleSSBNNode testNode = parent; 
 		
 		parent = ssbn.addSSBNNodeIfItDontAdded(testNode);
+		
+		if (parent.equals(child)) {
+			ssbn.getLogManager().printText(level5, false, "Attempted to include " + parent + " as parent of " + child + ". Returning...");
+			return null;
+		}
 		
 		if(parent == testNode){
 			numberNodes++; 
