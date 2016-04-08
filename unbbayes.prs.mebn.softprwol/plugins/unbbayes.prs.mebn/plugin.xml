@@ -75,6 +75,7 @@
         <parameter-def id="class"/>
         <parameter-def id="name"/>
         <parameter-def multiplicity="none-or-one" id="optionPanel"/>
+        <parameter-def multiplicity="none-or-one" id="toolbar"/>
     </extension-point>
     
     <!-- Situation Specific Bayesian Network generation extension point. 
