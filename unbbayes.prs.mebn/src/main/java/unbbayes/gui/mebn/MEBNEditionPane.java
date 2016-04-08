@@ -23,7 +23,6 @@ package unbbayes.gui.mebn;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridLayout;
@@ -217,8 +216,6 @@ public class MEBNEditionPane extends JPanel {
     /** This is the options for MEBN */
     private OptionsDialog mebnOptionsDialog;
 
-    JToolBar panelToolBar;
-    
 	/* Load resource file from this package */
   	private static ResourceBundle resource = ResourceController.newInstance().getBundle(
 			unbbayes.gui.mebn.resources.Resources.class.getName());
@@ -291,6 +288,8 @@ public class MEBNEditionPane extends JPanel {
         toolBarContextNode = new ToolBarContextNode();
         toolBarOVariable = new ToolBarOrdVariable(mebnController);
         toolBarMTheory = new ToolBarMTheory();
+
+        
         
         /*---- jtbEmpty ----*/
         JTextField txtIsEmpty = new JTextField(resource.getString("whithotMFragActive"));
@@ -447,6 +446,7 @@ public class MEBNEditionPane extends JPanel {
 						}
 					}
 				});
+
   	}
 
 
@@ -802,6 +802,10 @@ public class MEBNEditionPane extends JPanel {
 	    private JButton btnTurnToSSBNMode; 
 	    
 	    private JButton btnTurnToMTheoryMode;
+	    
+	    private JButton btnSaveKB; 
+	    private JButton btnLoadKB; 
+		private JButton btnClearKB;
 		
 		private JButton btnSaveNetImage;
 
@@ -816,6 +820,10 @@ public class MEBNEditionPane extends JPanel {
 	    	btnDoQuery = new JButton(iconController.getCompileIcon());
 	    	btnTurnToSSBNMode = new JButton(iconController.getSsbnIcon()); 
 	    	btnTurnToMTheoryMode = new JButton(iconController.getMTheoryViewIcon());
+	    	btnClearKB = new JButton(iconController.getEditDelete()); 
+
+	    	btnLoadKB = new JButton(iconController.getLoadFindingsInstance());
+	    	btnSaveKB = new JButton(iconController.getSaveFindingsInstance());
 	    	
 	    	btnSaveNetImage = new JButton(iconController.getSaveNetIcon());
 	    	
@@ -824,6 +832,9 @@ public class MEBNEditionPane extends JPanel {
 	    	btnDoQuery.setToolTipText(resource.getString("executeQueryToolTip"));
 	    	btnTurnToSSBNMode.setToolTipText(resource.getString("turnToSSBNModeToolTip"));
 	    	btnTurnToMTheoryMode.setToolTipText(resource.getString("turnToMTheoryViewModeToolTip"));
+	    	btnClearKB.setToolTipText(resource.getString("clearKBToolTip"));
+	    	btnLoadKB.setToolTipText(resource.getString("loadKBToolTip"));
+	    	btnSaveKB.setToolTipText(resource.getString("saveKBToolTip"));
 	    	
 	    	btnSaveNetImage.setToolTipText(resource.getString("saveNetImageToolTip"));
 	    	
@@ -859,12 +870,18 @@ public class MEBNEditionPane extends JPanel {
 				}
 	    		
 	    	});
-	    	
-	    	btnSaveNetImage.addActionListener(new ActionListener() {
-	            public void actionPerformed(ActionEvent e) {
-	            	mebnController.saveNetImage();
-	            }
-	        });
+
+	    	btnClearKB.addActionListener(new ActionListener(){
+
+				public void actionPerformed(ActionEvent e) {
+					mebnController.clearFindingsIntoGUI(); 
+					if (entityFindingEditionPane != null && entityFindingEditionPane.getObjectEntityInstanceListPane() != null) {
+						entityFindingEditionPane.getObjectEntityInstanceListPane().update();
+					}
+					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("KBClean"));
+				}
+	    		
+	    	});
 	    	
 	    	/*--------------- PowerLoom Options ------------------*/
 	    	JButton btnSaveGenerative = new JButton("SVG");
@@ -889,6 +906,20 @@ public class MEBNEditionPane extends JPanel {
 	    			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	    		}
 	    	}); 
+	    	
+	    	btnSaveKB.addActionListener(new ActionListener() {
+	    		public void actionPerformed(ActionEvent ae) {
+	    			doSaveKnowledgeBase(); 
+	    		}
+	    	}); 
+	    	
+	    	btnLoadKB.addActionListener(new ActionListener() {
+	    		public void actionPerformed(ActionEvent ae) {
+	    			doLoadKnowledgeBase(); 
+	    			if (entityFindingEditionPane != null && entityFindingEditionPane.getObjectEntityInstanceListPane() != null) {
+	    				entityFindingEditionPane.getObjectEntityInstanceListPane().update();
+	    			}
+	    		}});
 	    	
 	    	btnSaveNetImage.addActionListener(new ActionListener() {
 	            public void actionPerformed(ActionEvent e) {
@@ -926,99 +957,31 @@ public class MEBNEditionPane extends JPanel {
 	        
 	        addSeparator(new Dimension(30, 30)); 
 	        
-	        JToolBar kbNameToolBar = new JToolBar();
+//	        ButtonLabel btnKnowledgeBase = 
+//	        		new ButtonLabel("PowerLoom", iconController.getCompileIcon());
+//	        btnKnowledgeBase.setEnabled(false);
 	        
-	        kbNameToolBar.add(new JLabel("KB: ")); 
+	        JToolBar knowledgeBaseToolBar = new JToolBar(); 
 	        
-	        kbName = new JLabel("Default"); 
-	        kbNameToolBar.add(kbName); 
+	        knowledgeBaseToolBar.add(new JLabel("KB: ")); 
 	        
-	        kbNameToolBar.setFloatable(false);
-	        add(kbNameToolBar); 
+	        kbName = new JLabel("PowerLoom"); 
+//	        knowledgeBaseName.setForeground(Color.blue);
 	        
-	        panelToolBar = createKBToolBar(); 
-	        panelToolBar.setFloatable(false);
+	        knowledgeBaseToolBar.add(kbName); 
+	        knowledgeBaseToolBar.add(new JLabel(" ")); 
 	        
-	        add(panelToolBar); 
+	        knowledgeBaseToolBar.add(btnLoadKB); 
+	        knowledgeBaseToolBar.add(btnSaveKB); 
+	        knowledgeBaseToolBar.add(btnClearKB);
+	        knowledgeBaseToolBar.setFloatable(false);
+//	        knowledgeBaseToolBar.setBorder(BorderFactory.createEtchedBorder());
+	        
+	        add(knowledgeBaseToolBar); 
 	        
 	        setFloatable(false);
-	    }
-
-		private JToolBar createKBToolBar() {
-	        return new DefaultKBToolBar(); 
-		}; 
+	    }; 
 	    
-
-		/**
-		 * @return the btnMEBNOption
-		 */
-		public AbstractButton getBtnMEBNOption() {
-			return btnMEBNOption;
-		}
-
-		/**
-		 * @param btnMEBNOption the btnMEBNOption to set
-		 */
-		public void setBtnMEBNOption(AbstractButton btnMEBNOption) {
-			this.btnMEBNOption = btnMEBNOption;
-		}
-	    
-		public void setKBName(String name){
-			this.kbName.setText(name);
-		}
-		
-	}
-	
-	public class DefaultKBToolBar extends JToolBar{
-		
-	    private JButton btnSaveKB; 
-	    private JButton btnLoadKB; 
-		private JButton btnClearKB;
-		
-		public DefaultKBToolBar(){
-			
-	    	btnClearKB = new JButton(iconController.getEditDelete()); 
-	    	btnLoadKB = new JButton(iconController.getLoadFindingsInstance());
-	    	btnSaveKB = new JButton(iconController.getSaveFindingsInstance());
-			
-	    	btnClearKB.setToolTipText(resource.getString("clearKBToolTip"));
-	    	btnLoadKB.setToolTipText(resource.getString("loadKBToolTip"));
-	    	btnSaveKB.setToolTipText(resource.getString("saveKBToolTip"));
-	    	
-	    	btnClearKB.addActionListener(new ActionListener(){
-
-				public void actionPerformed(ActionEvent e) {
-					mebnController.clearFindingsIntoGUI(); 
-					if (entityFindingEditionPane != null && entityFindingEditionPane.getObjectEntityInstanceListPane() != null) {
-						entityFindingEditionPane.getObjectEntityInstanceListPane().update();
-					}
-					JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("KBClean"));
-				}
-	    		
-	    	});
-			
-	    	btnSaveKB.addActionListener(new ActionListener() {
-	    		public void actionPerformed(ActionEvent ae) {
-	    			doSaveKnowledgeBase(); 
-	    		}
-	    	}); 
-	    	
-	    	btnLoadKB.addActionListener(new ActionListener() {
-	    		public void actionPerformed(ActionEvent ae) {
-	    			doLoadKnowledgeBase(); 
-	    			if (entityFindingEditionPane != null && entityFindingEditionPane.getObjectEntityInstanceListPane() != null) {
-	    				entityFindingEditionPane.getObjectEntityInstanceListPane().update();
-	    			}
-	    		}});
-	    	
-			add(new JLabel(" ")); 
-
-			add(btnLoadKB); 
-			add(btnSaveKB); 
-			add(btnClearKB);
-			setFloatable(false);
-		}
-        
 	    /**
 	     * Open the JFileChooser for the user enter with the name of file and 
 	     * save the knowledge base (only the findings)
@@ -1128,8 +1091,24 @@ public class MEBNEditionPane extends JPanel {
 			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	    }
 
+		/**
+		 * @return the btnMEBNOption
+		 */
+		public AbstractButton getBtnMEBNOption() {
+			return btnMEBNOption;
+		}
 
-    	
+		/**
+		 * @param btnMEBNOption the btnMEBNOption to set
+		 */
+		public void setBtnMEBNOption(AbstractButton btnMEBNOption) {
+			this.btnMEBNOption = btnMEBNOption;
+		}
+	    
+		public void setKBName(String name){
+			this.kbName.setText(name);
+		}
+		
 	}
 	
   	public class ToolBarEdition extends JToolBar{
@@ -2097,22 +2076,6 @@ public class MEBNEditionPane extends JPanel {
 	 */
 	public JSplitPane getJspTabSelectedAndDescription() {
 		return jspTabSelectedAndDescription;
-	}
-	
-	public void setKnowledgeBaseToolBar(JToolBar toolbar){
-		this.panelToolBar.removeAll(); 
-		toolbar.setFloatable(false);
-		for(Component comp: toolbar.getComponents()){
-			panelToolBar.add(comp); 
-		}
-	}
-	
-	public void setDefaultKnowledgeBaseToolBar(){
-		this.panelToolBar.removeAll();
-		DefaultKBToolBar defaultKnowledgeBase = new DefaultKBToolBar();
-		for(Component comp: defaultKnowledgeBase.getComponents()){
-			panelToolBar.add(comp); 
-		}
 	}
 
 }
