@@ -24,6 +24,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Graph;
+import org.openrdf.model.Literal;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -38,8 +39,10 @@ import org.openrdf.query.BindingSet;
 import org.openrdf.query.BooleanQuery;
 import org.openrdf.query.GraphQuery;
 import org.openrdf.query.GraphQueryResult;
+import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.Operation;
 import org.openrdf.query.Query;
+import org.openrdf.query.QueryEvaluationException;
 import org.openrdf.query.QueryLanguage;
 import org.openrdf.query.TupleQuery;
 import org.openrdf.query.TupleQueryResult;
@@ -49,10 +52,10 @@ import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.config.RepositoryConfig;
+import org.openrdf.repository.config.RepositoryConfigException;
 import org.openrdf.repository.manager.LocalRepositoryManager;
 import org.openrdf.repository.manager.RemoteRepositoryManager;
 import org.openrdf.repository.manager.RepositoryManager;
-import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.repository.util.RDFInserter;
 import org.openrdf.rio.ParserConfig;
 import org.openrdf.rio.RDFFormat;
@@ -64,7 +67,9 @@ import org.openrdf.rio.RDFParser.DatatypeHandling;
 import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
-import org.openrdf.sail.memory.MemoryStore;
+
+import unbbayes.triplestore.exception.InvalidSPARQLException;
+import unbbayes.triplestore.exception.TriplestoreException;
 
 /**
  * This class is used to make the connection to the triplestore. After this, the
@@ -76,8 +81,7 @@ import org.openrdf.sail.memory.MemoryStore;
  * @author Laecio Lima dos Santos
  *
  */
-public class TripleStoreDriver {
-
+public class Triplestore {
 
 	// Command line parameters
 	public static String PARAM_CONFIG = "config";
@@ -122,9 +126,13 @@ public class TripleStoreDriver {
 	// From repository.getConnection() - the connection through which we will
 	// use the repository
 	private RepositoryConnection repositoryConnection;
+	
+	private QueryLanguage queryLanguage; 
 
 	// A flag to indicate whether query results should be output.
 	private boolean showResults = false;
+	
+	private boolean isConnected = false; 
 
 	private static SimpleDateFormat logTimestamp = new SimpleDateFormat("HH:mm:ss ");
 
@@ -133,18 +141,18 @@ public class TripleStoreDriver {
 	}
 	
 	/**
-	 * Constructor - uses a map of configuration parameters to initialise the application
+	 * Constructor - uses a map of configuration parameters to initialize the application
 	 * <ul>
-	 * <li>uses the configuration file and repository ID to initialise a LocalRepositoryManager and
+	 * <li>uses the configuration file and repository ID to initialize a LocalRepositoryManager and
 	 * instantiate a repository, OR</li>
-	 * <li>initialises a RemoteRepositoryManager and connects to the remote repository given by the 'url'
+	 * <li>initializes a RemoteRepositoryManager and connects to the remote repository given by the 'URL'
 	 * parameter</li>
 	 * </ul>
 	 * 
 	 * @param parameters
 	 *            a map of configuration parameters
 	 */
-	public TripleStoreDriver(Map<String, String> parameters) {
+	public Triplestore(Map<String, String> parameters) {
 
 		this.parameters = parameters;
 
@@ -153,48 +161,50 @@ public class TripleStoreDriver {
 		// Set the 'output results' flag
 		showResults = isTrue(PARAM_SHOWRESULTS);
 		
-		String repositoryId = null;
+//		String repositoryId = null;
 		
-		String url = parameters.get(PARAM_URL);
+		setQueryLanguage(QueryLanguage.SPARQL); 
 		
-		if (url == null) {
-			repositoryId = connectLocalRepository(parameters);
-		} else {
-			repositoryId = connectRemoteRepository(parameters);
-		}
-
-		// Get the repository to use
-		try {
-			repository = repositoryManager.getRepository(repositoryId);
-
-			if (repository == null) {
-				log("Unknown repository '" + repositoryId + "'");
-				String message = "Please make sure that the value of the '" + PARAM_REPOSITORY
-						+ "' parameter (current value '" + repositoryId + "') ";
-				if (url == null) {
-					message += "corresponds to the repository ID given in the configuration file identified by the '"
-							+ PARAM_CONFIG
-							+ "' parameter (current value '"
-							+ parameters.get(PARAM_CONFIG)
-							+ "')";
-				} else {
-					message += "identifies an existing repository on the Sesame server located at " + url;
-				}
-				log(message);
-				System.exit(-6);
-			}
-
-			// Open a connection to this repository
-			repositoryConnection = repository.getConnection();
-			repositoryConnection.setAutoCommit(false);
-		} catch (OpenRDFException e) {
-			log("Unable to establish a connection to the repository '" + repositoryId + "': "
-					+ e.getMessage());
-			System.exit(-7);
-		}
+//		String url = parameters.get(PARAM_URL);
+//		
+//		if (url == null) {
+//			repositoryId = connectLocalRepository(parameters);
+//		} else {
+//			repositoryId = connectRemoteRepository(parameters);
+//		}
+//
+//		// Get the repository to use
+//		try {
+//			repository = repositoryManager.getRepository(repositoryId);
+//
+//			if (repository == null) {
+//				log("Unknown repository '" + repositoryId + "'");
+//				String message = "Please make sure that the value of the '" + PARAM_REPOSITORY
+//						+ "' parameter (current value '" + repositoryId + "') ";
+//				if (url == null) {
+//					message += "corresponds to the repository ID given in the configuration file identified by the '"
+//							+ PARAM_CONFIG
+//							+ "' parameter (current value '"
+//							+ parameters.get(PARAM_CONFIG)
+//							+ "')";
+//				} else {
+//					message += "identifies an existing repository on the Sesame server located at " + url;
+//				}
+//				log(message);
+//				System.exit(-6);
+//			}
+//
+//			// Open a connection to this repository
+//			repositoryConnection = repository.getConnection();
+//			repositoryConnection.setAutoCommit(false);
+//		} catch (OpenRDFException e) {
+//			log("Unable to establish a connection to the repository '" + repositoryId + "': "
+//					+ e.getMessage());
+//			System.exit(-7);
+//		}
 	}
 
-	private String connectLocalRepository(Map<String, String> parameters) {
+	public String connectLocalRepository() {
 		
 		String repositoryId = null;
 		
@@ -258,6 +268,9 @@ public class TripleStoreDriver {
 			// Create a manager for local repositories and initialise it
 			repositoryManager = new LocalRepositoryManager(new File("."));
 			repositoryManager.initialize();
+			isConnected = true; 
+			repositoryConnection = repository.getConnection();
+			repositoryConnection.setAutoCommit(false);
 		} catch (RepositoryException e) {
 			log("");
 			System.exit(-3);
@@ -276,23 +289,22 @@ public class TripleStoreDriver {
 		return repositoryId;
 	}
 
-	private String connectRemoteRepository(Map<String, String> parameters) {
-		
-		String repositoryId;
+	public boolean connectRemoteRepository() {
 		
 		String url = parameters.get(PARAM_URL);
 		
-		repositoryId = parameters.get(PARAM_REPOSITORY);
+		String repositoryId = parameters.get(PARAM_REPOSITORY);
 		
 		if (repositoryId == null) {
 			log("No repository ID specified. When using the '" + PARAM_URL
 					+ "' parameter to specify a Sesame server, you must also use the '"
 					+ PARAM_REPOSITORY + "' parameter to specify a repository on that server.");
-			System.exit(-5);
+			return false; 
 		}
 		try {
-			// Create a manager for the remote Sesame server and initialise
+			// Create a manager for the remote Sesame server and initialize
 			// it
+			
 			RemoteRepositoryManager remote = new RemoteRepositoryManager(url);
 
 			String username = parameters.get(PARAM_USERNAME);
@@ -308,12 +320,28 @@ public class TripleStoreDriver {
 
 			repositoryManager = remote;
 			repositoryManager.initialize();
+			
+			repository = repositoryManager.getRepository(repositoryId);
+			
+			repositoryConnection = repository.getConnection();
+			repositoryConnection.setAutoCommit(false);
+			
+			//TODO Make a test for see if the knowledge base is really OK 
+			
+			isConnected = true; 
+			
 		} catch (RepositoryException e) {
 			log("Unable to establish a connection with the Sesame server '" + url + "': "
 					+ e.getMessage());
-			System.exit(-5);
+			return false; 
+		} catch (RepositoryConfigException e) {
+			log("Unable to establish a connection with the Sesame server '" + url + "': "
+					+ e.getMessage());
+			e.printStackTrace();
+			return false; 
 		}
-		return repositoryId;
+		
+		return true;
 	}
 
 	/**
@@ -705,18 +733,22 @@ public class TripleStoreDriver {
 	 *             If the local repository used to test the query type failed for some reason
 	 */
 	private Query prepareQuery(String query, QueryLanguage language, RepositoryConnection tempLocalConnection) throws RepositoryException {
+
+		//SELECT
 		try {
 			tempLocalConnection.prepareTupleQuery(language, query);
 			return repositoryConnection.prepareTupleQuery(language, query);
 		} catch (Exception e) {
 		}
 
+		//ASK
 		try {
 			tempLocalConnection.prepareBooleanQuery(language, query);
 			return repositoryConnection.prepareBooleanQuery(language, query);
 		} catch (Exception e) {
 		}
 
+		//CONSTRUCT/DESCRIBE
 		try {
 			tempLocalConnection.prepareGraphQuery(language, query);
 			return repositoryConnection.prepareGraphQuery(language, query);
@@ -726,42 +758,67 @@ public class TripleStoreDriver {
 		return null;
 	}
 
-	private Operation prepareOperation(String query) throws Exception {
-		Repository tempLocalRepository = new SailRepository(new MemoryStore());
-		tempLocalRepository.initialize();
-		RepositoryConnection tempLocalConnection = tempLocalRepository.getConnection();
-		
-		try {
-			tempLocalConnection.prepareUpdate(QueryLanguage.SPARQL, query);
-			return repositoryConnection.prepareUpdate(QueryLanguage.SPARQL, query);
-		}
-		catch(Exception e ) {
-		}
+	private TupleQuery prepareSelectQueryOperation(String query) throws TriplestoreException{
+
+		TupleQuery result = null;
 
 		try {
-			for (QueryLanguage language : queryLanguages) {
-				Query result = prepareQuery(query, language, tempLocalConnection);
-				if (result != null)
-					return result;
-			}
-			// Can't prepare this query in any language
-			return null;
+			result = repositoryConnection.prepareTupleQuery(
+					queryLanguage, query);
+		} catch (RepositoryException e) {
+			e.printStackTrace();
+			throw new TriplestoreException(e.getMessage()); 
+		} catch (MalformedQueryException e) {
+			e.printStackTrace();
+			throw new InvalidSPARQLException(e.getMessage()); 
 		}
-		finally {
-			try {
-				tempLocalConnection.close();
-				tempLocalRepository.shutDown();
-			}
-			catch(Exception e ) {
-			}
-		}
+
+		return result; 
 	}
 
-	private static final QueryLanguage[] queryLanguages = new QueryLanguage[] { QueryLanguage.SPARQL,
-			QueryLanguage.SERQL, QueryLanguage.SERQO };
-
+	private BooleanQuery prepareAskQueryOperation(String query) throws TriplestoreException{
+		
+		BooleanQuery result = null;
+		
+		try {
+			result = repositoryConnection.prepareBooleanQuery(
+					queryLanguage, query);
+		} catch (RepositoryException e) {
+			e.printStackTrace();
+			throw new TriplestoreException(e.getMessage()); 
+		} catch (MalformedQueryException e) {
+			e.printStackTrace();
+			throw new InvalidSPARQLException(e.getMessage()); 
+		}
+		
+		return result; 
+		
+	}
+	
+	private GraphQuery prepareConstructQueryOperation(String query) throws TriplestoreException{
+		
+		GraphQuery result = null;
+		
+		try {
+			result = repositoryConnection.prepareGraphQuery(
+					queryLanguage, query);
+		} catch (RepositoryException e) {
+			e.printStackTrace();
+			throw new TriplestoreException(e.getMessage()); 
+		} catch (MalformedQueryException e) {
+			e.printStackTrace();
+			throw new InvalidSPARQLException(e.getMessage()); 
+		}
+		
+		return result; 
+		
+		
+	}	
+	
 	/**
 	 * Query here is the SPARQL query. 
+	 * 
+	 * Only print the results 
 	 * 
 	 * Sample: 
 	 * 
@@ -780,7 +837,7 @@ public class TripleStoreDriver {
 	 */
 	private void executeSingleQuery(String query) {
 		try {
-			Operation preparedOperation = prepareOperation(query);
+			Operation preparedOperation = prepareSelectQueryOperation(query);
 			if (preparedOperation == null) {
 				log("Unable to parse query: " + query);
 				return;
@@ -807,12 +864,12 @@ public class TripleStoreDriver {
 					Statement statement = result.next();
 					rows++;
 					if (showResults) {
-						System.out.print(beautifyRDFValue(statement.getSubject()));
-						System.out.print(" " + beautifyRDFValue(statement.getPredicate()) + " ");
-						System.out.print(" " + beautifyRDFValue(statement.getObject()) + " ");
+						System.out.print(formatRDFValue(statement.getSubject()));
+						System.out.print(" " + formatRDFValue(statement.getPredicate()) + " ");
+						System.out.print(" " + formatRDFValue(statement.getObject()) + " ");
 						Resource context = statement.getContext();
 						if (context != null)
-							System.out.print(" " + beautifyRDFValue(context) + " ");
+							System.out.print(" " + formatRDFValue(context) + " ");
 						System.out.println();
 					}
 				}
@@ -846,7 +903,7 @@ public class TripleStoreDriver {
 					if (showResults) {
 						for (Iterator<Binding> iter = tuple.iterator(); iter.hasNext();) {
 							try {
-								System.out.print(beautifyRDFValue(iter.next().getValue()) + "\t");
+								System.out.print(formatRDFValue(iter.next().getValue()) + "\t");
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
@@ -867,6 +924,113 @@ public class TripleStoreDriver {
 		}
 	}
 
+	public List<String[]> executeSelectQuery(String query) {
+		
+		List<String[]> resultList = new ArrayList<String[]>(); 
+		
+		try {
+			TupleQuery preparedOperation = (TupleQuery)prepareSelectQueryOperation(query);
+			
+			if (preparedOperation == null) {
+				log("Unable to parse query: " + query);
+				return null;
+			}
+
+			long queryBegin = System.nanoTime();
+
+			TupleQueryResult result = preparedOperation.evaluate();
+
+			int rows = 0;
+			int numColumns = 0; 
+
+			while (result.hasNext()) {
+				BindingSet tuple = result.next();
+
+				//Headers of each column of result 
+				if (rows == 0) {
+					for (Iterator<Binding> iter = tuple.iterator(); iter.hasNext();) {
+						System.out.print(iter.next().getName()); //Name of column of graph 
+						System.out.print("\t");
+						numColumns++; 
+					}
+					System.out.println();
+					System.out.println("---------------------------------------------");
+				}
+				rows++;
+
+				String[] singleResult = new String[numColumns]; 
+				int i = 0; 
+				for (Iterator<Binding> iter = tuple.iterator(); iter.hasNext();) {
+					try {
+						Value value = iter.next().getValue(); 
+						System.out.print(formatRDFValue(value) + "\t");
+						
+						if(value instanceof URI){
+							URI u = (URI) value;
+							singleResult[i] = u.toString(); 
+							i++; 
+						}else{
+							if(value instanceof Literal){
+								Literal l = (Literal) value; 
+								singleResult[i] = l.getLabel(); 
+								i++; 
+							}else{
+								//TODO think other form of error. An exception? 
+								log("Invalid query return!");
+								return null;
+							}
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+
+				resultList.add(singleResult); 
+				System.out.println("");
+
+			}
+			
+			result.close();
+
+			long queryEnd = System.nanoTime();
+			log(rows + " result(s) in " + (queryEnd - queryBegin) / 1000000 + "ms.");
+			
+		} catch (Throwable e) {
+			log("An error occurred during query execution: " + e.getMessage());
+			e.printStackTrace();
+		}
+		
+		return resultList; 
+	}
+	
+	public boolean executeAskQuery(String query){
+		
+		boolean result = false; 
+		
+		BooleanQuery preparedOperation = null;
+		
+		try {
+			preparedOperation = (BooleanQuery)prepareAskQueryOperation(query);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		if (preparedOperation == null) {
+			log("Unable to parse query: " + query);
+			return result;
+		}
+
+		try {
+			result = preparedOperation.evaluate();
+		} catch (QueryEvaluationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return result; 
+	}
+	
 	/**
 	 * Creates a statement and adds it to the repository. Then deletes this statement and checks to make sure
 	 * it is gone.
@@ -890,7 +1054,7 @@ public class TripleStoreDriver {
 			boolean retrieved = false;
 			while (iter.hasNext()) {
 				retrieved = true;
-				System.out.println(beautifyStatement(iter.next()));
+				System.out.println(formatRDFStatement(iter.next()));
 			}
 			// CLOSE the iterator to avoid memory leaks
 			iter.close();
@@ -905,11 +1069,12 @@ public class TripleStoreDriver {
 
 			// Check whether there is some statement matching the subject of the
 			// deleted one
+			//TODO If will use this method, verify if really is necessary this verification -> Expensive
 			iter = repositoryConnection.getStatements(subj, null, null, true);
 			retrieved = false;
 			while (iter.hasNext()) {
 				retrieved = true;
-				System.out.println(beautifyStatement(iter.next()));
+				System.out.println(formatRDFStatement(iter.next()));
 			}
 			// CLOSE the iterator to avoid memory leaks
 			iter.close();
@@ -1018,6 +1183,7 @@ public class TripleStoreDriver {
 				repositoryConnection.close();
 				repository.shutDown();
 				repositoryManager.shutDown();
+				isConnected = false; 
 			} catch (Exception e) {
 				log("An exception occurred during shutdown: " + e.getMessage());
 			}
@@ -1026,12 +1192,12 @@ public class TripleStoreDriver {
 
 	/**
 	 * Auxiliary method, printing an RDF value in a "fancy" manner. In case of URI, qnames are printed for
-	 * better readability
+	 * better readability. 
 	 * 
 	 * @param value
-	 *            The value to beautify
+	 *            The value to format
 	 */
-	public String beautifyRDFValue(Value value) throws Exception {
+	public String formatRDFValue(Value value) throws Exception {
 		if (value instanceof URI) {
 			URI u = (URI) value;
 			String namespace = u.getNamespace();
@@ -1054,9 +1220,9 @@ public class TripleStoreDriver {
 	 *            The statement to be formatted.
 	 * @return The beautified statement.
 	 */
-	public String beautifyStatement(Statement statement) throws Exception {
-		return beautifyRDFValue(statement.getSubject()) + " " + beautifyRDFValue(statement.getPredicate())
-				+ " " + beautifyRDFValue(statement.getObject());
+	public String formatRDFStatement(Statement statement) throws Exception {
+		return formatRDFValue(statement.getSubject()) + " " + formatRDFValue(statement.getPredicate())
+				+ " " + formatRDFValue(statement.getObject());
 	}
 
 	/**
@@ -1132,6 +1298,18 @@ public class TripleStoreDriver {
 			log("Unable to load query file '" + queryFile + "':" + e);
 			return new String[0];
 		}
+	}
+
+	public QueryLanguage getQueryLanguage() {
+		return queryLanguage;
+	}
+
+	public void setQueryLanguage(QueryLanguage queryLanguage) {
+		this.queryLanguage = queryLanguage;
+	}
+	
+	public boolean isConnected() {
+		return isConnected;
 	}
 	
 }
