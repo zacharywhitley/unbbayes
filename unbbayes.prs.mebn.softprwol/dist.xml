@@ -40,7 +40,7 @@
 <!--       </includes> -->
 <!--     </fileSet> -->
     <fileSet>
-      <directory>plugins/unbbayes.prs.mebn.softprowl/</directory>
+      <directory>plugins/unbbayes.prs.mebn.prowl2rl/</directory>
       <outputDirectory></outputDirectory>
       <includes>
         <include>plugin.xml</include>
