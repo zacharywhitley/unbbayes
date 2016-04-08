@@ -1,5 +1,7 @@
 import java.util.Locale;
 
+import unbbayes.util.Debug;
+
 /**
  * This is just a stub in order to test this plugin on UnBBayes
  * @author Shou Matsumoto
@@ -22,6 +24,8 @@ public class UnBBayesMainDelegator {
 		// change default locale
 		Locale.setDefault(new Locale("en"));
 
+		Debug.setDebug(true);
+		
 		unbbayes.Main.main(args);
 	}
 

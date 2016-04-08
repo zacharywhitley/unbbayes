@@ -7,7 +7,7 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFParser.DatatypeHandling;
 
 import unbbayes.triplestore.Parameters;
-import unbbayes.triplestore.TripleStoreDriver;
+import unbbayes.triplestore.Triplestore;
 
 /**
  * <p>
@@ -115,7 +115,7 @@ public class TripleStoreConnectionTest {
 		log("Using parameters:");
 		log(params.toString());
 
-		TripleStoreDriver gettingStartedApplication = null;
+		Triplestore gettingStartedApplication = null;
 		try {
 			long initializationStart = System.currentTimeMillis();
 			
@@ -123,7 +123,7 @@ public class TripleStoreConnectionTest {
 			// of the Sesame configuration file are loaded during initialization.
 			// Thus, for large datasets the initialisation could take
 			// considerable time.
-			gettingStartedApplication = new TripleStoreDriver(params.getParameters());
+			gettingStartedApplication = new Triplestore(params.getParameters());
 
 			// Demonstrate the basic operations on a repository
 			
@@ -192,7 +192,7 @@ public class TripleStoreConnectionTest {
 		log("Using parameters:");
 		log(params.toString());
 
-		TripleStoreDriver gettingStartedApplication = null;
+		Triplestore gettingStartedApplication = null;
 		try {
 			long initializationStart = System.currentTimeMillis();
 			
@@ -200,7 +200,7 @@ public class TripleStoreConnectionTest {
 			// of the Sesame configuration file are loaded during initialization.
 			// Thus, for large datasets the initialisation could take
 			// considerable time.
-			gettingStartedApplication = new TripleStoreDriver(params.getParameters());
+			gettingStartedApplication = new Triplestore(params.getParameters());
 
 			
 			// Demonstrate the basic operations on a repository
@@ -277,7 +277,7 @@ public class TripleStoreConnectionTest {
 		log("Using parameters:");
 		log(params.toString());
 
-		TripleStoreDriver gettingStartedApplication = null;
+		Triplestore gettingStartedApplication = null;
 		try {
 			long initializationStart = System.currentTimeMillis();
 			
@@ -285,7 +285,7 @@ public class TripleStoreConnectionTest {
 			// of the Sesame configuration file are loaded during initialization.
 			// Thus, for large datasets the initialisation could take
 			// considerable time.
-			gettingStartedApplication = new TripleStoreDriver(params.getParameters());
+			gettingStartedApplication = new Triplestore(params.getParameters());
 	
 			//*********************** QUERYING ******************************			
 			gettingStartedApplication.iterateNamespaces();
