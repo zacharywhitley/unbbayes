@@ -77,6 +77,8 @@ public class DneIO implements BaseIO {
 	private String name = "DNE";
 
 	private boolean isToUseAbsurdState = false;
+
+	private boolean isToAppendLevelsToState = false;
 	
 	/**
 	 *  Loads a NET format file using default node/network builder.
@@ -512,8 +514,13 @@ public class DneIO implements BaseIO {
 	 */
 	protected void loadNodeDeclarationBody(StreamTokenizer st , Node node, SingleEntityNetwork net) throws IOException, LoadException {
 		boolean isConstantNode = false;	// if true, this node is a constant (i.e. do not represent random variable)
+		boolean isProbDeclared = false;	// if true, then there is a "probs" block and we should fill CPT from it. If false, then we need to fill CPT from belief block.
 		while (!st.sval.equals("}")) {
-			if (st.sval.equals("title")) {
+			if (st.sval.equals("whenchanged")) {
+				// ignore
+				while (getNext(st) != ';');
+				getNext(st);
+			} else if (st.sval.equals("title")) {
 				getNext(st);
 				node.setDescription(st.sval);
 				getNext(st);
@@ -561,13 +568,23 @@ public class DneIO implements BaseIO {
 					}
 				} else {
 					do {
-						node.appendState(st.sval);
+						if (isToAppendLevelsToState()) {
+							node.appendState(st.sval);
+						}
 					} while (getNext(st) != ';');
 				}
 			} else if (st.sval.equals("parents")) {
 				loadParents(st, node, net);
-			} else if (st.sval.equals("probs")) {
+			} else if (st.sval.equals("probs") ) {
 				loadPotentialDataOrdinal(st, node);
+				isProbDeclared = true;
+			} else if (st.sval.equals("belief")) {
+				if (!isProbDeclared) {
+					// if "probs" block is not declared, we need to fill CPT with the belief block
+					loadPotentialDataOrdinal(st, node);
+				} else {
+					getNext(st);
+				}
 			} else if (st.sval.equals("functable")) {
 				loadPotentialDataFuncTable(st, node);
 			} else if (st.sval.equals("visual")) {
@@ -1172,6 +1189,23 @@ public class DneIO implements BaseIO {
 	 */
 	public boolean isToUseAbsurdState() {
 		return isToUseAbsurdState;
+	}
+
+	/**
+	 * @return the isToAppendLevelsToState : if true, then if a node block has a "levels" statement, then entries in
+	 * such statements will be appended to discrete node's states. If false, then levels statements for discrete nodes will be ignored.
+	 */
+	public boolean isToAppendLevelsToState() {
+		return isToAppendLevelsToState;
+	}
+
+	/**
+	 * 
+	 * @param isToAppendLevelsToState the isToAppendLevelsToState to set. If true, then if a node block has a "levels" statement, then entries in
+	 * such statements will be appended to discrete node's states. If false, then levels statements for discrete nodes will be ignored.
+	 */
+	public void setToAppendLevelsToState(boolean isToAppendLevelsToState) {
+		this.isToAppendLevelsToState = isToAppendLevelsToState;
 	}
 
 	/**
