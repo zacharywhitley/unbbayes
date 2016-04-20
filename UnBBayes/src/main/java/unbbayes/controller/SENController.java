@@ -549,7 +549,12 @@ public class SENController {
 	 * @param node The discrete node to create the table pan for.
 	 */
 	public void createDiscreteTable(Node node) {
-		screen.setTable(makeTable(node), node);
+		JTable table = makeTable(node);
+		if (table == null) {
+			screen.setAddRemoveStateButtonVisible(true);
+			return;
+		}
+		screen.setTable(table, node);
 		// Show the selected node
 		if (screen.isCompiled()) {
 			for (int i = 0; i < screen.getEvidenceTree().getRowCount(); i++) {
@@ -585,6 +590,9 @@ public class SENController {
 
 		/* Check if the node represents a numeric attribute */
 		if (node.getStatesSize() == 0) {
+			if (node.getParents().isEmpty()) {
+				return null;
+			}
 			Node parent = node.getParents().get(0);
 			int numClasses = parent.getStatesSize();
 			double[] mean = node.getMean();
