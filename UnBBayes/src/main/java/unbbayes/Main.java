@@ -21,6 +21,7 @@
 package unbbayes;
 
 import unbbayes.controller.MainController;
+import unbbayes.example.TextModeRunner;
 import unbbayes.util.Debug;
 
 /**
@@ -52,14 +53,25 @@ public class Main {
 //    		// normal mode
 //    		new MainController();
 //    	}
+    	
+    	
     	// debug mode
     	for (String arg : args) {
 			if (arg.equalsIgnoreCase("-d")) {
 				Debug.setDebug(true);
 				Debug.println("Debug mode is on.");
+				break;
 			}
 		}
-    	new MainController();
+    	
+    	if (TextModeRunner.hasTextModeCommandLineArgument(args)) {
+    		// run command line mode
+    		TextModeRunner.main(args);
+    	} else {
+    		// graphical mode
+    		new MainController();
+    	}
+    	
     }
     
 }
