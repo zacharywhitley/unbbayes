@@ -587,6 +587,7 @@ public class DneIO implements BaseIO {
 				}
 			} else if (st.sval.equals("functable")) {
 				loadPotentialDataFuncTable(st, node);
+				isProbDeclared = true;
 			} else if (st.sval.equals("visual")) {
 				getNext(st); // The name of the visual
 				getNext(st);

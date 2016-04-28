@@ -110,6 +110,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 
 	private boolean isDecisionTotalOrderRequired = true;
 
+	
 //	/**
 //	 * Joint probability calculation with up to this amount of nodes will use optimization.
 //	 */
@@ -456,6 +457,41 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 				}
 			}
 		};
+	
+	/**
+	 * This listener can be used to print marginals to console after {@link #propagate()}.
+	 * Invoke {@link #addInferencceAlgorithmListener(IInferenceAlgorithmListener)}
+	 * to include this feature.
+	 */
+	public static final IInferenceAlgorithmListener PRINT_MARGINALS_ALGORITHM_LISTENER = new IInferenceAlgorithmListener() {
+
+		public void onBeforeRun(IInferenceAlgorithm algorithm) {}
+		public void onAfterRun(IInferenceAlgorithm algorithm) {}
+		public void onBeforeReset(IInferenceAlgorithm algorithm) {}
+		public void onAfterReset(IInferenceAlgorithm algorithm) {}
+		public void onBeforePropagate(IInferenceAlgorithm algorithm) {}
+		public void onAfterPropagate(IInferenceAlgorithm algorithm) {
+			if (algorithm == null || algorithm.getNetwork() == null) {
+				return;
+			}
+			try {
+				System.out.println(new java.util.Date().toString());
+				for (Node node : algorithm.getNetwork().getNodes()) {
+					if (node instanceof TreeVariable) {
+						System.out.println(node + ": ");
+						TreeVariable treeVariable = (TreeVariable) node;
+						for (int i = 0; i < treeVariable.getStatesSize(); i++) {
+							System.out.println("\t" + treeVariable.getStateAt(i) + " = " + treeVariable.getMarginalAt(i));
+						}
+					}
+					System.out.println();
+				}
+			} catch (Throwable e) {
+				e.printStackTrace();
+			}
+		}
+		
+	};
 	
 	/**
 	 * Default constructor for plugin support
