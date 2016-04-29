@@ -49,6 +49,7 @@ import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.ParcialStateException;
 import unbbayes.gui.UnBBayesFrame;
 import unbbayes.gui.mebn.auxiliary.ListCellRenderer;
+import unbbayes.gui.mebn.auxiliary.MebnToolkit;
 import unbbayes.gui.mebn.util.OrganizerUtils;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -110,14 +111,19 @@ public class QueryPanel extends JDialog{
 		
 		JPanel contentPane = new JPanel(new BorderLayout());
 
-		btnSelect = new JButton(resource.getString("queryBtnSelect"));
+//		btnSelect = new JButton(resource.getString("queryBtnSelect"));
+		btnSelect = new JButton(); 
+		btnSelect.setIcon(iconController.getGoNextInstance());
+		
 		btnSelect.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				showArgumentsSelection(residentSelected);
 			}
 		});
 		
-		btnClose = new JButton(resource.getString("closeButton")); 
+//		btnClose = new JButton(resource.getString("closeButton")); 
+		btnClose = new JButton(); 
+		btnClose.setIcon(iconController.getProcessStopInstance());
 		btnClose.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent arg0) {
 				exit(); 
@@ -127,9 +133,10 @@ public class QueryPanel extends JDialog{
 		JToolBar toolBar = new JToolBar();
 		toolBar.setFloatable(false);
 		toolBar.setLayout(new GridLayout());
+		
 		toolBar.add(new JLabel());
-		toolBar.add(btnSelect);
 		toolBar.add(btnClose);
+		toolBar.add(btnSelect);
 
 		RandonVariableListPane randonVariableListPane = new RandonVariableListPane();
 
@@ -229,15 +236,29 @@ public class QueryPanel extends JDialog{
 
 			queryArgumentsPane = new QueryArgumentsPane(residentNode, mebnController);
 
-			btnBack = new JButton(resource.getString("queryBtnBack"));
-			btnExecute = new JButton(resource.getString("queryBtnExecute"));
-			btnClose = new JButton(resource.getString("closeButton"));
+//			btnBack = new JButton(resource.getString("queryBtnBack"));
+			btnBack = new JButton(); 
+			btnBack.setIcon(iconController.getGoPreviousInstance()); 
+			
+//			btnExecute = new JButton(resource.getString("queryBtnExecute"));
+			btnExecute = new JButton(); 
+			btnExecute.setIcon(iconController.getCompileIcon());
+//			iconController.get
+//			btnExecute.setBackground(MebnToolkit.getColor1());
+			
+//			btnClose = new JButton(resource.getString("closeButton"));
+			btnClose = new JButton(); 
+			btnClose.setIcon(iconController.getProcessStopInstance());
 
 			jtbOptions = new JToolBar();
-			jtbOptions.setLayout(new GridLayout(1,3));
+			
+			jtbOptions.setLayout(new GridLayout());
+			
+			jtbOptions.add(new JLabel());
 			jtbOptions.add(btnBack);
-			jtbOptions.add(btnExecute);
 			jtbOptions.add(btnClose);
+			
+			jtbOptions.add(btnExecute);
 			jtbOptions.setFloatable(false);
 
 			btnBack.addActionListener(new ActionListener(){
@@ -293,8 +314,7 @@ public class QueryPanel extends JDialog{
 						
 						List<Query> queryList = new ArrayList<Query>();
 						queryList.add(query); 
-//						ProbabilisticNetwork network = mebnController.executeQueryLaskeyAlgorithm(queryList);
-						mebnController.executeQuery(queryList);
+                        mebnController.executeQuery(queryList);
 						
 				        mebnController.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 						
@@ -314,10 +334,17 @@ public class QueryPanel extends JDialog{
 								JOptionPane.ERROR_MESSAGE);
 					} catch (InconsistentArgumentException iae) {
 						iae.printStackTrace();
-						JOptionPane.showMessageDialog(mebnController.getScreen(), 
-								resource.getString("inconsistentArgument"),
-								resource.getString("error"),
-								JOptionPane.ERROR_MESSAGE);
+						if(iae.getMessage().isEmpty()){
+							JOptionPane.showMessageDialog(mebnController.getScreen(), 
+									resource.getString("inconsistentArgument"),
+									resource.getString("error"),
+									JOptionPane.ERROR_MESSAGE);
+						}else{
+							JOptionPane.showMessageDialog(mebnController.getScreen(), 
+									iae.getMessage(),
+									resource.getString("error"),
+									JOptionPane.ERROR_MESSAGE);
+						}
 					} catch (SSBNNodeGeneralException e2) {
 						e2.printStackTrace();
 						JOptionPane.showMessageDialog(mebnController.getScreen(), 

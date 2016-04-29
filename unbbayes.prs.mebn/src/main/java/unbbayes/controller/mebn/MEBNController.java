@@ -39,6 +39,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JToolBar;
 
 import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.NetworkController;
@@ -2637,6 +2638,13 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		this.mebnEditionPane = mebnEditionPane;
 	}
 
+	public void setKnowledgeBaseToolBar(JToolBar toolbar){
+		this.getMebnEditionPane().setKnowledgeBaseToolBar(toolbar);  
+	}
+	
+	public void setDefaultKnowledgeBaseToolBar(){
+		this.getMebnEditionPane().setDefaultKnowledgeBaseToolBar();
+	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#getSpecificSituationBayesianNetwork()

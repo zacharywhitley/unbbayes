@@ -30,6 +30,7 @@ import javax.swing.border.TitledBorder;
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.mebn.extension.IPanelBuilder;
 import unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder;
+import unbbayes.gui.mebn.extension.kb.IKBToolBarBuilder;
 import unbbayes.gui.mebn.extension.ssbn.ISSBNOptionPanelBuilder;
 import unbbayes.gui.mebn.extension.ssbn.LaskeyAlgorithmOptionPanelBuilder;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
@@ -91,6 +92,8 @@ public class OptionsDialog extends JDialog {
   	/** This map stores the default KB information (those not loaded from plugins) */
 	private Map<JRadioButtonMenuItem, IKBOptionPanelBuilder> defaultKbToOptionMap = null;
 	
+	Map<JRadioButtonMenuItem, IKBToolBarBuilder> toolBarMap = 
+			new HashMap<JRadioButtonMenuItem, IKBToolBarBuilder>();
 	
 	// components for SSBN algorithm configuration
 	
@@ -364,9 +367,16 @@ public class OptionsDialog extends JDialog {
 	                	// trace what is the last confirmed selection
 	                    lastConfirmedKBOption = lastSelectedKBOption;
 	                	
-	                	// updating the inference kb referenced by controller
+	                	// updating the inference knowledge base referenced by controller
 	                    controller.setKnowledgeBase(selectedKBOptionPanel.getKB());
 	                    controller.setKnowledgeBaseTypeName(getSelectedKBName()); 
+	                    
+	                    if(getSelectedKBToolBar()!= null){
+	                    	controller.getMebnEditionPane().setKnowledgeBaseToolBar(
+	                    			getSelectedKBToolBar().getToolBar());
+	                    }else{
+	                    	controller.setDefaultKnowledgeBaseToolBar();
+	                    }
 	                    
 	                }
 	            });
@@ -401,6 +411,18 @@ public class OptionsDialog extends JDialog {
 		for (JRadioButtonMenuItem option : this.getKbToOptionMap().keySet()) {
 			if (option.isSelected()) {
 				return this.getKbToOptionMap().get(option);
+			}
+		}
+		return null;
+	}
+    
+    private IKBToolBarBuilder getSelectedKBToolBar() {
+    	if (this.getKbToOptionMap() == null) {
+    		return null;
+    	}
+		for (JRadioButtonMenuItem option : this.getKbToOptionMap().keySet()) {
+			if (option.isSelected()) {
+				return this.toolBarMap.get(option);
 			}
 		}
 		return null;
@@ -455,6 +477,11 @@ public class OptionsDialog extends JDialog {
 		Map<IKnowledgeBaseBuilder, IKBOptionPanelBuilder> kbMap = 
 				this.getKbPluginManager().getKbToOptionPanelMap();
 		
+		Map<IKnowledgeBaseBuilder, IKBToolBarBuilder> kbToolBarMap = 
+				this.getKbPluginManager().getKbToToolBarMap();
+		
+		toolBarMap = new HashMap<JRadioButtonMenuItem, IKBToolBarBuilder>();
+				
 		for (IKnowledgeBaseBuilder kbBuilder : kbMap.keySet()) {
 			try {
 				
@@ -465,12 +492,16 @@ public class OptionsDialog extends JDialog {
 					panelBuilder = new EmptyOptionPanelBuilder(null);
 				}
 
+				KnowledgeBase kb = null; 
+				
 				boolean isOK = false;
 				try {
 					// tells the panel the correct kb to edit
-					panelBuilder.setKB(kbBuilder.buildKB(
+					kb = kbBuilder.buildKB(
 							this.getController().getMultiEntityBayesianNetwork(), 
-							this.getController()));
+							this.getController()); 
+							
+					panelBuilder.setKB(kb);
 					
 					isOK = true;
 				} catch (Throwable e) {
@@ -483,7 +514,9 @@ public class OptionsDialog extends JDialog {
 //							resource.getString("moduleLoadingError"), 
 //							e.getMessage(), 
 //							JOptionPane.WARNING_MESSAGE); 
-					panelBuilder.setKB(kbBuilder.buildKB()); // build using old deprecated method (it is OK, although it is not the best way)
+					kb = kbBuilder.buildKB(); 
+					
+					panelBuilder.setKB(kb); // build using old deprecated method (it is OK, although it is not the best way)
 					isOK = true;	
 				}
 				
@@ -494,6 +527,14 @@ public class OptionsDialog extends JDialog {
 					
 					// fill return
 					ret.put(radioButton, panelBuilder);
+
+					if (kb != null){
+						if(kbToolBarMap.get(kbBuilder)!=null){
+							kbToolBarMap.get(kbBuilder).setKB(kb);
+						}
+					}
+					
+					toolBarMap.put(radioButton, kbToolBarMap.get(kbBuilder)); 
 				}
 				
 			} catch (Throwable e) {

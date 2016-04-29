@@ -42,6 +42,8 @@ import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.compiler.Compiler;
 import unbbayes.prs.mebn.compiler.ICompiler;
 import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.util.Debug;
@@ -129,6 +131,8 @@ public class SSBNNode implements INode {
 			this.probabilisticNetwork = pnet;
 		}
 		
+		this.actualValues =  this.residentNode.getPossibleValueListIncludingEntityInstances();
+		
 		if (probNode == null) {
 			this.setProbNode(new ProbabilisticNode());
 		}else{
@@ -136,8 +140,6 @@ public class SSBNNode implements INode {
 		}
 		
 		updateProbabilisticNodeName(); 
-		
-		this.actualValues =  this.residentNode.getPossibleValueListIncludingEntityInstances();
 		
 		this.setUsingDefaultCPT(false);
 		
@@ -897,7 +899,14 @@ public class SSBNNode implements INode {
 			if (name.charAt(name.length() - 1) != '(') {
 				name += "_";
 			}
-			name += ovi.getEntity().getInstanceName();
+			
+			//TODO Temporary... change
+			if(ovi.getEntity().getInstanceName().contains("#")){
+				int index = ovi.getEntity().getInstanceName().indexOf("#"); 
+				name += ovi.getEntity().getInstanceName().substring(index + 1); 
+			}else{
+				name += ovi.getEntity().getInstanceName();
+			}
 		}
 		name += "";
 		
@@ -1105,7 +1114,17 @@ public class SSBNNode implements INode {
 			this.getProbabilisticNetwork().removeNode(this.probabilisticNode);
 		}
 		this.probabilisticNode = probNode;
-		this.appendProbNodeState();
+		
+		List<String> listStates = new ArrayList<String>(); 
+		
+		if (this.getResident() != null) {
+
+			for (Entity entity : this.actualValues) {
+				listStates.add(entity.getName()); 
+			}
+		}
+		
+		this.fillProbNodeStates(listStates);
 		
 		if (this.probabilisticNode != null) {
 			updateProbabilisticNodeName(); 
@@ -1380,16 +1399,15 @@ public class SSBNNode implements INode {
 	}
 
 	
-	
-	private void appendProbNodeState() {
+	private void fillProbNodeStates(List<String> stateList) {
 		if (this.getProbNode() == null) {
 			return;
 		}
-		if (this.getResident() != null) {
-			for (Entity entity : this.residentNode.getPossibleValueListIncludingEntityInstances()) {
-				this.getProbNode().appendState(entity.getName());
-			}
+		
+		for(String state: stateList){
+			this.getProbNode().appendState(state);
 		}
+
 		if (this.getProbNode().getProbabilityFunction() != null) {
 			this.getProbNode().getProbabilityFunction().addVariable(this.getProbNode());
 		}

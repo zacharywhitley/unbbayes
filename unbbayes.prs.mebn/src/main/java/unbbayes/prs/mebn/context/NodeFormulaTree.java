@@ -185,18 +185,41 @@ public class NodeFormulaTree{
 				int numberAguments = pointer.getNumberArguments(); 
 				for(int i = 0; i < numberAguments - 1; i++){
 					if(pointer.getArgument(i) != null){
-					   returnName+= pointer.getArgument(i).getName();
+						//TODO Find a better way to do this. 
+					   String name = pointer.getArgument(i).getName();
+					   if(name.contains("#")){
+							int index = name.indexOf("#"); 
+							name = name.substring(index + 1); 
+							returnName+=name; 
+						}else{
+							returnName+=name;
+						}
+//					   returnName+= pointer.getArgument(i).getName();
 					}
 					returnName+= ","; 
 				}
 				if(numberAguments > 0){
-					if(pointer.getArgument(numberAguments - 1) != null){		
-					    returnName+= pointer.getArgument(numberAguments - 1).getName(); // without ","
+					if(pointer.getArgument(numberAguments - 1) != null){	
+						//TODO Find a better way to do this. 
+						   String name = pointer.getArgument(numberAguments - 1).getName();
+						   if(name.contains("#")){
+								int index = name.indexOf("#"); 
+								name = name.substring(index + 1); 
+								returnName+=name; 
+							}else{
+								returnName+=name;
+							}
+//					    returnName+= pointer.getArgument(numberAguments - 1).getName(); // without ","
 					}
 				}
 				return returnName + ")"; 
 	
 			default: 
+				//TODO Find a better way to do this
+				if(name.contains("#")){
+					int index = name.indexOf("#"); 
+					name = name.substring(index + 1); 
+				}
 				return name; 
 			}
 			

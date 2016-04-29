@@ -70,11 +70,15 @@
     	 	    optionPanel : this is a panel to be used as a form to fill attributes for this Knowledge Base.
     	 	           It MUST implement unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder.
     	 	           It MUST provide a default constructor with no parameters.
+    	 	    toolbar : this is a toolbar with options of the knowledge base. 
+    	 	           It MUST implement unbbayes.gui.mebn.extension.kb.IKBToolBarBuilder.
+    	 	           It MUST provide a default constructor with no parameters.       
     -->
     <extension-point id="KnowledgeBase">
         <parameter-def id="class"/>
         <parameter-def id="name"/>
         <parameter-def multiplicity="none-or-one" id="optionPanel"/>
+        <parameter-def multiplicity="none-or-one" id="toolbar"/>
     </extension-point>
     
     <!-- Situation Specific Bayesian Network generation extension point. 

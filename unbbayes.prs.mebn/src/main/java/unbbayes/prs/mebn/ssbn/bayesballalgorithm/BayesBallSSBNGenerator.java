@@ -8,6 +8,10 @@ import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.prs.mebn.ResidentNode;
+import unbbayes.prs.mebn.entity.Entity;
+import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.BuilderLocalDistributionImpl;
@@ -17,6 +21,7 @@ import unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
+import unbbayes.prs.mebn.ssbn.SimpleSSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
@@ -100,7 +105,45 @@ public class BayesBallSSBNGenerator implements IMediatorAwareSSBNGenerator{
 		IPruneStructure pruneStructure = PruneStructureImpl.newInstance(pruners); 
 		pruneStructure.pruneStructure(ssbn);
 		
+		//TODO Remove this temporary solution. 
+		//Recover from kb individuals of ObjectEntity in case of this individuals are
+		//not filled yed (when the user uses a database knowledge base, for instance. 
+		Debug.println("\n");
+		Debug.println("Fill possible values for Object Entities:"); 
+		
+		List<ObjectEntity> evaluatedObjectEntityList = new ArrayList<ObjectEntity>(); 
+		
+		for(SimpleSSBNNode node: ssbn.getSimpleSsbnNodeList()){
+			ResidentNode resident = node.getResidentNode(); 
+			for (Entity state : resident.getPossibleValueList()) {
+				if (state instanceof ObjectEntity) {
+					ObjectEntity objectEntityState = (ObjectEntity)state; 
+					if(!evaluatedObjectEntityList.contains(objectEntityState)){
+						objectEntityState.removeAllInstances();
+						evaluatedObjectEntityList.add(objectEntityState); 
+					}
+					if(objectEntityState.getInstanceList().size() == 0){
+						Debug.println("Fill possible values for entity " + objectEntityState);
+						List<String> listIndividuals = kb.getEntityByType(objectEntityState.getType().getName()); 
+						for(String individual: listIndividuals){
+							try {
+								Debug.println("Individual: " + individual);
+								objectEntityState.addInstance(individual);
+							} catch (TypeException e) {
+								e.printStackTrace();
+							} 
+						}
+					}
+				}
+			}
+		}
+		
+		Debug.println("\n");
+		
 		//Step 4: 
+		//In this step we translate the BayesBallSSBNnode (SimpleSSBNNode) to SSBNNode.
+		//This is a good time for expand the states of resident nodes, because we already prune 
+		//all unnecessary nodes, so all nodes in the SSBN really will need of the possible value list. 
 		IBuilderLocalDistribution localDistributionBuilder = BuilderLocalDistributionImpl.newInstance(); 
 		localDistributionBuilder.buildLocalDistribution(ssbn);
 				

@@ -10,11 +10,12 @@ import java.util.Map;
 
 import org.java.plugin.PluginManager;
 import org.java.plugin.registry.Extension;
+import org.java.plugin.registry.Extension.Parameter;
 import org.java.plugin.registry.ExtensionPoint;
 import org.java.plugin.registry.PluginDescriptor;
-import org.java.plugin.registry.Extension.Parameter;
 
 import unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder;
+import unbbayes.gui.mebn.extension.kb.IKBToolBarBuilder;
 import unbbayes.prs.mebn.kb.extension.IKnowledgeBaseBuilder;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
@@ -32,10 +33,12 @@ public class KnowledgeBasePluginManager {
 	private String paramNameKBBuilder = "class";
 	private String paramNameName = "name";
 	private String paramNameOptionPanelBuilder = "optionPanel";
+	private String paramNameToolBar = "toolbar";
 	
 	private PluginManager pluginManager = UnBBayesPluginContextHolder.newInstance().getPluginManager();
 	
 	private Map<IKnowledgeBaseBuilder, IKBOptionPanelBuilder> kbToOptionPanelMap = new HashMap<IKnowledgeBaseBuilder, IKBOptionPanelBuilder>();
+	private Map<IKnowledgeBaseBuilder, IKBToolBarBuilder> kbToToolBarMap = new HashMap<IKnowledgeBaseBuilder, IKBToolBarBuilder>();
 
 	/**
 	 * Default constructor.
@@ -80,6 +83,7 @@ public class KnowledgeBasePluginManager {
 	public void reloadPlugins() {
 		
 		Map<IKnowledgeBaseBuilder, IKBOptionPanelBuilder> kbToOptionPanelMap = new HashMap<IKnowledgeBaseBuilder, IKBOptionPanelBuilder>();
+		Map<IKnowledgeBaseBuilder, IKBToolBarBuilder> kbToToolBarMap = new HashMap<IKnowledgeBaseBuilder, IKBToolBarBuilder>();
 		
     	try {
         	// let's republish plugins if they're not done yet
@@ -108,22 +112,34 @@ public class KnowledgeBasePluginManager {
     				Parameter kbBuilderParam = ext.getParameter(this.getParamNameKBBuilder());
     				Parameter nameParam = ext.getParameter(this.getParamNameName());
     				Parameter optionPanelParam = ext.getParameter(this.getParamNameOptionPanelBuilder());
+    				Parameter toolbarParam = ext.getParameter(this.getParamNameToolBar()); 
     				
     				// extracting builder class
     				
     				ClassLoader classLoader = this.getPluginManager().getPluginClassLoader(descr);
     				
     	            Class kbClass = classLoader.loadClass(kbBuilderParam.valueAsString());
+    	            
     	            Class optionPanelClass = null;
     	            if ((optionPanelParam != null) && (optionPanelParam.valueAsString().length() > 0)) {
     	            	optionPanelClass = classLoader.loadClass(optionPanelParam.valueAsString());
     	            }
+    	            Class toolbarClass = null;
+    	            if ((toolbarParam != null) && (toolbarParam.valueAsString().length() > 0)) {
+    	            	toolbarClass = classLoader.loadClass(toolbarParam.valueAsString());
+    	            }
     				
     	            // intantiating plugin object
     		    	IKnowledgeBaseBuilder kbBuilder = (IKnowledgeBaseBuilder)kbClass.newInstance();
+    		    	
     		    	IKBOptionPanelBuilder optionPanelBuilder = null;
     		    	if (optionPanelClass != null) {
     		    		optionPanelBuilder = (IKBOptionPanelBuilder)optionPanelClass.newInstance();
+    		    	}
+    		    	
+    		    	IKBToolBarBuilder toolbarBuilder = null; 
+    		    	if (toolbarClass != null) {
+    		    		toolbarBuilder = (IKBToolBarBuilder)toolbarClass.newInstance();
     		    	}
     		    	
     		    	// setting name as extracted from plugin
@@ -131,6 +147,7 @@ public class KnowledgeBasePluginManager {
     				
     				// filling the map
     				kbToOptionPanelMap.put(kbBuilder, optionPanelBuilder);
+    				kbToToolBarMap.put(kbBuilder, toolbarBuilder);
     			} catch (Throwable e) {
     				e.printStackTrace();
     				continue;
@@ -141,6 +158,7 @@ public class KnowledgeBasePluginManager {
 		}
 	    
     	this.setKbToOptionPanelMap(kbToOptionPanelMap);
+    	this.setKbToToolBarMap(kbToToolBarMap); 
 	}
 
 	/**
@@ -222,6 +240,11 @@ public class KnowledgeBasePluginManager {
 		return paramNameOptionPanelBuilder;
 	}
 
+	public String getParamNameToolBar() {
+		return paramNameToolBar;
+	}
+
+	
 	/**
 	 * @param paramNameOptionPanelBuilder the paramNameOptionPanelBuilder to set
 	 */
@@ -236,12 +259,21 @@ public class KnowledgeBasePluginManager {
 		return kbToOptionPanelMap;
 	}
 
+	public Map<IKnowledgeBaseBuilder, IKBToolBarBuilder> getKbToToolBarMap(){
+		return kbToToolBarMap; 
+	}
+	
 	/**
 	 * @param kbToOptionPanelMap the kbToOptionPanelMap to set
 	 */
 	public void setKbToOptionPanelMap(
 			Map<IKnowledgeBaseBuilder, IKBOptionPanelBuilder> kbToOptionPanelMap) {
 		this.kbToOptionPanelMap = kbToOptionPanelMap;
+	}
+	
+	public void setKbToToolBarMap(
+			Map<IKnowledgeBaseBuilder, IKBToolBarBuilder> kbToToolBarMap) {
+		this.kbToToolBarMap = kbToToolBarMap;
 	}
 
 }

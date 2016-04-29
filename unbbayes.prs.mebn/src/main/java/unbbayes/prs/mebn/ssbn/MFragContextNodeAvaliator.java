@@ -97,7 +97,17 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 					logManager.printText(level5, false, "All ov's of the context node are setted");
 				}
 				
-				boolean result = kb.evaluateContextNodeFormula(contextNode, ovInstances);
+				Boolean resultBoolean = kb.evaluateContextNodeFormula(contextNode, ovInstances);
+				
+				boolean result = false; 
+				
+				if(resultBoolean!= null){
+					if(resultBoolean.booleanValue()){
+						result = true; 
+					}
+				}else{
+					throw new MFragContextFailException("Error evaluating node " + contextNode); 
+				}
 				
 				if(result){
 					mFragInstance.setStateEvaluationOfContextNode(contextNode, 
@@ -304,7 +314,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 	 * evaluation of one context node, we try use the information for solve others 
 	 * context nodes. 
 	 * 
-	 * Update the evaluation tree with the values of the ordinary variables found. 
+	 * Update the evaluation tree (inside MFragInstance) with the values of the ordinary variables found. 
 	 * 
 	 *  @return list of possible reference uncertain nodes updated only with the
 	 *          nodes don't evaluated in this step. 
@@ -389,7 +399,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 								//Here, the context node fail adding the values for a ordinary variable
 								//fault. This fail impossibility the evaluation of the rest of the MFragInstance, 
 								//because, this node, used to recover the possible values, fail. 
-								//								throw e; 
+								//throw e; 
 							}
 
 						}
