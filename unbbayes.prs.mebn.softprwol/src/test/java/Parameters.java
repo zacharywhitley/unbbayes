@@ -1,4 +1,4 @@
-package unbbayes.triplestore;
+
 
 import java.util.ArrayList;
 import java.util.Collections;

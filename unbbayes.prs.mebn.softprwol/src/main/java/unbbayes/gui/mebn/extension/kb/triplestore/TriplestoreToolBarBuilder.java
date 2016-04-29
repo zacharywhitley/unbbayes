@@ -9,14 +9,16 @@ public class TriplestoreToolBarBuilder implements IKBToolBarBuilder{
 
 	KnowledgeBase kb; 
 	
-	TripleStoreToolBar triplestoreBar; 
+	TriplestoreToolBar triplestoreBar; 
 	
 	@Override
 	public JToolBar getToolBar() {
+		
 		if(triplestoreBar == null){
-			triplestoreBar = new TripleStoreToolBar(); 
+			triplestoreBar = new TriplestoreToolBar(); 
 		}
-		return triplestoreBar ;
+		
+		return triplestoreBar; 
 	}
 
 	@Override

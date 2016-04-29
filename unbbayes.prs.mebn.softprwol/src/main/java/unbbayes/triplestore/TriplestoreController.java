@@ -1,20 +1,28 @@
 package unbbayes.triplestore;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFParser.DatatypeHandling;
+import unbbayes.gui.mebn.extension.kb.triplestore.DatabaseStatusObserver;
+import unbbayes.triplestore.exception.InvalidQuerySintaxException;
+import unbbayes.triplestore.exception.TriplestoreQueryEvaluationException;
+import unbbayes.triplestore.exception.TriplestoreException;
 
-public class TriplestoreController {
+import unbbayes.util.Parameters;
+
+public class TriplestoreController implements DatabaseStatusObservable {	
 
 	Triplestore triplestore = null;
 	Parameters params = null; 
+	
+	private List<DatabaseStatusObserver> listenerList = 
+			new ArrayList<DatabaseStatusObserver>(); 
 	
 	public TriplestoreController(){
 		
 	}
 	
-	public void startConnection(Parameters params){
+	public void startConnection(Parameters params) throws TriplestoreException{
 		
 		this.params = params; 
 		
@@ -23,64 +31,30 @@ public class TriplestoreController {
 		// http://java.sun.com/j2se/1.5.0/docs/guide/xml/jaxp/JAXP-Compatibility_150.html#JAXP_security
 		System.setProperty("entityExpansionLimit", "1000000");
 
-		// Set default values for missing parameters
-		params.setDefaultValue(Triplestore.PARAM_CONFIG, "./owlim.ttl");
-		
-		params.setDefaultValue(Triplestore.PARAM_SHOWRESULTS, "true");
-		params.setDefaultValue(Triplestore.PARAM_SHOWSTATS, "false");
-		
-		params.setDefaultValue(Triplestore.PARAM_UPDATES, "false");
-		
-//		params.setDefaultValue(PARAM_QUERYFILE, "./queries/lubmqueries.sparql");
-		params.setDefaultValue(Triplestore.PARAM_QUERYFILE, "./queries/lubmqueries2.sparql");
-		
-		params.setDefaultValue(Triplestore.PARAM_EXPORT_FORMAT, RDFFormat.NTRIPLES.getName());
+		long initializationStart = System.currentTimeMillis();
 
-		params.setDefaultValue(Triplestore.PARAM_PRELOAD, "./preload");
-		params.setDefaultValue(Triplestore.PARAM_VERIFY, "true");
-		params.setDefaultValue(Triplestore.PARAM_STOP_ON_ERROR, "true");
-		params.setDefaultValue(Triplestore.PARAM_PRESERVE_BNODES, "true");
-		params.setDefaultValue(Triplestore.PARAM_DATATYPE_HANDLING, DatatypeHandling.VERIFY.name());
-		params.setDefaultValue(Triplestore.PARAM_CHUNK_SIZE, "500000");
-		
-		// Old versions 
-//		params.setDefaultValue(PARAM_URL, "	http://localhost:8080/openrdf-sesame");
-//		params.setDefaultValue(PARAM_URL, "	http://localhost:8080/openrdf-workbench");
-		
-		// Graphdb 6.6.3
-//		params.setDefaultValue(TripleStoreDriver.PARAM_URL, "http://localhost:8080/graphdb-workbench-free");
-//		params.setDefaultValue(TripleStoreDriver.PARAM_REPOSITORY, "LUBM1RL");
-		
-//		params.setDefaultValue(PARAM_REPOSITORY, "LUBM2-QL");
+		// The ontologies and datasets specified in the 'import' parameter
+		// of the Sesame configuration file are loaded during initialization.
+		// Thus, for large datasets the initialization could take
+		// considerable time.
+		triplestore = new SAILTriplestore(params);
+		Boolean connected = triplestore.connectRemoteRepository(); 
 
-		try {
-			long initializationStart = System.currentTimeMillis();
-			
-			// The ontologies and datasets specified in the 'import' parameter
-			// of the Sesame configuration file are loaded during initialization.
-			// Thus, for large datasets the initialization could take
-			// considerable time.
-			triplestore = new Triplestore(params.getParameters());
-			Boolean connected = triplestore.connectRemoteRepository(); 
-			
-			if(connected){
-				System.out.println("Connection OK!");
-			}else{
-				System.out.println("Connection not OK.");
-			}
-		
-			
-		} catch (Throwable ex) {
-			ex.printStackTrace();
-		}		
-		
+		if(connected){
+			System.out.println("Connection OK!");
+		}else{
+			System.out.println("Connection not OK.");
+		}
+
+		notifyListeners(); 
+
 	}
 	
 	public boolean isConnected(){
 		return triplestore.isConnected(); 
 	}
 	
-	public void stopConnection(){
+	public void stopConnection() throws TriplestoreException{
 		
 		if (triplestore != null){
 			triplestore.shutdown();
@@ -92,15 +66,40 @@ public class TriplestoreController {
 		triplestore.iterateNamespaces();
 	}
 	
-	public List<String[]> executeSelectQuery(String query){
-		
+	public List<String[]> executeSelectQuery(String query) throws InvalidQuerySintaxException, TriplestoreException, TriplestoreQueryEvaluationException{
 		List<String[]> list = triplestore.executeSelectQuery(query); 
-		
 		return list; 
-		
 	}
 	
-	public boolean executeAskQuery(String query){
+	public Triplestore getTriplestore() {
+		return triplestore;
+	}
+
+	public void setTriplestore(Triplestore triplestore) {
+		this.triplestore = triplestore;
+	}
+	
+	public boolean executeAskQuery(String query) throws InvalidQuerySintaxException, TriplestoreQueryEvaluationException, TriplestoreException{
 		return triplestore.executeAskQuery(query); 
 	}
+	
+
+	@Override
+	public void atach(DatabaseStatusObserver observer) {
+		this.listenerList.add(observer); 
+	}
+
+	@Override
+	public void detach(DatabaseStatusObserver observer) {
+		this.listenerList.remove(observer); 
+	}
+
+	@Override
+	public void notifyListeners() {
+		for(DatabaseStatusObserver o: this.listenerList){
+			o.update(this.isConnected());
+		}
+	}
+	
 }
+
