@@ -12,7 +12,7 @@ public class TriplestoreToolBarBuilder implements IKBToolBarBuilder{
 	TriplestoreToolBar triplestoreBar; 
 	
 	@Override
-	public JToolBar getToolBar() {
+	public TriplestoreToolBar getToolBar() {
 		
 		if(triplestoreBar == null){
 			triplestoreBar = new TriplestoreToolBar(); 
@@ -23,11 +23,14 @@ public class TriplestoreToolBarBuilder implements IKBToolBarBuilder{
 
 	@Override
 	public void setKB(KnowledgeBase kb) {
+		
 		this.kb = kb;
 		
-		if(triplestoreBar!=null){
-			triplestoreBar.setKb(kb);
+		if(triplestoreBar==null){
+			triplestoreBar = this.getToolBar(); 
 		}
+
+		triplestoreBar.setKb(kb);
 		
 	}
 

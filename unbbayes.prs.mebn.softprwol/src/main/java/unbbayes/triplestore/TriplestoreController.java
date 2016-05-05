@@ -5,9 +5,9 @@ import java.util.List;
 
 import unbbayes.gui.mebn.extension.kb.triplestore.DatabaseStatusObserver;
 import unbbayes.triplestore.exception.InvalidQuerySintaxException;
-import unbbayes.triplestore.exception.TriplestoreQueryEvaluationException;
 import unbbayes.triplestore.exception.TriplestoreException;
-
+import unbbayes.triplestore.exception.TriplestoreQueryEvaluationException;
+import unbbayes.util.Debug;
 import unbbayes.util.Parameters;
 
 public class TriplestoreController implements DatabaseStatusObservable {	
@@ -33,6 +33,14 @@ public class TriplestoreController implements DatabaseStatusObservable {
 
 		long initializationStart = System.currentTimeMillis();
 
+		
+		//Disconnect previous connection 
+		if(triplestore != null){
+			if(triplestore.isConnected()){
+				triplestore.shutdown();
+			}
+		}
+		
 		// The ontologies and datasets specified in the 'import' parameter
 		// of the Sesame configuration file are loaded during initialization.
 		// Thus, for large datasets the initialization could take
@@ -41,9 +49,9 @@ public class TriplestoreController implements DatabaseStatusObservable {
 		Boolean connected = triplestore.connectRemoteRepository(); 
 
 		if(connected){
-			System.out.println("Connection OK!");
+			Debug.println("Connection Succesfull!");
 		}else{
-			System.out.println("Connection not OK.");
+			Debug.println("Fail trying connect to database.");
 		}
 
 		notifyListeners(); 
@@ -51,7 +59,11 @@ public class TriplestoreController implements DatabaseStatusObservable {
 	}
 	
 	public boolean isConnected(){
-		return triplestore.isConnected(); 
+		if(triplestore!=null){
+			return triplestore.isConnected();
+		}else{
+			return false; 
+		}
 	}
 	
 	public void stopConnection() throws TriplestoreException{

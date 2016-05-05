@@ -31,6 +31,7 @@ public class TriplestoreToolBar extends JToolBar implements DatabaseStatusObserv
 		super(); 
 		
 		btnStatus = new JButton(""); 
+		
 		this.setStatusOff();
 		
 		btnConfigure = new JButton("Configure");  
@@ -38,11 +39,11 @@ public class TriplestoreToolBar extends JToolBar implements DatabaseStatusObserv
 		btnLoadTBox= new JButton("LoadTBox"); 
 		btnQuery =new JButton("Query"); 
 		
-//		add(btnStatus); 
-		add(btnConfigure);  
-		add(btnConnect);     
-		add(btnLoadTBox); 
-		add(btnQuery); 
+		add(btnStatus); 
+//		add(btnConfigure);  
+//		add(btnConnect);     
+//		add(btnLoadTBox); 
+//		add(btnQuery); 
 		
 	}
 	
@@ -55,6 +56,7 @@ public class TriplestoreToolBar extends JToolBar implements DatabaseStatusObserv
 	private void setStatusOn() {
 		btnStatus.setBackground(Color.green);
     	btnStatus.setText("ON");
+		btnStatus.setToolTipText(this.getKb().getTriplestoreController().getTriplestore().getRepositoryURI());
     	this.repaint();
 	}
 	
@@ -63,7 +65,7 @@ public class TriplestoreToolBar extends JToolBar implements DatabaseStatusObserv
 	}
 
 	public void setKb(KnowledgeBase kb) {
-		//TODO Modify this 
+
 		this.kb = (TriplestoreKnowledgeBase)kb;
 		
 		if(this.kb.getTriplestoreController().isConnected()){

@@ -36,6 +36,9 @@ public class SAILTriplestore implements Triplestore{
 
 	Parameters parameters; 
 	
+	private String url = "";
+	private String repositoryId = "";
+	
 	// The repository manager
 	private RepositoryManager repositoryManager;
 
@@ -68,13 +71,14 @@ public class SAILTriplestore implements Triplestore{
 	@Override
 	public boolean connectRemoteRepository() throws TriplestoreException{
 		
-		String url = parameters.getParameterValue(PARAM_URL);
+		this.url = parameters.getParameterValue(PARAM_URL);
 
-		String repositoryId = parameters.getParameterValue(PARAM_REPOSITORY);
+		this.repositoryId = parameters.getParameterValue(PARAM_REPOSITORY);
 
 		if ((repositoryId == null) || (repositoryId.equals(""))) {
 			throw new TriplestoreException("Can't connect to repository. No repository ID specified.");
 		}
+		
 		try {
 			RemoteRepositoryManager remoteRepositoryManager = new RemoteRepositoryManager(url);
 
@@ -330,6 +334,15 @@ public class SAILTriplestore implements Triplestore{
 			return prefix + u.getLocalName();
 		} else {
 			return value.toString();
+		}
+	}
+
+	@Override
+	public String getRepositoryURI() {
+		if((this.url != null) && (!this.url.equals("")) && (this.repositoryId != null)){
+			return this.url + this.repositoryId;
+		}else{
+			return ""; 
 		}
 	}
 	

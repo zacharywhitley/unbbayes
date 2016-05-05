@@ -43,6 +43,8 @@ public interface Triplestore{
 	
 	public void setParameterValue(String parameter, String value); 
 	
+	public String getRepositoryURI(); 
+	
 	public boolean connectRemoteRepository() throws TriplestoreException; 
 	
 	public boolean isConnected(); 
