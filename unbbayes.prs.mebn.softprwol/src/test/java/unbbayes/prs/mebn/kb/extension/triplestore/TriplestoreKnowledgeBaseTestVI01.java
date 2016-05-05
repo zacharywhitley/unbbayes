@@ -14,7 +14,6 @@ import java.util.Set;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import unbbayes.io.mebn.EmptyMediator;
 import unbbayes.io.mebn.PROWLModelUser;
 import unbbayes.io.mebn.UbfIO2;
 import unbbayes.prs.Graph;
