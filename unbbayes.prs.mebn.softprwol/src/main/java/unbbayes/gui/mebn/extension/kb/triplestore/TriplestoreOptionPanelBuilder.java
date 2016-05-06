@@ -82,8 +82,8 @@ public class TriplestoreOptionPanelBuilder extends JScrollPane implements
 	
 	public void updateUI() {
 		
-		JTextField repositoryNameTextField; 
-		JTextField databaseURLTextField; 
+		final JTextField repositoryNameTextField = new JTextField(30); ; 
+		final JTextField databaseURLTextField = new JTextField(30); ; 
 		JButton btnConnect; 
 		
 		JPanel newView = new JPanel(new BorderLayout());
@@ -97,8 +97,7 @@ public class TriplestoreOptionPanelBuilder extends JScrollPane implements
 		formPanel.add(new JLabel("Connection Configuration")); 
 		
 		JPanel line = new JPanel(); 
-		line.add(new JLabel("   Database URL:")); 
-		databaseURLTextField = new JTextField(30); 
+		line.add(new JLabel("   Database URL:"));
 		databaseURLTextField.setText("http://localhost:8080/graphdb-workbench-free/");
 		line.add(databaseURLTextField); 
 		
@@ -106,7 +105,6 @@ public class TriplestoreOptionPanelBuilder extends JScrollPane implements
 		
 		line = new JPanel(); 
 		line.add(new JLabel("Repository Name:")); 
-		repositoryNameTextField = new JTextField(30); 
 		repositoryNameTextField.setText("LUBM1RL");
 		line.add(repositoryNameTextField);
 		formPanel.add(line); 
