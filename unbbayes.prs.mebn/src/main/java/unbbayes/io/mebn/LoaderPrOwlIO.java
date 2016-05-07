@@ -30,8 +30,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.swing.tree.DefaultMutableTreeNode;
-
 import unbbayes.gui.InternalErrorDialog;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
@@ -1077,6 +1075,8 @@ public class LoaderPrOwlIO extends PROWLModelUser implements
 				try {
 					generativeInputNode.setInputInstanceOf(domainResidentNode);
 				} catch (Exception e) {
+					System.err.println("Warning: unable to find input node instance of " + domainResidentNode + ". Input instance was " + individualTwo);
+					System.err.println("The following is the stack trace:");
 					e.printStackTrace();
 				}
 				Debug.println("-> " + individualOne.getBrowserText() + ": "
