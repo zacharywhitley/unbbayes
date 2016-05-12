@@ -6,6 +6,7 @@ import java.util.List;
 
 import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.io.log.IdentationLevel;
+import unbbayes.prs.INode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
@@ -27,6 +28,7 @@ import unbbayes.prs.mebn.ssbn.SimpleSSBNNode;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
+import unbbayes.util.Debug;
 
 /** 
  * Build SSBN Grand-BN based on Bayes-Ball Algorithm. 
@@ -60,9 +62,9 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 	 * algorithm, pass the ball to all children, all parents or block it. 
 	 */
 	public void buildStructure(SSBN _ssbn) throws ImplementationRestrictionException, 
-	SSBNNodeGeneralException{
+	                                              SSBNNodeGeneralException{
 
-		System.out.println("Build Structure");
+		Debug.println("Build Structure");
 		
 		this.ssbn = _ssbn; 
 		this.kb = ssbn.getKnowledgeBase(); 
@@ -90,9 +92,9 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 			// This version of Bayes-Ball algorithm treat only probabilistic nodes 
 			for(BayesBallNode node: unvaluedNodeList){
 				
-				System.out.println(" ");
-				System.out.println("Evaluating node: " + node);
-				System.out.println(" ");
+				Debug.println(" ");
+				Debug.println("Evaluating node: " + node);
+				Debug.println(" ");
 				
 				//Evaluated Node: 
 				//Here, we have to: 
@@ -103,20 +105,26 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 					evaluateNode(node);
 				} catch (MFragContextFailException e) {
 					// TODO Auto-generated catch block
+					// TODO throws exception or set default distribution
 					e.printStackTrace();
+					node.setDefaultDistribution(true);
 				} 
 
 				node.setVisited(true);
+				
+				if(node.isDefaultDistribution()){
+					continue; 
+				}
 
 				//Receiving ball from child 	
-				//  Not finding 
+				//  Node isn't a finding:  
 				//  -> pass ball to parents 
 				//  -> pass ball to children 
-				//  Finding 
+				//  Node is a finding (observed):  
 				//  -> block 
 				
 				if (node.isReceivedBallFromChild()){
-					System.out.println("Is Received ball from child");
+					Debug.println("Node " + node + " is receiving ball from child.");
 					if (!node.isObserved()){
 						if(!node.isEvaluatedTop()){
 							evaluateTop(node);
@@ -128,13 +136,13 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 				}
 
 				//Receiving ball from parent 
-				//  Not finding 
+				//  Node isn't a finding:  
 				//  -> pass ball to children 
-				//  Finding 
+				//  Node is a finding (observed):
 				//  -> pass ball to parents 
 				
 				if (node.isReceivedBallFromParent()){
-					System.out.println("Is Received ball from parent");
+					Debug.println("Node " + node + " is receiving ball from parent.");
 					if (!node.isObserved()){
 						if(!node.isEvaluatedBottom()){
 							evaluateBottom(node);
@@ -149,31 +157,38 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 
 			//Schedule nodes to be evaluated in the next iteration 
 			unvaluedNodeList.clear(); 
-			System.out.println("");
-			System.out.println("----------------------------------");
-			System.out.println("Creating list of unvaluated nodes");
+			Debug.println("");
+			Debug.println("----------------------------------");
+			Debug.println("Updating list of unvaluated nodes");
 			for(BayesBallNode node: nodeList){
 				if(!node.isVisited()){
-					System.out.println(node + " UP " + 
+					Debug.println(node + " UP " + 
 							node.isEvaluatedBottom() + " DOWN " + node.isEvaluatedTop() + 
 							" CHILD " + node.isReceivedBallFromChild() + " FATH " + node.isReceivedBallFromParent());
 					unvaluedNodeList.add(node); 
 				}
 			}
-			System.out.println("------------------------------------");
-			System.out.println("");			
+			Debug.println("------------------------------------");
+			Debug.println("");			
 		} //While
 
-		System.out.println("");
-		System.out.println("Evaluation finished!!!");
+		Debug.println("");
+		Debug.println("Evaluation finished!!!");
 
-		System.out.println("");
-		System.out.println("Created Nodes:");
+		Debug.println("");
+		Debug.println("Final list of Nodes:");
+		
 		for(BayesBallNode node: nodeList){
-			System.out.println(node + " UP " + 
+			
+			ssbn.addSSBNNode(node);
+			
+			Debug.println(node + " UP " + 
 					node.isEvaluatedBottom() + " DOWN " + node.isEvaluatedTop() + 
 					" CHILD " + node.isReceivedBallFromChild() + " FATH " + node.isReceivedBallFromParent());
-			ssbn.addSSBNNode(node);
+			
+			for(INode nodeChild: node.getParentNodes()){
+				Debug.println("   > " + nodeChild);
+			}
 		}
 
 	}
@@ -202,29 +217,27 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 		StateLink exactValue = kb.searchFinding(
 				node.getResidentNode(), argumentList);
 		
-		/*
-		 * Note: how the algorithm is bottom-up, it is necessary continue the evaluation 
-		 * to up even if the node is already setted as a finding because above it can have
-		 * a query or a node that influence the query. 
-		 */
-		if(exactValue!= null){
+		if(exactValue != null){
 			node.setState(exactValue.getState());
 			node.setObserved(true);
 			ssbn.addFindingToFindingList(node); 
-			System.out.println("Node is a finding. Exact Value = " + exactValue.getState());
+			Debug.println("Node is a finding. Exact Value = " + exactValue.getState());
 			
 		}
 		
-		//Evaluate MFrag Instance
+		//------------------------------------------------------------------------------
+		// Step 2: Evaluate MFragInstance 
+		//------------------------------------------------------------------------------
 		
 		if(node.getMFragInstance()!=null){
 			
-			System.out.println("Node already have a MFrag Instance: " + node.getMFragInstance());
+			Debug.println("Node already have a MFrag Instance: " + node.getMFragInstance());
 			
 			if(node.getMFragInstance().isUsingDefaultDistribution()){
 				node.setDefaultDistribution(true);
-				System.out.println("Node using default distribution.");
+				Debug.println("MFrag Instance using default distibution: node setted to default distribution.");
 			}
+			
 		}else{
 			
 			List<OVInstance> oviList = new ArrayList<OVInstance>();
@@ -239,6 +252,12 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 					node.getResidentNode().getMFrag(), oviList); 
 			
 			node.setMFragInstance(mFragInstance);
+			
+			if (mFragInstance.isUsingDefaultDistribution()){
+				node.setDefaultDistribution(true);
+				Debug.println("MFrag Instance using default distibution: node setted to default distribution.");
+			}
+			
 		}
 	}
 
@@ -247,14 +266,14 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 		
 		MFragInstance mFragInstance = MFragInstance.getInstance(mFrag); 
 		
-		System.out.println("Created new MFrag Instance for MFrag " + mFrag );
+		Debug.println("Created new MFrag Instance for MFrag " + mFrag );
 		
 		//TODO Change for this point don't throw more a MFragContextFailException
 		for(OVInstance ovi: ovInstanceList){
 			mFragInstance.addOVValue(ovi.getOv(), ovi.getEntity().getInstanceName());
 		}
 				
-		//TODO We should verify in this point if we already have a MFragInstance with the filled arguments 
+		//TODO We should verify if we already have a MFragInstance with the filled arguments 
 		
 		//Evaluate context Nodes
 		// 2) Evaluate MFragInstance context
@@ -274,14 +293,14 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 //				throw new ImplementationRestrictionException(e.getMessage()); 
 			mFragInstance.setUseDefaultDistribution(true); 
 			e.printStackTrace();
-			System.out.println("MFrag Instance using default distribution");
+			Debug.println("MFrag Instance using default distribution");
 			
 		} catch (MFragContextFailException e) {
 			//TODO warning... the evaluation continue, using the default distribution
 //				throw new SSBNNodeGeneralException(e.getMessage()); 
 			e.printStackTrace();
 			mFragInstance.setUseDefaultDistribution(true); 
-			System.out.println("MFrag Instance using default distribution");
+			Debug.println("MFrag Instance using default distribution");
 		
 		} 	
 		
@@ -301,7 +320,7 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 	private void evaluateBottom(BayesBallNode node) throws SSBNNodeGeneralException, 
 	                                                       ImplementationRestrictionException {
 		
-		System.out.println("Evaluate bottom");
+		Debug.println("Evaluate bottom");
 		
 		/* ***************************************************************************
 		/*                      RESIDENT NODES IN SOME MFRAGS 
@@ -311,30 +330,37 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 			
 			//*** NEW NODE CREATED ***
 			
+			//This algorithm accept only one context node parent for node 
 			int contextParentsCount = 0; 
+			
 			List<OrdinaryVariable> ovFaultForNewNodeList = new ArrayList<OrdinaryVariable>(); 
 
 			//Fill the ovFault list, in relation with the child node. The ordinary
 			//variables of the MFragInstance will be used forward. 
 			for(OrdinaryVariable ov2: childrenNode.getOrdinaryVariableList()){
+				
 				boolean find = false; 
+				
 				for(OrdinaryVariable ov: node.getOvArray()){
 					if(ov2.equals(ov)){
 						find = true; 
 						break; 
 					}
 				}
+				
 				if(!find){
-					System.out.println("OV Fault = " + ov2);
+					Debug.println("OV Fault = " + ov2);
 					ovFaultForNewNodeList.add(ov2); 
 				}
-			} // End-for ov	
+				
+			} // End-for getOrdinaryVariableList	
 			
-			//Mount the combination of possible values for the ordinary variable fault
-			List<String[]> possibleCombinationsForOvFaultList = new ArrayList<String[]>(); 
 			
+			//Verify if already have a context node parent for this resident node 
 			List<SimpleContextNodeFatherSSBNNode> contextNodeFatherList = 
 					new ArrayList<SimpleContextNodeFatherSSBNNode>(); 
+			
+			List<String[]> possibleCombinationsForOvFaultList = new ArrayList<String[]>(); 
 			
 			if(ovFaultForNewNodeList.size() > 0){
 				
@@ -342,7 +368,8 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 					
 					SimpleContextNodeFatherSSBNNode contextNodeFather = 
 						node.getMFragInstance().getContextNodeFatherForOv(ov); 
-					System.out.println("Context node for ov " + ov + ":" + contextNodeFather);
+					
+					Debug.println("Context node for ov " + ov + ":" + contextNodeFather);
 					
 					if(contextNodeFather != null){
 						contextParentsCount++;
@@ -357,6 +384,8 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 					} //Other side, the ov was solved using the IsA nodes. 
 				} //end-for ovFaultForNewNodeList
 				
+				//Mount the combination of possible values for the ordinary variable fault
+
 				possibleCombinationsForOvFaultList = node.getMFragInstance().
 				        recoverCombinationsEntitiesPossibles(
 						    node.getOvArray(), 
@@ -474,6 +503,7 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 				} // End-for ov		
 
 				if(ovFaultForNewNodeList.size()> 0){
+					
 					if (logManager != null) {
 						logManager.printText(IdentationLevel.LEVEL_4, 
 								false, " Recursivity treatment: " + node.getResidentNode());
@@ -525,26 +555,36 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 				} //ovFault > 0  //TODO ovFault pode já estar preenchido em algum caso? 
 			} // same MFrag 
 			
-			//Test double input node. 
+			
 			boolean testDoubleInputNode = false; 
 			
+			// Verify if already have an input node for this node in the input MFrag. 
+			// If yes, and if some of the ordinary variable of the new input node is 
+			// different of the ov of the old input node, mark testDoubleInputNode true. 
 			if(node.getOvArrayForMFrag(inputNode.getMFrag()) != null){
 				
-				for (int i = 0 ; i < node.getOvArrayForMFrag(inputNode.getMFrag()).length; i++	){
-					if (!(node.getOvArrayForMFrag(inputNode.getMFrag())[i].equals(
+				MFrag mFragInputNode = inputNode.getMFrag(); 
+				
+				for (int i = 0 ; i < node.getOvArrayForMFrag(mFragInputNode).length; i++){
+					
+					if (!(node.getOvArrayForMFrag(mFragInputNode)[i].equals(
 							inputNode.getOrdinaryVariableByIndex(i)))){
+						
 						testDoubleInputNode = true;
+						
 						System.out.println("Double Input Node for " + inputNode);
-						break; 
+						
+						break; //abort on first ov different 
 					}
 				}
 			}
-//			
-			if (testDoubleInputNode) break; 
-			
+
 			// When we have two input nodes of the same resident node in one MFrag, 
 			// we need create only on of it. The other should be created originated
 			// by the context nodes of the MFrag. 
+			if (testDoubleInputNode) break; 
+			
+			//TODO Verify! The evaluation already finish on testDoubleInputNode
 			if (mFragAlreadyEvaluatedList.contains(inputNode.getMFrag())){
 				System.out.println("Two ocorrences of same input node in MFrag: " + inputNode);
 				System.out.println("The second ocorrence will be bypassed!");
@@ -576,11 +616,11 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 				e.printStackTrace();
 			} 
 			
-//			node.addInputMFragInstance(mFragInstance);
-			
+			Debug.println("Evaluate children of input node");
+			//Create node for resident nodes children of input node. 
 			for(ResidentNode residentNodeChild: inputNode.getResidentNodeChildList()){
 				
-				System.out.println("Evaluate resident node children: " + residentNodeChild );
+				Debug.println("Resident node children: " + residentNodeChild );
 				
 				int contextParentsCount = 0; 
 				List<OrdinaryVariable> ovFaultForNewNodeList = new ArrayList<OrdinaryVariable>(); 
@@ -596,10 +636,10 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 						}
 					}
 					if(!find){
-						System.out.println("OV Fault = " + ov2);
+						Debug.println("OV Fault = " + ov2);
 						ovFaultForNewNodeList.add(ov2); 
 					}
-				} // End-for ov		
+				} // End-for ov2	
 				
 				//Mount the combination of possible values for the ordinary variable fault
 				List<String[]> possibleCombinationsForOvFaultList = new ArrayList<String[]>(); 
@@ -613,7 +653,7 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 						
 						SimpleContextNodeFatherSSBNNode contextNodeFather = 
 							mFragInstance.getContextNodeFatherForOv(ov); 
-						System.out.println("Context node for ov " + ov + ":" + contextNodeFather);
+						Debug.println("Context node for ov " + ov + ":" + contextNodeFather);
 						
 						if(contextNodeFather != null){
 							contextParentsCount++;
@@ -693,7 +733,7 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 						
 					}
 					
-//					System.out.println("Generated node: " + newNode);
+//					System.out.println("Created node: " + newNode);
 					
 					if(nodeList.contains(newNode)){
 						int index = nodeList.indexOf(newNode);
