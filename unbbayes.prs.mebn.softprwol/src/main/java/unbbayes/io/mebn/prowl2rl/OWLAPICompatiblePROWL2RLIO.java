@@ -42,6 +42,7 @@ import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.OWLRuntimeException;
 import org.semanticweb.owlapi.model.PrefixManager;
+import org.semanticweb.owlapi.model.RemoveImport;
 import org.semanticweb.owlapi.model.SetOntologyID;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.util.OWLEntityRemover;
@@ -1006,6 +1007,13 @@ public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO impleme
 		if (!ontology.getOWLOntologyManager().getImportsClosure(ontology).contains(ontology.getOWLOntologyManager().getImportedOntology(importsPROWL2))) {
 			// add the import declaration to the ontology.
 			ontology.getOWLOntologyManager().applyChange(new AddImport(ontology, importsPROWL2));
+		}
+		
+		//Remove IRI of PR-OWL 2 if it exists. 
+		OWLImportsDeclaration importsPROWL2old = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLImportsDeclaration(IRI.create(IPROWL2RLModelUser.PROWL2_NAMESPACEURI));
+		if (ontology.getOWLOntologyManager().getImportsClosure(ontology).contains(ontology.getOWLOntologyManager().getImportedOntology(importsPROWL2old))) {
+			// add the import declaration to the ontology.
+			ontology.getOWLOntologyManager().applyChange(new RemoveImport(ontology, importsPROWL2old));
 		}
 		
 		// clear PR-OWL2 individuals (so that we can add only the ones which were not deleted from ontology during MEBN edition)
