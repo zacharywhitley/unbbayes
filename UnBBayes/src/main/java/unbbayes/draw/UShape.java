@@ -371,7 +371,7 @@ public class UShape extends JComponent implements ActionListener,
 
 		ActionListener okActionListener = new ActionListener() {
 			public void actionPerformed(ActionEvent actionEvent) {
-				Debug.println("OK Button");
+//				Debug.println("OK Button");
 				Debug.println(colorChooser.getColor().toString());
 
 				getCanvas().onShapeColorChanged(colorChooser.getColor());
@@ -381,7 +381,7 @@ public class UShape extends JComponent implements ActionListener,
 
 		ActionListener cancelActionListener = new ActionListener() {
 			public void actionPerformed(ActionEvent actionEvent) {
-				Debug.println("Cancel Button");
+//				Debug.println("Cancel Button");
 			}
 		};
 
@@ -680,7 +680,7 @@ public class UShape extends JComponent implements ActionListener,
 		if (textInput != null) {
 			boolean isValidName = true;
 			setName(textInput.getText());
-			Debug.println(textInput.getText());
+//			Debug.println(textInput.getText());
 
 			if (node != null) {
 				// check if name matches with a pattern
@@ -1270,7 +1270,7 @@ public class UShape extends JComponent implements ActionListener,
 	public void mouseClicked(MouseEvent arg0) {
 		if (SwingUtilities.isLeftMouseButton(arg0)) {
 			if (arg0.getClickCount() == 2 && !arg0.isConsumed()) {
-				Debug.println("handle double click.");
+//				Debug.println("handle double click.");
 
 				arg0.consume();
 
@@ -1279,11 +1279,11 @@ public class UShape extends JComponent implements ActionListener,
 		}
 
 		if (SwingUtilities.isMiddleMouseButton(arg0)) {
-			Debug.println("Middle button released.");
+//			Debug.println("Middle button released.");
 		}
 
 		if (SwingUtilities.isRightMouseButton(arg0)) {
-			Debug.println("Right button released.");
+//			Debug.println("Right button released.");
 
 			createPopupMenu();
 
@@ -1374,7 +1374,7 @@ public class UShape extends JComponent implements ActionListener,
 
 		// for right mouse button
 		if (SwingUtilities.isRightMouseButton(arg0)) {
-			Debug.println("Right button released.");
+//			Debug.println("Right button released.");
 		}
 
 		if (getUseSelection() == false) {
@@ -1389,11 +1389,11 @@ public class UShape extends JComponent implements ActionListener,
 	}
 
 	public void focusGained(FocusEvent arg0) {
-		Debug.println("focusGained");
+//		Debug.println("focusGained");
 	}
 
 	public void focusLost(FocusEvent arg0) {
-		Debug.println("focusLost");
+//		Debug.println("focusLost");
 
 		removeTextBox();
 	}

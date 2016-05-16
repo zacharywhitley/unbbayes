@@ -348,7 +348,7 @@ public class UShapeLine extends UShape implements IEdgeHolderShape {
 	 * @see unbbayes.draw.UShape#mouseClicked(java.awt.event.MouseEvent)
 	 */
 	public void mouseClicked(MouseEvent arg0) {
-		Debug.println("Line mouseClicked");
+//		Debug.println("Line mouseClicked");
 
 		// this.setState(UShape.STATE_SELECTED, null);
 
@@ -371,7 +371,7 @@ public class UShapeLine extends UShape implements IEdgeHolderShape {
 		}
 
 		if (SwingUtilities.isRightMouseButton(arg0)) {
-			Debug.println("Right button released.");
+//			Debug.println("Right button released.");
 
 			popupLine.setEnabled(true);
 			// popupLine.show(arg0.getComponent(),arg0.getX(),arg0.getY());

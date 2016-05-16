@@ -33,7 +33,6 @@ import java.awt.geom.Rectangle2D;
 import java.text.NumberFormat;
 
 import unbbayes.prs.Node;
-import unbbayes.util.Debug;
 
 public class UShapeState extends UShape implements MouseMotionListener, MouseListener, Cloneable
 {       
@@ -101,7 +100,7 @@ public class UShapeState extends UShape implements MouseMotionListener, MouseLis
 	
 	public void mouseDragged(MouseEvent arg0) 
 	{
-		Debug.println("UShapeSizeBtn_mouseDragged"); 
+//		Debug.println("UShapeSizeBtn_mouseDragged"); 
 	}
 
 	public void mouseMoved(MouseEvent arg0) 

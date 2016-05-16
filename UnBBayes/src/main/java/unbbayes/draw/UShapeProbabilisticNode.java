@@ -305,12 +305,12 @@ public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 	        
 	    if (SwingUtilities.isMiddleMouseButton(arg0)) 
 	    {
-	    	Debug.println("Middle button released.");
+//	    	Debug.println("Middle button released.");
 	    }
 	        
 	    if (SwingUtilities.isRightMouseButton(arg0)) 
 	    {
-	    	Debug.println("Right button released.");
+//	    	Debug.println("Right button released.");
 	       	
 	       	createPopupMenu();
 	       	

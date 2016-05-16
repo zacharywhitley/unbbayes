@@ -246,7 +246,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 			UShape shape = selectedShapes.get(i);
 
 			if (shape instanceof UShape) {
-				Debug.println("DeleteSelectedShape  =" + i + " " + shape.ID);
+//				Debug.println("DeleteSelectedShape  =" + i + " " + shape.ID);
 				onShapeDeleted(shape);
 				this.remove(shape);
 			}
@@ -269,14 +269,14 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 
 		if (!(s instanceof UShapeLine)) {
 			if (s.getCenterX() + s.getWidth() > dim.width) {
-				Debug.println(s.ID + "getCenterX=" + s.getCenterX());
+//				Debug.println(s.ID + "getCenterX=" + s.getCenterX());
 				setPreferredSize(new Dimension(s.getCenterX() + s.getWidth(),
 						dim.height));
 				setSize(new Dimension(s.getCenterX() + s.getWidth(), dim.height));
 			}
 
 			if (s.getCenterY() + s.getHeight() > dim.height) {
-				Debug.println(s.ID + "getCenterY=" + s.getCenterY());
+//				Debug.println(s.ID + "getCenterY=" + s.getCenterY());
 				setPreferredSize(new Dimension(dim.width, s.getCenterY()
 						+ s.getHeight()));
 				setSize(new Dimension(dim.width, s.getCenterY() + s.getHeight()));
@@ -881,7 +881,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 
 	public void mouseClicked(MouseEvent e) {
 		if (isFocusable()) {
-			Debug.println("isFocusable ");
+//			Debug.println("isFocusable ");
 
 		}
 	}
@@ -927,23 +927,23 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	public void componentHidden(ComponentEvent arg0) {
 		// by young4
 		setShapeStateAll(UShape.STATE_NONE, null);
-		Debug.println("componentHidden ");
+//		Debug.println("componentHidden ");
 
 	}
 
 	public void componentMoved(ComponentEvent arg0) {
 		setShapeStateAll(UShape.STATE_NONE, null);
-		Debug.println("componentMoved ");
+//		Debug.println("componentMoved ");
 
 	}
 
 	public void componentResized(ComponentEvent arg0) {
-		Debug.println("componentResized ");
+//		Debug.println("componentResized ");
 	}
 
 	public void componentShown(ComponentEvent arg0) {
 		setShapeStateAll(UShape.STATE_NONE, null);
-		Debug.println("componentShown ");
+//		Debug.println("componentShown ");
 	}
 
 	public void keyPressed(KeyEvent arg0) {
@@ -953,13 +953,13 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 
 		if (arg0.getKeyCode() == KeyEvent.VK_DELETE) {
 			DeleteSelectedShape();
-			Debug.println("Delete");
+//			Debug.println("Delete");
 		}
 	}
 
 	public void keyReleased(KeyEvent arg0) {
 		setState(STATE_NONE);
-		Debug.println("keyReleased");
+//		Debug.println("keyReleased");
 	}
 
 	public void keyTyped(KeyEvent arg0) {

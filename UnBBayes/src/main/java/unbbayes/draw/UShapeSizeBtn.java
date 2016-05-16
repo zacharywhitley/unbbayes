@@ -31,8 +31,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Ellipse2D;
 
-import unbbayes.util.Debug;
-
 public class UShapeSizeBtn extends UShape implements MouseMotionListener, MouseListener, Cloneable
 {       
 	/**
@@ -118,7 +116,7 @@ public class UShapeSizeBtn extends UShape implements MouseMotionListener, MouseL
 
 	public void mouseDragged(MouseEvent arg0) 
 	{
-		Debug.println("UShapeSizeBtn_mouseDragged");
+//		Debug.println("UShapeSizeBtn_mouseDragged");
 		
 		Rectangle rc = getDraggedRect( arg0.getX(), arg0.getY() );
 		
@@ -153,7 +151,7 @@ public class UShapeSizeBtn extends UShape implements MouseMotionListener, MouseL
 
 
 	public void mouseReleased(MouseEvent arg0) {
-		Debug.println("mouseReleased");
+//		Debug.println("mouseReleased");
 		setDrawColor(getLineColor());
 		repaint();
 		

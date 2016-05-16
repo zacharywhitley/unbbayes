@@ -79,7 +79,7 @@ public class UShapeText extends UShape
 	      private void printIt(String title, KeyEvent keyEvent) {
 	        int keyCode = keyEvent.getKeyCode();
 	        String keyText = KeyEvent.getKeyText(keyCode);
-	        Debug.println(title + " : " + keyText + " / " + keyEvent.getKeyChar());
+//	        Debug.println(title + " : " + keyText + " / " + keyEvent.getKeyChar());
 	      }
 	    };
 	    
