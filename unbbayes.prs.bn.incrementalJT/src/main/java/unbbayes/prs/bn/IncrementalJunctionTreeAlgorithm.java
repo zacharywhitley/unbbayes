@@ -318,7 +318,7 @@ public class IncrementalJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 		} 
 		
 		if (isToCompileNormally) {
-			// run ordinal junction tree compilation
+			// run ordinary junction tree compilation
 			super.run();
 		}
 		

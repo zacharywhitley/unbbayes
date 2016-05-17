@@ -326,6 +326,10 @@ public class LoopyJunctionTree extends JunctionTree {
 			child.setParent(parent);
 		}
 		
+		if (parentCliques.contains(parent)) {
+			// do not add multiple times
+			return false;
+		}
 		return parentCliques.add(parent);
 		
 	}
