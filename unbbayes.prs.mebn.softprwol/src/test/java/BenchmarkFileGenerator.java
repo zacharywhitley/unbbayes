@@ -4,7 +4,6 @@ import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.Random;
 
-
 /**
  * 
  * Generate test files of Procurement Fraud Ontology 
@@ -32,7 +31,7 @@ public class BenchmarkFileGenerator {
 	private static final String PREFIX = "exp:"; 
 	
 	private static final String PREFIX_STRING = 
-			"PREFIX " + PREFIX + " <http://www.pr-owl.org/examples/pr-owl2/ProcurementFraud/ProcurementFraud.owl#>"; 
+			"@prefix " + PREFIX + " <http://www.pr-owl.org/examples/pr-owl2/ProcurementFraud/ProcurementFraud.owl#>" + "."; 
 	
 	public static void main(String[] args){
 		
@@ -40,7 +39,8 @@ public class BenchmarkFileGenerator {
 		
 		System.out.println("Generate test file");
 		
-		File file = new File("teste.txt");
+		File file = new File("teste.ttl");
+		System.out.println("File: " + file.getAbsolutePath());
 		
 		PrintStream out = null; 
 		
@@ -202,7 +202,7 @@ public class BenchmarkFileGenerator {
 			
 			//isMemberOfComitee
 			for(int j = 0; j < AVG_NUMBER_MEMBER_PROCUREMENT; j++ ){
-				out.println(PREFIX+ "person" + indexPerson + " " + PREFIX + "isMemberOfCommittee" + " " + name);
+				out.println(PREFIX+ "person" + indexPerson + " " + PREFIX + "isMemberOfCommittee" + " " + name + ".");
 				indexPerson++; 
 			}
 			
@@ -218,7 +218,7 @@ public class BenchmarkFileGenerator {
 			for(int j = 0; j < AVG_NUMBER_ENTERPRISES_PROCUREMENT; j++){
 				int numEnterprise = gerador.nextInt(QUANT_ENTERPRISE); 
 				arrayEnterprises[j] = numEnterprise; 
-				out.println(PREFIX + "enterprise" + numEnterprise + " " + PREFIX + "IsParticipantIn" + " " + name + ".");
+				out.println(PREFIX + "enterprise" + numEnterprise + " " + PREFIX + "isParticipantIn" + " " + name + ".");
 			}
 			
 			//Select one of the concorrents to be the winner. 
