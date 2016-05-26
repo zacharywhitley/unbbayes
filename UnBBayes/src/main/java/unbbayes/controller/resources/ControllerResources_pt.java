@@ -175,7 +175,9 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"shadowOpacityInputMessage", "Favor entrar com opacidade.\n(Tem que ser um número entre 0 e 1)"},
 		{"shadowOpacityInputErrorTitle", "Erro com Opacidade da Sombra"},
 		{"shadowOpacityInputErrorMessage", "O valor tem que ser um número entre 0 e 1."},
-		
+		{"wrongImageFormat", "Formato inválido. Utilize jpg, png or bmp."},
+		{"invalidImageName", "Nome do arquivo inválido."},
+		{"saveImageError", "Erro ao tentar salvar imagem."},
 		
 		{"sizeOfLikelihoodException","O tamanho do vetor de likelihood deve ser suficiente para preencher o potencial de um dos estados no nó virtual. "},
 		{"expectedSize","Tamanho esperado: "},

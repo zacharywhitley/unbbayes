@@ -130,9 +130,9 @@ public class ControllerResources extends ListResourceBundle {
 		{"ResultDialog", "Result"}, 
 		
 		/* load/save */
-		{"saveSucess", "File saved"},
-		{"bnDontExists", "Failed: no active Bayesian Network"},
-		{"msbnDontExists", "Failed: No active MSBN"},
+		{"saveSucess", "File saved."},
+		{"bnDontExists", "Failed: no active Bayesian Network."},
+		{"msbnDontExists", "Failed: No active MSBN."},
 		{"sucess", "Sucess"}, 
 		{"error", "Error"},
 		{"loadHasError", "The file has been loaded with some errors"},
@@ -172,6 +172,9 @@ public class ControllerResources extends ListResourceBundle {
 		{"shadowOpacityInputMessage", "Please, enter shadow's opacity.\n(It must be a number between 0 and 1)"},
 		{"shadowOpacityInputErrorTitle", "Shadow Opacity Error"},
 		{"shadowOpacityInputErrorMessage", "Input must be a number between 0 and 1."},
+		{"wrongImageFormat", "Invalid format. Try jpg, png or bmp."},
+		{"invalidImageName", "Invalid file name."},
+		{"saveImageError", "Error trying to save image."},
 				
 		{"sizeOfLikelihoodException","The size of likelihood must be sufficient for filling the potentials of one of the states of the virtual evidence. "},
 		{"expectedSize","Expected size: "},

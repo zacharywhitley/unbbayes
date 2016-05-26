@@ -483,16 +483,20 @@ public class NetworkController implements KeyListener, INetworkMediator {
 			Rectangle r = calculateNetRectangle();
 			Component comp = screen.getGraphPane().getGraphViewport();
 			File file = new File(chooser.getSelectedFile().getPath());
-			saveComponentAsImage(comp, r.width, r.height, file);
-			FileHistoryController.getInstance().setCurrentDirectory(
-					chooser.getCurrentDirectory());
+			
+			boolean imageSaved = saveComponentAsImage(comp, r.width, r.height, file);
+			
+			if(imageSaved){
+				FileHistoryController.getInstance().setCurrentDirectory(
+						chooser.getCurrentDirectory());
 
-			JOptionPane.showMessageDialog(screen,
-					resource.getString("saveSucess"));
+				JOptionPane.showMessageDialog(screen,
+						resource.getString("saveSucess"));
+			}
 		}
 	}
 
-	protected void saveComponentAsImage(Component comp, int width, int height,
+	protected boolean saveComponentAsImage(Component comp, int width, int height,
 			File file) {
 		BufferedImage bufferedImage = new BufferedImage(width, height,
 				BufferedImage.TYPE_INT_ARGB);
@@ -501,74 +505,78 @@ public class NetworkController implements KeyListener, INetworkMediator {
 		comp.paint(g2d);
 		g2d.dispose();
 
-		int option = JOptionPane.showConfirmDialog(screen,
-				resource.getString("useTransparencyMessage"),
-				resource.getString("useTransparencyTitle"),
-				JOptionPane.YES_NO_OPTION);
-
-		if (option == JOptionPane.YES_OPTION) {
-			// Make the image transparent
-			// Image image =
-			// Transparency.transformColorToTransparency(bufferedImage, new
-			// Color(250, 250, 255), Color.WHITE);
-			Image image = Transparency.transformColorToTransparency(
-					bufferedImage, Color.WHITE, Color.WHITE);
-			bufferedImage = Transparency.imageToBufferedImage(image,
-					bufferedImage.getWidth(), bufferedImage.getHeight());
-		}
-
-		option = JOptionPane
-				.showConfirmDialog(screen,
-						resource.getString("useShadowMessage"),
-						resource.getString("useShadowTitle"),
-						JOptionPane.YES_NO_OPTION);
-
-		if (option == JOptionPane.YES_OPTION) {
-			boolean askAgain = false;
-			String answer;
-			int size = 2;
-			do {
-				try {
-					answer = JOptionPane.showInputDialog(screen,
-							resource.getString("shadowSizeInputMessage"));
-					size = Integer.parseInt(answer);
-					askAgain = false;
-				} catch (NumberFormatException e) {
-					JOptionPane.showMessageDialog(screen,
-							resource.getString("shadowSizeInputErrorMessage"),
-							resource.getString("shadowSizeInputErrorTitle"),
-							JOptionPane.ERROR_MESSAGE);
-					askAgain = true;
-				}
-			} while (askAgain);
-
-			float opacity = .5f;
-			do {
-				try {
-					answer = JOptionPane.showInputDialog(screen,
-							resource.getString("shadowOpacityInputMessage"));
-					opacity = Float.parseFloat(answer);
-					askAgain = false;
-					if (opacity < 0 || opacity > 1) {
-						JOptionPane
-								.showMessageDialog(
-										screen,
-										resource.getString("shadowOpacityInputErrorMessage"),
-										resource.getString("shadowOpacityInputErrorTitle"),
-										JOptionPane.ERROR_MESSAGE);
-						askAgain = true;
-					}
-				} catch (NumberFormatException e) {
-					JOptionPane.showMessageDialog(screen, resource
-							.getString("shadowOpacityInputErrorMessage"),
-							resource.getString("shadowOpacityInputErrorTitle"),
-							JOptionPane.ERROR_MESSAGE);
-					askAgain = true;
-				}
-			} while (askAgain);
-			bufferedImage = DropShadowDemo.addDropShadow(bufferedImage, size,
-					opacity);
-		}
+		//Remove transparency and shadow options. This don't work well in windows. 
+		//Analyse the reason and if fixed the problems, include this options in a 
+		//initial panel with options for save the image. 
+		
+//		int option = JOptionPane.showConfirmDialog(screen,
+//				resource.getString("useTransparencyMessage"),
+//				resource.getString("useTransparencyTitle"),
+//				JOptionPane.YES_NO_OPTION);
+//
+//		if (option == JOptionPane.YES_OPTION) {
+//			// Make the image transparent
+//			// Image image =
+//			// Transparency.transformColorToTransparency(bufferedImage, new
+//			// Color(250, 250, 255), Color.WHITE);
+//			Image image = Transparency.transformColorToTransparency(
+//					bufferedImage, Color.WHITE, Color.WHITE);
+//			bufferedImage = Transparency.imageToBufferedImage(image,
+//					bufferedImage.getWidth(), bufferedImage.getHeight());
+//		}
+//
+//		option = JOptionPane
+//				.showConfirmDialog(screen,
+//						resource.getString("useShadowMessage"),
+//						resource.getString("useShadowTitle"),
+//						JOptionPane.YES_NO_OPTION);
+//
+//		if (option == JOptionPane.YES_OPTION) {
+//			boolean askAgain = false;
+//			String answer;
+//			int size = 2;
+//			do {
+//				try {
+//					answer = JOptionPane.showInputDialog(screen,
+//							resource.getString("shadowSizeInputMessage"));
+//					size = Integer.parseInt(answer);
+//					askAgain = false;
+//				} catch (NumberFormatException e) {
+//					JOptionPane.showMessageDialog(screen,
+//							resource.getString("shadowSizeInputErrorMessage"),
+//							resource.getString("shadowSizeInputErrorTitle"),
+//							JOptionPane.ERROR_MESSAGE);
+//					askAgain = true;
+//				}
+//			} while (askAgain);
+//
+//			float opacity = .5f;
+//			do {
+//				try {
+//					answer = JOptionPane.showInputDialog(screen,
+//							resource.getString("shadowOpacityInputMessage"));
+//					opacity = Float.parseFloat(answer);
+//					askAgain = false;
+//					if (opacity < 0 || opacity > 1) {
+//						JOptionPane
+//								.showMessageDialog(
+//										screen,
+//										resource.getString("shadowOpacityInputErrorMessage"),
+//										resource.getString("shadowOpacityInputErrorTitle"),
+//										JOptionPane.ERROR_MESSAGE);
+//						askAgain = true;
+//					}
+//				} catch (NumberFormatException e) {
+//					JOptionPane.showMessageDialog(screen, resource
+//							.getString("shadowOpacityInputErrorMessage"),
+//							resource.getString("shadowOpacityInputErrorTitle"),
+//							JOptionPane.ERROR_MESSAGE);
+//					askAgain = true;
+//				}
+//			} while (askAgain);
+//			bufferedImage = DropShadowDemo.addDropShadow(bufferedImage, size,
+//					opacity);
+//		}
 
 		boolean wrongName = false;
 
@@ -585,20 +593,29 @@ public class NetworkController implements KeyListener, INetworkMediator {
 				} else if (fileExt.equalsIgnoreCase("bmp")) {
 					ImageIO.write(bufferedImage, "bmp", file);
 				} else {
-					wrongName = true;
+					JOptionPane.showMessageDialog(screen, resource.getString("wrongImageFormat"),
+							resource.getString("error"),
+							JOptionPane.ERROR_MESSAGE);
+					return false; 
 				}
+				
+				//saved
+				return true; 
+				
 			} catch (IOException e1) {
-				// TODO SHOW MESSAGE TO USER
+				JOptionPane.showMessageDialog(screen, resource.getString("saveImageError"),
+				resource.getString("error"),
+				JOptionPane.ERROR_MESSAGE);
 				e1.printStackTrace();
+				return false; 
 			}
 		} else {
-			wrongName = true;
+			JOptionPane.showMessageDialog(screen, resource.getString("invalidImageName"),
+					resource.getString("error"),
+					JOptionPane.ERROR_MESSAGE);
+			return false; 
 		}
-
-		if (wrongName) {
-			// TODO SHOW MESSAGE TO USER
-		}
-
+		
 	}
 
 	/*
@@ -621,12 +638,16 @@ public class NetworkController implements KeyListener, INetworkMediator {
 			// TODO MAKE IT SHOW THE HEADER ALSO
 			Component comp = screen.getTable();
 			File file = new File(chooser.getSelectedFile().getPath());
-			saveComponentAsImage(comp, comp.getWidth(), comp.getHeight(), file);
-			FileHistoryController.getInstance().setCurrentDirectory(
-					chooser.getCurrentDirectory());
+			
+			boolean imageSaved = saveComponentAsImage(comp, comp.getWidth(), comp.getHeight(), file);
+			
+			if(imageSaved){
+				FileHistoryController.getInstance().setCurrentDirectory(
+						chooser.getCurrentDirectory());
 
-			JOptionPane.showMessageDialog(screen,
-					resource.getString("saveSucess"));
+				JOptionPane.showMessageDialog(screen,
+						resource.getString("saveSucess"));
+			}
 		}
 	}
 
