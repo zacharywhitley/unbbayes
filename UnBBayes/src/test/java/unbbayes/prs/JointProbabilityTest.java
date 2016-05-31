@@ -4,6 +4,7 @@
 package unbbayes.prs;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -15,12 +16,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import junit.framework.TestCase;
+import unbbayes.io.DneIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.exception.LoadException;
+import unbbayes.prs.bn.IProbabilityFunction;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.util.dseparation.impl.MSeparationUtility;
+import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 
 /**
  * @author Shou Matsumoto
@@ -367,7 +371,253 @@ public class JointProbabilityTest extends TestCase {
        System.out.println(node13.getMarginalAt(node15State));
        System.out.println();
 	}
+	
+	
+	public final void testJointProbability2 () {
+		// open a .net file
+		ProbabilisticNetwork net = null;
+		try {
+			net = (ProbabilisticNetwork)new DneIO().load(new File(getClass().getResource("/Challenge_1.dne").toURI()));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// prepare the algorithm to compile network
+		JunctionTreeAlgorithm alg = new JunctionTreeAlgorithm();
+		alg.setNetwork(net);
+		alg.run();
+		
+		
+		for (int node1Index = 0; node1Index < net.getNodeCount()-1; node1Index++) {
+			for (int node2Index = node1Index+1; node2Index < net.getNodeCount(); node2Index++) {
+				
+				//specifying the nodes and states for inquiring about the joint distribution
+				ProbabilisticNode node1 = (ProbabilisticNode)net.getNodeAt(node1Index);
+				ProbabilisticNode node2 = (ProbabilisticNode)net.getNodeAt(node2Index);
+				
+				for (int i = 0; i <node1.getStatesSize(); i++) {
+					for (int j = 0; j < node2.getStatesSize(); j++) {
+						HashMap<ProbabilisticNode, Integer> map = new HashMap<ProbabilisticNode, Integer>();
+						map.put(node1, i);
+						map.put(node2, j);
+						
+						//calling the joint probability method
+						float jointProb = alg.getJointProbability(map);
+						System.out.println("P ( " + node1.getName() + " = " + node1.getStateAt(i) 
+								+ " , " + node2.getName() + " = " + node1.getStateAt(j) + " ) : " + jointProb);
+						assertTrue("P ( " + node1.getName() + " = " + node1.getStateAt(i) 
+									+ " , " + node2.getName() + " = " + node1.getStateAt(j) + " ) : " + jointProb, 
+								(jointProb > 0 && jointProb < 1));
+					}
+				}
+			}
+		}
+		
+		
+		
+	}
+	
 
+	public final void testJointProbability3 () {
+		// open a .net file
+		ProbabilisticNetwork net = null;
+		try {
+			net = (ProbabilisticNetwork)new DneIO().load(new File(getClass().getResource("/Challenge_3.dne").toURI()));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// prepare the algorithm to compile network
+		JunctionTreeAlgorithm alg = new JunctionTreeAlgorithm();
+		alg.setNetwork(net);
+		alg.run();
+		
+		
+		for (int node1Index = 0; node1Index < net.getNodeCount()-1; node1Index++) {
+			for (int node2Index = node1Index+1; node2Index < net.getNodeCount(); node2Index++) {
+				
+				//specifying the nodes and states for inquiring about the joint distribution
+				ProbabilisticNode node1 = (ProbabilisticNode)net.getNodeAt(node1Index);
+				ProbabilisticNode node2 = (ProbabilisticNode)net.getNodeAt(node2Index);
+				
+				for (int i = 0; i <node1.getStatesSize(); i++) {
+					for (int j = 0; j < node2.getStatesSize(); j++) {
+						HashMap<ProbabilisticNode, Integer> map = new HashMap<ProbabilisticNode, Integer>();
+						map.put(node1, i);
+						map.put(node2, j);
+						
+						//calling the joint probability method
+						float jointProb = alg.getJointProbability(map);
+						System.out.println("P ( " + node1.getName() + " = " + node1.getStateAt(i) 
+								+ " , " + node2.getName() + " = " + node1.getStateAt(j) + " ) : " + jointProb);
+						assertTrue("P ( " + node1.getName() + " = " + node1.getStateAt(i) 
+								+ " , " + node2.getName() + " = " + node1.getStateAt(j) + " ) : " + jointProb, 
+								(jointProb > 0 && jointProb < 1));
+					}
+				}
+			}
+		}
+		
+		
+		
+	}
+
+	
+	public final void testJointProbability4 () {
+		// open a .net file
+		ProbabilisticNetwork net = null;
+		try {
+			net = (ProbabilisticNetwork)new DneIO().load(new File(getClass().getResource("/Challenge_2v5.dne").toURI()));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// prepare the algorithm to compile network
+		JunctionTreeAlgorithm alg = new JunctionTreeAlgorithm();
+		alg.setNetwork(net);
+		alg.run();
+		
+		
+		for (int node1Index = 0; node1Index < net.getNodeCount()-1; node1Index++) {
+			for (int node2Index = node1Index+1; node2Index < net.getNodeCount(); node2Index++) {
+				
+				//specifying the nodes and states for inquiring about the joint distribution
+				ProbabilisticNode node2 = (ProbabilisticNode)net.getNodeAt(node2Index);
+				ProbabilisticNode node1 = (ProbabilisticNode)net.getNodeAt(node1Index);
+				
+				assertEquals(2, node1.getStatesSize());
+				assertEquals(2, node2.getStatesSize());
+				
+				System.out.println();
+				System.out.println(" \t \t" + node2.getName() + "\t ");
+				System.out.println(" \t \t" + node2.getStateAt(0) + "\t" + node2.getStateAt(1));
+				float sum = 0f;
+				for (int i = 0; i <node1.getStatesSize(); i++) {
+					System.out.print(((i==0)?node1.getName():" ") + "\t" + node1.getStateAt(i));
+					for (int j = 0; j < node2.getStatesSize(); j++) {
+						HashMap<ProbabilisticNode, Integer> map = new HashMap<ProbabilisticNode, Integer>();
+						map.put(node1, i);
+						map.put(node2, j);
+						
+						//calling the joint probability method
+						float jointProb = alg.getJointProbability(map);
+						System.out.print("\t" + jointProb);
+						sum += jointProb;
+						
+						assertTrue("P ( " + node1.getName() + " = " + node1.getStateAt(i) 
+								+ " , " + node2.getName() + " = " + node1.getStateAt(j) + " ) : " + jointProb, 
+								(jointProb > 0 && jointProb < 1));
+					}
+					System.out.println();
+				}
+				assertEquals(node1.getName() + "," + node2.getName() ,1f, sum, 0.00005);
+			}
+		}
+	}
+	public final void testJointProbability5 () {
+		// open a .net file
+		ProbabilisticNetwork net = null;
+		try {
+			net = (ProbabilisticNetwork)new DneIO().load(new File(getClass().getResource("/Challenge_1v3.dne").toURI()));
+		} catch (Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
+		}
+		
+		// prepare the algorithm to compile network
+		JunctionTreeAlgorithm alg = new JunctionTreeAlgorithm();
+		alg.setNetwork(net);
+		alg.run();
+		
+		
+		for (int node1Index = 0; node1Index < net.getNodeCount()-1; node1Index++) {
+			for (int node2Index = node1Index+1; node2Index < net.getNodeCount(); node2Index++) {
+				
+				//specifying the nodes and states for inquiring about the joint distribution
+				ProbabilisticNode node2 = (ProbabilisticNode)net.getNodeAt(node2Index);
+				ProbabilisticNode node1 = (ProbabilisticNode)net.getNodeAt(node1Index);
+				
+				assertEquals(2, node1.getStatesSize());
+				assertEquals(2, node2.getStatesSize());
+				
+				System.out.println();
+				System.out.println(" \t \t" + node2.getName() + "\t ");
+				System.out.println(" \t \t" + node2.getStateAt(0) + "\t" + node2.getStateAt(1));
+				float sum = 0f;
+				for (int i = 0; i <node1.getStatesSize(); i++) {
+					System.out.print(((i==0)?node1.getName():" ") + "\t" + node1.getStateAt(i));
+					for (int j = 0; j < node2.getStatesSize(); j++) {
+						HashMap<ProbabilisticNode, Integer> map = new HashMap<ProbabilisticNode, Integer>();
+						map.put(node1, i);
+						map.put(node2, j);
+						
+						//calling the joint probability method
+						float jointProb = alg.getJointProbability(map);
+						System.out.print("\t" + jointProb);
+						sum += jointProb;
+						
+						assertTrue("P ( " + node1.getName() + " = " + node1.getStateAt(i) 
+								+ " , " + node2.getName() + " = " + node1.getStateAt(j) + " ) : " + jointProb, 
+							(jointProb > 0 && jointProb < 1));
+					}
+					System.out.println();
+				}
+				assertEquals(node1.getName() + "," + node2.getName() ,1f, sum, 0.00005);
+			}
+		}
+	}
+	
+//	public final void testInvertArc() throws FileNotFoundException, URISyntaxException {
+//		// open a .net file
+//		ProbabilisticNetwork inputNet = null;
+//		try {
+//			inputNet = (ProbabilisticNetwork)new NetIO().load(new File(getClass().getResource("/Challenge_1.net").toURI()));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		ProbabilisticNetwork outputNet = null;
+//		try {
+//			outputNet = (ProbabilisticNetwork)new NetIO().load(new File(getClass().getResource("/Challenge_1_inverted.net").toURI()));
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			fail(e.getMessage());
+//		}
+//		
+//		// prepare the algorithm to compile network
+//		JunctionTreeAlgorithm alg = new JunctionTreeAlgorithm();
+//		alg.setNetwork(inputNet);
+//		alg.run();
+//		
+//		ProbabilisticNode nodeInOutputNet = (ProbabilisticNode) outputNet.getNode("Investigation");
+//		PotentialTable outputTable = nodeInOutputNet.getProbabilityFunction();
+//		
+//		List<INode> nodesInInputNet = new ArrayList<INode>(nodeInOutputNet.getParentNodes().size());
+//		for (int i = 1; i < outputTable.variableCount(); i++) {
+//			nodesInInputNet.add(inputNet.getNode(outputTable.getVariableAt(i).getName()));
+//		}
+//		
+//		InCliqueConditionalProbabilityExtractor condProbExtractor = (InCliqueConditionalProbabilityExtractor) InCliqueConditionalProbabilityExtractor.newInstance(true);
+//		PotentialTable inputTable = (PotentialTable) condProbExtractor.buildCondicionalProbability(inputNet.getNode("Investigation"), nodesInInputNet, inputNet, alg);
+//		assertEquals(64, inputTable.tableSize());
+//		
+//		
+//		assertEquals(outputTable.getVariablesSize(), inputTable.getVariablesSize());
+//		assertEquals(inputTable.tableSize(), outputTable.tableSize());
+//		
+//		for (int i = 0; i < outputTable.getVariablesSize(); i++) {
+//			assertEquals(outputTable.getVariableAt(i), inputTable.getVariableAt(i));
+//		}
+//		
+//		outputTable.setValues(inputTable.getValues());
+//		outputTable.copyData();
+//		
+//		new NetIO().save(new File("Challenge_1_inverted.net"), outputNet);
+//	}
+	
 	
 	private boolean isConnectedOrEqual(ProbabilisticNode from, ProbabilisticNode to, Set<ProbabilisticNode> handled) {
 		if (handled == null) {

@@ -1,0 +1,342 @@
+// ~->[DNET-1]->~
+
+// File created by someone at SEOR-GMU using Netica 5.12 on Apr 13, 2016 at 22:07:36.
+
+bnet Challenge_1 {
+AutoCompile = TRUE;
+autoupdate = TRUE;
+whenchanged = 1459385085;
+
+visual V1 {
+	defdispform = BELIEFBARS;
+	nodelabeling = TITLE;
+	NodeMaxNumEntries = 50;
+	nodefont = font {shape= "Arial"; size= 9;};
+	linkfont = font {shape= "Arial"; size= 9;};
+	windowposn = (26, 26, 1139, 473);
+	resolution = 72;
+	drawingbounds = (1817, 975);
+	showpagebreaks = FALSE;
+	usegrid = TRUE;
+	gridspace = (6, 6);
+	NodeSet Node {BuiltIn = 1; Color = 0x00C0C0C0;};
+	NodeSet Nature {BuiltIn = 1; Color = 0x00F8EED2;};
+	NodeSet Deterministic {BuiltIn = 1; Color = 0x00D3CAA6;};
+	NodeSet Finding {BuiltIn = 1; Color = 0x00C8C8C8;};
+	NodeSet Constant {BuiltIn = 1; Color = 0x00FFFFFF;};
+	NodeSet ConstantValue {BuiltIn = 1; Color = 0x00FFFFB4;};
+	NodeSet Utility {BuiltIn = 1; Color = 0x00FFBDBD;};
+	NodeSet Decision {BuiltIn = 1; Color = 0x00DEE8FF;};
+	NodeSet Documentation {BuiltIn = 1; Color = 0x00F0FAFA;};
+	NodeSet Title {BuiltIn = 1; Color = 0x00FFFFFF;};
+	PrinterSetting A {
+		margins = (1270, 1270, 1270, 1270);
+		magnify = 1;
+		};
+	};
+
+node Investigation {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	statetitles = ("Match Threat Type ", "Do not Match Threat Type");
+	parents = ();
+	probs = 
+		// Match Threat Typ Do not Match Thr 
+		  (0.07180431,  0.9281957);
+	numcases = 3802;
+	title = "Abnormal Work Habits";
+	whenchanged = 1459385033;
+	belief = (0.07180431, 0.9281957);
+	visual V1 {
+		center = (660, 60);
+		height = 4;
+		};
+	};
+
+node Antivirus {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.0109489,   0.9890511,    // Match Threat Typ 
+		   2.832861e-4, 0.9997167);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (274,          // Match Threat Typ 
+		   3530);        // Do not Match Thr ;
+	title = "Antivirus Updates";
+	whenchanged = 1459385085;
+	belief = (0.001049123, 0.9989509);
+	visual V1 {
+		center = (198, 162);
+		height = 5;
+		};
+	};
+
+node VPN_Activity {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.770073,    0.229927,     // Match Threat Typ 
+		   2.832861e-4, 0.9997167);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (274,          // Match Threat Typ 
+		   3530);        // Do not Match Thr ;
+	title = "Top 5% VPN Activity";
+	whenchanged = 1458854077;
+	belief = (0.0555575, 0.9444425);
+	visual V1 {
+		center = (414, 162);
+		height = 1;
+		};
+	};
+
+node Logins {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.770073,    0.229927,     // Match Threat Typ 
+		   2.832861e-4, 0.9997167);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (274,          // Match Threat Typ 
+		   3530);        // Do not Match Thr ;
+	title = "Top 5% User Logins";
+	whenchanged = 1458854084;
+	belief = (0.05555751, 0.9444425);
+	visual V1 {
+		center = (660, 156);
+		height = 6;
+		};
+	};
+
+node Email {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.770073,    0.229927,     // Match Threat Typ 
+		   2.832861e-4, 0.9997167);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (274,          // Match Threat Typ 
+		   3530);        // Do not Match Thr ;
+	title = "Top 5% Email Activty";
+	whenchanged = 1458853426;
+	belief = (0.05555752, 0.9444425);
+	visual V1 {
+		center = (900, 156);
+		height = 2;
+		};
+	};
+
+node Website {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.770073,    0.229927,     // Match Threat Typ 
+		   2.832861e-4, 0.9997167);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (274,          // Match Threat Typ 
+		   3530);        // Do not Match Thr ;
+	title = "Top 5% Website Activity";
+	whenchanged = 1458853469;
+	belief = (0.05555751, 0.9444425);
+	visual V1 {
+		center = (1134, 156);
+		height = 3;
+		link 1 {
+			path = ((786, 86), (1055, 141));
+			};
+		};
+	};
+
+node Updates {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Antivirus);
+	probs = 
+		// True         False         // Antivirus 
+		  (0.75,        0.25,         // True      
+		   2.631579e-4, 0.9997368);   // False     ;
+	numcases = 
+		                 // Antivirus 
+		  (4,            // True      
+		   3800);        // False     ;
+	title = ">1 Update";
+	whenchanged = 1458853543;
+	belief = (0.001049724, 0.9989503);
+	visual V1 {
+		center = (198, 300);
+		height = 8;
+		};
+	};
+
+node Connections {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (VPN_Activity);
+	probs = 
+		// True         False         // VPN_Activity 
+		  (0.995283,    0.004716981,  // True         
+		   0.001391982, 0.998608);    // False        ;
+	numcases = 
+		                 // VPN_Activity 
+		  (212,          // True         
+		   3592);        // False        ;
+	title = ">=28 VPN Connections";
+	whenchanged = 1458853620;
+	belief = (0.05661009, 0.9433899);
+	visual V1 {
+		center = (414, 306);
+		height = 9;
+		};
+	};
+
+node ADDC {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Logins);
+	probs = 
+		// True         False         // Logins 
+		  (0.995283,    0.004716981,  // True   
+		   0.001113586, 0.9988864);   // False  ;
+	numcases = 
+		                 // Logins 
+		  (212,          // True   
+		   3592);        // False  ;
+	title = ">=128 ADDC Log Entries";
+	whenchanged = 1458853655;
+	belief = (0.05634716, 0.9436529);
+	visual V1 {
+		center = (660, 306);
+		height = 10;
+		};
+	};
+
+node Outbound {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Email);
+	probs = 
+		// True         False         // Email 
+		  (0.995283,    0.004716981,  // True  
+		   0.002227172, 0.9977728);   // False ;
+	numcases = 
+		                 // Email 
+		  (212,          // True  
+		   3592);        // False ;
+	title = ">=24 Outbound Emails";
+	whenchanged = 1458853692;
+	belief = (0.05739889, 0.9426011);
+	visual V1 {
+		center = (900, 306);
+		height = 11;
+		};
+	};
+
+node Proxy {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Website);
+	probs = 
+		// True         False         // Website 
+		  (0.995283,    0.004716981,  // True    
+		   0.001113586, 0.9988864);   // False   ;
+	numcases = 
+		                 // Website 
+		  (212,          // True    
+		   3592);        // False   ;
+	title = ">=24,500 Proxy Log Entries";
+	whenchanged = 1458853730;
+	belief = (0.05634716, 0.9436529);
+	visual V1 {
+		center = (1134, 306);
+		height = 12;
+		};
+	};
+
+node Alert {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = DETERMIN;
+	states = (True, False);
+	parents = (Updates, Connections, ADDC, Outbound, Proxy);
+	functable = 
+		                    // Updates Connections ADDC  Outbound Proxy 
+		  (True,            // True    True        True  True     True  
+		   True,            // True    True        True  True     False 
+		   True,            // True    True        True  False    True  
+		   True,            // True    True        True  False    False 
+		   True,            // True    True        False True     True  
+		   True,            // True    True        False True     False 
+		   True,            // True    True        False False    True  
+		   True,            // True    True        False False    False 
+		   True,            // True    False       True  True     True  
+		   True,            // True    False       True  True     False 
+		   True,            // True    False       True  False    True  
+		   True,            // True    False       True  False    False 
+		   True,            // True    False       False True     True  
+		   True,            // True    False       False True     False 
+		   True,            // True    False       False False    True  
+		   False,           // True    False       False False    False 
+		   True,            // False   True        True  True     True  
+		   True,            // False   True        True  True     False 
+		   True,            // False   True        True  False    True  
+		   True,            // False   True        True  False    False 
+		   True,            // False   True        False True     True  
+		   True,            // False   True        False True     False 
+		   True,            // False   True        False False    True  
+		   False,           // False   True        False False    False 
+		   True,            // False   False       True  True     True  
+		   True,            // False   False       True  True     False 
+		   True,            // False   False       True  False    True  
+		   False,           // False   False       True  False    False 
+		   True,            // False   False       False True     True  
+		   False,           // False   False       False True     False 
+		   False,           // False   False       False False    True  
+		   False);          // False   False       False False    False ;
+	whenchanged = 1458854150;
+	belief = (0.06884131, 0.9311587);
+	visual V1 {
+		center = (660, 480);
+		height = 7;
+		link 4 {
+			path = ((864, 332), (695, 454));
+			};
+		};
+	};
+ElimOrder = (Antivirus, VPN_Activity, Logins, Email, Website, Investigation, Updates, Connections, ADDC, Outbound, Proxy, Alert);
+};

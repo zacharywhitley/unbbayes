@@ -1,0 +1,870 @@
+// ~->[DNET-1]->~
+
+// File created by someone at SEOR-GMU using Netica 5.12 on May 21, 2016 at 16:02:57.
+
+bnet Challenge_2v5 {
+AutoCompile = TRUE;
+autoupdate = TRUE;
+whenchanged = 1461089766;
+
+visual V1 {
+	defdispform = BELIEFBARS;
+	nodelabeling = TITLE;
+	NodeMaxNumEntries = 50;
+	nodefont = font {shape= "Arial"; size= 9;};
+	linkfont = font {shape= "Arial"; size= 9;};
+	windowposn = (26, 26, 1228, 955);
+	resolution = 72;
+	drawingbounds = (1816, 975);
+	showpagebreaks = FALSE;
+	usegrid = TRUE;
+	gridspace = (6, 6);
+	NodeSet Node {BuiltIn = 1; Color = 0x00C0C0C0;};
+	NodeSet Nature {BuiltIn = 1; Color = 0x00F8EED2;};
+	NodeSet Deterministic {BuiltIn = 1; Color = 0x00D3CAA6;};
+	NodeSet Finding {BuiltIn = 1; Color = 0x00C8C8C8;};
+	NodeSet Constant {BuiltIn = 1; Color = 0x00FFFFFF;};
+	NodeSet ConstantValue {BuiltIn = 1; Color = 0x00FFFFB4;};
+	NodeSet Utility {BuiltIn = 1; Color = 0x00FFBDBD;};
+	NodeSet Decision {BuiltIn = 1; Color = 0x00DEE8FF;};
+	NodeSet Documentation {BuiltIn = 1; Color = 0x00F0FAFA;};
+	NodeSet Title {BuiltIn = 1; Color = 0x00FFFFFF;};
+	NodeSet Indicators {Color = 0x0080FFFF;};
+	NodeSet Detectors {Color = 0x00FF8040;};
+	NodeSet Behaviors {Color = 0x00FFFF80;};
+	NodeSet Alerts {Color = 0x0000FF80;};
+	NodeSet Unexplained_Indicator {Color = 0x00FF80FF;};
+	PrinterSetting A {
+		margins = (1270, 1270, 1270, 1270);
+		magnify = 1;
+		};
+	};
+
+node Investigation {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	statetitles = ("Match Threat Type", "Do not Match Threat Type");
+	parents = ();
+	probs = 
+		// Match Threat Typ Do not Match Thr 
+		  (0.05023671,  0.9497633);
+	numcases = 3802;
+	title = "Abnormally Large Data Transfers";
+	whenchanged = 1461089766;
+	belief = (0.05023672, 0.9497633);
+	visual V1 {
+		center = (660, 60);
+		height = 1;
+		};
+	};
+
+node Fileshare {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.9791667,   0.02083333,   // Match Threat Typ 
+		   0.006644518, 0.9933555);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (192,          // Match Threat Typ 
+		   3612);        // Do not Match Thr ;
+	title = "Top 5% Prohibited Fileshare Sites";
+	whenchanged = 1460915772;
+	belief = (0.05550084, 0.9444991);
+	visual V1 {
+		center = (162, 180);
+		height = 2;
+		link 1 {
+			path = ((553, 87), (270, 155));
+			};
+		};
+	};
+
+node Large_Email {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.9791667,   0.02083333,   // Match Threat Typ 
+		   0.006644518, 0.9933555);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (192,          // Match Threat Typ 
+		   3612);        // Do not Match Thr ;
+	title = "Top 5% Large Emails Sent";
+	whenchanged = 1460915926;
+	belief = (0.05550084, 0.9444991);
+	visual V1 {
+		center = (384, 180);
+		height = 3;
+		link 1 {
+			path = ((601, 87), (444, 154));
+			};
+		};
+	};
+
+node VPN_Data {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.9791667,   0.02083333,   // Match Threat Typ 
+		   0.006644518, 0.9933555);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (192,          // Match Threat Typ 
+		   3612);        // Do not Match Thr ;
+	title = "Top 5% VPN Large Data";
+	whenchanged = 1459694630;
+	belief = (0.05550084, 0.9444991);
+	visual V1 {
+		center = (588, 180);
+		height = 4;
+		};
+	};
+
+node Firewall {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.984375,    0.015625,     // Match Threat Typ 
+		   0.006367663, 0.9936323);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (192,          // Match Threat Typ 
+		   3612);        // Do not Match Thr ;
+	title = "Top 5% Firewall Large Data";
+	whenchanged = 1459694410;
+	belief = (0.05549954, 0.9445004);
+	visual V1 {
+		center = (792, 180);
+		height = 5;
+		};
+	};
+
+node Website {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.9791667,   0.02083333,   // Match Threat Typ 
+		   0.006644518, 0.9933555);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (192,          // Match Threat Typ 
+		   3612);        // Do not Match Thr ;
+	title = "Top 5% Website Large Data";
+	whenchanged = 1459694645;
+	belief = (0.05550084, 0.9444991);
+	visual V1 {
+		center = (1002, 180);
+		height = 6;
+		};
+	};
+
+node USB {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	inputs = (Investigation);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.9791667,   0.02083333,   // Match Threat Typ 
+		   0.006644518, 0.9933555);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (192,          // Match Threat Typ 
+		   3612);        // Do not Match Thr ;
+	title = "Top 5% Large USB";
+	whenchanged = 1460916257;
+	belief = (0.05550084, 0.9444991);
+	visual V1 {
+		center = (1338, 168);
+		height = 22;
+		};
+	};
+
+node Flagged {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = ();
+	probs = 
+		// True         False        
+		  (0.001052078, 0.9989479);
+	numcases = 3802;
+	title = "Flagged by Analysts";
+	whenchanged = 1461089697;
+	belief = (0.001052078, 0.9989479);
+	visual V1 {
+		center = (282, 54);
+		height = 7;
+		};
+	};
+
+node U_Fileshare {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Flagged, Investigation);
+	probs = 
+		// True         False         // Flagged Investigation    
+		  (0.2,         0.8,          // True    Match Threat Typ 
+		   0.5,         0.5,          // True    Do not Match Thr 
+		   0.994709,    0.005291005,  // False   Match Threat Typ 
+		   0.006644518, 0.9933555);   // False   Do not Match Thr ;
+	numcases = 
+		                 // Flagged Investigation    
+		  (5,            // True    Match Threat Typ 
+		   2,            // True    Do not Match Thr 
+		   189,          // False   Match Threat Typ 
+		   3612);        // False   Do not Match Thr ;
+	title = "Top 5% Flagged Fileshare";
+	whenchanged = 1461086424;
+	belief = (0.0567326, 0.9432674);
+	visual V1 {
+		center = (106, 306);
+		height = 8;
+		link 2 {
+			path = ((602, 87), (161, 280));
+			};
+		};
+	};
+
+node U_Fileshare1 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	inputs = (Flagged, Investigation);
+	parents = (Flagged, Investigation);
+	probs = 
+		// True         False         // Flagged Investigation    
+		  (0.2,         0.8,          // True    Match Threat Typ 
+		   0.5,         0.5,          // True    Do not Match Thr 
+		   0.994709,    0.005291005,  // False   Match Threat Typ 
+		   0.006644518, 0.9933555);   // False   Do not Match Thr ;
+	numcases = 
+		                 // Flagged Investigation    
+		  (5,            // True    Match Threat Typ 
+		   2,            // True    Do not Match Thr 
+		   189,          // False   Match Threat Typ 
+		   3612);        // False   Do not Match Thr ;
+	title = "Unexplained Large Email";
+	whenchanged = 1461086430;
+	belief = (0.0567326, 0.9432674);
+	visual V1 {
+		center = (342, 300);
+		height = 24;
+		};
+	};
+
+node U_Fileshare2 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Flagged, Investigation);
+	probs = 
+		// True         False         // Flagged Investigation    
+		  (0.2,         0.8,          // True    Match Threat Typ 
+		   0.5,         0.5,          // True    Do not Match Thr 
+		   0.994709,    0.005291005,  // False   Match Threat Typ 
+		   0.006644518, 0.9933555);   // False   Do not Match Thr ;
+	numcases = 
+		                 // Flagged Investigation    
+		  (5,            // True    Match Threat Typ 
+		   2,            // True    Do not Match Thr 
+		   189,          // False   Match Threat Typ 
+		   3612);        // False   Do not Match Thr ;
+	title = "Unexplained Large Email";
+	whenchanged = 1461086434;
+	belief = (0.0567326, 0.9432674);
+	visual V1 {
+		center = (576, 306);
+		height = 9;
+		link 2 {
+			path = ((652, 87), (585, 280));
+			};
+		};
+	};
+
+node U_Fileshare3 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Flagged, Investigation);
+	probs = 
+		// True         False         // Flagged Investigation    
+		  (0.4,         0.6,          // True    Match Threat Typ 
+		   0.5,         0.5,          // True    Do not Match Thr 
+		   0.994709,    0.005291005,  // False   Match Threat Typ 
+		   0.006644518, 0.9933555);   // False   Do not Match Thr ;
+	numcases = 
+		                 // Flagged Investigation    
+		  (5,            // True    Match Threat Typ 
+		   2,            // True    Do not Match Thr 
+		   189,          // False   Match Threat Typ 
+		   3612);        // False   Do not Match Thr ;
+	title = "Unexplained Large Firewall Data";
+	whenchanged = 1461086438;
+	belief = (0.05674317, 0.9432569);
+	visual V1 {
+		center = (798, 306);
+		height = 10;
+		};
+	};
+
+node U_Fileshare4 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Flagged, Investigation);
+	probs = 
+		// True         False         // Flagged Investigation    
+		  (0.2,         0.8,          // True    Match Threat Typ 
+		   0.5,         0.5,          // True    Do not Match Thr 
+		   0.994709,    0.005291005,  // False   Match Threat Typ 
+		   0.006644518, 0.9933555);   // False   Do not Match Thr ;
+	numcases = 
+		                 // Flagged Investigation    
+		  (5,            // True    Match Threat Typ 
+		   2,            // True    Do not Match Thr 
+		   189,          // False   Match Threat Typ 
+		   3612);        // False   Do not Match Thr ;
+	title = "Unexplained Fileshare";
+	whenchanged = 1461086440;
+	belief = (0.0567326, 0.9432674);
+	visual V1 {
+		center = (1020, 306);
+		height = 11;
+		link 1 {
+			path = ((357, 79), (945, 280));
+			};
+		};
+	};
+
+node U_Fileshare5 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Flagged, Investigation);
+	probs = 
+		// True         False         // Flagged Investigation    
+		  (0.2,         0.8,          // True    Match Threat Typ 
+		   0.5,         0.5,          // True    Do not Match Thr 
+		   0.994709,    0.005291005,  // False   Match Threat Typ 
+		   0.006644518, 0.9933555);   // False   Do not Match Thr ;
+	numcases = 
+		                 // Flagged Investigation    
+		  (5,            // True    Match Threat Typ 
+		   2,            // True    Do not Match Thr 
+		   189,          // False   Match Threat Typ 
+		   3612);        // False   Do not Match Thr ;
+	title = "Unexplained Fileshare";
+	whenchanged = 1461086442;
+	belief = (0.05673259, 0.9432674);
+	visual V1 {
+		center = (1218, 288);
+		height = 23;
+		};
+	};
+
+node Proxy_Transfer {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Fileshare);
+	probs = 
+		// True         False         // Fileshare 
+		  (0.995283,    0.004716981,  // True      
+		   0.005289532, 0.9947104);   // False     ;
+	numcases = 
+		                 // Fileshare 
+		  (212,          // True      
+		   3592);        // False     ;
+	title = ">= 2000 Proxy Log";
+	whenchanged = 1460915842;
+	belief = (0.06023499, 0.939765);
+	visual V1 {
+		center = (162, 414);
+		height = 12;
+		};
+	};
+
+node Email_Attach {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Large_Email);
+	probs = 
+		// True         False         // Large_Email 
+		  (0.995283,    0.004716981,  // True        
+		   0.001391982, 0.998608);    // False       ;
+	numcases = 
+		                 // Large_Email 
+		  (212,          // True        
+		   3592);        // False       ;
+	title = ">=3 emails w/ 5 MB attachment";
+	whenchanged = 1460916029;
+	belief = (0.05655376, 0.9434462);
+	visual V1 {
+		center = (384, 414);
+		height = 15;
+		};
+	};
+
+node VPN_Data2 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (VPN_Data);
+	probs = 
+		// True         False         // VPN_Data 
+		  (0.995283,    0.004716981,  // True     
+		   0.01753898,  0.982461);    // False    ;
+	numcases = 
+		                 // VPN_Data 
+		  (212,          // True     
+		   3592);        // False    ;
+	title = ">=7 VPN w/210 MB";
+	whenchanged = 1460916067;
+	belief = (0.07180459, 0.9281954);
+	visual V1 {
+		center = (594, 420);
+		height = 27;
+		};
+	};
+
+node Firewall_Data {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Firewall);
+	probs = 
+		// True         False         // Firewall 
+		  (0.995283,    0.004716981,  // True     
+		   2.783964e-4, 0.9997216);   // False    ;
+	numcases = 
+		                 // Firewall 
+		  (212,          // True     
+		   3592);        // False    ;
+	title = ">=3 firewall entries w/200 KB";
+	whenchanged = 1460916095;
+	belief = (0.0555007, 0.9444993);
+	visual V1 {
+		center = (792, 414);
+		height = 14;
+		};
+	};
+
+node Proxy {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (Website);
+	probs = 
+		// True         False         // Website 
+		  (0.995283,    0.004716981,  // True    
+		   2.783964e-4, 0.9997216);   // False   ;
+	numcases = 
+		                 // Website 
+		  (212,          // True    
+		   3592);        // False   ;
+	title = ">=1 proxy entry w/51 MB";
+	whenchanged = 1460916135;
+	belief = (0.05550199, 0.944498);
+	visual V1 {
+		center = (1002, 414);
+		height = 13;
+		};
+	};
+
+node USB_Attach {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	parents = (USB);
+	probs = 
+		// True         False         // USB   
+		  (0.990566,    0.009433962,  // True  
+		   2.783964e-4, 0.9997216);   // False ;
+	numcases = 
+		                 // USB   
+		  (212,          // True  
+		   3592);        // False ;
+	title = ">=11 log entries of devices attached.";
+	whenchanged = 1460916177;
+	belief = (0.05524019, 0.9447598);
+	visual V1 {
+		center = (1374, 408);
+		height = 21;
+		};
+	};
+
+node Proxy_Transfer1 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	inputs = (Fileshare);
+	parents = (U_Fileshare);
+	probs = 
+		// True         False         // Fileshare 
+		  (0.995283,    0.004716981,  // True      
+		   0.005289532, 0.9947104);   // False     ;
+	numcases = 
+		                 // Fileshare 
+		  (212,          // True      
+		   3592);        // False     ;
+	EqnDirty = TRUE;
+	title = ">= 2000 Proxy Log";
+	whenchanged = 1461073192;
+	belief = (0.06145444, 0.9385456);
+	visual V1 {
+		center = (156, 612);
+		height = 16;
+		};
+	};
+
+node Email_Attach1 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	inputs = (Large_Email);
+	parents = (U_Fileshare1);
+	probs = 
+		// True         False         // Large_Email 
+		  (0.995283,    0.004716981,  // True        
+		   0.001391982, 0.998608);    // False       ;
+	numcases = 
+		                 // Large_Email 
+		  (212,          // True        
+		   3592);        // False       ;
+	EqnDirty = TRUE;
+	title = ">=3 emails w/ 5 MB attachment";
+	whenchanged = 1461073214;
+	belief = (0.057778, 0.942222);
+	visual V1 {
+		center = (378, 612);
+		height = 19;
+		};
+	};
+
+node VPN_Data3 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	inputs = (VPN_Data);
+	parents = (U_Fileshare2);
+	probs = 
+		// True         False         // VPN_Data 
+		  (0.995283,    0.004716981,  // True     
+		   0.01753898,  0.982461);    // False    ;
+	numcases = 
+		                 // VPN_Data 
+		  (212,          // True     
+		   3592);        // False    ;
+	EqnDirty = TRUE;
+	title = ">=7 VPN w/210 MB";
+	whenchanged = 1461073229;
+	belief = (0.07300894, 0.926991);
+	visual V1 {
+		center = (606, 606);
+		height = 26;
+		};
+	};
+
+node Firewall_Data1 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	inputs = (Firewall);
+	parents = (U_Fileshare3);
+	probs = 
+		// True         False         // Firewall 
+		  (0.995283,    0.004716981,  // True     
+		   2.783964e-4, 0.9997216);   // False    ;
+	numcases = 
+		                 // Firewall 
+		  (212,          // True     
+		   3592);        // False    ;
+	EqnDirty = TRUE;
+	title = ">=3 firewall entries w/200 KB";
+	whenchanged = 1461073242;
+	belief = (0.05673811, 0.9432619);
+	visual V1 {
+		center = (798, 576);
+		height = 28;
+		};
+	};
+
+node Proxy1 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	inputs = (Website);
+	parents = (U_Fileshare4);
+	probs = 
+		// True         False         // Website 
+		  (0.995283,    0.004716981,  // True    
+		   2.783964e-4, 0.9997216);   // False   ;
+	numcases = 
+		                 // Website 
+		  (212,          // True    
+		   3592);        // False   ;
+	EqnDirty = TRUE;
+	title = ">=1 proxy entry w/51 MB";
+	whenchanged = 1461073257;
+	belief = (0.05672759, 0.9432724);
+	visual V1 {
+		center = (996, 612);
+		height = 18;
+		};
+	};
+
+node USB_Attach1 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	inputs = (USB);
+	parents = (U_Fileshare5);
+	probs = 
+		// True         False         // USB   
+		  (0.990566,    0.009433962,  // True  
+		   2.783964e-4, 0.9997216);   // False ;
+	numcases = 
+		                 // USB   
+		  (212,          // True  
+		   3592);        // False ;
+	EqnDirty = TRUE;
+	title = ">=11 log entries of devices attached.";
+	whenchanged = 1461073272;
+	belief = (0.05646, 0.94354);
+	visual V1 {
+		center = (1199, 612);
+		height = 17;
+		};
+	};
+
+node Alert {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = DETERMIN;
+	states = (True, False);
+	parents = (Proxy_Transfer, Email_Attach, VPN_Data2, Firewall_Data, Proxy, USB_Attach);
+	functable = 
+		                    // Proxy_Transfer Email_Attach VPN_Data2 Firewall_Data Proxy USB_Attach 
+		  (True,            // True           True         True      True          True  True       
+		   True,            // True           True         True      True          True  False      
+		   True,            // True           True         True      True          False True       
+		   True,            // True           True         True      True          False False      
+		   True,            // True           True         True      False         True  True       
+		   True,            // True           True         True      False         True  False      
+		   True,            // True           True         True      False         False True       
+		   True,            // True           True         True      False         False False      
+		   True,            // True           True         False     True          True  True       
+		   True,            // True           True         False     True          True  False      
+		   True,            // True           True         False     True          False True       
+		   True,            // True           True         False     True          False False      
+		   True,            // True           True         False     False         True  True       
+		   True,            // True           True         False     False         True  False      
+		   True,            // True           True         False     False         False True       
+		   True,            // True           True         False     False         False False      
+		   True,            // True           False        True      True          True  True       
+		   True,            // True           False        True      True          True  False      
+		   True,            // True           False        True      True          False True       
+		   True,            // True           False        True      True          False False      
+		   True,            // True           False        True      False         True  True       
+		   True,            // True           False        True      False         True  False      
+		   True,            // True           False        True      False         False True       
+		   True,            // True           False        True      False         False False      
+		   True,            // True           False        False     True          True  True       
+		   True,            // True           False        False     True          True  False      
+		   True,            // True           False        False     True          False True       
+		   True,            // True           False        False     True          False False      
+		   True,            // True           False        False     False         True  True       
+		   True,            // True           False        False     False         True  False      
+		   True,            // True           False        False     False         False True       
+		   False,           // True           False        False     False         False False      
+		   True,            // False          True         True      True          True  True       
+		   True,            // False          True         True      True          True  False      
+		   True,            // False          True         True      True          False True       
+		   True,            // False          True         True      True          False False      
+		   True,            // False          True         True      False         True  True       
+		   True,            // False          True         True      False         True  False      
+		   True,            // False          True         True      False         False True       
+		   True,            // False          True         True      False         False False      
+		   True,            // False          True         False     True          True  True       
+		   True,            // False          True         False     True          True  False      
+		   True,            // False          True         False     True          False True       
+		   True,            // False          True         False     True          False False      
+		   True,            // False          True         False     False         True  True       
+		   True,            // False          True         False     False         True  False      
+		   True,            // False          True         False     False         False True       
+		   False,           // False          True         False     False         False False      
+		   True,            // False          False        True      True          True  True       
+		   True,            // False          False        True      True          True  False      
+		   True,            // False          False        True      True          False True       
+		   True,            // False          False        True      True          False False      
+		   True,            // False          False        True      False         True  True       
+		   True,            // False          False        True      False         True  False      
+		   True,            // False          False        True      False         False True       
+		   False,           // False          False        True      False         False False      
+		   True,            // False          False        False     True          True  True       
+		   True,            // False          False        False     True          True  False      
+		   True,            // False          False        False     True          False True       
+		   False,           // False          False        False     True          False False      
+		   True,            // False          False        False     False         True  True       
+		   False,           // False          False        False     False         True  False      
+		   False,           // False          False        False     False         False True       
+		   False);          // False          False        False     False         False False      ;
+	title = "Alert for Unexplained";
+	whenchanged = 1461085628;
+	belief = (0.05172232, 0.9482777);
+	visual V1 {
+		center = (312, 756);
+		height = 25;
+		};
+	};
+
+node Alert1 {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = DETERMIN;
+	states = (True, False);
+	inputs = (Proxy_Transfer, Email_Attach, VPN_Data2, Firewall_Data, Proxy, USB_Attach);
+	parents = (Proxy_Transfer1, Firewall_Data1, Email_Attach1, VPN_Data3, Proxy1, USB_Attach1);
+	functable = 
+		                    // Proxy_Transfer Email_Attach VPN_Data2 Firewall_Data Proxy USB_Attach 
+		  (True,            // True           True         True      True          True  True       
+		   True,            // True           True         True      True          True  False      
+		   True,            // True           True         True      True          False True       
+		   True,            // True           True         True      True          False False      
+		   True,            // True           True         True      False         True  True       
+		   True,            // True           True         True      False         True  False      
+		   True,            // True           True         True      False         False True       
+		   True,            // True           True         True      False         False False      
+		   True,            // True           True         False     True          True  True       
+		   True,            // True           True         False     True          True  False      
+		   True,            // True           True         False     True          False True       
+		   True,            // True           True         False     True          False False      
+		   True,            // True           True         False     False         True  True       
+		   True,            // True           True         False     False         True  False      
+		   True,            // True           True         False     False         False True       
+		   True,            // True           True         False     False         False False      
+		   True,            // True           False        True      True          True  True       
+		   True,            // True           False        True      True          True  False      
+		   True,            // True           False        True      True          False True       
+		   True,            // True           False        True      True          False False      
+		   True,            // True           False        True      False         True  True       
+		   True,            // True           False        True      False         True  False      
+		   True,            // True           False        True      False         False True       
+		   True,            // True           False        True      False         False False      
+		   True,            // True           False        False     True          True  True       
+		   True,            // True           False        False     True          True  False      
+		   True,            // True           False        False     True          False True       
+		   True,            // True           False        False     True          False False      
+		   True,            // True           False        False     False         True  True       
+		   True,            // True           False        False     False         True  False      
+		   True,            // True           False        False     False         False True       
+		   False,           // True           False        False     False         False False      
+		   True,            // False          True         True      True          True  True       
+		   True,            // False          True         True      True          True  False      
+		   True,            // False          True         True      True          False True       
+		   True,            // False          True         True      True          False False      
+		   True,            // False          True         True      False         True  True       
+		   True,            // False          True         True      False         True  False      
+		   True,            // False          True         True      False         False True       
+		   True,            // False          True         True      False         False False      
+		   True,            // False          True         False     True          True  True       
+		   True,            // False          True         False     True          True  False      
+		   True,            // False          True         False     True          False True       
+		   True,            // False          True         False     True          False False      
+		   True,            // False          True         False     False         True  True       
+		   True,            // False          True         False     False         True  False      
+		   True,            // False          True         False     False         False True       
+		   False,           // False          True         False     False         False False      
+		   True,            // False          False        True      True          True  True       
+		   True,            // False          False        True      True          True  False      
+		   True,            // False          False        True      True          False True       
+		   True,            // False          False        True      True          False False      
+		   True,            // False          False        True      False         True  True       
+		   True,            // False          False        True      False         True  False      
+		   True,            // False          False        True      False         False True       
+		   False,           // False          False        True      False         False False      
+		   True,            // False          False        False     True          True  True       
+		   True,            // False          False        False     True          True  False      
+		   True,            // False          False        False     True          False True       
+		   False,           // False          False        False     True          False False      
+		   True,            // False          False        False     False         True  True       
+		   False,           // False          False        False     False         True  False      
+		   False,           // False          False        False     False         False True       
+		   False);          // False          False        False     False         False False      ;
+	title = "Alert for Flagged";
+	whenchanged = 1461089710;
+	belief = (0.05259447, 0.9474055);
+	visual V1 {
+		center = (798, 690);
+		height = 20;
+		link 1 {
+			path = ((231, 620), (724, 681));
+			};
+		link 5 {
+			path = ((914, 644), (863, 664));
+			};
+		link 6 {
+			path = ((1094, 634), (873, 676));
+			};
+		};
+	};
+NodeSet Indicators {Nodes = (Fileshare, Large_Email, VPN_Data, Firewall, Website, USB);};
+NodeSet Detectors {Nodes = (Proxy_Transfer1, Email_Attach1, VPN_Data3, Firewall_Data1, Proxy1, USB_Attach1, Proxy_Transfer, Email_Attach, VPN_Data2, Firewall_Data, Proxy, USB_Attach);};
+NodeSet Behaviors {Nodes = (Investigation, Flagged);};
+NodeSet Alerts {Nodes = (Alert, Alert1);};
+NodeSet Unexplained_Indicator {Nodes = (U_Fileshare, U_Fileshare1, U_Fileshare2, U_Fileshare3, U_Fileshare4, U_Fileshare5);};
+ElimOrder = (Fileshare, Large_Email, VPN_Data, Firewall, Website, USB, U_Fileshare, U_Fileshare1, U_Fileshare2, U_Fileshare3, U_Fileshare4, U_Fileshare5, Alert, Alert1, Proxy_Transfer, Email_Attach, VPN_Data2, Firewall_Data, Proxy, USB_Attach, Investigation, Flagged, Proxy_Transfer1, Email_Attach1, VPN_Data3, Firewall_Data1, Proxy1, USB_Attach1);
+};
