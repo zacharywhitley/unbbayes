@@ -25,6 +25,8 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -59,8 +61,6 @@ import unbbayes.gui.table.PercentRenderer;
 import unbbayes.gui.table.RadioButtonCellEditor;
 import unbbayes.gui.table.RadioButtonCellRenderer;
 import unbbayes.gui.table.RowHeaderRenderer;
-
-import com.ibm.icu.text.NumberFormat;
 
 public class EvaluationPane extends JPanel {
 
@@ -134,8 +134,9 @@ public class EvaluationPane extends JPanel {
 		sampleSizeTextField.setColumns(10);
 		
 		errorLabel = new JLabel("Error:");
-		NumberFormat numberFormat = NumberFormat.getScientificInstance();
-		numberFormat.setMaximumFractionDigits(3);
+//		NumberFormat numberFormat = DecimalFormat.getInstance();
+//		numberFormat.setMaximumFractionDigits(3);
+		NumberFormat numberFormat = new DecimalFormat("0.###E0");
 		errorTextField = new JFormattedTextField(numberFormat);
 		errorTextField.setColumns(5);
 		errorTextField.setEditable(false);
