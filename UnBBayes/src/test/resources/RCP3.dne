@@ -1,0 +1,316 @@
+// ~->[DNET-1]->~
+
+// File created by someone at SEOR-GMU using Netica 5.12 on Jun 02, 2016 at 14:06:17.
+
+bnet RCP3 {
+AutoCompile = TRUE;
+autoupdate = TRUE;
+whenchanged = 1463677115;
+
+visual V1 {
+	defdispform = BELIEFBARS;
+	nodelabeling = TITLE;
+	NodeMaxNumEntries = 50;
+	nodefont = font {shape= "Arial"; size= 9;};
+	linkfont = font {shape= "Arial"; size= 9;};
+	windowposn = (26, 26, 1139, 473);
+	resolution = 72;
+	drawingbounds = (1345, 720);
+	showpagebreaks = FALSE;
+	usegrid = TRUE;
+	gridspace = (6, 6);
+	NodeSet Node {BuiltIn = 1; Color = 0x00C0C0C0;};
+	NodeSet Nature {BuiltIn = 1; Color = 0x00F8EED2;};
+	NodeSet Deterministic {BuiltIn = 1; Color = 0x00D3CAA6;};
+	NodeSet Finding {BuiltIn = 1; Color = 0x00C8C8C8;};
+	NodeSet Constant {BuiltIn = 1; Color = 0x00FFFFFF;};
+	NodeSet ConstantValue {BuiltIn = 1; Color = 0x00FFFFB4;};
+	NodeSet Utility {BuiltIn = 1; Color = 0x00FFBDBD;};
+	NodeSet Decision {BuiltIn = 1; Color = 0x00DEE8FF;};
+	NodeSet Documentation {BuiltIn = 1; Color = 0x00F0FAFA;};
+	NodeSet Title {BuiltIn = 1; Color = 0x00FFFFFF;};
+	NodeSet Indicators {Color = 0x0080FFFF;};
+	NodeSet Detectors {Color = 0x00FF8040;};
+	NodeSet Behaviors {Color = 0x00FFFF80;};
+	NodeSet Alerts {Color = 0x0080FF80;};
+	PrinterSetting A {
+		margins = (1270, 1270, 1270, 1270);
+		magnify = 1;
+		};
+	};
+
+node Investigation {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	statetitles = ("Match Threat Type ", "Do not Match Threat Type");
+	levels = (1, 0);
+	parents = ();
+	probs = 
+		// Match Threat Typ Do not Match Thr 
+		  (0.00144,     0.99856);
+	numcases = 50000;
+	title = "Unusual Foreign Contact";
+	whenchanged = 1463677115;
+	belief = (0.00144, 0.99856);
+	visual V1 {
+		center = (660, 54);
+		height = 10;
+		};
+	};
+
+node Foreign_Email {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.8055555,   0.1944445,    // Match Threat Typ 
+		   0.05373738,  0.9462626);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (72,           // Match Threat Typ 
+		   49928);       // Do not Match Thr ;
+	title = "Top 5% Foreign Email";
+	whenchanged = 1463677115;
+	belief = (0.05482, 0.94518);
+	visual V1 {
+		center = (312, 162);
+		height = 2;
+		link 1 {
+			path = ((546, 91), (387, 140));
+			};
+		};
+	};
+
+node VPN_Foreign {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.1527779,   0.8472221,    // Match Threat Typ 
+		   0.001822625, 0.9981773);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (72,           // Match Threat Typ 
+		   49928);       // Do not Match Thr ;
+	title = "Top 5% Foreign VPN";
+	whenchanged = 1463677115;
+	belief = (0.00204, 0.99796);
+	visual V1 {
+		center = (546, 156);
+		height = 5;
+		};
+	};
+
+node Foreign_Firewall {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.4444444,   0.5555555,    // Match Threat Typ 
+		   0.05433825,  0.9456617);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (72,           // Match Threat Typ 
+		   49928);       // Do not Match Thr ;
+	title = "Top 5% Firewall Entries to Foreign";
+	whenchanged = 1463677115;
+	belief = (0.0549, 0.9451);
+	visual V1 {
+		center = (1134, 156);
+		height = 8;
+		};
+	};
+
+node Foreign_Web {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	parents = (Investigation);
+	probs = 
+		// True         False         // Investigation    
+		  (0.8194444,   0.1805556,    // Match Threat Typ 
+		   0.05572024,  0.9442798);   // Do not Match Thr ;
+	numcases = 
+		                 // Investigation    
+		  (72,           // Match Threat Typ 
+		   49928);       // Do not Match Thr ;
+	title = "Top 5% Foreign Websites";
+	whenchanged = 1463677115;
+	belief = (0.05682, 0.94318);
+	visual V1 {
+		center = (816, 156);
+		height = 7;
+		};
+	};
+
+node Outbound_Email {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	parents = (Foreign_Email);
+	probs = 
+		// True         False         // Foreign_Email 
+		  (0.9598687,   0.04013134,   // True          
+		   8.252399e-4, 0.9991748);   // False         ;
+	numcases = 
+		                 // Foreign_Email 
+		  (2741,         // True          
+		   47259);       // False         ;
+	title = ">= 1 Foreign Email";
+	whenchanged = 1463677115;
+	belief = (0.0534, 0.9466);
+	visual V1 {
+		center = (312, 288);
+		height = 3;
+		};
+	};
+
+node VPN_Login {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	parents = (VPN_Foreign);
+	probs = 
+		// True         False         // VPN_Foreign 
+		  (0.9509803,   0.0490197,    // True        
+		   1.202455e-4, 0.9998798);   // False       ;
+	numcases = 
+		                 // VPN_Foreign 
+		  (102,          // True        
+		   49898);       // False       ;
+	title = ">=1 VPN from Foreign Location";
+	whenchanged = 1463677115;
+	belief = (0.00206, 0.99794);
+	visual V1 {
+		center = (546, 288);
+		height = 4;
+		};
+	};
+
+node Firewall_Log {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	parents = (Foreign_Firewall);
+	probs = 
+		// True         False         // Foreign_Firewall 
+		  (0.9489982,   0.05100183,   // True             
+		   0.003999577, 0.9960004);   // False            ;
+	numcases = 
+		                 // Foreign_Firewall 
+		  (2745,         // True             
+		   47255);       // False            ;
+	title = ">=37 firewall entries to Foreign Locations";
+	whenchanged = 1463677115;
+	belief = (0.05588, 0.94412);
+	visual V1 {
+		center = (1140, 288);
+		height = 9;
+		};
+	};
+
+node Websites {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	parents = (Foreign_Web);
+	probs = 
+		// True         False         // Foreign_Web 
+		  (0.9415699,   0.05843014,   // True        
+		   0.003117115, 0.9968829);   // False       ;
+	numcases = 
+		                 // Foreign_Web 
+		  (2841,         // True        
+		   47159);       // False       ;
+	title = ">=7100 proxy logs to Foreign Websites";
+	whenchanged = 1463677115;
+	belief = (0.05644, 0.94356);
+	visual V1 {
+		center = (816, 288);
+		height = 6;
+		};
+	};
+
+node Alert {
+	kind = NATURE;
+	discrete = TRUE;
+	chance = CHANCE;
+	states = (True, False);
+	levels = (1, 0);
+	parents = (Outbound_Email, VPN_Login, Firewall_Log, Websites);
+	probs = 
+		// True         False         // Outbound_Email VPN_Login Firewall_Log Websites 
+		  (0.5,         0.5,          // True           True      True         True     
+		   0.99999,     9.9998e-6,    // True           True      True         False    
+		   0.9999987,   1.25e-6,      // True           True      False        True     
+		   1,           3.0303e-7,    // True           True      False        False    
+		   0.9999986,   1.428567e-6,  // True           False     True         True     
+		   1,           9.009008e-8,  // True           False     True         False    
+		   1,           4.739336e-8,  // True           False     False        True     
+		   4.349717e-9, 1,            // True           False     False        False    
+		   0.5,         0.5,          // False          True      True         True     
+		   0.5,         0.5,          // False          True      True         False    
+		   0.9999987,   1.25e-6,      // False          True      False        True     
+		   1.886792e-7, 1,            // False          True      False        False    
+		   1,           1.075269e-7,  // False          False     True         True     
+		   3.872966e-9, 1,            // False          False     True         False    
+		   4.008016e-9, 1,            // False          False     False        True     
+		   2.375353e-10,1);           // False          False     False        False    ;
+	numcases = 
+		                 // Outbound_Email VPN_Login Firewall_Log Websites 
+		  (2e-5,         // True           True      True         True     
+		   1.00002,      // True           True      True         False    
+		   8.000019,     // True           True      False        True     
+		   33,           // True           True      False        False    
+		   7.00002,      // True           False     True         True     
+		   111,          // True           False     True         False    
+		   211,          // True           False     False        True     
+		   2299,         // True           False     False        False    
+		   2e-5,         // False          True      True         True     
+		   2e-5,         // False          True      True         False    
+		   8.000019,     // False          True      False        True     
+		   53,           // False          True      False        False    
+		   93,           // False          False     True         True     
+		   2582,         // False          False     True         False    
+		   2495,         // False          False     False        True     
+		   42099);       // False          False     False        False    ;
+	whenchanged = 1463677115;
+	belief = (0.00983872, 0.9901613);
+	visual V1 {
+		center = (660, 480);
+		height = 1;
+		link 3 {
+			path = ((1051, 325), (735, 451));
+			};
+		};
+	};
+NodeSet Indicators {Nodes = (Foreign_Email, VPN_Foreign, Foreign_Web, Foreign_Firewall);};
+NodeSet Detectors {Nodes = (Outbound_Email, VPN_Login, Websites, Firewall_Log);};
+NodeSet Behaviors {Nodes = (Investigation);};
+NodeSet Alerts {Nodes = (Alert);};
+ElimOrder = (Foreign_Email, VPN_Foreign, Foreign_Firewall, Foreign_Web, Investigation, Outbound_Email, VPN_Login, Firewall_Log, Websites, Alert);
+};
