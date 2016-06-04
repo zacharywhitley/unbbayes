@@ -1,0 +1,11 @@
+#
+# Physically Damaged Grid input file
+#
+
+PhysicalAttack:	false
+Nature:	true
+Weather:	3
+Malware:	true
+HighTraffic:	false
+
+
