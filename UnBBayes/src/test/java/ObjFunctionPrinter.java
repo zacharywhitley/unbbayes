@@ -24,7 +24,9 @@ public class ObjFunctionPrinter {
 
 	private static float greaterThanValue = 0;
 	
-	private boolean isToBreakLineOnObjectFunction = true;
+	private boolean isToBreakLineOnObjectFunction = false;
+
+	private boolean isToSubtract1WayLikelihood = true;;
 	
 	private static String threatName = "Threat";
 	private static String[] indicatorNames = {"I1", "I2", "I3", "I4", "I5"};
@@ -397,9 +399,10 @@ public class ObjFunctionPrinter {
 			printer.println();
 		}
 		
-		// threatIndicatorMatrix
+		// weightedTables
 		for (int tableIndex = 0; tableIndex < weightedTables.size(); tableIndex++) {
-			printer.print(" w[" + (tableIndex+1) + "] * ( ");
+//			printer.print(" w[" + (tableIndex+1) + "] * ( ");
+			printer.print(" w * ( ");
 			PotentialTable currentTable = weightedTables.get(tableIndex);
 			for (int cellIndex = 0; cellIndex < currentTable.tableSize() ; cellIndex++) {
 				
@@ -458,7 +461,7 @@ public class ObjFunctionPrinter {
 		
 		printer.print(" + ");
 		
-		// indicatorCorrelations
+		// unweightedTables
 		for (int tableIndex = 0; tableIndex < unweightedTables.size(); tableIndex++) {
 			PotentialTable currentTable = unweightedTables.get(tableIndex);
 			for (int cellIndex = 0; cellIndex < currentTable.tableSize() ; cellIndex++) {
@@ -509,14 +512,237 @@ public class ObjFunctionPrinter {
 			}
 			
 		}
-
+		
+		if (isToBreakLineOnObjectFunction()) {
+			printer.println();
+		}
+		
+		// make sure we only count the 1-way log likelihood once
+		if (isToSubtract1WayLikelihood()) {
+			printer.print(get1WayLikelihoodSubtraction(unweightedTables, weightedTables, jointTable));
+		}
+		
 		printer.println(";");
 		
 		return output.toString();
 		
 	}
 	
-	
+	/**
+	 * 
+	 * @param unweightedTables : correlation table
+	 * @param weightedTables : table from naive bayes distribution
+	 * @param jointTable : used just in order to treat the indexes of cells of a table containing all variables
+	 * @return
+	 */
+	public String get1WayLikelihoodSubtraction(List<PotentialTable> unweightedTables, List<PotentialTable> weightedTables, PotentialTable jointTable) {
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		PrintStream printer = new PrintStream(output);
+		
+		
+	    
+	    // count number of occurrences of variables
+	    Map<String, Integer> weightedTableCounter = new HashMap<String, Integer>();
+	    for (PotentialTable table : weightedTables) {
+			for (int i = 0; i < table.getVariablesSize(); i++) {
+				INode var = table.getVariableAt(i);
+				Integer count = weightedTableCounter.get(var.getName());
+				if (count == null) {
+					count = 0;
+				}
+				count++;
+				weightedTableCounter.put(var.getName(), count);
+			}
+		}
+	    Map<String, Integer> unweightedTableCounter = new HashMap<String, Integer>();
+	    for (PotentialTable table : unweightedTables) {
+	    	for (int i = 0; i < table.getVariablesSize(); i++) {
+	    		INode var = table.getVariableAt(i);
+	    		Integer count = unweightedTableCounter.get(var.getName());
+	    		if (count == null) {
+	    			count = 0;
+	    		}
+	    		count++;
+	    		unweightedTableCounter.put(var.getName(), count);
+	    	}
+	    }
+	    
+//	    Map<String, INode> jointTableVariableMap = new HashMap<String, INode>();
+//	    for (int i = 0; i < jointTable.getVariablesSize(); i++) {
+//			jointTableVariableMap.put(jointTable.getVariableAt(i).getName(), jointTable.getVariableAt(i));
+//		}
+	    
+
+		// check marginal consistency between tables in same category and get marginal counts (frequency) for each
+	    Map<String, int[]> weightedMarginals = this.getMarginalCounts(weightedTables);
+	    Map<String, int[]> unweightedMarginals = this.getMarginalCounts(unweightedTables);
+		
+	    // treat weighted marginals
+	    for (int varIndex = jointTable.getVariablesSize()-1; varIndex >= 0; varIndex--) {
+			
+	    	INode var = jointTable.getVariableAt(varIndex);
+	    	String varName = var.getName();
+	    	
+	    	if (!weightedMarginals.containsKey(varName) || !weightedTableCounter.containsKey(varName)) {
+	    		continue;	// ignore marginals that are not present in weighted table
+	    	}
+	    	
+	    	int[] marginal = weightedMarginals.get(varName);
+	    	Integer numToRemove = weightedTableCounter.get(varName);
+			if (!unweightedTableCounter.containsKey(varName) || unweightedTableCounter.get(varName).intValue() == 0) {
+				// if there is no occurrences in the other table, we need to consider 1 less marginals
+				numToRemove--;
+			}
+			printer.print(" - w * " + numToRemove + " * (");
+			
+			for (int stateIndex = 0; stateIndex < marginal.length; stateIndex++) {
+				printer.print(marginal[stateIndex] + " * log(");
+
+				boolean found1stP = false;
+				for (int jointCellIndex = 0; jointCellIndex < jointTable.tableSize(); jointCellIndex++) {
+					
+					int indexInJointTable = jointTable.getVariableIndex((Node) var);
+					int[] jointCoord = jointTable.getMultidimensionalCoord(jointCellIndex);
+					
+					if (jointCoord[indexInJointTable] == stateIndex) {
+						if (found1stP) {
+							printer.print(" +");
+						}
+						printer.print(" p[" + (jointCellIndex+1) + "]");
+						found1stP = true;
+					}
+					
+				}
+				
+				printer.print(")");
+				if (stateIndex + 1  < marginal.length) {
+					printer.print(" + ");
+				}
+			}
+			
+			printer.print(") ");
+
+			if (isToBreakLineOnObjectFunction()) {
+				printer.println();
+			}
+		}
+	    
+		
+	    if (isToBreakLineOnObjectFunction()) {
+	    	printer.println();
+	    }
+	    
+		// for unweighted marginals, 
+	    for (int varIndex = jointTable.getVariablesSize()-1; varIndex >= 0; varIndex--) {
+	    	
+	    	INode var = jointTable.getVariableAt(varIndex);
+	    	String varName = var.getName();
+	    	
+	    	if (!unweightedMarginals.containsKey(varName) || !unweightedTableCounter.containsKey(varName)) {
+	    		continue;	// ignore marginals that are not present in unweighted table
+	    	}
+	    	
+	    	int[] marginal = unweightedMarginals.get(varName);
+	    	Integer numToRemove = unweightedTableCounter.get(varName)-1;	// always remove 1-way log-likelihood except 1 entry
+	    	
+	    	printer.print(" - " + numToRemove + " * (");
+	    	
+	    	for (int stateIndex = 0; stateIndex < marginal.length; stateIndex++) {
+	    		printer.print(marginal[stateIndex] + " * log(");
+	    		
+	    		boolean found1stP = false;
+	    		for (int jointCellIndex = 0; jointCellIndex < jointTable.tableSize(); jointCellIndex++) {
+	    			
+	    			int indexInJointTable = jointTable.getVariableIndex((Node) var);
+	    			int[] jointCoord = jointTable.getMultidimensionalCoord(jointCellIndex);
+	    			
+	    			if (jointCoord[indexInJointTable] == stateIndex) {
+	    				if (found1stP) {
+	    					printer.print(" +");
+	    				}
+	    				printer.print(" p[" + (jointCellIndex+1) + "]");
+	    				found1stP = true;
+	    			}
+	    			
+	    		}
+	    		
+	    		printer.print(")");
+	    		if (stateIndex + 1  < marginal.length) {
+	    			printer.print(" + ");
+	    		}
+	    	}
+	    	
+	    	printer.print(") ");
+	    	
+	    	if (isToBreakLineOnObjectFunction()) {
+	    		printer.println();
+	    	}
+	    }
+
+		
+		
+		return output.toString();
+	}
+
+	/**
+	 * 
+	 * @param tables
+	 * @return
+	 */
+	public Map<String, int[]> getMarginalCounts(List<PotentialTable> tables) {
+		if (tables == null || tables.isEmpty()) {
+			return Collections.EMPTY_MAP;
+		}
+		
+		Map<String, int[]> marginals = new HashMap<String, int[]>();
+		
+		for (PotentialTable originalTable : tables) {
+			for (int currentVarIndex = 0; currentVarIndex < originalTable.getVariablesSize(); currentVarIndex++) {
+				PotentialTable table = originalTable.getTemporaryClone();
+				INode var = originalTable.getVariableAt(currentVarIndex);
+				// marginalize out other variables
+				for (int indexToRemove = 0; indexToRemove < originalTable.getVariablesSize(); indexToRemove++) {
+					if (indexToRemove != currentVarIndex) {
+						table.removeVariable(table.getVariableAt(indexToRemove), false);	// do not normalize
+					}
+				}
+				if (table.tableSize() != var.getStatesSize()) {
+					throw new RuntimeException("Could not marginalize out variables other than " + var + ". Expected table size was " + var.getStatesSize() + ", but found " + table.tableSize());
+				}
+				// fill marginal
+				int[] marginal = new int[var.getStatesSize()];
+				for (int i = 0; i < table.tableSize(); i++) {
+					marginal[i] = (int) table.getValue(i);
+				}
+				
+				// compare with previously obtained marginal
+				int[] oldMarginal = marginals.get(var.getName());
+				if (oldMarginal == null) {
+					// 1st time we calculate marginal
+					marginals.put(var.getName(), marginal);
+//					// also fill node with marginal (optional)
+//					if (var instanceof TreeVariable) {
+//						((TreeVariable) var).initMarginalList();
+//						for (int i = 0; i < var.getStatesSize(); i++) {
+//							((TreeVariable) var).setMarginalAt(i, marginal[i]);
+//						}
+//					}
+				} else {
+					if (oldMarginal.length != marginal.length) {
+						throw new IllegalArgumentException(var + " has size " + oldMarginal.length + " and " + marginal.length);
+					}
+					for (int i = 0; i < oldMarginal.length; i++) {
+						if (oldMarginal[i] != marginal[i]) {
+							throw new IllegalArgumentException(var + " has different marginal at state " + i + ": " + oldMarginal[i] + " != " + marginal[i]);
+						}
+					}
+				}
+				
+			}
+		}
+		return marginals;
+	}
+
 	/**
 	 * objFun : p[1] + p[2] +,...,p[k] >= 0.0000001
 	 * @param correlationTables
@@ -629,46 +855,80 @@ public class ObjFunctionPrinter {
 		return output.toString();
 	}
 	
-
+	
 	/**
-	 * @param args
+	 * @see #printAll(String[], String[], String, int[][][], int[][][], int[][][], int[][][], PrintStream)
 	 */
-	public static void main(String[] args) {
-		
-		ObjFunctionPrinter printer = new ObjFunctionPrinter();
+	public void printAll(String[] indicatorNames, String[] detectorNames, String threatName,
+			int[][][] indicatorCorrelations, int[][][] detectorCorrelations,
+			int[][][] threatIndicatorMatrix, int[][][] detectorIndicatorMatrix){
+		this.printAll(indicatorNames, detectorNames, threatName, indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix, null);
+	}
+	
+	/**
+	 * 
+	 * @param indicatorNames
+	 * @param detectorNames
+	 * @param threatName
+	 * @param indicatorCorrelations
+	 * @param detectorCorrelations
+	 * @param threatIndicatorMatrix
+	 * @param detectorIndicatorMatrix
+	 * @param printer
+	 */
+	public void printAll(String[] indicatorNames, String[] detectorNames, String threatName,
+			int[][][] indicatorCorrelations, int[][][] detectorCorrelations,
+			int[][][] threatIndicatorMatrix, int[][][] detectorIndicatorMatrix ,
+			PrintStream printer){
+
+		if (printer == null) {
+			printer = System.out;
+		}
 		
 		Map<String, INode> variableMap = new HashMap<String, INode>();
 		
-		List<String> indicatorNameList = printer.getNameList(indicatorNames);
-		List<String> detectorNameList = printer.getNameList(detectorNames);
+		List<String> indicatorNameList = this.getNameList(indicatorNames);
+		List<String> detectorNameList = this.getNameList(detectorNames);
 		
 		List<String> allVariableList = new ArrayList<String>();
 		allVariableList.add(threatName);
 		allVariableList.addAll(indicatorNameList);
 		allVariableList.addAll(detectorNameList);
 		
-		PotentialTable jointTable = printer.getJointTable(variableMap, allVariableList );
+		PotentialTable jointTable = this.getJointTable(variableMap, allVariableList );
 		
-		List<PotentialTable> unweightedTables = printer.getCorrelationTables(variableMap , indicatorCorrelations, indicatorNameList);
-		unweightedTables.addAll(printer.getCorrelationTables(variableMap , detectorCorrelations, detectorNameList));
+		List<PotentialTable> unweightedTables = this.getCorrelationTables(variableMap , indicatorCorrelations, indicatorNameList);
+		unweightedTables.addAll(this.getCorrelationTables(variableMap , detectorCorrelations, detectorNameList));
 		
-		List<PotentialTable> weightedTables = printer.getThreatTables(variableMap , threatIndicatorMatrix, indicatorNameList, threatName);
-		weightedTables.addAll(printer.getDetectorTables(variableMap , detectorIndicatorMatrix, indicatorNameList, detectorNameList));
+		List<PotentialTable> weightedTables = this.getThreatTables(variableMap , threatIndicatorMatrix, indicatorNameList, threatName);
+		weightedTables.addAll(this.getDetectorTables(variableMap , detectorIndicatorMatrix, indicatorNameList, detectorNameList));
 		
-		System.out.println(printer.getObjFunction(unweightedTables, weightedTables, jointTable));
-		
-		System.out.println();
-		System.out.println();
-		System.out.println("Subject to: ");
-		System.out.println();
-		
-		System.out.println(printer.getNonZeroRestrictions(unweightedTables, weightedTables, jointTable, isStrictlyGreaterThan, greaterThanValue));
+		printer.println(this.getObjFunction(unweightedTables, weightedTables, jointTable));
 		
 		
-		System.out.println();
-		System.out.println();
-		System.out.println("Joint probability table:");
-		System.out.println(printer.getJointTableDescription(jointTable));
+		printer.println();
+		printer.println();
+		printer.println("Subject to: ");
+		printer.println();
+		
+		printer.println(this.getNonZeroRestrictions(unweightedTables, weightedTables, jointTable, isStrictlyGreaterThan, greaterThanValue));
+		
+		
+		printer.println();
+		printer.println();
+		printer.println("Joint probability table:");
+		printer.println(this.getJointTableDescription(jointTable));
+		
+	}
+	
+	
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		
+		new ObjFunctionPrinter().printAll(indicatorNames, detectorNames, threatName, indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix);
+		
 	}
 
 
@@ -722,6 +982,20 @@ public class ObjFunctionPrinter {
 	 */
 	public void setToBreakLineOnObjectFunction(boolean isToBreakLineOnObjectFunction) {
 		this.isToBreakLineOnObjectFunction = isToBreakLineOnObjectFunction;
+	}
+
+	/**
+	 * @return the isToSubtract1WayLikelihood
+	 */
+	public boolean isToSubtract1WayLikelihood() {
+		return isToSubtract1WayLikelihood;
+	}
+
+	/**
+	 * @param isToSubtract1WayLikelihood the isToSubtract1WayLikelihood to set
+	 */
+	public void setToSubtract1WayLikelihood(boolean isToSubtract1WayLikelihood) {
+		this.isToSubtract1WayLikelihood = isToSubtract1WayLikelihood;
 	}
 	
 
