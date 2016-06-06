@@ -2,11 +2,14 @@
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -24,7 +27,9 @@ public class ObjFunctionPrinter {
 
 	private static float greaterThanValue = 0;
 	
-	private boolean isToBreakLineOnObjectFunction = false;
+	private boolean isToPrintJointProbabilityDescription = false;
+	
+	private boolean isToBreakLineOnObjectFunction = true;
 
 	private boolean isToSubtract1WayLikelihood = true;;
 	
@@ -169,6 +174,29 @@ public class ObjFunctionPrinter {
 			{211,1},
 			{4,3588},
 		},
+	};
+	
+	
+//	private Integer[] jointProbsIndexesToConsider = null;
+	private Integer[] jointProbsIndexesToConsider = {
+		2047,
+		1915,
+		2014,
+		1783,
+		1981,
+		990,
+		891,
+		957,
+		693,
+		759,
+		627,
+		825,
+		858,
+		726,
+		827,
+		695,
+		924,
+		926,
 	};
 
 
@@ -369,8 +397,13 @@ public class ObjFunctionPrinter {
 		}
 	    printer.println("P");
 	    
+	    Collection<Integer> jointProbsToIgnore = (getJointProbsIndexesToIgnore(jointTable));
+	    
 	    // print TRUE,	TRUE,	TRUE,	TRUE,	TRUE,	TRUE,	TRUE,	TRUE,	TRUE,	TRUE,	TRUE,	p[1]
 	    for (int rowIndex = 0; rowIndex < jointTable.tableSize(); rowIndex++) {
+			if (jointProbsToIgnore.contains(rowIndex)) {
+				continue;
+			}
 			int[] coord = jointTable.getMultidimensionalCoord(rowIndex);
 	    	for (int varIndex = coord.length-1; varIndex >= 0; varIndex--) {
 				printer.print(jointTable.getVariableAt(varIndex).getStateAt(coord[varIndex]) + ",");
@@ -399,19 +432,29 @@ public class ObjFunctionPrinter {
 			printer.println();
 		}
 		
+		Collection<Integer> jointProbsToIgnore = (getJointProbsIndexesToIgnore(jointTable));
+		
+		
 		// weightedTables
 		for (int tableIndex = 0; tableIndex < weightedTables.size(); tableIndex++) {
 //			printer.print(" w[" + (tableIndex+1) + "] * ( ");
-			printer.print(" w * ( ");
+			
+			boolean foundLogFactor = false;
+//			printer.print(" w * ( ");
+			String tempString = " w * ( ";
 			PotentialTable currentTable = weightedTables.get(tableIndex);
 			for (int cellIndex = 0; cellIndex < currentTable.tableSize() ; cellIndex++) {
 				
-				printer.print(((int)currentTable.getValue(cellIndex)) + " * log(");
+//				printer.print(((int)currentTable.getValue(cellIndex)) + " * log(");
+				String tempStringLog = ((int)currentTable.getValue(cellIndex)) + " * log(";
 				
 				int[] coord = currentTable.getMultidimensionalCoord(cellIndex);
 				
 				boolean found1stP = false;
-				for (int jointCellIndex = 0; jointCellIndex < jointTable.tableSize(); jointCellIndex++) {
+				for (Integer jointCellIndex = 0; jointCellIndex < jointTable.tableSize(); jointCellIndex++) {
+					if (jointProbsToIgnore.contains(jointCellIndex)) {
+						continue;
+					}
 					
 					int[] jointCoord = jointTable.getMultidimensionalCoord(jointCellIndex);
 					
@@ -427,52 +470,66 @@ public class ObjFunctionPrinter {
 					
 					if (found) {
 						if (found1stP) {
-							printer.print(" +");
+							tempStringLog += " +";
 						}
-						printer.print(" p[" + (jointCellIndex+1) + "]");
+						tempStringLog += " p[" + (jointCellIndex+1) + "]";
 						found1stP = true;
 					}
 					
 				}
 				
-				printer.print(" )");
+//				printer.print(" )");
+				tempStringLog += " )";
 				
 				if (cellIndex + 1 < currentTable.tableSize()) {
-					printer.print(" + ");
+//					printer.print(" + ");
+					tempStringLog += " + ";
 				}
 				
+				if (found1stP) {
+					foundLogFactor = true;
+					tempString += tempStringLog;
+				}
 			}
 			
-			printer.print(" )");
+			tempString += " )";
 			
 			if (isToBreakLineOnObjectFunction()) {
-				printer.println();
+				tempString += "\n";
 			}
 			
 			if (tableIndex + 1 < weightedTables.size()) {
-				printer.print(" +");
+				tempString += " +";
 			}
 			
+			if (foundLogFactor) {
+				printer.print(tempString);
+			}
 		}
 		
 		if (isToBreakLineOnObjectFunction()) {
 			printer.println();
 		}
 		
-		printer.print(" + ");
+//		printer.print(" + ");
 		
 		// unweightedTables
 		for (int tableIndex = 0; tableIndex < unweightedTables.size(); tableIndex++) {
 			PotentialTable currentTable = unweightedTables.get(tableIndex);
+			String tempString = "";
+			boolean foundLogFactor = false;
 			for (int cellIndex = 0; cellIndex < currentTable.tableSize() ; cellIndex++) {
 				
-				printer.print(((int)currentTable.getValue(cellIndex)) + " * log(");
+//				printer.print(" + " + ((int)currentTable.getValue(cellIndex)) + " * log(");
+				String tempStringLog = " + " + ((int)currentTable.getValue(cellIndex)) + " * log(";
 				
 				int[] coord = currentTable.getMultidimensionalCoord(cellIndex);
 				
 				boolean found1stP = false;
 				for (int jointCellIndex = 0; jointCellIndex < jointTable.tableSize(); jointCellIndex++) {
-					
+					if (jointProbsToIgnore.contains(jointCellIndex)) {
+						continue;
+					}
 					int[] jointCoord = jointTable.getMultidimensionalCoord(jointCellIndex);
 					
 					boolean found = true;
@@ -487,29 +544,38 @@ public class ObjFunctionPrinter {
 					
 					if (found) {
 						if (found1stP) {
-							printer.print(" +");
+							tempStringLog += " +";
 						}
-						printer.print(" p[" + (jointCellIndex+1) + "]");
+						tempStringLog += " p[" + (jointCellIndex+1) + "]";
 						found1stP = true;
 					}
 					
 				}
 				
-				printer.print(" )");
+				tempStringLog += " )";
 				
-				if (cellIndex + 1 < currentTable.tableSize()) {
-					printer.print(" + ");
+//				if (cellIndex + 1 < currentTable.tableSize()) {
+//					printer.print(" + ");
+//				}
+				if (found1stP) {
+					tempString += tempStringLog;
+					foundLogFactor = true;
 				}
 				
 			}
 			
 			if (isToBreakLineOnObjectFunction()) {
-				printer.println();
+				tempString += "\n";
 			}
 			
-			if (tableIndex + 1 < unweightedTables.size()) {
-				printer.print(" + ");
+//			if (tableIndex + 1 < unweightedTables.size()) {
+//				printer.print(" + ");
+//			}
+			
+			if (foundLogFactor) {
+				printer.print(tempString);
 			}
+			
 			
 		}
 		
@@ -576,6 +642,8 @@ public class ObjFunctionPrinter {
 		// check marginal consistency between tables in same category and get marginal counts (frequency) for each
 	    Map<String, int[]> weightedMarginals = this.getMarginalCounts(weightedTables);
 	    Map<String, int[]> unweightedMarginals = this.getMarginalCounts(unweightedTables);
+	    
+	    Collection<Integer> jointProbsToIgnore = (getJointProbsIndexesToIgnore(jointTable));
 		
 	    // treat weighted marginals
 	    for (int varIndex = jointTable.getVariablesSize()-1; varIndex >= 0; varIndex--) {
@@ -593,37 +661,50 @@ public class ObjFunctionPrinter {
 				// if there is no occurrences in the other table, we need to consider 1 less marginals
 				numToRemove--;
 			}
-			printer.print(" - w * " + numToRemove + " * (");
+			
+			String tempString = (" - w * " + numToRemove + " * (");
+			boolean isToPrintWeightFactor = false;
 			
 			for (int stateIndex = 0; stateIndex < marginal.length; stateIndex++) {
-				printer.print(marginal[stateIndex] + " * log(");
-
+				String tempStringLog = (marginal[stateIndex] + " * log(");
+				
 				boolean found1stP = false;
 				for (int jointCellIndex = 0; jointCellIndex < jointTable.tableSize(); jointCellIndex++) {
-					
+					if (jointProbsToIgnore.contains(jointCellIndex)) {
+						continue;
+					}
 					int indexInJointTable = jointTable.getVariableIndex((Node) var);
 					int[] jointCoord = jointTable.getMultidimensionalCoord(jointCellIndex);
 					
 					if (jointCoord[indexInJointTable] == stateIndex) {
 						if (found1stP) {
-							printer.print(" +");
+							tempStringLog += (" +");
 						}
-						printer.print(" p[" + (jointCellIndex+1) + "]");
+						tempStringLog += (" p[" + (jointCellIndex+1) + "]");
 						found1stP = true;
 					}
 					
 				}
 				
-				printer.print(")");
+				tempStringLog += (")");
 				if (stateIndex + 1  < marginal.length) {
-					printer.print(" + ");
+					tempStringLog += (" + ");
+				}
+				
+				if (found1stP) {
+					isToPrintWeightFactor = true;
+					tempString += tempStringLog;
 				}
 			}
 			
-			printer.print(") ");
+			tempString += (") ");
 
 			if (isToBreakLineOnObjectFunction()) {
-				printer.println();
+				tempString += "\n";
+			}
+			
+			if (isToPrintWeightFactor) {
+				printer.print(tempString);
 			}
 		}
 	    
@@ -645,37 +726,49 @@ public class ObjFunctionPrinter {
 	    	int[] marginal = unweightedMarginals.get(varName);
 	    	Integer numToRemove = unweightedTableCounter.get(varName)-1;	// always remove 1-way log-likelihood except 1 entry
 	    	
-	    	printer.print(" - " + numToRemove + " * (");
+	    	String tempString = (" - " + numToRemove + " * (");
+	    	boolean isToPrintFactor = false;
 	    	
 	    	for (int stateIndex = 0; stateIndex < marginal.length; stateIndex++) {
-	    		printer.print(marginal[stateIndex] + " * log(");
+	    		String tempStringLog = (marginal[stateIndex] + " * log(");
 	    		
 	    		boolean found1stP = false;
 	    		for (int jointCellIndex = 0; jointCellIndex < jointTable.tableSize(); jointCellIndex++) {
-	    			
+	    			if (jointProbsToIgnore.contains(jointCellIndex)) {
+	    				continue;
+	    			}
 	    			int indexInJointTable = jointTable.getVariableIndex((Node) var);
 	    			int[] jointCoord = jointTable.getMultidimensionalCoord(jointCellIndex);
 	    			
 	    			if (jointCoord[indexInJointTable] == stateIndex) {
 	    				if (found1stP) {
-	    					printer.print(" +");
+	    					tempStringLog += (" +");
 	    				}
-	    				printer.print(" p[" + (jointCellIndex+1) + "]");
+	    				tempStringLog += (" p[" + (jointCellIndex+1) + "]");
 	    				found1stP = true;
 	    			}
 	    			
 	    		}
 	    		
-	    		printer.print(")");
+	    		tempStringLog += (")");
 	    		if (stateIndex + 1  < marginal.length) {
-	    			printer.print(" + ");
+	    			tempStringLog += (" + ");
+	    		}
+	    		
+	    		if (found1stP) {
+	    			isToPrintFactor = true;
+					tempString += tempStringLog;
 	    		}
 	    	}
 	    	
-	    	printer.print(") ");
+	    	tempString += (") ");
 	    	
 	    	if (isToBreakLineOnObjectFunction()) {
-	    		printer.println();
+	    		tempString += "\n";
+	    	}
+	    	
+	    	if (isToPrintFactor) {
+	    		printer.print(tempString);
 	    	}
 	    }
 
@@ -752,6 +845,8 @@ public class ObjFunctionPrinter {
 			PotentialTable jointTable, boolean isStrictlyGreater, float value) {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 	    PrintStream printer = new PrintStream(output);
+	    
+	    Collection<Integer> jointProbsToIgnore = (getJointProbsIndexesToIgnore(jointTable));
 		
 		// threatIndicatorMatrix
 		for (int tableIndex = 0; tableIndex < threatTables.size(); tableIndex++) {
@@ -763,7 +858,9 @@ public class ObjFunctionPrinter {
 				
 				boolean found1stP = false;
 				for (int jointCellIndex = 0; jointCellIndex < jointTable.tableSize(); jointCellIndex++) {
-					
+					if (jointProbsToIgnore.contains(jointCellIndex)) {
+						continue;
+					}
 					int[] jointCoord = jointTable.getMultidimensionalCoord(jointCellIndex);
 					
 					boolean found = true;
@@ -786,22 +883,25 @@ public class ObjFunctionPrinter {
 					
 				}
 				
-				printer.print(" >");
-				if (!isStrictlyGreater) {
-					printer.print("= ");
-				} else {
-					printer.print(" ");
+				if (found1stP) {
+					printer.print(" >");
+					if (!isStrictlyGreater) {
+						printer.print("= ");
+					} else {
+						printer.print(" ");
+					}
+					
+					printer.print(value);
+					
+					printer.println(";");
 				}
-				
-				printer.print(value);
-				
-				printer.println(";");
 				
 			}
 			
 		}
 		
 		printer.println();
+		
 		
 		// indicatorCorrelations
 		for (int tableIndex = 0; tableIndex < correlationTables.size(); tableIndex++) {
@@ -813,7 +913,9 @@ public class ObjFunctionPrinter {
 				
 				boolean found1stP = false;
 				for (int jointCellIndex = 0; jointCellIndex < jointTable.tableSize(); jointCellIndex++) {
-					
+					if (jointProbsToIgnore.contains(jointCellIndex)) {
+						continue;
+					}
 					int[] jointCoord = jointTable.getMultidimensionalCoord(jointCellIndex);
 					
 					boolean found = true;
@@ -836,15 +938,16 @@ public class ObjFunctionPrinter {
 					
 				}
 				
-
-				printer.print(" > ");
-				if (!isStrictlyGreater) {
-					printer.print("= ");
+				if (found1stP) {
+					printer.print(" > ");
+					if (!isStrictlyGreater) {
+						printer.print("= ");
+					}
+					
+					printer.print(value);
+					
+					printer.println(";");
 				}
-				
-				printer.print(value);
-				
-				printer.println(";");
 				
 			}
 			
@@ -913,11 +1016,12 @@ public class ObjFunctionPrinter {
 		
 		printer.println(this.getNonZeroRestrictions(unweightedTables, weightedTables, jointTable, isStrictlyGreaterThan, greaterThanValue));
 		
-		
-		printer.println();
-		printer.println();
-		printer.println("Joint probability table:");
-		printer.println(this.getJointTableDescription(jointTable));
+		if (isToPrintJointProbabilityDescription()) {
+			printer.println();
+			printer.println();
+			printer.println("Joint probability table:");
+			printer.println(this.getJointTableDescription(jointTable));
+		}
 		
 	}
 	
@@ -996,6 +1100,65 @@ public class ObjFunctionPrinter {
 	 */
 	public void setToSubtract1WayLikelihood(boolean isToSubtract1WayLikelihood) {
 		this.isToSubtract1WayLikelihood = isToSubtract1WayLikelihood;
+	}
+
+	/**
+	 * @return the complement of {@link #getJointProbsIndexesToConsider()}
+	 */
+	public Collection<Integer> getJointProbsIndexesToIgnore(PotentialTable jointTable) {
+		if (jointTable == null || jointTable.getVariablesSize() <= 0) {
+			return Collections.EMPTY_LIST;
+		}
+		Integer[] toConsider = getJointProbsIndexesToConsider();
+		if (toConsider == null || toConsider.length <= 0) {
+			return Collections.EMPTY_LIST;
+		}
+		List<Integer> jointProbsToConsider = Arrays.asList(toConsider);
+		Set<Integer> ret = new HashSet<Integer>();
+		for (Integer i = 0; i < jointTable.tableSize(); i++) {
+			if (!jointProbsToConsider.contains(i)) {
+				ret.add(i);
+			}
+		}
+		
+		if (ret.size() + jointProbsToConsider.size() != jointTable.tableSize()) {
+			throw new RuntimeException("Size of joint prob indexes to ignore is expected to be " 
+					+ (jointTable.tableSize() - jointProbsToConsider.size()) + ", but was " + ret.size());
+		}
+		
+		return ret;
+	}
+
+
+	/**
+	 * @return the jointProbsIndexesToConsider
+	 * @see #getJointProbsToIgnore()
+	 */
+	public Integer[] getJointProbsIndexesToConsider() {
+		return jointProbsIndexesToConsider;
+	}
+
+	/**
+	 * @param jointProbsIndexesToConsider the jointProbsIndexesToConsider to set
+	 * @see #getJointProbsToIgnore()
+	 */
+	public void setJointProbsIndexesToConsider(Integer[] jointProbsToConsider) {
+		this.jointProbsIndexesToConsider = jointProbsToConsider;
+	}
+
+	/**
+	 * @return the isToPrintJointProbabilityDescription
+	 */
+	public boolean isToPrintJointProbabilityDescription() {
+		return isToPrintJointProbabilityDescription;
+	}
+
+	/**
+	 * @param isToPrintJointProbabilityDescription the isToPrintJointProbabilityDescription to set
+	 */
+	public void setToPrintJointProbabilityDescription(
+			boolean isToPrintJointProbabilitySpecification) {
+		this.isToPrintJointProbabilityDescription = isToPrintJointProbabilitySpecification;
 	}
 	
 
