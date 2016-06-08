@@ -36,13 +36,17 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	
 	private String[] columnsToIgnore = {"P"};
 
-	private boolean isToPrintExpectationTable = true;
+	private boolean isToPrintExpectationTable = false;
+
+	private boolean is1stLineForNames = false;
+
+	private int defaultIndexOfProbability = 0;
 
 	/**
 	 * 
 	 */
 	public ExpectationPrinter() {
-		this.setToPrintJointProbabilityDescription(true);
+		this.setToPrintJointProbabilityDescription(false);
 	}
 	
 	
@@ -69,36 +73,38 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		List<Integer> columnIndexesToIgnore = new ArrayList<Integer>();
 		
 		
-		List<String> varNames = new ArrayList<String>();
+		List<String> varNames = null;
 		
 		// read the 1st line of csv (name of the columns)
-		String[] csvLine = reader.readNext();
-		int indexOfProbability = csvLine.length-1;	// assuming by default to be the last column
-		for (int column = 0; column < csvLine.length; column++) {
-			String name = csvLine[column];
-			if (namesToIgnore.contains(name)) {
-				columnIndexesToIgnore.add(column);
-				continue;
+		String[] csvLine = null;
+		int indexOfProbability = getDefaultIndexOfProbability();
+		
+		if (is1stLineForNames()) {
+			varNames = new ArrayList<String>();
+			csvLine = reader.readNext();
+			indexOfProbability = csvLine.length-1;	// assuming by default to be the last column
+			for (int column = 0; column < csvLine.length; column++) {
+				String name = csvLine[column];
+				if (namesToIgnore.contains(name)) {
+					columnIndexesToIgnore.add(column);
+					continue;
+				}
+				
+				if (name.equals(getProbabilityColumnName())) {
+					indexOfProbability = column;
+					continue;
+				}
+				
+				varNames.add(name);
 			}
-			
-			if (name.equals(getProbabilityColumnName())) {
-				indexOfProbability = column;
-				continue;
-			}
-			
-			// add to the beginning, so that the order is inversed
-			varNames.add(0, name);
 		}
 		
-		
-		PotentialTable jointTable = new ProbabilisticTable();
-		for (String name : varNames) {
-			INode var = new ProbabilisticNode();
-			var.setName(name);
-			var.appendState("TRUE");
-			var.appendState("FALSE");
-			jointTable.addVariable(var);
+		if (varNames ==null) {
+			varNames = getNameList(DEFAULT_INDICATOR_NAMES);
+			varNames.add(0, DEFAULT_THREAT_NAME);
 		}
+		
+		PotentialTable jointTable = super.getJointTable(null, varNames);
 		
 		// read the remaining file
 		int cellsRead = 0;
@@ -109,7 +115,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 			float value = 0;
 			if (csvLine.length > indexOfProbability) {
 				try {
-					value = Float.parseFloat(csvLine[indexOfProbability]);
+					value = Float.parseFloat(csvLine[(indexOfProbability>=0)?indexOfProbability:(csvLine.length-1)]);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -462,6 +468,42 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	 */
 	public void setToPrintExpectationTable(boolean isToPrintExpectationTable) {
 		this.isToPrintExpectationTable = isToPrintExpectationTable;
+	}
+
+
+
+	/**
+	 * @return the is1stLineForNames
+	 */
+	public boolean is1stLineForNames() {
+		return is1stLineForNames;
+	}
+
+
+
+	/**
+	 * @param is1stLineForNames the is1stLineForNames to set
+	 */
+	public void set1stLineForNames(boolean is1stLineForNames) {
+		this.is1stLineForNames = is1stLineForNames;
+	}
+
+
+
+	/**
+	 * @return the defaultIndexOfProbability
+	 */
+	public int getDefaultIndexOfProbability() {
+		return defaultIndexOfProbability;
+	}
+
+
+
+	/**
+	 * @param defaultIndexOfProbability the defaultIndexOfProbability to set
+	 */
+	public void setDefaultIndexOfProbability(int defaultIndexOfProbability) {
+		this.defaultIndexOfProbability = defaultIndexOfProbability;
 	}
 
 }
