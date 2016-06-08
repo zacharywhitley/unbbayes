@@ -27,20 +27,26 @@ public class ObjFunctionPrinter {
 
 	private static float greaterThanValue = 0;
 	
-	private boolean isToPrintJointProbabilityDescription = false;
+	private boolean isToPrintJointProbabilityDescription = true;
 	
 	private boolean isToBreakLineOnObjectFunction = true;
 
-	private boolean isToSubtract1WayLikelihood = true;;
+	private boolean isToSubtract1WayLikelihood = true;
 	
-	private static String threatName = "Threat";
-	private static String[] indicatorNames = {"I1", "I2", "I3", "I4", "I5"};
-	private static String[] detectorNames = {"D1", "D2", "D3", "D4", "D5"};
+	public static final String DEFAULT_THREAT_NAME = "Threat";
+	
+	public static final String[] DEFAULT_INDICATOR_NAMES = {"I1", "I2", "I3", "I4", "I5"};
+	
+//	public static final  String[] DEFAULT_DETECTOR_NAMES = {"D1", "D2", "D3", "D4", "D5"};
+	public static final  String[] DEFAULT_DETECTOR_NAMES = {};
+	
+	private String primaryTableWeightSymbol = "w1";
+	private String auxiliaryTableWeightSymbol = "w2";
 
 	private static boolean isStrictlyGreaterThan = true;
+
 	
-	
-	private static final int[][][] indicatorCorrelations = {
+	public static final int[][][] indicatorCorrelations = {
 		{
 			// I2=true, I2=false
 			{3,	2},			// I1=true
@@ -87,50 +93,50 @@ public class ObjFunctionPrinter {
 		},
 	};
 	
-	private static final int[][][] detectorCorrelations = {
-		{
-			{3,2},
-			{209,4053}
-		},
-		{
-			{2,3},
-			{213,4049}
-		},
-		{
-			{1,4},
-			{201,4061}
-		},
-		{
-			{1,4},
-			{213,4049}
-		},
-		{
-			{31,181},
-			{184,3871}
-		},
-		{
-			{44,168},
-			{158,3897}
-		},
-		{
-			{20,192},
-			{194,3861}
-		},
-		{
-			{28,187},
-			{174,3878}
-		},
-		{
-			{25,190},
-			{189,3863}
-		},
-		{
-			{18,184},
-			{196,3869},
-		},
+	public static final int[][][] detectorCorrelations = {
+//		{
+//			{3,2},
+//			{209,4053}
+//		},
+//		{
+//			{2,3},
+//			{213,4049}
+//		},
+//		{
+//			{1,4},
+//			{201,4061}
+//		},
+//		{
+//			{1,4},
+//			{213,4049}
+//		},
+//		{
+//			{31,181},
+//			{184,3871}
+//		},
+//		{
+//			{44,168},
+//			{158,3897}
+//		},
+//		{
+//			{20,192},
+//			{194,3861}
+//		},
+//		{
+//			{28,187},
+//			{174,3878}
+//		},
+//		{
+//			{25,190},
+//			{189,3863}
+//		},
+//		{
+//			{18,184},
+//			{196,3869},
+//		},
 	};
 	
-	private static final int[][][] threatIndicatorMatrix = {
+	public static final int[][][] threatIndicatorMatrix = {
 		{
 			{3,	271},
 			{1,	3529}
@@ -153,51 +159,53 @@ public class ObjFunctionPrinter {
 		},
 	};
 	
-	private static final int[][][] detectorIndicatorMatrix = {
-		{
-			{3,1},
-			{1,3799}
-		},
-		{
-			{211,1},
-			{5,3587}
-		},
-		{
-			{211,1},
-			{4,3588}
-		},
-		{
-			{211,1},
-			{8,3584}
-		},
-		{
-			{211,1},
-			{4,3588},
-		},
+	public static final int[][][] detectorIndicatorMatrix = {
+//		{
+//			{3,1},
+//			{1,3799}
+//		},
+//		{
+//			{211,1},
+//			{5,3587}
+//		},
+//		{
+//			{211,1},
+//			{4,3588}
+//		},
+//		{
+//			{211,1},
+//			{8,3584}
+//		},
+//		{
+//			{211,1},
+//			{4,3588},
+//		},
 	};
 	
 	
 //	private Integer[] jointProbsIndexesToConsider = null;
 	private Integer[] jointProbsIndexesToConsider = {
-		2047,
-		1915,
-		2014,
-		1783,
-		1981,
-		990,
-		891,
-		957,
-		693,
-		759,
-		627,
-		825,
-		858,
-		726,
-		827,
-		695,
-		924,
-		926,
+//		2047,
+//		1915,
+//		2014,
+//		1783,
+//		1981,
+//		990,
+//		891,
+//		957,
+//		693,
+//		759,
+//		627,
+//		825,
+//		858,
+//		726,
+//		827,
+//		695,
+//		924,
+//		926,
 	};
+
+
 
 
 	
@@ -271,9 +279,16 @@ public class ObjFunctionPrinter {
 		
 		table.addVariable(rowVar);
 		
-		for (int n=0,i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix.length; j++,n++) {
-				table.setValue(n, matrix[i][j]);
+		if (matrix != null) {
+			for (int n=0,i = 0; i < matrix.length; i++) {
+				for (int j = 0; j < matrix.length; j++,n++) {
+					table.setValue(n, matrix[i][j]);
+				}
+			}
+		} else {
+			// just fill everything with zeros
+			for (int i = 0; i < table.tableSize(); i++) {
+				table.setValue(i, 0);
 			}
 		}
 		
@@ -287,13 +302,14 @@ public class ObjFunctionPrinter {
 	 * 
 	 * @param variableMap
 	 * @param indicatorCorrelations
-	 * @param indicatorNames
+	 * @param DEFAULT_INDICATOR_NAMES
 	 * @return
 	 */
 	public List<PotentialTable> getCorrelationTables(Map<String, INode> variableMap, int[][][] correlations, List<String> names) {
 		
-		if (combinatorial(names.size(), 2) != correlations.length) {
-			throw new IllegalArgumentException("Combinations of indicatorNames is " + combinatorial(names.size(), 2) 
+		if (correlations != null 
+				&& combinatorial(names.size(), 2) != correlations.length) {
+			throw new IllegalArgumentException("Combinations of DEFAULT_INDICATOR_NAMES is " + combinatorial(names.size(), 2) 
 					+ ", but correlation matrix had size " + correlations.length);
 		}
 		
@@ -302,7 +318,10 @@ public class ObjFunctionPrinter {
 		for (int n=0,i=0; i < names.size()-1; i++) {
 			String rowName = names.get(i);
 			for (int j = i+1; j < names.size(); j++,n++) {
-				int[][] matrix = correlations[n];
+				int[][] matrix = null;
+				if (correlations != null) {
+					matrix = correlations[n];
+				}
 				String columnName = names.get(j);
 				PotentialTable table = this.getPotentialTable(variableMap, matrix, columnName, rowName);
 				ret.add(table);
@@ -314,21 +333,25 @@ public class ObjFunctionPrinter {
 	/**
 	 * 
 	 * @param variableMap
-	 * @param threatName 
+	 * @param DEFAULT_THREAT_NAME 
 	 * @param indicatorCorrelations
-	 * @param indicatorNames
+	 * @param DEFAULT_INDICATOR_NAMES
 	 * @return
 	 */
 	public List<PotentialTable> getThreatTables(Map<String, INode> variableMap, int[][][] tables, List<String> indicatorNames, String threatName) {
 		
-		if (tables.length != indicatorNames.size()) {
+		if (tables != null
+				&& tables.length != indicatorNames.size()) {
 			throw new IllegalArgumentException("Number of tables of threat is expected to be: " + indicatorNames.size() + ", but was " + tables.length);
 		}
 		
 		List<PotentialTable> ret = new ArrayList<PotentialTable>(); 
 		
-		for (int i=0; i < tables.length; i++) {
-			int[][] matrix = tables[i];
+		for (int i=0; i < indicatorNames.size(); i++) {
+			int[][] matrix = null;
+			if (tables != null) {
+				matrix = tables[i];
+			}
 			String rowName = threatName;
 			String columnName = indicatorNames.get(i);
 			
@@ -349,7 +372,9 @@ public class ObjFunctionPrinter {
 	 */
 	public Collection<PotentialTable> getDetectorTables(Map<String, INode> variableMap, int[][][] tables,
 			List<String> indicatorNameList, List<String> detectorNameList) {
-		
+		if (detectorNameList == null || detectorNameList.isEmpty()) {
+			return Collections.EMPTY_LIST;
+		}
 		if (indicatorNameList.size() != detectorNameList.size()) {
 			throw new IllegalArgumentException("List of detectors and indicators must be of same size: " + detectorNameList + " ; " + indicatorNameList);
 		}
@@ -417,12 +442,12 @@ public class ObjFunctionPrinter {
 	/**
 	 * This will return a string like the following
 	 * <pre>
-	 * objFun : w[1] * ( 3 * log( p[1] + p[2] +,...,p[k] ) + 9 * log(p[3] + ... + p[l]) ) + w[2] * ( 271 * log( p[1] + p[2] +,...,p[m] ) + ...
+	 * objFun : w1 * ( 3 * log( p[1] + p[2] +,...,p[k] ) + 9 * log(p[3] + ... + p[l]) ) + w2 * ( 271 * log( p[1] + p[2] +,...,p[m] ) + ...
 	 * </pre>
-	 * @param unweightedTables
-	 * @param weightedTables
+	 * @param primaryTables
+	 * @param auxiliaryTables
 	 */
-	public String getObjFunction(List<PotentialTable> unweightedTables, List<PotentialTable> weightedTables, PotentialTable jointTable) {
+	public String getObjFunction(List<PotentialTable> primaryTables, List<PotentialTable> auxiliaryTables, PotentialTable jointTable) {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 	    PrintStream printer = new PrintStream(output);
 		
@@ -435,14 +460,14 @@ public class ObjFunctionPrinter {
 		Collection<Integer> jointProbsToIgnore = (getJointProbsIndexesToIgnore(jointTable));
 		
 		
-		// weightedTables
-		for (int tableIndex = 0; tableIndex < weightedTables.size(); tableIndex++) {
-//			printer.print(" w[" + (tableIndex+1) + "] * ( ");
+		// auxiliaryTables
+		for (int tableIndex = 0; tableIndex < auxiliaryTables.size(); tableIndex++) {
+//			printer.print(" " + getAuxiliaryTableWeightSymbol() + "[" + (tableIndex+1) + "] * ( ");
 			
 			boolean foundLogFactor = false;
-//			printer.print(" w * ( ");
-			String tempString = " w * ( ";
-			PotentialTable currentTable = weightedTables.get(tableIndex);
+//			printer.print(" " + getAuxiliaryTableWeightSymbol() + " * ( ");
+			String tempString = " " + getAuxiliaryTableWeightSymbol() + " * ( ";
+			PotentialTable currentTable = auxiliaryTables.get(tableIndex);
 			for (int cellIndex = 0; cellIndex < currentTable.tableSize() ; cellIndex++) {
 				
 //				printer.print(((int)currentTable.getValue(cellIndex)) + " * log(");
@@ -498,7 +523,7 @@ public class ObjFunctionPrinter {
 				tempString += "\n";
 			}
 			
-			if (tableIndex + 1 < weightedTables.size()) {
+			if (tableIndex + 1 < auxiliaryTables.size()) {
 				tempString += " +";
 			}
 			
@@ -513,15 +538,16 @@ public class ObjFunctionPrinter {
 		
 //		printer.print(" + ");
 		
-		// unweightedTables
-		for (int tableIndex = 0; tableIndex < unweightedTables.size(); tableIndex++) {
-			PotentialTable currentTable = unweightedTables.get(tableIndex);
-			String tempString = "";
+		// primaryTables
+		for (int tableIndex = 0; tableIndex < primaryTables.size(); tableIndex++) {
+			PotentialTable currentTable = primaryTables.get(tableIndex);
+			String tempString = " + " + getPrimaryTableWeightSymbol() + " * ( ";
 			boolean foundLogFactor = false;
 			for (int cellIndex = 0; cellIndex < currentTable.tableSize() ; cellIndex++) {
 				
 //				printer.print(" + " + ((int)currentTable.getValue(cellIndex)) + " * log(");
-				String tempStringLog = " + " + ((int)currentTable.getValue(cellIndex)) + " * log(";
+				
+				String tempStringLog = ((int)currentTable.getValue(cellIndex)) + " * log(";
 				
 				int[] coord = currentTable.getMultidimensionalCoord(cellIndex);
 				
@@ -554,9 +580,9 @@ public class ObjFunctionPrinter {
 				
 				tempStringLog += " )";
 				
-//				if (cellIndex + 1 < currentTable.tableSize()) {
-//					printer.print(" + ");
-//				}
+				if (cellIndex + 1 < currentTable.tableSize()) {
+					tempStringLog += (" + ");
+				}
 				if (found1stP) {
 					tempString += tempStringLog;
 					foundLogFactor = true;
@@ -564,11 +590,13 @@ public class ObjFunctionPrinter {
 				
 			}
 			
+			tempString += " )";
+			
 			if (isToBreakLineOnObjectFunction()) {
 				tempString += "\n";
 			}
 			
-//			if (tableIndex + 1 < unweightedTables.size()) {
+//			if (tableIndex + 1 < primaryTables.size()) {
 //				printer.print(" + ");
 //			}
 			
@@ -585,7 +613,7 @@ public class ObjFunctionPrinter {
 		
 		// make sure we only count the 1-way log likelihood once
 		if (isToSubtract1WayLikelihood()) {
-			printer.print(get1WayLikelihoodSubtraction(unweightedTables, weightedTables, jointTable));
+			printer.print(get1WayLikelihoodSubtraction(primaryTables, auxiliaryTables, jointTable));
 		}
 		
 		printer.println(";");
@@ -596,40 +624,40 @@ public class ObjFunctionPrinter {
 	
 	/**
 	 * 
-	 * @param unweightedTables : correlation table
-	 * @param weightedTables : table from naive bayes distribution
+	 * @param primaryTables : correlation table
+	 * @param auxiliaryTables : table from naive bayes distribution
 	 * @param jointTable : used just in order to treat the indexes of cells of a table containing all variables
 	 * @return
 	 */
-	public String get1WayLikelihoodSubtraction(List<PotentialTable> unweightedTables, List<PotentialTable> weightedTables, PotentialTable jointTable) {
+	public String get1WayLikelihoodSubtraction(List<PotentialTable> primaryTables, List<PotentialTable> auxiliaryTables, PotentialTable jointTable) {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		PrintStream printer = new PrintStream(output);
 		
 		
 	    
 	    // count number of occurrences of variables
-	    Map<String, Integer> weightedTableCounter = new HashMap<String, Integer>();
-	    for (PotentialTable table : weightedTables) {
+	    Map<String, Integer> auxiliaryTableCounter = new HashMap<String, Integer>();
+	    for (PotentialTable table : auxiliaryTables) {
 			for (int i = 0; i < table.getVariablesSize(); i++) {
 				INode var = table.getVariableAt(i);
-				Integer count = weightedTableCounter.get(var.getName());
+				Integer count = auxiliaryTableCounter.get(var.getName());
 				if (count == null) {
 					count = 0;
 				}
 				count++;
-				weightedTableCounter.put(var.getName(), count);
+				auxiliaryTableCounter.put(var.getName(), count);
 			}
 		}
-	    Map<String, Integer> unweightedTableCounter = new HashMap<String, Integer>();
-	    for (PotentialTable table : unweightedTables) {
+	    Map<String, Integer> primaryTableCounter = new HashMap<String, Integer>();
+	    for (PotentialTable table : primaryTables) {
 	    	for (int i = 0; i < table.getVariablesSize(); i++) {
 	    		INode var = table.getVariableAt(i);
-	    		Integer count = unweightedTableCounter.get(var.getName());
+	    		Integer count = primaryTableCounter.get(var.getName());
 	    		if (count == null) {
 	    			count = 0;
 	    		}
 	    		count++;
-	    		unweightedTableCounter.put(var.getName(), count);
+	    		primaryTableCounter.put(var.getName(), count);
 	    	}
 	    }
 	    
@@ -640,29 +668,29 @@ public class ObjFunctionPrinter {
 	    
 
 		// check marginal consistency between tables in same category and get marginal counts (frequency) for each
-	    Map<String, int[]> weightedMarginals = this.getMarginalCounts(weightedTables);
-	    Map<String, int[]> unweightedMarginals = this.getMarginalCounts(unweightedTables);
+	    Map<String, int[]> auxiliaryMarginals = this.getMarginalCounts(auxiliaryTables);
+	    Map<String, int[]> primaryMarginals = this.getMarginalCounts(primaryTables);
 	    
 	    Collection<Integer> jointProbsToIgnore = (getJointProbsIndexesToIgnore(jointTable));
 		
-	    // treat weighted marginals
+	    // treat auxiliary marginals
 	    for (int varIndex = jointTable.getVariablesSize()-1; varIndex >= 0; varIndex--) {
 			
 	    	INode var = jointTable.getVariableAt(varIndex);
 	    	String varName = var.getName();
 	    	
-	    	if (!weightedMarginals.containsKey(varName) || !weightedTableCounter.containsKey(varName)) {
-	    		continue;	// ignore marginals that are not present in weighted table
+	    	if (!auxiliaryMarginals.containsKey(varName) || !auxiliaryTableCounter.containsKey(varName)) {
+	    		continue;	// ignore marginals that are not present in auxiliary table
 	    	}
 	    	
-	    	int[] marginal = weightedMarginals.get(varName);
-	    	Integer numToRemove = weightedTableCounter.get(varName);
-			if (!unweightedTableCounter.containsKey(varName) || unweightedTableCounter.get(varName).intValue() == 0) {
+	    	int[] marginal = auxiliaryMarginals.get(varName);
+	    	Integer numToRemove = auxiliaryTableCounter.get(varName);
+			if (!primaryTableCounter.containsKey(varName) || primaryTableCounter.get(varName).intValue() == 0) {
 				// if there is no occurrences in the other table, we need to consider 1 less marginals
 				numToRemove--;
 			}
 			
-			String tempString = (" - w * " + numToRemove + " * (");
+			String tempString = (" - " + getAuxiliaryTableWeightSymbol() + " * " + numToRemove + " * (");
 			boolean isToPrintWeightFactor = false;
 			
 			for (int stateIndex = 0; stateIndex < marginal.length; stateIndex++) {
@@ -713,20 +741,20 @@ public class ObjFunctionPrinter {
 	    	printer.println();
 	    }
 	    
-		// for unweighted marginals, 
+		// for primary marginals, 
 	    for (int varIndex = jointTable.getVariablesSize()-1; varIndex >= 0; varIndex--) {
 	    	
 	    	INode var = jointTable.getVariableAt(varIndex);
 	    	String varName = var.getName();
 	    	
-	    	if (!unweightedMarginals.containsKey(varName) || !unweightedTableCounter.containsKey(varName)) {
-	    		continue;	// ignore marginals that are not present in unweighted table
+	    	if (!primaryMarginals.containsKey(varName) || !primaryTableCounter.containsKey(varName)) {
+	    		continue;	// ignore marginals that are not present in primary table
 	    	}
 	    	
-	    	int[] marginal = unweightedMarginals.get(varName);
-	    	Integer numToRemove = unweightedTableCounter.get(varName)-1;	// always remove 1-way log-likelihood except 1 entry
+	    	int[] marginal = primaryMarginals.get(varName);
+	    	Integer numToRemove = primaryTableCounter.get(varName)-1;	// always remove 1-way log-likelihood except 1 entry
 	    	
-	    	String tempString = (" - " + numToRemove + " * (");
+	    	String tempString = (" - " + getPrimaryTableWeightSymbol() + " * " + numToRemove + " * (");
 	    	boolean isToPrintFactor = false;
 	    	
 	    	for (int stateIndex = 0; stateIndex < marginal.length; stateIndex++) {
@@ -970,9 +998,9 @@ public class ObjFunctionPrinter {
 	
 	/**
 	 * 
-	 * @param indicatorNames
-	 * @param detectorNames
-	 * @param threatName
+	 * @param DEFAULT_INDICATOR_NAMES
+	 * @param DEFAULT_DETECTOR_NAMES
+	 * @param DEFAULT_THREAT_NAME
 	 * @param indicatorCorrelations
 	 * @param detectorCorrelations
 	 * @param threatIndicatorMatrix
@@ -1000,13 +1028,13 @@ public class ObjFunctionPrinter {
 		
 		PotentialTable jointTable = this.getJointTable(variableMap, allVariableList );
 		
-		List<PotentialTable> unweightedTables = this.getCorrelationTables(variableMap , indicatorCorrelations, indicatorNameList);
-		unweightedTables.addAll(this.getCorrelationTables(variableMap , detectorCorrelations, detectorNameList));
+		List<PotentialTable> primaryTables = this.getCorrelationTables(variableMap , indicatorCorrelations, indicatorNameList);
+		primaryTables.addAll(this.getCorrelationTables(variableMap , detectorCorrelations, detectorNameList));
 		
-		List<PotentialTable> weightedTables = this.getThreatTables(variableMap , threatIndicatorMatrix, indicatorNameList, threatName);
-		weightedTables.addAll(this.getDetectorTables(variableMap , detectorIndicatorMatrix, indicatorNameList, detectorNameList));
+		List<PotentialTable> auxiliaryTables = this.getThreatTables(variableMap , threatIndicatorMatrix, indicatorNameList, threatName);
+		auxiliaryTables.addAll(this.getDetectorTables(variableMap , detectorIndicatorMatrix, indicatorNameList, detectorNameList));
 		
-		printer.println(this.getObjFunction(unweightedTables, weightedTables, jointTable));
+		printer.println(this.getObjFunction(primaryTables, auxiliaryTables, jointTable));
 		
 		
 		printer.println();
@@ -1014,7 +1042,7 @@ public class ObjFunctionPrinter {
 		printer.println("Subject to: ");
 		printer.println();
 		
-		printer.println(this.getNonZeroRestrictions(unweightedTables, weightedTables, jointTable, isStrictlyGreaterThan, greaterThanValue));
+		printer.println(this.getNonZeroRestrictions(primaryTables, auxiliaryTables, jointTable, isStrictlyGreaterThan, greaterThanValue));
 		
 		if (isToPrintJointProbabilityDescription()) {
 			printer.println();
@@ -1026,20 +1054,24 @@ public class ObjFunctionPrinter {
 	}
 	
 	
+
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		ObjFunctionPrinter printer = new ObjFunctionPrinter();
+		printer.printAll(DEFAULT_INDICATOR_NAMES, DEFAULT_DETECTOR_NAMES, DEFAULT_THREAT_NAME, 
+				indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix);
 		
-		new ObjFunctionPrinter().printAll(indicatorNames, detectorNames, threatName, indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix);
 		
 	}
 
 
 
+
 	/**
 	 * 
-	 * @param indicatorNames
+	 * @param DEFAULT_INDICATOR_NAMES
 	 * @return
 	 */
 	public List<String> getNameList(String[] names)  {
@@ -1160,6 +1192,37 @@ public class ObjFunctionPrinter {
 			boolean isToPrintJointProbabilitySpecification) {
 		this.isToPrintJointProbabilityDescription = isToPrintJointProbabilitySpecification;
 	}
+
+	/**
+	 * @return the auxiliaryTableWeightSymbol
+	 */
+	public String getAuxiliaryTableWeightSymbol() {
+		return auxiliaryTableWeightSymbol;
+	}
+
+	/**
+	 * @param auxiliaryTableWeightSymbol the auxiliaryTableWeightSymbol to set
+	 */
+	public void setAuxiliaryTableWeightSymbol(
+			String auxiliaryTableWeightSymbol) {
+		this.auxiliaryTableWeightSymbol = auxiliaryTableWeightSymbol;
+	}
+
+	/**
+	 * @return the primaryTableWeightSymbol
+	 */
+	public String getPrimaryTableWeightSymbol() {
+		return primaryTableWeightSymbol;
+	}
+
+	/**
+	 * @param primaryTableWeightSymbol the primaryTableWeightSymbol to set
+	 */
+	public void setPrimaryTableWeightSymbol(
+			String primaryTableWeightSymbol) {
+		this.primaryTableWeightSymbol = primaryTableWeightSymbol;
+	}
+
 	
 
 }
