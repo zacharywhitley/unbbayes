@@ -26,7 +26,7 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class ExpectationPrinter extends ObjFunctionPrinter {
 
-	private String defaultJointProbabilityInputFileName = "input";
+	private String defaultJointProbabilityInputFileName = "weights";
 	
 	public static final int DEFAULT_NUM_POPULATION_CORRELATION_TABLE = 4267;
 
@@ -41,6 +41,8 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	private boolean is1stLineForNames = false;
 
 	private int defaultIndexOfProbability = 0;
+
+	private boolean isToUseAverageAsExpected = true;
 
 	/**
 	 * 
@@ -249,7 +251,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 					System.out.print(",");
 				}
 			}
-			System.out.println("," + this.getChiSqure(observed,expected));
+			System.out.println("," + this.getChiSqure(observed,expected, isToUseAverageAsExpected()));
 		}
 		
 		for (int i = 0; i < threatTables.size(); i++) {
@@ -273,7 +275,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 					System.out.print(",");
 				}
 			}
-			System.out.println("," + this.getChiSqure(observed,expected));
+			System.out.println("," + this.getChiSqure(observed,expected, isToUseAverageAsExpected()));
 		}
 		
 	}
@@ -311,9 +313,10 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	 * 
 	 * @param observed
 	 * @param expected
+	 * @param isToUseAverageAsExpectedValue
 	 * @return
 	 */
-	public double getChiSqure(PotentialTable observed, PotentialTable expected) {
+	public double getChiSqure(PotentialTable observed, PotentialTable expected, boolean isToUseAverageAsExpectedValue) {
 		if (observed.tableSize() != expected.tableSize()) {
 			throw new IllegalArgumentException("Tables differ in size: " + observed.tableSize() + " != " + expected.tableSize());
 		}
@@ -338,11 +341,25 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 				observedCoord[stateIndex] = expectedCoord[expected.getVariableIndex((Node) observed.getVariableAt(stateIndex))];
 			}
 			
-			double temp = (observed.getValue(observedCoord) - expected.getValue(expectedCoord));
-			temp /= expected.getValue(expectedCoord);	// divide first, to avoid overflow
-			temp *= (observed.getValue(observedCoord) - expected.getValue(expectedCoord));
+			double temp = Double.NaN;
+			if (isToUseAverageAsExpectedValue) {
+				double average = (observed.getValue(observedCoord) + expected.getValue(expectedCoord)) / 2;
+				temp = (observed.getValue(observedCoord) - average);
+				temp /= average;	// divide first, to avoid overflow
+				temp *= (observed.getValue(observedCoord) - average);
+				double temp2 = (expected.getValue(observedCoord) - average);
+				temp2 /= average;	// divide first, to avoid overflow
+				temp2 *= (expected.getValue(observedCoord) - average);
+				temp += temp2;
+			} else {
+				temp = (observed.getValue(observedCoord) - expected.getValue(expectedCoord));
+				temp /= expected.getValue(expectedCoord);	// divide first, to avoid overflow
+				temp *= (observed.getValue(observedCoord) - expected.getValue(expectedCoord));
+			}
 			
 			sum += temp;
+			
+			
 		}
 		
 		return sum;
@@ -504,6 +521,24 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	 */
 	public void setDefaultIndexOfProbability(int defaultIndexOfProbability) {
 		this.defaultIndexOfProbability = defaultIndexOfProbability;
+	}
+
+
+
+	/**
+	 * @return the isToUseAverageAsExpected
+	 */
+	public boolean isToUseAverageAsExpected() {
+		return isToUseAverageAsExpected;
+	}
+
+
+
+	/**
+	 * @param isToUseAverageAsExpected the isToUseAverageAsExpected to set
+	 */
+	public void setToUseAverageAsExpected(boolean isToUseAverageAsExpected) {
+		this.isToUseAverageAsExpected = isToUseAverageAsExpected;
 	}
 
 }

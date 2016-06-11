@@ -35,7 +35,10 @@ public class ObjFunctionPrinter {
 	
 	public static final String DEFAULT_THREAT_NAME = "Threat";
 	
-	public static final String[] DEFAULT_INDICATOR_NAMES = {"I1", "I2", "I3", "I4", "I5"};
+	public static final String[] DEFAULT_INDICATOR_NAMES1 = {"I1", "I2", "I3", "I4", "I5"}; //RCP1
+	public static final String[] DEFAULT_INDICATOR_NAMES2 = {"I1", "I2", "I3", "I4", "I5", "I6"}; //RCP2
+	public static final String[] DEFAULT_INDICATOR_NAMES3 = {"I1", "I2", "I3", "I4"}; //RCP3
+	
 	
 //	public static final  String[] DEFAULT_DETECTOR_NAMES = {"D1", "D2", "D3", "D4", "D5"};
 	public static final  String[] DEFAULT_DETECTOR_NAMES = {};
@@ -46,7 +49,9 @@ public class ObjFunctionPrinter {
 	private static boolean isStrictlyGreaterThan = true;
 
 	
-	public static final int[][][] indicatorCorrelations = {
+	
+	
+	public static final int[][][] indicatorCorrelations1 = {	// RCP1
 		{
 			// I2=true, I2=false
 			{3,	2},			// I1=true
@@ -93,6 +98,123 @@ public class ObjFunctionPrinter {
 		},
 	};
 	
+	public static final int[][][] indicatorCorrelations3 = {//RCP3
+		{
+			// I2=true, I2=false
+			{4,	201},
+			{5,	4057}	// I1 = false
+		},
+		{
+			// I3=true, I3=false
+			{17,	188},
+			{198,	3864},
+
+		},
+		{
+			// I4
+			{8,	197},
+			{207,	3855},
+
+		},
+		{
+			// I3
+			{2,	7},
+			{213,	4045},
+
+		},
+		{
+			{1,	8},
+			{214,	4044},
+
+		},
+		{
+			{8,	207},
+			{207,	3845},
+		},
+	};
+	
+	public static final int[][][] indicatorCorrelations2 = {//RCP2
+		{
+			// I2=true, I2=false
+			{12,	203},
+			{202,	3850},
+
+		},
+		{
+			// I3=true, I3=false
+			{14,	201},
+			{196,	3856},
+
+		},
+		{
+			// I4
+			{14,	201},
+			{196,	3856},
+
+		},
+		{
+			// I3
+			{18,	197},
+			{187,	3865},
+
+		},
+		{
+			{13,	202},
+			{201,	3851},
+
+		},
+		{
+			{23,	191},
+			{187,	3866},
+
+		},
+		{
+			{23,	191},
+			{187,	3866},
+
+		},
+		{
+			{27,	187},
+			{178,	3875},
+
+		},
+		{
+			{16,	198},
+			{198,	3855},
+
+		},
+		{
+			{209,	1},
+			{1,	4056},
+
+		},
+		{
+			{35,	175},
+			{170,	3887},
+
+		},
+		{
+			{13,	197},
+			{201,	3856},
+
+		},
+		{
+			{35,	175},
+			{170,	3887},
+
+		},
+		{
+			{13,	197},
+			{201,	3856},
+
+		},
+		{
+			{21,	184},
+			{193,	3869},
+
+		}
+	};
+	
 	public static final int[][][] detectorCorrelations = {
 //		{
 //			{3,2},
@@ -136,7 +258,7 @@ public class ObjFunctionPrinter {
 //		},
 	};
 	
-	public static final int[][][] threatIndicatorMatrix = {
+	public static final int[][][] threatIndicatorMatrix1 = {	// RCP1
 		{
 			{3,	271},
 			{1,	3529}
@@ -156,6 +278,60 @@ public class ObjFunctionPrinter {
 		{
 			{211,63},
 			{1,3529}
+		},
+	};
+	
+	public static final int[][][] threatIndicatorMatrix3 = {	// RCP3
+		{
+			{64,	1},
+			{148,	3591},
+		},
+		{
+			{8,	57},
+			{1,	3738},
+
+		},
+		{
+			{64,	1},
+			{148,	3591},
+
+		},
+		{
+			{64,	1},
+			{148,	3591},
+
+		},
+	};
+	
+	public static final int[][][] threatIndicatorMatrix2 = {	// RCP2
+		{
+			{188,	4},
+			{24,	3588},
+		},
+		{
+			{188,	4},
+			{24,	3588},
+
+		},
+		{
+			{188,	4},
+			{24,	3588},
+
+		},
+		{
+			{189,	3},
+			{23,	3589},
+
+		},
+		{
+			{188,	4},
+			{24,	3588},
+
+		},
+		{
+			{188,	4},
+			{24,	3588},
+
 		},
 	};
 	
@@ -183,8 +359,8 @@ public class ObjFunctionPrinter {
 	};
 	
 	
-//	private Integer[] jointProbsIndexesToConsider = null;
-	private Integer[] jointProbsIndexesToConsider = {
+	private Integer[] jointProbsIndexesToConsider = null;
+//	private Integer[] jointProbsIndexesToConsider = {
 //		2047,
 //		1915,
 //		2014,
@@ -203,11 +379,12 @@ public class ObjFunctionPrinter {
 //		695,
 //		924,
 //		926,
-	};
+//	};
 
 
-
-
+	public static final String[] DEFAULT_INDICATOR_NAMES = DEFAULT_INDICATOR_NAMES2;
+	public static int[][][] indicatorCorrelations = indicatorCorrelations2;
+	public static int[][][] threatIndicatorMatrix = threatIndicatorMatrix2;
 	
 	/**
 	 * Auto-generated default constructor
