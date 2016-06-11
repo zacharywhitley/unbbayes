@@ -102,7 +102,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		}
 		
 		if (varNames ==null) {
-			varNames = getNameList(DEFAULT_INDICATOR_NAMES);
+			varNames = getNameList(defaultIndicatorNames);
 			varNames.add(0, DEFAULT_THREAT_NAME);
 		}
 		
@@ -139,7 +139,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	 * 
 	 * @param file
 	 * @param isToPrintChiSquareHeader 
-	 * @param DEFAULT_INDICATOR_NAMES
+	 * @param defaultIndicatorNames
 	 * @param DEFAULT_DETECTOR_NAMES
 	 * @param DEFAULT_THREAT_NAME
 	 * @return
@@ -407,7 +407,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		
 		try {
 			printer.printExpectationFromFile(new File(printer.getDefaultJointProbabilityInputFileName()), 
-					DEFAULT_INDICATOR_NAMES, DEFAULT_DETECTOR_NAMES, DEFAULT_THREAT_NAME, DEFAULT_NUM_POPULATION_CORRELATION_TABLE, DEFAULT_NUM_POPULATION_THREAT_TABLE, true);
+					defaultIndicatorNames, DEFAULT_DETECTOR_NAMES, DEFAULT_THREAT_NAME, DEFAULT_NUM_POPULATION_CORRELATION_TABLE, DEFAULT_NUM_POPULATION_THREAT_TABLE, true);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

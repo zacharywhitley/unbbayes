@@ -382,7 +382,7 @@ public class ObjFunctionPrinter {
 //	};
 
 
-	public static final String[] DEFAULT_INDICATOR_NAMES = DEFAULT_INDICATOR_NAMES2;
+	public static String[] defaultIndicatorNames = DEFAULT_INDICATOR_NAMES2;
 	public static int[][][] indicatorCorrelations = indicatorCorrelations2;
 	public static int[][][] threatIndicatorMatrix = threatIndicatorMatrix2;
 	
@@ -479,14 +479,14 @@ public class ObjFunctionPrinter {
 	 * 
 	 * @param variableMap
 	 * @param indicatorCorrelations
-	 * @param DEFAULT_INDICATOR_NAMES
+	 * @param defaultIndicatorNames
 	 * @return
 	 */
 	public List<PotentialTable> getCorrelationTables(Map<String, INode> variableMap, int[][][] correlations, List<String> names) {
 		
 		if (correlations != null 
 				&& combinatorial(names.size(), 2) != correlations.length) {
-			throw new IllegalArgumentException("Combinations of DEFAULT_INDICATOR_NAMES is " + combinatorial(names.size(), 2) 
+			throw new IllegalArgumentException("Combinations of defaultIndicatorNames is " + combinatorial(names.size(), 2) 
 					+ ", but correlation matrix had size " + correlations.length);
 		}
 		
@@ -512,7 +512,7 @@ public class ObjFunctionPrinter {
 	 * @param variableMap
 	 * @param DEFAULT_THREAT_NAME 
 	 * @param indicatorCorrelations
-	 * @param DEFAULT_INDICATOR_NAMES
+	 * @param defaultIndicatorNames
 	 * @return
 	 */
 	public List<PotentialTable> getThreatTables(Map<String, INode> variableMap, int[][][] tables, List<String> indicatorNames, String threatName) {
@@ -1175,7 +1175,7 @@ public class ObjFunctionPrinter {
 	
 	/**
 	 * 
-	 * @param DEFAULT_INDICATOR_NAMES
+	 * @param defaultIndicatorNames
 	 * @param DEFAULT_DETECTOR_NAMES
 	 * @param DEFAULT_THREAT_NAME
 	 * @param indicatorCorrelations
@@ -1237,7 +1237,7 @@ public class ObjFunctionPrinter {
 	 */
 	public static void main(String[] args) {
 		ObjFunctionPrinter printer = new ObjFunctionPrinter();
-		printer.printAll(DEFAULT_INDICATOR_NAMES, DEFAULT_DETECTOR_NAMES, DEFAULT_THREAT_NAME, 
+		printer.printAll(defaultIndicatorNames, DEFAULT_DETECTOR_NAMES, DEFAULT_THREAT_NAME, 
 				indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix);
 		
 		
@@ -1248,7 +1248,7 @@ public class ObjFunctionPrinter {
 
 	/**
 	 * 
-	 * @param DEFAULT_INDICATOR_NAMES
+	 * @param defaultIndicatorNames
 	 * @return
 	 */
 	public List<String> getNameList(String[] names)  {
