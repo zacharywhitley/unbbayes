@@ -9,7 +9,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -55,9 +54,9 @@ We will do the above simulation 100 times to get 100 threat x indicator combinat
  */
 public class DirichletUserSimulator extends ExpectationPrinter {
 
-	private String problemID = "Users_RCP1";
+	
 	private int numUsers = 4263;
-	private int numOrganization = 100;
+	private int numOrganization = 1000;
 	private File input = new File("input");
 	private File output = new File("output");
 	
@@ -65,7 +64,9 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	/**
 	 * Default constructor is kept protected to avoid instantiation, but to allow inheritance.
 	 */
-	protected DirichletUserSimulator() {}
+	protected DirichletUserSimulator() {
+//		this.setToConsiderDetectors(false);
+	}
 	
 	/**
 	 * Constructor method initializing fields
@@ -186,7 +187,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	 * @see #getJointProbabilityFromFile(File)
 	 * @see #runSingleSimulation(List, File, int)
 	 */
-	public void runSimulations() throws IOException {
+	public void run() throws IOException {
 		File input = this.getInput();
 		if (!input.exists()) {
 			throw new IOException("File or folder " + input.getName() + " does not exist.");
@@ -238,7 +239,15 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			
 			
 			for (int i = 1; i <= numOrganization; i++) {
-				File file = new File(output, prefix + String.format("%1$03d", i) + ".csv");
+				String numbering = ""+i;
+				if (numOrganization < 1000) {
+					numbering = String.format("%1$03d", i);
+				} else if (numOrganization < 10000) {
+					numbering = String.format("%1$04d", i);
+				} else if (numOrganization < 100000)  {
+					numbering = String.format("%1$05d", i);
+				}
+				File file = new File(output, prefix + numbering  + ".csv");
 				this.runSingleSimulation(jointProbabilities, file, getNumUsers());
 			}
 		} else if (output.isFile()) {
@@ -348,6 +357,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		options.addOption("o","output", true, "File or directory to place output files.");
 		options.addOption("id","problem-id", true, "Name or identification of the current problem (this will be used as suffixes of output file names).");
 		options.addOption("d","debug", false, "Enables debug mode.");
+		options.addOption("h","help", false, "Help.");
 		
 		CommandLine cmd = null;
 		try {
@@ -359,6 +369,18 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		
 		if (cmd == null) {
 			System.err.println("Invalid command line");
+			return;
+		}
+		
+		if (cmd.hasOption("h")) {
+			System.out.println("-i <FILE NAME> : file or directory containing csv files of joint probabilities.");
+			System.out.println("-o <SOME NUMBER> : file or directory to place output files.");
+			System.out.println("-u <SOME NUMBER> : number of users.");
+			System.out.println("-n <SOME NUMBER> : number of organizations (repetitions of sampled users).");
+			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"Users_RCP1\", \"Users_RCP2\", or \"Users_RCP3\"). "
+					+ "This will be used as suffixes of output file names");
+			System.out.println("-d : Enables debug mode.");
+			System.out.println("-h: Help.");
 			return;
 		}
 		
@@ -387,7 +409,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 
 		
 		try {
-			sim.runSimulations();
+			sim.run();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
@@ -452,37 +474,6 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		this.output = output;
 	}
 
-	/**
-	 * @return the problemID
-	 */
-	public String getProblemID() {
-		return problemID;
-	}
-
-	/**
-	 * @param problemID the problemID to set
-	 */
-	public void setProblemID(String problemID) {
-		this.problemID = problemID;
-		
-		String upperCase = problemID.toUpperCase();
-		if (upperCase.contains("RCP2")) {
-			Debug.println("Using variable sets of RCP2");
-			this.indicatorCorrelations = indicatorCorrelations2;
-			this.threatIndicatorMatrix = threatIndicatorMatrix2;
-			this.defaultIndicatorNames = DEFAULT_INDICATOR_NAMES2;
-		} else if (upperCase.contains("RCP3")) {
-			Debug.println("Using variable sets of RCP3");
-			this.indicatorCorrelations = indicatorCorrelations3;
-			this.threatIndicatorMatrix = threatIndicatorMatrix3;
-			this.defaultIndicatorNames = DEFAULT_INDICATOR_NAMES3;
-		} else {
-			Debug.println("Using variable sets of RCP1");
-			this.indicatorCorrelations = indicatorCorrelations1;
-			this.threatIndicatorMatrix = threatIndicatorMatrix1;
-			this.defaultIndicatorNames = DEFAULT_INDICATOR_NAMES1;
-		}
-	}
 
 
 }

@@ -11,11 +11,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.util.Debug;
 
 
 /**
@@ -24,6 +31,8 @@ import unbbayes.prs.bn.ProbabilisticTable;
  * The output of this class can be used as an input for a third-party non-linear optimizer.
  */
 public class ObjFunctionPrinter {
+	
+	private String problemID = "RCP1";
 
 	private static float greaterThanValue = 0;
 	
@@ -33,6 +42,8 @@ public class ObjFunctionPrinter {
 
 	private boolean isToSubtract1WayLikelihood = true;
 	
+	private boolean isToConsiderDetectors = false;
+	
 	public static final String DEFAULT_THREAT_NAME = "Threat";
 	
 	public static final String[] DEFAULT_INDICATOR_NAMES1 = {"I1", "I2", "I3", "I4", "I5"}; //RCP1
@@ -40,8 +51,11 @@ public class ObjFunctionPrinter {
 	public static final String[] DEFAULT_INDICATOR_NAMES3 = {"I1", "I2", "I3", "I4"}; //RCP3
 	
 	
-//	public static final  String[] DEFAULT_DETECTOR_NAMES = {"D1", "D2", "D3", "D4", "D5"};
-	public static final  String[] DEFAULT_DETECTOR_NAMES = {};
+	public static final  String[] DEFAULT_DETECTOR_NAMES1 = {"D1", "D2", "D3", "D4", "D5"};	//RCP1
+	public static final  String[] DEFAULT_DETECTOR_NAMES2 = {"D1", "D2", "D3", "D4", "D5", "D6"};	//RCP2
+	public static final  String[] DEFAULT_DETECTOR_NAMES3 = {"D1", "D2", "D3", "D4"};	//RCP3
+	
+	
 	
 	private String primaryTableWeightSymbol = "w1";
 	private String auxiliaryTableWeightSymbol = "w2";
@@ -215,47 +229,155 @@ public class ObjFunctionPrinter {
 		}
 	};
 	
-	public static final int[][][] detectorCorrelations = {
-//		{
-//			{3,2},
-//			{209,4053}
-//		},
-//		{
-//			{2,3},
-//			{213,4049}
-//		},
-//		{
-//			{1,4},
-//			{201,4061}
-//		},
-//		{
-//			{1,4},
-//			{213,4049}
-//		},
-//		{
-//			{31,181},
-//			{184,3871}
-//		},
-//		{
-//			{44,168},
-//			{158,3897}
-//		},
-//		{
-//			{20,192},
-//			{194,3861}
-//		},
-//		{
-//			{28,187},
-//			{174,3878}
-//		},
-//		{
-//			{25,190},
-//			{189,3863}
-//		},
-//		{
-//			{18,184},
-//			{196,3869},
-//		},
+	public static final int[][][] detectorCorrelations1 = {
+		{
+			{3,2},
+			{209,4053}
+		},
+		{
+			{2,3},
+			{213,4049}
+		},
+		{
+			{1,4},
+			{201,4061}
+		},
+		{
+			{1,4},
+			{213,4049}
+		},
+		{
+			{31,181},
+			{184,3871}
+		},
+		{
+			{44,168},
+			{158,3897}
+		},
+		{
+			{20,192},
+			{194,3861}
+		},
+		{
+			{28,187},
+			{174,3878}
+		},
+		{
+			{25,190},
+			{189,3863}
+		},
+		{
+			{18,184},
+			{196,3869},
+		},
+	};
+	
+	public static final int[][][] detectorCorrelations2 = {	// RCP2
+		{
+			{13,	206},
+			{190,	3858},
+		},
+			
+		{	
+			{20,	199},
+			{233,	3815},
+		},
+			
+		{	
+			{12,	207},
+			{201,	3847},
+		},
+			
+		{	
+			{18,	201},
+			{187,	3861},
+		},
+			
+		{	
+			{17,	202},
+			{236,	3812},
+		},
+			
+		{	
+			{25,	178},
+			{228,	3836},
+		},
+			
+		{	
+			{14,	189},
+			{199,	3865},
+		},
+			
+		{	
+			{26,	177},
+			{179,	3885},
+		},
+			
+		{	
+			{19,	184},
+			{234,	3830},
+		},
+			
+		{	
+			{28,	225},
+			{185,	3829},
+		},
+			
+		{	
+			{38,	215},
+			{167,	3847},
+		},
+			
+		{	
+			{18,	235},
+			{235,	3779},
+		},
+			
+		{	
+			{22,	191},
+			{183,	3871},
+		},
+		
+		{	
+			{24,	189},
+			{229,	3825},
+		},
+			
+		{	
+			{24,	181},
+			{229,	3833},
+		},
+	};
+	public static final int[][][] detectorCorrelations3 = {	// RCP 3
+		{
+			{4,	201},
+			{5,	4057},
+		},
+				
+		{		
+			{17,	188},
+			{193,	3869},
+		},
+				
+		{		
+			{8,	197},
+			{205,	3857},
+		},
+				
+		{		
+			{2,	7},
+			{208,	4050},
+		},
+				
+		{		
+			{1,	8},
+			{212,	4046},
+		},
+				
+		{		
+			{7,	203},
+			{206,	3851},
+		},
 	};
 	
 	public static final int[][][] threatIndicatorMatrix1 = {	// RCP1
@@ -335,27 +457,80 @@ public class ObjFunctionPrinter {
 		},
 	};
 	
-	public static final int[][][] detectorIndicatorMatrix = {
-//		{
-//			{3,1},
-//			{1,3799}
-//		},
-//		{
-//			{211,1},
-//			{5,3587}
-//		},
-//		{
-//			{211,1},
-//			{4,3588}
-//		},
-//		{
-//			{211,1},
-//			{8,3584}
-//		},
-//		{
-//			{211,1},
-//			{4,3588},
-//		},
+	public static final int[][][] detectorIndicatorMatrix1 = {	// RCP1
+		{
+			{3,1},
+			{1,3799}
+		},
+		{
+			{211,1},
+			{5,3587}
+		},
+		{
+			{211,1},
+			{4,3588}
+		},
+		{
+			{211,1},
+			{8,3584}
+		},
+		{
+			{211,1},
+			{4,3588},
+		},
+	};
+	public static final int[][][] detectorIndicatorMatrix2 = {	// RCP2
+		{
+			{211,1},
+			{19,3573},
+		},
+
+		{
+			{211,1},
+			{5,3587},
+		},
+
+		{
+			{211,1},
+			{63,3529},
+		},
+
+		{
+			{211,1},
+			{1,3591},
+		},
+
+		{
+			{211,1},
+			{1,3591},
+		},
+
+		{
+			{210,2},
+			{1,3591},
+		}
+	};
+	public static final int[][][] detectorIndicatorMatrix3 = { // RCP3
+		{
+			{205,7},
+			{1,3591},
+		},
+
+		{
+			{8,1},
+			{1,3794},
+		},
+
+		{
+			{211,1},
+			{1,3591},
+		},
+
+		{
+			{211,1},
+			{3,3589},
+		}
+
 	};
 	
 	
@@ -382,9 +557,14 @@ public class ObjFunctionPrinter {
 //	};
 
 
-	public static String[] defaultIndicatorNames = DEFAULT_INDICATOR_NAMES2;
-	public static int[][][] indicatorCorrelations = indicatorCorrelations2;
-	public static int[][][] threatIndicatorMatrix = threatIndicatorMatrix2;
+	public static String[] defaultIndicatorNames = DEFAULT_INDICATOR_NAMES1;
+	public static String[] defaultDetectorNames = DEFAULT_DETECTOR_NAMES1;
+	
+	public static int[][][] indicatorCorrelations = indicatorCorrelations1;
+	public static int[][][] detectorCorrelations = detectorCorrelations1;
+	
+	public static int[][][] threatIndicatorMatrix = threatIndicatorMatrix1;
+	public static int[][][] detectorIndicatorMatrix = detectorIndicatorMatrix1;
 	
 	/**
 	 * Auto-generated default constructor
@@ -1176,7 +1356,7 @@ public class ObjFunctionPrinter {
 	/**
 	 * 
 	 * @param defaultIndicatorNames
-	 * @param DEFAULT_DETECTOR_NAMES
+	 * @param defaultDetectorNames
 	 * @param DEFAULT_THREAT_NAME
 	 * @param indicatorCorrelations
 	 * @param detectorCorrelations
@@ -1236,8 +1416,47 @@ public class ObjFunctionPrinter {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		
+		
+		CommandLineParser parser = new DefaultParser();
+		Options options = new Options();
+		options.addOption("id","problem-id", true, "Name or identification of the current problem (this will be used as suffixes of output file names).");
+		options.addOption("d","debug", false, "Enables debug mode.");
+		options.addOption("h","help", false, "Help.");
+		
+		CommandLine cmd = null;
+		try {
+			cmd = parser.parse(options, args);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		if (cmd == null) {
+			System.err.println("Invalid command line");
+			return;
+		}
+		
+		if (cmd.hasOption("h")) {
+			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"RCP1\", \"RCP2\", or \"RCP3\").");
+			System.out.println("-d : Enables debug mode.");
+			System.out.println("-h: Help.");
+			return;
+		}
+		
+		if (cmd.hasOption("d")) {
+			Debug.setDebug(true);
+		} else {
+			Debug.setDebug(false);
+		}
+		
 		ObjFunctionPrinter printer = new ObjFunctionPrinter();
-		printer.printAll(defaultIndicatorNames, DEFAULT_DETECTOR_NAMES, DEFAULT_THREAT_NAME, 
+		if (cmd.hasOption("id")) {
+			printer.setProblemID(cmd.getOptionValue("id"));
+		}
+		
+		
+		printer.printAll(defaultIndicatorNames, defaultDetectorNames, DEFAULT_THREAT_NAME, 
 				indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix);
 		
 		
@@ -1398,6 +1617,70 @@ public class ObjFunctionPrinter {
 	public void setPrimaryTableWeightSymbol(
 			String primaryTableWeightSymbol) {
 		this.primaryTableWeightSymbol = primaryTableWeightSymbol;
+	}
+	
+
+	/**
+	 * @return the problemID
+	 */
+	public String getProblemID() {
+		return problemID;
+	}
+
+	
+
+	/**
+	 * @param problemID the problemID to set
+	 */
+	public void setProblemID(String problemID) {
+		this.problemID = problemID;
+		
+		String upperCase = problemID.toUpperCase();
+		if (upperCase.contains("RCP2")) {
+			Debug.println("Using variable sets of RCP2");
+			this.indicatorCorrelations = indicatorCorrelations2;
+			this.detectorCorrelations = detectorCorrelations2;
+			this.threatIndicatorMatrix = threatIndicatorMatrix2;
+			this.detectorIndicatorMatrix = detectorIndicatorMatrix2;
+			this.defaultIndicatorNames = DEFAULT_INDICATOR_NAMES2;
+			this.defaultDetectorNames = DEFAULT_DETECTOR_NAMES2;
+		} else if (upperCase.contains("RCP3")) {
+			Debug.println("Using variable sets of RCP3");
+			this.indicatorCorrelations = indicatorCorrelations3;
+			this.detectorCorrelations = detectorCorrelations3;
+			this.threatIndicatorMatrix = threatIndicatorMatrix3;
+			this.detectorIndicatorMatrix = detectorIndicatorMatrix3;
+			this.defaultIndicatorNames = DEFAULT_INDICATOR_NAMES3;
+			this.defaultDetectorNames = DEFAULT_DETECTOR_NAMES3;
+		} else {
+			Debug.println("Using variable sets of RCP1");
+			this.indicatorCorrelations = indicatorCorrelations1;
+			this.detectorCorrelations = detectorCorrelations1;
+			this.threatIndicatorMatrix = threatIndicatorMatrix1;
+			this.detectorIndicatorMatrix = detectorIndicatorMatrix1;
+			this.defaultIndicatorNames = DEFAULT_INDICATOR_NAMES1;
+			this.defaultDetectorNames = DEFAULT_DETECTOR_NAMES1;
+		}
+		
+		if (!isToConsiderDetectors()){
+			this.detectorCorrelations = new int[0][0][0];
+			this.detectorIndicatorMatrix = new int[0][0][0];
+			this.defaultDetectorNames = new String[0];
+		}
+	}
+
+	/**
+	 * @return the isToConsiderDetectors
+	 */
+	public boolean isToConsiderDetectors() {
+		return isToConsiderDetectors;
+	}
+
+	/**
+	 * @param isToConsiderDetectors the isToConsiderDetectors to set
+	 */
+	public void setToConsiderDetectors(boolean isToConsiderDetectors) {
+		this.isToConsiderDetectors = isToConsiderDetectors;
 	}
 
 	

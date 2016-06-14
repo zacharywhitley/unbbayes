@@ -9,11 +9,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.util.Debug;
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
@@ -36,7 +41,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	
 	private String[] columnsToIgnore = {"P"};
 
-	private boolean isToPrintExpectationTable = false;
+	private boolean isToPrintExpectationTable = true;
 
 	private boolean is1stLineForNames = false;
 
@@ -140,7 +145,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	 * @param file
 	 * @param isToPrintChiSquareHeader 
 	 * @param defaultIndicatorNames
-	 * @param DEFAULT_DETECTOR_NAMES
+	 * @param defaultDetectorNames
 	 * @param DEFAULT_THREAT_NAME
 	 * @return
 	 * @throws IOException 
@@ -403,11 +408,63 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		
+
+		CommandLineParser parser = new DefaultParser();
+		Options options = new Options();
+		options.addOption("id","problem-id", true, "Name or identification of the current problem (this will be used as suffixes of output file names).");
+		options.addOption("d","debug", false, "Enables debug mode.");
+		options.addOption("i","input", true, "File or directory to get joint probabilities from.");
+		options.addOption("h","help", false, "Help.");
+		
+		CommandLine cmd = null;
+		try {
+			cmd = parser.parse(options, args);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		if (cmd == null) {
+			System.err.println("Invalid command line");
+			return;
+		}
+		
+		if (cmd.hasOption("h")) {
+			System.out.println("-i <FILE NAME> : file or directory containing csv files of joint probabilities.");
+			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"Users_RCP1\", \"Users_RCP2\", or \"Users_RCP3\"). "
+					+ "This will be used as suffixes of output file names");
+			System.out.println("-d : Enables debug mode.");
+			System.out.println("-h: Help.");
+			return;
+		}
+		
+		if (cmd.hasOption("d")) {
+			Debug.setDebug(true);
+		} else {
+			Debug.setDebug(false);
+		}
+		
 		ExpectationPrinter printer = new ExpectationPrinter();
+		if (cmd.hasOption("id")) {
+			printer.setProblemID(cmd.getOptionValue("id"));
+		}
+		if (cmd.hasOption("i")) {
+			printer.setDefaultJointProbabilityInputFileName(cmd.getOptionValue("i"));
+		}
+		
+		int numPopulationCorrelationTable = DEFAULT_NUM_POPULATION_CORRELATION_TABLE;
+		if (cmd.hasOption("c")) {
+			numPopulationCorrelationTable = Integer.parseInt(cmd.getOptionValue("c"));
+		}
+		int numPopulationThreatTable = DEFAULT_NUM_POPULATION_THREAT_TABLE;
+		if (cmd.hasOption("t")) {
+			numPopulationCorrelationTable = Integer.parseInt(cmd.getOptionValue("t"));
+		}
 		
 		try {
 			printer.printExpectationFromFile(new File(printer.getDefaultJointProbabilityInputFileName()), 
-					defaultIndicatorNames, DEFAULT_DETECTOR_NAMES, DEFAULT_THREAT_NAME, DEFAULT_NUM_POPULATION_CORRELATION_TABLE, DEFAULT_NUM_POPULATION_THREAT_TABLE, true);
+					defaultIndicatorNames, defaultDetectorNames, DEFAULT_THREAT_NAME, numPopulationCorrelationTable, numPopulationThreatTable, true);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

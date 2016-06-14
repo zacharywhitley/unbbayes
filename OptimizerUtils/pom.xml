@@ -126,6 +126,14 @@
 			    <version>1.3.1</version>
 			</dependency>
 						
+			<!-- Common library for math functions. It's used in this project for calculating statistics -->
+			<!-- http://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
+			<dependency>
+			    <groupId>org.apache.commons</groupId>
+			    <artifactId>commons-math3</artifactId>
+			    <version>3.6.1</version>
+			</dependency>
+						
 			
 	</dependencies>
 	<reporting>
