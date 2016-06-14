@@ -42,7 +42,7 @@ public class ObjFunctionPrinter {
 
 	private boolean isToSubtract1WayLikelihood = true;
 	
-	private boolean isToConsiderDetectors = false;
+	private boolean isToConsiderDetectors = true;
 	
 	public static final String DEFAULT_THREAT_NAME = "Threat";
 	
@@ -59,6 +59,12 @@ public class ObjFunctionPrinter {
 	
 	private String primaryTableWeightSymbol = "w1";
 	private String auxiliaryTableWeightSymbol = "w2";
+	
+	private Map<String, String> primaryTableSpecialCasesWeightSymbol = new HashMap<String, String>();
+	{
+		primaryTableSpecialCasesWeightSymbol.put("I6", "w3");
+	}
+	
 
 	private static boolean isStrictlyGreaterThan = true;
 
@@ -898,7 +904,33 @@ public class ObjFunctionPrinter {
 		// primaryTables
 		for (int tableIndex = 0; tableIndex < primaryTables.size(); tableIndex++) {
 			PotentialTable currentTable = primaryTables.get(tableIndex);
-			String tempString = " + " + getPrimaryTableWeightSymbol() + " * ( ";
+			String tempString = "";
+			
+			// check if we can find variables to be treated in special way
+			List<String> variablesFound = new ArrayList<String>();
+			for (int i = 0; i < currentTable.getVariablesSize(); i++) {
+				if (getPrimaryTableSpecialCasesWeightSymbol().containsKey(currentTable.getVariableAt(i).getName())) {
+					variablesFound.add(currentTable.getVariableAt(i).getName());
+				}
+			}
+			if (variablesFound.isEmpty()) {
+				tempString += " + " + getPrimaryTableWeightSymbol() + " * ( ";
+			} else {
+				tempString += " + ";
+				if (variablesFound.size() > 1) {
+					tempString += "( ";
+				}
+				for (int i = 0; i < variablesFound.size(); i++) {
+					tempString += getPrimaryTableSpecialCasesWeightSymbol().get(variablesFound.get(i));
+					if (i+1 < variablesFound.size()) {
+						tempString += " * ";
+					}
+				}
+				if (variablesFound.size() > 1) {
+					tempString += " )";
+				}
+				tempString += " * ( ";
+			}
 			boolean foundLogFactor = false;
 			for (int cellIndex = 0; cellIndex < currentTable.tableSize() ; cellIndex++) {
 				
@@ -1421,6 +1453,7 @@ public class ObjFunctionPrinter {
 		CommandLineParser parser = new DefaultParser();
 		Options options = new Options();
 		options.addOption("id","problem-id", true, "Name or identification of the current problem (this will be used as suffixes of output file names).");
+		options.addOption("i","indicator-only", false, "Use indicator tables, and do not use detectors.");
 		options.addOption("d","debug", false, "Enables debug mode.");
 		options.addOption("h","help", false, "Help.");
 		
@@ -1451,10 +1484,12 @@ public class ObjFunctionPrinter {
 		}
 		
 		ObjFunctionPrinter printer = new ObjFunctionPrinter();
+		
+		printer.setToConsiderDetectors(!cmd.hasOption("i"));
+		
 		if (cmd.hasOption("id")) {
 			printer.setProblemID(cmd.getOptionValue("id"));
 		}
-		
 		
 		printer.printAll(defaultIndicatorNames, defaultDetectorNames, DEFAULT_THREAT_NAME, 
 				indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix);
@@ -1681,6 +1716,26 @@ public class ObjFunctionPrinter {
 	 */
 	public void setToConsiderDetectors(boolean isToConsiderDetectors) {
 		this.isToConsiderDetectors = isToConsiderDetectors;
+		if (!isToConsiderDetectors) {
+			this.detectorCorrelations = new int[0][0][0];
+			this.detectorIndicatorMatrix = new int[0][0][0];
+			this.defaultDetectorNames = new String[0];
+		}
+	}
+
+	/**
+	 * @return the primaryTableSpecialCasesWeightSymbol
+	 */
+	public Map<String, String> getPrimaryTableSpecialCasesWeightSymbol() {
+		return primaryTableSpecialCasesWeightSymbol;
+	}
+
+	/**
+	 * @param primaryTableSpecialCasesWeightSymbol the primaryTableSpecialCasesWeightSymbol to set
+	 */
+	public void setPrimaryTableSpecialCasesWeightSymbol(
+			Map<String, String> primaryTableSpecialCasesWeightSymbol) {
+		this.primaryTableSpecialCasesWeightSymbol = primaryTableSpecialCasesWeightSymbol;
 	}
 
 	

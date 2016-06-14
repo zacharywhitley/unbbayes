@@ -59,6 +59,8 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	private int numOrganization = 1000;
 	private File input = new File("input");
 	private File output = new File("output");
+	private boolean isToPrintAlert = true;
+	private int countAlert = 2;
 	
 
 	/**
@@ -106,7 +108,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	 * @param numSimulation : number of samples to generate
 	 * @throws IOException 
 	 */
-	public void runSingleSimulation(List<PotentialTable> jointProbabilities, File output, int numSimulation) throws IOException {
+	public void runSingleSimulation(List<PotentialTable> jointProbabilities, File output, int numSimulation, boolean isToPrintAlert, int alertScore) throws IOException {
 		
 		// assert that all joint probabilities have same ordering of variables
 		for (int i = 1; i < jointProbabilities.size(); i++) {
@@ -126,6 +128,9 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 					printer.print(",");
 				}
 			}
+			if (isToPrintAlert) {
+				printer.print(",Alert");
+			}
 			printer.println();
 		}
 		
@@ -141,21 +146,37 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			alphas[i] = numSimulation * table.getValue(i);
 		}
 		
+		List<String> alertVars = getNameList(defaultDetectorNames);
+		if (alertVars.isEmpty()) {
+			alertVars = getNameList(defaultIndicatorNames);
+		}
+		
 		// instantiate a dirichlet sampler
 		// initialize dictionary of states of dirichlet sampler
 		Object[] jointStates = new Object[table.tableSize()];
 		for (int i = 0; i < jointStates.length; i++) {
 			int[] states = table.getMultidimensionalCoord(i);
 			String csvLine = "";
+			int countAlert = 0;
 			for (int varIndex = states.length-1; varIndex >= 0 ; varIndex--) {
 				String state = table.getVariableAt(varIndex).getStateAt(states[varIndex]).trim();
 				if (state.equalsIgnoreCase("Yes") || state.equalsIgnoreCase("true")) {
 					csvLine += ("1");
+					if (alertVars.contains(table.getVariableAt(varIndex).getName())) {
+						countAlert++;
+					} 
 				} else {
 					csvLine += ("0");
 				}
 				if (varIndex > 0) {
 					csvLine += (",");
+				}
+			}
+			if (isToPrintAlert) {
+				if (countAlert >= alertScore) {
+					csvLine += ",1";
+				} else {
+					csvLine += ",0";
 				}
 			}
 			jointStates[i] = csvLine;
@@ -248,13 +269,13 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 					numbering = String.format("%1$05d", i);
 				}
 				File file = new File(output, prefix + numbering  + ".csv");
-				this.runSingleSimulation(jointProbabilities, file, getNumUsers());
+				this.runSingleSimulation(jointProbabilities, file, getNumUsers(), isToPrintAlert(), getCountAlert() );
 			}
 		} else if (output.isFile()) {
 			// just run multiple times and append results to same output
 			int numOrganization = getNumOrganization();
 			for (int i = 0; i < numOrganization; i++) {
-				this.runSingleSimulation(jointProbabilities, output, getNumUsers());
+				this.runSingleSimulation(jointProbabilities, output, getNumUsers(), isToPrintAlert(), getCountAlert());
 			}
 		} else {
 			throw new IllegalArgumentException(output.getName() + "  is not a valid accessible file/directory.");
@@ -357,6 +378,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		options.addOption("o","output", true, "File or directory to place output files.");
 		options.addOption("id","problem-id", true, "Name or identification of the current problem (this will be used as suffixes of output file names).");
 		options.addOption("d","debug", false, "Enables debug mode.");
+		options.addOption("a","alert", true, "Whether to print alert and how many detectors to consider in alert.");
 		options.addOption("h","help", false, "Help.");
 		
 		CommandLine cmd = null;
@@ -380,6 +402,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"Users_RCP1\", \"Users_RCP2\", or \"Users_RCP3\"). "
 					+ "This will be used as suffixes of output file names");
 			System.out.println("-d : Enables debug mode.");
+			System.out.println("-a <SOME NUMBER> : whether to print alert and how many detectors to consider in alert.");
 			System.out.println("-h: Help.");
 			return;
 		}
@@ -405,6 +428,10 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		}
 		if (cmd.hasOption("id")) {
 			sim.setProblemID(cmd.getOptionValue("id"));
+		}
+		if (cmd.hasOption("a")) {
+			sim.setToPrintAlert(true);
+			sim.setCountAlert(Integer.parseInt(cmd.getOptionValue("a")));
 		}
 
 		
@@ -472,6 +499,34 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	 */
 	public void setOutput(File output) {
 		this.output = output;
+	}
+
+	/**
+	 * @return the isToPrintAlert
+	 */
+	public boolean isToPrintAlert() {
+		return isToPrintAlert;
+	}
+
+	/**
+	 * @param isToPrintAlert the isToPrintAlert to set
+	 */
+	public void setToPrintAlert(boolean isToPrintAlert) {
+		this.isToPrintAlert = isToPrintAlert;
+	}
+
+	/**
+	 * @return the countAlert
+	 */
+	public int getCountAlert() {
+		return countAlert;
+	}
+
+	/**
+	 * @param countAlert the countAlert to set
+	 */
+	public void setCountAlert(int countAlert) {
+		this.countAlert = countAlert;
 	}
 
 

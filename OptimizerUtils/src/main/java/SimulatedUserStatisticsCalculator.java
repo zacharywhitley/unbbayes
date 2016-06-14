@@ -1,6 +1,8 @@
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -16,7 +18,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.math3.distribution.TDistribution;
-import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.PotentialTable;
@@ -35,25 +37,86 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 
-	private boolean isToAdd1ToCounts = true;
+	private boolean isToAdd1ToCounts = false;
 	
 	private float confidence = .95f;
 	private List<Query> queries = new ArrayList<SimulatedUserStatisticsCalculator.Query>();
+
+	private boolean isToPrintSummary = false;
 	
-	/**
-	 * 
-	 */
+	private Map<String, String> queryAlias = QUERY_ALIAS_RCP1;
+	
+	public static final Map<String, String> QUERY_ALIAS_RCP1 = new HashMap<String, String>();
+	static {
+		QUERY_ALIAS_RCP1.put("P(Alert=true|Threat=true)", "Q01");
+		QUERY_ALIAS_RCP1.put("P(Threat=true|Alert=true)", "Q02");
+		QUERY_ALIAS_RCP1.put("P(Alert=true|Threat=false)", "Q03");
+		
+		QUERY_ALIAS_RCP1.put("P(Alert=true|I1=true)", "Q04");
+		QUERY_ALIAS_RCP1.put("P(Alert=true|I2=true)", "Q05");
+		QUERY_ALIAS_RCP1.put("P(Alert=true|I3=true)", "Q06");
+		QUERY_ALIAS_RCP1.put("P(Alert=true|I4=true)", "Q07");
+		QUERY_ALIAS_RCP1.put("P(Alert=true|I5=true)", "Q08");
+		
+		QUERY_ALIAS_RCP1.put("P(I1=true|Alert=true)", "Q09");
+		QUERY_ALIAS_RCP1.put("P(I2=true|Alert=true)", "Q10");
+		QUERY_ALIAS_RCP1.put("P(I3=true|Alert=true)", "Q11");
+		QUERY_ALIAS_RCP1.put("P(I4=true|Alert=true)", "Q12");
+		QUERY_ALIAS_RCP1.put("P(I5=true|Alert=true)", "Q13");
+	}
+	
+	public static final Map<String, String> QUERY_ALIAS_RCP2 = new HashMap<String, String>();
+	static {
+		QUERY_ALIAS_RCP2.put("P(Alert=true|Threat=true)", "Q01");
+		QUERY_ALIAS_RCP2.put("P(Threat=true|Alert=true)", "Q02");
+		QUERY_ALIAS_RCP2.put("P(Alert=true|Threat=false)", "Q03");
+		
+		QUERY_ALIAS_RCP2.put("P(Alert=true|I1=true)", "Q04");
+		QUERY_ALIAS_RCP2.put("P(Alert=true|I2=true)", "Q05");
+		QUERY_ALIAS_RCP2.put("P(Alert=true|I3=true)", "Q06");
+		QUERY_ALIAS_RCP2.put("P(Alert=true|I4=true)", "Q07");
+		QUERY_ALIAS_RCP2.put("P(Alert=true|I5=true)", "Q08");
+		QUERY_ALIAS_RCP2.put("P(Alert=true|I6=true)", "Q09");
+		
+		QUERY_ALIAS_RCP2.put("P(I1=true|Alert=true)", "Q10");
+		QUERY_ALIAS_RCP2.put("P(I2=true|Alert=true)", "Q11");
+		QUERY_ALIAS_RCP2.put("P(I3=true|Alert=true)", "Q12");
+		QUERY_ALIAS_RCP2.put("P(I4=true|Alert=true)", "Q13");
+		QUERY_ALIAS_RCP2.put("P(I5=true|Alert=true)", "Q14");
+		QUERY_ALIAS_RCP2.put("P(I6=true|Alert=true)", "Q15");
+	}
+	
+	public static final Map<String, String> QUERY_ALIAS_RCP3 = new HashMap<String, String>();
+	static {
+		QUERY_ALIAS_RCP3.put("P(Alert=true|Threat=true)", "Q01");
+		QUERY_ALIAS_RCP3.put("P(Threat=true|Alert=true)", "Q02");
+		QUERY_ALIAS_RCP3.put("P(Alert=true|Threat=false)", "Q03");
+		
+		QUERY_ALIAS_RCP3.put("P(Alert=true|I1=true)", "Q04");
+		QUERY_ALIAS_RCP3.put("P(Alert=true|I2=true)", "Q05");
+		QUERY_ALIAS_RCP3.put("P(Alert=true|I3=true)", "Q06");
+		QUERY_ALIAS_RCP3.put("P(Alert=true|I4=true)", "Q07");
+		
+		QUERY_ALIAS_RCP3.put("P(I1=true|Alert=true)", "Q08");
+		QUERY_ALIAS_RCP3.put("P(I2=true|Alert=true)", "Q09");
+		QUERY_ALIAS_RCP3.put("P(I3=true|Alert=true)", "Q10");
+		QUERY_ALIAS_RCP3.put("P(I4=true|Alert=true)", "Q11");
+	}
+	
 	public SimulatedUserStatisticsCalculator() {
 		this.set1stLineForNames(true);
+		this.setOutput(new File("output.csv"));
 	}
 	
 	public static class Query {
+		private boolean isToUsePercentileForConfidenceInterval = false;
 		private List<String> conditions = Collections.emptyList();
 		private List<String> conditionsStates = Collections.emptyList();
 		private String query = "";
 		private String queryState = "";
-		private SummaryStatistics statistics = new SummaryStatistics();
+		private DescriptiveStatistics statistics = new DescriptiveStatistics();
 		private String queriedString = null;
+		private List<Float> values = new ArrayList<Float>();
 		public List<String> getConditions() {
 			return this.conditions;
 		}
@@ -66,10 +129,10 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		public void setQuery(String query) {
 			this.query = query;
 		}
-		public SummaryStatistics getStatistics() {
+		public DescriptiveStatistics getStatistics() {
 			return this.statistics;
 		}
-		public void setStatistics(SummaryStatistics statistics) {
+		public void setStatistics(DescriptiveStatistics statistics) {
 			this.statistics = statistics;
 		}
 		public List<String> getConditionsStates() {
@@ -90,13 +153,32 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		public void setQueriedString(String queriedString) {
 			this.queriedString = queriedString;
 		}
+		public List<Float> getValues() {
+			return values;
+		}
+		public void setValues(List<Float> values) {
+			this.values = values;
+		}
+		public boolean isToUsePercentileForConfidenceInterval() {
+			return isToUsePercentileForConfidenceInterval;
+		}
+		public void setToUsePercentileForConfidenceInterval(
+				boolean isToUsePercentileForConfidenceInterval) {
+			this.isToUsePercentileForConfidenceInterval = isToUsePercentileForConfidenceInterval;
+		}
 		/**
 		 * @param confidence : Number between 0 and 1 use indicating confidence (as in confidence interval). 
 		 * Use .95 by default.
 		 * @return a confidence interval that can be obtained from {@link #getStatistics()}
 		 */
 		public Entry<Float, Float> getConfidenceInterval(float confidence) {
-			SummaryStatistics statistics = this.getStatistics();
+			DescriptiveStatistics statistics = this.getStatistics();
+			
+			if (isToUsePercentileForConfidenceInterval()) {
+				Float upper = (float) statistics.getPercentile(1-((1-confidence)/2));
+				Float lower = (float) statistics.getPercentile((1-confidence)/2);
+				return Collections.singletonMap(lower, upper).entrySet().iterator().next();
+			}
 			
 			// extract the statistics we need
 			double average = statistics.getMean();
@@ -117,6 +199,14 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			// convert the pair to an instance of Entry.
 			// TODO instantiate an Entry instead of delegating to Map
 			return Collections.singletonMap(lower, upper).entrySet().iterator().next();
+		}
+		
+		public void addValue(float value) {
+			getStatistics().addValue(value);
+			this.getValues().add(value);
+		}
+		public String toString() {
+			return this.getQueriedString();
 		}
 		
 	}
@@ -177,13 +267,6 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		query.setQueriedString(toParse);
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 * @see DirichletUserSimulator#runSingleSimulation(java.util.List, java.io.File, int)
-	 */
-	public void runSingleSimulation(List<PotentialTable> jointProbabilities, File output, int numSimulation) throws IOException {
-		throw new UnsupportedOperationException();
-	}
 
 	
 
@@ -213,6 +296,9 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		if (varNames.isEmpty()) {
 			varNames = getNameList(defaultIndicatorNames);
 			varNames.add(0, DEFAULT_THREAT_NAME);
+			if (isToConsiderDetectors()) {
+				varNames.addAll(getNameList(defaultDetectorNames));
+			}
 		}
 		
 		PotentialTable jointTable = super.getJointTable(null, varNames);
@@ -309,16 +395,49 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			throw new IllegalArgumentException(input.getName() + " is not a valid accessible file/directory.");
 		}
 		
-		// print query results
-		System.out.println("\"Query\",\"Average\",\"Std.Dev.\",\"" + getConfidence() + " C.I., lower bound\",\""+ getConfidence() + " C.I., upper bound\"");
-		for (Query query : getQueries()) {
-			System.out.print("\""+query.getQueriedString()+"\",");
-			System.out.print(query.getStatistics().getMean()+",");
-			System.out.print(query.getStatistics().getStandardDeviation()+",");
-			Entry<Float, Float> ci = query.getConfidenceInterval(getConfidence());
-			System.out.print(ci.getKey()+",");
-			System.out.println(ci.getValue()+",");
+		PrintStream printer = new PrintStream(new FileOutputStream(getOutput(), true));
+		
+		if (isToPrintSummary()) {
+			// print query results
+			printer.println("\"Query\",\"Average\",\"Std.Dev.\",\"" + getConfidence() + " C.I., lower bound\",\""+ getConfidence() + " C.I., upper bound\"");
+			for (Query query : getQueries()) {
+				printer.print("\""+query.getQueriedString()+"\",");
+				printer.print(query.getStatistics().getMean()+",");
+				printer.print(query.getStatistics().getStandardDeviation()+",");
+				Entry<Float, Float> ci = query.getConfidenceInterval(getConfidence());
+				printer.print(ci.getKey()+",");
+				printer.println(ci.getValue()+",");
+			}
+		} else {
+			// print the data
+			// print first line
+			int rowSize = -1;
+			for (Query query : getQueries()) {
+				String label = query.getQueriedString();
+				if (getQueryAlias().containsKey(label)) {
+					label = getQueryAlias().get(label);
+				}
+				printer.print("\""+ label + "\",");
+				
+				// also check number of values for this query
+				int size = query.getValues().size();
+				if (rowSize < 0) {
+					rowSize = size;
+				} else if (rowSize != size) {
+					printer.close();
+					throw new RuntimeException("Found query with " + size + " values, while previous queries had " + rowSize + " values");
+				}
+			}
+			printer.println();
+			for (int row = 0; row < rowSize; row++) {	// use an internal condition to break loop
+				for (Query query : getQueries()) {
+					printer.print(query.getValues().get(row) + ",");
+				}
+				printer.println();
+			}
 		}
+		
+		printer.close();
 	}
 
 	
@@ -450,7 +569,8 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			int[] coord = queryTable.getMultidimensionalCoord(0);
 			coord[0] = queriedStateIndex;
 			coord[1] = conditionStateIndex;
-			query.getStatistics().addValue(queryTable.getValue(coord));
+//			query.getStatistics().addValue(queryTable.getValue(coord));
+			query.addValue(queryTable.getValue(coord));
 		}
 		
 		
@@ -463,9 +583,13 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		CommandLineParser parser = new DefaultParser();
 		Options options = new Options();
 		options.addOption("d","debug", false, "Enables debug mode.");
+		options.addOption("id","problem-id", true, "Name or identification of the current problem (this will be used as suffixes of output file names).");
 		options.addOption("i","input", true, "File or directory to get joint probabilities from.");
+		options.addOption("o","output", true, "File or directory to place output files.");
 		options.addOption("c","confidence", true, "Number between 0 and 1 which denotes confidence (for confidence interval)");
 		options.addOption("q","query", true, "Probabilities in the format of \"P(X=state|Y=state)\" to be queried.");
+		options.addOption("p","percentile", false, "Use percentiles for confidence interval calculation.");
+		options.addOption("s","summary", false, "Print statistical summary instead of probabilities.");
 		options.addOption("h","help", false, "Help.");
 		
 		CommandLine cmd = null;
@@ -487,33 +611,58 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			System.out.println("-c <SOME NUMBER> : number between 0 and 1 which denotes confidence (for confidence interval).");
 			System.out.println("-q <STRING> : queries in the format of \"P(X=state|Y=state)\". Multiple queries can be performed.");
 			System.out.println("-d : Enables debug mode.");
+			System.out.println("-p : use percentiles for confidence interval calculation.");
+			System.out.println("-s : print statistical summary instead of probabilities.");
+			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"Users_RCP1\", \"Users_RCP2\", or \"Users_RCP3\"). "
+					+ "This will be used to set up aliases for questions or to fill queries with default values.");
 			System.out.println("-h: Help.");
 			return;
 		}
 		
-		if (cmd.hasOption("d")) {
-			Debug.setDebug(true);
-		} else {
-			Debug.setDebug(false);
-		}
+		Debug.setDebug(cmd.hasOption("d"));
 		
-		SimulatedUserStatisticsCalculator sim = new SimulatedUserStatisticsCalculator();
+		final SimulatedUserStatisticsCalculator sim = new SimulatedUserStatisticsCalculator();
 		if (cmd.hasOption("i")) {
 			sim.setInput(new File(cmd.getOptionValue("i")));
+		}
+		if (cmd.hasOption("o")) {
+			sim.setOutput(new File(cmd.getOptionValue("o")));
 		}
 		if (cmd.hasOption("c")) {
 			sim.setConfidence(Float.parseFloat(cmd.getOptionValue("c")));
 		}
 		
-		List<Query> queries = new ArrayList<SimulatedUserStatisticsCalculator.Query>();
+		boolean isToUsePercentiles = cmd.hasOption("p");
+		
+		sim.setToPrintSummary(cmd.hasOption("s"));
+		
+		if (cmd.hasOption("id")) {
+			sim.setProblemID(cmd.getOptionValue("id"));
+		}
+		
 		if (cmd.hasOption("q")) {
+			List<Query> queries = new ArrayList<SimulatedUserStatisticsCalculator.Query>();
 			String[] optionValues = cmd.getOptionValues("q");
 			for (String toParse : optionValues) {
 				Query q = new Query();
 				sim.fillQueriedVarAndStates(toParse, q);
-				q.setStatistics(new SummaryStatistics());
+				q.setToUsePercentileForConfidenceInterval(isToUsePercentiles);
 				queries.add(q);
 			}
+			sim.setQueries(queries);
+		} else {
+			List<Query> queries = new ArrayList<SimulatedUserStatisticsCalculator.Query>();
+			for (String toParse : sim.getQueryAlias().keySet()) {
+				Query q = new Query();
+				sim.fillQueriedVarAndStates(toParse, q);
+				q.setToUsePercentileForConfidenceInterval(isToUsePercentiles);
+				queries.add(q);
+			}
+			Collections.sort(queries, new Comparator<Query>() {
+				public int compare(Query o1, Query o2) {
+					return sim.getQueryAlias().get(o1.getQueriedString()).compareTo(sim.getQueryAlias().get(o2.getQueriedString()));
+				}
+			});
 			sim.setQueries(queries);
 		}
 		
@@ -572,6 +721,61 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	public void setToAdd1ToCounts(boolean isToAdd1ToCounts) {
 		this.isToAdd1ToCounts = isToAdd1ToCounts;
 	}
+
+
+	/**
+	 * @return the isToPrintSummary
+	 */
+	public boolean isToPrintSummary() {
+		return isToPrintSummary;
+	}
+
+
+	/**
+	 * @param isToPrintSummary the isToPrintSummary to set
+	 */
+	public void setToPrintSummary(boolean isToPrintSummary) {
+		this.isToPrintSummary = isToPrintSummary;
+	}
+
+
+	/**
+	 * @return the queryAlias
+	 */
+	public Map<String, String> getQueryAlias() {
+		return queryAlias;
+	}
+
+
+	/**
+	 * @param queryAlias the queryAlias to set
+	 */
+	public void setQueryAlias(Map<String, String> queryAlias) {
+		this.queryAlias = queryAlias;
+	}
+
+
+	/*
+	 * (non-Javadoc)
+	 * @see ObjFunctionPrinter#setProblemID(java.lang.String)
+	 */
+	public void setProblemID(String problemID) {
+		super.setProblemID(problemID);
+		
+		String upperCase = problemID.toUpperCase();
+		if (upperCase.contains("RCP2")) {
+			Debug.println("Setting alias for RCP2");
+			this.setQueryAlias(QUERY_ALIAS_RCP2);
+		} else if (upperCase.contains("RCP3")) {
+			Debug.println("Setting alias for RCP3");
+			this.setQueryAlias(QUERY_ALIAS_RCP3);
+		} else {
+			Debug.println("Setting alias for RCP1");
+			this.setQueryAlias(QUERY_ALIAS_RCP1);
+		}
+	}
+
+
 
 
 

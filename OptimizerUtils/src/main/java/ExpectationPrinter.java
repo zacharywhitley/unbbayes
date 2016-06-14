@@ -109,6 +109,9 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		if (varNames ==null) {
 			varNames = getNameList(defaultIndicatorNames);
 			varNames.add(0, DEFAULT_THREAT_NAME);
+			if (isToConsiderDetectors()) {
+				varNames.addAll(getNameList(defaultDetectorNames));
+			}
 		}
 		
 		PotentialTable jointTable = super.getJointTable(null, varNames);
