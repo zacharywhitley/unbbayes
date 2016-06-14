@@ -429,11 +429,19 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 				}
 			}
 			printer.println();
-			for (int row = 0; row < rowSize; row++) {	// use an internal condition to break loop
+			for (int row = 0; row < rowSize; row++) {	
+				String rowToPrint = "";
+				boolean hasNaN = false;
 				for (Query query : getQueries()) {
-					printer.print(query.getValues().get(row) + ",");
+					if (query.getValues().get(row).isNaN()) {
+						hasNaN = true;
+						break;
+					}
+					rowToPrint += (query.getValues().get(row) + ",");
 				}
-				printer.println();
+				if (!hasNaN) {
+					printer.println(rowToPrint);
+				}
 			}
 		}
 		

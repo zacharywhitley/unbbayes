@@ -235,10 +235,13 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		}
 		
 		if (isToPrintChiSquareHeader) {
-			System.out.println("File,Var1,Var2,ChiSquare");
+			System.out.println("File,Var1,Var2,ChiSquare,sumChiSqure");
 		}
 		
+		List<List<String>> temp = new ArrayList<List<String>>();
+		double sumChiSquares = 0;
 		for (int i = 0; i < correlationTables.size(); i++) {
+			List<String> line = new ArrayList<String>();
 			PotentialTable expected = originalCorrelationTables.get(i);
 			PotentialTable observed = correlationTables.get(i);
 			
@@ -249,20 +252,31 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 				throw new IllegalArgumentException("Size of table did not match: " + observed + " = " + observed.tableSize() 
 						+ "; " + expected + " = " + expected.tableSize());
 			}
-			System.out.print(file.getName()+",");
+			
+			line.add(file.getName());
+			
 			for (int j = expected.variableCount()-1; j >= 0; j--) {
 				if (observed.getVariableIndex((Node) expected.getVariableAt(j)) < 0) {
 					throw new IllegalArgumentException(expected.getVariableAt(j) + " not found in observed table: " + observed + " ; " + expected);
 				}
-				System.out.print(expected.getVariableAt(j).getName());
-				if (j > 0) {
-					System.out.print(",");
-				}
+				line.add(expected.getVariableAt(j).getName());
 			}
-			System.out.println("," + this.getChiSqure(observed,expected, isToUseAverageAsExpected()));
+			double chiSquare = this.getChiSqure(observed,expected, isToUseAverageAsExpected());
+			sumChiSquares += chiSquare;
+			line.add(""+chiSquare);
+			temp.add(line);
+		}
+		for (List<String> list : temp) {
+			for (String string : list) {
+				System.out.print(string + ",");
+			}
+			System.out.println(sumChiSquares + ",");
 		}
 		
+		temp = new ArrayList<List<String>>();
+		sumChiSquares = 0;
 		for (int i = 0; i < threatTables.size(); i++) {
+			List<String> line = new ArrayList<String>();
 			PotentialTable expected = originalThreatTables.get(i);
 			PotentialTable observed = threatTables.get(i);
 			
@@ -273,17 +287,23 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 				throw new IllegalArgumentException("Size of table did not match: " + observed + " = " + observed.tableSize() 
 						+ "; " + expected + " = " + expected.tableSize());
 			}
-			System.out.print(file.getName()+",");
+			line.add(file.getName());
 			for (int j = expected.variableCount()-1; j >= 0; j--) {
 				if (observed.getVariableIndex((Node) expected.getVariableAt(j)) < 0) {
 					throw new IllegalArgumentException(expected.getVariableAt(j) + " not found in observed table: " + observed + " ; " + expected);
 				}
-				System.out.print(expected.getVariableAt(j).getName());
-				if (j > 0) {
-					System.out.print(",");
-				}
+				line.add(expected.getVariableAt(j).getName());
 			}
-			System.out.println("," + this.getChiSqure(observed,expected, isToUseAverageAsExpected()));
+			double chiSquare = this.getChiSqure(observed,expected, isToUseAverageAsExpected());
+			sumChiSquares += chiSquare;
+			line.add(""+chiSquare);
+			temp.add(line);
+		}
+		for (List<String> list : temp) {
+			for (String string : list) {
+				System.out.print(string + ",");
+			}
+			System.out.println(sumChiSquares + ",");
 		}
 		
 	}
@@ -418,7 +438,12 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		options.addOption("id","problem-id", true, "Name or identification of the current problem (this will be used as suffixes of output file names).");
 		options.addOption("d","debug", false, "Enables debug mode.");
 		options.addOption("i","input", true, "File or directory to get joint probabilities from.");
+//		options.addOption("o","output", true, "File or directory to write results.");
+		options.addOption("c","correlation-num", true, "Size of population in correlation table.");
+		options.addOption("t","threat-num", true, "Size of population in threat table.");
 		options.addOption("h","help", false, "Help.");
+		options.addOption("f","full", false, "Use full domain size (includes detector) instead of using a subset (only indicators).");
+		options.addOption("e","expectation", false, "Print expectation table as well.");
 		
 		CommandLine cmd = null;
 		try {
@@ -438,6 +463,10 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"Users_RCP1\", \"Users_RCP2\", or \"Users_RCP3\"). "
 					+ "This will be used as suffixes of output file names");
 			System.out.println("-d : Enables debug mode.");
+			System.out.println("-c : size of population in correlation table.");
+			System.out.println("-t : size of population in threat table.");
+			System.out.println("-f : use full domain size (includes detector) instead of using a subset (only indicators).");
+			System.out.println("-e : print expectation table as well.");
 			System.out.println("-h: Help.");
 			return;
 		}
@@ -448,7 +477,10 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 			Debug.setDebug(false);
 		}
 		
+		
+		
 		ExpectationPrinter printer = new ExpectationPrinter();
+		printer.setToConsiderDetectors(cmd.hasOption("f"));
 		if (cmd.hasOption("id")) {
 			printer.setProblemID(cmd.getOptionValue("id"));
 		}
@@ -464,6 +496,8 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		if (cmd.hasOption("t")) {
 			numPopulationCorrelationTable = Integer.parseInt(cmd.getOptionValue("t"));
 		}
+		
+		printer.setToPrintExpectationTable(cmd.hasOption("e"));
 		
 		try {
 			printer.printExpectationFromFile(new File(printer.getDefaultJointProbabilityInputFileName()), 
