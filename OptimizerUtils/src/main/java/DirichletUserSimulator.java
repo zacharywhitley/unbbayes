@@ -67,7 +67,6 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	 * Default constructor is kept protected to avoid instantiation, but to allow inheritance.
 	 */
 	protected DirichletUserSimulator() {
-//		this.setToConsiderDetectors(false);
 	}
 	
 	/**
@@ -379,6 +378,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		options.addOption("id","problem-id", true, "Name or identification of the current problem (this will be used as suffixes of output file names).");
 		options.addOption("d","debug", false, "Enables debug mode.");
 		options.addOption("a","alert", true, "Whether to print alert and how many detectors to consider in alert.");
+		options.addOption("s","short", false, "Short version (does not consider detectors).");
 		options.addOption("h","help", false, "Help.");
 		
 		CommandLine cmd = null;
@@ -402,6 +402,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"Users_RCP1\", \"Users_RCP2\", or \"Users_RCP3\"). "
 					+ "This will be used as suffixes of output file names");
 			System.out.println("-d : Enables debug mode.");
+			System.out.println("-s : short version (does not consider detectors).");
 			System.out.println("-a <SOME NUMBER> : whether to print alert and how many detectors to consider in alert.");
 			System.out.println("-h: Help.");
 			return;
@@ -414,6 +415,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		}
 		
 		DirichletUserSimulator sim = DirichletUserSimulator.getInstance();
+		sim.setToConsiderDetectors(!cmd.hasOption("s"));
 		if (cmd.hasOption("u")) {
 			sim.setNumUsers(Integer.parseInt(cmd.getOptionValue("u")));
 		}
@@ -432,6 +434,8 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		if (cmd.hasOption("a")) {
 			sim.setToPrintAlert(true);
 			sim.setCountAlert(Integer.parseInt(cmd.getOptionValue("a")));
+		} else {
+			sim.setToPrintAlert(false);
 		}
 
 		
