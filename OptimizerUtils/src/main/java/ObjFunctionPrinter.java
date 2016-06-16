@@ -733,7 +733,7 @@ public class ObjFunctionPrinter {
 	 * @param detectorNameList
 	 * @return
 	 */
-	public Collection<PotentialTable> getDetectorTables(Map<String, INode> variableMap, int[][][] tables,
+	public List<PotentialTable> getDetectorTables(Map<String, INode> variableMap, int[][][] tables,
 			List<String> indicatorNameList, List<String> detectorNameList) {
 		if (detectorNameList == null || detectorNameList.isEmpty()) {
 			return Collections.EMPTY_LIST;
@@ -742,14 +742,18 @@ public class ObjFunctionPrinter {
 			throw new IllegalArgumentException("List of detectors and indicators must be of same size: " + detectorNameList + " ; " + indicatorNameList);
 		}
 		
-		if (tables.length != detectorNameList.size()) {
+		if (tables != null
+				&& tables.length != detectorNameList.size()) {
 			throw new IllegalArgumentException("Number of tables of detector frequencies is expected to be: " + detectorNameList.size() + ", but was " + tables.length);
 		}
 		
 		List<PotentialTable> ret = new ArrayList<PotentialTable>(); 
 		
-		for (int i=0; i < tables.length; i++) {
-			int[][] matrix = tables[i];
+		for (int i=0; i < detectorNameList.size(); i++) {
+			int[][] matrix = null;
+			if (tables != null) {
+				matrix = tables[i];
+			}
 			String rowName = indicatorNameList.get(i);
 			String columnName = detectorNameList.get(i);
 			
