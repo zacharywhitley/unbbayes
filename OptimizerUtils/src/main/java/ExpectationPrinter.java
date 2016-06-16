@@ -35,7 +35,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	
 	public static final int DEFAULT_NUM_POPULATION_CORRELATION_TABLE = 4267;
 
-	public static final int DEFAULT_NUM_POPULATION_THREAT_TABLE = 3804;
+	public static final int DEFAULT_NUM_POPULATION_RCP_TABLE = 3804;
 	
 	private String probabilityColumnName = "NLP OUT";
 	
@@ -134,6 +134,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 			cellsRead++;
 		}
 		if (cellsRead != jointTable.tableSize()) {
+			reader.close();
 			throw new RuntimeException("Cells read = " + cellsRead);
 		}
 		
@@ -146,15 +147,16 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	/**
 	 * 
 	 * @param file
-	 * @param isToPrintChiSquareHeader 
-	 * @param defaultIndicatorNames
-	 * @param defaultDetectorNames
-	 * @param DEFAULT_THREAT_NAME
-	 * @return
-	 * @throws IOException 
+	 * @param indicatorNames
+	 * @param detectorNames
+	 * @param threatName
+	 * @param numPopulationCorrelation
+	 * @param numPopulationRCP
+	 * @param isToPrintChiSquareHeader
+	 * @throws IOException
 	 */
 	public void printExpectationFromFile(File file, String[] indicatorNames, String[] detectorNames, String threatName, 
-			int numPopulationCorrelation, int numPopulationThreat, boolean isToPrintChiSquareHeader) throws IOException {
+			int numPopulationCorrelation, int numPopulationRCP, boolean isToPrintChiSquareHeader) throws IOException {
 		
 		// if it is a directory, read all files in the directory
 		if (file.isDirectory()) {
@@ -165,7 +167,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 				}
 			});
 			for (File internalFile : files) {
-				this.printExpectationFromFile(internalFile, indicatorNames, detectorNames, threatName, numPopulationCorrelation, numPopulationThreat, isToPrintChiSquareHeader);
+				this.printExpectationFromFile(internalFile, indicatorNames, detectorNames, threatName, numPopulationCorrelation, numPopulationRCP, isToPrintChiSquareHeader);
 				isToPrintChiSquareHeader = false;	// don't print the header next time
 			}
 			return;
@@ -179,13 +181,15 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		}
 		
 		List<String> indicatorNameList = this.getNameList(indicatorNames);
-//		List<String> detectorNameList = this.getNameList(detectorNames);
+		List<String> detectorNameList = this.getNameList(detectorNames);
 		List<PotentialTable> correlationTables = this.getCorrelationTables(variableMap , null, indicatorNameList);
-		List<PotentialTable> threatTables = this.getThreatTables(variableMap , null, indicatorNameList, threatName);
+		correlationTables.addAll(this.getCorrelationTables(variableMap , null, detectorNameList));
 		
+		List<PotentialTable> rcpTables = this.getThreatTables(variableMap , null, indicatorNameList, threatName);
+		rcpTables.addAll(this.getDetectorTables(variableMap, null, indicatorNameList, detectorNameList));
 		
 		List<PotentialTable> tables = new ArrayList<PotentialTable>(correlationTables) ;
-		tables.addAll(threatTables);
+		tables.addAll(rcpTables);
 		
 		// get probabilities of each smaller tables
 		this.fillTablesFromJointProbability(tables, jointTable);
@@ -210,9 +214,9 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 				table.setValue(i, table.getValue(i) * numPopulationCorrelation);
 			}
 		}
-		for (PotentialTable table : threatTables) {
+		for (PotentialTable table : rcpTables) {
 			for (int i = 0; i < table.tableSize(); i++) {
-				table.setValue(i, table.getValue(i) * numPopulationThreat);
+				table.setValue(i, table.getValue(i) * numPopulationRCP);
 			}
 		}
 		
@@ -225,13 +229,15 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		
 		
 		List<PotentialTable> originalCorrelationTables = this.getCorrelationTables(variableMap, indicatorCorrelations, indicatorNameList);
-		List<PotentialTable> originalThreatTables = this.getThreatTables(variableMap , threatIndicatorMatrix, indicatorNameList, threatName);
+		originalCorrelationTables.addAll(this.getCorrelationTables(variableMap, detectorCorrelations, detectorNameList));
+		List<PotentialTable> originalRCPTables = this.getThreatTables(variableMap , threatIndicatorMatrix, indicatorNameList, threatName);
+		originalRCPTables.addAll(this.getDetectorTables(variableMap, detectorIndicatorMatrix, indicatorNameList, detectorNameList));
 		
 		if (correlationTables.size() != originalCorrelationTables.size()) {
 			throw new IllegalArgumentException("Number of correlation tables did not match.");
 		}
-		if (threatTables.size() != originalThreatTables.size()) {
-			throw new IllegalArgumentException("Number of threat-indicator tables did not match.");
+		if (rcpTables.size() != originalRCPTables.size()) {
+			throw new IllegalArgumentException("Total number of threat-indicator and indicator-detector tables did not match.");
 		}
 		
 		if (isToPrintChiSquareHeader) {
@@ -275,10 +281,10 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		
 		temp = new ArrayList<List<String>>();
 		sumChiSquares = 0;
-		for (int i = 0; i < threatTables.size(); i++) {
+		for (int i = 0; i < rcpTables.size(); i++) {
 			List<String> line = new ArrayList<String>();
-			PotentialTable expected = originalThreatTables.get(i);
-			PotentialTable observed = threatTables.get(i);
+			PotentialTable expected = originalRCPTables.get(i);
+			PotentialTable observed = rcpTables.get(i);
 			
 			if (expected.variableCount() != observed.variableCount()) {
 				throw new IllegalArgumentException("Number of variables in table did not match: " + observed + " ; " + expected);
@@ -440,7 +446,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		options.addOption("i","input", true, "File or directory to get joint probabilities from.");
 //		options.addOption("o","output", true, "File or directory to write results.");
 		options.addOption("c","correlation-num", true, "Size of population in correlation table.");
-		options.addOption("t","threat-num", true, "Size of population in threat table.");
+		options.addOption("r","rcp-num", true, "Size of population in tables in RCP problem document.");
 		options.addOption("h","help", false, "Help.");
 		options.addOption("f","full", false, "Use full domain size (includes detector) instead of using a subset (only indicators).");
 		options.addOption("e","expectation", false, "Print expectation table as well.");
@@ -464,7 +470,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 					+ "This will be used as suffixes of output file names");
 			System.out.println("-d : Enables debug mode.");
 			System.out.println("-c : size of population in correlation table.");
-			System.out.println("-t : size of population in threat table.");
+			System.out.println("-r : size of population in tables in RCP problem document.");
 			System.out.println("-f : use full domain size (includes detector) instead of using a subset (only indicators).");
 			System.out.println("-e : print expectation table as well.");
 			System.out.println("-h: Help.");
@@ -492,16 +498,16 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		if (cmd.hasOption("c")) {
 			numPopulationCorrelationTable = Integer.parseInt(cmd.getOptionValue("c"));
 		}
-		int numPopulationThreatTable = DEFAULT_NUM_POPULATION_THREAT_TABLE;
-		if (cmd.hasOption("t")) {
-			numPopulationCorrelationTable = Integer.parseInt(cmd.getOptionValue("t"));
+		int numPopulationRCPTable = DEFAULT_NUM_POPULATION_RCP_TABLE;
+		if (cmd.hasOption("r")) {
+			numPopulationCorrelationTable = Integer.parseInt(cmd.getOptionValue("r"));
 		}
 		
 		printer.setToPrintExpectationTable(cmd.hasOption("e"));
 		
 		try {
 			printer.printExpectationFromFile(new File(printer.getDefaultJointProbabilityInputFileName()), 
-					defaultIndicatorNames, defaultDetectorNames, DEFAULT_THREAT_NAME, numPopulationCorrelationTable, numPopulationThreatTable, true);
+					defaultIndicatorNames, defaultDetectorNames, DEFAULT_THREAT_NAME, numPopulationCorrelationTable, numPopulationRCPTable, true);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
