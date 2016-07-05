@@ -109,7 +109,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	}
 	
 	public static class Query {
-		private boolean isToUsePercentileForConfidenceInterval = false;
+		private boolean isToUsePercentileForConfidenceInterval = true;
 		private List<String> conditions = Collections.emptyList();
 		private List<String> conditionsStates = Collections.emptyList();
 		private String query = "";
@@ -171,12 +171,12 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		 * Use .95 by default.
 		 * @return a confidence interval that can be obtained from {@link #getStatistics()}
 		 */
-		public Entry<Float, Float> getConfidenceInterval(float confidence) {
+		public Entry<Float, Float> getInterval(float confidence) {
 			DescriptiveStatistics statistics = this.getStatistics();
 			
 			if (isToUsePercentileForConfidenceInterval()) {
-				Float upper = (float) statistics.getPercentile(1-((1-confidence)/2));
-				Float lower = (float) statistics.getPercentile((1-confidence)/2);
+				Float upper = (float) statistics.getPercentile((confidence+((1-confidence)/2)) * 100);
+				Float lower = (float) statistics.getPercentile(((1-confidence)/2) * 100);
 				return Collections.singletonMap(lower, upper).entrySet().iterator().next();
 			}
 			
@@ -202,6 +202,10 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		}
 		
 		public void addValue(float value) {
+			if (Float.isNaN(value)) {
+				Debug.println(getClass(), "Found NaN in " + this);
+				return;
+			}
 			getStatistics().addValue(value);
 			this.getValues().add(value);
 		}
@@ -399,12 +403,17 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		
 		if (isToPrintSummary()) {
 			// print query results
-			printer.println("\"Query\",\"Average\",\"Std.Dev.\",\"" + getConfidence() + " C.I., lower bound\",\""+ getConfidence() + " C.I., upper bound\"");
+			printer.println("\"Query\",\"Average\",\"Std.Dev.\",\"Median\",\"" + getConfidence() + " lower\",\""+ getConfidence() + " upper\"");
 			for (Query query : getQueries()) {
-				printer.print("\""+query.getQueriedString()+"\",");
+				String label = query.getQueriedString();
+				if (getQueryAlias().containsKey(label)) {
+					label = getQueryAlias().get(label);
+				}
+				printer.print("\""+label+"\",");
 				printer.print(query.getStatistics().getMean()+",");
 				printer.print(query.getStatistics().getStandardDeviation()+",");
-				Entry<Float, Float> ci = query.getConfidenceInterval(getConfidence());
+				printer.print(query.getStatistics().getPercentile(50)+",");
+				Entry<Float, Float> ci = query.getInterval(getConfidence());
 				printer.print(ci.getKey()+",");
 				printer.println(ci.getValue()+",");
 			}

@@ -62,6 +62,8 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	private boolean isToPrintAlert = true;
 	private int countAlert = 2;
 	
+	private boolean isToUseDirichletMultinomial = true;
+	
 
 	/**
 	 * Default constructor is kept protected to avoid instantiation, but to allow inheritance.
@@ -139,19 +141,13 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		// randomly choose a joint prob distribution (assuming uniform distribution)
 		PotentialTable table = jointProbabilities.get(random.nextInt(jointProbabilities.size()));
 		
-		// calculate dirichlet parameters as expectations from current joint probability
-		double[] alphas = new double[table.tableSize()];
-		for (int i = 0; i < alphas.length; i++) {
-			alphas[i] = numSimulation * table.getValue(i);
-		}
-		
+		// extract name of variables to be used to calculate the value of the alert variable
 		List<String> alertVars = getNameList(defaultDetectorNames);
 		if (alertVars.isEmpty()) {
 			alertVars = getNameList(defaultIndicatorNames);
 		}
 		
-		// instantiate a dirichlet sampler
-		// initialize dictionary of states of dirichlet sampler
+		// initialize dictionary of states of sampler
 		Object[] jointStates = new Object[table.tableSize()];
 		for (int i = 0; i < jointStates.length; i++) {
 			int[] states = table.getMultidimensionalCoord(i);
@@ -180,17 +176,35 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			}
 			jointStates[i] = csvLine;
 		}
-		Dirichlet dirichlet = new Dirichlet(alphas, new Alphabet(jointStates));
+		Alphabet dictionary = new Alphabet(jointStates);
 		
-		
-		// sample dirichlet distribution
-		double[] distribution = dirichlet.nextDistribution();
-		
+		double[] distribution = null;
+		if (isToUseDirichletMultinomial()) {
+			// calculate dirichlet parameters as expectations from current joint probability
+			double[] alphas = new double[table.tableSize()];
+			for (int i = 0; i < alphas.length; i++) {
+				alphas[i] = numSimulation * table.getValue(i);
+			}
+			
+			
+			// instantiate a dirichlet sampler
+			Dirichlet dirichlet = new Dirichlet(alphas, dictionary);
+			
+			
+			// sample dirichlet distribution
+			distribution = dirichlet.nextDistribution();
+		} else {
+			// sample directly from original distribution
+			distribution = new double[table.tableSize()];
+			for (int i = 0; i < distribution.length; i++) {
+				distribution[i] = table.getValue(i);
+			}
+		}
 		
 		// generate and print samples
 		for (int i = 0; i < numSimulation; i++) {
 			// generate sample, use alphabet (dictionary) to translate it to joint state, and then print joint state
-			printer.println(dirichlet.getAlphabet().lookupObject(random.nextDiscrete(distribution)));
+			printer.println(dictionary.lookupObject(random.nextDiscrete(distribution)));
 		}
 		
 		printer.close();
@@ -380,6 +394,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		options.addOption("a","alert", true, "Whether to print alert and how many detectors to consider in alert.");
 		options.addOption("s","short", false, "Short version (does not consider detectors).");
 		options.addOption("h","help", false, "Help.");
+		options.addOption("q","quick", false, "Quick sampling (does not use dirichlet multinomial sampling).");
 		
 		CommandLine cmd = null;
 		try {
@@ -405,6 +420,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			System.out.println("-s : short version (does not consider detectors).");
 			System.out.println("-a <SOME NUMBER> : whether to print alert and how many detectors to consider in alert.");
 			System.out.println("-h: Help.");
+			System.out.println("-q: quick sampling (does not use dirichlet multinomial sampling).");
 			return;
 		}
 		
@@ -416,6 +432,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		
 		DirichletUserSimulator sim = DirichletUserSimulator.getInstance();
 		sim.setToConsiderDetectors(!cmd.hasOption("s"));
+		sim.setToUseDirichletMultinomial(!cmd.hasOption("q"));
 		if (cmd.hasOption("u")) {
 			sim.setNumUsers(Integer.parseInt(cmd.getOptionValue("u")));
 		}
@@ -531,6 +548,21 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	 */
 	public void setCountAlert(int countAlert) {
 		this.countAlert = countAlert;
+	}
+
+	/**
+	 * @return the isToUseDirichletMultinomial
+	 */
+	public boolean isToUseDirichletMultinomial() {
+		return isToUseDirichletMultinomial;
+	}
+
+	/**
+	 * @param isToUseDirichletMultinomial the isToUseDirichletMultinomial to set
+	 */
+	public void setToUseDirichletMultinomial(boolean isToUseDirichletMultinomial) {
+		this.isToUseDirichletMultinomial = isToUseDirichletMultinomial;
+		Debug.println("Dirichlet multinomial sampling mode: " + (isToUseDirichletMultinomial?"on":"off"));
 	}
 
 
