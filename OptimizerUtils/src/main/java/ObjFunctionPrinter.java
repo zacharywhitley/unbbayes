@@ -1,5 +1,8 @@
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,11 +20,17 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import unbbayes.io.DneIO;
+import unbbayes.io.FileExtensionIODelegator;
+import unbbayes.io.NetIO;
+import unbbayes.io.XMLBIFIO;
+import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.prs.id.UtilityNode;
 import unbbayes.util.Debug;
 
 
@@ -43,6 +52,10 @@ public class ObjFunctionPrinter {
 	private boolean isToSubtract1WayLikelihood = true;
 	
 	private boolean isToConsiderDetectors = true;
+	
+	private String auxiliaryTableDirectoryName = null;
+	private String primaryTableDirectoryName = null;
+	
 	
 	public static final String DEFAULT_THREAT_NAME = "Threat";
 	
@@ -690,6 +703,122 @@ public class ObjFunctionPrinter {
 				ret.add(table);
 			}
 		}
+		return ret;
+	}
+	
+	/**
+	 * @param variableMap : this is used to reuse node variables by name. If empty, nothing will be returned.
+	 * Any variable not contained in this map will be considered as invalid input.
+	 * If negative numbers is found in tables, it will be ignored.
+	 * @param file : it may be either a network file (.net, .xml, .dne), or a directory containing network files.
+	 * @return : non empty list of tables
+	 * @throws IOException 
+	 */
+	public List<PotentialTable> getTablesFromNetFile( Map<String, INode> variableMap, File file) throws IOException {
+		if (variableMap == null || variableMap.isEmpty()) {
+			return Collections.EMPTY_LIST;
+		}
+		if (file == null || !file.exists()) {
+			return Collections.EMPTY_LIST;
+		}
+		
+		
+		List<PotentialTable> ret = new ArrayList<PotentialTable>();
+		
+		if (file.isDirectory()) {
+			// read files in directory
+			for (File input : file.listFiles()) {
+				// recursively read files
+				ret.addAll(this.getTablesFromNetFile(variableMap, input));
+			}
+		} else {
+			// this is a single file
+
+			// prepare an I/O class which delegates to proper I/O class accordingly to file extension
+			FileExtensionIODelegator fileReader = FileExtensionIODelegator.newInstance();
+			fileReader.getDelegators().add(new NetIO());
+			fileReader.getDelegators().add(new XMLBIFIO());
+			fileReader.getDelegators().add(new DneIO());
+			
+			// load the network file
+			Graph graph = fileReader.load(file);
+			
+			for (Node node : graph.getNodes()) {
+				PotentialTable inputTable = null;
+				if (node instanceof ProbabilisticNode) {
+					inputTable = ((ProbabilisticNode) node).getProbabilityFunction();
+				} else if (node instanceof UtilityNode) {
+					inputTable = ((UtilityNode) node).getProbabilityFunction();
+				}
+				
+				// fill output table
+				PotentialTable outputTable = new ProbabilisticTable();
+				
+				// fill variables, but use nodes in variableMap
+				for (int varIndex = 0; varIndex < inputTable.getVariablesSize(); varIndex++) {
+					// get node with same name from map
+					INode mappedNode = variableMap.get(inputTable.getVariableAt(varIndex).getName());
+					// checking existence
+					if (mappedNode == null) {
+						throw new IOException(inputTable.getVariableAt(varIndex).getName() + " is an unknown variable.");
+					}
+					// check number of states
+					if (mappedNode.getStatesSize() != inputTable.getVariableAt(varIndex).getStatesSize()) {
+						throw new IOException("Expected size of " + mappedNode.getName() + " is " + mappedNode.getStatesSize() 
+								+ ", but was " + inputTable.getVariableAt(varIndex).getStatesSize());
+					}
+					// check that i-th state of mapped node is equal to i-th state of node in file
+					for (int stateIndex = 0; stateIndex < mappedNode.getStatesSize(); stateIndex++) {
+						if (mappedNode.getStateAt(stateIndex).equalsIgnoreCase("true")
+								|| mappedNode.getStateAt(stateIndex).equalsIgnoreCase("yes")
+								|| mappedNode.getStateAt(stateIndex).equalsIgnoreCase("1")) {
+							// check if respective state in file is also true/yes/1
+							if (!(inputTable.getVariableAt(varIndex).getStateAt(stateIndex).equalsIgnoreCase("true")
+									|| inputTable.getVariableAt(varIndex).getStateAt(stateIndex).equalsIgnoreCase("yes")
+									|| inputTable.getVariableAt(varIndex).getStateAt(stateIndex).equalsIgnoreCase("1"))) {
+								throw new IOException("State " + stateIndex + " of " + mappedNode.getName() + " is expected to be " + mappedNode.getStateAt(stateIndex)
+										+ ", but found " + inputTable.getVariableAt(varIndex).getStateAt(stateIndex));
+							}
+						} else if (mappedNode.getStateAt(stateIndex).equalsIgnoreCase("false")
+								|| mappedNode.getStateAt(stateIndex).equalsIgnoreCase("no")
+								|| mappedNode.getStateAt(stateIndex).equalsIgnoreCase("0")) {
+							// check if respective state in file is also false/no/0
+							if (!(inputTable.getVariableAt(varIndex).getStateAt(stateIndex).equalsIgnoreCase("false")
+									|| inputTable.getVariableAt(varIndex).getStateAt(stateIndex).equalsIgnoreCase("no")
+									|| inputTable.getVariableAt(varIndex).getStateAt(stateIndex).equalsIgnoreCase("0"))) {
+								throw new IOException("State " + stateIndex + " of " + mappedNode.getName() + " is expected to be " + mappedNode.getStateAt(stateIndex)
+										+ ", but found " + inputTable.getVariableAt(varIndex).getStateAt(stateIndex));
+							}
+						}
+					}
+					
+					// if everything is file, add variable to new table
+					outputTable.addVariable(mappedNode);
+				}
+				
+				// check consistency of table size
+				if (inputTable.tableSize() != outputTable.tableSize()) {
+					throw new RuntimeException("Table sizes are diverging... Input = " + inputTable.tableSize() + "; output = " + outputTable.tableSize());
+				}
+				
+				// fill values, but check if there is invalid values
+				boolean hasInvalid = false;
+				// at this point, table sizes are supposedly equal
+				for (int i = 0; i < inputTable.tableSize(); i++) {
+					int value = (int) inputTable.getValue(i);
+					if (value < 0) {
+						hasInvalid = true;
+						break;
+					}
+					outputTable.setValue(i, value);
+				}
+				
+				if (!hasInvalid) {
+					ret.add(outputTable);
+				}
+			}
+		}
+		
 		return ret;
 	}
 	
@@ -1381,11 +1510,12 @@ public class ObjFunctionPrinter {
 	
 	
 	/**
+	 * @throws FileNotFoundException 
 	 * @see #printAll(String[], String[], String, int[][][], int[][][], int[][][], int[][][], PrintStream)
 	 */
 	public void printAll(String[] indicatorNames, String[] detectorNames, String threatName,
 			int[][][] indicatorCorrelations, int[][][] detectorCorrelations,
-			int[][][] threatIndicatorMatrix, int[][][] detectorIndicatorMatrix){
+			int[][][] threatIndicatorMatrix, int[][][] detectorIndicatorMatrix) throws IOException{
 		this.printAll(indicatorNames, detectorNames, threatName, indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix, null);
 	}
 	
@@ -1394,16 +1524,17 @@ public class ObjFunctionPrinter {
 	 * @param defaultIndicatorNames
 	 * @param defaultDetectorNames
 	 * @param DEFAULT_THREAT_NAME
-	 * @param indicatorCorrelations
-	 * @param detectorCorrelations
-	 * @param threatIndicatorMatrix
-	 * @param detectorIndicatorMatrix
+	 * @param indicatorCorrelationsMatrix
+	 * @param detectorCorrelationsMatrix
+	 * @param threatIndicatorTableMatrix
+	 * @param detectorIndicatorTableMatrix
 	 * @param printer
+	 * @throws FileNotFoundException 
 	 */
 	public void printAll(String[] indicatorNames, String[] detectorNames, String threatName,
-			int[][][] indicatorCorrelations, int[][][] detectorCorrelations,
-			int[][][] threatIndicatorMatrix, int[][][] detectorIndicatorMatrix ,
-			PrintStream printer){
+			int[][][] indicatorCorrelationsMatrix, int[][][] detectorCorrelationsMatrix,
+			int[][][] threatIndicatorTableMatrix, int[][][] detectorIndicatorTableMatrix ,
+			PrintStream printer) throws IOException{
 
 		if (printer == null) {
 			printer = System.out;
@@ -1421,11 +1552,24 @@ public class ObjFunctionPrinter {
 		
 		PotentialTable jointTable = this.getJointTable(variableMap, allVariableList );
 		
-		List<PotentialTable> primaryTables = this.getCorrelationTables(variableMap , indicatorCorrelations, indicatorNameList);
-		primaryTables.addAll(this.getCorrelationTables(variableMap , detectorCorrelations, detectorNameList));
+		List<PotentialTable> primaryTables = null;
+		if (getPrimaryTableDirectoryName() != null &&  !getPrimaryTableDirectoryName().trim().isEmpty()) {
+			primaryTables = this.getTablesFromNetFile(variableMap , new File(getPrimaryTableDirectoryName()));
+		} else {
+			primaryTables = this.getCorrelationTables(variableMap , indicatorCorrelationsMatrix, indicatorNameList);
+			primaryTables.addAll(this.getCorrelationTables(variableMap , detectorCorrelationsMatrix, detectorNameList));
+		}
 		
-		List<PotentialTable> auxiliaryTables = this.getThreatTables(variableMap , threatIndicatorMatrix, indicatorNameList, threatName);
-		auxiliaryTables.addAll(this.getDetectorTables(variableMap , detectorIndicatorMatrix, indicatorNameList, detectorNameList));
+		
+		List<PotentialTable> auxiliaryTables = null;
+		if (getAuxiliaryTableDirectoryName() != null &&  !getAuxiliaryTableDirectoryName().trim().isEmpty()) {
+			auxiliaryTables = this.getTablesFromNetFile(variableMap , new File(getAuxiliaryTableDirectoryName()));
+		} else {
+			auxiliaryTables = this.getThreatTables(variableMap , threatIndicatorTableMatrix, indicatorNameList, threatName);
+			auxiliaryTables.addAll(this.getDetectorTables(variableMap , detectorIndicatorTableMatrix, indicatorNameList, detectorNameList));
+		}
+		
+		
 		
 		printer.println(this.getObjFunction(primaryTables, auxiliaryTables, jointTable));
 		
@@ -1448,6 +1592,7 @@ public class ObjFunctionPrinter {
 	
 	
 
+
 	/**
 	 * @param args
 	 */
@@ -1458,7 +1603,13 @@ public class ObjFunctionPrinter {
 		Options options = new Options();
 		options.addOption("id","problem-id", true, "Name or identification of the current problem (this will be used as suffixes of output file names).");
 		options.addOption("i","indicator-only", false, "Use indicator tables, and do not use detectors.");
+		options.addOption("out","output", true, "Output file.");
 		options.addOption("d","debug", false, "Enables debug mode.");
+		options.addOption("primary","primary-tables", true, "Where to read primary tables from.");
+		options.addOption("aux","auxiliary-tables", true, "Where to read primary tables from.");
+		options.addOption("inames","indicator-names", true, "Comma-separated names of indicators.");
+		options.addOption("dnames","detector-names", true, "Comma-separated names of detectors.");
+		options.addOption("threat","threat-name", true, "Name of threat variable.");
 		options.addOption("h","help", false, "Help.");
 		
 		CommandLine cmd = null;
@@ -1476,8 +1627,15 @@ public class ObjFunctionPrinter {
 		
 		if (cmd.hasOption("h")) {
 			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"RCP1\", \"RCP2\", or \"RCP3\").");
+			System.out.println("-out <SOME NAME> : file to print output.");
+			System.out.println("-i : Use indicator tables, and do not use detectors.");
 			System.out.println("-d : Enables debug mode.");
 			System.out.println("-h: Help.");
+			System.out.println("-primary : where to read primary tables from.");
+			System.out.println("-aux : where to read auxiliary tables from.");
+			System.out.println("-inames : Comma-separated names of indicators.");
+			System.out.println("-dnames : Comma-separated names of detectors.");
+			System.out.println("-threat : Name of threat variable.");
 			return;
 		}
 		
@@ -1489,15 +1647,53 @@ public class ObjFunctionPrinter {
 		
 		ObjFunctionPrinter printer = new ObjFunctionPrinter();
 		
+//		if (cmd.hasOption("data")) {
+//			printer.setToPrintDataOnly(true);
+//		}
+		
 		printer.setToConsiderDetectors(!cmd.hasOption("i"));
 		
 		if (cmd.hasOption("id")) {
 			printer.setProblemID(cmd.getOptionValue("id"));
 		}
 		
-		printer.printAll(defaultIndicatorNames, defaultDetectorNames, DEFAULT_THREAT_NAME, 
-				indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix);
+		PrintStream ps = System.out;
+		if (cmd.hasOption("out")) {
+			try {
+				ps = new PrintStream(new File(cmd.getOptionValue("out")));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+				ps = System.out;
+			}
+		}
 		
+		if (cmd.hasOption("primary")) {
+			printer.setPrimaryTableDirectoryName(cmd.getOptionValue("primary"));
+		}
+		if (cmd.hasOption("aux")) {
+			printer.setAuxiliaryTableDirectoryName(cmd.getOptionValue("aux"));
+		}
+		
+		if (cmd.hasOption("inames")) {
+			defaultIndicatorNames = cmd.getOptionValue("inames").split("[,:]");
+		}
+		if (cmd.hasOption("dnames")) {
+			defaultDetectorNames = cmd.getOptionValue("dnames").split("[,:]");
+		}
+		
+		String threatName = DEFAULT_THREAT_NAME;
+		if (cmd.hasOption("threat")) {
+			threatName = cmd.getOptionValue("threat");
+		}
+		
+		try {
+			printer.printAll(defaultIndicatorNames, defaultDetectorNames, threatName, 
+					indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix, 
+					ps);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 	}
 
@@ -1691,7 +1887,7 @@ public class ObjFunctionPrinter {
 			this.detectorIndicatorMatrix = detectorIndicatorMatrix3;
 			this.defaultIndicatorNames = DEFAULT_INDICATOR_NAMES3;
 			this.defaultDetectorNames = DEFAULT_DETECTOR_NAMES3;
-		} else {
+		} else if (upperCase.contains("RCP1")) {
 			Debug.println("Using variable sets of RCP1");
 			this.indicatorCorrelations = indicatorCorrelations1;
 			this.detectorCorrelations = detectorCorrelations1;
@@ -1699,6 +1895,12 @@ public class ObjFunctionPrinter {
 			this.detectorIndicatorMatrix = detectorIndicatorMatrix1;
 			this.defaultIndicatorNames = DEFAULT_INDICATOR_NAMES1;
 			this.defaultDetectorNames = DEFAULT_DETECTOR_NAMES1;
+		} else {
+			Debug.println("Resetting RCP variable sets");
+			this.indicatorCorrelations = null;
+			this.detectorCorrelations = null;
+			this.threatIndicatorMatrix = null;
+			this.detectorIndicatorMatrix = null;
 		}
 		
 		if (!isToConsiderDetectors()){
@@ -1741,6 +1943,36 @@ public class ObjFunctionPrinter {
 			Map<String, String> primaryTableSpecialCasesWeightSymbol) {
 		this.primaryTableSpecialCasesWeightSymbol = primaryTableSpecialCasesWeightSymbol;
 	}
+
+	/**
+	 * @return the auxiliaryTableDirectoryName
+	 */
+	public String getAuxiliaryTableDirectoryName() {
+		return auxiliaryTableDirectoryName;
+	}
+
+	/**
+	 * @param auxiliaryTableDirectoryName the auxiliaryTableDirectoryName to set
+	 */
+	public void setAuxiliaryTableDirectoryName(
+			String auxiliaryTableDirectoryName) {
+		this.auxiliaryTableDirectoryName = auxiliaryTableDirectoryName;
+	}
+
+	/**
+	 * @return the primaryTableDirectoryName
+	 */
+	public String getPrimaryTableDirectoryName() {
+		return primaryTableDirectoryName;
+	}
+
+	/**
+	 * @param primaryTableDirectoryName the primaryTableDirectoryName to set
+	 */
+	public void setPrimaryTableDirectoryName(String primaryTableDirectoryName) {
+		this.primaryTableDirectoryName = primaryTableDirectoryName;
+	}
+
 
 	
 

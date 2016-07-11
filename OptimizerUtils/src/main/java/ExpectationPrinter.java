@@ -182,11 +182,22 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		
 		List<String> indicatorNameList = this.getNameList(indicatorNames);
 		List<String> detectorNameList = this.getNameList(detectorNames);
-		List<PotentialTable> correlationTables = this.getCorrelationTables(variableMap , null, indicatorNameList);
-		correlationTables.addAll(this.getCorrelationTables(variableMap , null, detectorNameList));
 		
-		List<PotentialTable> rcpTables = this.getThreatTables(variableMap , null, indicatorNameList, threatName);
-		rcpTables.addAll(this.getDetectorTables(variableMap, null, indicatorNameList, detectorNameList));
+		List<PotentialTable> correlationTables = null;
+		if (getPrimaryTableDirectoryName() != null &&  !getPrimaryTableDirectoryName().trim().isEmpty()) {
+			correlationTables = this.getTablesFromNetFile(variableMap , new File(getPrimaryTableDirectoryName()));
+		} else {
+			correlationTables = this.getCorrelationTables(variableMap , null, indicatorNameList);
+			correlationTables.addAll(this.getCorrelationTables(variableMap , null, detectorNameList));
+		}
+		
+		List<PotentialTable> rcpTables = null;
+		if (getAuxiliaryTableDirectoryName() != null &&  !getAuxiliaryTableDirectoryName().trim().isEmpty()) {
+			rcpTables = this.getTablesFromNetFile(variableMap , new File(getAuxiliaryTableDirectoryName()));
+		} else {
+			rcpTables = this.getThreatTables(variableMap , null, indicatorNameList, threatName);
+			rcpTables.addAll(this.getDetectorTables(variableMap, null, indicatorNameList, detectorNameList));
+		}
 		
 		List<PotentialTable> tables = new ArrayList<PotentialTable>(correlationTables) ;
 		tables.addAll(rcpTables);
@@ -228,10 +239,21 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		}
 		
 		
-		List<PotentialTable> originalCorrelationTables = this.getCorrelationTables(variableMap, indicatorCorrelations, indicatorNameList);
-		originalCorrelationTables.addAll(this.getCorrelationTables(variableMap, detectorCorrelations, detectorNameList));
-		List<PotentialTable> originalRCPTables = this.getThreatTables(variableMap , threatIndicatorMatrix, indicatorNameList, threatName);
-		originalRCPTables.addAll(this.getDetectorTables(variableMap, detectorIndicatorMatrix, indicatorNameList, detectorNameList));
+		List<PotentialTable> originalCorrelationTables = null;
+		if (getPrimaryTableDirectoryName() != null &&  !getPrimaryTableDirectoryName().trim().isEmpty()) {
+			originalCorrelationTables = this.getTablesFromNetFile(variableMap , new File(getPrimaryTableDirectoryName()));
+		} else {
+			originalCorrelationTables = this.getCorrelationTables(variableMap, indicatorCorrelations, indicatorNameList);
+			originalCorrelationTables.addAll(this.getCorrelationTables(variableMap, detectorCorrelations, detectorNameList));
+		}
+		
+		List<PotentialTable> originalRCPTables = null;
+		if (getAuxiliaryTableDirectoryName() != null &&  !getAuxiliaryTableDirectoryName().trim().isEmpty()) {
+			originalRCPTables = this.getTablesFromNetFile(variableMap , new File(getAuxiliaryTableDirectoryName()));
+		} else {
+			originalRCPTables = this.getThreatTables(variableMap , threatIndicatorMatrix, indicatorNameList, threatName);
+			originalRCPTables.addAll(this.getDetectorTables(variableMap, detectorIndicatorMatrix, indicatorNameList, detectorNameList));
+		}
 		
 		if (correlationTables.size() != originalCorrelationTables.size()) {
 			throw new IllegalArgumentException("Number of correlation tables did not match.");
@@ -450,6 +472,11 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		options.addOption("h","help", false, "Help.");
 		options.addOption("f","full", false, "Use full domain size (includes detector) instead of using a subset (only indicators).");
 		options.addOption("e","expectation", false, "Print expectation table as well.");
+		options.addOption("primary","primary-tables", true, "Where to read primary tables from.");
+		options.addOption("aux","auxiliary-tables", true, "Where to read primary tables from.");
+		options.addOption("inames","indicator-names", true, "Comma-separated names of indicators.");
+		options.addOption("dnames","detector-names", true, "Comma-separated names of detectors.");
+		options.addOption("threat","threat-name", true, "Name of threat variable.");
 		
 		CommandLine cmd = null;
 		try {
@@ -473,6 +500,11 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 			System.out.println("-r : size of population in tables in RCP problem document.");
 			System.out.println("-f : use full domain size (includes detector) instead of using a subset (only indicators).");
 			System.out.println("-e : print expectation table as well.");
+			System.out.println("-primary : where to read primary tables from.");
+			System.out.println("-aux : where to read auxiliary tables from.");
+			System.out.println("-inames : Comma-separated names of indicators.");
+			System.out.println("-dnames : Comma-separated names of detectors.");
+			System.out.println("-threat : Name of threat variable.");
 			System.out.println("-h: Help.");
 			return;
 		}
@@ -486,7 +518,9 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		
 		
 		ExpectationPrinter printer = new ExpectationPrinter();
-		printer.setToConsiderDetectors(cmd.hasOption("f"));
+		if (cmd.hasOption("f")) {
+			printer.setToConsiderDetectors(true);
+		}
 		if (cmd.hasOption("id")) {
 			printer.setProblemID(cmd.getOptionValue("id"));
 		}
@@ -505,9 +539,29 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		
 		printer.setToPrintExpectationTable(cmd.hasOption("e"));
 		
+
+		if (cmd.hasOption("primary")) {
+			printer.setPrimaryTableDirectoryName(cmd.getOptionValue("primary"));
+		}
+		if (cmd.hasOption("aux")) {
+			printer.setAuxiliaryTableDirectoryName(cmd.getOptionValue("aux"));
+		}
+		
+		if (cmd.hasOption("inames")) {
+			defaultIndicatorNames = cmd.getOptionValue("inames").split("[,:]");
+		}
+		if (cmd.hasOption("dnames")) {
+			defaultDetectorNames = cmd.getOptionValue("dnames").split("[,:]");
+		}
+		
+		String threatName = DEFAULT_THREAT_NAME;
+		if (cmd.hasOption("threat")) {
+			threatName = cmd.getOptionValue("threat");
+		}
+		
 		try {
 			printer.printExpectationFromFile(new File(printer.getDefaultJointProbabilityInputFileName()), 
-					defaultIndicatorNames, defaultDetectorNames, DEFAULT_THREAT_NAME, numPopulationCorrelationTable, numPopulationRCPTable, true);
+					defaultIndicatorNames, defaultDetectorNames, threatName, numPopulationCorrelationTable, numPopulationRCPTable, true);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
