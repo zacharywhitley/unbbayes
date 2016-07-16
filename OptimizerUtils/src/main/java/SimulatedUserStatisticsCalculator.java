@@ -117,6 +117,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		private DescriptiveStatistics statistics = new DescriptiveStatistics();
 		private String queriedString = null;
 		private List<Float> values = new ArrayList<Float>();
+		private boolean isJointProbability = false;
 		public List<String> getConditions() {
 			return this.conditions;
 		}
@@ -166,6 +167,12 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 				boolean isToUsePercentileForConfidenceInterval) {
 			this.isToUsePercentileForConfidenceInterval = isToUsePercentileForConfidenceInterval;
 		}
+		public boolean isJointProbability() {
+			return isJointProbability;
+		}
+		public void setJointProbability(boolean isJointProbability) {
+			this.isJointProbability = isJointProbability;
+		}
 		/**
 		 * @param confidence : Number between 0 and 1 use indicating confidence (as in confidence interval). 
 		 * Use .95 by default.
@@ -213,6 +220,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			return this.getQueriedString();
 		}
 		
+		
 	}
 	
 	
@@ -229,7 +237,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 
 	/**
 	 * @param query : output argument. 
-	 * @param toParse : string in a format like "P(X=state|Y=state)"
+	 * @param toParse : string in a format like "P(X=state|Y=state)" or "P(X=state,Y=state)"
 	 * @see Query#setQuery(String)
 	 * @see Query#setQueryState(String)
 	 * @see Query#setConditions(List)
@@ -239,11 +247,14 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		// remove white spaces
 		toParse = toParse.trim().replaceAll("\\s","");
 		
-		if (!toParse.matches("P\\([a-zA-Z_][a-zA-Z0-9_]*=[a-zA-Z0-9_]+\\|[a-zA-Z_][a-zA-Z0-9_]*=[a-zA-Z0-9_]+\\)")) {
+		if (!toParse.matches("P\\([a-zA-Z_][a-zA-Z0-9_]*=[a-zA-Z0-9_]+[\\|,][a-zA-Z_][a-zA-Z0-9_]*=[a-zA-Z0-9_]+\\)")) {
 			throw new IllegalArgumentException("Query needs to match format P(X=state|Y=state)");
 		}
 		
-		String[] split = toParse.split("(P\\(|\\||\\)|=)");
+		// if it contains a comma and matched the above regex, then it is a query to joint probability
+		query.setJointProbability(toParse.contains(","));
+		
+		String[] split = toParse.split("(P\\(|\\||,|\\)|=)");
 		if (split[0].trim().isEmpty()) {
 			split = Arrays.copyOfRange(split, 1, split.length);
 		}
@@ -298,10 +309,10 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		}
 		
 		if (varNames.isEmpty()) {
-			varNames = getNameList(defaultIndicatorNames);
-			varNames.add(0, DEFAULT_THREAT_NAME);
+			varNames = getNameList(getIndicatorNames());
+			varNames.add(0, getThreatName());
 			if (isToConsiderDetectors()) {
-				varNames.addAll(getNameList(defaultDetectorNames));
+				varNames.addAll(getNameList(getDetectorNames()));
 			}
 		}
 		
@@ -492,7 +503,6 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		
 		
 		// iterate on queries and update their statistics
-		List<PotentialTable> queriedTables = new ArrayList<PotentialTable>(queries.size());
 		for (Query query : queries) {
 			
 			// retrieve what was queried
@@ -514,29 +524,22 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			// build a potential table which represents the query
 			PotentialTable queryTable = new ProbabilisticTable();
 			queryTable.addVariable(queriedVar);
-			queryTable.addVariable(conditionedVar);
+			if (conditionedVar != null && !conditionedVar.equals(queriedVar)) {
+				queryTable.addVariable(conditionedVar);
+			}
 			
-			queriedTables.add(queryTable);
-		}
-		
-		fillTablesFromJointProbability(queriedTables, jointTable);
-		
-		// convert queried tables from joint probabilities to conditional probabilities;
-		for (PotentialTable table : queriedTables) {
-			// calculate marginal of condition, so that we can use it to calculate conditional
-			PotentialTable marginalTable = table.getTemporaryClone();
-			marginalTable.removeVariable(table.getVariableAt(0));	// the first variable is the queried var, so if we remove it, we have the marginal of the conditions.
-			table.opTab(marginalTable, table.DIVISION_OPERATOR);
-//			for (int i = 0; i < table.tableSize(); i++) {
-//				int[] coord = table.getMultidimensionalCoord(i);
-//				table.setValue(i, table.getValue(i) / marginalTable.getValue(coord[1]));
-//			}
-		}
-		
-		// add to query statistics the cell in conditional table which matches with the queried element;
-		for (int i = 0; i < queries.size(); i++) {
-			Query query = queries.get(i);
-			PotentialTable queryTable = queriedTables.get(i);
+			// fill queryTable with joint probability
+			fillTablesFromJointProbability(Collections.singletonList(queryTable), jointTable);
+			
+			// convert queried tables from joint probabilities to conditional probabilities if necessary;
+			if (!query.isJointProbability()) {
+				// calculate marginal of condition, so that we can use it to calculate conditional
+				PotentialTable marginalTable = queryTable.getTemporaryClone();
+				marginalTable.removeVariable(queryTable.getVariableAt(0));	// the first variable is the queried var, so if we remove it, we have the marginal of the conditions.
+				queryTable.opTab(marginalTable, queryTable.DIVISION_OPERATOR);
+			}
+			
+			// add to query statistics the cell in conditional table which matches with the queried element;
 			
 			// find queried state
 			String state = query.getQueryState().trim();
@@ -588,6 +591,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			coord[1] = conditionStateIndex;
 //			query.getStatistics().addValue(queryTable.getValue(coord));
 			query.addValue(queryTable.getValue(coord));
+		
 		}
 		
 		
@@ -608,6 +612,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		options.addOption("p","percentile", false, "Use percentiles for confidence interval calculation.");
 		options.addOption("s","summary", false, "Print statistical summary instead of probabilities.");
 		options.addOption("h","help", false, "Help.");
+		options.addOption("numI","number-indicators", true, "Number of indicators to consider.");
 		
 		CommandLine cmd = null;
 		try {
@@ -632,7 +637,8 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			System.out.println("-s : print statistical summary instead of probabilities.");
 			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"Users_RCP1\", \"Users_RCP2\", or \"Users_RCP3\"). "
 					+ "This will be used to set up aliases for questions or to fill queries with default values.");
-			System.out.println("-h: Help.");
+			System.out.println("- h: Help.");
+			System.out.println("numI : Number of indicators to consider.");
 			return;
 		}
 		
@@ -655,6 +661,41 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		
 		if (cmd.hasOption("id")) {
 			sim.setProblemID(cmd.getOptionValue("id"));
+		}
+		
+		// mount query aliases accordingly to indicators 
+		if (cmd.hasOption("numI")) {
+			// set names of indicators, for backward compatibility
+			int num = Integer.parseInt(cmd.getOptionValue("numI"));
+			String[] indicatorNames = new String[num];
+			for (int i = 1; i <= num; i++) {
+				indicatorNames[i-1] = "I"+i;
+			}
+			sim.setIndicatorNames(indicatorNames);
+			
+			// prepare the map that will be filled with queries and aliases (i.e. optional names)
+			Map<String, String> alias = sim.getQueryAlias();
+			if (alias == null) {
+				alias = new HashMap<String, String>();
+				sim.setQueryAlias(alias);
+			} else {
+				alias.clear();
+			}
+
+			// 3 queries are common to all RCPs
+			alias.put("P(Alert=true|Threat=true)", "Q01");
+			alias.put("P(Threat=true|Alert=true)", "Q02");
+			alias.put("P(Alert=true|Threat=false)", "Q03");
+			
+			// other queries are dependent to indicators
+			for (int i = 0; i < indicatorNames.length; i++) {
+				String indicator = indicatorNames[i];
+				alias.put("P(Alert=true|" + indicator + "=true)", "Q" + String.format("%1$02d", (i+4)));;
+			}
+			for (int i = 0; i < indicatorNames.length; i++) {
+				String indicator = indicatorNames[i];
+				alias.put("P(" + indicator + "=true|Alert=true)", "Q" + String.format("%1$02d", (i+9)));
+			}
 		}
 		
 		if (cmd.hasOption("q")) {
@@ -786,9 +827,12 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		} else if (upperCase.contains("RCP3")) {
 			Debug.println("Setting alias for RCP3");
 			this.setQueryAlias(QUERY_ALIAS_RCP3);
-		} else {
+		} else if (upperCase.contains("RCP1")) {
 			Debug.println("Setting alias for RCP1");
 			this.setQueryAlias(QUERY_ALIAS_RCP1);
+		} else {
+			Debug.println("Unknown RCP ID. Resetting query alias...");
+			this.setQueryAlias(new HashMap<String, String>());
 		}
 	}
 

@@ -142,9 +142,9 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		PotentialTable table = jointProbabilities.get(random.nextInt(jointProbabilities.size()));
 		
 		// extract name of variables to be used to calculate the value of the alert variable
-		List<String> alertVars = getNameList(defaultDetectorNames);
+		List<String> alertVars = getNameList(getDetectorNames());
 		if (alertVars.isEmpty()) {
-			alertVars = getNameList(defaultIndicatorNames);
+			alertVars = getNameList(getIndicatorNames());
 		}
 		
 		// initialize dictionary of states of sampler
@@ -395,6 +395,9 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		options.addOption("s","short", false, "Short version (does not consider detectors).");
 		options.addOption("h","help", false, "Help.");
 		options.addOption("q","quick", false, "Quick sampling (does not use dirichlet multinomial sampling).");
+		options.addOption("numI","number-indicators", true, "Number of indicators to consider.");
+		options.addOption("numD","number-detectors", true, "Number of detectors to consider.");
+		
 		
 		CommandLine cmd = null;
 		try {
@@ -421,6 +424,8 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			System.out.println("-a <SOME NUMBER> : whether to print alert and how many detectors to consider in alert.");
 			System.out.println("-h: Help.");
 			System.out.println("-q: quick sampling (does not use dirichlet multinomial sampling).");
+			System.out.println("numI: Number of indicators to consider.");
+			System.out.println("numD: Number of detectors to consider.");
 			return;
 		}
 		
@@ -455,6 +460,24 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			sim.setToPrintAlert(false);
 		}
 
+		// generate default names of indicators
+		if (cmd.hasOption("numI")) {
+			int num = Integer.parseInt(cmd.getOptionValue("numI"));
+			String[] names = new String[num];
+			for (int i = 1; i <= num; i++) {
+				names[i-1] = "I"+i;
+			}
+			sim.setIndicatorNames(names);
+		}
+		// generate default names of detectors
+		if (cmd.hasOption("numD")) {
+			int num = Integer.parseInt(cmd.getOptionValue("numD"));
+			String[] names = new String[num];
+			for (int i = 1; i <= num; i++) {
+				names[i-1] = "D"+i;
+			}
+			sim.setDetectorNames(names);
+		}
 		
 		try {
 			sim.run();

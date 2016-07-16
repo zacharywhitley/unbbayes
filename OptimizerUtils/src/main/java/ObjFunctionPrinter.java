@@ -57,7 +57,7 @@ public class ObjFunctionPrinter {
 	private String primaryTableDirectoryName = null;
 	
 	
-	public static final String DEFAULT_THREAT_NAME = "Threat";
+	private String threatName = "Threat";
 	
 	public static final String[] DEFAULT_INDICATOR_NAMES1 = {"I1", "I2", "I3", "I4", "I5"}; //RCP1
 	public static final String[] DEFAULT_INDICATOR_NAMES2 = {"I1", "I2", "I3", "I4", "I5", "I6"}; //RCP2
@@ -105,8 +105,8 @@ public class ObjFunctionPrinter {
 //	};
 
 
-	public static String[] defaultIndicatorNames = DEFAULT_INDICATOR_NAMES1;
-	public static String[] defaultDetectorNames = DEFAULT_DETECTOR_NAMES1;
+	private String[] indicatorNames = DEFAULT_INDICATOR_NAMES1;
+	private String[] detectorNames = DEFAULT_DETECTOR_NAMES1;
 	
 	public static int[][][] indicatorCorrelations = {};
 	public static int[][][] detectorCorrelations = {};
@@ -207,14 +207,14 @@ public class ObjFunctionPrinter {
 	 * 
 	 * @param variableMap
 	 * @param indicatorCorrelations
-	 * @param defaultIndicatorNames
+	 * @param indicatorNames
 	 * @return
 	 */
 	public List<PotentialTable> getCorrelationTables(Map<String, INode> variableMap, int[][][] correlations, List<String> names) {
 		
 		if (correlations != null 
 				&& combinatorial(names.size(), 2) != correlations.length) {
-			throw new IllegalArgumentException("Combinations of defaultIndicatorNames is " + combinatorial(names.size(), 2) 
+			throw new IllegalArgumentException("Combinations of indicatorNames is " + combinatorial(names.size(), 2) 
 					+ ", but correlation matrix had size " + correlations.length);
 		}
 		
@@ -354,9 +354,9 @@ public class ObjFunctionPrinter {
 	/**
 	 * 
 	 * @param variableMap
-	 * @param DEFAULT_THREAT_NAME 
+	 * @param threatName 
 	 * @param indicatorCorrelations
-	 * @param defaultIndicatorNames
+	 * @param indicatorNames
 	 * @return
 	 */
 	public List<PotentialTable> getThreatTables(Map<String, INode> variableMap, int[][][] tables, List<String> indicatorNames, String threatName) {
@@ -1042,17 +1042,17 @@ public class ObjFunctionPrinter {
 	 * @throws FileNotFoundException 
 	 * @see #printAll(String[], String[], String, int[][][], int[][][], int[][][], int[][][], PrintStream)
 	 */
-	public void printAll(String[] indicatorNames, String[] detectorNames, String threatName,
+	public void printAll(
 			int[][][] indicatorCorrelations, int[][][] detectorCorrelations,
 			int[][][] threatIndicatorMatrix, int[][][] detectorIndicatorMatrix) throws IOException{
-		this.printAll(indicatorNames, detectorNames, threatName, indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix, null);
+		this.printAll(indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix, null);
 	}
 	
 	/**
 	 * 
-	 * @param defaultIndicatorNames
-	 * @param defaultDetectorNames
-	 * @param DEFAULT_THREAT_NAME
+	 * @param indicatorNames
+	 * @param detectorNames
+	 * @param threatName
 	 * @param indicatorCorrelationsMatrix
 	 * @param detectorCorrelationsMatrix
 	 * @param threatIndicatorTableMatrix
@@ -1060,8 +1060,7 @@ public class ObjFunctionPrinter {
 	 * @param printer
 	 * @throws FileNotFoundException 
 	 */
-	public void printAll(String[] indicatorNames, String[] detectorNames, String threatName,
-			int[][][] indicatorCorrelationsMatrix, int[][][] detectorCorrelationsMatrix,
+	public void printAll(int[][][] indicatorCorrelationsMatrix, int[][][] detectorCorrelationsMatrix,
 			int[][][] threatIndicatorTableMatrix, int[][][] detectorIndicatorTableMatrix ,
 			PrintStream printer) throws IOException{
 
@@ -1071,11 +1070,11 @@ public class ObjFunctionPrinter {
 		
 		Map<String, INode> variableMap = new HashMap<String, INode>();
 		
-		List<String> indicatorNameList = this.getNameList(indicatorNames);
-		List<String> detectorNameList = this.getNameList(detectorNames);
+		List<String> indicatorNameList = this.getNameList(getIndicatorNames());
+		List<String> detectorNameList = this.getNameList(getDetectorNames());
 		
 		List<String> allVariableList = new ArrayList<String>();
-		allVariableList.add(threatName);
+		allVariableList.add(getThreatName());
 		allVariableList.addAll(indicatorNameList);
 		allVariableList.addAll(detectorNameList);
 		
@@ -1094,7 +1093,7 @@ public class ObjFunctionPrinter {
 		if (getAuxiliaryTableDirectoryName() != null &&  !getAuxiliaryTableDirectoryName().trim().isEmpty()) {
 			auxiliaryTables = this.getTablesFromNetFile(variableMap , new File(getAuxiliaryTableDirectoryName()));
 		} else {
-			auxiliaryTables = this.getThreatTables(variableMap , threatIndicatorTableMatrix, indicatorNameList, threatName);
+			auxiliaryTables = this.getThreatTables(variableMap , threatIndicatorTableMatrix, indicatorNameList, getThreatName());
 			auxiliaryTables.addAll(this.getDetectorTables(variableMap , detectorIndicatorTableMatrix, indicatorNameList, detectorNameList));
 		}
 		
@@ -1204,20 +1203,18 @@ public class ObjFunctionPrinter {
 		}
 		
 		if (cmd.hasOption("inames")) {
-			defaultIndicatorNames = cmd.getOptionValue("inames").split("[,:]");
+			printer.setIndicatorNames(cmd.getOptionValue("inames").split("[,:]"));
 		}
 		if (cmd.hasOption("dnames")) {
-			defaultDetectorNames = cmd.getOptionValue("dnames").split("[,:]");
+			printer.setDetectorNames(cmd.getOptionValue("dnames").split("[,:]"));
 		}
 		
-		String threatName = DEFAULT_THREAT_NAME;
 		if (cmd.hasOption("threat")) {
-			threatName = cmd.getOptionValue("threat");
+			printer.setThreatName(cmd.getOptionValue("threat"));
 		}
 		
 		try {
-			printer.printAll(defaultIndicatorNames, defaultDetectorNames, threatName, 
-					indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix, 
+			printer.printAll(indicatorCorrelations, detectorCorrelations, threatIndicatorMatrix, detectorIndicatorMatrix, 
 					ps);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -1231,7 +1228,7 @@ public class ObjFunctionPrinter {
 
 	/**
 	 * 
-	 * @param defaultIndicatorNames
+	 * @param indicatorNames
 	 * @return
 	 */
 	public List<String> getNameList(String[] names)  {
@@ -1402,16 +1399,16 @@ public class ObjFunctionPrinter {
 		String upperCase = problemID.toUpperCase();
 		if (upperCase.contains("RCP2")) {
 			Debug.println("Using variable sets of RCP2");
-			this.defaultIndicatorNames = DEFAULT_INDICATOR_NAMES2;
-			this.defaultDetectorNames = DEFAULT_DETECTOR_NAMES2;
+			this.setIndicatorNames(DEFAULT_INDICATOR_NAMES2);
+			this.setDetectorNames(DEFAULT_DETECTOR_NAMES2);
 		} else if (upperCase.contains("RCP3")) {
 			Debug.println("Using variable sets of RCP3");
-			this.defaultIndicatorNames = DEFAULT_INDICATOR_NAMES3;
-			this.defaultDetectorNames = DEFAULT_DETECTOR_NAMES3;
+			this.setIndicatorNames(DEFAULT_INDICATOR_NAMES3);
+			this.setDetectorNames(DEFAULT_DETECTOR_NAMES3);
 		} else if (upperCase.contains("RCP1")) {
 			Debug.println("Using variable sets of RCP1");
-			this.defaultIndicatorNames = DEFAULT_INDICATOR_NAMES1;
-			this.defaultDetectorNames = DEFAULT_DETECTOR_NAMES1;
+			this.setIndicatorNames(DEFAULT_INDICATOR_NAMES1);
+			this.setDetectorNames(DEFAULT_DETECTOR_NAMES1);
 		} else {
 			Debug.println("Resetting RCP variable sets");
 			this.indicatorCorrelations = null;
@@ -1423,7 +1420,7 @@ public class ObjFunctionPrinter {
 		if (!isToConsiderDetectors()){
 			this.detectorCorrelations = new int[0][0][0];
 			this.detectorIndicatorMatrix = new int[0][0][0];
-			this.defaultDetectorNames = new String[0];
+			this.setDetectorNames(new String[0]);
 		}
 	}
 
@@ -1442,7 +1439,7 @@ public class ObjFunctionPrinter {
 		if (!isToConsiderDetectors) {
 			this.detectorCorrelations = new int[0][0][0];
 			this.detectorIndicatorMatrix = new int[0][0][0];
-			this.defaultDetectorNames = new String[0];
+			this.setDetectorNames(new String[0]);
 		}
 	}
 
@@ -1488,6 +1485,48 @@ public class ObjFunctionPrinter {
 	 */
 	public void setPrimaryTableDirectoryName(String primaryTableDirectoryName) {
 		this.primaryTableDirectoryName = primaryTableDirectoryName;
+	}
+
+	/**
+	 * @return the indicatorNames
+	 */
+	public String[] getIndicatorNames() {
+		return indicatorNames;
+	}
+
+	/**
+	 * @param indicatorNames the indicatorNames to set
+	 */
+	public void setIndicatorNames(String[] indicatorNames) {
+		this.indicatorNames = indicatorNames;
+	}
+
+	/**
+	 * @return the detectorNames
+	 */
+	public String[] getDetectorNames() {
+		return detectorNames;
+	}
+
+	/**
+	 * @param detectorNames the detectorNames to set
+	 */
+	public void setDetectorNames(String[] detectorNames) {
+		this.detectorNames = detectorNames;
+	}
+
+	/**
+	 * @return the threatName
+	 */
+	public String getThreatName() {
+		return threatName;
+	}
+
+	/**
+	 * @param threatName the threatName to set
+	 */
+	public void setThreatName(String threatName) {
+		this.threatName = threatName;
 	}
 
 
