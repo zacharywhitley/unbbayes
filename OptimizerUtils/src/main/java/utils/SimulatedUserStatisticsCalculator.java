@@ -1,3 +1,4 @@
+package utils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -637,8 +638,8 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			System.out.println("-s : print statistical summary instead of probabilities.");
 			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"Users_RCP1\", \"Users_RCP2\", or \"Users_RCP3\"). "
 					+ "This will be used to set up aliases for questions or to fill queries with default values.");
-			System.out.println("- h: Help.");
-			System.out.println("numI : Number of indicators to consider.");
+			System.out.println("-h: Help.");
+			System.out.println("-numI : Number of indicators to consider.");
 			return;
 		}
 		

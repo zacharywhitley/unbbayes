@@ -1,3 +1,4 @@
+package utils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -424,8 +425,8 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			System.out.println("-a <SOME NUMBER> : whether to print alert and how many detectors to consider in alert.");
 			System.out.println("-h: Help.");
 			System.out.println("-q: quick sampling (does not use dirichlet multinomial sampling).");
-			System.out.println("numI: Number of indicators to consider.");
-			System.out.println("numD: Number of detectors to consider.");
+			System.out.println("-numI: Number of indicators to consider.");
+			System.out.println("-numD: Number of detectors to consider.");
 			return;
 		}
 		
