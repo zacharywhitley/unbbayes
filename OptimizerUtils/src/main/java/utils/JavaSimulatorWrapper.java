@@ -1411,8 +1411,8 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 		dirichletArgs[11] = ""+wrapper.getNumDetectors();	
 		dirichletArgs[12] = "-a";	
 		dirichletArgs[13] = ""+wrapper.getCountAlert();	
-		if (Debug.isDebugMode()) {
-			dirichletArgs[12] = "-d";	
+		if (Debug.isDebugMode() && dirichletArgs.length >= 15) {
+			dirichletArgs[14] = "-d";	
 		}
 		
 		// run dirichlet multinomial sampler
@@ -1438,7 +1438,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 		questionArgs[3] = "\"" + tempQuestionOutput.getAbsolutePath() +"\"";;
 		questionArgs[4] = "-numI";	
 		questionArgs[5] = ""+wrapper.getNumIndicators();	
-		if (Debug.isDebugMode()) {
+		if (Debug.isDebugMode() && questionArgs.length >= 7) {
 			questionArgs[6] = "-d";	
 		}
 		
