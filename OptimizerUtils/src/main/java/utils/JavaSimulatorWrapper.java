@@ -1453,6 +1453,9 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 			return;
 		}
 		
+		tempDirichletOutput.delete();
+		tempQuestionOutput.delete();
+		tempProbDirectory.delete();
 	}
 
 	/**
