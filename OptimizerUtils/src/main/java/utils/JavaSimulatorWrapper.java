@@ -554,8 +554,10 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	 * @see ExpectationPrinter#set1stLineForNames(boolean)
 	 */
 	public void set1stLineForNames(boolean is1stLineForNames) {
-		this.getSimulatedUserStatisticsCalculator()
-				.set1stLineForNames(is1stLineForNames);
+		super.set1stLineForNames(is1stLineForNames);
+		if (this.getSimulatedUserStatisticsCalculator() != null) {
+			this.getSimulatedUserStatisticsCalculator().set1stLineForNames(is1stLineForNames);
+		}
 	}
 
 	/**
@@ -856,8 +858,10 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	 */
 	public void setToPrintJointProbabilityDescription(
 			boolean isToPrintJointProbabilitySpecification) {
-		this.getSimulatedUserStatisticsCalculator()
-				.setToPrintJointProbabilityDescription(isToPrintJointProbabilitySpecification);
+		super.setToPrintJointProbabilityDescription(isToPrintJointProbabilitySpecification);
+		if (this.getSimulatedUserStatisticsCalculator() != null) {
+			this.getSimulatedUserStatisticsCalculator().setToPrintJointProbabilityDescription(isToPrintJointProbabilitySpecification);
+		}
 	}
 
 	/**
@@ -1105,7 +1109,9 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		tempFolder.deleteOnExit();
 		for (int i = 0; i < getWrapperProbabilities().size(); i++) {
 			List<Float> probability = getWrapperProbabilities().get(i);
-			PrintStream printer = new PrintStream(new FileOutputStream(File.createTempFile("prob"+i, ".csv", tempFolder), false));	// overwrites if file exists
+			File tempFile = File.createTempFile("prob"+i, ".csv", tempFolder);
+			tempFile.deleteOnExit();
+			PrintStream printer = new PrintStream(new FileOutputStream(tempFile , false));	// overwrites if file exists
 			for (Float prob : probability) {
 				printer.println(prob + ",");
 			}
@@ -1136,8 +1142,11 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		// TODO this is redundant
 		String commaSeparatedProb = "";
 		for (int i = 0; i < line.length; i++) {
+			if (line[i] == null || line[i].trim().isEmpty()) {
+				continue;
+			}
 			commaSeparatedProb += line[i];
-			if (i+1 < line.length) {
+			if (i+1 < line.length && !line[i+1].trim().isEmpty()) {
 				commaSeparatedProb += ",";
 			}
 		}
@@ -1378,6 +1387,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 		File tempDirichletOutput = null;
 		try {
 			tempDirichletOutput = File.createTempFile("Users_", ".csv");
+			tempDirichletOutput.deleteOnExit();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
@@ -1412,6 +1422,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 		File tempQuestionOutput = null;
 		try {
 			tempQuestionOutput = File.createTempFile("Probabilities_Questions_", ".csv");
+			tempQuestionOutput.deleteOnExit();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;

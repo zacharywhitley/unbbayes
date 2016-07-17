@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import unbbayes.prs.bn.TreeVariable;
 import utils.JavaSimulatorWrapper;
 
 /**
@@ -47,11 +46,13 @@ public class ModelCenterWrapperIO implements IModelCenterWrapperIO {
 
 		// set up file tokenizer
 		StreamTokenizer st = new StreamTokenizer(new BufferedReader(new FileReader(input)));
+		st.resetSyntax();
 		st.wordChars('A', 'z');
 		st.wordChars('0', '9');
 		st.wordChars('_', '_');
 		st.wordChars('-', '-');
 		st.wordChars(',', ',');	// commas should be considered as part of the word
+		st.wordChars('.', '.');	// dots should be considered as part of the word
 		st.whitespaceChars(':',':');	// jumps separators
 		st.whitespaceChars(' ',' ');
 		st.whitespaceChars('\t','\t');
@@ -77,6 +78,9 @@ public class ModelCenterWrapperIO implements IModelCenterWrapperIO {
 			// read the right value (value of the property)
 			st.nextToken();
 			String value = st.sval;
+			if (st.ttype == st.TT_NUMBER) {
+				value = String.valueOf(st.nval);
+			}
 			if (value == null || value.trim().isEmpty()) {
 				// go to next line
 				while (st.nextToken() != st.TT_EOL){};
@@ -99,7 +103,7 @@ public class ModelCenterWrapperIO implements IModelCenterWrapperIO {
 		}
 		
 		// prepare the stream to print results to
-		PrintStream printer = new PrintStream(new FileOutputStream(output, true));	// overwrite if file exists
+		PrintStream printer = new PrintStream(new FileOutputStream(output, false));	// overwrite if file exists
 		
 		/*
 		Print something like the following:
@@ -118,8 +122,10 @@ public class ModelCenterWrapperIO implements IModelCenterWrapperIO {
 		
 		// properties
 		for (Entry<String, String> entry : property.entrySet()) {
-			System.out.println(entry.getKey() + "=" + entry.getValue());
+			printer.println(entry.getKey() + "=" + entry.getValue());
 		}
+		
+		printer.println();
 		
 		printer.close();
 		
