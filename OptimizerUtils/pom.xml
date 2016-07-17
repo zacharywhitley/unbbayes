@@ -80,6 +80,8 @@
 			              <mainClass>utils.JavaSimulatorWrapper</mainClass>
 			            </manifest>
 			        </archive>
+			        <finalName>JavaSimulatorWrapper</finalName>
+  					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
 			</plugin>
 		</plugins>
