@@ -136,7 +136,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		}
 		if (cellsRead != jointTable.tableSize()) {
 			reader.close();
-			throw new RuntimeException("Cells read = " + cellsRead);
+			throw new RuntimeException("Cells read = " + cellsRead + ", expected = " + jointTable.tableSize());
 		}
 		
 		reader.close();
