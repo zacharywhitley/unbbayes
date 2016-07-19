@@ -148,10 +148,17 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			alertVars = getNameList(getIndicatorNames());
 		}
 		
+		// calculate dirichlet parameters as expectations from current joint probability.
+		// we'll also use it to filter out states that are impossible to happen (for optimization and also to avoid dirichlet with alpha = 0)
+		double[] tentativeAlpha = new double[table.tableSize()];
+		for (int i = 0; i < tentativeAlpha.length; i++) {
+			tentativeAlpha[i] = numSimulation * table.getValue(i);
+		}
+		
 		// initialize dictionary of states of sampler
-		Object[] jointStates = new Object[table.tableSize()];
-		for (int i = 0; i < jointStates.length; i++) {
-			int[] states = table.getMultidimensionalCoord(i);
+		List<Object> jointStates = new ArrayList<Object>();
+		for (int tableIndex = 0; tableIndex < table.tableSize(); tableIndex++) {
+			int[] states = table.getMultidimensionalCoord(tableIndex);
 			String csvLine = "";
 			int countAlert = 0;
 			for (int varIndex = states.length-1; varIndex >= 0 ; varIndex--) {
@@ -175,22 +182,25 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 					csvLine += ",0";
 				}
 			}
-			jointStates[i] = csvLine;
+			if (tentativeAlpha[tableIndex] > 0) {
+				jointStates.add(csvLine);
+			}
 		}
-		Alphabet dictionary = new Alphabet(jointStates);
+		Alphabet dictionary = new Alphabet(jointStates.toArray(new Object[jointStates.size()]));
 		
 		double[] distribution = null;
 		if (isToUseDirichletMultinomial()) {
-			// calculate dirichlet parameters as expectations from current joint probability
-			double[] alphas = new double[table.tableSize()];
-			for (int i = 0; i < alphas.length; i++) {
-				alphas[i] = numSimulation * table.getValue(i);
+			// remove zeros from tentative alpha
+			double[] alpha = new double[dictionary.size()];
+			for (int indexTentative = 0, indexAlpha = 0; indexTentative < tentativeAlpha.length; indexTentative++) {
+				if (tentativeAlpha[indexTentative] > 0) {
+					alpha[indexAlpha] = tentativeAlpha[indexTentative];
+					indexAlpha++;
+				}
 			}
 			
-			
 			// instantiate a dirichlet sampler
-			Dirichlet dirichlet = new Dirichlet(alphas, dictionary);
-			
+			Dirichlet dirichlet = new Dirichlet(alpha, dictionary);
 			
 			// sample dirichlet distribution
 			distribution = dirichlet.nextDistribution();

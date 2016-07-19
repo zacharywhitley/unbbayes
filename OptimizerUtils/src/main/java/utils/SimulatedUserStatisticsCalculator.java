@@ -210,12 +210,12 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		}
 		
 		public void addValue(float value) {
+			this.getValues().add(value);
 			if (Float.isNaN(value)) {
 				Debug.println(getClass(), "Found NaN in " + this);
 				return;
 			}
 			getStatistics().addValue(value);
-			this.getValues().add(value);
 		}
 		public String toString() {
 			return this.getQueriedString();

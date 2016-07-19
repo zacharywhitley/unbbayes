@@ -34,6 +34,7 @@ import au.com.bytecode.opencsv.CSVReader;
  *
  */
 public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
+	private static int maxNumAttempt = 1000;
 	
 	public static final String NUMBER_INDICATORS_PROPERTY_NAME = "Number_of_Indicators";
 	public static final String NUMBER_DETECTORS_PROPERTY_NAME = "Number_of_Detectors";
@@ -1038,6 +1039,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	 * @throws IOException 
 	 */
 	public void loadWrapperInput(File input) throws IOException {
+		Debug.println(getClass(), "Loading wrapper file: " + input.getAbsolutePath());
 
 		// load from file
 		this.getIO().readWrapperFile(input);
@@ -1045,9 +1047,15 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		// update attributes accordingly from what we read from file
 		
 		this.setNumIndicators(Integer.parseInt(this.getIO().getProperty(getNumberOfIndicatorsPropertyName())));
+		Debug.println(getClass(), "Num indicators = " + this.getNumIndicators());
 		this.setNumDetectors(Integer.parseInt(this.getIO().getProperty(getNumberOfDetectorsPropertyName())));
+		Debug.println(getClass(), "Num detectors = " + this.getNumDetectors());
 		this.setNumUsers(Integer.parseInt(this.getIO().getProperty(getNumberOfUsersPropertyName())));
-		this.setCountAlert(this.convertFusionTypeToCountAlert(this.getIO().getProperty(getTypeOfFusionPropertyName())));
+		Debug.println(getClass(), "Num users = " + this.getNumUsers());
+		String typeOfFusion = this.getIO().getProperty(getTypeOfFusionPropertyName());
+		Debug.println(getClass(), "Type of fusion = " + typeOfFusion);
+		this.setCountAlert(this.convertFusionTypeToCountAlert(typeOfFusion));
+		Debug.println(getClass(), "Count alert = " + this.getCountAlert());
 		
 		// reset the probability vector
 		getWrapperProbabilities().clear();
@@ -1055,18 +1063,24 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		for (int i = 1; i <= Integer.MAX_VALUE; i++) {
 			// read property, which is a comma-separated string with probability distribution
 			String property = this.getIO().getProperty(getProbabilitiesPropertyNamePrefix() + i);
+			Debug.println(getClass(), getProbabilitiesPropertyNamePrefix() + i + " = " + property);
 			if (property == null || property.trim().isEmpty()) {
 				break;
 			}
 			// convert comma-separated string to a list of float
 			List<Float> probability = new ArrayList<Float>();
 			String[] split = property.split(",");
+			Debug.println(getClass(), "Parsing probabilities...");
+			Debug.print("[");
 			for (String string : split) {
 				if (string == null || string.trim().isEmpty()) {
 					continue;	// ignore null entries
 				}
 				probability.add(Float.parseFloat(string));
+				Debug.print(string+"\t");
 			}
+			Debug.println("]");
+			Debug.println(getClass(), "Finished parsing probabilities. Size = " + probability.size());
 			getWrapperProbabilities().add(probability);
 		}
 		
@@ -1107,6 +1121,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	public File writeCurrentProbabilityToDirectory() throws IOException {
 		File tempFolder = Files.createTempDirectory("Probabilities").toFile();
 		tempFolder.deleteOnExit();
+		Debug.println(getClass(), "Created temporary directory for probabilities: " + tempFolder.getAbsolutePath());
 		for (int i = 0; i < getWrapperProbabilities().size(); i++) {
 			List<Float> probability = getWrapperProbabilities().get(i);
 			File tempFile = File.createTempFile("prob"+i, ".csv", tempFolder);
@@ -1116,6 +1131,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 				printer.println(prob + ",");
 			}
 			printer.close();
+			Debug.println(getClass(), "Created temporary file for probability + " + i + ": " + tempFile.getAbsolutePath());
 		}
 		return tempFolder;
 	}
@@ -1128,6 +1144,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	 * @throws IOException
 	 */
 	public void convertToWrapperOutput(File input, File output) throws IOException {
+		Debug.println(getClass(), "Converting CSV " + input.getAbsolutePath() + " to wrapper " + output.getAbsolutePath());
 		
 		CSVReader reader = new CSVReader(new FileReader(input));
 		
@@ -1152,6 +1169,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		}
 		
 		// write to wrapper ouput file
+		Debug.println(getClass(), "Writing wrapper " + output.getAbsolutePath());
 		this.getIO().writeWrapperFile(Collections.singletonMap(getProbabilityPropertyName(), commaSeparatedProb), output);
 		
 	}
@@ -1361,7 +1379,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 		
 		Debug.setDebug(cmd.hasOption("d"));
 		
-		final JavaSimulatorWrapper wrapper = JavaSimulatorWrapper.getInstance();
+		JavaSimulatorWrapper wrapper = JavaSimulatorWrapper.getInstance();
 		if (cmd.hasOption("i")) {
 			wrapper.setInput(new File(cmd.getOptionValue("i")));
 		}
@@ -1371,91 +1389,102 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 		
 		try {
 			wrapper.loadWrapperInput(wrapper.getInput());
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			return;
-		}
-		File tempProbDirectory = null;
-		try {
-			tempProbDirectory = wrapper.writeCurrentProbabilityToDirectory();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-			return;
-		}
-		
-		// generate temporary file to store results of dirichlet-multinomial simulation
-		File tempDirichletOutput = null;
-		try {
-			tempDirichletOutput = File.createTempFile("Users_", ".csv");
-			tempDirichletOutput.deleteOnExit();
 		} catch (IOException e) {
 			e.printStackTrace();
 			return;
 		}
 		
-		// set up arguments for dirichlet-multinomial simulator
-		String[] dirichletArgs = new String[Debug.isDebugMode()?15:14];
 		
-		// -i "RCP3-full" -o "test.csv" -u 4263 -n 1 -numI 4 -numD 4 -a 2 -d 
-		dirichletArgs[0] = "-i";
-		dirichletArgs[1] = "\"" + tempProbDirectory.getAbsolutePath() +"\"";
-		dirichletArgs[2] = "-o";
-		dirichletArgs[3] = "\"" + tempDirichletOutput.getAbsolutePath() +"\"";
-		dirichletArgs[4] = "-u";
-		dirichletArgs[5] = ""+wrapper.getNumUsers();
-		dirichletArgs[6] = "-n";
-		dirichletArgs[7] = "1";	// always replicate 1 time
-		dirichletArgs[8] = "-numI";	
-		dirichletArgs[9] = ""+wrapper.getNumIndicators();	
-		dirichletArgs[10] = "-numD";	
-		dirichletArgs[11] = ""+wrapper.getNumDetectors();	
-		dirichletArgs[12] = "-a";	
-		dirichletArgs[13] = ""+wrapper.getCountAlert();	
-		if (Debug.isDebugMode() && dirichletArgs.length >= 15) {
-			dirichletArgs[14] = "-d";	
+		// attempt several times until we don't have any exception
+		int numAttempt;
+		for (numAttempt = 0; numAttempt < getMaxNumAttempt(); numAttempt++) {
+			try {
+				File tempProbDirectory = wrapper.writeCurrentProbabilityToDirectory();
+				
+				// generate temporary file to store results of dirichlet-multinomial simulation
+				File tempDirichletOutput = File.createTempFile("Users_", ".csv");
+				tempDirichletOutput.deleteOnExit();
+				Debug.println(JavaSimulatorWrapper.class, "Created temporary file for users: " + tempDirichletOutput.getAbsolutePath());
+				
+				// set up arguments for dirichlet-multinomial simulator
+				String[] dirichletArgs = new String[Debug.isDebugMode()?15:14];
+				
+				// -i "RCP3-full" -o "test.csv" -u 4263 -n 1 -numI 4 -numD 4 -a 2 -d 
+				dirichletArgs[0] = "-i";
+				dirichletArgs[1] = "\"" + tempProbDirectory.getAbsolutePath() +"\"";
+				dirichletArgs[2] = "-o";
+				dirichletArgs[3] = "\"" + tempDirichletOutput.getAbsolutePath() +"\"";
+				dirichletArgs[4] = "-u";
+				dirichletArgs[5] = ""+wrapper.getNumUsers();
+				dirichletArgs[6] = "-n";
+				dirichletArgs[7] = "1";	// always replicate 1 time
+				dirichletArgs[8] = "-numI";	
+				dirichletArgs[9] = ""+wrapper.getNumIndicators();	
+				dirichletArgs[10] = "-numD";	
+				dirichletArgs[11] = ""+wrapper.getNumDetectors();	
+				dirichletArgs[12] = "-a";	
+				dirichletArgs[13] = ""+wrapper.getCountAlert();	
+				if (Debug.isDebugMode() && dirichletArgs.length >= 15) {
+					dirichletArgs[14] = "-d";	
+				}
+				
+				if (Debug.isDebugMode()) {
+					for (String arg : dirichletArgs) {
+						Debug.println(JavaSimulatorWrapper.class, "Argument for dirichlet-multinomial simulator: " + arg);
+					}
+				}
+
+				
+				// run dirichlet multinomial sampler
+				wrapper.getDirichletUserSimulator().main(dirichletArgs);
+				
+				// generate temporary file to store results of calculator of probabilities of questions
+				File tempQuestionOutput = File.createTempFile("Probabilities_Questions_", ".csv");
+				tempQuestionOutput.deleteOnExit();
+				Debug.println(JavaSimulatorWrapper.class, "Created temporary file for RCP answers: " + tempQuestionOutput.getAbsolutePath());
+				
+				// set up arguments to calculate probabilities of questions
+				String[] questionArgs = new String[Debug.isDebugMode()?7:6];
+				
+				// -i "test.csv" -o "Probabilities_test.csv" -numI 4 -d
+				questionArgs[0] = "-i";
+				questionArgs[1] = "\"" + tempDirichletOutput.getAbsolutePath() +"\"";;
+				questionArgs[2] = "-o";
+				questionArgs[3] = "\"" + tempQuestionOutput.getAbsolutePath() +"\"";;
+				questionArgs[4] = "-numI";	
+				questionArgs[5] = ""+wrapper.getNumIndicators();	
+				if (Debug.isDebugMode() && questionArgs.length >= 7) {
+					questionArgs[6] = "-d";	
+				}
+				
+				if (Debug.isDebugMode()) {
+					for (String arg : questionArgs) {
+						Debug.println(JavaSimulatorWrapper.class, "Argument for statistics calculator: " + arg);
+					}
+				}
+				
+				wrapper.getSimulatedUserStatisticsCalculator().main(questionArgs);
+				
+				// convert output to JavaSimulatorWrapper.out format;
+				
+				wrapper.convertToWrapperOutput(tempQuestionOutput, wrapper.getOutput());
+				
+				tempDirichletOutput.delete();
+				tempQuestionOutput.delete();
+				tempProbDirectory.delete();
+			} catch (Exception e) {
+				
+				if (numAttempt + 1 >= maxNumAttempt) {
+					// Failed the last attempt. Just let the caller know about the last exception
+					throw new RuntimeException("Failed max number of attempts. This might be caused by bad input probabilities.",e);
+				}
+				
+				Debug.println(JavaSimulatorWrapper.class, e.getMessage(), e);
+				continue;	// try next attempt if exception was thrown
+			}
+			
+			break;	// finish attempt if everything was fine
 		}
-		
-		// run dirichlet multinomial sampler
-		wrapper.getDirichletUserSimulator().main(dirichletArgs);
-		
-		// generate temporary file to store results of calculator of probabilities of questions
-		File tempQuestionOutput = null;
-		try {
-			tempQuestionOutput = File.createTempFile("Probabilities_Questions_", ".csv");
-			tempQuestionOutput.deleteOnExit();
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
-		}
-		
-		// set up arguments to calculate probabilities of questions
-		String[] questionArgs = new String[Debug.isDebugMode()?7:6];
-		
-		// -i "test.csv" -o "Probabilities_test.csv" -numI 4 -d
-		questionArgs[0] = "-i";
-		questionArgs[1] = "\"" + tempDirichletOutput.getAbsolutePath() +"\"";;
-		questionArgs[2] = "-o";
-		questionArgs[3] = "\"" + tempQuestionOutput.getAbsolutePath() +"\"";;
-		questionArgs[4] = "-numI";	
-		questionArgs[5] = ""+wrapper.getNumIndicators();	
-		if (Debug.isDebugMode() && questionArgs.length >= 7) {
-			questionArgs[6] = "-d";	
-		}
-		
-		wrapper.getSimulatedUserStatisticsCalculator().main(questionArgs);
-		
-		// convert output to JavaSimulatorWrapper.out format;
-		
-		try {
-			wrapper.convertToWrapperOutput(tempQuestionOutput, wrapper.getOutput());
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
-		}
-		
-		tempDirichletOutput.delete();
-		tempQuestionOutput.delete();
-		tempProbDirectory.delete();
 	}
 
 	/**
@@ -1470,6 +1499,20 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 	 */
 	public void setWrapperProbabilities(List<List<Float>> probabilities) {
 		this.wrapperProbabilities = probabilities;
+	}
+
+	/**
+	 * @return the maxNumAttempt
+	 */
+	public static int getMaxNumAttempt() {
+		return maxNumAttempt;
+	}
+
+	/**
+	 * @param maxNumAttempt the maxNumAttempt to set
+	 */
+	public static void setMaxNumAttempt(int maxNumAttempt) {
+		JavaSimulatorWrapper.maxNumAttempt = maxNumAttempt;
 	}
 	
 }
