@@ -87,7 +87,16 @@ public class ModelCenterWrapperIO implements IModelCenterWrapperIO {
 				continue;
 			}
 			
-			getProperties().put(key, value);
+			// check if a property with same name exists already.
+			String currentProperty=getProperties().get(key);
+
+            if (currentProperty==null || currentProperty.isEmpty()) {
+            	getProperties().put(key, value);
+            } else {
+            	// if there is a property with same name already, append (separated by comma)
+            	getProperties().put(key, currentProperty + "," + value);
+            }
+
 		}
 		
 	}
