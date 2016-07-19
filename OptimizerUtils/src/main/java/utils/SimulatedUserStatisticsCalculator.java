@@ -46,6 +46,10 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	private boolean isToPrintSummary = false;
 	
 	private Map<String, String> queryAlias = QUERY_ALIAS_RCP1;
+
+	private boolean isToIgnoreNaN = false;
+
+	private Float defaultNaNPrintAlias = -1f;
 	
 	public static final Map<String, String> QUERY_ALIAS_RCP1 = new HashMap<String, String>();
 	static {
@@ -454,11 +458,16 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 				String rowToPrint = "";
 				boolean hasNaN = false;
 				for (Query query : getQueries()) {
-					if (query.getValues().get(row).isNaN()) {
-						hasNaN = true;
-						break;
+					Float value = query.getValues().get(row);
+					if (value.isNaN()) {
+						if (isToIgnoreNaN()) {
+							hasNaN = true;
+							break;
+						} else {
+							value = getDefaultNaNPrintAlias();
+						}
 					}
-					rowToPrint += (query.getValues().get(row) + ",");
+					rowToPrint += (value + ",");
 				}
 				if (!hasNaN) {
 					printer.println(rowToPrint);
@@ -835,6 +844,42 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			Debug.println("Unknown RCP ID. Resetting query alias...");
 			this.setQueryAlias(new HashMap<String, String>());
 		}
+	}
+
+
+	/**
+	 * @return the isToIgnoreNaN
+	 */
+	public boolean isToIgnoreNaN() {
+		return isToIgnoreNaN;
+	}
+
+
+	/**
+	 * @param isToIgnoreNaN the isToIgnoreNaN to set
+	 */
+	public void setToIgnoreNaN(boolean isToIgnoreNaN) {
+		this.isToIgnoreNaN = isToIgnoreNaN;
+	}
+
+
+	/**
+	 * @return the defaultNaNPrintAlias : alternative value for {@link Float#NaN}
+	 * when printing results.
+	 * @see #run()
+	 */
+	public Float getDefaultNaNPrintAlias() {
+		return defaultNaNPrintAlias;
+	}
+
+
+	/**
+	 * @param defaultNaNPrintAlias alternative value for {@link Float#NaN}
+	 * when printing results.
+	 * @see #run()
+	 */
+	public void setDefaultNaNPrintAlias(Float defaultNaNPrintAlias) {
+		this.defaultNaNPrintAlias = defaultNaNPrintAlias;
 	}
 
 
