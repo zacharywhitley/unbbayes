@@ -363,7 +363,9 @@ public class ObjFunctionPrinter {
 	 * @return
 	 */
 	public List<PotentialTable> getThreatTables(Map<String, INode> variableMap, int[][][] tables, List<String> indicatorNames, String threatName) {
-		
+		if (threatName == null || threatName.trim().isEmpty()) {
+			return new ArrayList<PotentialTable>();
+		}
 		if (tables != null
 				&& tables.length != indicatorNames.size()) {
 			throw new IllegalArgumentException("Number of tables of threat is expected to be: " + indicatorNames.size() + ", but was " + tables.length);

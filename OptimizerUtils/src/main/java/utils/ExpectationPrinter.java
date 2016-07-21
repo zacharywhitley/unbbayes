@@ -13,6 +13,7 @@ import java.util.Map;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -49,6 +50,8 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	private int defaultIndexOfProbability = 0;
 
 	private boolean isToUseAverageAsExpected = true;
+
+	private boolean isToPrintChiSquare = true;
 
 	/**
 	 * 
@@ -109,7 +112,10 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		
 		if (varNames ==null) {
 			varNames = getNameList(getIndicatorNames());
-			varNames.add(0, getThreatName());
+			String threat = getThreatName();
+			if (threat != null && !threat.trim().isEmpty()) {
+				varNames.add(0, threat);
+			}
 			if (isToConsiderDetectors()) {
 				varNames.addAll(getNameList(getDetectorNames()));
 			}
@@ -236,100 +242,102 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 			System.out.println();
 		}
 		
-		
-		List<PotentialTable> originalCorrelationTables = null;
-		if (getPrimaryTableDirectoryName() != null &&  !getPrimaryTableDirectoryName().trim().isEmpty()) {
-			originalCorrelationTables = this.getTablesFromNetFile(variableMap , new File(getPrimaryTableDirectoryName()));
-		} else {
-			originalCorrelationTables = this.getCorrelationTables(variableMap, indicatorCorrelations, indicatorNameList);
-			originalCorrelationTables.addAll(this.getCorrelationTables(variableMap, detectorCorrelations, detectorNameList));
-		}
-		
-		List<PotentialTable> originalRCPTables = null;
-		if (getAuxiliaryTableDirectoryName() != null &&  !getAuxiliaryTableDirectoryName().trim().isEmpty()) {
-			originalRCPTables = this.getTablesFromNetFile(variableMap , new File(getAuxiliaryTableDirectoryName()));
-		} else {
-			originalRCPTables = this.getThreatTables(variableMap , threatIndicatorMatrix, indicatorNameList, getThreatName());
-			originalRCPTables.addAll(this.getDetectorTables(variableMap, detectorIndicatorMatrix, indicatorNameList, detectorNameList));
-		}
-		
-		if (correlationTables.size() != originalCorrelationTables.size()) {
-			throw new IllegalArgumentException("Number of correlation tables did not match.");
-		}
-		if (rcpTables.size() != originalRCPTables.size()) {
-			throw new IllegalArgumentException("Total number of threat-indicator and indicator-detector tables did not match.");
-		}
-		
-		if (isToPrintChiSquareHeader) {
-			System.out.println("File,Var1,Var2,ChiSquare,sumChiSqure");
-		}
-		
-		List<List<String>> temp = new ArrayList<List<String>>();
-		double sumChiSquares = 0;
-		for (int i = 0; i < correlationTables.size(); i++) {
-			List<String> line = new ArrayList<String>();
-			PotentialTable expected = originalCorrelationTables.get(i);
-			PotentialTable observed = correlationTables.get(i);
+		if (isToPrintChiSquare()) {
 			
-			if (expected.variableCount() != observed.variableCount()) {
-				throw new IllegalArgumentException("Number of variables in table did not match: " + observed + " ; " + expected);
-			}
-			if (expected.tableSize() != observed.tableSize()) {
-				throw new IllegalArgumentException("Size of table did not match: " + observed + " = " + observed.tableSize() 
-						+ "; " + expected + " = " + expected.tableSize());
+			List<PotentialTable> originalCorrelationTables = null;
+			if (getPrimaryTableDirectoryName() != null &&  !getPrimaryTableDirectoryName().trim().isEmpty()) {
+				originalCorrelationTables = this.getTablesFromNetFile(variableMap , new File(getPrimaryTableDirectoryName()));
+			} else {
+				originalCorrelationTables = this.getCorrelationTables(variableMap, indicatorCorrelations, indicatorNameList);
+				originalCorrelationTables.addAll(this.getCorrelationTables(variableMap, detectorCorrelations, detectorNameList));
 			}
 			
-			line.add(file.getName());
+			List<PotentialTable> originalRCPTables = null;
+			if (getAuxiliaryTableDirectoryName() != null &&  !getAuxiliaryTableDirectoryName().trim().isEmpty()) {
+				originalRCPTables = this.getTablesFromNetFile(variableMap , new File(getAuxiliaryTableDirectoryName()));
+			} else {
+				originalRCPTables = this.getThreatTables(variableMap , threatIndicatorMatrix, indicatorNameList, getThreatName());
+				originalRCPTables.addAll(this.getDetectorTables(variableMap, detectorIndicatorMatrix, indicatorNameList, detectorNameList));
+			}
 			
-			for (int j = expected.variableCount()-1; j >= 0; j--) {
-				if (observed.getVariableIndex((Node) expected.getVariableAt(j)) < 0) {
-					throw new IllegalArgumentException(expected.getVariableAt(j) + " not found in observed table: " + observed + " ; " + expected);
+			if (correlationTables.size() != originalCorrelationTables.size()) {
+				throw new IllegalArgumentException("Number of correlation tables did not match.");
+			}
+			if (rcpTables.size() != originalRCPTables.size()) {
+				throw new IllegalArgumentException("Total number of threat-indicator and indicator-detector tables did not match.");
+			}
+			
+			if (isToPrintChiSquareHeader) {
+				System.out.println("File,Var1,Var2,ChiSquare,sumChiSqure");
+			}
+			
+			List<List<String>> temp = new ArrayList<List<String>>();
+			double sumChiSquares = 0;
+			for (int i = 0; i < correlationTables.size(); i++) {
+				List<String> line = new ArrayList<String>();
+				PotentialTable expected = originalCorrelationTables.get(i);
+				PotentialTable observed = correlationTables.get(i);
+				
+				if (expected.variableCount() != observed.variableCount()) {
+					throw new IllegalArgumentException("Number of variables in table did not match: " + observed + " ; " + expected);
 				}
-				line.add(expected.getVariableAt(j).getName());
-			}
-			double chiSquare = this.getChiSqure(observed,expected, isToUseAverageAsExpected());
-			sumChiSquares += chiSquare;
-			line.add(""+chiSquare);
-			temp.add(line);
-		}
-		for (List<String> list : temp) {
-			for (String string : list) {
-				System.out.print(string + ",");
-			}
-			System.out.println(sumChiSquares + ",");
-		}
-		
-		temp = new ArrayList<List<String>>();
-		sumChiSquares = 0;
-		for (int i = 0; i < rcpTables.size(); i++) {
-			List<String> line = new ArrayList<String>();
-			PotentialTable expected = originalRCPTables.get(i);
-			PotentialTable observed = rcpTables.get(i);
-			
-			if (expected.variableCount() != observed.variableCount()) {
-				throw new IllegalArgumentException("Number of variables in table did not match: " + observed + " ; " + expected);
-			}
-			if (expected.tableSize() != observed.tableSize()) {
-				throw new IllegalArgumentException("Size of table did not match: " + observed + " = " + observed.tableSize() 
-						+ "; " + expected + " = " + expected.tableSize());
-			}
-			line.add(file.getName());
-			for (int j = expected.variableCount()-1; j >= 0; j--) {
-				if (observed.getVariableIndex((Node) expected.getVariableAt(j)) < 0) {
-					throw new IllegalArgumentException(expected.getVariableAt(j) + " not found in observed table: " + observed + " ; " + expected);
+				if (expected.tableSize() != observed.tableSize()) {
+					throw new IllegalArgumentException("Size of table did not match: " + observed + " = " + observed.tableSize() 
+							+ "; " + expected + " = " + expected.tableSize());
 				}
-				line.add(expected.getVariableAt(j).getName());
+				
+				line.add(file.getName());
+				
+				for (int j = expected.variableCount()-1; j >= 0; j--) {
+					if (observed.getVariableIndex((Node) expected.getVariableAt(j)) < 0) {
+						throw new IllegalArgumentException(expected.getVariableAt(j) + " not found in observed table: " + observed + " ; " + expected);
+					}
+					line.add(expected.getVariableAt(j).getName());
+				}
+				double chiSquare = this.getChiSqure(observed,expected, isToUseAverageAsExpected());
+				sumChiSquares += chiSquare;
+				line.add(""+chiSquare);
+				temp.add(line);
 			}
-			double chiSquare = this.getChiSqure(observed,expected, isToUseAverageAsExpected());
-			sumChiSquares += chiSquare;
-			line.add(""+chiSquare);
-			temp.add(line);
-		}
-		for (List<String> list : temp) {
-			for (String string : list) {
-				System.out.print(string + ",");
+			for (List<String> list : temp) {
+				for (String string : list) {
+					System.out.print(string + ",");
+				}
+				System.out.println(sumChiSquares + ",");
 			}
-			System.out.println(sumChiSquares + ",");
+			
+			temp = new ArrayList<List<String>>();
+			sumChiSquares = 0;
+			for (int i = 0; i < rcpTables.size(); i++) {
+				List<String> line = new ArrayList<String>();
+				PotentialTable expected = originalRCPTables.get(i);
+				PotentialTable observed = rcpTables.get(i);
+				
+				if (expected.variableCount() != observed.variableCount()) {
+					throw new IllegalArgumentException("Number of variables in table did not match: " + observed + " ; " + expected);
+				}
+				if (expected.tableSize() != observed.tableSize()) {
+					throw new IllegalArgumentException("Size of table did not match: " + observed + " = " + observed.tableSize() 
+							+ "; " + expected + " = " + expected.tableSize());
+				}
+				line.add(file.getName());
+				for (int j = expected.variableCount()-1; j >= 0; j--) {
+					if (observed.getVariableIndex((Node) expected.getVariableAt(j)) < 0) {
+						throw new IllegalArgumentException(expected.getVariableAt(j) + " not found in observed table: " + observed + " ; " + expected);
+					}
+					line.add(expected.getVariableAt(j).getName());
+				}
+				double chiSquare = this.getChiSqure(observed,expected, isToUseAverageAsExpected());
+				sumChiSquares += chiSquare;
+				line.add(""+chiSquare);
+				temp.add(line);
+			}
+			for (List<String> list : temp) {
+				for (String string : list) {
+					System.out.print(string + ",");
+				}
+				System.out.println(sumChiSquares + ",");
+			}
 		}
 		
 	}
@@ -475,6 +483,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		options.addOption("inames","indicator-names", true, "Comma-separated names of indicators.");
 		options.addOption("dnames","detector-names", true, "Comma-separated names of detectors.");
 		options.addOption("threat","threat-name", true, "Name of threat variable.");
+		options.addOption("skip","skip-chi-square", false, "Skip chi-square calculation.");
 		
 		CommandLine cmd = null;
 		try {
@@ -490,20 +499,9 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		}
 		
 		if (cmd.hasOption("h")) {
-			System.out.println("-i <FILE NAME> : file or directory containing csv files of joint probabilities.");
-			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"Users_RCP1\", \"Users_RCP2\", or \"Users_RCP3\"). "
-					+ "This will be used as suffixes of output file names");
-			System.out.println("-d : Enables debug mode.");
-			System.out.println("-c : size of population in correlation table.");
-			System.out.println("-r : size of population in tables in RCP problem document.");
-			System.out.println("-f : use full domain size (includes detector) instead of using a subset (only indicators).");
-			System.out.println("-e : print expectation table as well.");
-			System.out.println("-primary : where to read primary tables from.");
-			System.out.println("-aux : where to read auxiliary tables from.");
-			System.out.println("-inames : Comma-separated names of indicators.");
-			System.out.println("-dnames : Comma-separated names of detectors.");
-			System.out.println("-threat : Name of threat variable.");
-			System.out.println("-h: Help.");
+			for (Option option : options.getOptions()) {
+				System.out.println("-" + option.getOpt() + (option.hasArg()?(" <" + option.getLongOpt() +">"):"") + " : " + option.getDescription());
+			}
 			return;
 		}
 		
@@ -532,7 +530,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		}
 		int numPopulationRCPTable = DEFAULT_NUM_POPULATION_RCP_TABLE;
 		if (cmd.hasOption("r")) {
-			numPopulationCorrelationTable = Integer.parseInt(cmd.getOptionValue("r"));
+			numPopulationRCPTable = Integer.parseInt(cmd.getOptionValue("r"));
 		}
 		
 		printer.setToPrintExpectationTable(cmd.hasOption("e"));
@@ -554,6 +552,10 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		
 		if (cmd.hasOption("threat")) {
 			printer.setThreatName(cmd.getOptionValue("threat"));
+		}
+		
+		if (cmd.hasOption("skip")) {
+			printer.setToPrintChiSquare(false);
 		}
 		
 		try {
@@ -690,6 +692,24 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	 */
 	public void setToUseAverageAsExpected(boolean isToUseAverageAsExpected) {
 		this.isToUseAverageAsExpected = isToUseAverageAsExpected;
+	}
+
+
+
+	/**
+	 * @return the isToPrintChiSquare
+	 */
+	public boolean isToPrintChiSquare() {
+		return isToPrintChiSquare;
+	}
+
+
+
+	/**
+	 * @param isToPrintChiSquare the isToPrintChiSquare to set
+	 */
+	public void setToPrintChiSquare(boolean isToPrintChiSquare) {
+		this.isToPrintChiSquare = isToPrintChiSquare;
 	}
 
 }
