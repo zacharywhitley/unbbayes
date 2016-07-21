@@ -42,6 +42,8 @@ import unbbayes.util.Debug;
  */
 public class ObjFunctionPrinter {
 	
+	private String probabilityVariablePrefix = "p";
+	
 	private String problemID = "RCP1";
 
 	private static float greaterThanValue = 0;
@@ -459,7 +461,7 @@ public class ObjFunctionPrinter {
 	    	for (int varIndex = coord.length-1; varIndex >= 0; varIndex--) {
 				printer.print(jointTable.getVariableAt(varIndex).getStateAt(coord[varIndex]) + ",");
 			}
-	    	printer.println("p[" + (rowIndex+1) + "]");
+	    	printer.println(getProbabilityVariablePrefix() + "[" + (rowIndex+1) + "]");
 		}
 		
 		return output.toString();
@@ -523,7 +525,7 @@ public class ObjFunctionPrinter {
 						if (found1stP) {
 							tempStringLog += " +";
 						}
-						tempStringLog += " p[" + (jointCellIndex+1) + "]";
+						tempStringLog += " " + getProbabilityVariablePrefix() + "[" + (jointCellIndex+1) + "]";
 						found1stP = true;
 					}
 					
@@ -624,7 +626,7 @@ public class ObjFunctionPrinter {
 						if (found1stP) {
 							tempStringLog += " +";
 						}
-						tempStringLog += " p[" + (jointCellIndex+1) + "]";
+						tempStringLog += " " + getProbabilityVariablePrefix() + "[" + (jointCellIndex+1) + "]";
 						found1stP = true;
 					}
 					
@@ -760,7 +762,7 @@ public class ObjFunctionPrinter {
 						if (found1stP) {
 							tempStringLog += (" +");
 						}
-						tempStringLog += (" p[" + (jointCellIndex+1) + "]");
+						tempStringLog += (" " + getProbabilityVariablePrefix() + "[" + (jointCellIndex+1) + "]");
 						found1stP = true;
 					}
 					
@@ -824,7 +826,7 @@ public class ObjFunctionPrinter {
 	    				if (found1stP) {
 	    					tempStringLog += (" +");
 	    				}
-	    				tempStringLog += (" p[" + (jointCellIndex+1) + "]");
+	    				tempStringLog += ( " " + getProbabilityVariablePrefix() + "[" + (jointCellIndex+1) + "]");
 	    				found1stP = true;
 	    			}
 	    			
@@ -957,7 +959,7 @@ public class ObjFunctionPrinter {
 						if (found1stP) {
 							printer.print(" +");
 						}
-						printer.print(" p[" + (jointCellIndex+1) + "]");
+						printer.print(" " + getProbabilityVariablePrefix() + "[" + (jointCellIndex+1) + "]");
 						found1stP = true;
 					}
 					
@@ -1012,7 +1014,7 @@ public class ObjFunctionPrinter {
 						if (found1stP) {
 							printer.print(" +");
 						}
-						printer.print(" p[" + (jointCellIndex+1) + "]");
+						printer.print(" " + getProbabilityVariablePrefix() + "[" + (jointCellIndex+1) + "]");
 						found1stP = true;
 					}
 					
@@ -1236,6 +1238,9 @@ public class ObjFunctionPrinter {
 		List<String> ret = new ArrayList<String>();
 		
 		for (String name : names) {
+			if (name.trim().isEmpty()) {
+				continue;	//ignore blank names
+			}
 			ret.add(name);
 		}
 		return ret;
@@ -1528,6 +1533,20 @@ public class ObjFunctionPrinter {
 	 */
 	public void setThreatName(String threatName) {
 		this.threatName = threatName;
+	}
+
+	/**
+	 * @return the probabilityVariablePrefix
+	 */
+	public String getProbabilityVariablePrefix() {
+		return probabilityVariablePrefix;
+	}
+
+	/**
+	 * @param probabilityVariablePrefix the probabilityVariablePrefix to set
+	 */
+	public void setProbabilityVariablePrefix(String probabilityVariablePrefix) {
+		this.probabilityVariablePrefix = probabilityVariablePrefix;
 	}
 
 
