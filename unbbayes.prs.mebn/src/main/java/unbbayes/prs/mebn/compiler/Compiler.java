@@ -68,7 +68,7 @@ import unbbayes.util.Debug;
  <pre>
  BNF MEBN Table:
  ===============================================================
- table := statement | if_statement
+ distribution ::= statement | if_statement
  if_statement  ::= 
  	"if" allop varsetname "have" "(" b_expression ")" statement 
  	"else" else_statement 
@@ -77,7 +77,7 @@ import unbbayes.util.Debug;
  b_expression ::= b_term [ "|" b_term ]*
  b_term ::= not_factor [ "&" not_factor ]*
  not_factor ::= [ "~" ] b_factor
- b_factor ::= ident ["(" arguments ")"]  "=" ident ["(" arguments ")"] | "(" b_expression ")"
+ b_factor ::= "(" b_expression ")" | ident ["(" arguments ")"]  "=" ident ["(" arguments ")"] 
  arguments ::= ident[["."|","]ident]*
  else_statement ::= statement | if_statement
  statement ::= "[" assignment_or_if "]" 
@@ -88,15 +88,14 @@ import unbbayes.util.Debug;
  signed_factor ::= [ addop ] factor
  factor ::= number | function | "(" expression ")"
  function ::= possibleVal 
- 	| "CARDINALITY" "(" varsetname ")"
- 	| "CARDINALITY" "(" ")"
+ 	| "CARDINALITY" "(" [varsetname] ")"
  	| "MIN" "(" expression ";" expression ")"
  	| "MAX" "(" expression ";" expression ")"
+ 	| external_function
  possibleVal ::= ident
  addop ::= "+" | "-"
  mulop ::= "*" | "/"
  ident ::= letter [ letter | digit ]*
- number ::= [digit]+
  ================================================================
  
  ----------------
@@ -524,7 +523,7 @@ public class Compiler implements ICompiler {
 		}
 		// Debug.println("PARSED: ");
 		this.skipWhite();
-		this.table();
+		this.distribution();
 	}
 	
 	/**
@@ -998,8 +997,21 @@ public class Compiler implements ICompiler {
 		return table;
 	}
 	
+	
 	/**
-	 *  table := statement | if_statement
+	 * distribution := statement | if_statement
+	 */
+	protected void distribution() throws NoDefaultDistributionDeclaredException,
+			InvalidConditionantException,
+			SomeStateUndeclaredException,
+			InvalidProbabilityRangeException,
+			TableFunctionMalformedException{
+		this.table();
+	}
+	
+	/**
+	 * @deprecated
+	 * @see #distribution()
 	 */
 	protected void table() throws NoDefaultDistributionDeclaredException,
 	  							InvalidConditionantException,
@@ -3196,14 +3208,13 @@ public class Compiler implements ICompiler {
 				// first, test if leaf has same arguments as its ssbnnode (if ssbnnode has same arguments as parents)
 				for (OVInstance argParent : args) {
 					// check condition to activate the flag (i.e. to change content of isAllOVsDeclaredInVarsetname)
-					if ( !argParent.getOv().getValueType().hasOrder() ) {	 // we don't need to consider weak ovs
-						// check if the ov of this argument was declared in the varsetname field of current if-clause
-						if (varSetNamesInCurrentIfClause.contains(argParent.getOv().getName())) {
-							isAtLeast1OVDeclaredInVarsetname = true;	// we found at least 1 OV, so turn the flag on
-						} else if (isExactMatchStrongOV()) {
-							// we can immediately return if compiler requires exact match of strong ovs
-							return false;
-						}
+					// check if the ov of this argument was declared in the varsetname field of current if-clause
+					if (varSetNamesInCurrentIfClause.contains(argParent.getOv().getName())) {
+						isAtLeast1OVDeclaredInVarsetname = true;	// we found at least 1 OV, so turn the flag on
+					} else if (!argParent.getOv().getValueType().hasOrder() // we don't need to consider weak ovs
+								&& isExactMatchStrongOV()) {
+						// we can immediately return if compiler requires exact match of strong ovs
+						return false;
 					}
 					
 					// if it has same OV as ssbnnode, then should be the same entity
