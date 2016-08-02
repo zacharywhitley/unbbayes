@@ -77,7 +77,9 @@ import unbbayes.util.Debug;
  b_expression ::= b_term [ "|" b_term ]*
  b_term ::= not_factor [ "&" not_factor ]*
  not_factor ::= [ "~" ] b_factor
- b_factor ::= "(" b_expression ")" | ident ["(" arguments ")"]  "=" ident ["(" arguments ")"] 
+ b_factor ::= "(" b_expression ")" 
+ 		| ident ["(" arguments ")"]  "=" ident ["(" arguments ")"] 
+ 		| external_boolean_function
  arguments ::= ident[["."|","]ident]*
  else_statement ::= statement | if_statement
  statement ::= "[" assignment_or_if "]" 
@@ -101,6 +103,10 @@ import unbbayes.util.Debug;
  ----------------
  Changes (Month/Date/Year): 
  </pre>
+ @version 02/16/2016:
+ 			Description: ordinary variables (OVs) can be used in if-clause (in order to be able to compare states of nodes with values of OVs, or values of 2 OVs), 
+ 			and names of nodes in if-clauses can now have arguments between parenthesis, so that a node with two input node parents pointing
+ 			to same resident node (but with different OVs in their arguments) can be distinguished.
  @version 08/02/2008:
  			Description: Added nested "if" feature.
  			Now an if-clause would look like this ("else" is still mandatory):
@@ -1307,6 +1313,8 @@ public class Compiler implements ICompiler {
 	 * For example: Node = state
 	 * <br/>
 	 * Another example: OV = entityInstance
+	 * <br/>
+	 * Another example: b_cardinality(Node;state;1)
 	 * 
 	 */
 	protected ICompilerBooleanValue bFactor() throws InvalidConditionantException,
@@ -1779,7 +1787,12 @@ public class Compiler implements ICompiler {
 					for (Entity entity : undeclaredStates) {
 						if (entity != null) {
 							// distribute the remaining probability (1-retValue) uniformly across the non-declared states, but substitute NaN with 0
-							this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(Float.isNaN(probOfUndeclaredState)?0f:probOfUndeclaredState )));
+							if (this.getSSBNNode() != null) {
+								// use a special type of cell which will recalculate the probability each time getProbabiity is called, by uniformly distributing 1-(probability of declared states)
+								this.currentHeader.addCell(new TempTableProbabilityCell(entity, new UniformComplementProbabilityValue(this.currentHeader, entity)));
+							} else {
+								this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(Float.isNaN(probOfUndeclaredState)?0f:probOfUndeclaredState )));
+							}
 							// the following may be irrelevant now, since we fill all undeclared states automatically anyway
 //							declaredStates.add(entity);
 						}
@@ -4138,9 +4151,36 @@ public class Compiler implements ICompiler {
 		public float getProbability() throws InvalidProbabilityRangeException {
 			return this.value;
 		}
-		
-		
-		
+	}
+	
+	protected class UniformComplementProbabilityValue extends IProbabilityValue {
+
+		private TempTableHeaderCell currentHeader;
+		private Entity entity;
+
+		public UniformComplementProbabilityValue(TempTableHeaderCell currentHeader, Entity entity) {
+			this.currentHeader = currentHeader;
+			this.entity = entity;
+		}
+
+		public float getProbability() throws InvalidProbabilityRangeException {
+			if (currentHeader == null || getSSBNNode() == null || getSSBNNode().getProbNode() == null) {
+				return 0;
+			}
+			float sumOtherStates = 0;
+			int declaredStates = 0;
+			for (TempTableProbabilityCell cell : currentHeader.getCellList()) {
+				if (this.getClass().isAssignableFrom(cell.getProbability().getClass())) {
+					continue;	// ignore cells that are also dynamic like this class
+				}
+				declaredStates++;
+				sumOtherStates += cell.getProbabilityValue();
+			}
+			if (Float.isNaN(sumOtherStates) || declaredStates <= 0) {
+				return 0f;
+			}
+			return (1-sumOtherStates)/(getSSBNNode().getProbNode().getStatesSize() - declaredStates);
+		}
 		
 	}
 	
