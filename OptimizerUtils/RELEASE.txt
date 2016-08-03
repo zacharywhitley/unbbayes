@@ -1,0 +1,18 @@
+
+
+----------------------------------------------------------------
+
+Version 1.1.0
+
+Support for "Type_of_Fusion:	4" in JavaSimulatorWrapper.in.
+It will assume that Alert is a variable not to be calculated by the simulator,
+and it will try load it from the input probabilities (it will assume that
+Alert is the last variable--the variable that will have states iterated most).
+
+
+----------------------------------------------------------------
+Version 1.0.0
+
+Initial release.
+A JavaSimulatorWrapper.jar will be able to read JavaSimulatorWrapper.in file
+and output JavaSimulatorWrapper.out file. See samples.
