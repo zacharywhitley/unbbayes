@@ -32,9 +32,13 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto
  *
  */
-public class EuclidianDistanceObjFunctionPrinter extends ObjFunctionPrinter {
+public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
+	
+	private boolean isToUseAuxiliaryTable = true;
 
-	public EuclidianDistanceObjFunctionPrinter() {
+	public EuclideanDistanceObjFunctionPrinter() {
+		setIndicatorNames(null);
+		setDetectorNames(null);
 		this.setPrimaryTableWeightSymbol("w");		// for weights
 		this.setAuxiliaryTableWeightSymbol("n");	// for counts
 		this.setProbabilityVariablePrefix("x");		// for probabilities to be optimized
@@ -72,7 +76,10 @@ public class EuclidianDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 		
 		// Similarly, tables related to Indicator X Detector. 
 		// Again, we won't use the values in cells (the table is just for organizing variables and states)
-		List<PotentialTable> auxiliaryTables = this.getDetectorTables(variableMap , null, indicatorNameList, detectorNameList);
+		List<PotentialTable> auxiliaryTables = null;
+		if (isToUseAuxiliaryTables()) {
+			auxiliaryTables = this.getDetectorTables(variableMap , null, indicatorNameList, detectorNameList);
+		}
 		
 		// actually print the objective function
 		printer.println(this.getObjFunction(primaryTables, auxiliaryTables, jointTable));
@@ -86,7 +93,7 @@ public class EuclidianDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 			
 			// also print the meaning of count variables n[i] and w[i]
 			printer.println();
-			printer.println("Counts and weights:");
+			printer.println("Counts:");
 			printer.println(this.getCountTableDescription(primaryTables, auxiliaryTables));
 		}
 		
@@ -129,7 +136,7 @@ public class EuclidianDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 		if (primaryTables != null) {
 			tables.addAll(primaryTables);
 		}
-		if (auxiliaryTables != null) {
+		if (isToConsiderDetectors() && auxiliaryTables != null) {
 			tables.addAll(auxiliaryTables);
 		}
 		
@@ -150,7 +157,13 @@ public class EuclidianDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 	    	// Var1,	StateVar1,	Var2,	StateVar2, ...
 			printer.print("Var" + (i+1) + ",StateVar" + (i+1) + ",") ;
 		}
-	    printer.println(getAuxiliaryTableWeightSymbol() + "," + getPrimaryTableWeightSymbol());	// n,w
+	    // n,w
+	    printer.print(getAuxiliaryTableWeightSymbol());	
+	    if (getPrimaryTableWeightSymbol() != null && !getPrimaryTableWeightSymbol().isEmpty()) {
+	    	printer.println("," + getPrimaryTableWeightSymbol());	// n,w
+	    } else {
+	    	printer.println();
+	    }
 	    
 	    
 	    // I1,	TRUE,		I2,	TRUE,		n[1],	w[1]
@@ -164,7 +177,11 @@ public class EuclidianDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 					printer.print(table.getVariableAt(varIndex).getStateAt(coord[varIndex]) + ",");
 				}
 				printer.print(getAuxiliaryTableWeightSymbol()+"[" + (rowIndex+1) + "],");
-				printer.println(getPrimaryTableWeightSymbol() + "[" + (tableIndex+1) +"]");
+				if (getPrimaryTableWeightSymbol() != null && !getPrimaryTableWeightSymbol().isEmpty()) {
+					printer.println(getPrimaryTableWeightSymbol() + "[" + (tableIndex+1) +"]");
+				} else {
+					printer.println();
+				}
 			}
 		}
 		
@@ -197,7 +214,7 @@ public class EuclidianDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 			allTables.addAll(primaryTables);
 		}
 		// auxiliary tables comes after primary tables
-		if (auxiliaryTables != null) {
+		if (isToUseAuxiliaryTables() && auxiliaryTables != null) {
 			allTables.addAll(auxiliaryTables);	
 		}
 		
@@ -289,6 +306,7 @@ public class EuclidianDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 		options.addOption("inames","indicator-names", true, "Comma-separated names of indicators.");
 		options.addOption("dnames","detector-names", true, "Comma-separated names of detectors.");
 		options.addOption("h","help", false, "Help.");
+		options.addOption("aux","use-auxiliary-table", false, "Use auxiliary tables: tables of Indicator X Detector joint states.");
 		
 		CommandLine cmd = null;
 		try {
@@ -316,7 +334,7 @@ public class EuclidianDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 			Debug.setDebug(false);
 		}
 		
-		EuclidianDistanceObjFunctionPrinter printer = new EuclidianDistanceObjFunctionPrinter();
+		EuclideanDistanceObjFunctionPrinter printer = new EuclideanDistanceObjFunctionPrinter();
 		
 		
 		
@@ -330,6 +348,7 @@ public class EuclidianDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 			}
 		}
 		
+		printer.setToUseAuxiliaryTables(cmd.hasOption("aux"));
 		
 		if (cmd.hasOption("inames")) {
 			printer.setIndicatorNames(cmd.getOptionValue("inames").split("[,:]"));
@@ -346,6 +365,23 @@ public class EuclidianDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 			e.printStackTrace();
 		}
 		
+	}
+	
+
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean isToUseAuxiliaryTables() {
+		return this.isToUseAuxiliaryTable;
+	}
+
+	/**
+	 * 
+	 * @param isToUseAuxiliaryTable
+	 */
+	public void setToUseAuxiliaryTables(boolean isToUseAuxiliaryTable) {
+		this.isToUseAuxiliaryTable  = isToUseAuxiliaryTable;
 	}
 
 
