@@ -18,6 +18,7 @@ import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -61,6 +62,7 @@ public class ObjFunctionPrinter {
 	
 	
 	private String threatName = "Threat";
+	private String alertName = "Alert";
 	
 	public static final String[] DEFAULT_INDICATOR_NAMES1 = {"I1", "I2", "I3", "I4", "I5"}; //RCP1
 	public static final String[] DEFAULT_INDICATOR_NAMES2 = {"I1", "I2", "I3", "I4", "I5", "I6"}; //RCP2
@@ -1159,16 +1161,9 @@ public class ObjFunctionPrinter {
 		}
 		
 		if (cmd.hasOption("h")) {
-			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"RCP1\", \"RCP2\", or \"RCP3\").");
-			System.out.println("-out <SOME NAME> : file to print output.");
-			System.out.println("-i : Use indicator tables, and do not use detectors.");
-			System.out.println("-d : Enables debug mode.");
-			System.out.println("-h: Help.");
-			System.out.println("-primary : where to read primary tables from.");
-			System.out.println("-aux : where to read auxiliary tables from.");
-			System.out.println("-inames : Comma-separated names of indicators.");
-			System.out.println("-dnames : Comma-separated names of detectors.");
-			System.out.println("-threat : Name of threat variable.");
+			for (Option option : options.getOptions()) {
+				System.out.println("-" + option.getOpt() + (option.hasArg()?(" <" + option.getLongOpt() +">"):"") + " : " + option.getDescription());
+			}
 			return;
 		}
 		
@@ -1549,6 +1544,20 @@ public class ObjFunctionPrinter {
 	 */
 	public void setProbabilityVariablePrefix(String probabilityVariablePrefix) {
 		this.probabilityVariablePrefix = probabilityVariablePrefix;
+	}
+
+	/**
+	 * @return the alertName
+	 */
+	public String getAlertName() {
+		return alertName;
+	}
+
+	/**
+	 * @param alertName the alertName to set
+	 */
+	public void setAlertName(String alertName) {
+		this.alertName = alertName;
 	}
 
 

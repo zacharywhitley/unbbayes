@@ -61,14 +61,23 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	}
 	
 	
-
 	/**
-	 * 
-	 * @param jointTable
 	 * @param file
-	 * @throws IOException 
+	 * @return
+	 * @throws IOException
+	 * @see {@link #getJointProbabilityFromFile(File, boolean)}
 	 */
 	public PotentialTable getJointProbabilityFromFile(File file) throws IOException {
+		return this.getJointProbabilityFromFile(file, false);
+	}
+
+	/**
+	 * @param jointTable
+	 * @param file
+	 * @param isToConsiderAlert
+	 * @throws IOException 
+	 */
+	public PotentialTable getJointProbabilityFromFile(File file, boolean isToConsiderAlert) throws IOException {
 		
 		CSVReader reader = new CSVReader(new FileReader(file));
 		
@@ -119,6 +128,9 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 			if (isToConsiderDetectors()) {
 				varNames.addAll(getNameList(getDetectorNames()));
 			}
+			if (isToConsiderAlert) {
+				varNames.add(getAlertName());
+			}
 		}
 		
 		PotentialTable jointTable = super.getJointTable(null, varNames);
@@ -127,6 +139,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		int cellsRead = 0;
 		for (csvLine = reader.readNext(); csvLine != null; csvLine = reader.readNext()) {
 			if (cellsRead >= jointTable.tableSize()) {
+				// file is larger than expected probability distribution
 				break;
 			}
 			float value = 0;
@@ -140,6 +153,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 			jointTable.setValue(cellsRead, value);
 			cellsRead++;
 		}
+		
 		if (cellsRead != jointTable.tableSize()) {
 			reader.close();
 			throw new RuntimeException("Cells read = " + cellsRead + ", expected = " + jointTable.tableSize());

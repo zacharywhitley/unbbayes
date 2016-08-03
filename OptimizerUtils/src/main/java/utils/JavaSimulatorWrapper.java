@@ -17,6 +17,7 @@ import java.util.Map;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -1057,6 +1058,8 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		this.setCountAlert(this.convertFusionTypeToCountAlert(typeOfFusion));
 		Debug.println(getClass(), "Count alert = " + this.getCountAlert());
 		
+		setToReadAlert(((int)(Float.parseFloat(typeOfFusion)) == 4));
+		
 		// reset the probability vector
 		getWrapperProbabilities().clear();
 		
@@ -1370,10 +1373,9 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 		
 
 		if (cmd.hasOption("h")) {
-			System.out.println("-d : Enables debug mode.");
-			System.out.println("-i : File to read. If not specified, JavaSimulatorWrapper.in (in same directory of the program) will be used.");
-			System.out.println("-o : File to write. If not specified, JavaSimulatorWrapper.out (in same directory of the program) will be used.");
-			System.out.println("-h : Help.");
+			for (Option option : options.getOptions()) {
+				System.out.println("-" + option.getOpt() + (option.hasArg()?(" <" + option.getLongOpt() +">"):"") + " : " + option.getDescription());
+			}
 			return;
 		}
 		
@@ -1407,7 +1409,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				Debug.println(JavaSimulatorWrapper.class, "Created temporary file for users: " + tempDirichletOutput.getAbsolutePath());
 				
 				// set up arguments for dirichlet-multinomial simulator
-				String[] dirichletArgs = new String[Debug.isDebugMode()?15:14];
+				String[] dirichletArgs = new String[Debug.isDebugMode()?16:15];
 				
 				// -i "RCP3-full" -o "test.csv" -u 4263 -n 1 -numI 4 -numD 4 -a 2 -d 
 				dirichletArgs[0] = "-i";
@@ -1424,8 +1426,9 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				dirichletArgs[11] = ""+wrapper.getNumDetectors();	
 				dirichletArgs[12] = "-a";	
 				dirichletArgs[13] = ""+wrapper.getCountAlert();	
-				if (Debug.isDebugMode() && dirichletArgs.length >= 15) {
-					dirichletArgs[14] = "-d";	
+				dirichletArgs[14] = wrapper.isToReadAlert()?"-ra":"";	
+				if (Debug.isDebugMode() && dirichletArgs.length >= 16) {
+					dirichletArgs[15] = "-d";	
 				}
 				
 				if (Debug.isDebugMode()) {

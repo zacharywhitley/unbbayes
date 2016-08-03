@@ -14,6 +14,7 @@ import java.util.Map;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
@@ -64,6 +65,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	private int countAlert = 2;
 	
 	private boolean isToUseDirichletMultinomial = true;
+	private boolean isToReadAlert = false;
 	
 
 	/**
@@ -258,11 +260,11 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 				}
 			});
 			for (File internalFile : files) {
-				jointProbabilities.add(this.getJointProbabilityFromFile(internalFile));
+				jointProbabilities.add(this.getJointProbabilityFromFile(internalFile, isToReadAlert()));
 			}
 		} else if (input.isFile()) {
 			// read a single file
-			jointProbabilities.add(this.getJointProbabilityFromFile(input));
+			jointProbabilities.add(this.getJointProbabilityFromFile(input, isToReadAlert()));
 		} else {
 			throw new IllegalArgumentException(input.getName() + " is not a valid accessible file/directory.");
 		}
@@ -408,6 +410,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		options.addOption("q","quick", false, "Quick sampling (does not use dirichlet multinomial sampling).");
 		options.addOption("numI","number-indicators", true, "Number of indicators to consider.");
 		options.addOption("numD","number-detectors", true, "Number of detectors to consider.");
+		options.addOption("ra","read-alert", false, "Whether to read aleart from probability file.");
 		
 		
 		CommandLine cmd = null;
@@ -424,19 +427,9 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		}
 		
 		if (cmd.hasOption("h")) {
-			System.out.println("-i <FILE NAME> : file or directory containing csv files of joint probabilities.");
-			System.out.println("-o <SOME NUMBER> : file or directory to place output files.");
-			System.out.println("-u <SOME NUMBER> : number of users.");
-			System.out.println("-n <SOME NUMBER> : number of organizations (repetitions of sampled users).");
-			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"Users_RCP1\", \"Users_RCP2\", or \"Users_RCP3\"). "
-					+ "This will be used as suffixes of output file names");
-			System.out.println("-d : Enables debug mode.");
-			System.out.println("-s : short version (does not consider detectors).");
-			System.out.println("-a <SOME NUMBER> : whether to print alert and how many detectors to consider in alert.");
-			System.out.println("-h: Help.");
-			System.out.println("-q: quick sampling (does not use dirichlet multinomial sampling).");
-			System.out.println("-numI: Number of indicators to consider.");
-			System.out.println("-numD: Number of detectors to consider.");
+			for (Option option : options.getOptions()) {
+				System.out.println("-" + option.getOpt() + (option.hasArg()?(" <" + option.getLongOpt() +">"):"") + " : " + option.getDescription());
+			}
 			return;
 		}
 		
@@ -468,6 +461,10 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			sim.setToPrintAlert(true);
 			sim.setCountAlert(Integer.parseInt(cmd.getOptionValue("a")));
 		} else {
+			sim.setToPrintAlert(false);
+		}
+		if (cmd.hasOption("ra")) {
+			sim.setToReadAlert(true);
 			sim.setToPrintAlert(false);
 		}
 
@@ -597,6 +594,20 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	public void setToUseDirichletMultinomial(boolean isToUseDirichletMultinomial) {
 		this.isToUseDirichletMultinomial = isToUseDirichletMultinomial;
 		Debug.println("Dirichlet multinomial sampling mode: " + (isToUseDirichletMultinomial?"on":"off"));
+	}
+
+	/**
+	 * @return the isToReadAlert
+	 */
+	public boolean isToReadAlert() {
+		return isToReadAlert;
+	}
+
+	/**
+	 * @param isToReadAlert the isToReadAlert to set
+	 */
+	public void setToReadAlert(boolean isToReadAlert) {
+		this.isToReadAlert = isToReadAlert;
 	}
 
 
