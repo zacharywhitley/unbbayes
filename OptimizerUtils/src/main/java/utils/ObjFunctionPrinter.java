@@ -1233,12 +1233,13 @@ public class ObjFunctionPrinter {
 	 */
 	public List<String> getNameList(String[] names)  {
 		List<String> ret = new ArrayList<String>();
-		
-		for (String name : names) {
-			if (name.trim().isEmpty()) {
-				continue;	//ignore blank names
+		if (names != null) {
+			for (String name : names) {
+				if (name.trim().isEmpty()) {
+					continue;	//ignore blank names
+				}
+				ret.add(name);
 			}
-			ret.add(name);
 		}
 		return ret;
 	}
