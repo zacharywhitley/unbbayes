@@ -43,6 +43,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	public static final String TYPE_FUSION_PROPERTY_NAME = "Type_of_Fusion";
 	public static final String PROBABILITIES_PROPERTY_NAME_PREFIX = "Probabilities";
 	public static final String PROBABILITY_PROPERTY_NAME = "Probability";
+	public static final String HAS_ALERT_IN_PROB_PROPERTY_NAME = "Has_Alert_In_Prob";
 	
 	private String numberOfIndicatorsPropertyName = NUMBER_INDICATORS_PROPERTY_NAME;
 	private String numberOfDetectorsPropertyName = NUMBER_DETECTORS_PROPERTY_NAME;
@@ -50,6 +51,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	private String typeOfFusionPropertyName = TYPE_FUSION_PROPERTY_NAME;
 	private String probabilitiesPropertyNamePrefix = PROBABILITIES_PROPERTY_NAME_PREFIX;
 	private String probabilityPropertyName = PROBABILITY_PROPERTY_NAME;
+	private String hasAlertInProbPropertyName = HAS_ALERT_IN_PROB_PROPERTY_NAME;
 
 	private SimulatedUserStatisticsCalculator simulatedUserStatisticsCalculator = new SimulatedUserStatisticsCalculator();
 	private DirichletUserSimulator dirichletUserSimulator = new DirichletUserSimulator();
@@ -1057,8 +1059,8 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		Debug.println(getClass(), "Type of fusion = " + typeOfFusion);
 		this.setCountAlert(this.convertFusionTypeToCountAlert(typeOfFusion));
 		Debug.println(getClass(), "Count alert = " + this.getCountAlert());
-		
-		setToReadAlert(((int)(Float.parseFloat(typeOfFusion)) == 4));
+		this.setToReadAlert(Integer.parseInt(this.getIO().getProperty(getHasAlertInProbPropertyName())) != 0 );
+		Debug.println(getClass(), "Read alert = " + this.isToReadAlert());
 		
 		// reset the probability vector
 		getWrapperProbabilities().clear();
@@ -1109,11 +1111,17 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	 * @return
 	 */
 	public int convertFusionTypeToCountAlert(String fusionType) {
-		if (fusionType.trim().equals("1")) {
-			// currently, this is the only type of fusion we know (2 or more detectors triggers alert)
-			return 2;
+		if (fusionType == null || fusionType.trim().isEmpty()) {
+			return Integer.MIN_VALUE;
 		}
-		return Integer.MIN_VALUE;
+		int ret = Integer.MIN_VALUE;
+		try {
+			ret = 1 + ((int) (Float.parseFloat(fusionType)));
+		} catch (NumberFormatException e) {
+			Debug.println(getClass(), "Could not parse type of fusion: " + fusionType, e);
+			return Integer.MIN_VALUE;
+		}
+		return ret;
 	}
 
 	/**
@@ -1155,6 +1163,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		reader.readNext();	// ignore first row
 		String[] line = reader.readNext();
 		if (line == null) {
+			reader.close();
 			throw new IOException("2nd row not found in " + input.getName());
 		}
 		
@@ -1175,6 +1184,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		Debug.println(getClass(), "Writing wrapper " + output.getAbsolutePath());
 		this.getIO().writeWrapperFile(Collections.singletonMap(getProbabilityPropertyName(), commaSeparatedProb), output);
 		
+		reader.close();
 	}
 
 
@@ -1472,9 +1482,10 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				
 				wrapper.convertToWrapperOutput(tempQuestionOutput, wrapper.getOutput());
 				
+				tempProbDirectory.delete();
 				tempDirichletOutput.delete();
 				tempQuestionOutput.delete();
-				tempProbDirectory.delete();
+				
 			} catch (Exception e) {
 				
 				if (numAttempt + 1 >= maxNumAttempt) {
@@ -1516,6 +1527,26 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 	 */
 	public static void setMaxNumAttempt(int maxNumAttempt) {
 		JavaSimulatorWrapper.maxNumAttempt = maxNumAttempt;
+	}
+
+	/**
+	 * @return the hasAlertInProbPropertyName : name of the property in JavaSimulatorWrapper.in file 
+	 * which indicates whether the Alert variable is included in the probability distribution (1)
+	 * or not included (0).
+	 * @see #loadWrapperInput(File)
+	 */
+	public String getHasAlertInProbPropertyName() {
+		return hasAlertInProbPropertyName;
+	}
+
+	/**
+	 * @param hasAlertInProbPropertyName : name of the property in JavaSimulatorWrapper.in file 
+	 * which indicates whether the Alert variable is included in the probability distribution (1)
+	 * or not included (0).
+	 * @see #loadWrapperInput(File)
+	 */
+	public void setHasAlertInProbPropertyName(String hasAlertInProbPropertyName) {
+		this.hasAlertInProbPropertyName = hasAlertInProbPropertyName;
 	}
 	
 }
