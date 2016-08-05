@@ -2358,10 +2358,10 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		for (ObjectEntity entity : mebn.getObjectEntityContainer().getListEntity()) {
 			 currentOWLEntity = this.getObjectEntityClassesCache().get(entity).asOWLClass();
 			 // ignore owl:Thing, because it is too generic (and it represents actually everything)
-			 if (currentOWLEntity.isOWLThing()) {
-				 continue;
-			 }
 			 if (currentOWLEntity != null) {
+				 if (currentOWLEntity.isOWLThing()) {
+					 continue;
+				 }
 				 // create OWL individuals (or reuse them) for each object entity instance found for that entity
 				 for ( ObjectEntityInstance entityInstance : entity.getInstanceList()) {
 					 // ignore entityInstances that were loaded from this ontology (we are not going to save them twice)
