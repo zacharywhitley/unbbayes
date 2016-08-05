@@ -1,9 +1,13 @@
-UNBBAYES MEBN PLUGIN - VERSION 1.16.13
+UNBBAYES MEBN PLUGIN - VERSION 1.16.14
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
 15			Changes in LPD grammar to get closer to FOL expressiveness.
 16			Bayes ball algorithm
+
+BUG LIST		
+Number	Request ID	Summary
+14			Fixed a bug in LPD regarding if-clauses only referencing entities with total order.
 
 UNBBAYES MEBN PLUGIN - VERSION 1.14.13
 ----------------------------
