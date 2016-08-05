@@ -1,11 +1,19 @@
 package unbbayes.io.mebn;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import junit.framework.TestCase;
 import unbbayes.prs.Graph;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.ObjectEntityContainer;
+import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
+import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.util.Debug;
 
 public class UbfIO2Test extends TestCase {
@@ -23,6 +31,77 @@ public class UbfIO2Test extends TestCase {
 		super.tearDown();
 	}
 
+	/**
+	 * This will check if creating {@link ObjectEntity} and {@link ObjectEntityInstance}
+	 * from a newly created {@link MultiEntityBayesianNetwork}, saving it as PR-OWL 2, and then loading
+	 * it again won't sweep  {@link ObjectEntity} and {@link ObjectEntityInstance}.
+	 * @throws TypeException 
+	 * @throws EntityInstanceAlreadyExistsException 
+	 * @throws IOException 
+	 */
+	public final void testSaveEntitiesFromScratch() throws TypeException, EntityInstanceAlreadyExistsException, IOException {
+		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("MEBN_From_Scratch");
+		
+		// create object entities
+		ObjectEntityContainer entityContainer = mebn.getObjectEntityContainer();
+		
+		ObjectEntity myEntity = entityContainer.createObjectEntity("MyEntity");
+		ObjectEntity siblingEntity = entityContainer.createObjectEntity("SiblingEntity");
+		ObjectEntity childEntity = entityContainer.createObjectEntity("ChildEntity", myEntity);
+		
+		// create one instance for each entity
+		ObjectEntityInstance myInstance = myEntity.addInstance("myInstance");
+		mebn.getObjectEntityContainer().addEntityInstance(myInstance);
+		ObjectEntityInstance siblingInstance = siblingEntity.addInstance("siblingInstance");
+		mebn.getObjectEntityContainer().addEntityInstance(siblingInstance);
+		ObjectEntityInstance childInstance = childEntity.addInstance("childInstance");
+		mebn.getObjectEntityContainer().addEntityInstance(childInstance);
+		
+		int numEntities = mebn.getObjectEntityContainer().getListEntity().size();
+		int numInstances = mebn.getObjectEntityContainer().getListEntityInstances().size();
+		
+		// save the project as ubf + PR-OWL 2 file
+		
+		UbfIO2 io = UbfIO2.getInstance();
+		
+		File tempFolder = Files.createTempDirectory(Paths.get(new File("./").toURI()), mebn.getName()).toFile();
+		tempFolder.deleteOnExit();
+		File tempFile = File.createTempFile(mebn.getName(), ".ubf", tempFolder);
+		tempFile.deleteOnExit();
+		
+		io.save(tempFile, mebn);
+		
+		// load the project again
+		mebn = (MultiEntityBayesianNetwork) io.load(tempFile);
+		assertNotNull(mebn);
+		assertNotNull(mebn.getObjectEntityContainer());
+		
+		// check if entities are still there
+		assertEquals(numEntities, mebn.getObjectEntityContainer().getListEntity().size());
+		assertTrue(mebn.getObjectEntityContainer().getObjectEntityByName(myEntity.getName()) != null);
+		assertEquals(mebn.getObjectEntityContainer().getObjectEntityByName(myEntity.getName()).getName(), myEntity.getName());
+		assertTrue(mebn.getObjectEntityContainer().getObjectEntityByName(siblingEntity.getName()) != null);
+		assertEquals(mebn.getObjectEntityContainer().getObjectEntityByName(siblingEntity.getName()).getName(), siblingEntity.getName());
+		assertTrue(mebn.getObjectEntityContainer().getObjectEntityByName(childEntity.getName()) != null);
+		assertEquals(mebn.getObjectEntityContainer().getObjectEntityByName(childEntity.getName()).getName(), childEntity.getName());
+		
+		// check if instances are still there
+		assertEquals(numInstances, mebn.getObjectEntityContainer().getListEntityInstances().size());
+		assertTrue(mebn.getObjectEntityContainer().getEntityInstanceByName(myInstance.getName()) != null);
+		assertEquals(mebn.getObjectEntityContainer().getEntityInstanceByName(myInstance.getName()).getName(), myInstance.getName());
+		assertEquals(mebn.getObjectEntityContainer().getObjectEntityByName(myInstance.getInstanceOf().getName()).getInstanceByName( myInstance.getName()).getName(), myInstance.getName());
+		assertTrue(mebn.getObjectEntityContainer().getEntityInstanceByName(siblingInstance.getName()) != null);
+		assertEquals(mebn.getObjectEntityContainer().getEntityInstanceByName(siblingInstance.getName()).getName(), siblingInstance.getName());
+		assertEquals(mebn.getObjectEntityContainer().getObjectEntityByName(siblingInstance.getInstanceOf().getName()).getInstanceByName( siblingInstance.getName()).getName(), siblingInstance.getName());
+		assertTrue(mebn.getObjectEntityContainer().getEntityInstanceByName(childInstance.getName()) != null);
+		assertEquals(mebn.getObjectEntityContainer().getEntityInstanceByName(childInstance.getName()).getName(), childInstance.getName());
+		assertEquals(mebn.getObjectEntityContainer().getObjectEntityByName(childInstance.getInstanceOf().getName()).getInstanceByName( childInstance.getName()).getName(), childInstance.getName());
+		
+		
+		tempFile.delete();
+		tempFolder.delete();
+	}
+	
 	/**
 	 * Test method for {@link UbfIO2#load(java.io.File)}
 	 */
