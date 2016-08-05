@@ -11,7 +11,6 @@ import org.osgi.framework.BundleException;
 import org.protege.editor.core.ProtegeManager;
 import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.editor.owl.model.inference.NoOpReasonerInfo;
 import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.protege.editor.owl.model.inference.ReasonerStatus;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
@@ -20,7 +19,6 @@ import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWL2IO;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.entity.ontology.owlapi.OWLAPIObjectEntityContainer;
 import unbbayes.prs.mebn.ontology.protege.IBundleLauncher;
 import unbbayes.prs.mebn.ontology.protege.OWLClassExpressionParserFacade;
 import unbbayes.prs.mebn.ontology.protege.ProtegeBundleLauncher;
@@ -36,8 +34,8 @@ import unbbayes.util.Debug;
 public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 
 	
-	private long maximumBuzyWaitingCount = 300;
-	private long sleepTimeWaitingReasonerInitialization = 8000;
+	private long maximumBusyWaitingCount = 1000;
+	private long sleepTimeWaitingReasonerInitialization = 900;
 	
 	private IBundleLauncher protegeBundleLauncher;
 	
@@ -303,21 +301,36 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	}
 
 	/**
-	 * This is the maximum time we buzy-wait an uninitialized reasoner until it gets ready.
-	 * @return the maximumBuzyWaitingCount
-	 * @deprecated TODO stop using buzy waiting
+	 * @see #getMaximumBusyWaitingCount()
+	 * @deprecated : method not spelled correctly.
 	 */
 	public long getMaximumBuzyWaitingCount() {
-		return maximumBuzyWaitingCount;
+		return maximumBusyWaitingCount;
+	}
+	/**
+	 * This is the maximum time we buzy-wait an uninitialized reasoner until it gets ready.
+	 * @return the maximumBusyWaitingCount
+	 * @deprecated TODO stop using buzy waiting
+	 */
+	public long getMaximumBusyWaitingCount() {
+		return maximumBusyWaitingCount;
+	}
+	
+	/**
+	 * @see #setMaximumBusyWaitingCount(long)
+	 * @deprecated : method not spelled correctly.
+	 */
+	public void setMaximumBuzyWaitingCount(long maximumBuzyWaitingCount) {
+		this.maximumBusyWaitingCount = maximumBuzyWaitingCount;
 	}
 
 	/**
 	 * This is the maximum time we buzy-wait an uninitialized reasoner until it gets ready.
-	 * @param maximumBuzyWaitingCount the maximumBuzyWaitingCount to set
+	 * @param maximumBusyWaitingCount the maximumBusyWaitingCount to set
 	 * @deprecated TODO stop using buzy waiting
 	 */
-	public void setMaximumBuzyWaitingCount(long maximumBuzyWaitingCount) {
-		this.maximumBuzyWaitingCount = maximumBuzyWaitingCount;
+	public void setMaximumBusyWaitingCount(long maximumBuzyWaitingCount) {
+		this.maximumBusyWaitingCount = maximumBuzyWaitingCount;
 	}
 
 	/**
