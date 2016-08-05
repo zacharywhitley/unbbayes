@@ -31,10 +31,14 @@ import java.io.StreamTokenizer;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
+
+import org.semanticweb.owlapi.model.IRI;
 
 import unbbayes.io.exception.LoadException;
 import unbbayes.io.mebn.exceptions.IOMebnException;
@@ -43,6 +47,7 @@ import unbbayes.io.mebn.protege.Protege41CompatiblePROWL2IO;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.ContextNode;
+import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -538,7 +543,7 @@ public class UbfIO2 extends UbfIO {
 		 * but we need to keep track of what instances were declared within OWL file, then we
 		 * just save their names and clear them when order shall be set 
 		 */
-		List<String> owlDeclaredInstanceNames = null;
+		Map<String, IRI> owlDeclaredInstanceNames = null;
 		while (st.nextToken() != st.TT_EOF) {
 			
 			if (st.ttype != st.TT_WORD) {
@@ -550,7 +555,7 @@ public class UbfIO2 extends UbfIO {
 					if (st.ttype == st.TT_WORD) {
 						objectEntity = mebn.getObjectEntityContainer().getObjectEntityByName(st.sval);
 						// initiate tracking of entity instances
-						owlDeclaredInstanceNames = new ArrayList<String>();
+						owlDeclaredInstanceNames = new HashMap<String, IRI>();
 						break;
 					}
 				}
@@ -561,7 +566,7 @@ public class UbfIO2 extends UbfIO {
 			}else{
 				// store already declared instances
 				for (ObjectEntityInstance entityInstance : objectEntity.getInstanceList()) {
-					owlDeclaredInstanceNames.add(entityInstance.getName());
+					owlDeclaredInstanceNames.put(entityInstance.getName(), IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(mebn, entityInstance));
 				}
 				// clear instances in order to let it have order
 				mebn.getObjectEntityContainer().clearAllInstances(objectEntity);
@@ -582,12 +587,13 @@ public class UbfIO2 extends UbfIO {
 				while (st.nextToken() != st.TT_EOL) {
 					if (st.ttype == st.TT_WORD) {
 						String name = st.sval;
-						if (!owlDeclaredInstanceNames.contains(name)) {
+						if (owlDeclaredInstanceNames.get(name) == null) {
 							// we should only add the instances also declared previously in OWL file
 							continue;
 						}
 						try {
 							ObjectEntityInstanceOrdereable oe = (ObjectEntityInstanceOrdereable)objectEntity.addInstance(name); 
+							IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, oe, owlDeclaredInstanceNames.get(name));
 							mebn.getObjectEntityContainer().addEntityInstance(oe);
 							oe.setPrev(prev);
 							if(prev!=null) prev.setProc(oe);
