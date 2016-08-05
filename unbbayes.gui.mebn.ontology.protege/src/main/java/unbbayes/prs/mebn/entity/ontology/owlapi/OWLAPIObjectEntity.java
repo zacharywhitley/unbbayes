@@ -3,16 +3,12 @@
  */
 package unbbayes.prs.mebn.entity.ontology.owlapi;
 
-import java.util.ArrayList;
 import java.util.Collections;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLEntity;
-import org.semanticweb.owlapi.model.OWLIndividual;
-import org.semanticweb.owlapi.model.OWLNamedIndividual;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
@@ -27,7 +23,7 @@ import unbbayes.io.mebn.owlapi.IPROWL2ModelUser;
 import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.entity.ObjectEntity;
-import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.ObjectEntityContainer;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
@@ -226,7 +222,10 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 	
 	/**
 	 * This method also renames {@link #getAssociatedOWLEntity()}
+	 * If you are using {@link ObjectEntityContainer}, then call {@link ObjectEntityContainer#renameEntity(ObjectEntity, String)} instead.
+	 * @param name The entity's name.
 	 * @see unbbayes.prs.mebn.entity.ObjectEntity#setName(java.lang.String)
+	 * @see ObjectEntityContainer#renameEntity(ObjectEntity, String)
 	 */
 	public void setName(String name) throws TypeAlreadyExistsException {
 		if (this.getName().equalsIgnoreCase(name)) {
@@ -344,60 +343,66 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 //		 return entityInstance;
 //	}
 	
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.entity.ObjectEntity#removeInstance(unbbayes.prs.mebn.entity.ObjectEntityInstance)
-	 */
-	public void removeInstance(ObjectEntityInstance instance) {
-		super.removeInstance(instance);
-		
-		// now, delete the associated owl individual
-		
-		// extract the ontology and its manager
-		OWLOntology ontology = getOWLOntology();
-		if (ontology == null) {
-			throw new NullPointerException("Could not extract owl ontology from mebn " + getMEBN());
-		}
-		OWLOntologyManager manager = ontology.getOWLOntologyManager();	// the manager of the owl ontology
-		PrefixManager currentPrefix = getOntologyPrefixManager(ontology);	// namespace of current ontology
-		
-		// extract the IRI and the OWL individual to delete
-		IRI iri = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(getMEBN(), instance);
-		OWLNamedIndividual individualToRemove = null;
-		if (iri != null) {
-			// extract the individual from mapped IRI
-			individualToRemove = manager.getOWLDataFactory().getOWLNamedIndividual(iri);
-		} else {
-			// there were no IRI mapped for this instance. Make a guess from its name 
-			System.err.println(instance + " is not mapped to any OWL individual in " + getMEBN() + ". Guessing the IRI from its name...");
-			individualToRemove = manager.getOWLDataFactory().getOWLNamedIndividual(instance.getName(), currentPrefix);
-			iri = individualToRemove.getIRI();
-			System.err.println("Guessed IRI = " + iri);
-		}
-		if ( ( iri == null ) || (individualToRemove == null) || !ontology.containsIndividualInSignature(iri, true) ) {
-			return; // there is no individual to delete anyway
-		}
-		
-		OWLEntityRemover remover = new OWLEntityRemover(manager, Collections.singleton(ontology));
-		remover.visit(individualToRemove);
-		manager.applyChanges(remover.getChanges());	// commit
-		
-		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, instance, null);
-	}
-	/* (non-Javadoc)
-	 * @see unbbayes.prs.mebn.entity.ObjectEntity#removeAllInstances()
-	 */
-	public void removeAllInstances() {
-		for (ObjectEntityInstance instance : new ArrayList<ObjectEntityInstance>(getInstanceList())) {	// iterate on a cloned list, so that changes are not concurrent.
-			this.removeInstance(instance);
-		}
-	}
+	
+	
+	
+	
+	// uncomment the following code if you need instances to be immediately removed from ontology (without "saving")
+	
+//	/* (non-Javadoc)
+//	 * @see unbbayes.prs.mebn.entity.ObjectEntity#removeInstance(unbbayes.prs.mebn.entity.ObjectEntityInstance)
+//	 */
+//	public void removeInstance(ObjectEntityInstance instance) {
+//		super.removeInstance(instance);
+//		
+//		// now, delete the associated owl individual
+//		
+//		// extract the ontology and its manager
+//		OWLOntology ontology = getOWLOntology();
+//		if (ontology == null) {
+//			throw new NullPointerException("Could not extract owl ontology from mebn " + getMEBN());
+//		}
+//		OWLOntologyManager manager = ontology.getOWLOntologyManager();	// the manager of the owl ontology
+//		PrefixManager currentPrefix = getOntologyPrefixManager(ontology);	// namespace of current ontology
+//		
+//		// extract the IRI and the OWL individual to delete
+//		IRI iri = IRIAwareMultiEntityBayesianNetwork.getIRIFromMEBN(getMEBN(), instance);
+//		OWLNamedIndividual individualToRemove = null;
+//		if (iri != null) {
+//			// extract the individual from mapped IRI
+//			individualToRemove = manager.getOWLDataFactory().getOWLNamedIndividual(iri);
+//		} else {
+//			// there were no IRI mapped for this instance. Make a guess from its name 
+//			System.err.println(instance + " is not mapped to any OWL individual in " + getMEBN() + ". Guessing the IRI from its name...");
+//			individualToRemove = manager.getOWLDataFactory().getOWLNamedIndividual(instance.getName(), currentPrefix);
+//			iri = individualToRemove.getIRI();
+//			System.err.println("Guessed IRI = " + iri);
+//		}
+//		if ( ( iri == null ) || (individualToRemove == null) || !ontology.containsIndividualInSignature(iri, true) ) {
+//			return; // there is no individual to delete anyway
+//		}
+//		
+//		OWLEntityRemover remover = new OWLEntityRemover(manager, Collections.singleton(ontology));
+//		remover.visit(individualToRemove);
+//		manager.applyChanges(remover.getChanges());	// commit
+//		
+//		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, instance, null);
+//	}
+//	/* (non-Javadoc)
+//	 * @see unbbayes.prs.mebn.entity.ObjectEntity#removeAllInstances()
+//	 */
+//	public void removeAllInstances() {
+//		for (ObjectEntityInstance instance : new ArrayList<ObjectEntityInstance>(getInstanceList())) {	// iterate on a cloned list, so that changes are not concurrent.
+//			this.removeInstance(instance);
+//		}
+//	}
+	
 	/* (non-Javadoc)
 	 * @see unbbayes.prs.mebn.entity.ObjectEntity#delete()
 	 */
 	protected void delete() throws TypeDoesNotExistException {
 		// TODO Auto-generated method stub
 		super.delete();
-		
 		// now, delete the associated owl entity
 		
 		// extract the entity to delete

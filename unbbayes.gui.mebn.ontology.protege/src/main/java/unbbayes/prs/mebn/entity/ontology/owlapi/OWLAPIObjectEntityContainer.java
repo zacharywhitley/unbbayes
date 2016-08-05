@@ -3,6 +3,9 @@
  */
 package unbbayes.prs.mebn.entity.ontology.owlapi;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLClassExpression;
@@ -17,9 +20,13 @@ import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.entity.IObjectEntityBuilder;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityContainer;
+import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.TypeContainer;
+import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
+import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
+import unbbayes.util.Debug;
 
 /**
  * 
@@ -103,9 +110,46 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 		
 		// fill this_ container with content of old container;
 		this.setTypeContainer(oldContainer.getTypeContainer());
-//		this.setEntityNum(oldContainer.getEntityNum());
-//		this.getListEntity().addAll(oldContainer.getListEntity());
+		
+		try {
+			oldContainer.getRootObjectEntity().setName(this.getDefaultRootEntityName());
+		} catch (TypeAlreadyExistsException e) {
+			Debug.println(getClass(), "Could not rename root entity.", e);
+		}
+		this.setRootObjectEntity(oldContainer.getRootObjectEntity());
+		// make sure MEBN knows the IRI of this root entity is the same of owl:Thing
+		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, this.getRootObjectEntity(), OWLManager.getOWLDataFactory().getOWLThing().getIRI());
+		
+		// copy the entities
+		for (ObjectEntity entity : oldContainer.getListEntity()) {
+			List<ObjectEntity> parents = oldContainer.getParentsOfObjectEntity(entity);
+			if (parents == null || parents.isEmpty()) {
+				// this will also force root node, and those with no parents explicitly specified, to be managed by this container
+				this.addEntity(entity, null);
+			} else {
+				for (ObjectEntity parent : parents) {
+					this.addEntity(entity, parent);
+				}
+			}
+		}
+		
+		
+		// copy the instances
 //		this.getListEntityInstances().addAll(oldContainer.getListEntityInstances());
+		// the above may not work, because there is no guarantee that getListEntityInstances is mutable and will return original instance
+		List<ObjectEntityInstance> failedToInclude = new ArrayList<ObjectEntityInstance>();
+		for (ObjectEntityInstance instance : oldContainer.getListEntityInstances()) {
+			try {
+				this.addEntityInstance(instance);
+			} catch (EntityInstanceAlreadyExistsException e) {
+				Debug.println(getClass(), "Failed to include " + instance, e);
+				failedToInclude.add(instance);
+			}
+		}
+		// try to add instances in other way, if the "official" way has failed.
+		this.getListEntityInstances().addAll(failedToInclude);
+		
+		this.setEntityNum(oldContainer.getEntityNum());
 		
 	}
 	
@@ -136,6 +180,7 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 //		plusEntityNum(); 
 //		
 //		return objEntity; 
+		// TODO synchronize (i.e. use synchronized(Object)) this and other methods that either creates entities or sets configurations
 		boolean backup = this.isToCreateOWLEntity();
 		try {
 			this.setToCreateOWLEntity(isToCreateOWLEntity);
