@@ -20,6 +20,8 @@
  */
 package unbbayes.prs.mebn.entity;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -29,6 +31,7 @@ import unbbayes.prs.mebn.entity.exception.ObjectEntityHasInstancesException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
+import unbbayes.util.Debug;
 
 /**
  * 
@@ -38,6 +41,9 @@ import unbbayes.prs.mebn.entity.exception.TypeException;
 public class ObjectEntity extends Entity {
 
 	private TypeContainer typeContainer = null; 
+	
+	private List<IEntityNameChangeListener> nameChangeListeners = null;
+	
 	
 	/**
 	 * This object property (subsOVar) assigns MetaEntity individuals in order 
@@ -57,7 +63,7 @@ public class ObjectEntity extends Entity {
 	
 	protected ObjectEntity(String name, TypeContainer container) throws TypeException {
 		
-		super(name, container.createType(name + "_label")); 
+		super(name, (container.getType(name + "_label")!=null)?container.getType(name + "_label"):container.createType(name + "_label")); 
 		typeContainer = container; 
 		
 		listObjectEntityInstance = new HashSet<ObjectEntityInstance>(); 
@@ -169,9 +175,15 @@ public class ObjectEntity extends Entity {
 
 	/**
 	 * Set the entity's name. 
+	 * <br/>
+	 * If you are using {@link ObjectEntityContainer}, then call {@link ObjectEntityContainer#renameEntity(ObjectEntity, String)} instead.
 	 * @param name The entity's name.
+	 * @see ObjectEntityContainer#renameEntity(ObjectEntity, String)
+	 * @see #getNameChangeListeners()
+	 * @see IEntityNameChangeListener#onNameChange(String, String, Entity)
 	 */
 	public void setName(String name) throws TypeAlreadyExistsException{
+		// TODO use a listener that will invoke a method in ObjectEntityContainer and will update the map of names.
 		
 		if(type != null){
 			type.renameType(name + "_label"); 
@@ -180,7 +192,20 @@ public class ObjectEntity extends Entity {
 			type =  typeContainer.createType(name + "_label"); 
 		}
 		
+		String oldName = this.name;
+		
 		this.name = name;
+		
+		// call listeners
+		try {
+			for (IEntityNameChangeListener listener : getNameChangeListeners()) {
+				listener.onNameChange(oldName, name, this);
+			}
+		} catch (Throwable t) {
+			if (Debug.isDebugMode()) {
+				t.printStackTrace();
+			}
+		}
 		
 	}
 	
@@ -223,5 +248,63 @@ public class ObjectEntity extends Entity {
 		
 		this.getType().setHasOrder(isOrdereable); 
 	}
+	
+	/**
+	 * @return the nameChangeListeners : listeners which will be called in {@link ObjectEntity#setName(String)}.
+	 * Please, notice that implementations may return an immutable list or a clone of actual list of listeners.
+	 */
+	public List<IEntityNameChangeListener> getNameChangeListeners() {
+		if (nameChangeListeners == null) {
+			nameChangeListeners = new ArrayList<IEntityNameChangeListener>();
+		}
+		return nameChangeListeners;
+	}
+	
+	/**
+	 * @param listener : listener which will be called in {@link ObjectEntity#setName(String)}
+	 * @return as specified in {@link Collection#add(Object)}
+	 * @see #getNameChangeListeners()
+	 */
+	public boolean addNameChangeListener(IEntityNameChangeListener listener) {
+		List<IEntityNameChangeListener> listeners = getNameChangeListeners();
+		if (listeners == null) {
+			listeners = new ArrayList<IEntityNameChangeListener>();
+			setNameChangeListeners(listeners);
+		}
+		return listeners.add(listener);
+	}
+	
+	/**
+	 * Deletes the specified listener
+	 * @param listener : listener which will be called in {@link ObjectEntity#setName(String)}
+	 * @return as specified in {@link Collection#remove(Object)}
+	 * @see #getNameChangeListeners()
+	 */
+	public boolean removeNameChangeListener(IEntityNameChangeListener listener) {
+		List<IEntityNameChangeListener> listeners = getNameChangeListeners();
+		if (listeners != null) {
+			return listeners.remove(listener);
+		}
+		return false;
+	}
+	
+	/**
+	 * Clears {@link #getNameChangeListeners()}
+	 */
+	public void clearNameChangeListeners() {
+		List<IEntityNameChangeListener> listeners = getNameChangeListeners();
+		if (listeners != null) {
+			listeners.clear();
+		}
+	}
+
+	/**
+	 * @param nameChangeListeners : listeners which will be called in {@link ObjectEntity#setName(String)}
+	 */
+	protected void setNameChangeListeners(List<IEntityNameChangeListener> nameChangeListeners) {
+		this.nameChangeListeners = nameChangeListeners;
+	}
+
+	
 	
 }
