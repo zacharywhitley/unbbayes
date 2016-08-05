@@ -35,6 +35,7 @@ public class ObjectEntityInstance extends Entity implements ILiteralEntityInstan
 	/**
 	 * Note: this constructor doesn't add the new instance into the ObjectEntity's list
 	 * of instances.
+	 * @see ObjectEntity#addInstance(String)
 	 * @param name
 	 * @param instanceOf
 	 */
