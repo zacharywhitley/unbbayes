@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -33,6 +34,7 @@ import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
+import unbbayes.util.Debug;
 
 /**
  * Contains the Object entities of a MEBN. 
@@ -40,8 +42,12 @@ import unbbayes.prs.mebn.entity.exception.TypeException;
  * Note: this container should not be a singleton, since an user might edit
  * two MTheories simultaneously; naturally, using different sets of entities.
  * 
+ * TODO create a method which can disconnect an entity from its children or its parents without deleting the entire subtree. 
+ * 
  * @author Laecio Lima dos Santos
  * @author Shou Matsumoto
+ * @author Guilherme Carvalho Torres
+ * @version 2.0 Hierarchy of object entities
  * @version 1.1 02/25/2008
  * 
  *
@@ -52,11 +58,12 @@ public class ObjectEntityContainer {
 	private List<ObjectEntity> listEntity;
 	
 	// Using Tree Implementation
+	// TODO remove swing classes from API
 	private DefaultTreeModel entityTreeModel;
 	private ObjectEntity rootObjectEntity;
-	private HashMap<String,ObjectEntity> mapObjectEntity = new HashMap<String,ObjectEntity>();
-	private HashMap<ObjectEntity,List<ObjectEntity>> mapObjectChilds = new HashMap<ObjectEntity,List<ObjectEntity>>();
-	private HashMap<ObjectEntity,List<ObjectEntity>> mapObjectParents = new HashMap<ObjectEntity,List<ObjectEntity>>();
+	private Map<String,ObjectEntity> mapObjectEntity = new HashMap<String,ObjectEntity>();
+	private Map<ObjectEntity,List<ObjectEntity>> mapObjectChildren = new HashMap<ObjectEntity,List<ObjectEntity>>();
+	private Map<ObjectEntity,List<ObjectEntity>> mapObjectParents = new HashMap<ObjectEntity,List<ObjectEntity>>();
 	
 	/** 
 	 * This will be the initial value of {@link #getDefaultRootEntityName()} 
@@ -136,8 +143,8 @@ public class ObjectEntityContainer {
 				
 				addEntity(rootObjectEntity, null);
 	
-				this.mapObjectChilds.put(rootObjectEntity, new ArrayList<ObjectEntity>());
-				this.mapObjectParents.put(rootObjectEntity, (List) Collections.emptyList());
+//				this.mapObjectChildren.put(rootObjectEntity, new ArrayList<ObjectEntity>());	// this is redundant
+				this.mapObjectParents.put(rootObjectEntity, (List) Collections.emptyList());	// this reduces memory usage
 				
 				refreshTreeModel();
 				
@@ -149,14 +156,14 @@ public class ObjectEntityContainer {
 		
 	}
 	
-	private void refreshChilds(ObjectEntity parentObjectEntity,DefaultMutableTreeNode parentNode) {
+	private void refreshChildren(ObjectEntity parentObjectEntity,DefaultMutableTreeNode parentNode) {
 
-		for(ObjectEntity childObjectEntity: this.mapObjectChilds.get(parentObjectEntity)) {
+		for(ObjectEntity childObjectEntity: this.mapObjectChildren.get(parentObjectEntity)) {
 			
 			DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(childObjectEntity);
 			entityTreeModel.insertNodeInto(childNode, parentNode, parentNode.getChildCount());
 			
-			refreshChilds(childObjectEntity,childNode);
+			refreshChildren(childObjectEntity,childNode);
 		}
 		
 	}
@@ -168,16 +175,16 @@ public class ObjectEntityContainer {
 			// Maybe raise some Exception here
 			return;
 		}
-		
+		// TODO remove swing classes from dependence.
 		DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode(rootObjectEntity);
 		
 		entityTreeModel = new DefaultTreeModel(rootNode);
 		
-		for(ObjectEntity childObjectEntity: this.mapObjectChilds.get(rootObjectEntity)) {
+		for(ObjectEntity childObjectEntity: this.mapObjectChildren.get(rootObjectEntity)) {
 			
 			DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(childObjectEntity);
 			entityTreeModel.insertNodeInto(childNode, rootNode, rootNode.getChildCount());
-			refreshChilds(childObjectEntity,childNode);
+			refreshChildren(childObjectEntity,childNode);
 		}
 	}
 
@@ -206,9 +213,9 @@ public class ObjectEntityContainer {
 	}
 	
 	/**
-	 * This method updates the content of {@link #listEntity}, {@link #mapObjectEntity},{@link #mapObjectChilds}, {@link #mapObjectParents}.
+	 * This method updates the content of {@link #listEntity}, {@link #mapObjectEntity},{@link #mapObjectChildren}, {@link #mapObjectParents}.
 	 * @param entity : This will be included into {@link #listEntity}, and also will be used as key in 
-	 * {@link #mapObjectEntity},{@link #mapObjectChilds}, {@link #mapObjectParents}.
+	 * {@link #mapObjectEntity},{@link #mapObjectChildren}, {@link #mapObjectParents}.
 	 * If this is null then we are creating a new root entity.
 	 * @param parentObjectEntity : This will become the parent entity.
 	 * @see #createObjectEntity(String, ObjectEntity)
@@ -227,29 +234,41 @@ public class ObjectEntityContainer {
 			this.listEntity.add(entity);
 			this.mapObjectEntity.put(entityName,entity);
 			
+			entity.addNameChangeListener(new IEntityNameChangeListener() {
+				/** This should update map of names whenever object entity's name is changed*/
+				public void onNameChange(String oldName, String newName, Entity entity) {
+					getMapObjectEntity().remove(oldName);
+					try {
+						getMapObjectEntity().put(newName, (ObjectEntity)entity);
+					} catch (ClassCastException e) {
+						Debug.println(getClass(), "Could not update entity name mapping of " + entity, e);
+					}
+					
+				}
+			});
 		}
 		
 		if(parentObjectEntity == null) {
 			
-			this.mapObjectChilds.put(entity, new ArrayList<ObjectEntity>());
+			this.mapObjectChildren.put(entity, new ArrayList<ObjectEntity>());
 			this.mapObjectParents.put(entity, new ArrayList<ObjectEntity>());
 
 			return;
 		}
 		
-		List<ObjectEntity> mappedList = this.mapObjectChilds.get(parentObjectEntity);
+		List<ObjectEntity> mappedList = this.mapObjectChildren.get(parentObjectEntity);
 		
 		if(mappedList == null) {
 			mappedList = new ArrayList<ObjectEntity>();
-			this.mapObjectChilds.put(parentObjectEntity,mappedList);
+			this.mapObjectChildren.put(parentObjectEntity,mappedList);
 		}
 		
-		if(!this.mapObjectChilds.get(parentObjectEntity).contains(entity)) {
-			this.mapObjectChilds.get(parentObjectEntity).add(entity);
+		if(!this.mapObjectChildren.get(parentObjectEntity).contains(entity)) {
+			this.mapObjectChildren.get(parentObjectEntity).add(entity);
 		}
 		
-		if(!this.mapObjectChilds.containsKey(entity)){
-			this.mapObjectChilds.put(entity, new ArrayList<ObjectEntity>());
+		if(!this.mapObjectChildren.containsKey(entity)){
+			this.mapObjectChildren.put(entity, new ArrayList<ObjectEntity>());
 		}
 		
 		mappedList = this.mapObjectParents.get(entity);
@@ -259,7 +278,11 @@ public class ObjectEntityContainer {
 			this.mapObjectParents.put(entity,mappedList);
 		}
 
-		this.mapObjectParents.get(entity).add(parentObjectEntity);
+		if (!this.mapObjectParents.get(entity).contains(parentObjectEntity)) {	// avoid duplicates
+			this.mapObjectParents.get(entity).add(parentObjectEntity);
+		}
+		
+		
 		
 	}
 	
@@ -270,6 +293,7 @@ public class ObjectEntityContainer {
 	 * @param parentObjectEntity : if this is null then a new entity will be created as a child of {@link #getRootObjectEntity()}
 	 * @return
 	 * @throws TypeException
+	 * 
 	 */
 	public ObjectEntity createObjectEntity(String name, ObjectEntity parentObjectEntity) throws TypeException{
 		
@@ -279,6 +303,7 @@ public class ObjectEntityContainer {
 			
 			objEntity = this.getObjectEntityBuilder().getObjectEntity(name); 
 			objEntity.getType().addUserObject(objEntity); 
+			
 		
 			plusEntityNum();
 			
@@ -305,35 +330,45 @@ public class ObjectEntityContainer {
 //
 //	}
 	
+	/**
+	 * @param entity : entity to rename
+	 * @param name : new name
+	 * @throws TypeAlreadyExistsException
+	 * @see {@link ObjectEntity#setName(String)}
+	 * @see IEntityNameChangeListener#onNameChange(String, String, Entity)
+	 */
 	public void renameEntity(ObjectEntity entity, String name) throws TypeAlreadyExistsException {
 		
-		this.mapObjectEntity.remove(entity.getName());
+		// the code to update mapObjectEntity and tree model were migrated to ObjectEntity#EntityNameChangeListener
+//		this.mapObjectEntity.remove(entity.getName());
 		
 		entity.setName(name);
-		this.mapObjectEntity.put(name,entity);
+		
+		// the code to update mapObjectEntity and tree model were migrated to ObjectEntity#EntityNameChangeListener
+//		this.mapObjectEntity.put(name,entity);
 		
 		refreshTreeModel();
 	}
 	
 	// Using Tree Implementation 
-	private void removeSelfAndChildsEntities(ObjectEntity entity) throws TypeDoesNotExistException {
+	private void removeSelfAndChildEntities(ObjectEntity entity) throws TypeDoesNotExistException {
 		
 		ObjectEntity parent;
 		
-		while(this.mapObjectChilds.get(entity).size() != 0){
+		while(this.mapObjectChildren.get(entity).size() != 0){
 			
-			removeSelfAndChildsEntities(this.mapObjectChilds.get(entity).get(0));
+			removeSelfAndChildEntities(this.mapObjectChildren.get(entity).get(0));
 		}
 		
 		entity.delete();
 				
 		this.listEntity.remove(entity);
-		this.mapObjectChilds.remove(entity);
+		this.mapObjectChildren.remove(entity);
 		
 		while(this.mapObjectParents.get(entity).size() != 0){
 			
 			parent = this.mapObjectParents.get(entity).get(0);
-			this.mapObjectChilds.get(parent).remove(entity);
+			this.mapObjectChildren.get(parent).remove(entity);
 			this.mapObjectParents.get(entity).remove(parent);
 		}
 		this.mapObjectParents.remove(entity);
@@ -345,7 +380,7 @@ public class ObjectEntityContainer {
 	// Using Tree Implementation 
 	public void removeEntity(ObjectEntity entity) throws TypeDoesNotExistException,Exception {
 		
-		removeSelfAndChildsEntities(entity);
+		removeSelfAndChildEntities(entity);
 		refreshTreeModel();
 	}
 	
@@ -372,13 +407,13 @@ public class ObjectEntityContainer {
 		return this.mapObjectParents.get(entity);
 	}
 	
-	public List<ObjectEntity> getChildsOfObjectEntity(ObjectEntity entity) {
-		return this.mapObjectChilds.get(entity);
+	public List<ObjectEntity> getChildrenOfObjectEntity(ObjectEntity entity) {
+		return this.mapObjectChildren.get(entity);
 	}
 	
 	private List<ObjectEntity> getDescendantsAndSelfRecursive(List<ObjectEntity> descendents, ObjectEntity entity) {
 		
-		for(ObjectEntity child: this.mapObjectChilds.get(entity)) {
+		for(ObjectEntity child: this.mapObjectChildren.get(entity)) {
 			getDescendantsAndSelfRecursive(descendents, child);
 		}
 		
@@ -550,24 +585,24 @@ public class ObjectEntityContainer {
 	}
 
 	/**
-	 * @return the mapObjectChilds
+	 * @return the mapObjectChildren
 	 */
-	protected HashMap<ObjectEntity, List<ObjectEntity>> getMapObjectChilds() {
-		return this.mapObjectChilds;
+	protected Map<ObjectEntity, List<ObjectEntity>> getMapObjectChildren() {
+		return this.mapObjectChildren;
 	}
 
 	/**
-	 * @param mapObjectChilds the mapObjectChilds to set
+	 * @param mapObjectChildren the mapObjectChildren to set
 	 */
-	protected void setMapObjectChilds(
-			HashMap<ObjectEntity, List<ObjectEntity>> mapObjectChilds) {
-		this.mapObjectChilds = mapObjectChilds;
+	protected void setMapObjectChildren(
+			Map<ObjectEntity, List<ObjectEntity>> mapObjectChildren) {
+		this.mapObjectChildren = mapObjectChildren;
 	}
 
 	/**
 	 * @return the mapObjectParents
 	 */
-	protected HashMap<ObjectEntity, List<ObjectEntity>> getMapObjectParents() {
+	protected Map<ObjectEntity, List<ObjectEntity>> getMapObjectParents() {
 		return this.mapObjectParents;
 	}
 
@@ -575,14 +610,14 @@ public class ObjectEntityContainer {
 	 * @param mapObjectParents the mapObjectParents to set
 	 */
 	protected void setMapObjectParents(
-			HashMap<ObjectEntity, List<ObjectEntity>> mapObjectParents) {
+			Map<ObjectEntity, List<ObjectEntity>> mapObjectParents) {
 		this.mapObjectParents = mapObjectParents;
 	}
 
 	/**
 	 * @return the mapObjectEntity
 	 */
-	protected HashMap<String, ObjectEntity> getMapObjectEntity() {
+	protected Map<String, ObjectEntity> getMapObjectEntity() {
 		return this.mapObjectEntity;
 	}
 
