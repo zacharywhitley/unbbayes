@@ -141,9 +141,13 @@ public class ModelCenterMatrixStyleWrapperIO extends ModelCenterWrapperIO {
 		
 		// convert 1st row to a tab-separated string
 		String rowToWrite = "";
+		int numQuestionsRead = 0;
 		for (int i = 0; i < csvRow.length; i++) {
 			if (csvRow[i] == null || csvRow[i].trim().isEmpty()) {
 				continue;	// ignore null or empty names
+			}
+			if ( numQuestionsRead > 0) {
+				rowToWrite += "\t";
 			}
 			if (csvRow[i].matches("Q[0-9]+")) {
 				// if questions are in the format like Q01, convert to Q1
@@ -152,9 +156,7 @@ public class ModelCenterMatrixStyleWrapperIO extends ModelCenterWrapperIO {
 				// or else, use name as-is
 				rowToWrite += csvRow[i];
 			}
-			if ( i + 1 < csvRow.length) {
-				rowToWrite += "\t";
-			}
+			numQuestionsRead++;
 		}
 		
 		property.put(++rowNumber+"", rowToWrite);	// increment row number and insert row to property
