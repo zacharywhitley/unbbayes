@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.math3.distribution.TDistribution;
@@ -639,16 +640,9 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		
 
 		if (cmd.hasOption("h")) {
-			System.out.println("-i <FILE NAME> : file or directory containing csv files of joint probabilities.");
-			System.out.println("-c <SOME NUMBER> : number between 0 and 1 which denotes confidence (for confidence interval).");
-			System.out.println("-q <STRING> : queries in the format of \"P(X=state|Y=state)\". Multiple queries can be performed.");
-			System.out.println("-d : Enables debug mode.");
-			System.out.println("-p : use percentiles for confidence interval calculation.");
-			System.out.println("-s : print statistical summary instead of probabilities.");
-			System.out.println("-id <SOME NAME> : Name or identification of the current problem (e.g. \"Users_RCP1\", \"Users_RCP2\", or \"Users_RCP3\"). "
-					+ "This will be used to set up aliases for questions or to fill queries with default values.");
-			System.out.println("-h: Help.");
-			System.out.println("-numI : Number of indicators to consider.");
+			for (Option option : options.getOptions()) {
+				System.out.println("-" + option.getOpt() + (option.hasArg()?(" <" + option.getLongOpt() +">"):"") + " : " + option.getDescription());
+			}
 			return;
 		}
 		
@@ -698,13 +692,14 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			alias.put("P(Alert=true|Threat=false)", "Q03");
 			
 			// other queries are dependent to indicators
-			for (int i = 0; i < indicatorNames.length; i++) {
+			int questionNumber = 4;
+			for (int i = 0; i < indicatorNames.length; i++, questionNumber++) {
 				String indicator = indicatorNames[i];
-				alias.put("P(Alert=true|" + indicator + "=true)", "Q" + String.format("%1$02d", (i+4)));;
+				alias.put("P(Alert=true|" + indicator + "=true)", "Q" + String.format("%1$02d", questionNumber));;
 			}
-			for (int i = 0; i < indicatorNames.length; i++) {
+			for (int i = 0; i < indicatorNames.length; i++, questionNumber++) {
 				String indicator = indicatorNames[i];
-				alias.put("P(" + indicator + "=true|Alert=true)", "Q" + String.format("%1$02d", (i+9)));
+				alias.put("P(" + indicator + "=true|Alert=true)", "Q" + String.format("%1$02d", questionNumber));
 			}
 		}
 		
