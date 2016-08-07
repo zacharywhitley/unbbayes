@@ -35,10 +35,13 @@ import unbbayes.util.Debug;
 public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 	
 	private boolean isToUseAuxiliaryTable = true;
+	private boolean isToUsePrimaryTables = true;
 
 	public EuclideanDistanceObjFunctionPrinter() {
 		setIndicatorNames(null);
 		setDetectorNames(null);
+		setThreatName(null);
+		setAlertName(null);
 		this.setPrimaryTableWeightSymbol("w");		// for weights
 		this.setAuxiliaryTableWeightSymbol("n");	// for counts
 		this.setProbabilityVariablePrefix("x");		// for probabilities to be optimized
@@ -64,21 +67,32 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 		List<String> detectorNameList = this.getNameList(getDetectorNames());
 		
 		List<String> allVariableList = new ArrayList<String>();
+		if (getThreatName() != null && !getThreatName().trim().isEmpty()) {
+			allVariableList.add(getThreatName());
+		}
 		allVariableList.addAll(indicatorNameList);
 		allVariableList.addAll(detectorNameList);
+		if (getAlertName() != null && !getAlertName().trim().isEmpty()) {
+			allVariableList.add(getAlertName());
+		}
 		
 		PotentialTable jointTable = this.getJointTable(variableMap, allVariableList );
 		
 		// tables related to correlation. 
 		// We won't use the values in cells (we'll just use the instance of PotentialTable to organize the order and names of variables/states)
-		List<PotentialTable> primaryTables = this.getCorrelationTables(variableMap , null, indicatorNameList);
-		primaryTables.addAll(this.getCorrelationTables(variableMap , null, detectorNameList));
+		List<PotentialTable> primaryTables = new ArrayList<PotentialTable>();
+		if (isToUsePrimaryTables()) {
+			primaryTables.addAll(this.getCorrelationTables(variableMap , null, indicatorNameList));
+			primaryTables.addAll(this.getCorrelationTables(variableMap , null, detectorNameList));
+		}
 		
 		// Similarly, tables related to Indicator X Detector. 
 		// Again, we won't use the values in cells (the table is just for organizing variables and states)
 		List<PotentialTable> auxiliaryTables = null;
 		if (isToUseAuxiliaryTables()) {
-			auxiliaryTables = this.getDetectorTables(variableMap , null, indicatorNameList, detectorNameList);
+			auxiliaryTables = new ArrayList<PotentialTable>();
+			auxiliaryTables.addAll(this.getThreatTables(variableMap, null, indicatorNameList, getThreatName()));
+			auxiliaryTables.addAll(this.getDetectorTables(variableMap , null, indicatorNameList, detectorNameList));
 		}
 		
 		// actually print the objective function
@@ -305,8 +319,12 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 		options.addOption("d","debug", false, "Enables debug mode.");
 		options.addOption("inames","indicator-names", true, "Comma-separated names of indicators.");
 		options.addOption("dnames","detector-names", true, "Comma-separated names of detectors.");
+		options.addOption("threat","threat-name", true, "Name of threat variable.");
+		options.addOption("alert","alert-name", true, "Name of alert variable.");
 		options.addOption("h","help", false, "Help.");
-		options.addOption("aux","use-auxiliary-table", false, "Use auxiliary tables: tables of Indicator X Detector joint states.");
+		options.addOption("aux","use-auxiliary-table", false, "Use auxiliary tables: tables of Indicator X Detector or Threat X Indicator joint states.");
+		options.addOption("aonly","use-auxiliary-table-only", false, "Use auxiliary tables (e.g. tables of Indicator X Detector or Threat X Indicator joint states) "
+				+ "and do not use primary tables (e.g. correlation tables).");
 		
 		CommandLine cmd = null;
 		try {
@@ -350,11 +368,22 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 		
 		printer.setToUseAuxiliaryTables(cmd.hasOption("aux"));
 		
+		if (cmd.hasOption("aonly")) {
+			printer.setToUseAuxiliaryTables(true);
+			printer.setToUsePrimaryTables(false);
+		}
+		
 		if (cmd.hasOption("inames")) {
 			printer.setIndicatorNames(cmd.getOptionValue("inames").split("[,:]"));
 		}
 		if (cmd.hasOption("dnames")) {
 			printer.setDetectorNames(cmd.getOptionValue("dnames").split("[,:]"));
+		}
+		if (cmd.hasOption("threat")) {
+			printer.setThreatName(cmd.getOptionValue("threat"));
+		}
+		if (cmd.hasOption("alert")) {
+			printer.setAlertName(cmd.getOptionValue("alert"));
 		}
 		
 		
@@ -382,6 +411,22 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 	 */
 	public void setToUseAuxiliaryTables(boolean isToUseAuxiliaryTable) {
 		this.isToUseAuxiliaryTable  = isToUseAuxiliaryTable;
+	}
+
+
+	/**
+	 * @return the isToUsePrimaryTables
+	 */
+	public boolean isToUsePrimaryTables() {
+		return isToUsePrimaryTables;
+	}
+
+
+	/**
+	 * @param isToUsePrimaryTables the isToUsePrimaryTables to set
+	 */
+	public void setToUsePrimaryTables(boolean isToUsePrimaryTables) {
+		this.isToUsePrimaryTables = isToUsePrimaryTables;
 	}
 
 

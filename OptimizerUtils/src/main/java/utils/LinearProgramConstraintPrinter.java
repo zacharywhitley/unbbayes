@@ -137,8 +137,13 @@ public class LinearProgramConstraintPrinter extends
 		options.addOption("d","debug", false, "Enables debug mode.");
 		options.addOption("inames","indicator-names", true, "Comma-separated names of indicators.");
 		options.addOption("dnames","detector-names", true, "Comma-separated names of detectors.");
-		options.addOption("aux","use-auxiliary-table", false, "Use auxiliary tables: tables of Indicator X Detector joint states.");
+		options.addOption("threat","threat-name", true, "Name of threat variable.");
+		options.addOption("alert","alert-name", true, "Name of alert variable.");
 		options.addOption("h","help", false, "Help.");
+		options.addOption("aux","use-auxiliary-table", false, "Use auxiliary tables: tables of Indicator X Detector or Threat X Indicator joint states.");
+		options.addOption("aonly","use-auxiliary-table-only", false, "Use auxiliary tables (e.g. tables of Indicator X Detector or Threat X Indicator joint states) "
+				+ "and do not use primary tables (e.g. correlation tables).");
+		
 		
 		CommandLine cmd = null;
 		try {
@@ -180,13 +185,25 @@ public class LinearProgramConstraintPrinter extends
 			}
 		}
 		
+
 		printer.setToUseAuxiliaryTables(cmd.hasOption("aux"));
+		
+		if (cmd.hasOption("aonly")) {
+			printer.setToUseAuxiliaryTables(true);
+			printer.setToUsePrimaryTables(false);
+		}
 		
 		if (cmd.hasOption("inames")) {
 			printer.setIndicatorNames(cmd.getOptionValue("inames").split("[,:]"));
 		}
 		if (cmd.hasOption("dnames")) {
 			printer.setDetectorNames(cmd.getOptionValue("dnames").split("[,:]"));
+		}
+		if (cmd.hasOption("threat")) {
+			printer.setThreatName(cmd.getOptionValue("threat"));
+		}
+		if (cmd.hasOption("alert")) {
+			printer.setAlertName(cmd.getOptionValue("alert"));
 		}
 		
 		

@@ -400,7 +400,8 @@ public class ObjFunctionPrinter {
 	 */
 	public List<PotentialTable> getDetectorTables(Map<String, INode> variableMap, int[][][] tables,
 			List<String> indicatorNameList, List<String> detectorNameList) {
-		if (detectorNameList == null || detectorNameList.isEmpty()) {
+		if (detectorNameList == null || detectorNameList.isEmpty()
+				|| indicatorNameList == null || indicatorNameList.isEmpty()) {
 			return Collections.EMPTY_LIST;
 		}
 		if (indicatorNameList.size() != detectorNameList.size()) {
