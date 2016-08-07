@@ -4,13 +4,11 @@ import io.ModelCenterWrapperIO;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -24,7 +22,6 @@ import org.apache.commons.cli.ParseException;
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.util.Debug;
-import au.com.bytecode.opencsv.CSVReader;
 
 
 /**
@@ -42,7 +39,6 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	public static final String NUMBER_USERS_PROPERTY_NAME = "Number_of_Users";
 	public static final String TYPE_FUSION_PROPERTY_NAME = "Type_of_Fusion";
 	public static final String PROBABILITIES_PROPERTY_NAME_PREFIX = "Probabilities";
-	public static final String PROBABILITY_PROPERTY_NAME = "Probability";
 	public static final String HAS_ALERT_IN_PROB_PROPERTY_NAME = "Has_Alert_In_Prob";
 	
 	private String numberOfIndicatorsPropertyName = NUMBER_INDICATORS_PROPERTY_NAME;
@@ -50,9 +46,10 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	private String numberOfUsersPropertyName = NUMBER_USERS_PROPERTY_NAME;
 	private String typeOfFusionPropertyName = TYPE_FUSION_PROPERTY_NAME;
 	private String probabilitiesPropertyNamePrefix = PROBABILITIES_PROPERTY_NAME_PREFIX;
-	private String probabilityPropertyName = PROBABILITY_PROPERTY_NAME;
 	private String hasAlertInProbPropertyName = HAS_ALERT_IN_PROB_PROPERTY_NAME;
 
+	
+	
 	private SimulatedUserStatisticsCalculator simulatedUserStatisticsCalculator = new SimulatedUserStatisticsCalculator();
 	private DirichletUserSimulator dirichletUserSimulator = new DirichletUserSimulator();
 	
@@ -62,6 +59,8 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	
 	private IModelCenterWrapperIO io = null;
 	private List<List<Float>> wrapperProbabilities = new ArrayList<List<Float>>();
+
+	private String numberOfRunsPropertyName = "Number_of_Runs";
 	
 	/**
 	 * Default constructor is kept protected to allow inheritance, 
@@ -70,6 +69,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	protected JavaSimulatorWrapper() {
 		this.setInput(new File("JavaSimulatorWrapper.in"));
 		this.setOutput(new File("JavaSimulatorWrapper.out"));
+		this.setNumOrganization(1);
 	}
 
 	/**
@@ -1049,18 +1049,37 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		
 		// update attributes accordingly from what we read from file
 		
-		this.setNumIndicators(Integer.parseInt(this.getIO().getProperty(getNumberOfIndicatorsPropertyName())));
+		if (this.getIO().getProperty(getNumberOfIndicatorsPropertyName()) != null) {
+			this.setNumIndicators(Integer.parseInt(this.getIO().getProperty(getNumberOfIndicatorsPropertyName())));
+		}
 		Debug.println(getClass(), "Num indicators = " + this.getNumIndicators());
-		this.setNumDetectors(Integer.parseInt(this.getIO().getProperty(getNumberOfDetectorsPropertyName())));
+		
+		if (this.getIO().getProperty(getNumberOfDetectorsPropertyName()) != null) {
+			this.setNumDetectors(Integer.parseInt(this.getIO().getProperty(getNumberOfDetectorsPropertyName())));
+		}
 		Debug.println(getClass(), "Num detectors = " + this.getNumDetectors());
-		this.setNumUsers(Integer.parseInt(this.getIO().getProperty(getNumberOfUsersPropertyName())));
+		
+		if (this.getIO().getProperty(getNumberOfUsersPropertyName()) != null) {
+			this.setNumUsers(Integer.parseInt(this.getIO().getProperty(getNumberOfUsersPropertyName())));
+		}
 		Debug.println(getClass(), "Num users = " + this.getNumUsers());
+		
 		String typeOfFusion = this.getIO().getProperty(getTypeOfFusionPropertyName());
 		Debug.println(getClass(), "Type of fusion = " + typeOfFusion);
-		this.setCountAlert(this.convertFusionTypeToCountAlert(typeOfFusion));
+		if (typeOfFusion != null) {
+			this.setCountAlert(this.convertFusionTypeToCountAlert(typeOfFusion));
+		}
 		Debug.println(getClass(), "Count alert = " + this.getCountAlert());
-		this.setToReadAlert(Integer.parseInt(this.getIO().getProperty(getHasAlertInProbPropertyName())) != 0 );
+		
+		if (this.getIO().getProperty(getHasAlertInProbPropertyName()) != null) {
+			this.setToReadAlert(Integer.parseInt(this.getIO().getProperty(getHasAlertInProbPropertyName())) != 0 );
+		}
 		Debug.println(getClass(), "Read alert = " + this.isToReadAlert());
+		
+		if (this.getIO().getProperty(getNumberOfRunsPropertyName()) != null) {
+			this.setNumOrganization(Integer.parseInt(this.getIO().getProperty(getNumberOfRunsPropertyName())) );
+		}
+		Debug.println(getClass(), "Num organization = " + this.getNumOrganization());
 		
 		// reset the probability vector
 		getWrapperProbabilities().clear();
@@ -1130,7 +1149,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	 * @throws IOException 
 	 */
 	public File writeCurrentProbabilityToDirectory() throws IOException {
-		File tempFolder = Files.createTempDirectory("Probabilities").toFile();
+		File tempFolder = Files.createTempDirectory("Probabilities_").toFile();
 		tempFolder.deleteOnExit();
 		Debug.println(getClass(), "Created temporary directory for probabilities: " + tempFolder.getAbsolutePath());
 		for (int i = 0; i < getWrapperProbabilities().size(); i++) {
@@ -1149,42 +1168,14 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 
 	
 	/**
-	 * 
-	 * @param input
-	 * @param output
-	 * @throws IOException
+	 * @see IModelCenterWrapperIO#convertToWrapperOutput(File, File)
+	 * @see #getIO()
 	 */
 	public void convertToWrapperOutput(File input, File output) throws IOException {
-		Debug.println(getClass(), "Converting CSV " + input.getAbsolutePath() + " to wrapper " + output.getAbsolutePath());
-		
-		CSVReader reader = new CSVReader(new FileReader(input));
-		
-		// the csv file has only 2 rows: 1st row has names of questions, and 2nd row has probabilities
-		reader.readNext();	// ignore first row
-		String[] line = reader.readNext();
-		if (line == null) {
-			reader.close();
-			throw new IOException("2nd row not found in " + input.getName());
+		IModelCenterWrapperIO io = this.getIO();
+		if (io != null) {
+			this.getIO().convertToWrapperOutput(input, output);
 		}
-		
-		// convert back the line to a comma-separated string
-		// TODO this is redundant
-		String commaSeparatedProb = "";
-		for (int i = 0; i < line.length; i++) {
-			if (line[i] == null || line[i].trim().isEmpty()) {
-				continue;
-			}
-			commaSeparatedProb += line[i];
-			if (i+1 < line.length && !line[i+1].trim().isEmpty()) {
-				commaSeparatedProb += ",";
-			}
-		}
-		
-		// write to wrapper ouput file
-		Debug.println(getClass(), "Writing wrapper " + output.getAbsolutePath());
-		this.getIO().writeWrapperFile(Collections.singletonMap(getProbabilityPropertyName(), commaSeparatedProb), output);
-		
-		reader.close();
 	}
 
 
@@ -1311,16 +1302,27 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 
 	/**
 	 * @return the probabilityPropertyName
+	 * @deprecated see {@link ModelCenterWrapperIO#getProbabilityPropertyName()}
 	 */
 	public String getProbabilityPropertyName() {
-		return this.probabilityPropertyName;
+		IModelCenterWrapperIO io = this.getIO();
+		if ( ( io != null ) && ( io instanceof ModelCenterWrapperIO ) ) {
+			// delegate to ModelCenterWrapperIO
+			return ((ModelCenterWrapperIO) io).getProbabilityPropertyName();
+		}
+		return ModelCenterWrapperIO.PROBABILITY_PROPERTY_NAME;	// return the default value
 	}
 
 	/**
 	 * @param probabilityPropertyName the probabilityPropertyName to set
+	 * @deprecated see {@link ModelCenterWrapperIO#getProbabilityPropertyName()}
 	 */
 	public void setProbabilityPropertyName(String probabilityPropertyName) {
-		this.probabilityPropertyName = probabilityPropertyName;
+		IModelCenterWrapperIO io = this.getIO();
+		if ( ( io != null ) && ( io instanceof ModelCenterWrapperIO ) ) {
+			// delegate to ModelCenterWrapperIO
+			((ModelCenterWrapperIO) io).setProbabilityPropertyName(probabilityPropertyName);
+		}
 	}
 	
 
@@ -1414,14 +1416,20 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				File tempProbDirectory = wrapper.writeCurrentProbabilityToDirectory();
 				
 				// generate temporary file to store results of dirichlet-multinomial simulation
-				File tempDirichletOutput = File.createTempFile("Users_", ".csv");
+				File tempDirichletOutput = null;
+				if (wrapper.getNumOrganization() <= 1) {
+					tempDirichletOutput = File.createTempFile("Users_", ".csv");
+					Debug.println(JavaSimulatorWrapper.class, "Created temporary file for users: " + tempDirichletOutput.getAbsolutePath());
+				} else {
+					tempDirichletOutput = Files.createTempDirectory("Users_").toFile();
+					Debug.println(JavaSimulatorWrapper.class, "Created temporary folder for users: " + tempDirichletOutput.getAbsolutePath());
+				}
 				tempDirichletOutput.deleteOnExit();
-				Debug.println(JavaSimulatorWrapper.class, "Created temporary file for users: " + tempDirichletOutput.getAbsolutePath());
 				
 				// set up arguments for dirichlet-multinomial simulator
-				String[] dirichletArgs = new String[Debug.isDebugMode()?16:15];
+				String[] dirichletArgs = new String[Debug.isDebugMode()?18:17];
 				
-				// -i "RCP3-full" -o "test.csv" -u 4263 -n 1 -numI 4 -numD 4 -a 2 -d 
+				// -i "RCP3-full" -o "test.csv" -u 4263 -n 1000 -numI 4 -numD 4 -a 2 -d 
 				dirichletArgs[0] = "-i";
 				dirichletArgs[1] = "\"" + tempProbDirectory.getAbsolutePath() +"\"";
 				dirichletArgs[2] = "-o";
@@ -1429,7 +1437,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				dirichletArgs[4] = "-u";
 				dirichletArgs[5] = ""+wrapper.getNumUsers();
 				dirichletArgs[6] = "-n";
-				dirichletArgs[7] = "1";	// always replicate 1 time
+				dirichletArgs[7] = ""+wrapper.getNumOrganization();	// number of replications
 				dirichletArgs[8] = "-numI";	
 				dirichletArgs[9] = ""+wrapper.getNumIndicators();	
 				dirichletArgs[10] = "-numD";	
@@ -1437,8 +1445,10 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				dirichletArgs[12] = "-a";	
 				dirichletArgs[13] = ""+wrapper.getCountAlert();	
 				dirichletArgs[14] = wrapper.isToReadAlert()?"-ra":"";	
-				if (Debug.isDebugMode() && dirichletArgs.length >= 16) {
-					dirichletArgs[15] = "-d";	
+				dirichletArgs[15] = "-id";	
+				dirichletArgs[16] = wrapper.isToUseDirichletMultinomial()?"Dirichlet":"Samples";	
+				if (Debug.isDebugMode() && dirichletArgs.length >= 18) {
+					dirichletArgs[17] = "-d";	
 				}
 				
 				if (Debug.isDebugMode()) {
@@ -1478,12 +1488,23 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				
 				wrapper.getSimulatedUserStatisticsCalculator().main(questionArgs);
 				
+				
 				// convert output to JavaSimulatorWrapper.out format;
 				
 				wrapper.convertToWrapperOutput(tempQuestionOutput, wrapper.getOutput());
 				
+				
+				// make sure we delete the temp files (although we created them as temporary)
+				
 				tempProbDirectory.delete();
+				
+				if (tempDirichletOutput.isDirectory()) {
+					for (File innerFile : tempDirichletOutput.listFiles()) {
+						innerFile.delete();
+					}
+				}
 				tempDirichletOutput.delete();
+				
 				tempQuestionOutput.delete();
 				
 			} catch (Exception e) {
@@ -1547,6 +1568,20 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 	 */
 	public void setHasAlertInProbPropertyName(String hasAlertInProbPropertyName) {
 		this.hasAlertInProbPropertyName = hasAlertInProbPropertyName;
+	}
+
+	/**
+	 * @return the numberOfRunsPropertyName
+	 */
+	public String getNumberOfRunsPropertyName() {
+		return numberOfRunsPropertyName;
+	}
+
+	/**
+	 * @param numberOfRunsPropertyName the numberOfRunsPropertyName to set
+	 */
+	public void setNumberOfRunsPropertyName(String numberOfRunsPropertyName) {
+		this.numberOfRunsPropertyName = numberOfRunsPropertyName;
 	}
 	
 }
