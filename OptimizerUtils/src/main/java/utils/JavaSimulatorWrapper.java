@@ -372,11 +372,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	 * @see DirichletUserSimulator#setNumOrganization(int)
 	 */
 	public void setNumOrganization(int numOrganization) {
-		if (numOrganization < 1) {
-			numOrganization = 1;
-		}
-		this.getSimulatedUserStatisticsCalculator()
-				.setNumOrganization(numOrganization);
+		this.getSimulatedUserStatisticsCalculator().setNumOrganization(numOrganization);
 	}
 
 //	/**
@@ -1064,6 +1060,9 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		
 		if (this.getIO().getProperty(getNumberOfUsersPropertyName()) != null) {
 			this.setNumUsers(Integer.parseInt(this.getIO().getProperty(getNumberOfUsersPropertyName())));
+			if (getNumUsers() < 1) {
+				throw new IllegalArgumentException(getNumberOfUsersPropertyName() + " expected to be 1 or above, but found " + getNumUsers());
+			}
 		}
 		Debug.println(getClass(), "Num users = " + this.getNumUsers());
 		
@@ -1081,6 +1080,9 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		
 		if (this.getIO().getProperty(getNumberOfRunsPropertyName()) != null) {
 			this.setNumOrganization(Integer.parseInt(this.getIO().getProperty(getNumberOfRunsPropertyName())) );
+			if (getNumOrganization() < 1) {
+				throw new IllegalArgumentException(getNumberOfRunsPropertyName() + " expected to be 1 or above, but found " + getNumOrganization());
+			}
 		}
 		Debug.println(getClass(), "Num organization = " + this.getNumOrganization());
 		
@@ -1514,7 +1516,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				
 				if (numAttempt + 1 >= maxNumAttempt) {
 					// Failed the last attempt. Just let the caller know about the last exception
-					throw new RuntimeException("Failed max number of attempts. This might be caused by bad input probabilities.",e);
+					throw new RuntimeException("Failed max number of attempts. This might be caused by bad input probabilities: " + e.getMessage(),e);
 				}
 				
 				Debug.println(JavaSimulatorWrapper.class, e.getMessage(), e);

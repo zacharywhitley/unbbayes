@@ -188,6 +188,10 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 				jointStates.add(csvLine);
 			}
 		}
+		if (jointStates.size() <= 0) {
+			printer.close();
+			throw new IllegalArgumentException("No positive probability found.");
+		}
 		Alphabet dictionary = new Alphabet(jointStates.toArray(new Object[jointStates.size()]));
 		
 		double[] distribution = null;

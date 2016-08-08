@@ -190,5 +190,81 @@ public class JavaSimulatorWrapperTest extends TestCase {
 		
 		assertTrue(tempFile.delete());
 	}
+	
+	/**
+	 * Smoke test of {@link JavaSimulatorWrapper#main(String[])}, with argument pointing to a input file with invalid probabilities.
+	 * @throws IOException 
+	 */
+	@SuppressWarnings("static-access")
+	public void testMainInvalidProb() throws IOException {
+		
+		File tempFile = File.createTempFile(getClass().getName() + "_", ".out");
+		tempFile.deleteOnExit();
+		
+		args[0] = "-i";
+		args[1] = "\"" + getClass().getResource("../JavaSimulatorWrapper_invalidProb.in").getPath() + "\"";
+		args[2] = "-o";
+		args[3] = tempFile.getPath();
+		args[4] = "-d";
+		try {
+			wrapper.main(args);
+			fail("Should throw exception when probabilities are wrong");
+		} catch (RuntimeException e) {
+			assertTrue(e.getMessage().contains("No positive probability found."));
+		}
+		
+		tempFile.delete();
+	}
+	/**
+	 * 
+	 * Smoke test of {@link JavaSimulatorWrapper#main(String[])}, with argument pointing to a input file with invalid number of users.
+	 * @throws IOException 
+	 */
+	@SuppressWarnings("static-access")
+	public void testMainInvalidUsers() throws IOException {
+		
+		File tempFile = File.createTempFile(getClass().getName() + "_", ".out");
+		tempFile.deleteOnExit();
+		
+		args[0] = "-i";
+		args[1] = "\"" + getClass().getResource("../JavaSimulatorWrapper_invalidUsers.in").getPath() + "\"";
+		args[2] = "-o";
+		args[3] = tempFile.getPath();
+		args[4] = "-d";
+		try {
+			wrapper.main(args);
+			fail("Should throw exception when probabilities are wrong");
+		} catch (IllegalArgumentException e) {
+			assertTrue(e.getMessage().toUpperCase().contains(wrapper.getNumberOfUsersPropertyName().toUpperCase()));
+		}
+		
+		tempFile.delete();
+	}
+	
+	/**
+	 * 
+	 * Smoke test of {@link JavaSimulatorWrapper#main(String[])}, with argument pointing to a input file with invalid number of users.
+	 * @throws IOException 
+	 */
+	@SuppressWarnings("static-access")
+	public void testMainInvalidRuns() throws IOException {
+		
+		File tempFile = File.createTempFile(getClass().getName() + "_", ".out");
+		tempFile.deleteOnExit();
+		
+		args[0] = "-i";
+		args[1] = "\"" + getClass().getResource("../JavaSimulatorWrapper_invalidRuns.in").getPath() + "\"";
+		args[2] = "-o";
+		args[3] = tempFile.getPath();
+		args[4] = "-d";
+		try {
+			wrapper.main(args);
+			fail("Should throw exception when probabilities are wrong");
+		} catch (IllegalArgumentException e) {
+			assertTrue(e.getMessage().toUpperCase().contains(wrapper.getNumberOfRunsPropertyName().toUpperCase()));
+		}
+		
+		tempFile.delete();
+	}
 
 }
