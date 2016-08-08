@@ -372,6 +372,9 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	 * @see DirichletUserSimulator#setNumOrganization(int)
 	 */
 	public void setNumOrganization(int numOrganization) {
+		if (numOrganization < 1) {
+			numOrganization = 1;
+		}
 		this.getSimulatedUserStatisticsCalculator()
 				.setNumOrganization(numOrganization);
 	}
