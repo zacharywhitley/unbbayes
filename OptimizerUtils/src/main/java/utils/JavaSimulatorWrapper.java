@@ -1417,11 +1417,13 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 		// attempt several times until we don't have any exception
 		int numAttempt;
 		for (numAttempt = 0; numAttempt < getMaxNumAttempt(); numAttempt++) {
+			File tempProbDirectory = null;
+			File tempDirichletOutput = null;
+			File tempQuestionOutput = null;
 			try {
-				File tempProbDirectory = wrapper.writeCurrentProbabilityToDirectory();
+				tempProbDirectory = wrapper.writeCurrentProbabilityToDirectory();
 				
 				// generate temporary file to store results of dirichlet-multinomial simulation
-				File tempDirichletOutput = null;
 				if (wrapper.getNumOrganization() <= 1) {
 					tempDirichletOutput = File.createTempFile("Users_", ".csv");
 					Debug.println(JavaSimulatorWrapper.class, "Created temporary file for users: " + tempDirichletOutput.getAbsolutePath());
@@ -1467,7 +1469,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				wrapper.getDirichletUserSimulator().main(dirichletArgs);
 				
 				// generate temporary file to store results of calculator of probabilities of questions
-				File tempQuestionOutput = File.createTempFile("Probabilities_Questions_", ".csv");
+				tempQuestionOutput = File.createTempFile("Probabilities_Questions_", ".csv");
 				tempQuestionOutput.deleteOnExit();
 				Debug.println(JavaSimulatorWrapper.class, "Created temporary file for RCP answers: " + tempQuestionOutput.getAbsolutePath());
 				
@@ -1513,6 +1515,20 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				tempQuestionOutput.delete();
 				
 			} catch (Exception e) {
+				if (tempProbDirectory != null){
+					tempProbDirectory.delete();
+				}
+				if (tempDirichletOutput != null){
+					if (tempDirichletOutput.isDirectory()) {
+						for (File innerFile : tempDirichletOutput.listFiles()) {
+							innerFile.delete();
+						}
+					}
+					tempDirichletOutput.delete();
+				}
+				if (tempQuestionOutput != null){
+					tempQuestionOutput.delete();
+				}
 				
 				if (numAttempt + 1 >= maxNumAttempt) {
 					// Failed the last attempt. Just let the caller know about the last exception
