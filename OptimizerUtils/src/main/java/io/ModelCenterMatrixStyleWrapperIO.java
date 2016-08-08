@@ -73,17 +73,33 @@ public class ModelCenterMatrixStyleWrapperIO extends ModelCenterWrapperIO {
 		List<Entry<String, String>> sortedEntries = new ArrayList<Map.Entry<String,String>>(property.entrySet());
 		Collections.sort(sortedEntries, new Comparator<Entry<String, String>>() {
 			public int compare(Entry<String, String> o1, Entry<String, String> o2) {
-				return o1.getKey().compareTo(o2.getKey());	// compare keys
+//				int lengthComparison = Integer.compare(o1.getKey().length(), o2.getKey().length());
+//				if (lengthComparison == 0) {
+//					return o1.getKey().compareTo(o2.getKey());	// compare keys alphabetically
+//				}
+//				return lengthComparison;
+				try {
+					return Integer.compare(Integer.parseInt(o1.getKey()) , Integer.parseInt(o2.getKey()));	// compare keys assuming they are integer
+				} catch (Exception e1) {
+					try {
+						return Float.compare(Float.parseFloat(o1.getKey()) , Float.parseFloat(o2.getKey()));	// compare keys assuming they are numbers
+					} catch (Exception e2) {
+						return o1.getKey().compareTo(o2.getKey());	// compare keys alphabetically
+					}
+				}
 			}
 		});
 		
 		// print the values line-by-line
 		for (Entry<String, String> entry : sortedEntries) {
+			if (entry.getValue() == null && entry.getValue().trim().isEmpty()) {
+				continue;
+			}
 			printer.println(entry.getValue());	// only print value. The key (name) was only used for sorting.
 		}
 		
-		// make sure we include additional line break at the end
-		printer.println();
+//		// make sure we include additional line break at the end
+//		printer.println();
 	}
 
 	/**
