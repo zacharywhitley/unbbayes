@@ -62,7 +62,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	private File input = new File("input");
 	private File output = new File("output");
 	private boolean isToPrintAlert = true;
-	private int countAlert = 2;
+	
 	
 	private boolean isToUseDirichletMultinomial = true;
 	private boolean isToReadAlert = false;
@@ -571,19 +571,6 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		this.isToPrintAlert = isToPrintAlert;
 	}
 
-	/**
-	 * @return the countAlert
-	 */
-	public int getCountAlert() {
-		return countAlert;
-	}
-
-	/**
-	 * @param countAlert the countAlert to set
-	 */
-	public void setCountAlert(int countAlert) {
-		this.countAlert = countAlert;
-	}
 
 	/**
 	 * @return the isToUseDirichletMultinomial

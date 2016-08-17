@@ -43,6 +43,8 @@ import unbbayes.util.Debug;
  */
 public class ObjFunctionPrinter {
 	
+	private int countAlert = 2;
+	
 	private String probabilityVariablePrefix = "p";
 	
 	private String problemID = "RCP1";
@@ -60,6 +62,8 @@ public class ObjFunctionPrinter {
 	private String auxiliaryTableDirectoryName = null;
 	private String primaryTableDirectoryName = null;
 	
+	private List<List<String>> primaryTableVarNames = new ArrayList<List<String>>();
+	private List<List<String>> auxiliaryTableVarNames = new ArrayList<List<String>>();
 	
 	private String threatName = "Threat";
 	private String alertName = "Alert";
@@ -165,29 +169,35 @@ public class ObjFunctionPrinter {
 		if (variableMap == null) {
 			variableMap = new HashMap<String, INode>();
 		}
-		ProbabilisticTable table = new ProbabilisticTable();
 		
-		INode columnVar = variableMap.get(columnName);
-		if (columnVar == null) {
-			columnVar = new ProbabilisticNode();
-			columnVar.setName(columnName);
-			columnVar.appendState("TRUE");
-			columnVar.appendState("FALSE");
-			variableMap.put(columnName,columnVar);
-		}
+		List<String> varNames = new ArrayList<String>(2);
+		varNames.add(rowName);
+		varNames.add(columnName);
 		
-		table.addVariable(columnVar);
+		PotentialTable table = this.getEmptyPotentialTable(variableMap, varNames);
 		
-		INode rowVar = variableMap.get(rowName);
-		if (rowVar == null) {
-			rowVar = new ProbabilisticNode();
-			rowVar.setName(rowName);
-			rowVar.appendState("TRUE");
-			rowVar.appendState("FALSE");
-			variableMap.put(rowName,rowVar);
-		}
-		
-		table.addVariable(rowVar);
+//		ProbabilisticTable table = new ProbabilisticTable();
+//		INode columnVar = variableMap.get(columnName);
+//		if (columnVar == null) {
+//			columnVar = new ProbabilisticNode();
+//			columnVar.setName(columnName);
+//			columnVar.appendState("TRUE");
+//			columnVar.appendState("FALSE");
+//			variableMap.put(columnName,columnVar);
+//		}
+//		
+//		table.addVariable(columnVar);
+//		
+//		INode rowVar = variableMap.get(rowName);
+//		if (rowVar == null) {
+//			rowVar = new ProbabilisticNode();
+//			rowVar.setName(rowName);
+//			rowVar.appendState("TRUE");
+//			rowVar.appendState("FALSE");
+//			variableMap.put(rowName,rowVar);
+//		}
+//		
+//		table.addVariable(rowVar);
 		
 		if (matrix != null) {
 			for (int n=0,i = 0; i < matrix.length; i++) {
@@ -195,12 +205,45 @@ public class ObjFunctionPrinter {
 					table.setValue(n, matrix[i][j]);
 				}
 			}
-		} else {
-			// just fill everything with zeros
-			for (int i = 0; i < table.tableSize(); i++) {
-				table.setValue(i, 0);
-			}
 		}
+		
+		return table;
+	}
+	
+	/**
+	 * Returns an empty potential table 
+	 * @param variableMap
+	 * @param varNames
+	 * @return
+	 */
+	public PotentialTable getEmptyPotentialTable(Map<String, INode> variableMap, List<String> varNames) {
+		if (varNames == null || varNames.isEmpty()) {
+			return null;
+		}
+		if (variableMap == null) {
+			variableMap = new HashMap<String, INode>();
+		}
+		ProbabilisticTable table = new ProbabilisticTable();
+		
+		// clone list and reverse its order
+		varNames = new ArrayList<String>(varNames);
+		Collections.reverse(varNames);
+		
+		for (String name : varNames) {
+			INode var = variableMap.get(name);
+			if (var == null) {
+				var = new ProbabilisticNode();
+				var.setName(name);
+				var.appendState("TRUE");
+				var.appendState("FALSE");
+				variableMap.put(name,var);
+			}
+			
+			table.addVariable(var);
+		}
+		
+		// just fill everything with zeros
+		table.fillTable(0f);
 		
 		return table;
 	}
@@ -1091,6 +1134,9 @@ public class ObjFunctionPrinter {
 		List<PotentialTable> primaryTables = null;
 		if (getPrimaryTableDirectoryName() != null &&  !getPrimaryTableDirectoryName().trim().isEmpty()) {
 			primaryTables = this.getTablesFromNetFile(variableMap , new File(getPrimaryTableDirectoryName()));
+		} else if (indicatorCorrelationsMatrix == null && detectorCorrelationsMatrix == null
+				&& getPrimaryTableVarNames() != null && !getPrimaryTableVarNames().isEmpty()) {
+			primaryTables = this.getEmptyPotentialTables(variableMap,getPrimaryTableVarNames());
 		} else {
 			primaryTables = this.getCorrelationTables(variableMap , indicatorCorrelationsMatrix, indicatorNameList);
 			primaryTables.addAll(this.getCorrelationTables(variableMap , detectorCorrelationsMatrix, detectorNameList));
@@ -1100,6 +1146,9 @@ public class ObjFunctionPrinter {
 		List<PotentialTable> auxiliaryTables = null;
 		if (getAuxiliaryTableDirectoryName() != null &&  !getAuxiliaryTableDirectoryName().trim().isEmpty()) {
 			auxiliaryTables = this.getTablesFromNetFile(variableMap , new File(getAuxiliaryTableDirectoryName()));
+		} else if (threatIndicatorTableMatrix == null && detectorIndicatorTableMatrix == null
+				&& getPrimaryTableVarNames() != null && !getPrimaryTableVarNames().isEmpty()) {
+			auxiliaryTables = this.getEmptyPotentialTables(variableMap,getAuxiliaryTableVarNames());
 		} else {
 			auxiliaryTables = this.getThreatTables(variableMap , threatIndicatorTableMatrix, indicatorNameList, getThreatName());
 			auxiliaryTables.addAll(this.getDetectorTables(variableMap , detectorIndicatorTableMatrix, indicatorNameList, detectorNameList));
@@ -1128,6 +1177,25 @@ public class ObjFunctionPrinter {
 	
 	
 
+	/**
+	 * This is a wrapper for {@link #getEmptyPotentialTable(Map, List)}
+	 * @see #getPrimaryTableVarNames()
+	 * @see #getAuxiliaryTableVarNames()
+	 * @see #printAll(int[][][], int[][][], int[][][], int[][][])
+	 * @see #getEmptyPotentialTable(Map, List)
+	 */
+	public List<PotentialTable> getEmptyPotentialTables(Map<String, INode> variableMap, List<List<String>> varNames) {
+
+		List<PotentialTable> ret = new ArrayList<PotentialTable>(); 
+		
+		if (varNames != null) {
+			for (List<String> vars : varNames) {
+				ret.add(this.getEmptyPotentialTable(variableMap, vars));
+			}
+		}
+		
+		return ret;
+	}
 
 	/**
 	 * @param args
@@ -1562,7 +1630,48 @@ public class ObjFunctionPrinter {
 		this.alertName = alertName;
 	}
 
+	/**
+	 * @return the primaryTableVarNames
+	 */
+	public List<List<String>> getPrimaryTableVarNames() {
+		return primaryTableVarNames;
+	}
 
-	
+	/**
+	 * @param primaryTableVarNames the primaryTableVarNames to set
+	 */
+	public void setPrimaryTableVarNames(List<List<String>> primaryTableVarNames) {
+		this.primaryTableVarNames = primaryTableVarNames;
+	}
+
+	/**
+	 * @return the auxiliaryTableVarNames
+	 */
+	public List<List<String>> getAuxiliaryTableVarNames() {
+		return auxiliaryTableVarNames;
+	}
+
+	/**
+	 * @param auxiliaryTableVarNames the auxiliaryTableVarNames to set
+	 */
+	public void setAuxiliaryTableVarNames(List<List<String>> auxiliaryTableVarNames) {
+		this.auxiliaryTableVarNames = auxiliaryTableVarNames;
+	}
+
+
+
+	/**
+	 * @return the countAlert
+	 */
+	public int getCountAlert() {
+		return countAlert;
+	}
+
+	/**
+	 * @param countAlert the countAlert to set
+	 */
+	public void setCountAlert(int countAlert) {
+		this.countAlert = countAlert;
+	}	
 
 }
