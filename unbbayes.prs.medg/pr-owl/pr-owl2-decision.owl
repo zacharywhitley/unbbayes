@@ -7,19 +7,19 @@
     <!ENTITY pr-owl2 "http://www.pr-owl.org/pr-owl2.owl#" >
     <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
     <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
-    <!ENTITY pr-owl2-decision "http://www.pr-owl.org/pr-owl2-decision.owl#" >
+    <!ENTITY pr-owl-decision "http://www.pr-owl.org/pr-owl-decision.owl#" >
 ]>
 
 
-<rdf:RDF xmlns="http://www.pr-owl.org/pr-owl2-decision.owl#"
-     xml:base="http://www.pr-owl.org/pr-owl2-decision.owl"
+<rdf:RDF xmlns="http://www.pr-owl.org/pr-owl-decision.owl#"
+     xml:base="http://www.pr-owl.org/pr-owl-decision.owl"
      xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-     xmlns:pr-owl2-decision="http://www.pr-owl.org/pr-owl2-decision.owl#"
+     xmlns:pr-owl-decision="http://www.pr-owl.org/pr-owl-decision.owl#"
      xmlns:owl="http://www.w3.org/2002/07/owl#"
      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:pr-owl2="http://www.pr-owl.org/pr-owl2.owl#">
-    <owl:Ontology rdf:about="http://www.pr-owl.org/pr-owl2-decision.owl">
+    <owl:Ontology rdf:about="http://www.pr-owl.org/pr-owl-decision.owl">
         <owl:versionInfo rdf:datatype="&xsd;string">2.0</owl:versionInfo>
         <rdfs:comment rdf:datatype="&xsd;string">PR-OWL 2 Decision is a profile of PR-OWL 2 for writing probabilistic ontologies with support for decisions. It is based on Multi-Entity Decision Graph (MEDG). More information can be found at www.pr-owl.org.</rdfs:comment>
         <owl:imports rdf:resource="http://www.pr-owl.org/pr-owl2.owl"/>
@@ -63,6 +63,12 @@
     
 
 
+    <!-- http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn -->
+
+    <owl:ObjectProperty rdf:about="&pr-owl2;isTypeOfArgumentIn"/>
+    
+
+
     <!-- http://www.pr-owl.org/pr-owl2.owl#typeOfMExpression -->
 
     <owl:ObjectProperty rdf:about="&pr-owl2;typeOfMExpression"/>
@@ -103,10 +109,11 @@
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl2-decision.owl#DomainDecisionNode -->
+    <!-- http://www.pr-owl.org/pr-owl-decision.owl#DomainDecisionNode -->
 
-    <owl:Class rdf:about="&pr-owl2-decision;DomainDecisionNode">
+    <owl:Class rdf:about="&pr-owl-decision;DomainDecisionNode">
         <rdfs:subClassOf rdf:resource="&pr-owl2;DomainResidentNode"/>
+        <owl:disjointWith rdf:resource="&pr-owl-decision;DomainUtilityNode"/>
         <rdfs:comment rdf:datatype="&xsd;string">This class represents a decision node in MEDG. A decision node is 
     theoretically different from a domain resident node. For instance, 
     decision nodes don&#39;t need LPD specification. However, technically 
@@ -120,14 +127,20 @@
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl2-decision.owl#DomainUtilityNode -->
+    <!-- http://www.pr-owl.org/pr-owl-decision.owl#DomainUtilityNode -->
 
-    <owl:Class rdf:about="&pr-owl2-decision;DomainUtilityNode">
+    <owl:Class rdf:about="&pr-owl-decision;DomainUtilityNode">
         <rdfs:subClassOf rdf:resource="&pr-owl2;DomainResidentNode"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&pr-owl2;hasMExpression"/>
-                <owl:allValuesFrom rdf:resource="&pr-owl2-decision;UtilityMExpression"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl-decision;UtilityMExpression"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isParentOf"/>
+                <owl:allValuesFrom rdf:resource="&pr-owl-decision;DomainUtilityNode"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:comment rdf:datatype="&xsd;string">This class represents an utility node in MEDG. Utility nodes are 
@@ -145,27 +158,35 @@
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl2-decision.owl#UtilityMExpression -->
+    <!-- http://www.pr-owl.org/pr-owl-decision.owl#UtilityMExpression -->
 
-    <owl:Class rdf:about="&pr-owl2-decision;UtilityMExpression">
+    <owl:Class rdf:about="&pr-owl-decision;UtilityMExpression">
         <owl:equivalentClass>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&pr-owl2;typeOfMExpression"/>
-                <owl:someValuesFrom rdf:resource="&pr-owl2-decision;UtilityVariable"/>
+                <owl:someValuesFrom rdf:resource="&pr-owl-decision;UtilityVariable"/>
             </owl:Restriction>
         </owl:equivalentClass>
-        <rdfs:subClassOf rdf:resource="&pr-owl2;SimpleMExpression"/>
+        <rdfs:subClassOf rdf:resource="&pr-owl2;MExpression"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="&pr-owl2;isTypeOfArgumentIn"/>
+                <owl:onClass rdf:resource="&pr-owl2;MExpressionArgument"/>
+                <owl:qualifiedCardinality rdf:datatype="&xsd;nonNegativeInteger">0</owl:qualifiedCardinality>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <owl:disjointWith rdf:resource="&pr-owl2;BooleanMExpression"/>
     </owl:Class>
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl2-decision.owl#UtilityVariable -->
+    <!-- http://www.pr-owl.org/pr-owl-decision.owl#UtilityVariable -->
 
-    <owl:Class rdf:about="&pr-owl2-decision;UtilityVariable">
+    <owl:Class rdf:about="&pr-owl-decision;UtilityVariable">
         <owl:equivalentClass>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="&pr-owl2;hasPossibleValues"/>
-                <owl:hasValue rdf:datatype="&xsd;anyURI">http://www.pr-owl.org/pr-owl2-decision.owl#utility</owl:hasValue>
+                <owl:hasValue rdf:datatype="&xsd;anyURI">http://www.pr-owl.org/pr-owl-decision.owl#utility</owl:hasValue>
             </owl:Restriction>
         </owl:equivalentClass>
         <rdfs:subClassOf rdf:resource="&pr-owl2;RandomVariable"/>
@@ -173,9 +194,27 @@
     
 
 
+    <!-- http://www.pr-owl.org/pr-owl2.owl#BooleanMExpression -->
+
+    <owl:Class rdf:about="&pr-owl2;BooleanMExpression"/>
+    
+
+
     <!-- http://www.pr-owl.org/pr-owl2.owl#DomainResidentNode -->
 
     <owl:Class rdf:about="&pr-owl2;DomainResidentNode"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#MExpression -->
+
+    <owl:Class rdf:about="&pr-owl2;MExpression"/>
+    
+
+
+    <!-- http://www.pr-owl.org/pr-owl2.owl#MExpressionArgument -->
+
+    <owl:Class rdf:about="&pr-owl2;MExpressionArgument"/>
     
 
 
@@ -214,9 +253,9 @@
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl2-decision.owl#utility -->
+    <!-- http://www.pr-owl.org/pr-owl-decision.owl#utility -->
 
-    <owl:NamedIndividual rdf:about="&pr-owl2-decision;utility">
+    <owl:NamedIndividual rdf:about="&pr-owl-decision;utility">
         <rdfs:comment rdf:datatype="&xsd;string">This is a categoritcal entity which represents a default state of utility nodes. For backward compatibility, utility nodes in PR-OWL2 Decision profile is virtually handled as a resident node with only 1 possible state, and this individual is such state.</rdfs:comment>
     </owl:NamedIndividual>
 </rdf:RDF>
