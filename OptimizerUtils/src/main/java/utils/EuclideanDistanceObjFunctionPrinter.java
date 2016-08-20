@@ -458,17 +458,24 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 		
 		printer.print("set " + getJointIndexVariableName());
 		printer.print(" := { ");
-		boolean hasPrinted = false;
+		int numEntries = 0;	// counts how many entries were written
 		for (int i = 0; i < jointTable.tableSize(); i++) {
 			if (!jointIndexesToIgnore.contains(i)) {
-				if (hasPrinted) {
+				if (numEntries > 0) {
 					printer.print(" , ");
 				}
 				printer.print(""+(i+1));
-				hasPrinted = true;
+				numEntries++;
 			}
 		}
 		printer.println("};");
+		
+		printer.println();
+		printer.println();
+		
+		printer.println("size_" + getJointIndexVariableName() + " = " + numEntries);
+		
+		
 	}
 
 
