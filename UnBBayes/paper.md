@@ -7,23 +7,23 @@ tags:
   - GUI
   - API
 authors:
-- name: Marcelo Ladeira
-  affiliation: Universidade de Brasília
-- name: Laecio Santos
+- name: Danilo Silva
   affiliation: Universidade de Brasília
 - name: Diego Marques
   affiliation: Universidade de Brasília
+- name: Emerson Machado
+  affiliation: Universidade de Brasília
 - name: Guilherme Torres
   affiliation: Universidade de Brasília
-- name: Danilo Silva
+- name: Laecio Santos
+  affiliation: Universidade de Brasília
+- name: Marcelo Ladeira
   affiliation: Universidade de Brasília
 - name: Michael Onishi
   affiliation: Universidade de Brasília
-- name: Emerson Machado
-  affiliation: Universidade de Brasília
-- name: Rommel Carvalho
-  affiliation: George Mason University
 - name: Paulo Costa
+  affiliation: George Mason University
+- name: Rommel Carvalho
   affiliation: George Mason University
 - name: Shou Matsumoto
   affiliation: George Mason University
