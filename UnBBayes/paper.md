@@ -27,7 +27,7 @@ authors:
   affiliation: Universidade de Brasília
 - name: Guilherme Torres
   affiliation: Universidade de Brasília
-date: 21 August 2016
+date: 22 August 2016
 
 ---
 
