@@ -7,33 +7,33 @@ tags:
   - GUI
   - API
 authors:
-- name: Danilo Silva
-  affiliation: Universidade de Brasília
-- name: Diego Marques
-  affiliation: Universidade de Brasília
-- name: Emerson Machado
-  affiliation: Universidade de Brasília
-- name: Guilherme Torres
-  affiliation: Universidade de Brasília
-- name: Laecio Santos
-  affiliation: Universidade de Brasília
 - name: Marcelo Ladeira
+  affiliation: Universidade de Brasília
+- name: Rommel Carvalho
+  affiliation: Universidade de Brasília
+- name: Shou Matsumoto
+  affiliation: George Mason University
+- name: Laecio Santos
   affiliation: Universidade de Brasília
 - name: Michael Onishi
   affiliation: Universidade de Brasília
 - name: Paulo Costa
   affiliation: George Mason University
-- name: Rommel Carvalho
-  affiliation: George Mason University
-- name: Shou Matsumoto
-  affiliation: George Mason University
+- name: Danilo Silva
+  affiliation: Universidade de Brasília
+- name: Emerson Machado
+  affiliation: Universidade de Brasília
+- name: Diego Marques
+  affiliation: Universidade de Brasília
+- name: Guilherme Torres
+  affiliation: Universidade de Brasília
 date: 21 August 2016
 
 ---
 
 # Summary
 
-UnBBayes is a plug-in based open source software framework written in Java for modeling, learning and reasoning upon probabilistic networks. It has both a GUI and an API for inference, sampling, machine learning and evaluation. It supports Bayesian Networks, Influence Diagrams, Multiple-Sectioned Bayesian Networks, Object-Oriented Bayesian Networks, Hybrid Bayesian Networks, Multi-Entity Bayesian Networks and Probabilistic Web Ontology Language, Probabilistic Relational Models, structure, parameter and incremental learning. 
+UnBBayes is a plug-in based open source software framework written in Java for modeling, learning and reasoning upon probabilistic networks. It has both a GUI and an API for inference, sampling, machine learning and evaluation. It supports Bayesian Networks, Influence Diagrams, Multiple-Sectioned Bayesian Networks, Object-Oriented Bayesian Networks, Hybrid Bayesian Networks, Multi-Entity Bayesian Networks and Probabilistic Web Ontology Language, Probabilistic Relational Models, and learning of the structure and parameter of Bayesian Networks. 
 
 ![UnBBayes screenshot](https://a.fsdn.com/con/app/proj/unbbayes/screenshots/231404.jpg)
 
