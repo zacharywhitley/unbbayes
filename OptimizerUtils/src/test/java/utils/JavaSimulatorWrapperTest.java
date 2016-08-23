@@ -190,6 +190,60 @@ public class JavaSimulatorWrapperTest extends TestCase {
 		
 		assertTrue(tempFile.delete());
 	}
+	/**
+	 * Smoke test of {@link JavaSimulatorWrapper#main(String[])}, with argument pointing to 1 probability distribution only.
+	 * @throws IOException 
+	 */
+	@SuppressWarnings("static-access")
+	public void testMainSingleProb() throws IOException {
+		
+		File tempFile = File.createTempFile(getClass().getName() + "_", ".out");
+		tempFile.deleteOnExit();
+		
+		args[0] = "-i";
+		args[1] = "\"" + getClass().getResource("../JavaSimulatorWrapper_singleProb.in").getPath() + "\"";
+		args[2] = "-o";
+		args[3] = tempFile.getPath();
+		args[4] = "-d";
+		wrapper.main(args);
+		
+		
+		assertTrue(tempFile.exists());
+		assertTrue(tempFile.isFile());
+		assertTrue(tempFile.length() > 0);
+		
+		// read the output file and check sanity
+		this.checkFileSanity(tempFile);
+		
+		assertTrue(tempFile.delete());
+	}
+	/**
+	 * Smoke test of {@link JavaSimulatorWrapper#main(String[])}, with argument pointing to more than 3 probability distributions.
+	 * @throws IOException 
+	 */
+	@SuppressWarnings("static-access")
+	public void testMainManyProb() throws IOException {
+		
+		File tempFile = File.createTempFile(getClass().getName() + "_", ".out");
+		tempFile.deleteOnExit();
+		
+		args[0] = "-i";
+		args[1] = "\"" + getClass().getResource("../JavaSimulatorWrapper_manyProb.in").getPath() + "\"";
+		args[2] = "-o";
+		args[3] = tempFile.getPath();
+		args[4] = "-d";
+		wrapper.main(args);
+		
+		
+		assertTrue(tempFile.exists());
+		assertTrue(tempFile.isFile());
+		assertTrue(tempFile.length() > 0);
+		
+		// read the output file and check sanity
+		this.checkFileSanity(tempFile);
+		
+		assertTrue(tempFile.delete());
+	}
 	
 	/**
 	 * Smoke test of {@link JavaSimulatorWrapper#main(String[])}, with argument pointing to a input file with invalid probabilities.
