@@ -404,7 +404,7 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 				
 				squareFactor += (" )^2");
 				
-				if (!squareFactor.isEmpty()) {
+				if (!is1stP) {
 					weightFactor += (squareFactor);
 					hasSquareFactor = true;
 				}
@@ -414,7 +414,7 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 			// end of ( (x[1] + x[2] - n[1])^2 + (x[3] + x[4] - n[2])^2 + (x[5] + x[6] - n[3])^2 + (x[7] + x[8] - n[4])^2) )
 			weightFactor += (" )");
 			
-			if (!weightFactor.isEmpty()) {
+			if (hasSquareFactor) {
 				printer.print(weightFactor);
 				hasWeightFactor = true;
 			}

@@ -134,10 +134,8 @@ public class ChiSquareObjFunctionPrinter extends
 					
 					squareFactor += " )";
 					
-					if (!squareFactor.isEmpty()) {
-						weightFactor += (squareFactor);
-						hasSquareFactor = true;
-					}
+					weightFactor += (squareFactor);
+					hasSquareFactor = true;
 				}
 				
 			}
@@ -145,7 +143,7 @@ public class ChiSquareObjFunctionPrinter extends
 			// end of ( (x[1] + x[2] - n[1])^2 + (x[3] + x[4] - n[2])^2 + (x[5] + x[6] - n[3])^2 + (x[7] + x[8] - n[4])^2) )
 			weightFactor += (" )");
 			
-			if (!weightFactor.isEmpty()) {
+			if (hasSquareFactor) {
 				printer.print(weightFactor);
 				hasWeightFactor = true;
 			}

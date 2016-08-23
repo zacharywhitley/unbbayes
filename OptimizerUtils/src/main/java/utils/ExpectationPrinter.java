@@ -110,7 +110,7 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 					continue;
 				}
 				
-				if (name.equals(getProbabilityColumnName())) {
+				if (name.equals(getProbabilityColumnName()) || name.trim().isEmpty()) {
 					indexOfProbability = column;
 					continue;
 				}
