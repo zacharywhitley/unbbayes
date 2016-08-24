@@ -76,6 +76,8 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 	 * @param file
 	 * @param isToConsiderAlert
 	 * @throws IOException 
+	 * @see #readJointProbabilityBody(CSVReader, int, List)
+	 * @see #readJointProbabilityHeader(CSVReader, List, List)
 	 */
 	public PotentialTable getJointProbabilityFromFile(File file, boolean isToConsiderAlert) throws IOException {
 		
@@ -90,32 +92,18 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 		if (namesToIgnoreArray != null && namesToIgnoreArray.length > 0) {
 			namesToIgnore = Arrays.asList(namesToIgnoreArray);
 		}
-		List<Integer> columnIndexesToIgnore = new ArrayList<Integer>();
 		
 		
 		List<String> varNames = null;
 		
 		// read the 1st line of csv (name of the columns)
-		String[] csvLine = null;
 		int indexOfProbability = getDefaultIndexOfProbability();
 		
 		if (is1stLineForNames()) {
 			varNames = new ArrayList<String>();
-			csvLine = reader.readNext();
-			indexOfProbability = csvLine.length-1;	// assuming by default to be the last column
-			for (int column = 0; column < csvLine.length; column++) {
-				String name = csvLine[column];
-				if (namesToIgnore.contains(name)) {
-					columnIndexesToIgnore.add(column);
-					continue;
-				}
-				
-				if (name.equals(getProbabilityColumnName()) || name.trim().isEmpty()) {
-					indexOfProbability = column;
-					continue;
-				}
-				
-				varNames.add(name);
+			indexOfProbability = this.readJointProbabilityHeader(reader, namesToIgnore, varNames);
+			if (varNames.isEmpty()) {
+				varNames = null;
 			}
 		}
 		
@@ -133,11 +121,47 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 			}
 		}
 		
-		PotentialTable jointTable = super.getJointTable(null, varNames);
+		PotentialTable jointTable;
+		try {
+			jointTable = this.readJointProbabilityBody(reader, indexOfProbability, varNames, is1stLineForNames(), null);
+		} catch (RuntimeException e) {
+			reader.close();
+			throw e;
+		} catch (IOException e) {
+			reader.close();
+			throw e;
+		}
+		
+		
+		reader.close();
+		
+		
+		return jointTable;
+	}
+
+	/**
+	 * Reads the body of joint probability file.
+	 * @param reader : csv reader to read header from
+	 * @param indexOfProbability : index of csv row to read joint probability from
+	 * @param varNames : names of variables read from header
+	 * @param isToReadState : if true, then states will be read from column
+	 * @param variableMap 
+	 * @return Joint probability read from file.
+	 * @throws IOException
+	 * @see #readJointProbabilityHeader(CSVReader, List, List)
+	 * @see #getJointProbabilityFromFile(File, boolean)
+	 */
+	protected PotentialTable readJointProbabilityBody(CSVReader reader, int indexOfProbability, List<String> varNames, boolean isToReadState, Map<String, INode> variableMap) throws IOException {
+
+		if (varNames == null) {
+			varNames = Collections.EMPTY_LIST;
+		}
+		
+		PotentialTable jointTable = super.getJointTable(variableMap, varNames);
 		
 		// read the remaining file
 		int cellsRead = 0;
-		for (csvLine = reader.readNext(); csvLine != null; csvLine = reader.readNext()) {
+		for (String[] csvLine = reader.readNext(); csvLine != null; csvLine = reader.readNext()) {
 			if (cellsRead >= jointTable.tableSize()) {
 				// file is larger than expected probability distribution
 				break;
@@ -149,8 +173,46 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+			} else {
+				throw new IndexOutOfBoundsException("Attempted to read column " + indexOfProbability + ", but column of current row ends at " + csvLine.length);
 			}
-			jointTable.setValue(cellsRead, value);
+			
+			int tableIndex = cellsRead;
+			if (isToReadState) {
+				// we need to write to proper cell in table.
+				
+				// prepare a coordinate which will be used to map a cell in table to states of variables
+				int[] coord = jointTable.getMultidimensionalCoord(0);	// instantiate a new object (default = cell 0) and fill it later.
+				
+				// make sure cell of probability is not included in cells of states
+				if (coord.length > indexOfProbability) {
+					throw new IllegalArgumentException("Inconsistency of format: expected to read " + coord.length 
+							+ " columns from CSV for the joint state, but index of probability was specified as column " + indexOfProbability);
+				}
+				
+				// read the initial columns of current row in order to fill coord
+				for (int columnInCSV = 0; columnInCSV < coord.length; columnInCSV++) {
+					String stateRead = csvLine[columnInCSV];
+					if (stateRead.equalsIgnoreCase("1")
+							|| stateRead.equalsIgnoreCase("TRUE")
+							|| stateRead.equals("YES")) {
+						// the last index in coord represents the 1st variable, and 1st index in coord represents the last variable
+						// so coord.length - columnInCSV - 1 is the index of the variable we are reading from csv
+						coord[coord.length - columnInCSV - 1] = 0;	// state 0 is true
+					} else if (stateRead.equalsIgnoreCase("0")
+							|| stateRead.equalsIgnoreCase("FALSE")
+							|| stateRead.equals("NO")) {
+						coord[coord.length - columnInCSV - 1] = 1;	// state 1 is false
+					} else {
+						throw new IllegalArgumentException("Unexpected state " + stateRead + " found in csv file at column " + columnInCSV);
+					}
+				}
+				
+				// convert back to cell in table 
+				tableIndex = jointTable.getLinearCoord(coord);
+			}
+			
+			jointTable.setValue(tableIndex, value);
 			cellsRead++;
 		}
 		
@@ -159,11 +221,58 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 			throw new RuntimeException("Cells read = " + cellsRead + ", expected = " + jointTable.tableSize());
 		}
 		
-		reader.close();
-		
-		
 		return jointTable;
 	}
+
+
+	/**
+	 * Reads only the header of joint probability file.
+	 * @param reader : csv reader to read header from
+	 * @param namesToIgnore : names in the header to be ignored
+	 * @param varNames : output argument to be filled with names of variables read from header
+	 * @return last index read, or index of {@link #getProbabilityColumnName()}.
+	 * @throws IOException
+	 * @see #getJointProbabilityFromFile(File, boolean)
+	 * @see #readJointProbabilityBody(CSVReader, int, List)
+	 * @see #getProbabilityColumnName()
+	 */
+	protected int readJointProbabilityHeader(CSVReader reader, List<String> namesToIgnore, List<String> varNames) throws IOException {
+
+		// basic assertions
+		if (reader == null) {
+			throw new IllegalArgumentException("No csv reader was provided.");
+		}
+		if (namesToIgnore == null) {
+			namesToIgnore = Collections.EMPTY_LIST;
+		}
+		if (varNames == null) {
+			varNames = new ArrayList<String>();
+		}
+		
+		String[] csvLine = reader.readNext();
+		if (csvLine == null) {
+			throw new IOException("There is no more row in csv file from where to read the header.");
+		}
+		
+		
+		int indexOfProbability = csvLine.length-1;	// assuming by default to be the last column;
+		for (int column = 0; column < csvLine.length; column++) {
+			String name = csvLine[column].trim();
+			if (namesToIgnore.contains(name)) {
+				continue;
+			}
+			
+			if (name.equals(getProbabilityColumnName())) {
+				indexOfProbability = column;
+				continue;
+			}
+			
+			varNames.add(name);
+		}
+		
+		return indexOfProbability;
+	}
+
 
 	/**
 	 * 
