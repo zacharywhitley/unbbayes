@@ -44,7 +44,6 @@ public class MultiColumnToMultiFileProbCSVConverterTest extends TestCase {
 	 * @throws InterruptedException 
 	 * @throws IOException 
 	 */
-	@SuppressWarnings("static-access")
 	public void testMain() throws InterruptedException, IOException {
 		
 		File temp = Files.createTempDirectory(getClass().getName() + "_").toFile();
