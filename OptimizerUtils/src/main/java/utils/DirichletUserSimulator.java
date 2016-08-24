@@ -163,15 +163,22 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			int[] states = table.getMultidimensionalCoord(tableIndex);
 			String csvLine = "";
 			int countAlert = 0;
+			Boolean alertState = null;	// keep track if we have alert variable in prob dist, and what is its state in current cell
 			for (int varIndex = states.length-1; varIndex >= 0 ; varIndex--) {
 				String state = table.getVariableAt(varIndex).getStateAt(states[varIndex]).trim();
-				if (state.equalsIgnoreCase("Yes") || state.equalsIgnoreCase("true")) {
+				if (state.equalsIgnoreCase("Yes") || state.equalsIgnoreCase("true") || state.equals("1")) {
 					csvLine += ("1");
 					if (alertVars.contains(table.getVariableAt(varIndex).getName())) {
 						countAlert++;
 					} 
+					if (table.getVariableAt(varIndex).getName().equalsIgnoreCase(getAlertName())) {
+						alertState = true;	// if this is the alert variable, keep track of its state
+					}
 				} else {
 					csvLine += ("0");
+					if (table.getVariableAt(varIndex).getName().equalsIgnoreCase(getAlertName())) {
+						alertState = false;	// if this is the alert variable, keep track of its state
+					}
 				}
 				if (varIndex > 0) {
 					csvLine += (",");
@@ -182,6 +189,17 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 					csvLine += ",1";
 				} else {
 					csvLine += ",0";
+				}
+			} else if (isToReadAlert()) {
+				// if we are reading alerts from the prob dist, we need to make sure the alert is only triggered if countAlert >= alertScore
+				if (alertState == null) {	// just checking that we found a alert variable in probability distribution
+					printer.close();
+					throw new IllegalArgumentException("Alert variable " + getAlertName() 
+							+ " is supposed to be read from probability distribution, but no state for such variable was found.");
+				}
+				// check that alert is true if and only if the number of active detectors are greater or equal to the specified score
+				if ( ( countAlert >= alertScore ) != alertState) {
+					tentativeAlpha[tableIndex] = 0;	// force this state to be impossible in Dirichlet distribution
 				}
 			}
 			if (tentativeAlpha[tableIndex] > 0) {
