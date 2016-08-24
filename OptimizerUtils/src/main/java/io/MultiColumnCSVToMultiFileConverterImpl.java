@@ -59,7 +59,6 @@ public class MultiColumnCSVToMultiFileConverterImpl extends ExpectationPrinter i
 			throw new IllegalArgumentException("Invalid input file: " + input);
 		}
 		
-		// if it is a directory, read all files in the directory
 		if (input.isDirectory()) {
 			throw new IllegalArgumentException("Directory is not supported as input: " + input);
 		}
