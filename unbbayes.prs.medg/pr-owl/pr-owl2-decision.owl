@@ -158,6 +158,20 @@
     
 
 
+    <!-- http://www.pr-owl.org/pr-owl-decision.owl#Utility -->
+
+    <owl:Class rdf:about="&pr-owl-decision;Utility">
+        <owl:equivalentClass>
+            <owl:Class>
+                <owl:oneOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="&pr-owl-decision;utility"/>
+                </owl:oneOf>
+            </owl:Class>
+        </owl:equivalentClass>
+    </owl:Class>
+    
+
+
     <!-- http://www.pr-owl.org/pr-owl-decision.owl#UtilityMExpression -->
 
     <owl:Class rdf:about="&pr-owl-decision;UtilityMExpression">
@@ -256,6 +270,7 @@
     <!-- http://www.pr-owl.org/pr-owl-decision.owl#utility -->
 
     <owl:NamedIndividual rdf:about="&pr-owl-decision;utility">
+        <rdf:type rdf:resource="&pr-owl-decision;Utility"/>
         <rdfs:comment rdf:datatype="&xsd;string">This is a categoritcal entity which represents a default state of utility nodes. For backward compatibility, utility nodes in PR-OWL2 Decision profile is virtually handled as a resident node with only 1 possible state, and this individual is such state.</rdfs:comment>
     </owl:NamedIndividual>
 </rdf:RDF>
