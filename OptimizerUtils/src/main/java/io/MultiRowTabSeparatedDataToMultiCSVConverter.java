@@ -73,8 +73,19 @@ public class MultiRowTabSeparatedDataToMultiCSVConverter extends
 		// set up file tokenizer
 		BufferedReader reader = new BufferedReader(new FileReader(input));
 		StreamTokenizer st = new StreamTokenizer(reader);
+		st.resetSyntax();
+		// java.io.StreamTokenizer fails to parse scientific notation like "1.09E-008", so I'm parsing such numbers as words.
+		st.wordChars('0', '9'); 
+		st.wordChars('e', 'e');
+		st.wordChars('E', 'E'); 
+		st.wordChars('.', '.'); 
+		st.wordChars('+', '+'); 
+		st.wordChars('-', '-'); 
+		st.whitespaceChars('\r','\r');
 		st.whitespaceChars(' ',' ');
 		st.whitespaceChars('\t','\t');
+		st.whitespaceChars(',', ',');	// ignore commas
+		st.whitespaceChars(';', ';');	// ignore semicollons
 		st.quoteChar('\'');		
 		st.quoteChar('"');
 		st.eolIsSignificant(true);	// declaration must be in same line
@@ -110,10 +121,14 @@ public class MultiRowTabSeparatedDataToMultiCSVConverter extends
 					throw new IOException("Joint probability should have size " + potentialTable.tableSize()
 							+ ", but joint probability in file had size " + i);
 				}
-				if (st.ttype == st.TT_NUMBER) {
-					potentialTable.setValue(i, (float)st.nval);
+				if (st.ttype == st.TT_WORD) {
+					try {
+						potentialTable.setValue(i, Float.parseFloat(st.sval));
+					} catch (RuntimeException e) {
+						throw new IOException("Failed to parse token. Token code: " + (st.ttype) + ", string = " + st.sval, e);
+					}
 				} else {
-					throw new IOException("Non-number token found: " + ((char)st.ttype) + ", string = " + st.sval);
+					throw new IOException("Non-number token found. Token code: " + (st.ttype) + ", string = " + st.sval);
 				}
 			}
 			

@@ -433,6 +433,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		options.addOption("numI","number-indicators", true, "Number of indicators to consider.");
 		options.addOption("numD","number-detectors", true, "Number of detectors to consider.");
 		options.addOption("ra","read-alert", false, "Whether to read aleart from probability file.");
+		options.addOption("threat","threat-name", true, "Name of threat variable to consider.");
 		
 		
 		CommandLine cmd = null;
@@ -507,6 +508,10 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 				names[i-1] = "D"+i;
 			}
 			sim.setDetectorNames(names);
+		}
+		
+		if (cmd.hasOption("threat")) {
+			sim.setThreatName(cmd.getOptionValue("threat"));
 		}
 		
 		try {
