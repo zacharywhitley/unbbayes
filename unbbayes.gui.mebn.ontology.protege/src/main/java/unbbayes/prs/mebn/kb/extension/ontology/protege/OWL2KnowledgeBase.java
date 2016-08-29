@@ -2092,7 +2092,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					for (OWLNamedIndividual object : reasoner.getObjectPropertyValues(subject.asOWLNamedIndividual(), property).getFlattened()) {
 						try {
 							// generate the set of arguments to be added
-							HashSet<ObjectEntityInstance> arguments = new HashSet<ObjectEntityInstance>();
+							List<ObjectEntityInstance> arguments = new ArrayList<ObjectEntityInstance>();
 							
 							// the subject is allways the 1st argument
 							arguments.add(argument1);
