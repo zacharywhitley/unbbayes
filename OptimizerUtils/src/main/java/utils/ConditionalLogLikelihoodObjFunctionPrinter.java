@@ -28,8 +28,9 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto
  *
  */
-public class ConditionalLogLikelihoodObjFunctionPrinter extends
-		LogLikelihoodObjFunctionPrinter {
+public class ConditionalLogLikelihoodObjFunctionPrinter extends LogLikelihoodObjFunctionPrinter {
+	
+	private boolean isToUseJointProbabilities = true;
 
 	/**
 	 * 
@@ -75,11 +76,27 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends
 		if (isToUseAuxiliaryTables() && auxiliaryTables != null) {
 			allTables.addAll(auxiliaryTables);	
 		}
+		
+		// prepare name of threat variable, because we might need to find it later
+		String threatName = getThreatName();
+		
 		// tableIndex is the index for w; globalCellIndex is the index for n (i.e. the index of a cell in a table, but it does not reset from table to table)
 		boolean hasWeightFactor = false;
-		for (int tableIndex = 0, globalCellIndex = 0; tableIndex < allTables.size(); tableIndex++) {
+		for (int tableIndex = 0, /*globalCellIndex = 0,*/ offset = 0; tableIndex < allTables.size(); tableIndex++) {
 			PotentialTable currentTable = allTables.get(tableIndex);
 			
+			// find threat variable in current table
+			int threatIndex = -1;		// position of threat variable in current table
+			int numStatesThreat = -1;	// number of states of the threat variable (in current table)
+			if (isToUseJointProbabilities() && (threatName != null)) {
+				for (int i = 0; i < currentTable.getVariablesSize(); i++) {
+					if (currentTable.getVariableAt(i).getName().equals(threatName)) {
+						threatIndex = i;
+						numStatesThreat = currentTable.getVariableAt(i).getStatesSize();
+						break;
+					}
+				}
+			}
 			
 			// w[1] * ( 
 			String weightFactor = "";
@@ -91,19 +108,59 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends
 			
 			// w[1] * ( n[1] * log(p[1]) + n[2] * log(p[2])) + w[2] *  ...
 			boolean hasLogFactor = false;	// this will become true if we ever wrote the content of log
-			for (int cellIndex = 0; cellIndex < currentTable.tableSize() ; cellIndex++, globalCellIndex++) {
-				// cell index is like a translation of globalCellIndex to an index in current table
+			for (int cellIndex = 0; cellIndex < currentTable.tableSize() ; cellIndex++/*, globalCellIndex++*/) {
 				
 				String logFactor = "";
 				
-				
-				// +  n[1] * log( p[1] )
+				// +  n[1] * 
 				if (hasLogFactor) {
 					logFactor += (" + ");
 				}
-				logFactor += (getAuxiliaryTableWeightSymbol() + "[" + (globalCellIndex+1) + "] * log(" + getProbabilityVariablePrefix() + "[" + (globalCellIndex+1) + "])");
+//				logFactor += getAuxiliaryTableWeightSymbol() + "[" + (globalCellIndex+1) + "] * ";
+				logFactor += getAuxiliaryTableWeightSymbol() + "[" + (offset + cellIndex + 1) + "] * ";
 				
-				weightFactor += (logFactor);
+				if (isToUseJointProbabilities()) {
+					// fill with something like "( log(p[1]) - log(p[1] + p[3]) )"
+					if (threatIndex < 0) {
+						throw new IllegalArgumentException("Variable " + threatName + " not found in table " + currentTable);
+					}
+					if (currentTable.getVariablesSize() != 2) {
+						throw new IllegalArgumentException("Current version does not support tuples of variables other than pairs: " + currentTable);
+					}
+					// find the variable other than threat
+//					int otherVarIndex = -1;
+//					for (int i = 0; i < currentTable.getVariablesSize(); i++) {
+//						if (i != threatIndex) {
+//							otherVarIndex = i;
+//							break;
+//						}
+//					}
+//					if (otherVarIndex < 0) {
+//						throw new IllegalArgumentException("Could not find variable other than threat: " + currentTable);
+//					}
+					
+					// ( log(p[1]) - log(p[1] + p[3]) )
+//					logFactor += "( log(" + getProbabilityVariablePrefix() + "[" + (globalCellIndex+1) + "]) - log(";
+					logFactor += "( log(" + getProbabilityVariablePrefix() + "[" + (offset + cellIndex + 1) + "]) - log(";
+					
+					// convert global cell index to a coordinate (<state of var1>, <state of var2>)
+					int[] coord = currentTable.getMultidimensionalCoord(cellIndex);
+					
+					// p[1] + p[3]
+					for (int i = 0; i < numStatesThreat ; i++) {
+						coord[threatIndex] = i;
+						logFactor += getProbabilityVariablePrefix() + "[" + (offset + currentTable.getLinearCoord(coord) + 1) + "]";
+						if (i+1 < numStatesThreat) {
+							logFactor += " + ";
+						}
+					}
+					logFactor += ") )";
+				} else {
+					// fill with something like log( p[1] )
+					logFactor += "log(" + getProbabilityVariablePrefix() + "[" + (offset + cellIndex + 1) + "])";
+				}
+				
+				weightFactor += logFactor;
 				hasLogFactor = true;
 				
 			}
@@ -120,6 +177,8 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends
 				printer.println();
 			}
 			
+			// next iteration shall start with this index
+			offset += currentTable.tableSize();
 		}
 		
 		
@@ -140,9 +199,14 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends
 	 * x[5] + x[7] = 1;		(this means P(Threat=true|I2=true) + P(Threat=false|I2=true) = 1)
 	 * x[6] + x[8] = 1;		(this means P(Threat=true|I2=false) + P(Threat=false|I2=false) = 1)
 	 * </pre>
-	 * @see utils.EuclideanDistanceObjFunctionPrinter#printJointIndexesToConsider(java.io.PrintStream, unbbayes.prs.bn.PotentialTable, java.util.Collection)
+	 * Or if {@link #isToUseJointProbabilities()} is on, then:
+	 * <pre>
+	 * x[1] + x[2] + x[3] + x[4] = 1;		(this means sum of P(Threat,I1) = 1)
+	 * x[5] + x[6] + x[7] + x[8] = 1;		(this means sum of P(Threat,I2) = 1)
+	 * </pre>
+	 * @see utils.EuclideanDistanceObjFunctionPrinter#printJointIndexesToConsider(java.io.PrintStream, unbbayes.prs.bn.PotentialTable, java.util.Collection, java.util.List, java.util.List)
 	 */
-	public void printJointIndexesToConsider(PrintStream printer, PotentialTable jointTable, Collection<Integer> jointIndexesToIgnore) {
+	public void printJointIndexesToConsider(PrintStream printer, PotentialTable jointTable, Collection<Integer> jointIndexesToIgnore,  List<PotentialTable> primaryTables, List<PotentialTable> auxiliaryTables) {
 //		super.printJointIndexesToConsider(printer, jointTable, jointIndexesToIgnore);
 		if (jointTable == null || jointTable.tableSize() <= 0) {
 			return;
@@ -156,72 +220,101 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends
 			printer.println();
 		}
 		
-		// find threat variable
-		int threatVarIndex = -1;
-		INode threatVar = null;
-		for (int i = 0; i < jointTable.getVariablesSize(); i++) {
-			if (getThreatName().equals(jointTable.getVariableAt(i).getName())) {
-				// check if threat has only 2 states
-//				if (jointTable.getVariableAt(i).getStatesSize() != 2) {
-//					throw new IllegalArgumentException("Current version only supports threat variable with 2 states, but found " + jointTable.getVariableAt(i).getStatesSize());
-//				}
-				threatVarIndex = i;
-				threatVar = jointTable.getVariableAt(i);
-				break;
-			};
-		}
-		
-		if (threatVarIndex <= 0) {
-			Debug.println(getClass(), "No threat variable found. Threat name: " + getThreatName());
-			return;
-		}
-		
-		// for each pair of variables (i.e. threat and something), print constraints
-		for (int varIndex = 0, offset = 0; varIndex < jointTable.getVariablesSize(); varIndex++) {
-			if (varIndex == threatVarIndex) {
-				continue;
+		if (isToUseJointProbabilities()) {
+
+			// use all tables equally (instead of distinguishing them in auxiliary and primary tables)
+			List<PotentialTable> allTables = new ArrayList<PotentialTable>();	// create a new list containing all of them
+			if (primaryTables != null) {
+				allTables.addAll(primaryTables);
 			}
-			INode currentVar = jointTable.getVariableAt(varIndex);
-			// check if var has only 2 states
-//			if (currentVar.getStatesSize() != 2) {
-//				throw new IllegalArgumentException("Current version only supports variables with 2 states, but found "
-//						+ currentVar + " with " + currentVar.getStatesSize() + " states.");
-//			}
+			// auxiliary tables comes after primary tables
+			if (isToUseAuxiliaryTables() && auxiliaryTables != null) {
+				allTables.addAll(auxiliaryTables);	
+			}
 			
-			// this is just an object to convert multi-dimensional coordinates (var1=true, var2=false) to a linear index.
-			PotentialTable indexConverter = new ProbabilisticTable();
-			indexConverter.addVariable(currentVar);
-			indexConverter.addVariable(threatVar);
-			int[] coord = indexConverter.getMultidimensionalCoord(0);	// this array represents a multi-dimensional coordinate.
-			
-			// print x[1] + x[3] = 1; for each pair of variables
-			for (int currentVarStateIndex = 0; currentVarStateIndex < currentVar.getStatesSize(); currentVarStateIndex++) {
-				
-				coord[indexConverter.getVariableIndex((Node) currentVar)] = currentVarStateIndex;
-				
-				// print x[1] + x[3]
-				for (int threatVarStateIndex = 0; threatVarStateIndex < threatVar.getStatesSize(); threatVarStateIndex++) {
-					
-					coord[indexConverter.getVariableIndex((Node) threatVar)] = threatVarStateIndex;
-					
-					printer.print(getProbabilityVariablePrefix() + "[" + (offset + indexConverter.getLinearCoord(coord) + 1) + "]");
-					
-					if (threatVarStateIndex + 1 < threatVar.getStatesSize()) {
+			int offset = 0;
+			for (PotentialTable table : allTables) {
+				for (int cellIndex = 0; cellIndex < table.tableSize(); cellIndex++) {
+					printer.print(getProbabilityVariablePrefix() + "[" + (offset + cellIndex + 1) + "]");
+					if (cellIndex + 1 < table.tableSize()) {
 						printer.print(" + ");
 					}
-					
-				}	// end of x[1] + x[3]
-				
+				}
 				printer.println(" = 1;");
+				offset += table.tableSize();
+			}
+		} else {
+			// TODO use primary and auxiliary tables instead
+			Debug.println(getClass(), "Warning: using joint tables instead of primary and auxiliary tables to print constraints about conditionals probabilities...");
+			// find threat variable
+			int threatVarIndex = -1;
+			INode threatVar = null;
+			for (int i = 0; i < jointTable.getVariablesSize(); i++) {
+				if (getThreatName().equals(jointTable.getVariableAt(i).getName())) {
+					// check if threat has only 2 states
+//					if (jointTable.getVariableAt(i).getStatesSize() != 2) {
+//						throw new IllegalArgumentException("Current version only supports threat variable with 2 states, but found " + jointTable.getVariableAt(i).getStatesSize());
+//					}
+					threatVarIndex = i;
+					threatVar = jointTable.getVariableAt(i);
+					break;
+				};
+			}
+			
+			if (threatVarIndex <= 0) {
+				Debug.println(getClass(), "No threat variable found. Threat name: " + getThreatName());
+				return;
+			}
+			
+			// for each pair of variables (i.e. threat and something), print constraints
+			for (int varIndex = 0, offset = 0; varIndex < jointTable.getVariablesSize(); varIndex++) {
+				if (varIndex == threatVarIndex) {
+					continue;
+				}
+				INode currentVar = jointTable.getVariableAt(varIndex);
+				// check if var has only 2 states
+//				if (currentVar.getStatesSize() != 2) {
+//					throw new IllegalArgumentException("Current version only supports variables with 2 states, but found "
+//							+ currentVar + " with " + currentVar.getStatesSize() + " states.");
+//				}
 				
-			}	// end of x[1] + x[3] = 1; x[2] + x[4] = 1;
+				// this is just an object to convert multi-dimensional coordinates (var1=true, var2=false) to a linear index.
+				PotentialTable indexConverter = new ProbabilisticTable();
+				indexConverter.addVariable(currentVar);
+				indexConverter.addVariable(threatVar);
+				int[] coord = indexConverter.getMultidimensionalCoord(0);	// this array represents a multi-dimensional coordinate.
+				
+				// print x[1] + x[3] = 1; for each pair of variables
+				for (int currentVarStateIndex = 0; currentVarStateIndex < currentVar.getStatesSize(); currentVarStateIndex++) {
+					
+					coord[indexConverter.getVariableIndex((Node) currentVar)] = currentVarStateIndex;
+					
+					// print x[1] + x[3]
+					for (int threatVarStateIndex = 0; threatVarStateIndex < threatVar.getStatesSize(); threatVarStateIndex++) {
+						
+						coord[indexConverter.getVariableIndex((Node) threatVar)] = threatVarStateIndex;
+						
+						printer.print(getProbabilityVariablePrefix() + "[" + (offset + indexConverter.getLinearCoord(coord) + 1) + "]");
+						
+						if (threatVarStateIndex + 1 < threatVar.getStatesSize()) {
+							printer.print(" + ");
+						}
+						
+					}	// end of x[1] + x[3]
+					
+					printer.println(" = 1;");
+					
+				}	// end of x[1] + x[3] = 1; x[2] + x[4] = 1;
+				
+				// adjust offset of next iteration, because next iteration shall start with larger index. 
+				// E.g. first iteration shall be x[1] + x[3] = 1; x[2] + x[4]; 
+				// next iteration shall be x[5] + x[7] = 1; x[6] + x[8]; 
+				offset += currentVar.getStatesSize() * threatVar.getStatesSize();
+				
+			}	// end of for each pair of variables (i.e. threat and something), print constraints
 			
-			// adjust offset of next iteration, because next iteration shall start with larger index. 
-			// E.g. first iteration shall be x[1] + x[3] = 1; x[2] + x[4]; 
-			// next iteration shall be x[5] + x[7] = 1; x[6] + x[8]; 
-			offset += currentVar.getStatesSize() * threatVar.getStatesSize();
-			
-		}	// end of for each pair of variables (i.e. threat and something), print constraints
+		}
+		
 		
 	}
 	
@@ -270,7 +363,11 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends
 	    PrintStream printer = new PrintStream(output);
 		
 	    // print 1st line : Var,	State,	Cond_Var,	Cond_State,	n,	w,	p
-	    printer.print("Var,State,Cond_Var,Cond_State,") ;
+	    if (isToUseJointProbabilities()) {
+	    	printer.print("Var1,State1,Var2,State2,") ;
+	    } else {
+	    	printer.print("Var,State,Cond_Var,Cond_State,") ;
+	    }
 	    printer.print(getAuxiliaryTableWeightSymbol());			// n
 	    if (getPrimaryTableWeightSymbol() != null && !getPrimaryTableWeightSymbol().isEmpty()) {
 	    	printer.print("," + getPrimaryTableWeightSymbol());	// w
@@ -324,6 +421,37 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends
 		
 	}
 	
+
+
+	/**
+	 * @return the isToUseJointProbabilities : if true, conditional probabilities will be considered
+	 * as a sum and division of joint probabilities:
+	 * <pre>
+	 * P(X|Y) = P(X,Y) / (P(X=true,Y) + P(X=false,Y))
+	 * </pre>
+	 * @see #getCountTableDescription(List, List)
+	 * @see #getObjFunction(List, List, PotentialTable)
+	 */
+	public boolean isToUseJointProbabilities() {
+		return isToUseJointProbabilities;
+	}
+
+
+
+
+	/**
+	 * @param isToUseJointProbabilities : : if true, conditional probabilities will be considered
+	 * as a sum and division of joint probabilities:
+	 * <pre>
+	 * P(X|Y) = P(X,Y) / (P(X=true,Y) + P(X=false,Y))
+	 * </pre>
+	 * @see #getCountTableDescription(List, List)
+	 * @see #getObjFunction(List, List, PotentialTable)
+	 */
+	public void setToUseJointProbabilities(boolean isToUseJointProbabilities) {
+		this.isToUseJointProbabilities = isToUseJointProbabilities;
+	}
+	
 	/**
 	 * @param args
 	 */
@@ -344,6 +472,7 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends
 				+ "and do not use primary tables (e.g. correlation tables).");
 		options.addOption("pnames","primary-table-var-names", true, "Names (comma-separated) of variables to be included in primary table. "
 				+ "Wildcard \"*\" can be used to indicate all names that matches.");
+		options.addOption("c","conditiona;", false, "Variables will represent conditional probabilities P(X|Y) directly, instead of joint probabilities of subset of variables.");
 		
 		CommandLine cmd = null;
 		try {
@@ -393,11 +522,10 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends
 		if (cmd.hasOption("alert")) {
 			printer.setAlertName(cmd.getOptionValue("alert"));
 		}
-		
-
 		if (cmd.hasOption("pnames")) {
 			printer.setPrimaryTableVarNames(printer.parseVarNames(cmd.getOptionValues("pnames")));
 		}
+		printer.setToUseJointProbabilities(!cmd.hasOption("c"));
 		
 
 		if (cmd.hasOption("out")) {
@@ -432,5 +560,8 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends
 		
 		
 	}
+
+
+
 
 }

@@ -136,7 +136,7 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 		printer.println(this.getObjFunction(primaryTables, auxiliaryTables, jointTable));
 		
 
-		this.printJointIndexesToConsider(printer, jointTable, getJointIndexesToIgnore());
+		this.printJointIndexesToConsider(printer, jointTable, getJointIndexesToIgnore(), primaryTables, auxiliaryTables);
 
 		// print the meaning of p variables
 		if (isToPrintJointProbabilityDescription()) {
@@ -449,8 +449,10 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 	 * @param printer 
 	 * @param jointTable
 	 * @param jointIndexesToIgnore
+	 * @param auxiliaryTables 
+	 * @param primaryTables 
 	 */
-	public void printJointIndexesToConsider(PrintStream printer, PotentialTable jointTable, Collection<Integer> jointIndexesToIgnore) {
+	public void printJointIndexesToConsider(PrintStream printer, PotentialTable jointTable, Collection<Integer> jointIndexesToIgnore, List<PotentialTable> primaryTables, List<PotentialTable> auxiliaryTables) {
 		if (jointTable == null || jointTable.tableSize() <= 0) {
 			return;
 		}
