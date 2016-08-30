@@ -16,10 +16,11 @@
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:xml="http://www.w3.org/XML/1998/namespace"
      ontologyIRI="http://www.pr-owl.org/resources/SPL/UnBBayesFeatureRecommendation.owl">
-    <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
-    <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
     <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
     <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+    <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
     <Import>http://www.pr-owl.org/resources/SPL/unbbayesConfigurationTransition.owl</Import>
     <Import>http://www.pr-owl.org/pr-owl2-decision.owl</Import>
     <Declaration>
@@ -75,6 +76,9 @@
     </Declaration>
     <Declaration>
         <NamedIndividual IRI="#NamelessUser"/>
+    </Declaration>
+    <Declaration>
+        <NamedIndividual IRI="#subdomainApplicationRequirement"/>
     </Declaration>
     <EquivalentClasses>
         <Class IRI="#BNStorageFeature"/>
@@ -233,7 +237,39 @@
     </ClassAssertion>
     <ClassAssertion>
         <Class IRI="http://www.pr-owl.org/pr-owl2.owl#DomainMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.FeatureMFrag"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="http://www.pr-owl.org/pr-owl2.owl#DomainMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.FeatureSuggestionMFrag"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="http://www.pr-owl.org/pr-owl2.owl#DomainMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.ReferenceMFrag"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="http://www.pr-owl.org/pr-owl2.owl#DomainMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.RequirementMFrag"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="http://www.pr-owl.org/pr-owl2.owl#DomainMFrag"/>
         <NamedIndividual IRI="#Domain_MFrag.RetributionMFrag"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="http://www.pr-owl.org/pr-owl2.owl#DomainMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.StorageFeatureMFrag"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="http://www.pr-owl.org/pr-owl2.owl#DomainMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.SuccessfulSuggestionMFrag"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="http://www.pr-owl.org/pr-owl2.owl#DomainMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.UserSatisfactionMFrag"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="http://www.pr-owl.org/pr-owl2.owl#DomainMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.transitionCostMFrag"/>
     </ClassAssertion>
     <ClassAssertion>
         <Class IRI="http://www.pr-owl.org/pr-owl2.owl#DomainResidentNode"/>
@@ -308,11 +344,11 @@
         <NamedIndividual IRI="#FeatureSuggestionMFrag.suggestedFeat"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class abbreviatedIRI="owl:Thing"/>
+        <Class abbreviatedIRI=":Thing"/>
         <NamedIndividual IRI="#High"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class abbreviatedIRI="owl:Thing"/>
+        <Class abbreviatedIRI=":Thing"/>
         <NamedIndividual IRI="#IX1"/>
     </ClassAssertion>
     <ClassAssertion>
@@ -424,11 +460,11 @@
         <NamedIndividual IRI="#IX22_1"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class abbreviatedIRI="owl:Thing"/>
+        <Class abbreviatedIRI=":Thing"/>
         <NamedIndividual IRI="#IX4"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class abbreviatedIRI="owl:Thing"/>
+        <Class abbreviatedIRI=":Thing"/>
         <NamedIndividual IRI="#IX5"/>
     </ClassAssertion>
     <ClassAssertion>
@@ -444,11 +480,11 @@
         <NamedIndividual IRI="#IX6_2"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class abbreviatedIRI="owl:Thing"/>
+        <Class abbreviatedIRI=":Thing"/>
         <NamedIndividual IRI="#IX7"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class abbreviatedIRI="owl:Thing"/>
+        <Class abbreviatedIRI=":Thing"/>
         <NamedIndividual IRI="#Low"/>
     </ClassAssertion>
     <ClassAssertion>
@@ -608,7 +644,7 @@
         <NamedIndividual IRI="#MEXPRESSION_userSatisfaction"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class abbreviatedIRI="owl:Thing"/>
+        <Class abbreviatedIRI=":Thing"/>
         <NamedIndividual IRI="#Medium"/>
     </ClassAssertion>
     <ClassAssertion>
@@ -888,6 +924,10 @@
         <NamedIndividual IRI="#retribution_1"/>
     </ClassAssertion>
     <ClassAssertion>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#CanYourDomainBeDevidedIntoSubDomains"/>
+        <NamedIndividual IRI="#subdomainApplicationRequirement"/>
+    </ClassAssertion>
+    <ClassAssertion>
         <Class IRI="http://www.pr-owl.org/pr-owl2.owl#OrdinaryVariable"/>
         <NamedIndividual IRI="#transitionCostMFrag.config"/>
     </ClassAssertion>
@@ -911,6 +951,26 @@
         <Class IRI="http://www.pr-owl.org/pr-owl2.owl#OrdinaryVariableArgument"/>
         <NamedIndividual IRI="#userSatisfaction_1"/>
     </ClassAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfills"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning_sample"/>
+        <NamedIndividual IRI="http://www.pr-owl.org/resources/SPL/unbbayesConfigurationTransition.owl#learning_requirement"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfills"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning_sample"/>
+        <NamedIndividual IRI="http://www.pr-owl.org/resources/SPL/unbbayesConfigurationTransition.owl#incremental_learning_requirement"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfills"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn_sample"/>
+        <NamedIndividual IRI="http://www.pr-owl.org/resources/SPL/unbbayesConfigurationTransition.owl#mebn_requirement"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfills"/>
+        <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn_sample"/>
+        <NamedIndividual IRI="http://www.pr-owl.org/resources/SPL/unbbayesConfigurationTransition.owl#mebn_requirement"/>
+    </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfills"/>
         <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn_sample"/>
@@ -1009,12 +1069,12 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasOrdinaryVariable"/>
         <NamedIndividual IRI="#Domain_MFrag.FeatureSuggestionMFrag"/>
-        <NamedIndividual IRI="#FeatureSuggestionMFrag.req"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.currentFeat"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasOrdinaryVariable"/>
         <NamedIndividual IRI="#Domain_MFrag.FeatureSuggestionMFrag"/>
-        <NamedIndividual IRI="#FeatureSuggestionMFrag.currentFeat"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.req"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasOrdinaryVariable"/>
@@ -1277,6 +1337,11 @@
         <NamedIndividual IRI="#IX6"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasProbabilityDistribution"/>
+        <NamedIndividual IRI="#Domain_Res.fulfills"/>
+        <NamedIndividual IRI="http://www.pr-owl.org/pr-owl2.owl#fulfills_Table"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isResidentNodeIn"/>
         <NamedIndividual IRI="#Domain_Res.fulfills"/>
         <NamedIndividual IRI="#Domain_MFrag.RequirementMFrag"/>
@@ -1493,6 +1558,76 @@
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#IX20_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#IX16_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#isGoodSuggestion_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#hasFeature_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#userSatisfaction_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#incorporateFeature_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#IX21_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#hasSuggestion_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#MEXPRESSION_CX5_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#usabilityScore_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#transitionCost_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#retribution_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#IX22_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+        <NamedIndividual IRI="#IX17_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
         <NamedIndividual IRI="#FeatureSuggestionMFrag.currentFeat"/>
         <NamedIndividual IRI="#IX10_1"/>
     </ObjectPropertyAssertion>
@@ -1525,11 +1660,6 @@
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
         <NamedIndividual IRI="#FeatureSuggestionMFrag.req"/>
         <NamedIndividual IRI="#IX11_2"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#FeatureSuggestionMFrag.req"/>
-        <NamedIndividual IRI="#fulfills_2"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
@@ -1659,7 +1789,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#IX16_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -1689,7 +1819,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#IX17_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -1749,7 +1879,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#IX20_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -1779,7 +1909,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#IX21_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -1809,7 +1939,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#IX22_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasMExpression"/>
@@ -1909,7 +2039,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#MEXPRESSION_CX5_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -2763,78 +2893,13 @@
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#MEXPRESSION_CX5_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#IX21_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#userSatisfaction_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#hasSuggestion_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#hasFeature_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#retribution_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#IX20_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#usabilityScore_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#IX22_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#incorporateFeature_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#IX17_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#IX16_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#isGoodSuggestion_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
-        <NamedIndividual IRI="#transitionCost_1"/>
-    </ObjectPropertyAssertion>
-    <ObjectPropertyAssertion>
-        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
-        <NamedIndividual IRI="#StorageFeatureMFrag.feature"/>
+        <NamedIndividual IRI="#RequirementMFrag.feature"/>
         <NamedIndividual IRI="#fulfills_1"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
+        <NamedIndividual IRI="#RequirementMFrag.req"/>
+        <NamedIndividual IRI="#fulfills_2"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isTypeOfArgumentIn"/>
@@ -2974,7 +3039,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#fulfills_1"/>
-        <NamedIndividual IRI="#StorageFeatureMFrag.feature"/>
+        <NamedIndividual IRI="#RequirementMFrag.feature"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -2984,7 +3049,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#fulfills_2"/>
-        <NamedIndividual IRI="#FeatureSuggestionMFrag.req"/>
+        <NamedIndividual IRI="#RequirementMFrag.req"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -2994,7 +3059,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#hasFeature_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -3014,7 +3079,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#hasSuggestion_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -3034,7 +3099,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#incorporateFeature_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -3064,7 +3129,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#isGoodSuggestion_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -3114,7 +3179,12 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#retribution_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#is_derived_from"/>
+        <NamedIndividual IRI="#subdomainApplicationRequirement"/>
+        <NamedIndividual IRI="http://www.pr-owl.org/resources/SPL/unbbayesConfigurationTransition.owl#msbn_requirement"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -3124,7 +3194,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#transitionCost_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -3144,7 +3214,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#usabilityScore_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -3154,7 +3224,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#typeOfArgument"/>
         <NamedIndividual IRI="#userSatisfaction_1"/>
-        <NamedIndividual IRI="#RetributionMFrag.config"/>
+        <NamedIndividual IRI="#FeatureSuggestionMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#fulfilled_by"/>
@@ -3190,6 +3260,24 @@
         <DataProperty IRI="#isBNStorageFeature"/>
         <NamedIndividual IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7_sample"/>
         <Literal datatypeIRI="&xsd;boolean">true</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasDeclaration"/>
+        <NamedIndividual IRI="http://www.pr-owl.org/pr-owl2.owl#fulfills_Table"/>
+        <Literal datatypeIRI="&xsd;string">if any feature,domReq have ( fulfills = true ) [
+   true = .7,
+   false = .3
+] else if any feature,domReq have ( fulfills = false ) [
+   true = .1,
+   false = .9
+] else if any feature,domReq have ( fulfills = absurd ) [
+   absurd = 1
+] else [ 
+    true = .5,
+   false = .5
+]
+
+</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasDeclaration"/>
@@ -3383,9 +3471,19 @@
         <Literal datatypeIRI="&xsd;integer">1</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isSubjectIn"/>
+        <NamedIndividual IRI="#RV_fulfills_1"/>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.owl-ontologies.com/requirements/requirements.owl#fulfills</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
         <NamedIndividual IRI="#RV_fulfills_2"/>
         <Literal datatypeIRI="&xsd;integer">2</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isObjectIn"/>
+        <NamedIndividual IRI="#RV_fulfills_2"/>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.owl-ontologies.com/requirements/requirements.owl#fulfills</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
@@ -3428,6 +3526,11 @@
         <Literal datatypeIRI="&xsd;integer">2</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
+        <NamedIndividual IRI="#RV_incorporateFeature"/>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/resources/SPL/UnBBayesFeatureRecommendation.owl#incorporateFeature</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
         <NamedIndividual IRI="#RV_incorporateFeature_1"/>
         <Literal datatypeIRI="&xsd;integer">1</Literal>
@@ -3446,6 +3549,11 @@
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
         <NamedIndividual IRI="#RV_isBNStorageFeature_1"/>
         <Literal datatypeIRI="&xsd;integer">1</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
+        <NamedIndividual IRI="#RV_isGoodSuggestion"/>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/resources/SPL/UnBBayesFeatureRecommendation.owl#isGoodSuggestion</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3483,9 +3591,9 @@
         <Literal datatypeIRI="&xsd;integer">2</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
         <NamedIndividual IRI="#RV_retribution"/>
-        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/pr-owl2-decision.owl#utility</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/resources/SPL/UnBBayesFeatureRecommendation.owl#retribution</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3493,9 +3601,9 @@
         <Literal datatypeIRI="&xsd;integer">1</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
-        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
         <NamedIndividual IRI="#RV_transitionCost"/>
-        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/pr-owl2-decision.owl#utility</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/resources/SPL/UnBBayesFeatureRecommendation.owl#transitionCost</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3506,6 +3614,11 @@
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
         <NamedIndividual IRI="#RV_transitionCost_2"/>
         <Literal datatypeIRI="&xsd;integer">2</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
+        <NamedIndividual IRI="#RV_usabilityScore"/>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/resources/SPL/UnBBayesFeatureRecommendation.owl#usabilityScore</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
@@ -3526,6 +3639,11 @@
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
         <NamedIndividual IRI="#RV_usabilityScore_1"/>
         <Literal datatypeIRI="&xsd;integer">1</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
+        <NamedIndividual IRI="#RV_userSatisfaction"/>
+        <Literal datatypeIRI="&xsd;anyURI">http://www.pr-owl.org/resources/SPL/UnBBayesFeatureRecommendation.owl#userSatisfaction</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -3726,6 +3844,30 @@
     <SubObjectPropertyOf>
         <ObjectProperty IRI="#hasSuggestionIO"/>
         <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#hasSuggestion"/>
+    </SubObjectPropertyOf>
+    <SubObjectPropertyOf>
+        <ObjectProperty IRI="#incorporateFeature"/>
+        <ObjectProperty abbreviatedIRI=":topObjectProperty"/>
+    </SubObjectPropertyOf>
+    <SubObjectPropertyOf>
+        <ObjectProperty IRI="#isGoodSuggestion"/>
+        <ObjectProperty abbreviatedIRI=":topObjectProperty"/>
+    </SubObjectPropertyOf>
+    <SubObjectPropertyOf>
+        <ObjectProperty IRI="#retribution"/>
+        <ObjectProperty abbreviatedIRI=":topObjectProperty"/>
+    </SubObjectPropertyOf>
+    <SubObjectPropertyOf>
+        <ObjectProperty IRI="#transitionCost"/>
+        <ObjectProperty abbreviatedIRI=":topObjectProperty"/>
+    </SubObjectPropertyOf>
+    <SubObjectPropertyOf>
+        <ObjectProperty IRI="#usabilityScore"/>
+        <ObjectProperty abbreviatedIRI=":topObjectProperty"/>
+    </SubObjectPropertyOf>
+    <SubObjectPropertyOf>
+        <ObjectProperty IRI="#userSatisfaction"/>
+        <ObjectProperty abbreviatedIRI=":topObjectProperty"/>
     </SubObjectPropertyOf>
     <ObjectPropertyRange>
         <ObjectProperty IRI="#hasSuggestionIO"/>
