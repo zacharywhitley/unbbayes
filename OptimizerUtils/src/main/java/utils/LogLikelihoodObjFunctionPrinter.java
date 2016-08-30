@@ -81,7 +81,7 @@ public class LogLikelihoodObjFunctionPrinter extends
 			weightFactor += (" " + getPrimaryTableWeightSymbol() + "[" + (tableIndex+1) +"]" + " * (");
 			
 			// w[1] * ( n[1] * log( p[1] + p[2] +,...,p[k] ) + n[2] * log(p[3] + ... + p[l]) ) + w[2] * ( 271 * log( p[1] + p[2] +,...,p[m] ) + ...
-			boolean hasLogFactor = false;	// this will become true if we ever wrote (x[5] + x[6] - n[3])^2
+			boolean hasLogFactor = false;	// this will become true if we ever wrote content of log
 			for (int cellIndex = 0; cellIndex < currentTable.tableSize() ; cellIndex++, globalCellIndex++) {
 				// cell index is like a translation of globalCellIndex to an index in current table
 				
@@ -189,7 +189,7 @@ public class LogLikelihoodObjFunctionPrinter extends
 			return;
 		}
 		
-		if (cmd.hasOption("h")) {
+		if (cmd.hasOption("h") || args.length <= 0) {
 			for (Option option : options.getOptions()) {
 				System.out.println("-" + option.getOpt() + (option.hasArg()?(" <" + option.getLongOpt() +">"):"") + " : " + option.getDescription());
 			}

@@ -144,11 +144,18 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 //			printer.println();
 //			printer.println("Joint probability table:");
 			jointProbPrinter.println(this.getJointTableDescription(jointTable));
+			if (jointProbPrinter != weightPrinter
+					&& jointProbPrinter != printer) {
+				jointProbPrinter.close();
+			}
 			
 			// also print the meaning of count variables n[i] and w[i]
 			printer.println();
 //			printer.println("Counts:");
 			weightPrinter.println(this.getCountTableDescription(primaryTables, auxiliaryTables));
+			if (weightPrinter != printer) {
+				weightPrinter.close();
+			}
 		}
 		
 	}
