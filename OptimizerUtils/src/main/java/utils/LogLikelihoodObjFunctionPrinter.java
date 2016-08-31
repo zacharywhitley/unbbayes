@@ -67,81 +67,21 @@ public class LogLikelihoodObjFunctionPrinter extends
 			allTables.addAll(auxiliaryTables);	
 		}
 		// tableIndex is the index for w; globalCellIndex is the index for n (i.e. the index of a cell in a table, but it does not reset from table to table)
-		boolean hasWeightFactor = false;
-		for (int tableIndex = 0, globalCellIndex = 0; tableIndex < allTables.size(); tableIndex++) {
+		boolean isFirstLine = true;
+		for (int tableIndex = 0, offset = 0; tableIndex < allTables.size(); tableIndex++) {
 			PotentialTable currentTable = allTables.get(tableIndex);
 			
 			
-			// w[1] * ( 
-			String weightFactor = "";
-			if (hasWeightFactor) {
-				weightFactor += " +";
-			}
+			String weightFactor = this.getObjFunctionLine(currentTable, isFirstLine, tableIndex, offset, jointTable);
+			offset += currentTable.tableSize();
 			
-			weightFactor += (" " + getPrimaryTableWeightSymbol() + "[" + (tableIndex+1) +"]" + " * (");
-			
-			// w[1] * ( n[1] * log( p[1] + p[2] +,...,p[k] ) + n[2] * log(p[3] + ... + p[l]) ) + w[2] * ( 271 * log( p[1] + p[2] +,...,p[m] ) + ...
-			boolean hasLogFactor = false;	// this will become true if we ever wrote content of log
-			for (int cellIndex = 0; cellIndex < currentTable.tableSize() ; cellIndex++, globalCellIndex++) {
-				// cell index is like a translation of globalCellIndex to an index in current table
-				
-				String logFactor = "";
-				
-				
-				// +  n[1] * log( p[1] + p[2] +,...,p[k] )
-				if (hasLogFactor) {
-					logFactor += (" + ");
-				}
-				logFactor += (getAuxiliaryTableWeightSymbol() + "[" + (globalCellIndex+1) + "] * log(");
-				
-				// coord represents the states (of the variables) associated with current cell in current table
-				int[] coord = currentTable.getMultidimensionalCoord(cellIndex);
-				
-				// is1stP is whether this is the 1st probability in parenthesis (it's going to be used to decide whether to append a "+" before p)
-				boolean is1stP = true;	
-				// find what cells in joint table are associated with the states in coord
-				for (Integer jointCellIndex = 0; jointCellIndex < jointTable.tableSize(); jointCellIndex++) {
-					
-					int[] jointCoord = jointTable.getMultidimensionalCoord(jointCellIndex);
-					
-					boolean found = true;
-					for (int i = 0; i < coord.length; i++) {
-						INode var = currentTable.getVariableAt(i);
-						int indexInJointTable = jointTable.getVariableIndex((Node) var);
-						if (jointCoord[indexInJointTable] != coord[i]) {
-							found = false;
-							break;
-						}
-					}
-					
-					if (found && !getJointIndexesToIgnore().contains(jointCellIndex)) {
-						if (!is1stP) {
-							logFactor += (" +");
-						}
-						logFactor += (" " + getProbabilityVariablePrefix() + "[" + (jointCellIndex+1) + "]");
-						is1stP = false;
-					}
-					
-				}
-				
-				logFactor += (" )");
-				
-				if (!is1stP) {
-					weightFactor += (logFactor);
-					hasLogFactor = true;
-				}
-				
-			}
-			
-			// end of ( n[1] * log( p[1] + p[2] +,...,p[k] ) + n[2] * log(p[3] + ... + p[l]) )
-			weightFactor += (" )");
-			
-			if (hasLogFactor) {
+//			if (hasLogFactor) {
+			if (weightFactor != null) {
 				printer.print(weightFactor);
-				hasWeightFactor = true;
+				isFirstLine = false;
 			}
 			
-			if (hasWeightFactor && isToBreakLineOnObjectFunction()) {
+			if (!isFirstLine && isToBreakLineOnObjectFunction()) {
 				printer.println();
 			}
 			
@@ -154,6 +94,90 @@ public class LogLikelihoodObjFunctionPrinter extends
 		
 		return output.toString();
 	}
+
+	/**
+	 * 
+	 * @param currentTable
+	 * @param isFirstLine
+	 * @param lineIndex
+	 * @param offset
+	 * @param jointTable
+	 * @return
+	 */
+	protected String getObjFunctionLine(PotentialTable currentTable, boolean isFirstLine, int lineIndex, int offset, PotentialTable jointTable) {
+
+		// w[1] * ( 
+		String ret = "";
+		if (!isFirstLine) {
+			ret += " +";
+		}
+		
+		ret += (" " + getPrimaryTableWeightSymbol() + "[" + (lineIndex+1) +"]" + " * (");
+		
+		// w[1] * ( n[1] * log( p[1] + p[2] +,...,p[k] ) + n[2] * log(p[3] + ... + p[l]) ) + w[2] * ( 271 * log( p[1] + p[2] +,...,p[m] ) + ...
+		boolean hasLogFactor = false;	// this will become true if we ever wrote content of log
+		for (int cellIndex = 0; cellIndex < currentTable.tableSize() ; cellIndex++) {
+			// cell index is like a translation of globalCellIndex to an index in current table
+			
+			String logFactor = "";
+			
+			
+			// +  n[1] * log( p[1] + p[2] +,...,p[k] )
+			if (hasLogFactor) {
+				logFactor += (" + ");
+			}
+			logFactor += (getAuxiliaryTableWeightSymbol() + "[" + (offset + cellIndex + 1) + "] * log(");
+			
+			// coord represents the states (of the variables) associated with current cell in current table
+			int[] coord = currentTable.getMultidimensionalCoord(cellIndex);
+			
+			// is1stP is whether this is the 1st probability in parenthesis (it's going to be used to decide whether to append a "+" before p)
+			boolean is1stP = true;	
+			// find what cells in joint table are associated with the states in coord
+			for (Integer jointCellIndex = 0; jointCellIndex < jointTable.tableSize(); jointCellIndex++) {
+				
+				int[] jointCoord = jointTable.getMultidimensionalCoord(jointCellIndex);
+				
+				boolean found = true;
+				for (int i = 0; i < coord.length; i++) {
+					INode var = currentTable.getVariableAt(i);
+					int indexInJointTable = jointTable.getVariableIndex((Node) var);
+					if (jointCoord[indexInJointTable] != coord[i]) {
+						found = false;
+						break;
+					}
+				}
+				
+				if (found && !getJointIndexesToIgnore().contains(jointCellIndex)) {
+					if (!is1stP) {
+						logFactor += (" +");
+					}
+					logFactor += (" " + getProbabilityVariablePrefix() + "[" + (jointCellIndex+1) + "]");
+					is1stP = false;
+				}
+				
+			}
+			
+			logFactor += (" )");
+			
+			if (!is1stP) {
+				ret += (logFactor);
+				hasLogFactor = true;
+			}
+			
+		}
+		// end of ( n[1] * log( p[1] + p[2] +,...,p[k] ) + n[2] * log(p[3] + ... + p[l]) )
+		
+		if (!hasLogFactor) {
+			return null;
+		}
+		
+		ret += (" )");
+		
+		return ret;
+	}
+
+
 
 	/**
 	 * @param args
