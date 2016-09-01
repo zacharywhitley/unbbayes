@@ -96,6 +96,10 @@
     </EquivalentClasses>
     <SubClassOf>
         <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#CanYourDomainBeDevidedIntoSubDomains"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#BooleanQuestion"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#CanYourDomainBeDevidedIntoSubDomains"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="http://www.owl-ontologies.com/requirements/requirements.owl#is_derived_from"/>
             <Class IRI="http://www.pr-owl.org/resources/SPL/unbbayesConfigurationTransition.owl#ModelDivisibleToHierarchicSectionRequirement"/>
@@ -156,6 +160,10 @@
         <Class IRI="#IOFeature"/>
     </SubClassOf>
     <SubClassOf>
+        <Class IRI="http://www.owl-ontologies.com/requirements/constraints.owl#PathRef"/>
+        <Class abbreviatedIRI=":Thing"/>
+    </SubClassOf>
+    <SubClassOf>
         <Class IRI="#BNStorageFeature"/>
         <Class IRI="#IOFeature"/>
     </SubClassOf>
@@ -163,6 +171,10 @@
         <Class IRI="#IOFeature"/>
         <Class IRI="http://www.pr-owl.org/resources/SPL/unbbayesFeatureModel.owl#DynamicFeature"/>
     </SubClassOf>
+    <DisjointClasses>
+        <Class IRI="http://www.owl-ontologies.com/requirements/requirements.owl#DetailedRequirement"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/requirements.owl#InitialRequirement"/>
+    </DisjointClasses>
     <ClassAssertion>
         <Class IRI="http://www.pr-owl.org/pr-owl2.owl#DeclarativeDistribution"/>
         <NamedIndividual IRI="http://www.pr-owl.org/pr-owl2.owl#fulfills_Table"/>

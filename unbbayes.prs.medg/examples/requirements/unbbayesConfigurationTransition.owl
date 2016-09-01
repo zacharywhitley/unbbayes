@@ -188,13 +188,6 @@
         </DataSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#DoYouHaveData"/>
-        <DataSomeValuesFrom>
-            <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#hasDataSet"/>
-            <Datatype abbreviatedIRI="xsd:boolean"/>
-        </DataSomeValuesFrom>
-    </EquivalentClasses>
-    <EquivalentClasses>
         <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#SuggestIncrementalLearning"/>
         <ObjectHasValue>
             <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#hasSuggestion"/>
@@ -396,6 +389,13 @@
     <SubClassOf>
         <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#DoYouHaveData"/>
         <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#BooleanQuestion"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#DoYouHaveData"/>
+        <DataSomeValuesFrom>
+            <DataProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#hasDataSet"/>
+            <Datatype abbreviatedIRI="xsd:boolean"/>
+        </DataSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl#InformationRequirement"/>
