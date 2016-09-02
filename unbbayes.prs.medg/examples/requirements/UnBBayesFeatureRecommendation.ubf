@@ -13,35 +13,6 @@ NextEntity=1
 % UBF MFrags and Nodes declaration
 
 % MFrag
-MFrag=FeatureMFrag
-NextOrdinaryVar=3
-
-% Resident nodes
-
-
-Node=hasFeature
-Type=DomainResidentNode
-Position=0.0,131.0
-Size=198,60
-Color=-66914
-PossibleValuesOrder=false,true,absurd
-
-% Ordinary Variables
-
-
-Node=feature
-Type=OrdinalVar
-Position=13.0,61.0
-Size=158,60
-Color=-5178237
-
-Node=config
-Type=OrdinalVar
-Position=0.0,0.0
-Size=185,60
-Color=-5178237
-
-% MFrag
 MFrag=RequirementMFrag
 NextOrdinaryVar=4
 
@@ -95,6 +66,35 @@ Size=242,60
 Color=-5178237
 
 % MFrag
+MFrag=FeatureMFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=hasFeature
+Type=DomainResidentNode
+Position=0.0,131.0
+Size=198,60
+Color=-66914
+PossibleValuesOrder=false,true,absurd
+
+% Ordinary Variables
+
+
+Node=feature
+Type=OrdinalVar
+Position=13.0,61.0
+Size=158,60
+Color=-5178237
+
+Node=config
+Type=OrdinalVar
+Position=0.0,0.0
+Size=185,60
+Color=-5178237
+
+% MFrag
 MFrag=UserSatisfactionMFrag
 NextOrdinaryVar=4
 
@@ -113,7 +113,7 @@ Type=DomainResidentNode
 Position=109.0,254.0
 Size=180,60
 Color=-66914
-PossibleValuesOrder=
+PossibleValuesOrder=Low,Medium,High
 
 % Input nodes
 
@@ -207,7 +207,7 @@ Size=185,60
 Color=-5178237
 
 % MFrag
-MFrag=transitionCostMFrag
+MFrag=TransitionCostMFrag
 NextOrdinaryVar=3
 
 % Resident nodes
