@@ -155,20 +155,28 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends LogLikelihoodObj
 	 */
 	protected String getObjFunctionLine(PotentialTable currentTable, boolean isFirstLine, int lineIndex, int offset, PotentialTable jointTable, boolean isToUseJointTable) {
 		
-		// find threat variable in current table
-		int threatIndexInCurrentTable = -1;		// position of threat variable in current table
-		int numStatesThreat = -1;				// number of states of the threat variable (in current table)
+		// find condition variable in current table
+		int conditionIndexInCurrentTable = -1;		// position of condition variable in current table
+		int numStatesCondition = -1;				// number of states of the condition variable (in current table)
 		if (isToUseJointProbabilities() && (getThreatName() != null)) {
 			for (int i = 0; i < currentTable.getVariablesSize(); i++) {
 				if (currentTable.getVariableAt(i).getName().equals(getThreatName())) {
-					threatIndexInCurrentTable = i;
-					numStatesThreat = currentTable.getVariableAt(i).getStatesSize();
+					conditionIndexInCurrentTable = i;
+					numStatesCondition = currentTable.getVariableAt(i).getStatesSize();
 					break;
 				}
 			}
 		}
-		if (threatIndexInCurrentTable < 0 || numStatesThreat < 0) {
-			throw new IllegalArgumentException("Could not find threat variable " + getThreatName() + " or invalid threat variable size in current table, : " + currentTable);
+		if (conditionIndexInCurrentTable < 0 || numStatesCondition < 0) {
+			// use the last variable instead
+			conditionIndexInCurrentTable = currentTable.getVariablesSize()-1;
+			if (conditionIndexInCurrentTable >= 0) {
+				numStatesCondition = currentTable.getVariableAt(conditionIndexInCurrentTable).getStatesSize();
+			}
+			Debug.println(getClass(), "Unable to find " + getThreatName() + " in table " + currentTable + ", using last variable: " + currentTable.getVariableAt(conditionIndexInCurrentTable) + " instead.");
+		}
+		if (conditionIndexInCurrentTable < 0 || numStatesCondition < 0) {
+			throw new IllegalArgumentException("Could not find condition variable " + getThreatName() + " or invalid condition variable size in current table, : " + currentTable);
 		}
 		
 		// w[1] * ( 
@@ -194,7 +202,7 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends LogLikelihoodObj
 			boolean hasLogContent = false;
 			if (isToUseJointProbabilities()) {
 				// fill with something like "( log(p[1]) - log(p[1] + p[3]) )"
-				if (threatIndexInCurrentTable < 0) {
+				if (conditionIndexInCurrentTable < 0) {
 					throw new IllegalArgumentException("Variable " + getThreatName() + " not found in table " + currentTable);
 				}
 				if (currentTable.getVariablesSize() != 2) {
@@ -246,15 +254,15 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends LogLikelihoodObj
 						// - log(p[1] + p[2] + p[6] + p[7])
 						logFactor += "- log(";
 						
-						// find what cells in joint table are associated with the states in coord, except state of threat
+						// find what cells in joint table are associated with the states in coord, except state of condition
 						for (Integer jointCellIndex = 0; jointCellIndex < jointTable.tableSize(); jointCellIndex++) {
 							
 							int[] jointCoord = jointTable.getMultidimensionalCoord(jointCellIndex);
 							
 							boolean found = true;
 							for (int i = 0; i < coord.length; i++) {
-								if (i == threatIndexInCurrentTable) {
-									// in order to marginalize out threat variable, we just need to ignore state of threat variable
+								if (i == conditionIndexInCurrentTable) {
+									// in order to marginalize out condition variable, we just need to ignore state of condition variable
 									continue;
 								}
 								INode var = currentTable.getVariableAt(i);
@@ -290,10 +298,10 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends LogLikelihoodObj
 					
 					
 					// p[1] + p[3]
-					for (int i = 0; i < numStatesThreat ; i++) {
-						coord[threatIndexInCurrentTable] = i;
+					for (int i = 0; i < numStatesCondition ; i++) {
+						coord[conditionIndexInCurrentTable] = i;
 						logFactor += getProbabilityVariablePrefix() + "[" + (offset + currentTable.getLinearCoord(coord) + 1) + "]";
-						if (i+1 < numStatesThreat) {
+						if (i+1 < numStatesCondition) {
 							logFactor += " + ";
 						}
 					}
@@ -340,7 +348,11 @@ public class ConditionalLogLikelihoodObjFunctionPrinter extends LogLikelihoodObj
 	 * @see utils.EuclideanDistanceObjFunctionPrinter#printJointIndexesToConsider(java.io.PrintStream, unbbayes.prs.bn.PotentialTable, java.util.Collection, java.util.List, java.util.List)
 	 */
 	public void printJointIndexesToConsider(PrintStream printer, PotentialTable jointTable, Collection<Integer> jointIndexesToIgnore,  List<PotentialTable> primaryTables, List<PotentialTable> auxiliaryTables) {
-//		super.printJointIndexesToConsider(printer, jointTable, jointIndexesToIgnore);
+		
+		if (!getJointIndexesToIgnore().isEmpty()) {
+			super.printJointIndexesToConsider(printer, jointTable, jointIndexesToIgnore, primaryTables, auxiliaryTables);
+		}
+		
 		if (jointTable == null || jointTable.tableSize() <= 0) {
 			return;
 		}
