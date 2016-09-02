@@ -1253,32 +1253,32 @@
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasInputNode"/>
-        <NamedIndividual IRI="#Domain_MFrag.transitionCostMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.TransitionCostMFrag"/>
         <NamedIndividual IRI="#IX16"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasOrdinaryVariable"/>
-        <NamedIndividual IRI="#Domain_MFrag.transitionCostMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.TransitionCostMFrag"/>
         <NamedIndividual IRI="#TransitionCostMFrag.config"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasOrdinaryVariable"/>
-        <NamedIndividual IRI="#Domain_MFrag.transitionCostMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.TransitionCostMFrag"/>
         <NamedIndividual IRI="#TransitionCostMFrag.feat"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasResidentNode"/>
-        <NamedIndividual IRI="#Domain_MFrag.transitionCostMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.TransitionCostMFrag"/>
         <NamedIndividual IRI="#Domain_Res.incorporateFeature"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasResidentNode"/>
-        <NamedIndividual IRI="#Domain_MFrag.transitionCostMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.TransitionCostMFrag"/>
         <NamedIndividual IRI="#Domain_Res.transitionCost"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isMFragOf"/>
-        <NamedIndividual IRI="#Domain_MFrag.transitionCostMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.TransitionCostMFrag"/>
         <NamedIndividual IRI="#UnBBayesFeatureRecommendation"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
@@ -1389,7 +1389,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isResidentNodeIn"/>
         <NamedIndividual IRI="#Domain_Res.incorporateFeature"/>
-        <NamedIndividual IRI="#Domain_MFrag.transitionCostMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.TransitionCostMFrag"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasInputInstance"/>
@@ -1484,7 +1484,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isResidentNodeIn"/>
         <NamedIndividual IRI="#Domain_Res.transitionCost"/>
-        <NamedIndividual IRI="#Domain_MFrag.transitionCostMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.TransitionCostMFrag"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasMExpression"/>
@@ -1759,7 +1759,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isInputNodeIn"/>
         <NamedIndividual IRI="#IX16"/>
-        <NamedIndividual IRI="#Domain_MFrag.transitionCostMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.TransitionCostMFrag"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isArgumentOf"/>
@@ -2999,7 +2999,7 @@
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasMFrag"/>
         <NamedIndividual IRI="#UnBBayesFeatureRecommendation"/>
-        <NamedIndividual IRI="#Domain_MFrag.transitionCostMFrag"/>
+        <NamedIndividual IRI="#Domain_MFrag.TransitionCostMFrag"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasMFrag"/>
@@ -3996,7 +3996,7 @@
     </AnnotationAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
-        <IRI>#Domain_MFrag.transitionCostMFrag</IRI>
+        <IRI>#Domain_MFrag.TransitionCostMFrag</IRI>
         <Literal datatypeIRI="&xsd;string"></Literal>
     </AnnotationAssertion>
     <AnnotationAssertion>
