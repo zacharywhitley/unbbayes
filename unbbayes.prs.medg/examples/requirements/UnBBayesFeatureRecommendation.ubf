@@ -5,12 +5,57 @@ PrOwl="UnBBayesFeatureRecommendation.owl"
 % UBF MTheory declaration
 MTheory=UnBBayesFeatureRecommendation
 NextMFrag=18
-NextResident=26
+NextResident=27
 NextInput=23
-NextContext=8
+NextContext=11
 NextEntity=1
 
 % UBF MFrags and Nodes declaration
+
+% MFrag
+MFrag=TransitionCostMFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=incorporateFeature
+Type=DomainResidentNode
+Position=41.0,163.0
+Size=221,60
+Color=-14336
+PossibleValuesOrder=true,false,absurd
+
+Node=transitionCost
+Type=DomainResidentNode
+Position=20.0,229.0
+Size=263,77
+Color=-16711681
+PossibleValuesOrder=
+
+% Input nodes
+
+
+Node=IX16
+Type=GenerativeInputNode
+Position=52.0,90.0
+Size=198,60
+Color=-2302756
+
+% Ordinary Variables
+
+
+Node=config
+Type=OrdinalVar
+Position=8.0,16.0
+Size=185,60
+Color=-5178237
+
+Node=feat
+Type=OrdinalVar
+Position=186.0,16.0
+Size=140,60
+Color=-5178237
 
 % MFrag
 MFrag=RequirementMFrag
@@ -103,32 +148,42 @@ NextOrdinaryVar=4
 
 Node=usabilityScore
 Type=DomainResidentNode
-Position=17.0,153.0
+Position=9.0,74.0
 Size=168,60
 Color=-66914
 PossibleValuesOrder=Low,Medium,High,absurd
 
 Node=userSatisfaction
 Type=DomainResidentNode
-Position=109.0,254.0
+Position=90.0,216.0
 Size=180,60
 Color=-66914
-PossibleValuesOrder=Low,Medium,High
+PossibleValuesOrder=Low,Medium,High,absurd
+
+Node=aggregatedScore
+Type=DomainResidentNode
+Position=0.0,149.0
+Size=186,60
+Color=-66914
+PossibleValuesOrder=Low,Medium,High,absurd
 
 % Input nodes
 
 
-Node=IX20
-Type=GenerativeInputNode
-Position=2.0,80.0
-Size=198,60
-Color=-2302756
-
 Node=IX21
 Type=GenerativeInputNode
-Position=200.0,151.0
+Position=162.0,123.0
 Size=217,60
 Color=-2302756
+
+% Context nodes
+
+
+Node=CX10
+Type=ContextNode
+Position=168.0,65.0
+Size=177,60
+Color=-5178237
 
 % Ordinary Variables
 
@@ -141,7 +196,7 @@ Color=-5178237
 
 Node=feat
 Type=OrdinalVar
-Position=179.0,15.0
+Position=171.0,13.0
 Size=140,60
 Color=-5178237
 
@@ -207,60 +262,15 @@ Size=185,60
 Color=-5178237
 
 % MFrag
-MFrag=TransitionCostMFrag
-NextOrdinaryVar=3
-
-% Resident nodes
-
-
-Node=incorporateFeature
-Type=DomainResidentNode
-Position=41.0,163.0
-Size=221,60
-Color=-14336
-PossibleValuesOrder=
-
-Node=transitionCost
-Type=DomainResidentNode
-Position=20.0,229.0
-Size=263,77
-Color=-16711681
-PossibleValuesOrder=
-
-% Input nodes
-
-
-Node=IX16
-Type=GenerativeInputNode
-Position=52.0,90.0
-Size=198,60
-Color=-2302756
-
-% Ordinary Variables
-
-
-Node=config
-Type=OrdinalVar
-Position=8.0,16.0
-Size=185,60
-Color=-5178237
-
-Node=feat
-Type=OrdinalVar
-Position=186.0,16.0
-Size=140,60
-Color=-5178237
-
-% MFrag
 MFrag=SuccessfulSuggestionMFrag
-NextOrdinaryVar=5
+NextOrdinaryVar=6
 
 % Resident nodes
 
 
 Node=isGoodSuggestion
 Type=DomainResidentNode
-Position=118.0,310.0
+Position=119.0,276.0
 Size=220,60
 Color=-66914
 PossibleValuesOrder=true,false,absurd
@@ -270,13 +280,13 @@ PossibleValuesOrder=true,false,absurd
 
 Node=IX17
 Type=GenerativeInputNode
-Position=27.0,198.0
+Position=17.0,218.0
 Size=198,60
 Color=-2302756
 
 Node=IX18
 Type=GenerativeInputNode
-Position=249.0,202.0
+Position=268.0,221.0
 Size=170,60
 Color=-2302756
 
@@ -285,14 +295,20 @@ Color=-2302756
 
 Node=CX6
 Type=ContextNode
-Position=61.0,122.0
-Size=161,60
+Position=23.0,116.0
+Size=221,60
 Color=-5178237
 
 Node=CX7
 Type=ContextNode
-Position=239.0,121.0
+Position=239.0,119.0
 Size=242,60
+Color=-5178237
+
+Node=CX9
+Type=ContextNode
+Position=114.0,167.0
+Size=237,60
 Color=-5178237
 
 % Ordinary Variables
@@ -300,13 +316,13 @@ Color=-5178237
 
 Node=config
 Type=OrdinalVar
-Position=51.0,10.0
+Position=6.0,11.0
 Size=185,60
 Color=-5178237
 
 Node=feat
 Type=OrdinalVar
-Position=301.0,10.0
+Position=176.0,9.0
 Size=140,60
 Color=-5178237
 
@@ -320,6 +336,12 @@ Node=domReq
 Type=OrdinalVar
 Position=248.0,63.0
 Size=242,60
+Color=-5178237
+
+Node=currentFeature
+Type=OrdinalVar
+Position=302.0,9.0
+Size=200,60
 Color=-5178237
 
 % MFrag
@@ -389,14 +411,8 @@ Color=-2302756
 
 Node=IX11
 Type=GenerativeInputNode
-Position=338.0,179.0
+Position=184.0,175.0
 Size=194,60
-Color=-2302756
-
-Node=IX10
-Type=GenerativeInputNode
-Position=28.0,183.0
-Size=173,60
 Color=-2302756
 
 % Context nodes
@@ -406,6 +422,12 @@ Node=CX5
 Type=ContextNode
 Position=363.0,46.0
 Size=219,60
+Color=-5178237
+
+Node=CX8
+Type=ContextNode
+Position=400.0,100.0
+Size=173,60
 Color=-5178237
 
 % Ordinary Variables
