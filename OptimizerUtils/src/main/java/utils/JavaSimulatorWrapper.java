@@ -1089,6 +1089,37 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		// reset the probability vector
 		getWrapperProbabilities().clear();
 		
+		// read property in the format Probability = p1,p2,...,pk.
+		String probMatrixString = this.getIO().getProperty(getProbabilitiesPropertyNamePrefix());
+		if (probMatrixString != null) {
+			Debug.println(getClass(), "Reading " + getProbabilitiesPropertyNamePrefix());
+			
+			// convert the comma-separated string to a list. This list is linear, but may represent multiple probability vectors
+			List<Float> probMatrixList = this.getFloatListFromCommaSeparatedString(probMatrixString);
+			
+			// estimate what is the expected size of a single joint probability vector (i.e. calculate the number of joint states).
+			int jointStateSize = 2 * (this.isToReadAlert()?2:1);	// size of threat = 2, and if we need to read alert from prob vector, then consider alert (size 2) as well
+			for (int i = 0; i < this.getNumIndicators() + this.getNumDetectors(); i++) {	// consider joint size of indicators and detectors
+				jointStateSize *= 2;	// assume that indicators and detectors have size 2
+			}
+			
+			// make sure the size of matrix of probabilities is a multiple of joint state size
+			if (probMatrixList.size() % jointStateSize != 0) {
+				throw new IllegalArgumentException("Expected joint state size of " + this.getNumIndicators() + " indicators, "
+						+ this.getNumDetectors() + " detectors," + (this.isToReadAlert()?" threat, and alert":" and threat") 
+						+ " should be a multple of " + jointStateSize + ", but probability matrix had size of " + probMatrixList.size());
+			}
+			
+			// split the probability matrix to multiple probability list
+			for (int i = 0; i < probMatrixList.size(); i += jointStateSize) {
+				List<Float> subList = probMatrixList.subList(i, i + jointStateSize);
+				Debug.println(getClass(), "Adding probability (sub)list of size " + subList.size());
+				getWrapperProbabilities().add(subList);
+			}
+			
+		}
+		
+		// read properties in the format Probability<N> = p1,p2,...,pk
 		for (int i = 1; i <= Integer.MAX_VALUE; i++) {
 			// read property, which is a comma-separated string with probability distribution
 			String property = this.getIO().getProperty(getProbabilitiesPropertyNamePrefix() + i);
@@ -1096,21 +1127,9 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 			if (property == null || property.trim().isEmpty()) {
 				break;
 			}
-			// convert comma-separated string to a list of float
-			List<Float> probability = new ArrayList<Float>();
-			String[] split = property.split(",");
-			Debug.println(getClass(), "Parsing probabilities...");
-			Debug.print("[");
-			for (String string : split) {
-				if (string == null || string.trim().isEmpty()) {
-					continue;	// ignore null entries
-				}
-				probability.add(Float.parseFloat(string));
-				Debug.print(string+"\t");
-			}
-			Debug.println("]");
-			Debug.println(getClass(), "Finished parsing probabilities. Size = " + probability.size());
-			getWrapperProbabilities().add(probability);
+			
+			// convert comma-separated string to a list of float and puts to wrapper probabilities
+			getWrapperProbabilities().add(this.getFloatListFromCommaSeparatedString(property));
 		}
 		
 		if (getWrapperProbabilities().size() < 1) {
@@ -1128,6 +1147,38 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		
 	}
 	
+	/**
+	 * Converts a comma-separated string to a list of float numbers.
+	 * @param property : string containing float numbers separated by commas.
+	 * @return list of float obtained by splitting the comma-separated string.
+	 * @see #loadWrapperInput(File)
+	 * @see Float#parseFloat(String)
+	 * @see String#split(String)
+	 */
+	protected List<Float> getFloatListFromCommaSeparatedString(String property) {
+		
+		List<Float> probability = new ArrayList<Float>();
+		
+		try {
+			String[] split = property.split(",");
+//			Debug.println(getClass(), "Parsing probabilities...");
+//			Debug.print("[");
+			for (String string : split) {
+				if (string == null || string.trim().isEmpty()) {
+					continue;	// ignore null entries
+				}
+				probability.add(Float.parseFloat(string));
+//				Debug.print(string+"\t");
+			}
+//			Debug.println("]");
+//			Debug.println(getClass(), "Finished parsing probabilities. Size = " + probability.size());
+		} catch (RuntimeException e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		
+		return probability;
+	}
+
 	/**
 	 * Converts a fusionType code to how many detectors should be considered in alert.
 	 * Negative values can be used for special types of alerts.
@@ -1330,6 +1381,68 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		}
 	}
 	
+
+	/**
+	 * @return the probabilities
+	 */
+	public List<List<Float>> getWrapperProbabilities() {
+		return wrapperProbabilities;
+	}
+
+	/**
+	 * @param probabilities the probabilities to set
+	 */
+	public void setWrapperProbabilities(List<List<Float>> probabilities) {
+		this.wrapperProbabilities = probabilities;
+	}
+
+	/**
+	 * @return the maxNumAttempt
+	 */
+	public static int getMaxNumAttempt() {
+		return maxNumAttempt;
+	}
+
+	/**
+	 * @param maxNumAttempt the maxNumAttempt to set
+	 */
+	public static void setMaxNumAttempt(int maxNumAttempt) {
+		JavaSimulatorWrapper.maxNumAttempt = maxNumAttempt;
+	}
+
+	/**
+	 * @return the hasAlertInProbPropertyName : name of the property in JavaSimulatorWrapper.in file 
+	 * which indicates whether the Alert variable is included in the probability distribution (1)
+	 * or not included (0).
+	 * @see #loadWrapperInput(File)
+	 */
+	public String getHasAlertInProbPropertyName() {
+		return hasAlertInProbPropertyName;
+	}
+
+	/**
+	 * @param hasAlertInProbPropertyName : name of the property in JavaSimulatorWrapper.in file 
+	 * which indicates whether the Alert variable is included in the probability distribution (1)
+	 * or not included (0).
+	 * @see #loadWrapperInput(File)
+	 */
+	public void setHasAlertInProbPropertyName(String hasAlertInProbPropertyName) {
+		this.hasAlertInProbPropertyName = hasAlertInProbPropertyName;
+	}
+
+	/**
+	 * @return the numberOfRunsPropertyName
+	 */
+	public String getNumberOfRunsPropertyName() {
+		return numberOfRunsPropertyName;
+	}
+
+	/**
+	 * @param numberOfRunsPropertyName the numberOfRunsPropertyName to set
+	 */
+	public void setNumberOfRunsPropertyName(String numberOfRunsPropertyName) {
+		this.numberOfRunsPropertyName = numberOfRunsPropertyName;
+	}
 
 
 	/**
@@ -1545,66 +1658,5 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 		}
 	}
 
-	/**
-	 * @return the probabilities
-	 */
-	public List<List<Float>> getWrapperProbabilities() {
-		return wrapperProbabilities;
-	}
-
-	/**
-	 * @param probabilities the probabilities to set
-	 */
-	public void setWrapperProbabilities(List<List<Float>> probabilities) {
-		this.wrapperProbabilities = probabilities;
-	}
-
-	/**
-	 * @return the maxNumAttempt
-	 */
-	public static int getMaxNumAttempt() {
-		return maxNumAttempt;
-	}
-
-	/**
-	 * @param maxNumAttempt the maxNumAttempt to set
-	 */
-	public static void setMaxNumAttempt(int maxNumAttempt) {
-		JavaSimulatorWrapper.maxNumAttempt = maxNumAttempt;
-	}
-
-	/**
-	 * @return the hasAlertInProbPropertyName : name of the property in JavaSimulatorWrapper.in file 
-	 * which indicates whether the Alert variable is included in the probability distribution (1)
-	 * or not included (0).
-	 * @see #loadWrapperInput(File)
-	 */
-	public String getHasAlertInProbPropertyName() {
-		return hasAlertInProbPropertyName;
-	}
-
-	/**
-	 * @param hasAlertInProbPropertyName : name of the property in JavaSimulatorWrapper.in file 
-	 * which indicates whether the Alert variable is included in the probability distribution (1)
-	 * or not included (0).
-	 * @see #loadWrapperInput(File)
-	 */
-	public void setHasAlertInProbPropertyName(String hasAlertInProbPropertyName) {
-		this.hasAlertInProbPropertyName = hasAlertInProbPropertyName;
-	}
-
-	/**
-	 * @return the numberOfRunsPropertyName
-	 */
-	public String getNumberOfRunsPropertyName() {
-		return numberOfRunsPropertyName;
-	}
-
-	/**
-	 * @param numberOfRunsPropertyName the numberOfRunsPropertyName to set
-	 */
-	public void setNumberOfRunsPropertyName(String numberOfRunsPropertyName) {
-		this.numberOfRunsPropertyName = numberOfRunsPropertyName;
-	}
 	
 }

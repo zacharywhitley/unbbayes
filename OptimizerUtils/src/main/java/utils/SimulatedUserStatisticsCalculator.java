@@ -97,7 +97,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	public static final Map<String, String> QUERY_ALIAS_RCP3 = new HashMap<String, String>();
 
 	private int stratifiedSampleNumTotal = 100;
-	private int stratifiedSampleNumAlert = -1;
+	private int stratifiedSampleNumAlert = 30;
 	
 	static {
 		QUERY_ALIAS_RCP3.put("P(Alert=true|Threat=true)", "Q01");
