@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -23,6 +24,7 @@ import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import unbbayes.prs.INode;
+import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.util.Debug;
@@ -93,6 +95,10 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	}
 	
 	public static final Map<String, String> QUERY_ALIAS_RCP3 = new HashMap<String, String>();
+
+	private int stratifiedSampleNumTotal = 100;
+	private int stratifiedSampleNumAlert = -1;
+	
 	static {
 		QUERY_ALIAS_RCP3.put("P(Alert=true|Threat=true)", "Q01");
 		QUERY_ALIAS_RCP3.put("P(Threat=true|Alert=true)", "Q02");
@@ -112,6 +118,15 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	public SimulatedUserStatisticsCalculator() {
 		this.set1stLineForNames(true);
 		this.setOutput(new File("output.csv"));
+	}
+	public static SimulatedUserStatisticsCalculator getInstance() {
+		return new SimulatedUserStatisticsCalculator();
+	}
+	public static SimulatedUserStatisticsCalculator getInstance(int numUsers, int numOrganization) {
+		SimulatedUserStatisticsCalculator ret = SimulatedUserStatisticsCalculator.getInstance();
+		ret.setNumUsers(numUsers);
+		ret.setNumOrganization(numOrganization);
+		return ret;
 	}
 	
 	public static class Query {
@@ -296,6 +311,27 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	 * @see ExpectationPrinter#getJointProbabilityFromFile(java.io.File)
 	 */
 	public PotentialTable getJointProbabilityFromFile(File file) throws IOException {
+		return this.getJointProbabilityFromFile(file, getStratifiedSampleNumAlert() >= 0);
+	}
+	
+	/**
+	 * Obtains a joint probability from file, but with support for pre-processing for stratified sub-samples 
+	 * which consider {@link #getStratifiedSampleNumAlert()} and {@link #getStratifiedSampleNumTotal()}.
+	 * <br/>
+	 * A subset of {@link #getStratifiedSampleNumTotal()} samples from file will be used to calculate joint probability.
+	 * Samples with {@link #getAlertName()} = true will have a weight of:
+	 * <pre>
+	 * "total number of samples with {@link #getAlertName()} = true" / {@link #getStratifiedSampleNumAlert()}
+	 * </pre>
+	 * and samples with {@link #getAlertName()} = false will have a weight of:
+	 * <pre>
+	 * "total number of samples with {@link #getAlertName()} = false" / ({@link #getStratifiedSampleNumTotal()} - {@link #getStratifiedSampleNumAlert()})
+	 * </pre>
+	 * @param isToSubSample : if true, then {@link #getStratifiedSampleNumAlert()} and {@link #getStratifiedSampleNumTotal()}
+	 * will be used to generate stratified samples from file before calculating joint probabilities.
+	 * @see utils.ExpectationPrinter#getJointProbabilityFromFile(java.io.File, boolean)
+	 */
+	public PotentialTable getJointProbabilityFromFile(File file, boolean isToSubSample) throws IOException {
 		
 		CSVReader reader = new CSVReader(new FileReader(file));
 		
@@ -305,10 +341,15 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		
 		List<String> varNames = new ArrayList<String>();
 		
-		// read the 1st line of csv (name of the columns)
-		String[] csvLine = null;
+		// read the csv rows.
+		List<String[]> allRows = reader.readAll();
 		
-		csvLine = reader.readNext();
+		// read the 1st line of csv (name of the columns)
+//		String[] csvLine = null;
+//		csvLine = reader.readNext();
+		String[] csvLine = allRows.get(0);
+		
+		
 		for (int column = 0; column < csvLine.length; column++) {
 			String name = csvLine[column];
 			varNames.add(name);
@@ -329,8 +370,136 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			jointTable.fillTable(0f);	// initialize counts with zeros
 		}
 		
+		
+		PotentialTable weightTable = null; 	// if non-null, this weight will be multiplied to number of samples so that counts of samples are converted to weighted samples
+		List<String[]> rowsToRead = null;	// this will be filled with samples that will be read from csv (can be the entire file, or subset of the file)
+		if (isToSubSample) {
+			// check validity of sample numbers
+			if (getStratifiedSampleNumAlert() <= 0
+					|| getStratifiedSampleNumTotal() <= getStratifiedSampleNumAlert()) {
+				reader.close();
+				throw new IllegalArgumentException("Invalid number of stratified samples. Alert = true: " + getStratifiedSampleNumAlert()
+						 + ". Total: " + getStratifiedSampleNumTotal());
+			}
+			// check validity of alert variable's name
+			if (getAlertName() == null || getAlertName().trim().isEmpty()) {
+				reader.close();
+				throw new IllegalArgumentException("Invalid alert variable name: " + getAlertName());
+			}
+			
+			// prepare the table which will hold weights to be applied to count table
+			weightTable = new ProbabilisticTable();
+			// search and add the alert variable into weight table
+			for (int i = 0; i < jointTable.getVariablesSize(); i++) {
+				if (jointTable.getVariableAt(i).getName().equals(getAlertName())) {
+					weightTable.addVariable(jointTable.getVariableAt(i));
+					break;
+				}
+			}
+			if (weightTable.tableSize() > 2) {
+				reader.close();
+				throw new UnsupportedOperationException("Current version does not support variable " + getAlertName() + " with size " + weightTable.tableSize());
+			}
+			
+			
+			// extract which column in csv is the state of alert variable
+			int indexOfAlertInCSV = varNames.indexOf(getAlertName());
+			if (indexOfAlertInCSV < 0) {
+				indexOfAlertInCSV = jointTable.getVariablesSize() - jointTable.getVariableIndex((Node) weightTable.getVariableAt(0)) - 1;
+				if (indexOfAlertInCSV < 0 || indexOfAlertInCSV >= jointTable.getVariablesSize()) {
+					reader.close();
+					throw new IllegalArgumentException("Alert variable not found in header " + varNames + " or in joint table " + jointTable);
+				}
+			}
+			
+			// count how many entries of alert = true and alert = false there are			
+			List<Integer> alertTrueRowIndexes = new ArrayList<Integer>();
+			List<Integer> alertFalseRowIndexes = new ArrayList<Integer>();
+			for (int rowIndex = 1; rowIndex < allRows.size(); rowIndex++) {	// ignore first row, because it's a header
+				csvLine = allRows.get(rowIndex);
+				String alertValueInCSV = csvLine[indexOfAlertInCSV];
+				if (alertValueInCSV.trim().equalsIgnoreCase("Yes")
+						|| alertValueInCSV.trim().equalsIgnoreCase("true")
+						|| alertValueInCSV.trim().equals("1")) {
+					alertTrueRowIndexes.add(rowIndex);
+				} else if (alertValueInCSV.trim().equalsIgnoreCase("No")
+						|| alertValueInCSV.trim().equalsIgnoreCase("false")
+						|| alertValueInCSV.trim().equals("0")) {
+					alertFalseRowIndexes.add(rowIndex);
+				} else {
+					reader.close();
+					throw new IOException("Invalid state found in row " + rowIndex + ", column " + indexOfAlertInCSV + ": " + alertValueInCSV);
+				}
+			}
+			
+			if (alertTrueRowIndexes.size() + alertFalseRowIndexes.size() != allRows.size()-1) {
+				reader.close();
+				throw new IOException("Number of data in CSV is " + (allRows.size()-1) + ", but sum of alert and non-alert data was " + (alertTrueRowIndexes.size() + alertFalseRowIndexes.size()));
+			}
+			
+			
+			// calculate weights;
+			float weightAlert = ((float)alertTrueRowIndexes.size()) / ((float)getStratifiedSampleNumAlert());
+			float weightNonAlert = ((float)alertFalseRowIndexes.size()) / (((float)getStratifiedSampleNumTotal()) - ((float)getStratifiedSampleNumAlert()));
+			// if weight is lower than 1, set to 1;
+			if (weightAlert < 1) {
+				weightAlert = 1;
+			}
+			if (weightNonAlert < 1) {
+				weightNonAlert = 1;
+			}
+			Debug.println(getClass(), "Weight alert = " + weightAlert + ", weight non-alert = " + weightNonAlert);
+			
+			// fill weight table 
+			if (weightTable.tableSize() == 2) {
+				INode alertVar = weightTable.getVariableAt(0);
+				int alertTrueStateIndex = -1;
+				if (alertVar.getStateAt(0).trim().equalsIgnoreCase("Yes")
+						|| alertVar.getStateAt(0).trim().equalsIgnoreCase("true")
+						|| alertVar.getStateAt(0).trim().equals("1")) {
+					alertTrueStateIndex = 0;
+				}
+				if (alertTrueStateIndex < 0) {
+					reader.close();
+					throw new IllegalArgumentException("Cound not find true/yes/1 state in variable " + alertVar);
+				}
+				weightTable.setValue(alertTrueStateIndex, weightAlert);
+				weightTable.setValue((1-alertTrueStateIndex), weightNonAlert);
+			} else {
+				Debug.println(getClass(), "Found weight table " + weightTable + " with size " + weightTable.tableSize());
+			}
+			
+			// we'll fill rowsToRead with getStratifiedSampleNumTotal() samples.
+			rowsToRead = new ArrayList<String[]>(getStratifiedSampleNumTotal());
+			// randomly pick getStratifiedSampleNumAlert() samples 
+			Random rand = new Random();
+			for (int i = 0; i < getStratifiedSampleNumAlert(); i++) {
+				if (alertTrueRowIndexes.size() <= 0) {
+					break;
+				}
+				int indexToAdd = rand.nextInt(alertTrueRowIndexes.size());
+				rowsToRead.add(allRows.get(alertTrueRowIndexes.get(indexToAdd)));
+				alertTrueRowIndexes.remove(indexToAdd);
+			}
+			// randomly pick getStratifiedSampleNumTotal() - getStratifiedSampleNumAlert() samples 
+			for (int i = 0; i < getStratifiedSampleNumTotal() - getStratifiedSampleNumAlert(); i++) {
+				if (alertFalseRowIndexes.size() <= 0) {
+					break;
+				}
+				int indexToAdd = rand.nextInt(alertFalseRowIndexes.size());
+				rowsToRead.add(allRows.get(alertFalseRowIndexes.get(indexToAdd)));
+				alertFalseRowIndexes.remove(indexToAdd);
+			}
+			
+		} else {
+			// just read all rows
+			rowsToRead = allRows;
+		}
+		
 		// read the remaining file and fill joint table with counts
-		for (csvLine = reader.readNext(); csvLine != null; csvLine = reader.readNext()) {
+//		for (csvLine = reader.readNext(); csvLine != null; csvLine = reader.readNext()) {
+		for (int currentRowIndex = 1; currentRowIndex < rowsToRead.size(); currentRowIndex++) {
+			csvLine = rowsToRead.get(currentRowIndex);
 			if (csvLine.length <= 0) {
 				continue;	// ignore empty lines
 			}
@@ -383,6 +552,11 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			jointTable.setValue(cell, jointTable.getValue(cell)+1);
 		}
 		reader.close();
+		
+		// apply weights;
+		if (weightTable != null && weightTable.getVariablesSize() > 0) {
+			jointTable.opTab(weightTable, jointTable.PRODUCT_OPERATOR);	// multiply counts in joint table with the weights in weight table
+		}
 		
 		// normalize joint table, so that joint table becomes a table of proportions
 		jointTable.normalize();
@@ -607,135 +781,8 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		
 		
 	}
+	
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		CommandLineParser parser = new DefaultParser();
-		Options options = new Options();
-		options.addOption("d","debug", false, "Enables debug mode.");
-		options.addOption("id","problem-id", true, "Name or identification of the current problem (this will be used as suffixes of output file names).");
-		options.addOption("i","input", true, "File or directory to get joint probabilities from.");
-		options.addOption("o","output", true, "File or directory to place output files.");
-		options.addOption("c","confidence", true, "Number between 0 and 1 which denotes confidence (for confidence interval)");
-		options.addOption("q","query", true, "Probabilities in the format of \"P(X=state|Y=state)\" to be queried.");
-		options.addOption("p","percentile", false, "Use percentiles for confidence interval calculation.");
-		options.addOption("s","summary", false, "Print statistical summary instead of probabilities.");
-		options.addOption("h","help", false, "Help.");
-		options.addOption("numI","number-indicators", true, "Number of indicators to consider.");
-		
-		CommandLine cmd = null;
-		try {
-			cmd = parser.parse(options, args);
-		} catch (ParseException e) {
-			e.printStackTrace();
-			return;
-		}
-		
-		if (cmd == null) {
-			System.err.println("Invalid command line");
-			return;
-		}
-		
-
-		if (cmd.hasOption("h")) {
-			for (Option option : options.getOptions()) {
-				System.out.println("-" + option.getOpt() + (option.hasArg()?(" <" + option.getLongOpt() +">"):"") + " : " + option.getDescription());
-			}
-			return;
-		}
-		
-		Debug.setDebug(cmd.hasOption("d"));
-		
-		final SimulatedUserStatisticsCalculator sim = new SimulatedUserStatisticsCalculator();
-		if (cmd.hasOption("i")) {
-			sim.setInput(new File(cmd.getOptionValue("i")));
-		}
-		if (cmd.hasOption("o")) {
-			sim.setOutput(new File(cmd.getOptionValue("o")));
-		}
-		if (cmd.hasOption("c")) {
-			sim.setConfidence(Float.parseFloat(cmd.getOptionValue("c")));
-		}
-		
-		boolean isToUsePercentiles = cmd.hasOption("p");
-		
-		sim.setToPrintSummary(cmd.hasOption("s"));
-		
-		if (cmd.hasOption("id")) {
-			sim.setProblemID(cmd.getOptionValue("id"));
-		}
-		
-		// mount query aliases accordingly to indicators 
-		if (cmd.hasOption("numI")) {
-			// set names of indicators, for backward compatibility
-			int num = Integer.parseInt(cmd.getOptionValue("numI"));
-			String[] indicatorNames = new String[num];
-			for (int i = 1; i <= num; i++) {
-				indicatorNames[i-1] = "I"+i;
-			}
-			sim.setIndicatorNames(indicatorNames);
-			
-			// prepare the map that will be filled with queries and aliases (i.e. optional names)
-			Map<String, String> alias = sim.getQueryAlias();
-			if (alias == null) {
-				alias = new HashMap<String, String>();
-				sim.setQueryAlias(alias);
-			} else {
-				alias.clear();
-			}
-
-			// 3 queries are common to all RCPs
-			alias.put("P(Alert=true|Threat=true)", "Q01");
-			alias.put("P(Threat=true|Alert=true)", "Q02");
-			alias.put("P(Alert=true|Threat=false)", "Q03");
-			
-			// other queries are dependent to indicators
-			int questionNumber = 4;
-			for (int i = 0; i < indicatorNames.length; i++, questionNumber++) {
-				String indicator = indicatorNames[i];
-				alias.put("P(Alert=true|" + indicator + "=true)", "Q" + String.format("%1$02d", questionNumber));;
-			}
-			for (int i = 0; i < indicatorNames.length; i++, questionNumber++) {
-				String indicator = indicatorNames[i];
-				alias.put("P(" + indicator + "=true|Alert=true)", "Q" + String.format("%1$02d", questionNumber));
-			}
-		}
-		
-		if (cmd.hasOption("q")) {
-			List<Query> queries = new ArrayList<SimulatedUserStatisticsCalculator.Query>();
-			String[] optionValues = cmd.getOptionValues("q");
-			for (String toParse : optionValues) {
-				Query q = new Query();
-				sim.fillQueriedVarAndStates(toParse, q);
-				q.setToUsePercentileForConfidenceInterval(isToUsePercentiles);
-				queries.add(q);
-			}
-			sim.setQueries(queries);
-		} else {
-			List<Query> queries = new ArrayList<SimulatedUserStatisticsCalculator.Query>();
-			for (String toParse : sim.getQueryAlias().keySet()) {
-				Query q = new Query();
-				sim.fillQueriedVarAndStates(toParse, q);
-				q.setToUsePercentileForConfidenceInterval(isToUsePercentiles);
-				queries.add(q);
-			}
-			Collections.sort(queries, new Comparator<Query>() {
-				public int compare(Query o1, Query o2) {
-					return sim.getQueryAlias().get(o1.getQueriedString()).compareTo(sim.getQueryAlias().get(o2.getQueriedString()));
-				}
-			});
-			sim.setQueries(queries);
-		}
-		
-		try {
-			sim.run();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	}
 
 
 	/**
@@ -878,6 +925,195 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	}
 
 
+
+
+	/**
+	 * @return the stratifiedSampleNumTotal
+	 * @see #getStratifiedSampleNumAlert()
+	 */
+	public int getStratifiedSampleNumTotal() {
+		return stratifiedSampleNumTotal;
+	}
+
+
+	/**
+	 * @param stratifiedSampleNumTotal the stratifiedSampleNumTotal to set
+	 * @see #getStratifiedSampleNumAlert()
+	 */
+	public void setStratifiedSampleNumTotal(int stratifiedSampleNumTotal) {
+		this.stratifiedSampleNumTotal = stratifiedSampleNumTotal;
+	}
+
+
+	/**
+	 * @return the stratifiedSampleNumAlert : number of stratified samples to consider with Alert=true. 
+	 * 100 minus this number will be sampled for Alert = false. Use this argument in order to increase variance.
+	 * @see #getStratifiedSampleNumTotal()
+	 */
+	public int getStratifiedSampleNumAlert() {
+		return stratifiedSampleNumAlert;
+	}
+
+
+	/**
+	 * @param stratifiedSampleNumAlert : number of stratified samples to consider with Alert=true. 
+	 * 100 minus this number will be sampled for Alert = false. Use this argument in order to increase variance.
+	 * @see #getStratifiedSampleNumTotal()
+	 */
+	public void setStratifiedSampleNumAlert(int stratifiedSampleNumAlert) {
+		this.stratifiedSampleNumAlert = stratifiedSampleNumAlert;
+	}
+
+
+
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		CommandLineParser parser = new DefaultParser();
+		Options options = new Options();
+		options.addOption("d","debug", false, "Enables debug mode.");
+		options.addOption("id","problem-id", true, "Name or identification of the current problem (this will be used as suffixes of output file names).");
+		options.addOption("i","input", true, "File or directory to get joint probabilities from.");
+		options.addOption("o","output", true, "File or directory to place output files.");
+		options.addOption("c","confidence", true, "Number between 0 and 1 which denotes confidence (for confidence interval)");
+		options.addOption("q","query", true, "Probabilities in the format of \"P(X=state|Y=state)\" to be queried.");
+		options.addOption("p","percentile", false, "Use percentiles for confidence interval calculation.");
+		options.addOption("s","summary", false, "Print statistical summary instead of probabilities.");
+		options.addOption("h","help", false, "Help.");
+		options.addOption("numI","number-indicators", true, "Number of indicators to consider.");
+		options.addOption("alertSample","number-alert-samples", true, "Number of stratified samples to consider with Alert=true. "
+				+ "100 minus this number will be sampled for Alert = false. Use this argument in order to increase variance.");
+		options.addOption("alert","alert-name", true, "Name of alert variable.");
+		
+		CommandLine cmd = null;
+		try {
+			cmd = parser.parse(options, args);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		if (cmd == null) {
+			System.err.println("Invalid command line");
+			return;
+		}
+		
+
+		if (cmd.hasOption("h")) {
+			for (Option option : options.getOptions()) {
+				System.out.println("-" + option.getOpt() + (option.hasArg()?(" <" + option.getLongOpt() +">"):"") + " : " + option.getDescription());
+			}
+			return;
+		}
+		
+		Debug.setDebug(cmd.hasOption("d"));
+		
+		final SimulatedUserStatisticsCalculator sim = new SimulatedUserStatisticsCalculator();
+		if (cmd.hasOption("i")) {
+			sim.setInput(new File(cmd.getOptionValue("i")));
+		}
+		if (cmd.hasOption("o")) {
+			sim.setOutput(new File(cmd.getOptionValue("o")));
+		}
+		if (cmd.hasOption("c")) {
+			sim.setConfidence(Float.parseFloat(cmd.getOptionValue("c")));
+		}
+		
+		boolean isToUsePercentiles = cmd.hasOption("p");
+		
+		sim.setToPrintSummary(cmd.hasOption("s"));
+		
+		if (cmd.hasOption("id")) {
+			sim.setProblemID(cmd.getOptionValue("id"));
+		}
+		
+		options.addOption("alertSample","number-alert-samples", true, "Number of stratified samples to consider with Alert=true. "
+				+ "100 minus this number will be sampled for Alert = false. Use this argument in order to increase variance.");
+		options.addOption("alert","alert-name", true, "Name of alert variable.");
+		if (cmd.hasOption("alert")) {
+			sim.setAlertName(cmd.getOptionValue("alert"));
+		}
+		if (cmd.hasOption("alertSample")) {
+			String value = cmd.getOptionValue("alertSample");
+			int sampleNum = Integer.parseInt(value);
+			if (sampleNum > 100) {
+				throw new IllegalArgumentException("Invalid number of samples: " + sampleNum);
+			}
+			sim.setStratifiedSampleNumAlert(sampleNum);
+			sim.setStratifiedSampleNumTotal(100);
+		}
+		
+		// mount query aliases accordingly to indicators 
+		if (cmd.hasOption("numI")) {
+			// set names of indicators, for backward compatibility
+			int num = Integer.parseInt(cmd.getOptionValue("numI"));
+			String[] indicatorNames = new String[num];
+			for (int i = 1; i <= num; i++) {
+				indicatorNames[i-1] = "I"+i;
+			}
+			sim.setIndicatorNames(indicatorNames);
+			
+			// prepare the map that will be filled with queries and aliases (i.e. optional names)
+			Map<String, String> alias = sim.getQueryAlias();
+			if (alias == null) {
+				alias = new HashMap<String, String>();
+				sim.setQueryAlias(alias);
+			} else {
+				alias.clear();
+			}
+
+			// 3 queries are common to all RCPs
+			alias.put("P(Alert=true|Threat=true)", "Q01");
+			alias.put("P(Threat=true|Alert=true)", "Q02");
+			alias.put("P(Alert=true|Threat=false)", "Q03");
+			
+			// other queries are dependent to indicators
+			int questionNumber = 4;
+			for (int i = 0; i < indicatorNames.length; i++, questionNumber++) {
+				String indicator = indicatorNames[i];
+				alias.put("P(Alert=true|" + indicator + "=true)", "Q" + String.format("%1$02d", questionNumber));;
+			}
+			for (int i = 0; i < indicatorNames.length; i++, questionNumber++) {
+				String indicator = indicatorNames[i];
+				alias.put("P(" + indicator + "=true|Alert=true)", "Q" + String.format("%1$02d", questionNumber));
+			}
+		}
+		
+		if (cmd.hasOption("q")) {
+			List<Query> queries = new ArrayList<SimulatedUserStatisticsCalculator.Query>();
+			String[] optionValues = cmd.getOptionValues("q");
+			for (String toParse : optionValues) {
+				Query q = new Query();
+				sim.fillQueriedVarAndStates(toParse, q);
+				q.setToUsePercentileForConfidenceInterval(isToUsePercentiles);
+				queries.add(q);
+			}
+			sim.setQueries(queries);
+		} else {
+			List<Query> queries = new ArrayList<SimulatedUserStatisticsCalculator.Query>();
+			for (String toParse : sim.getQueryAlias().keySet()) {
+				Query q = new Query();
+				sim.fillQueriedVarAndStates(toParse, q);
+				q.setToUsePercentileForConfidenceInterval(isToUsePercentiles);
+				queries.add(q);
+			}
+			Collections.sort(queries, new Comparator<Query>() {
+				public int compare(Query o1, Query o2) {
+					return sim.getQueryAlias().get(o1.getQueriedString()).compareTo(sim.getQueryAlias().get(o2.getQueriedString()));
+				}
+			});
+			sim.setQueries(queries);
+		}
+		
+		try {
+			sim.run();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
 
 
 

@@ -1434,7 +1434,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				tempDirichletOutput.deleteOnExit();
 				
 				// set up arguments for dirichlet-multinomial simulator
-				String[] dirichletArgs = new String[Debug.isDebugMode()?18:17];
+				String[] dirichletArgs = new String[Debug.isDebugMode()?20:19];
 				
 				// -i "RCP3-full" -o "test.csv" -u 4263 -n 1000 -numI 4 -numD 4 -a 2 -d 
 				dirichletArgs[0] = "-i";
@@ -1453,9 +1453,11 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				dirichletArgs[13] = ""+wrapper.getCountAlert();	
 				dirichletArgs[14] = wrapper.isToReadAlert()?"-ra":"";	
 				dirichletArgs[15] = "-id";	
-				dirichletArgs[16] = wrapper.isToUseDirichletMultinomial()?"Dirichlet":"Samples";	
-				if (Debug.isDebugMode() && dirichletArgs.length >= 18) {
-					dirichletArgs[17] = "-d";	
+				dirichletArgs[16] = wrapper.isToUseDirichletMultinomial()?"Dirichlet":"Samples";
+				dirichletArgs[17] = "-threat";	
+				dirichletArgs[18] = "Threat";
+				if (Debug.isDebugMode() && dirichletArgs.length >= 20) {
+					dirichletArgs[19] = "-d";	
 				}
 				
 				if (Debug.isDebugMode()) {
