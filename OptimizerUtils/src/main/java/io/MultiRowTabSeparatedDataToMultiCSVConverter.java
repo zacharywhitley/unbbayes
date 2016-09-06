@@ -21,6 +21,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.util.Debug;
 
@@ -28,8 +29,9 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto
  *
  */
-public class MultiRowTabSeparatedDataToMultiCSVConverter extends
-		MultiColumnCSVToMultiFileConverterImpl {
+public class MultiRowTabSeparatedDataToMultiCSVConverter extends MultiColumnCSVToMultiFileConverterImpl {
+	
+	private boolean isToConsiderAlertConsistency = false;
 
 	/**
 	 * 
@@ -105,6 +107,10 @@ public class MultiRowTabSeparatedDataToMultiCSVConverter extends
 		}
 		
 		PotentialTable potentialTable = getJointTable(null, allVariableList);
+		if (isToConsiderAlertConsistency()) {
+			// if we need to consider alert consistency, then input will have smaller size, and non-specified states shall be filled with zeros
+			potentialTable.fillTable(0f);
+		}
 		
 		// read row of file and write to output
 		for (int numJointProbsRead = 0; numJointProbsRead < Integer.MAX_VALUE; numJointProbsRead++) {
@@ -112,6 +118,11 @@ public class MultiRowTabSeparatedDataToMultiCSVConverter extends
 			// fill potentialTable with values read from file
 			boolean isToWriteFile = true;
 			for (int i = 0; i < potentialTable.tableSize(); i++) {
+				if (isToConsiderAlertConsistency() && !isCellConsistentWithAlert(i, potentialTable)) {
+					// ignore cells which are not consistent with alert rule (i.e. 2 active detectors triggers alert)
+					continue;
+				}
+				
 				st.nextToken();
 				if (st.ttype == st.TT_EOL || st.ttype == st.TT_EOF) {
 					if (i <= 0) {
@@ -164,6 +175,70 @@ public class MultiRowTabSeparatedDataToMultiCSVConverter extends
 	}
 
 
+	/**
+	 * Checks if current cell in table is a joint state in which detectors and alerts are consistent.
+	 * @param cellIndex : cell to check
+	 * @param potentialTable : joint probability table to check for joint state
+	 * @return true if OK (consistent). False if not.
+	 */
+	protected boolean isCellConsistentWithAlert(int cellIndex, PotentialTable potentialTable) {
+		
+		// the i-th element in this vector represents the state of the i-th variable/node in table
+		int[] varStates = potentialTable.getMultidimensionalCoord(cellIndex);
+		
+		// extract some auxiliary info we'll use to check consistency
+		String alertName = getAlertName();	// name of alert variable
+		List<String> detectorNames = getNameList(getDetectorNames());	// names of detectors variables
+		int alertTriggerNum = getCountAlert();	// how many detectors needs to be active to trigger alert
+	
+		Boolean isAlertActive = null;	// this will be filled with whether the alert variable is on or off.
+		int numActiveDetectors = 0;	// this will be filled with how many active detectors are in varStates
+		// iterate on detectors and alert
+		for (int varIndex = 0; varIndex < varStates.length; varIndex++) {
+			// extract current var
+			INode var = potentialTable.getVariableAt(varIndex);
+			// check if current var is detector or alert
+			if (detectorNames.contains(var.getName())) { // this is a detector
+				// extract state of this detector in current cell
+				String state = var.getStateAt(varStates[varIndex]);
+				if (state.equalsIgnoreCase("true")
+						|| state.equalsIgnoreCase("yes")
+						|| state.equals("1")) {
+					// this detector is active. Increment counter.
+					numActiveDetectors++;
+				}
+			} else if (alertName.equalsIgnoreCase(var.getName())) { // current var is the alert var. 
+				// extract state of alert in current cell
+				String state = var.getStateAt(varStates[varIndex]);
+				if (state.equalsIgnoreCase("true")
+						|| state.equalsIgnoreCase("yes")
+						|| state.equals("1")) {
+					// alert is active. 
+					if (isAlertActive != null && !isAlertActive) {
+						throw new IllegalArgumentException("There is more than 1 alert variable, and values are conflicting. Index = "
+								 + varIndex + ", state = " + state);
+					}
+					isAlertActive = true;
+				} else {
+					// alert is inactive. 
+					if (isAlertActive != null && isAlertActive) {
+						throw new IllegalArgumentException("There is more than 1 alert variable, and values are conflicting. Index = "
+								+ varIndex + ", state = " + state);
+					}
+					isAlertActive = false;
+				}
+			}
+		}	// end of iteration of varIndex
+		
+		if (isAlertActive == null) {
+			throw new IllegalArgumentException("No alert variable was found in table: " + potentialTable);
+		}
+		
+		// return true if and only if alert is active when number of active detectors are above threshold
+		return (numActiveDetectors >= alertTriggerNum) == isAlertActive;
+	}
+
+
 
 	/**
 	 * @param args
@@ -182,6 +257,9 @@ public class MultiRowTabSeparatedDataToMultiCSVConverter extends
 		options.addOption("o","output", true, "Directory to write results.");
 		options.addOption("id","problem-id", true, "Name or identification of the current problem (this will be used as prefixes of output file names).");
 		options.addOption("h","help", false, "Help.");
+		options.addOption("consistency","redacted-alert-consistency", false, "Assumes that input probabilities has less entries because"
+				+ " joint states which are inconsistent with definition of alert probabilities were taken off.");
+		
 		
 		CommandLine cmd = null;
 		try {
@@ -235,6 +313,8 @@ public class MultiRowTabSeparatedDataToMultiCSVConverter extends
 			converter.setAlertName(cmd.getOptionValue("alert"));
 		}
 		
+		converter.setToConsiderAlertConsistency(cmd.hasOption("consistency"));
+		
 		
 		try {
 			converter.convert(new File(converter.getDefaultJointProbabilityInputFileName()), 
@@ -245,6 +325,24 @@ public class MultiRowTabSeparatedDataToMultiCSVConverter extends
 		}
 		
 		
+	}
+
+
+
+	/**
+	 * @return the isToConsiderAlertConsistency
+	 */
+	public boolean isToConsiderAlertConsistency() {
+		return isToConsiderAlertConsistency;
+	}
+
+
+
+	/**
+	 * @param isToConsiderAlertConsistency the isToConsiderAlertConsistency to set
+	 */
+	public void setToConsiderAlertConsistency(boolean isToConsiderAlertConsistency) {
+		this.isToConsiderAlertConsistency = isToConsiderAlertConsistency;
 	}
 
 }
