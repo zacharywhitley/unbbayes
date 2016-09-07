@@ -1029,9 +1029,6 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			sim.setProblemID(cmd.getOptionValue("id"));
 		}
 		
-		options.addOption("alertSample","number-alert-samples", true, "Number of stratified samples to consider with Alert=true. "
-				+ "100 minus this number will be sampled for Alert = false. Use this argument in order to increase variance.");
-		options.addOption("alert","alert-name", true, "Name of alert variable.");
 		if (cmd.hasOption("alert")) {
 			sim.setAlertName(cmd.getOptionValue("alert"));
 		}
