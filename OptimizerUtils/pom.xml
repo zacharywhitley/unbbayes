@@ -4,7 +4,7 @@
 	<groupId>edu.gmu</groupId>
 	<artifactId>unbbayes.util.optimizationUtils</artifactId>
 	<name>Set of utility programs for optimization problems</name>
-	<version>1.2.0</version>
+	<version>1.2.1</version>
 	<url>http://unbbayes.sourceforge.net</url>
 	<licenses>
 		<license>

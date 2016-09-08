@@ -1,3 +1,12 @@
+Version 1.2.1
+
+Fixed minor bug that happened when individual components of JavaSimulatorWrapper
+(e.g. utils.SimulatedUserStatisticsCalculator or utils.DirichletUserSimulator)
+were used individually (by calling their main methods from command line), 
+we can pass a csv with empty/blank columns, and
+such inputs were generating errors. Now, empty columns are simply ignored.
+
+----------------------------------------------------------------
 Version 1.2.0
 
 Stratified samples will be used to increase the variance of answers, 

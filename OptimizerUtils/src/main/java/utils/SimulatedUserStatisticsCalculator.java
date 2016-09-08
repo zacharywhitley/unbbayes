@@ -352,7 +352,9 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		
 		for (int column = 0; column < csvLine.length; column++) {
 			String name = csvLine[column];
-			varNames.add(name);
+			if (name != null && !name.trim().isEmpty()) {
+				varNames.add(name);
+			}
 		}
 		
 		if (varNames.isEmpty()) {
@@ -510,7 +512,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			int[] coord = jointTable.getMultidimensionalCoord(0);
 			if (csvLine.length != coord.length) {
 				reader.close();
-				throw new IOException("File is expected to have " + coord.length + " columns, but the number of columns was " + csvLine.length);
+				throw new IOException("File " + file.getAbsolutePath() +  " is expected to have " + coord.length + " columns, but the number of columns was " + csvLine.length);
 			}
 			for (int columnInCSV = 0; columnInCSV < csvLine.length; columnInCSV++) {
 				
