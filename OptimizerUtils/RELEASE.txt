@@ -1,7 +1,7 @@
 Version 1.2.1
 
 Fixed minor bug that happened when individual components of JavaSimulatorWrapper
-(e.g. utils.SimulatedUserStatisticsCalculator or utils.DirichletUserSimulator)
+(e.g. utils.SimulatedUserStatisticsCalculator)
 were used individually (by calling their main methods from command line), 
 we can pass a csv with empty/blank columns, and
 such inputs were generating errors. Now, empty columns are simply ignored.
