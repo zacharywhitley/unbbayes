@@ -198,10 +198,7 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 				if (detectorNames.contains(jointTable.getVariableAt(varIndex).getName())) {  
 					// check if state is ON
 					String state = jointTable.getVariableAt(varIndex).getStateAt(coord[varIndex]);
-					if (state.equalsIgnoreCase("TRUE")
-							|| state.equalsIgnoreCase("YES")
-							|| state.equalsIgnoreCase("ON")
-							|| state.equals("1")) {
+					if (parseBoolean(state) == true) {
 						sumDetectors++;
 					}
 				} 
@@ -209,10 +206,7 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 				if (jointTable.getVariableAt(varIndex).getName().equals(getAlertName())) { 
 					// check if state is ON
 					String state = jointTable.getVariableAt(varIndex).getStateAt(coord[varIndex]);
-					if (state.equalsIgnoreCase("TRUE")
-							|| state.equalsIgnoreCase("YES")
-							|| state.equalsIgnoreCase("ON")
-							|| state.equals("1")) {
+					if (parseBoolean(state) == true) {
 						isAlertTrue = true;
 					}
 				}

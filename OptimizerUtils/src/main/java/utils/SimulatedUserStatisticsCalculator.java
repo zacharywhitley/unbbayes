@@ -97,7 +97,17 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	public static final Map<String, String> QUERY_ALIAS_RCP3 = new HashMap<String, String>();
 
 	private int stratifiedSampleNumTotal = 100;
-	private int stratifiedSampleNumAlert = 30;
+	private int stratifiedSampleNumAlert = -1;//30;
+
+	private boolean isToNormalize = true;	// false
+	
+	/**
+	 * Types of sub-sampling supported by {@link SimulatedUserStatisticsCalculator#getJointProbabilityFromFile(File, boolean, boolean, boolean)}
+	 * and {@link SimulatedUserStatisticsCalculator#getConditionalProbabilityFromQueryTable(PotentialTable)}.
+	 */
+	public static enum SubSamplingMode {WEIGHTED, BETA_BINOMIAL};
+//	private SubSamplingMode subSamplingMode = SubSamplingMode.BETA_BINOMIAL;
+	private SubSamplingMode subSamplingMode = SubSamplingMode.WEIGHTED;
 	
 	static {
 		QUERY_ALIAS_RCP3.put("P(Alert=true|Threat=true)", "Q01");
@@ -314,6 +324,14 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		return this.getJointProbabilityFromFile(file, getStratifiedSampleNumAlert() >= 0);
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see utils.ExpectationPrinter#getJointProbabilityFromFile(java.io.File, boolean)
+	 */
+	public PotentialTable getJointProbabilityFromFile(File file, boolean isToSubSample) throws IOException {
+		return this.getJointProbabilityFromFile(file, isToSubSample, getSubSamplingMode() == SubSamplingMode.WEIGHTED, isToNormalize());
+	}
+	
 	/**
 	 * Obtains a joint probability from file, but with support for pre-processing for stratified sub-samples 
 	 * which consider {@link #getStratifiedSampleNumAlert()} and {@link #getStratifiedSampleNumTotal()}.
@@ -328,10 +346,17 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	 * "total number of samples with {@link #getAlertName()} = false" / ({@link #getStratifiedSampleNumTotal()} - {@link #getStratifiedSampleNumAlert()})
 	 * </pre>
 	 * @param isToSubSample : if true, then {@link #getStratifiedSampleNumAlert()} and {@link #getStratifiedSampleNumTotal()}
-	 * will be used to generate stratified samples from file before calculating joint probabilities.
+	 * will be used to generate samples from file before calculating joint probabilities.
+	 * @param isToWeight : if true and isToSubSample is also true, then stratified/weighted samples will be used
+	 * @param originalCounts : if this map is filled, the counts of variables identified by key of entries in this map
+	 * will be inserted to this map. This is useful when isToSubSample is on, because the original count will be lost otherwise.
+	 * @param isToNormalize: if true, then the table to be returned will be normalized to 1.
 	 * @see utils.ExpectationPrinter#getJointProbabilityFromFile(java.io.File, boolean)
 	 */
-	public PotentialTable getJointProbabilityFromFile(File file, boolean isToSubSample) throws IOException {
+	public PotentialTable getJointProbabilityFromFile(File file, boolean isToSubSample, boolean isToWeight, boolean isToNormalize) throws IOException {
+		
+	
+		
 		
 		CSVReader reader = new CSVReader(new FileReader(file));
 		
@@ -389,25 +414,29 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 				throw new IllegalArgumentException("Invalid alert variable name: " + getAlertName());
 			}
 			
-			// prepare the table which will hold weights to be applied to count table
-			weightTable = new ProbabilisticTable();
-			// search and add the alert variable into weight table
-			for (int i = 0; i < jointTable.getVariablesSize(); i++) {
-				if (jointTable.getVariableAt(i).getName().equals(getAlertName())) {
-					weightTable.addVariable(jointTable.getVariableAt(i));
-					break;
+			if (isToWeight) {
+				// prepare the table which will hold weights to be applied to count table
+				weightTable = new ProbabilisticTable();
+				// search and add the alert variable into weight table
+				for (int i = 0; i < jointTable.getVariablesSize(); i++) {
+					if (jointTable.getVariableAt(i).getName().equals(getAlertName())) {
+						weightTable.addVariable(jointTable.getVariableAt(i));
+						break;
+					}
 				}
-			}
-			if (weightTable.tableSize() > 2) {
-				reader.close();
-				throw new UnsupportedOperationException("Current version does not support variable " + getAlertName() + " with size " + weightTable.tableSize());
+				if (weightTable.tableSize() > 2) {
+					reader.close();
+					throw new UnsupportedOperationException("Current version does not support variable " + getAlertName() + " with size " + weightTable.tableSize());
+				}
 			}
 			
 			
 			// extract which column in csv is the state of alert variable
 			int indexOfAlertInCSV = varNames.indexOf(getAlertName());
 			if (indexOfAlertInCSV < 0) {
-				indexOfAlertInCSV = jointTable.getVariablesSize() - jointTable.getVariableIndex((Node) weightTable.getVariableAt(0)) - 1;
+				if (weightTable != null) {
+					indexOfAlertInCSV = jointTable.getVariablesSize() - jointTable.getVariableIndex((Node) weightTable.getVariableAt(0)) - 1;
+				}
 				if (indexOfAlertInCSV < 0 || indexOfAlertInCSV >= jointTable.getVariablesSize()) {
 					reader.close();
 					throw new IllegalArgumentException("Alert variable not found in header " + varNames + " or in joint table " + jointTable);
@@ -419,18 +448,15 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			List<Integer> alertFalseRowIndexes = new ArrayList<Integer>();
 			for (int rowIndex = 1; rowIndex < allRows.size(); rowIndex++) {	// ignore first row, because it's a header
 				csvLine = allRows.get(rowIndex);
-				String alertValueInCSV = csvLine[indexOfAlertInCSV];
-				if (alertValueInCSV.trim().equalsIgnoreCase("Yes")
-						|| alertValueInCSV.trim().equalsIgnoreCase("true")
-						|| alertValueInCSV.trim().equals("1")) {
-					alertTrueRowIndexes.add(rowIndex);
-				} else if (alertValueInCSV.trim().equalsIgnoreCase("No")
-						|| alertValueInCSV.trim().equalsIgnoreCase("false")
-						|| alertValueInCSV.trim().equals("0")) {
-					alertFalseRowIndexes.add(rowIndex);
-				} else {
+				String valueInCSV = csvLine[indexOfAlertInCSV];
+				Boolean isTrueValue = parseBoolean(valueInCSV);
+				if (isTrueValue == null) {
 					reader.close();
-					throw new IOException("Invalid state found in row " + rowIndex + ", column " + indexOfAlertInCSV + ": " + alertValueInCSV);
+					throw new IOException("Invalid state found in row " + rowIndex + ", column " + indexOfAlertInCSV + ": " + valueInCSV);
+				} else if (isTrueValue) {
+					alertTrueRowIndexes.add(rowIndex);
+				} else {
+					alertFalseRowIndexes.add(rowIndex);
 				}
 			}
 			
@@ -441,34 +467,34 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			
 			
 			// calculate weights;
-			float weightAlert = ((float)alertTrueRowIndexes.size()) / ((float)getStratifiedSampleNumAlert());
-			float weightNonAlert = ((float)alertFalseRowIndexes.size()) / (((float)getStratifiedSampleNumTotal()) - ((float)getStratifiedSampleNumAlert()));
-			// if weight is lower than 1, set to 1;
-			if (weightAlert < 1) {
-				weightAlert = 1;
-			}
-			if (weightNonAlert < 1) {
-				weightNonAlert = 1;
-			}
-			Debug.println(getClass(), "Weight alert = " + weightAlert + ", weight non-alert = " + weightNonAlert);
-			
-			// fill weight table 
-			if (weightTable.tableSize() == 2) {
-				INode alertVar = weightTable.getVariableAt(0);
-				int alertTrueStateIndex = -1;
-				if (alertVar.getStateAt(0).trim().equalsIgnoreCase("Yes")
-						|| alertVar.getStateAt(0).trim().equalsIgnoreCase("true")
-						|| alertVar.getStateAt(0).trim().equals("1")) {
-					alertTrueStateIndex = 0;
+			if (isToWeight) {
+				float weightAlert = ((float)alertTrueRowIndexes.size()) / ((float)getStratifiedSampleNumAlert());
+				float weightNonAlert = ((float)alertFalseRowIndexes.size()) / (((float)getStratifiedSampleNumTotal()) - ((float)getStratifiedSampleNumAlert()));
+				// if weight is lower than 1, set to 1;
+				if (weightAlert < 1) {
+					weightAlert = 1;
 				}
-				if (alertTrueStateIndex < 0) {
-					reader.close();
-					throw new IllegalArgumentException("Cound not find true/yes/1 state in variable " + alertVar);
+				if (weightNonAlert < 1) {
+					weightNonAlert = 1;
 				}
-				weightTable.setValue(alertTrueStateIndex, weightAlert);
-				weightTable.setValue((1-alertTrueStateIndex), weightNonAlert);
-			} else {
-				Debug.println(getClass(), "Found weight table " + weightTable + " with size " + weightTable.tableSize());
+				Debug.println(getClass(), "Weight alert = " + weightAlert + ", weight non-alert = " + weightNonAlert);
+				
+				// fill weight table 
+				if (weightTable.tableSize() == 2) {
+					INode alertVar = weightTable.getVariableAt(0);
+					int alertTrueStateIndex = -1;
+					if (parseBoolean(alertVar.getStateAt(0)) == true) {
+						alertTrueStateIndex = 0;
+					}
+					if (alertTrueStateIndex < 0) {
+						reader.close();
+						throw new IllegalArgumentException("Cound not find true/yes/1 state in variable " + alertVar);
+					}
+					weightTable.setValue(alertTrueStateIndex, weightAlert);
+					weightTable.setValue((1-alertTrueStateIndex), weightNonAlert);
+				} else {
+					Debug.println(getClass(), "Found weight table " + weightTable + " with size " + weightTable.tableSize());
+				}
 			}
 			
 			// we'll fill rowsToRead with getStratifiedSampleNumTotal() samples.
@@ -481,7 +507,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 				}
 				int indexToAdd = rand.nextInt(alertTrueRowIndexes.size());
 				rowsToRead.add(allRows.get(alertTrueRowIndexes.get(indexToAdd)));
-				alertTrueRowIndexes.remove(indexToAdd);
+				alertTrueRowIndexes.remove(indexToAdd);	// this is a random pick without substitution
 			}
 			// randomly pick getStratifiedSampleNumTotal() - getStratifiedSampleNumAlert() samples 
 			for (int i = 0; i < getStratifiedSampleNumTotal() - getStratifiedSampleNumAlert(); i++) {
@@ -523,29 +549,25 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 				int trueState = -1;
 				int falseState = -1;
 				for (int state = 0; state < var.getStatesSize(); state++) {
-					if (var.getStateAt(state).trim().equalsIgnoreCase("Yes")
-							|| var.getStateAt(state).trim().equalsIgnoreCase("true")) {
-						trueState = state;
-					} else if (var.getStateAt(state).trim().equalsIgnoreCase("No")
-							|| var.getStateAt(state).trim().equalsIgnoreCase("false")) {
-						falseState = state;
-					} else {
+					Boolean isTrue = parseBoolean(var.getStateAt(state));
+					if (isTrue == null) {
 						reader.close();
 						throw new IOException("Invalid state found in variable " + var.getName() + ": " + var.getStateAt(state));
+					} else if (isTrue) {
+						trueState = state;
+					} else {
+						falseState = state;
 					}
 				}
 				
-				if (csvLine[columnInCSV].trim().equalsIgnoreCase("true")
-						|| csvLine[columnInCSV].trim().equalsIgnoreCase("yes")
-						|| csvLine[columnInCSV].trim().equalsIgnoreCase("1")) {
-					coord[columnInTable] = trueState;
-				} else if (csvLine[columnInCSV].trim().equalsIgnoreCase("false")
-						|| csvLine[columnInCSV].trim().equalsIgnoreCase("no")
-						|| csvLine[columnInCSV].trim().equalsIgnoreCase("0")) {
-					coord[columnInTable] = falseState;
-				} else {
+				Boolean isTrue = parseBoolean(csvLine[columnInCSV]);
+				if (isTrue == null) {
 					reader.close();
 					throw new IOException("Unknown state found in file " + file.getName() + ": " + csvLine[columnInCSV]);
+				} else if (isTrue) {
+					coord[columnInTable] = trueState;
+				} else {
+					coord[columnInTable] = falseState;
 				}
 			}
 			
@@ -555,13 +577,16 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		}
 		reader.close();
 		
+		
 		// apply weights;
 		if (weightTable != null && weightTable.getVariablesSize() > 0) {
 			jointTable.opTab(weightTable, jointTable.PRODUCT_OPERATOR);	// multiply counts in joint table with the weights in weight table
 		}
 		
-		// normalize joint table, so that joint table becomes a table of proportions
-		jointTable.normalize();
+		if (isToNormalize) {
+			// normalize joint table, so that joint table becomes a table of proportions
+			jointTable.normalize();
+		}
 		
 		return jointTable;
 	}
@@ -679,8 +704,22 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			return;
 		} 
 		
-		// read current file
-		PotentialTable jointTable = this.getJointProbabilityFromFile(file);
+		// read current file. 
+		// joint table based on configuration in attributes (can be probabilities, or sub-sampled tables)
+		PotentialTable jointTable = this.getJointProbabilityFromFile(file, getStratifiedSampleNumAlert() >= 0, getSubSamplingMode() == SubSamplingMode.WEIGHTED, isToNormalize());
+		// a table that counts the occurrences in file without sub-sampling, without weighting, and without normalization
+		// this is used later in order to run beta binomial simulation (we need to keep track original counts for it)
+		PotentialTable nonNormalizedFullCountTable = null;
+		if (((getStratifiedSampleNumAlert() < 0) && (getSubSamplingMode() != SubSamplingMode.WEIGHTED) && !isToNormalize() )	
+				|| getSubSamplingMode() == subSamplingMode.WEIGHTED) {	// we don't need to keep track of original counts in weighted sub-sampling mode
+			// just reuse jointTable if it was not sub-sampled, not weighted, and didn't normalize
+			nonNormalizedFullCountTable = jointTable;
+		} else {
+			// get another table without sub-sampling, without weighting, and without normalization
+			nonNormalizedFullCountTable = this.getJointProbabilityFromFile(file, false, false, false);
+			// TODO stop reading file twice (it's redundant).
+		}
+		
 		
 		// build a map of names to variable, for easy access
 		Map<String, INode> varMap = new HashMap<String, INode>();
@@ -721,31 +760,25 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			// convert queried tables from joint probabilities to conditional probabilities if necessary;
 			if (!query.isJointProbability()) {
 				// calculate marginal of condition, so that we can use it to calculate conditional
-				PotentialTable marginalTable = queryTable.getTemporaryClone();
-				marginalTable.removeVariable(queryTable.getVariableAt(0));	// the first variable is the queried var, so if we remove it, we have the marginal of the conditions.
-				queryTable.opTab(marginalTable, queryTable.DIVISION_OPERATOR);
+				queryTable = this.getConditionalProbabilityFromQueryTable(queryTable, nonNormalizedFullCountTable);
 			}
 			
 			// add to query statistics the cell in conditional table which matches with the queried element;
 			
 			// find queried state
 			String state = query.getQueryState().trim();
-			boolean isTrue = false;
-			if (state.equalsIgnoreCase("Yes") || state.equalsIgnoreCase("true")  || state.equalsIgnoreCase("1")) {
-				isTrue = true;
-			}
+			boolean isTrue = (parseBoolean(state) == true);
 			
 			// search for index 
 			int queriedStateIndex = 0;
 			for (; queriedStateIndex < queryTable.getVariableAt(0).getStatesSize(); queriedStateIndex++) {
-				if (queryTable.getVariableAt(0).getStateAt(queriedStateIndex).equalsIgnoreCase("Yes")
-						|| queryTable.getVariableAt(0).getStateAt(queriedStateIndex).equalsIgnoreCase("true")) {
+				Boolean isQueryVarTrue = parseBoolean(queryTable.getVariableAt(0).getStateAt(queriedStateIndex));
+				if (isQueryVarTrue == true) {
 					if (isTrue) {
 						break;
 					}
 				}
-				if (queryTable.getVariableAt(0).getStateAt(queriedStateIndex).equalsIgnoreCase("No")
-						|| queryTable.getVariableAt(0).getStateAt(queriedStateIndex).equalsIgnoreCase("false")) {
+				if (isQueryVarTrue == false) {
 					if (!isTrue) {
 						break;
 					}
@@ -753,20 +786,16 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			}
 			
 			state = query.getConditionsStates().get(0).trim();
-			isTrue = false;
-			if (state.equalsIgnoreCase("Yes") || state.equalsIgnoreCase("true")  || state.equalsIgnoreCase("1")) {
-				isTrue = true;
-			}
+			isTrue = (parseBoolean(state) == true);
 			int conditionStateIndex = 0;
 			for (; conditionStateIndex < queryTable.getVariableAt(0).getStatesSize(); conditionStateIndex++) {
-				if (queryTable.getVariableAt(0).getStateAt(conditionStateIndex).equalsIgnoreCase("Yes")
-						|| queryTable.getVariableAt(0).getStateAt(conditionStateIndex).equalsIgnoreCase("true")) {
+				Boolean isQueryVarTrue = parseBoolean(queryTable.getVariableAt(0).getStateAt(conditionStateIndex));
+				if (isQueryVarTrue == true) {
 					if (isTrue) {
 						break;
 					}
 				}
-				if (queryTable.getVariableAt(0).getStateAt(conditionStateIndex).equalsIgnoreCase("No")
-						|| queryTable.getVariableAt(0).getStateAt(conditionStateIndex).equalsIgnoreCase("false")) {
+				if (isQueryVarTrue == false) {
 					if (!isTrue) {
 						break;
 					}
@@ -785,8 +814,55 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	}
 	
 
-
-
+	/**
+	 * Converts a query table (marginalized joint probability or count table) to conditional probability
+	 * @param queryTable
+	 * @param fullCountTable : record of original counts (because queryTable may have sub-sampled counts).
+	 *  This is used for reference when {@link #getSubSamplingMode()} is {@link SubSamplingMode#BETA_BINOMIAL}.
+	 * @see #fillQueriesFromFile(File, List)
+	 * @see #getJointProbabilityFromFile(File, boolean, boolean, boolean)
+	 */
+	public PotentialTable getConditionalProbabilityFromQueryTable(PotentialTable queryTable, PotentialTable fullCountTable) {
+		if (queryTable == null) {
+			throw new NullPointerException("No query table was provided");
+		}
+		
+		// if we need to do beta-binomial sub sampling, do a pre-processing so that queryTable is filled with simulated counts
+		if (getSubSamplingMode() == SubSamplingMode.BETA_BINOMIAL) {
+			throw new UnsupportedOperationException("Not implemented yet");
+//			// basic assertions
+//			if (queryTable.getVariablesSize() != 2) {
+//				throw new IllegalArgumentException("Current version can only handle beta-binomial sub-sampling with 2 variables. Query table = " + queryTable);
+//			}
+//			
+//			// make sure variables in queryTable is a subset of variables in jointTable
+//			if (queryTable.getVariablesSize() > countTable.getVariablesSize()) {
+//				throw new IllegalArgumentException("Variables in query table must be a subset of joint table. Query table = " 
+//							+ queryTable + ", joint table = " + countTable);
+//			}
+//			for (int i = 0; i < queryTable.getVariablesSize(); i++) {
+//				if (countTable.getVariableIndex((Node) queryTable.getVariableAt(i)) < 0) {
+//					throw new IllegalArgumentException("Variables in query table must be a subset of joint table, but variable " 
+//							+ queryTable.getVariableAt(i) + " was not found in joint table. Query table = " + queryTable
+//							+ ", joint table = " + countTable);
+//				}
+//			}
+//			
+//			
+//			
+//			// 
+//			asdf;
+			
+		}
+		
+		// we can just calculate the conditional probabilities, because the weights were already handled in getJointProbabilityFromFile
+		PotentialTable marginalTable = queryTable.getTemporaryClone();
+		marginalTable.removeVariable(queryTable.getVariableAt(0));	// the first variable is the queried var, so if we remove it, we have the marginal of the conditions.
+		queryTable.opTab(marginalTable, queryTable.DIVISION_OPERATOR);
+		
+		return queryTable;
+	}
+	
 	/**
 	 * @return the confidence
 	 */
@@ -1112,6 +1188,35 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			e.printStackTrace();
 		}
 
+	}
+	
+	/**
+	 * @return the isToNormalize : if true, then {@link #getJointProbabilityFromFile(File, boolean)} will
+	 * normalize the table to 1.
+	 */
+	public boolean isToNormalize() {
+		return isToNormalize;
+	}
+	/**
+	 * @param isToNormalize : if true, then {@link #getJointProbabilityFromFile(File, boolean)} will
+	 * normalize the table to 1.
+	 */
+	public void setToNormalize(boolean isToNormalize) {
+		this.isToNormalize = isToNormalize;
+	}
+	/**
+	 * @return the subSamplingMode : type of sub-sampling to be used by {@link SimulatedUserStatisticsCalculator#getJointProbabilityFromFile(File, boolean, boolean, boolean)}
+	 * and {@link SimulatedUserStatisticsCalculator#getConditionalProbabilityFromQueryTable(PotentialTable)}.
+	 */
+	public SubSamplingMode getSubSamplingMode() {
+		return subSamplingMode;
+	}
+	/**
+	 * @param subSamplingMode : type of sub-sampling to be used by {@link SimulatedUserStatisticsCalculator#getJointProbabilityFromFile(File, boolean, boolean, boolean)}
+	 * and {@link SimulatedUserStatisticsCalculator#getConditionalProbabilityFromQueryTable(PotentialTable)}.
+	 */
+	public void setSubSamplingMode(SubSamplingMode subSamplingMode) {
+		this.subSamplingMode = subSamplingMode;
 	}
 
 

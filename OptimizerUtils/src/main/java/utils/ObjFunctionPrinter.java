@@ -284,6 +284,36 @@ public class ObjFunctionPrinter {
 	}
 	
 	/**
+	 * @param value : string to check
+	 * @return true if the provided string represents a "true" value (e.g. "true", "yes", "1"), false if it represents
+	 * a "false" value (e.g. "false", "no", "0"), and null if unknown.
+	 */
+	public Boolean parseBoolean(String value) {
+		
+		if (value == null) {
+			return null;
+		}
+		
+		value = value.trim();
+		
+		if (value.isEmpty()) {
+			return null;
+		}
+		
+		if (value.equals("1")
+				|| value.equalsIgnoreCase("true")
+				|| value.equalsIgnoreCase("yes")) {
+			return true;
+		} else if (value.equals("0")
+				|| value.equalsIgnoreCase("false")
+				|| value.equalsIgnoreCase("no")) {
+			return false;
+		}
+		
+		return null;
+	}
+	
+	/**
 	 * @param variableMap : this is used to reuse node variables by name. If empty, nothing will be returned.
 	 * Any variable not contained in this map will be considered as invalid input.
 	 * If negative numbers is found in tables, it will be ignored.
@@ -346,23 +376,17 @@ public class ObjFunctionPrinter {
 					}
 					// check that i-th state of mapped node is equal to i-th state of node in file
 					for (int stateIndex = 0; stateIndex < mappedNode.getStatesSize(); stateIndex++) {
-						if (mappedNode.getStateAt(stateIndex).equalsIgnoreCase("true")
-								|| mappedNode.getStateAt(stateIndex).equalsIgnoreCase("yes")
-								|| mappedNode.getStateAt(stateIndex).equalsIgnoreCase("1")) {
+						Boolean mappedNodeValue = parseBoolean(mappedNode.getStateAt(stateIndex));
+						Boolean inputTableValue = parseBoolean(inputTable.getVariableAt(varIndex).getStateAt(stateIndex));
+						if (mappedNodeValue == true) {
 							// check if respective state in file is also true/yes/1
-							if (!(inputTable.getVariableAt(varIndex).getStateAt(stateIndex).equalsIgnoreCase("true")
-									|| inputTable.getVariableAt(varIndex).getStateAt(stateIndex).equalsIgnoreCase("yes")
-									|| inputTable.getVariableAt(varIndex).getStateAt(stateIndex).equalsIgnoreCase("1"))) {
+							if (inputTableValue != true) {
 								throw new IOException("State " + stateIndex + " of " + mappedNode.getName() + " is expected to be " + mappedNode.getStateAt(stateIndex)
 										+ ", but found " + inputTable.getVariableAt(varIndex).getStateAt(stateIndex));
 							}
-						} else if (mappedNode.getStateAt(stateIndex).equalsIgnoreCase("false")
-								|| mappedNode.getStateAt(stateIndex).equalsIgnoreCase("no")
-								|| mappedNode.getStateAt(stateIndex).equalsIgnoreCase("0")) {
+						} else if (mappedNodeValue == false) {
 							// check if respective state in file is also false/no/0
-							if (!(inputTable.getVariableAt(varIndex).getStateAt(stateIndex).equalsIgnoreCase("false")
-									|| inputTable.getVariableAt(varIndex).getStateAt(stateIndex).equalsIgnoreCase("no")
-									|| inputTable.getVariableAt(varIndex).getStateAt(stateIndex).equalsIgnoreCase("0"))) {
+							if (inputTableValue != false) {
 								throw new IOException("State " + stateIndex + " of " + mappedNode.getName() + " is expected to be " + mappedNode.getStateAt(stateIndex)
 										+ ", but found " + inputTable.getVariableAt(varIndex).getStateAt(stateIndex));
 							}

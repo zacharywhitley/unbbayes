@@ -166,7 +166,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			Boolean alertState = null;	// keep track if we have alert variable in prob dist, and what is its state in current cell
 			for (int varIndex = states.length-1; varIndex >= 0 ; varIndex--) {
 				String state = table.getVariableAt(varIndex).getStateAt(states[varIndex]).trim();
-				if (state.equalsIgnoreCase("Yes") || state.equalsIgnoreCase("true") || state.equals("1")) {
+				if (parseBoolean(state) == true) {
 					csvLine += ("1");
 					if (alertVars.contains(table.getVariableAt(varIndex).getName())) {
 						countAlert++;

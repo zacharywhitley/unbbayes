@@ -201,18 +201,14 @@ public class MultiRowTabSeparatedDataToMultiCSVConverter extends MultiColumnCSVT
 			if (detectorNames.contains(var.getName())) { // this is a detector
 				// extract state of this detector in current cell
 				String state = var.getStateAt(varStates[varIndex]);
-				if (state.equalsIgnoreCase("true")
-						|| state.equalsIgnoreCase("yes")
-						|| state.equals("1")) {
+				if (parseBoolean(state) == true) {
 					// this detector is active. Increment counter.
 					numActiveDetectors++;
 				}
 			} else if (alertName.equalsIgnoreCase(var.getName())) { // current var is the alert var. 
 				// extract state of alert in current cell
 				String state = var.getStateAt(varStates[varIndex]);
-				if (state.equalsIgnoreCase("true")
-						|| state.equalsIgnoreCase("yes")
-						|| state.equals("1")) {
+				if (parseBoolean(state) == true) {
 					// alert is active. 
 					if (isAlertActive != null && !isAlertActive) {
 						throw new IllegalArgumentException("There is more than 1 alert variable, and values are conflicting. Index = "

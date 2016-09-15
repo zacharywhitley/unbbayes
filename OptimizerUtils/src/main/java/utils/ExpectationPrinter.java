@@ -193,18 +193,15 @@ public class ExpectationPrinter extends ObjFunctionPrinter {
 				// read the initial columns of current row in order to fill coord
 				for (int columnInCSV = 0; columnInCSV < coord.length; columnInCSV++) {
 					String stateRead = csvLine[columnInCSV];
-					if (stateRead.equalsIgnoreCase("1")
-							|| stateRead.equalsIgnoreCase("TRUE")
-							|| stateRead.equals("YES")) {
+					Boolean isTrue = parseBoolean(stateRead);
+					if (isTrue == null) {
+						throw new IllegalArgumentException("Unexpected state " + stateRead + " found in csv file at column " + columnInCSV);
+					} else if (isTrue) {
 						// the last index in coord represents the 1st variable, and 1st index in coord represents the last variable
 						// so coord.length - columnInCSV - 1 is the index of the variable we are reading from csv
 						coord[coord.length - columnInCSV - 1] = 0;	// state 0 is true
-					} else if (stateRead.equalsIgnoreCase("0")
-							|| stateRead.equalsIgnoreCase("FALSE")
-							|| stateRead.equals("NO")) {
+					} else  {
 						coord[coord.length - columnInCSV - 1] = 1;	// state 1 is false
-					} else {
-						throw new IllegalArgumentException("Unexpected state " + stateRead + " found in csv file at column " + columnInCSV);
 					}
 				}
 				
