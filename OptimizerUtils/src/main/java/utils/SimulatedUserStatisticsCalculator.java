@@ -29,6 +29,9 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.util.Debug;
 import au.com.bytecode.opencsv.CSVReader;
+import cc.mallet.types.Alphabet;
+import cc.mallet.types.Dirichlet;
+import cc.mallet.util.Randoms;
 
 /**
  * 
@@ -96,10 +99,6 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	
 	public static final Map<String, String> QUERY_ALIAS_RCP3 = new HashMap<String, String>();
 
-	private int stratifiedSampleNumTotal = 100;
-	private int stratifiedSampleNumAlert = -1;//30;
-
-	private boolean isToNormalize = true;	// false
 	
 	/**
 	 * Types of sub-sampling supported by {@link SimulatedUserStatisticsCalculator#getJointProbabilityFromFile(File, boolean, boolean, boolean)}
@@ -108,6 +107,12 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	public static enum SubSamplingMode {WEIGHTED, BETA_BINOMIAL};
 //	private SubSamplingMode subSamplingMode = SubSamplingMode.BETA_BINOMIAL;
 	private SubSamplingMode subSamplingMode = SubSamplingMode.WEIGHTED;
+	private int numSubSampleSimulation = 1000;
+	private int stratifiedSampleNumTotal = 100;
+	private int stratifiedSampleNumAlert = -1;//30;	// negative values mean no sub-sampling will be performed
+	private boolean isToNormalize = false;
+
+	private float priorCount = 1;
 	
 	static {
 		QUERY_ALIAS_RCP3.put("P(Alert=true|Threat=true)", "Q01");
@@ -758,7 +763,10 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			fillTablesFromJointProbability(Collections.singletonList(queryTable), jointTable);
 			
 			// convert queried tables from joint probabilities to conditional probabilities if necessary;
-			if (!query.isJointProbability()) {
+			if (query.isJointProbability()) {
+				// just make sure table is normalized.
+				queryTable.normalize();
+			} else {
 				// calculate marginal of condition, so that we can use it to calculate conditional
 				queryTable = this.getConditionalProbabilityFromQueryTable(queryTable, nonNormalizedFullCountTable);
 			}
@@ -829,36 +837,327 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		
 		// if we need to do beta-binomial sub sampling, do a pre-processing so that queryTable is filled with simulated counts
 		if (getSubSamplingMode() == SubSamplingMode.BETA_BINOMIAL) {
-			throw new UnsupportedOperationException("Not implemented yet");
-//			// basic assertions
-//			if (queryTable.getVariablesSize() != 2) {
-//				throw new IllegalArgumentException("Current version can only handle beta-binomial sub-sampling with 2 variables. Query table = " + queryTable);
-//			}
-//			
-//			// make sure variables in queryTable is a subset of variables in jointTable
-//			if (queryTable.getVariablesSize() > countTable.getVariablesSize()) {
-//				throw new IllegalArgumentException("Variables in query table must be a subset of joint table. Query table = " 
-//							+ queryTable + ", joint table = " + countTable);
-//			}
-//			for (int i = 0; i < queryTable.getVariablesSize(); i++) {
-//				if (countTable.getVariableIndex((Node) queryTable.getVariableAt(i)) < 0) {
-//					throw new IllegalArgumentException("Variables in query table must be a subset of joint table, but variable " 
-//							+ queryTable.getVariableAt(i) + " was not found in joint table. Query table = " + queryTable
-//							+ ", joint table = " + countTable);
-//				}
-//			}
-//			
-//			
-//			
-//			// 
-//			asdf;
-			
+			return this.getConditionalProbabilityFromSimulation(queryTable, fullCountTable);
 		}
 		
 		// we can just calculate the conditional probabilities, because the weights were already handled in getJointProbabilityFromFile
+		queryTable.normalize();
 		PotentialTable marginalTable = queryTable.getTemporaryClone();
 		marginalTable.removeVariable(queryTable.getVariableAt(0));	// the first variable is the queried var, so if we remove it, we have the marginal of the conditions.
 		queryTable.opTab(marginalTable, queryTable.DIVISION_OPERATOR);
+		
+		return queryTable;
+	}
+	
+	/**
+	 * Runs a beta binomial simulation in order to simulate the full population from a sub-sampled population and
+	 * calculate conditional probability from simulated population.
+	 * This is useful to incorporate uncertainty to a population read in {@link #getJointProbabilityFromFile(File, boolean, boolean, boolean)}
+	 * when this population is known to generated from a sub-sampled population already (so we need to artificially increase the variance).
+	 * @param queryTable : table containing 2 variables: query (0-th var in table) and condition (1st var in table).
+	 * WARNING: implementations may make changes to this table instance (i.e. the content of this instance may be changed).
+	 * @param fullCountTable : joint table containing counts of full population.
+	 * @return conditional probability table of query (0-th var in table) given condition (1st var in table).
+	 */
+	protected PotentialTable getConditionalProbabilityFromSimulation(PotentialTable queryTable, PotentialTable fullCountTable) {
+		// TODO reduce instrumentation to improve readability & speed
+
+		// basic assertions
+		if (queryTable.getVariablesSize() != 2) {
+			throw new IllegalArgumentException("Current version can only handle beta-binomial sub-sampling with 2 variables. Query table = " + queryTable);
+		}
+		
+		// make sure variables in queryTable is a subset of variables in jointTable
+		if (queryTable.getVariablesSize() > fullCountTable.getVariablesSize()) {
+			throw new IllegalArgumentException("Variables in query table must be a subset of joint table. Query table = " 
+						+ queryTable + ", joint table = " + fullCountTable);
+		}
+		for (int i = 0; i < queryTable.getVariablesSize(); i++) {
+			if (fullCountTable.getVariableIndex((Node) queryTable.getVariableAt(i)) < 0) {
+				throw new IllegalArgumentException("Variables in query table must be a subset of joint table, but variable " 
+						+ queryTable.getVariableAt(i) + " was not found in joint table. Query table = " + queryTable
+						+ ", joint table = " + fullCountTable);
+			}
+		}
+		
+		// make sure the number of sub samples is consistent
+		int numSubSamples = 0;
+		for (int i = 0; i < queryTable.tableSize(); i++) {
+			numSubSamples += queryTable.getValue(i);
+		}
+		if (numSubSamples != getStratifiedSampleNumTotal()) {
+			throw new IllegalArgumentException("Expected number of sub-samples is " + getStratifiedSampleNumTotal()
+					+ ", but actual number os sub-samples was " + numSubSamples);
+		}
+		
+		// extract the alert variable
+		String alertName = this.getAlertName();
+		if (alertName == null || alertName.trim().isEmpty()) {
+			throw new IllegalArgumentException("No name for alert variable was provided.");
+		}
+		INode alertVar = null;
+		for (int i = 0; i < fullCountTable.getVariablesSize(); i++) {
+			if (fullCountTable.getVariableAt(i).getName().equalsIgnoreCase(alertName)) {
+				alertVar = fullCountTable.getVariableAt(i);
+				break;
+			}
+		}
+		
+		// search which index in alert variable is the state true, and which one is false
+		int indexOfAlertTrue = -1;
+		int indexOfAlertFalse = -1;
+		for (int i = 0; i < alertVar.getStatesSize(); i++) {
+			Boolean isTrue = parseBoolean(alertVar.getStateAt(i));
+			if (isTrue != null) {
+				if (isTrue) {
+					indexOfAlertTrue = i;
+				} else {
+					indexOfAlertFalse = i;
+				}
+			}
+		}
+		Debug.println(getClass(), "Var: " + alertVar + ". Index of true = " + indexOfAlertTrue + ", index of false = " + indexOfAlertFalse);
+		if (indexOfAlertTrue < 0) {
+			throw new IllegalArgumentException("Could not find true state of variable " + alertVar);
+		}
+		if (indexOfAlertFalse < 0) {
+			throw new IllegalArgumentException("Could not find false state of variable " + alertVar);
+		}
+		
+		// retrieve how many alerts we originally had
+		// marginalize out all variables of full count table, except alert
+		PotentialTable numAlertTotal = (PotentialTable) fullCountTable.clone();
+		while (numAlertTotal.getVariablesSize() > 1) {
+			INode varToRemove = numAlertTotal.getVariableAt(0);
+			if (varToRemove.equals(alertVar)) { // do not remove alert
+				varToRemove = numAlertTotal.getVariableAt(1);
+			}
+			numAlertTotal.removeVariable(varToRemove);
+		}
+		Debug.println(getClass(), "Total num alert = " + numAlertTotal.getValue(indexOfAlertTrue) + ", total num non-alert = " + numAlertTotal.getValue(indexOfAlertFalse));
+		if (numAlertTotal.getValue(indexOfAlertTrue) + numAlertTotal.getValue(indexOfAlertFalse) < getStratifiedSampleNumTotal()) {
+			throw new IllegalArgumentException("There are total of " + (numAlertTotal.getValue(indexOfAlertTrue) + numAlertTotal.getValue(indexOfAlertFalse)) 
+					+ " data, but requested number of sub-samples was " + getStratifiedSampleNumTotal());
+		}
+		
+		
+		// get how many sub-samples of alert we had
+		PotentialTable numAlertSubSample = new ProbabilisticTable();
+		numAlertSubSample.addVariable(alertVar);
+		numAlertSubSample.setValue(indexOfAlertTrue, 
+				// if there is no enough sample, use the the total number of alerts
+				(getStratifiedSampleNumAlert() > numAlertTotal.getValue(indexOfAlertTrue))?numAlertTotal.getValue(indexOfAlertTrue):getStratifiedSampleNumAlert()
+			);
+		// the rest is non-alert
+		numAlertSubSample.setValue(indexOfAlertFalse, getStratifiedSampleNumTotal() - numAlertSubSample.getValue(indexOfAlertTrue));
+		
+		// make sure these numbers are consistent with queryTable table
+		if (queryTable.getVariableIndex((Node) alertVar) >= 0) {	// if query table contains alert, then do the check
+			// use a clone of query table and marginalize out non-alert
+			PotentialTable numAlertInQueryTable = queryTable.getTemporaryClone();
+			while (numAlertInQueryTable.getVariablesSize() > 1) {
+				INode varToRemove = numAlertInQueryTable.getVariableAt(0);
+				if (varToRemove.equals(alertVar)) { // do not remove alert
+					varToRemove = numAlertInQueryTable.getVariableAt(1);
+				}
+				numAlertInQueryTable.removeVariable(varToRemove);
+			}
+			if (((int)numAlertInQueryTable.getValue(indexOfAlertTrue)) != ((int)numAlertSubSample.getValue(indexOfAlertTrue))) {
+				throw new IllegalArgumentException("Expected number of alert in queried table " + queryTable + " is " + numAlertSubSample.getValue(indexOfAlertTrue)
+						+ ", but was " + numAlertInQueryTable.getValue(indexOfAlertTrue));
+			}
+			if (((int)numAlertInQueryTable.getValue(indexOfAlertFalse)) != ((int)numAlertSubSample.getValue(indexOfAlertFalse))) {
+				throw new IllegalArgumentException("Expected number of non-alert in queried table " + queryTable + " is " + numAlertSubSample.getValue(indexOfAlertFalse)
+						+ ", but was " + numAlertInQueryTable.getValue(indexOfAlertFalse));
+			}
+		}
+		 
+		// extract queried var
+		INode queryVar = queryTable.getVariableAt(0);
+		if (queryVar.getStatesSize() != 2) {
+			throw new IllegalArgumentException("Current version can only support Boolean variables: " + queryVar);
+		}
+		// extract condition var
+		INode conditionVar = queryTable.getVariableAt(1);
+		if (conditionVar.getStatesSize() != 2) {
+			throw new IllegalArgumentException("Current version can only support Boolean variables: " + conditionVar);
+		}
+		
+		// search which index in query variable is the state true, and which one is false
+		int indexOfQueryTrue = -1;
+		int indexOfQueryFalse = -1;
+		for (int i = 0; i < queryVar.getStatesSize(); i++) {
+			Boolean isTrue = parseBoolean(queryVar.getStateAt(i));
+			if (isTrue != null) {
+				if (isTrue) {
+					indexOfQueryTrue = i;
+				} else {
+					indexOfQueryFalse = i;
+				}
+			}
+		}
+		Debug.println(getClass(), "Var: " + queryVar + ". Index of true = " + indexOfQueryTrue + ", index of false = " + indexOfQueryFalse);
+		if (indexOfQueryTrue < 0) {
+			throw new IllegalArgumentException("Could not find true state of variable " + queryVar);
+		}
+		if (indexOfQueryFalse < 0) {
+			throw new IllegalArgumentException("Could not find false state of variable " + queryVar);
+		}
+		
+		// search which index in condition variable is the state true, and which one is false
+		int indexOfConditionTrue = -1;
+		int indexOfConditionFalse = -1;
+		for (int i = 0; i < conditionVar.getStatesSize(); i++) {
+			Boolean isTrue = parseBoolean(conditionVar.getStateAt(i));
+			if (isTrue != null) {
+				if (isTrue) {
+					indexOfConditionTrue = i;
+				} else {
+					indexOfConditionFalse = i;
+				}
+			}
+		}
+		Debug.println(getClass(), "Var: " + conditionVar + ". Index of true = " + indexOfConditionTrue + ", index of false = " + indexOfConditionFalse);
+		if (indexOfConditionTrue < 0) {
+			throw new IllegalArgumentException("Could not find true state of variable " + conditionVar);
+		}
+		if (indexOfConditionFalse < 0) {
+			throw new IllegalArgumentException("Could not find false state of variable " + conditionVar);
+		}
+		
+		// create an alphabet of true and false, but we need to make sure the indexes are the same of queried var
+		Boolean[] booleanAlphabet = new Boolean[queryVar.getStatesSize()];
+		for (int state = 0; state < queryVar.getStatesSize(); state++) {
+			Boolean isTrue = parseBoolean(queryVar.getStateAt(state));
+			if (isTrue == null) {
+				throw new IllegalArgumentException("Boolean variable " + queryVar + " has an invalid state: " + queryVar.getStateAt(state));
+			}
+			booleanAlphabet[state] = isTrue;
+		}
+		Alphabet dictionary = new Alphabet(booleanAlphabet);
+		
+		Randoms sampler = new Randoms();	// this is used later to draw samples from beta dist
+		
+		// prepare parameters of beta-binomial sampler given condition = 0th state
+		// a dirichlet-multinomial sampler with dimension of 2 is a beta-binomial sampler
+		double[] alphasConditionTrue = new double[queryVar.getStatesSize()];
+		double[] alphasConditionFalse = new double[queryVar.getStatesSize()];
+		for (int state = 0; state < queryVar.getStatesSize(); state++) {
+			int[] coord = queryTable.getMultidimensionalCoord(0);
+			coord[queryTable.getVariableIndex((Node) queryVar)] = state;	// set query to current state
+			coord[queryTable.getVariableIndex((Node) conditionVar)] = indexOfConditionTrue;		// given condition = true
+			// we usually add a prior count (configurable parameter), which is 1 in most bayesian approaches
+			alphasConditionTrue[state] = queryTable.getValue(coord) + getPriorCount();	
+			coord[queryTable.getVariableIndex((Node) conditionVar)] = indexOfConditionFalse;	// given condition = false
+			alphasConditionFalse[state] = queryTable.getValue(coord) + getPriorCount();	
+		}
+		Dirichlet betaConditionTrue = new Dirichlet(alphasConditionTrue, dictionary);
+		Dirichlet betaConditionFalse = new Dirichlet(alphasConditionFalse, dictionary);
+		
+		// Create a table that will store the sum of estimates (to be used later to calculate average of estimates)
+		PotentialTable estimateQueryTrue = new ProbabilisticTable();
+		estimateQueryTrue.addVariable(conditionVar);		// each cell "i" in this table is the estimate of query = true given condition = "i". So the table is indexed by condition variable
+		estimateQueryTrue.fillTable(0);	// initialize with zeros (null value of a sum), because we will fill it with a sum of estimates (and then divide, in order to calculate average)
+		
+		// generate samples
+		for (int i = 0; i < getNumSubSampleSimulation(); i++) { 
+			
+			// run trials (beta-binomial are like flips of coins, and trials is how many times we flip the coin)
+//			int[] histogramGivenTrue = new int[dictionary.size()];		// histogram of query given condition true
+//			int[] histogramGivenFalse = new int[dictionary.size()];		// histogram of query given condition false
+//			Arrays.fill(histogramGivenTrue, 0);							// initialize histogram with nothing (null value is zero)
+//			Arrays.fill(histogramGivenFalse, 0);						// initialize histogram with nothing (null value is zero)
+			int[][] countCondQuery = new int[dictionary.size()][dictionary.size()];	// vector of counts, condition var X query var
+			for (int n = 0; n < countCondQuery.length; n++) {
+				for (int m = 0; m < countCondQuery[0].length; m++) {
+					countCondQuery[n][m] = 0;	// initialize with zeros
+				}
+			}
+			
+			// fill histograms with samples from beta-binomial distribution
+			// the number of trials is the total number of alerts (but we reuse the sub samples, so we reduce number of sub-samples from number of trials)
+			int numTrials = (int) (numAlertTotal.getValue(indexOfAlertTrue) - numAlertSubSample.getValue(indexOfAlertTrue));
+			for (int trial = 0; trial < numTrials ; trial++) {
+//				histogramGivenTrue[sampler.nextDiscrete(betaConditionTrue.nextDistribution())]++;
+				countCondQuery[indexOfConditionTrue][sampler.nextDiscrete(betaConditionTrue.nextDistribution())]++;
+			}
+			// do the same for query given condition = false
+			numTrials = (int) (numAlertTotal.getValue(indexOfAlertFalse) - numAlertSubSample.getValue(indexOfAlertFalse));
+			for (int trial = 0; trial < numTrials ; trial++) {
+//				histogramGivenFalse[sampler.nextDiscrete(betaConditionFalse.nextDistribution())]++;
+				countCondQuery[indexOfConditionFalse][sampler.nextDiscrete(betaConditionFalse.nextDistribution())]++;
+			}
+			
+			// reuse the sub-samples we had, by adding the sub samples to histogram
+			for (int queryState = 0; queryState < queryVar.getStatesSize(); queryState++) {
+				// calculate the coordinate in query table which is related to current query state
+				int[] coord = queryTable.getMultidimensionalCoord(0);
+				coord[queryTable.getVariableIndex((Node) queryVar)] = queryState;
+				
+				// increase histograms
+				coord[queryTable.getVariableIndex((Node) conditionVar)] = indexOfConditionTrue;
+//				histogramGivenTrue[queryState] += queryTable.getValue(coord);
+				countCondQuery[indexOfConditionTrue][queryState] += queryTable.getValue(coord);
+				
+				coord[queryTable.getVariableIndex((Node) conditionVar)] = indexOfConditionFalse;
+//				histogramGivenFalse[queryState] += queryTable.getValue(coord);
+				countCondQuery[indexOfConditionFalse][queryState] += queryTable.getValue(coord);
+			}
+			
+			// make sure total counts are consistent;
+			int expectedTotalCount =  (int) (numAlertTotal.getValue(indexOfAlertTrue) + numAlertTotal.getValue(indexOfAlertFalse));
+			int actualTotalCount = 0;
+			for (int n = 0; n < countCondQuery.length; n++) {
+				for (int m = 0; m < countCondQuery[0].length; m++) {
+					actualTotalCount += countCondQuery[n][m];
+				}
+			}
+			if (expectedTotalCount != actualTotalCount) {
+				throw new RuntimeException("Failed to generate correct number of counts. Expected = " + expectedTotalCount + ", actual = " + actualTotalCount + ", query table = " + queryTable);
+			}
+			
+			// calculate the estimates and store to estimate table;
+			
+			// P(Query = true | condition = true)
+			float value = ( (float) countCondQuery[indexOfConditionTrue][indexOfQueryTrue]) 
+					  / ( ( (float) countCondQuery[indexOfConditionTrue][indexOfQueryTrue]) + ( (float) countCondQuery[indexOfConditionTrue][indexOfQueryFalse] ) );
+			
+			// add value to estimate
+			estimateQueryTrue.setValue(indexOfConditionTrue, estimateQueryTrue.getValue(indexOfConditionTrue) + value);
+			
+			// P(Query = true | condition = false)
+			value = ( (float) countCondQuery[indexOfConditionFalse][indexOfQueryTrue]) 
+				/ ( ( (float) countCondQuery[indexOfConditionFalse][indexOfQueryTrue]) + ( (float) countCondQuery[indexOfConditionFalse][indexOfQueryFalse] ) );
+			
+			// add value to estimate
+			estimateQueryTrue.setValue(indexOfConditionFalse, estimateQueryTrue.getValue(indexOfConditionFalse) + value);
+		}
+		
+		// calculate average of estimates and set to table of estimates
+		for (int tableIndex = 0; tableIndex < estimateQueryTrue.tableSize(); tableIndex++) {
+			float value =  estimateQueryTrue.getValue(tableIndex) / ((float)getNumSubSampleSimulation());
+			if (value < 0 || value > 1) {
+				throw new RuntimeException("Invalid estimate of variable " + queryVar + " given " + conditionVar + " of value " + value
+						+ " at state " + tableIndex + ". This is probably a bug. Please, report.");
+			}
+			estimateQueryTrue.setValue(tableIndex, value);
+		}
+		
+		// fill query table with the average we just calculated
+		for (int conditionState = 0; conditionState < conditionVar.getStatesSize(); conditionState++) {
+			// calculate the coordinate in query table which is related to current state
+			int[] coord = queryTable.getMultidimensionalCoord(0);
+			coord[queryTable.getVariableIndex((Node) conditionVar)] = conditionState;
+			
+			// fill query = true with the estimate
+			coord[queryTable.getVariableIndex((Node) queryVar)] = indexOfQueryTrue;
+			queryTable.setValue(coord, estimateQueryTrue.getValue(conditionState));
+			
+			// fill the other cell (query = false) with the complement (1-estimate)
+			coord[queryTable.getVariableIndex((Node) queryVar)] = indexOfQueryFalse;
+			queryTable.setValue(coord, 1f - estimateQueryTrue.getValue(conditionState));
+		}
+		
 		
 		return queryTable;
 	}
@@ -1043,6 +1342,63 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	}
 
 
+	/**
+	 * @return the isToNormalize : if true, then {@link #getJointProbabilityFromFile(File, boolean)} will
+	 * normalize the table to 1.
+	 */
+	public boolean isToNormalize() {
+		return isToNormalize;
+	}
+	/**
+	 * @param isToNormalize : if true, then {@link #getJointProbabilityFromFile(File, boolean)} will
+	 * normalize the table to 1.
+	 */
+	public void setToNormalize(boolean isToNormalize) {
+		this.isToNormalize = isToNormalize;
+	}
+	/**
+	 * @return the subSamplingMode : type of sub-sampling to be used by {@link SimulatedUserStatisticsCalculator#getJointProbabilityFromFile(File, boolean, boolean, boolean)}
+	 * and {@link SimulatedUserStatisticsCalculator#getConditionalProbabilityFromQueryTable(PotentialTable)}.
+	 */
+	public SubSamplingMode getSubSamplingMode() {
+		return subSamplingMode;
+	}
+	/**
+	 * @param subSamplingMode : type of sub-sampling to be used by {@link SimulatedUserStatisticsCalculator#getJointProbabilityFromFile(File, boolean, boolean, boolean)}
+	 * and {@link SimulatedUserStatisticsCalculator#getConditionalProbabilityFromQueryTable(PotentialTable)}.
+	 */
+	public void setSubSamplingMode(SubSamplingMode subSamplingMode) {
+		this.subSamplingMode = subSamplingMode;
+	}
+	
+	/**
+	 * @return the numSubSampleSimulation : number of beta-binomial samples to be generated in {@link #getConditionalProbabilityFromSimulation(PotentialTable, PotentialTable)}
+	 */
+	public int getNumSubSampleSimulation() {
+		return numSubSampleSimulation;
+	}
+	/**
+	 * @param numSubSampleSimulation  : number of beta-binomial samples to be generated in {@link #getConditionalProbabilityFromSimulation(PotentialTable, PotentialTable)}
+	 */
+	public void setSubSampleSimulation(int numSubSampleSimulation) {
+		this.numSubSampleSimulation = numSubSampleSimulation;
+	}
+
+
+	/**
+	 * @return the priorCount : this is the prior count used in {@link #getConditionalProbabilityFromSimulation(PotentialTable, PotentialTable)}
+	 * to initialize parameters of simulation. For example a beta distribution would use a prior count of 1 (default value). 
+	 */
+	public float getPriorCount() {
+		return priorCount;
+	}
+	/**
+	 * @param priorCount : this is the prior count used in {@link #getConditionalProbabilityFromSimulation(PotentialTable, PotentialTable)}
+	 * to initialize parameters of simulation. For example a beta distribution would use a prior count of 1 (default value). 
+	 */
+	public void setPriorCount(float priorCount) {
+		this.priorCount = priorCount;
+	}
 
 
 	/**
@@ -1190,35 +1546,6 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 
 	}
 	
-	/**
-	 * @return the isToNormalize : if true, then {@link #getJointProbabilityFromFile(File, boolean)} will
-	 * normalize the table to 1.
-	 */
-	public boolean isToNormalize() {
-		return isToNormalize;
-	}
-	/**
-	 * @param isToNormalize : if true, then {@link #getJointProbabilityFromFile(File, boolean)} will
-	 * normalize the table to 1.
-	 */
-	public void setToNormalize(boolean isToNormalize) {
-		this.isToNormalize = isToNormalize;
-	}
-	/**
-	 * @return the subSamplingMode : type of sub-sampling to be used by {@link SimulatedUserStatisticsCalculator#getJointProbabilityFromFile(File, boolean, boolean, boolean)}
-	 * and {@link SimulatedUserStatisticsCalculator#getConditionalProbabilityFromQueryTable(PotentialTable)}.
-	 */
-	public SubSamplingMode getSubSamplingMode() {
-		return subSamplingMode;
-	}
-	/**
-	 * @param subSamplingMode : type of sub-sampling to be used by {@link SimulatedUserStatisticsCalculator#getJointProbabilityFromFile(File, boolean, boolean, boolean)}
-	 * and {@link SimulatedUserStatisticsCalculator#getConditionalProbabilityFromQueryTable(PotentialTable)}.
-	 */
-	public void setSubSamplingMode(SubSamplingMode subSamplingMode) {
-		this.subSamplingMode = subSamplingMode;
-	}
-
 
 
 }

@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Random;
 
 import unbbayes.util.Debug;
+import utils.SimulatedUserStatisticsCalculator.SubSamplingMode;
 import junit.framework.TestCase;
 import au.com.bytecode.opencsv.CSVReader;
 
@@ -137,7 +138,6 @@ public class SimulatedUserStatisticsCalculatorTest extends TestCase {
 		args[12] = "-p";
 		args[13] = "";
 		args[14] = "";
-		
 		calculator.main(args);
 		
 		/* Format of result:
@@ -168,9 +168,17 @@ public class SimulatedUserStatisticsCalculatorTest extends TestCase {
 		for (csvRow = reader.readNext(); csvRow != null; csvRow = reader.readNext()) {
 			assertTrue(csvRow[0], csvRow.length >= 6);
 			Map<String,Float> value = new HashMap<String, Float>();
-			value.put("Average", Float.parseFloat(csvRow[1]));
-			value.put("0.6 lower", Float.parseFloat(csvRow[4]));
-			value.put("0.6 upper", Float.parseFloat(csvRow[5]));
+			float average = Float.parseFloat(csvRow[1]);
+			float lower = Float.parseFloat(csvRow[4]);
+			float upper = Float.parseFloat(csvRow[5]);
+			assertTrue(csvRow[0], average >= 0 && average <= 1);
+			assertTrue(csvRow[0], lower >= 0 && lower <= 1);
+			assertTrue(csvRow[0], upper >= 0 && upper <= 1);
+			assertTrue(csvRow[0], average >= lower);
+			assertTrue(csvRow[0], average <= upper);
+			value.put("Average", average);
+			value.put("0.6 lower", lower);
+			value.put("0.6 upper", upper);
 			results.put(csvRow[0], value);
 		}
 		assertEquals(7, results.size());
@@ -182,6 +190,7 @@ public class SimulatedUserStatisticsCalculatorTest extends TestCase {
 		// run again with 30 alert samples
 		args[8] = "-alertSample";
 		args[9] = "30";
+		calculator.setSubSamplingMode(SubSamplingMode.WEIGHTED);
 		calculator.main(args);
 		assertTrue(tempQuestionOutput.exists());
 		
@@ -314,9 +323,17 @@ public class SimulatedUserStatisticsCalculatorTest extends TestCase {
 		for (csvRow = reader.readNext(); csvRow != null; csvRow = reader.readNext()) {
 			assertTrue("Seed=" + seed + ";" + csvRow[0], csvRow.length >= 6);
 			Map<String,Float> value = new HashMap<String, Float>();
-			value.put("Average", Float.parseFloat(csvRow[1]));
-			value.put("0.6 lower", Float.parseFloat(csvRow[4]));
-			value.put("0.6 upper", Float.parseFloat(csvRow[5]));
+			float average = Float.parseFloat(csvRow[1]);
+			float lower = Float.parseFloat(csvRow[4]);
+			float upper = Float.parseFloat(csvRow[5]);
+			assertTrue(csvRow[0], average >= 0 && average <= 1);
+			assertTrue(csvRow[0], lower >= 0 && lower <= 1);
+			assertTrue(csvRow[0], upper >= 0 && upper <= 1);
+			assertTrue(csvRow[0], average >= lower);
+			assertTrue(csvRow[0], average <= upper);
+			value.put("Average", average);
+			value.put("0.6 lower", lower);
+			value.put("0.6 upper", upper);
 			results.put(csvRow[0], value);
 		}
 		assertEquals("Seed=" + seed, 7, results.size());
@@ -328,6 +345,7 @@ public class SimulatedUserStatisticsCalculatorTest extends TestCase {
 		// run again with 30 alert samples
 		args[8] = "-alertSample";
 		args[9] = "30";
+		calculator.setSubSamplingMode(SubSamplingMode.WEIGHTED);
 		calculator.main(args);
 		assertTrue("Seed=" + seed, tempQuestionOutput.exists());
 		
@@ -356,6 +374,122 @@ public class SimulatedUserStatisticsCalculatorTest extends TestCase {
 		}
 		reader.close();
 		
+		
+		// make sure temporary files are deleted
+		for (File innerFile : tempDirichletOutput.listFiles()) {
+			assertTrue("Seed=" + seed + ";" + innerFile.getAbsolutePath(), innerFile.delete());
+		}
+		assertTrue("Seed=" + seed + ";" + tempDirichletOutput.getAbsolutePath(), tempDirichletOutput.delete());
+		assertTrue("Seed=" + seed + ";" + tempQuestionOutput.getAbsolutePath(), tempQuestionOutput.delete());
+	}
+	
+	/**
+	 * Test method for {@link utils.SimulatedUserStatisticsCalculator#main(java.lang.String[])}.
+	 * @throws IOException 
+	 * @throws URISyntaxException 
+	 */
+	public final void testBetaBinomialRandom() throws IOException, URISyntaxException {
+		DirichletUserSimulator dirichlet = DirichletUserSimulator.getInstance(4212, 500);
+		
+		String[] args = new String[15];
+		
+		long seed = System.currentTimeMillis();
+		Debug.println("Seed = " + seed);
+		File probFile = this.createRandomJointProbabilityFile(new Random(seed), 2*2*2*2*2);
+		probFile.deleteOnExit();
+		assertTrue("Seed=" + seed, probFile.exists());
+		assertTrue("Seed=" + seed,probFile.getTotalSpace() > 0);
+		
+		File tempDirichletOutput = Files.createTempDirectory("Users_").toFile();
+		tempDirichletOutput.deleteOnExit();
+		
+		
+		args[0] = "-i";
+		args[1] = "\"" + probFile.getAbsolutePath() +"\"";
+		args[2] = "-o";
+		args[3] = "\"" + tempDirichletOutput.getAbsolutePath() +"\"";
+		args[4] = "-u";
+		args[5] = "3000";
+		args[6] = "-n";
+		args[7] = "100";
+		args[8] = "-numI";	
+		args[9] = "2"	;
+		args[10] = "-numD";	
+		args[11] = "2";	
+		args[12] = "-a";	
+		args[13] = "2";
+		args[14] = "-d";
+		
+		// run dirichlet multinomial sampler
+		dirichlet.main(args);
+		
+		assertTrue("Seed=" + seed,tempDirichletOutput.exists());
+		assertEquals("Seed=" + seed,100, tempDirichletOutput.listFiles().length);
+		assertTrue("Seed=" + seed,tempDirichletOutput.getTotalSpace() > 0);
+		
+		File tempQuestionOutput = File.createTempFile("Probabilities_Questions_", ".csv");
+		tempQuestionOutput.deleteOnExit();
+		
+		// set up arguments to calculate probabilities of questions
+		args[0] = "-i";
+		args[1] = "\"" + tempDirichletOutput.getAbsolutePath() +"\"";;
+		args[2] = "-o";
+		args[3] = "\"" + tempQuestionOutput.getAbsolutePath() +"\"";;
+		args[4] = "-numI";	
+		args[5] = "2";	
+		args[6] = "-d";	
+		args[7] = "-s";
+		args[8] = "-alertSample";
+		args[9] = "30";
+		args[10] = "-c";
+		args[11] = "0.6";
+		args[12] = "-p";
+		args[13] = "";
+		args[14] = "";
+		calculator.setSubSamplingMode(SubSamplingMode.BETA_BINOMIAL);
+		calculator.main(args);
+		
+		/* Format of result:
+		 * Query,	Average,	Std.Dev.,	Median,	0.6 lower,	0.6 upper
+		 * Q01
+		 * Q02
+		 * Q03
+		 * Q04
+		 * Q05
+		 * Q06
+		 * Q07
+		 */
+		// read the output file and check sanity
+		CSVReader reader = new CSVReader(new FileReader(tempQuestionOutput));
+		
+		String[] csvRow = reader.readNext();
+		assertTrue("Seed=" + seed,csvRow.length >= 6);
+		// Query,	Average,	Std.Dev.,	Median,	0.6 lower,	0.6 upper
+		assertEquals("Seed=" + seed,"Query", csvRow[0]);
+		assertEquals("Seed=" + seed,"Average", csvRow[1]);
+		assertEquals("Seed=" + seed,"Std.Dev.", csvRow[2]);
+		assertEquals("Seed=" + seed,"Median", csvRow[3]);
+		assertEquals("Seed=" + seed,"0.6 lower", csvRow[4]);
+		assertEquals("Seed=" + seed,"0.6 upper", csvRow[5]);
+		
+		// store results
+		Map<String, Map<String, Float>> results = new HashMap<String, Map<String,Float>>();
+		for (csvRow = reader.readNext(); csvRow != null; csvRow = reader.readNext()) {
+			assertTrue("Seed=" + seed + ";" + csvRow[0], csvRow.length >= 6);
+			float average = Float.parseFloat(csvRow[1]);
+			float lower = Float.parseFloat(csvRow[4]);
+			float upper = Float.parseFloat(csvRow[5]);
+			assertTrue(csvRow[0], average >= 0 && average <= 1);
+			assertTrue(csvRow[0], lower >= 0 && lower <= 1);
+			assertTrue(csvRow[0], upper >= 0 && upper <= 1);
+			assertTrue(csvRow[0], average >= lower);
+			assertTrue(csvRow[0], average <= upper);
+		}
+		assertEquals("Seed=" + seed, 7, results.size());
+		reader.close();
+		
+		assertTrue("Seed=" + seed, tempQuestionOutput.delete());
+		assertTrue("Seed=" + seed, !tempQuestionOutput.exists());
 		
 		// make sure temporary files are deleted
 		for (File innerFile : tempDirichletOutput.listFiles()) {
