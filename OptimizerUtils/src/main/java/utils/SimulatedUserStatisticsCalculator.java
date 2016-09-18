@@ -1048,12 +1048,12 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		
 		// keep track of which variable is not the alert var
 		INode otherVar = queryVar;
-		int indexOfOtherVarTrue = indexOfQueryTrue;
-		int indexOfOtherVarFalse = indexOfQueryFalse;
+//		int indexOfOtherVarTrue = indexOfQueryTrue;
+//		int indexOfOtherVarFalse = indexOfQueryFalse;
 		if (otherVar.equals(alertVar)) {
 			otherVar = conditionVar;
-			indexOfOtherVarTrue = indexOfConditionTrue;
-			indexOfOtherVarFalse = indexOfConditionFalse;
+//			indexOfOtherVarTrue = indexOfConditionTrue;
+//			indexOfOtherVarFalse = indexOfConditionFalse;
 		}
 		
 		// create an alphabet of true and false, but we need to make sure the indexes are the same of queried var
@@ -1159,6 +1159,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 					/ ( ( (float) count_AlertXOther[indexOfQueryTrue][indexOfConditionTrue]) + ( (float) count_AlertXOther[indexOfQueryFalse][indexOfConditionTrue] ) );
 			}
 			
+//			Debug.println(getClass(), "P(" + queryVar + "=true|" + conditionVar + "=true) = " + value);
 			// add P(Query = true | condition = true) to estimate
 			estimateQueryTrue.setValue(indexOfConditionTrue, estimateQueryTrue.getValue(indexOfConditionTrue) + value);
 			
@@ -1173,6 +1174,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 					/ ( ( (float) count_AlertXOther[indexOfQueryTrue][indexOfConditionFalse]) + ( (float) count_AlertXOther[indexOfQueryFalse][indexOfConditionFalse] ) );
 			}
 			
+//			Debug.println(getClass(), "P(" + queryVar + "=true|" + conditionVar + "=false) = " + value);
 			// add P(Query = true | condition = false) to estimate
 			estimateQueryTrue.setValue(indexOfConditionFalse, estimateQueryTrue.getValue(indexOfConditionFalse) + value);
 		}
