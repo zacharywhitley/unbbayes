@@ -105,14 +105,12 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	 * and {@link SimulatedUserStatisticsCalculator#getConditionalProbabilityFromQueryTable(PotentialTable)}.
 	 */
 	public static enum SubSamplingMode {WEIGHTED, BETA_BINOMIAL};
-//	private SubSamplingMode subSamplingMode = SubSamplingMode.BETA_BINOMIAL;
-	private SubSamplingMode subSamplingMode = SubSamplingMode.WEIGHTED;
+	private SubSamplingMode subSamplingMode = SubSamplingMode.BETA_BINOMIAL;
 	private int numSubSampleSimulation = 1000;
 	private int stratifiedSampleNumTotal = 100;
-	private int stratifiedSampleNumAlert = -1;//30;	// negative values mean no sub-sampling will be performed
+	private int stratifiedSampleNumAlert = 30;	// negative values mean no sub-sampling will be performed
 	private boolean isToNormalize = false;
-
-	private float priorCount = 1;
+	private float priorCount = 1;				// beta binomial prior is 1
 	
 	static {
 		QUERY_ALIAS_RCP3.put("P(Alert=true|Threat=true)", "Q01");
@@ -318,7 +316,19 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		query.setQueriedString(toParse);
 	}
 	
-
+	/**
+	 * @param table
+	 * @return : the sum of {@link PotentialTable#getValue(int)} for the entire table.
+	 */
+	public float sumTableContent(PotentialTable table) {
+		float sum = 0;
+		if (table != null) {
+			for (int i = 0; i < table.tableSize(); i++) {
+				sum += table.getValue(i);
+			}
+		}
+		return sum;
+	}
 	
 
 	/*
@@ -508,15 +518,18 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			Random rand = new Random();
 			for (int i = 0; i < getStratifiedSampleNumAlert(); i++) {
 				if (alertTrueRowIndexes.size() <= 0) {
+					Debug.println(getClass(), "There are " + rowsToRead.size() + " cases of alert. Expected alert sample size was: " + getStratifiedSampleNumAlert());
 					break;
 				}
 				int indexToAdd = rand.nextInt(alertTrueRowIndexes.size());
 				rowsToRead.add(allRows.get(alertTrueRowIndexes.get(indexToAdd)));
 				alertTrueRowIndexes.remove(indexToAdd);	// this is a random pick without substitution
 			}
+			int numSampleAlert = rowsToRead.size();	// store how many cases of alert we read.
 			// randomly pick getStratifiedSampleNumTotal() - getStratifiedSampleNumAlert() samples 
-			for (int i = 0; i < getStratifiedSampleNumTotal() - getStratifiedSampleNumAlert(); i++) {
+			for (int i = 0; i < getStratifiedSampleNumTotal() - numSampleAlert; i++) {
 				if (alertFalseRowIndexes.size() <= 0) {
+					Debug.println(getClass(), "There are " + rowsToRead.size() + " total cases. Expected total sample size was: " + getStratifiedSampleNumTotal());
 					break;
 				}
 				int indexToAdd = rand.nextInt(alertFalseRowIndexes.size());
@@ -525,15 +538,16 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			}
 			
 		} else {
-			// just read all rows
-			rowsToRead = allRows;
+			// just read all rows except first row
+			rowsToRead = allRows.subList(1, allRows.size());
 		}
 		
 		// read the remaining file and fill joint table with counts
 //		for (csvLine = reader.readNext(); csvLine != null; csvLine = reader.readNext()) {
-		for (int currentRowIndex = 1; currentRowIndex < rowsToRead.size(); currentRowIndex++) {
+		for (int currentRowIndex = 0; currentRowIndex < rowsToRead.size(); currentRowIndex++) {
 			csvLine = rowsToRead.get(currentRowIndex);
 			if (csvLine.length <= 0) {
+				Debug.println(getClass(), "Empty row: " + currentRowIndex);
 				continue;	// ignore empty lines
 			}
 			
@@ -881,10 +895,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		}
 		
 		// make sure the number of sub samples is consistent
-		int numSubSamples = 0;
-		for (int i = 0; i < queryTable.tableSize(); i++) {
-			numSubSamples += queryTable.getValue(i);
-		}
+		int numSubSamples = (int) sumTableContent(queryTable);
 		if (numSubSamples != getStratifiedSampleNumTotal()) {
 			throw new IllegalArgumentException("Expected number of sub-samples is " + getStratifiedSampleNumTotal()
 					+ ", but actual number os sub-samples was " + numSubSamples);
@@ -982,6 +993,10 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		if (conditionVar.getStatesSize() != 2) {
 			throw new IllegalArgumentException("Current version can only support Boolean variables: " + conditionVar);
 		}
+		if (conditionVar.equals(queryVar)) {
+			throw new UnsupportedOperationException("Current version does not support queries of a variable given itself."
+					+ ". Query was P(" + queryVar + "|" + conditionVar + ")");
+		}
 		
 		// search which index in query variable is the state true, and which one is false
 		int indexOfQueryTrue = -1;
@@ -1025,34 +1040,51 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			throw new IllegalArgumentException("Could not find false state of variable " + conditionVar);
 		}
 		
-		// create an alphabet of true and false, but we need to make sure the indexes are the same of queried var
-		Boolean[] booleanAlphabet = new Boolean[queryVar.getStatesSize()];
-		for (int state = 0; state < queryVar.getStatesSize(); state++) {
-			Boolean isTrue = parseBoolean(queryVar.getStateAt(state));
-			if (isTrue == null) {
-				throw new IllegalArgumentException("Boolean variable " + queryVar + " has an invalid state: " + queryVar.getStateAt(state));
-			}
-			booleanAlphabet[state] = isTrue;
+		// This version only supports cases when the alert variable is in the query table
+		if (!(alertVar.equals(queryVar) || alertVar.equals(conditionVar))) {
+			throw new UnsupportedOperationException("Current version only allows queries involving alert variable " + alertVar 
+					+ ". Query was P(" + queryVar + "|" + conditionVar + ")");
 		}
-		Alphabet dictionary = new Alphabet(booleanAlphabet);
 		
-		Randoms sampler = new Randoms();	// this is used later to draw samples from beta dist
+		// keep track of which variable is not the alert var
+		INode otherVar = queryVar;
+		int indexOfOtherVarTrue = indexOfQueryTrue;
+		int indexOfOtherVarFalse = indexOfQueryFalse;
+		if (otherVar.equals(alertVar)) {
+			otherVar = conditionVar;
+			indexOfOtherVarTrue = indexOfConditionTrue;
+			indexOfOtherVarFalse = indexOfConditionFalse;
+		}
+		
+		// create an alphabet of true and false, but we need to make sure the indexes are the same of queried var
+//		Boolean[] booleanAlphabet = new Boolean[queryVar.getStatesSize()];
+//		for (int state = 0; state < queryVar.getStatesSize(); state++) {
+//			Boolean isTrue = parseBoolean(queryVar.getStateAt(state));
+//			if (isTrue == null) {
+//				throw new IllegalArgumentException("Boolean variable " + queryVar + " has an invalid state: " + queryVar.getStateAt(state));
+//			}
+//			booleanAlphabet[state] = isTrue;
+//		}
+//		Alphabet dictionary = new Alphabet(booleanAlphabet);
+		
 		
 		// prepare parameters of beta-binomial sampler given condition = 0th state
-		// a dirichlet-multinomial sampler with dimension of 2 is a beta-binomial sampler
-		double[] alphasConditionTrue = new double[queryVar.getStatesSize()];
-		double[] alphasConditionFalse = new double[queryVar.getStatesSize()];
+		double[] alphasAlertTrue = new double[queryVar.getStatesSize()];
+		double[] alphasAlertFalse = new double[queryVar.getStatesSize()];
 		for (int state = 0; state < queryVar.getStatesSize(); state++) {
 			int[] coord = queryTable.getMultidimensionalCoord(0);
-			coord[queryTable.getVariableIndex((Node) queryVar)] = state;	// set query to current state
-			coord[queryTable.getVariableIndex((Node) conditionVar)] = indexOfConditionTrue;		// given condition = true
-			// we usually add a prior count (configurable parameter), which is 1 in most bayesian approaches
-			alphasConditionTrue[state] = queryTable.getValue(coord) + getPriorCount();	
-			coord[queryTable.getVariableIndex((Node) conditionVar)] = indexOfConditionFalse;	// given condition = false
-			alphasConditionFalse[state] = queryTable.getValue(coord) + getPriorCount();	
+			coord[queryTable.getVariableIndex((Node) otherVar)] = state;					// set the other variable (not the alert) to current state
+			coord[queryTable.getVariableIndex((Node) alertVar)] = indexOfConditionTrue;		// given alert = true
+			alphasAlertTrue[state] = queryTable.getValue(coord) + getPriorCount();			// we usually add a prior count (configurable parameter), which is 1 in most bayesian approaches
+			coord[queryTable.getVariableIndex((Node) alertVar)] = indexOfConditionFalse;	// given alert = false
+			alphasAlertFalse[state] = queryTable.getValue(coord) + getPriorCount();			// add prior count here too
 		}
-		Dirichlet betaConditionTrue = new Dirichlet(alphasConditionTrue, dictionary);
-		Dirichlet betaConditionFalse = new Dirichlet(alphasConditionFalse, dictionary);
+		// a dirichlet-multinomial sampler with dimension of 2 is a beta-binomial sampler
+//		Dirichlet betaAlertTrue = new Dirichlet(alphasAlertTrue, dictionary);
+//		Dirichlet betaAlertFalse = new Dirichlet(alphasAlertFalse, dictionary);
+		// constructor of dirichlet without dictionary
+		Dirichlet betaAlertTrue = new Dirichlet(alphasAlertTrue);		
+		Dirichlet betaAlertFalse = new Dirichlet(alphasAlertFalse);		
 		
 		// Create a table that will store the sum of estimates (to be used later to calculate average of estimates)
 		PotentialTable estimateQueryTrue = new ProbabilisticTable();
@@ -1060,17 +1092,14 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		estimateQueryTrue.fillTable(0);	// initialize with zeros (null value of a sum), because we will fill it with a sum of estimates (and then divide, in order to calculate average)
 		
 		// generate samples
+		Randoms sampler = new Randoms();	// this is used later to draw samples from beta dist
 		for (int i = 0; i < getNumSubSampleSimulation(); i++) { 
 			
 			// run trials (beta-binomial are like flips of coins, and trials is how many times we flip the coin)
-//			int[] histogramGivenTrue = new int[dictionary.size()];		// histogram of query given condition true
-//			int[] histogramGivenFalse = new int[dictionary.size()];		// histogram of query given condition false
-//			Arrays.fill(histogramGivenTrue, 0);							// initialize histogram with nothing (null value is zero)
-//			Arrays.fill(histogramGivenFalse, 0);						// initialize histogram with nothing (null value is zero)
-			int[][] countCondQuery = new int[dictionary.size()][dictionary.size()];	// vector of counts, condition var X query var
-			for (int n = 0; n < countCondQuery.length; n++) {
-				for (int m = 0; m < countCondQuery[0].length; m++) {
-					countCondQuery[n][m] = 0;	// initialize with zeros
+			int[][] count_AlertXOther = new int[alertVar.getStatesSize()][otherVar.getStatesSize()];	// vector of counts, alert var X other var
+			for (int n = 0; n < count_AlertXOther.length; n++) {
+				for (int m = 0; m < count_AlertXOther[0].length; m++) {
+					count_AlertXOther[n][m] = 0;	// initialize with zeros
 				}
 			}
 			
@@ -1079,37 +1108,37 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			int numTrials = (int) (numAlertTotal.getValue(indexOfAlertTrue) - numAlertSubSample.getValue(indexOfAlertTrue));
 			for (int trial = 0; trial < numTrials ; trial++) {
 //				histogramGivenTrue[sampler.nextDiscrete(betaConditionTrue.nextDistribution())]++;
-				countCondQuery[indexOfConditionTrue][sampler.nextDiscrete(betaConditionTrue.nextDistribution())]++;
+				count_AlertXOther[indexOfAlertTrue][sampler.nextDiscrete(betaAlertTrue.nextDistribution())]++;
 			}
 			// do the same for query given condition = false
 			numTrials = (int) (numAlertTotal.getValue(indexOfAlertFalse) - numAlertSubSample.getValue(indexOfAlertFalse));
 			for (int trial = 0; trial < numTrials ; trial++) {
 //				histogramGivenFalse[sampler.nextDiscrete(betaConditionFalse.nextDistribution())]++;
-				countCondQuery[indexOfConditionFalse][sampler.nextDiscrete(betaConditionFalse.nextDistribution())]++;
+				count_AlertXOther[indexOfAlertFalse][sampler.nextDiscrete(betaAlertFalse.nextDistribution())]++;
 			}
 			
 			// reuse the sub-samples we had, by adding the sub samples to histogram
-			for (int queryState = 0; queryState < queryVar.getStatesSize(); queryState++) {
-				// calculate the coordinate in query table which is related to current query state
+			for (int otherVarState = 0; otherVarState < otherVar.getStatesSize(); otherVarState++) {
+				// calculate the coordinate in query table which is related to current state
 				int[] coord = queryTable.getMultidimensionalCoord(0);
-				coord[queryTable.getVariableIndex((Node) queryVar)] = queryState;
+				coord[queryTable.getVariableIndex((Node)otherVar)] = otherVarState;
 				
 				// increase histograms
-				coord[queryTable.getVariableIndex((Node) conditionVar)] = indexOfConditionTrue;
+				coord[queryTable.getVariableIndex((Node)alertVar)] = indexOfAlertTrue;
 //				histogramGivenTrue[queryState] += queryTable.getValue(coord);
-				countCondQuery[indexOfConditionTrue][queryState] += queryTable.getValue(coord);
+				count_AlertXOther[indexOfAlertTrue][otherVarState] += queryTable.getValue(coord);
 				
-				coord[queryTable.getVariableIndex((Node) conditionVar)] = indexOfConditionFalse;
+				coord[queryTable.getVariableIndex((Node)alertVar)] = indexOfAlertFalse;
 //				histogramGivenFalse[queryState] += queryTable.getValue(coord);
-				countCondQuery[indexOfConditionFalse][queryState] += queryTable.getValue(coord);
+				count_AlertXOther[indexOfAlertFalse][otherVarState] += queryTable.getValue(coord);
 			}
 			
 			// make sure total counts are consistent;
 			int expectedTotalCount =  (int) (numAlertTotal.getValue(indexOfAlertTrue) + numAlertTotal.getValue(indexOfAlertFalse));
 			int actualTotalCount = 0;
-			for (int n = 0; n < countCondQuery.length; n++) {
-				for (int m = 0; m < countCondQuery[0].length; m++) {
-					actualTotalCount += countCondQuery[n][m];
+			for (int n = 0; n < count_AlertXOther.length; n++) {
+				for (int m = 0; m < count_AlertXOther[0].length; m++) {
+					actualTotalCount += count_AlertXOther[n][m];
 				}
 			}
 			if (expectedTotalCount != actualTotalCount) {
@@ -1118,18 +1147,33 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			
 			// calculate the estimates and store to estimate table;
 			
-			// P(Query = true | condition = true)
-			float value = ( (float) countCondQuery[indexOfConditionTrue][indexOfQueryTrue]) 
-					  / ( ( (float) countCondQuery[indexOfConditionTrue][indexOfQueryTrue]) + ( (float) countCondQuery[indexOfConditionTrue][indexOfQueryFalse] ) );
+			// P(Query = true | condition = true) = Count(Query = true, condition = true) / (Count(Query = true, condition = true) + Count(Query = false, condition = true))
+			float value = -1;
+			if (alertVar.equals(conditionVar)) {	// alert is the condition var
+				// Count(Alert = true, Other = true) / (Count(Alert = true, Other = true) + Count(Alert = true, Other = false))
+				value = ( (float) count_AlertXOther[indexOfConditionTrue][indexOfQueryTrue]) 
+					/ ( ( (float) count_AlertXOther[indexOfConditionTrue][indexOfQueryTrue]) + ( (float) count_AlertXOther[indexOfConditionTrue][indexOfQueryFalse] ) );
+			} else {	// alert is the query var
+				// just invert the index [m][n] to [n][m]
+				value = ( (float) count_AlertXOther[indexOfQueryTrue][indexOfConditionTrue]) 
+					/ ( ( (float) count_AlertXOther[indexOfQueryTrue][indexOfConditionTrue]) + ( (float) count_AlertXOther[indexOfQueryFalse][indexOfConditionTrue] ) );
+			}
 			
-			// add value to estimate
+			// add P(Query = true | condition = true) to estimate
 			estimateQueryTrue.setValue(indexOfConditionTrue, estimateQueryTrue.getValue(indexOfConditionTrue) + value);
 			
-			// P(Query = true | condition = false)
-			value = ( (float) countCondQuery[indexOfConditionFalse][indexOfQueryTrue]) 
-				/ ( ( (float) countCondQuery[indexOfConditionFalse][indexOfQueryTrue]) + ( (float) countCondQuery[indexOfConditionFalse][indexOfQueryFalse] ) );
+			// P(Query = true | condition = false) = Count(Query = true, condition = false) / (Count(Query = true, condition = false) + Count(Query = false, condition = false))
+			if (alertVar.equals(conditionVar)) { 	// alert is the condition var
+				// Count(Alert = false, Other = true) / (Count(Alert = false, Other = true) + Count(Alert = false, Other = false))
+				value = ( (float) count_AlertXOther[indexOfConditionFalse][indexOfQueryTrue]) 
+					/ ( ( (float) count_AlertXOther[indexOfConditionFalse][indexOfQueryTrue]) + ( (float) count_AlertXOther[indexOfConditionFalse][indexOfQueryFalse] ) );
+			} else {	// alert is the query var
+				// just invert the index [m][n] to [n][m]
+				value = ( (float) count_AlertXOther[indexOfQueryTrue][indexOfConditionFalse]) 
+					/ ( ( (float) count_AlertXOther[indexOfQueryTrue][indexOfConditionFalse]) + ( (float) count_AlertXOther[indexOfQueryFalse][indexOfConditionFalse] ) );
+			}
 			
-			// add value to estimate
+			// add P(Query = true | condition = false) to estimate
 			estimateQueryTrue.setValue(indexOfConditionFalse, estimateQueryTrue.getValue(indexOfConditionFalse) + value);
 		}
 		
