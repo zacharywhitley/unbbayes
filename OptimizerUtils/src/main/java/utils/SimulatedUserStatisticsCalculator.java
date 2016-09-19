@@ -29,7 +29,6 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.util.Debug;
 import au.com.bytecode.opencsv.CSVReader;
-import cc.mallet.types.Alphabet;
 import cc.mallet.types.Dirichlet;
 import cc.mallet.util.Randoms;
 
@@ -50,6 +49,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	private List<Query> queries = new ArrayList<SimulatedUserStatisticsCalculator.Query>();
 
 	private boolean isToPrintSummary = false;
+	private boolean isToPrintAll = false;
 	
 	private Map<String, String> queryAlias = QUERY_ALIAS_RCP1;
 
@@ -106,9 +106,9 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	 */
 	public static enum SubSamplingMode {WEIGHTED, BETA_BINOMIAL};
 	private SubSamplingMode subSamplingMode = SubSamplingMode.BETA_BINOMIAL;
-	private int numSubSampleSimulation = 1000;
+	private int numSubSampleSimulation = 100;
 	private int stratifiedSampleNumTotal = 100;
-	private int stratifiedSampleNumAlert = 30;	// negative values mean no sub-sampling will be performed
+	private int stratifiedSampleNumAlert = -1;//30;	// negative values mean no sub-sampling will be performed
 	private boolean isToNormalize = false;
 	private float priorCount = 1;				// beta binomial prior is 1
 	
@@ -370,7 +370,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	 */
 	public PotentialTable getJointProbabilityFromFile(File file, boolean isToSubSample, boolean isToWeight, boolean isToNormalize) throws IOException {
 		
-	
+//		long time = System.currentTimeMillis();
 		
 		
 		CSVReader reader = new CSVReader(new FileReader(file));
@@ -607,6 +607,8 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			jointTable.normalize();
 		}
 		
+//		Debug.println(getClass(), "Loaded " + file.getName() + " in " + (System.currentTimeMillis() - time) + "ms.");
+		
 		return jointTable;
 	}
 	
@@ -636,70 +638,96 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			throw new IllegalArgumentException(input.getName() + " is not a valid accessible file/directory.");
 		}
 		
-		PrintStream printer = new PrintStream(new FileOutputStream(getOutput(), true));
 		
-		if (isToPrintSummary()) {
+		if (isToPrintAll()) {	// print in different files
 			// print query results
-			printer.println("\"Query\",\"Average\",\"Std.Dev.\",\"Median\",\"" + getConfidence() + " lower\",\""+ getConfidence() + " upper\"");
-			for (Query query : getQueries()) {
-				String label = query.getQueriedString();
-				if (getQueryAlias().containsKey(label)) {
-					label = getQueryAlias().get(label);
-				}
-				printer.print("\""+label+"\",");
-				printer.print(query.getStatistics().getMean()+",");
-				printer.print(query.getStatistics().getStandardDeviation()+",");
-				printer.print(query.getStatistics().getPercentile(50)+",");
-				Entry<Float, Float> ci = query.getInterval(getConfidence());
-				printer.print(ci.getKey()+",");
-				printer.println(ci.getValue()+",");
-			}
-		} else {
+			File file = new File(getOutput().getParentFile(), getOutput().getName() + "_Statistics.csv");
+			PrintStream printer = new PrintStream(new FileOutputStream(file, true));
+			this.printSummary(printer);
+			printer.close();
 			// print the data
-			// print first line
-			int rowSize = -1;
-			for (Query query : getQueries()) {
-				String label = query.getQueriedString();
-				if (getQueryAlias().containsKey(label)) {
-					label = getQueryAlias().get(label);
-				}
-				printer.print("\""+ label + "\",");
-				
-				// also check number of values for this query
-				int size = query.getValues().size();
-				if (rowSize < 0) {
-					rowSize = size;
-				} else if (rowSize != size) {
-					printer.close();
-					throw new RuntimeException("Found query with " + size + " values, while previous queries had " + rowSize + " values");
-				}
+			file = new File(getOutput().getParentFile(), getOutput().getName() + "_Answers.csv");
+			printer = new PrintStream(new FileOutputStream(file, true));
+			this.printAnswerData(printer);
+			printer.close();
+		} else {
+			PrintStream printer = new PrintStream(new FileOutputStream(getOutput(), true));
+			if (isToPrintSummary()) {
+				// print query results
+				this.printSummary(printer);
+			} else {
+				// print the data
+				this.printAnswerData(printer);
 			}
-			printer.println();
-			for (int row = 0; row < rowSize; row++) {	
-				String rowToPrint = "";
-				boolean hasNaN = false;
-				for (Query query : getQueries()) {
-					Float value = query.getValues().get(row);
-					if (value.isNaN()) {
-						if (isToIgnoreNaN()) {
-							hasNaN = true;
-							break;
-						} else {
-							value = getDefaultNaNPrintAlias();
-						}
-					}
-					rowToPrint += (value + ",");
-				}
-				if (!hasNaN) {
-					printer.println(rowToPrint);
-				}
-			}
+			printer.close();
 		}
 		
-		printer.close();
 	}
 
-	
+	/**
+	 * 
+	 * @param printer
+	 */
+	protected void printAnswerData(PrintStream printer) {
+		// print first line
+		int rowSize = -1;
+		for (Query query : getQueries()) {
+			String label = query.getQueriedString();
+			if (getQueryAlias().containsKey(label)) {
+				label = getQueryAlias().get(label);
+			}
+			printer.print("\""+ label + "\",");
+			
+			// also check number of values for this query
+			int size = query.getValues().size();
+			if (rowSize < 0) {
+				rowSize = size;
+			} else if (rowSize != size) {
+				printer.close();
+				throw new RuntimeException("Found query with " + size + " values, while previous queries had " + rowSize + " values");
+			}
+		}
+		printer.println();
+		for (int row = 0; row < rowSize; row++) {	
+			String rowToPrint = "";
+			boolean hasNaN = false;
+			for (Query query : getQueries()) {
+				Float value = query.getValues().get(row);
+				if (value.isNaN()) {
+					if (isToIgnoreNaN()) {
+						hasNaN = true;
+						break;
+					} else {
+						value = getDefaultNaNPrintAlias();
+					}
+				}
+				rowToPrint += (value + ",");
+			}
+			if (!hasNaN) {
+				printer.println(rowToPrint);
+			}
+		}
+	}
+	/**
+	 * 
+	 * @param printer
+	 */
+	protected void printSummary(PrintStream printer) {
+		printer.println("\"Query\",\"Average\",\"Std.Dev.\",\"Median\",\"" + getConfidence() + " lower\",\""+ getConfidence() + " upper\"");
+		for (Query query : getQueries()) {
+			String label = query.getQueriedString();
+			if (getQueryAlias().containsKey(label)) {
+				label = getQueryAlias().get(label);
+			}
+			printer.print("\""+label+"\",");
+			printer.print(query.getStatistics().getMean()+",");
+			printer.print(query.getStatistics().getStandardDeviation()+",");
+			printer.print(query.getStatistics().getPercentile(50)+",");
+			Entry<Float, Float> ci = query.getInterval(getConfidence());
+			printer.print(ci.getKey()+",");
+			printer.println(ci.getValue()+",");
+		}
+	}
 	/**
 	 * 
 	 * @param file
@@ -730,10 +758,11 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		// this is used later in order to run beta binomial simulation (we need to keep track original counts for it)
 		PotentialTable nonNormalizedFullCountTable = null;
 		if (((getStratifiedSampleNumAlert() < 0) && (getSubSamplingMode() != SubSamplingMode.WEIGHTED) && !isToNormalize() )	
-				|| getSubSamplingMode() == subSamplingMode.WEIGHTED) {	// we don't need to keep track of original counts in weighted sub-sampling mode
+				|| getSubSamplingMode() == SubSamplingMode.WEIGHTED) {	// we don't need to keep track of original counts in weighted sub-sampling mode
 			// just reuse jointTable if it was not sub-sampled, not weighted, and didn't normalize
 			nonNormalizedFullCountTable = jointTable;
 		} else {
+			Debug.println(getClass(), "Sub sampling... Mode = " + getSubSamplingMode());
 			// get another table without sub-sampling, without weighting, and without normalization
 			nonNormalizedFullCountTable = this.getJointProbabilityFromFile(file, false, false, false);
 			// TODO stop reading file twice (it's redundant).
@@ -782,7 +811,9 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 				queryTable.normalize();
 			} else {
 				// calculate marginal of condition, so that we can use it to calculate conditional
+//				long time = System.currentTimeMillis();
 				queryTable = this.getConditionalProbabilityFromQueryTable(queryTable, nonNormalizedFullCountTable);
+//				Debug.println(getClass(), "Calculated conditional probability in " + (System.currentTimeMillis() - time) + "ms.");
 			}
 			
 			// add to query statistics the cell in conditional table which matches with the queried element;
@@ -850,7 +881,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		}
 		
 		// if we need to do beta-binomial sub sampling, do a pre-processing so that queryTable is filled with simulated counts
-		if (getSubSamplingMode() == SubSamplingMode.BETA_BINOMIAL) {
+		if (getStratifiedSampleNumAlert() >= 0 && getSubSamplingMode() == SubSamplingMode.BETA_BINOMIAL) {
 			return this.getConditionalProbabilityFromSimulation(queryTable, fullCountTable);
 		}
 		
@@ -875,7 +906,9 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	 */
 	protected PotentialTable getConditionalProbabilityFromSimulation(PotentialTable queryTable, PotentialTable fullCountTable) {
 		// TODO reduce instrumentation to improve readability & speed
-
+		
+		
+		
 		// basic assertions
 		if (queryTable.getVariablesSize() != 2) {
 			throw new IllegalArgumentException("Current version can only handle beta-binomial sub-sampling with 2 variables. Query table = " + queryTable);
@@ -927,7 +960,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 				}
 			}
 		}
-		Debug.println(getClass(), "Var: " + alertVar + ". Index of true = " + indexOfAlertTrue + ", index of false = " + indexOfAlertFalse);
+//		Debug.println(getClass(), "Var: " + alertVar + ". Index of true = " + indexOfAlertTrue + ", index of false = " + indexOfAlertFalse);
 		if (indexOfAlertTrue < 0) {
 			throw new IllegalArgumentException("Could not find true state of variable " + alertVar);
 		}
@@ -945,7 +978,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			}
 			numAlertTotal.removeVariable(varToRemove);
 		}
-		Debug.println(getClass(), "Total num alert = " + numAlertTotal.getValue(indexOfAlertTrue) + ", total num non-alert = " + numAlertTotal.getValue(indexOfAlertFalse));
+//		Debug.println(getClass(), "Total num alert = " + numAlertTotal.getValue(indexOfAlertTrue) + ", total num non-alert = " + numAlertTotal.getValue(indexOfAlertFalse));
 		if (numAlertTotal.getValue(indexOfAlertTrue) + numAlertTotal.getValue(indexOfAlertFalse) < getStratifiedSampleNumTotal()) {
 			throw new IllegalArgumentException("There are total of " + (numAlertTotal.getValue(indexOfAlertTrue) + numAlertTotal.getValue(indexOfAlertFalse)) 
 					+ " data, but requested number of sub-samples was " + getStratifiedSampleNumTotal());
@@ -1011,7 +1044,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 				}
 			}
 		}
-		Debug.println(getClass(), "Var: " + queryVar + ". Index of true = " + indexOfQueryTrue + ", index of false = " + indexOfQueryFalse);
+//		Debug.println(getClass(), "Var: " + queryVar + ". Index of true = " + indexOfQueryTrue + ", index of false = " + indexOfQueryFalse);
 		if (indexOfQueryTrue < 0) {
 			throw new IllegalArgumentException("Could not find true state of variable " + queryVar);
 		}
@@ -1032,7 +1065,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 				}
 			}
 		}
-		Debug.println(getClass(), "Var: " + conditionVar + ". Index of true = " + indexOfConditionTrue + ", index of false = " + indexOfConditionFalse);
+//		Debug.println(getClass(), "Var: " + conditionVar + ". Index of true = " + indexOfConditionTrue + ", index of false = " + indexOfConditionFalse);
 		if (indexOfConditionTrue < 0) {
 			throw new IllegalArgumentException("Could not find true state of variable " + conditionVar);
 		}
@@ -1071,8 +1104,8 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		// prepare parameters of beta-binomial sampler given condition = 0th state
 		double[] alphasAlertTrue = new double[queryVar.getStatesSize()];
 		double[] alphasAlertFalse = new double[queryVar.getStatesSize()];
+		int[] coord = queryTable.getMultidimensionalCoord(0);				// prepare a coordinate to be used in next step
 		for (int state = 0; state < queryVar.getStatesSize(); state++) {
-			int[] coord = queryTable.getMultidimensionalCoord(0);
 			coord[queryTable.getVariableIndex((Node) otherVar)] = state;					// set the other variable (not the alert) to current state
 			coord[queryTable.getVariableIndex((Node) alertVar)] = indexOfConditionTrue;		// given alert = true
 			alphasAlertTrue[state] = queryTable.getValue(coord) + getPriorCount();			// we usually add a prior count (configurable parameter), which is 1 in most bayesian approaches
@@ -1118,9 +1151,9 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			}
 			
 			// reuse the sub-samples we had, by adding the sub samples to histogram
+			coord = queryTable.getMultidimensionalCoord(0);	// prepare coord to be used in next step
 			for (int otherVarState = 0; otherVarState < otherVar.getStatesSize(); otherVarState++) {
 				// calculate the coordinate in query table which is related to current state
-				int[] coord = queryTable.getMultidimensionalCoord(0);
 				coord[queryTable.getVariableIndex((Node)otherVar)] = otherVarState;
 				
 				// increase histograms
@@ -1189,10 +1222,10 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			estimateQueryTrue.setValue(tableIndex, value);
 		}
 		
+		coord = queryTable.getMultidimensionalCoord(0);	// prepare a coordinate to be used in next loop
 		// fill query table with the average we just calculated
 		for (int conditionState = 0; conditionState < conditionVar.getStatesSize(); conditionState++) {
 			// calculate the coordinate in query table which is related to current state
-			int[] coord = queryTable.getMultidimensionalCoord(0);
 			coord[queryTable.getVariableIndex((Node) conditionVar)] = conditionState;
 			
 			// fill query = true with the estimate
@@ -1271,6 +1304,19 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		this.isToPrintSummary = isToPrintSummary;
 	}
 
+	
+	/**
+	 * @return the isToPrintAll
+	 */
+	public boolean isToPrintAll() {
+		return isToPrintAll;
+	}
+	/**
+	 * @param isToPrintAll the isToPrintAll to set
+	 */
+	public void setToPrintAll(boolean isToPrintAll) {
+		this.isToPrintAll = isToPrintAll;
+	}
 
 	/**
 	 * @return the queryAlias
@@ -1466,6 +1512,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		options.addOption("alertSample","number-alert-samples", true, "Number of stratified samples to consider with Alert=true. "
 				+ "100 minus this number will be sampled for Alert = false. Use this argument in order to increase variance.");
 		options.addOption("alert","alert-name", true, "Name of alert variable.");
+		options.addOption("all","print-all", false, "Print statistical summary and probabilities.");
 		
 		CommandLine cmd = null;
 		try {
@@ -1504,6 +1551,8 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		boolean isToUsePercentiles = cmd.hasOption("p");
 		
 		sim.setToPrintSummary(cmd.hasOption("s"));
+		
+		sim.setToPrintAll(cmd.hasOption("all"));
 		
 		if (cmd.hasOption("id")) {
 			sim.setProblemID(cmd.getOptionValue("id"));
@@ -1591,6 +1640,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		}
 
 	}
+	
 	
 
 
