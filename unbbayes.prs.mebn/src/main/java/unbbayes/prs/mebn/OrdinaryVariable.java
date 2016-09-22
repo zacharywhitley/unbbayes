@@ -271,13 +271,23 @@ public class OrdinaryVariable extends Node{
 		
 	}
 	
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.Node#hashCode()
+	 */
+	public int hashCode() {
+		// superclass returns hash code of name. However, ordinary variable with same names are different variables if they are in different MFrags.
+		return ((mFrag!=null)?(mFrag.getName()+"."):"" + name).hashCode();
+	}
+	
 	 
 	/**
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString(){
-		return name; 
+		return ((mFrag!=null)?(mFrag.getName()+"."):"") + name; 
 	}
 	
 }
