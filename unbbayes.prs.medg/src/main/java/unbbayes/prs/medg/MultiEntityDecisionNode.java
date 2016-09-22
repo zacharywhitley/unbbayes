@@ -7,7 +7,6 @@ import java.awt.Color;
 import java.util.ArrayList;
 
 import unbbayes.controller.mebn.IMEBNMediator;
-import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.exception.InvalidParentException;
 import unbbayes.prs.id.DecisionNode;

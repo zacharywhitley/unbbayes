@@ -21,7 +21,7 @@ import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
- * This is the hybrid version of {@link BuilderLocalDistributionImpl}.
+ * This is the SSID version of {@link BuilderLocalDistributionImpl}.
  * Again, a lot of code was copied because of private methods and static method calls
  * (that's why programmers should not use too much private methods and static methods).
  * 
