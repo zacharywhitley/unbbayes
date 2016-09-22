@@ -3,7 +3,10 @@
  */
 package unbbayes.prs.mebn;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -11,6 +14,9 @@ import junit.framework.TestSuite;
 import unbbayes.prs.Node;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
 import unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo;
+import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.Type;
+import unbbayes.prs.mebn.entity.exception.TypeException;
 
 /**
  * @author user
@@ -212,9 +218,47 @@ public class MultiEntityBayesianNetworkTest extends TestCase {
 	}
 
 	/**
-	 * Test method for {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getDomainMFragNum()}.
+	 * Smoke test for a bug which was caused because {@link OrdinaryVariable}
+	 * extends {@link Node}, {@link Node#hashCode()} is a has code of {@link Node#getName()},
+	 * and {@link HashMap} used such hash for indexing.
+	 * This caused two ordinary variables in different MFrags to be considered as same instance
+	 * for {@link HashMap}.
+	 * @throws TypeException 
+	 * @throws IOException 
 	 */
-	public void testGetDomainMFragNum() {
+	public void testOVHashMap() throws TypeException {
+		
+		MultiEntityBayesianNetwork mebn = new MultiEntityBayesianNetwork("testOrdinaryVariableWithSameNameDifferentMFrag");
+		
+		// create an object entity
+		ObjectEntity entity = mebn.getObjectEntityContainer().createObjectEntity("MyEntity");
+		assertNotNull(entity);
+		assertEquals(entity.getName(), "MyEntity");
+		
+		// Create 3 MFrags
+		MFrag mfrag1 = new MFrag("MFrag1", mebn);
+		MFrag mfrag2 = new MFrag("MFrag2", mebn);
+		MFrag mfrag3 = new MFrag("MFrag3", mebn);
+		mebn.addDomainMFrag(mfrag1);
+		mebn.addDomainMFrag(mfrag2);
+		mebn.addDomainMFrag(mfrag3);
+		
+		// add ordinary variables to MFrags
+		Type type = entity.getType();
+
+		OrdinaryVariable ov1 = new OrdinaryVariable("x", type, mfrag1);
+		OrdinaryVariable ov2 = new OrdinaryVariable("x", type, mfrag2);
+		OrdinaryVariable ov3 = new OrdinaryVariable("x", type, mfrag3);
+		mfrag1.addOrdinaryVariable(ov1);
+		mfrag2.addOrdinaryVariable(ov2);
+		mfrag3.addOrdinaryVariable(ov3);
+		
+		// make sure HashMap considers the 3 ovs are different
+		Map<OrdinaryVariable, OrdinaryVariable> map = new HashMap<OrdinaryVariable, OrdinaryVariable>();
+		assertNull(map.put(ov1, ov1));
+		assertNull(map.put(ov2, ov2));
+		assertNull(map.put(ov3, ov3));
+		assertEquals(3, map.size());
 	}
 	
 	
