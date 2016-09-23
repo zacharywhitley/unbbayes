@@ -55,9 +55,10 @@ import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
-import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.prs.mebn.entity.exception.CategoricalStateDoesNotExistException;
 import unbbayes.prs.mebn.entity.ontology.owlapi.OWLAPIObjectEntityContainer;
+import unbbayes.prs.mebn.exception.MFragDoesNotExistException;
+import unbbayes.prs.mebn.extension.IMEBNPluginNode;
 import unbbayes.prs.medg.IMEDGElementFactory;
 import unbbayes.prs.medg.MultiEntityDecisionNode;
 import unbbayes.prs.medg.MultiEntityUtilityNode;
@@ -790,10 +791,21 @@ public class PROWL2DecisionIO extends Protege41CompatiblePROWL2IO implements IPR
 					if (domainResidentNode == null) {
 						// this should instantiate a resident node
 						domainResidentNode =  getMEDGFactory().createResidentNode(name, domainMFrag); 
+						domainMFrag.addResidentNode(domainResidentNode); 
+					} else if (domainResidentNode instanceof IMEBNPluginNode) {
+						try {
+							// notify the node that it was included to a new mfrag
+							((IMEBNPluginNode)domainResidentNode).onAddToMFrag(domainMFrag);
+						} catch (MFragDoesNotExistException e) {
+							throw new IOMebnException(e);
+						}
+						// add node to mfrag
+//						if (!domainMFrag.getResidentNodeList().contains(domainResidentNode)) {
+//							domainMFrag.addResidentNode(domainResidentNode); 
+//						}
+						// the above code is performed in onAddToMFrag
 					}
 					mebn.getNamesUsed().add(name);  // mark name as "used"
-					// add node to mfrag
-					domainMFrag.addResidentNode(domainResidentNode); 
 					// the mappings uses the original names (no prefix removal)
 					mapMultiEntityNode.put(this.extractName(ontology, owlIndividualResidentNode.asOWLNamedIndividual()), domainResidentNode); 
 					Debug.println(this.getClass(), "-> " + domainMFragIndividual + ": " + objectProperty + " = " + owlIndividualResidentNode); 

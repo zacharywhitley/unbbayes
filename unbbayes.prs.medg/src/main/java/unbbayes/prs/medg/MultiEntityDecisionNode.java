@@ -109,7 +109,9 @@ public class MultiEntityDecisionNode extends ResidentNode implements IMEBNPlugin
 		if (mfrag != null) {
 			// actually, we just need to do mfrag.getResidentNodeList().add(this), but I'm removing and adding again just to make sure consistency is OK		
 			mfrag.removeNode(this);
-			this.setName(getNodeNamePrefix() + mfrag.getDomainResidentNodeNum());
+			if (this.getName() == null || this.getName().trim().isEmpty()) {
+				this.setName(getNodeNamePrefix() + mfrag.getDomainResidentNodeNum());
+			}
 			mfrag.addResidentNode(this);
 			mfrag.getMultiEntityBayesianNetwork().getNamesUsed().add(this.getName());
 			if (this.getMediator() != null) {
