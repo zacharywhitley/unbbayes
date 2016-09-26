@@ -24,7 +24,7 @@
   <rdfs:Datatype rdf:about="http://www.w3.org/2001/XMLSchema#boolean"/>
   <rdfs:Datatype rdf:about="http://www.w3.org/2001/XMLSchema#string"/>
   <rdfs:Datatype rdf:about="http://www.w3.org/2001/XMLSchema#decimal"/>
-  <owl:Class rdf:ID="Utility">
+  <owl:Class rdf:ID="UtilityClass">
     <rdfs:subClassOf rdf:resource="http://www.pr-owl.org/pr-owl.owl#ObjectEntity"/>
     <rdfs:subClassOf>
       <owl:Restriction>

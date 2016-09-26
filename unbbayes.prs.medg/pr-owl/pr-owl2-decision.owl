@@ -156,9 +156,9 @@
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl-decision.owl#Utility -->
+    <!-- http://www.pr-owl.org/pr-owl-decision.owl#UtilityClass -->
 
-    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl-decision.owl#Utility"/>
+    <owl:Class rdf:about="http://www.pr-owl.org/pr-owl-decision.owl#UtilityClass"/>
     
 
 
@@ -251,11 +251,12 @@
     
 
 
-    <!-- http://www.pr-owl.org/pr-owl-decision.owl#util -->
+    <!-- http://www.pr-owl.org/pr-owl-decision.owl#utility -->
 
-    <owl:NamedIndividual rdf:about="http://www.pr-owl.org/pr-owl-decision.owl#defaultUtilityState">
-        <rdf:type rdf:resource="http://www.pr-owl.org/pr-owl-decision.owl#Utility"/>
-        <rdfs:comment rdf:datatype="&xsd;string">This is a categoritcal entity which represents a default state of utility nodes. For backward compatibility, utility nodes in PR-OWL2 Decision profile is virtually handled as a resident node with only 1 possible state, and this individual is such state.</rdfs:comment>
+    <owl:NamedIndividual rdf:about="http://www.pr-owl.org/pr-owl-decision.owl#utility">
+        <rdf:type rdf:resource="http://www.pr-owl.org/pr-owl-decision.owl#UtilityClass"/>
+        <rdfs:comment rdf:datatype="&xsd;string">This is an instance of entity which represents a default state of utility nodes. 
+        For compatibility, utility nodes in PR-OWL2 Decision profile is virtually handled as a resident node with some instance of UtilityClass as its state, and this individual is a default instance of UtilityClass.</rdfs:comment>
     </owl:NamedIndividual>
 </rdf:RDF>
 
