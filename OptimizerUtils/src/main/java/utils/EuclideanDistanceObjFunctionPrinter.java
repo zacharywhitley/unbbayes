@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -44,6 +45,8 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 	public static final String DEFAULT_JOINT_INDEX_VARIABLE_NAME = "k";
 	
 	private String jointIndexVariableName = DEFAULT_JOINT_INDEX_VARIABLE_NAME;
+	
+	private Map<String, Integer> detectorToCategoryMap = null;
 
 	public EuclideanDistanceObjFunctionPrinter() {
 		setIndicatorNames(null);
@@ -181,25 +184,46 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 			throw new IllegalArgumentException("Joint table is null.");
 		}
 		
-		List<String> detectorNames = Collections.EMPTY_LIST;
-		if (getDetectorNames() != null) {
-			detectorNames = getNameList(getDetectorNames());
+//		List<String> detectorNames = Collections.EMPTY_LIST;
+//		if (getDetectorNames() != null) {
+//			detectorNames = getNameList(getDetectorNames());
+//		}
+		
+		// extract detectors/categories to count, so that we can ensure consistency with alert variable
+		Map<String, Integer> detectorToCategoryMap = getDetectorToCategoryMap();
+		if (detectorToCategoryMap == null || detectorToCategoryMap.isEmpty()) {
+			// consider that each detector is in a single category (so if a detector is active, then it immediately contributes to alert)
+			detectorToCategoryMap = new HashMap<String, Integer>();
+			String[] detectorNames = getDetectorNames();
+			if (detectorNames != null) {
+				for (int detectorIndex = 0; detectorIndex < detectorNames.length; detectorIndex++) {
+					detectorToCategoryMap.put(detectorNames[detectorIndex], detectorIndex);
+				}
+			}
 		}
+		Debug.println(getClass(), "Categories: " + detectorToCategoryMap);
+		
+		// keep track of which categories were active in current joint state
+		Set<Integer> activeCategories = new HashSet<Integer>();
 		
 		for (int jointIndex = 0; jointIndex < jointTable.tableSize(); jointIndex++) {
 			
+			// reset active categories
+			activeCategories.clear();
+			
 			int[] coord = jointTable.getMultidimensionalCoord(jointIndex);
 			
-			// count the number of active detectors in current coordinate
-			int sumDetectors = 0;
+			// count the number of active categories/detectors in current coordinate
 			boolean isAlertTrue = false;
 			for (int varIndex = 0; varIndex < coord.length; varIndex++) {
-				// check if current var is a detector
-				if (detectorNames.contains(jointTable.getVariableAt(varIndex).getName())) {  
+				// check if current var is a detector in category
+				Integer category = detectorToCategoryMap.get(jointTable.getVariableAt(varIndex).getName());
+				if (category != null) {  
 					// check if state is ON
 					String state = jointTable.getVariableAt(varIndex).getStateAt(coord[varIndex]);
 					if (parseBoolean(state) == true) {
-						sumDetectors++;
+						// record this category as active
+						activeCategories.add(category);	// it's a set, so it won't contain duplicates
 					}
 				} 
 				// check if current var is alert
@@ -213,13 +237,12 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 				
 			}
 			
-			// alert should be true only if the number of active detectors is larger than a threshold
-			if ( isAlertTrue != (sumDetectors >= getCountAlert()) ) {
+			// alert should be true only if the number of active categories (of detectors) is larger than a threshold
+			if ( isAlertTrue != (activeCategories.size() >= getCountAlert()) ) {
 				toIgnore.add(jointIndex);
 			}
 			
 		}
-		
 		
 		setJointIndexesToIgnore(toIgnore);
 	}
@@ -584,6 +607,69 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 		return ret;
 	}
 	
+	/**
+	 * This method will parse an array of comma-separated list of detectors to be included to same category.
+	 * <br/>
+	 * E.g. {"D1,D2", "D3,D4", "D5,D6"} will result in 3 categories {D1,D2}, {D3,D4}, and {D5,D6}.
+	 * <br/>
+	 * {@link #getDetectorToCategoryMap()} will be instantiated/reset and then filled with the new categories.
+	 * <br/>
+	 * Detectors in {@link #getDetectorNames()} which are not specified in this argument will be included to new categories
+	 * containing a single detector.
+	 * <br/>
+	 * Detectors not in {@link #getDetectorNames()} are ignored.
+	 * @param optionValues : array of comma-separated list of detector names to be considered in same category.
+	 * @see #setDetectorToCategoryMap(Map)
+	 */
+	public void parseCategories(String[] categoryStringArray) {
+		
+		Map<String, Integer> detectorToCategoryMap = new HashMap<String, Integer>();
+		setDetectorToCategoryMap(detectorToCategoryMap);
+		
+		// just initialize map with detectors that are present in getDetectorNames()
+		String[] detectorNames = getDetectorNames();
+		if (detectorNames == null) {
+			Debug.println(getClass(), "There is no detector to consider.");
+			return;
+		}
+		for (String name : detectorNames) {
+			detectorToCategoryMap.put(name, -1);
+		}
+		
+		// parse the categories in argument
+		int category = 0;
+		if (categoryStringArray != null) {
+			for (; category < categoryStringArray.length; category++) {
+				String commaSeparatedNames = categoryStringArray[category];
+				if (commaSeparatedNames == null || commaSeparatedNames.trim().isEmpty()) {
+					continue;	// ignore null/empty entries
+				}
+				// extract each name
+				for (String name : commaSeparatedNames.split(",")) {
+					if (name == null) {
+						continue;	// ignore null entries
+					}
+					// ignore white spaces at beginning and end 
+					name = name.trim();
+					// if name was declared in getDetectorNames, then it should be present in map
+					if (detectorToCategoryMap.containsKey(name)) {
+						detectorToCategoryMap.put(name, category);	// put current detector to current category
+					}
+				}
+			}
+		}
+		
+		// fill detectors that were not present in argument
+		for (String detectorName : detectorToCategoryMap.keySet()) {
+			// if category is negative, it was not present in argument
+			if (detectorToCategoryMap.get(detectorName) < 0) {
+				detectorToCategoryMap.put(detectorName, category);
+				category++;	// next detector will be in another (new) category
+			}
+		}
+		
+	}
+	
 
 
 	/**
@@ -656,6 +742,10 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 				+ "and do not use primary tables (e.g. correlation tables).");
 		options.addOption("pnames","primary-table-var-names", true, "Names (comma-separated) of variables to be included in primary table. "
 				+ "Wildcard \"*\" can be used to indicate all names that matches.");
+		options.addOption("count","count-alert", true, "How many categories to be active in order to trigger alert.");
+		options.addOption("category","detector-category", true, "Comma-separated list of detectors to be included in a single category. "
+				+ "Detectors in a single category will only contribute 1 time to the trigger of alert "
+				+ "(i.e. regardless how many detectors there are, if they are in the same category they will be counted as 1 for the alert trigger)");
 		
 		CommandLine cmd = null;
 		try {
@@ -711,6 +801,12 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 		if (cmd.hasOption("pnames")) {
 			printer.setPrimaryTableVarNames(printer.parseVarNames(cmd.getOptionValues("pnames")));
 		}
+		if (cmd.hasOption("count")) {
+			printer.setCountAlert(Integer.parseInt(cmd.getOptionValue("count")));
+		}
+		if (cmd.hasOption("category")) {
+			printer.parseCategories(cmd.getOptionValues("category"));
+		}
 
 		if (cmd.hasOption("out")) {
 			File out = new File(cmd.getOptionValue("out"));
@@ -746,6 +842,7 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 	}
 
 
+
 	/**
 	 * @return the jointIndexesToIgnore : joint probabilities with indexes specified here will be ignored in {@link #getObjFunction(List, List, PotentialTable)}
 	 * 
@@ -776,6 +873,28 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 	 */
 	public void setJointIndexVariableName(String jointIndexVariableName) {
 		this.jointIndexVariableName = jointIndexVariableName;
+	}
+
+
+	/**
+	 * @return the detectorToCategoryMap : organizes detectors in {@link #getDetectorNames()} to categories.
+	 * Categories will be counted in {@link #fillJointStatesToIgnore(PotentialTable)}
+	 * and if it's greater than {@link #getCountAlert()} it will trigger alert.
+	 * If null or empty is provided, then each detector shall be in a individual category.
+	 */
+	public Map<String, Integer> getDetectorToCategoryMap() {
+		return detectorToCategoryMap;
+	}
+
+
+	/**
+	 * @param detectorToCategoryMap : organizes detectors in {@link #getDetectorNames()} to categories.
+	 * Categories will be counted in {@link #fillJointStatesToIgnore(PotentialTable)}
+	 * and if it's greater than {@link #getCountAlert()} it will trigger alert.
+	 * If null or empty is provided, then each detector shall be in a individual category.
+	 */
+	public void setDetectorToCategoryMap(Map<String, Integer> detectorToCategoryMap) {
+		this.detectorToCategoryMap = detectorToCategoryMap;
 	}
 	
 
