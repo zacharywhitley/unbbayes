@@ -6,6 +6,7 @@ package utils;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import java.util.Map.Entry;
 
 import junit.framework.TestCase;
 import junit.framework.TestResult;
+import junit.textui.ResultPrinter;
 import junit.textui.TestRunner;
 
 import org.apache.commons.cli.CommandLine;
@@ -44,6 +46,9 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	
 	/** How many detectors we expect to read from csv files (this will be used to check consistency) */
 	private int expectedNumDetectors = 24;
+	
+	/** Expected total counts per table (this will be checked agains what's read from csv files) */
+	private int expectedNumCounts = 3816;
 	
 	/** 
 	 * Default place to look for pais of RCP data. 
@@ -783,7 +788,7 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 			// make sure number of variables matches with expected (24 detectors + 1 alert)
 			assertEquals(sharedVariables.toString(), numDetectors + 1, sharedVariables.size());
 			
-			// make sure all tables are using the shared variable instances
+			// make sure all tables are using the shared variable instances and the total counts is expected
 			for (PotentialTable table : correlationTables) {
 				for (int i = 0; i < table.getVariablesSize(); i++) {
 					INode tableVar = table.getVariableAt(i);
@@ -791,6 +796,12 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 					assertNotNull(table.toString(), sharedVar);
 					assertTrue(table.toString(), sharedVar == tableVar);
 				}
+				// check total counts in this table
+				int sum = 0;
+				for (int i = 0; i < table.tableSize(); i++) {
+					sum += ((int)table.getValue(i));
+				}
+				assertEquals(table.toString(), getExpectedNumCounts(), sum);
 			}
 			for (PotentialTable table : alertTables) {
 				for (int i = 0; i < table.getVariablesSize(); i++) {
@@ -799,6 +810,12 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 					assertNotNull(table.toString(), sharedVar);
 					assertTrue(table.toString(), sharedVar == tableVar);
 				}
+				// check total counts in this table
+				int sum = 0;
+				for (int i = 0; i < table.tableSize(); i++) {
+					sum += ((int)table.getValue(i));
+				}
+				assertEquals(table.toString(), getExpectedNumCounts(), sum);
 			}
 			
 			// compare correlation tables pair-wise;
@@ -1032,6 +1049,20 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	}
 
 	/**
+	 * @return Expected total counts per table (this will be checked agains what's read from csv files)
+	 */
+	public int getExpectedNumCounts() {
+		return expectedNumCounts;
+	}
+
+	/**
+	 * @param expectedNumCounts : Expected total counts per table (this will be checked agains what's read from csv files)
+	 */
+	public void setExpectedNumCounts(int expectedNumCounts) {
+		this.expectedNumCounts = expectedNumCounts;
+	}
+
+	/**
 	 * Execute this main function/method if you don't have a driver program (i.e. an invoker) of JUnit tests.
 	 * @param args 
 	 */
@@ -1039,6 +1070,8 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 		CommandLineParser parser = new DefaultParser();
 		Options options = new Options();
 		options.addOption("i","input", true, "Directory to get folders with pairs of csv files.");
+		options.addOption("n","num-detectors", true, "Expected number of detectors.");
+		options.addOption("c","num-counts", true, "Expected number of counts (users) per table.");
 		options.addOption("d","debug", false, "Enables debug mode.");
 		
 		CommandLine cmd = null;
@@ -1067,21 +1100,53 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 			Debug.setDebug(false);
 		}
 		
-		CSVTableMarginalConsistencyChecker test = new CSVTableMarginalConsistencyChecker(CSVTableMarginalConsistencyChecker.class.getName());
+		CSVTableMarginalConsistencyChecker test = new CSVTableMarginalConsistencyChecker("testCSVFileConsistency");
 		
 		if (cmd.hasOption("i")) { // if this param is not set, then it will look at a default place
 			test.setDefaultDataFileFolder(cmd.getOptionValue("i"));
 		}
+		if (cmd.hasOption("n")) { // if this param is not set, then it will look at a default place
+			test.setExpectedNumDetectors(Integer.parseInt(cmd.getOptionValue("n")));
+		}
+		if (cmd.hasOption("c")) { // if this param is not set, then it will look at a default place
+			test.setExpectedNumCounts(Integer.parseInt(cmd.getOptionValue("c")));
+		}
 		
-		TestRunner runner = new TestRunner(System.out);
+		
 		try {
-			TestResult result = runner.doRun(test);
+			PublicResultPrinter printer = new PublicResultPrinter(System.out);
+			TestResult result = new TestResult();
+			result.addListener(printer);
+			long startTime= System.currentTimeMillis();
+			test.run(result);
+			printer.printAll(result , System.currentTimeMillis() - startTime);
+			
 			if (!result.wasSuccessful()) 
 				System.exit(TestRunner.FAILURE_EXIT);
 			System.exit(TestRunner.SUCCESS_EXIT);
 		} catch(Throwable e) {
 			System.err.println(e.getMessage());
 			System.exit(TestRunner.EXCEPTION_EXIT);
+		}
+	}
+	
+	/**
+	 * This is just an extension of {@link ResultPrinter} with
+	 * a public wrapper of methods {@link #printHeader(long)},
+	 * {@link #printErrors(TestResult)}, {@link #printFailures(TestResult)},
+	 * and {@link #printFooter(TestResult)}.
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public static class PublicResultPrinter extends ResultPrinter {
+		public PublicResultPrinter(PrintStream writer) {
+			super(writer);
+		}
+		public synchronized void printAll(TestResult result, long runTime) {
+			printHeader(runTime);
+		    printErrors(result);
+		    printFailures(result);
+		    printFooter(result);
 		}
 	}
 
