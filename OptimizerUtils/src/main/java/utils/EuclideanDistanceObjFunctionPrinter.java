@@ -78,7 +78,7 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 			}
 			if (file.isDirectory()) {
 				printer = new PrintStream(new File(file,"objFun.txt"));
-				jointProbPrinter = new PrintStream(new File(file,"meaning_prob.csv"));
+				jointProbPrinter = new PrintStream(new File(file,"meaning_x.csv"));
 				weightPrinter = new PrintStream(new File(file,"meaning_count_weight.csv"));
 			} else if (file.isFile()) {
 				printer = new PrintStream(file);

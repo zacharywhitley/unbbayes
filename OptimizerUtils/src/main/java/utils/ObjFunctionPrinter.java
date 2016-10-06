@@ -520,7 +520,7 @@ public class ObjFunctionPrinter {
 	    for (int i = jointTable.variableCount()-1; i >= 0 ; i--) {
 			printer.print(jointTable.getVariableAt(i).getName() + ",");
 		}
-	    printer.println("P");
+	    printer.println(getProbabilityVariablePrefix());
 	    
 	    Collection<Integer> jointProbsToIgnore = (getJointProbsIndexesToIgnore(jointTable));
 	    
