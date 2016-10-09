@@ -6,7 +6,7 @@
 	<name>Uncertainty Modeling Process for Semantic Technologies</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->
-	<version>1.0.1</version>
+	<version>1.1.1</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
@@ -124,7 +124,17 @@
 			<timezone>-3</timezone>
 		</developer>
 		
-	
+		<developer>
+			<id>diego-marques</id>
+			<name>Diego Marques</name>
+			<email>diegomarques.azevedo@gmail.com</email>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<organization>University of Brasilia - UnB</organization>
+			<organizationUrl>www.unb.br</organizationUrl>
+			<timezone>-3</timezone>
+		</developer>	
 	
 
 		
@@ -203,7 +213,7 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes</artifactId>
-				<version>4.13.6</version>
+				<version>4.21.18</version>
 			</dependency>
 			
 	</dependencies>

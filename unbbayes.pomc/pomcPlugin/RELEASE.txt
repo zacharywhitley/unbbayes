@@ -1,9 +1,10 @@
-UNBBAYES PLUGIN - MSBN VERSION 1.1.0
+UNBBAYES PLUGIN - MSBN VERSION 1.1.1
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
-1				.
+01			Save file in XML.
 
 
 BUG LIST		
 Number	Request ID	Summary
+01          Fix minor bugs. 
