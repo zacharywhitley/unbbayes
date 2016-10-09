@@ -78,5 +78,9 @@ public class BuiltInRV {
 		this.mnemonic = mnemonic;
 	}
 	
+	public String toString(){
+		return name; 
+	}
+	
 }
  
