@@ -909,23 +909,26 @@ public class MEBNEditionPane extends JPanel {
 	            }
 	        });
 
-	        add(btnDoQuery);
+	    	JToolBar tb1 = new JToolBar(); 
+	    	tb1.add(btnDoQuery);
 	        
-	        addSeparator(new Dimension(10, 10)); 
+	    	tb1.addSeparator(new Dimension(10, 10)); 
 	        
-	        add(btnTurnToSSBNMode); 
-	        add(btnTurnToMTheoryMode); 
+	    	tb1.add(btnTurnToSSBNMode); 
+	    	tb1.add(btnTurnToMTheoryMode); 
 	        
-	        addSeparator(new Dimension(10, 10)); 
+	    	tb1.addSeparator(new Dimension(10, 10)); 
 	        
-	        add(btnSaveNetImage);
+	    	tb1.add(btnSaveNetImage);
 	        
-	        addSeparator(new Dimension(10, 10));
+	    	tb1.addSeparator(new Dimension(10, 10));
 	        
-	        add(btnMEBNOption);
+	    	tb1.add(btnMEBNOption);
 	        
-	        addSeparator(new Dimension(30, 30)); 
+	    	tb1.addSeparator(new Dimension(30, 30)); 
 	        
+	    	add(tb1); 
+	    	
 	        JToolBar kbNameToolBar = new JToolBar();
 	        
 	        kbNameToolBar.add(new JLabel("KB: ")); 

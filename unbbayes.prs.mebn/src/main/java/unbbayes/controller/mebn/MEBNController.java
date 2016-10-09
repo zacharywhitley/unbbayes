@@ -2042,7 +2042,14 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		
 		//init the powerloom knowledge base
 		createKnowledgeBase(); 	
+		
+		long initialTime = System.currentTimeMillis(); 
+		
 		getKnowledgeBase().loadModule(file, true);
+		
+		long finalTime = System.currentTimeMillis(); 
+		
+		System.out.println("Load time = " + (finalTime - initialTime) + "ms (without time to load on GUI)");
 		
 		//init gui
 		for (ResidentNode resident : this.multiEntityBayesianNetwork.getDomainResidentNodes()) {
@@ -2054,6 +2061,11 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 				 continue;
 			 }
 		}
+		
+        finalTime = System.currentTimeMillis(); 
+		
+		System.out.println("Load time = " + (finalTime - initialTime) + "ms (with time to load on GUI)");
+		
 		
 		mebnEditionPane.setStatus(resource.getString("statusReady")); 
 		
@@ -2208,8 +2220,21 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	    if (this.getSSBNGenerator() instanceof IMediatorAwareSSBNGenerator) {
 	    	((IMediatorAwareSSBNGenerator)this.getSSBNGenerator()).setMediator(this);
 	    }
+	    
+	    Runtime runtime = Runtime.getRuntime();
+	    long memory = runtime.totalMemory() - runtime.freeMemory();
+	    System.out.println("Used memory in bytes: " + memory);
+	    runtime.gc();
+	    memory = runtime.totalMemory() - runtime.freeMemory();
+	    System.out.println("Used memory in bytes: " + memory);
+	    
 	    ssbn = this.getSSBNGenerator().generateSSBN(listQueries, getKnowledgeBase()); 
-		
+	    
+		// show on display
+		showSSBN(ssbn);
+	    
+	    System.out.println("Used memory in bytes: " + memory);
+	    
 		if (ssbn != null) {
 			ret = ssbn.getNetwork();
 			if (ret != null && (ret instanceof ProbabilisticNetwork)) {
@@ -2244,6 +2269,25 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		return ret ;    
 	}
 
+	/**
+	 * Uses mediator to display the SSBN
+	 * @param mediator : MEBNController
+	 * @param  ssbn : the ssbn to show
+	 */
+	protected void showSSBN(SSBN ssbn) {
+
+//		NetworkWindow window = new NetworkWindow(ssbn.getNetwork());
+//		this.getMediator().getScreen().getUnbbayesFrame().addWindow(window);
+//		window.setVisible(true);
+		// use the above code to show compiled network in a separate internal frame
+		
+		setSpecificSituationBayesianNetwork(ssbn.getProbabilisticNetwork());
+		setToTurnToSSBNMode(true);	// if this is false, ((IMEBNMediator)this.getMediator()).turnToSSBNMode() will not work
+		turnToSSBNMode();
+		getScreen().getEvidenceTree().updateTree(true);;
+		
+	}
+	
 	/** 
 	 * @see unbbayes.controller.mebn.IMEBNMediator#executeQueryLaskeyAlgorithm(java.util.List)
 	 * @deprecated use {@link #executeQuery(List)} instead
@@ -2558,10 +2602,14 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
         	Rectangle r = new Rectangle(0, 0, (int)pane.getBiggestPoint().x, (int)pane.getBiggestPoint().y);
         	Component comp = pane.getGraphViewport();
         	File file = new File(chooser.getSelectedFile().getPath());
-        	saveComponentAsImage(comp, r.width, r.height, file);
-        	FileHistoryController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
         	
-        	JOptionPane.showMessageDialog(getScreen(), resource.getString("saveSucess"));
+        	boolean imageSaved = saveComponentAsImage(comp, r.width, r.height, file);
+        	
+        	if(imageSaved){
+        		FileHistoryController.getInstance().setCurrentDirectory(chooser.getCurrentDirectory());
+        		JOptionPane.showMessageDialog(getScreen(), resource.getString("saveSucess"));
+        	}
+        	
         }
     }
 	
