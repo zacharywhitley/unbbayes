@@ -81,6 +81,10 @@ public class Resources_pt extends ListResourceBundle {
 		{"contextInputNodeProblem", "Avaliação dos nós de contexto falhou porque não foram encontrados todas as entidades que preenchem as variáveis ordinárias"}, 
 		{"OVProblemResidentChild", "Falta instância de entidade para avaliar o nó residente filho"}, 
 		
+		//MFragContextFailException
+		{"EmptyTree", "Novos valores para as variáveis ordinárias do nó de contexto são inconsistentes com os anteriores. Arvore de avaliação vazia."},
+		
+		//Other
 		{"_", "End"} 
 	};
 }

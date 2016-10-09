@@ -373,8 +373,19 @@ public class QueryPanel extends JDialog{
 				}
 			});
 			
-			this.add(new JLabel("Selecione os valores dos argumentos:   ")); 
+			this.add(new JLabel(resource.getString("selectArgsValues")), BorderLayout.PAGE_START); 
 			this.add(new JScrollPane(queryArgumentsPane), BorderLayout.CENTER);
+			
+//			optionsPanel = new JPanel(new GridLayout(2,1)); 
+//			
+//			JToolBar panelAlgorithm = new JToolBar();
+//			panelAlgorithm.add(new JLabel("SSBNAlgorithm: "));
+//			panelAlgorithm.add(new JButton(mebnController.getSSBNGenerator().toString())); 
+//			
+//			optionsPanel.add(panelAlgorithm); 
+//			
+//			optionsPanel.add(jtbOptions); 
+			
 			this.add(jtbOptions, BorderLayout.PAGE_END);
 
 		}

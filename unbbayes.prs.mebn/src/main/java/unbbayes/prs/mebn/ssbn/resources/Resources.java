@@ -81,6 +81,10 @@ public class Resources extends ListResourceBundle {
 		{"contextInputNodeProblem", "Evaluation of context nodes fail because don't found all entities that match the ordinary variables."}, 
 		{"OVProblemResidentChild", "Entity instance fault for evaluation the resident node child"}, 
 		
+		//MFragContextFailException
+		{"EmptyTree", "The new values for context node ordinary variables are inconsistent with previous. Empty evaluation tree."},
+		
+		//Others 
 		{"_", "End"} 
 		
 		
