@@ -379,12 +379,14 @@ public class ContextNode extends MultiEntityNode {
      */
     
     public String toString(){
-    	try {
+    	
+    	if(formulaTree != null){
     		return formulaTree.getFormulaViewText();
-		} catch (Throwable e) {
-			Debug.println(this.getClass(), "formulaTree == null", e);
+    	}else{
+    		Debug.println(this.getClass(), "formulaTree == null");
+    		return this.getName();
 		}
-		return super.toString();
+		
     }
 
 	public static long getSerialVersionUID() {
