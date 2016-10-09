@@ -39,6 +39,7 @@ import unbbayes.prs.mebn.exception.MEBNException;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.resources.ResourcesSSBNAlgorithmLog;
 import unbbayes.prs.mebn.ssbn.BuilderStructureImpl;
+import unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.Query;
@@ -65,7 +66,9 @@ import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
  * @author Shou Matsumoto
  *
  */
-public class SSIDGenerator extends LaskeySSBNGenerator {
+public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator {
+	
+	private INetworkMediator mediator = null;
 	
 	/**
 	 * @return the isToCompileFinalSSBN
@@ -835,6 +838,20 @@ public class SSIDGenerator extends LaskeySSBNGenerator {
 	 */
 	public void setToAddFindings(boolean addFindings) {
 		this.addFindings = addFindings;
+	}
+
+	/**
+	 * @return the mediator
+	 */
+	public INetworkMediator getMediator() {
+		return this.mediator;
+	}
+
+	/**
+	 * @param mediator the mediator to set
+	 */
+	public void setMediator(INetworkMediator mediator) {
+		this.mediator = mediator;
 	}
 	
 
