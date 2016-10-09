@@ -379,6 +379,11 @@ public class SSBN {
 		this.logManager = _logManager;
 	}
 
+	public void removeSpaceAfterGenerationOfNetwork(){
+		simpleSSBNNodeList = new ArrayList<SimpleSSBNNode>(); 
+		ssbnNodeList = new ArrayList<SSBNNode>(); 
+		mFragInstanceList = new ArrayList<MFragInstance>(); 
+	}
 
 
 

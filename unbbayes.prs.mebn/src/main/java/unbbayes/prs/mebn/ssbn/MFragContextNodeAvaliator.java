@@ -179,7 +179,8 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 						
 					} catch (MFragContextFailException e) {
 						
-						e.printStackTrace(); 
+//						e.printStackTrace(); 
+						logManager.printText(level5, false, e.getMessage());
 						
 						mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_FAIL); 
 						mFragInstance.setUseDefaultDistribution(true); 
@@ -212,7 +213,6 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 				}
 			}
 		}
-		
 		
 		//------------------------------------------------------------------------------
 		//Verify if the reference uncertain strategy is possible for the candidate nodes
@@ -556,9 +556,9 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 						mFragInstance.setUseDefaultDistribution(true); 
 						if (logManager != null) {
 							logManager.printText(IdentationLevel.LEVEL_5, false,
-									"> Context node with variable ordinary fault don't attend the restriction");
+									"> Context node with variable ordinary fault don't attend the restriction.");
 							logManager.printText(IdentationLevel.LEVEL_5, false,
-									"> Have more than one ordinary variable without value: " + ov );
+									"> Argument ordinary variable without value: " + ov + ".");
 							logManager.printText(IdentationLevel.LEVEL_5, false,
 									"Context Node FAIL: use the default distribution");
 						}
@@ -568,7 +568,7 @@ public class MFragContextNodeAvaliator  implements IMFragContextNodeAvaliator {
 						mFragInstance.setUseDefaultDistribution(true); 
 						if (logManager != null) {
 							logManager.printText(IdentationLevel.LEVEL_5, false,
-									"> Context node with variable ordinary fault don't attend the restriction");
+									"> Context node with variable ordinary fault don't attend the restriction.");
 							logManager.printText(IdentationLevel.LEVEL_5, false,
 									"> Have more than one instance possible for the ordinary variable: " + ov );
 							logManager.printText(IdentationLevel.LEVEL_5, false,

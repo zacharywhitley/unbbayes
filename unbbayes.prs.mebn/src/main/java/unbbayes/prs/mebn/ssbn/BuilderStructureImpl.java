@@ -1,7 +1,9 @@
 package unbbayes.prs.mebn.ssbn;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -36,6 +38,8 @@ import unbbayes.util.Debug;
 
 public class BuilderStructureImpl implements IBuilderStructure{
 
+	SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+	
 	/** How many parents a resident node with {@link ResidentNode#isToLimitQuantityOfParentsInstances()} will have. */
 	public static final int MAX_NUM_PARENTS_IN_CHAIN = 2;
 
@@ -139,6 +143,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 			
 			for(SimpleSSBNNode node: notFinishedNodeList){
 		        try {
+		        	System.out.println("Time = " + sdf.format((new Date()).getTime()));
 					evaluateUnfinishedRV(node);
 				} catch (ImplementationRestrictionException e) {
 					e.printStackTrace();
@@ -238,8 +243,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 	      throws ImplementationRestrictionException, SSBNNodeGeneralException{
 		
 		IMFragContextNodeAvaliator mFragContextNodeAvaliator =    
-				new MFragContextNodeAvaliator(ssbn); 
-		
+				new MFragContextNodeAvaliator2(ssbn); 
 		
 		ISSBNLogManager logManager = ssbn.getLogManager();
 		if (logManager != null) {

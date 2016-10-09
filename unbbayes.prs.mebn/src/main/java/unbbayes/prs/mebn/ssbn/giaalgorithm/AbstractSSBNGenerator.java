@@ -48,7 +48,7 @@ import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.ContextFatherSSBNNode;
 import unbbayes.prs.mebn.ssbn.ContextNodeEvaluator;
 import unbbayes.prs.mebn.ssbn.ILiteralEntityInstance;
-import unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator;
+import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
@@ -69,7 +69,7 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto (cardialfly@gmail.com)
  * @author Rommel Carvalho (rommel.carvalho@gmail.com)
  */
-public abstract class AbstractSSBNGenerator implements IMediatorAwareSSBNGenerator{
+public abstract class AbstractSSBNGenerator implements ISSBNGenerator{
 
 	public static ILogManager logManager = new TextLogManager();
 

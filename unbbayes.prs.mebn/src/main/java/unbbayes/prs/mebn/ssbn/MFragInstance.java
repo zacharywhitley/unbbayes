@@ -26,11 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import unbbayes.prs.mebn.ContextNode;
-import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.OrdinaryVariable;
-import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
 
 /**
@@ -42,7 +39,7 @@ import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
 
 /*
  * Notes: 
- * The MFragInstance exist only in the builder phase of the algorithm. 
+ * - The MFragInstance exist only in the builder phase of the algorithm. 
  */
 public class MFragInstance {
 	
@@ -50,15 +47,15 @@ public class MFragInstance {
 	
 	private boolean isUsingDefaultDistribution; 
 	
-	//Theorem: For the same set of ordinary variables instance values, 
-	//         the evaluation of the context node should be the same. 
+	// For the same set of ordinary variables instance values, 
+	// the evaluation of the context node should be the same. 
 	private OrdinaryVariable[] ovList; 
 	private SimpleContextNodeFatherSSBNNode[] contextForOVList; 
 	
 	private EntityTree entityTree; 
 	
 	//This three lists contains the evaluation of the MFrag: the nodes and the 
-	//edges generateds. 
+	//generated edges. 
 	private List<SimpleSSBNNode> ssbNodeList; 
 //	private List<SimpleEdge> edgeList; 
 	
@@ -137,6 +134,15 @@ public class MFragInstance {
 	
 	}
 	
+	public void addOVValuesCombinationForPathCombination(List<OVInstance> path, 
+			                 OrdinaryVariable ovArray[], 
+			                 List<String[]> entityValuesArray) 
+			          throws MFragContextFailException{
+		
+		this.entityTree.updatePathOnTreeWithNewInformation(path, ovArray, entityValuesArray);
+		
+	}
+	
 	public void addOVValueCombination(OrdinaryVariable ov, List<String> entityValues) 
 	                 throws MFragContextFailException{
 
@@ -153,6 +159,12 @@ public class MFragInstance {
 
 		this.entityTree.updateTreeForNewInformation(ovArray, entityValuesArray); 
 
+	}
+	
+	public void removePossibleOVValuesEvaluation(OrdinaryVariable ovArray[], String[] entityValuesArray) throws MFragContextFailException{
+		
+		this.entityTree.deletePath(ovArray, entityValuesArray);
+		
 	}
 	
 	public List<OVInstance> getOVInstanceList(){
@@ -236,6 +248,36 @@ public class MFragInstance {
 				knownEntityArray, 
 				ovSearchArray); 
 		
+	}
+	
+	/**
+	 * Build a combination of all possible results for the ordinary variables 
+	 * inside ovSearchArray. Uses a tree of entities where it is used the values
+	 * of ordinary variables already filled.  
+	 * 
+	 * @param knownOVInstanceArray
+	 * @param ovSearchArray
+	 * 
+	 * @return A list of arrays with all possible values for the ovSearchArray. 
+	 *         Each array contains a value for each ordinary variable of ovSearchArray. 
+	 *         This value is the name of the entity. Each array group the elements
+	 *         in the same order of the elements of ovSearchArray. 
+	 */
+	public List<String[]> recoverCombinationsEntitiesPossibles(
+			OVInstance[] knownOVInstanceArray,
+			OrdinaryVariable[] ovSearchArray){
+		
+		OrdinaryVariable[] knownOVArray = new OrdinaryVariable[knownOVInstanceArray.length];
+		ILiteralEntityInstance[] knownEntityArray = new ILiteralEntityInstance[knownOVInstanceArray.length]; 
+		
+		for(int i = 0; i < knownOVInstanceArray.length; i ++){
+			knownOVArray[i] = knownOVInstanceArray[i].getOv(); 
+			knownEntityArray[i] = knownOVInstanceArray[i].getEntity(); 
+		}
+		
+		return entityTree.recoverCombinationsEntitiesPossibles(knownOVArray, 
+				knownEntityArray, 
+				ovSearchArray); 
 	}
 	
 	public List<String[]> recoverAllCombinationsEntitiesPossibles(){

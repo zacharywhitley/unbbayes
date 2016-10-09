@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import unbbayes.controller.INetworkMediator;
-import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.io.log.IdentationLevel;
 import unbbayes.prs.INode;
@@ -29,7 +27,7 @@ import unbbayes.prs.mebn.ssbn.BuilderLocalDistributionImpl;
 import unbbayes.prs.mebn.ssbn.BuilderStructureImpl;
 import unbbayes.prs.mebn.ssbn.IBuilderLocalDistribution;
 import unbbayes.prs.mebn.ssbn.IBuilderStructure;
-import unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator;
+import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.Parameters;
@@ -60,7 +58,7 @@ import unbbayes.util.Debug;
  * @author Shou Matsumoto
  */
 
-public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
+public class LaskeySSBNGenerator implements ISSBNGenerator{
 	
 	private boolean isLogEnabled = true;
 	
@@ -75,7 +73,7 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 	
 	private final boolean addFindings = true;
 	
-	private INetworkMediator mediator;
+//	private INetworkMediator mediator;
 	
 	public LaskeySSBNGenerator(LaskeyAlgorithmParameters _parameters){
 		
@@ -88,12 +86,12 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 	
 	}
 	
-	
 	public SSBN generateSSBN(List<Query> queryList, KnowledgeBase knowledgeBase)
 			throws SSBNNodeGeneralException,
 			ImplementationRestrictionException, MEBNException,
 			OVInstanceFaultException, InvalidParentException {
 		
+		long initialTime = System.currentTimeMillis(); 
 		long time0 = System.currentTimeMillis(); 
 		
 		SSBN ssbn = null; 
@@ -103,6 +101,9 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 			ssbn = initialization(queryList, knowledgeBase); 
 			ssbn.setParameters(getParameters()); 
 		}
+		
+		long inicializationTime = System.currentTimeMillis(); 
+		long numberNodesAfterInitialization = ssbn.getSimpleSsbnNodeList().size(); 
 		
 		ISSBNLogManager logManager = null;
 		if (ssbn != null) {
@@ -133,6 +134,10 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 			
 		}
 		
+		long numberNodesAfterBuilder = ssbn.getSimpleSsbnNodeList().size(); 
+		
+		long buildStructureTime = System.currentTimeMillis(); 
+		
 		//Step 3: 
 		if(Boolean.valueOf(getParameters().getParameterValue(LaskeyAlgorithmParameters.DO_PRUNE))){
 			
@@ -155,6 +160,9 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 				logManager.printSectionSeparation(); 
 			}
 		}
+		
+		long numberNodesAfterPrune = ssbn.getSimpleSsbnNodeList().size(); 
+		long pruneTime = System.currentTimeMillis(); 
 		
 		//Step 4: 
 		if(Boolean.valueOf(getParameters().getParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION))){
@@ -207,15 +215,9 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 					}
 				}
 			}
-		
 		}
 		
-		// adjust position of nodes
-		try {
-			PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(ssbn.getProbabilisticNetwork());
-		} catch (Exception e) {
-			Debug.println(getClass(), e.getMessage(), e);
-		}
+		long buildCPTTime = System.currentTimeMillis(); 
 		
 		if (logManager != null) {
 			long time1 = System.currentTimeMillis(); 
@@ -245,8 +247,42 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 			throw new MEBNException(e);
 		}
 		
-		// show on display
-		this.showSSBN(ssbn);
+		long compilationTime = System.currentTimeMillis(); 
+		long finalTime = System.currentTimeMillis();
+		
+		System.out.println("-------------------------------------------------------------------------------");
+		System.out.println("Benchmark Overview");
+		System.out.println("Inicialization  Time : " + (inicializationTime  - initialTime ) + "ms");
+		System.out.println("Build Structure Time : " + (buildStructureTime  - inicializationTime ) + "ms");
+		System.out.println("Prune Structure Time : " + (pruneTime  - buildStructureTime ) + "ms");
+		System.out.println("Build CPT Time : " + (buildCPTTime  - pruneTime ) + "ms");
+		System.out.println("Compilation Time : " + (compilationTime  - buildCPTTime ) + "ms");
+		System.out.println("Final Time : " + (finalTime   - initialTime ) + "ms");
+		System.out.println(" ");
+		System.out.println("Nodes After Initialization: " + numberNodesAfterInitialization);
+		System.out.println("Nodes After Builder: " + numberNodesAfterBuilder);
+		System.out.println("Nodes After Prune: " + numberNodesAfterPrune);
+		System.out.println("-------------------------------------------------------------------------------");
+		
+		// adjust position of nodes
+		try {
+			PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(ssbn.getProbabilisticNetwork());
+		} catch (Exception e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		
+		if (logManager != null) {
+			long time1 = System.currentTimeMillis(); 
+			long deltaTime = time1 - initialTime; 
+			
+//			SSBNDebugInformationUtil.printAndSaveCurrentNetwork(ssbn); 
+			
+			logManager.printBox1Bar();
+			logManager.printBox1(resourceLog.getString("007_ExecutionSucces")); 
+			logManager.printBox1(resourceLog.getString("009_Time") + ": " + deltaTime + " ms"); 
+			logManager.printBox1Bar(); 
+			logManager.skipLine(); 
+		}
 		
 		return ssbn;
 	}
@@ -259,28 +295,6 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 	 */
 	protected void compileAndInitializeSSBN(SSBN ssbn) throws Exception {
 		ssbn.compileAndInitializeSSBN();
-	}
-	
-	/**
-	 * Uses mediator to display the SSBN
-	 * @param mediator : MEBNController
-	 * @param  ssbn : the ssbn to show
-	 */
-	protected void showSSBN(SSBN ssbn) {
-//		if (this.getMediator() == null) {
-//			// if there is no mediator, we cannot go on
-//			return;
-//		}
-//		NetworkWindow window = new NetworkWindow(ssbn.getNetwork());
-//		this.getMediator().getScreen().getUnbbayesFrame().addWindow(window);
-//		window.setVisible(true);
-		// use the above code to show compiled network in a separate internal frame
-		if (this.getMediator() instanceof IMEBNMediator) {
-			((IMEBNMediator)this.getMediator()).setSpecificSituationBayesianNetwork(ssbn.getProbabilisticNetwork());
-			((IMEBNMediator)this.getMediator()).setToTurnToSSBNMode(true);	// if this is false, ((IMEBNMediator)this.getMediator()).turnToSSBNMode() will not work
-			((IMEBNMediator)this.getMediator()).turnToSSBNMode();
-			((IMEBNMediator)this.getMediator()).getScreen().getEvidenceTree().updateTree(true);;
-		}
 	}
 	
 	private void cleanUpSSBN(SSBN ssbn){
@@ -484,21 +498,6 @@ public class LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator{
 			IBuilderLocalDistribution buildLocalDistribution) {
 		this.buildLocalDistribution = buildLocalDistribution;
 	}
-
-	
-
-	public INetworkMediator getMediator() {
-		return mediator;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator#setMediator(unbbayes.controller.INetworkMediator)
-	 */
-	public void setMediator(INetworkMediator mediator) {
-		this.mediator = mediator;
-	}
-
 
 	/**
 	 * @return the isLogEnabled

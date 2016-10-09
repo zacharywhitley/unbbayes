@@ -19,7 +19,7 @@ import unbbayes.prs.mebn.ssbn.IBuilderStructure;
 import unbbayes.prs.mebn.ssbn.ILiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.IMFragContextNodeAvaliator;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
-import unbbayes.prs.mebn.ssbn.MFragContextNodeAvaliator;
+import unbbayes.prs.mebn.ssbn.MFragContextNodeAvaliator2;
 import unbbayes.prs.mebn.ssbn.MFragInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.SSBN;
@@ -69,7 +69,7 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 		this.ssbn = _ssbn; 
 		this.kb = ssbn.getKnowledgeBase(); 
 		this.logManager = ssbn.getLogManager(); 
-		this.mFragContextNodeAvaliator = new MFragContextNodeAvaliator(ssbn); 
+		this.mFragContextNodeAvaliator = new MFragContextNodeAvaliator2(ssbn); 
 
 		//All nodes 
 		nodeList = new ArrayList<BayesBallNode>();  //all nodes visualized
@@ -113,6 +113,7 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 				node.setVisited(true);
 				
 				if(node.isDefaultDistribution()){
+					System.out.println("Node setted default!");
 					continue; 
 				}
 
@@ -257,7 +258,6 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 				node.setDefaultDistribution(true);
 				Debug.println("MFrag Instance using default distibution: node setted to default distribution.");
 			}
-			
 		}
 	}
 
@@ -552,7 +552,7 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 						break; 
 						
 					} //isOrdered
-				} //ovFault > 0  //TODO ovFault pode já estar preenchido em algum caso? 
+				} //ovFault > 0  //TODO ovFault pode jï¿½ estar preenchido em algum caso? 
 			} // same MFrag 
 			
 			
@@ -616,8 +616,17 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 				e.printStackTrace();
 			} 
 			
+			//TODO Analyze... We need create the nodes below if the MFrag is evaluated default? And if not, this IF is 
+			//     sufficient to deal with this problem? 
+			
+			if(mFragInstance.isUsingDefaultDistribution()){
+				Debug.println("Can't create the child nodes of the input node bacause the MFrag can't be evaluated");
+				continue; 
+			}
+			
 			Debug.println("Evaluate children of input node");
 			//Create node for resident nodes children of input node. 
+			
 			for(ResidentNode residentNodeChild: inputNode.getResidentNodeChildList()){
 				
 				Debug.println("Resident node children: " + residentNodeChild );
@@ -1041,8 +1050,6 @@ public class BayesBallStructureBuilder implements IBuilderStructure{
 				}
 				
 			} // IF (recursivity) 
-			
-			System.out.println("Ops! Não saiu não!");
 			
 			//Mount the combination of possible values for the ordinary variable fault
 			List<String[]> possibleCombinationsForOvFaultList = new ArrayList<String[]>(); 

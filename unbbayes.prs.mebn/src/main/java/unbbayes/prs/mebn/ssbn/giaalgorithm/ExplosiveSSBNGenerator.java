@@ -27,9 +27,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 
-import unbbayes.controller.INetworkMediator;
-import unbbayes.controller.mebn.IMEBNMediator;
-import unbbayes.gui.NetworkWindow;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
@@ -46,17 +43,16 @@ import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
 import unbbayes.prs.mebn.ssbn.SSBNNode;
+import unbbayes.prs.mebn.ssbn.SSBNNode.EvaluationSSBNNodeState;
 import unbbayes.prs.mebn.ssbn.SSBNNodeJacket;
 import unbbayes.prs.mebn.ssbn.SSBNNodeList;
 import unbbayes.prs.mebn.ssbn.SSBNWarning;
-import unbbayes.prs.mebn.ssbn.SSBNNode.EvaluationSSBNNodeState;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationError;
 import unbbayes.prs.mebn.ssbn.exception.ImplementationRestrictionException;
 import unbbayes.prs.mebn.ssbn.exception.OVInstanceFaultException;
 import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 import unbbayes.prs.mebn.ssbn.util.PositionAdjustmentUtils;
 import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
-import unbbayes.util.Debug;
 
 /**
  * Implementation of a algorithm for generate ssbn's for MTheories. 
@@ -78,7 +74,7 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 
 	private List<SSBNNode> findingList; 
 	
-	private INetworkMediator mediator;
+//	private INetworkMediator mediator;
 
 	public ExplosiveSSBNGenerator(){
 		super();  
@@ -95,28 +91,10 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		SSBN ssbn =  generateSSBN(listQueries.get(0), kb);
 		try {
 			ssbn.compileAndInitializeSSBN();
-			// show on display
-			this.showSSBN(ssbn);
 		} catch (Exception e) {
 			throw new MEBNException(e);
 		}
 		return ssbn;
-	}
-	
-	/**
-	 * Uses mediator to display the SSBN
-	 * @param mediator : MEBNController
-	 * @param  ssbn : the ssbn to show
-	 */
-	protected void showSSBN(SSBN ssbn) {
-		if (this.getMediator() == null) {
-			// if there is no mediator, we cannot go on
-			return;
-		}
-		NetworkWindow window = new NetworkWindow(ssbn.getNetwork());
-		this.getMediator().getScreen().getUnbbayesFrame().addWindow(window);
-//		window.setSize(window.getPreferredSize());
-		window.setVisible(true);
 	}
 
 	/**
@@ -941,19 +919,6 @@ public class ExplosiveSSBNGenerator extends AbstractSSBNGenerator  {
 		stepCount++;
 		PositionAdjustmentUtils.adjustPositionProbabilisticNetwork(queryNode.getProbabilisticNetwork()); 
 		SSBNDebugInformationUtil.printNetworkInformation(logManager, queryNode, stepCount, queryName); 
-	}
-
-	
-	public INetworkMediator getMediator() {
-		return mediator;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * @see unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator#setMediator(unbbayes.controller.INetworkMediator)
-	 */
-	public void setMediator(INetworkMediator mediator) {
-		this.mediator = mediator;
 	}
 
 	/*

@@ -1,11 +1,6 @@
 package unbbayes.prs.mebn.ssbn.bayesballalgorithm;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.ResidentNode;
-import unbbayes.prs.mebn.ssbn.MFragInstance;
 import unbbayes.prs.mebn.ssbn.SimpleSSBNNode;
 
 /**
@@ -125,32 +120,5 @@ public class BayesBallNode extends SimpleSSBNNode {
 		}
 		
 	}
-	
-//	/**
-//	 * Add a input MFrag Instance to the list of input MFrags, only if still 
-//	 * don't exists other MFragInstance for this. 
-//	 * @param mFragInstance
-//	 */
-//	public void addInputMFragInstance(MFragInstance mFragInstance){
-//		//TODO throws an exception if already have a MFragInstance for this MFrag. 
-//		if(getMFragInstanceForInputMFrag(mFragInstance.getMFragOrigin()) == null){
-//			this.inputMFragList.add(mFragInstance); 
-//		}
-//		
-//	}
-//	
-//	public MFragInstance getMFragInstanceForInputMFrag(MFrag mFrag){
-//	
-//		for(MFragInstance mFragInstance: inputMFragList){
-//			if(mFragInstance.getMFragOrigin().equals(mFragInstance)){
-//				return mFragInstance; 
-//			}
-//		}
-//		
-//		//Not found 
-//		return null; 
-//		
-//	}
-	
 	
 }

@@ -3,8 +3,6 @@ package unbbayes.prs.mebn.ssbn.bayesballalgorithm;
 import java.util.ArrayList;
 import java.util.List;
 
-import unbbayes.controller.INetworkMediator;
-import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.io.log.ISSBNLogManager;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.exception.InvalidParentException;
@@ -17,7 +15,7 @@ import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.ssbn.BuilderLocalDistributionImpl;
 import unbbayes.prs.mebn.ssbn.IBuilderLocalDistribution;
 import unbbayes.prs.mebn.ssbn.IBuilderStructure;
-import unbbayes.prs.mebn.ssbn.IMediatorAwareSSBNGenerator;
+import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.OVInstance;
 import unbbayes.prs.mebn.ssbn.Query;
 import unbbayes.prs.mebn.ssbn.SSBN;
@@ -43,10 +41,9 @@ import unbbayes.util.Debug;
  * 
  * @author Laecio Lima dos Santos (laecio@gmail.com)
  */
-public class BayesBallSSBNGenerator implements IMediatorAwareSSBNGenerator{
+public class BayesBallSSBNGenerator implements ISSBNGenerator{
 
 	private boolean isLogEnabled = true;
-	private INetworkMediator mediator;
 	
 	private KnowledgeBase kb; 
 	private SSBN ssbn; 
@@ -65,6 +62,8 @@ public class BayesBallSSBNGenerator implements IMediatorAwareSSBNGenerator{
 		
 		this.kb = kb; 
 		
+		long initialTime = System.currentTimeMillis(); 
+		
 		System.out.println("");
 		System.out.println("---------------------------------");
 		System.out.println("       Bayes Ball Algorithm      ");
@@ -75,6 +74,7 @@ public class BayesBallSSBNGenerator implements IMediatorAwareSSBNGenerator{
 		
 		ssbn = new SSBN();
 		ssbn.setKnowledgeBase(kb); 
+		
 		
 		logManager = ssbn.getLogManager();
 		
@@ -91,10 +91,17 @@ public class BayesBallSSBNGenerator implements IMediatorAwareSSBNGenerator{
 
 			ssbn.addQueryToQueryList(query);                                                          
 		}
-				
+			
+		long inicializationTime = System.currentTimeMillis(); 
+		long numberNodesAfterInitialization = ssbn.getSimpleSsbnNodeList().size(); 
+		
 		//Step 2: 
 		IBuilderStructure structureBuilder = BayesBallStructureBuilder.newInstance(); 
 		structureBuilder.buildStructure(ssbn); 
+		
+		long numberNodesAfterBuilder = ssbn.getSimpleSsbnNodeList().size(); 
+		
+		long buildStructureTime = System.currentTimeMillis(); 
 		
 		//Step 3: 
 		List<IPruner> pruners = new ArrayList<IPruner>();
@@ -104,6 +111,9 @@ public class BayesBallSSBNGenerator implements IMediatorAwareSSBNGenerator{
 		
 		IPruneStructure pruneStructure = PruneStructureImpl.newInstance(pruners); 
 		pruneStructure.pruneStructure(ssbn);
+		
+		long numberNodesAfterPrune = ssbn.getSimpleSsbnNodeList().size(); 
+		long pruneTime = System.currentTimeMillis(); 
 		
 		//TODO Remove this temporary solution. 
 		//Recover from kb individuals of ObjectEntity in case of this individuals are
@@ -147,7 +157,44 @@ public class BayesBallSSBNGenerator implements IMediatorAwareSSBNGenerator{
 		IBuilderLocalDistribution localDistributionBuilder = BuilderLocalDistributionImpl.newInstance(); 
 		localDistributionBuilder.buildLocalDistribution(ssbn);
 				
+		long buildCPTTime = System.currentTimeMillis(); 
+		
+		//Free space... 
+		Runtime rt = Runtime.getRuntime();
+		System.out.println("Free memory: " + rt.freeMemory()); 
+		ssbn.removeSpaceAfterGenerationOfNetwork(); 
+		rt.gc();
+		System.out.println("Free memory after garbage collection: " + rt.freeMemory()); 
+		
 		System.out.println("Local distribution generated!");
+		
+		try {
+			ssbn.compileAndInitializeSSBN();
+		} catch (Exception e) {
+			throw new MEBNException(e);
+		}
+		
+		long compilationTime = System.currentTimeMillis(); 
+		
+		System.out.println("Network compiled");
+		
+		long finalTime = System.currentTimeMillis();
+		
+		
+		System.out.println("-------------------------------------------------------------------------------");
+		System.out.println("Benchmark Overview");
+		System.out.println("Inicialization  Time : " + (inicializationTime  - initialTime ) + "ms");
+		System.out.println("Build Structure Time : " + (buildStructureTime  - inicializationTime ) + "ms");
+		System.out.println("Prune Structure Time : " + (pruneTime  - buildStructureTime ) + "ms");
+		System.out.println("Build CPT Time : " + (buildCPTTime  - pruneTime ) + "ms");
+		System.out.println("Compilation Time : " + (compilationTime  - buildCPTTime ) + "ms");
+		System.out.println("Final Time : " + (finalTime   - initialTime ) + "ms");
+		System.out.println(" ");
+		System.out.println("Nodes After Initialization: " + numberNodesAfterInitialization);
+		System.out.println("Nodes After Builder: " + numberNodesAfterBuilder);
+		System.out.println("Nodes After Prune: " + numberNodesAfterPrune);
+		System.out.println("-------------------------------------------------------------------------------");
+		
 		
 		// Adjust nodes positions
 		try {
@@ -166,32 +213,7 @@ public class BayesBallSSBNGenerator implements IMediatorAwareSSBNGenerator{
 			}
 		}
 		
-		try {
-			ssbn.compileAndInitializeSSBN();
-		} catch (Exception e) {
-			throw new MEBNException(e);
-		}
-		
-		System.out.println("Network compiled");
-		
-		// show on display
-		if (this.getMediator() instanceof IMEBNMediator) {
-			((IMEBNMediator)this.getMediator()).setSpecificSituationBayesianNetwork(
-					(ProbabilisticNetwork)(ssbn.getNetwork()));
-			((IMEBNMediator)this.getMediator()).setToTurnToSSBNMode(true);	// if this is false, ((IMEBNMediator)this.getMediator()).turnToSSBNMode() will not work
-			((IMEBNMediator)this.getMediator()).turnToSSBNMode();
-			((IMEBNMediator)this.getMediator()).getScreen().getEvidenceTree().updateTree(true);;
-		}
-		
 		return ssbn;
-	}
-
-	public void setMediator(INetworkMediator mediator) {
-		this.mediator = mediator;
-	}
-	
-	public INetworkMediator getMediator() {
-		return mediator;
 	}
 
 	public void setLogEnabled(boolean isLogEnabled) {

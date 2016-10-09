@@ -2,6 +2,7 @@ package unbbayes.prs.mebn.ssbn;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ssbn.exception.MFragContextFailException;
@@ -16,6 +17,9 @@ import unbbayes.util.Debug;
 public class EntityTree{
 	
 	final EntityNode root; 
+	
+	private ResourceBundle resource = 
+			unbbayes.util.ResourceController.newInstance().getBundle(unbbayes.prs.mebn.ssbn.resources.Resources.class.getName());
 	
 	public EntityTree(){
 		root = new EntityNode(null, null, null);  
@@ -37,6 +41,107 @@ public class EntityTree{
 	}
 	
 	/**
+	 * 
+	 * @param ovArray
+	 * @param entityValuesArray
+	 * @throws MFragContextFailException If the tree is destroyed after this remotion (some level disappear) 
+	 */
+	public void deletePath(OrdinaryVariable ovArray[], String entityValuesArray[]) throws MFragContextFailException{
+		
+		//1 - Search the ordinary variable most near to the root of the tree and starting in it, and 
+		//search in which path is the deleted value. 
+		//2 - Down the tree selecting the entity in each level correspondent to the deleted entity
+		//3 - After arrive in the leaf, or in the last ov searched, delete the marked path. 
+		
+//		List<EntityNode> nodesToRemoveList = new ArrayList<EntityNode>(); 
+		
+		System.out.println("Entities:");
+		for(int i = 0 ; i < entityValuesArray.length; i++){
+			System.out.println(entityValuesArray[i]);
+		}
+		
+		List<EntityNode> lastNodeOfPossiblePathList = new ArrayList<EntityNode>(); 
+		lastNodeOfPossiblePathList.add(root); 
+		
+		printNode(root, 0); 
+		
+		while(lastNodeOfPossiblePathList.get(0).getChildren().size() != 0){
+			
+			//Test if the next ov is one of the setted ovs. 
+			int indexOV = -1; 
+			for (int i = 0; i < ovArray.length; i++){
+				if (ovArray[i].equals(lastNodeOfPossiblePathList.get(0).getChildren().get(0).getOv())){
+					indexOV = i; 
+					break; 
+				}
+			}
+			
+			List<EntityNode> newLastNodeOfPossiblePathList = new ArrayList<EntityNode>(); 
+			
+			//More a level without any ordinary variable of the list of the user 
+			if (indexOV == -1){
+				for(EntityNode node: lastNodeOfPossiblePathList){
+					newLastNodeOfPossiblePathList.addAll(node.getChildren());  //Advance lastNodeOfPossiblePath to the next level of the tree 
+				}
+				
+				lastNodeOfPossiblePathList = newLastNodeOfPossiblePathList; 
+				
+				continue;
+				
+			}
+			
+			//If we arrive here, we have a level with information that the user want delete 
+			//Evaluation in each path, which of them have information
+			
+			boolean findingEntity = false; 
+			
+			for(EntityNode node: lastNodeOfPossiblePathList){
+				
+				for(EntityNode child: node.getChildren()){
+					if (child.getEntityName().equals(entityValuesArray[indexOV])){
+						newLastNodeOfPossiblePathList.add(child); 
+						findingEntity = true; 
+						break; 
+					}
+				}
+			}
+			
+			//Entity not found in any path!!! 
+			if(!findingEntity){
+				System.out.println("Entity not found in any path: " + entityValuesArray[indexOV] + " ov: " + ovArray[indexOV]);
+				System.out.println("Remotion of the path don't made");
+				return; 
+			}else{
+				lastNodeOfPossiblePathList = newLastNodeOfPossiblePathList; 
+			}
+			
+		}
+		
+		//Remove the paths 
+		for(EntityNode node: lastNodeOfPossiblePathList){
+			System.out.println("Irá deletar nó: " + node.getEntityName());
+			this.destroyPath(node);
+			if(isTreeEmpty()){
+				throw new MFragContextFailException(resource.getString("EmptyTree")); 
+			}
+		}
+		
+	}
+	
+	public void printNode(EntityNode node, int level){
+		
+		for(int i = 0; i <= level; i++ ){
+			System.out.print("  ");
+		}
+		
+		System.out.println(node.getOv() + " " + node.getEntityName());
+		
+		for(EntityNode child:node.getChildren()){
+			printNode(child, level+1);
+		}
+	}
+	
+	/**
 	 * Update the tree of evaluation of the context nodes of a MFrag with the new 
 	 * result. 
 	 * 
@@ -48,7 +153,9 @@ public class EntityTree{
 	 *                                   result. The context node set of the mfrag
 	 *                                   fail (don't is consistent). 
 	 */
-	public void updateTreeForNewInformation(OrdinaryVariable ovArray[], List<String[]> entityValuesArray) 
+	public void updateTreeForNewInformation(
+			                 OrdinaryVariable ovArray[], 
+			                 List<String[]> entityValuesArray) 
          	throws MFragContextFailException{
 		
 		//Walk in the tree path to path. 
@@ -114,7 +221,7 @@ public class EntityTree{
 			if(resultToBeUsed.size() == 0){ //This don't is a valid way!!! 
 				destroyPath(lastNodeOfAPath); 
 			}else{
-				//Add the new ordinary variables and its evaluatin to the path
+				//Add the new ordinary variables and its evaluation to the path
 				for(String[] result: resultToBeUsed){
 					EntityNode parentNode = lastNodeOfAPath; 
 					for(int index = 0; index < ovArray.length; index++){
@@ -131,10 +238,119 @@ public class EntityTree{
 		//Verify if the tree was destroyed with the new informations: 
 		//The evaluation is false... 
 		if(isTreeEmpty()){
-			throw new MFragContextFailException(); 
+			throw new MFragContextFailException(resource.getString("EmptyTree")); 
 		}
 		
 	}	
+	
+	/**
+	 * Update the tree of evaluation of the context nodes of a MFrag with the new 
+	 * result. 
+	 * 
+	 * @param ovArray               Sequence of the ordinary variables of the context node
+	 * @param entityValuesArray     Sequence of possible evaluations for the OV set. 
+	 * 
+	 * @throws MFragContextFailException throw if the new results added to the tree
+	 *                                   don't are possible against the previous 
+	 *                                   result. The context node set of the mfrag
+	 *                                   fail (don't is consistent). 
+	 */
+	public void updatePathOnTreeWithNewInformation(
+	                               List<OVInstance> path, 
+			                       OrdinaryVariable ovArray[], 
+			                       List<String[]> entityValuesArray) 
+         	throws MFragContextFailException{
+		
+		
+		//Find selected path 
+	
+		List<EntityNode> possibleWays = new ArrayList<EntityNode>(); 
+		possibleWays.add(root); 
+		
+		int qtdOVFound = 0; 
+		
+		while(true){
+			
+			List<EntityNode> newList = new ArrayList<EntityNode>(); 
+			
+			//Search for the index of the node on path 
+			int index = -1;
+			for(int i = 0; i < path.size(); i++){
+				if(path.get(i).getOv().equals(possibleWays.get(0).getOv())){
+					index = i; 
+					qtdOVFound++; 
+					break; //we have the index!
+				}
+			}
+			
+			if(index != -1){
+				for(EntityNode node: possibleWays){
+					if(node.getEntityName().equals(path.get(index).getEntity().getInstanceName())){
+						newList.add(node);
+					}
+				}
+				possibleWays = newList; 
+			}
+			
+			//Advance to the next level 
+			newList = new ArrayList<EntityNode>(); 
+			for(EntityNode node: possibleWays){
+				if(node.getChildren().size()!=0){
+					newList.addAll(node.getChildren()); 
+				}
+			}
+			
+			if(newList.size()!=0){
+				possibleWays = newList; 
+			}else{
+				break; 
+			}
+		}
+		
+		if(qtdOVFound != path.size()){
+			//TODO Exception... the path don't is in the tree 
+			throw new IllegalStateException("Not all variables of the informed path are on tree!!!"); 
+		}
+		
+		for(EntityNode lastNodeOfAPath: possibleWays){
+			
+			for(String[] arrayEntity: entityValuesArray){
+				
+				EntityNode parentNode = lastNodeOfAPath; 
+				
+				for(int i = 0; i < ovArray.length; i++){
+					EntityNode node = new EntityNode(arrayEntity[i], ovArray[i], parentNode); 
+					parentNode.addChildren(node);		
+					parentNode = node; 
+				}
+				
+			}
+		}
+	}		
+	
+	/**
+	 * Get the list of ordinary variables of the tree. 
+	 * 
+	 * @return A list containing the ordinary variables of the tree 
+	 */
+	public List<OrdinaryVariable> getListOfOrdinaryVariables(){
+		
+		List<OrdinaryVariable> list = new ArrayList<OrdinaryVariable>(); 
+		
+		// Each ordinary variable is in a level of the tree. So is sufficient get 
+		// a root node and climb the tree for the first branch until arrive to a leaf, getting the 
+		// ordinary variable of each level. 
+		EntityNode node = root; 
+		
+		//node should have a node of the last level 
+		while(node.getChildren().size()!=0){
+			node = node.getChildren().get(0); 
+			list.add(node.getOv()); 
+		}
+		
+		return list; 
+		
+	}
 	
 	/**
 	 * Build the combination of possible outcomes for the Ordinary Variables 
@@ -244,9 +460,10 @@ public class EntityTree{
 	 * Return all ov instances 
 	 */
 	public List<OVInstance> getOVInstanceList(){
-		List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
 		
+		List<OVInstance> ovInstanceList = new ArrayList<OVInstance>(); 
 		List<EntityNode> entityNodeList = getTreeHowList(); 
+		
 		for(EntityNode entityNode: entityNodeList){
 			ILiteralEntityInstance lei = LiteralEntityInstance.getInstance(
 					entityNode.getEntityName(), entityNode.getOv().getValueType()); 
@@ -306,7 +523,7 @@ public class EntityTree{
 	/**
 	 * Destroy a path in the tree. 
 	 * 
-	 * @param node
+	 * @param node leaf of the path
 	 */
 	private void destroyPath(EntityNode node){
 		
@@ -314,6 +531,7 @@ public class EntityTree{
 		
 	   if(parent != null){
 		   parent.removeChildren(node);  
+		   System.out.println("Removed children = " + node);
 		   if(parent.getChildren().size() == 0){
 			   destroyPath(parent); 
 		   }
