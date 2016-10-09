@@ -24,7 +24,7 @@
     </runtime>
     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNPluginNode" id="MultiEntityDecisionNode">
         <parameter id="class" value="unbbayes.prs.medg.MultiEntityDecisionNode" />
-        <parameter id="name" value="Decision node" />
+        <parameter id="name" value="Decision" />
         <parameter id="shapeClass" value="unbbayes.draw.medg.UShapeMultiEntityDecisionNode"/>
 		<parameter id="panelBuilder" value="unbbayes.gui.medg.MultiEntityDecisionNodePanelBuilder"/>
 		<parameter id="description" value="Decision node for MEDG" />
@@ -33,7 +33,7 @@
     </extension>
     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNPluginNode" id="MultiEntityUtilityNode">
         <parameter id="class" value="unbbayes.prs.medg.MultiEntityUtilityNode" />
-        <parameter id="name" value="Utility node" />
+        <parameter id="name" value="Utility" />
         <parameter id="shapeClass" value="unbbayes.draw.medg.UShapeMultiEntityUtilityNode"/>
 		<parameter id="panelBuilder" value="unbbayes.gui.medg.MultiEntityUtilityNodePanelBuilder"/>
 		<parameter id="description" value="Utility node for MEDG" />

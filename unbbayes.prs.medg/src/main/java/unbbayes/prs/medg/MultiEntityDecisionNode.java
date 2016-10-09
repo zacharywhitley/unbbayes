@@ -47,7 +47,7 @@ public class MultiEntityDecisionNode extends ResidentNode implements IMEBNPlugin
 	 * plugin.xml
 	 */
 	public MultiEntityDecisionNode() {
-		this("Decision node", null); 
+		this("DecisionNode", null); 
 	}
 
 	/**
