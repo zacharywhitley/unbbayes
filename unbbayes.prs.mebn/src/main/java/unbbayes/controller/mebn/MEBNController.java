@@ -2282,9 +2282,15 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		// use the above code to show compiled network in a separate internal frame
 		
 		setSpecificSituationBayesianNetwork(ssbn.getProbabilisticNetwork());
-		setToTurnToSSBNMode(true);	// if this is false, ((IMEBNMediator)this.getMediator()).turnToSSBNMode() will not work
+		
+		// the following line was commented out because the controller must not overwrite the configuration (value of the attribute) provided by the invoker.
+		// If this attribute must be true, then the invoker should explicitly set it from outside, not here.
+//		setToTurnToSSBNMode(true);	// if this is false, ((IMEBNMediator)this.getMediator()).turnToSSBNMode() will not work
+		
 		turnToSSBNMode();
-		getScreen().getEvidenceTree().updateTree(true);;
+		
+		// the following line was migrated to turnToSSBNMode, because this is sensitive to how turnToSSBNMode is implemented
+//		getScreen().getEvidenceTree().updateTree(true);
 		
 	}
 	
@@ -2626,6 +2632,10 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 				this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);			
 				this.getMebnEditionPane().getNetworkWindow().getGraphPane().setGraphDimension(dimensionSSBNGraph); 
 				this.getMebnEditionPane().getNetworkWindow().getGraphPane().update(); 
+				
+				// the following line was migrated from showSSBN to here, because evidence tree should be updated only if we are actually turning the card layout to ssbn mode
+				getScreen().getEvidenceTree().updateTree(true);
+				
 				return true;  
 			}else{
 				return false;
