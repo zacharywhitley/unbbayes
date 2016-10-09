@@ -250,6 +250,7 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 		long compilationTime = System.currentTimeMillis(); 
 		long finalTime = System.currentTimeMillis();
 		
+		// TODO it's preferable for classes in API not to write System streams. For benchmarking, use profiling tools like jvisualvm (it comes with jdk) instead.
 		System.out.println("-------------------------------------------------------------------------------");
 		System.out.println("Benchmark Overview");
 		System.out.println("Inicialization  Time : " + (inicializationTime  - initialTime ) + "ms");
