@@ -435,12 +435,15 @@ public class EntityEditionPane extends JPanel{
 						// Create resources to tell that no TreeNode is selected.
 						// Check if strings are good enough.
 						
-						JOptionPane.showMessageDialog(null,
-								resource.getString("selectEntityFirst"),
-								resource.getString("warning"),
-								JOptionPane.ERROR_MESSAGE);
-						
-						return;
+//						JOptionPane.showMessageDialog(null,
+//								resource.getString("selectEntityFirst"),
+//								resource.getString("warning"),
+//								JOptionPane.ERROR_MESSAGE);
+//						
+//						return;
+						// select root by default
+						selectedTreeNode = (DefaultMutableTreeNode) getJTreeEntities().getModel().getRoot();
+//						getJTreeEntities().setSelectionRow(0);
 					} 
 					
 					selected = mebnController.createObjectEntity((ObjectEntity) selectedTreeNode.getUserObject());
