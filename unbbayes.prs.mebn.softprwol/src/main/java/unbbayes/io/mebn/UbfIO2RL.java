@@ -18,7 +18,6 @@ public class UbfIO2RL extends UbfIO2{
 		
 		super();
 		
-		//TODO Analyse if is time to change to ubf 3.0. Remember that the changes are 
 		this.setUbfVersion(2.5d);
 		
 		//Same resource of parent class. 

@@ -22,7 +22,7 @@ public class TriplestoreKnowledgeBaseBuilder implements IKnowledgeBaseBuilder{
 	 */
 	public KnowledgeBase buildKB(MultiEntityBayesianNetwork mebn,
 			IMEBNMediator mediator) throws InstantiationException {
-		return TriplestoreKnowledgeBase.getInstance(mebn, mediator);
+		return TriplestoreKnowledgeBase.getInstance(mebn);
 	}
 	
 	/*

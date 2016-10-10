@@ -58,14 +58,12 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 
 	private MultiEntityBayesianNetwork defaultMEBN;
 
-	private IMEBNMediator defaultMediator;
-
 	private TriplestoreController triplestoreController; 
 	
 	private static int blankNodeNumber = 0; 
 	
-	private final String AND_OPERATOR = "."; 
-	private final String OR_OPERATOR = "UNION"; 
+	private static final String SPARQL_AND_OPERATOR = "."; 
+	private static final String SPARQL_OR_OPERATOR = "UNION"; 
 	
 	private static final String GENERAL_PREFIX_DECLARATION = 
 			"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> " + 
@@ -91,9 +89,8 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 	/**
 	 * This is just a call to {@link #getInstance(null, MultiEntityBayesianNetwork, IMEBNMediator)}
 	 */
-	public static KnowledgeBase getInstance(MultiEntityBayesianNetwork mebn, IMEBNMediator mediator) {
+	public static KnowledgeBase getInstance(MultiEntityBayesianNetwork mebn) {
 		TriplestoreKnowledgeBase ret = new TriplestoreKnowledgeBase();
-		ret.setDefaultMediator(mediator);
 		ret.setDefaultMEBN(mebn);
 		return ret;
 	}
@@ -105,14 +102,6 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 	public TriplestoreController getTriplestoreController() {
 		return triplestoreController;
 	}
-
-	/**
-	 * A {@link IMEBNMediator} to be used by this knowledge base if GUI or IO commands needs to be accessed.
-	 * @param defaultMediator the defaultMediator to set
-	 */
-	public void setDefaultMediator(IMEBNMediator defaultMediator) {
-		this.defaultMediator = defaultMediator;
-	}	
 
 	/* 
 	 * The user can't delete the knowledge base using UnBBayes. He should do 
@@ -259,10 +248,16 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				throw new IllegalArgumentException("Invalid context node formula: " + context + ".");
 			}else{
 				StateLink result = searchFinding(pointer.getResidentNode(), ovInstances); 
-				if (result.getState().getName().equals("true")){
-					return new Boolean(Boolean.TRUE); 
-				}else{
+				if(result == null){
+					System.out.println("Seach for finding node return NULL. Consider the evaluation of the context node such as FALSE.");
 					return new Boolean(Boolean.FALSE); 
+				}else{
+					if (result.getState().getName().equals("true")){
+						return new Boolean(Boolean.TRUE); 
+					}else{
+						//For context nodes, a "null" result also is a "false"
+						return new Boolean(Boolean.FALSE); 
+					}
 				}
 			}
 			
@@ -280,10 +275,10 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				BuiltInRV builtIn = (BuiltInRV) formulaTree.getNodeVariable();
 
 				if(builtIn instanceof BuiltInRVAnd){
-					query+= makeBinaryStatement(formulaTree, ovInstances, null, AND_OPERATOR);
+					query+= makeBinaryStatement(formulaTree, ovInstances, null, SPARQL_AND_OPERATOR);
 				}else
 					if(builtIn instanceof BuiltInRVOr){
-						query+= makeBinaryStatement(formulaTree, ovInstances,null , OR_OPERATOR);
+						query+= makeBinaryStatement(formulaTree, ovInstances,null , SPARQL_OR_OPERATOR);
 					}else
 						if(builtIn instanceof BuiltInRVEqualTo){
 							query+= makeEqualStatement(formulaTree, ovInstances, null, true); 	
@@ -484,11 +479,14 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 
 				// extract the values of the arguments
 				
+				for(OrdinaryVariable ov: ovFaultList){
+					System.out.println("OV Fault: " + ov);
+				}
+				
 				String subjectName = null; 
 				String objectName = null; 
 				
-				Argument argument1 = residentNode.getArgumentList().get(0); 
-				OrdinaryVariable ov1 = argument1.getOVariable(); 
+				OrdinaryVariable ov1 = pointer.getArgument(0); 
 				for(OVInstance ovInstance: ovInstanceList){
 					if(ovInstance.getOv().equals(ov1)){
 						subjectName = "<" + ovInstance.getEntity().getInstanceName() + ">"; 
@@ -500,8 +498,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 						subjectName = "?X" + ovFaultList.indexOf(ov1);
 				}
 				
-				Argument argument2 = residentNode.getArgumentList().get(1); 
-				OrdinaryVariable ov2 = argument2.getOVariable(); 
+				OrdinaryVariable ov2 = pointer.getArgument(1); 
 				
 				for(OVInstance ovInstance: ovInstanceList){
 					if(ovInstance.getOv().equals(ov2)){
@@ -514,7 +511,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 					objectName = "?X" + ovFaultList.indexOf(ov2);
 				}
 				
-				//TODO Analyze! This hould be the arguments of context node, that can be different of arguments of original resident node. 
+				//TODO Analyze! This should be the arguments of context node, that can be different of arguments of original resident node. 
 				Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
 						residentNode, residentNode.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 				
@@ -1273,11 +1270,12 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 	}	
 	
 	/*
-	 * Evaluate AND clauses. Possibly this can be a set of AND clauses, and 
+	 * Evaluate AND/OR clauses. Possibly this can be a set of AND/OR clauses, and 
 	 * possibly with a negation. 
 	 * 
-	 * Using a tree structure, a sequence of AND clauses will be in the format: 
+	 * Using a tree structure, a sequence of AND/OR clauses will be in the format: 
 	 *                     A AND (B AND (C AND (D AND E) 
+	 *                     A OR  (B OR  (C OR  (D OR  E) 
 	 * where each AND is a node of the tree with two paths. Each element A, B... E 
 	 * can be a equal formula or a simple node. The evaluation build a List containing 
 	 * each A, B... E element and evaluate then like an equivalent AND formula: 
@@ -1298,14 +1296,14 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 		
 		while(rOperand != null){
 			if(rOperand.getTypeNode() == EnumType.SIMPLE_OPERATOR){
-				BuiltInRV builtIn = (BuiltInRV) formulaTree.getNodeVariable();
+				BuiltInRV builtIn = (BuiltInRV) rOperand.getNodeVariable();
 				
-				if(operator.equals(AND_OPERATOR) && (builtIn instanceof BuiltInRVAnd)){
+				if(operator.equals(SPARQL_AND_OPERATOR) && (builtIn instanceof BuiltInRVAnd)){
 					operandToEvaluate = rOperand.getChildren().get(0);
 					componentList.add(operandToEvaluate); 
 					rOperand = rOperand.getChildren().get(1); 
 				}else{
-					if(operator.equals(OR_OPERATOR) && (builtIn instanceof BuiltInRVOr)){
+					if(operator.equals(SPARQL_OR_OPERATOR) && (builtIn instanceof BuiltInRVOr)){
 						operandToEvaluate = rOperand.getChildren().get(0);
 						componentList.add(operandToEvaluate); 
 						rOperand = rOperand.getChildren().get(1); 
@@ -1365,6 +1363,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 			List<OVInstance> ovInstanceList, 
 			List<OrdinaryVariable> ovFaultList){
 		
+		System.out.println("Evaluating atom " + component );
 		String query = ""; 
 		
 		switch(component.getTypeNode()){
@@ -1394,6 +1393,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 			throw new IllegalStateException("Invalid context node formula: " + component);		
 		}
 		
+		System.out.println("Query for atom: " + query);
 		return query; 
 	}	
 	
@@ -1497,10 +1497,10 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				BuiltInRV builtIn = (BuiltInRV) formulaTree.getNodeVariable();
 
 				if(builtIn instanceof BuiltInRVAnd){
-					query+= makeBinaryStatement(formulaTree, ovInstanceList, ovFaultList, AND_OPERATOR);
+					query+= makeBinaryStatement(formulaTree, ovInstanceList, ovFaultList, SPARQL_AND_OPERATOR);
 				}else
 					if(builtIn instanceof BuiltInRVOr){
-						query+= makeBinaryStatement(formulaTree, ovInstanceList, ovFaultList, OR_OPERATOR);
+						query+= makeBinaryStatement(formulaTree, ovInstanceList, ovFaultList, SPARQL_OR_OPERATOR);
 					}else
 						if(builtIn instanceof BuiltInRVEqualTo){
 							query+= makeEqualStatement(formulaTree, ovInstanceList, ovFaultList, true); 	
@@ -1578,7 +1578,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 			e.printStackTrace();
 		} 
 
-		if(listResult != null){
+		if((listResult != null)&&(listResult.size() > 0)){
 
 			//TODO This only deal with a single fault ordinary variable! 
 
@@ -1642,7 +1642,8 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 		}
 
 		if (residentNode.getArgumentList().size() != listArguments.size()) {
-			throw new IllegalArgumentException("Findings of " + residentNode + " should have " + residentNode.getArgumentList().size() + " arguments.");
+			throw new IllegalArgumentException("Searching finding for node " + residentNode + " fail. Node have " + 
+		                                       residentNode.getArgumentList().size() + " ovs, but method was called with " + listArguments.size() + " ovs.");
 		}
 
 		if (listArguments.size() == 0) {
@@ -1953,11 +1954,18 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 			try {
 				boolean result = triplestoreController.executeAskQuery(query);
 
-				StateLink link = residentNode.getPossibleValueByName("" + result); 
+				//This are relations on base. If we don't have the predicate, we don't have a finding, so return null. 
+				//Triplestores only are able to keep positive facts, so, only positive answers will be a fact. The others need the 
+				//treatment of uncertainty. 
+				if(result == false){
+					return null; 
+				}else{
+					StateLink link = residentNode.getPossibleValueByName("" + result); 
 
-				if(link != null){
-					System.out.println("Returned: " + link);
-					return link; 
+					if(link != null){
+						System.out.println("Returned: " + link);
+						return link; 
+					}
 				}
 			} catch (InvalidQuerySintaxException e) {
 				// TODO Auto-generated catch block
@@ -1993,14 +2001,16 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				return null; 
 			}
 
+			//We don't have the information on the base, so we don't have a finding in this case. 
 			if(resultList.size() == 0){
-				if ((residentNode.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES)&&
-						(residentNode.getArgumentList().size() == 1)){
-					//Closed World Assumption - If the base haven't a statement, it is false
-					return residentNode.getPossibleValueByName("false"); 
-				}else{
-					return null; 
-				}
+				//TODO Analyse this change in methods that use searchFinding for evaluate context nodes. 
+//				if ((residentNode.getTypeOfStates() == ResidentNode.BOOLEAN_RV_STATES)&&
+//						(residentNode.getArgumentList().size() == 1)){
+//					//Closed World Assumption - If the base haven't a statement, it is false
+//					return residentNode.getPossibleValueByName("false"); 
+//				}else{
+				return null; 
+//				}
 			}
 
 			if(resultList.size() > 1){
@@ -2403,8 +2413,8 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 			if(!find){
 				int index = ovFaultList.indexOf(ov); 
 				
-				if(index <= 0){
-					throw new IllegalArgumentException("Ordinary Variable don't filled.");
+				if(index < 0){
+					throw new IllegalArgumentException("Ordinary Variable unfilled " + ov + " was not into ov fault list.");
 				}
 				variableInstanceList[i] = "?X" + index; 
 			}

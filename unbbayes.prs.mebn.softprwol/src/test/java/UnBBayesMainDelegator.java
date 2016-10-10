@@ -22,7 +22,7 @@ public class UnBBayesMainDelegator {
 	 */
 	public static void main(String[] args) {
 		// change default locale
-		Locale.setDefault(new Locale("en"));
+//		Locale.setDefault(new Locale("en"));
 
 		Debug.setDebug(true);
 		

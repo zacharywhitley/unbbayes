@@ -38,6 +38,7 @@ public class TriplestoreController implements DatabaseStatusObservable {
 		if(triplestore != null){
 			if(triplestore.isConnected()){
 				triplestore.shutdown();
+				notifyListeners(); 
 			}
 		}
 		
@@ -59,7 +60,7 @@ public class TriplestoreController implements DatabaseStatusObservable {
 	}
 	
 	public boolean isConnected(){
-		if(triplestore!=null){
+		if(triplestore != null){
 			return triplestore.isConnected();
 		}else{
 			return false; 

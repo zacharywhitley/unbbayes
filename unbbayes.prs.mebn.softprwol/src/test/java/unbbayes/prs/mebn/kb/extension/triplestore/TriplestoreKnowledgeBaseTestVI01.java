@@ -94,7 +94,7 @@ public class TriplestoreKnowledgeBaseTestVI01 {
 	public static void turnOnKnowledgeBase(){
 		System.out.println("Knwoledge Base Turn On");
 		
-		triplestoreKB = (TriplestoreKnowledgeBase)TriplestoreKnowledgeBase.getInstance(mebn, new EmptyMediator()); 
+		triplestoreKB = (TriplestoreKnowledgeBase)TriplestoreKnowledgeBase.getInstance(mebn); 
 				
 		kbController = triplestoreKB.getTriplestoreController(); 
 		

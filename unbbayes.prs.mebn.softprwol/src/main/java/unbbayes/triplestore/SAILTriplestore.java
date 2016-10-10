@@ -32,13 +32,13 @@ import unbbayes.triplestore.exception.TriplestoreException;
 import unbbayes.triplestore.exception.TriplestoreQueryEvaluationException;
 import unbbayes.util.Parameters;
 
-public class SAILTriplestore implements Triplestore{
+public class SAILTriplestore implements Triplestore {
 
-	Parameters parameters; 
-	
+	Parameters parameters;
+
 	private String url = "";
 	private String repositoryId = "";
-	
+
 	// The repository manager
 	private RepositoryManager repositoryManager;
 
@@ -49,38 +49,44 @@ public class SAILTriplestore implements Triplestore{
 	// From repository.getConnection() - the connection through which we will
 	// use the repository
 	private RepositoryConnection repositoryConnection;
-	
+
 	// A map of namespace-to-prefix
 	private Map<String, String> namespacePrefixes = new HashMap<String, String>();
-	
-	private QueryLanguage queryLanguage; 
-	
-	boolean isConnected = false; 
-	
-	public SAILTriplestore(Parameters parameters){
-		this.parameters = parameters; 
-		
-		queryLanguage = QueryLanguage.SPARQL; 
+
+	private QueryLanguage queryLanguage;
+
+	boolean isConnected = false;
+
+	public SAILTriplestore(Parameters parameters) {
+		this.parameters = parameters;
+
+		queryLanguage = QueryLanguage.SPARQL;
 	}
 
 	@Override
 	public void setParameterValue(String parameter, String value) {
-		this.parameters.setParameterValue(parameter, value); 
+		this.parameters.setParameterValue(parameter, value);
 	}
 
 	@Override
-	public boolean connectRemoteRepository() throws TriplestoreException{
+	public boolean connectRemoteRepository() throws TriplestoreException {
+
+		if(isConnected){
+			shutdown(); 
+		}
 		
 		this.url = parameters.getParameterValue(PARAM_URL);
 
 		this.repositoryId = parameters.getParameterValue(PARAM_REPOSITORY);
 
 		if ((repositoryId == null) || (repositoryId.equals(""))) {
-			throw new TriplestoreException("Can't connect to repository. No repository ID specified.");
+			throw new TriplestoreException(
+					"Can't connect to repository. No repository ID specified.");
 		}
-		
+
 		try {
-			RemoteRepositoryManager remoteRepositoryManager = new RemoteRepositoryManager(url);
+			RemoteRepositoryManager remoteRepositoryManager = new RemoteRepositoryManager(
+					url);
 
 			String username = parameters.getParameterValue(PARAM_USERNAME);
 			String password = parameters.getParameterValue(PARAM_PASSWORD);
@@ -90,7 +96,8 @@ public class SAILTriplestore implements Triplestore{
 					username = "";
 				if (password == null)
 					password = "";
-				remoteRepositoryManager.setUsernameAndPassword(username, password);
+				remoteRepositoryManager.setUsernameAndPassword(username,
+						password);
 			}
 
 			repositoryManager = remoteRepositoryManager;
@@ -98,13 +105,16 @@ public class SAILTriplestore implements Triplestore{
 
 			repository = repositoryManager.getRepository(repositoryId);
 
-			if(repository == null){
-				throw new TriplestoreException("Unable to establish a connection with the repository " + repositoryId + "."); 
+			if (repository == null) {
+				throw new TriplestoreException(
+						"Unable to establish a connection with the repository "
+								+ repositoryId + ".");
 			}
-			
+
 			repositoryConnection = repository.getConnection();
 
-			RepositoryResult<Namespace> iter = repositoryConnection.getNamespaces();
+			RepositoryResult<Namespace> iter = repositoryConnection
+					.getNamespaces();
 
 			while (iter.hasNext()) {
 				Namespace namespace = iter.next();
@@ -114,18 +124,20 @@ public class SAILTriplestore implements Triplestore{
 				Debug.println(prefix + ":\t" + name);
 			}
 			iter.close();
-			
-			isConnected = true; 
+
+			isConnected = true;
 
 		} catch (RepositoryException e) {
-			throw new TriplestoreException("Unable to establish a connection with the server \n'" 
-		                                   + parameters.getParameterValue(PARAM_URL) + "'.");
+			throw new TriplestoreException(
+					"Unable to establish a connection with the server \n'"
+							+ parameters.getParameterValue(PARAM_URL) + "'.");
 		} catch (RepositoryConfigException e) {
-			throw new TriplestoreException("Unable to establish a connection with the server \n'" 
-		                                   + parameters.getParameterValue(PARAM_URL) + "'.");
+			throw new TriplestoreException(
+					"Unable to establish a connection with the server \n'"
+							+ parameters.getParameterValue(PARAM_URL) + "'.");
 		}
-		
-		return isConnected; 
+
+		return isConnected;
 	}
 
 	@Override
@@ -141,9 +153,11 @@ public class SAILTriplestore implements Triplestore{
 				repositoryConnection.close();
 				repository.shutDown();
 				repositoryManager.shutDown();
-				isConnected = false; 
+				isConnected = false;
 			} catch (Exception e) {
-				throw new TriplestoreException("An exception occurred during shutdown: " + e.getMessage());
+				throw new TriplestoreException(
+						"An exception occurred during shutdown: "
+								+ e.getMessage());
 			}
 		}
 	}
@@ -167,19 +181,18 @@ public class SAILTriplestore implements Triplestore{
 	/**
 	 * 
 	 * @param query
-	 * @return null if an error occur; a List of results otherside 
+	 * @return null if an error occur; a List of results otherside
 	 * @throws InvalidQuerySintaxException
 	 * @throws TriplestoreException
 	 * @throws TriplestoreQueryEvaluationException
 	 */
-	public List<String[]> executeSelectQuery(String query) 
-			throws InvalidQuerySintaxException, 
-			       TriplestoreException, 
-			       TriplestoreQueryEvaluationException {
+	public List<String[]> executeSelectQuery(String query)
+			throws InvalidQuerySintaxException, TriplestoreException,
+			TriplestoreQueryEvaluationException {
 
-		List<String[]> resultList = new ArrayList<String[]>(); 
+		List<String[]> resultList = new ArrayList<String[]>();
 
-		TupleQuery preparedOperation = (TupleQuery)prepareSelectQueryOperation(query);
+		TupleQuery preparedOperation = (TupleQuery) prepareSelectQueryOperation(query);
 
 		if (preparedOperation == null) {
 			Debug.println("Unable to parse query: " + query);
@@ -190,44 +203,48 @@ public class SAILTriplestore implements Triplestore{
 
 		TupleQueryResult result;
 		int rows = 0;
-		
+
 		try {
 			result = preparedOperation.evaluate();
-			int numColumns = 0; 
+			int numColumns = 0;
 
 			while (result.hasNext()) {
 				BindingSet tuple = result.next();
 
-				//Headers of each column of result 
+				// Headers of each column of result
 				if (rows == 0) {
-					for (Iterator<Binding> iter = tuple.iterator(); iter.hasNext();) {
-						System.out.print(iter.next().getName()); //Name of column of graph 
+					for (Iterator<Binding> iter = tuple.iterator(); iter
+							.hasNext();) {
+						System.out.print(iter.next().getName()); // Name of
+																	// column of
+																	// graph
 						System.out.print("\t");
-						numColumns++; 
+						numColumns++;
 					}
 					System.out.println();
-					System.out.println("---------------------------------------------");
+					System.out
+							.println("---------------------------------------------");
 				}
 				rows++;
 
-				String[] singleResult = new String[numColumns]; 
-				int i = 0; 
+				String[] singleResult = new String[numColumns];
+				int i = 0;
 				for (Iterator<Binding> iter = tuple.iterator(); iter.hasNext();) {
 					try {
-						Value value = iter.next().getValue(); 
+						Value value = iter.next().getValue();
 						System.out.print(formatRDFValue(value) + "\t");
 
-						if(value instanceof URI){
+						if (value instanceof URI) {
 							URI u = (URI) value;
-							singleResult[i] = u.toString(); 
-							i++; 
-						}else{
-							if(value instanceof Literal){
-								Literal l = (Literal) value; 
-								singleResult[i] = l.getLabel(); 
-								i++; 
-							}else{
-								//TODO think other form of error. An exception? 
+							singleResult[i] = u.toString();
+							i++;
+						} else {
+							if (value instanceof Literal) {
+								Literal l = (Literal) value;
+								singleResult[i] = l.getLabel();
+								i++;
+							} else {
+								// TODO think other form of error. An exception?
 								Debug.println("Invalid query return!");
 								return null;
 							}
@@ -237,31 +254,34 @@ public class SAILTriplestore implements Triplestore{
 					}
 				}
 
-				resultList.add(singleResult); 
+				resultList.add(singleResult);
 				System.out.println("");
 
 			}
-			
+
 			result.close();
 
 		} catch (QueryEvaluationException e1) {
 			e1.printStackTrace();
-			throw new TriplestoreQueryEvaluationException(e1.getMessage()); 
+			throw new TriplestoreQueryEvaluationException(e1.getMessage());
 		}
 
 		long queryEnd = System.nanoTime();
-		Debug.println(rows + " result(s) in " + (queryEnd - queryBegin) / 1000000 + "ms.");
+		Debug.println(rows + " result(s) in " + (queryEnd - queryBegin)
+				/ 1000000 + "ms.");
 
-		return resultList; 
+		return resultList;
 	}
 
-	public boolean executeAskQuery(String query) throws TriplestoreQueryEvaluationException, InvalidQuerySintaxException, TriplestoreException{
+	public boolean executeAskQuery(String query)
+			throws TriplestoreQueryEvaluationException,
+			InvalidQuerySintaxException, TriplestoreException {
 
-		boolean result = false; 
+		boolean result = false;
 
 		BooleanQuery preparedOperation = null;
 
-		preparedOperation = (BooleanQuery)prepareAskQueryOperation(query);
+		preparedOperation = (BooleanQuery) prepareAskQueryOperation(query);
 
 		if (preparedOperation == null) {
 			Debug.println("Unable to parse query: " + query);
@@ -271,52 +291,54 @@ public class SAILTriplestore implements Triplestore{
 		try {
 			result = preparedOperation.evaluate();
 		} catch (QueryEvaluationException e) {
-			throw new TriplestoreQueryEvaluationException(e.getMessage()); 
+			throw new TriplestoreQueryEvaluationException(e.getMessage());
 		}
 
-		return result; 
+		return result;
 	}
-	
-	private TupleQuery prepareSelectQueryOperation(String query) throws TriplestoreException, InvalidQuerySintaxException{
+
+	private TupleQuery prepareSelectQueryOperation(String query)
+			throws TriplestoreException, InvalidQuerySintaxException {
 
 		TupleQuery result = null;
 
 		try {
-			result = repositoryConnection.prepareTupleQuery(
-					queryLanguage, query);
+			result = repositoryConnection.prepareTupleQuery(queryLanguage,
+					query);
 		} catch (RepositoryException e) {
 			e.printStackTrace();
-			throw new TriplestoreException(e.getMessage()); 
+			throw new TriplestoreException(e.getMessage());
 		} catch (MalformedQueryException e) {
 			e.printStackTrace();
-			throw new InvalidQuerySintaxException(e.getMessage()); 
+			throw new InvalidQuerySintaxException(e.getMessage());
 		}
 
-		return result; 
+		return result;
 	}
 
-	private BooleanQuery prepareAskQueryOperation(String query) throws TriplestoreException, InvalidQuerySintaxException{
+	private BooleanQuery prepareAskQueryOperation(String query)
+			throws TriplestoreException, InvalidQuerySintaxException {
 
 		BooleanQuery result = null;
 
 		try {
-			result = repositoryConnection.prepareBooleanQuery(
-					queryLanguage, query);
+			result = repositoryConnection.prepareBooleanQuery(queryLanguage,
+					query);
 		} catch (RepositoryException e) {
 			e.printStackTrace();
-			throw new TriplestoreException(e.getMessage()); 
+			throw new TriplestoreException(e.getMessage());
 		} catch (MalformedQueryException e) {
 			e.printStackTrace();
-			throw new InvalidQuerySintaxException(e.getMessage()); 
+			throw new InvalidQuerySintaxException(e.getMessage());
 		}
 
-		return result; 
+		return result;
 
 	}
-	
+
 	/**
-	 * Auxiliary method, printing an RDF value in a "fancy" manner. In case of URI, qnames are printed for
-	 * better readability. 
+	 * Auxiliary method, printing an RDF value in a "fancy" manner. In case of
+	 * URI, qnames are printed for better readability.
 	 * 
 	 * @param value
 	 *            The value to format
@@ -339,12 +361,12 @@ public class SAILTriplestore implements Triplestore{
 
 	@Override
 	public String getRepositoryURI() {
-		if((this.url != null) && (!this.url.equals("")) && (this.repositoryId != null)){
+		if ((this.url != null) && (!this.url.equals(""))
+				&& (this.repositoryId != null)) {
 			return this.url + this.repositoryId;
-		}else{
-			return ""; 
+		} else {
+			return "";
 		}
 	}
-	
 
 }

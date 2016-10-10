@@ -3,6 +3,7 @@ package unbbayes.gui.mebn.extension.kb.triplestore;
 import java.awt.Color;
 
 import javax.swing.JButton;
+import javax.swing.JTextField;
 import javax.swing.JToolBar;
 
 import unbbayes.prs.mebn.kb.KnowledgeBase;
@@ -26,6 +27,8 @@ public class TriplestoreToolBar extends JToolBar implements DatabaseStatusObserv
 	JButton btnLoadTBox; 
 	JButton btnQuery; 
 
+	JTextField lblNameReposit; 
+	
 	
 	public TriplestoreToolBar(){
 		super(); 
@@ -39,7 +42,13 @@ public class TriplestoreToolBar extends JToolBar implements DatabaseStatusObserv
 		btnLoadTBox= new JButton("LoadTBox"); 
 		btnQuery =new JButton("Query"); 
 		
+		lblNameReposit = new JTextField(100);
+		lblNameReposit.setBackground(Color.WHITE);
+		lblNameReposit.setEditable(false);
+		
 		add(btnStatus); 
+		add(lblNameReposit); 
+		
 //		add(btnConfigure);  
 //		add(btnConnect);     
 //		add(btnLoadTBox); 
@@ -57,6 +66,7 @@ public class TriplestoreToolBar extends JToolBar implements DatabaseStatusObserv
 		btnStatus.setBackground(Color.green);
     	btnStatus.setText("ON");
 		btnStatus.setToolTipText(this.getKb().getTriplestoreController().getTriplestore().getRepositoryURI());
+		lblNameReposit.setText(getKb().getTriplestoreController().getTriplestore().getRepositoryURI());
     	this.repaint();
 	}
 	
@@ -93,6 +103,8 @@ public class TriplestoreToolBar extends JToolBar implements DatabaseStatusObserv
 		}else{
 			this.setStatusOff();
 		}
+		
+		this.updateUI();
 		
 	}
 

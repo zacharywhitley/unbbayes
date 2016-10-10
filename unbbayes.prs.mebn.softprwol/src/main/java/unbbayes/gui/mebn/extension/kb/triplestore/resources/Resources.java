@@ -1,6 +1,5 @@
 package unbbayes.gui.mebn.extension.kb.triplestore.resources;
 
-
 import java.util.ArrayList;
 
 /**
@@ -32,8 +31,11 @@ public class Resources extends unbbayes.gui.mebn.resources.Resources {
 	 */
 	static final Object[][] contents =
 	{	
+		{"Message" , "Message"},
+		{"Error" , "Error"},
+		
 		{"ConnectionError" , "Error trying connect to triplestore."},
-		{"ConnectionSuccessfull" , "Connection to triplestore sucessfull."},
+		{"ConnectionSuccessfull" , "Connection sucessfull."},
 		
 	};
 

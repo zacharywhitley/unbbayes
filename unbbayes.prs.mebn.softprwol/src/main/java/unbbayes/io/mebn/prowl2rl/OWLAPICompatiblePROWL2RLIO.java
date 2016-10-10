@@ -99,7 +99,7 @@ import unbbayes.util.Debug;
 public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO implements IPROWL2RLModelUser{
 	
 	//TODO For implement fast, this class only repeat the methods of OWLAPICompatiblePROWL2IO for save/load PR-OWL 2 ontologies 
-	//     changing the properties names that are diffent in PR-OWL 2 RL. In future, change for don't repeat the code of the 
+	//     changing the properties names that are different in PR-OWL 2 RL. In future, change for don't repeat the code of the 
 	//     parent class. 
 	
 	private final String PROWL2RLMODELFILEPATH = "pr-owl/pr-owl2rl.owl";
@@ -156,6 +156,8 @@ public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO impleme
 			try {
 				// load file assuming that it is a plug-in resource (in such case, we must tell plug-in classloaders to look for files).
 				prowl2RLDefinitionFile = new File(this.getClass().getClassLoader().getResource(this.getPROWL2ModelFilePath()).toURI());
+//				prowl2RLDefinitionFile = new File("j:/pr-owl/pr-owl2rl.owl");
+				System.out.println("Carregou: " + prowl2RLDefinitionFile);
 			} catch (Exception e1) {
 				try {
 					Debug.println(this.getClass(), e1.getMessage() + " - Could not load Pr-OWL2 RL definitions from " + this.getPROWL2ModelFilePath() + " in plug-in's resource folder. Retry using project's root folder...", e1);
@@ -266,7 +268,6 @@ public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO impleme
 			return;
 		}
 		
-		//TODO Implement changes on PR-OWL 2 RL. 
 		try {
 			// load object entities and fill the mapping of object entities
 			this.setMapLabelToObjectEntity(this.loadObjectEntity(ontology, mebn));
@@ -337,7 +338,7 @@ public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO impleme
 		PrefixManager prefixManager = this.getDefaultPrefixManager();	// this is the PR-OWL2 prefix
 		
 		// extract owl class DomainResidentNode
-		OWLClass owlClassDomainResidentNode = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2ModelUser.DOMAINRESIDENT, prefixManager); 
+		OWLClass owlClassDomainResidentNode = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(IPROWL2RLModelUser.DOMAINRESIDENT, prefixManager); 
 		if (!ontology.containsClassInSignature(owlClassDomainResidentNode.getIRI(), true)) {
 			// use old definition
 			owlClassDomainResidentNode = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(PROWLModelUser.DOMAIN_RESIDENT, prefixManager); 
@@ -777,9 +778,9 @@ public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO impleme
 				continue;
 			}
 			// ignore it if it is not declared in PR-OWL2 definition. Use string comparison to prefixes.
-			if (!builtInRVIndividual.asOWLNamedIndividual().getIRI().toString().startsWith(IPROWL2ModelUser.PROWL2_NAMESPACEURI)) {
+			if (!builtInRVIndividual.asOWLNamedIndividual().getIRI().toString().startsWith(IPROWL2RLModelUser.PROWL2RL_NAMESPACEURI)) {
 				try{
-					Debug.println(this.getClass(), builtInRVIndividual + " is not in " + IPROWL2ModelUser.PROWL2_NAMESPACEURI+ " namespace. It is going to be ignored by built in RV loader.");
+					Debug.println(this.getClass(), builtInRVIndividual + " is not in " + IPROWL2RLModelUser.PROWL2RL_NAMESPACEURI+ " namespace. It is going to be ignored by built in RV loader.");
 				} catch (Throwable t) {
 					t.printStackTrace();
 				}
@@ -1138,6 +1139,7 @@ public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO impleme
 						Argument argument = this.getMEBNFactory().createArgument(this.extractName(ontology, argumentIndividual.asOWLNamedIndividual()), domainResidentNode); 
 						domainResidentNode.addArgument(argument); 
 						this.getMapArgument().put(this.extractName(ontology, argumentIndividual.asOWLNamedIndividual()), argument); 
+						System.out.println("Adicionado no ponto 1");
 						Debug.println(this.getClass(), "-> " + residentNodeIndividual + "-> ... -> " + hasArgument + " = " + argumentIndividual); 
 						
 						try {
@@ -1839,8 +1841,17 @@ public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO impleme
 	        try {
 	        	// assume there is only 1 value
 	        	argument.setArgNumber(Integer.parseInt(owlLiterals.iterator().next().getLiteral()));
+	        	
+	        	System.out.println("Setting ArgNumber:");
+    			System.out.println("Argument = " + argument.getName());
+    			System.out.println("ArgNumber = " + argument.getArgNumber());
+    			
 	        } catch (Exception e) {
 	        	// hasArgNumber was null or a non-integer. This is an error, but lets try going on....
+	        	
+	        	System.out.println("Error setting argnumber");
+    			System.out.println("Argument = " + argument.getName());
+    			
 	        	Debug.println(this.getClass(), ordinaryVariableArgumentIndividual + " - " + hasArgNumber + " = ERROR");
 	        	e.printStackTrace();
 			}
@@ -2016,6 +2027,7 @@ public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO impleme
 			
 			// extract 1st level arguments (arguments directly connected to a node) by name
 			String argumentName = this.extractName(ontology, mExpressionArgumentIndividual.asOWLNamedIndividual());
+			System.out.println("Analysing argument " + argumentName);
 			
 			Argument argument = this.getMapArgument().get(argumentName); 
 			if (argument == null){
@@ -2076,8 +2088,17 @@ public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO impleme
 			Collection<OWLLiteral> literals = this.getDataPropertyValues(mExpressionArgumentIndividual, hasArgNumber, ontology);			
 			try {
 				argument.setArgNumber(Integer.parseInt(literals.iterator().next().getLiteral()));
+				
+	        	System.out.println("Setting ArgNumber:");
+    			System.out.println("Argument = " + argument.getName());
+    			System.out.println("ArgNumber = " + argument.getArgNumber());
+    			
 			} catch (Exception e) {
 				// the argnumber was empty or invalid... This is an error, but lets try going on...
+				
+	        	System.out.println("Error setting argnumber");
+    			System.out.println("Argument = " + argument.getName());
+    			
 				e.printStackTrace();
 			}
 			
@@ -2193,8 +2214,10 @@ public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO impleme
 							this.getMapArgument().put(this.extractName(ontology, argumentIndividual.asOWLNamedIndividual()), innerArgument); 
 							try {
 								Debug.println(this.getClass(), "-> " + typeOfArgument + ": " + hasArgument + " = " + argumentIndividual); 
+								System.out.println("Adicionado no ponto 2");
 							} catch (Throwable t) {
 								t.printStackTrace();
+								System.out.println("Erro no ponto 2");
 							}
 							
 							try {

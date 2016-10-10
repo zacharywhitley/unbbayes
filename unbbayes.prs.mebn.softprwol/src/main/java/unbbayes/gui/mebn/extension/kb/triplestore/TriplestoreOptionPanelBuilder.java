@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
@@ -33,13 +34,17 @@ public class TriplestoreOptionPanelBuilder extends JScrollPane implements
 	
 	private JButton btnStatus; 
 	
-  	private static ResourceBundle resource = ResourceController.newInstance().getBundle(
-  			unbbayes.gui.mebn.extension.kb.triplestore.resources.Resources.class.getName());
+  	private ResourceBundle resource; 
   	
 	public TriplestoreOptionPanelBuilder(){
 		
 		super(); 
 		
+		resource = ResourceController.newInstance().getBundle(
+	  			unbbayes.gui.mebn.extension.kb.triplestore.resources.Resources.class.getName(),
+				Locale.getDefault(),
+				this.getClass().getClassLoader());
+	  	
 		this.setName("Available OWL2 Reasoners");
 		
 	}
@@ -58,7 +63,6 @@ public class TriplestoreOptionPanelBuilder extends JScrollPane implements
 	@Override
 	public void discardChanges() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -98,14 +102,14 @@ public class TriplestoreOptionPanelBuilder extends JScrollPane implements
 		
 		JPanel line = new JPanel(); 
 		line.add(new JLabel("   Database URL:"));
-		databaseURLTextField.setText("http://localhost:8080/graphdb-workbench-free/");
+//		databaseURLTextField.setText("http://localhost:8080/graphdb-workbench-free/");
 		line.add(databaseURLTextField); 
 		
 		formPanel.add(line); 
 		
 		line = new JPanel(); 
 		line.add(new JLabel("Repository Name:")); 
-		repositoryNameTextField.setText("LUBM1RL");
+//		repositoryNameTextField.setText("LUBM1RL");
 		line.add(repositoryNameTextField);
 		formPanel.add(line); 
 		
@@ -128,25 +132,37 @@ public class TriplestoreOptionPanelBuilder extends JScrollPane implements
             	
         		params.setParameterValue(Triplestore.PARAM_URL, databaseURLTextField.getText());
         		params.setParameterValue(Triplestore.PARAM_REPOSITORY, repositoryNameTextField.getText());
-            	
+        		
         		try {
 					kb.getTriplestoreController().startConnection(params);
 					kb.getTriplestoreController().iterateNamespaces();
 					
 					setStatusOn();
 					
+					JOptionPane.showMessageDialog(null, 
+							resource.getString("ConnectionSuccessfull"),
+							resource.getString("Message"), 
+							JOptionPane.INFORMATION_MESSAGE);
+					
 				} catch (TriplestoreException e2) {
+					
+					setStatusOff();
+					
 					JOptionPane.showMessageDialog(null, 
 							e2.getMessage(),
-							resource.getString("ConnectionError"), 
+							resource.getString("Error"), 
 							JOptionPane.ERROR_MESSAGE);
 					e2.printStackTrace();
+					
 				} catch (Exception e1) {
+					
+					setStatusOff();
 					JOptionPane.showMessageDialog(null, 
 							e1.getMessage(),
-							resource.getString("ConnectionError"), 
+							resource.getString("Error"), 
 							JOptionPane.ERROR_MESSAGE);
 					e1.printStackTrace();
+					
 				}
             }
         });
