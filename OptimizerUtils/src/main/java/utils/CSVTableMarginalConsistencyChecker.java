@@ -4,6 +4,7 @@
 package utils;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -56,6 +57,12 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	 * one for correlation data and one for detector x alert data 
 	 */
 	private String defaultDataFileFolder = "RCPData";
+
+	/** If true, {@link #testCSVFileConsistency()} will print information about dependency between variables */
+	private boolean isToPrintDependency = true;
+
+	/** Name of the output file to print statistics, like mutual information and chi-square tests' p-values */
+	private String outputFileName = "DependencyStatistics.csv";
 
 	/**
 	 * @param name
@@ -883,11 +890,86 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 				}
 				assertEquals("Table did not have matches. " + correlationTable, correlationTable.variableCount(), numMatches);
 			}
+			
+			// print the results of chi-square test of independence. 
+			// results are p-values, so smaller values (e.g. less than 0.05) mean dependence.
+			
+			if (isToPrintDependency()) {
+				// this will be used to test chi-square independence test's p-value.
+				ChiSqureTestWithZero chiSquareTester = new ChiSqureTestWithZero();
+				
+				// print statistics to a separate file
+				PrintStream printer = new PrintStream(new FileOutputStream(new File(innerFolder.getName() + "_" + getOutputFileName()), false));
+//				System.out.println("=====================================================");
+//				System.out.println("Dependence statistics");
+//				System.out.println("=====================================================");
+//				System.out.println("\"Var1\",\"Var2\",\"Correlation\",\"Mutual information\",\"Chi-Square p-value\"");
+				printer.println("\"Var1\",\"Var2\",\"Mutual information\",\"Chi-Square p-value\"");
+				tables = new ArrayList<PotentialTable>(correlationTables);
+				tables.addAll(alertTables);
+				for (PotentialTable table : tables) {
+//					System.out.println("-------------------------------------------------------");
+					if (table.variableCount() != 2) {
+						Debug.println(getClass(), "Skipping table without 2 variables: " + table);
+						continue;
+					}
+					
+					// print the variables
+					for (int i = 0; i < table.variableCount(); i++) {
+						printer.print("\"" + table.getVariableAt(i).getName() + "\"");
+						printer.print(",");
+					}
+					
+//					// print correlation
+//					List<double[]> countArrays = getCountArrays(table);	// convert table to arrays of counts
+//					assertEquals(2, countArrays.size());
+//					System.out.print(new PearsonsCorrelation().correlation(countArrays.get(0), countArrays.get(1)));
+//					System.out.print(",");
+					
+					// print mutual information
+					printer.print("\"" + table.getMutualInformation(0, 1) + "\"");	// we know that there are only 2 vars in table
+					printer.print(",");
+					
+					// calculate and print p-value of chi-square test
+					long[][] counts = getContingencyMatrix(table);	// convert table to matrix of contingency
+					printer.print("\"" + chiSquareTester.chiSquareTest(counts) + "\"");	// values lower than 0.05 strongly suggest dependence
+					
+					// end of line
+					printer.println();
+//					System.out.println("-------------------------------------------------------");
+				}
+//				System.out.println("=====================================================");
+				printer.close();
+			}
+			
 		}
 		
 	}
 	
-	
+	/**
+	 * Simply converts the table to an equivalent matrix of long.
+	 * @param table : table of counts of 2 variables
+	 * @return equivalent representation as a matrix of long.
+	 * States of the variable at index 1 of {@link PotentialTable#getVariableAt(int)} will be the rows of the matrix,
+	 * and states of the variable at index 0 of {@link PotentialTable#getVariableAt(int)} will be the columns of the matrix.
+	 */
+	public long[][] getContingencyMatrix(PotentialTable table) {
+		// basic assertion
+		assertNotNull(table);
+		assertEquals(2, table.getVariablesSize());
+		
+		// prepare the matrix to return
+		long[][] ret = new long[table.getVariableAt(1).getStatesSize()][table.getVariableAt(0).getStatesSize()];
+		
+		for (int row = 0, tableIndex = 0; row < ret.length; row++) {
+			for (int column = 0; column < ret[row].length; column++, tableIndex++) {
+				ret[row][column] = (long) table.getValue(tableIndex);
+			}
+		}
+		
+		return ret;
+	}
+
 	/**
 	 * Compares the content of two tables with same size and same variables (but variables may be in different ordering).
 	 * @param table1
@@ -1063,6 +1145,35 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	}
 
 	/**
+	 * @return : If true, {@link #testCSVFileConsistency()} will print information about dependency between variables
+	 */
+	public boolean isToPrintDependency() {
+		return isToPrintDependency;
+	}
+
+	/**
+	 * @param isToPrintDependency : If true, {@link #testCSVFileConsistency()} will print information about dependency between variables
+	 */
+	public void setToPrintDependency(boolean isToPrintDependency) {
+		this.isToPrintDependency = isToPrintDependency;
+	}
+	
+
+	/**
+	 * @return the outputFileName : Name of the output file to print statistics, like mutual information and chi-square tests' p-values
+	 */
+	public String getOutputFileName() {
+		return outputFileName;
+	}
+
+	/**
+	 * @param outputFileName the outputFileName to set : Name of the output file to print statistics, like mutual information and chi-square tests' p-values
+	 */
+	public void setOutputFileName(String outputFileName) {
+		this.outputFileName = outputFileName;
+	}
+
+	/**
 	 * Execute this main function/method if you don't have a driver program (i.e. an invoker) of JUnit tests.
 	 * @param args 
 	 */
@@ -1070,6 +1181,7 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 		CommandLineParser parser = new DefaultParser();
 		Options options = new Options();
 		options.addOption("i","input", true, "Directory to get folders with pairs of csv files.");
+		options.addOption("o","output", true, "Name of the resulting csv files which will be written to each input directory.");
 		options.addOption("n","num-detectors", true, "Expected number of detectors.");
 		options.addOption("c","num-counts", true, "Expected number of counts (users) per table.");
 		options.addOption("d","debug", false, "Enables debug mode.");
@@ -1105,6 +1217,9 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 		if (cmd.hasOption("i")) { // if this param is not set, then it will look at a default place
 			test.setDefaultDataFileFolder(cmd.getOptionValue("i"));
 		}
+		if (cmd.hasOption("o")) { // if this param is not set, then it will look at a default place
+			test.setOutputFileName(cmd.getOptionValue("o"));
+		}
 		if (cmd.hasOption("n")) { // if this param is not set, then it will look at a default place
 			test.setExpectedNumDetectors(Integer.parseInt(cmd.getOptionValue("n")));
 		}
@@ -1130,6 +1245,7 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 		}
 	}
 	
+
 	/**
 	 * This is just an extension of {@link ResultPrinter} with
 	 * a public wrapper of methods {@link #printHeader(long)},
