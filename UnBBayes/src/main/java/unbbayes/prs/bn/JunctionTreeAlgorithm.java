@@ -3339,6 +3339,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 * @see JunctionTree#getPath(Clique, Clique)
 	 */
 	public double getMutualInformation(ProbabilisticNode node1, ProbabilisticNode node2) {
+		// TODO use PotentialTable#getMutualInformation if two nodes are in same clique
 		// basic assertion
 		if (node1 == null || node2 == null) {
 			return Double.NaN;	// there is no way to calculate mutual information of null
@@ -3397,6 +3398,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	 * @return the entropy of the node
 	 */
 	public double getEntropy(ProbabilisticNode node) {
+		// TODO use PotentialTable#getEntropy instead
 		if (node == null) {
 			return Float.NaN;
 		}

@@ -23,6 +23,8 @@ package unbbayes.prs.bn;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -1198,6 +1200,177 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 	public static void setToUseSingletonArrayOfRemovedCellInDataPT(
 			boolean isToUseSingletonArrayOfRemovedCellInDataPT) {
 		PotentialTable.isToUseSingletonArrayOfRemovedCellInDataPT = isToUseSingletonArrayOfRemovedCellInDataPT;
+	}
+	
+
+	/**
+	 * Obtains the mutual information between two nodes in this table.
+	 * It is assumed that {@link #getValue(int)} of this table are joint distribution (not necessarily normalized) of variables in this table.
+	 * <br/>
+	 * <br/>
+	 * In probability theory and information theory, 
+	 * the mutual information (MI) or (formerly) "trans" information of two random variables is a measure of the variables' mutual dependence.
+	 * <br/>
+	 * <br/>
+	 * The mutual information for nodes X and Y is the expected value of log(P(X,Y) / P(X)P(Y)). In other words,
+	 * it is the SUM [ P(X,Y) * log(P(X,Y) / P(X)P(Y)) ] for all states of X and Y.
+	 * <br/>
+	 * <br/>
+	 * It uses natural logarithm.
+	 * @param indexNode1 : index of one of the node to estimate mutual informatioan. 
+	 * @param indexNode2 : index of the other node to estimate mutual information. 
+	 * @return : the mutual information. In other words, the expected log(P(X,Y) / P(X)P(Y)).
+	 * @see #getEntropy(int)
+	 */
+	public double getMutualInformation(int indexNode1, int indexNode2) {
+		// basic input assertion
+		if (indexNode1 < 0 || indexNode1 >= getVariablesSize()) {
+			throw new ArrayIndexOutOfBoundsException(indexNode1);
+		}
+		if (indexNode2 < 0 || indexNode2 >= getVariablesSize()) {
+			throw new ArrayIndexOutOfBoundsException(indexNode2);
+		}
+		
+		// the mutual information of same node is its entropy
+		if (indexNode1 == indexNode2) {
+			return this.getEntropy(indexNode1);
+		}
+		
+		// extract the nodes
+		INode node1 = getVariableAt(indexNode1);
+		if (node1 == null) {
+			throw new NullPointerException("Found null node at index " + indexNode1);	// there is no way to calculate mutual information of null
+		}
+		INode node2 = getVariableAt(indexNode2);
+		if (node2 == null) {
+			throw new NullPointerException("Found null node at index " + indexNode2);	// there is no way to calculate mutual information of null
+		}
+		
+		
+		// prepare the value to return
+		double ret = 0;		// this will be a sum, so initialize with 0.
+		
+		// extract the marginals of node1 and node2
+		PotentialTable marginal1 = (PotentialTable) clone();				// use a clone, so that original is kept unchanged
+		marginal1.retainVariables(Collections.singletonList(node1));	// marginalize out all vars except node1.
+		PotentialTable marginal2 = (PotentialTable) clone();				// use a clone, so that original is kept unchanged
+		marginal2.retainVariables(Collections.singletonList(node2));	// marginalize out all vars except node2. 
+		
+		// extract the joint of node1 and node2
+		PotentialTable joint = (PotentialTable) clone();	// use a clone, so that original is kept unchanged
+		{
+			// marginalize out all vars except node1 and node2. 
+			Collection<INode> nodes = new ArrayList<INode>(2);
+			nodes.add(node1);
+			nodes.add(node2);
+			joint.retainVariables(nodes);
+			if (joint.getVariablesSize() != nodes.size()) {
+				throw new RuntimeException("Retaining nodes " + nodes + "from table " + this + " resulted in a table with size " + joint.getVariablesSize());
+			}
+		}
+		
+		// mutual information is calculated on probabilities, so make sure its normalized to 1
+		marginal1.normalize();	
+		marginal2.normalize();
+		joint.normalize();
+		
+		// prepare an array which represents states of node1 and node2
+		int[] coord = joint.getMultidimensionalCoord(0);
+		// iterate on all state space
+		for (int stateNode1 = 0; stateNode1 < marginal1.tableSize(); stateNode1++) {
+			
+			coord[joint.indexOfVariable((Node) node1)] = stateNode1;	// set current state of node1
+			
+			for (int stateNode2 = 0; stateNode2 < marginal2.tableSize(); stateNode2++) {
+				
+				coord[joint.indexOfVariable((Node) node2)] = stateNode2;	// set current state of node2
+				
+				// extract the joint probability of current combination of states
+				float jointProb = joint.getValue(coord);
+				
+				// ret will be the expected (across joint probabilities) of log2(joint/productOfMarginals).
+				// which is equal to sum of joint* log2((joint/marginal1)/marginal2)) = log2(joint/marginal1) -log2(marginal2) = log2(joint)-log2(marginal1)-log2(marginal2) 
+				double factorCurrentState =  jointProb * (Math.log(jointProb) - Math.log(marginal1.getValue(stateNode1)) - Math.log(marginal2.getValue(stateNode2)) );
+				if (!Double.isNaN(factorCurrentState)) {
+					// ignore zero probabilities which will cause log to be NaN
+					ret += factorCurrentState;
+				}
+			}
+		}
+		
+		return Math.abs(ret);
+	}
+	
+
+	/**
+	 * This method calculates the entropy of a node, which is -SUM[P(x)*log(P(x))] for each state x of the variable.
+	 * It is assumed that {@link #getValue(int)} of this table are joint distribution (not necessarily normalized) of variables in this table.
+	 * @param nodeIndex : index of the node to calculate entropy. 
+	 * @return the entropy of the node
+	 * @see #getTemporaryClone()
+	 */
+	public double getEntropy(int nodeIndex) {
+		// basic assertion of arguments
+		if (nodeIndex < 0 || nodeIndex >= getVariablesSize()) {
+			throw new ArrayIndexOutOfBoundsException(nodeIndex);
+		}
+		
+		// this will be the variable to be returned
+		double sum = 0f;
+		
+		// extract the node
+		INode node = this.getVariableAt(nodeIndex);
+		if (node == null) {
+			throw new IllegalArgumentException("Found null at index " + nodeIndex);
+		}
+		
+		// calculate the marginal of this node
+		PotentialTable marginalTable = getTemporaryClone();
+		marginalTable.retainVariables(Collections.singletonList(node));	// marginalize out other variables. 
+		marginalTable.normalize();	// entropy must be calculated over probability, so make sure table is normalized to 1
+		
+		// basic assertion
+		if (marginalTable.tableSize() != node.getStatesSize()) {
+			throw new RuntimeException("Marginalized table " + marginalTable + " has size " + marginalTable.tableSize() + ", but number of states of node " + node + " was " + node.getStatesSize());
+		}
+		
+		// calculate the SUM[P(x)*log(P(x))] for each state
+		for (int state = 0; state < marginalTable.tableSize(); state++) {
+			float marginal = marginalTable.getValue(state);	// extract the marginal probability of current state
+			if (marginal > 0f ) {	// ignore impossible states
+				sum += marginal * Math.log(marginal);		// P(x)*log(P(x))
+			}
+		}
+		
+		// entropy is -SUM[P(x)*log(P(x))]
+		return -sum;
+	}
+
+	/**
+	 * Remove all variables except the node in argument.
+	 * Values in the table will be summed out based on {@link #removeVariable(INode, boolean)}, but
+	 * without normalization.
+	 * @param nodes : nodes/vars to keep in this table
+	 * @see #removeVariable(INode, boolean)
+	 */
+	public void retainVariables(Collection<INode> nodes) {
+		if (nodes == null) {
+			nodes = Collections.EMPTY_LIST;
+		}
+		
+		// check which vars we need to remove
+		Collection<INode> nodesToRemove = new ArrayList<INode>(getVariablesSize());
+		for (int i = 0; i < getVariablesSize(); i++) {
+			INode nodeToRemove = getVariableAt(i);
+			if (!nodes.contains(nodeToRemove)) {
+				nodesToRemove.add(nodeToRemove);
+			}
+		}
+		
+		// marginalize out vars
+		for (INode nodeToRemove : nodesToRemove) {
+			removeVariable(nodeToRemove, false);
+		}
 	}
 
 	
