@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -63,6 +65,8 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 
 	/** Name of the output file to print statistics, like mutual information and chi-square tests' p-values */
 	private String outputFileName = "DependencyStatistics.csv";
+
+	private boolean isToPrintCorrelation = true;
 
 	/**
 	 * @param name
@@ -903,8 +907,11 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 //				System.out.println("=====================================================");
 //				System.out.println("Dependence statistics");
 //				System.out.println("=====================================================");
-//				System.out.println("\"Var1\",\"Var2\",\"Correlation\",\"Mutual information\",\"Chi-Square p-value\"");
-				printer.println("\"Var1\",\"Var2\",\"Mutual information\",\"Chi-Square p-value\"");
+				if (isToPrintCorrelation()) {
+					printer.println("\"Var1\",\"Var2\",\"Correlation\",\"Mutual information\",\"Chi-Square p-value\"");
+				} else {
+					printer.println("\"Var1\",\"Var2\",\"Mutual information\",\"Chi-Square p-value\"");
+				}
 				tables = new ArrayList<PotentialTable>(correlationTables);
 				tables.addAll(alertTables);
 				for (PotentialTable table : tables) {
@@ -920,11 +927,13 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 						printer.print(",");
 					}
 					
-//					// print correlation
-//					List<double[]> countArrays = getCountArrays(table);	// convert table to arrays of counts
-//					assertEquals(2, countArrays.size());
-//					System.out.print(new PearsonsCorrelation().correlation(countArrays.get(0), countArrays.get(1)));
-//					System.out.print(",");
+					// print correlation
+					if (isToPrintCorrelation()) {
+						List<double[]> countArrays = getCountArrays(table);	// convert table to arrays of counts
+						assertEquals(2, countArrays.size());
+						printer.print(new PearsonsCorrelation().correlation(countArrays.get(0), countArrays.get(1)));
+						printer.print(",");
+					}
 					
 					// print mutual information
 					printer.print("\"" + table.getMutualInformation(0, 1) + "\"");	// we know that there are only 2 vars in table
@@ -946,6 +955,52 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 		
 	}
 	
+	/**
+	 * Converts a contingency table to arrays of counts.
+	 * @param table : contingency table
+	 * @return : arrays of counts for each variable in {@link PotentialTable#getVariableAt(int)}
+	 */
+	public List<double[]> getCountArrays(PotentialTable table) {
+		if (table == null) {
+			return Collections.EMPTY_LIST;
+		}
+		
+		// calculate how many datasets we need to create
+		int numDatasets = (int) table.getSum();		// TODO check overflow
+		
+		List<double[]> ret = new ArrayList<double[]>(table.getVariablesSize());
+		
+		// create 1 entry in ret for each variable in the table
+		for (int varIndex = 0; varIndex < table.getVariablesSize(); varIndex++) {
+			
+			double[] data = new double[numDatasets];	// entry in ret
+			
+			// read the table
+			int dataIndex = 0;
+			for (int cell = 0; cell < table.tableSize(); cell++) {
+				
+				int state = table.getMultidimensionalCoord(cell)[varIndex];
+				int count = (int) table.getValue(cell);
+				for (int i = 0; i < count; i++) {
+					if (dataIndex >= numDatasets) {
+						Debug.println(null, "Expected number of datasets is " + numDatasets + ", but attempted to add entry to index " + dataIndex + " for variable " + table.getVariableAt(varIndex));
+					} else {
+						data[dataIndex]	= state;
+					}
+					dataIndex++;
+				}
+			}
+			
+			if (dataIndex != numDatasets) {
+				throw new RuntimeException("Estimated sum of cells in contingency table was " + numDatasets + ", but found " + dataIndex + " for variable " + table.getVariableAt(varIndex));
+			}
+			
+			ret.add(data);
+		}
+		
+		return ret;
+	}
+
 	/**
 	 * Simply converts the table to an equivalent matrix of long.
 	 * @param table : table of counts of 2 variables
@@ -1174,6 +1229,20 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	}
 
 	/**
+	 * @return the isToPrintCorrelation
+	 */
+	public boolean isToPrintCorrelation() {
+		return isToPrintCorrelation;
+	}
+
+	/**
+	 * @param isToPrintCorrelation the isToPrintCorrelation to set
+	 */
+	public void setToPrintCorrelation(boolean isToPrintCorrelation) {
+		this.isToPrintCorrelation = isToPrintCorrelation;
+	}
+
+	/**
 	 * Execute this main function/method if you don't have a driver program (i.e. an invoker) of JUnit tests.
 	 * @param args 
 	 */
@@ -1184,6 +1253,7 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 		options.addOption("o","output", true, "Name of the resulting csv files which will be written to each input directory.");
 		options.addOption("n","num-detectors", true, "Expected number of detectors.");
 		options.addOption("c","num-counts", true, "Expected number of counts (users) per table.");
+		options.addOption("corr","print-correlation", false, "Prints Pearson's correlation to result.");
 		options.addOption("d","debug", false, "Enables debug mode.");
 		
 		CommandLine cmd = null;
@@ -1226,6 +1296,7 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 		if (cmd.hasOption("c")) { // if this param is not set, then it will look at a default place
 			test.setExpectedNumCounts(Integer.parseInt(cmd.getOptionValue("c")));
 		}
+		test.setToPrintCorrelation(cmd.hasOption("corr"));
 		
 		
 		try {
