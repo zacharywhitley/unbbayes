@@ -20,6 +20,8 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.math3.distribution.BetaDistribution;
+import org.apache.commons.math3.distribution.BinomialDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
@@ -1081,12 +1083,12 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		
 		// keep track of which variable is not the alert var
 		INode otherVar = queryVar;
-//		int indexOfOtherVarTrue = indexOfQueryTrue;
-//		int indexOfOtherVarFalse = indexOfQueryFalse;
+		int indexOfOtherVarTrue = indexOfQueryTrue;
+		int indexOfOtherVarFalse = indexOfQueryFalse;
 		if (otherVar.equals(alertVar)) {
 			otherVar = conditionVar;
-//			indexOfOtherVarTrue = indexOfConditionTrue;
-//			indexOfOtherVarFalse = indexOfConditionFalse;
+			indexOfOtherVarTrue = indexOfConditionTrue;
+			indexOfOtherVarFalse = indexOfConditionFalse;
 		}
 		
 		// create an alphabet of true and false, but we need to make sure the indexes are the same of queried var
@@ -1116,8 +1118,11 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 //		Dirichlet betaAlertTrue = new Dirichlet(alphasAlertTrue, dictionary);
 //		Dirichlet betaAlertFalse = new Dirichlet(alphasAlertFalse, dictionary);
 		// constructor of dirichlet without dictionary
-		Dirichlet betaAlertTrue = new Dirichlet(alphasAlertTrue);		
-		Dirichlet betaAlertFalse = new Dirichlet(alphasAlertFalse);		
+//		Dirichlet betaAlertTrue = new Dirichlet(alphasAlertTrue);		
+//		Dirichlet betaAlertFalse = new Dirichlet(alphasAlertFalse);	
+		// use apache commons library instead of mallet
+		BetaDistribution betaAlertTrue = new BetaDistribution(alphasAlertTrue[0], alphasAlertTrue[1]);
+		BetaDistribution betaAlertFalse = new BetaDistribution(alphasAlertFalse[0], alphasAlertFalse[1]);
 		
 		// Create a table that will store the sum of estimates (to be used later to calculate average of estimates)
 		PotentialTable estimateQueryTrue = new ProbabilisticTable();
@@ -1125,7 +1130,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		estimateQueryTrue.fillTable(0);	// initialize with zeros (null value of a sum), because we will fill it with a sum of estimates (and then divide, in order to calculate average)
 		
 		// generate samples
-		Randoms sampler = new Randoms();	// this is used later to draw samples from beta dist
+//		Randoms sampler = new Randoms();	// this is used later to draw samples from beta dist
 		for (int i = 0; i < getNumSubSampleSimulation(); i++) { 
 			
 			// run trials (beta-binomial are like flips of coins, and trials is how many times we flip the coin)
@@ -1139,16 +1144,29 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			// fill histograms with samples from beta-binomial distribution
 			// the number of trials is the total number of alerts (but we reuse the sub samples, so we reduce number of sub-samples from number of trials)
 			int numTrials = (int) (numAlertTotal.getValue(indexOfAlertTrue) - numAlertSubSample.getValue(indexOfAlertTrue));
-			for (int trial = 0; trial < numTrials ; trial++) {
-//				histogramGivenTrue[sampler.nextDiscrete(betaConditionTrue.nextDistribution())]++;
-				count_AlertXOther[indexOfAlertTrue][sampler.nextDiscrete(betaAlertTrue.nextDistribution())]++;
+			
+			BinomialDistribution binomial = new BinomialDistribution(numTrials, betaAlertTrue.sample());
+			int sample = binomial.sample();
+			if (sample > numTrials) {
+				throw new IllegalStateException("Sampled " + sample + " from " + numTrials);
 			}
+			count_AlertXOther[indexOfAlertTrue][indexOfOtherVarTrue] += sample;
+			count_AlertXOther[indexOfAlertTrue][indexOfOtherVarFalse] += (numTrials - sample);
+//			for (int trial = 0; trial < numTrials ; trial++) {
+//				count_AlertXOther[indexOfAlertTrue][sampler.nextDiscrete(betaAlertTrue.nextDistribution())]++;
+//			}
 			// do the same for query given condition = false
 			numTrials = (int) (numAlertTotal.getValue(indexOfAlertFalse) - numAlertSubSample.getValue(indexOfAlertFalse));
-			for (int trial = 0; trial < numTrials ; trial++) {
-//				histogramGivenFalse[sampler.nextDiscrete(betaConditionFalse.nextDistribution())]++;
-				count_AlertXOther[indexOfAlertFalse][sampler.nextDiscrete(betaAlertFalse.nextDistribution())]++;
+			binomial = new BinomialDistribution(numTrials, betaAlertFalse.sample());
+			sample = binomial.sample();
+			if (sample > numTrials) {
+				throw new IllegalStateException("Sampled " + sample + " from " + numTrials);
 			}
+			count_AlertXOther[indexOfAlertFalse][indexOfOtherVarTrue] += sample;
+			count_AlertXOther[indexOfAlertFalse][indexOfOtherVarFalse] += (numTrials - sample);
+//			for (int trial = 0; trial < numTrials ; trial++) {
+//				count_AlertXOther[indexOfAlertFalse][sampler.nextDiscrete(betaAlertFalse.nextDistribution())]++;
+//			}
 			
 			// reuse the sub-samples we had, by adding the sub samples to histogram
 			coord = queryTable.getMultidimensionalCoord(0);	// prepare coord to be used in next step
@@ -1192,7 +1210,6 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 					/ ( ( (float) count_AlertXOther[indexOfQueryTrue][indexOfConditionTrue]) + ( (float) count_AlertXOther[indexOfQueryFalse][indexOfConditionTrue] ) );
 			}
 			
-//			Debug.println(getClass(), "P(" + queryVar + "=true|" + conditionVar + "=true) = " + value);
 			// add P(Query = true | condition = true) to estimate
 			estimateQueryTrue.setValue(indexOfConditionTrue, estimateQueryTrue.getValue(indexOfConditionTrue) + value);
 			
@@ -1207,7 +1224,6 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 					/ ( ( (float) count_AlertXOther[indexOfQueryTrue][indexOfConditionFalse]) + ( (float) count_AlertXOther[indexOfQueryFalse][indexOfConditionFalse] ) );
 			}
 			
-//			Debug.println(getClass(), "P(" + queryVar + "=true|" + conditionVar + "=false) = " + value);
 			// add P(Query = true | condition = false) to estimate
 			estimateQueryTrue.setValue(indexOfConditionFalse, estimateQueryTrue.getValue(indexOfConditionFalse) + value);
 		}

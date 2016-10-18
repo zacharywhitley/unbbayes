@@ -484,6 +484,11 @@ public class SimulatedUserStatisticsCalculatorTest extends TestCase {
 			assertTrue(csvRow[0], upper >= 0 && upper <= 1);
 			assertTrue(csvRow[0], average >= lower);
 			assertTrue(csvRow[0], average <= upper);
+			Map<String,Float> value = new HashMap<String, Float>();
+			value.put("Average", average);
+			value.put("0.6 lower", lower);
+			value.put("0.6 upper", upper);
+			results.put(csvRow[0], value);
 		}
 		assertEquals("Seed=" + seed, 7, results.size());
 		reader.close();
@@ -496,7 +501,6 @@ public class SimulatedUserStatisticsCalculatorTest extends TestCase {
 			assertTrue("Seed=" + seed + ";" + innerFile.getAbsolutePath(), innerFile.delete());
 		}
 		assertTrue("Seed=" + seed + ";" + tempDirichletOutput.getAbsolutePath(), tempDirichletOutput.delete());
-		assertTrue("Seed=" + seed + ";" + tempQuestionOutput.getAbsolutePath(), tempQuestionOutput.delete());
 	}
 
 
