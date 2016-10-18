@@ -1372,6 +1372,17 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 			removeVariable(nodeToRemove, false);
 		}
 	}
+	
+	/**
+	 * @return the sum of the values in this table
+	 */
+	public double getSum() {
+		float sum = 0;
+		for (int i = 0; i < tableSize(); i++) {
+			sum += getValue(i);
+		}
+		return sum;
+	}
 
 	
 }
