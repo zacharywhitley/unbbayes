@@ -384,7 +384,7 @@ public class EntityTree{
 				
 				for(int index = 0; index < knownOVArray.length; index++){
 					if(nodeOfPath.getOv().equals(knownOVArray[index])){
-						if(nodeOfPath.entityName.equals(knownEntityArray[index].getInstanceName())){
+						if(nodeOfPath.entityName.equalsIgnoreCase(knownEntityArray[index].getInstanceName())){
 							ovFoundCount++; 
 						}else{
 							break; 
