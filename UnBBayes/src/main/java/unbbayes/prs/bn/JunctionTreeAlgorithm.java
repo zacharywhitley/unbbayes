@@ -922,10 +922,6 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
      * @param net
      */
     public void moralize(ProbabilisticNetwork net) {
-		Node auxNo;
-		Node auxPai1;
-		Node auxPai2;
-		Edge auxArco;
 		
 		// reset adjacency info
 		for (Node node : net.getNodes()) {
@@ -948,8 +944,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		// remove the list of edges for information
 		int sizeArcos = net.getMarkovArcs().size() - 1;
 		for (int i = sizeArcos; i >= 0; i--) {
-			auxArco = net.getMarkovArcs().get(i);
-			if (auxArco.getDestinationNode().getType()
+			Edge edge = net.getMarkovArcs().get(i);
+			if (edge.getDestinationNode().getType()
 				== Node.DECISION_NODE_TYPE) {
 				net.getMarkovArcs().remove(i);
 			}
@@ -957,25 +953,25 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 	
 		int sizeNos = net.getNodes().size();
 		for (int n = 0; n < sizeNos; n++) {
-			auxNo = net.getNodes().get(n);
-			if (!(auxNo.getType() == Node.DECISION_NODE_TYPE)
-				&& auxNo.getParents().size() > 1) {
-				int sizePais = auxNo.getParents().size();
+			Node currentNode = net.getNodes().get(n);
+			if (!(currentNode.getType() == Node.DECISION_NODE_TYPE)
+				&& currentNode.getParents().size() > 1) {
+				int sizePais = currentNode.getParents().size();
 				for (int j = 0; j < sizePais - 1; j++) {
-					auxPai1 = auxNo.getParents().get(j);
+					Node parent1 = currentNode.getParents().get(j);
 					for (int k = j + 1; k < sizePais; k++) {
-						auxPai2 = auxNo.getParents().get(k);
-						if ((net.hasEdge(auxPai1, auxPai2,  net.getEdgesCopy()) == -1)
-							&& (net.hasEdge(auxPai1, auxPai2, net.getMarkovArcs()) == -1)) {
-							auxArco = new Edge(auxPai1, auxPai2);
+						Node parent2 = currentNode.getParents().get(k);
+						if ((net.hasEdge(parent1, parent2,  net.getEdgesCopy()) < 0)
+							&& (net.hasEdge(parent1, parent2, net.getMarkovArcs()) < 0)) {
+							Edge moralizationEdge = new Edge(parent1, parent2);
 							if (net.isCreateLog()) {
 								net.getLogManager().append(
-									auxPai1.getName()
+									parent1.getName()
 										+ " - "
-										+ auxPai2.getName()
+										+ parent2.getName()
 										+ "\n");
 							}
-							net.getMarkovArcs().add(auxArco);
+							net.getMarkovArcs().add(moralizationEdge);
 						}
 					}
 				}
