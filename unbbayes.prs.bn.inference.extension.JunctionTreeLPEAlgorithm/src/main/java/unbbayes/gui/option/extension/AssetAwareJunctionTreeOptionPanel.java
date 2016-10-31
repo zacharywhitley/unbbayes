@@ -21,6 +21,8 @@ import unbbayes.util.Debug;
  */
 public class AssetAwareJunctionTreeOptionPanel extends JunctionTreeOptionPanel {
 
+	private static final long serialVersionUID = -528991137535805602L;
+	
 	private JLabel mainLabel;
 	private JTextField assetQuantityTextField;
 	

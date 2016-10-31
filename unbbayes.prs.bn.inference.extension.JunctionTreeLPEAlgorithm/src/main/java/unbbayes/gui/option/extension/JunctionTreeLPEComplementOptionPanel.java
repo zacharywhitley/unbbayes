@@ -11,6 +11,8 @@ import unbbayes.prs.bn.inference.extension.JunctionTreeLPEComplementAlgorithm;
  */
 public class JunctionTreeLPEComplementOptionPanel extends JunctionTreeMPEOptionPanel {
 
+	private static final long serialVersionUID = -7815171835909757541L;
+
 	/**
 	 * 
 	 */
