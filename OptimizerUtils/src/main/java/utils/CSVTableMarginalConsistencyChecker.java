@@ -30,12 +30,19 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 
+import unbbayes.io.NetIO;
+import unbbayes.prs.Edge;
 import unbbayes.prs.INode;
+import unbbayes.prs.Network;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.prs.id.DecisionNode;
 import unbbayes.util.Debug;
+import unbbayes.util.dseparation.impl.MSeparationUtility;
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
@@ -67,6 +74,18 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	private String outputFileName = "DependencyStatistics.csv";
 
 	private boolean isToPrintCorrelation = true;
+	
+	/** The alpha value of p-value test. If p-value is smaller than this, then we can reject null hypothesis (of independence) */
+	private float alpha = 0.5f;
+	
+	/** Name of Bayesian/Markov net file to generate. If null or empty, no such file will be generated*/
+	private String networkFileName = "network.net";
+
+	/** If true, {@link #generateNetFile(List, List)} will consider tables containing alert. */
+	private boolean isToUseAlertTables = false;
+	
+	/** {@link #generateNet(Network, List, List)} will graphically separate nodes into blocks of this size */
+	private int numNodeSet = 6;
 
 	/**
 	 * @param name
@@ -730,8 +749,9 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 
 	/**
 	 * @throws IOException 
+	 * @throws InvalidParentException 
 	 */
-	public void testCSVFileConsistency() throws IOException {
+	public void testCSVFileConsistency() throws IOException, InvalidParentException {
 		
 		// calculate how many correlation tables we expect
 		int numDetectors = getExpectedNumDetectors();		// how many detectors we expect
@@ -748,6 +768,9 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 		assertNotNull(innerFolders);
 		assertTrue(innerFolders.length > 0);
 		
+		
+		Network net = null;	// network generated from all files in inner folder
+		String netFileName = getNetworkFileName();	// file to save net
 		for (File innerFolder : innerFolders) {
 			
 			assertNotNull(innerFolder);
@@ -898,63 +921,203 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 			// print the results of chi-square test of independence. 
 			// results are p-values, so smaller values (e.g. less than 0.05) mean dependence.
 			
-			if (isToPrintDependency()) {
-				// this will be used to test chi-square independence test's p-value.
-				ChiSqureTestWithZero chiSquareTester = new ChiSqureTestWithZero();
-				
-				// print statistics to a separate file
-				PrintStream printer = new PrintStream(new FileOutputStream(new File(innerFolder.getName() + "_" + getOutputFileName()), false));
-//				System.out.println("=====================================================");
-//				System.out.println("Dependence statistics");
-//				System.out.println("=====================================================");
-				if (isToPrintCorrelation()) {
-					printer.println("\"Var1\",\"Var2\",\"Correlation\",\"Mutual information\",\"Chi-Square p-value\"");
-				} else {
-					printer.println("\"Var1\",\"Var2\",\"Mutual information\",\"Chi-Square p-value\"");
-				}
-				tables = new ArrayList<PotentialTable>(correlationTables);
-				tables.addAll(alertTables);
-				for (PotentialTable table : tables) {
-//					System.out.println("-------------------------------------------------------");
-					if (table.variableCount() != 2) {
-						Debug.println(getClass(), "Skipping table without 2 variables: " + table);
-						continue;
-					}
-					
-					// print the variables
-					for (int i = 0; i < table.variableCount(); i++) {
-						printer.print("\"" + table.getVariableAt(i).getName() + "\"");
-						printer.print(",");
-					}
-					
-					// print correlation
-					if (isToPrintCorrelation()) {
-						List<double[]> countArrays = getCountArrays(table);	// convert table to arrays of counts
-						assertEquals(2, countArrays.size());
-						printer.print(new PearsonsCorrelation().correlation(countArrays.get(0), countArrays.get(1)));
-						printer.print(",");
-					}
-					
-					// print mutual information
-					printer.print("\"" + table.getMutualInformation(0, 1) + "\"");	// we know that there are only 2 vars in table
-					printer.print(",");
-					
-					// calculate and print p-value of chi-square test
-					long[][] counts = getContingencyMatrix(table);	// convert table to matrix of contingency
-					printer.print("\"" + chiSquareTester.chiSquareTest(counts) + "\"");	// values lower than 0.05 strongly suggest dependence
-					
-					// end of line
-					printer.println();
-//					System.out.println("-------------------------------------------------------");
-				}
-//				System.out.println("=====================================================");
-				printer.close();
+			this.printDependency(innerFolder.getName() + "_" + getOutputFileName(), correlationTables, alertTables);
+			
+			// reuse net from previous iteration (if it's null, then a new net is instantiated)
+			if (netFileName != null && !netFileName.trim().isEmpty()) {
+				net = this.generateNet(net, correlationTables, alertTables);
 			}
 			
 		}
 		
+		// save the net
+		if (netFileName != null && !netFileName.trim().isEmpty()) {
+			assertFalse(((ProbabilisticNetwork)net).hasCycle());
+			new NetIO().save(new File(netFileName.trim()), net);
+		}
+		
 	}
 	
+	/**
+	 * 
+	 * @param correlationTables
+	 * @param alertTables
+	 * @throws InvalidParentException 
+	 * @see #getAlpha()
+	 */
+	protected Network generateNet(Network net, List<PotentialTable> correlationTables, List<PotentialTable> alertTables) throws InvalidParentException {
+		
+		
+		// prepare list of tables to consider
+		List<PotentialTable> tables = new ArrayList<PotentialTable>(correlationTables);
+		if (isToUseAlertTables()) {
+			tables.addAll(alertTables);
+		}
+		
+		// instantiate the network to save
+		if (net == null) {
+			net = new ProbabilisticNetwork("StubNetwork");
+		}
+		
+		// include the nodes to network
+		for (PotentialTable table : tables) {
+			// iterate on each node (variable) in table
+			for (int varIndex = 0; varIndex < table.variableCount(); varIndex++) {
+				INode node = table.getVariableAt(varIndex);
+				String name = node.getName().replaceAll("\\s", "_");
+				// if network does not already have this node, then include it
+				if (net.getNodeIndex(name) < 0) {
+					// use decision nodes instead, because they don't need conditional probability tables
+					DecisionNode decision = new DecisionNode();
+					decision.setName(name);
+					for (int i = 0; i < node.getStatesSize(); i++) {
+						decision.appendState(node.getStateAt(i));
+					}
+					
+					decision.setPosition(100 + (net.getNodeCount() % getNumNodeSet())*200, 100 + (net.getNodeCount() / getNumNodeSet())*200);
+					
+					net.addNode(decision);
+				} else {
+					// node already exists. Append state if necessary
+					Node nodeInNet = net.getNode(name);
+					if (node.getStatesSize() > nodeInNet.getStatesSize()) {
+						nodeInNet.removeStates();
+						for (int i = 0; i < node.getStatesSize(); i++) {
+							nodeInNet.appendState(node.getStateAt(i));
+						}
+					}
+				}
+			}
+		}
+		
+		// prepare a chi-square tester which will be used to calculate p-value for rejecting null hypothesis of independence.
+		// the dependence calculated by this object will be used to generate arcs
+		ChiSqureTestWithZero chiSquareTester = new ChiSqureTestWithZero();
+		
+		// prepare an object that will be used to check if there is a directed path between two nodes
+		// this will be used to avoid cycles when inserting new arc
+		MSeparationUtility pathFinder = MSeparationUtility.newInstance();	
+		
+		// create the arcs for each pair of nodes in table
+		for (PotentialTable table : tables) {
+			// extract the p-value to be used to check if we should add an arc between nodes in this table
+			double pValue = chiSquareTester.chiSquareTest(getContingencyMatrix(table));	
+			// remove arc if test failed (p-value was greater than the threshold alpha means we cannot reject null hypothesis of independence)
+			// add otherwise.
+			boolean isToAdd = pValue <= getAlpha();
+			
+			// include the arcs for each pair of nodes in table (table supposedly has only 2 nodes, though)
+			for (int i = 0; i < table.getVariablesSize()-1; i++) {
+				
+				// extract the nodes
+				String name1 = table.getVariableAt(i).getName().replaceAll("\\s", "_");
+				Node node1 = net.getNode(name1);
+				assertNotNull(name1,node1);
+				
+				for (int j = i+1; j < table.getVariablesSize(); j++) {
+					
+					String name2 = table.getVariableAt(j).getName().replaceAll("\\s", "_");
+					Node node2 = net.getNode(name2);
+					assertNotNull(name2,node2);
+					
+					// do not connect same nodes twice
+					if (net.getEdge(node1, node2) != null) {
+						if (isToAdd) {
+							continue;
+						} else {
+							// remove existing edge
+							net.removeEdge(net.getEdge(node1, node2));
+						}
+					}
+					
+					if (isToAdd) {
+						// include the arc if it will not cause a cycle
+						if (pathFinder.getRoutes(node2, node1, null, null, 1).isEmpty()) {
+							// there is no route from node2 to node1, so we can create node1->node2 without generating cycle
+							net.addEdge(new Edge(node1, node2));
+						} else {
+							// include the arc in opposite direction won't cause a cycle
+							net.addEdge(new Edge(node2, node1));
+						}
+					}
+					
+				}
+			}
+			
+		}
+		
+		return net;
+	}
+
+	/**
+	 * Creates a csv file with dependency information (e.g. mutual information, chi-square test's p-value).
+	 * @param fileName : name of the csv file
+	 * @param correlationTables : contingency tables with correlation data
+	 * @param alertTables : contingency table containing the alert variable
+	 * @throws IOException
+	 * @see {@link #testCSVFileConsistency()}
+	 */
+	protected void printDependency(String fileName, List<PotentialTable> correlationTables, List<PotentialTable> alertTables) throws IOException {
+		
+		// do nothing if boolean attribute is false
+		if (!isToPrintDependency()) {
+			return;
+		}
+		
+		// this will be used to test chi-square independence test's p-value.
+		ChiSqureTestWithZero chiSquareTester = new ChiSqureTestWithZero();
+		
+		// print statistics to a separate file
+		PrintStream printer = new PrintStream(new FileOutputStream(new File(fileName), false));
+//		System.out.println("=====================================================");
+//		System.out.println("Dependence statistics");
+//		System.out.println("=====================================================");
+		if (isToPrintCorrelation()) {
+			printer.println("\"Var1\",\"Var2\",\"Correlation\",\"Mutual information\",\"Chi-Square p-value\"");
+		} else {
+			printer.println("\"Var1\",\"Var2\",\"Mutual information\",\"Chi-Square p-value\"");
+		}
+		List<PotentialTable> tables = new ArrayList<PotentialTable>(correlationTables);
+		tables.addAll(alertTables);
+		for (PotentialTable table : tables) {
+//			System.out.println("-------------------------------------------------------");
+			if (table.variableCount() != 2) {
+				Debug.println(getClass(), "Skipping table without 2 variables: " + table);
+				continue;
+			}
+			
+			// print the variables
+			for (int i = 0; i < table.variableCount(); i++) {
+				printer.print("\"" + table.getVariableAt(i).getName() + "\"");
+				printer.print(",");
+			}
+			
+			// print correlation
+			if (isToPrintCorrelation()) {
+				List<double[]> countArrays = getCountArrays(table);	// convert table to arrays of counts
+				assertEquals(2, countArrays.size());
+				printer.print(new PearsonsCorrelation().correlation(countArrays.get(0), countArrays.get(1)));
+				printer.print(",");
+			}
+			
+			// print mutual information
+			printer.print("\"" + table.getMutualInformation(0, 1) + "\"");	// we know that there are only 2 vars in table
+			printer.print(",");
+			
+			// calculate and print p-value of chi-square test
+			long[][] counts = getContingencyMatrix(table);	// convert table to matrix of contingency
+			printer.print("\"" + chiSquareTester.chiSquareTest(counts) + "\"");	// values lower than 0.05 strongly suggest dependence
+			
+			// end of line
+			printer.println();
+//			System.out.println("-------------------------------------------------------");
+		}
+//		System.out.println("=====================================================");
+		printer.close();
+	
+		
+	}
+
 	/**
 	 * Converts a contingency table to arrays of counts.
 	 * @param table : contingency table
@@ -1241,6 +1404,72 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	public void setToPrintCorrelation(boolean isToPrintCorrelation) {
 		this.isToPrintCorrelation = isToPrintCorrelation;
 	}
+	
+
+	/**
+	 * @return The alpha value of p-value test. If p-value is smaller than this, then we can reject null hypothesis (of independence).
+	 * @see #testCSVFileConsistency()
+	 */
+	public float getAlpha() {
+		return alpha;
+	}
+
+	/**
+	 * @param alpha : The alpha value of p-value test. If p-value is smaller than this, then we can reject null hypothesis (of independence)
+	 * @see #testCSVFileConsistency()
+	 */
+	public void setAlpha(float alpha) {
+		this.alpha = alpha;
+	}
+
+
+	/**
+	 * @return name of Bayesian/Markov net file to generate. If null or empty, no such file will be generated
+	 * @see #generateNetFile(String, List, List)
+	 */
+	public String getNetworkFileName() {
+		return networkFileName;
+	}
+
+	/**
+	 * @param networkFileName : name of Bayesian/Markov net file to generate. If null or empty, no such file will be generated
+	 * @see #generateNetFile(String, List, List)
+	 */
+	public void setNetworkFileName(String networkFileName) {
+		this.networkFileName = networkFileName;
+	}
+	
+
+
+	/**
+	 * @return the isToUseAlertTables : if true, {@link #generateNetFile(List, List)} will consider tables containing alert.
+	 */
+	public boolean isToUseAlertTables() {
+		return isToUseAlertTables;
+	}
+
+	/**
+	 * @param isToUseAlertTables : if true, {@link #generateNetFile(List, List)} will consider tables containing alert.
+	 */
+	public void setToUseAlertTables(boolean isToUseAlertTables) {
+		this.isToUseAlertTables = isToUseAlertTables;
+	}
+
+
+
+	/**
+	 * @return the numNodeSet
+	 */
+	public int getNumNodeSet() {
+		return numNodeSet;
+	}
+
+	/**
+	 * @param numNodeSet the numNodeSet to set
+	 */
+	public void setNumNodeSet(int numNodeSet) {
+		this.numNodeSet = numNodeSet;
+	}
 
 	/**
 	 * Execute this main function/method if you don't have a driver program (i.e. an invoker) of JUnit tests.
@@ -1253,7 +1482,12 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 		options.addOption("o","output", true, "Name of the resulting csv files which will be written to each input directory.");
 		options.addOption("n","num-detectors", true, "Expected number of detectors.");
 		options.addOption("c","num-counts", true, "Expected number of counts (users) per table.");
+		options.addOption("net","net-file", true, "Name of network file to generate. If empty, no network file will be generated.");
+		options.addOption("alpha","alpha-p-value", true, "The alpha value (between 0 and 1) to be considered as the "
+				+ "cut-off for rejecting null hypothesis in p-value. "
+				+ "Smaller values indicates that more pairs of variables will be considered as independent.");
 		options.addOption("corr","print-correlation", false, "Prints Pearson's correlation to result.");
+		options.addOption("alert","use-alert-tables", false, "Uses alert tables when generating network file.");
 		options.addOption("d","debug", false, "Enables debug mode.");
 		
 		CommandLine cmd = null;
@@ -1290,13 +1524,20 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 		if (cmd.hasOption("o")) { // if this param is not set, then it will look at a default place
 			test.setOutputFileName(cmd.getOptionValue("o"));
 		}
+		if (cmd.hasOption("net")) { // if this param is not set, then it will look at a default place
+			test.setNetworkFileName(cmd.getOptionValue("net"));
+		}
 		if (cmd.hasOption("n")) { // if this param is not set, then it will look at a default place
 			test.setExpectedNumDetectors(Integer.parseInt(cmd.getOptionValue("n")));
 		}
 		if (cmd.hasOption("c")) { // if this param is not set, then it will look at a default place
 			test.setExpectedNumCounts(Integer.parseInt(cmd.getOptionValue("c")));
 		}
+		if (cmd.hasOption("alpha")) { // if this param is not set, then it will look at a default place
+			test.setAlpha(Float.parseFloat(cmd.getOptionValue("alpha")));
+		}
 		test.setToPrintCorrelation(cmd.hasOption("corr"));
+		test.setToUseAlertTables(cmd.hasOption("alert"));
 		
 		
 		try {
@@ -1316,6 +1557,9 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 		}
 	}
 	
+
+
+
 
 	/**
 	 * This is just an extension of {@link ResultPrinter} with
