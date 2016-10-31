@@ -49,7 +49,7 @@ public class NetworkCompilationLogManager extends TextLogManager{
             auxClique = (Clique) clicks.get(c);
 
             int sizenodes1 = auxClique.getNodes().size();
-            append(resource.getString("cliqueName") + c + "\n");
+            append(resource.getString("cliqueName") + c + " (" + auxClique.getNodesList().size() + ")" + "\n");
             for (int c2 = 0; c2 < sizenodes1; c2++) {
                 append((auxClique.getNodes().get(c2)).getName() + "-");
             }
