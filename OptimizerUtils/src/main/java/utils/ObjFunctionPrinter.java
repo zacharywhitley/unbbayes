@@ -516,6 +516,10 @@ public class ObjFunctionPrinter {
 		ByteArrayOutputStream output = new ByteArrayOutputStream();
 	    PrintStream printer = new PrintStream(output);
 		
+	    if (jointTable.tableSize() <= 0) {
+	    	return "";
+	    }
+	    
 	    // print names of vars in jointTable from last to first (because the first var has values changing more frequently)
 	    for (int i = jointTable.variableCount()-1; i >= 0 ; i--) {
 			printer.print(jointTable.getVariableAt(i).getName() + ",");

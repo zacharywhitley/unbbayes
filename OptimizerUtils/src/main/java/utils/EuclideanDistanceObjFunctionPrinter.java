@@ -288,6 +288,9 @@ public class EuclideanDistanceObjFunctionPrinter extends ObjFunctionPrinter {
 			tables.addAll(auxiliaryTables);
 		}
 		
+		if (tables.isEmpty()) {
+			return "";
+		}
 		
 		// check that all tables have same number of variables
 		int numVars = tables.get(0).variableCount();
