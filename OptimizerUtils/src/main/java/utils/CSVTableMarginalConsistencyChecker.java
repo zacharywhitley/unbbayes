@@ -76,7 +76,7 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	private boolean isToPrintCorrelation = true;
 	
 	/** The alpha value of p-value test. If p-value is smaller than this, then we can reject null hypothesis (of independence) */
-	private float alpha = 0.5f;
+	private float alpha = 0.01f;
 	
 	/** Name of Bayesian/Markov net file to generate. If null or empty, no such file will be generated*/
 	private String networkFileName = "network.net";
@@ -86,6 +86,10 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	
 	/** {@link #generateNet(Network, List, List)} will graphically separate nodes into blocks of this size */
 	private int numNodeSet = 6;
+
+	private boolean isToUseDecisionNode = true;
+
+	private boolean isToReduceStateSpace = false;
 
 	/**
 	 * @param name
@@ -968,15 +972,20 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 				// if network does not already have this node, then include it
 				if (net.getNodeIndex(name) < 0) {
 					// use decision nodes instead, because they don't need conditional probability tables
-					DecisionNode decision = new DecisionNode();
-					decision.setName(name);
+					Node newNode = null;
+					if (isToUseDecisionNode()) {
+						newNode = new DecisionNode();
+					} else {
+						newNode = new ProbabilisticNode();
+					}
+					newNode.setName(name);
 					for (int i = 0; i < node.getStatesSize(); i++) {
-						decision.appendState(node.getStateAt(i));
+						newNode.appendState(node.getStateAt(i));
 					}
 					
-					decision.setPosition(100 + (net.getNodeCount() % getNumNodeSet())*200, 100 + (net.getNodeCount() / getNumNodeSet())*200);
+					newNode.setPosition(100 + (net.getNodeCount() % getNumNodeSet())*200, 100 + (net.getNodeCount() / getNumNodeSet())*200);
 					
-					net.addNode(decision);
+					net.addNode(newNode);
 				} else {
 					// node already exists. Append state if necessary
 					Node nodeInNet = net.getNode(name);
@@ -988,6 +997,33 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 					}
 				}
 			}
+		}
+		
+		
+		// reduce state space. Node with smallest state will have 1 state, and others will be adjusted.
+		if (isToReduceStateSpace()) {
+			// this will be a list of number of states found in network
+			List<Integer> stateSizeList = new ArrayList<Integer>(net.getNodeCount());
+			for (Node node : net.getNodes()) {
+				Integer statesSize = node.getStatesSize();
+				if (!stateSizeList.contains(statesSize)) {
+					stateSizeList.add(statesSize);
+				}
+			}
+			
+			// order the list so that smallest sizes will be the 1st in list
+			Collections.sort(stateSizeList);
+			
+			// adjust the number of states of each nodes
+			for (Node node : net.getNodes()) {
+				Integer originalSize = node.getStatesSize();
+				int newSize = stateSizeList.indexOf(originalSize) + 1;	// smallest size will be 1, and larger sizes will be 1 + position in list
+				node.removeStates();
+				for (int i = 0; i < newSize; i++) {
+					node.appendState("state"+i);
+				}
+			}
+			
 		}
 		
 		// prepare a chi-square tester which will be used to calculate p-value for rejecting null hypothesis of independence.
@@ -1472,6 +1508,38 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	}
 
 	/**
+	 * @return the isToUseDecisionNode : if true, {@link #generateNet(Network, List, List)} will generate decision nodes
+	 * in order to save space of conditional probabilities.
+	 */
+	public boolean isToUseDecisionNode() {
+		return isToUseDecisionNode;
+	}
+
+	/**
+	 * @param isToUseDecisionNode : if true, {@link #generateNet(Network, List, List)} will generate decision nodes
+	 * in order to save space of conditional probabilities
+	 */
+	public void setToUseDecisionNode(boolean isToUseDecisionNode) {
+		this.isToUseDecisionNode = isToUseDecisionNode;
+	}
+
+	/**
+	 * @return the isToReduceStateSpace : if true, {@link #generateNet(Network, List, List)} will consider
+	 * that variables with smaller size has 1 state, and other variables will be adjusted.
+	 */
+	public boolean isToReduceStateSpace() {
+		return isToReduceStateSpace;
+	}
+
+	/**
+	 * @param isToReduceStateSpace the isToReduceStateSpace to set : if true, {@link #generateNet(Network, List, List)} will consider
+	 * that variables with smaller size has 1 state, and other variables will be adjusted.
+	 */
+	public void setToReduceStateSpace(boolean isToReduceStateSpace) {
+		this.isToReduceStateSpace = isToReduceStateSpace;
+	}
+
+	/**
 	 * Execute this main function/method if you don't have a driver program (i.e. an invoker) of JUnit tests.
 	 * @param args 
 	 */
@@ -1488,6 +1556,8 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 				+ "Smaller values indicates that more pairs of variables will be considered as independent.");
 		options.addOption("corr","print-correlation", false, "Prints Pearson's correlation to result.");
 		options.addOption("alert","use-alert-tables", false, "Uses alert tables when generating network file.");
+		options.addOption("decision","use-decision-nodes", false, "Decision nodes will be used when generating network file in order to save space.");
+		options.addOption("reduced","reduce-state-space", false, "Variables with smaller states will be converted to variables with 1 state only, when generating network file.");
 		options.addOption("d","debug", false, "Enables debug mode.");
 		
 		CommandLine cmd = null;
@@ -1538,6 +1608,8 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 		}
 		test.setToPrintCorrelation(cmd.hasOption("corr"));
 		test.setToUseAlertTables(cmd.hasOption("alert"));
+		test.setToUseDecisionNode(cmd.hasOption("decision"));
+		test.setToReduceStateSpace(cmd.hasOption("reduced"));
 		
 		
 		try {
