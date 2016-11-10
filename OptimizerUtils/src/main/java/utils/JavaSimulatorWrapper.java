@@ -6,11 +6,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -1046,6 +1050,71 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		// load from file
 		this.getIO().readWrapperFile(input);
 		
+		if (this.getIO().getProperties() != null) {
+			try {
+				// use java reflection in order to automatically detect setter names and fill properties
+				Map<String, Entry<Object, Method>> settersByName = new HashMap<String, Entry<Object, Method>>();	// organize methods by name
+				if (getDirichletUserSimulator() != null) {
+					for (Method method : getSimulatedUserStatisticsCalculator().getClass().getMethods()) {
+						if (method.getName().startsWith("set") && method.getParameterTypes().length == 1) {
+							// only consider simple setters in the format "setX(T value)"
+							settersByName.put(method.getName(), Collections.singletonMap((Object)getDirichletUserSimulator(), method).entrySet().iterator().next());
+						}
+					}
+				}
+				if (getSimulatedUserStatisticsCalculator() != null) {
+					for (Method method : getSimulatedUserStatisticsCalculator().getClass().getMethods()) {
+						if (method.getName().startsWith("set") && method.getParameterTypes().length == 1) {
+							// only consider simple setters in the format "setX(T value)"
+							settersByName.put(method.getName(), Collections.singletonMap((Object)getSimulatedUserStatisticsCalculator(), method).entrySet().iterator().next());
+						}
+					}
+				}
+				for (Method method : this.getClass().getMethods()) {
+					if (method.getName().startsWith("set") && method.getParameterTypes().length == 1) {
+						// only consider simple setters in the format "setX(T value)"
+						settersByName.put(method.getName(), Collections.singletonMap((Object)this, method).entrySet().iterator().next());
+					}
+				}
+				
+				// look for methods with same name
+				for (Entry<String, String> entry : this.getIO().getProperties().entrySet()) {
+					try {
+						String methodName = "set" + entry.getKey();
+						Entry<Object, Method> invokerMethodPair = settersByName.get(methodName);	// key is invoker, value is method
+						if (invokerMethodPair != null) {
+							Class<?> type = invokerMethodPair.getValue().getParameterTypes()[0];	// extract the type of the 1st parameter
+							if (String.class.isAssignableFrom(type)) {
+								invokerMethodPair.getValue().invoke(invokerMethodPair.getKey(), (entry.getValue()));
+							} else if (int.class.isAssignableFrom(type)) {
+								invokerMethodPair.getValue().invoke(invokerMethodPair.getKey(), Integer.parseInt(entry.getValue()));
+							} else if (float.class.isAssignableFrom(type)) {
+								invokerMethodPair.getValue().invoke(invokerMethodPair.getKey(), Float.parseFloat(entry.getValue()));
+							} else if (Integer.class.isAssignableFrom(type)) {
+								invokerMethodPair.getValue().invoke(invokerMethodPair.getKey(), new Integer(entry.getValue()));
+							} else if (Float.class.isAssignableFrom(type)) {
+								invokerMethodPair.getValue().invoke(invokerMethodPair.getKey(), new Float(entry.getValue()));
+							} else if (double.class.isAssignableFrom(type)) {
+								invokerMethodPair.getValue().invoke(invokerMethodPair.getKey(), Double.parseDouble(entry.getValue()));
+							} else if (long.class.isAssignableFrom(type)) {
+								invokerMethodPair.getValue().invoke(invokerMethodPair.getKey(), Long.parseLong(entry.getValue()));
+							} else if (Double.class.isAssignableFrom(type)) {
+								invokerMethodPair.getValue().invoke(invokerMethodPair.getKey(), new Double(entry.getValue()));
+							} else if (Long.class.isAssignableFrom(type)) {
+								invokerMethodPair.getValue().invoke(invokerMethodPair.getKey(), new Long(entry.getValue()));
+							} else {
+								invokerMethodPair.getValue().invoke(invokerMethodPair.getKey(), type.cast(entry.getValue()));
+							}
+						}
+					} catch (Throwable t) {
+						Debug.println(getClass(), t.getMessage(), t);
+					}
+				}
+			} catch (Throwable t) {
+				Debug.println(getClass(), t.getMessage(), t);
+			}
+		}
+		
 		// update attributes accordingly from what we read from file
 		
 		if (this.getIO().getProperty(getNumberOfIndicatorsPropertyName()) != null) {
@@ -1442,6 +1511,56 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	 */
 	public void setNumberOfRunsPropertyName(String numberOfRunsPropertyName) {
 		this.numberOfRunsPropertyName = numberOfRunsPropertyName;
+	}
+	
+
+	/**
+	 * Delegates to {@link #getSimulatedUserStatisticsCalculator()}
+	 * @return the stratifiedSampleNumTotal
+	 * @see #getStratifiedSampleNumAlert()
+	 */
+	public int getStratifiedSampleNumTotal() {
+		return getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal();
+	}
+
+
+	/**
+	 * Delegates to {@link #getSimulatedUserStatisticsCalculator()}
+	 * @param stratifiedSampleNumTotal the stratifiedSampleNumTotal to set
+	 * @see #getStratifiedSampleNumAlert()
+	 */
+	public void setStratifiedSampleNumTotal(int stratifiedSampleNumTotal) {
+		getSimulatedUserStatisticsCalculator().setStratifiedSampleNumTotal(stratifiedSampleNumTotal);
+	}
+
+
+	/**
+	 * Delegates to {@link #getSimulatedUserStatisticsCalculator()}
+	 * @return the stratifiedSampleNumAlert : number of stratified samples to consider with Alert=true. 
+	 * 100 minus this number will be sampled for Alert = false. Use this argument in order to increase variance.
+	 * @see #getStratifiedSampleNumTotal()
+	 */
+	public int getStratifiedSampleNumAlert() {
+		return getSimulatedUserStatisticsCalculator().getStratifiedSampleNumAlert();
+	}
+
+
+	/**
+	 * Delegates to {@link #getSimulatedUserStatisticsCalculator()}.
+	 * @param stratifiedSampleNumAlert : number of stratified samples to consider with Alert=true. 
+	 * 100 minus this number will be sampled for Alert = false. Use this argument in order to increase variance.
+	 * @see #getStratifiedSampleNumTotal()
+	 */
+	public void setStratifiedSampleNumAlert(int stratifiedSampleNumAlert) {
+		getSimulatedUserStatisticsCalculator().setStratifiedSampleNumAlert(stratifiedSampleNumAlert);
+	}
+	
+	/**
+	 * Delegates to {@link #getSimulatedUserStatisticsCalculator()}
+	 * @see SimulatedUserStatisticsCalculator#setSubSamplingMode(SubSamplingMode)
+	 */
+	public void setSubSamplingModeName(String subSamplingModeName) {
+		getSimulatedUserStatisticsCalculator().setSubSamplingMode(SubSamplingMode.valueOf(subSamplingModeName));
 	}
 
 

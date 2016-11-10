@@ -374,5 +374,37 @@ public class JavaSimulatorWrapperTest extends TestCase {
 		
 		tempFile.delete();
 	}
+	
+	/**
+	 * 
+	 * Smoke test of {@link JavaSimulatorWrapper#main(String[])}, but testing the sensibility of user number.
+	 * @throws IOException 
+	 */
+	@SuppressWarnings("static-access")
+	public void testMainUserNumber() throws IOException {
+		
+		File tempFile10 = File.createTempFile(getClass().getName()+ "_10_" + System.currentTimeMillis(), ".out");
+		tempFile10.deleteOnExit();
+		
+		args[0] = "-i";
+		args[1] = "\"" + getClass().getResource("../JavaSimulatorWrapper_10User.in").getPath() + "\"";
+		args[2] = "-o";
+		args[3] = tempFile10.getPath();
+		args[4] = "-d";
+		wrapper.main(args);
+		
+		File tempFile4214 = File.createTempFile(getClass().getName()+ "_4214_" + System.currentTimeMillis(), ".out");
+		tempFile4214.deleteOnExit();
+		
+		args[0] = "-i";
+		args[1] = "\"" + getClass().getResource("../JavaSimulatorWrapper_4214User.in").getPath() + "\"";
+		args[2] = "-o";
+		args[3] = tempFile4214.getPath();
+		args[4] = "-d";
+		wrapper.main(args);
+		
+		assertTrue(tempFile10.delete());
+		assertTrue(tempFile4214.delete());
+	}
 
 }

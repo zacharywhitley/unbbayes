@@ -31,8 +31,6 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.util.Debug;
 import au.com.bytecode.opencsv.CSVReader;
-import cc.mallet.types.Dirichlet;
-import cc.mallet.util.Randoms;
 
 /**
  * 
@@ -107,7 +105,8 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	 * and {@link SimulatedUserStatisticsCalculator#getConditionalProbabilityFromQueryTable(PotentialTable)}.
 	 */
 	public static enum SubSamplingMode {WEIGHTED, BETA_BINOMIAL};
-	private SubSamplingMode subSamplingMode = SubSamplingMode.BETA_BINOMIAL;
+//	private SubSamplingMode subSamplingMode = SubSamplingMode.BETA_BINOMIAL;
+	private SubSamplingMode subSamplingMode = SubSamplingMode.WEIGHTED;
 	private int numSubSampleSimulation = 100;
 	private int stratifiedSampleNumTotal = 100;
 	private int stratifiedSampleNumAlert = -1;//30;	// negative values mean no sub-sampling will be performed

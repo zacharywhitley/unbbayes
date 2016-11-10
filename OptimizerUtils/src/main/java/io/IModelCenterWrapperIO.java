@@ -37,6 +37,11 @@ public interface IModelCenterWrapperIO {
 	public String getProperty(String key);
 	
 	/**
+	 * @return all properties that can be obtained from {@link #getProperty(String)}
+	 */
+	public Map<String, String> getProperties();
+	
+	/**
 	 * This is an utility method to convert some file to wrapper file.
 	 * @param input : the file to read from.
 	 * @param output : the file to write to.
