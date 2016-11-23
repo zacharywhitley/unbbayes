@@ -351,7 +351,7 @@ public class JSONCliqueStructureLoader implements ICliqueStructureLoader {
 	 */
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		
-		String fileName = "src/test/resources/cliques.json";	// default place to look for json file
+		String fileName = "cliques.json";	// default place to look for json file
 		if (args != null && args.length > 0) {
 			fileName = args[0];	// extract name from argument
 		}
