@@ -1,0 +1,32 @@
+{
+	"_comment" : "This is a JSON file. You can use io.JSONCliqueStructureLoader to parse it.",
+	
+	"variables": [ "D1", "D2", "D3", "D4"],
+	"sizes" : [ 2, 3, 4, 5 ],
+	"cliques" : [
+		{
+			"name" : "C0",
+			"variables" : ["D1","D2"]
+		},
+		{
+			"name" : "C1",
+			"variables" : ["D1","D3"]
+		},
+		{
+			"name" : "C2",
+			"variables" : ["D3","D4"]
+		}
+	],
+	"separators" : [
+		{
+			"clique1" : "C0",
+			"clique2" : "C1",
+			"variables" : ["D1"]
+		},
+		{
+			"clique1" : "C1",
+			"clique2" : "C2",
+			"variables" : ["D3"]
+		}
+	]
+}
