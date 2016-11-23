@@ -382,8 +382,9 @@ public class JSONCliqueStructureLoader implements ICliqueStructureLoader {
 			System.out.println("\tVariable = " + varNames.get(i) + ", size = " + varSizes.get(i));
 		}
 
-		System.out.println("\n\nCliques:");
 		
+		
+		System.out.println("\n\nCliques:");
 		
 		// iterate on cliques and print their content
 		for (String name : loader.getCliqueNames()) {
@@ -394,6 +395,8 @@ public class JSONCliqueStructureLoader implements ICliqueStructureLoader {
 			}
 			System.out.println("\n");
 		}
+		
+		
 		
 		System.out.println("\n\nSeparators:");
 		

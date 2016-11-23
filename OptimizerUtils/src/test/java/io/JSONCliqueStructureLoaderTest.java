@@ -99,7 +99,7 @@ public class JSONCliqueStructureLoaderTest extends TestCase {
 		// start printing the content we just parsed
 		
 		
-		// extract the names and sizes
+		// extract the names and sizes of random variables
 		List<String> varNames = loader.getVariableNames();
 		List<Integer> varSizes = loader.getVariablesSizes();
 		// basic assertions
