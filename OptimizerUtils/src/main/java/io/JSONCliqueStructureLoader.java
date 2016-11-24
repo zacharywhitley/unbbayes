@@ -28,30 +28,6 @@ import org.json.JSONObject;
  * An input file supported by this class should be in JSON (RFC7159) format. Such input file describes a tree of cliques (i.e. a junction tree).
  * It basically declares a set of variables, their sizes, set of cliques (with variables in it) and separators (i.e. intersection of cliques).
  * <br/><br/>
- * Note: this example only contains Detectors. A model only with detectors is enough for most of cases,
- * because once we get conditional probabilities P(Indicator|Detectors) and P(Threat|Indicators)
- * we can simulate (i.e. generate samples of) Detectors, then Indicators given Detectors, and Threat given Indicators to get a full set.
- * <br/><br/>
- * The *variables* block declares the names of random variables in this domain.
- * <br/><br/>
- * The *sizes* block declares how many states (i.e. possible values) each random variable has. We are considering 2 states in this simpler example.
- * The *cliques* block is a list of cliques. A clique has a name field and a list of variables that belongs to the clique.
- * Stochastic optimization can be performed in each clique separately (in parallel if we can guarantee that optimal values of intersections are unique).
- * <br/><br/>
- * The *separators* block is a list of separators (intersection of cliques).
- * A separator has a pair of cliques it separates, and a set of variables in the intersection.
- * Separators may look redundant, but they are useful to guarantee a unique tree structure of cliques.
- * <br/><br/>
- * The stochastic optimization component should consider the *separators* block only if solver cannot guarantee that optimal values of intersections are unique.
- * This block may be ignored if optimal values of intersections are unique.
- * When such values are not unique, optimization must be performed in sequence for each clique (given optimal values of cliques solved already),
- * accordingly to tree structure (separators are helpful in retrieving such tree structure).
- * <br/><br/>
- * The tree structure (thus the separators) is necessary for generating samples from the joint distribution, though.
- * <br/><br/>
- * <br/><br/>
- * 
- * 
  * The following is an example of a JSON file supported by this class.
  * <pre>
 {
@@ -85,6 +61,29 @@ import org.json.JSONObject;
 	]
 }
  * </pre>
+ * 
+ * Note: this example only contains Detectors. A model only with detectors is enough for most of cases,
+ * because once we get conditional probabilities P(Indicator|Detectors) and P(Threat|Indicators)
+ * we can simulate (i.e. generate samples of) Detectors, then Indicators given Detectors, and Threat given Indicators to get a full set.
+ * <br/><br/>
+ * The *variables* block declares the names of random variables in this domain.
+ * <br/><br/>
+ * The *sizes* block declares how many states (i.e. possible values) each random variable has. We are considering 2 states in this simpler example.
+ * The *cliques* block is a list of cliques. A clique has a name field and a list of variables that belongs to the clique.
+ * Stochastic optimization can be performed in each clique separately (in parallel if we can guarantee that optimal values of intersections are unique).
+ * <br/><br/>
+ * The *separators* block is a list of separators (intersection of cliques).
+ * A separator has a pair of cliques it separates, and a set of variables in the intersection.
+ * Separators may look redundant, but they are useful to guarantee a unique tree structure of cliques.
+ * <br/><br/>
+ * The stochastic optimization component should consider the *separators* block only if solver cannot guarantee that optimal values of intersections are unique.
+ * This block may be ignored if optimal values of intersections are unique.
+ * When such values are not unique, optimization must be performed in sequence for each clique (given optimal values of cliques solved already),
+ * accordingly to tree structure (separators are helpful in retrieving such tree structure).
+ * <br/><br/>
+ * The tree structure (thus the separators) is necessary for generating samples from the joint distribution, though.
+ * 
+ * 
  * @author Shou Matsumoto
  *
  */
