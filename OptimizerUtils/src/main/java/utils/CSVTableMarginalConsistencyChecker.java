@@ -267,7 +267,16 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	 * @param cell
 	 * @return
 	 */
-	protected String convertToName(String cell) {
+	public String convertToName(String cell) {
+		// remove white spaces
+		cell = cell.replaceAll("\\s", "");
+		
+		if (cell.matches("det[0-9]+")) {
+			return cell.replaceAll("det", "Detector");
+		} else if (cell.matches("ADD[0-9]+")) {
+			return cell.replaceAll("ADD", "Detector");
+		}
+		
 		return cell.replaceAll("Alert Days Detector", "Detector");
 	}
 	
