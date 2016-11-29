@@ -1,5 +1,6 @@
 package utils;
 import io.IModelCenterWrapperIO;
+import io.ModelCenterMatrixStyleWrapperIO;
 import io.ModelCenterWrapperIO;
 
 import java.io.File;
@@ -1340,7 +1341,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	 */
 	public IModelCenterWrapperIO getIO() {
 		if (io == null) {
-			io = ModelCenterWrapperIO.getInstance();
+			io = ModelCenterMatrixStyleWrapperIO.getInstance();
 		}
 		return io;
 	}

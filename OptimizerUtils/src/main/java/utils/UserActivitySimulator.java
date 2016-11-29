@@ -9,6 +9,7 @@ import io.IActivityHistIO;
 import io.IJointDistributionReader;
 import io.IModelCenterWrapperIO;
 import io.IPeerGroupReader;
+import io.ModelCenterMatrixStyleWrapperIO;
 import io.ModelCenterWrapperIO;
 import io.PeerGroupSizeCSVReader;
 
@@ -17,7 +18,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -38,6 +38,8 @@ import org.apache.commons.cli.ParseException;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.util.Debug;
 
 /**
@@ -51,18 +53,20 @@ public class UserActivitySimulator {
 	private String rawDataOutput = "userActivity.csv";
 	private String transformedDataOutput = "detectorsDays.csv";
 	private float block1CutoffPercent = .8f;
-	private int totalUsers = 3816;
-	private int totalDays = 163;
-	private int testDayThreshold = 144;
+	private int totalUsers = 100;//3816;
+	private int totalDays = 60;//163;
+	private int testDayThreshold = 36;//144;
 	private int numTimeBlocks = 6;
 	private int numDetectors = 24;
 	private String rScriptName = "RCP8_ComputeAlertDays_Driver.r";
 	private String correlationDataFileFolder = "CorrelationData";
 	private String rscriptProgramName = "RScript";
 	private String distanceMetricFileName = "UserActivitySimulator.out";
+	private int daysToRedrawUserAttitude = 20;
+	private boolean isToAdd1ToCounts = true;
 	
 	private IJointDistributionReader transformedDataReader = new CSVJointDistributionReader();
-	private IModelCenterWrapperIO wrapperIO = ModelCenterWrapperIO.getInstance();
+	private IModelCenterWrapperIO wrapperIO = ModelCenterMatrixStyleWrapperIO.getInstance();
 	private Long seed = null;
 	private IActivityHistIO io = null;
 	private List<Integer> block1TokensGood = null;
@@ -117,7 +121,7 @@ public class UserActivitySimulator {
 		// check at which index is the percentile
 		for (int i = 0; i < cumulative.size(); i++) {
 			if (cumulative.get(i) > percentile) {
-				return (i==0)?0:(i-1);	// return previous bin (but if bin is zero, return zero)
+				return i;
 			}
 		}
 		
@@ -173,7 +177,7 @@ public class UserActivitySimulator {
 		}
 		
 		// prepare output file to write simulated users
-		PrintStream printer = new PrintStream(new FileOutputStream(rawDataOutput, true));
+		PrintStream printer = new PrintStream(new FileOutputStream(rawDataOutput, false));
 		
 		// write the 1st row: 
 		// type,timeid,grpid,userid,dayid,det1,...,det12
@@ -186,17 +190,12 @@ public class UserActivitySimulator {
 		
 		// iterate on users (userid). Start from 1
 		for (int userid = 1; userid <= getTotalUsers(); userid++) {
-			// reset/initialize tokens of this user (set of block1 and block2 tokens for each detector)
-			List<Integer> block1TokenGood = new ArrayList<Integer>(getBlock1TokensGood());	
-			List<Integer> block2TokenGood = new ArrayList<Integer>(getBlock2TokensGood());
-			List<Integer> block1TokenBad = new ArrayList<Integer>(getBlock1TokensGood());	
-			List<Integer> block2TokenBad = new ArrayList<Integer>(getBlock2TokensGood());
 			
 			// Assign peer group ids (grpid) to user.
 			
-			int grpid = pickPeerGroup(rand, peerGroupCounts);
+			int peerGroup = pickPeerGroup(rand, peerGroupCounts);
 					
-			String groupSize = peerGroupSizes.get(grpid);
+			String groupSize = peerGroupSizes.get(peerGroup);
 			
 			// extract probability of a user to be bad given size of peer group
 			Float badUserProb = getBadUserProbs().get(groupSize);
@@ -206,6 +205,7 @@ public class UserActivitySimulator {
 			
 			// iterate on day (dayid). 
 			for (int day = 0; day < getTotalDays(); day++) {
+
 				
 				// check if data of this day is a testing data (type = 2) or training data (type = 1)
 				int type = (day < firstTestDay)?1:2;
@@ -213,12 +213,18 @@ public class UserActivitySimulator {
 				// iterate on time (timeid), starting
 				for (int time = 0; time < getNumTimeBlocks(); time++) {
 					
-					// time and day must start from 1 (so add 1 to time and day). Group id is already starting from 1.
-					// write the beginning of the current row: type,time,grpid,userid,day
-					printer.print(type + "," + (time+1) + "," + grpid + "," + userid + "," + (day+1));
+					// reset/initialize tokens of this user (set of block1 and block2 tokens for each detector)
+					List<Integer> block1TokenGood = new ArrayList<Integer>(getBlock1TokensGood());	
+					List<Integer> block2TokenGood = new ArrayList<Integer>(getBlock2TokensGood());
+					List<Integer> block1TokenBad = new ArrayList<Integer>(getBlock1TokensBad());	
+					List<Integer> block2TokenBad = new ArrayList<Integer>(getBlock2TokensBad());
 					
-					// detectors in our model start from 0, but when printing we must start from 1
-					for (int detector = 0; detector < getNumDetectors(); detector++) {
+					// peerGroup, time and day must start from 1 (so add 1). User id is already starting from 1.
+					// write the beginning of the current row: type,time,grpid,userid,day
+					printer.print(type + "," + (time+1) + "," + (peerGroup+1) + "," + userid + "," + (day+1));
+					
+					// iterate on detectors, but we only need to simulate raw data for half of them (the other half is for peer group outlier)
+					for (int detector = 0; detector < getNumDetectors() / 2; detector++) {	
 						
 						// pick a token
 						boolean isLowBlockToken = false;
@@ -236,12 +242,12 @@ public class UserActivitySimulator {
 						// transform the distribution accordingly to the token we picked
 						if (isLowBlockToken) {
 							// if picked token of lower distribution, then let higher distribution to be zero and normalize.
-							for (int i = block1CutoffIndex; i < cumulative.size(); i++) {
+							for (int i = block1CutoffIndex + 1; i < cumulative.size(); i++) {
 								probDist.set(i, 0f);
 							}
 						} else {
 							// if picked token of higher distribution, then let lower distribution to be zero and normalize.
-							for (int i = 0; i < block1CutoffIndex; i++) {
+							for (int i = 0; i <= block1CutoffIndex; i++) {
 								probDist.set(i, 0f);
 							}
 						}
@@ -259,6 +265,14 @@ public class UserActivitySimulator {
 					printer.println();
 					
 				}	// end of for time
+				
+				if (getDaysToRedrawUserAttitude() > 0) {
+					if (day+1 % getDaysToRedrawUserAttitude() == 0) {
+						// redraw the type of user for next iteration
+						isBadUser = (rand.nextFloat() < badUserProb);
+					}
+				}
+				
 			}	// end of for day
 		}	// end of for userid
 		
@@ -290,12 +304,12 @@ public class UserActivitySimulator {
 				// reduce 1 count
 				peerGroupCounts.set(group, peerGroupCounts.get(group) - 1);
 				// return the group id 
-				return group + 1; 	// group io must start from 1;
+				return group;
 			}
 		}
 		
 		// if there is no more peer groups, then pick one with uniform dist
-		return rand.nextInt(peerGroupCounts.size()) + 1;	// group id must start from 1;
+		return rand.nextInt(peerGroupCounts.size());
 	}
 
 
@@ -409,6 +423,12 @@ public class UserActivitySimulator {
 	 * @throws IOException 
 	 */
 	public void computeDistance() throws IOException {
+		// prepare an object which will read the file of simulated detector alert days (i.e. the data transformed from raw user activity data)
+		IJointDistributionReader transformedDataReader = getTransformedDataReader();
+		File transformedDataFile = new File(getTransformedDataOutput());
+		
+		// obtain the maximum detector state in simulated data. Make sure we use support the largest of simulated and actual data
+		Map<String, Integer> maxDetectorValues = transformedDataReader.getMaxValue(new FileInputStream(transformedDataFile));
 		
 		// read the detector correlation files
 
@@ -419,36 +439,42 @@ public class UserActivitySimulator {
 		// I'll use a method in this class to read correlation tables
 		CSVTableMarginalConsistencyChecker checker = new CSVTableMarginalConsistencyChecker("");
 		
-		// prepare a list of correlation tables (read from csv files)
-		List<PotentialTable> correlationTables = new ArrayList<PotentialTable>();
 		
 		// calculate how many correlation tables we expect for each csv file
 		// binomial coefficient (i.e. from numDetectors, choose 2) = fact(numDetectors) / ( (fact(numDetectors) - 2)*2 )
 		int numCorrelations = (getNumDetectors() * (getNumDetectors() - 1)) / 2;
 		
+		// prepare a list of correlation tables (read from csv files)
+		List<PotentialTable> correlationTables = new ArrayList<PotentialTable>();
 		// read the files
-		Map<String, INode> sharedVariables = new HashMap<String, INode>();	// we must use same instances of variables in all tables
 		for (File innerFile : innerFiles) {
+			Map<String, INode> sharedVariables = new HashMap<String, INode>();	// we must use same instances of variables in all tables in each file
 			List<PotentialTable> tables = checker.readTablesFromCSVFile(innerFile, sharedVariables);
-			if (tables.size() == numCorrelations) {
-				// this is a correlation table
-				correlationTables = tables;
-			} else {
+			
+			// check that the simulated maximum detector size is supported
+			tables = ensureCapacities(tables, maxDetectorValues);
+			
+			if (tables.size() != numCorrelations) {
 				throw new IOException("Unexpected number of tables read from " + innerFile.getAbsolutePath() + ": " + tables.size());
 			}
+			
 			correlationTables.addAll(tables);
 		}
 		if (correlationTables.isEmpty()) {
 			throw new IOException("Unable to read correlation tables from folder " + folder.getAbsolutePath());
 		}
 		
-		// prepare an object which will read the file of simulated detector alert days (i.e. the data transformed from raw user activity data)
-		IJointDistributionReader transformedDataReader = getTransformedDataReader();
-		InputStream transformedDataStream = new FileInputStream(new File(getTransformedDataOutput()));
 		
 		// for each correlation table, read the transformed detector alert days file (for comparison)
 		float sum = 0;		// We'll use sum of kl divergence as the metric
 		for (PotentialTable correlationTable : correlationTables) {
+			
+			if (isToAdd1ToCounts()) {
+				// increment 1 to counts (to avoid 0)
+				for (int i = 0; i < correlationTable.tableSize(); i++) {
+					correlationTable.setValue(i, correlationTable.getValue(i) + 1);
+				}
+			}
 			
 			// make sure this table represents proportions between 0 and 1 (kl divergence is a distance of probability/proportions)
 			correlationTable.normalize();	
@@ -458,7 +484,16 @@ public class UserActivitySimulator {
 			transformedDataTable.fillTable(-1f);	// initialize with invalid values
 			
 			// fill the table
-			transformedDataReader.fillJointDist(transformedDataTable, transformedDataStream, true);
+			transformedDataReader.fillJointDist(transformedDataTable, new FileInputStream(transformedDataFile), false);
+			
+			if (isToAdd1ToCounts()) {
+				// increment 1 to counts (to avoid 0)
+				for (int i = 0; i < transformedDataTable.tableSize(); i++) {
+					transformedDataTable.setValue(i, transformedDataTable.getValue(i) + 1);
+				}
+			}
+			
+			transformedDataTable.normalize();
 			
 			// calculate the distance metric (kl divergence). 
 			sum += getKLDistance(correlationTable, transformedDataTable); // kl divergence is non-negative, so minimizing sum will minimize overall distance
@@ -472,6 +507,83 @@ public class UserActivitySimulator {
 	}
 	
 	
+
+	/**
+	 * Ensures that tables will have a capacity that can handle the maximum state values specified by max >= node.getStatesSize().
+	 * The variables used in tables may be modified or replaced.
+	 * @param tables
+	 * @param maxDetectorValues
+	 */
+	protected List<PotentialTable> ensureCapacities(List<PotentialTable> tables, Map<String, Integer> maxDetectorValues) {
+		for (int tableIndex = 0; tableIndex < tables.size(); tableIndex++) {
+			PotentialTable table = tables.get(tableIndex);
+			for (int i = 0; i < table.getVariablesSize(); i++) {
+				INode node = table.getVariableAt(i);
+				String name = getTransformedDataReader().convertName(node.getName());
+				Integer max = maxDetectorValues.get(name);
+				PotentialTable newTable = ensureCapacity(table, node, max+1);	// size must be max value + 1
+				tables.set(tableIndex, newTable);
+				table = newTable;
+			}
+		}
+		return tables;
+	}
+
+	/**
+	 * Ensures that tables will have a capacity that can handle the size of a variable.
+	 * The variables used in tables may be modified or replaced
+	 * @param oldTable
+	 * @param oldNode
+	 * @param nodeSize
+	 */
+	protected PotentialTable ensureCapacity(PotentialTable oldTable, INode oldNode, Integer nodeSize) {
+		if (nodeSize <= oldNode.getStatesSize()) {
+			return oldTable;	// no need for changes
+		}
+		
+		// copy the node and append states to it to ensure node size
+		INode newNode = (INode) ((ProbabilisticNode)oldNode).clone();
+		while (nodeSize > newNode.getStatesSize()) {
+			newNode.appendState(""+(newNode.getStatesSize() + (nodeSize - newNode.getStatesSize()) -1) );
+		}
+		
+		// copy the table into another table, but substitute the node with a larger one
+		PotentialTable newTable = new ProbabilisticTable();
+		for (int varIndex = 0; varIndex < oldTable.getVariablesSize(); varIndex++) {
+			INode var = oldTable.getVariableAt(varIndex);
+			if (var.equals(oldNode)) {
+				newTable.addVariable(newNode);
+			} else {
+				newTable.addVariable(var);
+			}
+		}
+		
+		if (newTable.tableSize() <= oldTable.tableSize()) {
+			throw new RuntimeException("Failed to increase table size. This is probably caused by a bug in older APIs.");
+		}
+		
+		// make sure we initialize new table with zeros
+		newTable.fillTable(0f);
+		
+		// copy the content of old table to new table
+		for (int cell = 0; cell < oldTable.tableSize(); cell++) {
+			// new table and old table do not share same linear index, but they can use same multi-dimensional indexes, because variables were included in same order.
+			int[] coord = oldTable.getMultidimensionalCoord(cell);
+			newTable.setValue(coord, oldTable.getValue(cell));
+		}
+		
+		return newTable;
+	}
+
+
+	protected boolean containsVar(PotentialTable table, INode node) {
+		for (int i = 0; i < table.getVariablesSize(); i++) {
+			if (table.getVariableAt(i).equals(node)) {
+				return true;
+			}
+		}
+		return false;
+	}
 
 
 	/**
@@ -614,6 +726,13 @@ public class UserActivitySimulator {
 	 * @return the block1Tokens
 	 */
 	public List<Integer> getBlock1TokensGood() {
+		if (block1TokensGood == null) {
+			String string = "9";
+			for (int i = 1; i < getNumDetectors()/2; i++) {
+				string += ",9";
+			};
+			block1TokensGood = parseTokens(string );
+		}
 		return block1TokensGood;
 	}
 
@@ -647,6 +766,13 @@ public class UserActivitySimulator {
 	 * @return the block2Tokens
 	 */
 	public List<Integer> getBlock2TokensGood() {
+		if (block2TokensGood == null) {
+			String string = "3";
+			for (int i = 1; i < getNumDetectors()/2; i++) {
+				string += ",3";
+			};
+			block2TokensGood = parseTokens(string );
+		}
 		return block2TokensGood;
 	}
 
@@ -663,6 +789,14 @@ public class UserActivitySimulator {
 	 * @return the block1TokensBad
 	 */
 	public List<Integer> getBlock1TokensBad() {
+		if (block1TokensBad == null) {
+			String string = "2";
+			for (int i = 1; i < getNumDetectors()/2; i++) {
+				string += ",2";
+			};
+			block1TokensBad = parseTokens(string );
+		}
+		
 		return block1TokensBad;
 	}
 
@@ -679,6 +813,13 @@ public class UserActivitySimulator {
 	 * @return the block2TokensBad
 	 */
 	public List<Integer> getBlock2TokensBad() {
+		if (block2TokensBad == null) {
+			String string = "10";
+			for (int i = 1; i < getNumDetectors()/2; i++) {
+				string += ",10";
+			};
+			block2TokensBad = parseTokens(string );
+		}
 		return block2TokensBad;
 	}
 
@@ -750,7 +891,7 @@ public class UserActivitySimulator {
 	 */
 	public Map<String, Float> getBadUserProbs() {
 		if (badUserProbs == null) {
-			badUserProbs = new HashMap<String, Float>();
+			badUserProbs = parseBadUserProb("0.1");
 		}
 		return badUserProbs;
 	}
@@ -1002,6 +1143,38 @@ public class UserActivitySimulator {
 
 
 	/**
+	 * @return the daysToRedrawBadUser : how many days to wait until randomly redrawing whether a user is bad or good.
+	 */
+	public int getDaysToRedrawUserAttitude() {
+		return daysToRedrawUserAttitude;
+	}
+
+
+	/**
+	 * @param daysToRedrawUserAttitude : how many days to wait until randomly redrawing whether a user is bad or good.
+	 */
+	public void setDaysToRedrawUserAttitude(int daysToRedrawUserAttitude) {
+		this.daysToRedrawUserAttitude = daysToRedrawUserAttitude;
+	}
+
+
+	/**
+	 * @return the isToAdd1ToCounts
+	 */
+	public boolean isToAdd1ToCounts() {
+		return isToAdd1ToCounts;
+	}
+
+
+	/**
+	 * @param isToAdd1ToCounts the isToAdd1ToCounts to set
+	 */
+	public void setToAdd1ToCounts(boolean isToAdd1ToCounts) {
+		this.isToAdd1ToCounts = isToAdd1ToCounts;
+	}
+
+
+	/**
 	 * @param args
 	 * @throws IOException 
 	 * @throws InterruptedException 
@@ -1017,7 +1190,9 @@ public class UserActivitySimulator {
 		options.addOption("rscript","rscript", true, "Name of R script file to be invoked in order to generate the output file from activity file.");
 		options.addOption("metricFile","distance-metric-output-file", true, "Name of output file (which contains a metric of distance between the correlation data and simulated detectors alert days data) to be generated.");
 		options.addOption("block","block-cutoff-percent", true, "This proportion of users in the histogram will be considered to be in block 1 (histogram of low-activity users).");
+		options.addOption("redrawAttitude","days-redraw-user-attitude", true, "How many days to wait until redrawing the bad/good attitude of user. Set to negative in order to make an user immutable.");
 		options.addOption("seed","random-seed", true, "Seed to be used in random number generator.");
+		options.addOption("noIncrement","no-increment-counts", false, "Do not add 1 to counts before calculating proportions/probabilities.");
 		options.addOption("goodTokens1","block1-tokens-per-detector-good-user", true, "Comma separated integer list of how many tokens for block 1 a good user has for each detector. "
 				+ "An example for 6 detectors would be: \"5,70,15,10,90,40\"");
 		options.addOption("goodTokens2","block2-tokens-per-detector-good-user", true, "Comma separated integer list of how many tokens for block 2 a good user has for each detector. "
@@ -1092,6 +1267,9 @@ public class UserActivitySimulator {
 		if (cmd.hasOption("block")) {
 			simulator.setBlock1CutoffPercent(Float.parseFloat(cmd.getOptionValue("block")));
 		}
+		if (cmd.hasOption("redrawAttitude")) {
+			simulator.setDaysToRedrawUserAttitude(Integer.parseInt(cmd.getOptionValue("redrawAttitude")));
+		}
 		if (cmd.hasOption("seed")) {
 			simulator.setSeed(Long.parseLong(cmd.getOptionValue("seed")));
 		}
@@ -1122,6 +1300,8 @@ public class UserActivitySimulator {
 		if (cmd.hasOption("badUserProb")) {
 			simulator.setBadUserProbs(simulator.parseBadUserProb(cmd.getOptionValue("badUserProb")));
 		}
+		
+		simulator.setToAdd1ToCounts(!cmd.hasOption("noIncrement"));
 		
 		simulator.simulateAll();
 		System.exit(0);

@@ -68,7 +68,7 @@ public class ModelCenterWrapperIO implements IModelCenterWrapperIO {
 	 * @see ModelCenterMatrixStyleWrapperIO#getInstance()
 	 */
 	public static IModelCenterWrapperIO getInstance() {
-		return ModelCenterMatrixStyleWrapperIO.getInstance();
+		return new ModelCenterWrapperIO();
 	}
 	
 	/* (non-Javadoc)

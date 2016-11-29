@@ -9,8 +9,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -50,14 +53,14 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 			return cell.replaceAll("ADD", "Detector");
 		}
 		
-		return cell.replaceAll("Alert Days Detector", "Detector");
+		return cell.replaceAll("AlertDaysDetector", "Detector");
 	}
 	
 	/*
 	 * (non-Javadoc)
 	 * @see io.IJointDistributionReader#fillJointDist(unbbayes.prs.bn.PotentialTable, java.io.InputStream, boolean)
 	 */
-	public void fillJointDist(PotentialTable table, InputStream input, boolean isToNormalize) throws IOException {
+	public boolean fillJointDist(PotentialTable table, InputStream input, boolean isToNormalize) throws IOException {
 		
 		// read the csv rows.
 		CSVReader reader = new CSVReader(new InputStreamReader(input));
@@ -82,9 +85,16 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 			
 			// check if current column in csv represents some variable in table
 			for (int varIndex = 0; varIndex < table.getVariablesSize(); varIndex++) {
-				if (table.getVariableAt(varIndex).getName().equalsIgnoreCase(convertName(nameInFile))) {
+				if (convertName(table.getVariableAt(varIndex).getName()).equalsIgnoreCase(convertName(nameInFile))) {
 					columns[varIndex] = columnInCSV;
 				}
+			}
+		}
+		
+		// check if all columns were present
+		for (int columnInCsv : columns) {
+			if (columnInCsv < 0) {
+				return false;
 			}
 		}
 		
@@ -108,7 +118,13 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 			// figure out which cell in joint table represents the value in current line
 			int[] coord = table.getMultidimensionalCoord(0);
 			for (int varIndex = 0; varIndex < coord.length; varIndex++) {
-				coord[varIndex] = Integer.parseInt(csvLine[columns[varIndex]]);
+				int state = Integer.parseInt(csvLine[columns[varIndex]]);
+				
+				if (state >= table.getVariableAt(varIndex).getStatesSize()) {
+					throw new IllegalArgumentException("Found state " + state + " at row " + (currentRowIndex+1) + " for variable " + table.getVariableAt(varIndex) + " with number of states " + table.getVariableAt(varIndex).getStatesSize());
+				}
+				
+				coord[varIndex] = state;
 			}
 			
 			// increment current cell in table
@@ -121,6 +137,71 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 			// normalize joint table, so that joint table becomes a table of proportions
 			table.normalize();
 		}
+		
+		return true;
+		
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see io.IJointDistributionReader#getMaxValue(java.io.InputStream)
+	 */
+	public Map<String, Integer> getMaxValue(InputStream input) throws IOException{
+		
+		// read the csv rows.
+		CSVReader reader = new CSVReader(new InputStreamReader(input));
+		List<String[]> allRows = reader.readAll();
+		reader.close();
+		
+		Map<String, Integer> ret = new HashMap<String, Integer>();
+		List<String> columnNames = new ArrayList<String>();
+		
+		// read the 1st line of csv (name of the columns)
+		String[] csvLine = allRows.get(0);
+		// iterate on columns in order to read variable names
+		for (int columnInCSV = 0; columnInCSV < csvLine.length; columnInCSV++) {
+			if (columnInCSV == getIdColumn()) {
+				columnNames.add("ID");
+				continue;
+			}
+			String nameInFile = csvLine[columnInCSV];
+			if (nameInFile == null || nameInFile.trim().isEmpty()) {
+				continue;
+			}
+			
+			nameInFile = convertName(nameInFile);
+			ret.put(nameInFile, -1);
+			columnNames.add(nameInFile);
+		}
+		
+		
+		// read the remaining file and fill joint table with counts
+		for (int currentRowIndex = 1; currentRowIndex < allRows.size(); currentRowIndex++) { // just read all rows except first row
+			csvLine = allRows.get(currentRowIndex);
+			if (csvLine.length <= 0) {
+				Debug.println(getClass(), "Empty row: " + currentRowIndex);
+				continue;	// ignore empty lines
+			}
+			
+			for (int columnInCSV = 0; columnInCSV < csvLine.length; columnInCSV++) {
+				if (columnInCSV == getIdColumn()) {
+					continue;
+				}
+				
+				String columnName = columnNames.get(columnInCSV);
+				Integer max = ret.get(columnName);
+				
+				int value = Math.round(Float.parseFloat(csvLine[columnInCSV]));
+				if (value > max) {
+					ret.put(columnName, value);
+				}
+				
+			}
+			
+		}
+		
+		
+		return ret;
 		
 	}
 

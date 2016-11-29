@@ -5,6 +5,7 @@ package io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import unbbayes.prs.bn.PotentialTable;
 
@@ -15,6 +16,28 @@ import unbbayes.prs.bn.PotentialTable;
  */
 public interface IJointDistributionReader {
 	
-	public void fillJointDist(PotentialTable table, InputStream input, boolean isToNormalize) throws IOException;
+	/**
+	 * 
+	 * @param table : updates content of this table by using data from input
+	 * @param input : input stream to read
+	 * @param isToNormalize : if true, table will be normalized to 1
+	 * @return : true if success, false otherwise
+	 * @throws IOException
+	 */
+	public boolean fillJointDist(PotentialTable table, InputStream input, boolean isToNormalize) throws IOException;
+	
+	/**
+	 * @param input
+	 * @return Max value per column (variable name) in input stream.
+	 * @throws IOException
+	 */
+	public Map<String, Integer> getMaxValue(InputStream input) throws IOException;
+	
+	/**
+	 * Translates a variable or column name to a valid variable name used in this file format.
+	 * @param name
+	 * @return
+	 */
+	public String convertName(String name);
 
 }

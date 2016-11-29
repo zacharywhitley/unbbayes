@@ -195,6 +195,7 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	 * @param sharedVariables : variables with same name should be related to same instances of {@link INode}, so this map
 	 * keeps track of what names/nodes were instantiated already. This is an input/output argument (i.e. if it is
 	 * filled already, values in it will be reused; and new values will be added to the mapping when read from csv).
+	 * @param checkConsistency 
 	 * @return tables read from csv files
 	 * @throws IOException
 	 */
