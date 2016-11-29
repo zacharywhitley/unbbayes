@@ -450,6 +450,9 @@ public class UserActivitySimulator {
 		float sum = 0;		// We'll use sum of kl divergence as the metric
 		for (PotentialTable correlationTable : correlationTables) {
 			
+			// make sure this table represents proportions between 0 and 1 (kl divergence is a distance of probability/proportions)
+			correlationTable.normalize();	
+			
 			// create a clone of correlation table that will be filled by the csv file of transformed data
 			PotentialTable transformedDataTable = (PotentialTable) correlationTable.clone();
 			transformedDataTable.fillTable(-1f);	// initialize with invalid values
