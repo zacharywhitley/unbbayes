@@ -1,0 +1,26 @@
+#
+# UserActivitySimulator input file
+#
+
+activity_histogram_file:	"RCP8_ActivityHist.csv"
+raw_user_activity_output:	"userActivity.csv"
+transformed_detectors_output:	"detectorsDays.csv"
+correlation_data_file_folder:	CorrelationData
+rscript_program_name:	"C:\Program Files\R\R-3.3.1\bin\Rscript"
+rscript:	"RCP8_ComputeAlertDays_Driver.r"
+distance_metric_output_file:	"UserActivitySimulator.out"
+peer_group_size_file:	"rcp7_group_sizes_withTRUE.csv"
+random_seed:	1480473510130
+block_cutoff_percent:	0.8
+days_redraw_user_attitude:	20
+block1_tokens_per_detector_good_user:	5000,7000,1500,1000,9000,4000
+block2_tokens_per_detector_good_user:	500,700,150,100,900,400
+block1_tokens_per_detector_bad_user:	600,800,200,200,1000,500
+block2_tokens_per_detector_bad_user:	6000,8000,2000,2000,10000,5000
+bad_user_prob_by_group_size:	"large:0.2,small:0.04,medium:0.0001"
+total_users:	100
+total_days:	60
+first_day:	0
+test_days_threshold:	36
+number_timeblocks:	6
+total_number_detectors:	24
