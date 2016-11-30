@@ -3,9 +3,6 @@
  */
 package utils;
 
-import io.IModelCenterWrapperIO;
-import io.ModelCenterWrapperIO;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -44,6 +41,7 @@ public class UserActivitySimulatorTest extends TestCase {
 		
 		assertTrue(new File(sim.getRScriptName()).exists());
 		
+		sim.setRscriptProgramName("C:\\Program Files\\R\\R-3.3.1\\bin\\Rscript");
 		sim.generateTransformedData();
 		
 		assertTrue(new File(input).exists());

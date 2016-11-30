@@ -48,5 +48,10 @@ public interface IModelCenterWrapperIO {
 	 * @throws IOException
 	 */
 	public void convertToWrapperOutput(File input, File output) throws IOException;
+	
+	/**
+	 * @param programName : this name will be printed in the header (initial comments).
+	 */
+	public void setProgramName(String programName);
 
 }

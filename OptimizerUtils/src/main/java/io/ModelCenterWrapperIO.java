@@ -57,6 +57,7 @@ public class ModelCenterWrapperIO implements IModelCenterWrapperIO {
 	private String probabilityPropertyName = PROBABILITY_PROPERTY_NAME;
 	
 	private Map<String, String> properties = new HashMap<String, String>();
+	private String programName = "JavaSimulatorWrapper";
 
 	/**
 	 * @see #getInstance(JavaSimulatorWrapper)
@@ -210,7 +211,7 @@ public class ModelCenterWrapperIO implements IModelCenterWrapperIO {
 			return;
 		}
 		// actually print the header
-		printer.println("# JavaSimulatorWrapper Results");
+		printer.println("# " + getProgramName() + " Results");
 		printer.println("# " + new Date().toString());
 		printer.println("#");
 		printer.println("# calculated parameters");
@@ -320,6 +321,20 @@ public class ModelCenterWrapperIO implements IModelCenterWrapperIO {
 	 */
 	public void setProbabilityPropertyName(String probabilityPropertyName) {
 		this.probabilityPropertyName = probabilityPropertyName;
+	}
+
+	/**
+	 * @return the programName
+	 */
+	public String getProgramName() {
+		return programName;
+	}
+
+	/**
+	 * @param programName the programName to set
+	 */
+	public void setProgramName(String programName) {
+		this.programName = programName;
 	}
 
 }

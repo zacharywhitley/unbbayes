@@ -10,7 +10,6 @@ import io.IJointDistributionReader;
 import io.IModelCenterWrapperIO;
 import io.IPeerGroupReader;
 import io.ModelCenterMatrixStyleWrapperIO;
-import io.ModelCenterWrapperIO;
 import io.PeerGroupSizeCSVReader;
 
 import java.io.BufferedReader;
@@ -66,7 +65,7 @@ public class UserActivitySimulator {
 	private boolean isToAdd1ToCounts = true;
 	
 	private IJointDistributionReader transformedDataReader = new CSVJointDistributionReader();
-	private IModelCenterWrapperIO wrapperIO = ModelCenterMatrixStyleWrapperIO.getInstance();
+	private IModelCenterWrapperIO wrapperIO = null;
 	private Long seed = null;
 	private IActivityHistIO io = null;
 	private List<Integer> block1TokensGood = null;
@@ -136,6 +135,11 @@ public class UserActivitySimulator {
 	 */
 	public void simulateAll() throws IOException, InterruptedException {
 		
+		// make sure the output files are deleted prior to execution
+		new File(getTransformedDataOutput()).delete();
+		new File(getRawDataOutput()).delete();
+		new File(getDistanceMetricFileName()).delete();
+		
 		// generate a csv file with raw data
 		simulateRawData();
 		
@@ -188,6 +192,13 @@ public class UserActivitySimulator {
 		
 		printer.println();
 		
+
+		// reset/initialize tokens of this user (set of block1 and block2 tokens for each detector)
+		List<Integer> block1TokenGood = new ArrayList<Integer>(getBlock1TokensGood());	
+		List<Integer> block2TokenGood = new ArrayList<Integer>(getBlock2TokensGood());
+		List<Integer> block1TokenBad = new ArrayList<Integer>(getBlock1TokensBad());	
+		List<Integer> block2TokenBad = new ArrayList<Integer>(getBlock2TokensBad());
+		
 		// iterate on users (userid). Start from 1
 		for (int userid = 1; userid <= getTotalUsers(); userid++) {
 			
@@ -213,11 +224,6 @@ public class UserActivitySimulator {
 				// iterate on time (timeid), starting
 				for (int time = 0; time < getNumTimeBlocks(); time++) {
 					
-					// reset/initialize tokens of this user (set of block1 and block2 tokens for each detector)
-					List<Integer> block1TokenGood = new ArrayList<Integer>(getBlock1TokensGood());	
-					List<Integer> block2TokenGood = new ArrayList<Integer>(getBlock2TokensGood());
-					List<Integer> block1TokenBad = new ArrayList<Integer>(getBlock1TokensBad());	
-					List<Integer> block2TokenBad = new ArrayList<Integer>(getBlock2TokensBad());
 					
 					// peerGroup, time and day must start from 1 (so add 1). User id is already starting from 1.
 					// write the beginning of the current row: type,time,grpid,userid,day
@@ -329,7 +335,7 @@ public class UserActivitySimulator {
 		Integer numTokens2 = higherBlockTokens.get(detector);	// number of tokens left for block2 (higher activity distribution)
 		
 		if (numTokens1 == 0 && numTokens2 == 0) {
-			System.err.println("No more tokens left for detector " + (detector + 1));
+			Debug.println("No more tokens left for detector " + (detector + 1));
 			// by default, pick a token with uniform distribution
 			return rand.nextBoolean();
 		}
@@ -399,6 +405,11 @@ public class UserActivitySimulator {
 	 * @throws InterruptedException
 	 */
 	public void generateTransformedData() throws IOException, InterruptedException {
+		
+		if (!new File(getRawDataOutput()).exists()) {
+			throw new IOException("File does not exist: " + getRawDataOutput());
+		}
+		
 		Runtime rt = Runtime.getRuntime();
 		
 		Process pr = rt.exec(getRscriptProgramName() + " " + getRScriptName() + " " + getRawDataOutput() + " " + getTransformedDataOutput());
@@ -406,10 +417,15 @@ public class UserActivitySimulator {
 		int exitVal = pr.waitFor();
 		
 		BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-		 
 		for (String line = input.readLine(); line != null; line = input.readLine()) {
 			System.out.println(line);
 		}
+		input.close();
+		input = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+		for (String line = input.readLine(); line != null; line = input.readLine()) {
+			System.out.println(line);
+		}
+		input.close();
 
         if (exitVal != 0) {
         	throw new IOException("Exited R script with exit code " + exitVal);
@@ -502,6 +518,7 @@ public class UserActivitySimulator {
 		// TODO calculate the distance metric regarding peer groups.
 		
 		// save the distance metric(s) to file (sum of kl distance)
+		
 		getWrapperIO().writeWrapperFile(Collections.singletonMap("Distance", ""+sum), new File(getDistanceMetricFileName()));
 		
 	}
@@ -727,9 +744,9 @@ public class UserActivitySimulator {
 	 */
 	public List<Integer> getBlock1TokensGood() {
 		if (block1TokensGood == null) {
-			String string = "9";
+			String string = "15000";
 			for (int i = 1; i < getNumDetectors()/2; i++) {
-				string += ",9";
+				string += ",15000";
 			};
 			block1TokensGood = parseTokens(string );
 		}
@@ -767,9 +784,9 @@ public class UserActivitySimulator {
 	 */
 	public List<Integer> getBlock2TokensGood() {
 		if (block2TokensGood == null) {
-			String string = "3";
+			String string = "3000";
 			for (int i = 1; i < getNumDetectors()/2; i++) {
-				string += ",3";
+				string += ",3000";
 			};
 			block2TokensGood = parseTokens(string );
 		}
@@ -790,9 +807,9 @@ public class UserActivitySimulator {
 	 */
 	public List<Integer> getBlock1TokensBad() {
 		if (block1TokensBad == null) {
-			String string = "2";
+			String string = "4000";
 			for (int i = 1; i < getNumDetectors()/2; i++) {
-				string += ",2";
+				string += ",4000";
 			};
 			block1TokensBad = parseTokens(string );
 		}
@@ -814,9 +831,9 @@ public class UserActivitySimulator {
 	 */
 	public List<Integer> getBlock2TokensBad() {
 		if (block2TokensBad == null) {
-			String string = "10";
+			String string = "10000";
 			for (int i = 1; i < getNumDetectors()/2; i++) {
-				string += ",10";
+				string += ",10000";
 			};
 			block2TokensBad = parseTokens(string );
 		}
@@ -1114,6 +1131,10 @@ public class UserActivitySimulator {
 	 * @return the wrapperIO
 	 */
 	public IModelCenterWrapperIO getWrapperIO() {
+		if (wrapperIO == null) {
+			wrapperIO = ModelCenterMatrixStyleWrapperIO.getInstance();
+			wrapperIO.setProgramName("UserActivitySimulator");
+		}
 		return wrapperIO;
 	}
 
@@ -1207,6 +1228,7 @@ public class UserActivitySimulator {
 		options.addOption("groupSizeFile","peer-group-size-file", true, "Path to csv file containing peer group sizes.");
 		options.addOption("users","total-users", true, "Total number of users to simulate.");
 		options.addOption("days","total-days", true, "Total number of days to simulate.");
+		options.addOption("testDays","test-days-threshold", true, "Number of days for training.");
 		options.addOption("numTimeblocks","number-timeblocks", true, "Total number of time blocks to simulate.");
 		options.addOption("totalDetectors","total-number-detectors", true, "Total number of detectors.");
 		options.addOption("d","debug", false, "Enables debug mode.");
@@ -1278,6 +1300,9 @@ public class UserActivitySimulator {
 		}
 		if (cmd.hasOption("days")) {
 			simulator.setTotalDays(Integer.parseInt(cmd.getOptionValue("days")));
+		}
+		if (cmd.hasOption("testDays")) {
+			simulator.setTestDayThreshold(Integer.parseInt(cmd.getOptionValue("testDays")));
 		}
 		if (cmd.hasOption("numTimeblocks")) {
 			simulator.setNumTimeBlocks(Integer.parseInt(cmd.getOptionValue("numTimeblocks")));
