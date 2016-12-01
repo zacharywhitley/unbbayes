@@ -63,6 +63,7 @@ public class UserActivitySimulator {
 	private String distanceMetricFileName = "UserActivitySimulator.out";
 	private int daysToRedrawUserAttitude = 20;
 	private boolean isToAdd1ToCounts = true;
+	private int firstDay = 0;
 	
 	private IJointDistributionReader transformedDataReader = new CSVJointDistributionReader();
 	private IModelCenterWrapperIO wrapperIO = null;
@@ -241,7 +242,7 @@ public class UserActivitySimulator {
 						}
 						
 						// choose a distribution to sample. If token was block 1, pick lower than cutoff. If token was block 2, pick higher than cutoff
-						List<Float> probDist = normalize((List)io.getNumUsers(detector, time, day));
+						List<Float> probDist = normalize((List)io.getNumUsers(detector, time, day + getFirstDay()));
 						List<Float> cumulative = getCumulativeDist((List)probDist);	
 						int block1CutoffIndex = getPercentileIndex(cumulative, getBlock1CutoffPercent());
 						
@@ -1196,6 +1197,22 @@ public class UserActivitySimulator {
 
 
 	/**
+	 * @return the firstDay
+	 */
+	public int getFirstDay() {
+		return firstDay;
+	}
+
+
+	/**
+	 * @param firstDay the firstDay to set
+	 */
+	public void setFirstDay(int firstDay) {
+		this.firstDay = firstDay;
+	}
+
+
+	/**
 	 * @param args
 	 * @throws IOException 
 	 * @throws InterruptedException 
@@ -1203,34 +1220,35 @@ public class UserActivitySimulator {
 	public static void main(String[] args) throws IOException, InterruptedException {
 		CommandLineParser parser = new DefaultParser();
 		Options options = new Options();
-		options.addOption("hist","activity-histogram-file", true, "CSV file with user activity histogram.");
-		options.addOption("activity","raw-user-activity-output", true, "Name of CSV file with simulated user activity.");
-		options.addOption("output","transformed-detectors-output", true, "Name of CSV file with simulated detectors alert days (i.e. transformed data).");
-		options.addOption("correlation","correlation-data-file-folder", true, "Name of folder containing CSV files with detectors correlation data (of alert days).");
-		options.addOption("rProg","rscript-program-name", true, "Name of program that will execute R script. It's usually \"RScript\"");
+		options.addOption("hist","activity_histogram_file", true, "CSV file with user activity histogram.");
+		options.addOption("activity","raw_user_activity_output", true, "Name of CSV file with simulated user activity.");
+		options.addOption("output","transformed_detectors_output", true, "Name of CSV file with simulated detectors alert days (i.e. transformed data).");
+		options.addOption("correlation","correlation_data_file_folder", true, "Name of folder containing CSV files with detectors correlation data (of alert days).");
+		options.addOption("rProg","rscript_program_name", true, "Name of program that will execute R script. It's usually \"RScript\"");
 		options.addOption("rscript","rscript", true, "Name of R script file to be invoked in order to generate the output file from activity file.");
-		options.addOption("metricFile","distance-metric-output-file", true, "Name of output file (which contains a metric of distance between the correlation data and simulated detectors alert days data) to be generated.");
-		options.addOption("block","block-cutoff-percent", true, "This proportion of users in the histogram will be considered to be in block 1 (histogram of low-activity users).");
-		options.addOption("redrawAttitude","days-redraw-user-attitude", true, "How many days to wait until redrawing the bad/good attitude of user. Set to negative in order to make an user immutable.");
-		options.addOption("seed","random-seed", true, "Seed to be used in random number generator.");
-		options.addOption("noIncrement","no-increment-counts", false, "Do not add 1 to counts before calculating proportions/probabilities.");
-		options.addOption("goodTokens1","block1-tokens-per-detector-good-user", true, "Comma separated integer list of how many tokens for block 1 a good user has for each detector. "
+		options.addOption("metricFile","distance_metric_output_file", true, "Name of output file (which contains a metric of distance between the correlation data and simulated detectors alert days data) to be generated.");
+		options.addOption("block","block_cutoff_percent", true, "This proportion of users in the histogram will be considered to be in block 1 (histogram of low activity users).");
+		options.addOption("redrawAttitude","days_redraw_user_attitude", true, "How many days to wait until redrawing the bad/good attitude of user. Set to negative in order to make an user immutable.");
+		options.addOption("seed","random_seed", true, "Seed to be used in random number generator.");
+		options.addOption("noIncrement","no_increment_counts", false, "Do not add 1 to counts before calculating proportions/probabilities.");
+		options.addOption("goodTokens1","block1_tokens_per_detector_good_user", true, "Comma separated integer list of how many tokens for block 1 a good user has for each detector. "
 				+ "An example for 6 detectors would be: \"5,70,15,10,90,40\"");
-		options.addOption("goodTokens2","block2-tokens-per-detector-good-user", true, "Comma separated integer list of how many tokens for block 2 a good user has for each detector. "
+		options.addOption("goodTokens2","block2_tokens_per_detector_good_user", true, "Comma separated integer list of how many tokens for block 2 a good user has for each detector. "
 				+ "An example for 6 detectors would be: \"5,70,15,10,90,40\"");
-		options.addOption("badTokens1","block1-tokens-per-detector-bad-user", true, "Comma separated integer list of how many tokens for block 1 a bad user has for each detector. "
+		options.addOption("badTokens1","block1_tokens_per_detector_bad_user", true, "Comma separated integer list of how many tokens for block 1 a bad user has for each detector. "
 				+ "An example for 6 detectors would be: \"5,70,15,10,90,40\"");
-		options.addOption("badTokens2","block2-tokens-per-detector-bad-user", true, "Comma separated integer list of how many tokens for block 2 a bad user has for each detector. "
+		options.addOption("badTokens2","block2_tokens_per_detector_bad_user", true, "Comma separated integer list of how many tokens for block 2 a bad user has for each detector. "
 				+ "An example for 6 detectors would be: \"5,70,15,10,90,40\"");
-		options.addOption("badUserProb","bad-user-prob-by-group-size", true, "Probability of a user to be a bad user, given each peer group size."
+		options.addOption("badUserProb","bad_user_prob_by_group_size", true, "Probability of a user to be a bad user, given each peer group size."
 				+ " The format is <PeerGroupSizeName>:<prob>[,<PeerGroupSizeName>:<prob>]*."
 				+ " For example, large:0.2,small:0.04,medium:0.0001");
-		options.addOption("groupSizeFile","peer-group-size-file", true, "Path to csv file containing peer group sizes.");
-		options.addOption("users","total-users", true, "Total number of users to simulate.");
-		options.addOption("days","total-days", true, "Total number of days to simulate.");
-		options.addOption("testDays","test-days-threshold", true, "Number of days for training.");
-		options.addOption("numTimeblocks","number-timeblocks", true, "Total number of time blocks to simulate.");
-		options.addOption("totalDetectors","total-number-detectors", true, "Total number of detectors.");
+		options.addOption("groupSizeFile","peer_group_size_file", true, "Path to csv file containing peer group sizes.");
+		options.addOption("users","total_users", true, "Total number of users to simulate.");
+		options.addOption("days","total_days", true, "Total number of days to simulate.");
+		options.addOption("firstDay","first_day", true, "First day to simulate. This is actually which date in histogram file (see parameter hist) to consider to be the 1st date. Default is 0, but it's suggested to use last day in histogram - total days to simulate.");
+		options.addOption("testDays","test_days_threshold", true, "Number of days for training.");
+		options.addOption("numTimeblocks","number_timeblocks", true, "Total number of time blocks to simulate.");
+		options.addOption("totalDetectors","total_number_detectors", true, "Total number of detectors.");
 		options.addOption("d","debug", false, "Enables debug mode.");
 		options.addOption("h","help", false, "Prints this help.");
 		
@@ -1300,6 +1318,9 @@ public class UserActivitySimulator {
 		}
 		if (cmd.hasOption("days")) {
 			simulator.setTotalDays(Integer.parseInt(cmd.getOptionValue("days")));
+		}
+		if (cmd.hasOption("firstDay")) {
+			simulator.setFirstDay(Integer.parseInt(cmd.getOptionValue("firstDay")));
 		}
 		if (cmd.hasOption("testDays")) {
 			simulator.setTestDayThreshold(Integer.parseInt(cmd.getOptionValue("testDays")));
