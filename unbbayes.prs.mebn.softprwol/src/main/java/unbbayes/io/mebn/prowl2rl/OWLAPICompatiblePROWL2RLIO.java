@@ -156,11 +156,11 @@ public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO impleme
 			try {
 				// load file assuming that it is a plug-in resource (in such case, we must tell plug-in classloaders to look for files).
 				prowl2RLDefinitionFile = new File(this.getClass().getClassLoader().getResource(this.getPROWL2ModelFilePath()).toURI());
-//				prowl2RLDefinitionFile = new File("j:/pr-owl/pr-owl2rl.owl");
-				System.out.println("Carregou: " + prowl2RLDefinitionFile);
 			} catch (Exception e1) {
 				try {
-					Debug.println(this.getClass(), e1.getMessage() + " - Could not load Pr-OWL2 RL definitions from " + this.getPROWL2ModelFilePath() + " in plug-in's resource folder. Retry using project's root folder...", e1);
+					Debug.println(this.getClass(), e1.getMessage() + " - Could not load Pr-OWL2 RL definitions from " + 
+				                  this.getPROWL2ModelFilePath() + " in plug-in's resource folder. "
+				                  		+ "Retry using project's root folder...", e1);
 				} catch (Throwable t) {
 					t.printStackTrace();
 				}
@@ -172,7 +172,8 @@ public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO impleme
 					}
 				} catch (Exception e) {
 					try {
-						Debug.println(this.getClass(), e.getMessage() + " - Could not load Pr-OWL2 RL definitions from " + this.getPROWL2ModelFilePath() 
+						Debug.println(this.getClass(), e.getMessage() + " - Could not load Pr-OWL2 RL definitions from " 
+					                                                  + this.getPROWL2ModelFilePath() 
 								                                      + " in project's root folder.", e);
 					} catch (Throwable t) {
 						t.printStackTrace();
@@ -191,7 +192,8 @@ public class OWLAPICompatiblePROWL2RLIO extends OWLAPICompatiblePROWL2IO impleme
 			} else {
 				// no local file was found
 				try {
-					Debug.println(this.getClass(), "Could not initialize PR-OWL2 IRI mapper using local file. Calls to PR-OWL2 definitions will be requested to " 
+					Debug.println(this.getClass(), "Could not initialize PR-OWL2 IRI mapper using local file. "
+							                       + "Calls to PR-OWL2 definitions will be requested to " 
 				                                   + IPROWL2RLModelUser.PROWL2RL_NAMESPACEURI);
 				} catch (Throwable t) {
 					t.printStackTrace();
