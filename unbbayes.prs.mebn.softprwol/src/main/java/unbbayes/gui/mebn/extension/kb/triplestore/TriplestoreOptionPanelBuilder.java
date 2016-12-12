@@ -20,6 +20,7 @@ import javax.swing.border.TitledBorder;
 import unbbayes.gui.mebn.extension.kb.IKBOptionPanelBuilder;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.triplestore.TriplestoreKnowledgeBase;
+import unbbayes.prs.mebn.kb.extension.triplestore.TriplestoreKnowledgeBaseBuilder;
 import unbbayes.triplestore.SAILTriplestoreParameters;
 import unbbayes.triplestore.Triplestore;
 import unbbayes.triplestore.exception.TriplestoreException;
@@ -57,7 +58,6 @@ public class TriplestoreOptionPanelBuilder extends JScrollPane implements
 	@Override
 	public void commitChanges() {
 		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
@@ -198,6 +198,46 @@ public class TriplestoreOptionPanelBuilder extends JScrollPane implements
 			setStatusOn(); 
 		}else{
 			setStatusOff();
+		}
+	}
+	
+	public static void main(String[] args){
+    	Parameters params = new SAILTriplestoreParameters();
+    
+    	TriplestoreKnowledgeBaseBuilder builder = new TriplestoreKnowledgeBaseBuilder(); 
+    	
+    	TriplestoreKnowledgeBase kb = null;
+		try {
+			kb = (TriplestoreKnowledgeBase)builder.buildKB();
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+    	
+		params.setParameterValue(Triplestore.PARAM_URL, "http://localhost:7200/");
+		params.setParameterValue(Triplestore.PARAM_REPOSITORY, "Base_15");
+		
+		try {
+			kb.getTriplestoreController().startConnection(params);
+			kb.getTriplestoreController().iterateNamespaces();
+			
+//			setStatusOn();
+			
+			System.out.println("Connection Successfull!");
+			
+		} catch (TriplestoreException e2) {
+			
+//			setStatusOff();
+			
+			System.out.println("Connection Error!");
+			e2.printStackTrace();
+			
+		} catch (Exception e1) {
+			
+//			setStatusOff();
+			System.out.println("Connection Error!");
+			e1.printStackTrace();
+			
 		}
 	}
 	
