@@ -19,8 +19,8 @@ block1_tokens_per_detector_bad_user:95200,52600,23900,27800,9600,0,17600,60300,0
 block2_tokens_per_detector_bad_user:1600,14900,14400,22200,10900,20800,21300,41500,1400,6900,5800,1000
 bad_user_prob_by_group_size:	"large:0.271,small:0.122,medium:0.295"
 total_users:3816
-total_days:62
-first_day:101
-test_days_threshold:43
+total_days:163
+first_day:0
+test_days_threshold:144
 number_timeblocks:	6
 total_number_detectors:	24
