@@ -127,5 +127,13 @@
 			    <version>3.6.1</version>
 			</dependency>
 			
+			<!-- Libraries for parsing JSON files -->
+			<!-- https://mvnrepository.com/artifact/org.json/json -->
+			<dependency>
+			    <groupId>org.json</groupId>
+			    <artifactId>json</artifactId>
+			    <version>20160810</version>
+			</dependency>
+			
 	</dependencies>
 </project>

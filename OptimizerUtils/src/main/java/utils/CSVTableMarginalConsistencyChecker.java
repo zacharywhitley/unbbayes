@@ -90,6 +90,8 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	private boolean isToUseDecisionNode = true;
 
 	private boolean isToReduceStateSpace = false;
+	
+	private UniformNameConverter nameConverter = null;
 
 	/**
 	 * @param name
@@ -269,16 +271,7 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	 * @return
 	 */
 	public String convertToName(String cell) {
-		// remove white spaces
-		cell = cell.replaceAll("\\s", "");
-		
-		if (cell.matches("det[0-9]+")) {
-			return cell.replaceAll("det", "Detector");
-		} else if (cell.matches("ADD[0-9]+")) {
-			return cell.replaceAll("ADD", "Detector");
-		}
-		
-		return cell.replaceAll("Alert Days Detector", "Detector");
+		return getNameConverter().convertToName(cell);
 	}
 	
 	/**
@@ -1547,6 +1540,23 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	 */
 	public void setToReduceStateSpace(boolean isToReduceStateSpace) {
 		this.isToReduceStateSpace = isToReduceStateSpace;
+	}
+
+	/**
+	 * @return the nameConverter
+	 */
+	public UniformNameConverter getNameConverter() {
+		if (nameConverter == null) {
+			nameConverter = new UniformNameConverter();
+		}
+		return nameConverter;
+	}
+
+	/**
+	 * @param nameConverter the nameConverter to set
+	 */
+	public void setNameConverter(UniformNameConverter nameConverter) {
+		this.nameConverter = nameConverter;
 	}
 
 	/**

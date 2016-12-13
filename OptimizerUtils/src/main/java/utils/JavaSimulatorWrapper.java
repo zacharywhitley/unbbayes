@@ -44,7 +44,9 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	public static final String NUMBER_USERS_PROPERTY_NAME = "Number_of_Users";
 	public static final String TYPE_FUSION_PROPERTY_NAME = "Type_of_Fusion";
 	public static final String PROBABILITIES_PROPERTY_NAME_PREFIX = "Probabilities";
+	public static final String CLIQUE_PROPERTY_NAME_PREFIX = "Clique";
 	public static final String HAS_ALERT_IN_PROB_PROPERTY_NAME = "Has_Alert_In_Prob";
+	public static final String NUMBER_OF_RUNS_PROPERTY_NAME = "Number_of_Runs";
 	
 	private String numberOfIndicatorsPropertyName = NUMBER_INDICATORS_PROPERTY_NAME;
 	private String numberOfDetectorsPropertyName = NUMBER_DETECTORS_PROPERTY_NAME;
@@ -52,8 +54,10 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	private String typeOfFusionPropertyName = TYPE_FUSION_PROPERTY_NAME;
 	private String probabilitiesPropertyNamePrefix = PROBABILITIES_PROPERTY_NAME_PREFIX;
 	private String hasAlertInProbPropertyName = HAS_ALERT_IN_PROB_PROPERTY_NAME;
+	private String numberOfRunsPropertyName = NUMBER_OF_RUNS_PROPERTY_NAME;
+	private String cliquesPropertyNamePrefix = CLIQUE_PROPERTY_NAME_PREFIX;
 
-	
+	private String cliquesFileName = "cliques.json";
 	
 	private SimulatedUserStatisticsCalculator simulatedUserStatisticsCalculator = new SimulatedUserStatisticsCalculator();
 	private DirichletUserSimulator dirichletUserSimulator = new DirichletUserSimulator();
@@ -65,7 +69,10 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	private IModelCenterWrapperIO io = null;
 	private List<List<Float>> wrapperProbabilities = new ArrayList<List<Float>>();
 
-	private String numberOfRunsPropertyName = "Number_of_Runs";
+	private List<String> cliqueNames;
+
+
+	
 	
 	/**
 	 * Default constructor is kept protected to allow inheritance, 
@@ -1206,12 +1213,33 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 			throw new IOException("No valid probability declaration was found.");
 		}
 		
-		// make sure all probabilities have same size
-		int sizeOfFirstProbDistro = getWrapperProbabilities().get(0).size();
-		for (int i = 1; i < getWrapperProbabilities().size(); i++) {
-			if (getWrapperProbabilities().get(i).size() != sizeOfFirstProbDistro) {
-				throw new IOException("Size of 1st probability distribution was " + sizeOfFirstProbDistro
-						+ ", but size of probability distribution " + i + " was " + getWrapperProbabilities().get(i).size());
+		// read properties in the format Clique<N>: <name>
+		for (int i = 1; i <= Integer.MAX_VALUE; i++) {
+			// read property, which is a comma-separated string with probability distribution
+			String property = this.getIO().getProperty(getCliquesPropertyNamePrefix() + i);
+			Debug.println(getClass(), getCliquesPropertyNamePrefix() + i + " = " + property);
+			if (property == null || property.trim().isEmpty()) {
+				break;
+			}
+			
+			// convert comma-separated string to a list of float and puts to wrapper probabilities
+			getCliqueNames().add(property.replaceAll("\\s", ""));	// make sure not to use spaces
+		}
+		
+		
+		if (getCliqueNames().isEmpty()) {
+			// make sure all probabilities have same size if we are not dealing with cliques
+			int sizeOfFirstProbDistro = getWrapperProbabilities().get(0).size();
+			for (int i = 1; i < getWrapperProbabilities().size(); i++) {
+				if (getWrapperProbabilities().get(i).size() != sizeOfFirstProbDistro) {
+					throw new IOException("Size of 1st probability distribution was " + sizeOfFirstProbDistro
+							+ ", but size of probability distribution " + i + " was " + getWrapperProbabilities().get(i).size());
+				}
+			}
+		} else {
+			// we are dealing with cliques. Make sure we have a probability distribution for each clique
+			if (getWrapperProbabilities().size() < getCliqueNames().size()) {
+				throw new IOException("Found " + getCliqueNames().size() + " cliques, but " + getWrapperProbabilities().size() + " probabilities.");
 			}
 		}
 		
@@ -1278,16 +1306,29 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		File tempFolder = Files.createTempDirectory("Probabilities_").toFile();
 		tempFolder.deleteOnExit();
 		Debug.println(getClass(), "Created temporary directory for probabilities: " + tempFolder.getAbsolutePath());
+		
+		List<String> cliqueNames = getCliqueNames();
+		if (cliqueNames == null) {
+			cliqueNames = Collections.EMPTY_LIST;
+		} else if (!cliqueNames.isEmpty()) {
+			Debug.println(getClass(), "Saving temporary files for clique potentials...");
+		}
+		List<List<Float>> probs = getWrapperProbabilities();
 		for (int i = 0; i < getWrapperProbabilities().size(); i++) {
-			List<Float> probability = getWrapperProbabilities().get(i);
-			File tempFile = File.createTempFile("prob"+i, ".csv", tempFolder);
+			List<Float> probability = probs.get(i);
+			String fileNamePrefix = "prob";
+			if (!cliqueNames.isEmpty()) {
+				// if there are cliques, use clique name as prefix of file names
+				fileNamePrefix = cliqueNames.get(i);
+			}
+			File tempFile = File.createTempFile(fileNamePrefix + "_" + i, ".csv", tempFolder);
 			tempFile.deleteOnExit();
 			PrintStream printer = new PrintStream(new FileOutputStream(tempFile , false));	// overwrites if file exists
 			for (Float prob : probability) {
 				printer.println(prob + ",");
 			}
 			printer.close();
-			Debug.println(getClass(), "Created temporary file for probability + " + i + ": " + tempFile.getAbsolutePath());
+			Debug.println(getClass(), "Created temporary file for probability " + i + ": " + tempFile.getAbsolutePath());
 		}
 		return tempFolder;
 	}
@@ -1453,14 +1494,18 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	
 
 	/**
-	 * @return the probabilities
+	 * @return the probabilities : probabilities read from input file.
+	 * @see #loadWrapperInput(File)
+	 * @see #getCliqueNames()
 	 */
 	public List<List<Float>> getWrapperProbabilities() {
 		return wrapperProbabilities;
 	}
 
 	/**
-	 * @param probabilities the probabilities to set
+	 * @param probabilities : probabilities read from input file.
+	 * @see #loadWrapperInput(File)
+	 * @see #getCliqueNames()
 	 */
 	public void setWrapperProbabilities(List<List<Float>> probabilities) {
 		this.wrapperProbabilities = probabilities;
@@ -1566,6 +1611,53 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 
 
 	/**
+	 * @return the cliquesFileName
+	 */
+	public String getCliquesFileName() {
+		return cliquesFileName;
+	}
+
+	/**
+	 * @param cliquesFileName the cliquesFileName to set
+	 */
+	public void setCliquesFileName(String cliquesFileName) {
+		this.cliquesFileName = cliquesFileName;
+	}
+
+	/**
+	 * @return the cliqueNames : if non-empty, then the i-th element of {@link #getWrapperProbabilities()}
+	 * represents the clique potential of the i-th clique in this list.
+	 */
+	public List<String> getCliqueNames() {
+		if (cliqueNames == null) {
+			cliqueNames = new ArrayList<String>();
+		}
+		return cliqueNames;
+	}
+
+	/**
+	 * @param cliqueNames : if non-empty, then the i-th element of {@link #getWrapperProbabilities()}
+	 * represents the clique potential of the i-th clique in this list.
+	 */
+	public void setCliqueNames(List<String> cliqueNames) {
+		this.cliqueNames = cliqueNames;
+	}
+
+	/**
+	 * @return the cliquesPropertyNamePrefix
+	 */
+	public String getCliquesPropertyNamePrefix() {
+		return cliquesPropertyNamePrefix;
+	}
+
+	/**
+	 * @param cliquesPropertyNamePrefix the cliquesPropertyNamePrefix to set
+	 */
+	public void setCliquesPropertyNamePrefix(String cliquesPropertyNamePrefix) {
+		this.cliquesPropertyNamePrefix = cliquesPropertyNamePrefix;
+	}
+
+	/**
 	 * Runs {@link DirichletUserSimulator#main(String[])} and then {@link SimulatedUserStatisticsCalculator#main(String[])}.
 	 * However, by default it will read a file called JavaSimulatorWrapper.in and write a file called JavaSimulatorWrapper.out
 	 * in the same directory of this program.
@@ -1600,12 +1692,14 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 	 * 
 	 * @param args
 	 */
+	@SuppressWarnings("static-access")
 	public static void main(String[] args) {
 		CommandLineParser parser = new DefaultParser();
 		Options options = new Options();
 		options.addOption("d","debug", false, "Enables debug mode.");
 		options.addOption("i","input", true, "File to read. If not specified, JavaSimulatorWrapper.in (in same directory of the program) will be used.");
 		options.addOption("o","output", true, "File to write. If not specified, JavaSimulatorWrapper.out (in same directory of the program) will be used.");
+		options.addOption("cliques","clique-structure-file-name", true, "Name of file (JSON format) to load clique structrue.");
 		options.addOption("h","help", false, "Help.");
 		
 		CommandLine cmd = null;
@@ -1638,6 +1732,9 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 		if (cmd.hasOption("o")) {
 			wrapper.setOutput(new File(cmd.getOptionValue("o")));
 		}
+		if (cmd.hasOption("cliques")) {
+			wrapper.setCliquesFileName(cmd.getOptionValue("cliques"));
+		}
 		
 		try {
 			wrapper.loadWrapperInput(wrapper.getInput());
@@ -1667,7 +1764,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				tempDirichletOutput.deleteOnExit();
 				
 				// set up arguments for dirichlet-multinomial simulator
-				String[] dirichletArgs = new String[Debug.isDebugMode()?20:19];
+				String[] dirichletArgs = new String[Debug.isDebugMode()?24:23];
 				
 				// -i "RCP3-full" -o "test.csv" -u 4263 -n 1000 -numI 4 -numD 4 -a 2 -d 
 				dirichletArgs[0] = "-i";
@@ -1689,8 +1786,18 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				dirichletArgs[16] = wrapper.isToUseDirichletMultinomial()?"Dirichlet":"Samples";
 				dirichletArgs[17] = "-threat";	
 				dirichletArgs[18] = "Threat";
-				if (Debug.isDebugMode() && dirichletArgs.length >= 20) {
-					dirichletArgs[19] = "-d";	
+				if (wrapper.getCliqueNames() == null || wrapper.getCliqueNames().isEmpty()) {
+					// make sure the cliques argument is not used if no clique was read
+					dirichletArgs[19] = "";	
+					dirichletArgs[20] = "";
+				} else {
+					dirichletArgs[19] = "-cliques";	
+					dirichletArgs[20] = wrapper.getCliquesFileName();
+				}
+				dirichletArgs[21] = "-cliques";	
+				dirichletArgs[22] = wrapper.getCliquesFileName();
+				if (Debug.isDebugMode() && dirichletArgs.length >= 24) {
+					dirichletArgs[23] = "-d";	
 				}
 				
 				if (Debug.isDebugMode()) {

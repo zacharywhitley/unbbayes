@@ -13,11 +13,25 @@ import java.io.InputStreamReader;
 import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import unbbayes.prs.INode;
+import unbbayes.prs.Node;
+import unbbayes.prs.bn.Clique;
+import unbbayes.prs.bn.DefaultJunctionTreeBuilder;
+import unbbayes.prs.bn.IJunctionTree;
+import unbbayes.prs.bn.IJunctionTreeBuilder;
+import unbbayes.prs.bn.IRandomVariable;
+import unbbayes.prs.bn.JunctionTree;
+import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.Separator;
+import utils.UniformNameConverter;
 
 /**
  * This is a default implementation of {@link ICliqueStructureLoader}
@@ -110,6 +124,10 @@ public class JSONCliqueStructureLoader implements ICliqueStructureLoader {
 	public static final String SEPARATORS_VARIABLES_KEY =  CLIQUES_VARIABLES_KEY;
 	
 	private JSONObject jsonObject = null;
+	
+	private IJunctionTreeBuilder junctionTreeBuilder = null;
+	
+	private UniformNameConverter nameConverter = null;
 	
 	/**
 	 * Default constructor
@@ -413,6 +431,163 @@ public class JSONCliqueStructureLoader implements ICliqueStructureLoader {
 		}
 		
 		
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see io.ICliqueStructureLoader#getJunctionTree()
+	 */
+	public IJunctionTree getJunctionTree() throws InstantiationException, IllegalAccessException {
+		// create the variables
+		Map<String, INode> nodeMap = new HashMap<String, INode>();
+		List<String> varNames = getVariableNames();
+		List<Integer> varSizes = getVariablesSizes();
+		for (int varIndex = 0; varIndex < varNames.size(); varIndex++) {
+			String name = getNameConverter().convertToName(varNames.get(varIndex));
+			ProbabilisticNode node = new ProbabilisticNode();
+			node.setName(name);
+			for (int state = 0; state < varSizes.get(varIndex); state++) {
+				node.appendState("" + state);
+			}
+			nodeMap.put(name, node);
+		}
+		
+		// instantiate the junction tree
+		IJunctionTree junctionTree = getJunctionTreeBuilder().buildJunctionTree(null);
+		
+		// create the cliques
+		Map<String, Clique> cliqueMap = new HashMap<String, Clique>();
+		for (String cliqueName : getCliqueNames()) {
+			Clique clique = new Clique();
+			int cliqueNum = getCliqueNumber(cliqueName);
+			clique.setInternalIdentificator(cliqueNum);
+			for (String varName : getVariablesInClique(cliqueName)) {
+				INode node = nodeMap.get(varName);
+				clique.getNodesList().add((Node) node);
+			}
+			// add variables to clique tables as well
+			for (int varIndex = clique.getNodesList().size()-1; varIndex >= 0; varIndex--) {	// last variable is the one which iterates most, so needs to be added 1st
+				clique.getProbabilityFunction().addVariable(clique.getNodesList().get(varIndex));
+			}
+			// also init clique tables (fill tables with variables)
+			clique.getProbabilityFunction().fillTable(1f);
+			junctionTree.getCliques().add(clique );
+			cliqueMap.put(cliqueName, clique);
+		}
+		
+		
+		// create the separators
+		List<Entry<String, String>> separators = getSeparators();
+		for (int sepIndex = 0; sepIndex < separators.size(); sepIndex++) {
+			Entry<String, String> entry = separators.get(sepIndex);
+			
+			Clique clique1 = cliqueMap.get(entry.getKey());
+			Clique clique2 = cliqueMap.get(entry.getValue());
+			
+			Separator sep = new Separator(clique1, clique2);	// this should update clique1.getChildren() and clique2.getParent()
+			sep.setInternalIdentificator(-(sepIndex+1));	// set internal ID unique and different from cliques
+			
+			sep.setNodes(new ArrayList<Node>(getVariablesInSeparator(entry).size()));	// make sure the list is initialized
+			for (String varName : getVariablesInSeparator(entry)) {
+				INode node = nodeMap.get(varName);
+				sep.getNodesList().add((Node) node);
+			}
+			// add variables to separator tables as well
+			for (int varIndex = sep.getNodesList().size()-1; varIndex >= 0; varIndex--) { // last variable is the one which iterates most, so needs to be added 1st
+				sep.getProbabilityFunction().addVariable(sep.getNodesList().get(varIndex));
+			}
+			// also init clique tables (fill tables with variables)
+			sep.getProbabilityFunction().fillTable(1f);
+			junctionTree.addSeparator(sep);
+		}
+		
+		// make sure internal identificators are up to date
+//		updateCliqueAndSeparatorInternalIdentificators(junctionTree);
+		
+		return junctionTree;
+	}
+	
+
+//	/**
+//     * This method moves the root clique to 1st index, and then updates {@link IRandomVariable#getInternalIdentificator()}
+//     * accordingly to its order of appearance in {@link IJunctionTree#getCliques()} and {@link IJunctionTree#getSeparators()}.
+//     * This is necessary because some implementations assumes that {@link IRandomVariable#getInternalIdentificator()} is synchronized with indexes.
+//	 * @param junctionTree 
+//	 */
+//	public void updateCliqueAndSeparatorInternalIdentificators(IJunctionTree junctionTree) {
+//    	if (junctionTree.getCliques() != null && !junctionTree.getCliques().isEmpty()) {
+//    		// move the new root clique to the 1st entry in the list of cliques in junction tree, because some algorithms assume the 1st element is the root;
+//    		Clique root = junctionTree.getCliques().get(0);
+//    		while (root.getParent() != null) { 
+//    			root = root.getParent(); // go up in hierarchy until we find the root
+//    		}
+//    		int indexOfRoot = junctionTree.getCliques().indexOf(root);
+//    		if (indexOfRoot > 0) {
+//    			// move root to the beginning (index 0) of the list
+//    			Collections.swap(junctionTree.getCliques(), 0, indexOfRoot);
+//    		}
+//    		
+//    		// redistribute internal identifications accordingly to indexes
+//    		for (int i = 0; i < junctionTree.getCliques().size(); i++) {
+//    			junctionTree.getCliques().get(i).setIndex(i);
+//    			junctionTree.getCliques().get(i).setInternalIdentificator(i);
+//    		}
+//    	}
+//    	// do the same for separators
+//    	int separatorIndex = -1;
+//    	for (Separator sep : junctionTree.getSeparators()) {
+//    		sep.setInternalIdentificator(separatorIndex--);
+//    	}
+//	}
+
+	/**
+	 * Extracts the clique number (id) from clique name
+	 * @param cliqueName
+	 * @return
+	 */
+	public int getCliqueNumber(String cliqueName) {
+		cliqueName  = cliqueName.toUpperCase();
+		cliqueName = cliqueName.replaceAll("[a-zA-Z-_\\.]", " ");
+		for (String split : cliqueName.split("\\s")) {
+			if (split != null && split.trim().length() > 0) {
+				return Integer.parseInt(split);
+			}
+		}
+		throw new IllegalArgumentException("Could not parse clique name " + cliqueName);
+	}
+
+	/**
+	 * @return the junctionTreeBuilder
+	 */
+	public IJunctionTreeBuilder getJunctionTreeBuilder() {
+		if (junctionTreeBuilder == null) {
+			junctionTreeBuilder = new DefaultJunctionTreeBuilder();
+		}
+		return junctionTreeBuilder;
+	}
+
+	/**
+	 * @param junctionTreeBuilder the junctionTreeBuilder to set
+	 */
+	public void setJunctionTreeBuilder(IJunctionTreeBuilder junctionTreeBuilder) {
+		this.junctionTreeBuilder = junctionTreeBuilder;
+	}
+
+	/**
+	 * @return the nameConverter
+	 */
+	public UniformNameConverter getNameConverter() {
+		if (nameConverter == null) {
+			nameConverter = new UniformNameConverter();
+		}
+		return nameConverter;
+	}
+
+	/**
+	 * @param nameConverter the nameConverter to set
+	 */
+	public void setNameConverter(UniformNameConverter nameConverter) {
+		this.nameConverter = nameConverter;
 	}
 	
 }

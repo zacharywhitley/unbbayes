@@ -8,6 +8,9 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Map.Entry;
 
+import unbbayes.prs.bn.IJunctionTree;
+import unbbayes.prs.bn.JunctionTree;
+
 /**
  * This is a common interface for classes that loads/saves streams which represent clique structures (e.g. a junction tree of cliques).
  * A clique is a set of random variables.
@@ -76,5 +79,14 @@ public interface ICliqueStructureLoader {
 	 * @see #getVariableNames()
 	 */
 	public List<String> getVariablesInSeparator(Entry<String, String> separator);
+
+
+	/**
+	 * Converts the information read in {@link #load(InputStream)} to a junction tree
+	 * @return instance of {@link JunctionTree}
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
+	 */
+	public IJunctionTree getJunctionTree() throws InstantiationException, IllegalAccessException;
 	
 }

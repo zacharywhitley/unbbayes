@@ -6,21 +6,21 @@ activity_histogram_file:	"RCP8_ActivityHist.csv"
 raw_user_activity_output:	"userActivity.csv"
 transformed_detectors_output:	"detectorsDays.csv"
 correlation_data_file_folder:	CorrelationData
-rscript_program_name:	"C:\\Program Files\\R\\R-3.3.1\\bin\\Rscript"
+rscript_program_name:	"C:\\Program Files\\R\\R-3.3.2\\bin\\Rscript"
 rscript:	"RCP8_ComputeAlertDays_Driver.r"
 distance_metric_output_file:	"UserActivitySimulator.out"
 peer_group_size_file:	"rcp7_group_sizes_withTRUE.csv"
-random_seed:	1480473510130
-block_cutoff_percent:	0.8
-days_redraw_user_attitude:	20
-block1_tokens_per_detector_good_user:	5000,7000,1500,1000,9000,4000,5000,7000,1500,1000,9000,4000
-block2_tokens_per_detector_good_user:	500,700,150,100,900,400,500,700,150,100,900,400
-block1_tokens_per_detector_bad_user:	600,800,200,200,1000,500,600,800,200,200,1000,500
-block2_tokens_per_detector_bad_user:	6000,8000,2000,2000,10000,5000,6000,8000,2000,2000,10000,5000
-bad_user_prob_by_group_size:	"large:0.2,small:0.04,medium:0.0001"
-total_users:	500
-total_days:	62
-first_day:	101
-test_days_threshold:	43
+random_seed:1
+block_cutoff_percent:0.859
+days_redraw_user_attitude:25
+block1_tokens_per_detector_good_user:24800,6800,12900,43900,14500,34700,18100,8400,20900,8600,22400,76000
+block2_tokens_per_detector_good_user:61100,41100,34200,300,3900,100,58600,21000,36400,27100,98900,1400
+block1_tokens_per_detector_bad_user:95200,52600,23900,27800,9600,0,17600,60300,0,16500,32700,32900
+block2_tokens_per_detector_bad_user:1600,14900,14400,22200,10900,20800,21300,41500,1400,6900,5800,1000
+bad_user_prob_by_group_size:	"large:0.271,small:0.122,medium:0.295"
+total_users:3816
+total_days:62
+first_day:101
+test_days_threshold:43
 number_timeblocks:	6
 total_number_detectors:	24

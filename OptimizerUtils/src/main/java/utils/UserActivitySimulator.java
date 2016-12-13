@@ -298,6 +298,9 @@ public class UserActivitySimulator {
 		for (Integer count : peerGroupCounts) {
 			sum += count;
 		}
+		if (sum <= 0) {
+			return rand.nextInt(peerGroupCounts.size());
+		}
 		int choice = rand.nextInt(sum);
 		
 		// retrieve the index where the choice was from

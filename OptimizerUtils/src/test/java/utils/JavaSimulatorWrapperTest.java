@@ -406,5 +406,37 @@ public class JavaSimulatorWrapperTest extends TestCase {
 		assertTrue(tempFile10.delete());
 		assertTrue(tempFile4214.delete());
 	}
+	
+	/**
+	 * 
+	 * Smoke test of {@link JavaSimulatorWrapper#main(String[])}, but with cliques.
+	 * @throws IOException 
+	 */
+	@SuppressWarnings("static-access")
+	public void testMainCliques() throws IOException {
+		
+		File tempFile = File.createTempFile(getClass().getName() + "_", ".out");
+		tempFile.deleteOnExit();
+		
+		
+		args[0] = "-i";
+		args[1] = "\"" + getClass().getResource("../JavaSimulatorWrapper_cliquesSimple.in").getPath() + "\"";
+		args[2] = "-o";
+		args[3] = tempFile.getPath();
+		args[4] = "-d";
+		args[5] = "-cliques";
+		args[6] = "\"" + getClass().getResource("../cliquesSimple.json").getPath() + "\"";
+		wrapper.main(args);
+		
+		
+		assertTrue(tempFile.exists());
+		assertTrue(tempFile.isFile());
+		assertTrue(tempFile.length() > 0);
+		
+		// read the output file and check sanity
+		this.checkFileSanity(tempFile);
+		
+		assertTrue(tempFile.delete());
+	}
 
 }

@@ -1,0 +1,16 @@
+#
+# JavaSimulatorWrapper input file
+#
+
+Number_of_Indicators:    4
+Number_of_Detectors:    4
+Has_Alert_In_Prob: 0
+Number_of_Runs:    1000
+Number_of_Users:    3800
+Type_of_Fusion:    0
+Clique1: C0
+Probabilities1: 0.1,0.1,0.3,0.2,0.1,0.2
+Clique2: C1
+Probabilities2: 0.1,0.2,0.1,0.1,0.2,0.2,0.0,0.1
+Clique3: C2
+Probabilities3: 0.06,0.06,0.06,0.06,0.06,0.08,0.08,0.08,0.08,0.08,0.02,0.02,0.02,0.02,0.02,0.04,0.04,0.04,0.04,0.04
