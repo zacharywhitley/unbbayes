@@ -34,6 +34,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.math3.distribution.PoissonDistribution;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.PotentialTable;
@@ -203,6 +204,12 @@ public class UserActivitySimulator {
 		List<Integer> block1TokenBad = new ArrayList<Integer>(getBlock1TokensBad());	
 		List<Integer> block2TokenBad = new ArrayList<Integer>(getBlock2TokensBad());
 		
+		// initialize a distribution to be used to randomly draw the number of days a user shall wait until changing their attitude
+		PoissonDistribution attitudeRedrawDaysDist = null;
+		if (getDaysToRedrawUserAttitude() > 0) {
+			attitudeRedrawDaysDist = new PoissonDistribution(getDaysToRedrawUserAttitude());
+		}
+		
 		// iterate on users (userid). Start from 1
 		for (int userid = 1; userid <= getTotalUsers(); userid++) {
 			
@@ -215,8 +222,15 @@ public class UserActivitySimulator {
 			// extract probability of a user to be bad given size of peer group
 			Float badUserProb = getBadUserProbs().get(groupSize);
 			
-			// randomly choose if this user is a bad user
+			// randomly choose user's attitude (i.e. if this user is a bad user)
 			boolean isBadUser = (rand.nextFloat() < badUserProb);
+			
+			// decide how many days to wait until re-choosing this user's attitude
+			int daysToRedrawAttitude = 0;
+			if (attitudeRedrawDaysDist != null) {
+				daysToRedrawAttitude = attitudeRedrawDaysDist.sample();
+			}
+			
 			
 			// iterate on day (dayid). 
 			for (int day = 0; day < getTotalDays(); day++) {
@@ -276,8 +290,8 @@ public class UserActivitySimulator {
 					
 				}	// end of for time
 				
-				if (getDaysToRedrawUserAttitude() > 0) {
-					if (day+1 % getDaysToRedrawUserAttitude() == 0) {
+				if (daysToRedrawAttitude > 0) {
+					if (((day+1) % daysToRedrawAttitude) == 0) {
 						// redraw the type of user for next iteration
 						isBadUser = (rand.nextFloat() < badUserProb);
 					}
