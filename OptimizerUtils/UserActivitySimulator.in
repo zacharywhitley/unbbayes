@@ -6,7 +6,7 @@ activity_histogram_file:	"RCP8_ActivityHist.csv"
 raw_user_activity_output:	"userActivity.csv"
 transformed_detectors_output:	"detectorsDays.csv"
 correlation_data_file_folder:	CorrelationData
-rscript_program_name:	"C:\\Program Files\\R\\R-3.3.2\\bin\\Rscript"
+rscript_program_name:	"C:\\Program Files\\R\\R-3.3.1\\bin\\Rscript"
 rscript:	"RCP8_ComputeAlertDays_Driver.r"
 distance_metric_output_file:	"UserActivitySimulator.out"
 peer_group_size_file:	"rcp7_group_sizes_withTRUE.csv"
@@ -19,8 +19,9 @@ block1_tokens_per_detector_bad_user:95200,52600,23900,27800,9600,0,17600,60300,0
 block2_tokens_per_detector_bad_user:1600,14900,14400,22200,10900,20800,21300,41500,1400,6900,5800,1000
 bad_user_prob_by_group_size:	"large:0.271,small:0.122,medium:0.295"
 total_users:3816
-total_days:163
-first_day:0
-test_days_threshold:144
+total_days:62
+first_day:101
+test_days_threshold:43
 number_timeblocks:	6
 total_number_detectors:	24
+redraw_attitude_probability_coefficient:	0.9

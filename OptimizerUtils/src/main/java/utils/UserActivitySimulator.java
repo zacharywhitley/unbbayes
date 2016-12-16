@@ -1360,7 +1360,8 @@ public class UserActivitySimulator {
 		options.addOption("alertThreshold","alert_days_threshold", true, "If detectors' alert days is larger than or equal to this value, then the user will trigger a system alert. "
 				+ "This is used to estimate an additional penalty for the distance between simulated and actual data.");
 		options.addOption("penalty","low_alert_penalty", true, "Value to be added to distance score when number of users with system alerts is lower than allowed.");
-		options.addOption("attitudeCoefficient","redraw_attitude_probability_coefficient", true, "When redrawing user attitude, this coefficient will be multiplied to probability of a user to have bad attitude if user did not have bad attitude already");
+		options.addOption("attitudeCoefficient","redraw_attitude_probability_coefficient", true, "When redrawing user attitude, this coefficient will be multiplied to probability of a user to have bad attitude if user did not have bad attitude already. "
+				+ "Use a float between 0 and 1.");
 		options.addOption("d","debug", false, "Enables debug mode.");
 		options.addOption("h","help", false, "Prints this help.");
 		
