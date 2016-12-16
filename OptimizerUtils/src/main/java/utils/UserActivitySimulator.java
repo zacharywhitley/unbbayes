@@ -64,6 +64,9 @@ public class UserActivitySimulator {
 	private int daysToRedrawUserAttitude = 20;
 	private boolean isToAdd1ToCounts = true;
 	private int firstDay = 0;
+	private int systemAlertUserCountPenaltyThreshold = 50;
+	private int systemAlertDaysThreshold = 8;
+	private float lowSystemAlertPenalty = Integer.MAX_VALUE/2f;
 	
 	private IJointDistributionReader transformedDataReader = new CSVJointDistributionReader();
 	private IModelCenterWrapperIO wrapperIO = null;
@@ -519,6 +522,13 @@ public class UserActivitySimulator {
 			sum += getKLDistance(correlationTable, transformedDataTable); // kl divergence is non-negative, so minimizing sum will minimize overall distance
 		}
 		
+		// increment distance if constraint about minimum number of users with system alert is not reached
+		int systemAlertUserCount = transformedDataReader.getNumUserSystemAlert(new FileInputStream(transformedDataFile), getSystemAlertDaysThreshold());
+		if (systemAlertUserCount < getSystemAlertUserCountPenaltyThreshold()) {
+			Debug.println(getClass(), "Number of alerts was " + systemAlertUserCount + ", while minimum allowed was " + getSystemAlertUserCountPenaltyThreshold());
+			sum += getLowSystemAlertPenalty();
+		}
+		
 		// TODO calculate the distance metric regarding peer groups.
 		
 		// save the distance metric(s) to file (sum of kl distance)
@@ -528,6 +538,7 @@ public class UserActivitySimulator {
 	}
 	
 	
+
 
 	/**
 	 * Ensures that tables will have a capacity that can handle the maximum state values specified by max >= node.getStatesSize().
@@ -1216,6 +1227,65 @@ public class UserActivitySimulator {
 
 
 	/**
+	 * @return the systemAlertUserCountPenaltyThreshold : if {@link #computeDistance()} detects that 
+	 * the number of users with system alerts is lower than this value, then the distance will be increased as penalty.
+	 */
+	public int getSystemAlertUserCountPenaltyThreshold() {
+		return systemAlertUserCountPenaltyThreshold;
+	}
+
+
+	/**
+	 * @param systemAlertUserCountPenaltyThreshold the systemAlertUserCountThreshold to set : if {@link #computeDistance()} detects that 
+	 * the number of users with system alerts is lower than this value, then the distance will be increased as penalty.
+	 */
+	public void setSystemAlertUserCountPenaltyThreshold(
+			int systemAlertUserCountPenaltyThreshold) {
+		this.systemAlertUserCountPenaltyThreshold = systemAlertUserCountPenaltyThreshold;
+	}
+
+
+	/**
+	 * @return the systemAlertDaysThreshold : {@link #computeDistance()} will consider alert days greater than or equal to this value
+	 * as a system alert.
+	 * @see #getSystemAlertUserCountPenaltyThreshold()
+	 */
+	public int getSystemAlertDaysThreshold() {
+		return systemAlertDaysThreshold;
+	}
+
+
+	/**
+	 * @param systemAlertDaysThreshold the systemAlertDaysThreshold to set: {@link #computeDistance()} will consider alert days greater than or equal to this value
+	 * as a system alert.
+	 * @see #getSystemAlertUserCountPenaltyThreshold()
+	 */
+	public void setSystemAlertDaysThreshold(int systemAlertDaysThreshold) {
+		this.systemAlertDaysThreshold = systemAlertDaysThreshold;
+	}
+
+
+	/**
+	 * @return the lowSystemAlertPenalty : amount of penalty to add to distance at {@link #computeDistance()}
+	 * when the number of users with system alert is below {@link #getSystemAlertUserCountPenaltyThreshold()}.
+	 * This should be a sufficiently large number, but not too large at a point to cause overflows.
+	 */
+	public float getLowSystemAlertPenalty() {
+		return lowSystemAlertPenalty;
+	}
+
+
+	/**
+	 * @param lowSystemAlertPenalty : amount of penalty to add to distance at {@link #computeDistance()}
+	 * when the number of users with system alert is below {@link #getSystemAlertUserCountPenaltyThreshold()}.
+	 * This should be a sufficiently large number, but not too large at a point to cause overflows.
+	 */
+	public void setLowSystemAlertPenalty(float lowSystemAlertPenalty) {
+		this.lowSystemAlertPenalty = lowSystemAlertPenalty;
+	}
+
+
+	/**
 	 * @param args
 	 * @throws IOException 
 	 * @throws InterruptedException 
@@ -1252,6 +1322,11 @@ public class UserActivitySimulator {
 		options.addOption("testDays","test_days_threshold", true, "Number of days for training.");
 		options.addOption("numTimeblocks","number_timeblocks", true, "Total number of time blocks to simulate.");
 		options.addOption("totalDetectors","total_number_detectors", true, "Total number of detectors.");
+		options.addOption("minAlertUser","minimum_users_system_alert", true, "Minimum number of users with system alerts. "
+				+ "If number of users is smaller than this value, then distance calculation will have a penalty increase in distance between simulated and actual data.");
+		options.addOption("alertThreshold","alert_days_threshold", true, "If detectors' alert days is larger than or equal to this value, then the user will trigger a system alert. "
+				+ "This is used to estimate an additional penalty for the distance between simulated and actual data.");
+		options.addOption("penalty","low_alert_penalty", true, "Value to be added to distance score when number of users with system alerts is lower than allowed.");
 		options.addOption("d","debug", false, "Enables debug mode.");
 		options.addOption("h","help", false, "Prints this help.");
 		
@@ -1348,6 +1423,15 @@ public class UserActivitySimulator {
 		}
 		if (cmd.hasOption("badUserProb")) {
 			simulator.setBadUserProbs(simulator.parseBadUserProb(cmd.getOptionValue("badUserProb")));
+		}
+		if (cmd.hasOption("minAlertUser")) {
+			simulator.setSystemAlertUserCountPenaltyThreshold(Integer.parseInt(cmd.getOptionValue("minAlertUser")));
+		}
+		if (cmd.hasOption("alertThreshold")) {
+			simulator.setSystemAlertDaysThreshold(Integer.parseInt(cmd.getOptionValue("alertThreshold")));
+		}
+		if (cmd.hasOption("penalty")) {
+			simulator.setLowSystemAlertPenalty(Integer.parseInt(cmd.getOptionValue("penalty")));
 		}
 		
 		simulator.setToAdd1ToCounts(!cmd.hasOption("noIncrement"));

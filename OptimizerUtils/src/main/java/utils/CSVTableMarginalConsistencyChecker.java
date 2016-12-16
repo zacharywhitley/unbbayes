@@ -4,6 +4,7 @@
 package utils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,6 +12,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -92,6 +94,8 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	private boolean isToReduceStateSpace = false;
 	
 	private UniformNameConverter nameConverter = null;
+
+	private int detectorAlertThreshold = 8;
 
 	/**
 	 * @param name
@@ -935,6 +939,11 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 				net = this.generateNet(net, correlationTables, alertTables);
 			}
 			
+			this.printBinaryCorrelations(innerFolder.getName() + "_marginal_" + getOutputFileName(), correlationTables, getDetectorAlertThreshold(), false, true);
+			this.printBinaryCorrelations(innerFolder.getName() + "_marginal_inverted_" + getOutputFileName(), correlationTables, getDetectorAlertThreshold(), true, true);
+			this.printBinaryCorrelations(innerFolder.getName() + "_wide_marginal_" + getOutputFileName(), correlationTables, getDetectorAlertThreshold(), false, false);
+			this.printBinaryCorrelations(innerFolder.getName() + "_wide_marginal_inverted_" + getOutputFileName(), correlationTables, getDetectorAlertThreshold(), true, false);
+			
 		}
 		
 		// save the net
@@ -945,6 +954,214 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 		
 	}
 	
+	/**
+	 * Converts tables of 2 variables with n-states to 2 variables with 2 states by using a threshold to split the n-states into 2 blocks. 
+	 * @param fileName
+	 * @param correlationTables : tables of 2 variables whose states are integers.
+	 * @param threshold : states greater than or equal to this value will be considered as the state "1" of the resulting binary variables.
+	 * Smaller values will be state "0".
+	 * @param inverted : if true, then state "1" will come before state "0" in the marginalized table.
+	 * @throws FileNotFoundException
+	 */
+	public void printBinaryCorrelations(String fileName, List<PotentialTable> correlationTables, int threshold, boolean inverted, boolean isToPrint1by1) throws FileNotFoundException {
+		
+		List<PotentialTable> marginalTables = new ArrayList<PotentialTable>(correlationTables.size());
+		Map<String, INode> varCache = new HashMap<String, INode>();
+		for (PotentialTable table : correlationTables) {
+			assertEquals(table.toString(), 2, table.getVariablesSize());	// we can only handle tables with 2 vars
+
+			// just create stub nodes with 2 states
+			INode node1 = varCache.get(table.getVariableAt(0).getName());
+			if (node1 == null) {
+				node1 = new ProbabilisticNode();
+				node1.setName(table.getVariableAt(0).getName());	// use same name of current table
+				if (inverted) {
+					node1.appendState("1");
+					node1.appendState("0");
+				} else {
+					node1.appendState("0");
+					node1.appendState("1");
+				}
+				varCache.put(table.getVariableAt(0).getName(), node1);
+			}
+			INode node2 = varCache.get(table.getVariableAt(1).getName());
+			if (node2 == null) {
+				node2 = new ProbabilisticNode();
+				node2.setName(table.getVariableAt(1).getName());	// use same name of current table
+				if (inverted) {
+					node2.appendState("1");
+					node2.appendState("0");
+				} else {
+					node2.appendState("0");
+					node2.appendState("1");
+				}
+				varCache.put(table.getVariableAt(1).getName(), node2);
+			}
+
+			PotentialTable marginalTable = new ProbabilisticTable();
+			marginalTable.addVariable(node1);
+			marginalTable.addVariable(node2);
+			marginalTable.fillTable(0f);	// set 0 as initial value
+			
+			
+			// marginalize the table (overwrite marginal table)
+			for (int cell = 0; cell < table.tableSize(); cell++) {
+				int[] coord = table.getMultidimensionalCoord(cell);
+				int[] marginalCoord = marginalTable.getMultidimensionalCoord(0);
+				int state1Index = inverted?0:1;	// if inverted, then state "1" is at index 0
+				
+				// "0" if smaller than threshold, "1" otherwise
+				marginalCoord[0] = ((Integer.parseInt(table.getVariableAt(0).getStateAt(coord[0])) >= threshold)?state1Index:(1-state1Index));	
+				// "0" if smaller than threshold, "1" otherwise
+				marginalCoord[1] = ((Integer.parseInt(table.getVariableAt(1).getStateAt(coord[1])) >= threshold)?state1Index:(1-state1Index));	
+				
+				int marginalCell = marginalTable.getLinearCoord(marginalCoord);
+				marginalTable.setValue(marginalCell, marginalTable.getValue(marginalCell) + table.getValue(cell));
+			}
+			
+			marginalTables.add(marginalTable);
+			
+			
+		}
+		
+		if (isToPrint1by1) {
+			// print tables 1-by-1
+			PrintStream printer = new PrintStream(new FileOutputStream(new File(fileName), false));
+			for (PotentialTable table : marginalTables) {
+				printTable(table, printer);
+			}
+			printer.close();
+		} else {
+			// print the marginal tables in a less compressed view
+			printTables(fileName, marginalTables, varCache);
+		}
+		
+	}
+	
+
+	private void printTables(String fileName, List<PotentialTable> tablesToPrint, Map<String, INode> varCache) throws FileNotFoundException {
+		
+		Map<String, List<PotentialTable>> tablesByLastNode = new HashMap<String, List<PotentialTable>>();
+		for (PotentialTable table : tablesToPrint) {
+			List<PotentialTable> listLast = tablesByLastNode.get(table.getVariableAt(1).getName());
+			if (listLast == null) {
+				listLast = new ArrayList<PotentialTable>();
+			}
+			listLast.add(table);
+			tablesByLastNode.put(table.getVariableAt(1).getName(), listLast);
+		}
+		
+		List<String> varNames = new ArrayList<String>(varCache.keySet());
+		Collections.sort(varNames, new Comparator<String>() {
+			public int compare(String o1, String o2) {
+				int val1 = Integer.parseInt(o1.split("Detector")[1]);
+				int val2 = Integer.parseInt(o2.split("Detector")[1]);
+				return val1 - val2;
+			}
+		});
+		
+		// print statistics to a separate file
+		PrintStream printer = new PrintStream(new FileOutputStream(new File(fileName), false));
+	
+		// 1st row : var names
+		printer.print(",");
+		for (int i = 0; i < varNames.size(); i++) {
+			String varName = varNames.get(i);
+			INode var = varCache.get(varName);
+			for (int state = 0; state < var.getStatesSize(); state++) {
+				printer.print(",\"" + varName + "\"");
+			}
+//			if (i+1 < varNames.size()) {
+//				printer.print(",");
+//			}
+		}
+		printer.println();
+		
+		// 2nd row: var 
+		printer.print(",,");
+		for (int i = 0; i < varNames.size(); i++) {
+			INode var = varCache.get(varNames.get(i));
+			printer.print(var.getStateAt(0) + "," + var.getStateAt(1));
+			if (i+1 < varNames.size()) {
+				printer.print(",");
+			}
+		}
+		printer.println();
+		
+		// print rows
+		for (String mainVarName : varNames) {
+			INode mainVar = varCache.get(mainVarName);
+			assertNotNull(mainVar);
+			List<PotentialTable> mainTables = tablesByLastNode.get(mainVarName);
+			if (mainTables == null || mainTables.isEmpty()) {
+				continue;
+			}
+			for (int mainState = 0; mainState < mainVar.getStatesSize(); mainState++) {
+				
+				// 1st cell is variable name, 2nd is variable state
+				printer.print("\"" + mainVarName + "\"," + mainVar.getStateAt(mainState));
+				
+				for (String subVarName : varNames) {
+					INode subVar = varCache.get(subVarName);
+					assertNotNull(subVar);
+					
+					if (mainVarName.equals(subVarName) ) {
+						// just print -1
+						for (int subState = 0; subState < subVar.getStatesSize(); subState++) {
+							printer.print(",-1");
+						}
+					} else {
+						// look for table containing subvar
+						PotentialTable table = null;
+						for (PotentialTable t : mainTables) {
+							assertEquals(mainVar, t.getVariableAt(1));
+							if (t.getVariableAt(0).getName().equals(subVarName)) {
+								// only 1 table must have this sub var
+								assertNull("Duplicate var " + subVarName + " at table " + table + " and " + t, table);
+								table = t;
+							}
+						}
+						if (table == null) {
+							// just print -1
+							for (int subState = 0; subState < subVar.getStatesSize(); subState++) {
+								printer.print(",-1");
+							}
+						} else {
+							for (int subState = 0; subState < subVar.getStatesSize(); subState++) {
+								int[] coord = table.getMultidimensionalCoord(0);
+								coord[0] = subState;
+								coord[1] = mainState;
+								printer.print("," + table.getValue(coord));
+							}
+						}
+					}
+				}
+				
+				printer.println();
+			}
+		}
+		
+		printer.close();
+	}
+
+	protected void printTable(PotentialTable table, PrintStream printer) {
+		assertEquals(table.toString(), 2, table.getVariablesSize());	// we can only handle tables with 2 vars
+		
+		/* Print something like the following:
+		 * 
+		 * 		,	,var2	,var2
+		 * 		,	,0		,1
+		 * var1	,0	,90		,22
+		 * var1	,1	,0		,180
+		 */
+		printer.println(",,\"" + table.getVariableAt(0).getName() + "\",\"" + table.getVariableAt(0).getName() + "\"");
+		printer.println(",,"+table.getVariableAt(0).getStateAt(0)+","+table.getVariableAt(0).getStateAt(1)+"");
+		printer.println("\"" + table.getVariableAt(1).getName() + "\","+table.getVariableAt(1).getStateAt(0)+"," + table.getValue(0) + "," + table.getValue(1));
+		printer.println("\"" + table.getVariableAt(1).getName() + "\","+table.getVariableAt(1).getStateAt(1)+"," + table.getValue(2) + "," + table.getValue(3));
+		printer.println();
+		
+	}
+
 	/**
 	 * 
 	 * @param correlationTables
@@ -1557,6 +1774,20 @@ public class CSVTableMarginalConsistencyChecker extends TestCase {
 	 */
 	public void setNameConverter(UniformNameConverter nameConverter) {
 		this.nameConverter = nameConverter;
+	}
+
+	/**
+	 * @return the detectorAlertThreshold
+	 */
+	public int getDetectorAlertThreshold() {
+		return detectorAlertThreshold;
+	}
+
+	/**
+	 * @param detectorAlertThreshold the detectorAlertThreshold to set
+	 */
+	public void setDetectorAlertThreshold(int detectorAlertThreshold) {
+		this.detectorAlertThreshold = detectorAlertThreshold;
 	}
 
 	/**

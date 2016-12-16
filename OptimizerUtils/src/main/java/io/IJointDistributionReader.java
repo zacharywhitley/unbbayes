@@ -40,4 +40,11 @@ public interface IJointDistributionReader {
 	 */
 	public String convertName(String name);
 
+	/**
+	 * @param inputStream : stream to read
+	 * @param alertDaysThreshold : if any detector's alert days for an user was larger than this value, then user has a system-level alert.
+	 * @return how many users had system-level alerts.
+	 */
+	public int getNumUserSystemAlert(InputStream inputStream, int alertDaysThreshold) throws IOException;
+
 }

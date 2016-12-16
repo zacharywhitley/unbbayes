@@ -31,7 +31,7 @@ public class UniformNameConverter {
 			return nameToConvert.replaceAll("ADD", "Detector");
 		}
 		
-		return nameToConvert.replaceAll("Alert Days Detector", "Detector");
+		return nameToConvert.replaceAll("AlertDaysDetector", "Detector");
 	}
 
 }

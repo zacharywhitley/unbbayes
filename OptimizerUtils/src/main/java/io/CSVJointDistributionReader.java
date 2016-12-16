@@ -19,6 +19,7 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.util.Debug;
+import utils.UniformNameConverter;
 import au.com.bytecode.opencsv.CSVReader;
 
 /**
@@ -32,6 +33,8 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 	private boolean isToAdd1ToCounts = false;
 	private boolean isToSortStates = false;
 	
+	private UniformNameConverter converter = null;
+	
 
 	/**
 	 * Default constructor
@@ -44,16 +47,17 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 	 * @return
 	 */
 	public String convertName(String cell) {
-		// remove white spaces
-		cell = cell.replaceAll("\\s", "");
-		
-		if (cell.matches("det[0-9]+")) {
-			return cell.replaceAll("det", "Detector");
-		} else if (cell.matches("ADD[0-9]+")) {
-			return cell.replaceAll("ADD", "Detector");
-		}
-		
-		return cell.replaceAll("AlertDaysDetector", "Detector");
+		return this.getConverter().convertToName(cell);
+//		// remove white spaces
+//		cell = cell.replaceAll("\\s", "");
+//		
+//		if (cell.matches("det[0-9]+")) {
+//			return cell.replaceAll("det", "Detector");
+//		} else if (cell.matches("ADD[0-9]+")) {
+//			return cell.replaceAll("ADD", "Detector");
+//		}
+//		
+//		return cell.replaceAll("AlertDaysDetector", "Detector");
 	}
 	
 	/*
@@ -204,6 +208,69 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 		return ret;
 		
 	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see io.IJointDistributionReader#getNumUserSystemAlert(java.io.FileInputStream, int)
+	 */
+	public int getNumUserSystemAlert(InputStream input, int alertDaysThreshold) throws IOException {
+
+		// read the csv rows.
+		CSVReader reader = new CSVReader(new InputStreamReader(input));
+		
+		// read the 1st line of csv (name of the columns)
+		String[] csvLine = reader.readNext();
+		if (csvLine == null) {
+			reader.close();
+			throw new IOException("No row found");
+		}
+		
+		// read which columns are detectors (i.e. columns to check for alert days)
+		List<Integer> columnsToConsider = new ArrayList<Integer>();
+		for (int columnInCSV = 0; columnInCSV < csvLine.length; columnInCSV++) {	// iterate on columns in order to read variable names
+			if (columnInCSV == getIdColumn()) {
+				continue;	// user ids are definitely not detectors
+			}
+			String nameInFile = csvLine[columnInCSV];
+			if (nameInFile == null || nameInFile.trim().isEmpty()) {
+				continue;	// ignore empty names
+			}
+			
+			// convert name to a format we know
+			nameInFile = convertName(nameInFile);
+			
+			// if the name (in the format we know) contains the string "detector", then it should be considered as a detector
+			if (nameInFile.toLowerCase().contains("detector")) {
+				columnsToConsider.add(columnInCSV);	// mark this column as a detector column
+			}
+		}
+		
+		int ret = 0;	// var to return (number of users with system alerts)
+		
+		// read the remaining file and count how many users had system alerts
+		for (csvLine = reader.readNext(); csvLine != null; csvLine = reader.readNext()) { 
+			if (csvLine.length <= 0) {
+				Debug.println(getClass(), "Empty row found... ");
+				continue;	// ignore empty lines
+			}
+			
+			// only read columns that are considered (detectors)
+			for (Integer columnInCSV : columnsToConsider) {
+				// if we found at least one column with a value greater or equal to threshold, then current user has alert
+				int value = Math.round(Float.parseFloat(csvLine[columnInCSV]));
+				if (value >= alertDaysThreshold) {
+					ret++;	// increment number of users with system alerts.
+					break;	// any detector triggers system alert, so just consider the 1st we found and ignore others
+				}
+				
+			}
+			
+		}
+		
+		
+		reader.close();
+		return ret;
+	}
 
 	/**
 	 * @return the idColumn : the column to be considered an identifier column in csv file. This column will not be read. Set it to negative in order to read all columns
@@ -248,6 +315,25 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 	 */
 	public void setToSortStates(boolean isToSortStates) {
 		this.isToSortStates = isToSortStates;
+	}
+
+
+	/**
+	 * @return the converter
+	 */
+	public UniformNameConverter getConverter() {
+		if (converter == null) {
+			converter = new UniformNameConverter();
+		}
+		return converter;
+	}
+
+
+	/**
+	 * @param converter the converter to set
+	 */
+	public void setConverter(UniformNameConverter converter) {
+		this.converter = converter;
 	}
 
 
