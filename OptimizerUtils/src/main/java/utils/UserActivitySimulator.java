@@ -68,6 +68,7 @@ public class UserActivitySimulator {
 	private int systemAlertUserCountPenaltyThreshold = 50;
 	private int systemAlertDaysThreshold = 8;
 	private float lowSystemAlertPenalty = Integer.MAX_VALUE/2f;
+	private float keepAttitudeCoefficient = 0.9f;
 	
 	private IJointDistributionReader transformedDataReader = new CSVJointDistributionReader();
 	private IModelCenterWrapperIO wrapperIO = null;
@@ -293,7 +294,7 @@ public class UserActivitySimulator {
 				if (daysToRedrawAttitude > 0) {
 					if (((day+1) % daysToRedrawAttitude) == 0) {
 						// redraw the type of user for next iteration
-						isBadUser = (rand.nextFloat() < badUserProb);
+						isBadUser = (rand.nextFloat() < (badUserProb * (isBadUser?1:getKeepAttitudeCoefficient())));
 					}
 				}
 				
@@ -1300,6 +1301,24 @@ public class UserActivitySimulator {
 
 
 	/**
+	 * @return the keepAttitudeCoefficient : when redrawing user attitude, this coefficient will be multiplied to
+	 * probability of a user to have bad attitude if user did not have bad attitude
+	 */
+	public float getKeepAttitudeCoefficient() {
+		return keepAttitudeCoefficient;
+	}
+
+
+	/**
+	 * @param keepAttitudeCoefficient : when redrawing user attitude, this coefficient will be multiplied to
+	 * probability of a user to have bad attitude if user did not have bad attitude
+	 */
+	public void setKeepAttitudeCoefficient(float keepAttitudeCoefficient) {
+		this.keepAttitudeCoefficient = keepAttitudeCoefficient;
+	}
+
+
+	/**
 	 * @param args
 	 * @throws IOException 
 	 * @throws InterruptedException 
@@ -1341,6 +1360,7 @@ public class UserActivitySimulator {
 		options.addOption("alertThreshold","alert_days_threshold", true, "If detectors' alert days is larger than or equal to this value, then the user will trigger a system alert. "
 				+ "This is used to estimate an additional penalty for the distance between simulated and actual data.");
 		options.addOption("penalty","low_alert_penalty", true, "Value to be added to distance score when number of users with system alerts is lower than allowed.");
+		options.addOption("attitudeCoefficient","redraw_attitude_probability_coefficient", true, "When redrawing user attitude, this coefficient will be multiplied to probability of a user to have bad attitude if user did not have bad attitude already");
 		options.addOption("d","debug", false, "Enables debug mode.");
 		options.addOption("h","help", false, "Prints this help.");
 		
@@ -1446,6 +1466,9 @@ public class UserActivitySimulator {
 		}
 		if (cmd.hasOption("penalty")) {
 			simulator.setLowSystemAlertPenalty(Integer.parseInt(cmd.getOptionValue("penalty")));
+		}
+		if (cmd.hasOption("attitudeCoefficient")) {
+			simulator.setKeepAttitudeCoefficient(Float.parseFloat(cmd.getOptionValue("attitudeCoefficient")));
 		}
 		
 		simulator.setToAdd1ToCounts(!cmd.hasOption("noIncrement"));

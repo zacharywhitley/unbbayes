@@ -148,6 +148,11 @@ public class UserActivitySimulatorWrapper {
 			args.add("-total_number_detectors");
 			args.add(property);
 		}
+		property = io.getProperty("redraw_attitude_probability_coefficient");
+		if (property != null) {
+			args.add("-redraw_attitude_probability_coefficient");
+			args.add(property);
+		}
 		
 		if (Debug.isDebugMode()) {
 			args.add("-d");
