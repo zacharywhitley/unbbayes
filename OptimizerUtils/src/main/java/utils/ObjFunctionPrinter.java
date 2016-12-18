@@ -1228,7 +1228,7 @@ public class ObjFunctionPrinter {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		
 		
 		CommandLineParser parser = new DefaultParser();

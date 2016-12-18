@@ -4,19 +4,17 @@
 package utils;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
+import junit.framework.TestCase;
 import unbbayes.io.exception.LoadException;
-import unbbayes.prs.INode;
 import unbbayes.prs.bn.Clique;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.util.Debug;
-import junit.framework.TestCase;
 
 /**
  * @author Shou Matsumoto

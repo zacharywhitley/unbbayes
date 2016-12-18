@@ -1256,8 +1256,11 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 
 	/**
 	 * @param args
+	 * @throws IOException 
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws Exception {
 		CommandLineParser parser = new DefaultParser();
 		Options options = new Options();
 		options.addOption("i","input", true, "File or directory to get joint probabilities from.");
@@ -1369,12 +1372,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			sim.setCliquesFileName(cmd.getOptionValue("cliques"));
 		}
 		
-		try {
-			sim.run();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
-		}
+		sim.run();
 	}
 
 

@@ -81,10 +81,9 @@ public class SimulatedUserStatisticsCalculatorTest extends TestCase {
 
 	/**
 	 * Test method for {@link utils.SimulatedUserStatisticsCalculator#main(java.lang.String[])}.
-	 * @throws IOException 
-	 * @throws URISyntaxException 
+	 * @throws Exception 
 	 */
-	public final void testMain() throws IOException, URISyntaxException {
+	public final void testMain() throws Exception {
 		DirichletUserSimulator dirichlet = DirichletUserSimulator.getInstance(4212, 500);
 		
 		String[] args = new String[15];
@@ -231,10 +230,9 @@ public class SimulatedUserStatisticsCalculatorTest extends TestCase {
 	
 	/**
 	 * Test method for {@link utils.SimulatedUserStatisticsCalculator#main(java.lang.String[])}.
-	 * @throws IOException 
-	 * @throws URISyntaxException 
+	 * @throws Exception 
 	 */
-	public final void testMainRandom() throws IOException, URISyntaxException {
+	public final void testMainRandom() throws Exception {
 		DirichletUserSimulator dirichlet = DirichletUserSimulator.getInstance(4212, 500);
 		
 		String[] args = new String[15];
@@ -385,10 +383,9 @@ public class SimulatedUserStatisticsCalculatorTest extends TestCase {
 	
 	/**
 	 * Test method for {@link utils.SimulatedUserStatisticsCalculator#main(java.lang.String[])}.
-	 * @throws IOException 
-	 * @throws URISyntaxException 
+	 * @throws Exception 
 	 */
-	public final void testBetaBinomialRandom() throws IOException, URISyntaxException {
+	public final void testBetaBinomialRandom() throws Exception {
 		DirichletUserSimulator dirichlet = DirichletUserSimulator.getInstance(4212, 500);
 		
 		String[] args = new String[15];

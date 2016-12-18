@@ -9,6 +9,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
+import java.util.Arrays;
 
 import junit.framework.TestCase;
 import unbbayes.util.Debug;
@@ -38,7 +39,8 @@ public class JavaSimulatorWrapperTest extends TestCase {
 		super.setUp();
 		Debug.setDebug(true);
 		wrapper = JavaSimulatorWrapper.getInstance();
-		args = new String[5];
+		args = new String[7];
+		Arrays.fill(args, "");
 	}
 
 	/* (non-Javadoc)
@@ -414,7 +416,7 @@ public class JavaSimulatorWrapperTest extends TestCase {
 	 */
 	@SuppressWarnings("static-access")
 	public void testMainCliques() throws IOException {
-		
+		fail("Not implemented yet");
 		File tempFile = File.createTempFile(getClass().getName() + "_", ".out");
 		tempFile.deleteOnExit();
 		
