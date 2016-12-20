@@ -39,7 +39,7 @@ public class JavaSimulatorWrapperTest extends TestCase {
 		super.setUp();
 		Debug.setDebug(true);
 		wrapper = JavaSimulatorWrapper.getInstance();
-		args = new String[7];
+		args = new String[9];
 		Arrays.fill(args, "");
 	}
 
@@ -416,7 +416,6 @@ public class JavaSimulatorWrapperTest extends TestCase {
 	 */
 	@SuppressWarnings("static-access")
 	public void testMainCliques() throws IOException {
-		fail("Not implemented yet");
 		File tempFile = File.createTempFile(getClass().getName() + "_", ".out");
 		tempFile.deleteOnExit();
 		
@@ -428,6 +427,8 @@ public class JavaSimulatorWrapperTest extends TestCase {
 		args[4] = "-d";
 		args[5] = "-cliques";
 		args[6] = "\"" + getClass().getResource("../cliquesSimple.json").getPath() + "\"";
+		args[7] = "-cond";
+		args[8] = "\"" + getClass().getResource("../conditionalsSimple.net").getPath() + "\"";
 		wrapper.main(args);
 		
 		

@@ -2,7 +2,7 @@
 	"_comment" : "This is a JSON file. You can use io.JSONCliqueStructureLoader to parse it.",
 	
 	"variables": [ "D1", "D2", "D3", "D4"],
-	"sizes" : [ 2, 3, 4, 5 ],
+	"sizes" : [ 2, 2, 2, 2 ],
 	"cliques" : [
 		{
 			"name" : "C0",

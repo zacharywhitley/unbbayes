@@ -1222,7 +1222,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 				break;
 			}
 			
-			// convert comma-separated string to a list of float and puts to wrapper probabilities
+			
 			getCliqueNames().add(property.replaceAll("\\s", ""));	// make sure not to use spaces
 		}
 		
@@ -1656,6 +1656,22 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	public void setCliquesPropertyNamePrefix(String cliquesPropertyNamePrefix) {
 		this.cliquesPropertyNamePrefix = cliquesPropertyNamePrefix;
 	}
+	
+
+	/* (non-Javadoc)
+	 * @see utils.DirichletUserSimulator#getConditionalProbabilityFileName()
+	 */
+	public String getConditionalProbabilityFileName() {
+		return getDirichletUserSimulator().getConditionalProbabilityFileName();
+	}
+
+	/* (non-Javadoc)
+	 * @see utils.DirichletUserSimulator#setConditionalProbabilityFileName(java.lang.String)
+	 */
+	public void setConditionalProbabilityFileName(
+			String conditionalProbabilityFileName) {
+		getDirichletUserSimulator().setConditionalProbabilityFileName(conditionalProbabilityFileName);
+	}
 
 	/**
 	 * Runs {@link DirichletUserSimulator#main(String[])} and then {@link SimulatedUserStatisticsCalculator#main(String[])}.
@@ -1700,6 +1716,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 		options.addOption("i","input", true, "File to read. If not specified, JavaSimulatorWrapper.in (in same directory of the program) will be used.");
 		options.addOption("o","output", true, "File to write. If not specified, JavaSimulatorWrapper.out (in same directory of the program) will be used.");
 		options.addOption("cliques","clique-structure-file-name", true, "Name of file (JSON format) to load clique structrue.");
+		options.addOption("cond","conditional-probability-file-name", true, "Name of file (Hugin .net format) to load extra conditional probabilities.");
 		options.addOption("h","help", false, "Help.");
 		
 		CommandLine cmd = null;
@@ -1735,6 +1752,9 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 		if (cmd.hasOption("cliques")) {
 			wrapper.setCliquesFileName(cmd.getOptionValue("cliques"));
 		}
+		if (cmd.hasOption("cond")) {
+			wrapper.setConditionalProbabilityFileName(cmd.getOptionValue("cond"));
+		}
 		
 		try {
 			wrapper.loadWrapperInput(wrapper.getInput());
@@ -1764,7 +1784,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				tempDirichletOutput.deleteOnExit();
 				
 				// set up arguments for dirichlet-multinomial simulator
-				String[] dirichletArgs = new String[Debug.isDebugMode()?22:21];
+				String[] dirichletArgs = new String[Debug.isDebugMode()?24:23];
 				
 				// -i "RCP3-full" -o "test.csv" -u 4263 -n 1000 -numI 4 -numD 4 -a 2 -d 
 				dirichletArgs[0] = "-i";
@@ -1794,8 +1814,10 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 					dirichletArgs[19] = "-cliques";	
 					dirichletArgs[20] = wrapper.getCliquesFileName();
 				}
-				if (Debug.isDebugMode() && dirichletArgs.length >= 22) {
-					dirichletArgs[21] = "-d";	
+				dirichletArgs[21] = "-cond";	
+				dirichletArgs[22] = wrapper.getConditionalProbabilityFileName();
+				if (Debug.isDebugMode() && dirichletArgs.length >= 24) {
+					dirichletArgs[23] = "-d";	
 				}
 				
 				if (Debug.isDebugMode()) {
@@ -1882,6 +1904,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 			break;	// finish attempt if everything was fine
 		}
 	}
+
 
 	
 }

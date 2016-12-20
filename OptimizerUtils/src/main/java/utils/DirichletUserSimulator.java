@@ -5,6 +5,7 @@ import io.JSONCliqueStructureLoader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -33,8 +34,8 @@ import unbbayes.prs.bn.IJunctionTree;
 import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.util.Debug;
+import au.com.bytecode.opencsv.CSVReader;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.Dirichlet;
 import cc.mallet.util.Randoms;
@@ -310,7 +311,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 				String name = variableNames.get(i);
 				printer.print(name);
 				sample.add(-1);	// initialize with invalid value
-				if (i > 0) {
+				if (i+1 < variableNames.size()) {
 					printer.print(",");
 				}
 			}
@@ -335,13 +336,12 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			}
 		}
 		
-		Map<PotentialTable, Dirichlet> samplerCache = new HashMap<PotentialTable, Dirichlet>();	// initialize map to store cache of dirichlet multinomial sampler
 		// generate and print samples
 		for (int i = 0; i < numSimulation; i++) {
 			Collections.fill(sample, -1);	// reset sample list
 			
 			// sample from clique potentials (i.e. convert clique potentials to 0% and 100%) recursively, from root to leaf cliques
-			sampleJunctionTreeRecursive(junctionTree, root, samplerCache, numSimulation);
+			sampleJunctionTreeRecursive(junctionTree, root, numSimulation);
 			
 			// fill the sample list from sampled junction tree
 			fillSampleFromJunctionTree(sample, variableNames, junctionTree);
@@ -355,7 +355,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			fillAlert(sample, alertScore, getAlertStateThreshold(), variableNames, nameToNodeMap);
 			
 			// fill indicators and threat from conditional probabilities;
-			fillSampleConditionals(sample, variableNames, conditionals, samplerCache, numSimulation);
+			fillSampleConditionals(sample, variableNames, conditionals, numSimulation);
 			
 			// print sample
 			for (int sampleIndex = 0; sampleIndex < sample.size(); sampleIndex++) {
@@ -369,7 +369,9 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			
 		}
 		
-		printer.close();
+		if (printer != System.out) {
+			printer.close();
+		}
 		
 	}
 	
@@ -382,64 +384,49 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	 * @param samplerCache
 	 * @param expectedCounts 
 	 */
-	protected void sampleJunctionTreeRecursive(IJunctionTree junctionTree, Clique root, Map<PotentialTable, Dirichlet> samplerCache, float expectedCounts) {
+	protected void sampleJunctionTreeRecursive(IJunctionTree junctionTree, Clique root, float expectedCounts) {
 	
 		// extract the clique table to sample at current recursive step
 		PotentialTable table = root.getProbabilityFunction();
 		
 		// build a dictionary object (a subset of joint states containing only the joint states that have probabilities higher than 0%)
+		
+		// instantiate the dictionary from scratch.
+		
+		// calculate dirichlet parameters as expectations from current probability.
+		// we'll also use it to filter out states that are impossible to happen (for optimization and also to avoid dirichlet with alpha = 0)
+		double[] fullSpaceAlpha = new double[table.tableSize()];	// this is the alpha containig zeros
+		for (int i = 0; i < fullSpaceAlpha.length; i++) {
+			fullSpaceAlpha[i] = expectedCounts * table.getValue(i);
+		}
+		
+		// initialize dictionary of states of sampler
+		List<Integer> jointStates = new ArrayList<Integer>();
+		for (int tableIndex = 0; tableIndex < table.tableSize(); tableIndex++) {
+			if (fullSpaceAlpha[tableIndex] > 0f) {
+				jointStates.add(tableIndex);
+			}
+		}
+		if (jointStates.size() <= 0) {
+			throw new IllegalArgumentException("No positive probability found.");
+		}
 		// the dictionary will be used as a mapping between sampled state (subset) and actual state (original).
-		Alphabet dictionary = null;
-		double[] alpha = null;	// dirichlet parameter alpha, not containing zeros
-		if (!isToUseDirichletMultinomial() || !samplerCache.containsKey(table)) {
-			// instantiate the dictionary from scratch.
-			
-			// calculate dirichlet parameters as expectations from current probability.
-			// we'll also use it to filter out states that are impossible to happen (for optimization and also to avoid dirichlet with alpha = 0)
-			double[] fullSpaceAlpha = new double[table.tableSize()];	// this is the alpha containig zeros
-			for (int i = 0; i < fullSpaceAlpha.length; i++) {
-				fullSpaceAlpha[i] = expectedCounts * table.getValue(i);
+		Alphabet dictionary = new Alphabet(jointStates.toArray(new Object[jointStates.size()]));
+		
+		// remove zeros from alpha
+		double[] alpha = new double[dictionary.size()]; // dirichlet parameter alpha, not containing zeros
+		for (int indexTentative = 0, indexAlpha = 0; indexTentative < fullSpaceAlpha.length; indexTentative++) {
+			if (fullSpaceAlpha[indexTentative] > 0) {
+				alpha[indexAlpha] = fullSpaceAlpha[indexTentative];
+				indexAlpha++;
 			}
-			
-			// initialize dictionary of states of sampler
-			List<Integer> jointStates = new ArrayList<Integer>();
-			for (int tableIndex = 0; tableIndex < table.tableSize(); tableIndex++) {
-				if (fullSpaceAlpha[tableIndex] > 0f) {
-					jointStates.add(tableIndex);
-				}
-			}
-			if (jointStates.size() <= 0) {
-				throw new IllegalArgumentException("No positive probability found.");
-			}
-			dictionary = new Alphabet(jointStates.toArray(new Object[jointStates.size()]));
-			
-			// remove zeros from alpha
-			alpha = new double[dictionary.size()];
-			for (int indexTentative = 0, indexAlpha = 0; indexTentative < fullSpaceAlpha.length; indexTentative++) {
-				if (fullSpaceAlpha[indexTentative] > 0) {
-					alpha[indexAlpha] = fullSpaceAlpha[indexTentative];
-					indexAlpha++;
-				}
-			}
-			fullSpaceAlpha = null;	// we don't need alpha with zeros anymore
-		} // we dont need dictionary and alpha to be initialized if we'll use dirichlet but it's cached
+		}
+		fullSpaceAlpha = null;	// we don't need alpha with zeros anymore
 		
 		double[] distribution = null;	// the distribution to sample from. It will be initialized in the if-clause below
 		if (isToUseDirichletMultinomial()) {	// need to sample from dirichlet distribution
-			// check cache
-			Dirichlet dirichlet = samplerCache.get(table);
-			if (dirichlet == null) {	// not cached. Instantiate dirichlet object and fill cache
-				
-				// instantiate a dirichlet sampler (which only considers possible states -- i.e. excludes states with 0% probability)
-				dirichlet = new Dirichlet(alpha, dictionary);
-				
-				// add it to cache
-				samplerCache.put(table, dirichlet);
-				
-			} else {
-				// obtain dictionary from cached dirichlet object
-				dictionary = dirichlet.getAlphabet();
-			}
+			// instantiate a dirichlet sampler (which only considers possible states -- i.e. excludes states with 0% probability)
+			Dirichlet dirichlet = new Dirichlet(alpha, dictionary);
 			
 			// sample dirichlet distribution
 			distribution = dirichlet.nextDistribution();
@@ -470,7 +457,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			// Propagate to child table (i.e. make sure that only the joint states corresponding to parent's sampled state will be sampled in child).
 			propagate(root, child);
 			
-			sampleJunctionTreeRecursive(junctionTree, child, samplerCache, expectedCounts);
+			sampleJunctionTreeRecursive(junctionTree, child, expectedCounts);
 		}
 		
 	}
@@ -561,10 +548,9 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	 * @param sample
 	 * @param conditionals
 	 * @param variableNames
-	 * @param samplerCache 
 	 * @param expectedCounts 
 	 */
-	protected void fillSampleConditionals(List<Integer> sample, List<String> variableNames, List<PotentialTable> conditionals, Map<PotentialTable, Dirichlet> samplerCache, float expectedCounts) {
+	protected void fillSampleConditionals(List<Integer> sample, List<String> variableNames, List<PotentialTable> conditionals, float expectedCounts) {
 		
 		if (sample == null || sample.isEmpty()) {
 			return;	// there is nothing to fill
@@ -582,70 +568,63 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			// the dictionary will be used as a mapping between sampled state (subset) and actual state (original).
 			Alphabet dictionary = null;
 			double[] alpha = null;	// dirichlet parameter alpha, not containing zeros
-			if (!isToUseDirichletMultinomial() || !samplerCache.containsKey(table)) {
-				// instantiate the dictionary from scratch.
-				
+			
 
-				// extract the states of parents of variable to sample
-				int[] coord = table.getMultidimensionalCoord(0);	// this will be filled with the 1st cell in table corresponding with states of parents
-				for (int varInTable = 1; varInTable < table.getVariablesSize(); varInTable++) {
-					INode parent = table.getVariableAt(varInTable);
-					
-					// extract the index of current parent in the sample list
-					int indexInSample = variableNames.indexOf(parent.getName());
-					if (indexInSample < 0) {
-						throw new IllegalArgumentException("Node " + parent + " not found in list of variables to sample: " + variableNames);
-					}
-					
-					coord[varInTable] = sample.get(indexInSample);
-				}
-				
-				// calculate dirichlet parameters as expectations from current probability.
-				// we'll also use it to filter out states that are impossible to happen (for optimization and also to avoid dirichlet with alpha = 0)
-				double[] fullSpaceAlpha = new double[varToSample.getStatesSize()];	// this is the alpha containig zeros
-				for (int state = 0; state < fullSpaceAlpha.length; state++) {
-					coord[0] = state;	// index 0 is for the state of variable to sample. Other indexes were already filled with proper states of parent nodes
-					fullSpaceAlpha[state] = table.getValue(coord) * expectedCounts;
-				}
-				
-				// initialize dictionary of states of sampler
+			// instantiate the dictionary from scratch.
+			
 
-				// just fill entries in alphabet (dictionary) with indexes of states (starting from 0).
-				Integer[] entries = new Integer[varToSample.getStatesSize()];
-				for (int i = 0; i < entries.length; i++) {
-					entries[i] = i;
+			// extract the states of parents of variable to sample
+			int[] coord = table.getMultidimensionalCoord(0);	// this will be filled with the 1st cell in table corresponding with states of parents
+			for (int varInTable = 1; varInTable < table.getVariablesSize(); varInTable++) {
+				INode parent = table.getVariableAt(varInTable);
+				
+				// extract the index of current parent in the sample list
+				int indexInSample = variableNames.indexOf(parent.getName());
+				if (indexInSample < 0) {
+					throw new IllegalArgumentException("Node " + parent + " not found in list of variables to sample: " + variableNames);
 				}
 				
-				dictionary = new Alphabet(entries);
-				
-				
-				// remove zeros from alpha
-				alpha = new double[dictionary.size()];
-				for (int indexTentative = 0, indexAlpha = 0; indexTentative < fullSpaceAlpha.length; indexTentative++) {
-					if (fullSpaceAlpha[indexTentative] > 0) {
-						alpha[indexAlpha] = fullSpaceAlpha[indexTentative];
-						indexAlpha++;
-					}
+				coord[varInTable] = sample.get(indexInSample);
+			}
+			
+			// calculate dirichlet parameters as expectations from current probability.
+			// we'll also use it to filter out states that are impossible to happen (for optimization and also to avoid dirichlet with alpha = 0)
+			double[] fullSpaceAlpha = new double[varToSample.getStatesSize()];	// this is the alpha containig zeros
+			for (int state = 0; state < fullSpaceAlpha.length; state++) {
+				coord[0] = state;	// index 0 is for the state of variable to sample. Other indexes were already filled with proper states of parent nodes
+				fullSpaceAlpha[state] = table.getValue(coord) * expectedCounts;
+			}
+			
+			// initialize dictionary of states of sampler
+
+			// just fill entries in alphabet (dictionary) with indexes of states (starting from 0).
+			List<Integer> entries = new ArrayList<Integer>(fullSpaceAlpha.length);
+			for (int i = 0; i < fullSpaceAlpha.length; i++) {
+				if (fullSpaceAlpha[i] > 0) {
+					entries.add(i);
 				}
-				fullSpaceAlpha = null;	// we don't need alpha with zeros anymore
-			} // we dont need dictionary and alpha to be initialized if we'll use dirichlet but it's cached
+			}
+			
+			dictionary = new Alphabet(entries.toArray(new Integer[entries.size()]));
+			
+			if (dictionary.size() <= 0) {
+				throw new IllegalArgumentException("Invalid probability distribution");
+			}
+			
+			// remove zeros from alpha
+			alpha = new double[dictionary.size()];
+			for (int indexTentative = 0, indexAlpha = 0; indexTentative < fullSpaceAlpha.length; indexTentative++) {
+				if (fullSpaceAlpha[indexTentative] > 0) {
+					alpha[indexAlpha] = fullSpaceAlpha[indexTentative];
+					indexAlpha++;
+				}
+			}
+			fullSpaceAlpha = null;	// we don't need alpha with zeros anymore
 			
 			double[] distribution = null;	// the distribution to sample from. It will be initialized in the if-clause below
 			if (isToUseDirichletMultinomial()) {	// need to sample from dirichlet distribution
-				// check cache
-				Dirichlet dirichlet = samplerCache.get(table);
-				if (dirichlet == null) {	// not cached. Instantiate dirichlet object and fill cache
-					
-					// instantiate a dirichlet sampler (which only considers possible states -- i.e. excludes states with 0% probability)
-					dirichlet = new Dirichlet(alpha, dictionary);
-					
-					// add it to cache
-					samplerCache.put(table, dirichlet);
-					
-				} else {
-					// obtain dictionary from cached dirichlet object
-					dictionary = dirichlet.getAlphabet();
-				}
+				// instantiate a dirichlet sampler (which only considers possible states -- i.e. excludes states with 0% probability)
+				Dirichlet dirichlet = new Dirichlet(alpha, dictionary);
 				
 				// sample dirichlet distribution
 				distribution = dirichlet.nextDistribution();
@@ -707,18 +686,21 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		
 		// extract which state in alert variable represents the "true"
 		Integer trueIndex = null;
-		INode alertVar = nameToNodeMap.get(getAlertName());
-		if (alertVar == null) {
-			throw new IllegalArgumentException("Unable to find alert variable " + getAlertName() + " in name mapping " + nameToNodeMap);
-		}
-		for (int stateIndex = 0; stateIndex < alertVar.getStatesSize(); stateIndex++) {
-			Boolean isTrue = this.parseBoolean(alertVar.getStateAt(stateIndex));
-			if (isTrue == null) {
-				throw new IllegalArgumentException("Unknown alert state: " + alertVar.getStateAt(stateIndex));
-			} else if (isTrue) {
-				trueIndex = stateIndex;
-				break;
+		if (nameToNodeMap.containsKey(getAlertName())) {
+			INode alertVar = nameToNodeMap.get(getAlertName());
+			// extract from variable
+			for (int stateIndex = 0; stateIndex < alertVar.getStatesSize(); stateIndex++) {
+				Boolean isTrue = this.parseBoolean(alertVar.getStateAt(stateIndex));
+				if (isTrue == null) {
+					throw new IllegalArgumentException("Unknown alert state: " + alertVar.getStateAt(stateIndex));
+				} else if (isTrue) {
+					trueIndex = stateIndex;
+					break;
+				}
 			}
+		} else {
+//			throw new IllegalArgumentException("Unable to find alert variable " + getAlertName() + " in name mapping " + nameToNodeMap);
+			trueIndex = 1;	// by default, set "1" as "has alert"
 		}
 		
 		// iterate on names of variables to be considered to calculate alert value
@@ -788,6 +770,26 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			variableNames = loader.getVariableNames();
 			if (getConditionalProbabilityFileName() != null && !getConditionalProbabilityFileName().trim().isEmpty()) {
 				conditionals = loadConditionals(getConditionalProbabilityFileName());
+				// order conditionals by dependency
+				Collections.sort(conditionals, new Comparator<PotentialTable>() {
+					public int compare(PotentialTable table1, PotentialTable table2) {
+						// check parents of table1 (parents are the variables that are not in index 0)
+						for (int i = 1; i < table1.getVariablesSize(); i++) {
+							if (table1.getVariableAt(i).equals(table2.getVariableAt(0))) {
+								// main var of table2 comes before table1, so table1 comes after table2
+								return 1;	// table1 is greater than table2
+							}
+						}
+						// check parents of table2 (parents are the variables that are not in index 0)
+						for (int i = 1; i < table2.getVariablesSize(); i++) {
+							if (table2.getVariableAt(i).equals(table1.getVariableAt(0))) {
+								// main var of table1 comes before table2, so table1 comes before table2
+								return -1;	
+							}
+						}
+						return 0;
+					}
+				});
 			}
 		}
 		
@@ -803,7 +805,6 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 				}
 			});
 			for (File internalFile : files) {
-				PotentialTable tableInFile = this.getJointProbabilityFromFile(internalFile, isToReadAlert());
 				if (junctionTree != null) {
 					// read clique ID from file name;
 					int cliqueID = getCliqueIDFromFileName(internalFile.getName());	// TODO use a better way to pass clique names
@@ -818,10 +819,10 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 					}
 					
 					// fill current clique table;
-					fillCliquePotential(tableInClique, tableInFile);
+					fillCliquePotential(tableInClique, internalFile, isToReadAlert());
 				} else {
 					// add to list of joint probabilities to consider
-					jointProbabilities.add(tableInFile);
+					jointProbabilities.add(this.getJointProbabilityFromFile(internalFile, isToReadAlert()));
 				}
 			}
 		} else if (input.isFile() 
@@ -909,38 +910,106 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	}
 
 	/**
-	 * Reads values from one table and overwrites another table.
+	 * Reads probabilities from file and overwrites clique table table.
 	 * @param tableToFill : table to be filled
-	 * @param tableToRead : table to be read
+	 * @param isToConsiderAlert : true if alert variable needs to be read from file. False otherwise
+	 * @param file : file to read table probabilities from.
+	 * @throws IOException 
 	 * @see PotentialTable#getValue(int)
 	 * @see PotentialTable#setValue(int, float)
+	 * @see CSVReader
 	 */
-	protected void fillCliquePotential(PotentialTable tableToFill, PotentialTable tableToRead) {
+	protected void fillCliquePotential(PotentialTable tableToFill, File file, boolean isToConsiderAlert) throws IOException {
 		
-		// create a copy of tableInFile which uses variables from tableInClique (to enforce the variables to be the same)
-		// but before that, keep a mapping between names and variable objects (must use objects from tableToFill)
+
+		CSVReader reader = new CSVReader(new FileReader(file));
+		
+		
+		// read csv file line-by-line
+		
+		// prepare index of columns to be ignored
+		List<String> namesToIgnore = Collections.EMPTY_LIST;
+		String[] namesToIgnoreArray = getColumnsToIgnore();
+		if (namesToIgnoreArray != null && namesToIgnoreArray.length > 0) {
+			namesToIgnore = Arrays.asList(namesToIgnoreArray);
+		}
+		
+		
+		List<String> varNames = null;
+		
+		// read the 1st line of csv (name of the columns)
+		int indexOfProbability = getDefaultIndexOfProbability();
+		
+		if (is1stLineForNames()) {
+			varNames = new ArrayList<String>();
+			indexOfProbability = this.readJointProbabilityHeader(reader, namesToIgnore, varNames);
+			if (varNames.isEmpty()) {
+				varNames = null;
+			}
+		} else {
+			// fill variable names from table
+			varNames = new ArrayList<String>();
+			for (int i = tableToFill.variableCount() - 1; i >= 0; i--) {	
+				// read from the end, because last variable in varNames must be the variable which iterates most
+				varNames.add(tableToFill.getVariableAt(i).getName());	
+			}
+		}
+		
+		if (varNames ==null) {
+			varNames = getNameList(getIndicatorNames());
+			String threat = getThreatName();
+			if (threat != null && !threat.trim().isEmpty()) {
+				varNames.add(0, threat);
+			}
+			if (isToConsiderDetectors()) {
+				varNames.addAll(getNameList(getDetectorNames()));
+			}
+			if (isToConsiderAlert) {
+				varNames.add(getAlertName());
+			}
+		}
+		
+
+		// keep a mapping between names and variable objects (must use same objects from tableToFill)
 		Map<String, INode> nameToVarMap = new HashMap<String, INode>();
 		for (int i = 0; i < tableToFill.variableCount(); i++) {
 			nameToVarMap.put(tableToFill.getVariableAt(i).getName(), tableToFill.getVariableAt(i));
 		}
 		
-		// now, create the copy (but replacing variables with variables in tableToFill--with same names)
-		ProbabilisticTable copy = new ProbabilisticTable();
-		for (int i = 0; i < tableToRead.variableCount(); i++) {
-			INode variableToRead = tableToRead.getVariableAt(i);				// extract the current variable from tableToRead
-			INode variableToFill = nameToVarMap.get(variableToRead.getName());	// extract equivalent (but not same) variable from tableToFill
-			if (variableToFill == null) {
-				throw new IllegalArgumentException("Variable " + variableToRead + " not found in table to fill.");
-			}
-			copy.addVariable(variableToFill);
+		// read probabilities from file
+		PotentialTable tableFromFile;
+		try {
+			tableFromFile = this.readJointProbabilityBody(reader, indexOfProbability, varNames, is1stLineForNames(), nameToVarMap);
+		} catch (RuntimeException e) {
+			reader.close();
+			throw e;
+		} catch (IOException e) {
+			reader.close();
+			throw e;
 		}
-		copy.setValues(tableToRead.getValues());	// also copy the content (cells of table)
+		
+		
+		reader.close();
+		
+		// just make sure the sizes of tables match
+		if (tableFromFile.tableSize() != tableToFill.tableSize()) {
+			throw new IOException("Read a table with size " + tableFromFile.tableSize() + " from file " + file + ", but expected table of size " + tableToFill.tableSize());
+		}
+		// also make sure the variables in table read from file matches with variables in table to be written
+		if (tableFromFile.variableCount() != tableToFill.variableCount()) {
+			throw new IOException("Read a table with " + tableFromFile.variableCount() + " variables from file " + file + ", but expected number of variables was " + tableToFill.variableCount());
+		}
+		for (int i = 0; i < tableFromFile.variableCount(); i++) {
+			if (!tableFromFile.getVariableAt(i).equals(tableToFill.getVariableAt(i))) {
+				throw new IOException(i + "-th variable in file " + file + " was " + tableFromFile.getVariableAt(i) + ", but expected " + tableToFill.getVariableAt(i));
+			}
+		}
 		
 		// initialize tableInClique with 1 (null value of multiplication)
 		tableToFill.fillTable(1f);
 		
 		// multiply tableInClique and tableInFile
-		tableToFill.opTab(copy, tableToFill.PRODUCT_OPERATOR);
+		tableToFill.opTab(tableFromFile, tableToFill.PRODUCT_OPERATOR);
 		
 	}
 
@@ -1281,7 +1350,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		options.addOption("cliques","clique-structure-file-name", true, "Name of file (JSON format) to load clique structrue."
 				+ " If this is provided, then the input file directory (specified with -i) must contain files with names specifying"
 				+ " the clique name in the format <CLIQUE_NAME>_<NUMBER_TO_AVOID_DUPLICATE>.csv. For instance, C0_1.csv");
-		options.addOption("cond","conditional-prob-file-name", true, "Name of file (hugin .net file) containing conditional probabilities.");
+		options.addOption("cond","conditional-probability-file-name", true, "Name of file (hugin .net file) containing conditional probabilities.");
 		
 		
 		CommandLine cmd = null;
