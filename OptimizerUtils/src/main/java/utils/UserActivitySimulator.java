@@ -70,7 +70,8 @@ public class UserActivitySimulator {
 	private int systemAlertDaysThreshold = 8;
 	private float keepAttitudeCoefficient = 0.9f;
 	private float lowSystemAlertPenalty = Integer.MAX_VALUE/2f;
-	private float minAlertDaysPenalty = 2048;
+	private float maxAlertDaysPenalty = 2048;
+	private boolean isToAppendMaxToMetric = false;
 	
 	private IJointDistributionReader transformedDataReader = new CSVJointDistributionReader();
 	private IModelCenterWrapperIO wrapperIO = null;
@@ -546,12 +547,14 @@ public class UserActivitySimulator {
 			sum += getLowSystemAlertPenalty();
 		}
 		
-		// increment distance if there is a column (detector alert days) with maximum value smaller than threshold (this will make sure we'll have at least 1 system alert from each detector).
-		Map<String, Integer> maxValues = transformedDataReader.getMaxValue(new FileInputStream(transformedDataFile));
-		for (Entry<String, Integer> entry : maxValues.entrySet()) {
-			if (entry.getValue() < getSystemAlertDaysThreshold()) {
-				Debug.println(getClass(), "Attribute " + entry.getKey() + " had low maximum value: " + entry.getValue());
-				sum += getMinAlertDaysPenalty();
+		if (isToAppendMaxToMetric()) {
+			// increment distance if there is a column (detector alert days) with maximum value smaller than threshold (this will make sure we'll have at least 1 system alert from each detector).
+			Map<String, Integer> maxValues = transformedDataReader.getMaxValue(new FileInputStream(transformedDataFile));
+			for (Entry<String, Integer> entry : maxValues.entrySet()) {
+				if (entry.getValue() < getSystemAlertDaysThreshold()) {
+					Debug.println(getClass(), "Attribute " + entry.getKey() + " had low maximum value: " + entry.getValue());
+					sum += getMaxAlertDaysPenalty();
+				}
 			}
 		}
 		
@@ -1331,18 +1334,40 @@ public class UserActivitySimulator {
 
 
 	/**
-	 * @return the minAlertDaysPenalty
+	 * @return the maxAlertDaysPenalty : value to be incremented to metric in {@link #computeDistance()}
+	 * when maximum alert days of a detector is below {@link #getSystemAlertDaysThreshold()}
 	 */
-	public float getMinAlertDaysPenalty() {
-		return minAlertDaysPenalty;
+	public float getMaxAlertDaysPenalty() {
+		return maxAlertDaysPenalty;
 	}
 
 
 	/**
-	 * @param minAlertDaysPenalty the minAlertDaysPenalty to set
+	 * @param maxAlertDaysPenalty : value to be incremented to metric in {@link #computeDistance()}
+	 * when maximum alert days of a detector is below {@link #getSystemAlertDaysThreshold()}
 	 */
-	public void setMinAlertDaysPenalty(float minAlertDaysPenalty) {
-		this.minAlertDaysPenalty = minAlertDaysPenalty;
+	public void setMaxAlertDaysPenalty(float maxAlertDaysPenalty) {
+		this.maxAlertDaysPenalty = maxAlertDaysPenalty;
+	}
+
+
+	/**
+	 * @return the isToAppendMaxToMetric : if true, {@link #computeDistance()} will consider maximum alert days of each detector
+	 * in the metric. If maximum alert days is lower than expected, then {@link #getMaxAlertDaysPenalty()} will be incremented
+	 * to metric.
+	 */
+	public boolean isToAppendMaxToMetric() {
+		return isToAppendMaxToMetric;
+	}
+
+
+	/**
+	 * @param isToAppendMaxToMetric : if true, {@link #computeDistance()} will consider maximum alert days of each detector
+	 * in the metric. If maximum alert days is lower than expected, then {@link #getMaxAlertDaysPenalty()} will be incremented
+	 * to metric.
+	 */
+	public void setToAppendMaxToMetric(boolean isToAppendMaxToMetric) {
+		this.isToAppendMaxToMetric = isToAppendMaxToMetric;
 	}
 
 
