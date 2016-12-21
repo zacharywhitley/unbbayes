@@ -88,5 +88,53 @@ public class UserActivitySimulatorTest extends TestCase {
 		
 		assertTrue(new File(output).delete());
 	}
+	
+	/**
+	 * Test method for {@link utils.UserActivitySimulator#generateTransformedData()}.
+	 * @throws InterruptedException 
+	 * @throws IOException 
+	 */
+	public final void testExtended() throws IOException, InterruptedException {
+		String correlationDataFileFolder = "CorrelationData";
+		String rawData = "userActivity_extended.csv";
+		String transformedData = "detectorsDays_extended.csv";
+		String output = "testDistance_extended.out";
+		
+		UserActivitySimulator sim = new UserActivitySimulator();
+		
+		sim.setRawDataOutput(rawData);
+		assertTrue(new File(rawData).exists());
+		assertFalse(new File(rawData).isDirectory());
+		long rawDataLength = new File(rawData).length();
+		
+		sim.setCorrelationDataFileFolder(correlationDataFileFolder);;
+		assertTrue(new File(correlationDataFileFolder).exists());
+		assertTrue(new File(correlationDataFileFolder).isDirectory());
+		
+		sim.setTransformedDataOutput(transformedData);;
+		
+		new File(output).delete();
+//		assertFalse(new File(output).exists());
+		sim.setDistanceMetricFileName(output);
+		
+		// call PCA to generate csv file with transformed (PCA) data 
+		sim.generateTransformedData();
+		assertTrue(new File(transformedData).exists());
+		assertTrue(new File(transformedData).isFile());
+		
+		// compute the distance of transformed correlation (expected VS actual)
+		sim.computeDistance();
+
+		assertTrue(new File(rawData).exists());
+		assertEquals(rawDataLength, new File(rawData).length());		
+		
+		assertTrue(new File(correlationDataFileFolder).exists());
+		assertTrue(new File(transformedData).exists());
+		assertTrue(new File(output).exists());
+		
+		assertTrue(new File(output).length() > 0);
+		
+//		assertTrue(new File(output).delete());
+	}
 
 }

@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
@@ -67,8 +68,9 @@ public class UserActivitySimulator {
 	private int firstDay = 0;
 	private int systemAlertUserCountPenaltyThreshold = 50;
 	private int systemAlertDaysThreshold = 8;
-	private float lowSystemAlertPenalty = Integer.MAX_VALUE/2f;
 	private float keepAttitudeCoefficient = 0.9f;
+	private float lowSystemAlertPenalty = Integer.MAX_VALUE/2f;
+	private float minAlertDaysPenalty = 2048;
 	
 	private IJointDistributionReader transformedDataReader = new CSVJointDistributionReader();
 	private IModelCenterWrapperIO wrapperIO = null;
@@ -543,6 +545,16 @@ public class UserActivitySimulator {
 			Debug.println(getClass(), "Number of alerts was " + systemAlertUserCount + ", while minimum allowed was " + getSystemAlertUserCountPenaltyThreshold());
 			sum += getLowSystemAlertPenalty();
 		}
+		
+		// increment distance if there is a column (detector alert days) with maximum value smaller than threshold (this will make sure we'll have at least 1 system alert from each detector).
+		Map<String, Integer> maxValues = transformedDataReader.getMaxValue(new FileInputStream(transformedDataFile));
+		for (Entry<String, Integer> entry : maxValues.entrySet()) {
+			if (entry.getValue() < getSystemAlertDaysThreshold()) {
+				Debug.println(getClass(), "Attribute " + entry.getKey() + " had low maximum value: " + entry.getValue());
+				sum += getMinAlertDaysPenalty();
+			}
+		}
+		
 		
 		// TODO calculate the distance metric regarding peer groups.
 		
@@ -1315,6 +1327,22 @@ public class UserActivitySimulator {
 	 */
 	public void setKeepAttitudeCoefficient(float keepAttitudeCoefficient) {
 		this.keepAttitudeCoefficient = keepAttitudeCoefficient;
+	}
+
+
+	/**
+	 * @return the minAlertDaysPenalty
+	 */
+	public float getMinAlertDaysPenalty() {
+		return minAlertDaysPenalty;
+	}
+
+
+	/**
+	 * @param minAlertDaysPenalty the minAlertDaysPenalty to set
+	 */
+	public void setMinAlertDaysPenalty(float minAlertDaysPenalty) {
+		this.minAlertDaysPenalty = minAlertDaysPenalty;
 	}
 
 

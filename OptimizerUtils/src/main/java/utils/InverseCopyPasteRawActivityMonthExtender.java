@@ -26,9 +26,9 @@ public class InverseCopyPasteRawActivityMonthExtender {
 	
 	public static int BEGIN_DAY = 1;
 	public static int BEGIN_TESTING_DAY = 144;	//144 = 1st work day of May; 124 = 1st work day of April; 101 = 1st work day of March
-	public static int ABORT_DAY = 164;
-	public static int END_DAY = 163;
-
+	public static int ABORT_DAY = 9999;			// use big values to avoid aborting operation at the middle
+	public static int END_DAY = 163;			// use the theoretic max number. If you need to finish before this day, use ABORT_DAY instead
+	public static boolean isCopyOnlyTrainingData = true;	// if false, all data (type 1 and 2) will be copied. If false, only type=1 will be copied and pasted.
 	
 	public static int NUM_TIMEBLOCKS = 6;
 	
@@ -91,13 +91,27 @@ public class InverseCopyPasteRawActivityMonthExtender {
 		
 		// read how many days and users we have in data
 		List<Integer> daysInData = new ArrayList<Integer>();	// day ids in data
+		List<Integer> testDaysInData = new ArrayList<Integer>();	// day ids in test data (type = 2)
 		List<Integer> usersInData = new ArrayList<Integer>();	// user ids in data
 		Map<Integer, Map<Integer, Integer>> userToDayRowMap = new HashMap<Integer, Map<Integer,Integer>>();	// mapping from user id to another map from day id to row
 		for (int rowNumber = 1; rowNumber < rows.size(); rowNumber++) {
 			row = rows.get(rowNumber);
 			int day = Integer.parseInt(row[dayColumn]);
-			if (!daysInData.contains(day)) {
-				daysInData.add(day);
+			int type = Integer.parseInt(row[typeColumn]);
+			if (isCopyOnlyTrainingData) {
+				if (type == 2) {
+					if (!testDaysInData.contains(day)) {
+						testDaysInData.add(day);
+					}
+				} else {
+					if (!daysInData.contains(day)) {
+						daysInData.add(day);
+					}
+				}
+			} else {
+				if (!daysInData.contains(day)) {
+					daysInData.add(day);
+				}
 			}
 			int user = Integer.parseInt(row[userColumn]);
 			if (!usersInData.contains(user)) {
@@ -114,10 +128,10 @@ public class InverseCopyPasteRawActivityMonthExtender {
 		}
 		
 		// How many days the resulting file must have
-		int totalDays = END_DAY - BEGIN_DAY;
-		int numDaysToExtend = totalDays - daysInData.size();
+		int totalDays = END_DAY - BEGIN_DAY + 1;	
+		int numDaysToExtend = totalDays - daysInData.size() - testDaysInData.size(); // copy only the training data, so exclude test data from days to copy
 		int mod = (numDaysToExtend % (daysInData.size()-1));
-		int numCopies = (int)((numDaysToExtend / (daysInData.size()-1)) + ((mod>0)?1:0) + 1);	// how many copies of data to write (including original data)
+		int numCopies = (int)((numDaysToExtend / (daysInData.size()-1)) + ((mod>0)?1:0)) + 1;	// how many copies of data to write
 		
 		// generate the extended data.
 		for (Integer userId : usersInData) {
@@ -138,17 +152,18 @@ public class InverseCopyPasteRawActivityMonthExtender {
 				firstDayToReadInData = (daysInData.size() - 1 - mod);
 			}
 			
-			for (int copy = 0, globalDayId = BEGIN_DAY; copy < numCopies; copy++) {
+			int globalDayId = BEGIN_DAY;
+			for (int copy = 0 ; copy < numCopies; copy++) {
 				// another condition to finish
 				if (globalDayId > END_DAY) {
 					throw new IllegalStateException("Premature end reached. This is probably due to data not supported by this program.");
 				}
-				if (globalDayId >= ABORT_DAY) {
-					Debug.println("Aborted at day " + globalDayId);
-					break;
-				}
 				
 				for (int dayIndexInData = firstDayToReadInData; ; globalDayId++) {
+					if (globalDayId >= ABORT_DAY) {
+						Debug.println("Aborted at day " + globalDayId);
+						break;
+					}
 
 					int type = (globalDayId >= BEGIN_TESTING_DAY)?2:1;	// 2 = testing data; 1 = training data.
 					
@@ -221,6 +236,56 @@ public class InverseCopyPasteRawActivityMonthExtender {
 				}
 				
 			}	// end of for each copy of rows in data (of current user)
+			
+			
+			// write the test days
+			for (int dayIndexInData = 0; dayIndexInData < testDaysInData.size() ; dayIndexInData++, globalDayId++) {
+				if (globalDayId >= ABORT_DAY) {
+					Debug.println("Aborted at day " + globalDayId);
+					break;
+				}
+
+				int type = (globalDayId >= BEGIN_TESTING_DAY)?2:1;	// 2 = testing data; 1 = training data.
+				
+				// extract the day in original data (this will be used with user id to estimate the row number)
+				int dayInData = testDaysInData.get(dayIndexInData);
+				
+				for (int timeblock = 1; timeblock <= NUM_TIMEBLOCKS; timeblock++) {
+					
+					// extract the row (1st row of day of current user + timeblock)
+					int rowInData = userToDayRowMap.get(userId).get(dayInData) + timeblock - 1;
+					row = rows.get(rowInData);
+					
+					// make sure timeblock is consistent
+					if (Integer.parseInt(row[timeIDColumn]) != timeblock) {
+						throw new IOException("Expected timeblock " + timeblock + " at row " + rowInData
+								+ ", but obtained " + row[timeIDColumn]);
+					};
+					// make sure user is consistent
+					if (Integer.parseInt(row[userColumn]) != userId) {
+						throw new IOException("Expected user " + userId + " at row " + rowInData
+								+ ", but obtained " + row[userColumn]);
+					};
+					
+					// print the current row, but changing day and type (training/testing)
+					for (int column = 0; column < row.length; column++) {
+						if (column == dayColumn) {
+							printer.print(globalDayId);
+						} else if (column == typeColumn) {
+							printer.print(type);
+						} else {
+							printer.print(row[column]);
+						}
+						if ((column + 1) < row.length) {
+							printer.print(",");
+						}
+					}
+					printer.println();
+				}	// end of for each time block
+				
+				Debug.println("Printed day " + dayInData + " for user " + userId);
+				
+			}	// end of for dayIndexInData
 		
 		}	// end of for each user in data
 		
