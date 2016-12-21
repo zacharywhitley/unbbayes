@@ -5,6 +5,7 @@ package io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 
 import unbbayes.prs.bn.PotentialTable;
@@ -46,5 +47,6 @@ public interface IJointDistributionReader {
 	 * @return how many users had system-level alerts.
 	 */
 	public int getNumUserSystemAlert(InputStream inputStream, int alertDaysThreshold) throws IOException;
+	
 
 }
