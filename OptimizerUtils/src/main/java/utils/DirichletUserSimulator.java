@@ -79,6 +79,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	private boolean isToPrintAlert = true;
 	private String conditionalProbabilityFileName = "conditionals.net";
 	private int alertStateThreshold = 1;
+	private float virtualCountCoefficient = 0.5f;//1;
 	
 	
 	private boolean isToUseDirichletMultinomial = true;
@@ -237,7 +238,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		double[] alpha = new double[dictionary.size()];
 		for (int indexTentative = 0, indexAlpha = 0; indexTentative < tentativeAlpha.length; indexTentative++) {
 			if (tentativeAlpha[indexTentative] > 0) {
-				alpha[indexAlpha] = tentativeAlpha[indexTentative];
+				alpha[indexAlpha] = tentativeAlpha[indexTentative] * getVirtualCountCoefficient();
 				indexAlpha++;
 			}
 		}
@@ -417,7 +418,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		double[] alpha = new double[dictionary.size()]; // dirichlet parameter alpha, not containing zeros
 		for (int indexTentative = 0, indexAlpha = 0; indexTentative < fullSpaceAlpha.length; indexTentative++) {
 			if (fullSpaceAlpha[indexTentative] > 0) {
-				alpha[indexAlpha] = fullSpaceAlpha[indexTentative];
+				alpha[indexAlpha] = fullSpaceAlpha[indexTentative] * getVirtualCountCoefficient();
 				indexAlpha++;
 			}
 		}
@@ -615,7 +616,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			alpha = new double[dictionary.size()];
 			for (int indexTentative = 0, indexAlpha = 0; indexTentative < fullSpaceAlpha.length; indexTentative++) {
 				if (fullSpaceAlpha[indexTentative] > 0) {
-					alpha[indexAlpha] = fullSpaceAlpha[indexTentative];
+					alpha[indexAlpha] = fullSpaceAlpha[indexTentative] * getVirtualCountCoefficient();
 					indexAlpha++;
 				}
 			}
@@ -1321,6 +1322,31 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	 */
 	public void setAlertStateThreshold(int alertStateThreshold) {
 		this.alertStateThreshold = alertStateThreshold;
+	}
+
+	/**
+	 * @return the virtualCountCoefficient : this value will be multiplied with 
+	 * the alpha parameters of dirichlet sampler. Use a value between 0 (exclusive) and 1 (exclusive)
+	 * in order to make the variance greater. Use values higher than 1 in order to force narrower distribution
+	 * (i.e. force less variance in sampling), although this is not recommended. 
+	 * Use 1 for default behavior. Negative values are not allowed.
+	 */
+	public float getVirtualCountCoefficient() {
+		return virtualCountCoefficient;
+	}
+
+	/**
+	 * @param virtualCountCoefficient : this value will be multiplied with 
+	 * the alpha parameters of dirichlet sampler. Use a value between 0 (exclusive) and 1 (exclusive)
+	 * in order to make the variance greater. Use values higher than 1 in order to force narrower distribution
+	 * (i.e. force less variance in sampling), although this is not recommended. 
+	 * Use 1 for default behavior. Negative values are not allowed.
+	 */
+	public void setVirtualCountCoefficient(float virtualCountCoefficient) {
+		if (virtualCountCoefficient <= 0) {
+			throw new IllegalArgumentException("Only positive coefficient allowed.");
+		}
+		this.virtualCountCoefficient = virtualCountCoefficient;
 	}
 
 	/**
