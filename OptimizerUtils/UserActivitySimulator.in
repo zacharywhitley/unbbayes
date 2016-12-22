@@ -13,15 +13,14 @@ peer_group_size_file:	"rcp7_group_sizes_withTRUE.csv"
 random_seed:1
 block_cutoff_percent:0.859
 days_redraw_user_attitude:25
-block1_tokens_per_detector_good_user:24800,6800,12900,43900,14500,34700,18100,8400,20900,8600,22400,76000
-block2_tokens_per_detector_good_user:61100,41100,34200,300,3900,100,58600,21000,36400,27100,98900,1400
-block1_tokens_per_detector_bad_user:95200,52600,23900,27800,9600,0,17600,60300,0,16500,32700,32900
-block2_tokens_per_detector_bad_user:1600,14900,14400,22200,10900,20800,21300,41500,1400,6900,5800,1000
+block1_tokens_per_detector_good_user:74400,20400,38700,131700,43500,104100,54300,25200,62700,25800,67200,228000
+block2_tokens_per_detector_good_user:183300,123300,102600,900,11700,300,175800,63000,109200,81300,296700,4200
+block1_tokens_per_detector_bad_user:285600,157800,71700,83400,28800,0,52800,180900,0,49500,98100,98700
+block2_tokens_per_detector_bad_user:4800,44700,43200,66600,32700,62400,63900,124500,4200,20700,17400,3000
 bad_user_prob_by_group_size:	"large:0.271,small:0.122,medium:0.295"
 total_users:3816
-total_days:62
-first_day:101
-test_days_threshold:43
+total_days:163
+first_day:0
+test_days_threshold:143
 number_timeblocks:	6
 total_number_detectors:	24
-redraw_attitude_probability_coefficient:	0.9

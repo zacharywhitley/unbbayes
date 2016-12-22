@@ -211,9 +211,9 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 	
 	/*
 	 * (non-Javadoc)
-	 * @see io.IJointDistributionReader#getNumUserSystemAlert(java.io.FileInputStream, int)
+	 * @see io.IJointDistributionReader#getNumUserSystemAlert(java.io.InputStream, int, java.lang.String)
 	 */
-	public int getNumUserSystemAlert(InputStream input, int alertDaysThreshold) throws IOException {
+	public Map<String, Integer> getNumUserSystemAlert(InputStream input, int alertDaysThreshold, String totalCountKey) throws IOException {
 
 		// read the csv rows.
 		CSVReader reader = new CSVReader(new InputStreamReader(input));
@@ -225,8 +225,11 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 			throw new IOException("No row found");
 		}
 		
+		Map<String, Integer> alertCounters = new HashMap<String, Integer>();	// var to return (number of users with system alerts for each detector)
+		
 		// read which columns are detectors (i.e. columns to check for alert days)
 		List<Integer> columnsToConsider = new ArrayList<Integer>();
+		List<String> namesColumnsToConsider = new ArrayList<String>();	// respective names of columns to be considered
 		for (int columnInCSV = 0; columnInCSV < csvLine.length; columnInCSV++) {	// iterate on columns in order to read variable names
 			if (columnInCSV == getIdColumn()) {
 				continue;	// user ids are definitely not detectors
@@ -242,10 +245,12 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 			// if the name (in the format we know) contains the string "detector", then it should be considered as a detector
 			if (nameInFile.toLowerCase().contains("detector")) {
 				columnsToConsider.add(columnInCSV);	// mark this column as a detector column
+				namesColumnsToConsider.add(nameInFile);
+				alertCounters.put(nameInFile, 0);	// initialize counter (allocate space in map)
 			}
 		}
 		
-		int ret = 0;	// var to return (number of users with system alerts)
+		int totalAlerts = 0;	// total number of alerts (avoid double-counting users with multiple alerts)
 		
 		// read the remaining file and count how many users had system alerts
 		for (csvLine = reader.readNext(); csvLine != null; csvLine = reader.readNext()) { 
@@ -254,22 +259,37 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 				continue;	// ignore empty lines
 			}
 			
-			// only read columns that are considered (detectors)
-			for (Integer columnInCSV : columnsToConsider) {
+			// iterate on columns of current row/line
+			boolean hasCounted = false;	// this will become true when at least 1 detector had system alert for current user/row
+			for (int indexInList = 0; indexInList < columnsToConsider.size(); indexInList++) {
+				// only read columns that are considered (detectors)
+				Integer columnInCSV = columnsToConsider.get(indexInList);
 				// if we found at least one column with a value greater or equal to threshold, then current user has alert
 				int value = Math.round(Float.parseFloat(csvLine[columnInCSV]));
 				if (value >= alertDaysThreshold) {
-					ret++;	// increment number of users with system alerts.
-					break;	// any detector triggers system alert, so just consider the 1st we found and ignore others
+					// increment number of users with alert on current detector.
+					String detectorName = namesColumnsToConsider.get(indexInList);	// extract the name of current detector
+					Integer count = alertCounters.get(detectorName);	// the counter of alerts in current detector
+					count++;	
+					alertCounters.put(detectorName, count);
+					// increment total system alert only if we did not count current user yet
+					if (!hasCounted) {
+						totalAlerts++;
+					}
+					hasCounted = true;
 				}
 				
 			}
 			
 		}
-		
-		
 		reader.close();
-		return ret;
+		
+		// append total count of system alerts to map
+		if (totalCountKey != null && !totalCountKey.isEmpty()) {
+			alertCounters.put(totalCountKey, totalAlerts);
+		}
+		
+		return alertCounters;
 	}
 
 	/**

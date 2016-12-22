@@ -10,6 +10,7 @@ import io.IJointDistributionReader;
 import io.IModelCenterWrapperIO;
 import io.IPeerGroupReader;
 import io.ModelCenterMatrixStyleWrapperIO;
+import io.ModelCenterWrapperIO;
 import io.PeerGroupSizeCSVReader;
 
 import java.io.BufferedReader;
@@ -22,12 +23,14 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -71,7 +74,10 @@ public class UserActivitySimulator {
 	private float keepAttitudeCoefficient = 0.9f;
 	private float lowSystemAlertPenalty = Integer.MAX_VALUE/2f;
 	private float maxAlertDaysPenalty = 2048;
-	private boolean isToAppendMaxToMetric = false;
+	private boolean isToAppendConstraintsToMetric = false;
+	
+	private String distanceOutputName = "Distance";
+	private String systemAlertsOutputName = "System_Alerts";
 	
 	private IJointDistributionReader transformedDataReader = new CSVJointDistributionReader();
 	private IModelCenterWrapperIO wrapperIO = null;
@@ -540,21 +546,63 @@ public class UserActivitySimulator {
 			sum += getKLDistance(correlationTable, transformedDataTable); // kl divergence is non-negative, so minimizing sum will minimize overall distance
 		}
 		
-		// increment distance if constraint about minimum number of users with system alert is not reached
-		int systemAlertUserCount = transformedDataReader.getNumUserSystemAlert(new FileInputStream(transformedDataFile), getSystemAlertDaysThreshold());
-		if (systemAlertUserCount < getSystemAlertUserCountPenaltyThreshold()) {
-			Debug.println(getClass(), "Number of alerts was " + systemAlertUserCount + ", while minimum allowed was " + getSystemAlertUserCountPenaltyThreshold());
-			sum += getLowSystemAlertPenalty();
-		}
+		// Properties (map) to be written to output file. I'm using a tree map in order to preserve the order of keys.
+		Map<String, String> properties = new TreeMap<String, String>(new Comparator<String>() {
+			public int compare(String o1, String o2) {
+				if (o1.equals(o2)) {
+					return 0;
+				}
+				// force Distance to come first
+				if (o1.equalsIgnoreCase(getDistanceOutputName())) {
+					return -1;
+				}
+				if (o2.equalsIgnoreCase(getDistanceOutputName())) {
+					return 1;
+				}
+				// force total system alerts to come after Distance, but before everything else
+				if (o1.equalsIgnoreCase(getSystemAlertsOutputName())) {
+					return -1;
+				}
+				if (o2.equalsIgnoreCase(getSystemAlertsOutputName())) {
+					return 1;
+				}
+				// force detectors to be ordered by index
+				if (o1.toLowerCase().matches("detector[0-9]+")
+						&& o2.toLowerCase().matches("detector[0-9]+")) {
+					int index1 = Integer.parseInt(o1.substring(8));
+					int index2 = Integer.parseInt(o2.substring(8));
+					return index1 - index2;
+				}
+				// use default behavior for other cases
+				return o1.compareTo(o2);
+			}
+		});	
+		properties.put(getDistanceOutputName(), "" + sum);
 		
-		if (isToAppendMaxToMetric()) {
-			// increment distance if there is a column (detector alert days) with maximum value smaller than threshold (this will make sure we'll have at least 1 system alert from each detector).
-			Map<String, Integer> maxValues = transformedDataReader.getMaxValue(new FileInputStream(transformedDataFile));
-			for (Entry<String, Integer> entry : maxValues.entrySet()) {
-				if (entry.getValue() < getSystemAlertDaysThreshold()) {
-					Debug.println(getClass(), "Attribute " + entry.getKey() + " had low maximum value: " + entry.getValue());
+		// calculate the number of system alerts by each detector
+		Map<String, Integer> alertsByDetector = transformedDataReader.getNumUserSystemAlert(new FileInputStream(transformedDataFile), getSystemAlertDaysThreshold(), getSystemAlertsOutputName());
+		if (isToAppendConstraintsToMetric()) {
+			// increment distance if there is a column (detector alert days) with count zero
+			for (Entry<String, Integer> entry : alertsByDetector.entrySet()) {
+				if (entry.getValue() <= 0) {
+					Debug.println(getClass(), "Attribute " + entry.getKey() + " had low counts: " + entry.getValue());
 					sum += getMaxAlertDaysPenalty();
 				}
+			}
+			
+			// obtain the total count
+			Integer systemAlertUserCount = alertsByDetector.get(getSystemAlertsOutputName());
+			if (systemAlertUserCount != null) {
+				// increment distance if constraint about minimum number of users with system alert is not reached
+				if (systemAlertUserCount < getSystemAlertUserCountPenaltyThreshold()) {
+					Debug.println(getClass(), "Number of alerts was " + systemAlertUserCount + ", while minimum allowed was " + getSystemAlertUserCountPenaltyThreshold());
+					sum += getLowSystemAlertPenalty();
+				}
+			}
+		} else {
+			// just append to properties
+			for (Entry<String, Integer> entry : alertsByDetector.entrySet()) {
+				properties.put(entry.getKey(), ""+entry.getValue());
 			}
 		}
 		
@@ -562,8 +610,7 @@ public class UserActivitySimulator {
 		// TODO calculate the distance metric regarding peer groups.
 		
 		// save the distance metric(s) to file (sum of kl distance)
-		
-		getWrapperIO().writeWrapperFile(Collections.singletonMap("Distance", ""+sum), new File(getDistanceMetricFileName()));
+		getWrapperIO().writeWrapperFile(properties, new File(getDistanceMetricFileName()));
 		
 	}
 	
@@ -1177,7 +1224,7 @@ public class UserActivitySimulator {
 	 */
 	public IModelCenterWrapperIO getWrapperIO() {
 		if (wrapperIO == null) {
-			wrapperIO = ModelCenterMatrixStyleWrapperIO.getInstance();
+			wrapperIO = ModelCenterWrapperIO.getInstance();
 			wrapperIO.setProgramName("UserActivitySimulator");
 		}
 		return wrapperIO;
@@ -1352,22 +1399,54 @@ public class UserActivitySimulator {
 
 
 	/**
-	 * @return the isToAppendMaxToMetric : if true, {@link #computeDistance()} will consider maximum alert days of each detector
-	 * in the metric. If maximum alert days is lower than expected, then {@link #getMaxAlertDaysPenalty()} will be incremented
+	 * @return isToAppendConstraintsToMetric : if true, {@link #computeDistance()} will consider additional constraints (e.g. maximum alert days of each detector,
+	 * and number of total system alerts) in the metric. If constraint is not satisfied, then {@link #getMaxAlertDaysPenalty()} or {@link #getLowSystemAlertPenalty()} will be incremented
 	 * to metric.
 	 */
-	public boolean isToAppendMaxToMetric() {
-		return isToAppendMaxToMetric;
+	public boolean isToAppendConstraintsToMetric() {
+		return isToAppendConstraintsToMetric;
 	}
 
 
 	/**
-	 * @param isToAppendMaxToMetric : if true, {@link #computeDistance()} will consider maximum alert days of each detector
-	 * in the metric. If maximum alert days is lower than expected, then {@link #getMaxAlertDaysPenalty()} will be incremented
+	 * @param isToAppendConstraintsToMetric : if true, {@link #computeDistance()} will consider additional constraints (e.g. maximum alert days of each detector,
+	 * and number of total system alerts) in the metric. If constraint is not satisfied, then {@link #getMaxAlertDaysPenalty()} or {@link #getLowSystemAlertPenalty()} will be incremented
 	 * to metric.
 	 */
-	public void setToAppendMaxToMetric(boolean isToAppendMaxToMetric) {
-		this.isToAppendMaxToMetric = isToAppendMaxToMetric;
+	public void setToAppendConstraintsToMetric(boolean isToAppendConstraintsToMetric) {
+		this.isToAppendConstraintsToMetric = isToAppendConstraintsToMetric;
+	}
+
+
+	/**
+	 * @return a name of the property to be written in output generated in {@link #computeDistance()} related to distance of simulated data to actual data.
+	 */
+	public String getDistanceOutputName() {
+		return distanceOutputName;
+	}
+
+
+	/**
+	 * @param distanceOutputName : a name of the property to be written in output generated in {@link #computeDistance()} related to distance of simulated data to actual data.
+	 */
+	public void setDistanceOutputName(String distanceOutputName) {
+		this.distanceOutputName = distanceOutputName;
+	}
+
+
+	/**
+	 * @return a name of the property to be written in output generated in {@link #computeDistance()} related to total number of system alerts.
+	 */
+	public String getSystemAlertsOutputName() {
+		return systemAlertsOutputName;
+	}
+
+
+	/**
+	 * @param systemAlertsOutputName : a name of the property to be written in output generated in {@link #computeDistance()} related to total number of system alerts.
+	 */
+	public void setSystemAlertsOutputName(String systemAlertsOutputName) {
+		this.systemAlertsOutputName = systemAlertsOutputName;
 	}
 
 
