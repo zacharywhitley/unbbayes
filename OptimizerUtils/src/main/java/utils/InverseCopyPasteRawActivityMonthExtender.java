@@ -29,6 +29,7 @@ public class InverseCopyPasteRawActivityMonthExtender {
 	public static int ABORT_DAY = 9999;			// use big values to avoid aborting operation at the middle
 	public static int END_DAY = 163;			// use the theoretic max number. If you need to finish before this day, use ABORT_DAY instead
 	public static boolean isCopyOnlyTrainingData = true;	// if false, all data (type 1 and 2) will be copied. If false, only type=1 will be copied and pasted.
+	public static boolean isToFixZeroProxyDetectors = true;	// if true, proxy log detectors with 0 entries byt non-zero downloads will be set to 1.
 	
 	public static int NUM_TIMEBLOCKS = 6;
 	
@@ -71,6 +72,10 @@ public class InverseCopyPasteRawActivityMonthExtender {
 		int typeColumn = 0; 
 		int userColumn = 3; 
 		int timeIDColumn = 1; 
+		List<Integer> proxyDetectorColumns = null;
+		if (isToFixZeroProxyDetectors) {
+			proxyDetectorColumns = new ArrayList<Integer>();
+		}
 		for (int column = 0; column < row.length; column++) {
 			String attributeName = row[column];
 			if (attributeName.equalsIgnoreCase("dayid")) {
@@ -81,6 +86,8 @@ public class InverseCopyPasteRawActivityMonthExtender {
 				userColumn = column;
 			} else if (attributeName.equalsIgnoreCase("timeid")) {
 				timeIDColumn = column;
+			} else if (attributeName.toLowerCase().startsWith("det")) {
+				proxyDetectorColumns.add(column);
 			}
 			printer.print("\""+ attributeName +"\"");
 			if (column + 1 < row.length) {
@@ -88,6 +95,13 @@ public class InverseCopyPasteRawActivityMonthExtender {
 			}
 		}
 		printer.println();
+		
+		// half of detector columns are download detectors
+		List<Integer> downloadDetectorColumns = null;
+		if (isToFixZeroProxyDetectors) {
+			downloadDetectorColumns = proxyDetectorColumns.subList(proxyDetectorColumns.size()/2, proxyDetectorColumns.size());
+			proxyDetectorColumns = proxyDetectorColumns.subList(0, proxyDetectorColumns.size()/2);
+		}
 		
 		// read how many days and users we have in data
 		List<Integer> daysInData = new ArrayList<Integer>();	// day ids in data
@@ -200,10 +214,22 @@ public class InverseCopyPasteRawActivityMonthExtender {
 						
 						// print the current row, but changing day and type (training/testing)
 						for (int column = 0; column < row.length; column++) {
+							int intValue = -1;
+							try {
+								intValue = Integer.parseInt(row[column]);
+							} catch (Exception e) {}
 							if (column == dayColumn) {
 								printer.print(globalDayId);
 							} else if (column == typeColumn) {
 								printer.print(type);
+							} else if (isToFixZeroProxyDetectors && (intValue == 0) && proxyDetectorColumns.contains(column)) {
+								// get respective download detector
+								int downloadDetectorColumn = downloadDetectorColumns.get(proxyDetectorColumns.indexOf(column));
+								if (Float.parseFloat(row[downloadDetectorColumn]) > 0) {
+									printer.print("1");
+								} else {
+									printer.print(row[column]);
+								}
 							} else {
 								printer.print(row[column]);
 							}
