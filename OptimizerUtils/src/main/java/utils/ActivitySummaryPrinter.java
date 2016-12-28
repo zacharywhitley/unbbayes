@@ -9,6 +9,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -132,8 +133,6 @@ public class ActivitySummaryPrinter {
 		Map<Integer, Integer> userToRowMap = new HashMap<Integer, Integer>();	// map from user id to row in CSV related to such user
 		while(alertUserToDetectorMap.size() < totalNumUsersAlert) {		// fill alertUserToDetectorMap 
 			
-			// clone list of rows to consider, so that we can randomly pick a row and remove the picked one from the list (but without changing original list)
-			List<Integer> randomRowsToPick = new ArrayList<Integer>(rowsToConsider);
 			// also clone list of detectors to consider, for same reason of above list (not to change original list when picking/removing in random)
 			List<Integer> randomDetectorsToPick = new ArrayList<Integer>(detectorsToConsider);
 			
@@ -144,6 +143,9 @@ public class ActivitySummaryPrinter {
 				int pickedDetectorIndex = randomDetectorsToPick.remove(rand.nextInt(randomDetectorsToPick.size()));
 				// this is the column in csv file associated with the detector we just picked
 				int detectorColumn = detectorColumns.get(pickedDetectorIndex);
+				
+				// clone list of rows to consider, so that we can randomly pick a row and remove the picked one from the list (but without changing original list)
+				List<Integer> randomRowsToPick = new ArrayList<Integer>(rowsToConsider);
 				
 				// read rows. Since each row is 1 user, picking a row is equivalent to picking some user
 				while (randomRowsToPick.size() > 0) {
@@ -269,7 +271,11 @@ public class ActivitySummaryPrinter {
 			
 			// iterate on usersInSameGroup in random order
 			while (usersInSameGroup.size() > 0) {
-				int userInGroup = usersInSameGroup.remove(rand.nextInt(usersInSameGroup.size()));
+				Integer userInGroup = usersInSameGroup.remove(rand.nextInt(usersInSameGroup.size()));
+				if (nonAlertUsers.contains(userInGroup)) {
+					// try next user if user was already considered
+					continue;
+				}
 				
 				// extract row in csv related to current user
 				int rowNumber = userToRowMap.get(userInGroup);
@@ -282,26 +288,33 @@ public class ActivitySummaryPrinter {
 					smallestDetectorValueUser = userInGroup;
 					smallestDetectorValue = detectorValue;
 				} 
-				if (detectorValue >= largestDetectorValue) {	
-					// using ">=" here so that if multiple users have same detector values, 
+				if (detectorValue >= largestDetectorValue			// using ">=" here so that if multiple users have same detector values, 
+						&& detectorValue < systemAlertThreshold) {	// try to only consider users with no system alert for this detector
 					// the user of largest detector value is picked from later users.
 					largestDetectorValueUser = userInGroup;
 					largestDetectorValue = detectorValue;
 				} 
 			}	// end of iterate on usersInSameGroup in random order
 			
+			if (largestDetectorValueUser.intValue() == smallestDetectorValueUser.intValue()) {
+				System.err.println("Only found user " + largestDetectorValueUser + " in peer group " + groupId 
+						+ " when we excluded alert user " + userId + " and the users already picked.");
+				// nonAlertUsers is a set, so adding same user twice won't be a problem.
+			}
 			
 			// add the 2 users we found
 			nonAlertUsers.add(largestDetectorValueUser);
-			nonAlertUsers.add(smallestDetectorValueUser);
+			nonAlertUsers.add(smallestDetectorValueUser);	
 			
 		}	// end of for each alert user
 		
+		// ensure again that nonAlertUsers doesn't contain elements in alertUserToDetectorMap
+		nonAlertUsers.removeAll(alertUserToDetectorMap.keySet());
 		
-		// create a union (set) of users we picked with system alerts and without system alerts
-		Set<Integer> allUserIdsToConsider = new HashSet<Integer>(nonAlertUsers);
+		// create a union of users we picked with system alerts and without system alerts
+		List<Integer> allUserIdsToConsider = new ArrayList<Integer>(nonAlertUsers);
 		allUserIdsToConsider.addAll(alertUserToDetectorMap.keySet());
-			
+		Collections.sort(allUserIdsToConsider);		// sort user id
 		
 		// start printing
 		
@@ -314,8 +327,17 @@ public class ActivitySummaryPrinter {
 			printer.println(userid + "," + grpid);
 		}
 		
+		System.out.println();
+		System.out.println();
 		System.out.println("Total users: " + allUserIdsToConsider.size());
 		System.out.println("Users with system alert: " + alertUserToDetectorMap.size());
+		System.out.println();
+		System.out.println();
+		System.out.println("All peer groups:");
+		printer.println("\"userid\",\"grpid\",\"num_users_in_group\"");
+		for (Entry<Integer, Integer> entry : userToPeerGroupMap.entrySet()) {
+			printer.println(entry.getKey() + "," + entry.getValue() + "," + peerGroupToUserMap.get(entry.getValue()).size());
+		}
 		
 	}
 
