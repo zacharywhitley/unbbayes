@@ -9,7 +9,6 @@ import io.IActivityHistIO;
 import io.IJointDistributionReader;
 import io.IModelCenterWrapperIO;
 import io.IPeerGroupReader;
-import io.ModelCenterMatrixStyleWrapperIO;
 import io.ModelCenterWrapperIO;
 import io.PeerGroupSizeCSVReader;
 
@@ -75,6 +74,7 @@ public class UserActivitySimulator {
 	private float lowSystemAlertPenalty = Integer.MAX_VALUE/2f;
 	private float maxAlertDaysPenalty = 2048;
 	private boolean isToAppendConstraintsToMetric = false;
+	private boolean isToFixZeroProxyDetectors = false;	// if true, proxy log detectors with 0 entries byt non-zero downloads will be set to 1.
 	
 	private String distanceOutputName = "Distance";
 	private String systemAlertsOutputName = "System_Alerts";
@@ -258,6 +258,7 @@ public class UserActivitySimulator {
 					printer.print(type + "," + (time+1) + "," + (peerGroup+1) + "," + userid + "," + (day+1));
 					
 					// iterate on detectors, but we only need to simulate raw data for half of them (the other half is for peer group outlier)
+					List<Integer> detectorValues = new ArrayList<Integer>(getNumDetectors() / 2);
 					for (int detector = 0; detector < getNumDetectors() / 2; detector++) {	
 						
 						// pick a token
@@ -288,12 +289,27 @@ public class UserActivitySimulator {
 						probDist = normalize((List)probDist);
 						cumulative = getCumulativeDist((List)probDist);	// update the cumulative dist
 						
-						Integer rawDetectorSample = getRawDetectorSample(rand, cumulative, io, detector, time);
-						
-						// print the rest of the current row: ,det1,...,det12;
-						printer.print("," + rawDetectorSample);
+						// sample current detector and add to list of values
+						detectorValues.add(getRawDetectorSample(rand, cumulative, io, detector, time));
 						
 					}	// end of for detector
+					
+					// fix cases when there are downloads, but no proxy log for it
+					if (isToFixZeroProxyDetectors()) {
+						List<Integer> proxyValues = detectorValues.subList(0, detectorValues.size()/2);
+						List<Integer> downloadValues = detectorValues.subList(detectorValues.size()/2, detectorValues.size());
+						int size = Math.min(proxyValues.size(), downloadValues.size());
+						for (int i = 0; i < size; i++) {
+							if (downloadValues.get(i) > 0 && proxyValues.get(i) <= 0) {
+								detectorValues.set(i, detectorValues.get(i)+1);
+							}
+						}
+					}
+					
+					for (Integer rawDetectorSample : detectorValues) {
+						// print the rest of the current row: ,det1,...,det12;
+						printer.print("," + rawDetectorSample);
+					}
 					
 					// prepare to print next row
 					printer.println();
@@ -1447,6 +1463,22 @@ public class UserActivitySimulator {
 	 */
 	public void setSystemAlertsOutputName(String systemAlertsOutputName) {
 		this.systemAlertsOutputName = systemAlertsOutputName;
+	}
+
+
+	/**
+	 * @return if true, proxy log detectors with 0 entries but non-zero downloads will be set to 1.
+	 */
+	public boolean isToFixZeroProxyDetectors() {
+		return isToFixZeroProxyDetectors;
+	}
+
+
+	/**
+	 * @param isToFixZeroProxyDetectors : if true, proxy log detectors with 0 entries but non-zero downloads will be set to 1.
+	 */
+	public void setToFixZeroProxyDetectors(boolean isToFixZeroProxyDetectors) {
+		this.isToFixZeroProxyDetectors = isToFixZeroProxyDetectors;
 	}
 
 
