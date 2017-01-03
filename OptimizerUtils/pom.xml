@@ -4,7 +4,7 @@
 	<groupId>edu.gmu</groupId>
 	<artifactId>unbbayes.util.optimizationUtils</artifactId>
 	<name>Set of utility programs for optimization problems</name>
-	<version>1.2.1</version>
+	<version>1.3.0</version>
 	<url>http://unbbayes.sourceforge.net</url>
 	<licenses>
 		<license>
@@ -46,6 +46,19 @@
 			<name>Bahram Yousefi</name>
 			<email>byousefi@gmu.edu</email>
 			<url>http://mason.gmu.edu/~byousefi/
+			</url>
+			<organization>George Mason University - GMU</organization>
+			<organizationUrl>http://www.gmu.edu
+			</organizationUrl>
+			<roles>
+				<role>Consultant</role>
+			</roles>
+			<timezone>-5</timezone>
+		</contributor>
+		<contributor>
+			<name>Edward Huang</name>
+			<email>chuang10@gmu.edu</email>
+			<url>http://mason.gmu.edu/~chuang10/
 			</url>
 			<organization>George Mason University - GMU</organization>
 			<organizationUrl>http://www.gmu.edu
