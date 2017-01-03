@@ -1814,8 +1814,13 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 					dirichletArgs[19] = "-cliques";	
 					dirichletArgs[20] = wrapper.getCliquesFileName();
 				}
-				dirichletArgs[21] = "-cond";	
-				dirichletArgs[22] = wrapper.getConditionalProbabilityFileName();
+				if (wrapper.getConditionalProbabilityFileName() != null && !wrapper.getConditionalProbabilityFileName().trim().isEmpty()) {
+					dirichletArgs[21] = "-cond";	
+					dirichletArgs[22] = wrapper.getConditionalProbabilityFileName();
+				} else {
+					dirichletArgs[21] = "";	
+					dirichletArgs[22] = "";
+				}
 				if (Debug.isDebugMode() && dirichletArgs.length >= 24) {
 					dirichletArgs[23] = "-d";	
 				}

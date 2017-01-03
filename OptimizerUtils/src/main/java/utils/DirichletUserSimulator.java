@@ -79,7 +79,8 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	private boolean isToPrintAlert = true;
 	private String conditionalProbabilityFileName = "conditionals.net";
 	private int alertStateThreshold = 1;
-	private float virtualCountCoefficient = 0.5f;//1;
+	private float virtualCountCoefficient = 150f/3816f;//1;
+	private boolean isCliqueJointStatesInverted = true;
 	
 	
 	private boolean isToUseDirichletMultinomial = true;
@@ -367,7 +368,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 				printer.print(value);
 			}
 			printer.println();
-			
+//			System.gc();
 		}
 		
 		if (printer != System.out) {
@@ -413,6 +414,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		}
 		// the dictionary will be used as a mapping between sampled state (subset) and actual state (original).
 		Alphabet dictionary = new Alphabet(jointStates.toArray(new Object[jointStates.size()]));
+		jointStates = null;
 		
 		// remove zeros from alpha
 		double[] alpha = new double[dictionary.size()]; // dirichlet parameter alpha, not containing zeros
@@ -432,6 +434,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			// sample dirichlet distribution
 			distribution = dirichlet.nextDistribution();
 			
+			dirichlet = null;
 		} else {
 			
 			// sample directly from original distribution
@@ -441,6 +444,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			}
 			
 		}
+		alpha = null;
 		
 		// prepare the object which will be used to sample an individual from some distribution (e.g. uniform, or dirichlet)
 		Randoms random = new Randoms(getSeed().intValue());	
@@ -769,7 +773,8 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			loader.load(new FileInputStream(getCliquesFileName()));
 			junctionTree = loader.getJunctionTree();
 			variableNames = loader.getVariableNames();
-			if (getConditionalProbabilityFileName() != null && !getConditionalProbabilityFileName().trim().isEmpty()) {
+			if (getConditionalProbabilityFileName() != null && !getConditionalProbabilityFileName().trim().isEmpty()
+					&& new File(getConditionalProbabilityFileName()).exists()) {
 				conditionals = loadConditionals(getConditionalProbabilityFileName());
 				// order conditionals by dependency
 				Collections.sort(conditionals, new Comparator<PotentialTable>() {
@@ -989,8 +994,8 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			throw e;
 		}
 		
-		
 		reader.close();
+		
 		
 		// just make sure the sizes of tables match
 		if (tableFromFile.tableSize() != tableToFill.tableSize()) {
@@ -1006,11 +1011,24 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			}
 		}
 		
+		if (isCliqueJointStatesInverted()) {
+			// invert the probability in table from file, because they are the inverse of clique potentials
+			int size = tableFromFile.tableSize();
+			for(int i = 0; i < size / 2; i++) {
+				float temp = tableFromFile.getValue(i);
+				tableFromFile.setValue(i, tableFromFile.getValue(size - i - 1));
+				tableFromFile.setValue(size - i - 1, temp);
+			}
+		}
+		
 		// initialize tableInClique with 1 (null value of multiplication)
 		tableToFill.fillTable(1f);
 		
 		// multiply tableInClique and tableInFile
 		tableToFill.opTab(tableFromFile, tableToFill.PRODUCT_OPERATOR);
+		
+		// make sure clique potential is normalized to 1
+		tableToFill.normalize();
 		
 	}
 
@@ -1347,6 +1365,22 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			throw new IllegalArgumentException("Only positive coefficient allowed.");
 		}
 		this.virtualCountCoefficient = virtualCountCoefficient;
+	}
+
+	/**
+	 * @return true if {@link #fillCliquePotential(PotentialTable, File, boolean)} must consider
+	 * that joint states in cliques and joint states in csv files are inverted. False otherwise.
+	 */
+	public boolean isCliqueJointStatesInverted() {
+		return isCliqueJointStatesInverted;
+	}
+
+	/**
+	 * @param isCliqueJointStatesInverted : true if {@link #fillCliquePotential(PotentialTable, File, boolean)} must consider
+	 * that joint states in cliques and joint states in csv files are inverted. False otherwise.
+	 */
+	public void setCliqueJointStatesInverted(boolean isCliqueJointStatesInverted) {
+		this.isCliqueJointStatesInverted = isCliqueJointStatesInverted;
 	}
 
 	/**
