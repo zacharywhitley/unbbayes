@@ -89,6 +89,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	
 	private BaseIO conditionalProbabilityLoader;
 	private Long seed = null;
+	private Randoms random = null;
 	
 
 	/**
@@ -391,50 +392,41 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		// extract the clique table to sample at current recursive step
 		PotentialTable table = root.getProbabilityFunction();
 		
-		// build a dictionary object (a subset of joint states containing only the joint states that have probabilities higher than 0%)
-		
-		// instantiate the dictionary from scratch.
+		// count how many non-zero elements we can find in table.
+		// This will help us to avoid allocating memory unnecessarily
+		int nonZeroTableSize = 0;
+		for (int i = 0; i < table.tableSize(); i++) {
+			// iterating on table 1 additional time is usually cheaper than using memory unnecessarily, due to overhead of garbage collection
+			if (table.getValue(i) > 0f) {
+				nonZeroTableSize++;
+			}
+		}
+		if (nonZeroTableSize <= 0) {
+			throw new IllegalArgumentException("No positive probability found when handling clique " + root);
+		}
 		
 		// calculate dirichlet parameters as expectations from current probability.
-		// we'll also use it to filter out states that are impossible to happen (for optimization and also to avoid dirichlet with alpha = 0)
-		double[] fullSpaceAlpha = new double[table.tableSize()];	// this is the alpha containig zeros
-		for (int i = 0; i < fullSpaceAlpha.length; i++) {
-			fullSpaceAlpha[i] = expectedCounts * table.getValue(i);
-		}
-		
-		// initialize dictionary of states of sampler
-		List<Integer> jointStates = new ArrayList<Integer>();
-		for (int tableIndex = 0; tableIndex < table.tableSize(); tableIndex++) {
-			if (fullSpaceAlpha[tableIndex] > 0f) {
-				jointStates.add(tableIndex);
+		// we'll also filter out states that are impossible to happen (for optimization and also to avoid dirichlet with alpha = 0)
+		double[] alpha = new double[nonZeroTableSize];	// avoid using more memory than we need
+		// also initialize dictionary (mapping) of states of sampler
+		int[] stateMapping = new int[alpha.length];	// stateMapping[i] = j is basically a mapping from i-th element of alpha to j-th element in table
+		for (int tableIndex = 0, alphaIndex = 0; tableIndex < table.tableSize(); tableIndex++) {
+			if (table.getValue(tableIndex) > 0f) {
+				alpha[alphaIndex] = expectedCounts * table.getValue(tableIndex);
+				stateMapping[alphaIndex] = tableIndex;
+				alphaIndex++;
 			}
 		}
-		if (jointStates.size() <= 0) {
-			throw new IllegalArgumentException("No positive probability found.");
-		}
-		// the dictionary will be used as a mapping between sampled state (subset) and actual state (original).
-		Alphabet dictionary = new Alphabet(jointStates.toArray(new Object[jointStates.size()]));
-		jointStates = null;
 		
-		// remove zeros from alpha
-		double[] alpha = new double[dictionary.size()]; // dirichlet parameter alpha, not containing zeros
-		for (int indexTentative = 0, indexAlpha = 0; indexTentative < fullSpaceAlpha.length; indexTentative++) {
-			if (fullSpaceAlpha[indexTentative] > 0) {
-				alpha[indexAlpha] = fullSpaceAlpha[indexTentative] * getVirtualCountCoefficient();
-				indexAlpha++;
-			}
-		}
-		fullSpaceAlpha = null;	// we don't need alpha with zeros anymore
 		
 		double[] distribution = null;	// the distribution to sample from. It will be initialized in the if-clause below
 		if (isToUseDirichletMultinomial()) {	// need to sample from dirichlet distribution
 			// instantiate a dirichlet sampler (which only considers possible states -- i.e. excludes states with 0% probability)
-			Dirichlet dirichlet = new Dirichlet(alpha, dictionary);
+			Dirichlet dirichlet = new Dirichlet(alpha);
 			
 			// sample dirichlet distribution
 			distribution = dirichlet.nextDistribution();
 			
-			dirichlet = null;
 		} else {
 			
 			// sample directly from original distribution
@@ -446,11 +438,13 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		}
 		alpha = null;
 		
-		// prepare the object which will be used to sample an individual from some distribution (e.g. uniform, or dirichlet)
-		Randoms random = new Randoms(getSeed().intValue());	
 		
-		// get a sample from the distribution. Use the dictionary to translate from reduced space (no zeros) to full space (with zeros)
-		int jointState = (Integer)dictionary.lookupObject(random.nextDiscrete(distribution));
+		// get a sample from the distribution. Use the dictionary (i.e. mapping) to translate from reduced space (without zeros) to full space (with zeros)
+		int jointState = stateMapping[getRandom().nextDiscrete(distribution)];
+		
+		// we don't need these objects anymore. Set them to null before entering to next recursive call
+		stateMapping = null;	
+		distribution = null;
 		
 		// update root clique potential (i.e. fill the joint state with 100% and other states with 0%);
 		table.fillTable(0f);
@@ -561,22 +555,11 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			return;	// there is nothing to fill
 		}
 
-
-		
 		// iterate on each conditionals and sample from dirichlet;
 		for (PotentialTable table : conditionals) {
 
 			// extract the variable to sample (it's always the 1st node)
 			INode varToSample = table.getVariableAt(0);
-			
-			// build a dictionary object (a subset of joint states containing only the joint states that have probabilities higher than 0%)
-			// the dictionary will be used as a mapping between sampled state (subset) and actual state (original).
-			Alphabet dictionary = null;
-			double[] alpha = null;	// dirichlet parameter alpha, not containing zeros
-			
-
-			// instantiate the dictionary from scratch.
-			
 
 			// extract the states of parents of variable to sample
 			int[] coord = table.getMultidimensionalCoord(0);	// this will be filled with the 1st cell in table corresponding with states of parents
@@ -592,44 +575,38 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 				coord[varInTable] = sample.get(indexInSample);
 			}
 			
-			// calculate dirichlet parameters as expectations from current probability.
-			// we'll also use it to filter out states that are impossible to happen (for optimization and also to avoid dirichlet with alpha = 0)
-			double[] fullSpaceAlpha = new double[varToSample.getStatesSize()];	// this is the alpha containig zeros
-			for (int state = 0; state < fullSpaceAlpha.length; state++) {
+			// estimate how many non-zero states (i.e. possible states with probabilities higher than 0%) we have for this variable
+			int nonZeroStatesSize = 0;
+			for (int state = 0; state < varToSample.getStatesSize(); state++) {
 				coord[0] = state;	// index 0 is for the state of variable to sample. Other indexes were already filled with proper states of parent nodes
-				fullSpaceAlpha[state] = table.getValue(coord) * expectedCounts;
+				if (table.getValue(coord) > 0f) {
+					nonZeroStatesSize++;
+				}
+			}
+			if (nonZeroStatesSize <= 0) {
+				throw new IllegalArgumentException("Invalid probability distribution in table " + table);
 			}
 			
-			// initialize dictionary of states of sampler
+			// build a dictionary object (a subset of joint states containing only the joint states that have probabilities higher than 0%)
+			// the dictionary will be used as a mapping between sampled state (subset) and actual state (original).
+			int[] dictionary = new int[nonZeroStatesSize];
+			double[] alpha = new double[nonZeroStatesSize];	// dirichlet parameter alpha, not containing zeros
 
-			// just fill entries in alphabet (dictionary) with indexes of states (starting from 0).
-			List<Integer> entries = new ArrayList<Integer>(fullSpaceAlpha.length);
-			for (int i = 0; i < fullSpaceAlpha.length; i++) {
-				if (fullSpaceAlpha[i] > 0) {
-					entries.add(i);
+			// fill dictionary and alpha
+			for (int state = 0, alphaIndex = 0; state < varToSample.getStatesSize(); state++) {
+				coord[0] = state;	// index 0 is for the state of variable to sample. Other indexes were already filled with proper states of parent nodes
+				float value = table.getValue(coord);
+				if (value > 0f) {
+					alpha[alphaIndex] = value * expectedCounts;
+					dictionary[alphaIndex] = state;
+					alphaIndex++;
 				}
 			}
-			
-			dictionary = new Alphabet(entries.toArray(new Integer[entries.size()]));
-			
-			if (dictionary.size() <= 0) {
-				throw new IllegalArgumentException("Invalid probability distribution");
-			}
-			
-			// remove zeros from alpha
-			alpha = new double[dictionary.size()];
-			for (int indexTentative = 0, indexAlpha = 0; indexTentative < fullSpaceAlpha.length; indexTentative++) {
-				if (fullSpaceAlpha[indexTentative] > 0) {
-					alpha[indexAlpha] = fullSpaceAlpha[indexTentative] * getVirtualCountCoefficient();
-					indexAlpha++;
-				}
-			}
-			fullSpaceAlpha = null;	// we don't need alpha with zeros anymore
 			
 			double[] distribution = null;	// the distribution to sample from. It will be initialized in the if-clause below
 			if (isToUseDirichletMultinomial()) {	// need to sample from dirichlet distribution
 				// instantiate a dirichlet sampler (which only considers possible states -- i.e. excludes states with 0% probability)
-				Dirichlet dirichlet = new Dirichlet(alpha, dictionary);
+				Dirichlet dirichlet = new Dirichlet(alpha);
 				
 				// sample dirichlet distribution
 				distribution = dirichlet.nextDistribution();
@@ -643,12 +620,14 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 				}
 				
 			}
-			
-			// prepare the object which will be used to sample an individual from some distribution (e.g. uniform, or dirichlet)
-			Randoms random = new Randoms(getSeed().intValue());	
+			alpha = null;	// alpha is not needed anymore
 			
 			// get a sample from the distribution. Use the dictionary to translate from reduced space (no zeros) to full space (with zeros)
-			int sampleState = (Integer)dictionary.lookupObject(random.nextDiscrete(distribution));
+			int sampleState = dictionary[getRandom().nextDiscrete(distribution)];
+			
+			// we don't need these objects anymore
+			dictionary = null;
+			distribution = null;
 			
 			// get the index of variable in sample list
 			int indexOfVarInSample = variableNames.indexOf(varToSample.getName());
@@ -1381,6 +1360,24 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	 */
 	public void setCliqueJointStatesInverted(boolean isCliqueJointStatesInverted) {
 		this.isCliqueJointStatesInverted = isCliqueJointStatesInverted;
+	}
+
+	/**
+	 * @return the random number generator
+	 * @see #sampleJunctionTreeRecursive(IJunctionTree, Clique, float)
+	 */
+	protected Randoms getRandom() {
+		if (random == null) {
+			random = new Randoms(getSeed().intValue());
+		}
+		return random;
+	}
+
+	/**
+	 * @param random : the random number generator
+	 */
+	protected void setRandom(Randoms random) {
+		this.random = random;
 	}
 
 	/**
