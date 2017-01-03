@@ -105,31 +105,31 @@ public class JavaSimulatorWrapperTest extends TestCase {
 		reader.close();
 	}
 	
-	/**
-	 * Smoke test of {@link JavaSimulatorWrapper#main(String[])}, with no argument.
-	 * @throws InterruptedException 
-	 * @throws IOException 
-	 */
-	@SuppressWarnings("static-access")
-	public void testMain() throws InterruptedException, IOException {
-		// delete output file in advance
-		String outputFileName = "./JavaSimulatorWrapper.out";
-		if (new File(outputFileName).exists()) {
-			assertTrue(new File(outputFileName).delete());
-		}
-		Thread.sleep(500);
-		assertFalse(new File(outputFileName).exists());
-		
-		wrapper.main(null);
-		
-		assertTrue(new File(outputFileName).exists());
-		assertTrue(new File(outputFileName).isFile());
-		assertTrue(new File(outputFileName).length() > 0);
-		
-		// read the output file and check sanity
-		this.checkFileSanity(new File(outputFileName));
-		
-	}
+//	/**
+//	 * Smoke test of {@link JavaSimulatorWrapper#main(String[])}, with no argument.
+//	 * @throws InterruptedException 
+//	 * @throws IOException 
+//	 */
+//	@SuppressWarnings("static-access")
+//	public void testMain() throws InterruptedException, IOException {
+//		// delete output file in advance
+//		String outputFileName = "./JavaSimulatorWrapper.out";
+//		if (new File(outputFileName).exists()) {
+//			assertTrue(new File(outputFileName).delete());
+//		}
+//		Thread.sleep(500);
+//		assertFalse(new File(outputFileName).exists());
+//		
+//		wrapper.main(null);
+//		
+//		assertTrue(new File(outputFileName).exists());
+//		assertTrue(new File(outputFileName).isFile());
+//		assertTrue(new File(outputFileName).length() > 0);
+//		
+//		// read the output file and check sanity
+//		this.checkFileSanity(new File(outputFileName));
+//		
+//	}
 	
 
 	/**
