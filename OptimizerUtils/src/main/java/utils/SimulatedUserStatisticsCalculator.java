@@ -4,6 +4,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -1507,11 +1508,129 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		this.priorCount = priorCount;
 	}
 
+	
+	/**
+	 * Reads an input csv file (or internal files if directory is specified) and creates temporary copies of such files but 
+	 * without containing the columns/attributes specified in the argument
+	 * @param input : file or folder to create a copy
+	 * @param toIgnoreRegex : regular expression specifying which attributes (columns in csv files) must be ignored.
+	 * @return : path to the copied (temporary) file/directory
+	 * @throws IOException 
+	 * @see #preprocessInputFileRecursive(File, String, File)
+	 */
+	public File preprocessInputFile(File input, String toIgnoreRegex) throws IOException {
+		
+		if (input == null || !input.exists()) {
+			return null;
+		}
+		
+		File outputDirectory = input.getParentFile();
+		
+		if (input.isDirectory()) {
+			// if we are processing multiple files (i.e. input is a directory), then create a temporary directory to store copies of the files.
+			outputDirectory = Files.createTempDirectory("Preprocessed_Users_").toFile();
+		}
+		
+		this.preprocessInputFileRecursive(input, toIgnoreRegex, outputDirectory);
+		
+		return outputDirectory;
+		
+	}
+	
+	/**
+	 * Reads an input csv file (or recursively reads internal files if directory is specified) and creates temporary copies of such files but 
+	 * without containing the columns/attributes specified in the argument
+	 * @param input : file or folder to create a copy
+	 * @param regexToIgnore : regular expression specifying which attributes (columns in csv files) must be ignored.
+	 * @param outputDirectory : directory to write the temporary files.
+	 * @return : path to the copied (temporary) file/directory
+	 * @throws IOException 
+	 */
+	protected void preprocessInputFileRecursive(File input, String regexToIgnore, File outputDirectory) throws IOException {
+		
+		if (input.isDirectory()) {
+			for (File innerFile : input.listFiles()) {
+				// read internal files, but output to same directory
+				this.preprocessInputFileRecursive(innerFile, regexToIgnore, outputDirectory);
+			}
+			return;
+		}
+		
+		// at this point, input is a single file. 
+		
+		// prepare a reader to read the input csv file
+		CSVReader reader = new CSVReader(new FileReader(input));
+		
+		// read first row for header (i.e.names of attributes/columns);
+		String[] row = reader.readNext();
+		if (row == null) {
+			reader.close();
+			throw new IOException("Failed to read header (1st row) of file " + input);
+		}
+		
+		// We'll copy to a temporary file. Prepare the stream to print results
+		File output = File.createTempFile("Preprocessed_Users_", ".csv", outputDirectory);
+		output.deleteOnExit();
+		PrintStream printer = new PrintStream(new FileOutputStream(output, false));	// do not append
+		
+		// store which columns we should read;
+		List<Integer> columnsToCopy = new ArrayList<Integer>(row.length);
+		for (int columnNumber = 0; columnNumber < row.length; columnNumber++) {
+			
+			// read the name of current column
+			String columnName = row[columnNumber];
+			if (columnName == null) {
+				Debug.println(getClass(), "Found null attribute at column " + columnNumber + " of file " + input);
+				continue;
+			}
+			
+			// ignore the columns which matches with the specified regular expression
+			if (columnName.matches(regexToIgnore)) {
+				Debug.println(getClass(), "Ignoring column " + columnNumber + " (name = " + columnName + ") of file " + input + ". Regex = " + regexToIgnore);
+				continue;	
+			}
+			
+			// write to the header of output file;
+			if (!columnsToCopy.isEmpty()) {
+				// this is not the first column, so use a separator (in csv, a separator is the comma)
+				printer.print(",");
+			}
+			
+			printer.print("\"" + columnName + "\"");
+			
+			columnsToCopy.add(columnNumber);	// mark this column as a column to be copied (not to be ignored)
+			
+		}	// end of loop which reads header
+		
+		printer.println();	// finished copying header, so go to next line
+		
+		// read the other rows
+		while ((row = reader.readNext()) != null) {	// read row and also check if it's not null at the same time
+			
+			// read/write only the necessary rows;
+			for (int i = 0; i < columnsToCopy.size(); i++) {
+				if (i > 0) {
+					// print a separator (comma) if this is not the first data to copy
+					printer.print(",");
+				}
+				printer.print(row[columnsToCopy.get(i)]);
+			}	// end of iteration on columns
+			
+			printer.println();	// go to next row
+			
+		}	// end of loop which reads data body
+		
+		// release resources
+		reader.close();
+		printer.close();
+	}
+	
 
 	/**
 	 * @param args
+	 * @throws IOException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		CommandLineParser parser = new DefaultParser();
 		Options options = new Options();
 		options.addOption("d","debug", false, "Enables debug mode.");
@@ -1528,6 +1647,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 				+ "100 minus this number will be sampled for Alert = false. Use this argument in order to increase variance.");
 		options.addOption("alert","alert-name", true, "Name of alert variable.");
 		options.addOption("all","print-all", false, "Print statistical summary and probabilities.");
+		options.addOption("ignore","ignore-columns", true, "Regular expression specifying names of columns/attributes in input file not to be considered in the computation.");
 		
 		CommandLine cmd = null;
 		try {
@@ -1562,6 +1682,15 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		if (cmd.hasOption("c")) {
 			sim.setConfidence(Float.parseFloat(cmd.getOptionValue("c")));
 		}
+		
+		
+		// change the path of input file to read
+		if (cmd.hasOption("ignore")) {
+			sim.setInput(sim.preprocessInputFile(sim.getInput(), cmd.getOptionValue("ignore")));
+		}
+		
+		
+		
 		
 		boolean isToUsePercentiles = cmd.hasOption("p");
 		
@@ -1653,8 +1782,20 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		// if pre-processing of input was performed, then delete the temporary files
+		if (cmd.hasOption("ignore")) {
+			if (sim.getInput().isDirectory()) {
+				// delete files in this directory
+				for (File innerFiles : sim.getInput().listFiles()) {
+					innerFiles.delete();
+				}
+			}
+			sim.getInput().delete();
+		}
 
 	}
+	
 	
 	
 

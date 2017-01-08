@@ -1,4 +1,6 @@
 package utils;
+import java.io.IOException;
+
 import unbbayes.util.Debug;
 
 
@@ -13,8 +15,9 @@ public class BatchProcessor {
 
 	/**
 	 * @param args
+	 * @throws IOException 
 	 */
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		Debug.setDebug(false);	// configure debug mode
 		
 		if (args == null || args.length <= 0) {

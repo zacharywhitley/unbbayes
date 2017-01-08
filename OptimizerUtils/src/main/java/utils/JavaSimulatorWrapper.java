@@ -1841,17 +1841,19 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				Debug.println(JavaSimulatorWrapper.class, "Created temporary file for RCP answers: " + tempQuestionOutput.getAbsolutePath());
 				
 				// set up arguments to calculate probabilities of questions
-				String[] questionArgs = new String[Debug.isDebugMode()?7:6];
+				String[] questionArgs = new String[Debug.isDebugMode()?9:8];
 				
-				// -i "test.csv" -o "Probabilities_test.csv" -numI 4 -d
+				// -i "test.csv" -o "Probabilities_test.csv" -numI 4 -ignore "D.*" -d
 				questionArgs[0] = "-i";
 				questionArgs[1] = "\"" + tempDirichletOutput.getAbsolutePath() +"\"";;
 				questionArgs[2] = "-o";
 				questionArgs[3] = "\"" + tempQuestionOutput.getAbsolutePath() +"\"";;
 				questionArgs[4] = "-numI";	
 				questionArgs[5] = ""+wrapper.getNumIndicators();	
-				if (Debug.isDebugMode() && questionArgs.length >= 7) {
-					questionArgs[6] = "-d";	
+				args[6] = "-ignore";	
+				args[7] = "\"D.*\"";	// will not consider columns matching regular expression "D.*" (these are for ignoring detectors, because most questions don't deal with detectors)
+				if (Debug.isDebugMode() && questionArgs.length >= 9) {
+					questionArgs[8] = "-d";	
 				}
 				
 				if (Debug.isDebugMode()) {

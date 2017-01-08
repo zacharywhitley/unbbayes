@@ -11,6 +11,7 @@ import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -499,6 +500,79 @@ public class SimulatedUserStatisticsCalculatorTest extends TestCase {
 		}
 		assertTrue("Seed=" + seed + ";" + tempDirichletOutput.getAbsolutePath(), tempDirichletOutput.delete());
 	}
+	
+	/**
+	 * Test method for {@link utils.SimulatedUserStatisticsCalculator#main(java.lang.String[])}
+	 * which ignores some columns in large csv file of users.
+	 * @throws Exception 
+	 */
+	@SuppressWarnings("static-access")
+	public final void testMainIgnoreOption() throws Exception {
+		
+		String input = getClass().getResource("../Dirichlet_Large").getPath();
+		
+		
+		File tempQuestionOutput = File.createTempFile("Probabilities_Questions_", ".csv");
+		tempQuestionOutput.deleteOnExit();
+		
+		// set up arguments to calculate probabilities of questions
+		String[] args = new String[9];
+		args[0] = "-i";
+		args[1] = "\"" + input +"\"";;
+		args[2] = "-o";
+		args[3] = "\"" + tempQuestionOutput.getAbsolutePath() +"\"";;
+		args[4] = "-numI";	
+		args[5] = "4";	
+		args[6] = "-ignore";	
+		args[7] = "D.*";	
+		args[8] = "-d";	
+		
+		calculator.main(args);
+		
+		/* Format of result:
+		 * "Q01","Q02","Q03","Q04","Q05","Q06","Q07","Q08","Q09","Q10","Q11",
+		 * 1.0,0.24390244,0.024564182,1.0,1.0,1.0,1.0,0.24390244,0.30081302,0.13821137,0.13821137,
+		 * 1.0,0.24390244,0.024564182,1.0,1.0,1.0,1.0,0.24390244,0.30081302,0.13821137,0.13821137,
+		 */
+		// read the output file and check sanity
+		CSVReader reader = new CSVReader(new FileReader(tempQuestionOutput));
+		
+		List<String[]> rows = reader.readAll();
+		assertEquals(1 + new File(input).listFiles().length, rows.size());	// The number of rows to expect is header + number of input files
+		
+		// check header:  "Q01","Q02","Q03","Q04","Q05","Q06","Q07","Q08","Q09","Q10","Q11",
+		assertTrue(rows.get(0).length >= 11);
+		for (int i = 0; i < 11; i++) {
+			assertEquals("i="+i, "Q" + String.format("%1$02d", i+1), rows.get(0)[i]);
+		}
+		
+		// check that all data is [0,1] or -1
+		for (int i = 1; i < rows.size(); i++) {
+			String[] row = rows.get(i);
+			assertTrue(row.length >= 11);
+			for (int column = 0; column < 11; column++) {
+				assertNotNull("column=" + column, row[column]);
+				assertFalse("column=" + column, row[column].trim().isEmpty());
+				Float value = Float.parseFloat(row[column].trim());
+				assertFalse("column=" + column,value.isNaN());
+				assertFalse("column=" + column,value.isInfinite());
+				if (value < 0) {
+					assertEquals("column=" + column, -1f, value, 0.00005);
+				} else {
+					assertTrue("column=" + column, value >= 0f);
+					assertTrue("column=" + column, value <= 1f);
+				}
+			}
+		}
+		
+		reader.close();
+		
+		// make sure temporary files are deleted
+		assertTrue(tempQuestionOutput.getAbsolutePath(), tempQuestionOutput.delete());
+		assertTrue(tempQuestionOutput.getAbsolutePath(),!tempQuestionOutput.exists());
+		
+	}
+
 
 
 
