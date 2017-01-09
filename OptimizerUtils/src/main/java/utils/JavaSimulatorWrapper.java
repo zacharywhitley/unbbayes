@@ -1850,8 +1850,8 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				questionArgs[3] = "\"" + tempQuestionOutput.getAbsolutePath() +"\"";;
 				questionArgs[4] = "-numI";	
 				questionArgs[5] = ""+wrapper.getNumIndicators();	
-				args[6] = "-ignore";	
-				args[7] = "\"D.*\"";	// will not consider columns matching regular expression "D.*" (these are for ignoring detectors, because most questions don't deal with detectors)
+				questionArgs[6] = "-ignore";	
+				questionArgs[7] = "\"D.*\"";	// will not consider columns matching regular expression "D.*" (these are for ignoring detectors, because most questions don't deal with detectors)
 				if (Debug.isDebugMode() && questionArgs.length >= 9) {
 					questionArgs[8] = "-d";	
 				}
