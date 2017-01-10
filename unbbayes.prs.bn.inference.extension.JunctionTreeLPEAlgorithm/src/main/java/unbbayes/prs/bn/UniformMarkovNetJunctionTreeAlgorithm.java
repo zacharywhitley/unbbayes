@@ -235,6 +235,10 @@ public class UniformMarkovNetJunctionTreeAlgorithm extends JunctionTreeAlgorithm
 		if (net.isCreateLog()) {
 			Thread t = new Thread(new Runnable() {
 				public void run() {
+					net.getLogManager().append("\n\n*****************   Network size  *********************\n");
+					net.getLogManager().append("Nodes: " + net.getNodeCount() + "\n");
+					net.getLogManager().append("Edges: " + net.getEdges().size());
+					net.getLogManager().append("\n*******************************************************\n\n");
 					net.makeLog();
 					System.out.println("**Log ended**");
 				}
