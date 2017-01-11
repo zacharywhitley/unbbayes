@@ -344,7 +344,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			Collections.fill(sample, -1);	// reset sample list
 			
 			// sample from clique potentials (i.e. convert clique potentials to 0% and 100%) recursively, from root to leaf cliques
-			sampleJunctionTreeRecursive(junctionTree, root, numSimulation);
+			sampleJunctionTreeRecursive(junctionTree, root, numSimulation * getVirtualCountCoefficient());	// convert to virtual counts by multiplying number of simulation with coefficient
 			
 			// fill the sample list from sampled junction tree
 			fillSampleFromJunctionTree(sample, variableNames, junctionTree);
@@ -358,7 +358,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			fillAlert(sample, alertScore, getAlertStateThreshold(), variableNames, nameToNodeMap);
 			
 			// fill indicators and threat from conditional probabilities;
-			fillSampleConditionals(sample, variableNames, conditionals, numSimulation);
+			fillSampleConditionals(sample, variableNames, conditionals, numSimulation * getVirtualCountCoefficient()); // convert to virtual counts by multiplying number of simulation with coefficient
 			
 			// print sample
 			for (int sampleIndex = 0; sampleIndex < sample.size(); sampleIndex++) {
@@ -385,9 +385,9 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	 * @param junctionTree
 	 * @param root
 	 * @param samplerCache
-	 * @param expectedCounts 
+	 * @param virtualCounts 
 	 */
-	protected void sampleJunctionTreeRecursive(IJunctionTree junctionTree, Clique root, float expectedCounts) {
+	protected void sampleJunctionTreeRecursive(IJunctionTree junctionTree, Clique root, float virtualCounts) {
 	
 		// extract the clique table to sample at current recursive step
 		PotentialTable table = root.getProbabilityFunction();
@@ -412,7 +412,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		int[] stateMapping = new int[alpha.length];	// stateMapping[i] = j is basically a mapping from i-th element of alpha to j-th element in table
 		for (int tableIndex = 0, alphaIndex = 0; tableIndex < table.tableSize(); tableIndex++) {
 			if (table.getValue(tableIndex) > 0f) {
-				alpha[alphaIndex] = expectedCounts * table.getValue(tableIndex);
+				alpha[alphaIndex] = virtualCounts * table.getValue(tableIndex);
 				stateMapping[alphaIndex] = tableIndex;
 				alphaIndex++;
 			}
@@ -432,7 +432,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			// sample directly from original distribution
 			distribution = new double[alpha.length];
 			for (int i = 0; i < alpha.length; i++) {
-				distribution[i] = alpha[i]/expectedCounts;
+				distribution[i] = alpha[i]/virtualCounts;
 			}
 			
 		}
@@ -456,7 +456,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 			// Propagate to child table (i.e. make sure that only the joint states corresponding to parent's sampled state will be sampled in child).
 			propagate(root, child);
 			
-			sampleJunctionTreeRecursive(junctionTree, child, expectedCounts);
+			sampleJunctionTreeRecursive(junctionTree, child, virtualCounts);
 		}
 		
 	}
@@ -547,9 +547,9 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	 * @param sample
 	 * @param conditionals
 	 * @param variableNames
-	 * @param expectedCounts 
+	 * @param virtualCounts 
 	 */
-	protected void fillSampleConditionals(List<Integer> sample, List<String> variableNames, List<PotentialTable> conditionals, float expectedCounts) {
+	protected void fillSampleConditionals(List<Integer> sample, List<String> variableNames, List<PotentialTable> conditionals, float virtualCounts) {
 		
 		if (sample == null || sample.isEmpty()) {
 			return;	// there is nothing to fill
@@ -597,7 +597,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 				coord[0] = state;	// index 0 is for the state of variable to sample. Other indexes were already filled with proper states of parent nodes
 				float value = table.getValue(coord);
 				if (value > 0f) {
-					alpha[alphaIndex] = value * expectedCounts;
+					alpha[alphaIndex] = value * virtualCounts;
 					dictionary[alphaIndex] = state;
 					alphaIndex++;
 				}
@@ -616,7 +616,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 				// sample directly from original distribution
 				distribution = new double[alpha.length];
 				for (int i = 0; i < alpha.length; i++) {
-					distribution[i] = alpha[i]/expectedCounts;
+					distribution[i] = alpha[i]/virtualCounts;
 				}
 				
 			}
