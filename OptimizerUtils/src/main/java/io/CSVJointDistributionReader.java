@@ -122,7 +122,7 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 			// figure out which cell in joint table represents the value in current line
 			int[] coord = table.getMultidimensionalCoord(0);
 			for (int varIndex = 0; varIndex < coord.length; varIndex++) {
-				int state = Integer.parseInt(csvLine[columns[varIndex]]);
+				int state = Integer.parseInt(convertName(csvLine[columns[varIndex]]));
 				
 				if (state >= table.getVariableAt(varIndex).getStatesSize()) {
 					throw new IllegalArgumentException("Found state " + state + " at row " + (currentRowIndex+1) + " for variable " + table.getVariableAt(varIndex) + " with number of states " + table.getVariableAt(varIndex).getStatesSize());
