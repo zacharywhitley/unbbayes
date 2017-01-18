@@ -5,8 +5,10 @@ package utils;
 
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.NotPositiveException;
+import org.apache.commons.math3.exception.NotStrictlyPositiveException;
 import org.apache.commons.math3.exception.NullArgumentException;
 import org.apache.commons.math3.stat.inference.ChiSquareTest;
+import org.apache.commons.math3.util.FastMath;
 import org.apache.commons.math3.util.MathArrays;
 
 /**
@@ -73,5 +75,68 @@ public class ChiSqureTestWithZero extends ChiSquareTest {
         return sumSq;
 
    }
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.apache.commons.math3.stat.inference.ChiSquareTest#chiSquare(double[], long[])
+	 */
+    public double chiSquare(final double[] expected, final long[] observed)
+        throws NotPositiveException, NotStrictlyPositiveException,
+        DimensionMismatchException {
+
+        if (expected.length < 2) {
+            throw new DimensionMismatchException(expected.length, 2);
+        }
+        if (expected.length != observed.length) {
+            throw new DimensionMismatchException(expected.length, observed.length);
+        }
+        checkNonNegative(expected);
+        MathArrays.checkNonNegative(observed);
+
+        double sumExpected = 0d;
+        double sumObserved = 0d;
+        for (int i = 0; i < observed.length; i++) {
+            sumExpected += expected[i];
+            sumObserved += observed[i];
+        }
+        double ratio = 1.0d;
+        boolean rescale = false;
+        if (FastMath.abs(sumExpected - sumObserved) > 10E-6) {
+            ratio = sumObserved / sumExpected;
+            rescale = true;
+        }
+        double sumSq = 0.0d;
+        for (int i = 0; i < observed.length; i++) {
+            if (rescale) {
+                final double dev = observed[i] - ratio * expected[i];
+                if (dev == 0d) {
+                	continue;
+                }
+                sumSq += dev * dev / (ratio * expected[i]);
+            } else {
+                final double dev = observed[i] - expected[i];
+                if (dev == 0d) {
+                	continue;
+                }
+                sumSq += dev * dev / expected[i];
+            }
+        }
+        return sumSq;
+
+    }
+
+    /**
+     * Check that all entries of the input array are >= 0.
+     *
+     * @param in Array to be tested
+     * @throws NotPositiveException if any array entries are less than 0.
+     */
+	public void checkNonNegative(double[] in) throws NotPositiveException {
+	    for (int i = 0; i < in.length; i++) {
+	    	if (in[i] < 0) {
+	    		throw new NotPositiveException(in[i]);
+	    	}
+	    }
+	}
 
 }

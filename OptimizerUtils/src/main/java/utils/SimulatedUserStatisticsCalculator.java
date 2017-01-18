@@ -106,11 +106,11 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	 * and {@link SimulatedUserStatisticsCalculator#getConditionalProbabilityFromQueryTable(PotentialTable)}.
 	 */
 	public static enum SubSamplingMode {WEIGHTED, BETA_BINOMIAL};
-//	private SubSamplingMode subSamplingMode = SubSamplingMode.BETA_BINOMIAL;
-	private SubSamplingMode subSamplingMode = SubSamplingMode.WEIGHTED;
+	private SubSamplingMode subSamplingMode = SubSamplingMode.BETA_BINOMIAL;
+//	private SubSamplingMode subSamplingMode = SubSamplingMode.WEIGHTED;
 	private int numSubSampleSimulation = 100;
 	private int stratifiedSampleNumTotal = 100;
-	private int stratifiedSampleNumAlert = -1;//30;	// negative values mean no sub-sampling will be performed
+	private int stratifiedSampleNumAlert = 30;	// negative values mean no sub-sampling will be performed
 	private boolean isToNormalize = false;
 	private float priorCount = 1;				// beta binomial prior is 1
 	

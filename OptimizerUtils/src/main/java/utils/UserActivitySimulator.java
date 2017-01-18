@@ -712,32 +712,12 @@ public class UserActivitySimulator {
 
 
 	/**
-	 * @param expected : expected distribution
-	 * @param actual : approximate distribution
+	 * @param expectedDataTable : expected distribution
+	 * @param actualApproximateTable : approximate distribution
 	 * @return The Kullback–Leibler divergence D(expected||actual)
 	 */
-	public float getKLDistance(PotentialTable expected , PotentialTable actual) {
-		// basic assertions
-		if ((expected == null && actual == null) || (expected.tableSize() == 0 && expected.tableSize() == 0)) {
-			// by default, if both are null/empty, consider them equal distribution
-			return 0f;	// 0 means no divergence
-		}
-		if (expected == null || actual == null || (expected.tableSize() != actual.tableSize())) {
-			// no way to calculate kl distance if they differ in size
-			return Float.POSITIVE_INFINITY;
-		}
-		
-		// calculate kl distance := sum of expected log-divergence
-		float sum = 0f;
-		
-		// at this point, p.size() == q.size()
-		for (int i = 0; i < expected.tableSize(); i++) {
-			if (expected.getValue(i) > 0) {	// this if is just to consider 0*ln(0) = 0
-				sum += expected.getValue(i) * Math.log(expected.getValue(i)/actual.getValue(i));	// log-divergence is ln(p/q). Multiply by p to get its expectation.
-			}
-		}
-		
-		return sum;
+	public double getKLDistance(PotentialTable expectedDataTable , PotentialTable actualApproximateTable) {
+		return expectedDataTable.getKLDivergence(actualApproximateTable);
 	}
 
 

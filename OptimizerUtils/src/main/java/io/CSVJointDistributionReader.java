@@ -30,7 +30,7 @@ import au.com.bytecode.opencsv.CSVReader;
 public class CSVJointDistributionReader implements IJointDistributionReader {
 	
 	private int idColumn = 0;
-	private boolean isToAdd1ToCounts = false;
+	private float incrementCounts = 0f;
 	private boolean isToSortStates = false;
 	
 	private UniformNameConverter converter = null;
@@ -103,11 +103,8 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 		}
 		
 		// init table
-		if (isToAdd1ToCounts()) {
-			table.fillTable(1f);	// add count 1 to everyone
-		} else {
-			table.fillTable(0f);	// initialize counts with zeros
-		}
+		Debug.println(getClass(), "Incrementing count: " + getIncrementCounts());
+		table.fillTable(getIncrementCounts());	// add count to everyone (default is zero)
 		
 		// read the remaining file and fill joint table with counts
 		for (int currentRowIndex = 1; currentRowIndex < allRows.size(); currentRowIndex++) { // just read all rows except first row
@@ -309,17 +306,19 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 
 	/**
 	 * @return the isToAdd1ToCounts
+	 * @deprecated use {@link #getIncrementCounts()} instead
 	 */
 	public boolean isToAdd1ToCounts() {
-		return isToAdd1ToCounts;
+		return getIncrementCounts() >= 1f;
 	}
 
 
 	/**
 	 * @param isToAdd1ToCounts the isToAdd1ToCounts to set
+	 * @deprecated use {@link #setIncrementCounts(float)} instead
 	 */
 	public void setToAdd1ToCounts(boolean isToAdd1ToCounts) {
-		this.isToAdd1ToCounts = isToAdd1ToCounts;
+		setIncrementCounts(1f);
 	}
 	
 	/**
@@ -354,6 +353,22 @@ public class CSVJointDistributionReader implements IJointDistributionReader {
 	 */
 	public void setConverter(UniformNameConverter converter) {
 		this.converter = converter;
+	}
+
+
+	/**
+	 * @return the incrementCounts
+	 */
+	public float getIncrementCounts() {
+		return incrementCounts;
+	}
+
+
+	/**
+	 * @param incrementCounts the incrementCounts to set
+	 */
+	public void setIncrementCounts(float incrementCounts) {
+		this.incrementCounts = incrementCounts;
 	}
 
 
