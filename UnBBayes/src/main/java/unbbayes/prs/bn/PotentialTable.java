@@ -1386,9 +1386,9 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 
 	/**
 	 * @param q : the approximate model distribution. It is assumed that this table and the q table represents some joint distribution.
-	 * @return Kullback–Leibler divergence assuming that this potential table is the p (actual data) distribution, and the argument is the q (approximate model) distribution.
+	 * @return Kullback–Leibler divergence D(p||q) assuming that this potential table is the p (actual data) distribution, and the argument is the q (approximate model) distribution.
 	 */
-	public float getKLDivergence(PotentialTable q) {
+	public double getKLDivergence(PotentialTable q) {
 		// basic assertions
 		if ((this.tableSize() == 0 && q.tableSize() == 0)) {
 			// by default, if both are null/empty, consider them equal distribution
@@ -1400,7 +1400,7 @@ public abstract class PotentialTable implements Cloneable, java.io.Serializable,
 		}
 		
 		// calculate kl distance := sum of expected log-divergence
-		float sum = 0f;
+		double sum = 0f;
 		
 		// at this point, p.size() == q.size()
 		for (int i = 0; i < this.tableSize(); i++) {
