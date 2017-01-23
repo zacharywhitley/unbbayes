@@ -79,7 +79,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 	private boolean isToPrintAlert = true;
 	private String conditionalProbabilityFileName = "conditionals.net";
 	private int alertStateThreshold = 1;
-	private float virtualCountCoefficient = 150f/3816f;//1;
+	private float virtualCountCoefficient = 60/3816f;//150f/3816f;//1;
 	private boolean isCliqueJointStatesInverted = true;
 	
 	
