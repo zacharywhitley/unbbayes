@@ -210,7 +210,6 @@ public class TriplestoreOptionPanelBuilder extends JScrollPane implements
 		try {
 			kb = (TriplestoreKnowledgeBase)builder.buildKB();
 		} catch (InstantiationException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} 
     	
