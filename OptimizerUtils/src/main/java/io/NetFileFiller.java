@@ -17,7 +17,6 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.math3.stat.inference.TestUtils;
 
 import unbbayes.io.NetIO;
 import unbbayes.prs.Node;

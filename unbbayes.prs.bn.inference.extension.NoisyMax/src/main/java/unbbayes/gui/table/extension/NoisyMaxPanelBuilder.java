@@ -13,7 +13,6 @@ import javax.swing.JTable;
 import javax.swing.border.TitledBorder;
 
 import unbbayes.prs.Node;
-import unbbayes.prs.bn.IRandomVariable;
 import unbbayes.prs.bn.NoisyMaxNode;
 import unbbayes.prs.bn.ProbabilisticNode;
 
