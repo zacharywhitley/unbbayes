@@ -222,6 +222,7 @@ public class TriplestoreOptionPanelBuilder extends JScrollPane implements
 			
 //			setStatusOn();
 			
+			
 			System.out.println("Connection Successfull!");
 			
 		} catch (TriplestoreException e2) {
