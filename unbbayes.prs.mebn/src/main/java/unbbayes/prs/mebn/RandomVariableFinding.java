@@ -93,7 +93,8 @@ public class RandomVariableFinding {
 
 		nameFinding+=")";
 		nameFinding+="=";
-		nameFinding+=state.getName();
+//		nameFinding+=state.getName();
+		nameFinding+=state;
 
 		return nameFinding;
 	}
