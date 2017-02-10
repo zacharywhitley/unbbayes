@@ -133,5 +133,10 @@ public class Resources_pt extends GuiResources_pt {
 		// miscellaneous messages
 		{"selectOnlyOneEntry" , "Por favor, selecione somente um único elemento."},
 		
+
+		{"softEvidence" , "Evidência probabilística (usando-se regra de Jeffrey)"},
+		{"likelihoodEvidence" , "Evidência por verossimilhança (likelihood evidence)"},
+		{"csvSoftEvidence" , "Insira os valores da evidência (números reais separados por vírgula para probabilidades/verossimilhança)"},
+		
 	};
 }
