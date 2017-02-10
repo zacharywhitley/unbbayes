@@ -64,6 +64,7 @@ import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
+import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
@@ -83,6 +84,7 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityContainer;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
+import unbbayes.prs.mebn.entity.SoftEvidenceEntity;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.TypeContainer;
@@ -115,6 +117,7 @@ import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 import unbbayes.util.ApplicationPropertyHolder;
 import unbbayes.util.Debug;
+import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
 import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 import unbbayes.util.mebn.extension.manager.MEBNPluginNodeManager;
@@ -154,7 +157,8 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 //	private MEBNNetworkWindow screen;
 	private MEBNEditionPane mebnEditionPane;
 	private MultiEntityBayesianNetwork multiEntityBayesianNetwork;
-	private ProbabilisticNetwork specificSituationBayesianNetwork; 
+//	private ProbabilisticNetwork specificSituationBayesianNetwork; 
+	private IInferenceAlgorithm ssbnAlgorithm; 
 	
 	/* the attribute below is a singleton, but we should instantiate it ASAP */
 	//private KnowledgeBase knowledgeBase =  PowerLoomKB.getInstanceKB();
@@ -256,6 +260,9 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	private MEBNPluginNodeManager pluginNodeManager = MEBNPluginNodeManager.newInstance();
 
 	private boolean isToTurnToSSBNMode = true;
+
+	private boolean isToUseSimpleSoftEvidenceInKB = false;
+	
 	
 	
 	/*-------------------------------------------------------------------------*/
@@ -1960,7 +1967,10 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		for(MFrag mfrag: multiEntityBayesianNetwork.getDomainMFragList()){
 			for(IResidentNode residentNode : mfrag.getResidentNodeList()){
 				for(RandomVariableFinding finding: residentNode.getRandomVariableFindingList()){
-					knowledgeBase.insertRandomVariableFinding(finding); 
+					if (isToUseSimpleSoftEvidenceInKB() || !(finding.getState() instanceof SoftEvidenceEntity)) {
+						// if this is hard evidence, add to KB. If we can add soft evidence in KB, then just add it.
+						knowledgeBase.insertRandomVariableFinding(finding); 
+					}
 				}
 			}
 		}
@@ -2082,7 +2092,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	
 	private void createKnowledgeBase(){
 		// Must remove unwanted findings entered previously 
-		getKnowledgeBase().clearKnowledgeBase();
+		clearKnowledgeBase();
 		loadGenerativeMEBNIntoKB(); 
 		loadFindingsIntoKB(); 
 //		baseCreated = true; 
@@ -2230,6 +2240,8 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	    
 	    ssbn = this.getSSBNGenerator().generateSSBN(listQueries, getKnowledgeBase()); 
 	    
+	    
+	    
 		// show on display
 		showSSBN(ssbn);
 	    
@@ -2239,7 +2251,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 			ret = ssbn.getNetwork();
 			if (ret != null && (ret instanceof ProbabilisticNetwork)) {
 				// TODO remove the need to use the same panel for edition and compilation -> use different JInternalFrames for compiled network
-				specificSituationBayesianNetwork = (ProbabilisticNetwork)ret;
+				setSpecificSituationBayesianNetwork((ProbabilisticNetwork)ret);
 			}
 			
 			try {
@@ -2346,7 +2358,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		probabilisticNetwork = ssbn.getProbabilisticNetwork();
 
 		showSSBNGraph = true; 
-		specificSituationBayesianNetwork = probabilisticNetwork;
+		setSpecificSituationBayesianNetwork(probabilisticNetwork);
 		
 		try {
 
@@ -2359,7 +2371,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 			// logging probabilities of the nodes
 			this.logNodesAndItsProbabilities(ssbn);
 			
-			this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);
+			this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(getSpecificSituationBayesianNetwork());
 
 		} catch (Exception e) {
 			e.printStackTrace(); 
@@ -2377,7 +2389,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		mebnEditionPane.setStatus(resource.getString("statusReady")); 
 		this.getScreen().setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 		
-		return specificSituationBayesianNetwork ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
+		return getSpecificSituationBayesianNetwork() ;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 	}
 	
 	/* (non-Javadoc)
@@ -2564,11 +2576,11 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		this.getScreen().setCursor(new Cursor(Cursor.WAIT_CURSOR));
 		boolean temLikeliHood = false;
 		try {
-			specificSituationBayesianNetwork.updateEvidences();
+			getSpecificSituationBayesianNetwork().updateEvidences();
 			if (!temLikeliHood) {
 				this.getScreen().setStatus(resourcePN
 						.getString("statusEvidenceProbabilistic")
-						+ df.format(specificSituationBayesianNetwork.PET() * 100.0));
+						+ df.format(getSpecificSituationBayesianNetwork().PET() * 100.0));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -2627,6 +2639,7 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 */
 	public boolean turnToSSBNMode(){
 		if (isToTurnToSSBNMode ) {
+			ProbabilisticNetwork specificSituationBayesianNetwork = getSpecificSituationBayesianNetwork();
 			if(specificSituationBayesianNetwork != null){
 				showSSBNGraph = true; 
 				this.getMebnEditionPane().getNetworkWindow().changeToSSBNCompilationPane(specificSituationBayesianNetwork);			
@@ -2708,7 +2721,11 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 * @see unbbayes.controller.mebn.IMEBNMediator#getSpecificSituationBayesianNetwork()
 	 */
 	public ProbabilisticNetwork getSpecificSituationBayesianNetwork() {
-		return specificSituationBayesianNetwork;
+		IInferenceAlgorithm algorithm = getBNAlgorithm();
+		if (algorithm != null) {
+			return (ProbabilisticNetwork) algorithm.getNetwork();
+		}
+		return null;
 	}
 	
 	/* (non-Javadoc)
@@ -2723,7 +2740,10 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 */
 	public void setSpecificSituationBayesianNetwork(
 			ProbabilisticNetwork specificSituationBayesianNetwork) {
-		this.specificSituationBayesianNetwork = specificSituationBayesianNetwork;
+		IInferenceAlgorithm algorithm = getBNAlgorithm();
+		if (algorithm != null) {
+			algorithm.setNetwork(specificSituationBayesianNetwork);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -2959,6 +2979,38 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	public void setToTurnToSSBNMode(boolean isToTurnToSSBNMode) {
 		this.isToTurnToSSBNMode = isToTurnToSSBNMode;
 	}
+
+	/**
+	 * @return the ssbnAlgorithm
+	 */
+	public IInferenceAlgorithm getBNAlgorithm() {
+		if (ssbnAlgorithm == null) {
+			ssbnAlgorithm = new JunctionTreeAlgorithm();
+		}
+		return ssbnAlgorithm;
+	}
+
+	/**
+	 * @param ssbnAlgorithm the ssbnAlgorithm to set
+	 */
+	public void setBNAlgorithm(IInferenceAlgorithm ssbnAlgorithm) {
+		this.ssbnAlgorithm = ssbnAlgorithm;
+	}
+
+	/**
+	 * @return the isToUseSimpleSoftEvidenceInKB
+	 */
+	public boolean isToUseSimpleSoftEvidenceInKB() {
+		return isToUseSimpleSoftEvidenceInKB;
+	}
+
+	/**
+	 * @param isToUseSimpleSoftEvidenceInKB the isToUseSimpleSoftEvidenceInKB to set
+	 */
+	public void setToUseSimpleSoftEvidenceInKB(boolean isToUseSimpleSoftEvidenceInKB) {
+		this.isToUseSimpleSoftEvidenceInKB = isToUseSimpleSoftEvidenceInKB;
+	}
+
 	
 	
 	

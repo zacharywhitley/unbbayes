@@ -53,6 +53,7 @@ import unbbayes.prs.mebn.RandomVariableFinding;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.SoftEvidenceEntity;
 import unbbayes.util.Debug;
 
 /**
@@ -312,6 +313,29 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 					try {
 						ObjectEntityInstance[] arguments = findingArgumentPane.getArguments();
 						Entity state = findingArgumentPane.getState(); 
+						if (state instanceof SoftEvidenceEntity) {
+							String commaSeparatedValues = JOptionPane.showInputDialog(mebnController.getMebnEditionPane(), 
+									resource.getString("csvSoftEvidence"));
+							List<Float> softEvidence = new ArrayList<Float>();
+							if (commaSeparatedValues != null) {
+								try {
+									for (String value : commaSeparatedValues.trim().split(",")) {
+										softEvidence.add(Float.parseFloat(value));
+									}
+									((SoftEvidenceEntity) state).setSoftEvidence(softEvidence);
+								} catch (Exception e2) {
+									JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
+											e2.getMessage(), 
+											resource.getString("error"), 
+											JOptionPane.ERROR_MESSAGE);
+									return;
+								}
+							}
+							if (softEvidence.isEmpty()) {
+								// make sure we don't include this finding if it is empty
+								state = null;
+							}
+						}
 						if(state == null){
 							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), 
 									resource.getString("stateUnmarked"), 

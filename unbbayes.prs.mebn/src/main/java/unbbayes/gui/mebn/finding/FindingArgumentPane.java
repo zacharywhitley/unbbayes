@@ -44,6 +44,7 @@ import unbbayes.prs.mebn.entity.BooleanStatesEntityContainer;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.SoftEvidenceEntity;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.util.ResourceController;
 
@@ -70,7 +71,9 @@ public class FindingArgumentPane extends JPanel{
 	private final static int MINIMUM_LINE_SIXE_PANEL = 5; 
 	
 	ResourceBundle resource = ResourceController.newInstance().getBundle(
-			unbbayes.gui.mebn.resources.Resources.class.getName());; 
+			unbbayes.gui.mebn.resources.Resources.class.getName());
+	
+	private boolean isToIncludeSoftEvidences = false; 
 	
 	public FindingArgumentPane(IResidentNode node, MEBNController mebnController){
 		
@@ -157,17 +160,33 @@ public class FindingArgumentPane extends JPanel{
 				}
 			}			
 			//states = new JComboBox(node.getPossibleValueLinkList().toArray()); 
+			// include possibilities for adding soft evidences
+			if (isToIncludeSoftEvidences()) {
+				values.add(new StateLink(new SoftEvidenceEntity(resource.getString("softEvidence"), new ArrayList<Float>(), false)));
+				values.add(new StateLink(new SoftEvidenceEntity(resource.getString("likelihoodEvidence"), new ArrayList<Float>(), true)));
+			}
 			states = new JComboBox(values.toArray()); 
 			break; 
 		case IResidentNode.CATEGORY_RV_STATES:
 			btnLabelType = new JButton(resource.getString("categoricalLabel")); 
-			states = new JComboBox(node.getPossibleValueLinkList().toArray()); 
+			values = new ArrayList<StateLink>(node.getPossibleValueLinkList());
+			if (isToIncludeSoftEvidences()) {
+				values.add(new StateLink(new SoftEvidenceEntity(resource.getString("softEvidence"), new ArrayList<Float>(), false)));
+				values.add(new StateLink(new SoftEvidenceEntity(resource.getString("likelihoodEvidence"), new ArrayList<Float>(), true)));
+			}
+			states = new JComboBox(values.toArray()); 
 			break; 
 		case IResidentNode.OBJECT_ENTITY:
 			StateLink link = node.getPossibleValueLinkList().get(0); 
 			ObjectEntity objectEntity = (ObjectEntity)link.getState();
 			btnLabelType = new JButton(objectEntity.getName());
-			states = new JComboBox(objectEntity.getInstanceList().toArray()); 
+			// TODO try using some unified class instead of using a list of StateLink for boolean/categorical nodes and a list of ObjectEntityInstance for entity nodes
+			List<Entity> entities = new ArrayList<Entity>(objectEntity.getInstanceList());
+			if (isToIncludeSoftEvidences()) {
+				entities.add(new SoftEvidenceEntity(resource.getString("softEvidence"), new ArrayList<Float>(), false));
+				entities.add(new SoftEvidenceEntity(resource.getString("likelihoodEvidence"), new ArrayList<Float>(), true));
+			}
+			states = new JComboBox(entities.toArray()); 
 			break; 
 		default:
 		    break; 	
@@ -200,21 +219,47 @@ public class FindingArgumentPane extends JPanel{
 	}
 	
 	public Entity getState(){
-		switch(node.getTypeOfStates()){
-		case IResidentNode.BOOLEAN_RV_STATES:
-		case IResidentNode.CATEGORY_RV_STATES:
-			return ((StateLink)(states.getSelectedItem())).getState(); 
-		case IResidentNode.OBJECT_ENTITY:
-			return (ObjectEntityInstance)states.getSelectedItem(); 
-		default:
-		    return null;  	
+		Object selected = states.getSelectedItem();
+		if (selected instanceof StateLink) {
+			return ((StateLink) selected).getState();
+		} else if (selected instanceof Entity) {
+			return (Entity) selected;
 		}
+		return null;
+		// the above code substitutes the following code and it is more flexible in terms of types/subtypes
+//		switch(node.getTypeOfStates()){
+//		case IResidentNode.BOOLEAN_RV_STATES:
+//		case IResidentNode.CATEGORY_RV_STATES:
+//			return ((StateLink)(states.getSelectedItem())).getState(); 
+//		case IResidentNode.OBJECT_ENTITY:
+//			return (ObjectEntityInstance)states.getSelectedItem(); 
+//		default:
+//		    return null;  	
+//		}
 	}
 	
 	public void clear(){
 	
 	}
 	
+	/**
+	 * @return the isToIncludeSoftEvidences : set this to true in order
+	 * to activate the simple soft/likelihood evidence feature (the feature to add
+	 * soft/likelihood evidences in a propositional manner from MEBN GUI but without using the Finding MFrags).
+	 */
+	public boolean isToIncludeSoftEvidences() {
+		return isToIncludeSoftEvidences;
+	}
+
+	/**
+	 * @param isToIncludeSoftEvidences the isToIncludeSoftEvidences to set: set this to true in order
+	 * to activate the simple soft/likelihood evidence feature (the feature to add
+	 * soft/likelihood evidences in a propositional manner from MEBN GUI but without using the Finding MFrags).
+	 */
+	public void setToIncludeSoftEvidences(boolean isToIncludeSoftEvidences) {
+		this.isToIncludeSoftEvidences = isToIncludeSoftEvidences;
+	}
+
 	private class ComboListener implements ItemListener{
 		
 		int indice;
