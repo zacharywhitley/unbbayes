@@ -73,7 +73,6 @@ public class FindingArgumentPane extends JPanel{
 	ResourceBundle resource = ResourceController.newInstance().getBundle(
 			unbbayes.gui.mebn.resources.Resources.class.getName());
 	
-	private boolean isToIncludeSoftEvidences = false; 
 	
 	public FindingArgumentPane(IResidentNode node, MEBNController mebnController){
 		
@@ -243,21 +242,23 @@ public class FindingArgumentPane extends JPanel{
 	}
 	
 	/**
+	 * This simply delegates to {@link MEBNController#isToIncludeSoftEvidences()}
 	 * @return the isToIncludeSoftEvidences : set this to true in order
 	 * to activate the simple soft/likelihood evidence feature (the feature to add
 	 * soft/likelihood evidences in a propositional manner from MEBN GUI but without using the Finding MFrags).
 	 */
 	public boolean isToIncludeSoftEvidences() {
-		return isToIncludeSoftEvidences;
+		return mebnController.isToIncludeSoftEvidences();
 	}
 
 	/**
+	 * This simply delegates to {@link MEBNController#setToIncludeSoftEvidences(boolean)}
 	 * @param isToIncludeSoftEvidences the isToIncludeSoftEvidences to set: set this to true in order
 	 * to activate the simple soft/likelihood evidence feature (the feature to add
 	 * soft/likelihood evidences in a propositional manner from MEBN GUI but without using the Finding MFrags).
 	 */
 	public void setToIncludeSoftEvidences(boolean isToIncludeSoftEvidences) {
-		this.isToIncludeSoftEvidences = isToIncludeSoftEvidences;
+		mebnController.setToIncludeSoftEvidences(isToIncludeSoftEvidences);
 	}
 
 	private class ComboListener implements ItemListener{

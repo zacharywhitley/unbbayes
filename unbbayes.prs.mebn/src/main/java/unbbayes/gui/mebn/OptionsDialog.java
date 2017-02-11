@@ -11,6 +11,8 @@ import java.awt.GridLayout;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +20,7 @@ import java.util.ResourceBundle;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
@@ -132,6 +135,10 @@ public class OptionsDialog extends JDialog {
 
     /** Resource file from this package */
   	private ResourceBundle resource;
+
+	private JPanel miscellaneousPanel;
+
+	private JCheckBox useSoftEvidence;
   	
 	/**
 	 * Constructor initializing fields
@@ -209,6 +216,44 @@ public class OptionsDialog extends JDialog {
         // build options for KB
 		this.buildKBOptions();
 		this.buildSSBNGenerationOptions();
+		this.buildMiscellaneousOptions();
+	}
+
+	/**
+	 * Builds miscellaneous option panels.
+	 * This is called within {@link #buildPanels()} 
+	 */
+	protected void buildMiscellaneousOptions() {
+		// set up the miscellaneous tab panel
+		miscellaneousPanel        = new JPanel(new GridLayout(0, 1, 10, 10));
+		
+		// include the miscellaneous panel to tabs
+		tabPane.addTab(resource.getString("miscellaneousTab"), miscellaneousPanel);
+		
+		// add the check box to whether enable soft evidence or not
+		useSoftEvidence = new JCheckBox(resource.getString("enableSoftEvidence"), getController().isToIncludeSoftEvidences());
+		miscellaneousPanel.add(useSoftEvidence);
+
+	    // fill miscellaneous action listeners
+	    
+	    confirm.addActionListener(
+	            new ActionListener() {
+	                public void actionPerformed(ActionEvent e) {
+	                	// commit selection
+	                	getController().setToIncludeSoftEvidences(getUseSoftEvidence().isSelected());
+	                }
+	            });
+
+	    this.addComponentListener(new ComponentListener() {
+			public void componentShown(ComponentEvent e) {
+				getUseSoftEvidence().setSelected(getController().isToIncludeSoftEvidences());
+				getUseSoftEvidence().updateUI();
+				getUseSoftEvidence().repaint();
+			}
+			public void componentResized(ComponentEvent e) {}
+			public void componentMoved(ComponentEvent e) {}
+			public void componentHidden(ComponentEvent e) {}
+		});	
 	}
 
 	/**
@@ -1067,5 +1112,33 @@ public class OptionsDialog extends JDialog {
 	public void setSSBNPluginManager(
 			SSBNGenerationAlgorithmPluginManager ssbnPluginManager) {
 		this.ssbnPluginManager = ssbnPluginManager;
+	}
+
+	/**
+	 * @return the miscellaneousPanel
+	 */
+	public JPanel getMiscellaneousPanel() {
+		return miscellaneousPanel;
+	}
+
+	/**
+	 * @param miscellaneousPanel the miscellaneousPanel to set
+	 */
+	public void setMiscellaneousPanel(JPanel miscellaneousPanel) {
+		this.miscellaneousPanel = miscellaneousPanel;
+	}
+
+	/**
+	 * @return the useSoftEvidence
+	 */
+	public JCheckBox getUseSoftEvidence() {
+		return useSoftEvidence;
+	}
+
+	/**
+	 * @param useSoftEvidence the useSoftEvidence to set
+	 */
+	public void setUseSoftEvidence(JCheckBox useSoftEvidence) {
+		this.useSoftEvidence = useSoftEvidence;
 	}
 }

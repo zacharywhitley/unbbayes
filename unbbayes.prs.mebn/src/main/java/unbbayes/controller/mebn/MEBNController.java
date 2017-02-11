@@ -263,6 +263,9 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 
 	private boolean isToUseSimpleSoftEvidenceInKB = false;
 	
+
+	private boolean isToIncludeSoftEvidences = false; 
+	
 	
 	
 	/*-------------------------------------------------------------------------*/
@@ -3009,6 +3012,27 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 */
 	public void setToUseSimpleSoftEvidenceInKB(boolean isToUseSimpleSoftEvidenceInKB) {
 		this.isToUseSimpleSoftEvidenceInKB = isToUseSimpleSoftEvidenceInKB;
+	}
+
+
+	/**
+	 * @return the isToIncludeSoftEvidences : set this to true in order
+	 * to activate the simple soft/likelihood evidence feature (the feature to add
+	 * soft/likelihood evidences in a propositional manner from MEBN GUI but without using the Finding MFrags).
+	 * @see unbbayes.gui.mebn.finding.FindingArgumentPane
+	 */
+	public boolean isToIncludeSoftEvidences() {
+		return isToIncludeSoftEvidences;
+	}
+
+	/**
+	 * @param isToIncludeSoftEvidences the isToIncludeSoftEvidences to set: set this to true in order
+	 * to activate the simple soft/likelihood evidence feature (the feature to add
+	 * soft/likelihood evidences in a propositional manner from MEBN GUI but without using the Finding MFrags).
+	 * @see unbbayes.gui.mebn.finding.FindingArgumentPane
+	 */
+	public void setToIncludeSoftEvidences(boolean isToIncludeSoftEvidences) {
+		this.isToIncludeSoftEvidences = isToIncludeSoftEvidences;
 	}
 
 	

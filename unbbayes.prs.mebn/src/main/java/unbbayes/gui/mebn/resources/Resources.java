@@ -130,6 +130,7 @@ public class Resources extends GuiResources {
 		// miscellaneous messages
 		{"selectOnlyOneEntry" , "Please, select only one entry"},
 		
+		{"enableSoftEvidence" , "Enable soft/likelihood evidence"},
 		{"softEvidence" , "Soft Evidence (Jeffrey's Rule)"},
 		{"likelihoodEvidence" , "Likelihood Evidence"},
 		{"csvSoftEvidence" , "Please, provide the evidence (probabilities/likelihoods separated by comma)"},
