@@ -134,6 +134,7 @@ public class Resources extends GuiResources {
 		{"softEvidence" , "Soft Evidence (Jeffrey's Rule)"},
 		{"likelihoodEvidence" , "Likelihood Evidence"},
 		{"csvSoftEvidence" , "Please, provide the evidence (probabilities/likelihoods separated by comma)"},
+		{"nonNegativeError" , "Only non-negative numbers are allowed"},
 
 		
 	};

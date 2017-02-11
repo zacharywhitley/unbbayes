@@ -320,7 +320,11 @@ public class RandomVariableFindingEdtitionPane extends JPanel {
 							if (commaSeparatedValues != null) {
 								try {
 									for (String value : commaSeparatedValues.trim().split(",")) {
-										softEvidence.add(Float.parseFloat(value));
+										float prob = Float.parseFloat(value);
+										if (prob < 0) {
+											throw new IllegalArgumentException(resource.getString("nonNegativeError") + " : " + prob);
+										}
+										softEvidence.add(prob);
 									}
 									((SoftEvidenceEntity) state).setSoftEvidence(softEvidence);
 								} catch (Exception e2) {
