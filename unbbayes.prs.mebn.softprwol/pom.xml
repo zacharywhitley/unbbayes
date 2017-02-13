@@ -79,7 +79,7 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-rio-api</artifactId>
 			<version>2.7.14</version>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-repository-http</artifactId>
@@ -104,7 +104,7 @@
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame-console</artifactId>
 			<version>2.7.1</version>
-		</dependency>			
+		</dependency>
 
 		<!-- Protege 4.1 (it handles OWL2) Delete this dependencies... -->
 		<dependency>
@@ -242,6 +242,18 @@
 			<artifactId>xalan</artifactId>
 			<version>2.7.1</version>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+
+
 	</dependencies>
 	<repositories>
 		<repository>
