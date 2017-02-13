@@ -30,8 +30,8 @@ public class Resources_pt extends unbbayes.gui.mebn.resources.Resources {
 		{"Message" , "Mensagem"},
 		{"Error" , "Erro"},
 		
-		{"ConnectionError" , "Erro ao tentar conex„o ‡ triplestore."},
-		{"ConnectionSuccessfull" , "Conex„o feita com sucesso."},
+		{"ConnectionError" , "Erro ao tentar conex√£o √† triplestore."},
+		{"ConnectionSuccessfull" , "Conex√£o feita com sucesso."},
 		
 	};
 }
