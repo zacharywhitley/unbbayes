@@ -145,7 +145,7 @@ public class NetFileFiller extends CSVJointDistributionReader implements INetFil
 						optimizeNoisyOrParameter(noisyOrTable, tableToRead, noCountIndexes);
 						
 						// print the chi-square test statistics of how noisy-or approximates known entries in data table
-						System.out.println(node.getName() + ": chi-square p-value = " + getPValueNoisyOr(noisyOrTable, tableToRead, noCountIndexes));
+						System.out.println(node.getName() + ": chi-square p-value = " + getPValueNoisyOr(noisyOrTable, tableToRead, noCountIndexes) + ", no count size = " + noCountIndexes.size() + ", no counts = " + noCountIndexes);
 						
 						
 						// adjust noisy-or table by overwriting known entries (only unknown entries are filled with noisy-or values).
@@ -394,7 +394,7 @@ public class NetFileFiller extends CSVJointDistributionReader implements INetFil
 		// virtual counts we have in noisy or table
 		int largestIndex = 0;
 //		double[] expected = new double[noisyOrTable.tableSize()];
-		double[] expected = new double[noisyOrTable.tableSize() - 2 - noCountIndexes.size()];
+		double[] expected = new double[noisyOrTable.tableSize() - noCountIndexes.size() - (noCountIndexes.contains(0)?0:1) - (noCountIndexes.contains(1)?0:1)];
 		// convert table to joint distribution
 		noisyOrTable = (PotentialTable) noisyOrTable.clone();	// use a clone in order to keep original
 		convertToJoint(noisyOrTable);
@@ -412,7 +412,7 @@ public class NetFileFiller extends CSVJointDistributionReader implements INetFil
 		
 		// virtual counts we have in data (re-estimated). TODO use actual counts.
 //		long[] observed = new long[tableToRead.tableSize()];
-		long[] observed = new long[tableToRead.tableSize() - 2 - noCountIndexes.size()];
+		long[] observed = new long[tableToRead.tableSize() - noCountIndexes.size() - (noCountIndexes.contains(0)?0:1) - (noCountIndexes.contains(1)?0:1)];
 		// convert table to joint distribution
 		tableToRead = (PotentialTable) tableToRead.clone();	// use a clone in order to keep original
 		convertToJoint(tableToRead);

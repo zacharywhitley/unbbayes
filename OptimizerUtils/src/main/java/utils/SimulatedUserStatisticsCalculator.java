@@ -108,9 +108,9 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	public static enum SubSamplingMode {WEIGHTED, BETA_BINOMIAL};
 	private SubSamplingMode subSamplingMode = SubSamplingMode.BETA_BINOMIAL;
 //	private SubSamplingMode subSamplingMode = SubSamplingMode.WEIGHTED;
-	private int numSubSampleSimulation = 100;
-	private int stratifiedSampleNumTotal = 60;// 100;
-	private int stratifiedSampleNumAlert = (60*3)/10;// 30;	// negative values mean no sub-sampling will be performed
+	private int numSubSampleSimulation = 50;//100;
+	private int stratifiedSampleNumTotal = 15;//60;// 100;
+	private int stratifiedSampleNumAlert = 5;//(60*3)/10;// 30;	// negative values mean no sub-sampling will be performed
 	private boolean isToNormalize = false;
 	private float priorCount = 1;				// beta binomial prior is 1
 	
