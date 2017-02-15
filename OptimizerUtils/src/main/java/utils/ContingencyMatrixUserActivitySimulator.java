@@ -10,9 +10,17 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -29,6 +37,13 @@ import cc.mallet.util.Randoms;
  *
  */
 public class ContingencyMatrixUserActivitySimulator {
+	
+	/** Key in {@link #readContinuousDetectorCSVFile(String, Integer, float)} to access the bin's lower bound value.*/
+	public static final String BIN_UPPER_KEY = "upper";
+	/** Key in {@link #readContinuousDetectorCSVFile(String, Integer, float)} to access the bin's upper bound value.*/
+	public static final String BIN_LOWER_KEY = "lower";
+	/** Key in {@link #readContinuousDetectorCSVFile(String, Integer, float)} to access the bin's counts (number of users in that bin).*/
+	public static final String BIN_COUNTS_KEY = "counts";
 
 	private Randoms random = null;
 	private Long seed = null;
@@ -44,6 +59,9 @@ public class ContingencyMatrixUserActivitySimulator {
 	private float initialTableCount = 1f;
 	private String outputFolder = "output";
 	private String inputFolder = "input";
+	
+
+	private String headerColumnKeyword = "lower";
 	
 	
 	private List<String> discreteDetectorsLabels = new ArrayList<String>();
@@ -99,6 +117,9 @@ public class ContingencyMatrixUserActivitySimulator {
 	}
 
 	private Map<String, INode> nameToVariableCache;
+	private Map<String, PotentialTable> tableCache;
+	private Map<String, Map<String,List<Double>>> continuousDetectorFileCache;
+	private Map<String, Dirichlet> dirichletCache;
 
 
 	public ContingencyMatrixUserActivitySimulator() {}
@@ -136,12 +157,14 @@ public class ContingencyMatrixUserActivitySimulator {
 		}
 		
 		// randomly pick 2 discrete detectors
-		String discreteDetector1 = null;
-		String discreteDetector2 = null;
-		if (getDiscreteDetectorsLabels().size() < 2) {
-			throw new IllegalArgumentException("There must be at least 2 discrete detectors.");
-		} else {
-			
+		String discreteDetector1 = "";
+		String discreteDetector2 = "";
+		boolean isToUseDiscreteDetectors = (getDiscreteDetectorsLabels().size() >= 2);
+//		if (getDiscreteDetectorsLabels().size() < 2) {
+//			throw new IllegalArgumentException("There must be at least 2 discrete detectors.");
+//		} 
+		
+		if (isToUseDiscreteDetectors) {
 			List<String> listWithoutSubstitution = new ArrayList<String>(getDiscreteDetectorsLabels());
 			discreteDetector1 = listWithoutSubstitution.remove(getRandom().nextInt(listWithoutSubstitution.size()));
 			discreteDetector2 = listWithoutSubstitution.remove(getRandom().nextInt(listWithoutSubstitution.size()));
@@ -156,7 +179,7 @@ public class ContingencyMatrixUserActivitySimulator {
 		}
 		
 		File monthFolder = null;
-		if (getOutputFolder() != null) {
+		if (getOutputFolder() != null && !getOutputFolder().isEmpty()) {
 			monthFolder = new File(getOutputFolder(),monthLabel);
 			Files.createDirectories(monthFolder.toPath());
 		}
@@ -170,14 +193,25 @@ public class ContingencyMatrixUserActivitySimulator {
 			
 			
 			// read discrete detectors data (contingency tables)
-			String fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + discreteDetector2 + getTargetTrueLabel() + getFileNameSuffix(); // csv file of discrete variables has this format
-			PotentialTable tableTrue = readTableFromCSV(fileName , discreteDetector1, discreteDetector2, getInitialTableCount());
-			fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + discreteDetector2 + getTargetFalseLabel() + getFileNameSuffix(); // csv file of discrete variables has this format
-			PotentialTable tableFalse = readTableFromCSV(fileName, discreteDetector1, discreteDetector2, getInitialTableCount());
-			
-			// obtain target distribution from discrete detector data
-			double totalTrue = tableTrue.getSum();
-			double totalFalse = tableFalse.getSum();
+			PotentialTable tableTrue = null;
+			PotentialTable tableFalse = null;
+			double totalTrue = Double.NaN;
+			double totalFalse = Double.NaN;
+			if (isToUseDiscreteDetectors) {
+				String fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + discreteDetector2 + getTargetTrueLabel() + getFileNameSuffix(); // csv file of discrete variables has this format
+				tableTrue = readTableFromCSV(fileName , discreteDetector1, discreteDetector2, getInitialTableCount());
+				fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + discreteDetector2 + getTargetFalseLabel() + getFileNameSuffix(); // csv file of discrete variables has this format
+				tableFalse = readTableFromCSV(fileName, discreteDetector1, discreteDetector2, getInitialTableCount());
+				
+				// obtain target distribution from discrete detector data
+				totalTrue = tableTrue.getSum();
+				totalFalse = tableFalse.getSum();
+			} else {
+				String fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + getContinuousDetectorsLabels().get(0) + getTargetTrueLabel()  + getFileNameSuffix(); // csv file has this format
+				totalTrue = readTotalCountContinuous(fileName);
+				fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + getContinuousDetectorsLabels().get(0) + getTargetFalseLabel()  + getFileNameSuffix(); // csv file has this format
+				totalFalse = readTotalCountContinuous(fileName);
+			}
 		
 			
 			// it's 1 file per organization
@@ -214,23 +248,25 @@ public class ContingencyMatrixUserActivitySimulator {
 				
 				printer.print("," + (target?1:0));
 				
-				// sample discrete detectors given target
-				PotentialTable tableToSample = target?tableTrue:tableFalse;	// sample from tableTrue if target == true. Or else, sample from tableFalse
-				
 				// obtain what is the virtual count we should use when generating sample from current month
 				float virtualCount = getMonthlyVirtualCounts().get(getOutputMonthLabels().indexOf(monthLabel));
 				
-				// get a sample of all variables in the table
-				int[] sample = tableToSample.getMultidimensionalCoord(getSampleIndex(tableToSample, virtualCount));
 				Map<String, Integer> discreteDetectorNameToValueMap = new HashMap<String, Integer>();	// keep track of sampled value
-				// extract values of each variable
-				for (String detectorName : getDiscreteDetectorsLabels()) {
-					// get variable from name
-					Node detectorVar = (Node) getNameToVariableCache().get(detectorName);
-					// store and print the value of current variable
-					String value = detectorVar.getStateAt(sample[tableToSample.getVariableIndex(detectorVar)]);
-					discreteDetectorNameToValueMap.put(detectorName, Integer.parseInt(value));
-					printer.print("," + value);
+				if (isToUseDiscreteDetectors) {
+					// sample discrete detectors given target
+					PotentialTable tableToSample = target?tableTrue:tableFalse;	// sample from tableTrue if target == true. Or else, sample from tableFalse
+					
+					// get a sample of all variables in the table
+					int[] sample = tableToSample.getMultidimensionalCoord(getSampleIndex(tableToSample, virtualCount));
+					// extract values of each variable
+					for (String detectorName : getDiscreteDetectorsLabels()) {
+						// get variable from name
+						Node detectorVar = (Node) getNameToVariableCache().get(detectorName);
+						// store and print the value of current variable
+						String value = detectorVar.getStateAt(sample[tableToSample.getVariableIndex(detectorVar)]);
+						discreteDetectorNameToValueMap.put(detectorName, Integer.parseInt(value));
+						printer.print("," + value);
+					}
 				}
 				
 				
@@ -242,7 +278,7 @@ public class ContingencyMatrixUserActivitySimulator {
 						conditionVariableName = discreteDetector2;
 					}
 					
-					fileName = getFileNamePrefix() + dataMonth + conditionVariableName + getVsLabel() + continuousDetectorName + targetLabel  + getFileNameSuffix(); // csv file has this format
+					String fileName = getFileNamePrefix() + dataMonth + conditionVariableName + getVsLabel() + continuousDetectorName + targetLabel  + getFileNameSuffix(); // csv file has this format
 					double sampleValue = getSampleContinuous(fileName, virtualCount, discreteDetectorNameToValueMap.get(conditionVariableName), getInitialTableCount());
 					printer.print(","+sampleValue);
 				}
@@ -257,6 +293,7 @@ public class ContingencyMatrixUserActivitySimulator {
 		
 	}
 
+	
 
 	/**
 	 * Generate a sample from dirichlet-multinomial distribution
@@ -266,23 +303,34 @@ public class ContingencyMatrixUserActivitySimulator {
 	 * @return
 	 */
 	public int getSampleIndex(PotentialTable table, float virtualCount) {
-		table = table.getTemporaryClone();	// use a clone, so that we don't modify original table
-		if (virtualCount <= 0) {
-			// do not normalize table, and use the counts in table directly
-			virtualCount = 1;
-		} else {
-			// normalize table and use virtual counts
-			table.normalize();
+		
+		// check cache first
+		Dirichlet dirichlet = getDirichletCache().get(table.toString() + "_" + virtualCount);
+		
+		if (dirichlet == null) {
+			PotentialTable origTable = table;
+			if (virtualCount <= 0) {
+				// do not normalize table, and use the counts in table directly
+				virtualCount = 1;
+			} else {
+				// normalize table and use virtual counts
+				table = table.getTemporaryClone();	// use a clone, so that we don't modify original table
+				table.normalize();
+			}
+			double[] alpha = new double[table.tableSize()];
+			for (int i = 0; i < table.tableSize(); i++) {
+				alpha[i] = table.getValue(i) * virtualCount;
+			}
+			dirichlet = new Dirichlet(alpha);
+			
+			getDirichletCache().put(origTable.toString() + "_" + virtualCount, dirichlet);
 		}
-		double[] alpha = new double[table.tableSize()];
-		for (int i = 0; i < table.tableSize(); i++) {
-			alpha[i] = table.getValue(i) * virtualCount;
-		}
-		Dirichlet dirichlet = new Dirichlet(alpha);
+		
 		
 		return getRandom().nextDiscrete(dirichlet.nextDistribution());
 		
 	}
+	
 	
 	/**
 	 * 
@@ -294,32 +342,62 @@ public class ContingencyMatrixUserActivitySimulator {
 	 * @throws IOException 
 	 */
 	public double getSampleContinuous(String fileName, float virtualCount, Integer conditionState, float initialCounts) throws IOException {
+		
 		// read csv file
 		Map<String, List<Double>> map = readContinuousDetectorCSVFile(fileName, conditionState, initialCounts);
-		List<Double> counts = map.get("counts");
-		if (virtualCount <= 0) {
-			// do not normalize list, and use the counts in list directly
-			virtualCount = 1;
-		} else {
-			// normalize list and use virtual counts
-			double sum = 0;
-			for (Double count : counts) {
-				sum += count;
+		
+		Dirichlet dirichlet = getDirichletCache().get(fileName + "_" + virtualCount + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts);
+		if (dirichlet == null) {
+			List<Double> counts = map.get(BIN_COUNTS_KEY);
+			if (virtualCount <= 0) {
+				// do not normalize list, and use the counts in list directly
+				virtualCount = 1;
+			} else {
+				// normalize list and use virtual counts
+				double sum = 0;
+				for (Double count : counts) {
+					sum += count;
+				}
+				for (int i = 0; i < counts.size(); i++) {
+					counts.set(i, counts.get(i) / sum);
+				}
 			}
+			
+			// use dirichlet-multinomial sampler to sample a bin
+			double[] alpha = new double[counts.size()];
 			for (int i = 0; i < counts.size(); i++) {
-				counts.set(i, counts.get(i) / sum);
+				alpha[i] = counts.get(i) * virtualCount;
 			}
+			dirichlet = new Dirichlet(alpha);
+			
+			getDirichletCache().put(fileName + "_" + virtualCount + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts, dirichlet);
 		}
 		
-		// use dirichlet-multinomial sampler to sample a bin
-		double[] alpha = new double[counts.size()];
-		for (int i = 0; i < counts.size(); i++) {
-			alpha[i] = counts.get(i) * virtualCount;
-		}
-		int bin = getRandom().nextDiscrete(new Dirichlet(alpha).nextDistribution());
+		int bin = getRandom().nextDiscrete(dirichlet.nextDistribution());
 		
 		// use uniform distribution to sample a single value inside the sampled bin
-		return getRandom().nextUniform(map.get("lower").get(bin), map.get("upper").get(bin));
+		return getRandom().nextUniform(map.get(BIN_LOWER_KEY).get(bin), map.get(BIN_UPPER_KEY).get(bin));
+	}
+	
+
+	/**
+	 * @param fileName
+	 * @return sum of counts in the csv file specified by fileName
+	 * @throws IOException 
+	 * @throws NumberFormatException 
+	 */
+	public double readTotalCountContinuous(String fileName) throws NumberFormatException, IOException {
+		
+		// read csv file without condition (i.e. read only the 1st block found if csv has multiple headers)
+		Map<String, List<Double>> map = readContinuousDetectorCSVFile(fileName, null, 0f);	// add 0 to counts, because we want actual counts here
+		
+		// simply calculate the sum of counts
+		double ret = 0;
+		for (Double count : map.get(BIN_COUNTS_KEY)) {
+			ret += count;
+		}
+		
+		return ret;
 	}
 
 	/**
@@ -329,11 +407,17 @@ public class ContingencyMatrixUserActivitySimulator {
 	 * @param initialCounts  : this value will be added to all entries initially (use 0 to void this parameter).
 	 * @return mapping from attributes to values.
 	 * The i-th element in the list is the value of i-th bin.
-	 * The labels (keys) will be "lower", "upper", and "counts".
+	 * The labels (keys) will be {@link #BIN_LOWER_KEY}, {@link #BIN_UPPER_KEY}, and {@link #BIN_COUNTS_KEY}.
 	 * @throws IOException 
 	 * @see {@link #getOutputFolder()}
 	 */
 	public Map<String,List<Double>> readContinuousDetectorCSVFile(String fileName, Integer conditionState, float initialCounts) throws IOException {
+		
+		// check cache
+		Map<String,List<Double>> ret = getContinuousDetectorFileCache().get(fileName + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts);
+		if (ret != null) {
+			return ret;
+		}
 		
 		// read csv file
 		CSVReader reader = new CSVReader(new FileReader(new File(getInputFolder(),fileName)));
@@ -344,11 +428,18 @@ public class ContingencyMatrixUserActivitySimulator {
 			if (row.length <= 0) {
 				continue;	// ignore empty rows
 			}
-			if (row[0].toLowerCase().contains("lower") && row.length >= 3) {
+			if (row[0].toLowerCase().contains(getHeaderColumnKeyword()) && row.length >= 3) {
 				// check if condition matched
-				String[] split = row[2].trim().split("=");
-				if (conditionState.intValue() == Integer.parseInt(split[1])) {
-					break;	// found a matching condition
+				if (conditionState == null) {
+					// no condition was specified, so we can stop at any block (so just use the 1st block we found)
+					break;
+				} else if (row[2].matches(".*=.*")) {
+					String[] split = row[2].trim().split("=");
+					if (conditionState.intValue() == Integer.parseInt(split[1])) {
+						break;	// found a matching condition
+					}
+				} else {
+					break;
 				}
 			}
 		}
@@ -358,26 +449,27 @@ public class ContingencyMatrixUserActivitySimulator {
 		}
 		
 		// The labels (keys) will be "lower", "upper", and "counts".
-		Map<String,List<Double>> ret = new HashMap<String, List<Double>>();
-		ret.put("lower", new ArrayList<Double>());
-		ret.put("upper", new ArrayList<Double>());
-		ret.put("counts", new ArrayList<Double>());
+		ret = new HashMap<String, List<Double>>();
+		ret.put(BIN_LOWER_KEY, new ArrayList<Double>());
+		ret.put(BIN_UPPER_KEY, new ArrayList<Double>());
+		ret.put(BIN_COUNTS_KEY, new ArrayList<Double>());
 		
 		// at this point, cursor is at the header. Start reading the block
 		for (row = reader.readNext(); row != null; row = reader.readNext()) {
 			if (row.length <= 0) {
 				continue;	// ignore empty rows
 			}
-			if (row[0].toLowerCase().contains("lower")) {
+			if (row[0].toLowerCase().contains(getHeaderColumnKeyword())) {
 				break;	// this is the next block, so stop here
 			}
-			ret.get("lower").add(Double.parseDouble(row[0]));
-			ret.get("upper").add(Double.parseDouble(row[1]));
-			ret.get("counts").add(Double.parseDouble(row[2]) + initialCounts);
+			ret.get(BIN_LOWER_KEY).add(Double.parseDouble(row[0]));
+			ret.get(BIN_UPPER_KEY).add(Double.parseDouble(row[1]));
+			ret.get(BIN_COUNTS_KEY).add(Double.parseDouble(row[2]) + initialCounts);
 		}
 		
 		reader.close();
 		
+		getContinuousDetectorFileCache().put(fileName + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts, ret);
 		return ret;
 	}
 
@@ -393,9 +485,14 @@ public class ContingencyMatrixUserActivitySimulator {
 	 */
 	public PotentialTable readTableFromCSV(String fileName,String detector1, String detector2, float initialTableValue) throws IOException {
 
+		// check cache
+		PotentialTable ret = getTableCache().get(fileName + "_" + detector1 + "_" + detector2 + "_" + initialTableValue);
+		if (ret != null) {
+			return ret;
+		}
 		
 		// prepare table to return
-		PotentialTable ret = new ProbabilisticTable();
+		ret = new ProbabilisticTable();
 		INode node = getNameToVariableCache().get(detector2);	// detector 2 iterates on each column, so add it first
 		if (node == null) {
 			node = new ProbabilisticNode();
@@ -439,6 +536,8 @@ public class ContingencyMatrixUserActivitySimulator {
 		}
 		
 		reader.close();
+		
+		getTableCache().put(fileName + "_" + detector1 + "_" + detector2 + "_" + initialTableValue, ret);
 		
 		return ret;
 	}
@@ -708,15 +807,222 @@ public class ContingencyMatrixUserActivitySimulator {
 	public void setInputFolder(String inputFolder) {
 		this.inputFolder = inputFolder;
 	}
+	
+	/**
+	 * @return the tableCache
+	 */
+	protected Map<String, PotentialTable> getTableCache() {
+		if (tableCache == null) {
+			tableCache = new HashMap<String, PotentialTable>();
+		}
+		return tableCache;
+	}
+
+	/**
+	 * @param tableCache the tableCache to set
+	 */
+	protected void setTableCache(Map<String, PotentialTable> tableCache) {
+		this.tableCache = tableCache;
+	}
+
+	/**
+	 * @return the continuousDetectorFileCache
+	 */
+	protected Map<String, Map<String,List<Double>>> getContinuousDetectorFileCache() {
+		if (continuousDetectorFileCache == null) {
+			continuousDetectorFileCache = new HashMap<String, Map<String,List<Double>>>();
+		}
+		return continuousDetectorFileCache;
+	}
+
+	/**
+	 * @param continuousDetectorFileCache the continuousDetectorFileCache to set
+	 */
+	protected void setContinuousDetectorFileCache(
+			Map<String, Map<String,List<Double>>> continuousDetectorFileCache) {
+		this.continuousDetectorFileCache = continuousDetectorFileCache;
+	}
+
+	/**
+	 * @return the dirichletCache
+	 */
+	protected Map<String, Dirichlet> getDirichletCache() {
+		if (dirichletCache == null) {
+			dirichletCache = new HashMap<String, Dirichlet>();
+		}
+		return dirichletCache;
+	}
+
+	/**
+	 * @param dirichletCache the dirichletCache to set
+	 */
+	protected void setDirichletCache(Map<String, Dirichlet> dirichletCache) {
+		this.dirichletCache = dirichletCache;
+	}
+
+	/**
+	 * @return the headerColumnKeyword : a keyword belonging to 1st column of header of csv files (this is used to detect a header if csv has multiple headers).
+	 */
+	public String getHeaderColumnKeyword() {
+		return headerColumnKeyword;
+	}
+
+	/**
+	 * @param headerColumnKeyword the headerColumnKeyword to set  : a keyword belonging to 1st column of header of csv files (this is used to detect a header if csv has multiple headers).
+	 */
+	public void setHeaderColumnKeyword(String headerColumnKeyword) {
+		this.headerColumnKeyword = headerColumnKeyword;
+	}
+
+	/**
+	 * @param commaSeparatedList
+	 * @return comma separated list (string) parsed to a {@link List} of {@link String} 
+	 */
+	public static List<String> parseListString(String commaSeparatedList) {
+		if (commaSeparatedList == null || commaSeparatedList.isEmpty()) {
+			return Collections.EMPTY_LIST;
+		}
+		commaSeparatedList = commaSeparatedList.replaceAll("\\s", "");	// remove whitespaces
+		List<String> ret = new ArrayList<String>();
+		for (String string : commaSeparatedList.split(",")) {
+			if (string == null || string.isEmpty()) {
+				continue;	// ignore null/empty entries
+			}
+			ret.add(string);
+		}
+		return ret;
+	}
+	
+	/**
+	 * @param commaSeparatedList
+	 * @return comma separated list (string) parsed to a {@link List} of {@link Float} 
+	 */
+	public static List<Float> parseListFloat(String commaSeparatedList) {
+		if (commaSeparatedList == null || commaSeparatedList.isEmpty()) {
+			return Collections.EMPTY_LIST;
+		}
+		commaSeparatedList = commaSeparatedList.replaceAll("\\s", "");	// remove whitespaces
+		List<Float> ret = new ArrayList<Float>();
+		for (String value : commaSeparatedList.split(",")) {
+			if (value == null || value.isEmpty()) {
+				continue;	// ignore null/empty entries
+			}
+			ret.add(Float.parseFloat(value));
+		}
+		return ret;
+	}
 
 	/**
 	 * @param args
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
+		
+		CommandLineParser parser = new DefaultParser();
+		Options options = new Options();
+		options.addOption("d","debug", false, "Enables debug mode.");
+		options.addOption("usr","num-users", true, "Number of users to simulate.");
+		options.addOption("org","num-organizations", true, "Number of organizations to simulate.");
+		options.addOption("prefix","file-name-prefix", true, "Common prefixes of csv file names in the input folder (default \"RCP11\").");
+		options.addOption("suffix","file-name-suffix-extension", true, "Common suffixes or extensions of file names in the input folder (default \".csv\").");
+		options.addOption("sep","separator-vs-label", true, "Suffixes in input csv file names that separates names of detectors (default \"vs\").");
+		options.addOption("trueLabel","target-true-label", true, "Label/suffix in csv file that indicates that the data is for target = true (default \"_True\")."
+				+ " This must match with true/false values that appear in names of csv files.");
+		options.addOption("falseLabel","target-false-label", true, "Label/suffix in csv file that indicates that the data is for target = false (default \"_False\")."
+				+ " This must match with true/false values that appear in names of csv files.");
+		options.addOption("initCount","initial-table-count", true, "This value will be added to counts for dirichlet-multinomial sampling (real numbers are also allowed).");
+		options.addOption("o","output", true, "Folder to write. If not specified, \"output\" will be used.");
+		options.addOption("i","input", true, "Input folder to read. If not specified, \"input\" will be used.");
+		options.addOption("discrete","discrete-detector-labels", true, "Comma-separated list of detector numbers that are discrete in this RCP (default \"1,2\")."
+				+ " This must match with detectors that appear in names of csv files.");
+		options.addOption("continuous","continuous-detector-labels", true, "Comma-separated list of detector numbers that are continuous in this RCP "
+				+ "(default \"3a,3b,3c,4a,4b,4c,5a,6a,6b\"). This must match with detectors that appear in names of csv files.");
+		options.addOption("inputMonths","input-month-labels", true, "Comma-separated list of month labels that we have input data (default \"JAN,FEB\")."
+				+ " This must match with months that appear in names of csv files.");
+		options.addOption("allMonths","all-output-month-labels", true, "Comma-separated list of all month labels to output (default \"JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP\")."
+				+ " This must match with months that appear in names of csv files.");
+		options.addOption("virtCounts","monthly-virtual-counts", true, "Comma-separated list of numbers (virtual counts) to be used for sampling users of each month"
+				+ "(default \"-1,-1,1430,715,357.5,178.75,89.375,44.6875,22.34375\"). Zero or negative values can be used to consider actual counts instead (if the month has actual data).");
+		options.addOption("seed","random-seed", true, "Number to be used as random seed (default is system's time).");
+		options.addOption("h","help", false, "Help.");
+		
+		CommandLine cmd = null;
+		try {
+			cmd = parser.parse(options, args);
+		} catch (ParseException e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		if (cmd == null) {
+			System.err.println("Invalid command line");
+			return;
+		}
+		
+
+		if (cmd.hasOption("h")) {
+			for (Option option : options.getOptions()) {
+				System.out.println("-" + option.getOpt() + (option.hasArg()?(" <" + option.getLongOpt() +">"):"") + " : " + option.getDescription());
+			}
+			return;
+		}
+		
+		Debug.setDebug(cmd.hasOption("d"));
+		
 		ContingencyMatrixUserActivitySimulator sim = new ContingencyMatrixUserActivitySimulator();
-		// TODO read command line args and fill attributes from it
+		
+		// fill attributes with arguments
+		if (cmd.hasOption("usr")) {
+			sim.setNumUsers(Integer.parseInt(cmd.getOptionValue("usr")));
+		}
+		if (cmd.hasOption("org")) {
+			sim.setNumOrganizations(Integer.parseInt(cmd.getOptionValue("org")));
+		}
+		if (cmd.hasOption("prefix")) {
+			sim.setFileNamePrefix(cmd.getOptionValue("prefix"));
+		}
+		if (cmd.hasOption("suffix")) {
+			sim.setFileNameSuffix(cmd.getOptionValue("suffix"));
+		}
+		if (cmd.hasOption("sep")) {
+			sim.setVsLabel(cmd.getOptionValue("sep"));
+		}
+		if (cmd.hasOption("trueLabel")) {
+			sim.setTargetTrueLabel(cmd.getOptionValue("trueLabel"));
+		}
+		if (cmd.hasOption("falseLabel")) {
+			sim.setTargetFalseLabel(cmd.getOptionValue("falseLabel"));
+		}
+		if (cmd.hasOption("initCount")) {
+			sim.setInitialTableCount(Float.parseFloat(cmd.getOptionValue("initCount")));
+		}
+		if (cmd.hasOption("o")) {
+			sim.setOutputFolder(cmd.getOptionValue("o"));
+		}
+		if (cmd.hasOption("i")) {
+			sim.setInputFolder(cmd.getOptionValue("i"));
+		}
+		if (cmd.hasOption("discrete")) {
+			sim.setDiscreteDetectorsLabels(parseListString(cmd.getOptionValue("discrete")));
+		}
+		if (cmd.hasOption("continuous")) {
+			sim.setContinuousDetectorsLabels(parseListString(cmd.getOptionValue("continuous")));
+		}
+		if (cmd.hasOption("inputMonths")) {
+			sim.setInputMonthLabels(parseListString(cmd.getOptionValue("inputMonths")));
+		}
+		if (cmd.hasOption("allMonths")) {
+			sim.setOutputMonthLabels(parseListString(cmd.getOptionValue("allMonths")));
+		}
+		if (cmd.hasOption("virtCounts")) {
+			sim.setMonthlyVirtualCounts(parseListFloat(cmd.getOptionValue("virtCounts")));
+		}
+		if (cmd.hasOption("seed")) {
+			sim.setSeed(Long.parseLong(cmd.getOptionValue("seed")));
+		}
+		
 		sim.runAll();
 	}
+
 
 }
