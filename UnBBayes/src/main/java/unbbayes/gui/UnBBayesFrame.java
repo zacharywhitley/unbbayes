@@ -892,6 +892,7 @@ public class UnBBayesFrame extends JFrame {
 						resource.getString("saveSucess"),
 						resource.getString("sucess"),
 						JOptionPane.INFORMATION_MESSAGE);
+				ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 			}
 		} catch (FileExtensionIODelegator.MoreThanOneCompatibleIOException more) {
 			// OBS.
@@ -930,6 +931,7 @@ public class UnBBayesFrame extends JFrame {
 								resource.getString("sucess"),
 								JOptionPane.WARNING_MESSAGE);
 					}
+					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 				} catch (Exception e) {
 					e.printStackTrace();// FIXME log
 					JOptionPane.showMessageDialog(UnBBayesFrame.this,
