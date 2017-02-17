@@ -55,6 +55,8 @@ import unbbayes.gui.mebn.MEBNNetworkWindow;
 import unbbayes.gui.mebn.OVariableEditionPane;
 import unbbayes.gui.mebn.WarningPanel;
 import unbbayes.gui.mebn.cpt.CPTFrame;
+import unbbayes.gui.mebn.cpt.CPTFrameFactory;
+import unbbayes.gui.mebn.cpt.ICPTFrameFactory;
 import unbbayes.io.BaseIO;
 import unbbayes.io.exception.UBIOException;
 import unbbayes.io.extension.jpf.PluginAwareFileExtensionIODelegator;
@@ -212,7 +214,10 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	// TODO remove these hard coded debug files, because knowledge base may not be power loom!!!!
 	private boolean saveDebugFiles = false;
 	private static final String NAME_GENERATIVE_FILE = "generative.plm"; 
-	private static final String NAME_FINDING_FILE = "findings.plm"; 
+	private static final String NAME_FINDING_FILE = "findings.plm";
+
+	/** This is the default instance to be returned by {@link #getLPDFrameFactory()} */
+	public static final ICPTFrameFactory DEFAULT_CPT_FRAME_FACTORY = new CPTFrameFactory(); 
 	
 	/*-------------------------------------------------------------------------*/
 	/* Others (resources, utils, etc                                           */
@@ -1862,13 +1867,16 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		residentNode.setTableFunction(cpt);
 	}
 	
-	/* (non-Javadoc)
+	/**
+	 * This method will use {@link #getLPDFrameFactory()} to instantiate a JFrame for editing the LPD script.
 	 * @see unbbayes.controller.mebn.IMEBNMediator#openCPTDialog(unbbayes.prs.mebn.ResidentNode)
 	 */
 	public void openCPTDialog(ResidentNode residentNode){
+		
 		JFrame cptEditionPane = mapCpt.get(residentNode); 
 		if(cptEditionPane == null){
-			cptEditionPane = new CPTFrame(this, residentNode);
+//			cptEditionPane = new CPTFrame(this, residentNode);
+			cptEditionPane = getLPDFrameFactory().buildCPTFrame(this, residentNode);
 			mapCpt.put(residentNode, cptEditionPane); 
 			cptEditionPane.setVisible(true); 
 		}else{
@@ -1884,6 +1892,19 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		if(cptEditionPane != null){
 			cptEditionPane.dispose(); 
 			mapCpt.remove(residentNode); 
+		}
+	}
+	
+	/**
+	 * Closes all dialogs related to LPD editors.
+	 * This is equivalent to calling {@link #closeCPTDialog(ResidentNode)}
+	 * for all resident nodes that were handled by {@link #openCPTDialog(ResidentNode)}.
+	 */
+	public void closeAllCPTDialogs() {
+		if (mapCpt != null) {
+			for (ResidentNode residentNode : mapCpt.keySet()) {
+				closeCPTDialog(residentNode);
+			}
 		}
 	}
 	
@@ -2528,6 +2549,8 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		/** Load resource file from this package */
 	private static ResourceBundle resourcePN = unbbayes.util.ResourceController.newInstance().getBundle(
 			unbbayes.controller.mebn.resources.Resources.class.getName());
+
+	private ICPTFrameFactory lpdFrameFactory = DEFAULT_CPT_FRAME_FACTORY;
 	
 	/* (non-Javadoc)
 	 * @see unbbayes.controller.mebn.IMEBNMediator#compileNetwork(unbbayes.prs.bn.ProbabilisticNetwork)
@@ -3033,6 +3056,33 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	 */
 	public void setToIncludeSoftEvidences(boolean isToIncludeSoftEvidences) {
 		this.isToIncludeSoftEvidences = isToIncludeSoftEvidences;
+	}
+
+	/**
+	 * @return the lpdFrameFactory : this is the factory to intantiate JFrames in {@link #openCPTDialog(ResidentNode)} 
+	 * for editing LPD scripts. Replace this factory in order to use JFrames other than the default.
+	 */
+	public ICPTFrameFactory getLPDFrameFactory() {
+		if (lpdFrameFactory == null) {
+			lpdFrameFactory = DEFAULT_CPT_FRAME_FACTORY;
+		}
+		return lpdFrameFactory;
+	}
+
+	/**
+	 * @param lpdFrameFactory the lpdFrameFactory to set : this is the factory to intantiate JFrames in {@link #openCPTDialog(ResidentNode)} 
+	 * for editing LPD scripts. Replace this factory in order to use JFrames other than the default.
+	 */
+	public void setLPDFrameFactory(ICPTFrameFactory lpdFrameFactory) {
+		if (this.lpdFrameFactory != lpdFrameFactory) {
+			// dispose all the dialogs that are currently open if factory is being changed
+			try {
+				this.closeAllCPTDialogs();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		this.lpdFrameFactory = lpdFrameFactory;
 	}
 
 	

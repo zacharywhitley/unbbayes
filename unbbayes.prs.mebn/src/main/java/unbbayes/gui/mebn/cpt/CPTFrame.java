@@ -26,20 +26,33 @@ import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
 
+import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.controller.mebn.MEBNController;
 import unbbayes.gui.GUIUtils;
 import unbbayes.prs.mebn.ResidentNode;
 
 public class CPTFrame extends JFrame{
 
-	private final MEBNController mebnController; 
-	private final ResidentNode residentNode; 
+	private static final long serialVersionUID = 8161666753399577111L;
 	
-	public CPTFrame(MEBNController mebnController_, ResidentNode residentNode_){
+	private IMEBNMediator mediator; 
+	private ResidentNode residentNode; 
+	
+	public CPTFrame(IMEBNMediator mebnController_, ResidentNode residentNode_){
 		super(residentNode_.getName());
-		mebnController = mebnController_; 
-		residentNode = residentNode_; 
-    	CPTEditionPane cptEditionPane = new CPTEditionPane(mebnController, residentNode);
+		setMebnController(mebnController_); 
+		setResidentNode(residentNode_); 
+    	this.initComponents();
+    	this.initListeners();
+	}
+	
+	/**
+	 * Initializes the internal components of this frame.
+	 * Subclasses may overwrite this method in order to customize the components in this frame.
+	 * @see #initListeners()
+	 */
+	protected void initComponents() {
+		CPTEditionPane cptEditionPane = new CPTEditionPane((MEBNController) getMebnController(), getResidentNode());
     	setContentPane(cptEditionPane);
     	setLocation(GUIUtils.getCenterPositionForComponent(750,300));
     	pack(); 
@@ -47,11 +60,47 @@ public class CPTFrame extends JFrame{
     	
     	setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); 
     	
+	}
+	
+	/**
+	 * Initializes the action listeners related to this frame.
+	 * Subclasses may overwrite this method in order to customize the behavior of this frame and
+	 * components initialized in {@link #initComponents()}
+	 * @see #initComponents()
+	 */
+	protected void initListeners() {
     	addWindowListener(new WindowAdapter() {
     		    public void windowClosing(WindowEvent we) {
-    		        mebnController.closeCPTDialog(residentNode); 
+    		        getMebnController().closeCPTDialog(getResidentNode()); 
     		    }
     	});
 	}
-	
+
+	/**
+	 * @return the mebnController
+	 */
+	public IMEBNMediator getMebnController() {
+		return  mediator;
+	}
+
+	/**
+	 * @return the residentNode
+	 */
+	public ResidentNode getResidentNode() {
+		return residentNode;
+	}
+
+	/**
+	 * @param mediator the mebnController to set
+	 */
+	protected void setMebnController(IMEBNMediator mediator) {
+		this.mediator = mediator;
+	}
+
+	/**
+	 * @param residentNode the residentNode to set
+	 */
+	protected void setResidentNode(ResidentNode residentNode) {
+		this.residentNode = residentNode;
+	}
 }
