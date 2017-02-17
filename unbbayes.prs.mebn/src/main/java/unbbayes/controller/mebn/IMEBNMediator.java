@@ -31,6 +31,7 @@ import unbbayes.controller.exception.InconsistentArgumentException;
 import unbbayes.controller.exception.InvalidOperationException;
 import unbbayes.gui.mebn.MEBNEditionPane;
 import unbbayes.gui.mebn.cpt.CPTFrame;
+import unbbayes.gui.mebn.cpt.ICPTFrameFactory;
 import unbbayes.io.exception.UBIOException;
 import unbbayes.io.extension.jpf.PluginAwareFileExtensionIODelegator;
 import unbbayes.prs.Edge;
@@ -720,5 +721,18 @@ public interface IMEBNMediator extends INetworkMediator  {
 	 * @param isToTurnToSSBNMode the isToTurnToSSBNMode to set
 	 */
 	public void setToTurnToSSBNMode(boolean isToTurnToSSBNMode);
+
+
+	/**
+	 * @return the lpdFrameFactory : this is the factory to instantiate JFrames in {@link #openCPTDialog(ResidentNode)} 
+	 * for editing LPD scripts. Replace this factory in order to use JFrames other than the default.
+	 */
+	public ICPTFrameFactory getLPDFrameFactory();
+
+	/**
+	 * @param lpdFrameFactory the lpdFrameFactory to set : this is the factory to instantiate JFrames in {@link #openCPTDialog(ResidentNode)} 
+	 * for editing LPD scripts. Replace this factory in order to use JFrames other than the default.
+	 */
+	public void setLPDFrameFactory(ICPTFrameFactory lpdFrameFactory);
 
 }

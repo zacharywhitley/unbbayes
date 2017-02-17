@@ -3058,9 +3058,9 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		this.isToIncludeSoftEvidences = isToIncludeSoftEvidences;
 	}
 
-	/**
-	 * @return the lpdFrameFactory : this is the factory to intantiate JFrames in {@link #openCPTDialog(ResidentNode)} 
-	 * for editing LPD scripts. Replace this factory in order to use JFrames other than the default.
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#getLPDFrameFactory()
 	 */
 	public ICPTFrameFactory getLPDFrameFactory() {
 		if (lpdFrameFactory == null) {
@@ -3069,9 +3069,9 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 		return lpdFrameFactory;
 	}
 
-	/**
-	 * @param lpdFrameFactory the lpdFrameFactory to set : this is the factory to intantiate JFrames in {@link #openCPTDialog(ResidentNode)} 
-	 * for editing LPD scripts. Replace this factory in order to use JFrames other than the default.
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.controller.mebn.IMEBNMediator#setLPDFrameFactory(unbbayes.gui.mebn.cpt.ICPTFrameFactory)
 	 */
 	public void setLPDFrameFactory(ICPTFrameFactory lpdFrameFactory) {
 		if (this.lpdFrameFactory != lpdFrameFactory) {
