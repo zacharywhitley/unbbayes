@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -54,15 +55,18 @@ public class ContingencyMatrixUserActivitySimulator {
 	private String fileNamePrefix = "RCP11";
 	private String fileNameSuffix = ".csv";
 	private String vsLabel = "vs";
-	private String targetTrueLabel = "_True";
-	private String targetFalseLabel = "_False";
+	private String targetLabelSeparator = "_";
 	private float initialTableCount = 1f;
 	private String outputFolder = "output";
 	private String inputFolder = "input";
 	
-
 	private String headerColumnKeyword = "lower";
 	
+	private List<String> targetStateLabels = new ArrayList<String>();
+	{
+		getTargetStateLabels().add("False");
+		getTargetStateLabels().add("True");
+	}
 	
 	private List<String> discreteDetectorsLabels = new ArrayList<String>();
 	{
@@ -192,29 +196,33 @@ public class ContingencyMatrixUserActivitySimulator {
 			String dataMonth = getInputMonthLabels().get(indexOfMonthInInput);
 			
 			
-			// read discrete detectors data (contingency tables)
-			PotentialTable tableTrue = null;
-			PotentialTable tableFalse = null;
-			double totalTrue = Double.NaN;
-			double totalFalse = Double.NaN;
-			if (isToUseDiscreteDetectors) {
-				String fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + discreteDetector2 + getTargetTrueLabel() + getFileNameSuffix(); // csv file of discrete variables has this format
-				tableTrue = readTableFromCSV(fileName , discreteDetector1, discreteDetector2, getInitialTableCount());
-				fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + discreteDetector2 + getTargetFalseLabel() + getFileNameSuffix(); // csv file of discrete variables has this format
-				tableFalse = readTableFromCSV(fileName, discreteDetector1, discreteDetector2, getInitialTableCount());
+			
+			// read csv files in order to get number of users for each state of target/class variable
+			// if we are using discrete detectors, instantiate a list that will store their contingency tables. Keep it null if we are not using such discrete detectors
+			List<PotentialTable> discreteDetectorTablesByTargetState = isToUseDiscreteDetectors?new ArrayList<PotentialTable>(getTargetStateLabels().size()):null;
+			double targetCounts[] = new double[getTargetStateLabels().size()];	// how many users there are for each possible state of target/class variable
+			for (int targetIndex = 0; targetIndex < getTargetStateLabels().size(); targetIndex++) {
+				if (isToUseDiscreteDetectors) {
+					// read from discrete (binary) detectors file
+					// csv file of discrete variables has this format
+					String fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + discreteDetector2 + getTargetLabelSeparator() + getTargetStateLabels().get(targetIndex) + getFileNameSuffix();
+					PotentialTable table = readTableFromCSV(fileName , discreteDetector1, discreteDetector2, getInitialTableCount());
+					// keep table in memory
+					discreteDetectorTablesByTargetState.add(table);
+					// obtain target distribution from discrete detector data
+					targetCounts[targetIndex] = table.getSum() - (getInitialTableCount()*table.tableSize());	// this subtraction compensates the counts that were artificially added by getInitialTableCount() in all cells
+				} else {
+					// read target var counts from csv of any continuous detector of current month (use 1st detector)
+					// csv file has this format
+					String fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + getContinuousDetectorsLabels().get(0) 
+							+ getTargetLabelSeparator() + getTargetStateLabels().get(targetIndex) + getFileNameSuffix(); 
+					targetCounts[targetIndex] = readTotalCountContinuous(fileName);
+				}
 				
-				// obtain target distribution from discrete detector data
-				totalTrue = tableTrue.getSum();
-				totalFalse = tableFalse.getSum();
-			} else {
-				String fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + getContinuousDetectorsLabels().get(0) + getTargetTrueLabel()  + getFileNameSuffix(); // csv file has this format
-				totalTrue = readTotalCountContinuous(fileName);
-				fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + getContinuousDetectorsLabels().get(0) + getTargetFalseLabel()  + getFileNameSuffix(); // csv file has this format
-				totalFalse = readTotalCountContinuous(fileName);
 			}
 		
 			
-			// it's 1 file per organization
+			// it's 1 file per organization. Prepare a printer for such file
 			String numbering = "";
 			if (getNumOrganizations() < 1000) {
 				numbering = String.format("%1$03d", organization);
@@ -238,23 +246,53 @@ public class ContingencyMatrixUserActivitySimulator {
 			}
 			printer.println();
 			
+			// obtain what is the virtual count we should use when generating Dirichlet samples from current month
+			float virtualCount = getMonthlyVirtualCounts().get(getOutputMonthLabels().indexOf(monthLabel));
+			
+			// also prepare a dirichlet-multinomial sampler to sample a state from counts of target variable
+			// look for cache first
+			Dirichlet dirichlet = getDirichletCache().get(dataMonth  + "," + discreteDetector1 + "," + discreteDetector2 + "," + virtualCount);
+			if (dirichlet == null) {
+				// we may need to normalize targetCounts if virtual counts is positive, so calculate sum (to be used later for normalization)
+				double sum = 0;
+				if (virtualCount > 0) {
+					for (double count : targetCounts) {
+						sum += count;
+					}
+				}
+				// calculate parameters of dirichlet
+				double[] alpha = new double[targetCounts.length];
+				Arrays.fill(alpha, 0.0);
+				for (int i = 0; i < targetCounts.length; i++) {
+					alpha[i] = targetCounts[i] + getInitialTableCount(); //initialTableCount = 1 is used avoid zeros (common practice in bayesian learning)
+					if (virtualCount > 0) {
+						alpha[i] *= virtualCount/sum; // this is equivalent to normalizing targetCounts to 1 and then multiplying virtual counts
+					}
+				}
+				dirichlet = new Dirichlet(alpha);
+				getDirichletCache().put(dataMonth  + "," + discreteDetector1 + "," + discreteDetector2 + "," + virtualCount, dirichlet);
+			}
 			
 			for (int user = 0; user < getNumUsers(); user++) {
 				printer.print(""+user);
 				
-				// sample target. If rand.nextDouble <= probability of true, then sample true. Sample false otherwise
-				boolean target = (getRandom().nextDouble() <= (totalTrue / (totalTrue + totalFalse)));
-				String targetLabel = target?getTargetTrueLabel():getTargetFalseLabel();	// prepare in advance the label of target state, to be used to access respective files
+				// sample target. 
+				int targetState = getRandom().nextDiscrete(dirichlet.nextDistribution());
+				String targetLabel = getTargetStateLabels().get(targetState);	// prepare in advance the label of target state, to be used to access respective files
 				
-				printer.print("," + (target?1:0));
+				if (getTargetStateLabels().size() == 2) {
+					// binary target. Use 0 or 1
+					printer.print("," + targetState);
+				} else {
+					// multinomial target. Use label directly
+					printer.print("," + targetLabel);
+				}
 				
-				// obtain what is the virtual count we should use when generating sample from current month
-				float virtualCount = getMonthlyVirtualCounts().get(getOutputMonthLabels().indexOf(monthLabel));
 				
 				Map<String, Integer> discreteDetectorNameToValueMap = new HashMap<String, Integer>();	// keep track of sampled value
 				if (isToUseDiscreteDetectors) {
 					// sample discrete detectors given target
-					PotentialTable tableToSample = target?tableTrue:tableFalse;	// sample from tableTrue if target == true. Or else, sample from tableFalse
+					PotentialTable tableToSample = discreteDetectorTablesByTargetState.get(targetState);	// for binary case, sample from tableTrue if target == true. Or else, sample from tableFalse
 					
 					// get a sample of all variables in the table
 					int[] sample = tableToSample.getMultidimensionalCoord(getSampleIndex(tableToSample, virtualCount));
@@ -278,7 +316,7 @@ public class ContingencyMatrixUserActivitySimulator {
 						conditionVariableName = discreteDetector2;
 					}
 					
-					String fileName = getFileNamePrefix() + dataMonth + conditionVariableName + getVsLabel() + continuousDetectorName + targetLabel  + getFileNameSuffix(); // csv file has this format
+					String fileName = getFileNamePrefix() + dataMonth + conditionVariableName + getVsLabel() + continuousDetectorName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
 					double sampleValue = getSampleContinuous(fileName, virtualCount, discreteDetectorNameToValueMap.get(conditionVariableName), getInitialTableCount());
 					printer.print(","+sampleValue);
 				}
@@ -612,33 +650,6 @@ public class ContingencyMatrixUserActivitySimulator {
 		this.vsLabel = vsLabel;
 	}
 
-	/**
-	 * @return the targetTrueLabel
-	 */
-	public String getTargetTrueLabel() {
-		return this.targetTrueLabel;
-	}
-
-	/**
-	 * @param targetTrueLabel the targetTrueLabel to set
-	 */
-	public void setTargetTrueLabel(String targetTrueLabel) {
-		this.targetTrueLabel = targetTrueLabel;
-	}
-
-	/**
-	 * @return the targetFalseLabel
-	 */
-	public String getTargetFalseLabel() {
-		return this.targetFalseLabel;
-	}
-
-	/**
-	 * @param targetFalseLabel the targetFalseLabel to set
-	 */
-	public void setTargetFalseLabel(String targetFalseLabel) {
-		this.targetFalseLabel = targetFalseLabel;
-	}
 
 	/**
 	 * @return the continuousDetectorsLabel
@@ -874,6 +885,35 @@ public class ContingencyMatrixUserActivitySimulator {
 		this.headerColumnKeyword = headerColumnKeyword;
 	}
 
+
+	/**
+	 * @return the targetLabelSeparator
+	 */
+	public String getTargetLabelSeparator() {
+		return targetLabelSeparator;
+	}
+
+	/**
+	 * @param targetLabelSeparator the targetLabelSeparator to set
+	 */
+	public void setTargetLabelSeparator(String targetLabelSeparator) {
+		this.targetLabelSeparator = targetLabelSeparator;
+	}
+
+	/**
+	 * @return the targetLabels
+	 */
+	public List<String> getTargetStateLabels() {
+		return targetStateLabels;
+	}
+
+	/**
+	 * @param targetLabels the targetLabels to set
+	 */
+	public void setTargetStateLabels(List<String> targetLabels) {
+		this.targetStateLabels = targetLabels;
+	}
+
 	/**
 	 * @param commaSeparatedList
 	 * @return comma separated list (string) parsed to a {@link List} of {@link String} 
@@ -882,7 +922,7 @@ public class ContingencyMatrixUserActivitySimulator {
 		if (commaSeparatedList == null || commaSeparatedList.isEmpty()) {
 			return Collections.EMPTY_LIST;
 		}
-		commaSeparatedList = commaSeparatedList.replaceAll("\\s", "");	// remove whitespaces
+//		commaSeparatedList = commaSeparatedList.replaceAll("\\s", "");	// remove whitespaces
 		List<String> ret = new ArrayList<String>();
 		for (String string : commaSeparatedList.split(",")) {
 			if (string == null || string.isEmpty()) {
@@ -925,10 +965,10 @@ public class ContingencyMatrixUserActivitySimulator {
 		options.addOption("org","num-organizations", true, "Number of organizations to simulate.");
 		options.addOption("prefix","file-name-prefix", true, "Common prefixes of csv file names in the input folder (default \"RCP11\").");
 		options.addOption("suffix","file-name-suffix-extension", true, "Common suffixes or extensions of file names in the input folder (default \".csv\").");
-		options.addOption("sep","separator-vs-label", true, "Suffixes in input csv file names that separates names of detectors (default \"vs\").");
-		options.addOption("trueLabel","target-true-label", true, "Label/suffix in csv file that indicates that the data is for target = true (default \"_True\")."
+		options.addOption("detectorSep","separator-detector-vs-label", true, "Suffixes in input csv file names that separates names of detectors (default \"vs\").");
+		options.addOption("targetSep","target-label-separator", true, "Suffixes in input csv file names that separates target state from other names (default \"_\")."
 				+ " This must match with true/false values that appear in names of csv files.");
-		options.addOption("falseLabel","target-false-label", true, "Label/suffix in csv file that indicates that the data is for target = false (default \"_False\")."
+		options.addOption("target","target-labels", true, "Comma separated list of names of states of target variable. This will also be used as label/suffix in csv file that indicates that the data is for target = false (default \"False,True\")."
 				+ " This must match with true/false values that appear in names of csv files.");
 		options.addOption("initCount","initial-table-count", true, "This value will be added to counts for dirichlet-multinomial sampling (real numbers are also allowed).");
 		options.addOption("o","output", true, "Folder to write. If not specified, \"output\" will be used.");
@@ -943,6 +983,7 @@ public class ContingencyMatrixUserActivitySimulator {
 				+ " This must match with months that appear in names of csv files.");
 		options.addOption("virtCounts","monthly-virtual-counts", true, "Comma-separated list of numbers (virtual counts) to be used for sampling users of each month"
 				+ "(default \"-1,-1,1430,715,357.5,178.75,89.375,44.6875,22.34375\"). Zero or negative values can be used to consider actual counts instead (if the month has actual data).");
+		options.addOption("numStates","num-states-class-variable", true, "Number of states of the class or target variable (default is binary, which is 2).");
 		options.addOption("seed","random-seed", true, "Number to be used as random seed (default is system's time).");
 		options.addOption("h","help", false, "Help.");
 		
@@ -984,14 +1025,14 @@ public class ContingencyMatrixUserActivitySimulator {
 		if (cmd.hasOption("suffix")) {
 			sim.setFileNameSuffix(cmd.getOptionValue("suffix"));
 		}
-		if (cmd.hasOption("sep")) {
-			sim.setVsLabel(cmd.getOptionValue("sep"));
+		if (cmd.hasOption("detectorSep")) {
+			sim.setVsLabel(cmd.getOptionValue("detectorSep"));
 		}
-		if (cmd.hasOption("trueLabel")) {
-			sim.setTargetTrueLabel(cmd.getOptionValue("trueLabel"));
+		if (cmd.hasOption("targetSep")) {
+			sim.setTargetLabelSeparator(cmd.getOptionValue("targetSep"));
 		}
-		if (cmd.hasOption("falseLabel")) {
-			sim.setTargetFalseLabel(cmd.getOptionValue("falseLabel"));
+		if (cmd.hasOption("target")) {
+			sim.setTargetStateLabels(parseListString(cmd.getOptionValue("target")));
 		}
 		if (cmd.hasOption("initCount")) {
 			sim.setInitialTableCount(Float.parseFloat(cmd.getOptionValue("initCount")));
