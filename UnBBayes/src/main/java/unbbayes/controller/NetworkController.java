@@ -20,11 +20,9 @@
  */
 package unbbayes.controller;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -60,12 +58,8 @@ import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
 import unbbayes.prs.hybridbn.ContinuousNode;
-import unbbayes.prs.id.DecisionNode;
-import unbbayes.prs.id.UtilityNode;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
-import unbbayes.util.graphics.DropShadowDemo;
-import unbbayes.util.graphics.Transparency;
 
 /**
  * This class is responsible for delegating instructions that is going to be
@@ -581,6 +575,13 @@ public class NetworkController implements KeyListener, INetworkMediator {
 		boolean wrongName = false;
 
 		String fileName = file.getName();
+		
+		//Save as .png as default
+		if(!fileName.contains(".")){
+			fileName= file.getAbsolutePath() + fileName + ".png"; 
+			file = new File(fileName); 
+		}
+		
 		if (fileName.length() > 4) {
 			String fileExt = fileName.substring(fileName.length() - 3);
 			try {
