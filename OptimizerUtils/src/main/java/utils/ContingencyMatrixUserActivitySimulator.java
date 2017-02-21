@@ -59,8 +59,8 @@ public class ContingencyMatrixUserActivitySimulator {
 	private float initialTableCount = 1f;
 	private String outputFolder = "output";
 	private String inputFolder = "input";
-	
 	private String headerColumnKeyword = "lower";
+	private boolean isToSampleTargetExact = true;
 	
 	private List<String> targetStateLabels = new ArrayList<String>();
 	{
@@ -200,23 +200,23 @@ public class ContingencyMatrixUserActivitySimulator {
 			// read csv files in order to get number of users for each state of target/class variable
 			// if we are using discrete detectors, instantiate a list that will store their contingency tables. Keep it null if we are not using such discrete detectors
 			List<PotentialTable> discreteDetectorTablesByTargetState = isToUseDiscreteDetectors?new ArrayList<PotentialTable>(getTargetStateLabels().size()):null;
-			double targetCounts[] = new double[getTargetStateLabels().size()];	// how many users there are for each possible state of target/class variable
-			for (int targetIndex = 0; targetIndex < getTargetStateLabels().size(); targetIndex++) {
+			List<Double> targetCounts = new ArrayList<Double>(getTargetStateLabels().size());	// how many users there are for each possible state of target/class variable
+			for (String targetStateLabel : getTargetStateLabels()) {
 				if (isToUseDiscreteDetectors) {
 					// read from discrete (binary) detectors file
 					// csv file of discrete variables has this format
-					String fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + discreteDetector2 + getTargetLabelSeparator() + getTargetStateLabels().get(targetIndex) + getFileNameSuffix();
+					String fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + discreteDetector2 + getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix();
 					PotentialTable table = readTableFromCSV(fileName , discreteDetector1, discreteDetector2, getInitialTableCount());
 					// keep table in memory
 					discreteDetectorTablesByTargetState.add(table);
 					// obtain target distribution from discrete detector data
-					targetCounts[targetIndex] = table.getSum() - (getInitialTableCount()*table.tableSize());	// this subtraction compensates the counts that were artificially added by getInitialTableCount() in all cells
+					targetCounts.add(table.getSum() - (getInitialTableCount()*table.tableSize()));	// this subtraction compensates the counts that were artificially added by getInitialTableCount() in all cells
 				} else {
 					// read target var counts from csv of any continuous detector of current month (use 1st detector)
 					// csv file has this format
 					String fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + getContinuousDetectorsLabels().get(0) 
-							+ getTargetLabelSeparator() + getTargetStateLabels().get(targetIndex) + getFileNameSuffix(); 
-					targetCounts[targetIndex] = readTotalCountContinuous(fileName);
+							+ getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix(); 
+					targetCounts.add(readTotalCountContinuous(fileName));
 				}
 				
 			}
@@ -249,35 +249,14 @@ public class ContingencyMatrixUserActivitySimulator {
 			// obtain what is the virtual count we should use when generating Dirichlet samples from current month
 			float virtualCount = getMonthlyVirtualCounts().get(getOutputMonthLabels().indexOf(monthLabel));
 			
-			// also prepare a dirichlet-multinomial sampler to sample a state from counts of target variable
-			// look for cache first
-			Dirichlet dirichlet = getDirichletCache().get(dataMonth  + "," + discreteDetector1 + "," + discreteDetector2 + "," + virtualCount);
-			if (dirichlet == null) {
-				// we may need to normalize targetCounts if virtual counts is positive, so calculate sum (to be used later for normalization)
-				double sum = 0;
-				if (virtualCount > 0) {
-					for (double count : targetCounts) {
-						sum += count;
-					}
-				}
-				// calculate parameters of dirichlet
-				double[] alpha = new double[targetCounts.length];
-				Arrays.fill(alpha, 0.0);
-				for (int i = 0; i < targetCounts.length; i++) {
-					alpha[i] = targetCounts[i] + getInitialTableCount(); //initialTableCount = 1 is used avoid zeros (common practice in bayesian learning)
-					if (virtualCount > 0) {
-						alpha[i] *= virtualCount/sum; // this is equivalent to normalizing targetCounts to 1 and then multiplying virtual counts
-					}
-				}
-				dirichlet = new Dirichlet(alpha);
-				getDirichletCache().put(dataMonth  + "," + discreteDetector1 + "," + discreteDetector2 + "," + virtualCount, dirichlet);
-			}
 			
 			for (int user = 0; user < getNumUsers(); user++) {
 				printer.print(""+user);
 				
 				// sample target. 
-				int targetState = getRandom().nextDiscrete(dirichlet.nextDistribution());
+//				int targetState = getRandom().nextDiscrete(dirichlet.nextDistribution());
+				int targetState = sampleTargetState(virtualCount, targetCounts);
+				
 				String targetLabel = getTargetStateLabels().get(targetState);	// prepare in advance the label of target state, to be used to access respective files
 				
 				if (getTargetStateLabels().size() == 2) {
@@ -331,7 +310,95 @@ public class ContingencyMatrixUserActivitySimulator {
 		
 	}
 
+	/**
+	 * @param numList
+	 * @return
+	 * Simply gets the sum of a content of a list
+	 */
+	private static Number getSum(List<Number> numList) {
+		double sum = 0;
+		for (Number number : numList) {
+			sum += number.doubleValue();
+		}
+		return sum;
+	}
 	
+	/**
+	 * Starts summing up the values in a list from 0-th index to last index, stops when reached the 
+	 * value in second argument, and return the index.
+	 * @param countList : list to iterate in
+	 * @param largerThan : iteration stops when sum reaches this value
+	 * @return the index 
+	 */
+	private static int getIndexOfSample(List<Number> countList, Number largerThan)  {
+		double sum = 0;
+		for (int i = 0; i < countList.size(); i++) {
+			sum += countList.get(i).doubleValue();
+			if (sum > largerThan.doubleValue()) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
+	/**
+	 * @param virtualCount : if {@link #isToSampleTargetExact()} is false, then 
+	 * sampling will be probabilistic by using a {@link Dirichlet} distribution.
+	 * This will be used as virtual counts (lower counts result in higher variance).
+	 * @param targetCounts : counts of target/class variable.
+	 * If {@link #isToSampleTargetExact()}, then values in this array will be decremented
+	 * as samples are generated (i.e. sampling without substitution).
+	 * @return
+	 */
+	protected int sampleTargetState(float virtualCount, List<Double> targetCounts) {
+		
+		if (isToSampleTargetExact()) {
+			
+			// randomly pick a target, with substitution
+			Number numPopulation = getSum((List)targetCounts);			// size of population
+			int sample = getRandom().nextInt(numPopulation.intValue());	// a sample from the population
+			int state = getIndexOfSample((List)targetCounts, sample);	// index of sample in the list
+			
+			if (state < 0) {
+				// pick uniformly if counts are zero
+				state = getRandom().nextInt(targetCounts.size());
+				Debug.println(getClass(), "No more counts in target/class variable to pick. Picking uniformly: " + state);
+			} else {
+				targetCounts.set(state, targetCounts.get(state) - 1);		// decrease count of that index (equivalent to removing the sample)
+			}
+			
+			return state;
+		} else {
+			// sample randomly
+			
+			// prepare a dirichlet-multinomial sampler to sample a state from counts of target variable
+			// look for cache first
+			Dirichlet dirichlet = getDirichletCache().get(targetCounts + "," + virtualCount);
+			if (dirichlet == null) {
+				// we may need to normalize targetCounts if virtual counts is positive, so calculate sum (to be used later for normalization)
+				double sum = 0;
+				if (virtualCount > 0) {
+					for (double count : targetCounts) {
+						sum += count;
+					}
+				}
+				// calculate parameters of dirichlet
+				double[] alpha = new double[targetCounts.size()];
+				Arrays.fill(alpha, 0.0);
+				for (int i = 0; i < targetCounts.size(); i++) {
+					alpha[i] = targetCounts.get(i) + getInitialTableCount(); //initialTableCount = 1 is used avoid zeros (common practice in bayesian learning)
+					if (virtualCount > 0) {
+						alpha[i] *= virtualCount/sum; // this is equivalent to normalizing targetCounts to 1 and then multiplying virtual counts
+					}
+				}
+				dirichlet = new Dirichlet(alpha);
+				getDirichletCache().put(targetCounts + "," + virtualCount, dirichlet);
+			}
+			
+			return  getRandom().nextDiscrete(dirichlet.nextDistribution());
+		}
+
+	}
 
 	/**
 	 * Generate a sample from dirichlet-multinomial distribution
@@ -915,6 +982,22 @@ public class ContingencyMatrixUserActivitySimulator {
 	}
 
 	/**
+	 * @return the isToSampleTargetExact : if true then {@link #sampleTargetState(float, double[])} will
+	 * pick values from target counts instead of sampling from dirichlet-multinomial.
+	 */
+	public boolean isToSampleTargetExact() {
+		return isToSampleTargetExact;
+	}
+
+	/**
+	 * @param isToSampleTargetExact the isToSampleTargetExact to set : if true then {@link #sampleTargetState(float, double[])} will
+	 * pick values from target counts instead of sampling from dirichlet-multinomial.
+	 */
+	public void setToSampleTargetExact(boolean isToSampleTargetExact) {
+		this.isToSampleTargetExact = isToSampleTargetExact;
+	}
+
+	/**
 	 * @param commaSeparatedList
 	 * @return comma separated list (string) parsed to a {@link List} of {@link String} 
 	 */
@@ -984,6 +1067,7 @@ public class ContingencyMatrixUserActivitySimulator {
 		options.addOption("virtCounts","monthly-virtual-counts", true, "Comma-separated list of numbers (virtual counts) to be used for sampling users of each month"
 				+ "(default \"-1,-1,1430,715,357.5,178.75,89.375,44.6875,22.34375\"). Zero or negative values can be used to consider actual counts instead (if the month has actual data).");
 		options.addOption("numStates","num-states-class-variable", true, "Number of states of the class or target variable (default is binary, which is 2).");
+		options.addOption("targetExact","sample-target-class-variable-exactly", false, "If set, target/class variable will be sampled without dirichlet-multinomial distribution.");
 		options.addOption("seed","random-seed", true, "Number to be used as random seed (default is system's time).");
 		options.addOption("h","help", false, "Help.");
 		
@@ -1061,6 +1145,8 @@ public class ContingencyMatrixUserActivitySimulator {
 		if (cmd.hasOption("seed")) {
 			sim.setSeed(Long.parseLong(cmd.getOptionValue("seed")));
 		}
+		
+		sim.setToSampleTargetExact(cmd.hasOption("targetExact"));
 		
 		sim.runAll();
 	}
