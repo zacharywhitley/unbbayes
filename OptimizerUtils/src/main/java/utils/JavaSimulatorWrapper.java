@@ -47,6 +47,12 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	public static final String CLIQUE_PROPERTY_NAME_PREFIX = "Clique";
 	public static final String HAS_ALERT_IN_PROB_PROPERTY_NAME = "Has_Alert_In_Prob";
 	public static final String NUMBER_OF_RUNS_PROPERTY_NAME = "Number_of_Runs";
+	public static final String BETA_VIRTUAL_COUNTS_PROPERTY_NAME = "Beta_Virtual_Counts";
+	public static final String BETA_STRATIFIED_SAMPLES_ALERT_PROPERTY_NAME = "Beta_Stratified_Samples_Alert";
+	public static final String BETA_NUM_SIMULATION_PROPERTY_NAME = "Beta_Num_Simulation";
+	public static final String JOINT_PROB_FILE_PROPERTY_NAME = "Joint_Prob_File";
+	public static final String COND_PROB_FILE_PROPERTY_NAME = "Cond_Prob_File";
+	public static final String CLIQUES_FILE_PROPERTY_NAME = "Cliques_File";
 	
 	private String numberOfIndicatorsPropertyName = NUMBER_INDICATORS_PROPERTY_NAME;
 	private String numberOfDetectorsPropertyName = NUMBER_DETECTORS_PROPERTY_NAME;
@@ -56,6 +62,12 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	private String hasAlertInProbPropertyName = HAS_ALERT_IN_PROB_PROPERTY_NAME;
 	private String numberOfRunsPropertyName = NUMBER_OF_RUNS_PROPERTY_NAME;
 	private String cliquesPropertyNamePrefix = CLIQUE_PROPERTY_NAME_PREFIX;
+	private String betaVirtualCountsPropertyName = BETA_VIRTUAL_COUNTS_PROPERTY_NAME;
+	private String betaStratifiedSamplesAlertPropertyName = BETA_STRATIFIED_SAMPLES_ALERT_PROPERTY_NAME;
+	private String betaNumSimulationPropertyName = BETA_NUM_SIMULATION_PROPERTY_NAME;
+	private String jointProbWrapperFilePropertyName = JOINT_PROB_FILE_PROPERTY_NAME;
+	private String condProbFilePropertyName = COND_PROB_FILE_PROPERTY_NAME;
+	private String cliquesFilePropertyName = CLIQUES_FILE_PROPERTY_NAME;
 
 	private String cliquesFileName = "cliques.json";
 	
@@ -70,6 +82,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	private List<List<Float>> wrapperProbabilities = new ArrayList<List<Float>>();
 
 	private List<String> cliqueNames;
+
 
 
 	
@@ -1163,8 +1176,59 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		}
 		Debug.println(getClass(), "Num organization = " + this.getNumOrganization());
 		
+		
+		if (this.getIO().getProperty(getBetaVirtualCountsPropertyName()) != null) {
+			this.getSimulatedUserStatisticsCalculator().setStratifiedSampleNumTotal(Integer.parseInt(this.getIO().getProperty(getBetaVirtualCountsPropertyName())) );
+			if (this.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal() < 1) {
+				throw new IllegalArgumentException(getBetaVirtualCountsPropertyName() + " expected to be 1 or above, but found " 
+						+ this.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal());
+			}
+		}
+		Debug.println(getClass(), "Num beta virtual counts = " + this.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal());
+		
+		if (this.getIO().getProperty(getBetaStratifiedSamplesAlertPropertyName()) != null) {
+			this.getSimulatedUserStatisticsCalculator().setStratifiedSampleNumAlert(Integer.parseInt(this.getIO().getProperty(getBetaStratifiedSamplesAlertPropertyName())) );
+			if (this.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumAlert() >  this.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal()) {
+				throw new IllegalArgumentException(getBetaStratifiedSamplesAlertPropertyName() + " expected to be lower than virtual counts " 
+						+ this.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal()
+						+ ", but found " + this.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumAlert());
+			}
+		}
+		Debug.println(getClass(), "Num beta stratified samples with alert = " + this.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumAlert());
+		
+		if (this.getIO().getProperty(getBetaNumSimulationPropertyName()) != null) {
+			this.getSimulatedUserStatisticsCalculator().setNumSubSampleSimulation(Integer.parseInt(this.getIO().getProperty(getBetaNumSimulationPropertyName())) );
+			if (this.getSimulatedUserStatisticsCalculator().getNumSubSampleSimulation() < 1) {
+				throw new IllegalArgumentException(getBetaNumSimulationPropertyName() + " expected to be 1 or above, but found " 
+						+ this.getSimulatedUserStatisticsCalculator().getNumSubSampleSimulation());
+			}
+		}
+		Debug.println(getClass(), "Num beta simulations = " + this.getSimulatedUserStatisticsCalculator().getNumSubSampleSimulation());
+		
+		
+		if (this.getIO().getProperty(getCondProbFilePropertyName()) != null) {
+			this.setConditionalProbabilityFileName(this.getIO().getProperty(getCondProbFilePropertyName()));
+		}
+		Debug.println(getClass(), "Conditional probability file name = " + this.getConditionalProbabilityFileName());
+		
+		if (this.getIO().getProperty(getCliquesFilePropertyName()) != null) {
+			this.setCliquesFileName(this.getIO().getProperty(getCliquesFilePropertyName()));
+		}
+		Debug.println(getClass(), "Cliques file name = " + this.getCliquesFileName());
+		
+		
+		
 		// reset the probability vector
 		getWrapperProbabilities().clear();
+		
+		// start reading probabilities (and respective clique id related to such probabilities)
+		
+		if (this.getIO().getProperty(getJointProbWrapperFilePropertyName()) != null) {
+			// read probabilities from another (separate/new) wrapper file
+			// by reloading the wrapper file at this point (after handling all properties--except the probabilities--from old file), 
+			// we're reusing properties of old file and loading the properties of probabilities from new file
+			this.getIO().readWrapperFile(new File(this.getIO().getProperty(getJointProbWrapperFilePropertyName())));
+		}	// or else, continue reading probabilities from current file
 		
 		// read property in the format Probability = p1,p2,...,pk.
 		String probMatrixString = this.getIO().getProperty(getProbabilitiesPropertyNamePrefix());
@@ -1674,6 +1738,93 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	}
 
 	/**
+	 * @return the betaVirtualCountsPropertyName
+	 */
+	public String getBetaVirtualCountsPropertyName() {
+		return this.betaVirtualCountsPropertyName;
+	}
+
+	/**
+	 * @param betaVirtualCountsPropertyName the betaVirtualCountsPropertyName to set
+	 */
+	public void setBetaVirtualCountsPropertyName(
+			String betaVirtualCountsPropertyName) {
+		this.betaVirtualCountsPropertyName = betaVirtualCountsPropertyName;
+	}
+
+	/**
+	 * @return the betaStratifiedSamplesAlertPropertyName
+	 */
+	public String getBetaStratifiedSamplesAlertPropertyName() {
+		return this.betaStratifiedSamplesAlertPropertyName;
+	}
+
+	/**
+	 * @param betaStratifiedSamplesAlertPropertyName the betaStratifiedSamplesAlertPropertyName to set
+	 */
+	public void setBetaStratifiedSamplesAlertPropertyName(
+			String betaStratifiedSamplesAlertPropertyName) {
+		this.betaStratifiedSamplesAlertPropertyName = betaStratifiedSamplesAlertPropertyName;
+	}
+
+	/**
+	 * @return the betaNumSimulationPropertyName
+	 */
+	public String getBetaNumSimulationPropertyName() {
+		return this.betaNumSimulationPropertyName;
+	}
+
+	/**
+	 * @param betaNumSimulationPropertyName the betaNumSimulationPropertyName to set
+	 */
+	public void setBetaNumSimulationPropertyName(
+			String betaNumSimulationPropertyName) {
+		this.betaNumSimulationPropertyName = betaNumSimulationPropertyName;
+	}
+
+	/**
+	 * @return the jointProbFilePropertyName
+	 */
+	public String getJointProbWrapperFilePropertyName() {
+		return this.jointProbWrapperFilePropertyName;
+	}
+
+	/**
+	 * @param jointProbFilePropertyName the jointProbFilePropertyName to set
+	 */
+	public void setJointProbWrapperFilePropertyName(String jointProbFilePropertyName) {
+		this.jointProbWrapperFilePropertyName = jointProbFilePropertyName;
+	}
+
+	/**
+	 * @return the condProbFilePropertyName
+	 */
+	public String getCondProbFilePropertyName() {
+		return this.condProbFilePropertyName;
+	}
+
+	/**
+	 * @param condProbFilePropertyName the condProbFilePropertyName to set
+	 */
+	public void setCondProbFilePropertyName(String condProbFilePropertyName) {
+		this.condProbFilePropertyName = condProbFilePropertyName;
+	}
+
+	/**
+	 * @return the cliquesFilePropertyName
+	 */
+	public String getCliquesFilePropertyName() {
+		return this.cliquesFilePropertyName;
+	}
+
+	/**
+	 * @param cliquesFilePropertyName the cliquesFilePropertyName to set
+	 */
+	public void setCliquesFilePropertyName(String cliquesFilePropertyName) {
+		this.cliquesFilePropertyName = cliquesFilePropertyName;
+	}
+
+	/**
 	 * Runs {@link DirichletUserSimulator#main(String[])} and then {@link SimulatedUserStatisticsCalculator#main(String[])}.
 	 * However, by default it will read a file called JavaSimulatorWrapper.in and write a file called JavaSimulatorWrapper.out
 	 * in the same directory of this program.
@@ -1749,12 +1900,6 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 		if (cmd.hasOption("o")) {
 			wrapper.setOutput(new File(cmd.getOptionValue("o")));
 		}
-		if (cmd.hasOption("cliques")) {
-			wrapper.setCliquesFileName(cmd.getOptionValue("cliques"));
-		}
-		if (cmd.hasOption("cond")) {
-			wrapper.setConditionalProbabilityFileName(cmd.getOptionValue("cond"));
-		}
 		
 		try {
 			wrapper.loadWrapperInput(wrapper.getInput());
@@ -1763,6 +1908,12 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 			return;
 		}
 		
+		if (cmd.hasOption("cliques")) {
+			wrapper.setCliquesFileName(cmd.getOptionValue("cliques"));
+		}
+		if (cmd.hasOption("cond")) {
+			wrapper.setConditionalProbabilityFileName(cmd.getOptionValue("cond"));
+		}
 		
 		// attempt several times until we don't have any exception
 		int numAttempt;
@@ -1830,7 +1981,6 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 						Debug.println(JavaSimulatorWrapper.class, "Argument for dirichlet-multinomial simulator: " + arg);
 					}
 				}
-
 				
 				// run dirichlet multinomial sampler
 				wrapper.getDirichletUserSimulator().main(dirichletArgs);
@@ -1841,9 +1991,11 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				Debug.println(JavaSimulatorWrapper.class, "Created temporary file for RCP answers: " + tempQuestionOutput.getAbsolutePath());
 				
 				// set up arguments to calculate probabilities of questions
-				String[] questionArgs = new String[Debug.isDebugMode()?9:8 + ((wrapper.getNumUsers()<=wrapper.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal())?2:0)];
+				String[] questionArgs = new String[Debug.isDebugMode()?15:14 
+//							+ ((wrapper.getNumUsers()<=wrapper.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal())?2:0)
+						];
 				
-				// -i "test.csv" -o "Probabilities_test.csv" -numI 4 -ignore "D.*" -d
+				// -i "test.csv" -o "Probabilities_test.csv" -numI 4 -ignore "D.*" -totalSample 15 -alertSample 3 -numSim 50  -d
 				questionArgs[0] = "-i";
 				questionArgs[1] = "\"" + tempDirichletOutput.getAbsolutePath() +"\"";;
 				questionArgs[2] = "-o";
@@ -1852,17 +2004,25 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				questionArgs[5] = ""+wrapper.getNumIndicators();	
 				questionArgs[6] = "-ignore";	
 				questionArgs[7] = "\"D.*\"";	// will not consider columns matching regular expression "D.*" (these are for ignoring detectors, because most questions don't deal with detectors)
-				if (Debug.isDebugMode() && questionArgs.length >= 9) {
-					questionArgs[8] = "-d";	
-					if ((wrapper.getNumUsers() <= wrapper.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal())) {
-						// disable stratified sub sampling
-						questionArgs[9] = "-alertSample";
-						questionArgs[10] = "\"-1\"";
-					}
-				} else if ((wrapper.getNumUsers() <= wrapper.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal())) {
-					// disable stratified sub sampling
-					questionArgs[8] = "-alertSample";
-					questionArgs[9] = "\"-1\"";
+
+				questionArgs[8] = "-totalSample";
+				questionArgs[9] = "" + wrapper.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal();
+				questionArgs[10] = "-alertSample";
+				questionArgs[11] = "" + wrapper.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumAlert();
+				questionArgs[12] = "-numSim";
+				questionArgs[13] = "" + wrapper.getSimulatedUserStatisticsCalculator().getNumSubSampleSimulation();
+				
+				if (Debug.isDebugMode() && questionArgs.length >= 15) {
+					questionArgs[14] = "-d";	
+//					if ((wrapper.getNumUsers() <= wrapper.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal())) {
+//						// disable stratified sub sampling
+//						questionArgs[9] = "-alertSample";
+//						questionArgs[10] = "\"-1\"";
+//					}
+//				} else if ((wrapper.getNumUsers() <= wrapper.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal())) {
+//					// disable stratified sub sampling
+//					questionArgs[8] = "-alertSample";
+//					questionArgs[9] = "\"-1\"";
 				}
 				
 				if (Debug.isDebugMode()) {

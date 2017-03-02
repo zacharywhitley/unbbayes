@@ -1,0 +1,16 @@
+#
+# JavaSimulatorWrapper input file
+#
+
+Number_of_Indicators:	4
+Number_of_Detectors:	24
+Has_Alert_In_Prob: 0
+Number_of_Runs:	2
+Number_of_Users:	50
+Type_of_Fusion:	0
+Beta_Virtual_Counts:	30
+Beta_Stratified_Samples_Alert:	10
+Beta_Num_Simulation:	60
+Joint_Prob_File:	JavaSimulatorWrapper.APR.in
+Cond_Prob_File:		conditionals_tony.net
+Cliques_File:		cliques_copy.json

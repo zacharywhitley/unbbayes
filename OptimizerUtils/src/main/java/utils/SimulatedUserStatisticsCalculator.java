@@ -531,13 +531,35 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			// randomly pick getStratifiedSampleNumTotal() - getStratifiedSampleNumAlert() samples 
 			for (int i = 0; i < getStratifiedSampleNumTotal() - numSampleAlert; i++) {
 				if (alertFalseRowIndexes.size() <= 0) {
-					Debug.println(getClass(), "There are " + rowsToRead.size() + " total cases. Expected total sample size was: " + getStratifiedSampleNumTotal());
+					// we were unable to fill all stratified samples.
+					Debug.println(getClass(), "There are " + rowsToRead.size() + " total stratified cases at this point. "
+							+ "Expected size was: " + getStratifiedSampleNumTotal());
+					Debug.println(getClass(), "Could not fill " + getStratifiedSampleNumTotal() + " samples with " + getStratifiedSampleNumAlert() + " alerts."
+							 + " This can happen when there are too few cases of non-alerts.");
+					// fill remaining space with alerts...
+					int remainingNum = getStratifiedSampleNumTotal() - rowsToRead.size();
+					Debug.println(getClass(), "Filling remaining " + remainingNum + " with individuals with alerts.");
+					for (int j = 0; j < remainingNum; j++) {
+						if (alertTrueRowIndexes.size() <= 0) {
+							break;
+						}
+						int indexToAdd = rand.nextInt(alertTrueRowIndexes.size());
+						rowsToRead.add(allRows.get(alertTrueRowIndexes.get(indexToAdd)));
+						alertTrueRowIndexes.remove(indexToAdd);	// this is a random pick without substitution
+					}
 					break;
 				}
 				int indexToAdd = rand.nextInt(alertFalseRowIndexes.size());
 				rowsToRead.add(allRows.get(alertFalseRowIndexes.get(indexToAdd)));
 				alertFalseRowIndexes.remove(indexToAdd);
 			}
+			
+			if (rowsToRead.size() < getStratifiedSampleNumTotal()) {
+				// if this happens at this point, we have too few non-alerts and also too few alerts, so we can't fill total of getStratifiedSampleNumTotal() samples at all
+				reader.close();
+				throw new IllegalStateException("Failed to get " + getStratifiedSampleNumTotal() + " stratified samples due to insufficient number of samples in population.");
+			}
+			
 			
 		} else {
 			// just read all rows except first row
@@ -1008,13 +1030,28 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 				}
 				numAlertInQueryTable.removeVariable(varToRemove);
 			}
+			
+			boolean isConsistent = true;
 			if (((int)numAlertInQueryTable.getValue(indexOfAlertTrue)) != ((int)numAlertSubSample.getValue(indexOfAlertTrue))) {
-				throw new IllegalArgumentException("Expected number of alert in queried table " + queryTable + " is " + numAlertSubSample.getValue(indexOfAlertTrue)
+//				throw new IllegalArgumentException("Expected number of alert in queried table " + queryTable + " is " + numAlertSubSample.getValue(indexOfAlertTrue)
+//						+ ", but was " + numAlertInQueryTable.getValue(indexOfAlertTrue));
+				Debug.println("Expected number of alert in queried table " + queryTable + " is " + numAlertSubSample.getValue(indexOfAlertTrue)
 						+ ", but was " + numAlertInQueryTable.getValue(indexOfAlertTrue));
+				isConsistent = false;
 			}
 			if (((int)numAlertInQueryTable.getValue(indexOfAlertFalse)) != ((int)numAlertSubSample.getValue(indexOfAlertFalse))) {
-				throw new IllegalArgumentException("Expected number of non-alert in queried table " + queryTable + " is " + numAlertSubSample.getValue(indexOfAlertFalse)
+//				throw new IllegalArgumentException("Expected number of non-alert in queried table " + queryTable + " is " + numAlertSubSample.getValue(indexOfAlertFalse)
+//						+ ", but was " + numAlertInQueryTable.getValue(indexOfAlertFalse));
+				Debug.println("Expected number of non-alert in queried table " + queryTable + " is " + numAlertSubSample.getValue(indexOfAlertFalse)
 						+ ", but was " + numAlertInQueryTable.getValue(indexOfAlertFalse));
+				isConsistent = false;
+			}
+			
+			if (!isConsistent) {
+				// force the values to be the same
+				for (int i = 0; i < numAlertSubSample.tableSize(); i++) {
+					numAlertSubSample.setValue(i, numAlertInQueryTable.getValue(i));
+				}
 			}
 		}
 		 
@@ -1488,7 +1525,7 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 	/**
 	 * @param numSubSampleSimulation  : number of beta-binomial samples to be generated in {@link #getConditionalProbabilityFromSimulation(PotentialTable, PotentialTable)}
 	 */
-	public void setSubSampleSimulation(int numSubSampleSimulation) {
+	public void setNumSubSampleSimulation(int numSubSampleSimulation) {
 		this.numSubSampleSimulation = numSubSampleSimulation;
 	}
 
@@ -1643,9 +1680,10 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		options.addOption("s","summary", false, "Print statistical summary instead of probabilities.");
 		options.addOption("h","help", false, "Help.");
 		options.addOption("numI","number-indicators", true, "Number of indicators to consider.");
+		options.addOption("totalSample","number-total-alert-samples", true, "Number of total stratified samples to consider.");
 		options.addOption("alertSample","number-alert-samples", true, "Number of stratified samples to consider with Alert=true. "
 				+ "totalSample minus this number will be sampled for Alert = false. Use this argument in order to increase variance.");
-		options.addOption("totalSample","number-total-alert-samples", true, "Number of total stratified samples to consider.");
+		options.addOption("numSim","number-stratified-simulation", true, "Name of times to perform simulation for generating stratified samples.");
 		options.addOption("alert","alert-name", true, "Name of alert variable.");
 		options.addOption("all","print-all", false, "Print statistical summary and probabilities.");
 		options.addOption("ignore","ignore-columns", true, "Regular expression specifying names of columns/attributes in input file not to be considered in the computation.");
@@ -1721,6 +1759,9 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 				throw new IllegalArgumentException("Invalid number of samples: " + sampleNum);
 			}
 			sim.setStratifiedSampleNumAlert(sampleNum);
+		}
+		if (cmd.hasOption("numSim")) {
+			sim.setNumSubSampleSimulation(Integer.parseInt(cmd.getOptionValue("numSim")));
 		}
 		
 		// mount query aliases accordingly to indicators 
