@@ -1524,12 +1524,12 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 			return null;
 		}
 		
-		File outputDirectory = input.getParentFile();
-		
-		if (input.isDirectory()) {
-			// if we are processing multiple files (i.e. input is a directory), then create a temporary directory to store copies of the files.
-			outputDirectory = Files.createTempDirectory("Preprocessed_Users_").toFile();
-		}
+//		File outputDirectory = input.getParentFile();
+//		if (input.isDirectory()) {
+//			// if we are processing multiple files (i.e. input is a directory), then create a temporary directory to store copies of the files.
+//			outputDirectory = Files.createTempDirectory("Preprocessed_Users_").toFile();
+//		}
+		File outputDirectory = Files.createTempDirectory("Preprocessed_Users_").toFile();
 		
 		this.preprocessInputFileRecursive(input, toIgnoreRegex, outputDirectory);
 		
@@ -1644,7 +1644,8 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		options.addOption("h","help", false, "Help.");
 		options.addOption("numI","number-indicators", true, "Number of indicators to consider.");
 		options.addOption("alertSample","number-alert-samples", true, "Number of stratified samples to consider with Alert=true. "
-				+ "100 minus this number will be sampled for Alert = false. Use this argument in order to increase variance.");
+				+ "totalSample minus this number will be sampled for Alert = false. Use this argument in order to increase variance.");
+		options.addOption("totalSample","number-total-alert-samples", true, "Number of total stratified samples to consider.");
 		options.addOption("alert","alert-name", true, "Name of alert variable.");
 		options.addOption("all","print-all", false, "Print statistical summary and probabilities.");
 		options.addOption("ignore","ignore-columns", true, "Regular expression specifying names of columns/attributes in input file not to be considered in the computation.");
@@ -1705,14 +1706,21 @@ public class SimulatedUserStatisticsCalculator extends DirichletUserSimulator {
 		if (cmd.hasOption("alert")) {
 			sim.setAlertName(cmd.getOptionValue("alert"));
 		}
+		if (cmd.hasOption("totalSample")) {
+			String value = cmd.getOptionValue("totalSample");
+			int sampleNum = Integer.parseInt(value);
+			if (sampleNum <= 0) {
+				throw new IllegalArgumentException("Invalid total number of samples: " + sampleNum);
+			}
+			sim.setStratifiedSampleNumTotal(sampleNum);
+		}
 		if (cmd.hasOption("alertSample")) {
 			String value = cmd.getOptionValue("alertSample");
 			int sampleNum = Integer.parseInt(value);
-			if (sampleNum > 100) {
+			if (sampleNum > sim.getStratifiedSampleNumTotal()) {
 				throw new IllegalArgumentException("Invalid number of samples: " + sampleNum);
 			}
 			sim.setStratifiedSampleNumAlert(sampleNum);
-			sim.setStratifiedSampleNumTotal(100);
 		}
 		
 		// mount query aliases accordingly to indicators 

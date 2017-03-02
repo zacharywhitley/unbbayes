@@ -1841,7 +1841,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				Debug.println(JavaSimulatorWrapper.class, "Created temporary file for RCP answers: " + tempQuestionOutput.getAbsolutePath());
 				
 				// set up arguments to calculate probabilities of questions
-				String[] questionArgs = new String[Debug.isDebugMode()?9:8];
+				String[] questionArgs = new String[Debug.isDebugMode()?9:8 + ((wrapper.getNumUsers()<=wrapper.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal())?2:0)];
 				
 				// -i "test.csv" -o "Probabilities_test.csv" -numI 4 -ignore "D.*" -d
 				questionArgs[0] = "-i";
@@ -1854,6 +1854,15 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				questionArgs[7] = "\"D.*\"";	// will not consider columns matching regular expression "D.*" (these are for ignoring detectors, because most questions don't deal with detectors)
 				if (Debug.isDebugMode() && questionArgs.length >= 9) {
 					questionArgs[8] = "-d";	
+					if ((wrapper.getNumUsers() <= wrapper.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal())) {
+						// disable stratified sub sampling
+						questionArgs[9] = "-alertSample";
+						questionArgs[10] = "\"-1\"";
+					}
+				} else if ((wrapper.getNumUsers() <= wrapper.getSimulatedUserStatisticsCalculator().getStratifiedSampleNumTotal())) {
+					// disable stratified sub sampling
+					questionArgs[8] = "-alertSample";
+					questionArgs[9] = "\"-1\"";
 				}
 				
 				if (Debug.isDebugMode()) {
