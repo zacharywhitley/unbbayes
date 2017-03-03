@@ -1408,6 +1408,7 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 				+ " If this is provided, then the input file directory (specified with -i) must contain files with names specifying"
 				+ " the clique name in the format <CLIQUE_NAME>_<NUMBER_TO_AVOID_DUPLICATE>.csv. For instance, C0_1.csv");
 		options.addOption("cond","conditional-probability-file-name", true, "Name of file (hugin .net file) containing conditional probabilities.");
+		options.addOption("virtCoef","virtual-counts-coefficient", true, "This real number will be multiplied to number of users for the virtual counts of dirichlet distribution.");
 		
 		
 		CommandLine cmd = null;
@@ -1496,6 +1497,9 @@ public class DirichletUserSimulator extends ExpectationPrinter {
 		
 		if (cmd.hasOption("cliques")) {
 			sim.setCliquesFileName(cmd.getOptionValue("cliques"));
+		}
+		if (cmd.hasOption("virtCoef")) {
+			sim.setVirtualCountCoefficient(Float.parseFloat(cmd.getOptionValue("virtCoef")));
 		}
 		
 		sim.run();

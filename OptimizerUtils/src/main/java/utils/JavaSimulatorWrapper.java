@@ -53,6 +53,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	public static final String JOINT_PROB_FILE_PROPERTY_NAME = "Joint_Prob_File";
 	public static final String COND_PROB_FILE_PROPERTY_NAME = "Cond_Prob_File";
 	public static final String CLIQUES_FILE_PROPERTY_NAME = "Cliques_File";
+	public static final String DIRICHLET_VIRTUAL_COUNT_COEFFICIENT_PROPERTY_NAME = "Dirichlet_Virtual_Count_Coefficient";
 	
 	private String numberOfIndicatorsPropertyName = NUMBER_INDICATORS_PROPERTY_NAME;
 	private String numberOfDetectorsPropertyName = NUMBER_DETECTORS_PROPERTY_NAME;
@@ -68,6 +69,7 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	private String jointProbWrapperFilePropertyName = JOINT_PROB_FILE_PROPERTY_NAME;
 	private String condProbFilePropertyName = COND_PROB_FILE_PROPERTY_NAME;
 	private String cliquesFilePropertyName = CLIQUES_FILE_PROPERTY_NAME;
+	private String dirichletVirtualCountCoefficientName = DIRICHLET_VIRTUAL_COUNT_COEFFICIENT_PROPERTY_NAME;
 
 	private String cliquesFileName = "cliques.json";
 	
@@ -1216,6 +1218,11 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 		}
 		Debug.println(getClass(), "Cliques file name = " + this.getCliquesFileName());
 		
+		if (this.getIO().getProperty(getDirichletVirtualCountCoefficientName()) != null) {
+			this.getDirichletUserSimulator().setVirtualCountCoefficient(Float.parseFloat(this.getIO().getProperty(getDirichletVirtualCountCoefficientName())));
+		}
+		Debug.println(getClass(), "Dirichlet virtual counts coefficient = " + this.getDirichletUserSimulator().getVirtualCountCoefficient());
+		
 		
 		
 		// reset the probability vector
@@ -1825,6 +1832,37 @@ public class JavaSimulatorWrapper extends SimulatedUserStatisticsCalculator {
 	}
 
 	/**
+	 * @return the dirichletVirtualCountCoefficientName
+	 */
+	public String getDirichletVirtualCountCoefficientName() {
+		return dirichletVirtualCountCoefficientName;
+	}
+
+	/**
+	 * @param dirichletVirtualCountCoefficientName the dirichletVirtualCountCoefficientName to set
+	 */
+	public void setDirichletVirtualCountCoefficientName(
+			String dirichletVirtualCountCoefficientName) {
+		this.dirichletVirtualCountCoefficientName = dirichletVirtualCountCoefficientName;
+	}
+	
+	
+
+	/* (non-Javadoc)
+	 * @see utils.DirichletUserSimulator#getVirtualCountCoefficient()
+	 */
+	public float getVirtualCountCoefficient() {
+		return this.getDirichletUserSimulator().getVirtualCountCoefficient();
+	}
+
+	/* (non-Javadoc)
+	 * @see utils.DirichletUserSimulator#setVirtualCountCoefficient(float)
+	 */
+	public void setVirtualCountCoefficient(float virtualCountCoefficient) {
+		getDirichletUserSimulator().setVirtualCountCoefficient(virtualCountCoefficient);
+	}
+
+	/**
 	 * Runs {@link DirichletUserSimulator#main(String[])} and then {@link SimulatedUserStatisticsCalculator#main(String[])}.
 	 * However, by default it will read a file called JavaSimulatorWrapper.in and write a file called JavaSimulatorWrapper.out
 	 * in the same directory of this program.
@@ -1935,7 +1973,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				tempDirichletOutput.deleteOnExit();
 				
 				// set up arguments for dirichlet-multinomial simulator
-				String[] dirichletArgs = new String[Debug.isDebugMode()?24:23];
+				String[] dirichletArgs = new String[Debug.isDebugMode()?26:25];
 				
 				// -i "RCP3-full" -o "test.csv" -u 4263 -n 1000 -numI 4 -numD 4 -a 2 -d 
 				dirichletArgs[0] = "-i";
@@ -1972,8 +2010,12 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 					dirichletArgs[21] = "";	
 					dirichletArgs[22] = "";
 				}
-				if (Debug.isDebugMode() && dirichletArgs.length >= 24) {
-					dirichletArgs[23] = "-d";	
+				
+				dirichletArgs[23] = "-virtCoef";	
+				dirichletArgs[24] = ""+wrapper.getDirichletUserSimulator().getVirtualCountCoefficient();
+				
+				if (Debug.isDebugMode() && dirichletArgs.length >= 26) {
+					dirichletArgs[25] = "-d";	
 				}
 				
 				if (Debug.isDebugMode()) {
