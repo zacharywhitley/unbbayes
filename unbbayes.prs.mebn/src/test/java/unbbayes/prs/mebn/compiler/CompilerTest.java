@@ -890,6 +890,58 @@ public class CompilerTest extends TestCase {
 		
 	}
 	
+	public void testNoArgumentNode() {
+		UbfIO io = UbfIO.getInstance();
+		
+		MultiEntityBayesianNetwork mebn = null;
+		try {
+			mebn = io.loadMebn(new File("./src/test/resources/noArgumentNode.ubf"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+		assertNotNull(mebn);
+		
+		TextModeRunner runner = new TextModeRunner();
+		
+		ResidentNode resident = mebn.getDomainResidentNode("MyNode");
+		OrdinaryVariable x = resident.getOrdinaryVariableByName("x");
+		
+		
+		List<OVInstance> queryArguments = new ArrayList<OVInstance>(2);
+		queryArguments.add(OVInstance.getInstance(x , LiteralEntityInstance.getInstance("a", x.getValueType())));
+		Query query = new Query(resident, queryArguments);
+		ProbabilisticNetwork result = null;
+		try {
+			result = runner.executeQueryLaskeyAlgorithm(Collections.singletonList(query), PowerLoomKB.getNewInstanceKB(), mebn);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		assertNotNull(result);
+		
+		// extract node to check for probabilities
+		ProbabilisticNode node = (ProbabilisticNode) result.getNode("MyNode__a");
+		assertNotNull(node);
+		
+		// find the state "absurd"
+		int indexOfAbsurd = 0;
+		for (; indexOfAbsurd < node.getStatesSize(); indexOfAbsurd++) {
+			if (node.getStateAt(indexOfAbsurd).equalsIgnoreCase("absurd")) {
+				break;
+			}
+		}
+		assertTrue(indexOfAbsurd < node.getStatesSize());
+		assertEquals("absurd", node.getStateAt(indexOfAbsurd));
+		
+		// check that it is not absurd 100% (with error margin 0.00005)
+		assertFalse("Marginal = " + node.getMarginalAt(indexOfAbsurd), node.getMarginalAt(indexOfAbsurd) >= 1-0.00005);
+		
+		assertEquals(0.7999, node.getMarginalAt(0), 0.00005);
+		assertEquals(0.2, node.getMarginalAt(1), 0.00005);
+		assertEquals(1.0E-4, node.getMarginalAt(2), 0.00005);
+		
+	}
+	
 	
 //	public void testTableGenerationNestedIf() {
 //		ResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");

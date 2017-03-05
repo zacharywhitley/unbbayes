@@ -624,6 +624,9 @@ public class SSBNNode implements INode {
 				} else {
 					parents.add(parent);
 				}
+			} else if (parent.getArguments().isEmpty() && !isExactMatch) {
+				// nodes with no arguments should match any weak OV
+				parents.add(parent);
 			}
 		}
 		return parents;

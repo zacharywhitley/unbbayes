@@ -542,7 +542,8 @@ public class PowerLoomKB implements KnowledgeBase {
 			i++; 
 		}
 
-		if (resident.getTypeOfStates() == IResidentNode.BOOLEAN_RV_STATES) {
+		if (resident.getTypeOfStates() == IResidentNode.BOOLEAN_RV_STATES
+				&& !arguments.isEmpty()) {
 			Stella_Object result = null;
 			for (int j = 0; j < this.getMaximumQueryAttemptCount(); j++) {
 				try {
@@ -602,12 +603,16 @@ public class PowerLoomKB implements KnowledgeBase {
 		this.mebn = mebn;
 		
 		for(ObjectEntity entity: mebn.getObjectEntityContainer().getListEntity()){
-			createEntityDefinition(entity);
+			if (entity != null) {
+				createEntityDefinition(entity);
+			}
 		}
 
 		for(MFrag mfrag: mebn.getDomainMFragList()){
 			for(ResidentNode resident: mfrag.getResidentNodeList()){
-				createRandomVariableDefinition(resident);
+				if (resident != null) {
+					createRandomVariableDefinition(resident);
+				}
 			}
 		}
 		
@@ -649,7 +654,8 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		String finding = "";
 		
-		if(randonVariableFinding.getNode().getTypeOfStates() == IResidentNode.BOOLEAN_RV_STATES){
+		if(randonVariableFinding.getNode().getTypeOfStates() == IResidentNode.BOOLEAN_RV_STATES
+				&& (randonVariableFinding.getArguments().length > 0)){
 		
 			finding+= "(";
 			if(randonVariableFinding.getState().getName().equals("false")){
@@ -1010,7 +1016,8 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		String finding = "";
 		
-		if(randomVariable.getTypeOfStates() == IResidentNode.BOOLEAN_RV_STATES){
+		if(randomVariable.getTypeOfStates() == IResidentNode.BOOLEAN_RV_STATES
+				&& !listArguments.isEmpty()){
 			finding+= randomVariable.getName() + " ";
 			for(OVInstance argument: listArguments){
 				finding+= " " + argument.getEntity().getInstanceName(); 

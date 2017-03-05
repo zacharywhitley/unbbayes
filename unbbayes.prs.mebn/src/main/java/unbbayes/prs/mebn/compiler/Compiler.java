@@ -67,37 +67,44 @@ import unbbayes.util.Debug;
 /**
  <pre>
  BNF MEBN Table:
+ TODO report a problem and next compilation reports next problem.
  ===============================================================
  distribution ::= statement | if_statement
  if_statement  ::= 
- 	"if" allop varsetname "have" "(" b_expression ")" statement 
+ TODO	"if" [allop varsetname "have"] "(" b_expression ")" statement 
  	"else" else_statement 
  allop ::= "any" | "all"
  varsetname ::= ident[["."|","]ident]*
  b_expression ::= b_term [ "|" b_term ]*
  b_term ::= not_factor [ "&" not_factor ]*
  not_factor ::= [ "~" ] b_factor
- b_factor ::= "(" b_expression ")" 
+TODO b_factor ::= "(" b_expression ")" 
  		| ident ["(" arguments ")"]  "=" ident ["(" arguments ")"] 
- 		| external_boolean_function
+TODO 		| external_boolean_function([arbitrary_arguments])
  arguments ::= ident[["."|","]ident]*
  else_statement ::= statement | if_statement
  statement ::= "[" assignment_or_if "]" 
- assignment_or_if ::= assignment | if_statement
- assignment ::= ident "=" expression [ "," assignment ]*
+TODO assignment_or_if ::= assignment_or_func | if_statement
+TODO assignment_or_func = assignment | func
+TODO func ::= external_function([arbitrary_arguments]) [ "," assignment_or_func ]*
+TODO assignment ::= ident "=" expression [ "," assignment_or_func ]*
+TODO assign to arbitrary variable
+TODO iterate on CPT multiple times to support cross column reference (cells are filled with NA until they are resolved)
  expression ::= term [ addop term ]*
  term ::= signed_factor [ mulop signed_factor ]*
  signed_factor ::= [ addop ] factor
  factor ::= number | function | "(" expression ")"
- function ::= possibleVal 
+TODO function ::= possibleVal 
  	| "CARDINALITY" "(" [varsetname] ")"
- 	| "MIN" "(" expression ";" expression ")"
- 	| "MAX" "(" expression ";" expression ")"
- 	| external_function
+TODO 	| "MIN" "(" expression [";"|","] expression ")"
+TODO  	| "MAX" "(" expression [";"|","] expression ")"
+TODO 	| external_function([arbitrary_arguments])
  possibleVal ::= ident
  addop ::= "+" | "-"
  mulop ::= "*" | "/"
  ident ::= letter [ letter | digit ]*
+TODO arbitrary_arguments ::= number_or_ident[["."|","]number_or_ident]*
+TODO number_or_ident ::= number | ident
  ================================================================
  
  ----------------
@@ -3214,6 +3221,10 @@ public class Compiler implements ICompiler {
 					continue;
 				}
 				List<OVInstance> args = leaf.getCurrentEntityAndArguments().arguments;
+				if (args.isEmpty()) {
+					// ignore nodes with no arguments
+					continue;
+				}
 				
 				// at least 1 OV in arguments shall be declared in the varset field of this if-clause, or else current combination of values of parents must be ignored
 				boolean isAtLeast1OVDeclaredInVarsetname = false;
