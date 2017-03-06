@@ -52,6 +52,7 @@ public class Resources_pt extends ListResourceBundle {
 		{"UnexpectedTokenFound","Um termo inesperado foi encontrado."},
 		{"TableUndeclared","A tabela não está declarada."},
 		{"FatalError","Erro Fatal: O compilador do pseudocódigo da CPT foi mal implementada."},
-		{"SSBNInstanceFailure","O gerador de SSBN falhou na instanciação de nós."}
+		{"SSBNInstanceFailure","O gerador de SSBN falhou na instanciação de nós."},
+		{"NonUserDefinedVariablesFoundBeforeIfClause","Somente atribuições a variáveis definidas pelo usuário (ao invés de atribuições aos estados dos nós) são permitidos antes de cláusulas \"if\" aninhadas."},
 	};
 }

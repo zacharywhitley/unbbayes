@@ -71,7 +71,7 @@ import unbbayes.util.Debug;
  ===============================================================
  distribution ::= statement | if_statement
  if_statement  ::= 
- TODO	"if" [allop varsetname "have"] "(" b_expression ")" statement 
+ "if" allop varsetname "have" "(" b_expression ")" statement 
  	"else" else_statement 
  allop ::= "any" | "all"
  varsetname ::= ident[["."|","]ident]*
@@ -84,7 +84,7 @@ TODO 		| external_boolean_function([arbitrary_arguments])
  arguments ::= ident[["."|","]ident]*
  else_statement ::= statement | if_statement
  statement ::= "[" assignment_or_if "]" 
-TODO assignment_or_if ::= assignment_or_func | if_statement
+TODO assignment_or_if ::= assignment_or_func [ "," if_statement] | if_statement
 TODO assignment_or_func = assignment | func
 TODO func ::= external_function([arbitrary_arguments]) [ "," assignment_or_func ]*
 TODO assignment ::= ident "=" expression [ "," assignment_or_func ]*
@@ -1741,7 +1741,7 @@ public class Compiler implements ICompiler {
 
 	
 	/**
-	 * assignment_or_if ::= assignment | if_statement
+	 * assignment_or_if ::= assignment [ "," if_statement] | if_statement
 	 * 
 	 * @param upperIf: the upper if-clause or the tempTable (upper-most container).
 	 * Since assignment_or_if might start a nested if/else-clause, this parameter
@@ -1777,58 +1777,67 @@ public class Compiler implements ICompiler {
 				
 				this.assignment(declaredStates, possibleStates);
 				
-				// After the assignment, if there are undeclared states, distribute the remaining probability uniformly.
-				// obtain undeclared states = possibleStates - declaredStates
-				Collection<Entity> undeclaredStates = new HashSet<Entity>(possibleStates);
-				undeclaredStates.removeAll(declaredStates);
-				if (undeclaredStates.size() > 0) {
-					// get the current (without the undeclared states) sum of probabilities
-					float sumOfDeclaredProb = currentHeader.getProbCellSum();
+
+				if (this.look == this.kwcode[this.lookup("IF")]) {
 					
-					// distribute the remaining probability (1-sumOfDeclaredProb) uniformly across the non-declared states
-					float probOfUndeclaredState = (1f-sumOfDeclaredProb)/undeclaredStates.size();
-					if (!isToNormalize()) {
-						// if we don't need to normalize, then simply set all undeclared states to zero
-						probOfUndeclaredState = 0f;
-					}
-					for (Entity entity : undeclaredStates) {
-						if (entity != null) {
-							// distribute the remaining probability (1-retValue) uniformly across the non-declared states, but substitute NaN with 0
-							if (this.getSSBNNode() != null) {
-								// use a special type of cell which will recalculate the probability each time getProbabiity is called, by uniformly distributing 1-(probability of declared states)
-								this.currentHeader.addCell(new TempTableProbabilityCell(entity, new UniformComplementProbabilityValue(this.currentHeader, entity)));
-							} else {
-								this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(Float.isNaN(probOfUndeclaredState)?0f:probOfUndeclaredState )));
+					// this is an if-clause after user-defined variable declaration
+					this.ifStatement(upperIf);
+					
+				} else {
+					// After the assignment, if there are undeclared states, distribute the remaining probability uniformly.
+					// obtain undeclared states = possibleStates - declaredStates
+					Collection<Entity> undeclaredStates = new HashSet<Entity>(possibleStates);
+					undeclaredStates.removeAll(declaredStates);
+					if (undeclaredStates.size() > 0) {
+						// get the current (without the undeclared states) sum of probabilities
+						float sumOfDeclaredProb = currentHeader.getProbCellSum();
+						
+						// distribute the remaining probability (1-sumOfDeclaredProb) uniformly across the non-declared states
+						float probOfUndeclaredState = (1f-sumOfDeclaredProb)/undeclaredStates.size();
+						if (!isToNormalize()) {
+							// if we don't need to normalize, then simply set all undeclared states to zero
+							probOfUndeclaredState = 0f;
+						}
+						for (Entity entity : undeclaredStates) {
+							if (entity != null) {
+								// distribute the remaining probability (1-retValue) uniformly across the non-declared states, but substitute NaN with 0
+								if (this.getSSBNNode() != null) {
+									// use a special type of cell which will recalculate the probability each time getProbabiity is called, by uniformly distributing 1-(probability of declared states)
+									this.currentHeader.addCell(new TempTableProbabilityCell(entity, new UniformComplementProbabilityValue(this.currentHeader, entity)));
+								} else {
+									this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(Float.isNaN(probOfUndeclaredState)?0f:probOfUndeclaredState )));
+								}
+								// the following may be irrelevant now, since we fill all undeclared states automatically anyway
+//								declaredStates.add(entity);
 							}
-							// the following may be irrelevant now, since we fill all undeclared states automatically anyway
-//							declaredStates.add(entity);
+						}
+					}
+					
+					// the following check may be irrelevant now, since we fill all undeclared states automatically anyway
+//					if (this.node != null) {
+//						// Consistency check C09
+//						// Verify if all states has probability declared
+//						if (!declaredStates.containsAll(possibleStates)) {
+//							throw new SomeStateUndeclaredException();
+//						}
+//					}
+					
+					
+					// Consistency check C09
+					// Verify if sum of all declared states' probability is 1
+					
+					// runtime probability bound check (on SSBN generation time)
+					if (isToNormalize()
+							&& !this.currentHeader.isSumEquals1()) {
+						// Debug.println("Testing cell's probability value's sum: " + currentHeader.getProbCellSum());
+						if (!Float.isNaN(this.currentHeader.getProbCellSum())) {
+							throw new InvalidProbabilityRangeException(getNode().toString());
+						} else {
+							// Debug.println("=>NaN found!!!");
 						}
 					}
 				}
 				
-				// the following check may be irrelevant now, since we fill all undeclared states automatically anyway
-//				if (this.node != null) {
-//					// Consistency check C09
-//					// Verify if all states has probability declared
-//					if (!declaredStates.containsAll(possibleStates)) {
-//						throw new SomeStateUndeclaredException();
-//					}
-//				}
-				
-				
-				// Consistency check C09
-				// Verify if sum of all declared states' probability is 1
-				
-				// runtime probability bound check (on SSBN generation time)
-				if (isToNormalize()
-						&& !this.currentHeader.isSumEquals1()) {
-					// Debug.println("Testing cell's probability value's sum: " + currentHeader.getProbCellSum());
-					if (!Float.isNaN(this.currentHeader.getProbCellSum())) {
-						throw new InvalidProbabilityRangeException(getNode().toString());
-					} else {
-						// Debug.println("=>NaN found!!!");
-					}
-				}
 			}
 		} catch (ArrayIndexOutOfBoundsException e) {
 			/* 
@@ -1864,22 +1873,29 @@ public class Compiler implements ICompiler {
 		
 		// SCAN FOR IDENTIFIER
 		scan();
+		String userDefinedVariableName = null;	// this will become non-null if there is an unknown state declared (unknown states will become user-defined variables)
 		if (token == 'x') {
 			if (this.node != null) {
 				// Consistency check C09
 				// Remember declared states, so we can check later if all states was declared
 				Entity possibleValue = null;
-				try {
-					possibleValue = possibleStates.get(this.node.getPossibleValueIndex(this.noCaseChangeValue));
-				} catch (Exception e) {
-					//throw new TableFunctionMalformedException(e.getMessage());
-					throw new TableFunctionMalformedException(this.node.toString(), e);
+				int index = this.node.getPossibleValueIndex(this.noCaseChangeValue);
+				if (index < 0) {
+					// unknown states will be considered as a new variable that user has declared
+					userDefinedVariableName = this.noCaseChangeValue;
+				} else {
+					try {
+						possibleValue = possibleStates.get(index);
+					} catch (Exception e) {
+						//throw new TableFunctionMalformedException(e.getMessage());
+						throw new TableFunctionMalformedException(this.node.toString(), e);
+					}
+					if (possibleValue == null) {
+						throw new TableFunctionMalformedException(getNode().toString());
+					}
+					declaredStates.add(possibleValue);
+					currentCell.setPossibleValue(possibleValue);
 				}
-				if (possibleValue == null) {
-					throw new TableFunctionMalformedException(getNode().toString());
-				}
-				declaredStates.add(possibleValue);
-				currentCell.setPossibleValue(possibleValue);
 			}
 			
 		} else {
@@ -1893,59 +1909,56 @@ public class Compiler implements ICompiler {
 		// ret verifies the sum of all declared states' probability (must be 1)
 		// boolean hasUnknownValue shows if some ret was negative.
 		IProbabilityValue ret = expression();		
-		float retValue = ret.getProbability();
+		float retValue = 0;	// initialize with a value which will not impact consistency check (the one that checks if sum is 1)
+		if (userDefinedVariableName == null) {
+			// this is a state of current node, so store the probability in order to calculate consistency later
+			retValue = ret.getProbability();
+		} else {
+			// this is a user-defined value
+			// store it in the scope of current if-clause
+			this.currentHeader.addUserDefinedVariable(userDefinedVariableName, ret);
+		}
 		boolean hasUnknownValue = Float.isNaN(retValue);
 		
 		// add cell to header
 		currentCell.setProbability(ret);
-		if (currentCell.getPossibleValue() != null) {
+		if (currentCell.getPossibleValue() != null && currentCell.getPossibleValue() != null) {
 			this.currentHeader.addCell(currentCell);
 		}
 		// Debug.println("Adding cell: " + currentCell.getPossibleValue().getName() + " = " + ret.toString());
 
 		// consistency check C09
-		// a single state shall never have prob range out from [0,1] (if it is configured to normalize such values)
+		// a single state shall never have negative prob 
 		if ( isToNormalize()
-				&& ((retValue < 0.0) || (1.0 < retValue))) {
+				&& ((retValue < 0.0) 
+//						|| (1.0 < retValue)
+						)) {
 			throw new InvalidProbabilityRangeException(getNode().toString());
 		}
 		
 		// LOOK FOR , (OPTIONAL)
 		if (look == ',') {
 			match(',');
-			IProbabilityValue temp = assignment(declaredStates, possibleStates);
-			float tempValue = temp.getProbability();
-			hasUnknownValue = hasUnknownValue || (Float.isNaN(tempValue));
-			if (hasUnknownValue) {
-				retValue = Float.NaN;
+			if (look != this.kwcode[this.lookup("IF")]) {
+				IProbabilityValue temp = assignment(declaredStates, possibleStates);
+				float tempValue = temp.getProbability();
+				hasUnknownValue = hasUnknownValue || (Float.isNaN(tempValue));
+				if (hasUnknownValue) {
+					retValue = Float.NaN;
+				} else {
+					retValue += temp.getProbability();
+				}
 			} else {
-				retValue += temp.getProbability();
+				// this is an if-clause after assignment.
+				// we should finish assignment (assignments in same block of if-clauses must be always before the if clause)
+				// if assignment and if-clause happens in same block, assingments must be only for user-defined variables
+				if (!currentHeader.getCellList().isEmpty()) {
+					// user-defined variables are not added to cellList. Assignments to states of variables are added to cell list.
+					// if this is not empty, then there were assignments to states of variables, so this is invalid.
+					throw new SomeStateUndeclaredException(getResource().getString("NonUserDefinedVariablesFoundBeforeIfClause"));
+				}
+				// let the upper clause actually handle the if=clause
 			}
-//		} else {
-//			// this is the last assignment. If there are undeclared states, distribute the remaining probability uniformly.
-//			// obtain undeclared states = possibleStates - declaredStates
-//			Collection<Entity> undeclaredStates = new HashSet<Entity>(possibleStates);
-//			undeclaredStates.removeAll(declaredStates);
-//			
-//			// distribute the remaining probability (1-retValue) uniformly across the non-declared states
-//			float probOfUndeclaredState = (1f-retValue)/undeclaredStates.size();
-//			float sumProbUndeclaredStates = 0f;	// sum of probabilities of undeclared states
-//			for (Entity entity : undeclaredStates) {
-//				if (entity != null) {
-//					sumProbUndeclaredStates += probOfUndeclaredState;
-//					if (!Float.isNaN(retValue)) {
-//						// distribute the remaining probability (1-retValue) uniformly across the non-declared states
-//						this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(probOfUndeclaredState )));
-//					} else {
-//						// add assignment: <undeclared state> = 0.0 if retValue could not be obtained
-//						this.currentHeader.addCell(new TempTableProbabilityCell(entity, new SimpleProbabilityValue(0.0f)));
-//					}
-//					declaredStates.add(entity);
-//				}
-//				// we do not need to update retValue (the total probability),
-//				// because it would be something like retValue += 0.0 (that is, it will not be altered at all);
-//			}
-//			retValue += sumProbUndeclaredStates;
 		}
 		
 		// Debug.println("Returned expression value = " + retValue);
@@ -2153,6 +2166,12 @@ public class Compiler implements ICompiler {
 		// Use a list to store already known states or identifiers to evaluate already known values... 
 		IProbabilityValue ret = new SimpleProbabilityValue(Float.NaN);
 		if (this.currentHeader != null) {
+			// check if this is not a user-defined variable first;
+			IProbabilityValue userDefinedVariableValue = this.currentHeader.getUserDefinedVariable(noCaseChangeValue);
+			if (userDefinedVariableValue != null) {
+				return userDefinedVariableValue;
+			}
+			// check if this is not another state of current node
 			for (TempTableProbabilityCell cell : this.currentHeader.getCellList()) {
 				 if (cell.getPossibleValue().getName().equalsIgnoreCase(value) ) {
 					 // Debug.println("\n => Variable value found: " + cell.getPossibleValue().getName());
@@ -2708,12 +2727,36 @@ public class Compiler implements ICompiler {
 		 */
 		public void cleanUpKnownValues(SSBNNode ssbnnode);
 		
+
+		/**
+		 * Hierarchically searches for user-defined variables in scope.
+		 * @param key : name of variable to look for
+		 * @return : value of the variable
+		 * @see #addUserDefinedVariable(String, IProbabilityValue)
+		 * @see #clearUserDefinedVariables()
+		 */
+		public IProbabilityValue getUserDefinedVariable(String key);
+		
+		/**
+		 *  Adds a new user-defined variable retrievable from {@link #getUserDefinedVariable(String)}
+		 * @see #clearUserDefinedVariables()
+		 */
+		public void addUserDefinedVariable(String key, IProbabilityValue value);
+		
+		/**
+		 * Deletes all user variables that were included by {@link #addUserDefinedVariable(String, IProbabilityValue)}.
+		 * @see #getUserDefinedVariable(String)
+		 */
+		public void clearUserDefinedVariables();
+		
+		
 	}
 	
 	
 	protected class TempTable implements INestedIfElseClauseContainer{
-
+		
 		private List<TempTableHeaderCell> clauses = null;
+		private Map<String, IProbabilityValue> userDefinedVariables;
 		
 		/**
 		 * Represents the temporary CPT table (a list of if-else clauses)
@@ -2828,9 +2871,45 @@ public class Compiler implements ICompiler {
 			}
 		}
 		
+		/**
+		 * @return the userDefinedVariables : mapping from user-defined variable names to its values.
+		 */
+		protected Map<String, IProbabilityValue> getUserDefinedVariables() {
+			if (userDefinedVariables == null) {
+				userDefinedVariables = new HashMap<String, IProbabilityValue>();
+			}
+			return userDefinedVariables;
+		}
+		/**
+		 * @param userDefinedVariables : mapping from user-defined variable names to its values.
+		 */
+		protected void setUserDefinedVariables(Map<String, IProbabilityValue> userDefinedVariables) {
+			this.userDefinedVariables = userDefinedVariables;
+		}
 		
+
+		/*
+		 * (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#getUserDefinedVariable(java.lang.String)
+		 */
+		public IProbabilityValue getUserDefinedVariable(String key) {
+			// this is the top level, so return immediately
+			return getUserDefinedVariables().get(key);
+		}
 		
+		/**
+		 *  Delegates to {@link #getUserDefinedVariables()} and {@link Map#put(Object, Object)}
+		 */
+		public void addUserDefinedVariable(String key, IProbabilityValue value){
+			getUserDefinedVariables().put(key, value);
+		}
 		
+		/**
+		 * Simply delegates to {@link #getUserDefinedVariables()} and {@link Map#clear()}
+		 */
+		public void clearUserDefinedVariables() {
+			getUserDefinedVariables().clear();
+		}
 	}
 	
 	
@@ -2854,6 +2933,8 @@ public class Compiler implements ICompiler {
 		private List<TempTableHeaderCell> nestedIfs = null;
 		
 		private INestedIfElseClauseContainer upperContainer = null;
+		
+		private Map<String, IProbabilityValue> userDefinedVariables;
 		
 		/**
 		 * Represents an entry for temporary table header (parents and their expected single values
@@ -3452,8 +3533,56 @@ public class Compiler implements ICompiler {
 			// at this point, we did not find any embedded node declaration in the if-clause
 			return false;
 		}
+		/**
+		 * @return the userDefinedVariables : mapping from user-defined variable names to its values.
+		 */
+		protected Map<String, IProbabilityValue> getUserDefinedVariables() {
+			if (userDefinedVariables == null) {
+				userDefinedVariables = new HashMap<String, IProbabilityValue>();
+			}
+			return userDefinedVariables;
+		}
+		/**
+		 * @param userDefinedVariables : mapping from user-defined variable names to its values.
+		 */
+		protected void setUserDefinedVariables(Map<String, IProbabilityValue> userDefinedVariables) {
+			this.userDefinedVariables = userDefinedVariables;
+		}
 		
+		/**
+		 * Delegates to {@link #getUserDefinedVariables()}.
+		 * If not present, delegates to upper if-clause (if there are nested if-clauses).
+		 * @param key : name of variable to look for
+		 * @return : value of the variable
+		 */
+		public IProbabilityValue getUserDefinedVariable(String key) {
+			IProbabilityValue value = getUserDefinedVariables().get(key);
+			if (value != null) {
+				// found
+				return value;
+			}
+			// look recursively
+			INestedIfElseClauseContainer upper = getUpperClause();
+			if (upper != null) {
+				return upper.getUserDefinedVariable(key);
+			}
+			// nothing found
+			return null;
+		}
 		
+		/**
+		 *  Delegates to {@link #getUserDefinedVariables()} and {@link Map#put(Object, Object)}
+		 */
+		public void addUserDefinedVariable(String key, IProbabilityValue value){
+			getUserDefinedVariables().put(key, value);
+		}
+		
+		/**
+		 * Simply delegates to {@link #getUserDefinedVariables()} and {@link Map#clear()}
+		 */
+		public void clearUserDefinedVariables() {
+			getUserDefinedVariables().clear();
+		}
 		
 		
 		
