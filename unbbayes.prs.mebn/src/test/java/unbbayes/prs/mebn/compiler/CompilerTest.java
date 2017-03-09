@@ -6,6 +6,7 @@ package unbbayes.prs.mebn.compiler;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +18,7 @@ import unbbayes.io.mebn.UbfIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
+import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -890,6 +892,9 @@ public class CompilerTest extends TestCase {
 		
 	}
 	
+	/**
+	 * This method tests support for noes with no arguments as parent of current node (whose LPD is being compiled)
+	 */
 	public void testNoArgumentNode() {
 		UbfIO io = UbfIO.getInstance();
 		
@@ -939,6 +944,369 @@ public class CompilerTest extends TestCase {
 		assertEquals(0.7999, node.getMarginalAt(0), 0.00005);
 		assertEquals(0.2, node.getMarginalAt(1), 0.00005);
 		assertEquals(1.0E-4, node.getMarginalAt(2), 0.00005);
+		
+	}
+	
+	/**
+	 * This method tests support for user-defined variables being dynamically defined
+	 * @throws MEBNException
+	 */
+	@SuppressWarnings("deprecation")
+	public void testUserDefinedVariable() throws MEBNException {
+		UbfIO io = UbfIO.getInstance();
+		
+		MultiEntityBayesianNetwork mebn = null;
+		try {
+			mebn = io.loadMebn(new File("./src/test/resources/twoNodeExample.ubf"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+		assertNotNull(mebn);
+		
+		// extract the node to change lpd
+		ResidentNode resident = mebn.getDomainResidentNode("RX2");
+		
+		// change the lpd of the node to some invalid script
+		resident.setTableFunction(
+					"if any x have (RX1 = true) [ "
+				+		"var1 = 0.9, true = var1, false = 1 - var1"
+				+	"] else if any x have (RX1 = false) [ "
+				+		"true = 1, "
+				+		"if all x have (RX1 = false) [ "
+				+			"var2 = 0.1, true = var2, false = 1 - true"
+				+		"] else [ "
+				+			"false = 0.75, true = 1-false"
+				+		"]  "
+				+	"] else [ "
+				+		"var3 = 1, absurd = var3"
+				+	"] "
+				);
+		
+		resident.getCompiler().init(resident.getTableFunction());
+		try {
+			resident.getCompiler().parse();
+			fail("Should throw compilation error");
+		} catch (MEBNException e1) {
+			// make sure correct exception message is used
+			assertTrue(e1.getMessage().contains(
+						unbbayes.util.ResourceController.newInstance().getBundle(
+								unbbayes.prs.mebn.compiler.resources.Resources.class.getName()
+						).getString("NonUserDefinedVariablesFoundBeforeIfClause")
+					)
+				);
+		}
+		// change the lpd of the node to some invalid script
+		resident.setTableFunction(
+				"if any x have (RX1 = true) [ "
+						+		"var1 = 0.9, true = var1, false = 1 - var1"
+						+	"] else if any x have (RX1 = false) [ "
+						+		"if all x have (RX1 = false) [ "
+						+			"var2 = 0.1, true = var2, false = 1 - true"
+						+		"] else [ "
+						+			"false = 0.75, true = 1-false"
+						+		"]  "
+						+		"true = 1, "
+						+	"] else [ "
+						+		"var3 = 1, absurd = var3"
+						+	"] "
+				);
+		
+		resident.getCompiler().init(resident.getTableFunction());
+		try {
+			resident.getCompiler().parse();
+			fail("Should throw compilation error");
+		} catch (MEBNException e1) {
+			// OK
+		}
+		// change the lpd of the node to some invalid script
+		resident.setTableFunction(
+				"if any x have (RX1 = true) [ "
+						+		"var1 = 0.9, true = var1, false = 1 - var1"
+						+	"] else if any x have (RX1 = false) [ "
+						+		"if all x have (RX1 = false) [ "
+						+			"var2 = 0.1, true = var2, false = 1 - true"
+						+		"] else [ "
+						+			"false = 0.75, true = 1-false"
+						+		"]  "
+						+		"var2 = 1, "
+						+	"] else [ "
+						+		"var3 = 1, absurd = var3"
+						+	"] "
+				);
+		
+		resident.getCompiler().init(resident.getTableFunction());
+		try {
+			resident.getCompiler().parse();
+			fail("Should throw compilation error");
+		} catch (MEBNException e1) {
+			// OK
+		}
+		
+		// change the lpd of the node to some valid script
+		resident.setTableFunction(
+				"if any x have (RX1 = true) [ "
+						+		"var1 = 0.9, true = var1, false = 1 - var1"
+						+	"] else if any x have (RX1 = false) [ "
+						+		"if all x have (RX1 = false) [ "
+						+			"var2 = 0.1, true = var2, false = 1 - true"
+						+		"] else [ "
+						+			"false = 0.75, true = 1-false"
+						+		"]  "
+						+	"] else [ "
+						+		"var3 = 1, absurd = var3"
+						+	"] "
+				);
+		
+		resident.getCompiler().init(resident.getTableFunction());
+		resident.getCompiler().parse();	// now should pass
+		
+		// change the lpd of the node to some valid script
+		resident.setTableFunction(
+				"if any x have (RX1 = true) [ "
+						+		"var1 = 0.9, true = var1, false = 1 - var1"
+						+	"] else if any x have (RX1 = false) [ "
+						+		"var2 = 0.1, "
+						+		"if all x have (RX1 = false) [ "
+						+			"true = var2, false = 1 - true"
+						+		"] else [ "
+						+			"false = 0.85-var2, true = 1-false"
+						+		"]  "
+						+	"] else [ "
+						+		"var3 = 1, absurd = var3"
+						+	"] "
+				);
+		
+		resident.getCompiler().init(resident.getTableFunction());
+		resident.getCompiler().parse();	// now should pass
+		
+		// check name scope of nested ifs
+		resident.setTableFunction(
+				"if any x have (RX1 = true) [ "
+						+		"var = 0.9, true = var, false = 1 - var"
+						+	"] else if any x have (RX1 = false) [ "
+						+		"var = 0.2, "
+						+		"if all x have (RX1 = false) [ "
+						+			"true = var, false = 1 - true"
+						+		"] else [ "
+						+			"false = 0.85-var, true = 1-false"
+						+		"]  "
+						+	"] else [ "
+						+		"var = 1, absurd = var"
+						+	"] "
+				);
+		
+		resident.getCompiler().init(resident.getTableFunction());
+		resident.getCompiler().parse();	// now should pass
+		
+		// run a query to make sure compiler generates correct CPT when SSBN is generated
+		TextModeRunner runner = new TextModeRunner();
+		
+		OrdinaryVariable x = resident.getOrdinaryVariableByName("x");
+		List<OVInstance> queryArguments = new ArrayList<OVInstance>(2);
+		queryArguments.add(OVInstance.getInstance(x , LiteralEntityInstance.getInstance("a", x.getValueType())));
+		Query query = new Query(resident, queryArguments);
+		ProbabilisticNetwork result = null;
+		try {
+			result = runner.executeQueryLaskeyAlgorithm(Collections.singletonList(query), PowerLoomKB.getNewInstanceKB(), mebn);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		assertNotNull(result);
+		
+		// extract node to check for probabilities
+		ProbabilisticNode node = (ProbabilisticNode) result.getNode("RX2__a");
+		assertNotNull(node);
+		PotentialTable table = node.getProbabilityFunction();
+		assertNotNull(table);
+		
+		// prepare an index that will store what are the positions of false/true/absurd states for current node
+		int stateIndex[] = new int[3];
+		Arrays.fill(stateIndex, -1);
+		for (int i = 0; i < node.getStatesSize(); i++) {
+			if (node.getStateAt(i).equalsIgnoreCase("false")) {
+				stateIndex[0] = i;
+			} else if (node.getStateAt(i).equalsIgnoreCase("true")) {
+				stateIndex[1] = i;
+			} else {
+				stateIndex[2] = i;
+			} 
+		}
+		assertTrue(stateIndex[0] >= 0);
+		assertTrue(stateIndex[1] >= 0);
+		assertTrue(stateIndex[2] >= 0);
+		
+		assertEquals(1, node.getParentNodes().size());
+		int stateIndexParent[] = new int[3];
+		Arrays.fill(stateIndexParent, -1);
+		for (int i = 0; i < node.getParentNodes().get(0).getStatesSize(); i++) {
+			if (node.getParentNodes().get(0).getStateAt(i).equalsIgnoreCase("false")) {
+				stateIndexParent[0] = i;
+			} else if (node.getParentNodes().get(0).getStateAt(i).equalsIgnoreCase("true")) {
+				stateIndexParent[1] = i;
+			} else {
+				stateIndexParent[2] = i;
+			} 
+		}
+		assertTrue(stateIndexParent[0] >= 0);
+		assertTrue(stateIndexParent[1] >= 0);
+		assertTrue(stateIndexParent[2] >= 0);
+		
+		int[] coord = table.getMultidimensionalCoord(0);
+		assertNotNull(coord);
+		assertEquals(2, coord.length);
+		
+		coord[1] = stateIndexParent[1];	// set parent to true
+		
+		coord[0] = stateIndex[1];		// set current node to true
+		assertEquals(0.9, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[0];		// set current node to false
+		assertEquals(0.1, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[2];		// set current node to absurd
+		assertEquals(0, table.getValue(coord), 0.00005);
+		
+		coord[1] = stateIndexParent[0];	// set parent to false
+		
+		coord[0] = stateIndex[1];		// set current node to true
+		assertEquals(0.2, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[0];		// set current node to false
+		assertEquals(0.8, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[2];		// set current node to absurd
+		assertEquals(0, table.getValue(coord), 0.00005);
+		
+		coord[1] = stateIndexParent[2];	// set parent to absurd
+		
+		coord[0] = stateIndex[1];		// set current node to true
+		assertEquals(0, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[0];		// set current node to false
+		assertEquals(0, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[2];		// set current node to absurd
+		assertEquals(1, table.getValue(coord), 0.00005);
+		
+	}
+	
+	/**
+	 * This method tests 2 types of normalization: normalization of probabilities
+	 * summing up to a value below 1 and some states not being declared (in this case
+	 * the remaining probabilities must be distributed uniformely to the other states);
+	 * and normalization of probabilities summing up to a value above 1 and some
+	 * states not being declared (in this case, undeclared states should be set to 0
+	 * and the probabilities must be normalized)
+	 * @throws Exception 
+	 */
+	public void testNormalization() throws Exception {
+		UbfIO io = UbfIO.getInstance();
+		
+		MultiEntityBayesianNetwork mebn = null;
+		try {
+			mebn = io.loadMebn(new File("./src/test/resources/twoNodeExample.ubf"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+		assertNotNull(mebn);
+		
+		// extract the node to change lpd
+		ResidentNode resident = mebn.getDomainResidentNode("RX2");
+		
+		// change the lpd of the node to some valid script
+		resident.setTableFunction(
+				"if any x have (RX1 = true) [ "
+						+		"true = 0.8, absurd = 0"
+						+	"] else if any x have (RX1 = false) [ "
+						+		"if all x have (RX1 = false) [ "
+						+			"true = 3, false = 1"
+						+		"] else [ "
+						+			"false = 0.75, true = 1-false"
+						+		"]  "
+						+	"] else [ "
+						+		"absurd = 0.3334"
+						+	"] "
+				);
+		
+		resident.getCompiler().init(resident.getTableFunction());
+		resident.getCompiler().parse();	// now should pass
+		
+		
+		// run a query to make sure compiler generates correct CPT when SSBN is generated
+		TextModeRunner runner = new TextModeRunner();
+		
+		OrdinaryVariable x = resident.getOrdinaryVariableByName("x");
+		List<OVInstance> queryArguments = new ArrayList<OVInstance>(2);
+		queryArguments.add(OVInstance.getInstance(x , LiteralEntityInstance.getInstance("a", x.getValueType())));
+		Query query = new Query(resident, queryArguments);
+		ProbabilisticNetwork result = null;
+		result = runner.executeQueryLaskeyAlgorithm(Collections.singletonList(query), PowerLoomKB.getNewInstanceKB(), mebn);
+		assertNotNull(result);
+		
+		// extract node to check for probabilities
+		ProbabilisticNode node = (ProbabilisticNode) result.getNode("RX2__a");
+		assertNotNull(node);
+		PotentialTable table = node.getProbabilityFunction();
+		assertNotNull(table);
+		
+		// prepare an index that will store what are the positions of false/true/absurd states for current node
+		int stateIndex[] = new int[3];
+		Arrays.fill(stateIndex, -1);
+		for (int i = 0; i < node.getStatesSize(); i++) {
+			if (node.getStateAt(i).equalsIgnoreCase("false")) {
+				stateIndex[0] = i;
+			} else if (node.getStateAt(i).equalsIgnoreCase("true")) {
+				stateIndex[1] = i;
+			} else {
+				stateIndex[2] = i;
+			} 
+		}
+		assertTrue(stateIndex[0] >= 0);
+		assertTrue(stateIndex[1] >= 0);
+		assertTrue(stateIndex[2] >= 0);
+		
+		assertEquals(1, node.getParentNodes().size());
+		int stateIndexParent[] = new int[3];
+		Arrays.fill(stateIndexParent, -1);
+		for (int i = 0; i < node.getParentNodes().get(0).getStatesSize(); i++) {
+			if (node.getParentNodes().get(0).getStateAt(i).equalsIgnoreCase("false")) {
+				stateIndexParent[0] = i;
+			} else if (node.getParentNodes().get(0).getStateAt(i).equalsIgnoreCase("true")) {
+				stateIndexParent[1] = i;
+			} else {
+				stateIndexParent[2] = i;
+			} 
+		}
+		assertTrue(stateIndexParent[0] >= 0);
+		assertTrue(stateIndexParent[1] >= 0);
+		assertTrue(stateIndexParent[2] >= 0);
+		
+		int[] coord = table.getMultidimensionalCoord(0);
+		assertNotNull(coord);
+		assertEquals(2, coord.length);
+		
+		coord[1] = stateIndexParent[1];	// set parent to true
+		
+		coord[0] = stateIndex[1];		// set current node to true
+		assertEquals(0.8, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[0];		// set current node to false
+		assertEquals(0.2, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[2];		// set current node to absurd
+		assertEquals(0, table.getValue(coord), 0.00005);
+		
+		coord[1] = stateIndexParent[0];	// set parent to false
+		
+		coord[0] = stateIndex[1];		// set current node to true
+		assertEquals(0.75, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[0];		// set current node to false
+		assertEquals(0.25, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[2];		// set current node to absurd
+		assertEquals(0, table.getValue(coord), 0.00005);
+		
+		coord[1] = stateIndexParent[2];	// set parent to absurd
+		
+		coord[0] = stateIndex[1];		// set current node to true
+		assertEquals(0.3333, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[0];		// set current node to false
+		assertEquals(0.3333, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[2];		// set current node to absurd
+		assertEquals(0.3334, table.getValue(coord), 0.00005);
 		
 	}
 	

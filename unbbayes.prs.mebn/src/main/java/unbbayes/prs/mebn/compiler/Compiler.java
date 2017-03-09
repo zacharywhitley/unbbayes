@@ -38,6 +38,9 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.IProbabilityFunction;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.prs.bn.ProbabilisticTable;
+import unbbayes.prs.bn.cpt.ITableFunction;
+import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
@@ -259,6 +262,9 @@ TODO number_or_ident ::= number | ident
  */
 public class Compiler implements ICompiler {
 	
+	/** This is a default instance of {@link #getTableNormalizer()} */
+	public static final ITableFunction DEFAULT_NORMALIZE_TABLE_FUNCTION = new NormalizeTableFunction();
+
 	private Comparator<List<INode>> cacheParentsComparator = new Comparator<List<INode>>() {
 		public int compare(List<INode> o1, List<INode> o2) {
 			if (o1.size() > o2.size()) {
@@ -365,6 +371,8 @@ public class Compiler implements ICompiler {
 	private boolean isExactMatchStrongOV = false;
 
 	private boolean isToNormalize = true;
+
+	private ITableFunction tableNormalizer = DEFAULT_NORMALIZE_TABLE_FUNCTION;
 	
 	/**
 	 * Because at least one constructor must be visible to subclasses in order to allow
@@ -804,10 +812,12 @@ public class Compiler implements ICompiler {
 						break;
 					}
 				}
-				// consistency check, allow only values between 0 and 1 (if we should use normalized values)
+				// consistency check, allow only positive values
 				if (isToNormalize()
-						&& ((value < 0) || (value > 1))) {
-					throw new InvalidProbabilityRangeException(getNode().toString());
+						&& ((value < 0) 
+//								|| (value > 1)
+								)) {
+					throw new InvalidProbabilityRangeException(getNode().toString() + " = " + value);
 				}
 				this.cpt.setValue(i+j, value );
 			}
@@ -823,6 +833,11 @@ public class Compiler implements ICompiler {
 //			
 //		}
 		
+		try {
+			getTableNormalizer().applyFunction((ProbabilisticTable)this.cpt);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		// rollback MFrag settings
 		for (SSBNNode parent : parentToPreviousMFragMap.keySet()) {
@@ -1794,7 +1809,7 @@ public class Compiler implements ICompiler {
 						
 						// distribute the remaining probability (1-sumOfDeclaredProb) uniformly across the non-declared states
 						float probOfUndeclaredState = (1f-sumOfDeclaredProb)/undeclaredStates.size();
-						if (!isToNormalize()) {
+						if (!isToNormalize() || (sumOfDeclaredProb >= 1)) {
 							// if we don't need to normalize, then simply set all undeclared states to zero
 							probOfUndeclaredState = 0f;
 						}
@@ -1828,7 +1843,8 @@ public class Compiler implements ICompiler {
 					
 					// runtime probability bound check (on SSBN generation time)
 					if (isToNormalize()
-							&& !this.currentHeader.isSumEquals1()) {
+							&& this.currentHeader.getProbCellSum() < 0.99995	// check if normalization of probabilities smaller than 1 worked
+							) {
 						// Debug.println("Testing cell's probability value's sum: " + currentHeader.getProbCellSum());
 						if (!Float.isNaN(this.currentHeader.getProbCellSum())) {
 							throw new InvalidProbabilityRangeException(getNode().toString());
@@ -1907,7 +1923,7 @@ public class Compiler implements ICompiler {
 
 		// consistency check C09
 		// ret verifies the sum of all declared states' probability (must be 1)
-		// boolean hasUnknownValue shows if some ret was negative.
+		// boolean hasUnknownValue shows if some ret was negative or NaN.
 		IProbabilityValue ret = expression();		
 		float retValue = 0;	// initialize with a value which will not impact consistency check (the one that checks if sum is 1)
 		if (userDefinedVariableName == null) {
@@ -4316,7 +4332,7 @@ public class Compiler implements ICompiler {
 				declaredStates++;
 				sumOtherStates += cell.getProbabilityValue();
 			}
-			if (Float.isNaN(sumOtherStates) || declaredStates <= 0) {
+			if (Float.isNaN(sumOtherStates) || declaredStates <= 0 || sumOtherStates >= 1) {
 				return 0f;
 			}
 			return (1-sumOtherStates)/(getSSBNNode().getProbNode().getStatesSize() - declaredStates);
@@ -4902,6 +4918,27 @@ public class Compiler implements ICompiler {
 	 */
 	public void setToNormalize(boolean isToNormalize) {
 		this.isToNormalize = isToNormalize;
+	}
+
+
+	/**
+	 * @return the tableNormalizer : this is a {@link ITableFunction} responsible for normalizing a CPT at the end of {@link #getCPT()}.
+	 * By default this is {@link #DEFAULT_NORMALIZE_TABLE_FUNCTION}
+	 */
+	public ITableFunction getTableNormalizer() {
+		if (tableNormalizer == null) {
+			tableNormalizer = DEFAULT_NORMALIZE_TABLE_FUNCTION;
+		}
+		return tableNormalizer;
+	}
+
+
+	/**
+	 * @param tableNormalizer : this is a {@link ITableFunction} responsible for normalizing a CPT at the end of {@link #getCPT()}.
+	 * By default this is {@link #DEFAULT_NORMALIZE_TABLE_FUNCTION}
+	 */
+	public void setTableNormalizer(ITableFunction tableNormalizer) {
+		this.tableNormalizer = tableNormalizer;
 	}
 
 

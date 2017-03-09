@@ -133,6 +133,9 @@ public class Resources_pt extends GuiResources_pt {
 		// miscellaneous messages
 		{"selectOnlyOneEntry" , "Por favor, selecione somente um único elemento."},
 		
+		{"useOldLPDEditor" , "Usar editor de LPD antigo."},
+		
+		// messages about simple soft evidence
 		{"enableSoftEvidence" , "Habilitar evidência não exata"},
 		{"softEvidence" , "Evidência probabilística (regra de Jeffrey)"},
 		{"likelihoodEvidence" , "Evidência por verossimilhança (likelihood evidence)"},
