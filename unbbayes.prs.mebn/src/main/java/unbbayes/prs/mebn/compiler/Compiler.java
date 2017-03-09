@@ -99,8 +99,8 @@ TODO iterate on CPT multiple times to support cross column reference (cells are 
  factor ::= number | function | "(" expression ")"
 TODO function ::= possibleVal 
  	| "CARDINALITY" "(" [varsetname] ")"
-TODO 	| "MIN" "(" expression [";"|","] expression ")"
-TODO  	| "MAX" "(" expression [";"|","] expression ")"
+ 	| "MIN" "(" expression [";"|","] expression ")"
+  	| "MAX" "(" expression [";"|","] expression ")"
 TODO 	| external_function([arbitrary_arguments])
  possibleVal ::= ident
  addop ::= "+" | "-"
@@ -2574,7 +2574,12 @@ public class Compiler implements ICompiler {
 		IProbabilityValue ret2 = null;
 		match('(');
 		ret1 = this.expression();
-		match(';');
+//		match(';');
+		if (look != ';' && look != ',') {
+			expected(";");
+		}
+		nextChar();
+		skipWhite();
 		ret2 = this.expression();
 		match(')');
 		/*
@@ -2605,7 +2610,12 @@ public class Compiler implements ICompiler {
 		IProbabilityValue ret2 = null;
 		match('(');
 		ret1 = this.expression();
-		match(';');
+//		match(';');
+		if (look != ';' && look != ',') {
+			expected(";");
+		}
+		nextChar();
+		skipWhite();
 		ret2 = this.expression();
 		match(')');
 		/*

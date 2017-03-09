@@ -1227,6 +1227,24 @@ public class CompilerTest extends TestCase {
 		resident.getCompiler().init(resident.getTableFunction());
 		resident.getCompiler().parse();	// now should pass
 		
+		// change the lpd of the node to some valid script
+		resident.setTableFunction(
+				"if any x have (RX1 = true) [ "
+						+		"true = 0.8, absurd = 0"
+						+	"] else if any x have (RX1 = false) [ "
+						+		"if all x have (RX1 = false) [ "
+						+			"true = MAX(3,1), false = MIN(3,1)"
+						+		"] else [ "
+						+			"true = 3, false = 1"
+						+		"]  "
+						+	"] else [ "
+						+		"absurd = 0.3334"
+						+	"] "
+				);
+		
+		resident.getCompiler().init(resident.getTableFunction());
+		resident.getCompiler().parse();	// now should pass
+		
 		
 		// run a query to make sure compiler generates correct CPT when SSBN is generated
 		TextModeRunner runner = new TextModeRunner();
