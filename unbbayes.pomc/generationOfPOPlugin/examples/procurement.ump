@@ -1,0 +1,178 @@
+Number of goals cadastred
+2
+IDs of all goals
+1
+2
+Number of hypothesis cadastred
+6
+IDs of all hypothesis
+1
+2
+3
+4
+5
+6
+Number of entites cadastred
+0
+Number of atributes cadastred
+0
+Number of relationship cadastred
+0
+Number of rules cadastred
+0
+Number of Groups cadastred
+0
+****************
+Groups Details
+****************
+Rules Details
+****************
+relationshp Details
+****************
+Atributes Details
+****************
+Entities Details
+****************
+Hypothesis Details
+1
+Is there any relations between the commitee and the enterprises that participated in the procurement?
+
+23/11/2013
+
+null
+Number of goals related
+1
+Goals related with this hypothesis
+1
+Number of subHypothesis
+0
+Number of foward tracking entity
+0
+Number of foward tracking groups
+0
+END OF HYPOTHESIS
+2
+Is the responsible person of the winner enterprise of the procurement a front?
+Laécio Lima 
+02/12/2013
+
+null
+Number of goals related
+1
+Goals related with this hypothesis
+1
+Number of subHypothesis
+0
+Number of foward tracking entity
+0
+Number of foward tracking groups
+0
+END OF HYPOTHESIS
+3
+Was the responsible person of the winner enterprise of the procurement responsible for an enterprise that has been suspended from procuring with the public administration?
+
+02/12/2013
+
+null
+Number of goals related
+1
+Goals related with this hypothesis
+1
+Number of subHypothesis
+0
+Number of foward tracking entity
+0
+Number of foward tracking groups
+0
+END OF HYPOTHESIS
+4
+Was competition compromissed?
+
+02/12/2013
+
+null
+Number of goals related
+1
+Goals related with this hypothesis
+1
+Number of subHypothesis
+0
+Number of foward tracking entity
+0
+Number of foward tracking groups
+0
+END OF HYPOTHESIS
+5
+Is there any member of commitee who does not have a clean history?
+Laécio Lima dos Santos
+02/12/2013
+
+null
+Number of goals related
+1
+Goals related with this hypothesis
+2
+Number of subHypothesis
+0
+Number of foward tracking entity
+0
+Number of foward tracking groups
+0
+END OF HYPOTHESIS
+6
+Is there any relation between members of the comitee and the enterprise that participate in previous procuerements?
+
+02/12/2013
+
+null
+Number of goals related
+1
+Goals related with this hypothesis
+2
+Number of subHypothesis
+0
+Number of foward tracking entity
+0
+Number of foward tracking groups
+0
+END OF HYPOTHESIS
+********************
+Goals details:
+1
+Identify whether a given procurement should be inspected and/or audited 
+Laécio Lima dos Santos
+23/11/2013
+Evidence suggests further analysis is needed. 
+null
+Number of subgoals
+0
+Number of hypothesis of this goal
+4
+Hypothesis of this goal:
+1
+2
+3
+4
+Number of entities related with this goal
+0
+Number of groups related with this goal
+0
+####
+2
+Identify whether the commitee of a given procurement should be changed
+Laécio Lima
+02/12/2013
+
+null
+Number of subgoals
+0
+Number of hypothesis of this goal
+2
+Hypothesis of this goal:
+5
+6
+Number of entities related with this goal
+0
+Number of groups related with this goal
+0
+####
