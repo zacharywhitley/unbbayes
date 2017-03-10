@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" id="XML Catalog File (see http://www.oasis-open.org/committees/entity/spec-2001-08-06.html) - Created By Protege 4" prefer="public">
+<group id="Folder Repository, directory=, recursive=true, Auto-Update=true, version=1" prefer="public" xml:base="">
+<uri id="Automatically generated entry, Timestamp=1470511552809" name="http://www.pr-owl.org/pr-owl2.owl" uri="target/classes/pr-owl/pr-owl2.owl"/>
+<uri id="Automatically generated entry, Timestamp=1470511552809" name="http://www.pr-owl.org/pr-owl.owl" uri="target/classes/pr-owl/pr-owl.owl"/>
+<uri id="Automatically generated entry, Timestamp=1470511552809" name="http://www.owl-ontologies.com/2005/08/07/xsp.owl" uri="mvn_lib/protege/edu.stanford.smi.protegex.owl/xsp.owl"/>
+<uri id="Automatically generated entry, Timestamp=1470511552809" name="http://www.w3.org/2003/11/swrl" uri="mvn_lib/protege/edu.stanford.smi.protegex.owl/swrl.owl"/>
+<uri id="Automatically generated entry, Timestamp=1470511552809" name="http://www.w3.org/2003/11/swrlb" uri="mvn_lib/protege/edu.stanford.smi.protegex.owl/swrlb.owl"/>
+<uri id="Automatically generated entry, Timestamp=1470511552809" name="http://www.owl-ontologies.com/assert.owl" uri="mvn_lib/protege/edu.stanford.smi.protegex.owl/assert.owl"/>
+<uri id="Automatically generated entry, Timestamp=1470511552809" name="http://protege.stanford.edu/plugins/owl/OWLProfiles.owl" uri="mvn_lib/protege/edu.stanford.smi.protegex.owl/OWLProfiles.owl"/>
+<uri id="Automatically generated entry, Timestamp=1470511552809" name="http://protege.stanford.edu/plugins/owl/protege" uri="mvn_lib/protege/edu.stanford.smi.protegex.owl/protege.owl"/>
+<uri id="Automatically generated entry, Timestamp=1474144855063" name="file:/home/diego/Documents/Mono/UMP-ST-Extension/UMPST/./ubfTmpFile.owl" uri="ubfTmpFile.owl"/>
+</group>
+</catalog>
