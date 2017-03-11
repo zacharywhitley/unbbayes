@@ -566,6 +566,7 @@ public class NetFileFiller extends CSVJointDistributionReader implements INetFil
 		options.addOption("o","output", true, "Network file (.net extension) to overwrite with conditional probabilities.");
 		options.addOption("inc","increment", true, "Increment this value to counts in order to avoid 0 counts.");
 		options.addOption("d","debug", false, "Enables debug mode.");
+		options.addOption("h","help", false, "Prints help.");
 		
 		
 		CommandLine cmd = null;
