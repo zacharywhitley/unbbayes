@@ -2116,6 +2116,7 @@ Probability=0.54347825,0.7352941,0.002134218,0.11557789,0.45454544,0.096330285,0
 				}
 				
 				Debug.println(JavaSimulatorWrapper.class, e.getMessage(), e);
+				System.err.println("Exception " + e.getMessage() + " at attempt " + numAttempt + ". Re-running...");
 				continue;	// try next attempt if exception was thrown
 			}
 			
