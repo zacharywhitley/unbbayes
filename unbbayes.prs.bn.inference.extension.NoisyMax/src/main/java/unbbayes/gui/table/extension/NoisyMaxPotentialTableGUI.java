@@ -5,8 +5,6 @@ package unbbayes.gui.table.extension;
 
 import java.awt.Color;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -15,8 +13,6 @@ import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
-
-import org.omg.CORBA.portable.ValueInputStream;
 
 import unbbayes.gui.table.ColumnGroup;
 import unbbayes.gui.table.ExcelAdapter;
@@ -111,7 +107,7 @@ public class NoisyMaxPotentialTableGUI extends GUIPotentialTable {
 		// the number of combinations of parent's states that we have (i.e. related to number of columns we'd have in ordinal CPT)
 		int nCombinationStates = table.tableSize() / tableOwner.getStatesSize();
 
-		// the number of rows is the number of states the node has, minus the last column, because the prob. of last state is 1-previous.
+		// the number of rows is the number of states the node has, minus the 1st column, because the prob. of such state is 1-others.
 		int numRows = tableOwner.getStatesSize() - 1;
 		if (numRows <= 0) {
 			// needs more states in order to build a noisy-max distribution
@@ -222,9 +218,9 @@ public class NoisyMaxPotentialTableGUI extends GUIPotentialTable {
 				for (multidimensionalCoord[varIndex] = 1; multidimensionalCoord[varIndex] < numStatesParent; multidimensionalCoord[varIndex]++, columnIndex++) {
 					// note: columnIndex increments only when stateIndex increments, but it is not reset when handling the next parent
 					// iterate on states of table owner (this is related to the row of the jtable)
-					for (multidimensionalCoord[0] = 0; multidimensionalCoord[0] < numRows;  multidimensionalCoord[0]++) {
+					for (multidimensionalCoord[0] = 1; multidimensionalCoord[0] < numRows+1;  multidimensionalCoord[0]++) {
 						// Note: numRows = number of states of table owner - 1 (because last state's prob is 1-previous, so we don't need to specify)
-						data[multidimensionalCoord[0]][columnIndex] = "" + df.format(table.getValue(multidimensionalCoord));
+						data[multidimensionalCoord[0]-1][columnIndex] = "" + df.format(table.getValue(multidimensionalCoord));
 					}
 				}
 				// set index of this variable to 0, so that in the next iteration all indexes are at 0
@@ -241,11 +237,11 @@ public class NoisyMaxPotentialTableGUI extends GUIPotentialTable {
 		 * | Node State 3 |
 		 * |---------------
 		 * 
-		 * We don't need the last state of node, because it is 1-prob of previous states
+		 * We don't need the 1st state of node, because it is 1-prob of other states
 		 */ 
-		for (int i = 0; i < numRows; i++) {	// numRows is already number of states - 1
-			// note: we don't need to specify the last state, because its probability is 1-previous
-			data[i][0] = tableOwner.getStateAt(i);
+		for (int i = 1; i <= numRows; i++) {	// numRows is already number of states - 1
+			// note: we don't need to specify the 1st state, because its probability is 1-others
+			data[i-1][0] = tableOwner.getStateAt(i);
 		}
 		
 		/*
@@ -399,7 +395,8 @@ public class NoisyMaxPotentialTableGUI extends GUIPotentialTable {
 					
 					// use a vector of indexes for each parent, because it's going to be easier in this way
 					int[] coordinateOfCellInCPT = getPotentialTable().getMultidimensionalCoord(0);
-					coordinateOfCellInCPT[0] = e.getLastRow();	// the row represents the state of the owner of the table (variable at index 0)
+					// the row represents the state of the owner of the table (variable at index 0)
+					coordinateOfCellInCPT[0] = e.getLastRow() + 1;	// we add 1, because 1st state is omitted at GUI table
 					
 					// find which state of which variable (parent) is associated with selected column in JTable
 					
@@ -425,14 +422,14 @@ public class NoisyMaxPotentialTableGUI extends GUIPotentialTable {
 					try {
 						float value = Float.parseFloat(valueText);
 						
-						// calculate the sum of prob of all states except the last state, because the prob of last state is 1 - the sum
+						// calculate the sum of prob of all states except the 1st state, because the prob of 1st state is 1 - the sum
 						float sum = 0f;
 						
 						// clone coordinateOfCellInCPT, and use it in order to iterate only on cells of current column in CPT
 						int[] coordinateForIterationOnSameColumn = getPotentialTable().getMultidimensionalCoord(getPotentialTable().getLinearCoord(coordinateOfCellInCPT));
 						// iterate on cells of current column in CPT
-						int stateSizeMinus1 = node.getStatesSize() - 1;	// - 1 because we don't need to iterate on last state
-						for (coordinateForIterationOnSameColumn[0] = 0; coordinateForIterationOnSameColumn[0] < stateSizeMinus1; coordinateForIterationOnSameColumn[0]++) {
+						int statesSize = node.getStatesSize();	
+						for (coordinateForIterationOnSameColumn[0] = 1; coordinateForIterationOnSameColumn[0] < statesSize; coordinateForIterationOnSameColumn[0]++) {
 							if (coordinateForIterationOnSameColumn[0] == coordinateOfCellInCPT[0]) {
 								// this is the value being updated now
 								sum += value;	
@@ -445,8 +442,8 @@ public class NoisyMaxPotentialTableGUI extends GUIPotentialTable {
 						if (sum < 0f || sum > 1f) {
 							// build a message like p1 + p2 + ... + pn = sum
 							String message = "";
-							for (coordinateForIterationOnSameColumn[0] = 0; coordinateForIterationOnSameColumn[0] < stateSizeMinus1; coordinateForIterationOnSameColumn[0]++) {
-								if (coordinateForIterationOnSameColumn[0] != 0) {
+							for (coordinateForIterationOnSameColumn[0] = 1; coordinateForIterationOnSameColumn[0] < statesSize; coordinateForIterationOnSameColumn[0]++) {
+								if (coordinateForIterationOnSameColumn[0] != 1) {
 									message += " + ";
 								}
 								if (coordinateForIterationOnSameColumn[0] == coordinateOfCellInCPT[0]) {
@@ -456,7 +453,7 @@ public class NoisyMaxPotentialTableGUI extends GUIPotentialTable {
 									// other values
 									message += getPotentialTable().getValue(coordinateForIterationOnSameColumn);
 								}
-								if (coordinateForIterationOnSameColumn[0] + 1 >= stateSizeMinus1) {
+								if (coordinateForIterationOnSameColumn[0] + 1 >= statesSize) {
 									// last iteration
 									message += " = " + sum + ((sum<0)?" < 0":" > 1");
 								}
@@ -487,10 +484,10 @@ public class NoisyMaxPotentialTableGUI extends GUIPotentialTable {
 							// update the value inserted by the user
 							getPotentialTable().setValue(coordinateOfCellInCPT , value);
 							
-							// point to last cell
-							coordinateForIterationOnSameColumn[0] = node.getStatesSize()-1;	
+							// point to 1st cell
+							coordinateForIterationOnSameColumn[0] = 0;	
 							
-							// set the last cell of the column as 1-sum
+							// set the 1st cell of the column as 1-sum
 							getPotentialTable().setValue(coordinateForIterationOnSameColumn, 1f-sum);
 							
 							
