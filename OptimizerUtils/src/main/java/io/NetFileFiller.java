@@ -26,6 +26,7 @@ import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.cpt.impl.NormalizeTableFunction;
 import unbbayes.util.Debug;
+import unbbayes.util.extension.bn.inference.IIndependenceCausalInfluenceCPTConverter;
 import unbbayes.util.extension.bn.inference.NoisyMaxCPTConverter;
 import utils.ChiSqureTestWithZero;
 
@@ -39,9 +40,11 @@ public class NetFileFiller extends CSVJointDistributionReader implements INetFil
 	private NetIO netIO;
 	private boolean isToTreatRootNodes = false;
 	private boolean isToGenerateNoisyOr = true;
+	private boolean isToIgnoreInputData = false;
 	private int numIteration = 1000;
 	private int numTrials = 50;
 	private float numVirtualCount = 144f;
+	private IIndependenceCausalInfluenceCPTConverter noisyMaxCPTConverter;
 
 	/**
 	 * Default constructor
@@ -68,33 +71,42 @@ public class NetFileFiller extends CSVJointDistributionReader implements INetFil
 		
 		
 		// read nodes and get conditional probability tables to fill;
-		for (Node node : net.getNodes()) {
-			if (node instanceof ProbabilisticNode) {
-				PotentialTable table = ((ProbabilisticNode) node).getProbabilityFunction();
-				
-				// if we should consider root nodes, then treat all nodes. If not, then only treat nodes with parents
-				if (isToTreatRootNodes() || table.getVariablesSize() > 1) {	// tables with more than 1 variable mean they have parents
-					// fill table with data;
-					if (this.fillJointDist(table, new FileInputStream(input), false)) {	// we don't need to normalize at this point
-						// Data is joint distribution/counts. Convert joint counts to conditional probabilities;
-						conditionalNormalizer.applyFunction((ProbabilisticTable) table);
-					} else {
-						throw new IOException("Unable to fill table " + table);
+		if (!isToIgnoreInputData()) {
+			for (Node node : net.getNodes()) {
+				if (node instanceof ProbabilisticNode) {
+					PotentialTable table = ((ProbabilisticNode) node).getProbabilityFunction();
+					
+					// if we should consider root nodes, then treat all nodes. If not, then only treat nodes with parents
+					if (isToTreatRootNodes() || table.getVariablesSize() > 1) {	// tables with more than 1 variable mean they have parents
+						// fill table with data;
+						if (this.fillJointDist(table, new FileInputStream(input), false)) {	// we don't need to normalize at this point
+							// Data is joint distribution/counts. Convert joint counts to conditional probabilities;
+							conditionalNormalizer.applyFunction((ProbabilisticTable) table);
+						} else {
+							throw new IOException("Unable to fill table " + table);
+						}
 					}
 				}
 			}
+			
+			// overwrite network file
+			netIO.save(netFile, net);
 		}
 		
-		// overwrite network file
-		netIO.save(netFile, net);
 		
 		if (!isToGenerateNoisyOr()) {
 			return;	// finish if we don't need to generate noisy-or distribution
 		}
 		
-		// reload network
-		net = (ProbabilisticNetwork) netIO.load(netFile);
-		ProbabilisticNetwork noisyOrNet = (ProbabilisticNetwork) netIO.load(netFile);
+		ProbabilisticNetwork noisyOrNet = null;
+		if (isToIgnoreInputData()) {
+			// reuse same net if we are not using data
+			noisyOrNet = net;
+		} else {
+			// reload network if needed
+			net = (ProbabilisticNetwork) netIO.load(netFile);
+			noisyOrNet = (ProbabilisticNetwork) netIO.load(netFile);
+		}
 		
 		
 		
@@ -119,41 +131,54 @@ public class NetFileFiller extends CSVJointDistributionReader implements INetFil
 							throw new RuntimeException("Noisy-OR cannot be estimated for a node with size " + noisyOrTable.getVariableAt(0).getStatesSize());
 						}
 						
-						PotentialTable tableToRead = ((ProbabilisticNode)net.getNode(node.getName())).getProbabilityFunction();
-						tableToRead.copyData();	// backup data with original increment of data
-						if (!this.fillJointDist(tableToRead, new FileInputStream(input), false)) {	// re-calculate data with small increment
-							throw new IOException("Unable to fill table " + tableToRead);
-						}
-						
-						// obtain which indexes we didn't find counts in data
-						List<Integer> noCountIndexes = new ArrayList<Integer>(tableToRead.tableSize());
-						for (int cell = 0; cell < tableToRead.tableSize(); cell += 2) {
-							if (tableToRead.getValue(cell) <= getIncrementCounts()
-									&& tableToRead.getValue(cell+1) <= getIncrementCounts()) {	
-								// if all entry in column is lower than the increment we specified, then there was no data for that entry
-								noCountIndexes.add(cell);
-								noCountIndexes.add(cell+1);
+						if (isToIgnoreInputData()) {
+							
+							// simply apply noisy-max to table, without considering data
+							getNoisyMaxCPTConverter().forceCPTToIndependenceCausalInfluence(noisyOrTable);
+							
+							Debug.println(getClass(), "Noisy-max applied directly to table " + noisyOrTable + " without reading data.");
+							
+						} else {
+							// use noisy-max only in entries that we didn't find data, and check (with chi-square test) if this approximation is acceptable
+							
+							PotentialTable tableToRead = ((ProbabilisticNode)net.getNode(node.getName())).getProbabilityFunction();
+							tableToRead.copyData();	// backup data with original increment of data
+							if (!this.fillJointDist(tableToRead, new FileInputStream(input), false)) {	// re-calculate data with small increment
+								throw new IOException("Unable to fill table " + tableToRead);
 							}
-						}
-						
-						// Data is joint distribution/counts. Convert joint counts to conditional probabilities;
-						conditionalNormalizer.applyFunction((ProbabilisticTable) tableToRead);
-						
-						// start adjusting noisy-or table to approximate with data.
-						
-						// estimate best noisy-or parameters if not specified by data
-						optimizeNoisyOrParameter(noisyOrTable, tableToRead, noCountIndexes);
-						
-						// print the chi-square test statistics of how noisy-or approximates known entries in data table
-						System.out.println(node.getName() + ": chi-square p-value = " + getPValueNoisyOr(noisyOrTable, tableToRead, noCountIndexes) + ", no count size = " + noCountIndexes.size() + ", no counts = " + noCountIndexes);
-						
-						
-						// adjust noisy-or table by overwriting known entries (only unknown entries are filled with noisy-or values).
-						tableToRead.restoreData();	// use the original data to fill gaps in noisy-or table
-						overwriteKnownEntries(noisyOrTable, tableToRead, noCountIndexes);
-					}
-				}
-			}
+							// obtain which indexes we didn't find counts in data
+							List<Integer> noCountIndexes = new ArrayList<Integer>(tableToRead.tableSize());
+							for (int cell = 0; cell < tableToRead.tableSize(); cell += 2) {
+								if (tableToRead.getValue(cell) <= getIncrementCounts()
+										&& tableToRead.getValue(cell+1) <= getIncrementCounts()) {	
+									// if all entry in column is lower than the increment we specified, then there was no data for that entry
+									noCountIndexes.add(cell);
+									noCountIndexes.add(cell+1);
+								}
+							}
+							// Data is joint distribution/counts. Convert joint counts to conditional probabilities;
+							conditionalNormalizer.applyFunction((ProbabilisticTable) tableToRead);
+							
+							// start adjusting noisy-or table to approximate with data.
+							
+							// estimate best noisy-or parameters if not specified by data
+							optimizeNoisyOrParameter(noisyOrTable, tableToRead, noCountIndexes);
+							
+							// print the chi-square test statistics of how noisy-or approximates known entries in data table
+							System.out.println(node.getName() + ": chi-square p-value = " + getPValueNoisyOr(noisyOrTable, tableToRead, noCountIndexes) + ", no count size = " + noCountIndexes.size() + ", no counts = " + noCountIndexes);
+							
+							
+							// adjust noisy-or table by overwriting known entries (only unknown entries are filled with noisy-or values).
+							tableToRead.restoreData();	// use the original data to fill gaps in noisy-or table
+							overwriteKnownEntries(noisyOrTable, tableToRead, noCountIndexes);
+							
+						}	// end of block which applies noisy-max to combination of states where data isn't available
+					
+					}	// end of if node has parents
+					
+				}	// end of if node is probabilistic
+				
+			}	// end of for each node in noisy or network
 			
 			// save noisy-or graph as another file
 			netIO.save(new File(netFile.getParentFile(), netFile.getName() + ".noisyOr.net"), noisyOrNet);
@@ -205,7 +230,7 @@ public class NetFileFiller extends CSVJointDistributionReader implements INetFil
 		
 		
 		// this will be used to calculate noisy-or table
-		NoisyMaxCPTConverter noisyOr = new NoisyMaxCPTConverter();
+		IIndependenceCausalInfluenceCPTConverter noisyOr = getNoisyMaxCPTConverter();
 		
 		// initialize with noisy-or table using default parameters
 		noisyOr.forceCPTToIndependenceCausalInfluence(noisyOrTable);
@@ -556,6 +581,45 @@ public class NetFileFiller extends CSVJointDistributionReader implements INetFil
 	}
 
 	/**
+	 * @return if this is set to true, {@link #fillNetFile(File, File)}
+	 * will ignore input data and will only apply noisy-max to the network file
+	 * (if {@link #isToGenerateNoisyOr()} is true).
+	 * If {@link #isToGenerateNoisyOr()} is false, then the network file will not be changed anyway.
+	 */
+	public boolean isToIgnoreInputData() {
+		return isToIgnoreInputData;
+	}
+
+	/**
+	 * @param isToIgnoreInputData : if this is set to true, {@link #fillNetFile(File, File)}
+	 * will ignore input data and will only apply noisy-max to the network file
+	 * (if {@link #isToGenerateNoisyOr()} is true).
+	 * If {@link #isToGenerateNoisyOr()} is false, then the network file will not be changed anyway
+	 */
+	public void setToIgnoreInputData(boolean isToIgnoreInputData) {
+		this.isToIgnoreInputData = isToIgnoreInputData;
+	}
+
+	/**
+	 * @return the noisyMaxCPTConverter : this is used to apply noisy-max function in {@link #optimizeNoisyOrParameter(PotentialTable, PotentialTable, List)},
+	 * or in {@link #fillNetFile(File, File)} when {@link #isToIgnoreInputData()} == true.
+	 */
+	public IIndependenceCausalInfluenceCPTConverter getNoisyMaxCPTConverter() {
+		if (noisyMaxCPTConverter == null) {
+			noisyMaxCPTConverter = new NoisyMaxCPTConverter();
+		}
+		return noisyMaxCPTConverter;
+	}
+
+	/**
+	 * @param noisyMaxCPTConverter : this is used to apply noisy-max function in {@link #optimizeNoisyOrParameter(PotentialTable, PotentialTable, List)},
+	 * or in {@link #fillNetFile(File, File)} when {@link #isToIgnoreInputData()} == true.
+	 */
+	public void setNoisyMaxCPTConverter(IIndependenceCausalInfluenceCPTConverter noisyMaxCPTConverter) {
+		this.noisyMaxCPTConverter = noisyMaxCPTConverter;
+	}
+
+	/**
 	 * @param args
 	 * @throws IOException 
 	 */
@@ -565,6 +629,7 @@ public class NetFileFiller extends CSVJointDistributionReader implements INetFil
 		options.addOption("i","input", true, "CSV file to get joint distribution from.");
 		options.addOption("o","output", true, "Network file (.net extension) to overwrite with conditional probabilities.");
 		options.addOption("inc","increment", true, "Increment this value to counts in order to avoid 0 counts.");
+		options.addOption("net","update-netfile-only", false, "Applies noisy-max transformation to network file only, without considering input data.");
 		options.addOption("d","debug", false, "Enables debug mode.");
 		options.addOption("h","help", false, "Prints help.");
 		
@@ -612,6 +677,9 @@ public class NetFileFiller extends CSVJointDistributionReader implements INetFil
 			filler.setIncrementCounts(Float.parseFloat(cmd.getOptionValue("inc")));
 		}
 		
+		if (cmd.hasOption("net")) {
+			filler.setToIgnoreInputData(true);
+		}
 		filler.fillNetFile(dataInput, netFile);
 		
 	}
