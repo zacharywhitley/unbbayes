@@ -680,7 +680,7 @@ public class CPTEditionPane extends JPanel{
 					JOptionPane.showMessageDialog(mebnController.getCPTEditionFrame(residentNode), 
 							resource.getString("CptSaveOK"), resource.getString("sucess"), 
 							JOptionPane.INFORMATION_MESSAGE);
-					mebnController.openCPTDialog(residentNode); 
+//					mebnController.openCPTDialog(residentNode); 
 				}
 				
 			}); 
@@ -708,7 +708,7 @@ public class CPTEditionPane extends JPanel{
 								JOptionPane.ERROR_MESSAGE);
 					}
 					
-					mebnController.openCPTDialog(residentNode); 
+//					mebnController.openCPTDialog(residentNode); 
 				}
 				
 			}); 
