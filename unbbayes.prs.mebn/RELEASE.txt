@@ -1,9 +1,11 @@
-UNBBAYES MEBN PLUGIN - VERSION 1.16.14
+UNBBAYES MEBN PLUGIN - VERSION 1.18.14
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
 15			Changes in LPD grammar to get closer to FOL expressiveness.
 16			Bayes ball algorithm
+17			Included extension point for external LPD functions.
+18			New GUI for LPD script (beta). Enable it at "options > Miscellaneous" in MEBN GUI.
 
 BUG LIST		
 Number	Request ID	Summary

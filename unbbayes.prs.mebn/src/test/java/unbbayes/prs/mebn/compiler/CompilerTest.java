@@ -1080,6 +1080,30 @@ public class CompilerTest extends TestCase {
 		resident.getCompiler().init(resident.getTableFunction());
 		resident.getCompiler().parse();	// now should pass
 		
+		// check invalid order of vars
+		resident.setTableFunction(
+				"if any x have (RX1 = true) [ "
+						+		"var = true, true = 0.9, false = 1 - var"
+						+	"] else if any x have (RX1 = false) [ "
+						+		"var = 0.2, "
+						+		"if all x have (RX1 = false) [ "
+						+			"false = 1 - true, true = var"
+						+		"] else [ "
+						+			"false = 0.85-var, true = 1-false"
+						+		"]  "
+						+	"] else [ "
+						+		"var = 1, absurd = var"
+						+	"] "
+				);
+		
+		resident.getCompiler().init(resident.getTableFunction());
+		try {
+			resident.getCompiler().parse();
+			fail("Should throw compilation error");
+		} catch (MEBNException e1) {
+			// OK
+		}
+		
 		// check name scope of nested ifs
 		resident.setTableFunction(
 				"if any x have (RX1 = true) [ "

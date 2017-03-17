@@ -130,10 +130,10 @@ public class Resources extends GuiResources {
 		// miscellaneous messages
 		{"selectOnlyOneEntry" , "Please, select only one entry"},
 		
-		{"useOldLPDEditor" , "Use old LPD script editor."},
+		{"useNewLPDEditor" , "Use new LPD script editor (under test)."},
 		
 		// messages about simple soft evidence
-		{"enableSoftEvidence" , "Enable soft/likelihood evidence"},
+		{"enableSoftEvidence" , "Enable soft/likelihood evidence (under test)"},
 		{"softEvidence" , "Soft Evidence (Jeffrey's Rule)"},
 		{"likelihoodEvidence" , "Likelihood Evidence"},
 		{"csvSoftEvidence" , "Please, provide the evidence (probabilities/likelihoods separated by comma)"},

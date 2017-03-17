@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 
@@ -56,6 +57,10 @@ import unbbayes.prs.mebn.compiler.exception.InvalidProbabilityRangeException;
 import unbbayes.prs.mebn.compiler.exception.NoDefaultDistributionDeclaredException;
 import unbbayes.prs.mebn.compiler.exception.SomeStateUndeclaredException;
 import unbbayes.prs.mebn.compiler.exception.TableFunctionMalformedException;
+import unbbayes.prs.mebn.compiler.extension.IUserDefinedFunction;
+import unbbayes.prs.mebn.compiler.extension.IUserDefinedFunctionBuilder;
+import unbbayes.prs.mebn.compiler.extension.jpf.UserDefinedFunctionPluginManager;
+import unbbayes.prs.mebn.entity.BooleanStatesEntityContainer;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
@@ -91,23 +96,21 @@ TODO assignment_or_if ::= assignment_or_func [ "," if_statement] | if_statement
 TODO assignment_or_func = assignment | func
 TODO func ::= external_function([arbitrary_arguments]) [ "," assignment_or_func ]*
 TODO assignment ::= ident "=" expression [ "," assignment_or_func ]*
-TODO assign to arbitrary variable
 TODO iterate on CPT multiple times to support cross column reference (cells are filled with NA until they are resolved)
  expression ::= term [ addop term ]*
  term ::= signed_factor [ mulop signed_factor ]*
  signed_factor ::= [ addop ] factor
  factor ::= number | function | "(" expression ")"
-TODO function ::= possibleVal 
+ function ::= possibleVal 
  	| "CARDINALITY" "(" [varsetname] ")"
- 	| "MIN" "(" expression [";"|","] expression ")"
-  	| "MAX" "(" expression [";"|","] expression ")"
-TODO 	| external_function([arbitrary_arguments])
+ 	| "MIN" "(" expression ";"|"," expression ")"
+  	| "MAX" "(" expression ";"|"," expression ")"
+ 	| external_function([expression [";"|"," expression]])
  possibleVal ::= ident
  addop ::= "+" | "-"
  mulop ::= "*" | "/"
  ident ::= letter [ letter | digit ]*
-TODO arbitrary_arguments ::= number_or_ident[["."|","]number_or_ident]*
-TODO number_or_ident ::= number | ident
+
  ================================================================
  
  ----------------
@@ -373,6 +376,8 @@ public class Compiler implements ICompiler {
 	private boolean isToNormalize = true;
 
 	private ITableFunction tableNormalizer = DEFAULT_NORMALIZE_TABLE_FUNCTION;
+
+	private UserDefinedFunctionPluginManager userFunctionPluginManager = UserDefinedFunctionPluginManager.getInstance(false);
 	
 	/**
 	 * Because at least one constructor must be visible to subclasses in order to allow
@@ -511,6 +516,8 @@ public class Compiler implements ICompiler {
 			this.text = text.toCharArray();
 			nextChar();
 		//}
+			
+		getUserFunctionPluginManager().initialize();
 		
 		tempTable = new TempTable();
 	}
@@ -1160,13 +1167,13 @@ public class Compiler implements ICompiler {
 		// Debug.println("STARTING STATEMENTS");
 		
 		// if we catch a sintax error here, it may be a value error
-		try {
+//		try {
 			// if there is a nested if, this if should be the upper clause (set currentHeader as upper clause).
 			statement(currentIfContainer);
-		} catch (TableFunctionMalformedException e) {
-			// Debug.println("->" + getNode());
-			throw new InvalidProbabilityRangeException("["+this.getNode().getName()+"]",e);
-		}
+//		} catch (TableFunctionMalformedException e) {
+//			// Debug.println("->" + getNode());
+//			throw new InvalidProbabilityRangeException("["+this.getNode().getName()+"]",e);
+//		}
 		
 		
 		
@@ -1924,7 +1931,10 @@ public class Compiler implements ICompiler {
 		// consistency check C09
 		// ret verifies the sum of all declared states' probability (must be 1)
 		// boolean hasUnknownValue shows if some ret was negative or NaN.
-		IProbabilityValue ret = expression();		
+		IProbabilityValue ret = expression();	
+		if (ret == null) {
+			throw new TableFunctionMalformedException(getResource().getString("NonDeclaredVarStateAssignment"));
+		}
 		float retValue = 0;	// initialize with a value which will not impact consistency check (the one that checks if sum is 1)
 		if (userDefinedVariableName == null) {
 			// this is a state of current node, so store the probability in order to calculate consistency later
@@ -2180,7 +2190,7 @@ public class Compiler implements ICompiler {
 		this.getName();
 		
 		// Use a list to store already known states or identifiers to evaluate already known values... 
-		IProbabilityValue ret = new SimpleProbabilityValue(Float.NaN);
+//		IProbabilityValue ret = new SimpleProbabilityValue(Float.NaN);
 		if (this.currentHeader != null) {
 			// check if this is not a user-defined variable first;
 			IProbabilityValue userDefinedVariableValue = this.currentHeader.getUserDefinedVariable(noCaseChangeValue);
@@ -2203,7 +2213,8 @@ public class Compiler implements ICompiler {
 
 
 		// Debug.println("An undeclared possible value or a \"varsetname\" was used : " + value);
-		return ret;
+//		return ret;
+		return null;
 	}
 
 	/**
@@ -2509,6 +2520,7 @@ public class Compiler implements ICompiler {
 	 *   	| "CARDINALITY" "(" ")"
 	 *    	| "MIN" "(" expression ";" expression ")"
 	 *     	| "MAX" "(" expression ";" expression ")"
+	 *     	| external_function([expression [";"|"," expression]])
 	 * @return numeric value expected for the function
 	 * @throws TableFunctionMalformedException
 	 */
@@ -2525,6 +2537,12 @@ public class Compiler implements ICompiler {
 			} else if (this.value.equalsIgnoreCase("MAX") ) {
 				return max();
 			} else {
+				for (IUserDefinedFunctionBuilder functionBuilder : getUserFunctionPluginManager().getFunctionBuilders()) {
+					if (this.value.equalsIgnoreCase(functionBuilder.getFunctionName())) {
+						return external_function(functionBuilder);
+					}
+				}
+				// if reached this point, we did not find function with specified name
 				// Debug.println("UNKNOWN FUNCTION FOUND: " + this.value);
 				throw new TableFunctionMalformedException(((getSSBNNode()!=null)?getSSBNNode():getNode()) + " : " + this.getResource().getString("UnexpectedTokenFound")
 						+ ": " + value);
@@ -2535,6 +2553,41 @@ public class Compiler implements ICompiler {
 		return ret;
 	}
 	
+	
+	/**
+	 * external_function([expression [";"|"," expression]])
+	 * @param functionBuilder : builder responsible for building an object representing this external function.
+	 * @return a wrapper for functionBuilder which virtually convertes {@link IUserDefinedFunction} (built by {@link IUserDefinedFunctionBuilder})
+	 * to a {@link IProbabilityValue}.
+	 * @throws TableFunctionMalformedException
+	 * @throws SomeStateUndeclaredException 
+	 * @throws InvalidProbabilityRangeException 
+	 */
+	protected IProbabilityValue external_function(IUserDefinedFunctionBuilder functionBuilder) throws TableFunctionMalformedException, InvalidProbabilityRangeException, SomeStateUndeclaredException {
+		
+		// prepare arguments to pass to external function
+		List<IProbabilityValue> args = new ArrayList<Compiler.IProbabilityValue>();
+		
+		match('(');
+		if (look != ')') {	// check if argument was provided
+			// add 1st argument
+			args.add(this.expression());
+			while (look == ';' || look == ',') {
+				// add next arguments if they were provided (";" or "," separates arguments)
+				nextChar();
+				skipWhite();
+				args.add(this.expression());
+			}
+		}
+		match(')');
+		
+		if (!args.isEmpty()) {
+			functionBuilder.setArguments(args);
+		}
+		
+		return new ExternalFunctionProbabilityValue(functionBuilder);
+		
+	}
 	
 	/**
 	 * Computes cardinality funcion's arguments and values
@@ -2684,7 +2737,7 @@ public class Compiler implements ICompiler {
 	
 	// Some inner classes that might be useful for temporaly table creation (organize the table parsed from pseudocode)
 	
-	protected interface IEmbeddedNodeUser {
+	public interface IEmbeddedNodeUser {
 		/**
 		 * @return true if at least one (nested) if-clause is using an embedded node feature.
 		 */
@@ -2694,7 +2747,7 @@ public class Compiler implements ICompiler {
 	/**
 	 * Container of a if-else-clause
 	 */
-	protected interface INestedIfElseClauseContainer extends IEmbeddedNodeUser {
+	public interface INestedIfElseClauseContainer extends IEmbeddedNodeUser {
 		/**
 		 * registers an if-clause (or else-clause) as an inner clause of this clause
 		 * @param nestedClause
@@ -2775,11 +2828,35 @@ public class Compiler implements ICompiler {
 		 */
 		public void clearUserDefinedVariables();
 		
+		/**
+		 * @return {@link #getUserDefinedVariable(String)} for this clause and all {@link #getNestedClauses()} recursively
+		 * @param keepFirst : if true, then variables found first will be kept if
+		 * variables with same name are found. If false, then variables found later will be used
+		 * in case of duplicate names.
+		 */
+		public Map<String, IProbabilityValue> getUserDefinedVariablesRecursively(boolean keepFirst);
 		
+		/**
+		 * @return instance of resident node whose LPD script is being applied.
+		 * (this can be used if we are compiling a script before generating SSBN)
+		 * @see #getSSBNNode()
+		 */
+		public IResidentNode getResidentNode();
+		
+		/**
+		 * @return : instance of SSBN node whose LPD script is being applied during SSBN generation.
+		 * May return null if compiler is called before SSBN generation. If so, {@link #getResidentNode()}
+		 * must be used.
+		 */
+		public SSBNNode getSSBNNode();
 	}
 	
-	
-	protected class TempTable implements INestedIfElseClauseContainer{
+	/**
+	 * This class represents the root of the if-else clause (i.e. this is outside all if clauses in the script).
+	 * In other words, this represents the entire script itself.
+	 * @author Shou Matsumoto
+	 */
+	public class TempTable implements INestedIfElseClauseContainer{
 		
 		private List<TempTableHeaderCell> clauses = null;
 		private Map<String, IProbabilityValue> userDefinedVariables;
@@ -2936,10 +3013,43 @@ public class Compiler implements ICompiler {
 		public void clearUserDefinedVariables() {
 			getUserDefinedVariables().clear();
 		}
+
+		public IResidentNode getResidentNode() { return Compiler.this.getNode(); }
+		public SSBNNode getSSBNNode() { return Compiler.this.getSSBNNode(); }
+
+		/*
+		 * (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#getUserDefinedVariablesRecursively(boolean)
+		 */
+		public Map<String, IProbabilityValue> getUserDefinedVariablesRecursively(boolean keepFirst) {
+			Map<String, IProbabilityValue> ret = new HashMap<String, Compiler.IProbabilityValue>(getUserDefinedVariables());
+			for (TempTableHeaderCell nested : getNestedClauses()) {
+				Map<String, IProbabilityValue> recursive = nested.getUserDefinedVariablesRecursively(keepFirst);
+				if (keepFirst) {
+					// do not overwrite existing entries
+					for (Entry<String, IProbabilityValue> entry : recursive.entrySet()) {
+						if (!ret.containsKey(entry.getKey())) {
+							ret.put(entry.getKey(), entry.getValue());
+						}
+					}
+				} else {
+					// overwrite all existing ones
+					ret.putAll(recursive);
+				}
+			}
+			return ret;
+		}
+		
+		
 	}
 	
-	
-	protected class TempTableHeaderCell implements INestedIfElseClauseContainer {
+	/**
+	 * This class represents either an if-clause or an else-clause.
+	 * If this is an else-clause, then {@link TempTableHeaderCell#isDefault()}
+	 * is true (because it is the default block under current scope of if-then-else clause).
+	 * @author Shou Matsumoto
+	 */
+	public class TempTableHeaderCell implements INestedIfElseClauseContainer {
 		private ICompilerBooleanValue booleanExpressionTree = null; // core of the if statement
 		private List<TempTableHeader> parents = null;	// this is also the leaf of boolean expression tree
 
@@ -3629,11 +3739,34 @@ public class Compiler implements ICompiler {
 		}
 		*/
 		
+		public IResidentNode getResidentNode() { return Compiler.this.getNode(); }
+		public SSBNNode getSSBNNode() { return Compiler.this.getSSBNNode(); }
 		
-		
+		/*
+		 * (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#getUserDefinedVariablesRecursively(boolean)
+		 */
+		public Map<String, IProbabilityValue> getUserDefinedVariablesRecursively(boolean keepFirst) {
+			Map<String, IProbabilityValue> ret = new HashMap<String, Compiler.IProbabilityValue>(getUserDefinedVariables());
+			for (TempTableHeaderCell nested : getNestedClauses()) {
+				Map<String, IProbabilityValue> recursive = nested.getUserDefinedVariablesRecursively(keepFirst);
+				if (keepFirst) {
+					// do not overwrite existing entries
+					for (Entry<String, IProbabilityValue> entry : recursive.entrySet()) {
+						if (!ret.containsKey(entry.getKey())) {
+							ret.put(entry.getKey(), entry.getValue());
+						}
+					}
+				} else {
+					// overwrite all existing ones
+					ret.putAll(recursive);
+				}
+			}
+			return ret;
+		}
 	}
 	
-	protected interface ICompilerBooleanValue {
+	public interface ICompilerBooleanValue {
 		/**
 		 * Obtains recursively a boolean value
 		 * @return true or false
@@ -3641,7 +3774,7 @@ public class Compiler implements ICompiler {
 		public boolean evaluate();
 	}
 	
-	protected class CompilerNotValue implements ICompilerBooleanValue{
+	public class CompilerNotValue implements ICompilerBooleanValue{
 		private ICompilerBooleanValue value = null;
 		/**
 		 * implements "not" operation on ISSBNBooleanValue
@@ -3674,7 +3807,7 @@ public class Compiler implements ICompiler {
 		
 	}
 	
-	protected class CompilerOrValue implements ICompilerBooleanValue{
+	public class CompilerOrValue implements ICompilerBooleanValue{
 		private ICompilerBooleanValue value1 = null;
 		private ICompilerBooleanValue value2 = null;
 		/**
@@ -3719,7 +3852,7 @@ public class Compiler implements ICompiler {
 		
 	}
 	
-	protected class CompilerAndValue implements ICompilerBooleanValue{
+	public class CompilerAndValue implements ICompilerBooleanValue{
 		private ICompilerBooleanValue value1 = null;
 		private ICompilerBooleanValue value2 = null;
 		/**
@@ -3770,7 +3903,7 @@ public class Compiler implements ICompiler {
 	 * @see TempTableHeader
 	 * @see TempTableHeaderOV
 	 */
-	protected abstract class TempTableHeader implements ICompilerBooleanValue, IEmbeddedNodeUser{
+	public abstract class TempTableHeader implements ICompilerBooleanValue, IEmbeddedNodeUser{
 		private Node parent = null;
 		private Entity value = null;
 		
@@ -3992,7 +4125,7 @@ public class Compiler implements ICompiler {
 	 * "Variable=Variable". For example: Node=Node or Node=OV or OV=Node or OV=OV.
 	 * @author Shou Matsumoto
 	 */
-	protected class TempTableHeaderVariableEqualsVariable implements ICompilerBooleanValue {
+	public class TempTableHeaderVariableEqualsVariable implements ICompilerBooleanValue {
 		
 		private TempTableHeader header1;
 		private TempTableHeader header2;
@@ -4076,7 +4209,7 @@ public class Compiler implements ICompiler {
 	 * @author Shou Matsumoto
 	 *
 	 */
-	protected class TempTableHeaderOV extends TempTableHeader {
+	public class TempTableHeaderOV extends TempTableHeader {
 
 		public TempTableHeaderOV(OrdinaryVariable ov , Entity value) {
 			this.setParent(ov);
@@ -4115,7 +4248,7 @@ public class Compiler implements ICompiler {
 	 * @author Shou Matsumoto
 	 *
 	 */
-	protected class TempTableHeaderParent extends TempTableHeader {
+	public class TempTableHeaderParent extends TempTableHeader {
 		
 		private List<OrdinaryVariable> expectedArgumentOVs = null;
 
@@ -4259,7 +4392,13 @@ public class Compiler implements ICompiler {
 		
 	}
 	
-	protected class TempTableProbabilityCell {
+	/**
+	 * This class represents some assignment of 
+	 * a possible state ({@link TempTableProbabilityCell#getPossibleValue()})
+	 * to a probability ({@link TempTableProbabilityCell#getProbability()})
+	 * @author Shou Matsumoto
+	 */
+	public class TempTableProbabilityCell {
 		private Entity possibleValue = null;
 		private IProbabilityValue probability = null;
 		
@@ -4290,7 +4429,12 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	protected abstract class IProbabilityValue {
+	/**
+	 * 
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public abstract class IProbabilityValue {
 		/**
 		 * 
 		 * @return: a value between [0,1] which represents a probability
@@ -4305,7 +4449,7 @@ public class Compiler implements ICompiler {
 		public boolean isFixedValue = true;
 	}
 	
-	protected class SimpleProbabilityValue extends IProbabilityValue {
+	public class SimpleProbabilityValue extends IProbabilityValue {
 		private float value = Float.NaN;
 		/**
 		 * Represents a simple float value for a probability
@@ -4319,7 +4463,7 @@ public class Compiler implements ICompiler {
 		}
 	}
 	
-	protected class UniformComplementProbabilityValue extends IProbabilityValue {
+	public class UniformComplementProbabilityValue extends IProbabilityValue {
 
 		private TempTableHeaderCell currentHeader;
 		private Entity entity;
@@ -4350,7 +4494,7 @@ public class Compiler implements ICompiler {
 		
 	}
 	
-	protected abstract class MathOperationProbabilityValue extends IProbabilityValue {
+	public abstract class MathOperationProbabilityValue extends IProbabilityValue {
 		protected IProbabilityValue op1 = null;
 		protected IProbabilityValue op2 = null;
 		
@@ -4361,7 +4505,7 @@ public class Compiler implements ICompiler {
 
 	}
 	
-	protected class AddOperationProbabilityValue extends MathOperationProbabilityValue {
+	public class AddOperationProbabilityValue extends MathOperationProbabilityValue {
 		AddOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
@@ -4373,7 +4517,7 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	protected class SubtractOperationProbabilityValue extends MathOperationProbabilityValue {
+	public class SubtractOperationProbabilityValue extends MathOperationProbabilityValue {
 		SubtractOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
@@ -4386,7 +4530,7 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	protected class MultiplyOperationProbabilityValue extends MathOperationProbabilityValue {
+	public class MultiplyOperationProbabilityValue extends MathOperationProbabilityValue {
 		MultiplyOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
@@ -4398,7 +4542,7 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	protected class DivideOperationProbabilityValue extends MathOperationProbabilityValue {
+	public class DivideOperationProbabilityValue extends MathOperationProbabilityValue {
 		DivideOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
@@ -4410,7 +4554,7 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	protected class NegativeOperationProbabilityValue extends MathOperationProbabilityValue {
+	public class NegativeOperationProbabilityValue extends MathOperationProbabilityValue {
 		NegativeOperationProbabilityValue(IProbabilityValue op1) {
 			this.op1 = op1;
 			this.op2 = op1;
@@ -4422,7 +4566,30 @@ public class Compiler implements ICompiler {
 		}		
 	}
 	
-	protected class CardinalityProbabilityValue extends IProbabilityValue {
+	/**
+	 * This class wrapps/adapts a {@link IUserDefinedFunctionBuilder} to {@link IProbabilityValue}
+	 * @author Shou Matsumoto
+	 */
+	public class ExternalFunctionProbabilityValue extends IProbabilityValue {
+		
+		private IUserDefinedFunctionBuilder functionBuilder;
+
+		public ExternalFunctionProbabilityValue(IUserDefinedFunctionBuilder functionBuilder) {
+			this.functionBuilder = functionBuilder;
+		}
+
+		/** Delegates to {@link IUserDefinedFunction#getResult()} */
+		public float getProbability() throws InvalidProbabilityRangeException {
+			IUserDefinedFunctionBuilder builder = getFunctionBuilder();
+			IUserDefinedFunction func = builder.buildUserDefinedFunction();
+			return func.getResult();
+		}
+
+		public IUserDefinedFunctionBuilder getFunctionBuilder() {return functionBuilder;}
+		public void setFunctionBuilder(IUserDefinedFunctionBuilder functionBuilder) {this.functionBuilder = functionBuilder;}
+	}
+	
+	public class CardinalityProbabilityValue extends IProbabilityValue {
 		//private float value = Float.NaN;
 		private String varSetName = null;		
 		//private SSBNNode thisNode = null;
@@ -4479,7 +4646,7 @@ public class Compiler implements ICompiler {
 	}
 	
 	
-	protected class ComparisionProbabilityValue extends IProbabilityValue {
+	public class ComparisionProbabilityValue extends IProbabilityValue {
 		private IProbabilityValue arg0 = null;
 		private IProbabilityValue arg1 = null;
 		private boolean isMax = false;
@@ -4543,7 +4710,7 @@ public class Compiler implements ICompiler {
 	 * would be (Phaser2Range;[(st,ST0),(t,T0)]), which means that DangerToSelf
 	 * is at value Phaser2Range when its arguments st=T0 and t=T0.
 	 */
-	protected class EntityAndArguments {
+	public class EntityAndArguments {
 		public Entity entity = null;
 		public List<OVInstance> arguments = null;
 		/**
@@ -4949,6 +5116,362 @@ public class Compiler implements ICompiler {
 	 */
 	public void setTableNormalizer(ITableFunction tableNormalizer) {
 		this.tableNormalizer = tableNormalizer;
+	}
+
+
+	/**
+	 * @return the userFunctionPluginManager : this is used for loading user-defined functions.
+	 * @see #function()
+	 * @see #init(String, boolean)
+	 */
+	public UserDefinedFunctionPluginManager getUserFunctionPluginManager() {
+		return userFunctionPluginManager;
+	}
+
+
+	/**
+	 * @param userFunctionPluginManager : this is used for loading user-defined functions.
+	 * @see #function()
+	 * @see #init(String, boolean)
+	 */
+	public void setUserFunctionPluginManager(UserDefinedFunctionPluginManager userFunctionPluginManager) {
+		this.userFunctionPluginManager = userFunctionPluginManager;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.compiler.ICompiler#getKeyWords()
+	 */
+	public Collection<String> getKeyWords() {
+		Collection<String> ret = new HashSet<String>();
+		
+		// basic keywords
+		ret.add("any");
+		ret.add("all");
+		ret.add("have");
+		ret.add("if");
+		ret.add("else");
+		ret.add("MIN");
+		ret.add("MAX");
+		ret.add("CARDINALITY");
+		ret.add("=");
+		ret.add("&");
+		ret.add("|");
+		ret.add("~");
+		ret.add(",");
+		ret.add(";");
+		
+		// possible states of this node
+		for (Entity possibleValue : getNode().getPossibleValueList()) {
+			ret.add(possibleValue.getName());
+		}
+		// arguments (limited to ordinary variables) of this node
+		for (OrdinaryVariable ov : getNode().getOrdinaryVariablesInArgument()) {
+			ret.add(ov.getName());
+		}
+		
+		// handle input parents
+		for (InputNode parent : getNode().getParentInputNodesList()) {
+			ret.add(parent.getName());
+			// add possible states
+			for (Entity possibleValue : parent.getPossibleValueList()) {
+				ret.add(possibleValue.getName());
+			}
+			// add argument OVs
+			for (OrdinaryVariable ov : parent.getOrdinaryVariablesInArgument()) {
+				ret.add(ov.getName());
+			}
+		}
+		
+		// handle resident parents
+		for (ResidentNode parent : getNode().getResidentNodeFatherList()) {
+			ret.add(parent.getName());
+			// add possible states
+			for (Entity possibleValue : parent.getPossibleValueList()) {
+				ret.add(possibleValue.getName());
+			}
+			// add argument OVs
+			for (OrdinaryVariable ov : parent.getOrdinaryVariablesInArgument()) {
+				ret.add(ov.getName());
+			}
+		}
+		
+
+		// external functions
+		for (IUserDefinedFunctionBuilder functionBuilder : getUserFunctionPluginManager().getFunctionBuilders()) {
+			ret.add(functionBuilder.getFunctionName());
+		}
+
+		// user-defined variables (if any)
+		try {
+			this.parse(getNode().getTableFunction());
+			TempTable tempTable = getTempTable();
+			if (tempTable != null) {
+				for (String varName : tempTable.getUserDefinedVariablesRecursively(false).keySet()) {
+					ret.add(varName);
+				}
+			}
+		} catch (Exception e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		
+		return ret;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.compiler.ICompiler#getShorthandKeywords()
+	 */
+	public Collection<Entry<String, String>> getShorthandKeywords() {
+		
+		Collection<Entry<String, String>> ret = new ArrayList<Map.Entry<String,String>>();
+		
+		// keep track of sample nodes (1st and 2nd parents to be used as placeholders)
+		String nodeName = "Node";
+		String stateName = "state";
+		String nodeName2 = "Node2";
+		String stateName2 = "state2";
+		String varSetName = "ov1,ov2";
+		
+		// extract nodeName, stateName, and ovName from 1st and 2nd parents
+		try {
+			int found = 0;
+			// look for resident nodes first
+			for (ResidentNode parent : getNode().getResidentNodeFatherList()) {
+				if (found <= 0) {
+					nodeName = parent.getName();
+					stateName = parent.getPossibleValueList().get(0).getName();
+					varSetName = null;
+					for (OrdinaryVariable ov : parent.getOrdinaryVariablesInArgument()) {
+						if (varSetName == null) {
+							varSetName = ov.getName();
+						} else {
+							varSetName += "," + ov.getName();
+						}
+					}
+				} else {
+					nodeName2 = parent.getName();
+					stateName2 = parent.getPossibleValueList().get(0).getName();
+				}
+				found++;
+				if (found >= 2) {
+					break;
+				}
+			}
+			if (found < 2) {
+				// look for input nodes
+				for (InputNode parent : getNode().getParentInputNodesList()) {
+					if (found <= 0) {
+						nodeName = parent.getName();
+						stateName = parent.getPossibleValueList().get(0).getName();
+						varSetName = null;
+						for (OrdinaryVariable ov : parent.getOrdinaryVariablesInArgument()) {
+							if (varSetName == null) {
+								varSetName = ov.getName();
+							} else {
+								varSetName += "," + ov.getName();
+							}
+						}
+					} else {
+						nodeName2 = parent.getName();
+						stateName2 = parent.getPossibleValueList().get(0).getName();
+					}
+					found++;
+					if (found >= 2) {
+						break;
+					}
+				}
+			}
+		} catch (Exception e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		
+		// if-then-else
+		
+		ret.add(Collections.singletonMap(
+				"any",
+				"if any "+varSetName+" have ("+nodeName+"="+stateName+") []").entrySet().iterator().next());
+		ret.add(Collections.singletonMap(
+				"all",
+				"if all "+varSetName+" have ("+nodeName+"="+stateName+") []").entrySet().iterator().next());
+		ret.add(Collections.singletonMap(
+				"if",
+				"if any "+varSetName+" have ("+nodeName+"="+stateName+") []").entrySet().iterator().next());
+		ret.add(Collections.singletonMap(
+				"if",
+	    		"if all "+varSetName+" have ("+nodeName+"="+stateName+") []").entrySet().iterator().next());
+		ret.add(Collections.singletonMap(
+	    		"else",
+	    		"else []").entrySet().iterator().next());
+		ret.add(Collections.singletonMap(
+	    		"else",
+	    		"else if any "+varSetName+" have ("+nodeName+"="+stateName+") []").entrySet().iterator().next());
+		ret.add(Collections.singletonMap(
+	    		"else",
+	    		"else if all "+varSetName+" have ("+nodeName+"="+stateName+") []").entrySet().iterator().next());
+//		ret.add(Collections.singletonMap(
+//				"default",
+//				"[]").entrySet().iterator().next());
+		
+		// built in functions
+		ret.add(Collections.singletonMap(
+	    		"min",
+	    		"MIN(exp1 ; exp2)").entrySet().iterator().next());
+		ret.add(Collections.singletonMap(
+	    		"max",
+	    		"MAX(exp1 ; exp2)").entrySet().iterator().next());
+		ret.add(Collections.singletonMap(
+	    		"cardinality",
+	    		"CARDINALITY("+varSetName+")").entrySet().iterator().next());
+		ret.add(Collections.singletonMap( 
+	    		"cardinality",
+	    		"CARDINALITY()").entrySet().iterator().next());
+		
+		// external functions
+		for (IUserDefinedFunctionBuilder functionBuilder : getUserFunctionPluginManager().getFunctionBuilders()) {
+			ret.add(Collections.singletonMap( 
+					functionBuilder.getFunctionName(),
+					functionBuilder.getFunctionName() + "(arg1,arg2,...)").entrySet().iterator().next());
+		}
+		
+		// boolean operators
+		ret.add(Collections.singletonMap(
+				"=",
+				"name = value").entrySet().iterator().next());
+		ret.add(Collections.singletonMap(
+				"~",
+				" ~ " + nodeName).entrySet().iterator().next());
+		ret.add(Collections.singletonMap(
+				"&",
+				nodeName + " = " + stateName + " & " + nodeName2 + " = " + stateName2).entrySet().iterator().next());
+		ret.add(Collections.singletonMap(
+				"|",
+				nodeName + " = " + stateName + " | " + nodeName2 + " = " + stateName2).entrySet().iterator().next());
+		
+		
+		
+		
+		// ParentName = parentState
+
+		// handle input parents
+		for (InputNode parent : getNode().getParentInputNodesList()) {
+			// get the 1st state
+			String state = "state";	// if no state is found, simply use this default value
+			List<Entity> possibleValues = parent.getPossibleValueList();
+			if (possibleValues!= null && !possibleValues.isEmpty()) {
+				state = possibleValues.get(0).getName();
+			}
+			ret.add(Collections.singletonMap(
+					parent.getName(),
+					parent.getName() + " = " + state).entrySet().iterator().next());
+		}
+		
+		// handle resident parents
+		for (ResidentNode parent : getNode().getResidentNodeFatherList()) {
+			// get the 1st state
+			String state = "state";	// if no state is found, simply use this default value
+			List<Entity> possibleValues = parent.getPossibleValueList();
+			if (possibleValues!= null && !possibleValues.isEmpty()) {
+				state = possibleValues.get(0).getName();
+			}
+			ret.add(Collections.singletonMap(
+					parent.getName(),
+					parent.getName() + " = " + state).entrySet().iterator().next());
+		}
+		
+		
+		// state = 100%
+		try {
+			for (Entity possibleValue : getNode().getPossibleValueList()) {
+				ret.add(Collections.singletonMap(
+						possibleValue.getName(),
+						possibleValue.getName() + " = 1").entrySet().iterator().next());
+			}
+		} catch (Exception e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		
+		
+		// create a template with placeholders to be substituted later
+		String template = null;
+		int numStatesWithoutAbsurd = getNode().getPossibleValueList().size();
+		try {
+			String absurd = "absurd";
+			try {
+				// extract the absurd name from mebn
+				absurd = getMEBN().getBooleanStatesEntityContainer().getAbsurdStateEntity().getName();
+			} catch (Exception e) {
+				Debug.println(getClass(), "Failed to extract absurd state from boolean states entity container of MEBN. Extracting from a new instance...", e);
+				try {
+					// extract the absurd name from new boolean states entity container
+					absurd = new BooleanStatesEntityContainer().getAbsurdStateEntity().getName();
+				} catch (Exception e2) {
+					Debug.println(getClass(), "Failed to extract absurd state from new boolean states entity container. Using default = absurd.", e2);
+					absurd = "absurd";
+				}
+			}
+			
+			// build distribution
+			for (Entity possibleValue : getNode().getPossibleValueList()) {
+				if (possibleValue.getName().equalsIgnoreCase(absurd)) {
+					numStatesWithoutAbsurd--;
+					continue;	// ignore absurd
+				}
+				if (template == null) {
+					template = possibleValue + " = $VALUE_STATE0";
+				} else {
+					template += " , " + possibleValue + " = $VALUE_DEFAULT";
+				}
+			}
+		} catch (Exception e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		
+		// uniform (excluding absurd)
+		try {
+			ret.add(Collections.singletonMap( 
+					"uniform",
+					// just call replaceAll 2 times (to substitute $VALUE_STATE0 and then $VALUE_DEFAULT)
+					template.replaceAll(
+							"\\$VALUE_STATE0", "" + 1f/numStatesWithoutAbsurd
+						).replaceAll(
+							"\\$VALUE_DEFAULT", "" + 1f/numStatesWithoutAbsurd)
+					).entrySet().iterator().next());	// extract entry
+		} catch (Exception e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		
+		// auto-fill by number of 1st state
+		for (int i = 0; i < 100; i += 10) {
+			ret.add(Collections.singletonMap( 
+					"" + i,
+					// just call replaceAll 2 times (to substitute $VALUE_STATE0 and then $VALUE_DEFAULT)
+					template.replaceAll(
+							"\\$VALUE_STATE0", "" + i/100f
+						).replaceAll(
+							"\\$VALUE_DEFAULT", "" + (1f-(i/100f))/(numStatesWithoutAbsurd-1f))
+					).entrySet().iterator().next());	// extract entry
+		
+		}
+		
+		// suggestions to show by default (autocomplete for empty string)
+		ret.add(Collections.singletonMap(
+				"",
+				"if any "+varSetName+" have ("+nodeName+"="+stateName+") ["
+						+template.replaceAll(
+							"\\$VALUE_STATE0", "" + 1f/numStatesWithoutAbsurd
+							).replaceAll(
+							"\\$VALUE_DEFAULT", "" + 1f/numStatesWithoutAbsurd)
+						+"]").entrySet().iterator().next());
+		ret.add(Collections.singletonMap(
+				"",
+				"[" + template.replaceAll(
+						"\\$VALUE_STATE0", "" + 1f/numStatesWithoutAbsurd
+						).replaceAll(
+								"\\$VALUE_DEFAULT", "" + 1f/numStatesWithoutAbsurd)
+				+"]").entrySet().iterator().next());
+		
+		return ret;
 	}
 
 

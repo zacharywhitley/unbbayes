@@ -20,6 +20,9 @@
  */
 package unbbayes.prs.mebn.compiler;
 
+import java.util.Collection;
+import java.util.Map.Entry;
+
 import unbbayes.prs.bn.IProbabilityFunction;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -82,5 +85,17 @@ public interface ICompiler {
 	 * @param probNode
 	 */
 	public IProbabilityFunction generateLinearDistroCPT(ProbabilisticNode probNode);
+	
+	/**
+	 * @return a collection of keywords that is supported by this compiler.
+	 * This can be used for auto-completion.
+	 */
+	public Collection<String> getKeyWords();
+	
+	/**
+	 * @return a collection of pairs keyword -> shorthand completions supported by this compiler.
+	 * For instance, keyword may be "if" and the shorthand completion may return "if any x have (Node=state) []"
+	 */
+	public Collection<Entry<String, String>> getShorthandKeywords();
 	
 }

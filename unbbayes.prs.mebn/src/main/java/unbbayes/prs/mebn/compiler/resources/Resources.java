@@ -54,5 +54,6 @@ public class Resources extends ListResourceBundle {
 		{"FatalError","Fatal Error: CPT Pseudocode Compiler was badly implemented."},
 		{"SSBNInstanceFailure","SSBN generation failed to properly create nodes."},
 		{"NonUserDefinedVariablesFoundBeforeIfClause","Only assignments to user-defined variables (instead of states of nodes) are permitted before a nested if-clause."},
+		{"NonDeclaredVarStateAssignment","Variables or states must be used in right-side of assignments only after properly declared/initialized."},
 	};
 }

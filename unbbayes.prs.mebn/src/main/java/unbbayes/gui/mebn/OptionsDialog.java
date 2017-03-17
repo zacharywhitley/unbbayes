@@ -44,6 +44,7 @@ import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.extension.ISSBNGeneratorBuilder;
 import unbbayes.prs.mebn.ssbn.extension.jpf.SSBNGenerationAlgorithmPluginManager;
 import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
+import unbbayes.gui.mebn.cpt.RSyntaxFrameFactory;
 
 /**
  * This dialog manages options for MEBN (e.g. Knowledge base's attributes)
@@ -139,6 +140,8 @@ public class OptionsDialog extends JDialog {
 	private JPanel miscellaneousPanel;
 
 	private JCheckBox useSoftEvidence;
+
+	private JCheckBox useNewLPDEditorCheckbox;
   	
 	/**
 	 * Constructor initializing fields
@@ -233,6 +236,9 @@ public class OptionsDialog extends JDialog {
 		// add the check box to whether enable soft evidence or not
 		useSoftEvidence = new JCheckBox(resource.getString("enableSoftEvidence"), getController().isToIncludeSoftEvidences());
 		miscellaneousPanel.add(useSoftEvidence);
+		
+		useNewLPDEditorCheckbox = new JCheckBox(resource.getString("useNewLPDEditor"), getController().getLPDFrameFactory() != MEBNController.DEFAULT_CPT_FRAME_FACTORY);
+		miscellaneousPanel.add(useNewLPDEditorCheckbox);
 
 	    // fill miscellaneous action listeners
 	    
@@ -241,6 +247,14 @@ public class OptionsDialog extends JDialog {
 	                public void actionPerformed(ActionEvent e) {
 	                	// commit selection
 	                	getController().setToIncludeSoftEvidences(getUseSoftEvidence().isSelected());
+	                	
+	                	if (useNewLPDEditorCheckbox.isSelected()) {
+	                		// use the new RSyntaxTextArea editor
+	                		getController().setLPDFrameFactory(new RSyntaxFrameFactory());
+	                	} else {
+	                		// if marked, keep using default 
+	                		getController().setLPDFrameFactory(MEBNController.DEFAULT_CPT_FRAME_FACTORY);
+	                	}
 	                }
 	            });
 
@@ -249,6 +263,9 @@ public class OptionsDialog extends JDialog {
 				getUseSoftEvidence().setSelected(getController().isToIncludeSoftEvidences());
 				getUseSoftEvidence().updateUI();
 				getUseSoftEvidence().repaint();
+				getUseNewLPDEditorCheckbox().setSelected(getController().getLPDFrameFactory() != MEBNController.DEFAULT_CPT_FRAME_FACTORY);
+				getUseNewLPDEditorCheckbox().updateUI();
+				getUseNewLPDEditorCheckbox().repaint();
 			}
 			public void componentResized(ComponentEvent e) {}
 			public void componentMoved(ComponentEvent e) {}
@@ -1140,5 +1157,19 @@ public class OptionsDialog extends JDialog {
 	 */
 	public void setUseSoftEvidence(JCheckBox useSoftEvidence) {
 		this.useSoftEvidence = useSoftEvidence;
+	}
+
+	/**
+	 * @return useNewLPDEditorCheckbox
+	 */
+	public JCheckBox getUseNewLPDEditorCheckbox() {
+		return useNewLPDEditorCheckbox;
+	}
+
+	/**
+	 * @param useNewLPDEditor the useOldLPDEditor to set
+	 */
+	public void setUseNewLPDEditorCheckbox(JCheckBox useNewLPDEditor) {
+		this.useNewLPDEditorCheckbox = useNewLPDEditor;
 	}
 }

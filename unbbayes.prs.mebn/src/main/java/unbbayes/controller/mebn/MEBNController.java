@@ -141,6 +141,9 @@ import unbbayes.util.mebn.extension.manager.MEBNPluginNodeManager;
  */
 
 public class MEBNController extends NetworkController implements IMEBNMediator{
+	
+	/** If true, {@link #openCPTDialog(ResidentNode)} will always re-instantiate a new LPD dialog. */
+	private boolean enableLPDEditorCache = false;
 
 	/** if set to true, this will log every nodes of SSBN and its probability values */
 	private boolean toLogNodesAndProbabilities = true;
@@ -1874,6 +1877,13 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	public void openCPTDialog(ResidentNode residentNode){
 		
 		JFrame cptEditionPane = mapCpt.get(residentNode); 
+		
+		if (!isEnableLPDEditorCache() && cptEditionPane != null) {
+			// dispose cache, so that it can be reloaded
+			closeCPTDialog(residentNode);
+			cptEditionPane = null;
+		}
+		
 		if(cptEditionPane == null){
 //			cptEditionPane = new CPTFrame(this, residentNode);
 			cptEditionPane = getLPDFrameFactory().buildCPTFrame(this, residentNode);
@@ -3083,6 +3093,20 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 			}
 		}
 		this.lpdFrameFactory = lpdFrameFactory;
+	}
+
+	/**
+	 * @return If true, {@link #openCPTDialog(ResidentNode)} will always re-instantiate a new LPD dialog.
+	 */
+	public boolean isEnableLPDEditorCache() {
+		return enableLPDEditorCache;
+	}
+
+	/**
+	 * @param enableLPDEditorCache : If true, {@link #openCPTDialog(ResidentNode)} will always re-instantiate a new LPD dialog.
+	 */
+	public void setEnableLPDEditorCache(boolean enableLPDEditorCache) {
+		this.enableLPDEditorCache = enableLPDEditorCache;
 	}
 
 	
