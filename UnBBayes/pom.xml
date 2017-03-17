@@ -4,14 +4,14 @@
 	<groupId>br.unb.cic</groupId>
 	<artifactId>unbbayes</artifactId>
 	<name>UnBBayes</name>
-	<version>4.21.18</version>
+	<version>4.22.18</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
 		<license>
-			<name> GNU General Public License, Version 3, 29 June 2007</name>
-			<url>http://www.gnu.org/licenses/gpl-3.0.txt
-			</url>
+			<name> GNU General Public License Version 3 with classpath exception</name>
+<!-- 			<url>http://www.gnu.org/licenses/gpl-3.0.txt -->
+<!-- 			</url> -->
 			<distribution>manual</distribution>
 		</license>
 	</licenses>
@@ -350,16 +350,17 @@
 
 
 		<!-- JUNIT -->
-		<dependency>
+<!-- 		<dependency> -->
 			<!--
 				JUnit is a simple framework to write repeatable tests. It is an
 				instance of the xUnit architecture for unit testing frameworks.
 				http://junit.sourceforge.net/
 			-->
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.1</version>
-		</dependency>
+			<!-- JUnit cannot be incorporated into GPL projects, because it is released under Eclipse public license, which is incompatible with GPL -->
+<!-- 			<groupId>junit</groupId> -->
+<!-- 			<artifactId>junit</artifactId> -->
+<!-- 			<version>4.1</version> -->
+<!-- 		</dependency> -->
 		<!-- JUNIT -->
 
 		<!-- JAXME/JAXB -->
@@ -417,11 +418,11 @@
 			can be used with any logging implementation at runtime.
 			http://commons.apache.org/logging/
 		-->
-		<dependency>
-			<groupId>commons-logging</groupId>
-			<artifactId>commons-logging</artifactId>
-			<version>1.1</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>commons-logging</groupId> -->
+<!-- 			<artifactId>commons-logging</artifactId> -->
+<!-- 			<version>1.1</version> -->
+<!-- 		</dependency> -->
 		<!-- COMMONS-LOGGING -->
 
 		<!-- PROTEGE-OWL -->
@@ -431,11 +432,11 @@
 			applications. Necessary for Protege. http://www.icu-project.org/
 		-->
 		<!-- Necessary for Evaluation -->
-		<dependency>
-			<groupId>com.ibm.icu</groupId>
-			<artifactId>icu4j</artifactId>
-			<version>3.8</version>
-		</dependency>
+<!-- 		<dependency> -->
+<!-- 			<groupId>com.ibm.icu</groupId> -->
+<!-- 			<artifactId>icu4j</artifactId> -->
+<!-- 			<version>3.8</version> -->
+<!-- 		</dependency> -->
 		<!-- Necessary for Protege. -->
 		<!-- This is mebn dependency (plugin dependency)
 		<dependency>
@@ -549,6 +550,8 @@
 			<groupId>net.sf.jpf</groupId>
 			<artifactId>jpf</artifactId>
 			<version>1.5</version>
+			
+			
 		</dependency>
 	</dependencies>
 	<reporting>

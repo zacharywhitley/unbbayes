@@ -1,8 +1,8 @@
-UNBBAYES VERSION 4.21.18
+UNBBAYES VERSION 4.22.18
 -----------------------------
 FEATURE LIST
 Number	Request ID	Summary
-		
+22				Added command line argument so that we can specify a network file and open it in GUI directly. Also made minor changes in API (e.g. KL divergence, entropy, and mutual information calculation). 
 
 BUG LIST
 Number	Request ID	Summary

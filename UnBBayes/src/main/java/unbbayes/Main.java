@@ -20,6 +20,8 @@
  */
 package unbbayes;
 
+import java.io.IOException;
+
 import unbbayes.controller.MainController;
 import unbbayes.example.TextModeRunner;
 import unbbayes.util.Debug;
@@ -40,6 +42,7 @@ public class Main {
 	
     /**
      *  Starts UnBBayes.
+     * @throws IOException 
      */
     public static void main(String[] args) {
     	// TextModeRunner was moved to MEBN plugin
@@ -55,21 +58,34 @@ public class Main {
 //    	}
     	
     	
-    	// debug mode
+    	boolean hasForceGUIMode = false;
+    	// check if debug mode and/or gui mode
     	for (String arg : args) {
 			if (arg.equalsIgnoreCase("-d")) {
 				Debug.setDebug(true);
 				Debug.println("Debug mode is on.");
-				break;
+				if (hasForceGUIMode) {
+					// break only if we found all relevant arguments
+					break;
+				}
+			}
+			if (arg.equalsIgnoreCase("-gui")) {
+				hasForceGUIMode = true;
+				Debug.println("Forcing GUI.");
+				if (Debug.isDebugMode()) {
+					// break only if we found all relevant arguments
+					break;
+				}
 			}
 		}
     	
-    	if (TextModeRunner.hasTextModeCommandLineArgument(args)) {
+    	if (!hasForceGUIMode && TextModeRunner.hasTextModeCommandLineArgument(args)) {
     		// run command line mode
     		TextModeRunner.main(args);
     	} else {
     		// graphical mode
-    		new MainController();
+    		MainController controller = new MainController();
+    		controller.handleCommandLineArguments(args);
     	}
     	
     }

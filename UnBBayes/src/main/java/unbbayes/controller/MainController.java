@@ -25,12 +25,14 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.xml.bind.JAXBException;
 
 import unbbayes.controller.exception.InvalidFileNameException;
 import unbbayes.controller.exception.NoObjectToBeSavedException;
+import unbbayes.example.TextModeRunner;
 import unbbayes.gui.Configurations;
 import unbbayes.gui.NetworkWindow;
 import unbbayes.gui.SplashScreen;
@@ -316,6 +318,38 @@ public class MainController {
 		}		
 		screen.addWindow(netWindow);
 		screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));    	
+	}
+
+	/**
+	 * This method attempts to handle command line arguments in GUI mode
+	 * @param args
+	 * @throws IOException 
+	 */
+	public void handleCommandLineArguments(String[] args)  {
+		try {
+			if (args == null) {
+				return;
+			}
+			TextModeRunner argumentExtractor = TextModeRunner.newInstance(args);
+			Map<String, String> argumentValues = argumentExtractor.extractArguments(args);
+			
+			// extract the network file to load BN from.
+			String netFileName = argumentValues.get(TextModeRunner.NET_FILE_ARGUMENT);
+			if (netFileName != null) {
+				File currentFile = new File(netFileName);
+				UnBBayesModule mod = new NetworkWindowBuilder().buildUnBBayesModule();
+				Thread.sleep(1);
+				mod = loadNet(currentFile , mod);
+				Thread.sleep(1);
+				if (mod != null) {
+					mod.setFile(currentFile);
+					Thread.sleep(1);
+					this.screen.addWindow(mod);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	
