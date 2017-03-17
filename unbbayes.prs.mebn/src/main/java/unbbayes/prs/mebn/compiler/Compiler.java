@@ -1,23 +1,3 @@
- /*
- *  UnBBayes
- *  Copyright (C) 2002, 2008 Universidade de Brasilia - http://www.unb.br
- *
- *  This file is part of UnBBayes.
- *
- *  UnBBayes is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  UnBBayes is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with UnBBayes.  If not, see <http://www.gnu.org/licenses/>.
- *
- */
 package unbbayes.prs.mebn.compiler;
 
 import java.util.ArrayList;
@@ -73,9 +53,9 @@ import unbbayes.util.Debug;
 
 
 /**
+ * 
  <pre>
  BNF MEBN Table:
- TODO report a problem and next compilation reports next problem.
  ===============================================================
  distribution ::= statement | if_statement
  if_statement  ::= 
@@ -100,7 +80,7 @@ TODO iterate on CPT multiple times to support cross column reference (cells are 
  expression ::= term [ addop term ]*
  term ::= signed_factor [ mulop signed_factor ]*
  signed_factor ::= [ addop ] factor
- factor ::= number | function | "(" expression ")"
+ factor ::= number | string | function | "(" expression ")"
  function ::= possibleVal 
  	| "CARDINALITY" "(" [varsetname] ")"
  	| "MIN" "(" expression ";"|"," expression ")"
@@ -110,12 +90,45 @@ TODO iterate on CPT multiple times to support cross column reference (cells are 
  addop ::= "+" | "-"
  mulop ::= "*" | "/"
  ident ::= letter [ letter | digit ]*
-
- ================================================================
+ </pre> 
  
- ----------------
+ string is a text between quotes
+ 
+ <br/>
+ <br/>
+ TODO Built-in external functions:
+<pre> 
+void SET_PROBABILITY(String regex, float prob, boolean isNegativeRegex);
+		Sets the probability of all states identified by regex to prob. If isNegativeRegex is true, then states not matching the regex will be considered.
+
+float GET_SUM()
+		Returns the sum of the probability of current column in CPT.
+
+float NORMALIZE()
+		Normalize the current column in CPT.
+
+String GET_MATCHING_OV(String varSetName)
+		Returns a String containing a list of OVs that matched with the if-clause condition. The list is separated by “|” (so that it can also be used as a regex).
+
+String GET_MATCHING_STATE(String nodeName)
+	Returns a String containing a list of states that matched with the if-clause condition. The list is separated by “|” (so that it can also be used as a regex). The argument is a name of parent node, with arguments.
+</pre> 
+
+<br/>
+<br/>
+ TODO Built-in external boolean functions:
+<pre> 
+CARDINALITY_COMPARISON(String b_expression, String comparisonSymbol, int arg2);
+		Compares the number of parents that passed the condition in b_expression with the arg2. The comparisonSymbol can be <, >, =, <=, >=, !=.
+</pre> 
+
+<pre> 
+ ================================================================
+</pre> 
+ 
  Changes (Month/Date/Year): 
- </pre>
+ @version 03/16/2017:
+ 			Description: Keywords, shorthand words, and support for external functions included.
  @version 02/16/2016:
  			Description: ordinary variables (OVs) can be used in if-clause (in order to be able to compare states of nodes with values of OVs, or values of 2 OVs), 
  			and names of nodes in if-clauses can now have arguments between parenthesis, so that a node with two input node parents pointing
@@ -264,6 +277,8 @@ TODO iterate on CPT multiple times to support cross column reference (cells are 
 	@Author Rommel Carvalho (rommel.carvalho@gmail.com)		
  */
 public class Compiler implements ICompiler {
+	// TODO migrate to simpler parsers, like stream/string tokenizer or Antlr
+	// TODO report a problem and next compilation reports next problem (i.e. multiple compilation error report).
 	
 	/** This is a default instance of {@link #getTableNormalizer()} */
 	public static final ITableFunction DEFAULT_NORMALIZE_TABLE_FUNCTION = new NormalizeTableFunction();
@@ -1886,7 +1901,7 @@ public class Compiler implements ICompiler {
 	 * returns the sum of all declared states' probability after this assignment recursion phase
 	 * 
 	 */
-	protected IProbabilityValue assignment(List<Entity> declaredStates, List<Entity> possibleStates) 
+	protected IExpressionValue assignment(List<Entity> declaredStates, List<Entity> possibleStates) 
 					throws InvalidProbabilityRangeException, 
 						   TableFunctionMalformedException,
 						   SomeStateUndeclaredException{
@@ -1931,14 +1946,22 @@ public class Compiler implements ICompiler {
 		// consistency check C09
 		// ret verifies the sum of all declared states' probability (must be 1)
 		// boolean hasUnknownValue shows if some ret was negative or NaN.
-		IProbabilityValue ret = expression();	
+		IExpressionValue ret = expression();	
 		if (ret == null) {
 			throw new TableFunctionMalformedException(getResource().getString("NonDeclaredVarStateAssignment"));
 		}
 		float retValue = 0;	// initialize with a value which will not impact consistency check (the one that checks if sum is 1)
 		if (userDefinedVariableName == null) {
 			// this is a state of current node, so store the probability in order to calculate consistency later
-			retValue = ret.getProbability();
+			if (!ret.isNumeric()) {
+				// state of nodes must be probabilities (numbers)
+				throw new TableFunctionMalformedException(getResource().getString("NonNumericProbAssignment"));
+			}
+			try {
+				retValue = Float.parseFloat(ret.getValue());
+			} catch (NumberFormatException e) {
+				retValue = Float.NaN;
+			}
 		} else {
 			// this is a user-defined value
 			// store it in the scope of current if-clause
@@ -1966,13 +1989,18 @@ public class Compiler implements ICompiler {
 		if (look == ',') {
 			match(',');
 			if (look != this.kwcode[this.lookup("IF")]) {
-				IProbabilityValue temp = assignment(declaredStates, possibleStates);
-				float tempValue = temp.getProbability();
+				IExpressionValue temp = assignment(declaredStates, possibleStates);
+				float tempValue = Float.NaN;
+				try {
+					tempValue = Float.parseFloat(temp.getValue());
+				} catch (NumberFormatException e) {
+					tempValue = Float.NaN;
+				}
 				hasUnknownValue = hasUnknownValue || (Float.isNaN(tempValue));
 				if (hasUnknownValue) {
 					retValue = Float.NaN;
 				} else {
-					retValue += temp.getProbability();
+					retValue += tempValue;
 				}
 			} else {
 				// this is an if-clause after assignment.
@@ -1999,14 +2027,14 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	protected IProbabilityValue expression() throws TableFunctionMalformedException,
+	protected IExpressionValue expression() throws TableFunctionMalformedException,
 												  InvalidProbabilityRangeException,
 												  SomeStateUndeclaredException{
 		
 		// temp table already created by upper caller
 		
-		IProbabilityValue temp1 = term();
-		IProbabilityValue temp2 = null;
+		IExpressionValue temp1 = term();
+		IExpressionValue temp2 = null;
 		
 		Float temp1Value = null;
 		Float temp2Value = null;
@@ -2015,30 +2043,41 @@ public class Compiler implements ICompiler {
 		case '+':
 			match('+');
 			temp2 = term();
-			temp1Value = temp1.getProbability();
-			temp2Value = temp2.getProbability();
-			if (!Float.isNaN(temp1Value)) {
-				if (!Float.isNaN(temp2Value)) {
-					
-					// pode the subtree if it is known value...
-					temp1 = new AddOperationProbabilityValue(
-							temp1.isFixedValue?(new SimpleProbabilityValue(temp1Value)):temp1 ,
-							temp2.isFixedValue?(new SimpleProbabilityValue(temp2Value)):temp2);
-				}				
+			try {
+				temp1Value = Float.parseFloat(temp1.getValue());
+			} catch (NumberFormatException e) {
+				temp1Value = Float.NaN;
+			}
+			try {
+				temp2Value = Float.parseFloat(temp2.getValue());
+			} catch (NumberFormatException e) {
+				temp2Value = Float.NaN;
+			}
+			if (!Float.isNaN(temp1Value) && !Float.isNaN(temp2Value)) {
+				// TODO cut the subtree if it is a known value...
+				temp1 = new AddOperationProbabilityValue(
+						temp1.isFixedValue()?(new SimpleProbabilityValue(temp1Value)):temp1 ,
+								temp2.isFixedValue()?(new SimpleProbabilityValue(temp2Value)):temp2);
 			}		
 			break;
 		case '-':
 			match('-');
 			temp2 = term();
-			temp1Value = temp1.getProbability();
-			temp2Value = temp2.getProbability();
-			if (!Float.isNaN(temp1Value)){
-				if (!Float.isNaN(temp2Value)) {
-					// pode the subtree if it is known value...
-					temp1 = new SubtractOperationProbabilityValue(
-							temp1.isFixedValue?(new SimpleProbabilityValue(temp1Value)):temp1 ,
-							temp2.isFixedValue?(new SimpleProbabilityValue(temp2Value)):temp2);
-				}
+			try {
+				temp1Value = Float.parseFloat(temp1.getValue());
+			} catch (NumberFormatException e) {
+				temp1Value = Float.NaN;
+			}
+			try {
+				temp2Value = Float.parseFloat(temp2.getValue());
+			} catch (NumberFormatException e) {
+				temp2Value = Float.NaN;
+			}
+			if (!Float.isNaN(temp1Value) && !Float.isNaN(temp2Value)){
+				// TODO cut the subtree if it is known value...
+				temp1 = new SubtractOperationProbabilityValue(
+						temp1.isFixedValue()?(new SimpleProbabilityValue(temp1Value)):temp1 ,
+								temp2.isFixedValue()?(new SimpleProbabilityValue(temp2Value)):temp2);
 			}			
 			break;
 		}
@@ -2052,11 +2091,11 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	protected IProbabilityValue term() throws TableFunctionMalformedException,
+	protected IExpressionValue term() throws TableFunctionMalformedException,
 											InvalidProbabilityRangeException,
 											SomeStateUndeclaredException{
-		IProbabilityValue temp1 = signedFactor();
-		IProbabilityValue temp2 = null;
+		IExpressionValue temp1 = signedFactor();
+		IExpressionValue temp2 = null;
 		
 		Float temp1Value = null;
 		Float temp2Value = null;
@@ -2065,29 +2104,41 @@ public class Compiler implements ICompiler {
 		case '*':
 			match('*');
 			temp2 = this.signedFactor();
-			temp1Value = temp1.getProbability();
-			temp2Value = temp2.getProbability();
-			if (!Float.isNaN(temp1Value)) {
-				if(!Float.isNaN(temp2Value)) {
-					// pode subtree if it is known value
-					return new MultiplyOperationProbabilityValue(
-							temp1.isFixedValue?(new SimpleProbabilityValue(temp1Value)):temp1 ,
-							temp2.isFixedValue?(new SimpleProbabilityValue(temp2Value)):temp2);
-				}
+			try {
+				temp1Value = Float.parseFloat(temp1.getValue());
+			} catch (NumberFormatException e) {
+				temp1Value = Float.NaN;
+			}
+			try {
+				temp2Value = Float.parseFloat(temp2.getValue());
+			} catch (NumberFormatException e) {
+				temp2Value = Float.NaN;
+			}
+			if (!Float.isNaN(temp1Value) && !Float.isNaN(temp2Value)) {
+				// TODO cut the subtree if it is known value
+				return new MultiplyOperationProbabilityValue(
+						temp1.isFixedValue()?(new SimpleProbabilityValue(temp1Value)):temp1 ,
+								temp2.isFixedValue()?(new SimpleProbabilityValue(temp2Value)):temp2);
 			}
 			break;
 		case '/':
 			match('/');
 			temp2 = this.signedFactor();
-			temp1Value = temp1.getProbability();
-			temp2Value = temp2.getProbability();
-			if (!Float.isNaN(temp1Value)) {
-				if (!Float.isNaN(temp2Value)) {
-					// pode subtree if it is known value
-					return new DivideOperationProbabilityValue(
-							temp1.isFixedValue?(new SimpleProbabilityValue(temp1Value)):temp1 ,
-							temp2.isFixedValue?(new SimpleProbabilityValue(temp2Value)):temp2);
-				}
+			try {
+				temp1Value = Float.parseFloat(temp1.getValue());
+			} catch (NumberFormatException e) {
+				temp1Value = Float.NaN;
+			}
+			try {
+				temp2Value = Float.parseFloat(temp2.getValue());
+			} catch (NumberFormatException e) {
+				temp2Value = Float.NaN;
+			}
+			if (!Float.isNaN(temp1Value) && !Float.isNaN(temp2Value)) {
+				// TODO cut the subtree if it is known value
+				return new DivideOperationProbabilityValue(
+						temp1.isFixedValue()?(new SimpleProbabilityValue(temp1Value)):temp1 ,
+								temp2.isFixedValue()?(new SimpleProbabilityValue(temp2Value)):temp2);
 			}
 			break;
 		//default:
@@ -2103,7 +2154,7 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	protected IProbabilityValue signedFactor() throws TableFunctionMalformedException,
+	protected IExpressionValue signedFactor() throws TableFunctionMalformedException,
 													InvalidProbabilityRangeException,
 													SomeStateUndeclaredException{
 
@@ -2131,18 +2182,20 @@ public class Compiler implements ICompiler {
 	}
 
 	/**
-	 * factor ::= number | function | ( expression )
+	 * factor ::= number | string | function | ( expression )
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	protected IProbabilityValue factor() throws TableFunctionMalformedException,
+	protected IExpressionValue factor() throws TableFunctionMalformedException,
 											  InvalidProbabilityRangeException,
 											  SomeStateUndeclaredException{
-		IProbabilityValue ret = null;
+		IExpressionValue ret = null;
 		if (look == '(') {
 			match('(');
 			ret = expression();
 			match(')');
+		} else if (look == '"') {
+			ret = this.getStr();
 		} else if (isAlpha(look)) {
 			ret = function();
 		} else {
@@ -2152,6 +2205,39 @@ public class Compiler implements ICompiler {
 		return ret;
 	}
 
+	/**
+	 * String is anything between quotes
+	 * @return instance of a {@link SimpleStringValue}
+	 */
+	protected IExpressionValue getStr()throws TableFunctionMalformedException {
+		value = "";
+		if (look != '"') {
+			expected("String");
+		}
+		nextChar();
+		while ((look != '"')) {
+			if (index >= text.length) {
+				break;
+			}
+			value += look;
+			nextChar();
+		}
+		if (look != '"') {
+			throw new TableFunctionMalformedException(getResource().getString("PrematureEndScript"));
+		}
+		
+		noCaseChangeValue = value;	// this is "value" without case change
+		value = value.toUpperCase();
+		
+		token = 'x';
+		
+		nextChar();
+		skipWhite();
+
+		// Debug.println("GetNum returned " + Float.parseFloat(value));
+		return new SimpleStringValue(noCaseChangeValue);
+	}
+	
 	/**
 	 * ident ::= letter [ letter | digit ]*
 	 * 
@@ -2184,16 +2270,16 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	protected IProbabilityValue possibleVal()throws TableFunctionMalformedException,
+	protected IExpressionValue possibleVal()throws TableFunctionMalformedException,
 												  SomeStateUndeclaredException {
 
 		this.getName();
 		
 		// Use a list to store already known states or identifiers to evaluate already known values... 
-//		IProbabilityValue ret = new SimpleProbabilityValue(Float.NaN);
+//		IExpressionValue ret = new SimpleProbabilityValue(Float.NaN);
 		if (this.currentHeader != null) {
 			// check if this is not a user-defined variable first;
-			IProbabilityValue userDefinedVariableValue = this.currentHeader.getUserDefinedVariable(noCaseChangeValue);
+			IExpressionValue userDefinedVariableValue = this.currentHeader.getUserDefinedVariable(noCaseChangeValue);
 			if (userDefinedVariableValue != null) {
 				return userDefinedVariableValue;
 			}
@@ -2222,7 +2308,7 @@ public class Compiler implements ICompiler {
 	 * returns the probability declared with this grammar category.
 	 * 	NAN if undefined or unknown.
 	 */
-	protected IProbabilityValue getNum() throws TableFunctionMalformedException {
+	protected IExpressionValue getNum() throws TableFunctionMalformedException {
 		value = "";
 
 		if (!((isNumeric(look)) || ((look == '.') && (value.indexOf('.') == -1))))
@@ -2341,7 +2427,7 @@ public class Compiler implements ICompiler {
 	/* Sends an alert telling that we expected some particular input */
 	protected void expected(String error) throws TableFunctionMalformedException {
 		System.err.println("Error: " + error + " expected!");
-		throw new TableFunctionMalformedException(getNode().toString());
+		throw new TableFunctionMalformedException(getNode().toString() + " : " + error);
 	}
 
 	/* Verifies if an input is an expected one */
@@ -2524,10 +2610,10 @@ public class Compiler implements ICompiler {
 	 * @return numeric value expected for the function
 	 * @throws TableFunctionMalformedException
 	 */
-	protected IProbabilityValue function()throws TableFunctionMalformedException,
+	protected IExpressionValue function()throws TableFunctionMalformedException,
 											   InvalidProbabilityRangeException,
 											   SomeStateUndeclaredException{
-		IProbabilityValue ret = this.possibleVal();
+		IExpressionValue ret = this.possibleVal();
 		skipWhite();
 		if (this.look == '(') {
 			if (this.value.equalsIgnoreCase("CARDINALITY")) {
@@ -2558,15 +2644,15 @@ public class Compiler implements ICompiler {
 	 * external_function([expression [";"|"," expression]])
 	 * @param functionBuilder : builder responsible for building an object representing this external function.
 	 * @return a wrapper for functionBuilder which virtually convertes {@link IUserDefinedFunction} (built by {@link IUserDefinedFunctionBuilder})
-	 * to a {@link IProbabilityValue}.
+	 * to a {@link IExpressionValue}.
 	 * @throws TableFunctionMalformedException
 	 * @throws SomeStateUndeclaredException 
 	 * @throws InvalidProbabilityRangeException 
 	 */
-	protected IProbabilityValue external_function(IUserDefinedFunctionBuilder functionBuilder) throws TableFunctionMalformedException, InvalidProbabilityRangeException, SomeStateUndeclaredException {
+	protected IExpressionValue external_function(IUserDefinedFunctionBuilder functionBuilder) throws TableFunctionMalformedException, InvalidProbabilityRangeException, SomeStateUndeclaredException {
 		
 		// prepare arguments to pass to external function
-		List<IProbabilityValue> args = new ArrayList<Compiler.IProbabilityValue>();
+		List<IExpressionValue> args = new ArrayList<Compiler.IExpressionValue>();
 		
 		match('(');
 		if (look != ')') {	// check if argument was provided
@@ -2594,8 +2680,8 @@ public class Compiler implements ICompiler {
 	 * @return
 	 * @throws TableFunctionMalformedException
 	 */
-	protected IProbabilityValue cardinality()throws TableFunctionMalformedException {
-		IProbabilityValue ret = null;
+	protected IExpressionValue cardinality()throws TableFunctionMalformedException {
+		IExpressionValue ret = null;
 		match('(');
 		
 		skipWhite();
@@ -2618,13 +2704,13 @@ public class Compiler implements ICompiler {
 	 * @return
 	 * @throws TableFunctionMalformedException
 	 */
-	protected IProbabilityValue min()throws TableFunctionMalformedException,
+	protected IExpressionValue min()throws TableFunctionMalformedException,
 										  InvalidProbabilityRangeException,
 										  SomeStateUndeclaredException{
 		// Debug.println("ANALISING MIN FUNCTION");
 		
-		IProbabilityValue ret1 = null;
-		IProbabilityValue ret2 = null;
+		IExpressionValue ret1 = null;
+		IExpressionValue ret2 = null;
 		match('(');
 		ret1 = this.expression();
 //		match(';');
@@ -2654,13 +2740,13 @@ public class Compiler implements ICompiler {
 	 * @return
 	 * @throws TableFunctionMalformedException
 	 */
-	protected IProbabilityValue max()throws TableFunctionMalformedException,
+	protected IExpressionValue max()throws TableFunctionMalformedException,
 										  InvalidProbabilityRangeException,
 										  SomeStateUndeclaredException{
 		// Debug.println("ANALISING MAX FUNCTION");
 		
-		IProbabilityValue ret1 = null;
-		IProbabilityValue ret2 = null;
+		IExpressionValue ret1 = null;
+		IExpressionValue ret2 = null;
 		match('(');
 		ret1 = this.expression();
 //		match(';');
@@ -2811,19 +2897,19 @@ public class Compiler implements ICompiler {
 		 * Hierarchically searches for user-defined variables in scope.
 		 * @param key : name of variable to look for
 		 * @return : value of the variable
-		 * @see #addUserDefinedVariable(String, IProbabilityValue)
+		 * @see #addUserDefinedVariable(String, IExpressionValue)
 		 * @see #clearUserDefinedVariables()
 		 */
-		public IProbabilityValue getUserDefinedVariable(String key);
+		public IExpressionValue getUserDefinedVariable(String key);
 		
 		/**
 		 *  Adds a new user-defined variable retrievable from {@link #getUserDefinedVariable(String)}
 		 * @see #clearUserDefinedVariables()
 		 */
-		public void addUserDefinedVariable(String key, IProbabilityValue value);
+		public void addUserDefinedVariable(String key, IExpressionValue value);
 		
 		/**
-		 * Deletes all user variables that were included by {@link #addUserDefinedVariable(String, IProbabilityValue)}.
+		 * Deletes all user variables that were included by {@link #addUserDefinedVariable(String, IExpressionValue)}.
 		 * @see #getUserDefinedVariable(String)
 		 */
 		public void clearUserDefinedVariables();
@@ -2834,7 +2920,7 @@ public class Compiler implements ICompiler {
 		 * variables with same name are found. If false, then variables found later will be used
 		 * in case of duplicate names.
 		 */
-		public Map<String, IProbabilityValue> getUserDefinedVariablesRecursively(boolean keepFirst);
+		public Map<String, IExpressionValue> getUserDefinedVariablesRecursively(boolean keepFirst);
 		
 		/**
 		 * @return instance of resident node whose LPD script is being applied.
@@ -2859,7 +2945,7 @@ public class Compiler implements ICompiler {
 	public class TempTable implements INestedIfElseClauseContainer{
 		
 		private List<TempTableHeaderCell> clauses = null;
-		private Map<String, IProbabilityValue> userDefinedVariables;
+		private Map<String, IExpressionValue> userDefinedVariables;
 		
 		/**
 		 * Represents the temporary CPT table (a list of if-else clauses)
@@ -2977,16 +3063,16 @@ public class Compiler implements ICompiler {
 		/**
 		 * @return the userDefinedVariables : mapping from user-defined variable names to its values.
 		 */
-		protected Map<String, IProbabilityValue> getUserDefinedVariables() {
+		protected Map<String, IExpressionValue> getUserDefinedVariables() {
 			if (userDefinedVariables == null) {
-				userDefinedVariables = new HashMap<String, IProbabilityValue>();
+				userDefinedVariables = new HashMap<String, IExpressionValue>();
 			}
 			return userDefinedVariables;
 		}
 		/**
 		 * @param userDefinedVariables : mapping from user-defined variable names to its values.
 		 */
-		protected void setUserDefinedVariables(Map<String, IProbabilityValue> userDefinedVariables) {
+		protected void setUserDefinedVariables(Map<String, IExpressionValue> userDefinedVariables) {
 			this.userDefinedVariables = userDefinedVariables;
 		}
 		
@@ -2995,7 +3081,7 @@ public class Compiler implements ICompiler {
 		 * (non-Javadoc)
 		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#getUserDefinedVariable(java.lang.String)
 		 */
-		public IProbabilityValue getUserDefinedVariable(String key) {
+		public IExpressionValue getUserDefinedVariable(String key) {
 			// this is the top level, so return immediately
 			return getUserDefinedVariables().get(key);
 		}
@@ -3003,7 +3089,7 @@ public class Compiler implements ICompiler {
 		/**
 		 *  Delegates to {@link #getUserDefinedVariables()} and {@link Map#put(Object, Object)}
 		 */
-		public void addUserDefinedVariable(String key, IProbabilityValue value){
+		public void addUserDefinedVariable(String key, IExpressionValue value){
 			getUserDefinedVariables().put(key, value);
 		}
 		
@@ -3021,13 +3107,13 @@ public class Compiler implements ICompiler {
 		 * (non-Javadoc)
 		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#getUserDefinedVariablesRecursively(boolean)
 		 */
-		public Map<String, IProbabilityValue> getUserDefinedVariablesRecursively(boolean keepFirst) {
-			Map<String, IProbabilityValue> ret = new HashMap<String, Compiler.IProbabilityValue>(getUserDefinedVariables());
+		public Map<String, IExpressionValue> getUserDefinedVariablesRecursively(boolean keepFirst) {
+			Map<String, IExpressionValue> ret = new HashMap<String, Compiler.IExpressionValue>(getUserDefinedVariables());
 			for (TempTableHeaderCell nested : getNestedClauses()) {
-				Map<String, IProbabilityValue> recursive = nested.getUserDefinedVariablesRecursively(keepFirst);
+				Map<String, IExpressionValue> recursive = nested.getUserDefinedVariablesRecursively(keepFirst);
 				if (keepFirst) {
 					// do not overwrite existing entries
-					for (Entry<String, IProbabilityValue> entry : recursive.entrySet()) {
+					for (Entry<String, IExpressionValue> entry : recursive.entrySet()) {
 						if (!ret.containsKey(entry.getKey())) {
 							ret.put(entry.getKey(), entry.getValue());
 						}
@@ -3070,7 +3156,7 @@ public class Compiler implements ICompiler {
 		
 		private INestedIfElseClauseContainer upperContainer = null;
 		
-		private Map<String, IProbabilityValue> userDefinedVariables;
+		private Map<String, IExpressionValue> userDefinedVariables;
 		
 		/**
 		 * Represents an entry for temporary table header (parents and their expected single values
@@ -3218,7 +3304,7 @@ public class Compiler implements ICompiler {
 		public void setNestedIfs(List<TempTableHeaderCell> nestedIfs) {
 			this.nestedIfs = nestedIfs;
 		}
-		public void addCell(Entity possibleValue , IProbabilityValue probability) {
+		public void addCell(Entity possibleValue , IExpressionValue probability) {
 			this.addCell(new TempTableProbabilityCell(possibleValue, probability));
 		}
 		
@@ -3672,16 +3758,16 @@ public class Compiler implements ICompiler {
 		/**
 		 * @return the userDefinedVariables : mapping from user-defined variable names to its values.
 		 */
-		protected Map<String, IProbabilityValue> getUserDefinedVariables() {
+		protected Map<String, IExpressionValue> getUserDefinedVariables() {
 			if (userDefinedVariables == null) {
-				userDefinedVariables = new HashMap<String, IProbabilityValue>();
+				userDefinedVariables = new HashMap<String, IExpressionValue>();
 			}
 			return userDefinedVariables;
 		}
 		/**
 		 * @param userDefinedVariables : mapping from user-defined variable names to its values.
 		 */
-		protected void setUserDefinedVariables(Map<String, IProbabilityValue> userDefinedVariables) {
+		protected void setUserDefinedVariables(Map<String, IExpressionValue> userDefinedVariables) {
 			this.userDefinedVariables = userDefinedVariables;
 		}
 		
@@ -3691,8 +3777,8 @@ public class Compiler implements ICompiler {
 		 * @param key : name of variable to look for
 		 * @return : value of the variable
 		 */
-		public IProbabilityValue getUserDefinedVariable(String key) {
-			IProbabilityValue value = getUserDefinedVariables().get(key);
+		public IExpressionValue getUserDefinedVariable(String key) {
+			IExpressionValue value = getUserDefinedVariables().get(key);
 			if (value != null) {
 				// found
 				return value;
@@ -3709,7 +3795,7 @@ public class Compiler implements ICompiler {
 		/**
 		 *  Delegates to {@link #getUserDefinedVariables()} and {@link Map#put(Object, Object)}
 		 */
-		public void addUserDefinedVariable(String key, IProbabilityValue value){
+		public void addUserDefinedVariable(String key, IExpressionValue value){
 			getUserDefinedVariables().put(key, value);
 		}
 		
@@ -3746,13 +3832,13 @@ public class Compiler implements ICompiler {
 		 * (non-Javadoc)
 		 * @see unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer#getUserDefinedVariablesRecursively(boolean)
 		 */
-		public Map<String, IProbabilityValue> getUserDefinedVariablesRecursively(boolean keepFirst) {
-			Map<String, IProbabilityValue> ret = new HashMap<String, Compiler.IProbabilityValue>(getUserDefinedVariables());
+		public Map<String, IExpressionValue> getUserDefinedVariablesRecursively(boolean keepFirst) {
+			Map<String, IExpressionValue> ret = new HashMap<String, Compiler.IExpressionValue>(getUserDefinedVariables());
 			for (TempTableHeaderCell nested : getNestedClauses()) {
-				Map<String, IProbabilityValue> recursive = nested.getUserDefinedVariablesRecursively(keepFirst);
+				Map<String, IExpressionValue> recursive = nested.getUserDefinedVariablesRecursively(keepFirst);
 				if (keepFirst) {
 					// do not overwrite existing entries
-					for (Entry<String, IProbabilityValue> entry : recursive.entrySet()) {
+					for (Entry<String, IExpressionValue> entry : recursive.entrySet()) {
 						if (!ret.containsKey(entry.getKey())) {
 							ret.put(entry.getKey(), entry.getValue());
 						}
@@ -4400,7 +4486,7 @@ public class Compiler implements ICompiler {
 	 */
 	public class TempTableProbabilityCell {
 		private Entity possibleValue = null;
-		private IProbabilityValue probability = null;
+		private IExpressionValue probability = null;
 		
 		/**
 		 * Represents a simple entry at a temporaly table representation (the
@@ -4408,7 +4494,7 @@ public class Compiler implements ICompiler {
 		 * @param possibleValue
 		 * @param probability
 		 */
-		TempTableProbabilityCell (Entity possibleValue , IProbabilityValue probability) {
+		TempTableProbabilityCell (Entity possibleValue , IExpressionValue probability) {
 			this.possibleValue = possibleValue;
 			this.probability = probability;
 		}
@@ -4419,37 +4505,105 @@ public class Compiler implements ICompiler {
 			this.possibleValue = possibleValue;
 		}
 		public float getProbabilityValue() throws InvalidProbabilityRangeException {
-			return probability.getProbability();
+			try {
+				return Float.parseFloat(probability.getValue());
+			} catch (NumberFormatException e) {}
+			return Float.NaN;
 		}
-		public IProbabilityValue getProbability() {
+		public IExpressionValue getProbability() {
 			return probability;
 		}
-		public void setProbability(IProbabilityValue probability) {
+		public void setProbability(IExpressionValue probability) {
 			this.probability = probability;
 		}		
 	}
 	
 	/**
-	 * 
+	 * Interface for classes representing terms in a expression in LPD.
 	 * @author Shou Matsumoto
-	 *
 	 */
-	public abstract class IProbabilityValue {
+	public abstract class IExpressionValue {
 		/**
-		 * 
-		 * @return: a value between [0,1] which represents a probability
+		 * @return: a string representation of a term in a expression (e.g. value between [0,1] for probability).
+		 * It's a string so that non-numeric values can also be used.
 		 */
-		public abstract float getProbability() throws InvalidProbabilityRangeException;
+		public abstract String getValue() throws InvalidProbabilityRangeException;
 		
 		/**
-		 * 
-		 * true if the probability is fixed. False if probability is
+		 * true if the value is fixed. False if value is
 		 * dynamic (values changes depending on SSBN configuration)
 		 */
-		public boolean isFixedValue = true;
+		private boolean isFixedValue = true;
+
+		/**
+		 * @return true if the value is fixed. False if value is
+		 * dynamic (values changes depending on SSBN configuration)
+		 */
+		public boolean isFixedValue() {
+			return this.isFixedValue;
+		}
+
+		/**
+		 * @param isFixedValue : true if the value is fixed. False if value is
+		 * dynamic (values changes depending on SSBN configuration)
+		 */
+		public void setFixedValue(boolean isFixedValue) {
+			this.isFixedValue = isFixedValue;
+		}
+		
+		/**
+		 * Subclasses must overwrite this method for representing non-numeric values in expressions.
+		 * @return : true if this value represents a numeric value. False otherwise.
+		 */
+		public abstract boolean isNumeric();
 	}
 	
-	public class SimpleProbabilityValue extends IProbabilityValue {
+	/**
+	 * Class representing a string label.
+	 * @author Shou Matsumoto
+	 */
+	public class SimpleStringValue extends IExpressionValue {
+		
+		private String value = "";
+		
+		/**
+		 * @param value : to be returned by {@link #getValue()}
+		 */
+		public SimpleStringValue(String value) {
+			super();
+			this.value = value;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.IExpressionValue#getValue()
+		 */
+		public String getValue() throws InvalidProbabilityRangeException {
+			return value;
+		}
+		
+		/**
+		 * @param value the value to set
+		 */
+		public void setValue(String value) {
+			this.value = value;
+		}
+
+		/*
+		 * (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.IExpressionValue#isNumeric()
+		 */
+		public boolean isNumeric() {
+			return false;
+		}
+		
+	}
+	
+	/**
+	 * Class representing a number (probability)
+	 * @author Shou Matsumoto
+	 */
+	public class SimpleProbabilityValue extends IExpressionValue {
 		private float value = Float.NaN;
 		/**
 		 * Represents a simple float value for a probability
@@ -4457,13 +4611,20 @@ public class Compiler implements ICompiler {
 		 */
 		SimpleProbabilityValue (float value) {
 			this.value = value;
+			this.setFixedValue(true);
 		}
-		public float getProbability() throws InvalidProbabilityRangeException {
-			return this.value;
+		public String getValue() throws InvalidProbabilityRangeException {
+			return ""+this.value;
 		}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.IExpressionValue#isNumeric()
+		 */
+		public boolean isNumeric() { return true;}
 	}
 	
-	public class UniformComplementProbabilityValue extends IProbabilityValue {
+	public class UniformComplementProbabilityValue extends IExpressionValue {
 
 		private TempTableHeaderCell currentHeader;
 		private Entity entity;
@@ -4473,9 +4634,9 @@ public class Compiler implements ICompiler {
 			this.entity = entity;
 		}
 
-		public float getProbability() throws InvalidProbabilityRangeException {
+		public String getValue() throws InvalidProbabilityRangeException {
 			if (currentHeader == null || getSSBNNode() == null || getSSBNNode().getProbNode() == null) {
-				return 0;
+				return ".0";
 			}
 			float sumOtherStates = 0;
 			int declaredStates = 0;
@@ -4487,90 +4648,142 @@ public class Compiler implements ICompiler {
 				sumOtherStates += cell.getProbabilityValue();
 			}
 			if (Float.isNaN(sumOtherStates) || declaredStates <= 0 || sumOtherStates >= 1) {
-				return 0f;
+				return "0";
 			}
-			return (1-sumOtherStates)/(getSSBNNode().getProbNode().getStatesSize() - declaredStates);
+			return ""+((1-sumOtherStates)/(getSSBNNode().getProbNode().getStatesSize() - declaredStates));
 		}
 		
-	}
-	
-	public abstract class MathOperationProbabilityValue extends IProbabilityValue {
-		protected IProbabilityValue op1 = null;
-		protected IProbabilityValue op2 = null;
-		
-		
-		
-		public abstract float getProbability() throws InvalidProbabilityRangeException;
-		
 
+		/*
+		 * (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.IExpressionValue#isNumeric()
+		 */
+		public boolean isNumeric() { return true;}
 	}
 	
+	/**
+	 * Class of binary (2-argument) operation, like *,/,+,-
+	 * @author Shou Matsumoto
+	 */
+	public abstract class MathOperationProbabilityValue extends IExpressionValue {
+		protected IExpressionValue op1 = null;
+		protected IExpressionValue op2 = null;
+		
+		public abstract String getValue() throws InvalidProbabilityRangeException;
+
+		/*
+		 * (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.IExpressionValue#isNumeric()
+		 */
+		public boolean isNumeric() {
+			if (op1 != null && op2 != null) {
+				return op1.isNumeric() && op2.isNumeric();
+			}
+			return true;
+		}
+	}
+	
+	/**
+	 * Class of "+" operation
+	 * @author Shou Matsumoto
+	 */
 	public class AddOperationProbabilityValue extends MathOperationProbabilityValue {
-		AddOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
+		AddOperationProbabilityValue(IExpressionValue op1 , IExpressionValue op2) {
 			this.op1 = op1;
 			this.op2 = op2;
-			this.isFixedValue = op1.isFixedValue?op2.isFixedValue:false;
+			this.setFixedValue(op1.isFixedValue()?op2.isFixedValue():false);
 		}
 		@Override
-		public float getProbability() throws InvalidProbabilityRangeException {
-			return this.op1.getProbability() + this.op2.getProbability();
-		}		
-	}
-	
-	public class SubtractOperationProbabilityValue extends MathOperationProbabilityValue {
-		SubtractOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
-			this.op1 = op1;
-			this.op2 = op2;
-
-			this.isFixedValue = op1.isFixedValue?op2.isFixedValue:false;
-		}
-		@Override
-		public float getProbability() throws InvalidProbabilityRangeException {
-			return this.op1.getProbability() - this.op2.getProbability();
-		}		
-	}
-	
-	public class MultiplyOperationProbabilityValue extends MathOperationProbabilityValue {
-		MultiplyOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
-			this.op1 = op1;
-			this.op2 = op2;
-			this.isFixedValue = op1.isFixedValue?op2.isFixedValue:false;
-		}
-		@Override
-		public float getProbability() throws InvalidProbabilityRangeException {
-			return this.op1.getProbability() * this.op2.getProbability();
-		}		
-	}
-	
-	public class DivideOperationProbabilityValue extends MathOperationProbabilityValue {
-		DivideOperationProbabilityValue(IProbabilityValue op1 , IProbabilityValue op2) {
-			this.op1 = op1;
-			this.op2 = op2;
-			this.isFixedValue = op1.isFixedValue?op2.isFixedValue:false;
-		}
-		@Override
-		public float getProbability() throws InvalidProbabilityRangeException {
-			return this.op1.getProbability() / this.op2.getProbability();
-		}		
-	}
-	
-	public class NegativeOperationProbabilityValue extends MathOperationProbabilityValue {
-		NegativeOperationProbabilityValue(IProbabilityValue op1) {
-			this.op1 = op1;
-			this.op2 = op1;
-			this.isFixedValue = op1.isFixedValue;
-		}
-		@Override
-		public float getProbability() throws InvalidProbabilityRangeException {
-			return - this.op1.getProbability();
+		public String getValue() throws InvalidProbabilityRangeException {
+			try {
+				return "" + (Float.parseFloat(this.op1.getValue()) + Float.parseFloat(this.op2.getValue()));
+			} catch (NumberFormatException e) {}
+			return "";
 		}		
 	}
 	
 	/**
-	 * This class wrapps/adapts a {@link IUserDefinedFunctionBuilder} to {@link IProbabilityValue}
+	 * Class of "-" (binary) operation
 	 * @author Shou Matsumoto
 	 */
-	public class ExternalFunctionProbabilityValue extends IProbabilityValue {
+	public class SubtractOperationProbabilityValue extends MathOperationProbabilityValue {
+		SubtractOperationProbabilityValue(IExpressionValue op1 , IExpressionValue op2) {
+			this.op1 = op1;
+			this.op2 = op2;
+
+			this.setFixedValue(op1.isFixedValue()?op2.isFixedValue():false);
+		}
+		@Override
+		public String getValue() throws InvalidProbabilityRangeException {
+			try {
+				return "" + (Float.parseFloat(this.op1.getValue()) - Float.parseFloat(this.op2.getValue()));
+			} catch (NumberFormatException e) {}
+			return "";
+		}		
+	}
+	
+	/**
+	 * Class of "*" operation
+	 * @author Shou Matsumoto
+	 */
+	public class MultiplyOperationProbabilityValue extends MathOperationProbabilityValue {
+		MultiplyOperationProbabilityValue(IExpressionValue op1 , IExpressionValue op2) {
+			this.op1 = op1;
+			this.op2 = op2;
+			this.setFixedValue(op1.isFixedValue()?op2.isFixedValue():false);
+		}
+		@Override
+		public String getValue() throws InvalidProbabilityRangeException {
+			try {
+				return "" + (Float.parseFloat(this.op1.getValue()) * Float.parseFloat(this.op2.getValue()));
+			} catch (NumberFormatException e) {}
+			return "";
+		}		
+	}
+	
+	/**
+	 * Class of "/" operation
+	 * @author Shou Matsumoto
+	 */
+	public class DivideOperationProbabilityValue extends MathOperationProbabilityValue {
+		DivideOperationProbabilityValue(IExpressionValue op1 , IExpressionValue op2) {
+			this.op1 = op1;
+			this.op2 = op2;
+			this.setFixedValue(op1.isFixedValue()?op2.isFixedValue():false);
+		}
+		@Override
+		public String getValue() throws InvalidProbabilityRangeException {
+			try {
+				return "" + (Float.parseFloat(this.op1.getValue()) / Float.parseFloat(this.op2.getValue()));
+			} catch (NumberFormatException e) {}
+			return "";
+		}		
+	}
+	
+	/**
+	 * Class of "-" (unary) operation
+	 * @author Shou Matsumoto
+	 */
+	public class NegativeOperationProbabilityValue extends MathOperationProbabilityValue {
+		NegativeOperationProbabilityValue(IExpressionValue op1) {
+			this.op1 = op1;
+			this.op2 = op1;
+			this.setFixedValue(op1.isFixedValue());
+		}
+		@Override
+		public String getValue() throws InvalidProbabilityRangeException {
+			try {
+				return "" + ( -Float.parseFloat(this.op1.getValue()) );
+			} catch (NumberFormatException e) {}
+			return "";
+		}		
+	}
+	
+	/**
+	 * This class wrapps/adapts a {@link IUserDefinedFunctionBuilder} to {@link IExpressionValue}
+	 * @author Shou Matsumoto
+	 */
+	public class ExternalFunctionProbabilityValue extends IExpressionValue {
 		
 		private IUserDefinedFunctionBuilder functionBuilder;
 
@@ -4579,17 +4792,34 @@ public class Compiler implements ICompiler {
 		}
 
 		/** Delegates to {@link IUserDefinedFunction#getResult()} */
-		public float getProbability() throws InvalidProbabilityRangeException {
+		public String getValue() throws InvalidProbabilityRangeException {
 			IUserDefinedFunctionBuilder builder = getFunctionBuilder();
 			IUserDefinedFunction func = builder.buildUserDefinedFunction();
-			return func.getResult();
+			String result = func.getResult();
+			if (result != null) {
+				return result;
+			}
+			return "";
 		}
 
 		public IUserDefinedFunctionBuilder getFunctionBuilder() {return functionBuilder;}
 		public void setFunctionBuilder(IUserDefinedFunctionBuilder functionBuilder) {this.functionBuilder = functionBuilder;}
+		
+		/*
+		 * (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.IExpressionValue#isNumeric()
+		 */
+		public boolean isNumeric() {
+			try {
+				float ret = Float.parseFloat(getValue());
+				return !Float.isNaN(ret);
+			} catch (InvalidProbabilityRangeException e) {
+			} catch (NumberFormatException e) {}
+			return false;
+		}
 	}
 	
-	public class CardinalityProbabilityValue extends IProbabilityValue {
+	public class CardinalityProbabilityValue extends IExpressionValue {
 		//private float value = Float.NaN;
 		private String varSetName = null;		
 		//private SSBNNode thisNode = null;
@@ -4606,21 +4836,21 @@ public class Compiler implements ICompiler {
 		CardinalityProbabilityValue (TempTableHeaderCell currentHeader, String varsetname) {
 			this.currentHeader = currentHeader;
 			this.varSetName= varsetname;
-			this.isFixedValue = false;
+			this.setFixedValue(false);
 		}
 
-		public float getProbability() throws InvalidProbabilityRangeException {
+		public String getValue() throws InvalidProbabilityRangeException {
 			
 			if (this.currentHeader == null) {
-				return Float.NaN;
+				return "";
 			}
 			if (getSSBNNode() == null) {
-				return Float.NaN;
+				return "";
 			}
 			
 			// if argument was not provided (i.e. it was "CARDINALITY()"), simply return total number of parents
 			if (this.varSetName == null || this.varSetName.trim().isEmpty()) {
-				return getSSBNNode().getParents().size();
+				return ""+getSSBNNode().getParents().size();
 			}
 			
 			// look for the upper if clauses which has matching varsetname
@@ -4632,23 +4862,25 @@ public class Compiler implements ICompiler {
 					// we found a container other than TempTableHeaderCell
 					// probably, it is a TempTable
 					// so, there was no perfect match for varsetname...
-					return 0;
+					return "0";
 				}
 			}
 			
 			// if we reach this code, we found a perfect match for varsetname
-			return matchingHeader.getValidParentSetCount();
+			return ""+matchingHeader.getValidParentSetCount();
 		}
 
-		
-		
-		
+		/*
+		 * (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.IExpressionValue#isNumeric()
+		 */
+		public boolean isNumeric() { return true;}
 	}
 	
 	
-	public class ComparisionProbabilityValue extends IProbabilityValue {
-		private IProbabilityValue arg0 = null;
-		private IProbabilityValue arg1 = null;
+	public class ComparisionProbabilityValue extends IExpressionValue {
+		private IExpressionValue arg0 = null;
+		private IExpressionValue arg1 = null;
 		private boolean isMax = false;
 		/**
 		 * Represents a comparision function between two values (MAX or MIN)
@@ -4657,22 +4889,33 @@ public class Compiler implements ICompiler {
 		 * @param isMax true if it represents a MAX function. If false, it represents a MIN
 		 * function.
 		 */
-		ComparisionProbabilityValue (IProbabilityValue arg0, IProbabilityValue arg1, boolean isMax) {
+		ComparisionProbabilityValue (IExpressionValue arg0, IExpressionValue arg1, boolean isMax) {
 			this.arg0 = arg0;
 			this.arg1 = arg1;
 			this.isMax = isMax;
-			this.isFixedValue = arg0.isFixedValue?arg1.isFixedValue:false;
+			this.setFixedValue(arg0.isFixedValue()?arg1.isFixedValue():false);
 		}
-		public float getProbability() throws InvalidProbabilityRangeException {
-			Float prob0 = this.arg0.getProbability();
+		public String getValue() throws InvalidProbabilityRangeException {
+			Float prob0 = Float.NaN;
+			try {
+				prob0 = Float.parseFloat(this.arg0.getValue());
+			} catch (NumberFormatException e) {
+				prob0 = Float.NaN;
+			}
 			if (Float.isNaN(prob0)) {
-				return prob0;
+				return "";
 			}
 			
-			Float prob1 = this.arg1.getProbability();
-			if (Float.isNaN(prob1)) {
-				return prob1;
+			Float prob1 = Float.NaN;
+			try {
+				prob1 = Float.parseFloat(this.arg1.getValue());
+			} catch (NumberFormatException e) {
+				prob1 = Float.NaN;
 			}
+			if (Float.isNaN(prob1)) {
+				return "";
+			}
+			
 			/*
 			 * the code below has the same meaning of:
 			 * if (isMax) {
@@ -4691,13 +4934,22 @@ public class Compiler implements ICompiler {
 			 * 
 			 */
 			if (this.isMax == (prob0 > prob1)) {				
-				return prob0;
+				return ""+prob0;
 			} else {
-				return prob1;
+				return ""+prob1;
 			}
 		}
 		
-
+		/*
+		 * (non-Javadoc)
+		 * @see unbbayes.prs.mebn.compiler.Compiler.IExpressionValue#isNumeric()
+		 */
+		public boolean isNumeric() {
+			if (arg0 != null && arg1 != null) {
+				return arg0.isNumeric() && arg1.isNumeric();
+			}
+			return true;
+		}
 
 	}
 
@@ -5170,21 +5422,14 @@ public class Compiler implements ICompiler {
 			ret.add(ov.getName());
 		}
 		
-		// handle input parents
-		for (InputNode parent : getNode().getParentInputNodesList()) {
-			ret.add(parent.getName());
-			// add possible states
-			for (Entity possibleValue : parent.getPossibleValueList()) {
-				ret.add(possibleValue.getName());
-			}
-			// add argument OVs
-			for (OrdinaryVariable ov : parent.getOrdinaryVariablesInArgument()) {
-				ret.add(ov.getName());
-			}
-		}
+
+		// extract all parents (regardless of being input or resident nodes)
+		List<MultiEntityNode> allParents = new ArrayList<MultiEntityNode>(getNode().getResidentNodeFatherList());
+		allParents.addAll(getNode().getParentInputNodesList());
 		
-		// handle resident parents
-		for (ResidentNode parent : getNode().getResidentNodeFatherList()) {
+		
+		// handle  parents
+		for (MultiEntityNode parent : allParents) {
 			ret.add(parent.getName());
 			// add possible states
 			for (Entity possibleValue : parent.getPossibleValueList()) {
@@ -5349,12 +5594,16 @@ public class Compiler implements ICompiler {
 				nodeName + " = " + stateName + " | " + nodeName2 + " = " + stateName2).entrySet().iterator().next());
 		
 		
+		// extract all parents (regardless of being input or resident nodes)
+		List<MultiEntityNode> allParents = new ArrayList<MultiEntityNode>(getNode().getResidentNodeFatherList());
+		allParents.addAll(getNode().getParentInputNodesList());
 		
+		//Parent1 = Parent2
+		
+		// Parent = ov
 		
 		// ParentName = parentState
-
-		// handle input parents
-		for (InputNode parent : getNode().getParentInputNodesList()) {
+		for (MultiEntityNode parent : allParents) {
 			// get the 1st state
 			String state = "state";	// if no state is found, simply use this default value
 			List<Entity> possibleValues = parent.getPossibleValueList();
@@ -5366,18 +5615,6 @@ public class Compiler implements ICompiler {
 					parent.getName() + " = " + state).entrySet().iterator().next());
 		}
 		
-		// handle resident parents
-		for (ResidentNode parent : getNode().getResidentNodeFatherList()) {
-			// get the 1st state
-			String state = "state";	// if no state is found, simply use this default value
-			List<Entity> possibleValues = parent.getPossibleValueList();
-			if (possibleValues!= null && !possibleValues.isEmpty()) {
-				state = possibleValues.get(0).getName();
-			}
-			ret.add(Collections.singletonMap(
-					parent.getName(),
-					parent.getName() + " = " + state).entrySet().iterator().next());
-		}
 		
 		
 		// state = 100%

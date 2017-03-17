@@ -55,5 +55,7 @@ public class Resources_pt extends ListResourceBundle {
 		{"SSBNInstanceFailure","O gerador de SSBN falhou na instanciação de nós."},
 		{"NonUserDefinedVariablesFoundBeforeIfClause","Somente atribuições a variáveis definidas pelo usuário (ao invés de atribuições aos estados dos nós) são permitidos antes de cláusulas \"if\" aninhadas."},
 		{"NonDeclaredVarStateAssignment","Variáveis ou estados só devem ser usados no lado direito das atribuições após serem propriamente declaradas/inicializadas."},
+		{"PrematureEndScript","Fim de script inesperado."},
+		{"NonNumericProbAssignment","Número (probabilidade) esperado em atribuições de valores aos estados do nó."},
 	};
 }

@@ -1210,6 +1210,160 @@ public class CompilerTest extends TestCase {
 	}
 	
 	/**
+	 * This method tests support for user-defined variables with string values
+	 * @throws MEBNException
+	 */
+	@SuppressWarnings("deprecation")
+	public void testStringVariable() throws MEBNException {
+		UbfIO io = UbfIO.getInstance();
+		
+		MultiEntityBayesianNetwork mebn = null;
+		try {
+			mebn = io.loadMebn(new File("./src/test/resources/twoNodeExample.ubf"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
+		}
+		assertNotNull(mebn);
+		
+		// extract the node to change lpd
+		ResidentNode resident = mebn.getDomainResidentNode("RX2");
+		
+		// change the lpd of the node to some invalid script
+		resident.setTableFunction(
+				"if any x have (RX1 = true) [ "
+						+		"var1 = \"myString\", true = var1, false = 1 - true"
+						+	"] else if any x have (RX1 = false) [ "
+						+		"if all x have (RX1 = false) [ "
+						+			"var2 = \"([a-zA-Z].*)+\", true = var2, false = 1 - true"
+						+		"] else [ "
+						+			"false = 0.75, true = 1-false"
+						+		"]  "
+						+	"] else [ "
+						+		"absurd = 1"
+						+	"] "
+				);
+		
+		resident.getCompiler().init(resident.getTableFunction());
+		try {
+			resident.getCompiler().parse();
+			fail("Should throw compilation error");
+		} catch (MEBNException e1) {
+			// make sure correct exception message is used
+			assertTrue(e1.getMessage().contains(
+					unbbayes.util.ResourceController.newInstance().getBundle(
+							unbbayes.prs.mebn.compiler.resources.Resources.class.getName()
+							).getString("NonNumericProbAssignment")
+						)
+					);
+		}
+		
+		// change the lpd of the node to some valid script
+		resident.setTableFunction(
+				"if any x have (RX1 = true) [ "
+						+		"var = \"myString\", true = .9, false = 1 - true"
+						+	"] else if any x have (RX1 = false) [ "
+						+		"var = \"([a-zA-Z].*)+\", "
+						+		"if all x have (RX1 = false) [ "
+						+			"true = .2, false = 1 - true"
+						+		"] else [ "
+						+			"false = 0.85-.2, true = 1-false"
+						+		"]  "
+						+	"] else [ "
+						+		"var = \"asdf\", absurd = 1"
+						+	"] "
+				);
+		
+		resident.getCompiler().init(resident.getTableFunction());
+		resident.getCompiler().parse();	// now should pass
+		
+		// run a query to make sure compiler generates correct CPT when SSBN is generated
+		TextModeRunner runner = new TextModeRunner();
+		
+		OrdinaryVariable x = resident.getOrdinaryVariableByName("x");
+		List<OVInstance> queryArguments = new ArrayList<OVInstance>(2);
+		queryArguments.add(OVInstance.getInstance(x , LiteralEntityInstance.getInstance("a", x.getValueType())));
+		Query query = new Query(resident, queryArguments);
+		ProbabilisticNetwork result = null;
+		try {
+			result = runner.executeQueryLaskeyAlgorithm(Collections.singletonList(query), PowerLoomKB.getNewInstanceKB(), mebn);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		assertNotNull(result);
+		
+		// extract node to check for probabilities
+		ProbabilisticNode node = (ProbabilisticNode) result.getNode("RX2__a");
+		assertNotNull(node);
+		PotentialTable table = node.getProbabilityFunction();
+		assertNotNull(table);
+		
+		// prepare an index that will store what are the positions of false/true/absurd states for current node
+		int stateIndex[] = new int[3];
+		Arrays.fill(stateIndex, -1);
+		for (int i = 0; i < node.getStatesSize(); i++) {
+			if (node.getStateAt(i).equalsIgnoreCase("false")) {
+				stateIndex[0] = i;
+			} else if (node.getStateAt(i).equalsIgnoreCase("true")) {
+				stateIndex[1] = i;
+			} else {
+				stateIndex[2] = i;
+			} 
+		}
+		assertTrue(stateIndex[0] >= 0);
+		assertTrue(stateIndex[1] >= 0);
+		assertTrue(stateIndex[2] >= 0);
+		
+		assertEquals(1, node.getParentNodes().size());
+		int stateIndexParent[] = new int[3];
+		Arrays.fill(stateIndexParent, -1);
+		for (int i = 0; i < node.getParentNodes().get(0).getStatesSize(); i++) {
+			if (node.getParentNodes().get(0).getStateAt(i).equalsIgnoreCase("false")) {
+				stateIndexParent[0] = i;
+			} else if (node.getParentNodes().get(0).getStateAt(i).equalsIgnoreCase("true")) {
+				stateIndexParent[1] = i;
+			} else {
+				stateIndexParent[2] = i;
+			} 
+		}
+		assertTrue(stateIndexParent[0] >= 0);
+		assertTrue(stateIndexParent[1] >= 0);
+		assertTrue(stateIndexParent[2] >= 0);
+		
+		int[] coord = table.getMultidimensionalCoord(0);
+		assertNotNull(coord);
+		assertEquals(2, coord.length);
+		
+		coord[1] = stateIndexParent[1];	// set parent to true
+		
+		coord[0] = stateIndex[1];		// set current node to true
+		assertEquals(0.9, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[0];		// set current node to false
+		assertEquals(0.1, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[2];		// set current node to absurd
+		assertEquals(0, table.getValue(coord), 0.00005);
+		
+		coord[1] = stateIndexParent[0];	// set parent to false
+		
+		coord[0] = stateIndex[1];		// set current node to true
+		assertEquals(0.2, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[0];		// set current node to false
+		assertEquals(0.8, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[2];		// set current node to absurd
+		assertEquals(0, table.getValue(coord), 0.00005);
+		
+		coord[1] = stateIndexParent[2];	// set parent to absurd
+		
+		coord[0] = stateIndex[1];		// set current node to true
+		assertEquals(0, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[0];		// set current node to false
+		assertEquals(0, table.getValue(coord), 0.00005);
+		coord[0] = stateIndex[2];		// set current node to absurd
+		assertEquals(1, table.getValue(coord), 0.00005);
+		
+	}
+	
+	/**
 	 * This method tests 2 types of normalization: normalization of probabilities
 	 * summing up to a value below 1 and some states not being declared (in this case
 	 * the remaining probabilities must be distributed uniformely to the other states);
@@ -1353,740 +1507,5 @@ public class CompilerTest extends TestCase {
 	}
 	
 	
-//	public void testTableGenerationNestedIf() {
-//		ResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
-//		
-//		OrdinaryVariable st = distFromOwn.getOrdinaryVariableByName("st");
-//		OrdinaryVariable tprev = distFromOwn.getMFrag().getOrdinaryVariableByName("tPrev");
-//		OrdinaryVariable t = distFromOwn.getOrdinaryVariableByName("t");
-//		
-//		OVInstance st0 = OVInstance.getInstance(st, "ST0", st.getValueType());
-//		OVInstance st1 = OVInstance.getInstance(st, "ST1", st.getValueType());
-//		OVInstance t0 = OVInstance.getInstance(tprev, "T0", tprev.getValueType());
-//		OVInstance t1 = OVInstance.getInstance(t, "T1", t.getValueType());
-//		OVInstance t2 = OVInstance.getInstance(t, "T2", t.getValueType());
-//		
-//		ProbabilisticNetwork net = new ProbabilisticNetwork("TestGenerateCPT");
-//		
-//		SSBNNode distFromOwn_ST0_T0 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST0_T0.addArgument(st0);
-//			distFromOwn_ST0_T0.addArgument(t0);
-//			List<Entity> valList = new ArrayList<Entity>(distFromOwn_ST0_T0.getActualValues());
-//			distFromOwn_ST0_T0.setNodeAsFinding(valList.get(0));
-//			
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		SSBNNode distFromOwn_ST0_T1 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST0_T1.addArgument(st0);
-//			distFromOwn_ST0_T1.addArgument(t1);
-//			distFromOwn_ST0_T1.addParent(distFromOwn_ST0_T0, false);
-//			distFromOwn_ST0_T1.getProbNode().setName("ST0T1");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		SSBNNode distFromOwn_ST1_T0 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST1_T0.addArgument(st1);
-//			distFromOwn_ST1_T0.addArgument(t0);
-//			distFromOwn_ST0_T1.addParent(distFromOwn_ST1_T0, false);
-//			distFromOwn_ST0_T1.getProbNode().setName("ST1T0");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		SSBNNode distFromOwn_ST0_T1v2 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST0_T1v2.addArgument(st0);
-//			distFromOwn_ST0_T1v2.addArgument(t1);
-//			distFromOwn_ST0_T1.addParent(distFromOwn_ST0_T1v2, false);
-//			distFromOwn_ST0_T1v2.getProbNode().setName("ST0T2");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		
-//		Compiler compiler = new Compiler(distFromOwn_ST0_T1.getResident(),distFromOwn_ST0_T1);
-//		compiler.init(distFromOwn_ST0_T1);
-//		
-////		Compiler compiler = new Compiler(distFromOwn_ST0_T1v2.getResident(),distFromOwn_ST0_T1v2);
-////		compiler.init(distFromOwn_ST0_T1v2);
-//		
-//		
-//		
-//		PotentialTable table = null;
-//		
-//		String code = 
-//		"if any st have ( DistFromOwn = OutOfRange ) [" +
-//				"if all st have (~ DistFromOwn = OutOfRange) " +
-//				"[ OutOfRange = 0 , TorpedoRange = 0 , Phaser2Range = .0 , Phaser1Range = .0 , " +
-//				"PulseCanonRange = .0 , Absurd = 1 ]" +
-//				" else " +
-//				"[ OutOfRange = MIN(0.3 * CARDINALITY(st); .99) , TorpedoRange = 1 - OutOfRange , Phaser2Range = .0 , Phaser1Range = .0 , " +
-//				"PulseCanonRange = .0 , Absurd = 0 ]" +
-//		"] else [" +
-//				"if all st have (~ DistFromOwn = OutOfRange) " +
-//				"[ PulseCanonRange = MIN(0.2 * CARDINALITY(st); .99) , Phaser2Range = 1 - PulseCanonRange , TorpedoRange = .0 , Phaser1Range = .0 , " +
-//				"OutOfRange = .0 , Absurd = 0 ]" +
-//				" else " +
-//				"[ OutOfRange = MIN(0.01 ; .99) , Phaser1Range = 0 , Phaser2Range = .0 , TorpedoRange = .0 , " +
-//				"PulseCanonRange = .0 , Absurd = 1 - OutOfRange ]" +
-//		"]";
-//		    
-//		try {
-//			compiler.parse(code);		
-//		} catch (MEBNException e) {
-//			e.printStackTrace();
-//			System.out.println(code.substring(compiler.getIndex() - 10));
-//			fail(e.getMessage() + " at [" +  compiler.getIndex() + "]");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		try {
-//			table = compiler.getCPT();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		
-//		GUIPotentialTable guiCPT = new GUIPotentialTable(table);
-//		guiCPT.showTable("VAI FUNCIONAR???!!");
-//		
-//		while(true);
-//	}
-	
-//	/**
-//	 * Test method for {@link unbbayes.prs.mebn.compiler.Compiler#main(java.lang.String[])}.
-//	 */
-//	public void testMain() {
-//		ProbabilisticNetwork rede = new ProbabilisticNetwork("MEBN Table Test");
-//
-//		ListaConjunto conjuntos = new ListaConjunto(new String[] { "OperatorSpecies",
-//				"HarmPot" });
-//
-//		ProbabilisticNode dangerToSelf = new ProbabilisticNode();
-//		dangerToSelf.setName("DangerToSelf");
-//		dangerToSelf.setDescription("Danger to self");
-//		dangerToSelf.appendState("Un");
-//		dangerToSelf.appendState("Hi");
-//		dangerToSelf.appendState("Me");
-//		dangerToSelf.appendState("Lo");
-//		PotentialTable auxTabPot = dangerToSelf.getPotentialTable();
-//		auxTabPot.addVariable(dangerToSelf);
-//		rede.addNode(dangerToSelf);
-//
-//		ProbabilisticNode opSpec = new ProbabilisticNode();
-//		opSpec.setName("OperatorSpecies");
-//		opSpec.setDescription("Operator Specie");
-//		opSpec.appendState("Cardassian");
-//		opSpec.appendState("Unknown");
-//		opSpec.appendState("Friend");
-//		opSpec.appendState("Klingon");
-//		opSpec.appendState("Romulan");
-//		auxTabPot = opSpec.getPotentialTable();
-//		auxTabPot.addVariable(opSpec);
-//		rede.addNode(opSpec);
-//
-//		Edge auxArco = new Edge(opSpec, dangerToSelf);
-//		rede.addEdge(auxArco);
-//
-//		ProbabilisticNode harmPotential = new ProbabilisticNode();
-//		harmPotential.setName("HarmPotential");
-//		harmPotential.setDescription("Harm Potential");
-//		harmPotential.appendState("True");
-//		harmPotential.appendState("False");
-//		auxTabPot = harmPotential.getPotentialTable();
-//		auxTabPot.addVariable(harmPotential);
-//		rede.addNode(harmPotential);
-//
-//		auxArco = new Edge(harmPotential, dangerToSelf);
-//		rede.addEdge(auxArco);
-//
-//		conjuntos.conjuntos.add(new Conjunto(
-//				new Node[] { opSpec, harmPotential }));
-//
-//		opSpec = new ProbabilisticNode();
-//		opSpec.setName("OpSpec2");
-//		opSpec.setDescription("Operator Specie 2");
-//		opSpec.appendState("Cardassian");
-//		opSpec.appendState("Unknown");
-//		opSpec.appendState("Friend");
-//		opSpec.appendState("Klingon");
-//		opSpec.appendState("Romulan");
-//		auxTabPot = opSpec.getPotentialTable();
-//		auxTabPot.addVariable(opSpec);
-//		rede.addNode(opSpec);
-//
-//		auxArco = new Edge(opSpec, dangerToSelf);
-//		rede.addEdge(auxArco);
-//
-//		harmPotential = new ProbabilisticNode();
-//		harmPotential.setName("HarmPotential2");
-//		harmPotential.setDescription("Harm Potential 2");
-//		harmPotential.appendState("True");
-//		harmPotential.appendState("False");
-//		auxTabPot = harmPotential.getPotentialTable();
-//		auxTabPot.addVariable(harmPotential);
-//		rede.addNode(harmPotential);
-//
-//		auxArco = new Edge(harmPotential, dangerToSelf);
-//		rede.addEdge(auxArco);
-//
-//		conjuntos.conjuntos.add(new Conjunto(
-//				new Node[] { opSpec, harmPotential }));
-//
-//		PotentialTable tab = dangerToSelf.getPotentialTable();
-//		for (int i = 0; i < tab.tableSize();) {
-//			int[] coord = tab.voltaCoord(i);
-//			int countSTi = 0;
-//			int countSTj = 0;
-//			int countSTk = 0;
-//			int countSTl = 0;
-//			int countSTm = 0;
-//
-//			for (int j = 0; j < conjuntos.conjuntos.size(); ++j) {
-//				int opSpecIndex = conjuntos.mapa.get("OperatorSpecies");
-//				int harmPotIndex = conjuntos.mapa.get("HarmPot");
-//				boolean ehCarda = coord[1 + (j * conjuntos.tamanhoConjunto)
-//						+ opSpecIndex] == 0; // 0 ? o indice do cardassian
-//				boolean ehTrue = coord[1 + (j * conjuntos.tamanhoConjunto)
-//						+ harmPotIndex] == 0; // 0 ? o indice do true
-//				if (ehCarda && ehTrue) {
-//					// STi
-//					countSTi++;
-//				}
-//
-//				boolean ehRomu = coord[1 + (j * conjuntos.tamanhoConjunto)
-//						+ opSpecIndex] == 4; // 4 ? o indice do romulan
-//				if (ehRomu && ehTrue) {
-//					// STj
-//					countSTj++;
-//				}
-//
-//				boolean ehUnk = coord[1 + (j * conjuntos.tamanhoConjunto)
-//						+ opSpecIndex] == 1; // 1 ? o indice do unk
-//
-//				if (ehUnk && ehTrue) {
-//					// stk
-//					countSTk++;
-//				}
-//
-//				boolean ehklin = coord[1 + (j * conjuntos.tamanhoConjunto)
-//						+ opSpecIndex] == 3; // 3 ? o indice do klin
-//
-//				if (ehklin && ehTrue) {
-//					// stl
-//					countSTl++;
-//				}
-//
-//				boolean ehfri = coord[1 + (j * conjuntos.tamanhoConjunto)
-//						+ opSpecIndex] == 2; // 2 ? o indice do fri
-//
-//				if (ehfri && ehTrue) {
-//					// stm
-//					countSTm++;
-//				}
-//			}			
-//			
-////			dangerToSelf.appendState("Un");
-////			dangerToSelf.appendState("Hi");
-////			dangerToSelf.appendState("Me");
-////			dangerToSelf.appendState("Lo");			
-//			
-//			if (countSTi > 0) {
-//				double unValue = 0.9 + Math.min(0.1, 0.025 * countSTi);
-//				tab.setValue(i, (float)unValue);
-//				
-//				double hiValue = (1-unValue) * 0.8;
-//				tab.setValue(i+1, (float)hiValue);
-//				
-//				double meValue = (1-unValue) * 0.2;
-//				tab.setValue(i+2, (float) meValue);
-//				
-//				tab.setValue(i+3, 0);
-//			} else if (countSTj > 0) {
-//				
-//			}
-//			
-//			i += dangerToSelf.getStatesSize();
-//		}
-//
-//		
-//		GUIPotentialTable guiCPT = new GUIPotentialTable(tab);
-//		guiCPT.showTable("VAI FUNCIONAR!");
-//		
-//		// while (true);
-//		
-//		/*
-//		Compiler c = new Compiler(null);
-//		c.init(TABLE_TO_PARSE); 
-//		try  {
-//			c.parse();
-//		} catch (MEBNException e) {
-//			fail(e.getMessage() + ": "+ e.getClass().getName());
-//		}
-//		*/
-//		 
-//	}
-//	
-//	
-	
-//	public void testGenerateCPT() {
-//		
-//		ResidentNode harmPotential = this.mebn.getDomainResidentNode("HarmPotential");
-//		ResidentNode starshipClass = this.mebn.getDomainResidentNode("StarshipClass");
-//		ResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
-//		
-//		OrdinaryVariable st = harmPotential.getOrdinaryVariableByName("st");
-//		OrdinaryVariable t = harmPotential.getOrdinaryVariableByName("t");
-//		
-//		OVInstance st0 = OVInstance.getInstance(st, "ST0", st.getValueType());
-//		OVInstance t0 = OVInstance.getInstance(t, "T0", t.getValueType());
-//		OVInstance st1 = OVInstance.getInstance(st, "ST1", st.getValueType());
-//		OVInstance t1 = OVInstance.getInstance(t, "T1", t.getValueType());
-//		
-//		ProbabilisticNetwork net = new ProbabilisticNetwork("TestGenerateCPT");
-//		
-//		SSBNNode harmPotential_ST0_T0 = SSBNNode.getInstance(net, harmPotential);
-//		try {
-//			harmPotential_ST0_T0.addArgument(st0);
-//			harmPotential_ST0_T0.addArgument(t0);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		SSBNNode distFromOwn_ST0_T0 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST0_T0.addArgument(st0);
-//			distFromOwn_ST0_T0.addArgument(t0);
-//			harmPotential_ST0_T0.addParent(distFromOwn_ST0_T0, true);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		//net.addEdge(new Edge(distFromOwn_ST0_T0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
-//		
-//		SSBNNode distFromOwn_ST1_T0 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST1_T0.addArgument(st1);
-//			distFromOwn_ST1_T0.addArgument(t0);
-//			harmPotential_ST0_T0.addParent(distFromOwn_ST1_T0, true);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		SSBNNode distFromOwn_ST0_T1 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST0_T1.addArgument(st0);
-//			distFromOwn_ST0_T1.addArgument(t1);
-//			harmPotential_ST0_T0.addParent(distFromOwn_ST0_T1, true);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		SSBNNode starshipClass_ST0 = SSBNNode.getInstance(net, starshipClass);
-//		try {
-//			starshipClass_ST0.addArgument(st0);
-//			harmPotential_ST0_T0.addParent(starshipClass_ST0, true);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		//net.addEdge(new Edge(starshipClass_ST0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
-//		
-//		
-//		Compiler compiler = new Compiler(harmPotential,harmPotential_ST0_T0);
-//		
-//		compiler.init(harmPotential_ST0_T0);
-//		
-//		PotentialTable table = null;
-//		
-//		String code = "if any st.t have (DistFromOwn = Absurd | StarshipClass = Absurd )"
-//			+ "[false = 0 , true = 0 , absurd = 1]"
-//			+ "else if any st.t have (DistFromOwn = Phaser1Range)" 
-//			+ "[false = MIN(MAX(CARDINALITY(st.t) * 0.3 ; 0.1) ; 1) , true = 1 - false , absurd = 0] "
-//			+ "else if all st have (DistFromOwn = Phaser2Range)" 
-//			+ "[false = MIN(MAX(CARDINALITY(st) * 0.2 ; 0.1) ; 1) , true = 1 - false , absurd = 0] "
-//			+ " else if all asdf have (StarshipClass = WarBird) "
-//			+ "[false = MIN(CARDINALITY(z)* .1; 1) ,  true = 1 - false , absurd = 0]"
-//			+ "else if all st have (StarshipClass = Explorer) "
-//			+ "[false = MIN(CARDINALITY(st)* .2; 1) ,  true = 1 - false , absurd = 0]"
-//			+ "else if any st have (DistFromOwn = OutOfRange) "
-//			+ "[true = MIN(CARDINALITY(asdf)* .3; 1) ,  false = 1 - true , absurd = 0]"
-//			+ "else if all st have (StarshipClass = Frigate) "
-//			+ "[false = MIN(CARDINALITY(st)* .4; 1) ,  true = 1 - false , absurd = 0]"
-//			+ "else if all st have (StarshipClass = Cruiser) "
-//			+ "[false = MIN(CARDINALITY(st)* .5; 1) ,  true = 1 - false , absurd = 0]"
-//			+ "else if all st have (StarshipClass = Freighter) "
-//			+ "[false = MIN(CARDINALITY(st)* .6; 1) ,  true = 1 - false , absurd = 0]"
-//			+ "else [false = 0.33 ,  true = 0.33 , absurd = 1 - (false + true)]";
-//			
-//		try {
-//			compiler.parse(code);		
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		System.out.println("\n\n\nCode Parsed!!\n\n\n");
-//		try {
-//			table = compiler.getCPT();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		
-//		GUIPotentialTable guiCPT = new GUIPotentialTable(table);
-//		guiCPT.showTable("VAI FUNCIONAR???");
-//		
-//		while(true);
-//		
-//	}
-//	
-	
-//public void testGenerateCPT2() {
-//		
-//	ResidentNode harmPotential = this.mebn.getDomainResidentNode("HarmPotential");
-//	ResidentNode starshipClass = this.mebn.getDomainResidentNode("StarshipClass");
-//	ResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
-//		
-//		OrdinaryVariable st = harmPotential.getOrdinaryVariableByName("st");
-//		OrdinaryVariable t = harmPotential.getOrdinaryVariableByName("t");
-//		OrdinaryVariable tother = new OrdinaryVariable("tother",t.getValueType(), t.getMFrag());
-//		
-//		OVInstance st0 = OVInstance.getInstance(st, "ST0", st.getValueType());
-//		OVInstance t0 = OVInstance.getInstance(t, "T0", t.getValueType());
-//		//OVInstance st1 = OVInstance.getInstance(st, "ST1", st.getValueType());
-//		OVInstance t1 = OVInstance.getInstance(t, "T1", t.getValueType());
-//		
-//		ProbabilisticNetwork net = new ProbabilisticNetwork("TestGenerateCPT");
-//		
-//		SSBNNode harmPotential_ST0_T0 = SSBNNode.getInstance(net, harmPotential);
-//		try {
-//			harmPotential_ST0_T0.addArgument(st0);
-//			harmPotential_ST0_T0.addArgument(t0);
-//			harmPotential_ST0_T0.getName();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		SSBNNode distFromOwn_ST0_T0 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST0_T0.addArgument(st0);
-//			distFromOwn_ST0_T0.addArgument(t0);
-//			distFromOwn_ST0_T0.getName();
-//			harmPotential_ST0_T0.addParent(distFromOwn_ST0_T0, true);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		//net.addEdge(new Edge(distFromOwn_ST0_T0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
-//		
-//		
-//		
-//		SSBNNode distFromOwn_ST0_T1 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST0_T1.addArgument(st0);
-//			distFromOwn_ST0_T1.addArgument(t1);
-//			distFromOwn_ST0_T1.getName();
-//			harmPotential_ST0_T0.addParent(distFromOwn_ST0_T1, true);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		SSBNNode starshipClass_ST0 = SSBNNode.getInstance(net, starshipClass);
-//		try {
-//			starshipClass_ST0.addArgument(st0);
-//			starshipClass_ST0.getName();
-//			harmPotential_ST0_T0.addParent(starshipClass_ST0, true);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		//net.addEdge(new Edge(starshipClass_ST0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
-//		
-//		
-//		Compiler compiler = new Compiler(harmPotential,harmPotential_ST0_T0);
-//		
-//		compiler.init(harmPotential_ST0_T0);
-//		
-//		PotentialTable table = null;
-//		
-//		String code = "if any st.t have (DistFromOwn = Absurd | StarshipClass = Absurd )"
-//	+ " [false = 0 , true = 0 , absurd = 1]"
-//	+ " else if any st.t have (DistFromOwn = Phaser1Range)" 
-//	+ " 	[false = MIN(MAX(CARDINALITY(st.t) * 0.3 ; 0.1) ; 1) , true = 1 - false , absurd = 0]" 
-//	+ " else if all st have (DistFromOwn = Phaser2Range)"
-//	+ " 	[false = MIN(MAX(CARDINALITY(st) * 0.2 ; 0.1) ; 1) , true = 1 - false , absurd = 0] "
-//	+ " else if all asdf have (StarshipClass = WarBird) "
-//	+ " 	[false = MIN(CARDINALITY(z)* .1; 1) ,  true = 1 - false , absurd = 0]"
-//	+ " else if all st have (StarshipClass = Explorer | ~ DistFromOwn = OutOfRange) "
-//	+ " 	[false = MIN(CARDINALITY(st)* .2; 1) ,  true = 1 - false , absurd = 0]"
-//	+ " else [false = 0.33 ,  true = 0.33 , absurd = 1 - (false + true)]";
-//			
-//		try {
-//			compiler.parse(code);		
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		System.out.println("\n\n\nCode Parsed!!\n\n\n");
-//		try {
-//			table = compiler.getCPT();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		
-//		GUIPotentialTable guiCPT = new GUIPotentialTable(table);
-//		guiCPT.showTable(harmPotential_ST0_T0.getName());
-//		
-//		//while(true);
-//		
-//	}
-//
-//
-//
-//public void testGenerateCPT3() {
-//		
-//	ResidentNode harmPotential = this.mebn.getDomainResidentNode("HarmPotential");
-//	ResidentNode starshipClass = this.mebn.getDomainResidentNode("StarshipClass");
-//	ResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
-//		
-//		OrdinaryVariable st = harmPotential.getOrdinaryVariableByName("st");
-//		OrdinaryVariable t = harmPotential.getOrdinaryVariableByName("t");
-//		OrdinaryVariable tother = new OrdinaryVariable("tother",t.getValueType(), t.getMFrag());
-//		
-//		OVInstance st0 = OVInstance.getInstance(st, "ST0", st.getValueType());
-//		OVInstance t0 = OVInstance.getInstance(t, "T0", t.getValueType());
-//		//OVInstance st1 = OVInstance.getInstance(st, "ST1", st.getValueType());
-//		OVInstance t1 = OVInstance.getInstance(tother, "T1", t.getValueType());
-//		
-//		ProbabilisticNetwork net = new ProbabilisticNetwork("TestGenerateCPT");
-//		
-//		SSBNNode harmPotential_ST0_T0 = SSBNNode.getInstance(net, harmPotential);
-//		try {
-//			harmPotential_ST0_T0.addArgument(st0);
-//			harmPotential_ST0_T0.addArgument(t0);
-//			harmPotential_ST0_T0.getName();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		SSBNNode distFromOwn_ST0_T0 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST0_T0.addArgument(st0);
-//			distFromOwn_ST0_T0.addArgument(t0);
-//			distFromOwn_ST0_T0.getName();
-//			harmPotential_ST0_T0.addParent(distFromOwn_ST0_T0, true);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		//net.addEdge(new Edge(distFromOwn_ST0_T0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
-//		
-//		
-//		
-//		SSBNNode distFromOwn_ST0_T1 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST0_T1.addArgument(st0);
-//			distFromOwn_ST0_T1.addArgument(t1);
-//			distFromOwn_ST0_T1.getName();
-//			harmPotential_ST0_T0.addParent(distFromOwn_ST0_T1, true);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		SSBNNode starshipClass_ST0 = SSBNNode.getInstance(net, starshipClass);
-//		try {
-//			starshipClass_ST0.addArgument(st0);
-//			starshipClass_ST0.getName();
-//			harmPotential_ST0_T0.addParent(starshipClass_ST0, true);
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		//net.addEdge(new Edge(starshipClass_ST0.getProbNode(),harmPotential_ST0_T0.getProbNode()));
-//		
-//		
-//		Compiler compiler = new Compiler(harmPotential,harmPotential_ST0_T0);
-//		
-//		compiler.init(harmPotential_ST0_T0);
-//		
-//		PotentialTable table = null;
-//		
-//		String code = "if any st.t have (DistFromOwn = Absurd | StarshipClass = Absurd )"
-//	+ " [false = 0 , true = 0 , absurd = 1]"
-//	+ " else if any st.t have (DistFromOwn = Phaser1Range)" 
-//	+ " 	[false = MIN(MAX(CARDINALITY(st.t) * 0.3 ; 0.1) ; 1) , true = 1 - false , absurd = 0]" 
-//	+ " else if all st have (DistFromOwn = Phaser2Range)"
-//	+ " 	[false = MIN(MAX(CARDINALITY(st) * 0.2 ; 0.1) ; 1) , true = 1 - false , absurd = 0] "
-//	+ " else if all asdf have (StarshipClass = WarBird) "
-//	+ " 	[false = MIN(CARDINALITY(z)* .1; 1) ,  true = 1 - false , absurd = 0]"
-//	+ " else if all st have (StarshipClass = Explorer | ~ DistFromOwn = OutOfRange) "
-//	+ " 	[false = MIN(CARDINALITY(st)* .4; 1) ,  true = 1 - false , absurd = 0]"
-//	+ " else [false = 0.33 ,  true = 0.33 , absurd = 1 - (false + true)]";
-//			
-//		try {
-//			compiler.parse(code);		
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		System.out.println("\n\n\nCode Parsed!!\n\n\n");
-//		try {
-//			table = compiler.getCPT();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		
-//		GUIPotentialTable guiCPT = new GUIPotentialTable(table);
-//		guiCPT.showTable(harmPotential_ST0_T0.getName());
-//		
-//		//while(true);
-//		
-//	}
-//	
-	
-//public void testDistFromOwn() {
-//		
-//	ResidentNode distFromOwn = this.mebn.getDomainResidentNode("DistFromOwn");
-//		
-//		OrdinaryVariable st = distFromOwn.getOrdinaryVariableByName("st");
-//		OrdinaryVariable tprev = distFromOwn.getMFrag().getOrdinaryVariableByName("tPrev");
-//		OrdinaryVariable t = distFromOwn.getOrdinaryVariableByName("t");
-//		
-//		OVInstance st0 = OVInstance.getInstance(st, "ST0", st.getValueType());
-//		OVInstance st1 = OVInstance.getInstance(st, "ST1", st.getValueType());
-//		OVInstance t0 = OVInstance.getInstance(tprev, "T0", tprev.getValueType());
-//		OVInstance t1 = OVInstance.getInstance(t, "T1", t.getValueType());
-//		
-//		ProbabilisticNetwork net = new ProbabilisticNetwork("TestGenerateCPT");
-//		
-//		SSBNNode distFromOwn_ST0_T0 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST0_T0.addArgument(st0);
-//			distFromOwn_ST0_T0.addArgument(t0);
-//			List<Entity> valList = new ArrayList<Entity>(distFromOwn_ST0_T0.getActualValues());
-//			distFromOwn_ST0_T0.setNodeAsFinding(valList.get(0));
-//			
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		SSBNNode distFromOwn_ST0_T1 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST0_T1.addArgument(st0);
-//			distFromOwn_ST0_T1.addArgument(t1);
-//			distFromOwn_ST0_T1.addParent(distFromOwn_ST0_T0, false);
-//			distFromOwn_ST0_T1.getProbNode().setName("ST0T1");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		SSBNNode distFromOwn_ST1_T0 = SSBNNode.getInstance(net, distFromOwn);
-//		try {
-//			distFromOwn_ST1_T0.addArgument(st1);
-//			distFromOwn_ST1_T0.addArgument(t0);
-//			distFromOwn_ST0_T1.addParent(distFromOwn_ST1_T0, false);
-//			distFromOwn_ST0_T1.getProbNode().setName("ST1T0");
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		
-//		Compiler compiler = new Compiler(distFromOwn_ST0_T1.getResident(),distFromOwn_ST0_T1);
-//		
-//		compiler.init(distFromOwn_ST0_T1);
-//		
-//		PotentialTable table = null;
-//		
-//		String code = "if any st have ( DistFromOwn = OutOfRange ) " +
-//				"[ OutOfRange = .6 , TorpedoRange = .3 , Phaser2Range = .05 , Phaser1Range = .04 , " +
-//				"PulseCanonRange = .01 , Absurd = 0 ]"
-//		+" else if any st have ( DistFromOwn = TorpedoRange ) " +
-//				"[ OutOfRange = .25 , TorpedoRange = .4 , Phaser2Range = .25 , Phaser1Range = .07 , " +
-//				"PulseCanonRange = .03 , Absurd = 0 ] " 
-//		+ "else if any st have ( DistFromOwn = Phaser2Range )" +
-//				" [ OutOfRange = .06 , TorpedoRange = .25 , Phaser2Range = .4 , " +
-//				"Phaser1Range = .25 , PulseCanonRange = .04 , Absurd = 0 ]"
-//		+ "else if any st have ( DistFromOwn = Phaser1Range ) " +
-//				"[ OutOfRange = .03 , TorpedoRange = .07 , Phaser2Range = .25 , Phaser1Range = .4 ," +
-//				"PulseCanonRange = .25 , Absurd = 0 ]"
-//		+ "else if any st have ( DistFromOwn = PulseCanonRange ) " +
-//				"[ OutOfRange = .01 , TorpedoRange = .04 , Phaser2Range = .1 , Phaser1Range = .35 , " +
-//				" PulseCanonRange = .5 , Absurd = 0 ]"
-//		+ "else " +
-//				"[ OutOfRange = 0 , TorpedoRange = 0 , Phaser2Range = 0 , Phaser1Range = 0 , " +
-//				"PulseCanonRange = 0 , Absurd = 1 ]";
-//		    
-//		try {
-//			compiler.parse(code);		
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		try {
-//			table = compiler.getCPT();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//			fail(e.getMessage());
-//		}
-//		
-//		
-//		GUIPotentialTable guiCPT = new GUIPotentialTable(table);
-//		guiCPT.showTable("VAI FUNCIONAR???!!");
-//		
-//		while(true);
-//		
-//	}
-//
-//
-//	public void startBusyLoopToPauseLastTest() {
-//		// this is just to let the last test not to exit (keep the test suite running)
-//		assertEquals(0f, 0);
-//		while(true);
-//		
-//	}
 
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.compiler.Compiler#init(java.lang.String)}.
-	 */
-	/*
-	public void testInit() {
-		fail("Not yet implemented"); // TODO
-	}
-	*/
-	/**
-	 * Test method for {@link unbbayes.prs.mebn.compiler.Compiler#parse()}.
-	 */
-	/*
-	public void testParse() {
-		fail("Not yet implemented"); // TODO
-		
-	}
-	*/
 }

@@ -5,10 +5,8 @@ package unbbayes.prs.mebn.compiler.extension;
 
 import java.util.List;
 
-import unbbayes.prs.mebn.IResidentNode;
 import unbbayes.prs.mebn.compiler.Compiler.INestedIfElseClauseContainer;
-import unbbayes.prs.mebn.compiler.Compiler.IProbabilityValue;
-import unbbayes.prs.mebn.ssbn.SSBNNode;
+import unbbayes.prs.mebn.compiler.Compiler.IExpressionValue;
 
 /**
  * Classes implementing this interface builds an instance of {@link IUserDefinedFunction}
@@ -20,7 +18,7 @@ public interface IUserDefinedFunctionBuilder {
 	/**
 	 * @param args : arguments that the script is passing to the function.
 	 */
-	public void setArguments(List<IProbabilityValue> args);
+	public void setArguments(List<IExpressionValue> args);
 	
 	
 	/**
