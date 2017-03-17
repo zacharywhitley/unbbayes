@@ -3,7 +3,7 @@
 <!-- This is the plugin descriptor for UnBBayes' MEBN module. -->
 <plugin id="unbbayes.prs.mebn" version="1.18.13">
     <requires>
-        <import plugin-id="unbbayes.util.extension.core" plugin-version="4.17.8"/>
+        <import plugin-id="unbbayes.util.extension.core" plugin-version="4.22.18"/>
     </requires>
     <runtime>
         <library type="resources" path="icons/" id="icons">
