@@ -350,14 +350,17 @@ public class MFragContextNodeAvaliator2  implements IMFragContextNodeAvaliator {
 				// We have to execute the search for each Si. 
 				
 				if(ovSetB.size()!=0){
-					
-					logManager.printText(IdentationLevel.LEVEL_5, false, "We have values from the evaluation of the others nodes.");
+					if (logManager != null) {
+						logManager.printText(IdentationLevel.LEVEL_5, false, "We have values from the evaluation of the others nodes.");
+					}
 					
 					boolean haveValidResult = false; 
 
 					for(String[] resultLine: possibleCombinationsForOvSetB){
 
-						logManager.printText(IdentationLevel.LEVEL_5, false, "Evaluation with possible values: " + resultLine);
+						if (logManager != null) {
+							logManager.printText(IdentationLevel.LEVEL_5, false, "Evaluation with possible values: " + resultLine);
+						}
 						
 						List<OVInstance> newOVInstanceList = new ArrayList<OVInstance>(); 
 
@@ -390,9 +393,7 @@ public class MFragContextNodeAvaliator2  implements IMFragContextNodeAvaliator {
 										for(int i = 0; i < result.length; i++){
 											resultOv += result[i] + " "; 
 										}
-										if (logManager != null) {
-											logManager.printText(IdentationLevel.LEVEL_5, false, resultOv);
-										}
+										logManager.printText(IdentationLevel.LEVEL_5, false, resultOv);
 									}
 								}
 
@@ -413,7 +414,9 @@ public class MFragContextNodeAvaliator2  implements IMFragContextNodeAvaliator {
 								} catch (MFragContextFailException e) {
 
 									//							e.printStackTrace(); 
-									logManager.printText(IdentationLevel.LEVEL_5, false, e.getMessage());
+									if (logManager != null) {
+										logManager.printText(IdentationLevel.LEVEL_5, false, e.getMessage());
+									}
 
 									mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_FAIL); 
 									mFragInstance.setUseDefaultDistribution(true); 
@@ -547,9 +550,7 @@ public class MFragContextNodeAvaliator2  implements IMFragContextNodeAvaliator {
 								for(int i = 0; i < result.length; i++){
 									resultOv += result[i] + " "; 
 								}
-								if (logManager != null) {
-									logManager.printText(IdentationLevel.LEVEL_5, false, resultOv);
-								}
+								logManager.printText(IdentationLevel.LEVEL_5, false, resultOv);
 							}
 						}
 
@@ -571,7 +572,9 @@ public class MFragContextNodeAvaliator2  implements IMFragContextNodeAvaliator {
 						} catch (MFragContextFailException e) {
 
 							//							e.printStackTrace(); 
-							logManager.printText(IdentationLevel.LEVEL_5, false, e.getMessage());
+							if (logManager != null) {
+								logManager.printText(IdentationLevel.LEVEL_5, false, e.getMessage());
+							}
 
 							mFragInstance.setStateEvaluationOfContextNode(contextNode, ContextNodeEvaluationState.EVALUATION_FAIL); 
 							mFragInstance.setUseDefaultDistribution(true); 

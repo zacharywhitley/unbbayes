@@ -70,19 +70,15 @@ public class TextModeRunnerTest extends TestCase {
 
 	/**
 	 * Test method for {@link unbbayes.TextModeRunner#executeQueryLaskeyAlgorithm(java.util.List, unbbayes.prs.mebn.kb.KnowledgeBase, unbbayes.prs.mebn.MultiEntityBayesianNetwork)}.
+	 * @throws Exception 
 	 */
-	public final void testCallLaskeyAlgorithm() {
+	public final void testCallLaskeyAlgorithm() throws Exception {
 		String nameOfResidentNodeInQuery = "ObjectType";
 		String argument = "Obj1";
 		
 		ProbabilisticNetwork net = null;
-		try {
-			// single query
-			net = this.textModeRunner.callLaskeyAlgorithm(mebn, kb, Collections.singletonList(textModeRunner.new QueryNodeNameAndArguments(nameOfResidentNodeInQuery, argument)));
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		// single query
+		net = this.textModeRunner.callLaskeyAlgorithm(mebn, kb, Collections.singletonList(textModeRunner.new QueryNodeNameAndArguments(nameOfResidentNodeInQuery, argument)));
 		
 		// the name of generated node shall be nameOfResidentNodeInQuery + "__" + argument
 		ProbabilisticNode node = (ProbabilisticNode) net.getNode(nameOfResidentNodeInQuery + "__" + argument);
@@ -98,8 +94,9 @@ public class TextModeRunnerTest extends TestCase {
 	
 	/**
 	 * Test method for {@link unbbayes.TextModeRunner#executeQueryLaskeyAlgorithm(java.util.List, unbbayes.prs.mebn.kb.KnowledgeBase, unbbayes.prs.mebn.MultiEntityBayesianNetwork)}.
+	 * @throws Exception 
 	 */
-	public final void testCallLaskeyAlgorithmMultipleQuery() {
+	public final void testCallLaskeyAlgorithmMultipleQuery() throws Exception {
 		String nameOfResidentNodeInQuery = "ObjectType";	
 		String argument1 = "Obj1";	// query 1 = ObjectType(Obj1)
 		String argument2 = "Obj2";	// query 2 = ObjectType(Obj2); we know that this is disconnected to query 1
@@ -111,13 +108,8 @@ public class TextModeRunnerTest extends TestCase {
 
 		// this is the return
 		ProbabilisticNetwork net = null;
-		try {
-			// multiple query (2 query nodes)
-			net = this.textModeRunner.callLaskeyAlgorithm(mebn, kb, queries);
-		} catch (Exception e) {
-			e.printStackTrace();
-			fail(e.getMessage());
-		}
+		// multiple query (2 query nodes)
+		net = this.textModeRunner.callLaskeyAlgorithm(mebn, kb, queries);
 		
 		// check query 1
 		// the name of generated node shall be nameOfResidentNodeInQuery + "__" + argument
