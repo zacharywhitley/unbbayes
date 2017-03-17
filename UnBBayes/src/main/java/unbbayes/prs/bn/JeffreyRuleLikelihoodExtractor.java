@@ -68,6 +68,15 @@ public class JeffreyRuleLikelihoodExtractor implements ILikelihoodExtractor {
 		// this is the probability user expects
 		float expectedProbability[] = mainNode.getLikelihood();
 		
+		// normalize expected probability
+		float total = 0;
+		for (float prob : expectedProbability) {
+			total += prob;
+		}
+		for (int i = 0; i < expectedProbability.length; i++) {
+			expectedProbability[i] /= total;
+		}
+		
 		// this is going to be the ratio. 
 		float ratio[] = new float[expectedProbability.length];
 		
@@ -81,7 +90,7 @@ public class JeffreyRuleLikelihoodExtractor implements ILikelihoodExtractor {
 			throw new RuntimeException("Could not extract current probability from " + node + " in " + graph);
 		}
 		
-		float total = 0;	// this value will be used to normalize ratio
+		total = 0;	// this value will be used to normalize ratio
 		// calculate ratio. 
 		for (int i = 0; i < ratio.length; i++) {
 			if (expectedProbability[i] == 0f && currentProbability[i] == 0f) {
