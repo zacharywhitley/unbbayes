@@ -1943,7 +1943,8 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 		virtualNode.setName(newName);
 		virtualNode.setInternalIdentificator(net.getNodeCount());
 		// we need to add only 2 states (one will be set as a finding)
-		virtualNode.appendState(this.getResource().getString("likelihoodName"));
+		// TODO change the names of default states
+		virtualNode.appendState(this.getResource().getString("softEvidenceState"));
 		virtualNode.appendState(this.getResource().getString("dummyState"));
 		
 		net.addNode(virtualNode);

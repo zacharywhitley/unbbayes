@@ -182,6 +182,10 @@ public class ControllerResources_pt extends ListResourceBundle {
 		{"sizeOfLikelihoodException","O tamanho do vetor de likelihood deve ser suficiente para preencher o potencial de um dos estados no nó virtual. "},
 		{"expectedSize","Tamanho esperado: "},
 		{"noCliqueForNodes","Nenhum clique foi encontrado para os seguintes nós: "},
-		{"dummyState","Dummy"},
+		
+
+		// soft evidence
+		{"softEvidenceState","EvidenciaVirtual"},
+		{"dummyState","EstadoFicticio"},
 	};
 }

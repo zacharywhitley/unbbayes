@@ -179,6 +179,9 @@ public class ControllerResources extends ListResourceBundle {
 		{"sizeOfLikelihoodException","The size of likelihood must be sufficient for filling the potentials of one of the states of the virtual evidence. "},
 		{"expectedSize","Expected size: "},
 		{"noCliqueForNodes","No clique was found for the following nodes: "},
+		
+		// soft evidence
+		{"softEvidenceState","VirtualEvidence"},
 		{"dummyState","DummyState"},
 	};
 	
