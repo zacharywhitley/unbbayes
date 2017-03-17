@@ -1034,49 +1034,52 @@ public class MEBNEditionPane extends JPanel {
 	     */
 	    private void doSaveKnowledgeBase(){
 			setCursor(new Cursor(Cursor.WAIT_CURSOR));
-			
-			if (mebnController.getKnowledgeBase().supportsLocalFile(false)) {
-				// the currently selected kb supports file saving
-//				String[] validSufixes = new String[] {PowerLoomKB.FILE_SUFIX};
-				String[] validSufixes = mebnController.getKnowledgeBase().getSupportedLocalFileExtension(false);
-				
-				
-				JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
-				chooser.setMultiSelectionEnabled(false);
-				chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-				
-				if (validSufixes != null) {
-					String fileFilterDescription = mebnController.getKnowledgeBase().getSupportedLocalFileDescription(false);
-					if (fileFilterDescription == null) {
-						fileFilterDescription = resource.getString("defaultKB");
+			try {
+				if (mebnController.getKnowledgeBase().supportsLocalFile(false)) {
+					// the currently selected kb supports file saving
+//					String[] validSufixes = new String[] {PowerLoomKB.FILE_SUFIX};
+					String[] validSufixes = mebnController.getKnowledgeBase().getSupportedLocalFileExtension(false);
+					
+					
+					JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
+					chooser.setMultiSelectionEnabled(false);
+					chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+					
+					if (validSufixes != null) {
+						String fileFilterDescription = mebnController.getKnowledgeBase().getSupportedLocalFileDescription(false);
+						if (fileFilterDescription == null) {
+							fileFilterDescription = resource.getString("defaultKB");
+						}
+						chooser.addChoosableFileFilter(new SimpleFileFilter(validSufixes,fileFilterDescription));
 					}
-					chooser.addChoosableFileFilter(new SimpleFileFilter(validSufixes,fileFilterDescription));
-				}
-				
-				int option = chooser.showSaveDialog(null);
-				if (option == JFileChooser.APPROVE_OPTION) {
 					
-					File file = chooser.getSelectedFile();
-					
-					// do not automatically resolve file name
-//					String nameFile = file.getAbsolutePath(); 
-//					if(!(nameFile.substring(nameFile.length() - 4).equals("." + PowerLoomKB.FILE_SUFIX))){
-//						file = new File(nameFile + "." + PowerLoomKB.FILE_SUFIX); 
-//					}
-					
-					if (file != null) {
-						mebnController.saveFindingsFile(file);
-						JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileSaveOK"));
+					int option = chooser.showSaveDialog(null);
+					if (option == JFileChooser.APPROVE_OPTION) {
+						
+						File file = chooser.getSelectedFile();
+						
+						// do not automatically resolve file name
+//						String nameFile = file.getAbsolutePath(); 
+//						if(!(nameFile.substring(nameFile.length() - 4).equals("." + PowerLoomKB.FILE_SUFIX))){
+//							file = new File(nameFile + "." + PowerLoomKB.FILE_SUFIX); 
+//						}
+						
+						if (file != null) {
+							mebnController.saveFindingsFile(file);
+							JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), resource.getString("FileSaveOK"));
+						}
 					}
+				} else {
+					// call save using a null file. This is just to commit changes on kb for non-file based kb
+					mebnController.saveGenerativeMTheory(null);
+					mebnController.saveFindingsFile(null);
 				}
-			} else {
-				// call save using a null file. This is just to commit changes on kb for non-file based kb
-				mebnController.saveGenerativeMTheory(null);
-				mebnController.saveFindingsFile(null);
+			} catch (Exception e) {
+				e.printStackTrace();
+				JOptionPane.showMessageDialog(mebnController.getMebnEditionPane(), e.getMessage());
+			} finally {
+				setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 			}
-			
-			
-			setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
 	    }
 	    
 	    /**
