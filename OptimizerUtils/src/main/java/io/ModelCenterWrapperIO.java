@@ -76,7 +76,9 @@ public class ModelCenterWrapperIO implements IModelCenterWrapperIO {
 	 * @see io.IModelCenterWrapperIO#readWrapperFile(java.io.File)
 	 */
 	public void readWrapperFile(File input) throws IOException {
-		
+		if (!input.exists()) {
+			throw new IOException("Input does not exist");
+		}
 		// reset properties
 		getProperties().clear();
 

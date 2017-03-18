@@ -62,6 +62,8 @@ public class ContingencyMatrixUserActivitySimulator {
 	private String headerColumnKeyword = "lower";
 	private boolean isToSampleTargetExact = true;
 	
+	private double[] inputMonthDistribution = {.5,.5};
+	
 	private List<String> targetStateLabels = new ArrayList<String>();
 	{
 		getTargetStateLabels().add("False");
@@ -191,7 +193,13 @@ public class ContingencyMatrixUserActivitySimulator {
 			int indexOfMonthInInput = getInputMonthLabels().indexOf(monthLabel);
 			if (indexOfMonthInInput < 0) {
 				// randomly pick input data month
-				indexOfMonthInInput = getRandom().nextInt(getInputMonthLabels().size());
+				double[] distribution = normalize(getInputMonthDistribution());
+				if (distribution.length > getInputMonthLabels().size()) {
+					throw new IllegalArgumentException("Input month distribution had size " + distribution.length
+							+ ", while number of labels of input months provided was " + getInputMonthLabels().size());
+				}
+//				indexOfMonthInInput = getRandom().nextInt(getInputMonthLabels().size());
+				indexOfMonthInInput = getRandom().nextDiscrete(distribution);
 			}
 			String dataMonth = getInputMonthLabels().get(indexOfMonthInInput);
 			
@@ -308,6 +316,50 @@ public class ContingencyMatrixUserActivitySimulator {
 			}
 		}
 		
+	}
+
+	/**
+	 * @param distribution : array to be normalized to 1. The returned value will be the same instance.
+	 * @return normalized (sum is 1) distribution. No new array is allocated.
+	 */
+	public double[] normalize(double[] distribution) {
+		if (distribution == null ) {
+			return null;
+		}
+		if (distribution.length <= 0) {
+			return distribution;
+		}
+		if (distribution.length == 1) {
+			distribution[0] = 1;
+			return distribution;
+		}
+		
+		// correct negative values
+		double smallest = 0;
+		for (double val : distribution) {
+			if (val < smallest) {
+				smallest = val;
+			}
+		}
+		
+		// at this point, smallest is 0 or negative
+		
+		// calculate sum for normalization
+		double sum = 0;
+		for (int i = 0; i < distribution.length; i++) {
+			distribution[i] -= smallest;	// correct negative values
+			sum += distribution[i];
+		}
+		if (sum <= 0) {
+			throw new IllegalArgumentException("Sum of distribution was zero.");
+		}
+		
+		// normalize
+		for (int i = 0; i < distribution.length; i++) {
+			distribution[i] /= sum;	// distribution[i] = distribution[i] / sum
+		}
+		
+		return distribution;
 	}
 
 	/**
@@ -1034,6 +1086,51 @@ public class ContingencyMatrixUserActivitySimulator {
 		}
 		return ret;
 	}
+	
+	/**
+	 * @param commaSeparatedList
+	 * @return comma separated list (string) parsed to a {@link List} of {@link Float} 
+	 */
+	public static double[] parseArrayDouble(String commaSeparatedList) {
+		if (commaSeparatedList == null || commaSeparatedList.isEmpty()) {
+			return new double[0];
+		}
+		
+		// read the argument
+		commaSeparatedList = commaSeparatedList.replaceAll("\\s", "");	// remove whitespaces
+		List<Float> list = new ArrayList<Float>();	// using a list, because we don't know the size (given that there may be invalid entries)
+		for (String value : commaSeparatedList.split(",")) {
+			if (value == null || value.isEmpty()) {
+				continue;	// ignore null/empty entries
+			}
+			list.add(Float.parseFloat(value));
+		}
+		
+		// convert to array of double
+		double[] ret = new double[list.size()];
+		for (int i = 0; i < list.size(); i++) {
+			ret[i] = list.get(i);
+		}
+		return ret;
+	}
+
+	/**
+	 * @return the multinomial probability distribution of a month in {@link #getInputMonthLabels()}
+	 * to be randomly picked as input data when generating samples of months when we don't have respective input data
+	 * (i.e. months in {@link #getOutputMonthLabels()} which is not in {@link #getInputMonthLabels()}).
+	 */
+	public double[] getInputMonthDistribution() {
+		return inputMonthDistribution;
+	}
+
+	/**
+	 * @param inputMonthDistribution : the multinomial probability distribution of a month in {@link #getInputMonthLabels()}
+	 * to be randomly picked as input data when generating samples of months when we don't have respective input data
+	 * (i.e. months in {@link #getOutputMonthLabels()} which is not in {@link #getInputMonthLabels()}).
+	 */
+	public void setInputMonthDistribution(double[] inputMonthDistribution) {
+		this.inputMonthDistribution = inputMonthDistribution;
+	}
 
 	/**
 	 * @param args
@@ -1069,6 +1166,9 @@ public class ContingencyMatrixUserActivitySimulator {
 		options.addOption("numStates","num-states-class-variable", true, "Number of states of the class or target variable (default is binary, which is 2).");
 		options.addOption("targetExact","sample-target-class-variable-exactly", false, "If set, target/class variable will be sampled without dirichlet-multinomial distribution.");
 		options.addOption("seed","random-seed", true, "Number to be used as random seed (default is system's time).");
+		options.addOption("inputDist","input-month-distribution", true, "Comma-separated list of probabilities (default is \".5,.5\"). "
+				+ "This is used to randomly pick an input month when simulating months with no input data. "
+				+ "The length of this list must match with list provided in -inputMonths.");
 		options.addOption("h","help", false, "Help.");
 		
 		CommandLine cmd = null;
@@ -1144,6 +1244,9 @@ public class ContingencyMatrixUserActivitySimulator {
 		}
 		if (cmd.hasOption("seed")) {
 			sim.setSeed(Long.parseLong(cmd.getOptionValue("seed")));
+		}
+		if (cmd.hasOption("inputDist")) {
+			sim.setInputMonthDistribution(parseArrayDouble(cmd.getOptionValue("inputDist")));
 		}
 		
 		sim.setToSampleTargetExact(cmd.hasOption("targetExact"));
