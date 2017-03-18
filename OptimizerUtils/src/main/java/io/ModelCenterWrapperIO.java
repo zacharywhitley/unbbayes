@@ -119,7 +119,7 @@ public class ModelCenterWrapperIO implements IModelCenterWrapperIO {
 			if (st.ttype == st.TT_NUMBER) {
 				value = String.valueOf(st.nval);
 			}
-			if (value == null || value.trim().isEmpty()) {
+			if (value == null) {
 				// go to next line
 				while (st.nextToken() != st.TT_EOL){};
 				continue;

@@ -50,10 +50,13 @@ public class FileToCommandLineArgumentWrapper extends ModelCenterWrapperIO {
 		if (properties != null) {
 			for (Entry<String, String> argValue : properties.entrySet()) {	
 				// key is argument, value is its value. This will append something like: -i "someFile.txt"
-				program += " -" + argValue.getKey() + " \"" + argValue.getValue() + "\"";
+				String arg = " -" + argValue.getKey() + " \"" + argValue.getValue() + "\"";
+				Debug.println(getClass(), "Handling argument: " + arg);
+				program += arg;
 			}
 		}
 		
+		Debug.println(getClass(), "Executing: " + program);
 		Runtime rt = Runtime.getRuntime();
 		Process pr = rt.exec(program);
 		
