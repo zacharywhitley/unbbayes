@@ -21,6 +21,8 @@ import junit.framework.TestCase;
 
 public class OOBNToSingleAgentMSBNCompilerTest extends TestCase {
 
+	private static final float ERROR_MARGIN = 0.00005f;
+
 	public OOBNToSingleAgentMSBNCompilerTest(String name) {
 		super(name);
 	}
@@ -63,16 +65,27 @@ public class OOBNToSingleAgentMSBNCompilerTest extends TestCase {
 		msbn.compile();
 		
 		for (int subnetIndex = 0; subnetIndex < msbn.getNetCount(); subnetIndex++) {
+			
 			SubNetwork subnet = msbn.getNetAt(subnetIndex);
 			assertNotNull(subnet);
 			System.out.println("Subnet: " + subnet.getName());
+			
 			for (Node node : subnet.getNodes()) {
 				if (node instanceof TreeVariable) {
-					System.out.print("\t Marginal probability of node " + node.getName() + ": ");
+					
+					assertTrue(node.getStatesSize() > 0);
+					
+					System.out.print("\t Marginal probability of node " + node.getName() + " is: [ ");
+					
+					float sum = 0;
 					for (int stateIndex = 0; stateIndex < node.getStatesSize(); stateIndex++) {
 						System.out.print(node.getStateAt(stateIndex) + "=" + ((TreeVariable) node).getMarginalAt(stateIndex) + ", ");
+						sum += ((TreeVariable) node).getMarginalAt(stateIndex);
 					}
-					System.out.println();
+					assertEquals(1, sum, ERROR_MARGIN);
+					
+					System.out.println(" ]");
+					
 				}
 			}
 		}
