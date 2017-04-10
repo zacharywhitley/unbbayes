@@ -53,7 +53,7 @@ public class OOBNControllerResources extends ListResourceBundle {
 		{"likelihoodName","Likelihood"},
 		{"likelihoodException","There are only zeros!"},
 		{"statusEvidenceProbabilistic","Total Evidence Probabilistic: "},
-		{"statusEvidenceException","Evidences are not consistancy or underflow"},
+		{"statusEvidenceException","Evidence is not consistent, or there was some underflow"},
 		{"statusError","Error!"},
 		{"printLogToolTip","Print compilation log"},
 		{"previewLogToolTip","Print preview"},
