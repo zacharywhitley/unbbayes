@@ -27,7 +27,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
@@ -39,7 +38,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -48,14 +46,10 @@ import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeSelectionModel;
 
 import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.IconController;
-import unbbayes.gui.AboutPane;
 import unbbayes.gui.FileIcon;
-import unbbayes.gui.HierarchicTree;
 import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLBIFIO;
@@ -269,13 +263,13 @@ public class AFINMetaphorMainPanel extends JPanel
    */
   private ArrayList<Node> getNodesWithoutMetaphorHierarch(ProbabilisticNetwork net, AFINMetaphorTree metTree) {
 	  ArrayList<Node> ret = new ArrayList<Node>();
-	  ArrayList<Node> allNodes = net.getExplanationNodes();
+	  ArrayList<Node> allNodes = net.getNodes();
 	  for (Node node : allNodes) {
-		  if (metTree.hasNode(node)) {
-			  continue;
-		  } else {
+//		  if (metTree.hasNode(node)) {
+//			  continue;
+//		  } else {
 			  ret.add(node);
-		  }
+//		  }
 	  }
 	  return ret;
   }
