@@ -51,7 +51,16 @@
       <directory>examples/</directory>
       <outputDirectory>${artifactId}-${version}/examples</outputDirectory>
       <includes>
-        <include>**/*</include>
+<!--         <include>**/*</include> -->
+        <include>mebn/StarTrek/StarTrek.owl</include>
+        <include>mebn/StarTrek/StarTrek.ubf</include>
+        <include>mebn/StarTrek/KnowledgeBase_Simple_HP_ST4_T1.plm</include>
+        <include>mebn/VehicleIdentification/VehicleIdentification.owl</include>
+        <include>mebn/VehicleIdentification/VehicleIdentification.ubf</include>
+        <include>mebn/VehicleIdentification/VehicleIdentification.plm</include>
+        <include>mebn/LahoreBombing/LahoreBombing.owl</include>
+        <include>mebn/LahoreBombing/LahoreBombing.ubf</include>
+        <include>mebn/LahoreBombing/LahoreBombing.plm</include>
       </includes>
     </fileSet>
     
