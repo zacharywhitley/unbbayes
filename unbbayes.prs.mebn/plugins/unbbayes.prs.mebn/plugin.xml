@@ -39,6 +39,15 @@
         <library id="xercesImpl" path="lib/xercesImpl-2.8.1.jar" type="code">
         	<export prefix="*"/>
         </library>
+        <library id="rsyntaxtextarea" path="lib/rsyntaxtextarea-2.6.1.jar" type="code">
+        	<export prefix="*"/>
+        </library>
+        <library id="autocomplete" path="lib/autocomplete-2.6.1.jar" type="code">
+        	<export prefix="*"/>
+        </library>
+        <library id="rstaui" path="lib/rstaui-2.6.0.jar" type="code">
+        	<export prefix="*"/>
+        </library>
     </runtime>
     <!-- Multi-Entity Bayesian Network I/O extension point. 
      	 Hot plug is enabled.
