@@ -5449,16 +5449,24 @@ public class Compiler implements ICompiler {
 		}
 		
 
-		// extract all parents (regardless of being input or resident nodes)
-		List<MultiEntityNode> allParents = new ArrayList<MultiEntityNode>(getNode().getResidentNodeFatherList());
-		allParents.addAll(getNode().getParentInputNodesList());
-		
 		
 		// handle  parents
-		for (MultiEntityNode parent : allParents) {
+		for (ResidentNode parent : getNode().getResidentNodeFatherList()) {
 			ret.add(parent.getName());
 			// add possible states
 			for (Entity possibleValue : parent.getPossibleValueList()) {
+				ret.add(possibleValue.getName());
+			}
+			// add argument OVs
+			for (OrdinaryVariable ov : parent.getOrdinaryVariablesInArgument()) {
+				ret.add(ov.getName());
+			}
+		}
+		// handle input parents
+		for (InputNode parent : getNode().getParentInputNodesList()) {
+			ret.add(parent.getResidentNodePointer().getResidentNode().getName());
+			// add possible states
+			for (Entity possibleValue : parent.getResidentNodePointer().getResidentNode().getPossibleValueList()) {
 				ret.add(possibleValue.getName());
 			}
 			// add argument OVs
@@ -5533,8 +5541,8 @@ public class Compiler implements ICompiler {
 				// look for input nodes
 				for (InputNode parent : getNode().getParentInputNodesList()) {
 					if (found <= 0) {
-						nodeName = parent.getName();
-						stateName = parent.getPossibleValueList().get(0).getName();
+						nodeName = parent.getResidentNodePointer().getResidentNode().getName();
+						stateName = parent.getResidentNodePointer().getResidentNode().getPossibleValueList().get(0).getName();
 						varSetName = null;
 						for (OrdinaryVariable ov : parent.getOrdinaryVariablesInArgument()) {
 							if (varSetName == null) {
@@ -5544,8 +5552,8 @@ public class Compiler implements ICompiler {
 							}
 						}
 					} else {
-						nodeName2 = parent.getName();
-						stateName2 = parent.getPossibleValueList().get(0).getName();
+						nodeName2 = parent.getResidentNodePointer().getResidentNode().getName();
+						stateName2 = parent.getResidentNodePointer().getResidentNode().getPossibleValueList().get(0).getName();
 					}
 					found++;
 					if (found >= 2) {
@@ -5620,16 +5628,13 @@ public class Compiler implements ICompiler {
 				nodeName + " = " + stateName + " | " + nodeName2 + " = " + stateName2).entrySet().iterator().next());
 		
 		
-		// extract all parents (regardless of being input or resident nodes)
-		List<MultiEntityNode> allParents = new ArrayList<MultiEntityNode>(getNode().getResidentNodeFatherList());
-		allParents.addAll(getNode().getParentInputNodesList());
 		
-		//Parent1 = Parent2
 		
-		// Parent = ov
 		
 		// ParentName = parentState
-		for (MultiEntityNode parent : allParents) {
+		// Parent = ov
+		//Parent1 = Parent2
+		for (ResidentNode parent : getNode().getResidentNodeFatherList()) {
 			// get the 1st state
 			String state = "state";	// if no state is found, simply use this default value
 			List<Entity> possibleValues = parent.getPossibleValueList();
@@ -5639,8 +5644,52 @@ public class Compiler implements ICompiler {
 			ret.add(Collections.singletonMap(
 					parent.getName(),
 					parent.getName() + " = " + state).entrySet().iterator().next());
+			ret.add(Collections.singletonMap(
+					parent.getName(),
+					parent.getName() + " = OV" ).entrySet().iterator().next());
+			
+			try {
+				if (!parent.getName().equals(nodeName)) {
+					ret.add(Collections.singletonMap(
+							parent.getName(),
+							parent.getName() + " = " + nodeName).entrySet().iterator().next());
+				} else {
+					ret.add(Collections.singletonMap(
+							parent.getName(),
+							parent.getName() + " = " + nodeName2).entrySet().iterator().next());
+				}
+			} catch (Exception e) {
+				Debug.println(getClass(), e.getMessage(), e);
+			}
 		}
-		
+		for (InputNode parent : getNode().getParentInputNodesList()) {
+			// get the 1st state
+			String state = "state";	// if no state is found, simply use this default value
+			List<Entity> possibleValues = parent.getResidentNodePointer().getResidentNode().getPossibleValueList();
+			if (possibleValues!= null && !possibleValues.isEmpty()) {
+				state = possibleValues.get(0).getName();
+			}
+			ret.add(Collections.singletonMap(
+					parent.getResidentNodePointer().getResidentNode().getName(),
+					parent.getResidentNodePointer().getResidentNode().getName() + " = " + state).entrySet().iterator().next());
+			ret.add(Collections.singletonMap(
+					parent.getResidentNodePointer().getResidentNode().getName(),
+					parent.getResidentNodePointer().getResidentNode().getName() + " = OV" ).entrySet().iterator().next());
+			
+			try {
+				if (!parent.getResidentNodePointer().getResidentNode().getName().equals(nodeName)) {
+					ret.add(Collections.singletonMap(
+							parent.getResidentNodePointer().getResidentNode().getName(),
+							parent.getResidentNodePointer().getResidentNode().getName() + " = " + nodeName).entrySet().iterator().next());
+				} else {
+					ret.add(Collections.singletonMap(
+							parent.getResidentNodePointer().getResidentNode().getName(),
+							parent.getResidentNodePointer().getResidentNode().getName() + " = " + nodeName2).entrySet().iterator().next());
+				}
+			} catch (Exception e) {
+				Debug.println(getClass(), e.getMessage(), e);
+			}
+		}
 		
 		
 		// state = 100%
