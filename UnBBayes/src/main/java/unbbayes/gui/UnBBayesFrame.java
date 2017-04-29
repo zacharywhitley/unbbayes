@@ -868,7 +868,9 @@ public class UnBBayesFrame extends JFrame {
 		// chooser.setDialogTitle(dialogueTitle);
 
 		chooser.setFileView(new FileIcon(UnBBayesFrame.this));
-		chooser.addChoosableFileFilter(new SimpleFileFilter(nets, filterMessage));
+		SimpleFileFilter fileFilter = new SimpleFileFilter(nets, filterMessage);
+		chooser.addChoosableFileFilter(fileFilter);
+		chooser.setFileFilter(fileFilter);	// make sure chooser selected the default file filter
 		int option = chooser.showSaveDialog(null);
 		if (option == JFileChooser.APPROVE_OPTION) {
 			file = chooser.getSelectedFile();
@@ -2275,9 +2277,11 @@ public class UnBBayesFrame extends JFrame {
 			}
 
 			// filter for all supported files
-			chooser.addChoosableFileFilter(new SimpleFileFilter(
+			SimpleFileFilter allSupportedNetFilter = new SimpleFileFilter(
 					getAllSupportedFileExtensions(getPluginMap().values()),
-					resource.getString("allNetFileFilter")));
+					resource.getString("allNetFileFilter"));
+			chooser.addChoosableFileFilter(allSupportedNetFilter);
+			chooser.setFileFilter(allSupportedNetFilter);	// make sure this is selected by default
 
 			int option = chooser.showOpenDialog(UnBBayesFrame.this);
 			if (option == JFileChooser.APPROVE_OPTION) {
