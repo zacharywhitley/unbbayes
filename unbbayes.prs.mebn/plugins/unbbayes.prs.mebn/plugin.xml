@@ -36,6 +36,9 @@
         <library id="protege-owl" path="lib/protege-owl-3.2.jar" type="code">
         	<export prefix="*"/>
         </library>
+        <library id="icu4j" path="lib/icu4j-3.8.jar" type="code">
+        	<export prefix="*"/>
+        </library>
         <library id="xercesImpl" path="lib/xercesImpl-2.8.1.jar" type="code">
         	<export prefix="*"/>
         </library>
