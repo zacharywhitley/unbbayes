@@ -1050,7 +1050,9 @@ public class MEBNEditionPane extends JPanel {
 						if (fileFilterDescription == null) {
 							fileFilterDescription = resource.getString("defaultKB");
 						}
-						chooser.addChoosableFileFilter(new SimpleFileFilter(validSufixes,fileFilterDescription));
+						SimpleFileFilter defaultFilter = new SimpleFileFilter(validSufixes,fileFilterDescription);
+						chooser.addChoosableFileFilter(defaultFilter);
+						chooser.setFileFilter(defaultFilter);
 					}
 					
 					int option = chooser.showSaveDialog(null);
@@ -1105,7 +1107,9 @@ public class MEBNEditionPane extends JPanel {
 					if (fileFilterDescription == null) {
 						fileFilterDescription = resource.getString("defaultKB");
 					}
-					chooser.addChoosableFileFilter(new SimpleFileFilter(validSufixes,fileFilterDescription));
+					SimpleFileFilter defaultKBFileFilter = new SimpleFileFilter(validSufixes,fileFilterDescription);
+					chooser.addChoosableFileFilter(defaultKBFileFilter);
+					chooser.setFileFilter(defaultKBFileFilter);	// make sure the default is selected from the beginning
 				}
 				
 				
