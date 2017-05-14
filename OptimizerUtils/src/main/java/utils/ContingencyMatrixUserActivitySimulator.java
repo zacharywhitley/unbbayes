@@ -214,7 +214,19 @@ public class ContingencyMatrixUserActivitySimulator {
 					// read from discrete (binary) detectors file
 					// csv file of discrete variables has this format
 					String fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + discreteDetector2 + getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix();
-					PotentialTable table = readTableFromCSV(fileName , discreteDetector1, discreteDetector2, getInitialTableCount());
+					PotentialTable table = null;
+					try {
+						table = readTableFromCSV(fileName , discreteDetector1, discreteDetector2, getInitialTableCount());
+					} catch (IOException e) {
+						// try without dataMonth
+						fileName = getFileNamePrefix() + discreteDetector1 + getVsLabel() + discreteDetector2 + getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix();
+						try {
+							table = readTableFromCSV(fileName , discreteDetector1, discreteDetector2, getInitialTableCount());
+						} catch (IOException e2) {
+							e.printStackTrace();
+							throw e2;
+						}
+					}
 					// keep table in memory
 					discreteDetectorTablesByTargetState.add(table);
 					// obtain target distribution from discrete detector data
@@ -304,7 +316,19 @@ public class ContingencyMatrixUserActivitySimulator {
 					}
 					
 					String fileName = getFileNamePrefix() + dataMonth + conditionVariableName + getVsLabel() + continuousDetectorName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
-					double sampleValue = getSampleContinuous(fileName, virtualCount, discreteDetectorNameToValueMap.get(conditionVariableName), getInitialTableCount());
+					double sampleValue = Float.NaN;
+					try {
+						sampleValue = getSampleContinuous(fileName, virtualCount, discreteDetectorNameToValueMap.get(conditionVariableName), getInitialTableCount());
+					} catch (IOException e) {
+						// try without dataMonth
+						fileName = getFileNamePrefix() + conditionVariableName + getVsLabel() + continuousDetectorName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
+						try {
+							sampleValue = getSampleContinuous(fileName, virtualCount, discreteDetectorNameToValueMap.get(conditionVariableName), getInitialTableCount());
+						} catch (IOException e2) {
+							e.printStackTrace();
+							throw e2;
+						}
+					}
 					printer.print(","+sampleValue);
 				}
 				
@@ -648,6 +672,14 @@ public class ContingencyMatrixUserActivitySimulator {
 			return ret;
 		}
 		
+		File file = new File(getInputFolder(),fileName);
+		if (!file.exists()) {
+			throw new IOException(file.getAbsolutePath() + " does not exist.");
+		}
+		if (!file.isFile()) {
+			throw new IOException(file.getAbsolutePath() + " is not a file.");
+		}
+		
 		// prepare table to return
 		ret = new ProbabilisticTable();
 		INode node = getNameToVariableCache().get(detector2);	// detector 2 iterates on each column, so add it first
@@ -671,7 +703,7 @@ public class ContingencyMatrixUserActivitySimulator {
 		ret.fillTable(initialTableValue);
 		
 		// read csv file
-		CSVReader reader = new CSVReader(new FileReader(new File(getInputFolder(),fileName)));
+		CSVReader reader = new CSVReader(new FileReader(file));
 		
 		// ignore 1st row (header Det2)
 		reader.readNext();
@@ -680,7 +712,7 @@ public class ContingencyMatrixUserActivitySimulator {
 		for (int tableIndex = 0; tableIndex < ret.tableSize();) {
 			String[] row = reader.readNext();
 			if (row == null) {
-				Debug.println(getClass(), "Premature EOF found at index " + tableIndex + " of file " + fileName);
+				Debug.println(getClass(), "Premature EOF found at index " + tableIndex + " of file " + file.getAbsolutePath());
 				break;
 			}
 			if (row.length <= 0) {
