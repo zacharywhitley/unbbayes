@@ -39,20 +39,20 @@ import cc.mallet.util.Randoms;
  */
 public class ContingencyMatrixUserActivitySimulator {
 	
-	/** Key in {@link #readContinuousDetectorCSVFile(String, Integer, float)} to access the bin's lower bound value.*/
+	/** Key in {@link #readContinuousVarCSVFile(String, Integer, float)} to access the bin's lower bound value.*/
 	public static final String BIN_UPPER_KEY = "upper";
-	/** Key in {@link #readContinuousDetectorCSVFile(String, Integer, float)} to access the bin's upper bound value.*/
+	/** Key in {@link #readContinuousVarCSVFile(String, Integer, float)} to access the bin's upper bound value.*/
 	public static final String BIN_LOWER_KEY = "lower";
-	/** Key in {@link #readContinuousDetectorCSVFile(String, Integer, float)} to access the bin's counts (number of users in that bin).*/
+	/** Key in {@link #readContinuousVarCSVFile(String, Integer, float)} to access the bin's counts (number of users in that bin).*/
 	public static final String BIN_COUNTS_KEY = "counts";
 
 	private Randoms random = null;
 	private Long seed = null;
 	
-	private int numUsers = 2860;
+	private int numUsers = -1;
 	private int numOrganizations = 100;
 	
-	private String fileNamePrefix = "RCP11";
+	private String fileNamePrefix = "";
 	private String fileNameSuffix = ".csv";
 	private String vsLabel = "vs";
 	private String targetLabelSeparator = "_";
@@ -62,7 +62,7 @@ public class ContingencyMatrixUserActivitySimulator {
 	private String headerColumnKeyword = "lower";
 	private boolean isToSampleTargetExact = true;
 	
-	private double[] inputMonthDistribution = {.5,.5};
+	private double[] inputTimeSliceDistribution = {.5,.5};
 	
 	private List<String> targetStateLabels = new ArrayList<String>();
 	{
@@ -70,85 +70,46 @@ public class ContingencyMatrixUserActivitySimulator {
 		getTargetStateLabels().add("True");
 	}
 	
-	private List<String> discreteDetectorsLabels = new ArrayList<String>();
-	{
-		discreteDetectorsLabels.add("1");
-		discreteDetectorsLabels.add("2");
-	}
+	private List<String> discreteVarsLabels = new ArrayList<String>();
 	
-	private List<String> continuousDetectorsLabels = new ArrayList<String>();
-	{
-		continuousDetectorsLabels.add("3a");
-		continuousDetectorsLabels.add("3b");
-		continuousDetectorsLabels.add("3c");
-		continuousDetectorsLabels.add("4a");
-		continuousDetectorsLabels.add("4b");
-		continuousDetectorsLabels.add("4c");
-		continuousDetectorsLabels.add("5a");
-		continuousDetectorsLabels.add("6a");
-		continuousDetectorsLabels.add("6b");
-	}
+	private List<String> continuousVarsLabels = new ArrayList<String>();
 	
 	
-	private List<String> inputMonthLabel = new ArrayList<String>();
-	{
-		inputMonthLabel.add("JAN");
-		inputMonthLabel.add("FEB");
-	}
+	private List<String> inputTimeSliceLabel = new ArrayList<String>();
 	
-	private List<String> outputMonthLabels = new ArrayList<String>();
-	{
-		outputMonthLabels.add("JAN");
-		outputMonthLabels.add("FEB");
-		outputMonthLabels.add("MAR");
-		outputMonthLabels.add("APR");
-		outputMonthLabels.add("MAY");
-		outputMonthLabels.add("JUN");
-		outputMonthLabels.add("JUL");
-		outputMonthLabels.add("AUG");
-		outputMonthLabels.add("SEP");
-	}
+	private List<String> outputTimeSliceLabels = new ArrayList<String>();
 	
-	private List<Float> monthlyVirtualCounts = new ArrayList<Float>();
-	{
-		monthlyVirtualCounts.add(-1f);
-		monthlyVirtualCounts.add(-1f);
-		monthlyVirtualCounts.add(2860f/2f);
-		monthlyVirtualCounts.add(2860f/4f);
-		monthlyVirtualCounts.add(2860f/8f);
-		monthlyVirtualCounts.add(2860f/16f);
-		monthlyVirtualCounts.add(2860f/32f);
-		monthlyVirtualCounts.add(2860f/64f);
-		monthlyVirtualCounts.add(2860f/128f);
-	}
+	private List<Float> timeSliceVirtualCounts = new ArrayList<Float>();
 
 	private Map<String, INode> nameToVariableCache;
 	private Map<String, PotentialTable> tableCache;
-	private Map<String, Map<String,List<Double>>> continuousDetectorFileCache;
+	private Map<String, Map<String,List<Double>>> continuousVarFileCache;
 	private Map<String, Dirichlet> dirichletCache;
 
+	private boolean is1stVarInRow = true;
+	private Object totalCounts;
 
 	public ContingencyMatrixUserActivitySimulator() {}
 	
 	/**
-	 * Runs {@link #runSingleMonth(String)} for each month in {@link #getOutputMonthLabels()}
+	 * Runs {@link #runSingleTimeSlice(String)} for each Time Slice in {@link #getOutputTimeSliceLabels()}
 	 * @throws IOException
 	 */
 	public void runAll() throws IOException {
-		for (String month : getOutputMonthLabels()) {
-			runSingleMonth(month);
+		for (String timeSlice : getOutputTimeSliceLabels()) {
+			runSingleTimeSlice(timeSlice);
 		}
 		
 	}
 
 	/**
-	 * Runs simulation for a single month.
-	 * @param monthLabel : month label. It is expected that it's one of {@link #getOutputMonthLabels()}.
+	 * Runs simulation for a single timeSlice.
+	 * @param timeSliceLabel : timeSlice label. It is expected that it's one of {@link #getOutputTimeSliceLabels()}.
 	 * This will be used to pick correct place to look for files.
 	 * @throws IOException
-	 * @see #getMonthlyVirtualCounts()
-	 * @see #getInputMonthLabels()
-	 * @see #getDiscreteDetectorsLabels()
+	 * @see #getTimeSliceVirtualCounts()
+	 * @see #getInputTimeSliceLabels()
+	 * @see #getDiscreteVarsLabels()
 	 * @see #getFileNamePrefix()
 	 * @see #getFileNameSuffix()
 	 * @see #getTargetFalseLabel()
@@ -156,89 +117,111 @@ public class ContingencyMatrixUserActivitySimulator {
 	 * @see #getVsLabel()
 	 * @see #getOutputFolder()
 	 */
-	public void runSingleMonth(String monthLabel) throws IOException {
-		if (getMonthlyVirtualCounts().size() != getOutputMonthLabels().size()) {
-			throw new IllegalArgumentException("Output months had size " + getOutputMonthLabels().size() 
-					+ ", while monthly virtual counts had size " + getMonthlyVirtualCounts().size());
+	public void runSingleTimeSlice(String timeSliceLabel) throws IOException {
+		if (getTimeSliceVirtualCounts().size() != getOutputTimeSliceLabels().size()) {
+			throw new IllegalArgumentException("Output timeSlices had size " + getOutputTimeSliceLabels().size() 
+					+ ", while timeSlicely virtual counts had size " + getTimeSliceVirtualCounts().size());
 		}
 		
-		// randomly pick 2 discrete detectors
-		String discreteDetector1 = "";
-		String discreteDetector2 = "";
-		boolean isToUseDiscreteDetectors = (getDiscreteDetectorsLabels().size() >= 2);
-//		if (getDiscreteDetectorsLabels().size() < 2) {
-//			throw new IllegalArgumentException("There must be at least 2 discrete detectors.");
+		// randomly pick 2 discrete vars
+		String discreteVar1 = "";
+		String discreteVar2 = "";
+		boolean isToUseDiscreteVars = (getDiscreteVarsLabels().size() >= 2);
+//		if (getDiscreteVarsLabels().size() < 2) {
+//			throw new IllegalArgumentException("There must be at least 2 discrete vars.");
 //		} 
 		
-		if (isToUseDiscreteDetectors) {
-			List<String> listWithoutSubstitution = new ArrayList<String>(getDiscreteDetectorsLabels());
-			discreteDetector1 = listWithoutSubstitution.remove(getRandom().nextInt(listWithoutSubstitution.size()));
-			discreteDetector2 = listWithoutSubstitution.remove(getRandom().nextInt(listWithoutSubstitution.size()));
+		if (isToUseDiscreteVars) {
+			List<String> listWithoutSubstitution = new ArrayList<String>(getDiscreteVarsLabels());
+			discreteVar1 = listWithoutSubstitution.remove(getRandom().nextInt(listWithoutSubstitution.size()));
+			discreteVar2 = listWithoutSubstitution.remove(getRandom().nextInt(listWithoutSubstitution.size()));
 			
-			// make sure detector1 is smaller than detector2 in the index of original list
-			if (getDiscreteDetectorsLabels().indexOf(discreteDetector1) > getDiscreteDetectorsLabels().indexOf(discreteDetector2)) {
-				// swap them, so that detector1 has smaller index than detector2
-				String aux = discreteDetector2;
-				discreteDetector2 = discreteDetector1;
-				discreteDetector1 = aux;
+			// make sure var1 is smaller than var2 in the index of original list
+			if (getDiscreteVarsLabels().indexOf(discreteVar1) > getDiscreteVarsLabels().indexOf(discreteVar2)) {
+				// swap them, so that var1 has smaller index than var2
+				String aux = discreteVar2;
+				discreteVar2 = discreteVar1;
+				discreteVar1 = aux;
 			}
 		}
 		
-		File monthFolder = null;
+		File timeSliceFolder = null;
 		if (getOutputFolder() != null && !getOutputFolder().isEmpty()) {
-			monthFolder = new File(getOutputFolder(),monthLabel);
-			Files.createDirectories(monthFolder.toPath());
+			timeSliceFolder = new File(getOutputFolder(),timeSliceLabel);
+			Files.createDirectories(timeSliceFolder.toPath());
 		}
 		for (int organization = 0; organization < getNumOrganizations(); organization++) {
-			int indexOfMonthInInput = getInputMonthLabels().indexOf(monthLabel);
-			if (indexOfMonthInInput < 0) {
-				// randomly pick input data month
-				double[] distribution = normalize(getInputMonthDistribution());
-				if (distribution.length > getInputMonthLabels().size()) {
-					throw new IllegalArgumentException("Input month distribution had size " + distribution.length
-							+ ", while number of labels of input months provided was " + getInputMonthLabels().size());
+			int indexOfTimeSliceInInput = getInputTimeSliceLabels().indexOf(timeSliceLabel);
+			if (indexOfTimeSliceInInput < 0) {
+				// randomly pick input data timeSlice
+				double[] distribution = normalize(getInputTimeSliceDistribution());
+				if (distribution.length > getInputTimeSliceLabels().size()) {
+					throw new IllegalArgumentException("Input timeSlice distribution had size " + distribution.length
+							+ ", while number of labels of input timeSlices provided was " + getInputTimeSliceLabels().size());
 				}
-//				indexOfMonthInInput = getRandom().nextInt(getInputMonthLabels().size());
-				indexOfMonthInInput = getRandom().nextDiscrete(distribution);
+//				indexOfTimeSliceInInput = getRandom().nextInt(getInputTimeSliceLabels().size());
+				indexOfTimeSliceInInput = getRandom().nextDiscrete(distribution);
 			}
-			String dataMonth = getInputMonthLabels().get(indexOfMonthInInput);
+			String dataTimeSlice = getInputTimeSliceLabels().get(indexOfTimeSliceInInput);
 			
 			
 			
 			// read csv files in order to get number of users for each state of target/class variable
-			// if we are using discrete detectors, instantiate a list that will store their contingency tables. Keep it null if we are not using such discrete detectors
-			List<PotentialTable> discreteDetectorTablesByTargetState = isToUseDiscreteDetectors?new ArrayList<PotentialTable>(getTargetStateLabels().size()):null;
+			// if we are using discrete vars, instantiate a list that will store their contingency tables. Keep it null if we are not using such discrete vars
+			List<PotentialTable> discreteVarTablesByTargetState = isToUseDiscreteVars?new ArrayList<PotentialTable>(getTargetStateLabels().size()):null;
 			List<Double> targetCounts = new ArrayList<Double>(getTargetStateLabels().size());	// how many users there are for each possible state of target/class variable
-			for (String targetStateLabel : getTargetStateLabels()) {
-				if (isToUseDiscreteDetectors) {
-					// read from discrete (binary) detectors file
+			List<Integer> hasNoDataTimeSliceSpecification = new ArrayList<Integer>(getTargetStateLabels().size());	// Indexes of which data/file didn't have dataTimeSlice
+			for (int targetIndex = 0; targetIndex < getTargetStateLabels().size(); targetIndex++) {
+				String targetStateLabel = getTargetStateLabels().get(targetIndex);
+				if (isToUseDiscreteVars) {
+					// read from discrete (binary) vars file
 					// csv file of discrete variables has this format
-					String fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + discreteDetector2 + getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix();
+					String fileName = getFileNamePrefix() + dataTimeSlice + discreteVar1 + getVsLabel() + discreteVar2 + getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix();
 					PotentialTable table = null;
-					try {
-						table = readTableFromCSV(fileName , discreteDetector1, discreteDetector2, getInitialTableCount());
-					} catch (IOException e) {
-						// try without dataMonth
-						fileName = getFileNamePrefix() + discreteDetector1 + getVsLabel() + discreteDetector2 + getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix();
-						try {
-							table = readTableFromCSV(fileName , discreteDetector1, discreteDetector2, getInitialTableCount());
-						} catch (IOException e2) {
-							e.printStackTrace();
-							throw e2;
-						}
+					if (new File(getInputFolder(),fileName).exists()) {
+						table = readTableFromCSV(fileName , discreteVar1, discreteVar2, getInitialTableCount(), is1stVarInRow());
+						// obtain target distribution from discrete var data
+						targetCounts.add(table.getSum() - (getInitialTableCount()*table.tableSize()));	// this subtraction compensates the counts that were artificially added by getInitialTableCount() in all cells
+					} else {
+						// there is no data timeSlice specified. Try without dataTimeSlice
+						fileName = getFileNamePrefix() + discreteVar1 + getVsLabel() + discreteVar2 + getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix();
+						table = readTableFromCSV(fileName , discreteVar1, discreteVar2, getInitialTableCount(), is1stVarInRow());
+						hasNoDataTimeSliceSpecification.add(targetIndex);	// mark this table as "no dataTimeSlice specified"
+						// fill count with invalid count (to be calculated later)
+						targetCounts.add(0d);	
 					}
 					// keep table in memory
-					discreteDetectorTablesByTargetState.add(table);
-					// obtain target distribution from discrete detector data
-					targetCounts.add(table.getSum() - (getInitialTableCount()*table.tableSize()));	// this subtraction compensates the counts that were artificially added by getInitialTableCount() in all cells
+					discreteVarTablesByTargetState.add(table);
 				} else {
-					// read target var counts from csv of any continuous detector of current month (use 1st detector)
+					// read target var counts from csv of any continuous var of current timeSlice (use 1st var)
 					// csv file has this format
-					String fileName = getFileNamePrefix() + dataMonth + discreteDetector1 + getVsLabel() + getContinuousDetectorsLabels().get(0) 
+					String fileName = getFileNamePrefix() + dataTimeSlice + discreteVar1 + getVsLabel() + getContinuousVarsLabels().get(0) 
 							+ getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix(); 
-					targetCounts.add(readTotalCountContinuous(fileName));
+					if (new File(getInputFolder(),fileName).exists()) {
+						targetCounts.add(readTotalCountContinuous(fileName));
+					} else {
+						// there is no data timeSlice specified. Try without dataTimeSlice
+						fileName = getFileNamePrefix() + discreteVar1 + getVsLabel() + getContinuousVarsLabels().get(0) 
+								+ getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix(); 
+						// fill count with invalid count (to be calculated later)
+						targetCounts.add(0d);	
+						hasNoDataTimeSliceSpecification.add(targetIndex);	// mark this table as "no dataTimeSlice specified"
+					}
 				}
 				
+			}
+			
+			if (!hasNoDataTimeSliceSpecification.isEmpty()) {
+				// calculate how many users there are in data with time slices (the data without time slices are 0, so it's ignored in sum)
+				int sum = getSum((List)hasNoDataTimeSliceSpecification).intValue();
+				// calculate target counts of data with no time slice as (total count - sum);
+				for (Integer index : hasNoDataTimeSliceSpecification) {
+					if (targetCounts.get(index) != 0d) {
+						throw new RuntimeException("Failed to treat data file with no specification of time slice.");
+					}
+					double count = (getNumUsers() - sum) / hasNoDataTimeSliceSpecification.size();	// if there are multiple data with no time slice specified, uniformly distribute counts
+					targetCounts.set(index.intValue(), count);
+				}
 			}
 		
 			
@@ -252,22 +235,22 @@ public class ContingencyMatrixUserActivitySimulator {
 				numbering = String.format("%1$05d", organization);
 			}
 			PrintStream printer = System.out;
-			if (monthFolder != null) {
-				printer = new PrintStream(new FileOutputStream(new File(monthFolder, getFileNamePrefix() + "_" + monthLabel + "_" + numbering + getFileNameSuffix()), false));
+			if (timeSliceFolder != null) {
+				printer = new PrintStream(new FileOutputStream(new File(timeSliceFolder, getFileNamePrefix() + "_" + timeSliceLabel + "_" + numbering + getFileNameSuffix()), false));
 			}
 			
 			// print the header
 			printer.print("user,target");
-			for (String detector : getDiscreteDetectorsLabels()) {
-				printer.print("," + detector);
+			for (String var : getDiscreteVarsLabels()) {
+				printer.print("," + var);
 			}
-			for (String detector : getContinuousDetectorsLabels()) {
-				printer.print("," + detector);
+			for (String var : getContinuousVarsLabels()) {
+				printer.print("," + var);
 			}
 			printer.println();
 			
-			// obtain what is the virtual count we should use when generating Dirichlet samples from current month
-			float virtualCount = getMonthlyVirtualCounts().get(getOutputMonthLabels().indexOf(monthLabel));
+			// obtain what is the virtual count we should use when generating Dirichlet samples from current timeSlice
+			float virtualCount = getTimeSliceVirtualCounts().get(getOutputTimeSliceLabels().indexOf(timeSliceLabel));
 			
 			
 			for (int user = 0; user < getNumUsers(); user++) {
@@ -276,6 +259,7 @@ public class ContingencyMatrixUserActivitySimulator {
 				// sample target. 
 //				int targetState = getRandom().nextDiscrete(dirichlet.nextDistribution());
 				int targetState = sampleTargetState(virtualCount, targetCounts);
+				
 				
 				String targetLabel = getTargetStateLabels().get(targetState);	// prepare in advance the label of target state, to be used to access respective files
 				
@@ -288,42 +272,42 @@ public class ContingencyMatrixUserActivitySimulator {
 				}
 				
 				
-				Map<String, Integer> discreteDetectorNameToValueMap = new HashMap<String, Integer>();	// keep track of sampled value
-				if (isToUseDiscreteDetectors) {
-					// sample discrete detectors given target
-					PotentialTable tableToSample = discreteDetectorTablesByTargetState.get(targetState);	// for binary case, sample from tableTrue if target == true. Or else, sample from tableFalse
+				Map<String, Integer> discreteVarNameToValueMap = new HashMap<String, Integer>();	// keep track of sampled value
+				if (isToUseDiscreteVars) {
+					// sample discrete vars given target
+					PotentialTable tableToSample = discreteVarTablesByTargetState.get(targetState);	// for binary case, sample from tableTrue if target == true. Or else, sample from tableFalse
 					
 					// get a sample of all variables in the table
 					int[] sample = tableToSample.getMultidimensionalCoord(getSampleIndex(tableToSample, virtualCount));
 					// extract values of each variable
-					for (String detectorName : getDiscreteDetectorsLabels()) {
+					for (String varName : getDiscreteVarsLabels()) {
 						// get variable from name
-						Node detectorVar = (Node) getNameToVariableCache().get(detectorName);
+						Node node = (Node) getNameToVariableCache().get(varName);
 						// store and print the value of current variable
-						String value = detectorVar.getStateAt(sample[tableToSample.getVariableIndex(detectorVar)]);
-						discreteDetectorNameToValueMap.put(detectorName, Integer.parseInt(value));
+						String value = node.getStateAt(sample[tableToSample.getVariableIndex(node)]);
+						discreteVarNameToValueMap.put(varName, Integer.parseInt(value));
 						printer.print("," + value);
 					}
 				}
 				
 				
-				// sample continuous detectors;
-				for (String continuousDetectorName : getContinuousDetectorsLabels()) {
-					// randomly pick a discrete detector to be used as condition for other continuous detectors;
-					String conditionVariableName = discreteDetector1;
+				// sample continuous vars;
+				for (String continuousVarName : getContinuousVarsLabels()) {
+					// randomly pick a discrete var to be used as condition for other continuous vars;
+					String conditionVariableName = discreteVar1;
 					if (getRandom().nextBoolean()) {
-						conditionVariableName = discreteDetector2;
+						conditionVariableName = discreteVar2;
 					}
 					
-					String fileName = getFileNamePrefix() + dataMonth + conditionVariableName + getVsLabel() + continuousDetectorName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
+					String fileName = getFileNamePrefix() + dataTimeSlice + conditionVariableName + getVsLabel() + continuousVarName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
 					double sampleValue = Float.NaN;
 					try {
-						sampleValue = getSampleContinuous(fileName, virtualCount, discreteDetectorNameToValueMap.get(conditionVariableName), getInitialTableCount());
+						sampleValue = getSampleContinuous(fileName, virtualCount, discreteVarNameToValueMap.get(conditionVariableName), getInitialTableCount());
 					} catch (IOException e) {
-						// try without dataMonth
-						fileName = getFileNamePrefix() + conditionVariableName + getVsLabel() + continuousDetectorName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
+						// try without dataTimeSlice
+						fileName = getFileNamePrefix() + conditionVariableName + getVsLabel() + continuousVarName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
 						try {
-							sampleValue = getSampleContinuous(fileName, virtualCount, discreteDetectorNameToValueMap.get(conditionVariableName), getInitialTableCount());
+							sampleValue = getSampleContinuous(fileName, virtualCount, discreteVarNameToValueMap.get(conditionVariableName), getInitialTableCount());
 						} catch (IOException e2) {
 							e.printStackTrace();
 							throw e2;
@@ -424,7 +408,7 @@ public class ContingencyMatrixUserActivitySimulator {
 	 * @param targetCounts : counts of target/class variable.
 	 * If {@link #isToSampleTargetExact()}, then values in this array will be decremented
 	 * as samples are generated (i.e. sampling without substitution).
-	 * @return
+	 * @return sample of target variable.
 	 */
 	protected int sampleTargetState(float virtualCount, List<Double> targetCounts) {
 		
@@ -525,7 +509,7 @@ public class ContingencyMatrixUserActivitySimulator {
 	public double getSampleContinuous(String fileName, float virtualCount, Integer conditionState, float initialCounts) throws IOException {
 		
 		// read csv file
-		Map<String, List<Double>> map = readContinuousDetectorCSVFile(fileName, conditionState, initialCounts);
+		Map<String, List<Double>> map = readContinuousVarCSVFile(fileName, conditionState, initialCounts);
 		
 		Dirichlet dirichlet = getDirichletCache().get(fileName + "_" + virtualCount + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts);
 		if (dirichlet == null) {
@@ -570,7 +554,7 @@ public class ContingencyMatrixUserActivitySimulator {
 	public double readTotalCountContinuous(String fileName) throws NumberFormatException, IOException {
 		
 		// read csv file without condition (i.e. read only the 1st block found if csv has multiple headers)
-		Map<String, List<Double>> map = readContinuousDetectorCSVFile(fileName, null, 0f);	// add 0 to counts, because we want actual counts here
+		Map<String, List<Double>> map = readContinuousVarCSVFile(fileName, null, 0f);	// add 0 to counts, because we want actual counts here
 		
 		// simply calculate the sum of counts
 		double ret = 0;
@@ -592,10 +576,10 @@ public class ContingencyMatrixUserActivitySimulator {
 	 * @throws IOException 
 	 * @see {@link #getOutputFolder()}
 	 */
-	public Map<String,List<Double>> readContinuousDetectorCSVFile(String fileName, Integer conditionState, float initialCounts) throws IOException {
+	public Map<String,List<Double>> readContinuousVarCSVFile(String fileName, Integer conditionState, float initialCounts) throws IOException {
 		
 		// check cache
-		Map<String,List<Double>> ret = getContinuousDetectorFileCache().get(fileName + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts);
+		Map<String,List<Double>> ret = getContinuousVarFileCache().get(fileName + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts);
 		if (ret != null) {
 			return ret;
 		}
@@ -626,7 +610,7 @@ public class ContingencyMatrixUserActivitySimulator {
 		}
 		if (row == null) {
 			reader.close();
-			throw new IllegalArgumentException("Detector value " + conditionState + " not found in file " + fileName);
+			throw new IllegalArgumentException("Var value " + conditionState + " not found in file " + fileName);
 		}
 		
 		// The labels (keys) will be "lower", "upper", and "counts".
@@ -650,24 +634,26 @@ public class ContingencyMatrixUserActivitySimulator {
 		
 		reader.close();
 		
-		getContinuousDetectorFileCache().put(fileName + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts, ret);
+		getContinuousVarFileCache().put(fileName + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts, ret);
 		return ret;
 	}
 
 	/**
 	 * Read a table of discrete variables from csv file
 	 * @param fileName : name of file to read
-	 * @param detector1 : 1st variable (it will be added as 2nd variable in table -- states will iterate less often -- row in csv)
-	 * @param detector2 : 2nd variable (it will be added as 1st variable in table -- states will iterate most often -- column in csv)
+	 * @param var1 : 1st variable (it will be added as 2nd variable in table -- states will iterate less often -- row in csv)
+	 * @param var2 : 2nd variable (it will be added as 1st variable in table -- states will iterate most often -- column in csv)
 	 * @param targetStateLabel : label indicating whether target variable is true or false. This will be used for file name.
 	 * @param initialTableValue : this value will be added to all entries initially (use 0 to void this parameter).
+	 * @param transpose : if false, then var1 is the row of table (and var2 is the column). 
+	 * If true, then var1 is the column (and var2 is the row).
 	 * @return the table read from csv file
 	 * @throws IOException
 	 */
-	public PotentialTable readTableFromCSV(String fileName,String detector1, String detector2, float initialTableValue) throws IOException {
+	public PotentialTable readTableFromCSV(String fileName,String var1, String var2, float initialTableValue, boolean transpose) throws IOException {
 
 		// check cache
-		PotentialTable ret = getTableCache().get(fileName + "_" + detector1 + "_" + detector2 + "_" + initialTableValue);
+		PotentialTable ret = getTableCache().get(fileName + "_" + var1 + "_" + var2 + "_" + initialTableValue);
 		if (ret != null) {
 			return ret;
 		}
@@ -682,24 +668,24 @@ public class ContingencyMatrixUserActivitySimulator {
 		
 		// prepare table to return
 		ret = new ProbabilisticTable();
-		INode node = getNameToVariableCache().get(detector2);	// detector 2 iterates on each column, so add it first
-		if (node == null) {
-			node = new ProbabilisticNode();
-			node.setName(detector2);
-			node.appendState("0");
-			node.appendState("1");
-			getNameToVariableCache().put(detector2, node);
+		INode det2Node = getNameToVariableCache().get(var2);	// var 2 iterates on each column, so add it first
+		if (det2Node == null) {
+			det2Node = new ProbabilisticNode();
+			det2Node.setName(var2);
+			det2Node.appendState("0");
+			det2Node.appendState("1");
+			getNameToVariableCache().put(var2, det2Node);
 		}
-		ret.addVariable(node);
-		node = getNameToVariableCache().get(detector1);
-		if (node == null) {
-			node = new ProbabilisticNode();
-			node.setName(detector1);
-			node.appendState("0");
-			node.appendState("1");
-			getNameToVariableCache().put(detector1, node);
+		ret.addVariable(det2Node);
+		INode det1Node = getNameToVariableCache().get(var1);
+		if (det1Node == null) {
+			det1Node = new ProbabilisticNode();
+			det1Node.setName(var1);
+			det1Node.appendState("0");
+			det1Node.appendState("1");
+			getNameToVariableCache().put(var1, det1Node);
 		}
-		ret.addVariable(node);
+		ret.addVariable(det1Node);
 		ret.fillTable(initialTableValue);
 		
 		// read csv file
@@ -726,7 +712,24 @@ public class ContingencyMatrixUserActivitySimulator {
 		
 		reader.close();
 		
-		getTableCache().put(fileName + "_" + detector1 + "_" + detector2 + "_" + initialTableValue, ret);
+		if (transpose) {
+			// backup data
+			ret.copyData();
+			int[] coordWrite = ret.getMultidimensionalCoord(0);			// initialize (allocate space for) index of transposed index
+			for (int cellIndex = 0; cellIndex < ret.tableSize(); cellIndex++) {
+				// calculate the coordinate of original table corresponding to current cell
+				int[] coordRead = ret.getMultidimensionalCoord(cellIndex);	// non-transposed indexes
+				// calculate cell in transposed table (i.e. just reverse the order)
+				for (int readIndex = 0, writeIndex = coordWrite.length-1; readIndex < coordWrite.length; readIndex++, writeIndex--) {
+					coordWrite[writeIndex] = coordRead[readIndex];
+				}
+				// copy from backup to table value
+				ret.setValue(coordWrite, ret.getCopiedValue(cellIndex));
+			}
+			
+		}
+		
+		getTableCache().put(fileName + "_" + var1 + "_" + var2 + "_" + initialTableValue, ret);
 		
 		return ret;
 	}
@@ -803,73 +806,73 @@ public class ContingencyMatrixUserActivitySimulator {
 
 
 	/**
-	 * @return the continuousDetectorsLabel
+	 * @return the continuousVarsLabel
 	 */
-	public List<String> getContinuousDetectorsLabels() {
-		return this.continuousDetectorsLabels;
+	public List<String> getContinuousVarsLabels() {
+		return this.continuousVarsLabels;
 	}
 
 	/**
-	 * @param continuousDetectorsLabels the continuousDetectorsLabel to set
+	 * @param continuousVarsLabels the continuousVarsLabel to set
 	 */
-	public void setContinuousDetectorsLabels(List<String> continuousDetectorsLabels) {
-		this.continuousDetectorsLabels = continuousDetectorsLabels;
+	public void setContinuousVarsLabels(List<String> continuousVarsLabels) {
+		this.continuousVarsLabels = continuousVarsLabels;
 	}
 
 	/**
-	 * @return the discreteDetectorsLabel
+	 * @return the discreteVarsLabel
 	 */
-	public List<String> getDiscreteDetectorsLabels() {
-		return this.discreteDetectorsLabels;
+	public List<String> getDiscreteVarsLabels() {
+		return this.discreteVarsLabels;
 	}
 
 	/**
-	 * @param discreteDetectorsLabels the discreteDetectorsLabel to set
+	 * @param discreteVarsLabels the discreteVarsLabel to set
 	 */
-	public void setDiscreteDetectorsLabels(List<String> discreteDetectorsLabels) {
-		this.discreteDetectorsLabels = discreteDetectorsLabels;
+	public void setDiscreteVarsLabels(List<String> discreteVarsLabels) {
+		this.discreteVarsLabels = discreteVarsLabels;
 	}
 
 	/**
-	 * @return the inputMonthLabel
+	 * @return the inputTimeSliceLabel
 	 */
-	public List<String> getInputMonthLabels() {
-		return this.inputMonthLabel;
+	public List<String> getInputTimeSliceLabels() {
+		return this.inputTimeSliceLabel;
 	}
 
 	/**
-	 * @param inputMonthLabel the inputMonthLabel to set
+	 * @param inputTimeSliceLabel the inputTimeSliceLabel to set
 	 */
-	public void setInputMonthLabels(List<String> inputMonthLabel) {
-		this.inputMonthLabel = inputMonthLabel;
+	public void setInputTimeSliceLabels(List<String> inputTimeSliceLabel) {
+		this.inputTimeSliceLabel = inputTimeSliceLabel;
 	}
 
 	/**
-	 * @return the outputMonthLabel
+	 * @return the outputTimeSliceLabel
 	 */
-	public List<String> getOutputMonthLabels() {
-		return this.outputMonthLabels;
+	public List<String> getOutputTimeSliceLabels() {
+		return this.outputTimeSliceLabels;
 	}
 
 	/**
-	 * @param outputMonthLabel the outputMonthLabel to set
+	 * @param outputTimeSliceLabel the outputTimeSliceLabel to set
 	 */
-	public void setOutputMonthLabels(List<String> outputMonthLabel) {
-		this.outputMonthLabels = outputMonthLabel;
+	public void setOutputTimeSliceLabels(List<String> outputTimeSliceLabel) {
+		this.outputTimeSliceLabels = outputTimeSliceLabel;
 	}
 
 	/**
-	 * @return the monthlyVirtualCounts
+	 * @return the timeSliceVirtualCounts
 	 */
-	public List<Float> getMonthlyVirtualCounts() {
-		return this.monthlyVirtualCounts;
+	public List<Float> getTimeSliceVirtualCounts() {
+		return this.timeSliceVirtualCounts;
 	}
 
 	/**
-	 * @param monthlyVirtualCounts the monthlyVirtualCounts to set
+	 * @param timeSlicelyVirtualCounts the timeSliceVirtualCounts to set
 	 */
-	public void setMonthlyVirtualCounts(List<Float> monthlyVirtualCounts) {
-		this.monthlyVirtualCounts = monthlyVirtualCounts;
+	public void setTimeSliceVirtualCounts(List<Float> timeSliceVirtualCounts) {
+		this.timeSliceVirtualCounts = timeSliceVirtualCounts;
 	}
 
 
@@ -988,21 +991,21 @@ public class ContingencyMatrixUserActivitySimulator {
 	}
 
 	/**
-	 * @return the continuousDetectorFileCache
+	 * @return the continuousVarFileCache
 	 */
-	protected Map<String, Map<String,List<Double>>> getContinuousDetectorFileCache() {
-		if (continuousDetectorFileCache == null) {
-			continuousDetectorFileCache = new HashMap<String, Map<String,List<Double>>>();
+	protected Map<String, Map<String,List<Double>>> getContinuousVarFileCache() {
+		if (continuousVarFileCache == null) {
+			continuousVarFileCache = new HashMap<String, Map<String,List<Double>>>();
 		}
-		return continuousDetectorFileCache;
+		return continuousVarFileCache;
 	}
 
 	/**
-	 * @param continuousDetectorFileCache the continuousDetectorFileCache to set
+	 * @param continuousVarFileCache the continuousVarFileCache to set
 	 */
-	protected void setContinuousDetectorFileCache(
-			Map<String, Map<String,List<Double>>> continuousDetectorFileCache) {
-		this.continuousDetectorFileCache = continuousDetectorFileCache;
+	protected void setContinuousVarFileCache(
+			Map<String, Map<String,List<Double>>> continuousVarFileCache) {
+		this.continuousVarFileCache = continuousVarFileCache;
 	}
 
 	/**
@@ -1147,22 +1150,39 @@ public class ContingencyMatrixUserActivitySimulator {
 	}
 
 	/**
-	 * @return the multinomial probability distribution of a month in {@link #getInputMonthLabels()}
-	 * to be randomly picked as input data when generating samples of months when we don't have respective input data
-	 * (i.e. months in {@link #getOutputMonthLabels()} which is not in {@link #getInputMonthLabels()}).
+	 * @return the multinomial probability distribution of a timeSlice in {@link #getInputTimeSliceLabels()}
+	 * to be randomly picked as input data when generating samples of timeSlices when we don't have respective input data
+	 * (i.e. timeSlices in {@link #getOutputTimeSliceLabels()} which is not in {@link #getInputTimeSliceLabels()}).
 	 */
-	public double[] getInputMonthDistribution() {
-		return inputMonthDistribution;
+	public double[] getInputTimeSliceDistribution() {
+		return inputTimeSliceDistribution;
 	}
 
 	/**
-	 * @param inputMonthDistribution : the multinomial probability distribution of a month in {@link #getInputMonthLabels()}
-	 * to be randomly picked as input data when generating samples of months when we don't have respective input data
-	 * (i.e. months in {@link #getOutputMonthLabels()} which is not in {@link #getInputMonthLabels()}).
+	 * @param inputTimeSliceDistribution : the multinomial probability distribution of a timeSlice in {@link #getInputTimeSliceLabels()}
+	 * to be randomly picked as input data when generating samples of timeSlices when we don't have respective input data
+	 * (i.e. timeSlices in {@link #getOutputTimeSliceLabels()} which is not in {@link #getInputTimeSliceLabels()}).
 	 */
-	public void setInputMonthDistribution(double[] inputMonthDistribution) {
-		this.inputMonthDistribution = inputMonthDistribution;
+	public void setInputTimeSliceDistribution(double[] inputTimeSliceDistribution) {
+		this.inputTimeSliceDistribution = inputTimeSliceDistribution;
 	}
+
+	/**
+	 * @return the is1stVarInRow : if true, contingency tables of discrete vars in csv files will be considered to have
+	 * 1st variable in rows, and 2nd variable in columns.
+	 */
+	public boolean is1stVarInRow() {
+		return is1stVarInRow;
+	}
+
+	/**
+	 * @param is1stVarInRow the is1stVarInRow to set : if true, contingency tables of discrete vars in csv files will be considered to have
+	 * 1st variable in rows, and 2nd variable in columns.
+	 */
+	public void set1stVarInRow(boolean is1stVarInRow) {
+		this.is1stVarInRow = is1stVarInRow;
+	}
+
 
 	/**
 	 * @param args
@@ -1173,11 +1193,11 @@ public class ContingencyMatrixUserActivitySimulator {
 		CommandLineParser parser = new DefaultParser();
 		Options options = new Options();
 		options.addOption("d","debug", false, "Enables debug mode.");
-		options.addOption("usr","num-users", true, "Number of users to simulate.");
-		options.addOption("org","num-organizations", true, "Number of organizations to simulate.");
-		options.addOption("prefix","file-name-prefix", true, "Common prefixes of csv file names in the input folder (default \"RCP11\").");
+		options.addOption("usr","num-users", true, "Number of users (samples or individuals) to simulate.");
+		options.addOption("org","num-organizations", true, "Number of organizations (group of users) to simulate. This is number of replications.");
+		options.addOption("prefix","file-name-prefix", true, "Common prefixes of csv file names in the input folder (e.g. \"RCP11\", default is empty).");
 		options.addOption("suffix","file-name-suffix-extension", true, "Common suffixes or extensions of file names in the input folder (default \".csv\").");
-		options.addOption("detectorSep","separator-detector-vs-label", true, "Suffixes in input csv file names that separates names of detectors (default \"vs\").");
+		options.addOption("varSep","separator-var-vs-label", true, "Suffixes in input csv file names that separates names of vars (default \"vs\").");
 		options.addOption("targetSep","target-label-separator", true, "Suffixes in input csv file names that separates target state from other names (default \"_\")."
 				+ " This must match with true/false values that appear in names of csv files.");
 		options.addOption("target","target-labels", true, "Comma separated list of names of states of target variable. This will also be used as label/suffix in csv file that indicates that the data is for target = false (default \"False,True\")."
@@ -1185,22 +1205,24 @@ public class ContingencyMatrixUserActivitySimulator {
 		options.addOption("initCount","initial-table-count", true, "This value will be added to counts for dirichlet-multinomial sampling (real numbers are also allowed).");
 		options.addOption("o","output", true, "Folder to write. If not specified, \"output\" will be used.");
 		options.addOption("i","input", true, "Input folder to read. If not specified, \"input\" will be used.");
-		options.addOption("discrete","discrete-detector-labels", true, "Comma-separated list of detector numbers that are discrete in this RCP (default \"1,2\")."
-				+ " This must match with detectors that appear in names of csv files.");
-		options.addOption("continuous","continuous-detector-labels", true, "Comma-separated list of detector numbers that are continuous in this RCP "
-				+ "(default \"3a,3b,3c,4a,4b,4c,5a,6a,6b\"). This must match with detectors that appear in names of csv files.");
-		options.addOption("inputMonths","input-month-labels", true, "Comma-separated list of month labels that we have input data (default \"JAN,FEB\")."
-				+ " This must match with months that appear in names of csv files.");
-		options.addOption("allMonths","all-output-month-labels", true, "Comma-separated list of all month labels to output (default \"JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP\")."
-				+ " This must match with months that appear in names of csv files.");
-		options.addOption("virtCounts","monthly-virtual-counts", true, "Comma-separated list of numbers (virtual counts) to be used for sampling users of each month"
-				+ "(default \"-1,-1,1430,715,357.5,178.75,89.375,44.6875,22.34375\"). Zero or negative values can be used to consider actual counts instead (if the month has actual data).");
+		options.addOption("discrete","discrete-var-labels", true, "Comma-separated list of variables that are discrete (e.g. \"1,2\", default is empty)."
+				+ " This must match with vars that appear in names of csv files.");
+		options.addOption("continuous","continuous-var-labels", true, "Comma-separated list of var numbers that are continuous in this RCP "
+				+ "(default \"3a,3b,3c,4a,4b,4c,5a,6a,6b\"). This must match with vars that appear in names of csv files.");
+		options.addOption("inputTimeSlices","input-timeSlice-labels", true, "Comma-separated list of timeSlice labels that we have input data (e.g. \"JAN,FEB\", default is empty)."
+				+ " This must match with timeSlices that appear in names of csv files.");
+		options.addOption("allTimeSlices","all-output-timeSlice-labels", true, "Comma-separated list of all timeSlice labels to output (e.g. \"JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP\" , default is empty)."
+				+ " This must match with timeSlices that appear in names of csv files.");
+		options.addOption("virtCounts","timeSlice-virtual-counts", true, "Comma-separated list of numbers (virtual counts) to be used for sampling users of each timeSlice"
+				+ "(e.g. \"-1,-1,1430,715,357.5,178.75,89.375,44.6875,22.34375\", default is empty). Zero or negative values can be used to consider actual counts instead (if the timeSlice has actual data).");
 		options.addOption("numStates","num-states-class-variable", true, "Number of states of the class or target variable (default is binary, which is 2).");
 		options.addOption("targetExact","sample-target-class-variable-exactly", false, "If set, target/class variable will be sampled without dirichlet-multinomial distribution.");
 		options.addOption("seed","random-seed", true, "Number to be used as random seed (default is system's time).");
-		options.addOption("inputDist","input-month-distribution", true, "Comma-separated list of probabilities (default is \".5,.5\"). "
-				+ "This is used to randomly pick an input month when simulating months with no input data. "
-				+ "The length of this list must match with list provided in -inputMonths.");
+		options.addOption("inputDist","input-timeSlice-distribution", true, "Comma-separated list of probabilities (default is \".5,.5\"). "
+				+ "This is used to randomly pick an input timeSlice when simulating timeSlices with no input data. "
+				+ "The length of this list must match with list provided in -inputTimeSlices.");
+		options.addOption("transpose","transpose-discrete-vars-table", false, "If this argument is specified, csv files of contingency tables of discrete variables will be consided to have 1st var as column and 2nd var as rows."
+				+ "If unspecified, then 1st variable will be rows, and 2nd variable will be column.");
 		options.addOption("h","help", false, "Help.");
 		
 		CommandLine cmd = null;
@@ -1241,8 +1263,8 @@ public class ContingencyMatrixUserActivitySimulator {
 		if (cmd.hasOption("suffix")) {
 			sim.setFileNameSuffix(cmd.getOptionValue("suffix"));
 		}
-		if (cmd.hasOption("detectorSep")) {
-			sim.setVsLabel(cmd.getOptionValue("detectorSep"));
+		if (cmd.hasOption("varSep")) {
+			sim.setVsLabel(cmd.getOptionValue("varSep"));
 		}
 		if (cmd.hasOption("targetSep")) {
 			sim.setTargetLabelSeparator(cmd.getOptionValue("targetSep"));
@@ -1260,26 +1282,28 @@ public class ContingencyMatrixUserActivitySimulator {
 			sim.setInputFolder(cmd.getOptionValue("i"));
 		}
 		if (cmd.hasOption("discrete")) {
-			sim.setDiscreteDetectorsLabels(parseListString(cmd.getOptionValue("discrete")));
+			sim.setDiscreteVarsLabels(parseListString(cmd.getOptionValue("discrete")));
 		}
 		if (cmd.hasOption("continuous")) {
-			sim.setContinuousDetectorsLabels(parseListString(cmd.getOptionValue("continuous")));
+			sim.setContinuousVarsLabels(parseListString(cmd.getOptionValue("continuous")));
 		}
-		if (cmd.hasOption("inputMonths")) {
-			sim.setInputMonthLabels(parseListString(cmd.getOptionValue("inputMonths")));
+		if (cmd.hasOption("inputTimeSlices")) {
+			sim.setInputTimeSliceLabels(parseListString(cmd.getOptionValue("inputTimeSlices")));
 		}
-		if (cmd.hasOption("allMonths")) {
-			sim.setOutputMonthLabels(parseListString(cmd.getOptionValue("allMonths")));
+		if (cmd.hasOption("allTimeSlices")) {
+			sim.setOutputTimeSliceLabels(parseListString(cmd.getOptionValue("allTimeSlices")));
 		}
 		if (cmd.hasOption("virtCounts")) {
-			sim.setMonthlyVirtualCounts(parseListFloat(cmd.getOptionValue("virtCounts")));
+			sim.setTimeSliceVirtualCounts(parseListFloat(cmd.getOptionValue("virtCounts")));
 		}
 		if (cmd.hasOption("seed")) {
 			sim.setSeed(Long.parseLong(cmd.getOptionValue("seed")));
 		}
 		if (cmd.hasOption("inputDist")) {
-			sim.setInputMonthDistribution(parseArrayDouble(cmd.getOptionValue("inputDist")));
+			sim.setInputTimeSliceDistribution(parseArrayDouble(cmd.getOptionValue("inputDist")));
 		}
+		
+		sim.set1stVarInRow(!cmd.hasOption("transpose"));
 		
 		sim.setToSampleTargetExact(cmd.hasOption("targetExact"));
 		
