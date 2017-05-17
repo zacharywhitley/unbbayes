@@ -52,15 +52,19 @@ public class ContingencyMatrixUserActivitySimulator {
 	private int numUsers = -1;
 	private int numOrganizations = 100;
 	
+	private int totalCounts = -1;
+	
 	private String fileNamePrefix = "";
 	private String fileNameSuffix = ".csv";
 	private String vsLabel = "vs";
 	private String targetLabelSeparator = "_";
+	private String timeSliceVarSeparator = "_";
 	private float initialTableCount = 1f;
 	private String outputFolder = "output";
 	private String inputFolder = "input";
 	private String headerColumnKeyword = "lower";
-	private boolean isToSampleTargetExact = true;
+	
+	private boolean isToSampleTargetExact = false;
 	
 	private double[] inputTimeSliceDistribution = {.5,.5};
 	
@@ -79,7 +83,7 @@ public class ContingencyMatrixUserActivitySimulator {
 	
 	private List<String> outputTimeSliceLabels = new ArrayList<String>();
 	
-	private List<Float> timeSliceVirtualCounts = new ArrayList<Float>();
+	private List<Float> timeSliceVirtualCountCoefficients = new ArrayList<Float>();
 
 	private Map<String, INode> nameToVariableCache;
 	private Map<String, PotentialTable> tableCache;
@@ -87,7 +91,6 @@ public class ContingencyMatrixUserActivitySimulator {
 	private Map<String, Dirichlet> dirichletCache;
 
 	private boolean is1stVarInRow = true;
-	private Object totalCounts;
 
 	public ContingencyMatrixUserActivitySimulator() {}
 	
@@ -107,7 +110,7 @@ public class ContingencyMatrixUserActivitySimulator {
 	 * @param timeSliceLabel : timeSlice label. It is expected that it's one of {@link #getOutputTimeSliceLabels()}.
 	 * This will be used to pick correct place to look for files.
 	 * @throws IOException
-	 * @see #getTimeSliceVirtualCounts()
+	 * @see #getTimeSliceVirtualCountCoefficients()
 	 * @see #getInputTimeSliceLabels()
 	 * @see #getDiscreteVarsLabels()
 	 * @see #getFileNamePrefix()
@@ -118,9 +121,9 @@ public class ContingencyMatrixUserActivitySimulator {
 	 * @see #getOutputFolder()
 	 */
 	public void runSingleTimeSlice(String timeSliceLabel) throws IOException {
-		if (getTimeSliceVirtualCounts().size() != getOutputTimeSliceLabels().size()) {
+		if (getTimeSliceVirtualCountCoefficients().size() != getOutputTimeSliceLabels().size()) {
 			throw new IllegalArgumentException("Output timeSlices had size " + getOutputTimeSliceLabels().size() 
-					+ ", while timeSlicely virtual counts had size " + getTimeSliceVirtualCounts().size());
+					+ ", while timeSlicely virtual counts had size " + getTimeSliceVirtualCountCoefficients().size());
 		}
 		
 		// randomly pick 2 discrete vars
@@ -145,6 +148,9 @@ public class ContingencyMatrixUserActivitySimulator {
 			}
 		}
 		
+		// obtain what is the virtual count we should use when generating Dirichlet samples from current timeSlice
+		float virtualCountCoef = getTimeSliceVirtualCountCoefficients().get(getOutputTimeSliceLabels().indexOf(timeSliceLabel));
+		
 		File timeSliceFolder = null;
 		if (getOutputFolder() != null && !getOutputFolder().isEmpty()) {
 			timeSliceFolder = new File(getOutputFolder(),timeSliceLabel);
@@ -153,7 +159,7 @@ public class ContingencyMatrixUserActivitySimulator {
 		for (int organization = 0; organization < getNumOrganizations(); organization++) {
 			int indexOfTimeSliceInInput = getInputTimeSliceLabels().indexOf(timeSliceLabel);
 			if (indexOfTimeSliceInInput < 0) {
-				// randomly pick input data timeSlice
+				// randomly pick input data timeSlice, because we don't have data to simulate current time slice (i.e. use random time slice to simulate current one)
 				double[] distribution = normalize(getInputTimeSliceDistribution());
 				if (distribution.length > getInputTimeSliceLabels().size()) {
 					throw new IllegalArgumentException("Input timeSlice distribution had size " + distribution.length
@@ -162,8 +168,7 @@ public class ContingencyMatrixUserActivitySimulator {
 //				indexOfTimeSliceInInput = getRandom().nextInt(getInputTimeSliceLabels().size());
 				indexOfTimeSliceInInput = getRandom().nextDiscrete(distribution);
 			}
-			String dataTimeSlice = getInputTimeSliceLabels().get(indexOfTimeSliceInInput);
-			
+			String dataTimeSlice = getInputTimeSliceLabels().get(indexOfTimeSliceInInput);	// label of time slice picked for simulating current month
 			
 			
 			// read csv files in order to get number of users for each state of target/class variable
@@ -176,18 +181,18 @@ public class ContingencyMatrixUserActivitySimulator {
 				if (isToUseDiscreteVars) {
 					// read from discrete (binary) vars file
 					// csv file of discrete variables has this format
-					String fileName = getFileNamePrefix() + dataTimeSlice + discreteVar1 + getVsLabel() + discreteVar2 + getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix();
+					String fileName = getFileNamePrefix() + dataTimeSlice + getTimeSliceVarSeparator() + discreteVar1 + getVsLabel() + discreteVar2 + getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix();
 					PotentialTable table = null;
 					if (new File(getInputFolder(),fileName).exists()) {
-						table = readTableFromCSV(fileName , discreteVar1, discreteVar2, getInitialTableCount(), is1stVarInRow());
+						table = readTableFromCSV(fileName , discreteVar1, discreteVar2, getInitialTableCount(), !is1stVarInRow());
 						// obtain target distribution from discrete var data
 						targetCounts.add(table.getSum() - (getInitialTableCount()*table.tableSize()));	// this subtraction compensates the counts that were artificially added by getInitialTableCount() in all cells
 					} else {
 						// there is no data timeSlice specified. Try without dataTimeSlice
 						fileName = getFileNamePrefix() + discreteVar1 + getVsLabel() + discreteVar2 + getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix();
-						table = readTableFromCSV(fileName , discreteVar1, discreteVar2, getInitialTableCount(), is1stVarInRow());
+						table = readTableFromCSV(fileName , discreteVar1, discreteVar2, getInitialTableCount(), !is1stVarInRow());
 						hasNoDataTimeSliceSpecification.add(targetIndex);	// mark this table as "no dataTimeSlice specified"
-						// fill count with invalid count (to be calculated later)
+						// fill count with default count (to be calculated later). Use zero, so that we can use getSum to obtain the counts we know so far.
 						targetCounts.add(0d);	
 					}
 					// keep table in memory
@@ -195,7 +200,7 @@ public class ContingencyMatrixUserActivitySimulator {
 				} else {
 					// read target var counts from csv of any continuous var of current timeSlice (use 1st var)
 					// csv file has this format
-					String fileName = getFileNamePrefix() + dataTimeSlice + discreteVar1 + getVsLabel() + getContinuousVarsLabels().get(0) 
+					String fileName = getFileNamePrefix() + dataTimeSlice + getTimeSliceVarSeparator() + discreteVar1 + getVsLabel() + getContinuousVarsLabels().get(0) 
 							+ getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix(); 
 					if (new File(getInputFolder(),fileName).exists()) {
 						targetCounts.add(readTotalCountContinuous(fileName));
@@ -203,7 +208,7 @@ public class ContingencyMatrixUserActivitySimulator {
 						// there is no data timeSlice specified. Try without dataTimeSlice
 						fileName = getFileNamePrefix() + discreteVar1 + getVsLabel() + getContinuousVarsLabels().get(0) 
 								+ getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix(); 
-						// fill count with invalid count (to be calculated later)
+						// fill count with default count (to be calculated later). Use zero, so that we can use getSum to obtain the counts we know so far.
 						targetCounts.add(0d);	
 						hasNoDataTimeSliceSpecification.add(targetIndex);	// mark this table as "no dataTimeSlice specified"
 					}
@@ -213,13 +218,27 @@ public class ContingencyMatrixUserActivitySimulator {
 			
 			if (!hasNoDataTimeSliceSpecification.isEmpty()) {
 				// calculate how many users there are in data with time slices (the data without time slices are 0, so it's ignored in sum)
-				int sum = getSum((List)hasNoDataTimeSliceSpecification).intValue();
+				int sum = getSum((List)targetCounts).intValue();
 				// calculate target counts of data with no time slice as (total count - sum);
 				for (Integer index : hasNoDataTimeSliceSpecification) {
 					if (targetCounts.get(index) != 0d) {
 						throw new RuntimeException("Failed to treat data file with no specification of time slice.");
 					}
-					double count = (getNumUsers() - sum) / hasNoDataTimeSliceSpecification.size();	// if there are multiple data with no time slice specified, uniformly distribute counts
+					int totalCounts = getTotalCounts();
+					if (totalCounts <= 0) {
+						// if not specified, use number of users to simulate as total counts by default
+						totalCounts = getNumUsers();
+					}
+					double count = (totalCounts - sum) / hasNoDataTimeSliceSpecification.size();	// if there are multiple data with no time slice specified, uniformly distribute counts
+					if (count < 0) {
+						// this may happen if data has more counts/users than expected
+						Debug.println(getClass(), "Unexpected counts. Total specified in arguments = " + totalCounts + "; total in data = " + sum);
+//						if (virtualCountCoef >= 0) {
+//							count = 1;	// if we are using dirichlet-multinomial, make sure no state is impossible
+//						} else {
+							count = 0;	// if we are not using dirichlet-multinomial, this state can be impossible
+//						}
+					}
 					targetCounts.set(index.intValue(), count);
 				}
 			}
@@ -249,8 +268,6 @@ public class ContingencyMatrixUserActivitySimulator {
 			}
 			printer.println();
 			
-			// obtain what is the virtual count we should use when generating Dirichlet samples from current timeSlice
-			float virtualCount = getTimeSliceVirtualCounts().get(getOutputTimeSliceLabels().indexOf(timeSliceLabel));
 			
 			
 			for (int user = 0; user < getNumUsers(); user++) {
@@ -258,7 +275,7 @@ public class ContingencyMatrixUserActivitySimulator {
 				
 				// sample target. 
 //				int targetState = getRandom().nextDiscrete(dirichlet.nextDistribution());
-				int targetState = sampleTargetState(virtualCount, targetCounts);
+				int targetState = sampleTargetState(virtualCountCoef, targetCounts);
 				
 				
 				String targetLabel = getTargetStateLabels().get(targetState);	// prepare in advance the label of target state, to be used to access respective files
@@ -278,7 +295,7 @@ public class ContingencyMatrixUserActivitySimulator {
 					PotentialTable tableToSample = discreteVarTablesByTargetState.get(targetState);	// for binary case, sample from tableTrue if target == true. Or else, sample from tableFalse
 					
 					// get a sample of all variables in the table
-					int[] sample = tableToSample.getMultidimensionalCoord(getSampleIndex(tableToSample, virtualCount));
+					int[] sample = tableToSample.getMultidimensionalCoord(getSampleIndex(tableToSample, virtualCountCoef));
 					// extract values of each variable
 					for (String varName : getDiscreteVarsLabels()) {
 						// get variable from name
@@ -299,15 +316,15 @@ public class ContingencyMatrixUserActivitySimulator {
 						conditionVariableName = discreteVar2;
 					}
 					
-					String fileName = getFileNamePrefix() + dataTimeSlice + conditionVariableName + getVsLabel() + continuousVarName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
+					String fileName = getFileNamePrefix() + dataTimeSlice + getTimeSliceVarSeparator() + conditionVariableName + getVsLabel() + continuousVarName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
 					double sampleValue = Float.NaN;
 					try {
-						sampleValue = getSampleContinuous(fileName, virtualCount, discreteVarNameToValueMap.get(conditionVariableName), getInitialTableCount());
+						sampleValue = getSampleContinuous(fileName, virtualCountCoef, discreteVarNameToValueMap.get(conditionVariableName), getInitialTableCount());
 					} catch (IOException e) {
 						// try without dataTimeSlice
 						fileName = getFileNamePrefix() + conditionVariableName + getVsLabel() + continuousVarName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
 						try {
-							sampleValue = getSampleContinuous(fileName, virtualCount, discreteVarNameToValueMap.get(conditionVariableName), getInitialTableCount());
+							sampleValue = getSampleContinuous(fileName, virtualCountCoef, discreteVarNameToValueMap.get(conditionVariableName), getInitialTableCount());
 						} catch (IOException e2) {
 							e.printStackTrace();
 							throw e2;
@@ -402,17 +419,17 @@ public class ContingencyMatrixUserActivitySimulator {
 	}
 	
 	/**
-	 * @param virtualCount : if {@link #isToSampleTargetExact()} is false, then 
+	 * @param virtualCountCoef : if this is negative or {@link #isToSampleTargetExact()} is false, then 
 	 * sampling will be probabilistic by using a {@link Dirichlet} distribution.
-	 * This will be used as virtual counts (lower counts result in higher variance).
+	 * This will be multiplied to counts (lower counts result in higher variance).
 	 * @param targetCounts : counts of target/class variable.
-	 * If {@link #isToSampleTargetExact()}, then values in this array will be decremented
+	 * If virtualCount is negative or {@link #isToSampleTargetExact()}, then values in this array will be decremented
 	 * as samples are generated (i.e. sampling without substitution).
 	 * @return sample of target variable.
 	 */
-	protected int sampleTargetState(float virtualCount, List<Double> targetCounts) {
+	protected int sampleTargetState(float virtualCountCoef, List<Double> targetCounts) {
 		
-		if (isToSampleTargetExact()) {
+		if (isToSampleTargetExact() || virtualCountCoef < 0) {
 			
 			// randomly pick a target, with substitution
 			Number numPopulation = getSum((List)targetCounts);			// size of population
@@ -433,26 +450,27 @@ public class ContingencyMatrixUserActivitySimulator {
 			
 			// prepare a dirichlet-multinomial sampler to sample a state from counts of target variable
 			// look for cache first
-			Dirichlet dirichlet = getDirichletCache().get(targetCounts + "," + virtualCount);
+			Dirichlet dirichlet = getDirichletCache().get(targetCounts + "," + virtualCountCoef);
 			if (dirichlet == null) {
 				// we may need to normalize targetCounts if virtual counts is positive, so calculate sum (to be used later for normalization)
-				double sum = 0;
-				if (virtualCount > 0) {
-					for (double count : targetCounts) {
-						sum += count;
-					}
-				}
+//				double sum = 0;
+//				if (virtualCountCoef > 0) {
+//					for (double count : targetCounts) {
+//						sum += count;
+//					}
+//				}
 				// calculate parameters of dirichlet
 				double[] alpha = new double[targetCounts.size()];
 				Arrays.fill(alpha, 0.0);
 				for (int i = 0; i < targetCounts.size(); i++) {
 					alpha[i] = targetCounts.get(i) + getInitialTableCount(); //initialTableCount = 1 is used avoid zeros (common practice in bayesian learning)
-					if (virtualCount > 0) {
-						alpha[i] *= virtualCount/sum; // this is equivalent to normalizing targetCounts to 1 and then multiplying virtual counts
+					if (virtualCountCoef > 0) {
+//						alpha[i] *= virtualCount/sum; // this is equivalent to normalizing targetCounts to 1 and then multiplying virtual counts
+						alpha[i] *= virtualCountCoef; 
 					}
 				}
 				dirichlet = new Dirichlet(alpha);
-				getDirichletCache().put(targetCounts + "," + virtualCount, dirichlet);
+				getDirichletCache().put(targetCounts + "," + virtualCountCoef, dirichlet);
 			}
 			
 			return  getRandom().nextDiscrete(dirichlet.nextDistribution());
@@ -463,35 +481,50 @@ public class ContingencyMatrixUserActivitySimulator {
 	/**
 	 * Generate a sample from dirichlet-multinomial distribution
 	 * @param table
-	 * @param virtualCount
+	 * @param virtualCountCoef : this coefficient will be multiplied to sample counts before generating dirichlet multinomial samples.
+	 * Use values between 0(exclusive) and 1(inclusive) to adjust virtual counts. Value 0 will be considered as 1. 
+	 * Values higher than 1 will make virtual counts higher than observed counts.
 	 * @param normalize : if true, table will be normalized
 	 * @return
 	 */
-	public int getSampleIndex(PotentialTable table, float virtualCount) {
+	public int getSampleIndex(PotentialTable table, float virtualCountCoef) {
 		
 		// check cache first
-		Dirichlet dirichlet = getDirichletCache().get(table.toString() + "_" + virtualCount);
+		Dirichlet dirichlet = getDirichletCache().get(table.toString() + "_" + virtualCountCoef);
+		double[] alpha = null;	// the alpha parameter of dirichlet (which can be used as prob of multinomial if we don't want to use dirichlet)
 		
 		if (dirichlet == null) {
+			
+			float coefficientToUse = virtualCountCoef;	// don't overwrite original coefficient
+			
 			PotentialTable origTable = table;
-			if (virtualCount <= 0) {
+			if (virtualCountCoef <= 0) {
 				// do not normalize table, and use the counts in table directly
-				virtualCount = 1;
-			} else {
-				// normalize table and use virtual counts
-				table = table.getTemporaryClone();	// use a clone, so that we don't modify original table
-				table.normalize();
+				coefficientToUse = 1;
+//			} else {
+//				// normalize table and use virtual counts
+//				table = table.getTemporaryClone();	// use a clone, so that we don't modify original table
+//				table.normalize();
 			}
-			double[] alpha = new double[table.tableSize()];
+			
+			alpha = new double[table.tableSize()];
 			for (int i = 0; i < table.tableSize(); i++) {
-				alpha[i] = table.getValue(i) * virtualCount;
+				alpha[i] = table.getValue(i) * coefficientToUse;
 			}
 			dirichlet = new Dirichlet(alpha);
 			
-			getDirichletCache().put(origTable.toString() + "_" + virtualCount, dirichlet);
+			getDirichletCache().put(origTable.toString() + "_" + virtualCountCoef, dirichlet);
 		}
 		
-		
+		if (virtualCountCoef < 0) {
+			// if negative, just use multinomial instead of dirichlet-multinomial
+			// re-extract alpha from cached dirichlet instance
+			alpha = new double[dirichlet.size()];
+			for (int i = 0; i < dirichlet.size(); i++) {
+				alpha[i] = dirichlet.alpha(i) - getInitialTableCount();	// compensate the value we used to fill tables initially (to avoid zeros) by subtracting initialTableCount
+			}
+			return getRandom().nextDiscrete(normalize(alpha));
+		}
 		return getRandom().nextDiscrete(dirichlet.nextDistribution());
 		
 	}
@@ -499,46 +532,66 @@ public class ContingencyMatrixUserActivitySimulator {
 	
 	/**
 	 * 
-	 * @param fileName
-	 * @param virtualCount
-	 * @param conditionState 
+	 * @param fileName : file to read histogram of continuous variable
+	 * @param virtualCountCoef : this coefficient will be multiplied to sample counts before generating dirichlet multinomial samples.
+	 * Use values between 0(exclusive) and 1(inclusive) to adjust virtual counts. Value 0 will be considered as 1. 
+	 * Values higher than 1 will make virtual counts higher than observed counts.
+	 * @param conditionState : if non-null, it is assumed that file is conditioned to another discrete variable and this is the state of such discrete var.
 	 * @param initialCounts  : this value will be added to all entries initially (use 0 to void this parameter).
-	 * @return
+	 * @return a sample (point value) of continuous variable
 	 * @throws IOException 
 	 */
-	public double getSampleContinuous(String fileName, float virtualCount, Integer conditionState, float initialCounts) throws IOException {
+	public double getSampleContinuous(String fileName, float virtualCountCoef, Integer conditionState, float initialCounts) throws IOException {
 		
 		// read csv file
 		Map<String, List<Double>> map = readContinuousVarCSVFile(fileName, conditionState, initialCounts);
 		
-		Dirichlet dirichlet = getDirichletCache().get(fileName + "_" + virtualCount + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts);
+		Dirichlet dirichlet = getDirichletCache().get(fileName + "_" + virtualCountCoef + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts);
+		double[] alpha = null;	// alpha parameters of dirichlet. This can also be used as prob of multinomial if we don't want to use dirichlet
+		
 		if (dirichlet == null) {
+			
+			float coefficientToUse = virtualCountCoef;	// do not overwrite initial virtual count
+			
 			List<Double> counts = map.get(BIN_COUNTS_KEY);
-			if (virtualCount <= 0) {
+			if (virtualCountCoef <= 0) {
 				// do not normalize list, and use the counts in list directly
-				virtualCount = 1;
-			} else {
-				// normalize list and use virtual counts
-				double sum = 0;
-				for (Double count : counts) {
-					sum += count;
-				}
-				for (int i = 0; i < counts.size(); i++) {
-					counts.set(i, counts.get(i) / sum);
-				}
+				coefficientToUse = 1;
+//			} else {
+//				// normalize list and use virtual counts
+//				double sum = 0;
+//				for (Double count : counts) {
+//					sum += count;
+//				}
+//				for (int i = 0; i < counts.size(); i++) {
+//					counts.set(i, counts.get(i) / sum);
+//				}
 			}
 			
 			// use dirichlet-multinomial sampler to sample a bin
-			double[] alpha = new double[counts.size()];
+			alpha = new double[counts.size()];
 			for (int i = 0; i < counts.size(); i++) {
-				alpha[i] = counts.get(i) * virtualCount;
+				alpha[i] = counts.get(i) * coefficientToUse;
 			}
 			dirichlet = new Dirichlet(alpha);
 			
-			getDirichletCache().put(fileName + "_" + virtualCount + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts, dirichlet);
+			getDirichletCache().put(fileName + "_" + virtualCountCoef + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts, dirichlet);
 		}
 		
-		int bin = getRandom().nextDiscrete(dirichlet.nextDistribution());
+		int bin = -1;
+
+		if (virtualCountCoef < 0) {
+			// if negative, just use multinomial instead of dirichlet-multinomial to sample a bin
+			// extract alpha from cached dirichlet instance
+			alpha = new double[dirichlet.size()];
+			for (int i = 0; i < dirichlet.size(); i++) {
+				alpha[i] = dirichlet.alpha(i) - initialCounts;	// compensate the value we used to fill tables initially (to avoid zeros) by subtracting initialCounts
+			}
+			bin = getRandom().nextDiscrete(normalize(alpha));
+		} else {
+			// sample bin from dirichlet multinomial
+			bin = getRandom().nextDiscrete(dirichlet.nextDistribution());
+		}
 		
 		// use uniform distribution to sample a single value inside the sampled bin
 		return getRandom().nextUniform(map.get(BIN_LOWER_KEY).get(bin), map.get(BIN_UPPER_KEY).get(bin));
@@ -587,28 +640,38 @@ public class ContingencyMatrixUserActivitySimulator {
 		// read csv file
 		CSVReader reader = new CSVReader(new FileReader(new File(getInputFolder(),fileName)));
 		
+		// prepare keyword which will indicate beginning of data block
+		String dataBlockKeyword = getHeaderColumnKeyword().toLowerCase();
+		
 		// read rows until we find the block we want (which matches with condition state)
+		int countColumn = -1;	// this will be filled with which column has the data given conditionState
 		String[] row = null;
 		for (row = reader.readNext(); row != null; row = reader.readNext()) {
 			if (row.length <= 0) {
 				continue;	// ignore empty rows
 			}
-			if (row[0].toLowerCase().contains(getHeaderColumnKeyword()) && row.length >= 3) {
+			if (row[0].toLowerCase().contains(dataBlockKeyword) && row.length >= 3) {
 				// check if condition matched
 				if (conditionState == null) {
 					// no condition was specified, so we can stop at any block (so just use the 1st block we found)
+					countColumn = 2;	// we can use any column. Use smallest (column 0 and 1 are "Lower bound" and "Upper bound", so these aren't included).
 					break;
-				} else if (row[2].matches(".*=.*")) {
-					String[] split = row[2].trim().split("=");
-					if (conditionState.intValue() == Integer.parseInt(split[1])) {
-						break;	// found a matching condition
-					}
 				} else {
+					// find column that matches with conditionState
+					for (int column = 2; column < row.length; column++) {	// column 0 and 1 are "Lower bound" and "Upper bound", so ignore them.
+						if (row[column].matches(".*=.*")) {
+							String[] split = row[column].trim().split("=");
+							if (conditionState.intValue() == Integer.parseInt(split[1])) {
+								countColumn = column;
+								break;	// found a matching condition
+							}
+						}
+					}
 					break;
 				}
 			}
 		}
-		if (row == null) {
+		if (row == null || countColumn < 0) {
 			reader.close();
 			throw new IllegalArgumentException("Var value " + conditionState + " not found in file " + fileName);
 		}
@@ -624,12 +687,12 @@ public class ContingencyMatrixUserActivitySimulator {
 			if (row.length <= 0) {
 				continue;	// ignore empty rows
 			}
-			if (row[0].toLowerCase().contains(getHeaderColumnKeyword())) {
+			if (row[0].toLowerCase().contains(dataBlockKeyword)) {
 				break;	// this is the next block, so stop here
 			}
 			ret.get(BIN_LOWER_KEY).add(Double.parseDouble(row[0]));
 			ret.get(BIN_UPPER_KEY).add(Double.parseDouble(row[1]));
-			ret.get(BIN_COUNTS_KEY).add(Double.parseDouble(row[2]) + initialCounts);
+			ret.get(BIN_COUNTS_KEY).add(Double.parseDouble(row[countColumn]) + initialCounts);
 		}
 		
 		reader.close();
@@ -864,15 +927,15 @@ public class ContingencyMatrixUserActivitySimulator {
 	/**
 	 * @return the timeSliceVirtualCounts
 	 */
-	public List<Float> getTimeSliceVirtualCounts() {
-		return this.timeSliceVirtualCounts;
+	public List<Float> getTimeSliceVirtualCountCoefficients() {
+		return this.timeSliceVirtualCountCoefficients;
 	}
 
 	/**
 	 * @param timeSlicelyVirtualCounts the timeSliceVirtualCounts to set
 	 */
-	public void setTimeSliceVirtualCounts(List<Float> timeSliceVirtualCounts) {
-		this.timeSliceVirtualCounts = timeSliceVirtualCounts;
+	public void setTimeSliceVirtualCountCoefficients(List<Float> timeSliceVirtualCounts) {
+		this.timeSliceVirtualCountCoefficients = timeSliceVirtualCounts;
 	}
 
 
@@ -1055,6 +1118,20 @@ public class ContingencyMatrixUserActivitySimulator {
 	}
 
 	/**
+	 * @return the timeSliceVarSeparator
+	 */
+	public String getTimeSliceVarSeparator() {
+		return timeSliceVarSeparator;
+	}
+
+	/**
+	 * @param timeSliceVarSeparator the timeSliceVarSeparator to set
+	 */
+	public void setTimeSliceVarSeparator(String timeSliceVarSeparator) {
+		this.timeSliceVarSeparator = timeSliceVarSeparator;
+	}
+
+	/**
 	 * @return the targetLabels
 	 */
 	public List<String> getTargetStateLabels() {
@@ -1185,6 +1262,22 @@ public class ContingencyMatrixUserActivitySimulator {
 
 
 	/**
+	 * @return the totalCounts: total (sum) of counts expected in input histograms. This should be usually the same of {@link #getNumUsers()},
+	 * but it is separated because we may want to simulate n users while the data contains m users.
+	 */
+	public int getTotalCounts() {
+		return totalCounts;
+	}
+
+	/**
+	 * @param totalCounts the totalCounts to set : : total (sum) of counts expected in input histograms. This should be usually the same of {@link #getNumUsers()},
+	 * but it is separated because we may want to simulate n users while the data contains m users.
+	 */
+	public void setTotalCounts(int totalCounts) {
+		this.totalCounts = totalCounts;
+	}
+
+	/**
 	 * @param args
 	 * @throws IOException 
 	 */
@@ -1194,12 +1287,13 @@ public class ContingencyMatrixUserActivitySimulator {
 		Options options = new Options();
 		options.addOption("d","debug", false, "Enables debug mode.");
 		options.addOption("usr","num-users", true, "Number of users (samples or individuals) to simulate.");
+		options.addOption("total","total-counts-num-users", true, "Number of users (samples or individuals) expected in data. If negative or 0, then this will be the same of specified in -usr.");
 		options.addOption("org","num-organizations", true, "Number of organizations (group of users) to simulate. This is number of replications.");
 		options.addOption("prefix","file-name-prefix", true, "Common prefixes of csv file names in the input folder (e.g. \"RCP11\", default is empty).");
 		options.addOption("suffix","file-name-suffix-extension", true, "Common suffixes or extensions of file names in the input folder (default \".csv\").");
 		options.addOption("varSep","separator-var-vs-label", true, "Suffixes in input csv file names that separates names of vars (default \"vs\").");
-		options.addOption("targetSep","target-label-separator", true, "Suffixes in input csv file names that separates target state from other names (default \"_\")."
-				+ " This must match with true/false values that appear in names of csv files.");
+		options.addOption("targetSep","target-label-separator", true, "Suffixes in input csv file names that separates target state from other names (default \"_\").");
+		options.addOption("timeSliceSep","timeSlice-var-label-separator", true, "Suffixes in input csv file names that separates time slice labels from variable names (default \"_\").");
 		options.addOption("target","target-labels", true, "Comma separated list of names of states of target variable. This will also be used as label/suffix in csv file that indicates that the data is for target = false (default \"False,True\")."
 				+ " This must match with true/false values that appear in names of csv files.");
 		options.addOption("initCount","initial-table-count", true, "This value will be added to counts for dirichlet-multinomial sampling (real numbers are also allowed).");
@@ -1213,15 +1307,16 @@ public class ContingencyMatrixUserActivitySimulator {
 				+ " This must match with timeSlices that appear in names of csv files.");
 		options.addOption("allTimeSlices","all-output-timeSlice-labels", true, "Comma-separated list of all timeSlice labels to output (e.g. \"JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP\" , default is empty)."
 				+ " This must match with timeSlices that appear in names of csv files.");
-		options.addOption("virtCounts","timeSlice-virtual-counts", true, "Comma-separated list of numbers (virtual counts) to be used for sampling users of each timeSlice"
-				+ "(e.g. \"-1,-1,1430,715,357.5,178.75,89.375,44.6875,22.34375\", default is empty). Zero or negative values can be used to consider actual counts instead (if the timeSlice has actual data).");
-		options.addOption("numStates","num-states-class-variable", true, "Number of states of the class or target variable (default is binary, which is 2).");
-		options.addOption("targetExact","sample-target-class-variable-exactly", false, "If set, target/class variable will be sampled without dirichlet-multinomial distribution.");
+		options.addOption("virtCountCoefs","timeSlice-virtual-count-coefficients", true, "Comma-separated list of numbers (virtual counts) to be multiplied to number of users of each timeSlice when sampling from dirichlet-multinomial"
+				+ "(e.g. \"-1,-1,.5,.25,.125,.06,.03,.015,.008\", default is empty). Zero or 1 can be used to consider actual counts instead (if the timeSlice has actual data). "
+				+ "Negative values can be used to disable dirichlet-multinomial sampling.");
+//		options.addOption("numStates","num-states-class-variable", true, "Number of states of the class or target variable (default is binary, which is 2).");
+		options.addOption("targetExact","sample-target-class-variable-exactly", true, "If set, target/class variable will be sampled without dirichlet-multinomial distribution.");
 		options.addOption("seed","random-seed", true, "Number to be used as random seed (default is system's time).");
 		options.addOption("inputDist","input-timeSlice-distribution", true, "Comma-separated list of probabilities (default is \".5,.5\"). "
 				+ "This is used to randomly pick an input timeSlice when simulating timeSlices with no input data. "
 				+ "The length of this list must match with list provided in -inputTimeSlices.");
-		options.addOption("transpose","transpose-discrete-vars-table", false, "If this argument is specified, csv files of contingency tables of discrete variables will be consided to have 1st var as column and 2nd var as rows."
+		options.addOption("transpose","transpose-discrete-vars-table", true, "If this argument is specified, csv files of contingency tables of discrete variables will be consided to have 1st var as column and 2nd var as rows."
 				+ "If unspecified, then 1st variable will be rows, and 2nd variable will be column.");
 		options.addOption("h","help", false, "Help.");
 		
@@ -1254,6 +1349,9 @@ public class ContingencyMatrixUserActivitySimulator {
 		if (cmd.hasOption("usr")) {
 			sim.setNumUsers(Integer.parseInt(cmd.getOptionValue("usr")));
 		}
+		if (cmd.hasOption("total")) {
+			sim.setTotalCounts(Integer.parseInt(cmd.getOptionValue("total")));
+		}
 		if (cmd.hasOption("org")) {
 			sim.setNumOrganizations(Integer.parseInt(cmd.getOptionValue("org")));
 		}
@@ -1268,6 +1366,9 @@ public class ContingencyMatrixUserActivitySimulator {
 		}
 		if (cmd.hasOption("targetSep")) {
 			sim.setTargetLabelSeparator(cmd.getOptionValue("targetSep"));
+		}
+		if (cmd.hasOption("timeSliceSep")) {
+			sim.setTimeSliceVarSeparator(cmd.getOptionValue("timeSliceSep"));
 		}
 		if (cmd.hasOption("target")) {
 			sim.setTargetStateLabels(parseListString(cmd.getOptionValue("target")));
@@ -1293,8 +1394,8 @@ public class ContingencyMatrixUserActivitySimulator {
 		if (cmd.hasOption("allTimeSlices")) {
 			sim.setOutputTimeSliceLabels(parseListString(cmd.getOptionValue("allTimeSlices")));
 		}
-		if (cmd.hasOption("virtCounts")) {
-			sim.setTimeSliceVirtualCounts(parseListFloat(cmd.getOptionValue("virtCounts")));
+		if (cmd.hasOption("virtCountCoefs")) {
+			sim.setTimeSliceVirtualCountCoefficients(parseListFloat(cmd.getOptionValue("virtCountCoefs")));
 		}
 		if (cmd.hasOption("seed")) {
 			sim.setSeed(Long.parseLong(cmd.getOptionValue("seed")));
@@ -1303,9 +1404,13 @@ public class ContingencyMatrixUserActivitySimulator {
 			sim.setInputTimeSliceDistribution(parseArrayDouble(cmd.getOptionValue("inputDist")));
 		}
 		
-		sim.set1stVarInRow(!cmd.hasOption("transpose"));
+		if (cmd.hasOption("transpose")) {
+			sim.set1stVarInRow(!Boolean.parseBoolean(cmd.getOptionValue("transpose")));
+		}
 		
-		sim.setToSampleTargetExact(cmd.hasOption("targetExact"));
+		if (cmd.hasOption("targetExact")) {
+			sim.setToSampleTargetExact(Boolean.parseBoolean(cmd.getOptionValue("targetExact")));
+		}
 		
 		sim.runAll();
 	}
