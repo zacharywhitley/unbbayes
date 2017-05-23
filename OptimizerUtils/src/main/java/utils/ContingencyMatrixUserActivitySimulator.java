@@ -255,7 +255,8 @@ public class ContingencyMatrixUserActivitySimulator {
 			}
 			PrintStream printer = System.out;
 			if (timeSliceFolder != null) {
-				printer = new PrintStream(new FileOutputStream(new File(timeSliceFolder, getFileNamePrefix() + "_" + timeSliceLabel + "_" + numbering + getFileNameSuffix()), false));
+				printer = new PrintStream(new FileOutputStream(new File(timeSliceFolder, getFileNamePrefix() + (getFileNamePrefix().isEmpty()?"":"_") 
+						+ timeSliceLabel + "_" + numbering + getFileNameSuffix()), false));
 			}
 			
 			// print the header
