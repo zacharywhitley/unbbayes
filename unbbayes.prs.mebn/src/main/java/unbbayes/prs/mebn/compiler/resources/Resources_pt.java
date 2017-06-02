@@ -58,5 +58,6 @@ public class Resources_pt extends ListResourceBundle {
 		{"PrematureEndScript","Fim de script inesperado."},
 		{"NonNumericProbAssignment","Número (probabilidade) esperado em atribuições de valores aos estados do nó."},
 		{"CyclicCellDependency","Falha ao tratar dependência entre células da tabela. Isto pode ser dependência cíclica."},
+		{"InvalidArgument","Argumento ou número de argumentos inválido."},
 	};
 }

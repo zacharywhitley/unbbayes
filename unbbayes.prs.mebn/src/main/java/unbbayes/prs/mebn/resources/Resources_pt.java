@@ -47,6 +47,9 @@ public class Resources_pt extends ListResourceBundle {
 	 */
 	static final Object[][] contents =
 	{	{"InvalidEdgeException","Arco Invalido!"}, 
-		{"CycleFoundException","Ciclo encontrado! Não pode haver ciclos no grafo. "}
+		{"CycleFoundException","Ciclo encontrado! Não pode haver ciclos no grafo. "},
+		{"SingleArgumentAllowed","Somente 1 argumento permitido."},
+		{"IdentityNode","Identity node"},
+		{"CouldNotExtractTypeEntity","Não foi possível extrair a entidade associada ao tipo desta variável ordinária."},
 	};
 }

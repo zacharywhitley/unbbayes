@@ -849,17 +849,35 @@ public class CPTForSSBNNodeGenerator {
 		if (ssbn == null) {
 			return;
 		}
-		// iterate over all nodes
 		for (SSBNNode node : ssbn.getSsbnNodeList()) {
 			if(node.isCptAlreadyGenerated()){
 				// ignore nodes returning true for isCptAlreadyGenerated
 				continue; 
 			}else{
-				generateCPT(node);
-				// set flag to ignore next time
-				node.setCptAlreadyGenerated(true); 
+				// generate cpt of this node, but make sure parents are generated
+				this.generateCPTForAllSSBNNodesParentsRecursive(node);
 			}
 		}
+	}
+	
+	/**
+	 * Recursively generate cpt for ssbn nodes, starting from parents (i.e. make sure parents are generated before child).
+	 * @param node
+	 * @throws MEBNException
+	 * @throws SSBNNodeGeneralException
+	 */
+	protected void generateCPTForAllSSBNNodesParentsRecursive(SSBNNode node)throws MEBNException, SSBNNodeGeneralException{
+		for (SSBNNode parent : node.getParents()) {
+			if(node.isCptAlreadyGenerated()){
+				// ignore those already treated
+				continue;
+			}
+			this.generateCPTForAllSSBNNodesParentsRecursive(parent);
+		}
+		generateCPT(node);
+		// set flag to ignore next time
+		node.setCptAlreadyGenerated(true); 
+		
 	}
 	
 }

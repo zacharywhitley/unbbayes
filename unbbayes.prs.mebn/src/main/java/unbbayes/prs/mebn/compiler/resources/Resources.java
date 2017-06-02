@@ -58,5 +58,6 @@ public class Resources extends ListResourceBundle {
 		{"PrematureEndScript","Premature end of script found."},
 		{"NonNumericProbAssignment","Number (probability) expected in assignments to states of nodes."},
 		{"CyclicCellDependency","Failed to handle CPT's cross cell reference. This might be caused by cyclic dependence between cells in table."},
+		{"InvalidArgument","Invalid argument or invalid number of arguments found."},
 	};
 }

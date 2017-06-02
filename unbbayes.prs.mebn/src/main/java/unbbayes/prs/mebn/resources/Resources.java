@@ -46,6 +46,9 @@ public class Resources extends ListResourceBundle {
 	 */
 	static final Object[][] contents =
 	{	{"InvalidEdgeException","Invalid Edge"}, 
-		{"CycleFoundException","Cycle found"}
+		{"CycleFoundException","Cycle found"},
+		{"SingleArgumentAllowed","Only 1 argument allowed"},
+		{"IdentityNode","Identity node"},
+		{"CouldNotExtractTypeEntity","Unable to extract object entity associated with this ordinary variable."},
 	};
 }
