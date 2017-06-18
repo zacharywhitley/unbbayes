@@ -61,7 +61,7 @@ public class UserActivitySimulator {
 	private int testDayThreshold = 36;//144;
 	private int numTimeBlocks = 6;
 	private int numDetectors = 24;
-	private String rScriptName = "RCP8_ComputeAlertDays_Driver.r";
+	private String rScriptName = "PCA_DownSelect_Driver.r";
 	private String correlationDataFileFolder = "CorrelationData";
 	private String rscriptProgramName = "RScript";
 	private String distanceMetricFileName = "UserActivitySimulator.out";

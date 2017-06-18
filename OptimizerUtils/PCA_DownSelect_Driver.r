@@ -18,7 +18,7 @@ c("Output (PCA):", output)		# print the name of the output file (detectors' aler
 
 # load the libraries
 library(reshape2)
-source("RCP8_ComputeAlertDays.r")
+source("PCA_DownSelect.r")
 
 # calculate alert days and output to file
 ADD.Test <- ComputeAlertDays(datafile=input)
