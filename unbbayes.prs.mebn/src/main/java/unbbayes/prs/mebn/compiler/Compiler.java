@@ -5754,34 +5754,47 @@ public class Compiler implements ICompiler {
 		}
 		
 		// auto-fill by number of 1st state
-		for (int i = 0; i < 100; i += 10) {
-			ret.add(Collections.singletonMap( 
-					"" + i,
-					// just call replaceAll 2 times (to substitute $VALUE_STATE0 and then $VALUE_DEFAULT)
-					template.replaceAll(
-							"\\$VALUE_STATE0", "" + i/100f
-						).replaceAll(
-							"\\$VALUE_DEFAULT", "" + (1f-(i/100f))/(numStatesWithoutAbsurd-1f))
-					).entrySet().iterator().next());	// extract entry
-		
+		try {
+			for (int i = 0; i < 100; i += 10) {
+				ret.add(Collections.singletonMap( 
+						"" + i,
+						// just call replaceAll 2 times (to substitute $VALUE_STATE0 and then $VALUE_DEFAULT)
+						template.replaceAll(
+								"\\$VALUE_STATE0", "" + i/100f
+								).replaceAll(
+										"\\$VALUE_DEFAULT", "" + (1f-(i/100f))/(numStatesWithoutAbsurd-1f))
+						).entrySet().iterator().next());	// extract entry
+				
+			}
+		} catch (Exception e) {
+			Debug.println(getClass(), e.getMessage(), e);
 		}
 		
-		// suggestions to show by default (autocomplete for empty string)
-		ret.add(Collections.singletonMap(
-				"",
-				"if any "+varSetName+" have ("+nodeName+"="+stateName+") ["
-						+template.replaceAll(
+		try {
+			// suggestions to show by default (autocomplete for empty string)
+			ret.add(Collections.singletonMap(
+					"",
+					"if any "+varSetName+" have ("+nodeName+"="+stateName+") ["
+							+template.replaceAll(
+									"\\$VALUE_STATE0", "" + 1f/numStatesWithoutAbsurd
+									).replaceAll(
+											"\\$VALUE_DEFAULT", "" + 1f/numStatesWithoutAbsurd)
+											+"]").entrySet().iterator().next());
+		} catch (Exception e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		try {
+			ret.add(Collections.singletonMap(
+					"",
+					"[" + template.replaceAll(
 							"\\$VALUE_STATE0", "" + 1f/numStatesWithoutAbsurd
 							).replaceAll(
-							"\\$VALUE_DEFAULT", "" + 1f/numStatesWithoutAbsurd)
-						+"]").entrySet().iterator().next());
-		ret.add(Collections.singletonMap(
-				"",
-				"[" + template.replaceAll(
-						"\\$VALUE_STATE0", "" + 1f/numStatesWithoutAbsurd
-						).replaceAll(
-								"\\$VALUE_DEFAULT", "" + 1f/numStatesWithoutAbsurd)
-				+"]").entrySet().iterator().next());
+									"\\$VALUE_DEFAULT", "" + 1f/numStatesWithoutAbsurd)
+									+"]").entrySet().iterator().next());
+		} catch (Exception e) {
+			Debug.println(getClass(), e.getMessage(), e);
+		}
+		
 		
 		return ret;
 	}
