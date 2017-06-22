@@ -210,6 +210,7 @@ public class FormulaViewTree extends JTree{
 			expandRow(i);
 		}
 		
+		setNodeActive(null);
 	}
 	
 
@@ -277,7 +278,7 @@ public class FormulaViewTree extends JTree{
 	 */
 	public void addSimpleOperatorInTree(BuiltInRV builtInRV, EnumSubType subType) throws FormulaTreeConstructionException{
 		if (nodeActive == null) {
-			nodeActive = rootTreeView;
+			nodeActive = rootTreeView.getFirstLeaf();
 		}
 		NodeFormulaTree nodeFormula = (NodeFormulaTree)nodeActive.getUserObject(); 
 		NodeFormulaTree operandoChild; 
@@ -320,7 +321,7 @@ public class FormulaViewTree extends JTree{
 	
 	public void addQuantifierOperatorInTree(BuiltInRV builtInRV, EnumSubType subType) throws FormulaTreeConstructionException{
 		if (nodeActive == null) {
-			nodeActive = rootTreeView;
+			nodeActive = rootTreeView.getFirstLeaf();
 		}
 		NodeFormulaTree nodeFormula = (NodeFormulaTree)nodeActive.getUserObject(); 
 		
