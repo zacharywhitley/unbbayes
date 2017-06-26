@@ -439,7 +439,9 @@ public class GraphPane extends UCanvas {
 				}
 			}
 			if (controller.getGraph() instanceof SingleEntityNetwork) {
-				controller.createTable(newNode);
+				if (!controller.getScreen().isCompiled()) {
+					controller.createTable(newNode);
+				}
 			}
 		}
 	}
