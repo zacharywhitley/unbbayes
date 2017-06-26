@@ -49,6 +49,7 @@ public class Resources extends ListResourceBundle {
 		{"CycleFoundException","Cycle found"},
 		{"SingleArgumentAllowed","Only 1 argument allowed"},
 		{"IdentityNode","Identity node"},
+		{"IdentityNodeInputInstanceError","Please, include a new identity node instead of referencing it with an input node."},
 		{"CouldNotExtractTypeEntity","Unable to extract object entity associated with this ordinary variable."},
 	};
 }

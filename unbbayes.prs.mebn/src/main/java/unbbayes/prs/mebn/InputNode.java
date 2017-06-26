@@ -176,6 +176,10 @@ public class InputNode extends MultiEntityNode {
 		
 		inputInstanceOfRV = null; 
 		inputInstanceOfNode = node; 
+		if (node == null) {
+			updateLabel();
+			return;
+		}
 		
 		residentNodePointer = new ResidentNodePointer(node, this);
 //		residentNodePointer.

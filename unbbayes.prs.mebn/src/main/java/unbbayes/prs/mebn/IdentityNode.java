@@ -22,6 +22,7 @@ import unbbayes.prs.mebn.extension.IMEBNPluginNode;
  */
 public class IdentityNode extends ResidentNode implements IMEBNPluginNode {
 
+
 	public static final Color IDENTITY_NODE_COLOR = new Color(220, 220, 220);
 
 
@@ -147,6 +148,14 @@ public class IdentityNode extends ResidentNode implements IMEBNPluginNode {
 		
 		// finally, add argument
 		super.addArgument(ov, addArgument);
+	}
+	
+
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ResidentNode#addInputInstanceFromList(unbbayes.prs.mebn.InputNode)
+	 */
+	protected void addInputInstanceFromList(InputNode instance) {
+		throw new UnsupportedOperationException(getResource().getString("IdentityNodeInputInstanceError"));
 	}
 
 	/**
