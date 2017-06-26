@@ -283,7 +283,7 @@ public class SSBNCompilationPane extends JPanel {
 								e1.printStackTrace();
 							} 
 							
-    						JOptionPane.showMessageDialog(controller.getScreen(), "Arquivo salvo com sucesso");
+    						JOptionPane.showMessageDialog(controller.getScreen(), resource.getString("saveSucess"));
     					}
     				}
     			}
