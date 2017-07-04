@@ -87,7 +87,7 @@ public class TextMode {
 		algorithm.setNetwork(net);
 		algorithm.run();
 		
-		// print node's states
+		// print node's prior marginal probabilities
 		List<Node> nodeList = net.getNodes();
 		for (Node node : nodeList) {
 			System.out.println(node.getDescription());
@@ -106,12 +106,12 @@ public class TextMode {
 		
 		// propagate evidence
 		try {
-        	net.updateEvidences();
+        	algorithm.propagate();
         } catch (Exception exc) {
         	System.out.println(exc.getMessage());               	
         }
         
-        //Å@print updated node's states
+        //print updated (posterior) node's marginal probabilities
 		for (Node node : nodeList) {
 			System.out.println(node.getDescription());
 			for (int i = 0; i < node.getStatesSize(); i++) {

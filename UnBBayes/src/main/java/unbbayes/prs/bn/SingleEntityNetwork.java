@@ -1300,6 +1300,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	/**
 	 * Delegates to {@link #updateEvidences(Clique)} passing null as its argument.
 	 *  @throws Exception : the message will contain any consistency error.
+	 *  @deprecated use {@link unbbayes.util.extension.bn.inference.IInferenceAlgorithm#propagate()} instead
 	 */
 	public void updateEvidences() throws Exception {
 		this.updateEvidences(null, true);
@@ -1320,6 +1321,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	 *  @throws Exception : the message will contain any consistency error.
 	 *  @see IJunctionTree#consistency()
 	 *  @see IJunctionTree#consistency(Clique)
+	 *  @deprecated use {@link unbbayes.util.extension.bn.inference.IInferenceAlgorithm#propagate()} instead
 	 */
 	public void updateEvidences(Clique rootClique, boolean isToUpdateMarginals) throws Exception {
 			
@@ -1370,6 +1372,8 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 	
 	/**
 	 * Initialize the believes of a junction tree.
+	 * @deprecated use {@link unbbayes.util.extension.bn.inference.IInferenceAlgorithm#run()}
+	 * and/or {@link unbbayes.util.extension.bn.inference.IInferenceAlgorithm#reset()} instead
 	 */
 	public void initialize() throws Exception {
 		resetEvidences();
