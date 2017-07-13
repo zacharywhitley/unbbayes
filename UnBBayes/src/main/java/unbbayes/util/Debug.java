@@ -66,6 +66,7 @@ public class Debug {
 	public static void println(Class classOrigin, String message, Throwable t) {
 		if (debug) {
 			System.out.println("[DEBUG] " + classOrigin + ": " + message);
+			System.out.println(t.getClass().getName());
 			System.out.println("[DEBUG] \t " + t.getMessage() + ": ");
 			for (StackTraceElement element : t.getStackTrace()) {
 				System.out.println("[DEBUG] \t \t" + element.toString() + "; ");
