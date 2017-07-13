@@ -1256,6 +1256,7 @@ public class Compiler implements ICompiler {
 	/**
 	 *   It skippes white spaces after evaluation.
 	 *   varsetname ::= ident[["."|","]ident]*
+	 *   @return a string containing "varsetname" (e.g. "st.sr.z")
 	 */
 	protected String varsetname() throws TableFunctionMalformedException {
 		
@@ -3193,7 +3194,7 @@ public class Compiler implements ICompiler {
 		 * @param isAny
 		 * @param isDefault
 		 */
-		TempTableHeaderCell (List<TempTableHeader> parents , boolean isAny, boolean isDefault, SSBNNode currentSSBNNode) {
+		public TempTableHeaderCell (List<TempTableHeader> parents , boolean isAny, boolean isDefault, SSBNNode currentSSBNNode) {
 			this.parents = parents;
 			this.isAny = isAny;
 			this.isDefault = isDefault;
@@ -3307,7 +3308,7 @@ public class Compiler implements ICompiler {
 		/**
 		 * @return the cellList: possible values and its probability
 		 */
-		protected List<TempTableProbabilityCell> getCellList() {
+		public List<TempTableProbabilityCell> getCellList() {
 			return cellList;
 		}
 		/**
@@ -4375,7 +4376,7 @@ public class Compiler implements ICompiler {
 		 * @param evaluationList : see {@link #setEvaluationList(List)}
 		 * 
 		 */
-		TempTableHeaderParent (ResidentNode parent , Entity value, 
+		public TempTableHeaderParent (ResidentNode parent , Entity value, 
 				List<OrdinaryVariable> expectedArgumentOVs,
 				List<EntityAndArguments>evaluationList) {
 			this.setParent(parent);
@@ -4387,14 +4388,14 @@ public class Compiler implements ICompiler {
 		/**
 		 * Constructor with fewer fields are kept here for backward compatibility.
 		 */
-		TempTableHeaderParent (ResidentNode parent , Entity value, List<EntityAndArguments>evaluationList) {
+		public TempTableHeaderParent (ResidentNode parent , Entity value, List<EntityAndArguments>evaluationList) {
 			this(parent, value, null, null);
 		}
 		
 		/**
 		 * Constructor with fewer fields are kept here for backward compatibility.
 		 */
-		TempTableHeaderParent (ResidentNode parent , Entity value) {
+		public TempTableHeaderParent (ResidentNode parent , Entity value) {
 			this(parent, value, null);
 		}
 		
@@ -4402,8 +4403,8 @@ public class Compiler implements ICompiler {
 		 * 
 		 * @return which parent this leaf represents
 		 */
-		public ResidentNode getParent() {
-			return (ResidentNode)super.getParent();
+		public MultiEntityNode getParent() {
+			return (MultiEntityNode)super.getParent();
 		}
 
 		/**
@@ -4520,7 +4521,7 @@ public class Compiler implements ICompiler {
 		 * @param possibleValue
 		 * @param probability
 		 */
-		TempTableProbabilityCell (Entity possibleValue , IExpressionValue probability) {
+		public TempTableProbabilityCell (Entity possibleValue , IExpressionValue probability) {
 			this.possibleValue = possibleValue;
 			this.probability = probability;
 		}
@@ -4530,6 +4531,9 @@ public class Compiler implements ICompiler {
 		public void setPossibleValue(Entity possibleValue) {
 			this.possibleValue = possibleValue;
 		}
+		/**
+		 * @deprecated use {@link #getProbability()} and then {@link IExpressionValue#getValue()} instead.
+		 * */
 		public float getProbabilityValue() throws InvalidProbabilityRangeException {
 			try {
 				return Float.parseFloat(probability.getValue());
@@ -4989,8 +4993,8 @@ public class Compiler implements ICompiler {
 	 * is at value Phaser2Range when its arguments st=T0 and t=T0.
 	 */
 	public class EntityAndArguments {
-		public Entity entity = null;
-		public List<OVInstance> arguments = null;
+		private Entity entity = null;
+		List<OVInstance> arguments = null;
 		/**
 		 * Creates an alternative (compact) way to represent a particular state of
 		 * a SSBNNode, by storing its current value (entity) and its current 
@@ -5006,13 +5010,37 @@ public class Compiler implements ICompiler {
 			this.entity = entity;
 			this.arguments = arguments;
 		}
+		/**
+		 * @return the entity
+		 */
+		public Entity getEntity() {
+			return entity;
+		}
+		/**
+		 * @param entity the entity to set
+		 */
+		public void setEntity(Entity entity) {
+			this.entity = entity;
+		}
+		/**
+		 * @return the arguments
+		 */
+		public List<OVInstance> getArguments() {
+			return arguments;
+		}
+		/**
+		 * @param arguments the arguments to set
+		 */
+		public void setArguments(List<OVInstance> arguments) {
+			this.arguments = arguments;
+		}
 		/* (non-Javadoc)
 		 * @see java.lang.Object#toString()
 		 */
 		public String toString() {
-			return "Entity: " + this.entity + ". arguments = " + this.arguments;
+			
+			return this.getEntity() + " = " +  this.arguments;
 		}
-		
 	}
 
 
