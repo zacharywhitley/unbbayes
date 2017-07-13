@@ -1,4 +1,4 @@
-UNBBAYES MEBN PLUGIN - VERSION 1.18.14
+UNBBAYES MEBN PLUGIN - VERSION 1.18.15
 ----------------------------
 FEATURE LIST		
 Number	Request ID	Summary
@@ -10,6 +10,7 @@ Number	Request ID	Summary
 BUG LIST		
 Number	Request ID	Summary
 14			Fixed a bug in LPD regarding if-clauses only referencing entities with total order.
+15			Fixed a inner-class visibility problem in LPD compiler.
 
 UNBBAYES MEBN PLUGIN - VERSION 1.14.13
 ----------------------------
