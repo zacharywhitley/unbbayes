@@ -10,7 +10,10 @@
     <runtime>
         <!-- It seems that loaders does not work as expected on jar files -->
         <!-- If you change/add the libraries, change/add these library declaration too -->
-        <library id="unbbayes.io.xmlbif.version7" path="unbbayes.io.xmlbif.version7-1.0.0" type="code" >
+        <library id="unbbayes.io.xmlbif.version7" path="unbbayes.io.xmlbif.version7-1.0.0.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+        <library id="unbbayes.io.xmlbif.version7Cls" path="classes/" type="code" >
         	<export prefix="*"/>
         </library>
     </runtime>

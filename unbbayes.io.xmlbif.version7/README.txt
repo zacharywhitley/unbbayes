@@ -26,7 +26,7 @@ CREATING A RELEASE
 1. Change the pom file so that it defines the right version (majorVersion.NumberOfFeatures.NumberOfFixedBugs).
 2. Define the features implemented and bugs fixed in the RELEASE.txt file
 3. Create dist file. Go to the projects root folder command line and run*:
-mvn assembly:assembly
+mvn assembly:assembly -Dmaven.test.skip=true
 
 RUNNING ON UNBBAYES
 -------------------
