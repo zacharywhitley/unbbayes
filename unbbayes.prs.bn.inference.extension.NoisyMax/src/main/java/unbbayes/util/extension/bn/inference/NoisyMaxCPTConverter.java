@@ -15,9 +15,10 @@ import unbbayes.prs.bn.PotentialTable;
  */
 public class NoisyMaxCPTConverter implements IIndependenceCausalInfluenceCPTConverter, IIndependenceCausalInfluenceChecker {
 	
+	public static final float DEFAULT_PROBABILITY_ERROR_MARGIN = 0.00005f;
 
 	/** Differences in probability within this margin will be considered ignorable in comparison */
-	private float probErrorMargin = 0.00005f;
+	private float probErrorMargin = DEFAULT_PROBABILITY_ERROR_MARGIN;
 
 	/**
 	 * Default constructor

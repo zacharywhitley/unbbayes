@@ -30,6 +30,8 @@ public class ICIFactorizationJunctionTreeAlgorithm extends JunctionTreeAlgorithm
 	
 	/** Lazily initialized at {@link #getReturnToEditModeListener()} */
 	private AncestorListener returnToEditModeListener = null;
+
+	private float probErrorMargin = NoisyMaxCPTConverter.DEFAULT_PROBABILITY_ERROR_MARGIN;
 	
 	/**
 	 * Default constructor
@@ -82,7 +84,9 @@ public class ICIFactorizationJunctionTreeAlgorithm extends JunctionTreeAlgorithm
 		});
 		
 		// factorize() will use this handler
-		getFactorizationHandlerList().add(new NoisyMaxTemporalFactorizationHandler());
+		NoisyMaxTemporalFactorizationHandler handler = new NoisyMaxTemporalFactorizationHandler();
+		handler.setProbErrorMargin(getProbErrorMargin() );
+		getFactorizationHandlerList().add(handler);
 	}
 
 
@@ -212,6 +216,32 @@ public class ICIFactorizationJunctionTreeAlgorithm extends JunctionTreeAlgorithm
 			}
 		}
 		this.returnToEditModeListener = returnToEditModeListener;
+	}
+
+
+	/**
+	 * @return the probErrorMargin : error margin to be passed to {@link NoisyMaxTemporalFactorizationHandler}
+	 * when it is instantiated at {@link #init()}. Default is {@link NoisyMaxCPTConverter#DEFAULT_PROBABILITY_ERROR_MARGIN}.
+	 */
+	public float getProbErrorMargin() {
+		return probErrorMargin;
+	}
+
+	/**
+	 * @param probErrorMargin : error margin to be passed to {@link NoisyMaxTemporalFactorizationHandler}
+	 * when it is instantiated at {@link #init()}. Default is {@link NoisyMaxCPTConverter#DEFAULT_PROBABILITY_ERROR_MARGIN}.
+	 */
+	public void setProbErrorMargin(float probErrorMargin) {
+		this.probErrorMargin = probErrorMargin;
+		
+		// update handler list if applicable
+		if (this.getFactorizationHandlerList() != null) {
+			for (ICINodeFactorizationHandler handler : getFactorizationHandlerList()) {
+				if (handler instanceof NoisyMaxTemporalFactorizationHandler) {
+					((NoisyMaxTemporalFactorizationHandler) handler).setProbErrorMargin(probErrorMargin);
+				}
+			}
+		}
 	}
 	
 	

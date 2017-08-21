@@ -40,6 +40,9 @@ public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizatio
 	private Map<INode, List<INode>> leakBackup;
 	private Map<INode, List<INode>> divorcingNodesBackup;
 
+
+	private float probErrorMargin = NoisyMaxCPTConverter.DEFAULT_PROBABILITY_ERROR_MARGIN;
+
 	/**
 	 * Default constructor
 	 */
@@ -484,6 +487,7 @@ public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizatio
 	public IIndependenceCausalInfluenceChecker getNoisyMaxCPTChecker() {
 		if (noisyMaxCPTChecker == null) {
 			noisyMaxCPTChecker = new NoisyMaxCPTConverter();
+			((NoisyMaxCPTConverter)noisyMaxCPTChecker).setProbErrorMargin(getProbErrorMargin() );
 		}
 		return noisyMaxCPTChecker;
 	}
@@ -493,6 +497,28 @@ public class NoisyMaxTemporalFactorizationHandler implements ICINodeFactorizatio
 	 */
 	public void setNoisyMaxCPTChecker(IIndependenceCausalInfluenceChecker noisyMaxCPTConverter) {
 		this.noisyMaxCPTChecker = noisyMaxCPTConverter;
+	}
+
+	/**
+	 * @return the probErrorMargin : error margin to be passed to {@link NoisyMaxCPTConverter}
+	 * when it is instantiated at {@link #getNoisyMaxCPTChecker()}. Default is {@link NoisyMaxCPTConverter#DEFAULT_PROBABILITY_ERROR_MARGIN}.
+	 */
+	public float getProbErrorMargin() {
+		return probErrorMargin;
+	}
+
+	/**
+	 * @param probErrorMargin : error margin to be passed to {@link NoisyMaxCPTConverter}
+	 * when it is instantiated at {@link #getNoisyMaxCPTChecker()}. Default is {@link NoisyMaxCPTConverter#DEFAULT_PROBABILITY_ERROR_MARGIN}.
+	 */
+	public void setProbErrorMargin(float probErrorMargin) {
+		this.probErrorMargin = probErrorMargin;
+		
+		// update ICI checker if applicable
+		IIndependenceCausalInfluenceChecker checker = getNoisyMaxCPTChecker();
+		if (checker != null && (checker instanceof NoisyMaxCPTConverter)) {
+			((NoisyMaxCPTConverter)checker).setProbErrorMargin(probErrorMargin);
+		}
 	}
 
 }
