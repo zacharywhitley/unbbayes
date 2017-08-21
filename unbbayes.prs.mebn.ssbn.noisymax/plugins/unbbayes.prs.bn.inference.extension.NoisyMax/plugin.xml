@@ -1,0 +1,45 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is a plugin descriptor for noisy-max feature -->
+<plugin id="unbbayes.prs.bn.inference.extension.NoisyMax" version="0.1.1">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+    </requires>
+    <runtime>
+        <library type="resources" path="icons/" id="icons">
+        	<export prefix="*"/>
+        </library>
+        <!-- It seems that loaders does not work as expected on jar files -->
+        <!-- If you change/add the libraries, change/add these library declaration too -->
+        <library id="unbbayes.prs.bn.inference.extension.NoisyMax" path="unbbayes.prs.bn.inference.extension.NoisyMax-0.1.1.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+    </runtime>
+    
+    <!-- Plugin for factorizing noisy-max nodes to multiple nodes, in order to optimize for junction tree algorithm -->
+    <extension plugin-id="unbbayes.util.extension.core" point-id="InferenceAlgorithm" id="NoisyMaxFactorization">
+        <parameter id="class" value="unbbayes.util.extension.bn.inference.TemporalFactorizationInferenceAlgorithmOptionPanel" />
+    </extension>
+    
+    <!-- Plugin to include a new panel to probabilistic nodes so that users are aided to edit CPTs of noisy-max distribution -->
+    <extension plugin-id="unbbayes.util.extension.core" point-id="ProbabilityFunctionPanel" id="NoisyMax">
+        <parameter id="class" value="unbbayes.prs.bn.ProbabilisticNode"/>
+        <parameter id="name" value="Noisy-Max"/>
+		<parameter id="panelBuilder" value="unbbayes.gui.table.extension.NoisyMaxPanelBuilder"/>
+		<parameter id="description" value="Panel for noisy-max distribution" />
+		<parameter id="icon" value="icon.gif" />
+    </extension>
+    
+    <!-- 
+    <extension plugin-id="unbbayes.util.extension.core" point-id="PluginNode" id="NoisyMaxNode">
+        <parameter id="class" value="unbbayes.prs.bn.NoisyMaxNode"/>
+        <parameter id="shapeClass" value="unbbayes.draw.extension.ProbabilisticNodeUShapeAdapterBuilder"/>
+		<parameter id="panelBuilder" value="unbbayes.gui.table.extension.NoisyMaxPanelBuilder"/>
+        <parameter id="name" value="NoisyMax"/>
+		<parameter id="description" value="Node for Noisy-Max" />
+		<parameter id="icon" value="icon.gif" />
+		<parameter id="cursor" value="cursor.gif" />
+    </extension>
+     -->
+     
+</plugin>

@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is the plugin descriptor for UnBBayes' MEBN to msbn converter. -->
+<plugin id="unbbayes.prs.mebn.ssbn.noisymax" version="0.0.1">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+        <import plugin-id="unbbayes.prs.mebn"/>
+        <import plugin-id="unbbayes.prs.bn.inference.extension.NoisyMax" plugin-version="0.1.1"/>
+        
+    </requires>
+    <runtime>
+        <library type="resources" path="icons/" id="icons">
+        	<export prefix="*"/>
+        </library>
+        <library type="resources" path="resources/" id="resources">
+        	<export prefix="*"/>
+        </library>
+        <!-- It seems that loaders does not work as expected on jar files -->
+        <!-- If you change/add the libraries, change/add these library declaration too -->
+        <library id="unbbayes.prs.mebn.ssbn.noisymax" path="unbbayes.prs.mebn.ssbn.noisymax-0.0.1.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+    
+    </runtime>
+    
+    <extension plugin-id="unbbayes.prs.mebn" point-id="SSBN" id="NoisyMaxSSBN">
+        <parameter id="class" value="unbbayes.prs.mebn.ssbn.extension.noisyMax.NoisyMaxSSBNAlgorithmBuilder" />
+        <parameter id="name" value="NoisyMaxSSBN" />
+		<parameter id="optionPanel" value="unbbayes.gui.mebn.extension.noisymax.NoisyMaxSSBNOptionPanelBuilder" />
+    </extension>
+</plugin>

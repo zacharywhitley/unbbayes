@@ -1,0 +1,51 @@
+% UBF file header
+Version=0.04
+PrOwl="BinaryOR.owl"
+
+% UBF MTheory declaration
+MTheory=MEBN
+NextMFrag=2
+NextResident=3
+NextInput=1
+NextContext=1
+NextEntity=1
+
+% UBF MFrags and Nodes declaration
+
+% MFrag
+MFrag=DMFrag1
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=Parent
+Type=DomainResidentNode
+Position=112.0,121.0
+Size=99,60
+Color=-66914
+PossibleValuesOrder=false,true,absurd
+
+Node=ORTest
+Type=DomainResidentNode
+Position=108.0,284.0
+Size=112,60
+Color=-66914
+PossibleValuesOrder=false,true,absurd
+
+% Ordinary Variables
+
+
+Node=x
+Type=OrdinalVar
+Position=45.0,9.0
+Size=126,60
+Color=-5178237
+
+Node=y
+Type=OrdinalVar
+Position=163.0,12.0
+Size=126,60
+Color=-5178237
+
+% Object Entity Instances
