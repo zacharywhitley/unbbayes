@@ -22,6 +22,7 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.math3.distribution.GammaDistribution;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;
@@ -34,6 +35,8 @@ import cc.mallet.types.Dirichlet;
 import cc.mallet.util.Randoms;
 
 /**
+ * This class performs population synthesis (simulates people in organizations)
+ * based on Tree-Augmented Naive Bayes model.
  * @author Shou Matsumoto
  *
  */
@@ -66,7 +69,10 @@ public class ContingencyMatrixUserActivitySimulator {
 	
 	private boolean isToSampleTargetExact = false;
 	
+	private boolean isUnmutableTarget = true;
+	
 	private double[] inputTimeSliceDistribution = {.5,.5};
+	private double[] partialInputTimeSliceDistribution = {.5,.5};
 	
 	private List<String> targetStateLabels = new ArrayList<String>();
 	{
@@ -80,6 +86,7 @@ public class ContingencyMatrixUserActivitySimulator {
 	
 	
 	private List<String> inputTimeSliceLabel = new ArrayList<String>();
+	private List<String> partialInputTimeSliceLabel = new ArrayList<String>();
 	
 	private List<String> outputTimeSliceLabels = new ArrayList<String>();
 	
@@ -91,6 +98,7 @@ public class ContingencyMatrixUserActivitySimulator {
 	private Map<String, Dirichlet> dirichletCache;
 
 	private boolean is1stVarInRow = true;
+	private Map<Integer, Integer> userTargetMap;
 
 	public ContingencyMatrixUserActivitySimulator() {}
 	
@@ -156,20 +164,40 @@ public class ContingencyMatrixUserActivitySimulator {
 			timeSliceFolder = new File(getOutputFolder(),timeSliceLabel);
 			Files.createDirectories(timeSliceFolder.toPath());
 		}
+		
+		// append labels of input (known) time slices with partially known (only some variables/detectors are known) time slices
+		List<String> inputTimeSliceLabelsAll = new ArrayList<String>(getInputTimeSliceLabels());
+		inputTimeSliceLabelsAll.addAll(getPartialInputTimeSliceLabels());
+		
+		// create a probability distribution of perfect data time slices (getInputTimeSliceLabels()) and partial data time slices (getPartialInputTimeSliceLabels()) together
+		double[] inputTimeSliceDistributionAll = mergeDistributions(getInputTimeSliceDistribution(), getPartialInputTimeSliceDistribution());
+		
 		for (int organization = 0; organization < getNumOrganizations(); organization++) {
-			int indexOfTimeSliceInInput = getInputTimeSliceLabels().indexOf(timeSliceLabel);
+			int indexOfTimeSliceInInput = inputTimeSliceLabelsAll.indexOf(timeSliceLabel);
 			if (indexOfTimeSliceInInput < 0) {
 				// randomly pick input data timeSlice, because we don't have data to simulate current time slice (i.e. use random time slice to simulate current one)
-				double[] distribution = normalize(getInputTimeSliceDistribution());
-				if (distribution.length > getInputTimeSliceLabels().size()) {
+				double[] distribution = normalize(inputTimeSliceDistributionAll);
+				if (distribution.length > inputTimeSliceLabelsAll.size()) {
 					throw new IllegalArgumentException("Input timeSlice distribution had size " + distribution.length
-							+ ", while number of labels of input timeSlices provided was " + getInputTimeSliceLabels().size());
+							+ ", while number of labels of input timeSlices (with partially known input timeSlices) provided was " + inputTimeSliceLabelsAll.size());
 				}
 //				indexOfTimeSliceInInput = getRandom().nextInt(getInputTimeSliceLabels().size());
 				indexOfTimeSliceInInput = getRandom().nextDiscrete(distribution);
 			}
-			String dataTimeSlice = getInputTimeSliceLabels().get(indexOfTimeSliceInInput);	// label of time slice picked for simulating current month
+			String dataTimeSlice = inputTimeSliceLabelsAll.get(indexOfTimeSliceInInput);	// label of time slice picked for simulating current month
 			
+			// also pick (in advance) which known timeslice to use if we are simulating a partially known timeslice
+			int indexOfTimeSliceInKnownInput = getInputTimeSliceLabels().indexOf(timeSliceLabel);
+			if (indexOfTimeSliceInKnownInput < 0) {
+				// randomly pick input data timeSlice, because we don't have data to simulate current time slice (i.e. use random time slice to simulate current one)
+				double[] distribution = normalize(getInputTimeSliceDistribution());
+				if (distribution.length > getInputTimeSliceLabels().size()) {
+					throw new IllegalArgumentException("Input timeSlice distribution had size " + distribution.length
+							+ ", while number of labels of input timeSlices provided was " + inputTimeSliceLabelsAll.size());
+				}
+				indexOfTimeSliceInKnownInput = getRandom().nextDiscrete(distribution);
+			}
+			String dataTimeSliceKnown = getInputTimeSliceLabels().get(indexOfTimeSliceInKnownInput);	// label of time slice picked for simulating current month for some variables not present in partial data
 			
 			// read csv files in order to get number of users for each state of target/class variable
 			// if we are using discrete vars, instantiate a list that will store their contingency tables. Keep it null if we are not using such discrete vars
@@ -181,7 +209,7 @@ public class ContingencyMatrixUserActivitySimulator {
 				if (isToUseDiscreteVars) {
 					// read from discrete (binary) vars file
 					// csv file of discrete variables has this format
-					String fileName = getFileNamePrefix() + dataTimeSlice + getTimeSliceVarSeparator() + discreteVar1 + getVsLabel() + discreteVar2 + getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix();
+					String fileName = getFileNamePrefix() + dataTimeSliceKnown + getTimeSliceVarSeparator() + discreteVar1 + getVsLabel() + discreteVar2 + getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix();
 					PotentialTable table = null;
 					if (new File(getInputFolder(),fileName).exists()) {
 						table = readTableFromCSV(fileName , discreteVar1, discreteVar2, getInitialTableCount(), !is1stVarInRow());
@@ -198,15 +226,21 @@ public class ContingencyMatrixUserActivitySimulator {
 					// keep table in memory
 					discreteVarTablesByTargetState.add(table);
 				} else {
-					// read target var counts from csv of any continuous var of current timeSlice (use 1st var)
+					// read target var counts from csv of any continuous var of current timeSlice (pick 1st var)
 					// csv file has this format
-					String fileName = getFileNamePrefix() + dataTimeSlice + getTimeSliceVarSeparator() + discreteVar1 + getVsLabel() + getContinuousVarsLabels().get(0) 
+//					String fileName = getFileNamePrefix() + dataTimeSlice + getTimeSliceVarSeparator() + discreteVar1 + getVsLabel() + getContinuousVarsLabels().get(0) 
+//							+ getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix(); 
+					// read target var counts from csv of any continuous var of current timeSlice (pick var randomly)
+					// csv file has this format
+					String fileName = getFileNamePrefix() + dataTimeSliceKnown + getTimeSliceVarSeparator() + discreteVar1 + getVsLabel() + getContinuousVarsLabels().get(getRandom().nextInt(getContinuousVarsLabels().size())) 
 							+ getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix(); 
 					if (new File(getInputFolder(),fileName).exists()) {
 						targetCounts.add(readTotalCountContinuous(fileName));
 					} else {
 						// there is no data timeSlice specified. Try without dataTimeSlice
-						fileName = getFileNamePrefix() + discreteVar1 + getVsLabel() + getContinuousVarsLabels().get(0) 
+//						fileName = getFileNamePrefix() + discreteVar1 + getVsLabel() + getContinuousVarsLabels().get(0) 
+//								+ getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix(); 
+						fileName = getFileNamePrefix() + discreteVar1 + getVsLabel() + getContinuousVarsLabels().get(getRandom().nextInt(getContinuousVarsLabels().size())) 
 								+ getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix(); 
 						// fill count with default count (to be calculated later). Use zero, so that we can use getSum to obtain the counts we know so far.
 						targetCounts.add(0d);	
@@ -260,7 +294,7 @@ public class ContingencyMatrixUserActivitySimulator {
 			}
 			
 			// print the header
-			printer.print("user,target");
+			printer.print("UserID,Target");
 			for (String var : getDiscreteVarsLabels()) {
 				printer.print("," + var);
 			}
@@ -276,12 +310,12 @@ public class ContingencyMatrixUserActivitySimulator {
 				
 				// sample target. 
 //				int targetState = getRandom().nextDiscrete(dirichlet.nextDistribution());
-				int targetState = sampleTargetState(virtualCountCoef, targetCounts);
+				int targetState = sampleTargetState(virtualCountCoef, targetCounts, user);
 				
 				
 				String targetLabel = getTargetStateLabels().get(targetState);	// prepare in advance the label of target state, to be used to access respective files
 				
-				if (getTargetStateLabels().size() == 2) {
+				if (isBooleanTarget(getTargetStateLabels())) {
 					// binary target. Use 0 or 1
 					printer.print("," + targetState);
 				} else {
@@ -317,21 +351,25 @@ public class ContingencyMatrixUserActivitySimulator {
 						conditionVariableName = discreteVar2;
 					}
 					
-					String fileName = getFileNamePrefix() + dataTimeSlice + getTimeSliceVarSeparator() + conditionVariableName + getVsLabel() + continuousVarName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
+					// value of variable to print in this iteration
 					double sampleValue = Float.NaN;
-					try {
+					
+					// first, try to use time slice containing partially known data. If we fail, then we use the time slice with perfect data.
+					String fileName = getFileNamePrefix() + dataTimeSlice + getTimeSliceVarSeparator() + conditionVariableName + getVsLabel() + continuousVarName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
+					if (new File(getInputFolder(),fileName).exists()) {
 						sampleValue = getSampleContinuous(fileName, virtualCountCoef, discreteVarNameToValueMap.get(conditionVariableName), getInitialTableCount());
-					} catch (IOException e) {
-						// try without dataTimeSlice
-						fileName = getFileNamePrefix() + conditionVariableName + getVsLabel() + continuousVarName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
-						try {
+					} else {
+						// try perfect data
+						fileName = getFileNamePrefix() + dataTimeSliceKnown + getTimeSliceVarSeparator() + conditionVariableName + getVsLabel() + continuousVarName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
+						if (new File(getInputFolder(),fileName).exists()) {
 							sampleValue = getSampleContinuous(fileName, virtualCountCoef, discreteVarNameToValueMap.get(conditionVariableName), getInitialTableCount());
-						} catch (IOException e2) {
-							e.printStackTrace();
-							throw e2;
+						} else {
+							// try without dataTimeSlice
+							fileName = getFileNamePrefix() + conditionVariableName + getVsLabel() + continuousVarName + getTargetLabelSeparator() + targetLabel  + getFileNameSuffix(); // csv file has this format
+							sampleValue = getSampleContinuous(fileName, virtualCountCoef, discreteVarNameToValueMap.get(conditionVariableName), getInitialTableCount());
 						}
 					}
-					printer.print(","+sampleValue);
+					printer.print(","+((float)sampleValue));
 				}
 				
 				printer.println();
@@ -342,6 +380,55 @@ public class ContingencyMatrixUserActivitySimulator {
 			}
 		}
 		
+	}
+
+	/**
+	 * Takes 2 probability distributions and merges into one.
+	 * @param inputTimeSliceDistribution 
+	 * @param partialInputTimeSliceDistribution
+	 * @return merged probability distribution
+	 */
+	protected double[] mergeDistributions(double[] inputTimeSliceDistribution, double[] partialInputTimeSliceDistribution) {
+		// instantiate the variable to return
+		double[] ret = new double[inputTimeSliceDistribution.length + partialInputTimeSliceDistribution.length];
+		Arrays.fill(ret, Double.NaN);	// initialize with invalid value, so that we can quickly identify problems
+		
+		// copy content of one of the array, weighted by its length
+		for (int i = 0; i < inputTimeSliceDistribution.length; i++) {
+			ret[i] = inputTimeSliceDistribution[i] * inputTimeSliceDistribution.length;
+		}
+		
+		// do the same with the other
+		for (int i = 0; i < partialInputTimeSliceDistribution.length; i++) {
+			// fill from end of previous loop
+			ret[i + inputTimeSliceDistribution.length] = partialInputTimeSliceDistribution[i] * partialInputTimeSliceDistribution.length;
+		}
+		
+		// normalize, to make sure sum is 1
+		return this.normalize(ret);
+	}
+
+	/**
+	 * @param targetStateLabels
+	 * @return : true if argument is {"FALSE", "TRUE"} or {"NO", "YES"} (case insensitive), false otherwise.
+	 */
+	protected boolean isBooleanTarget(List<String> targetStateLabels) {
+		if (getTargetStateLabels().size() != 2) {
+			return false;
+		}
+		
+		String label1 = targetStateLabels.get(0).trim();
+		String label2 = targetStateLabels.get(1).trim();
+		if (label1.equalsIgnoreCase("FALSE")
+				&& label2.equalsIgnoreCase("TRUE")) {
+			return true;
+		}
+		if (label1.equalsIgnoreCase("NO")
+				&& label2.equalsIgnoreCase("YES")) {
+			return true;
+		}
+		
+		return false;
 	}
 
 	/**
@@ -426,9 +513,21 @@ public class ContingencyMatrixUserActivitySimulator {
 	 * @param targetCounts : counts of target/class variable.
 	 * If virtualCount is negative or {@link #isToSampleTargetExact()}, then values in this array will be decremented
 	 * as samples are generated (i.e. sampling without substitution).
+	 * @param user : user id to be used as a reference
 	 * @return sample of target variable.
 	 */
-	protected int sampleTargetState(float virtualCountCoef, List<Double> targetCounts) {
+	protected int sampleTargetState(float virtualCountCoef, List<Double> targetCounts, int user) {
+		
+		if (isUnmutableTarget()) {
+			// check cache
+			Map<Integer, Integer> userTargetMap = getUserTargetMap();
+			if (userTargetMap == null) {
+				userTargetMap = new HashMap<Integer, Integer>();
+				setUserTargetMap(userTargetMap);
+			} else if (userTargetMap.containsKey(user)) {
+				return userTargetMap.get(user);
+			}
+		}
 		
 		if (isToSampleTargetExact() || virtualCountCoef < 0) {
 			
@@ -443,6 +542,16 @@ public class ContingencyMatrixUserActivitySimulator {
 				Debug.println(getClass(), "No more counts in target/class variable to pick. Picking uniformly: " + state);
 			} else {
 				targetCounts.set(state, targetCounts.get(state) - 1);		// decrease count of that index (equivalent to removing the sample)
+			}
+			
+			// update mapping of user-target
+			if (isUnmutableTarget()) {
+				Map<Integer, Integer> userTargetMap = getUserTargetMap();
+				if (userTargetMap == null) {
+					userTargetMap = new HashMap<Integer, Integer>();
+				} 
+				userTargetMap.put(user, state);
+				setUserTargetMap(userTargetMap);
 			}
 			
 			return state;
@@ -474,7 +583,20 @@ public class ContingencyMatrixUserActivitySimulator {
 				getDirichletCache().put(targetCounts + "," + virtualCountCoef, dirichlet);
 			}
 			
-			return  getRandom().nextDiscrete(dirichlet.nextDistribution());
+			// sample from dirichlet
+			int state = getRandom().nextDiscrete(dirichlet.nextDistribution());
+
+			// update mapping of user-target
+			if (isUnmutableTarget()) {
+				Map<Integer, Integer> userTargetMap = getUserTargetMap();
+				if (userTargetMap == null) {
+					userTargetMap = new HashMap<Integer, Integer>();
+				} 
+				userTargetMap.put(user, state);
+				setUserTargetMap(userTargetMap);
+			}
+			
+			return  state;
 		}
 
 	}
@@ -546,6 +668,7 @@ public class ContingencyMatrixUserActivitySimulator {
 		
 		// read csv file
 		Map<String, List<Double>> map = readContinuousVarCSVFile(fileName, conditionState, initialCounts);
+		
 		
 		Dirichlet dirichlet = getDirichletCache().get(fileName + "_" + virtualCountCoef + "_" + ((conditionState != null)?conditionState:"") + "_" + initialCounts);
 		double[] alpha = null;	// alpha parameters of dirichlet. This can also be used as prob of multinomial if we don't want to use dirichlet
@@ -910,6 +1033,19 @@ public class ContingencyMatrixUserActivitySimulator {
 	public void setInputTimeSliceLabels(List<String> inputTimeSliceLabel) {
 		this.inputTimeSliceLabel = inputTimeSliceLabel;
 	}
+	
+	/**
+	 * @return partialInputTimeSliceLabel 
+	 */
+	public List<String> getPartialInputTimeSliceLabels() {
+		return this.partialInputTimeSliceLabel;
+	}
+	/**
+	 * @param partialInputTimeSlices the partialInputTimeSliceLabel to set
+	 */
+	public void setPartialInputTimeSliceLabels(List<String> partialInputTimeSlices) {
+		this.partialInputTimeSliceLabel = partialInputTimeSlices;
+	}
 
 	/**
 	 * @return the outputTimeSliceLabel
@@ -1231,6 +1367,8 @@ public class ContingencyMatrixUserActivitySimulator {
 	 * @return the multinomial probability distribution of a timeSlice in {@link #getInputTimeSliceLabels()}
 	 * to be randomly picked as input data when generating samples of timeSlices when we don't have respective input data
 	 * (i.e. timeSlices in {@link #getOutputTimeSliceLabels()} which is not in {@link #getInputTimeSliceLabels()}).
+	 * These timeslices are expected to have perfect data available.
+	 * This data will be used when the variable being simulated is not present in {@link #getPartialInputTimeSliceDistribution()}.
 	 */
 	public double[] getInputTimeSliceDistribution() {
 		return inputTimeSliceDistribution;
@@ -1240,9 +1378,30 @@ public class ContingencyMatrixUserActivitySimulator {
 	 * @param inputTimeSliceDistribution : the multinomial probability distribution of a timeSlice in {@link #getInputTimeSliceLabels()}
 	 * to be randomly picked as input data when generating samples of timeSlices when we don't have respective input data
 	 * (i.e. timeSlices in {@link #getOutputTimeSliceLabels()} which is not in {@link #getInputTimeSliceLabels()}).
+	 * These timeslices are expected to have perfect data available.
+	 * This data will be used when the variable being simulated is not present in {@link #getPartialInputTimeSliceDistribution()}.
 	 */
 	public void setInputTimeSliceDistribution(double[] inputTimeSliceDistribution) {
 		this.inputTimeSliceDistribution = inputTimeSliceDistribution;
+	}
+	
+	/**
+	 * @return inputTimeSliceDistribution : the multinomial probability distribution of a timeSlice in {@link #getPartialInputTimeSliceLabels()}
+	 * to be randomly picked as input data when generating samples of timeSlices when we don't have respective input data
+	 * (i.e. timeSlices in {@link #getOutputTimeSliceLabels()} which is not in {@link #getInputTimeSliceLabels()} or {@link #getPartialInputTimeSliceLabels()}).
+	 * If the variable being simulated is not present in this timeslice, then {@link #getInputTimeSliceDistribution()} will be used instead.
+	 */
+	public double[] getPartialInputTimeSliceDistribution() {
+		return this.partialInputTimeSliceDistribution;
+	}
+	/**
+	 * @param inputTimeSliceDistribution : the multinomial probability distribution of a timeSlice in {@link #getPartialInputTimeSliceLabels()}
+	 * to be randomly picked as input data when generating samples of timeSlices when we don't have respective input data
+	 * (i.e. timeSlices in {@link #getOutputTimeSliceLabels()} which is not in {@link #getInputTimeSliceLabels()} or {@link #getPartialInputTimeSliceLabels()}).
+	 * If the variable being simulated is not present in this timeslice, then {@link #getInputTimeSliceDistribution()} will be used instead.
+	 */
+	public void setPartialInputTimeSliceDistribution(double[] inputTimeSliceDistribution) {
+		this.partialInputTimeSliceDistribution = inputTimeSliceDistribution;
 	}
 
 	/**
@@ -1277,6 +1436,78 @@ public class ContingencyMatrixUserActivitySimulator {
 	public void setTotalCounts(int totalCounts) {
 		this.totalCounts = totalCounts;
 	}
+	
+	/**
+	 * Wrapper that implements dirichlet distribution.
+	 * It may simply delegate to other classes
+	 * @author Shou Matsumoto
+	 *
+	 */
+	public class AlternativeDirichlet {
+
+		private GammaDistribution[] gammas;
+		private double[] lastSample = null;
+		
+		/**
+		 * Default constructor initializing fields
+		 * @param alphas : alpha arguments of dirichlet distribution
+		 */
+		public AlternativeDirichlet(double[] alphas) {
+			gammas = new GammaDistribution[alphas.length];
+			for (int i = 0; i < alphas.length; i++) {
+				GammaDistribution gamma = new GammaDistribution(alphas[i], 1);
+				gammas[i] = gamma;
+			}
+			lastSample = new double[alphas.length];
+			Arrays.fill(lastSample, 0);
+		}
+
+		/**
+		 * @param i : index of array of alpha arguments
+		 * @return The i-th alpha argument of this dirichlet distribution
+		 */
+		public double alpha(int i) {
+			return gammas[i].getShape();
+		}
+
+		/**
+		 * @return how many alpha arguments this distribution has
+		 */
+		public int size() {
+			return gammas.length;
+		}
+
+		/**
+		 * @return a sample of this dirichlet distribution based on {@link #alpha(int)}.
+		 * It reuses {@link #getLastSample()} to reduce space
+		 */
+		public double[] nextDistribution() {
+			double sum = 0;
+			for (int i = 0; i < gammas.length; i++) {
+				double sample = gammas[i].sample();
+				lastSample[i] = sample;
+				sum += sample;
+			}
+			for (int i = 0; i < lastSample.length; i++) {
+				lastSample[i] /= sum;
+			}
+			return lastSample;
+		}
+
+		/**
+		 * @return the lastSample
+		 */
+		public double[] getLastSample() {
+			return lastSample;
+		}
+
+		/**
+		 * @param lastSample the lastSample to set
+		 */
+		public void setLastSample(double[] lastSample) {
+			this.lastSample = lastSample;
+		}
+	}
 
 	/**
 	 * @param args
@@ -1306,6 +1537,8 @@ public class ContingencyMatrixUserActivitySimulator {
 				+ "(default \"3a,3b,3c,4a,4b,4c,5a,6a,6b\"). This must match with vars that appear in names of csv files.");
 		options.addOption("inputTimeSlices","input-timeSlice-labels", true, "Comma-separated list of timeSlice labels that we have input data (e.g. \"JAN,FEB\", default is empty)."
 				+ " This must match with timeSlices that appear in names of csv files.");
+		options.addOption("partialInputTimeSlices","partial-input-timeSlice-labels", true, "Comma-separated list of timeSlice labels that we have input data for some of the variables (e.g. \"JAN,FEB\", default is empty)."
+				+ " This must match with timeSlices that appear in names of csv files.");
 		options.addOption("allTimeSlices","all-output-timeSlice-labels", true, "Comma-separated list of all timeSlice labels to output (e.g. \"JAN,FEB,MAR,APR,MAY,JUN,JUL,AUG,SEP\" , default is empty)."
 				+ " This must match with timeSlices that appear in names of csv files.");
 		options.addOption("virtCountCoefs","timeSlice-virtual-count-coefficients", true, "Comma-separated list of numbers (virtual counts) to be multiplied to number of users of each timeSlice when sampling from dirichlet-multinomial"
@@ -1317,6 +1550,9 @@ public class ContingencyMatrixUserActivitySimulator {
 		options.addOption("inputDist","input-timeSlice-distribution", true, "Comma-separated list of probabilities (default is \".5,.5\"). "
 				+ "This is used to randomly pick an input timeSlice when simulating timeSlices with no input data. "
 				+ "The length of this list must match with list provided in -inputTimeSlices.");
+		options.addOption("partialInputDist","partial-input-timeSlice-distribution", true, "Comma-separated list of probabilities (default is \".5,.5\"). "
+				+ "This is used to randomly pick an input timeSlice with partial data (see -partialInputTimeSlices) when simulating timeSlices with no input data. "
+				+ "The length of this list must match with list provided in -partialInputTimeSlices.");
 		options.addOption("transpose","transpose-discrete-vars-table", true, "If this argument is specified, csv files of contingency tables of discrete variables will be consided to have 1st var as column and 2nd var as rows."
 				+ "If unspecified, then 1st variable will be rows, and 2nd variable will be column.");
 		options.addOption("h","help", false, "Help.");
@@ -1392,6 +1628,9 @@ public class ContingencyMatrixUserActivitySimulator {
 		if (cmd.hasOption("inputTimeSlices")) {
 			sim.setInputTimeSliceLabels(parseListString(cmd.getOptionValue("inputTimeSlices")));
 		}
+		if (cmd.hasOption("partialInputTimeSlices")) {
+			sim.setPartialInputTimeSliceLabels(parseListString(cmd.getOptionValue("partialInputTimeSlices")));
+		}
 		if (cmd.hasOption("allTimeSlices")) {
 			sim.setOutputTimeSliceLabels(parseListString(cmd.getOptionValue("allTimeSlices")));
 		}
@@ -1404,6 +1643,9 @@ public class ContingencyMatrixUserActivitySimulator {
 		if (cmd.hasOption("inputDist")) {
 			sim.setInputTimeSliceDistribution(parseArrayDouble(cmd.getOptionValue("inputDist")));
 		}
+		if (cmd.hasOption("partialInputDist")) {
+			sim.setPartialInputTimeSliceDistribution(parseArrayDouble(cmd.getOptionValue("partialInputDist")));
+		}
 		
 		if (cmd.hasOption("transpose")) {
 			sim.set1stVarInRow(!Boolean.parseBoolean(cmd.getOptionValue("transpose")));
@@ -1414,6 +1656,40 @@ public class ContingencyMatrixUserActivitySimulator {
 		}
 		
 		sim.runAll();
+	}
+
+	/**
+	 * @return the isUnmutableTarget
+	 */
+	public boolean isUnmutableTarget() {
+		return isUnmutableTarget;
+	}
+
+	/**
+	 * @param isUnmutableTarget the isUnmutableTarget to set
+	 */
+	public void setUnmutableTarget(boolean isUnmutableTarget) {
+		this.isUnmutableTarget = isUnmutableTarget;
+	}
+
+	/**
+	 * @return the userTargetMap : mapping of user id to target. If set to null, target will be picked randomly.
+	 * If not null, then this mapping will be used. 
+	 * @see #sampleTargetState(float, List, int)
+	 * @see #isUnmutableTarget()
+	 */
+	public Map<Integer, Integer> getUserTargetMap() {
+		return userTargetMap;
+	}
+
+	/**
+	 * @param userTargetCache : mapping of user id to target. If set to null, target will be picked randomly.
+	 * If not null, then this mapping will be used. 
+	 * @see #sampleTargetState(float, List, int)
+	 * @see #isUnmutableTarget()
+	 */
+	public void setUserTargetMap(Map<Integer, Integer> userTargetCache) {
+		this.userTargetMap = userTargetCache;
 	}
 
 
