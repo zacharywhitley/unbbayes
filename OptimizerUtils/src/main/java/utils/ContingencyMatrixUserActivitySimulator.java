@@ -4,6 +4,7 @@
 package utils;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -67,9 +68,11 @@ public class ContingencyMatrixUserActivitySimulator {
 	private String inputFolder = "input";
 	private String headerColumnKeyword = "lower";
 	
-	private boolean isToSampleTargetExact = false;
+	private String userDataFile = null;
 	
-	private boolean isUnmutableTarget = true;
+	private boolean isToSampleTargetExact = true;
+	
+	private boolean isImmutableTarget = true;
 	
 	private double[] inputTimeSliceDistribution = {.5,.5};
 	private double[] partialInputTimeSliceDistribution = {.5,.5};
@@ -98,7 +101,7 @@ public class ContingencyMatrixUserActivitySimulator {
 	private Map<String, Dirichlet> dirichletCache;
 
 	private boolean is1stVarInRow = true;
-	private Map<Integer, Integer> userTargetMap;
+	private Map<String, Integer> userTargetMap;
 
 	public ContingencyMatrixUserActivitySimulator() {}
 	
@@ -310,7 +313,7 @@ public class ContingencyMatrixUserActivitySimulator {
 				
 				// sample target. 
 //				int targetState = getRandom().nextDiscrete(dirichlet.nextDistribution());
-				int targetState = sampleTargetState(virtualCountCoef, targetCounts, user);
+				int targetState = sampleTargetState(virtualCountCoef, targetCounts, user, organization);
 				
 				
 				String targetLabel = getTargetStateLabels().get(targetState);	// prepare in advance the label of target state, to be used to access respective files
@@ -514,18 +517,89 @@ public class ContingencyMatrixUserActivitySimulator {
 	 * If virtualCount is negative or {@link #isToSampleTargetExact()}, then values in this array will be decremented
 	 * as samples are generated (i.e. sampling without substitution).
 	 * @param user : user id to be used as a reference
+	 * @param org : organization id to be used as reference
 	 * @return sample of target variable.
+	 * @throws IOException 
+	 * @throws NumberFormatException 
 	 */
-	protected int sampleTargetState(float virtualCountCoef, List<Double> targetCounts, int user) {
+	protected int sampleTargetState(float virtualCountCoef, List<Double> targetCounts, int user, final int org) throws NumberFormatException, IOException {
 		
-		if (isUnmutableTarget()) {
-			// check cache
-			Map<Integer, Integer> userTargetMap = getUserTargetMap();
+		// prepare the cache of users and target indexes.
+		Map<String, Integer> userTargetMap = getUserTargetMap();
+		
+		String key = org + "." + user;	// key to access organization/user in above map
+		
+		// if cache is empty and if there is a file to read target values from, then use such file (fill cache with such file)
+		if ((userTargetMap == null || userTargetMap.isEmpty() || !userTargetMap.containsKey(org + "." + 0)) 
+				&& getUserDataFile() != null 
+				&& !getUserDataFile().trim().isEmpty()) {
+			
+			
 			if (userTargetMap == null) {
-				userTargetMap = new HashMap<Integer, Integer>();
+				userTargetMap = new HashMap<String, Integer>();
+			} 
+			
+			// create a mapping from target label to target state number
+			Map<String, Integer> labelToIndexMap = new HashMap<String, Integer>();
+			List<String> labels = getTargetStateLabels();
+			for (int index = 0; index < labels.size(); index++) {
+				labelToIndexMap.put(labels.get(index), index);
+			}
+			
+			// extract the file to read
+			File userDataFile = new File(getUserDataFile().trim());
+			
+			// if it is a folder instead of file, extract file of current organization
+			if (userDataFile.isDirectory()) {
+				File[] filesMatchingOrg = userDataFile.listFiles(new FileFilter() {
+					public boolean accept(File pathname) {
+						try {
+							// extract the filename
+							String name = pathname.getName();
+							// assume that files have naming patter like <Timeslice>_<org>.csv
+							if (!name.matches("[a-zA-Z0-9]+_[0-9]+\\.csv")) {
+								return false;
+							}
+							// check the <org> part of <Timeslice>_<org>.csv
+							String orgString = name.substring(name.lastIndexOf('_')+1, name.lastIndexOf('.'));
+							return (Integer.parseInt(orgString) == org);
+						} catch (Exception e) {
+							e.printStackTrace();
+							System.err.println("Failed to handle file name " + pathname);
+						}
+						return false;
+					}
+				});
+				if (filesMatchingOrg == null || filesMatchingOrg.length <= 0) {
+					System.err.println("Could not file user data file for organization " + org + " from directory " + userDataFile);
+					userDataFile = null;
+				} else {
+					userDataFile = filesMatchingOrg[0];	// pick 1st file
+				}
+			}
+			if (userDataFile != null) {
+				// fill cache from file
+				CSVReader reader = new CSVReader(new FileReader(userDataFile));
+				String [] row = reader.readNext();	// skip header
+				while ((row = reader.readNext()) != null) {
+					// 1st column is user id, and 2nd column is target value
+					userTargetMap.put(org + "." + row[0].trim(), labelToIndexMap.get(row[1].trim()));
+				}
+				reader.close();
+			} else {
+				System.err.println("File for organization " + org + " was not specified. Sampling new user-target values.");
+			}
+			// update cache
+			setUserTargetMap(userTargetMap);
+		}
+		
+		if (isImmutableTarget()) {
+			// check cache
+			if (userTargetMap == null) {
+				userTargetMap = new HashMap<String, Integer>();
 				setUserTargetMap(userTargetMap);
-			} else if (userTargetMap.containsKey(user)) {
-				return userTargetMap.get(user);
+			} else if (userTargetMap.containsKey(key)) {
+				return userTargetMap.get(key);
 			}
 		}
 		
@@ -545,12 +619,11 @@ public class ContingencyMatrixUserActivitySimulator {
 			}
 			
 			// update mapping of user-target
-			if (isUnmutableTarget()) {
-				Map<Integer, Integer> userTargetMap = getUserTargetMap();
+			if (isImmutableTarget()) {
 				if (userTargetMap == null) {
-					userTargetMap = new HashMap<Integer, Integer>();
+					userTargetMap = new HashMap<String, Integer>();
 				} 
-				userTargetMap.put(user, state);
+				userTargetMap.put(key, state);
 				setUserTargetMap(userTargetMap);
 			}
 			
@@ -587,12 +660,11 @@ public class ContingencyMatrixUserActivitySimulator {
 			int state = getRandom().nextDiscrete(dirichlet.nextDistribution());
 
 			// update mapping of user-target
-			if (isUnmutableTarget()) {
-				Map<Integer, Integer> userTargetMap = getUserTargetMap();
+			if (isImmutableTarget()) {
 				if (userTargetMap == null) {
-					userTargetMap = new HashMap<Integer, Integer>();
+					userTargetMap = new HashMap<String, Integer>();
 				} 
-				userTargetMap.put(user, state);
+				userTargetMap.put(key, state);
 				setUserTargetMap(userTargetMap);
 			}
 			
@@ -1555,6 +1627,8 @@ public class ContingencyMatrixUserActivitySimulator {
 				+ "The length of this list must match with list provided in -partialInputTimeSlices.");
 		options.addOption("transpose","transpose-discrete-vars-table", true, "If this argument is specified, csv files of contingency tables of discrete variables will be consided to have 1st var as column and 2nd var as rows."
 				+ "If unspecified, then 1st variable will be rows, and 2nd variable will be column.");
+		options.addOption("immutableTarget","immutable-user-target", false, "If set, then target values of each user will not change over timeslices.");
+		options.addOption("userData","reuse-user-data-csv", true, "Specifies a CSV file in the same format of output csv to force target values of user ids to be the same.");
 		options.addOption("h","help", false, "Help.");
 		
 		CommandLine cmd = null;
@@ -1654,42 +1728,62 @@ public class ContingencyMatrixUserActivitySimulator {
 		if (cmd.hasOption("targetExact")) {
 			sim.setToSampleTargetExact(Boolean.parseBoolean(cmd.getOptionValue("targetExact")));
 		}
+		if (cmd.hasOption("userData")) {
+			sim.setUserDataFile(cmd.getOptionValue("userData"));
+		}
+		if (cmd.hasOption("immutableTarget")) {
+			sim.setImmutableTarget(true);
+		}
 		
 		sim.runAll();
 	}
 
 	/**
-	 * @return the isUnmutableTarget
+	 * @return the isImmutableTarget
 	 */
-	public boolean isUnmutableTarget() {
-		return isUnmutableTarget;
+	public boolean isImmutableTarget() {
+		return isImmutableTarget;
 	}
 
 	/**
-	 * @param isUnmutableTarget the isUnmutableTarget to set
+	 * @param isImmutableTarget the isImmutableTarget to set
 	 */
-	public void setUnmutableTarget(boolean isUnmutableTarget) {
-		this.isUnmutableTarget = isUnmutableTarget;
+	public void setImmutableTarget(boolean isImmutableTarget) {
+		this.isImmutableTarget = isImmutableTarget;
 	}
 
 	/**
-	 * @return the userTargetMap : mapping of user id to target. If set to null, target will be picked randomly.
+	 * @return the userTargetMap : mapping of org.user to target. If set to null, target will be picked randomly.
 	 * If not null, then this mapping will be used. 
 	 * @see #sampleTargetState(float, List, int)
-	 * @see #isUnmutableTarget()
+	 * @see #isImmutableTarget()
 	 */
-	public Map<Integer, Integer> getUserTargetMap() {
+	public Map<String, Integer> getUserTargetMap() {
 		return userTargetMap;
 	}
 
 	/**
-	 * @param userTargetCache : mapping of user id to target. If set to null, target will be picked randomly.
+	 * @param userTargetCache : mapping of "org.user" to target. If set to null, target will be picked randomly.
 	 * If not null, then this mapping will be used. 
 	 * @see #sampleTargetState(float, List, int)
-	 * @see #isUnmutableTarget()
+	 * @see #isImmutableTarget()
 	 */
-	public void setUserTargetMap(Map<Integer, Integer> userTargetCache) {
+	public void setUserTargetMap(Map<String, Integer> userTargetCache) {
 		this.userTargetMap = userTargetCache;
+	}
+
+	/**
+	 * @return the userDataFile
+	 */
+	public String getUserDataFile() {
+		return userDataFile;
+	}
+
+	/**
+	 * @param userDataFile the userDataFile to set
+	 */
+	public void setUserDataFile(String userDataFile) {
+		this.userDataFile = userDataFile;
 	}
 
 
