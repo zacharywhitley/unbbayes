@@ -102,6 +102,7 @@ public class ContingencyMatrixUserActivitySimulator {
 
 	private boolean is1stVarInRow = true;
 	private Map<String, Integer> userTargetMap;
+	private boolean isNumericTarget = false;
 
 	public ContingencyMatrixUserActivitySimulator() {}
 	
@@ -318,8 +319,8 @@ public class ContingencyMatrixUserActivitySimulator {
 				
 				String targetLabel = getTargetStateLabels().get(targetState);	// prepare in advance the label of target state, to be used to access respective files
 				
-				if (isBooleanTarget(getTargetStateLabels())) {
-					// binary target. Use 0 or 1
+				if (isNumericTarget() || isBooleanTarget(getTargetStateLabels())) {
+					// numeric target. Use index
 					printer.print("," + targetState);
 				} else {
 					// multinomial target. Use label directly
@@ -1580,6 +1581,71 @@ public class ContingencyMatrixUserActivitySimulator {
 			this.lastSample = lastSample;
 		}
 	}
+	
+
+	/**
+	 * @return the isImmutableTarget
+	 */
+	public boolean isImmutableTarget() {
+		return isImmutableTarget;
+	}
+
+	/**
+	 * @param isImmutableTarget the isImmutableTarget to set
+	 */
+	public void setImmutableTarget(boolean isImmutableTarget) {
+		this.isImmutableTarget = isImmutableTarget;
+	}
+
+	/**
+	 * @return the userTargetMap : mapping of org.user to target. If set to null, target will be picked randomly.
+	 * If not null, then this mapping will be used. 
+	 * @see #sampleTargetState(float, List, int)
+	 * @see #isImmutableTarget()
+	 */
+	public Map<String, Integer> getUserTargetMap() {
+		return userTargetMap;
+	}
+
+	/**
+	 * @param userTargetCache : mapping of "org.user" to target. If set to null, target will be picked randomly.
+	 * If not null, then this mapping will be used. 
+	 * @see #sampleTargetState(float, List, int)
+	 * @see #isImmutableTarget()
+	 */
+	public void setUserTargetMap(Map<String, Integer> userTargetCache) {
+		this.userTargetMap = userTargetCache;
+	}
+
+	/**
+	 * @return the userDataFile
+	 */
+	public String getUserDataFile() {
+		return userDataFile;
+	}
+
+	/**
+	 * @param userDataFile the userDataFile to set
+	 */
+	public void setUserDataFile(String userDataFile) {
+		this.userDataFile = userDataFile;
+	}
+
+	/**
+	 * @return the isNumericTarget : if true, target variable with 2 possible states will be considered as binary [0,1] variable.
+	 */
+	public boolean isNumericTarget() {
+		return isNumericTarget;
+	}
+
+	/**
+	 * @param isNumericTarget : if true, target variable with 2 possible states will be considered as binary [0,1] variable.
+	 */
+	public void setNumericTarget(boolean isNumericTarget) {
+		this.isNumericTarget = isNumericTarget;
+	}
+
+
 
 	/**
 	 * @param args
@@ -1629,6 +1695,7 @@ public class ContingencyMatrixUserActivitySimulator {
 				+ "If unspecified, then 1st variable will be rows, and 2nd variable will be column.");
 		options.addOption("immutableTarget","immutable-user-target", false, "If set, then target values of each user will not change over timeslices.");
 		options.addOption("userData","reuse-user-data-csv", true, "Specifies a CSV file in the same format of output csv to force target values of user ids to be the same.");
+		options.addOption("numeric","target-numeric-variable", false, "If true, target labels will be considered as numeric variables. Output will print numbers (associated with index of state at \"target\" param) instead of labels of target variables.");
 		options.addOption("h","help", false, "Help.");
 		
 		CommandLine cmd = null;
@@ -1735,56 +1802,9 @@ public class ContingencyMatrixUserActivitySimulator {
 			sim.setImmutableTarget(true);
 		}
 		
+		sim.setNumericTarget(cmd.hasOption("numeric"));
+		
 		sim.runAll();
 	}
-
-	/**
-	 * @return the isImmutableTarget
-	 */
-	public boolean isImmutableTarget() {
-		return isImmutableTarget;
-	}
-
-	/**
-	 * @param isImmutableTarget the isImmutableTarget to set
-	 */
-	public void setImmutableTarget(boolean isImmutableTarget) {
-		this.isImmutableTarget = isImmutableTarget;
-	}
-
-	/**
-	 * @return the userTargetMap : mapping of org.user to target. If set to null, target will be picked randomly.
-	 * If not null, then this mapping will be used. 
-	 * @see #sampleTargetState(float, List, int)
-	 * @see #isImmutableTarget()
-	 */
-	public Map<String, Integer> getUserTargetMap() {
-		return userTargetMap;
-	}
-
-	/**
-	 * @param userTargetCache : mapping of "org.user" to target. If set to null, target will be picked randomly.
-	 * If not null, then this mapping will be used. 
-	 * @see #sampleTargetState(float, List, int)
-	 * @see #isImmutableTarget()
-	 */
-	public void setUserTargetMap(Map<String, Integer> userTargetCache) {
-		this.userTargetMap = userTargetCache;
-	}
-
-	/**
-	 * @return the userDataFile
-	 */
-	public String getUserDataFile() {
-		return userDataFile;
-	}
-
-	/**
-	 * @param userDataFile the userDataFile to set
-	 */
-	public void setUserDataFile(String userDataFile) {
-		this.userDataFile = userDataFile;
-	}
-
 
 }
