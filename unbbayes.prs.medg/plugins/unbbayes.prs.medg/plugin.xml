@@ -5,7 +5,7 @@
     <requires>
 <!--     	<import plugin-id="unbbayes.util.extension.core" plugin-version="4.11.4"/> -->
         <import plugin-id="unbbayes.prs.mebn" plugin-version="1.13.10"/>
-        <import plugin-id="unbbayes.gui.mebn.ontology.protege" plugin-version="1.1.4"/>
+        <import plugin-id="unbbayes.gui.mebn.ontology.protege" plugin-version="1.2.6"/>
         <import plugin-id="unbbayes.io.mebn.UbfIO2"/>
     </requires>
     <runtime>

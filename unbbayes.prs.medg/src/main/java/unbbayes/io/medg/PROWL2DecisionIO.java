@@ -129,8 +129,10 @@ public class PROWL2DecisionIO extends Protege41CompatiblePROWL2IO implements IPR
 		
 		// add PR-OWL 2 Decision profile's URI to the collection of PR-OWL schemes, so that classes in PR-OWL 2 Decision scheme are not considered as object entities
 		// substitute the old collection instead of calling Collection#add(Object), because it may not be a mutable collection
+		// now, there is at least 2 URIs to be considered as part of PR-OWL scheme: the old (PR-OWL 2) one, and the new (Decision) one
 		Collection<String> prowlOntologyNamespaceURIs = new HashSet<String>(getNonPROWLClassExtractor().getPROWLOntologyNamespaceURIs());	// don't forget to keep the old (PR-OWL 2) URIs as well
-		prowlOntologyNamespaceURIs.add(PROWL2_DECISION_URI);	// now, there is at least 2 URIs to be considered as part of PR-OWL scheme: the old (PR-OWL 2) one, and the new (Decision) one
+		prowlOntologyNamespaceURIs.add(PROWL2_DECISION_URI);	
+		prowlOntologyNamespaceURIs.add(PROWL_DECISION_URI);		
 		getNonPROWLClassExtractor().setPROWLOntologyNamespaceURIs(prowlOntologyNamespaceURIs);
 
 		// initialize IRI mapper, so that requests for PR-OWL2 Decision IRIs are delegated to local files;

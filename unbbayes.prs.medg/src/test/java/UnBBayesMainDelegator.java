@@ -1,5 +1,6 @@
 
 
+import java.net.URISyntaxException;
 import java.util.Locale;
 
 import unbbayes.prs.mebn.ssbn.util.SSBNDebugInformationUtil;
@@ -30,6 +31,12 @@ public class UnBBayesMainDelegator {
 		// enable debug mode
 		SSBNDebugInformationUtil.setEnabled(false);
 		Debug.setDebug(true);
+		try {
+			// print "working" directory
+			Debug.println(new java.io.File(UnBBayesMainDelegator.class.getResource("./").toURI()).getAbsolutePath());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
 		// delegate to UnBBayes
 		unbbayes.Main.main(args);
 	}

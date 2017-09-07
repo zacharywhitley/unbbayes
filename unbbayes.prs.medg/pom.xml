@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project>
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>br.unb.cic</groupId>
+	<groupId>edu.gmu</groupId>
 	<artifactId>unbbayes.prs.medg</artifactId>
 	<name>Multi-Entity Decision Graph</name>
 	<version>0.0.1</version>
@@ -146,8 +146,8 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.5</source>
-					<target>1.5</target>
+					<source>1.7</source>
+					<target>1.7</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -171,7 +171,7 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes.gui.mebn.ontology.protege</artifactId>
-				<version>1.1.4</version>
+				<version>1.2.6</version>
 				<optional>false</optional>
 			</dependency>
 		</dependencies>
@@ -224,7 +224,7 @@
 				<configuration>
 					<links>
 						<link>
-							http://java.sun.com/j2se/1.5.0/docs/api
+							https://docs.oracle.com/javase/7/docs/api/
 						</link>
 					</links>
 					<aggregate>true</aggregate>
