@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>edu.gmu</groupId>
+	<artifactId>unbbayes.io.medg.prowl.decision</artifactId>
+	<name>PR-OWL Decision</name>
+	<version>0.0.1</version>
+	<url>http://unbbayes.sourceforge.net</url>
+	<licenses>
+		<license>
+			<name> GNU General Public License, Version 3, 29 June 2007</name>
+			<url>http://www.gnu.org/licenses/gpl-3.0.txt
+			</url>
+			<distribution>manual</distribution>
+		</license>
+	</licenses>
+	<issueManagement>
+		<system>SourceForge Tracker</system>
+		<url>https://sourceforge.net/p/unbbayes/_list/tickets</url>
+	</issueManagement>
+	<inceptionYear>2017</inceptionYear>
+	<mailingLists>
+		<mailingList>
+			<name> Discussion list</name>
+			<subscribe>https://sourceforge.net/p/unbbayes/discussion/</subscribe>
+			<unsubscribe>https://sourceforge.net/p/unbbayes/discussion/</unsubscribe>
+			<post>https://sourceforge.net/p/unbbayes/discussion/</post>
+			<archive>https://sourceforge.net/p/unbbayes/discussion/</archive>
+		</mailingList>
+	</mailingLists>
+	<developers>
+		<developer>
+			<id>cardialfly</id>
+			<name>Shou Matsumoto</name>
+			<email>smatsum2@gmu.edu</email>
+			<roles>
+				<role>Developer</role>
+			</roles>
+			<organization>George Mason University - GMU</organization>
+			<organizationUrl>www.gmu.edu</organizationUrl>
+			<timezone>-5</timezone>
+		</developer>
+	</developers>
+	<contributors>
+		<contributor>
+			<name>Dr. Paulo Cesar G. Costa</name>
+			<email>pcosta@gmu.edu</email>
+			<roles>
+				<role>Advisor</role>
+			</roles>
+			<organization>George Mason University - GMU</organization>
+			<organizationUrl>www.gmu.edu</organizationUrl>
+			<timezone>-5</timezone>
+		</contributor>
+		<contributor>
+			<name>Dr. Kathryn Blackmond Laskey</name>
+			<email>klaskey@gmu.edu</email>
+			<roles>
+				<role>Advisor</role>
+			</roles>
+			<organization>George Mason University - GMU</organization>
+			<organizationUrl>www.gmu.edu</organizationUrl>
+			<timezone>-5</timezone>
+		</contributor>
+		<contributor>
+			<name>Dr. Marcelo Ladeira</name>
+			<email>mladeira@unb.br</email>
+			<roles>
+				<role>Project Manager</role>
+			</roles>
+			<organization>University of Brasília - UnB</organization>
+			<organizationUrl>www.unb.br</organizationUrl>
+			<timezone>-3</timezone>
+		</contributor>
+	</contributors>
+	<organization>
+		<name>George Mason University - GMU</name>
+		<url>http://www.gmu.edu</url>
+	</organization>
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.7</source>
+					<target>1.7</target>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<descriptors>
+						<descriptor>dist.xml
+						</descriptor>
+					</descriptors>
+				</configuration>
+			</plugin>
+			<plugin>
+				<artifactId>maven-site-plugin</artifactId>
+				<configuration>
+					<locales>en</locales>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+		<dependencies>
+			<dependency>
+				<groupId>br.unb.cic</groupId>
+				<artifactId>unbbayes.gui.mebn.ontology.protege</artifactId>
+				<version>1.2.6</version>
+				<optional>false</optional>
+			</dependency>
+			<dependency>
+				<groupId>edu.gmu</groupId>
+				<artifactId>unbbayes.prs.medg</artifactId>
+				<version>0.0.1</version>
+				<optional>false</optional>
+			</dependency>
+		</dependencies>
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId> maven-project-info-reports-plugin</artifactId>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<!-- report>dependencies</report -->
+							<report>project-team</report>
+							<report>mailing-list</report>
+							<report>issue-tracking</report>
+							<report>license</report>
+							<report>scm</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-changes-plugin</artifactId>
+				<inherited>false</inherited>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>changes-report</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+				<configuration>
+					<issueLinkTemplate>http://sourceforge.net/support/tracker.php?aid=%ISSUE%</issueLinkTemplate>
+  				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>changes-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jxr-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<links>
+						<link>
+							https://docs.oracle.com/javase/7/docs/api/
+						</link>
+					</links>
+					<aggregate>true</aggregate>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
+	<distributionManagement>
+		<site>
+  		 	<id>sourceforge.net</id>
+   			<url>scp://shell.sourceforge.net/home/groups/u/un/unbbayes/htdocs</url>
+  		</site>
+	</distributionManagement>
+</project>
