@@ -20,7 +20,7 @@
     <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
     <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
     <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
-    <Import>http://www.pr-owl.org/pr-owl2-decision.owl</Import>
+    <Import>http://www.pr-owl.org/pr-owl-decision.owl</Import>
     <Import>http://www.pr-owl.org/pr-owl2.owl</Import>
     <SubClassOf>
         <Class IRI="#Sea"/>
@@ -211,6 +211,10 @@
         <NamedIndividual IRI="#Medium"/>
     </ClassAssertion>
     <ClassAssertion>
+        <Class IRI="#Sea"/>
+        <NamedIndividual IRI="#NORTHSEA"/>
+    </ClassAssertion>
+    <ClassAssertion>
         <Class IRI="http://www.pr-owl.org/pr-owl2.owl#OrdinaryVariableArgument"/>
         <NamedIndividual IRI="#ObservedFishVolume_1"/>
     </ClassAssertion>
@@ -301,6 +305,26 @@
     <ClassAssertion>
         <Class IRI="http://www.pr-owl.org/pr-owl2.owl#OrdinaryVariableArgument"/>
         <NamedIndividual IRI="#UtilitySea_2"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TimeStep"/>
+        <NamedIndividual IRI="#YEAR2012"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TimeStep"/>
+        <NamedIndividual IRI="#YEAR2013"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TimeStep"/>
+        <NamedIndividual IRI="#YEAR2014"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TimeStep"/>
+        <NamedIndividual IRI="#YEAR2015"/>
+    </ClassAssertion>
+    <ClassAssertion>
+        <Class IRI="#TimeStep"/>
+        <NamedIndividual IRI="#YEAR2016"/>
     </ClassAssertion>
     <ClassAssertion>
         <Class IRI="http://www.pr-owl.org/pr-owl2.owl#DeclarativeDistribution"/>
@@ -545,6 +569,11 @@
         <NamedIndividual IRI="#IX2"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasProbabilityDistribution"/>
+        <NamedIndividual IRI="#Domain_Res.ActualFishVolume"/>
+        <NamedIndividual IRI="http://www.pr-owl.org/pr-owl2.owl#ActualFishVolume_Table"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isResidentNodeIn"/>
         <NamedIndividual IRI="#Domain_Res.ActualFishVolume"/>
         <NamedIndividual IRI="#Domain_MFrag.FisherMFrag"/>
@@ -590,6 +619,11 @@
         <NamedIndividual IRI="#Domain_Res.ActualFishVolume"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasProbabilityDistribution"/>
+        <NamedIndividual IRI="#Domain_Res.ObservedFishVolume"/>
+        <NamedIndividual IRI="http://www.pr-owl.org/pr-owl2.owl#ObservedFishVolume_Table"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isResidentNodeIn"/>
         <NamedIndividual IRI="#Domain_Res.ObservedFishVolume"/>
         <NamedIndividual IRI="#Domain_MFrag.FisherMFrag"/>
@@ -613,6 +647,11 @@
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasParent"/>
         <NamedIndividual IRI="#Domain_Res.UtilitySea"/>
         <NamedIndividual IRI="#Domain_Res.AllowableCatchVolume"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasProbabilityDistribution"/>
+        <NamedIndividual IRI="#Domain_Res.UtilitySea"/>
+        <NamedIndividual IRI="http://www.pr-owl.org/pr-owl2.owl#UtilitySea_Table"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#isResidentNodeIn"/>
@@ -1295,6 +1334,11 @@
         <Literal datatypeIRI="&xsd;integer">1</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasUID"/>
+        <NamedIndividual IRI="#NORTHSEA"/>
+        <Literal datatypeIRI="&xsd;string">!NORTHSEA</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
         <NamedIndividual IRI="#ObservedFishVolume_1"/>
         <Literal datatypeIRI="&xsd;integer">1</Literal>
@@ -1342,12 +1386,12 @@
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_AllowableCatchVolume"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/workspace/MEDG/examples/fisher/fisher.owl#Medium</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">file:/C:/workspace/MEDG/examples/fisher/fisher.owl#High</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
         <NamedIndividual IRI="#RV_AllowableCatchVolume"/>
-        <Literal datatypeIRI="&xsd;anyURI">file:/C:/workspace/MEDG/examples/fisher/fisher.owl#High</Literal>
+        <Literal datatypeIRI="&xsd;anyURI">file:/C:/workspace/MEDG/examples/fisher/fisher.owl#Medium</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
@@ -1428,6 +1472,104 @@
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
         <NamedIndividual IRI="#UtilitySea_2"/>
         <Literal datatypeIRI="&xsd;integer">2</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasUID"/>
+        <NamedIndividual IRI="#YEAR2012"/>
+        <Literal datatypeIRI="&xsd;string">!YEAR2012</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasUID"/>
+        <NamedIndividual IRI="#YEAR2013"/>
+        <Literal datatypeIRI="&xsd;string">!YEAR2013</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasUID"/>
+        <NamedIndividual IRI="#YEAR2014"/>
+        <Literal datatypeIRI="&xsd;string">!YEAR2014</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasUID"/>
+        <NamedIndividual IRI="#YEAR2015"/>
+        <Literal datatypeIRI="&xsd;string">!YEAR2015</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasUID"/>
+        <NamedIndividual IRI="#YEAR2016"/>
+        <Literal datatypeIRI="&xsd;string">!YEAR2016</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasDeclaration"/>
+        <NamedIndividual IRI="http://www.pr-owl.org/pr-owl2.owl#ActualFishVolume_Table"/>
+        <Literal datatypeIRI="&xsd;string">if any sea have (ActualFishVolume = absurd ) [
+	absurd = 1
+] else if any sea have (ActualFishVolume = High) [
+	if any sea have (AllowableCatchVolume = High) [
+		absurd = 0,
+   		Low = .9
+	] else if any sea have (AllowableCatchVolume = Medium) [
+		absurd = 0,
+   		Medium = .9
+	] else if any sea have (AllowableCatchVolume = Low) [
+		absurd = 0,
+   		Low = .9
+	] else [
+    		absurd = 1
+	]
+] else if any sea have (ActualFishVolume = Medium) [
+	if any sea have (AllowableCatchVolume = High) [
+		absurd = 0,
+   		Low = 1
+	] else if any sea have (AllowableCatchVolume = Medium) [
+		absurd = 0,
+   		Low = .9
+	] else if any sea have (AllowableCatchVolume = Low) [
+		absurd = 0,
+   		Low = .9
+	] else [
+    		absurd = 1
+	]
+] else if any sea have (ActualFishVolume = Low) [
+	if any sea have (AllowableCatchVolume = High) [
+		absurd = 0,
+   		Low = 1
+	] else if any sea have (AllowableCatchVolume = Medium) [
+		absurd = 0,
+   		Low = 1
+	] else if any sea have (AllowableCatchVolume = Low) [
+		absurd = 0,
+   		Low = .9
+	] else [
+    		absurd = 1
+	]
+] else [
+    Low = 0.33333334 , Medium = 0.33333334 , High = 0.33333334
+]
+</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasDeclaration"/>
+        <NamedIndividual IRI="http://www.pr-owl.org/pr-owl2.owl#ObservedFishVolume_Table"/>
+        <Literal datatypeIRI="&xsd;string">if all sea have (ActualFishVolume=Low) [
+	absurd = 0,
+	Low = .9
+] else if all sea have (ActualFishVolume=Medium) [
+	absurd = 0,
+	Medium = .9
+]  else if all sea have (ActualFishVolume=High) [
+	absurd = 0,
+	High = .9
+] else [
+	absurd = 1
+]</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasDeclaration"/>
+        <NamedIndividual IRI="http://www.pr-owl.org/pr-owl2.owl#UtilitySea_Table"/>
+        <Literal datatypeIRI="&xsd;string">
+if all sea have (AllowableCatchVolume=High) [utility = 100]
+else if all sea have (AllowableCatchVolume=Medium) [utility = 1]
+else [utility = 0]</Literal>
     </DataPropertyAssertion>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
