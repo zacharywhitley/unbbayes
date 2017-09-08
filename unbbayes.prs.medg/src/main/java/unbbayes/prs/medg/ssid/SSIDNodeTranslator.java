@@ -36,8 +36,8 @@ import unbbayes.prs.medg.MultiEntityUtilityNode;
 /**
  * This is a rewrite of {@link SimpleSSBNNodeUtils}, but with more
  * flexibility
- * @author Shou Matsumoto
- *
+ * @author Shou Matsumoto 
+ * @deprecated classes involving {@link unbbayes.prs.medg.ssid.SSID} and {@link unbbayes.prs.medg.ssid.SSIDNode} should be avoided and use {@link unbbayes.prs.medg.ssid.SSIDGenerator} to generate ID from SSBN directly
  */
 public class SSIDNodeTranslator implements ISimpleSSIDNodeTranslator, INodeTranslator {
 

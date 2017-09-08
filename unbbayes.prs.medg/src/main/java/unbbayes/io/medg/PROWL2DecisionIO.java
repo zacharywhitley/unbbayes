@@ -72,7 +72,7 @@ import unbbayes.util.Debug;
 public class PROWL2DecisionIO extends Protege41CompatiblePROWL2IO implements IPROWL2DecisionModelUser {
 	
 	/** Default place to look for PR-OWL 2 decision scheme file */
-	public static final String PROWL2_DECISION_MODEL_FILEPATH = "pr-owl/pr-owl2-decision.owl";
+	public static final String PROWL2_DECISION_MODEL_FILEPATH = "pr-owl/pr-owl-decision.owl";
 	
 	private OWLOntologyIRIMapper prowl2DecisionDefinitionIRIMapper = null;
 

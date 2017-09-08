@@ -19,7 +19,7 @@ import unbbayes.prs.mebn.ssbn.exception.SSBNNodeGeneralException;
 
 /**
  * @author Shou Matsumoto
- *
+ * @deprecated classes involving {@link unbbayes.prs.medg.ssid.SSID} and {@link unbbayes.prs.medg.ssid.SSIDNode} should be avoided and use {@link unbbayes.prs.medg.ssid.SSIDGenerator} to generate ID from SSBN directly
  */
 public class SSIDNode extends SSBNNode {
 

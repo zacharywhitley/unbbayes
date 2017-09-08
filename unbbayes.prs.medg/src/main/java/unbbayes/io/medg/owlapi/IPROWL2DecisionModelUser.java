@@ -18,7 +18,7 @@ import unbbayes.io.medg.IPROWLDecisionModelUser;
 public interface IPROWL2DecisionModelUser extends IPROWL2ModelUser, IPROWLDecisionModelUser {
 	
 
-	public static final String PROWL2_DECISION_URI = "http://www.pr-owl.org/pr-owl2-decision.owl";
+	public static final String PROWL2_DECISION_URI = "http://www.pr-owl.org/pr-owl-decision.owl";
 
 	/** This is a prefix manager for {@value #PROWL2_DECISION_URI} */
 	public static final PrefixManager PROWL2_DECISION_DEFAULTPREFIXMANAGER = new DefaultPrefixManager(PROWL2_DECISION_URI + '#');

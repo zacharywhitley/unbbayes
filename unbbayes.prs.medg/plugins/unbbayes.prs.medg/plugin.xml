@@ -1,12 +1,12 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
-<!-- This is a stub plugin for new nodes in MEBN.  -->
+<!-- This is a plugin for decision/utility nodes in MEBN.  -->
 <plugin id="unbbayes.prs.medg" version="0.0.1">
     <requires>
 <!--     	<import plugin-id="unbbayes.util.extension.core" plugin-version="4.11.4"/> -->
-        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.13.10"/>
-        <import plugin-id="unbbayes.gui.mebn.ontology.protege" plugin-version="1.2.6"/>
-        <import plugin-id="unbbayes.io.mebn.UbfIO2"/>
+        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.18.14"/>
+<!--        <import plugin-id="unbbayes.gui.mebn.ontology.protege" plugin-version="1.2.6"/> -->
+<!--        <import plugin-id="unbbayes.io.mebn.UbfIO2"/> -->
     </requires>
     <runtime>
         <library type="resources" path="icons/" id="icons">
@@ -44,10 +44,13 @@
         <parameter id="class" value="unbbayes.io.medg.MEDGUBFIO" />
         <parameter id="name" value="PR-OWL Decision" />
     </extension>
+    <!-- I/O of PROWL 2 decision will be migrated to a separate plug-in -->
+    <!--
     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNIO" id="MEDGUBFIO2">
         <parameter id="class" value="unbbayes.io.medg.MEDGUBFIO2" />
         <parameter id="name" value="PR-OWL 2 Decision" />
     </extension>
+    -->
     <extension plugin-id="unbbayes.prs.mebn" point-id="SSBN" id="SSIDGenerator">
         <parameter id="class" value="unbbayes.prs.medg.ssid.SSIDGeneratorBuilder" />
         <parameter id="name" value="SSID generator" />

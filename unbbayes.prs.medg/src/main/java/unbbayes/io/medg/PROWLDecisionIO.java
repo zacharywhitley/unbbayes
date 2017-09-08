@@ -55,7 +55,7 @@ public class PROWLDecisionIO extends PrOwlIO implements IPROWLDecisionModelUser 
 	public static final String MEDG_UTILITY_NODE = "Domain_Utility";
 	
 	/** This is the default location of PR-OWL Decision model/definition file. */
-	public static final String DEFAULT_PROWL_DECISION_MODELFILE = "pr-owl/pr-owl-decision.owl";
+	public static final String DEFAULT_PROWL_DECISION_MODELFILE = "pr-owl/pr-owl1-decision.owl";
 
 	private String prowlDecisionModelFile = DEFAULT_PROWL_DECISION_MODELFILE;
 	

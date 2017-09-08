@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is a plugin for saving/storing PR-OWL 2 Decision  -->
+<plugin id="unbbayes.io.medg.prowl.decision" version="0.0.1">
+    <requires>
+    	<import plugin-id="unbbayes.prs.mebn"/>
+        <import plugin-id="unbbayes.prs.medg" plugin-version="0.0.1"/>
+        <import plugin-id="unbbayes.gui.mebn.ontology.protege" plugin-version="1.2.6"/>
+        <import plugin-id="unbbayes.io.mebn.UbfIO2"/>
+    </requires>
+    <runtime>
+        <library type="resources" path="icons/" id="icons">
+        	<export prefix="*"/>
+        </library>
+        <library type="resources" path="resources/" id="resources">
+        	<!-- This is where pr-owl definitions resides -->
+        	<export prefix="*"/>
+        </library>
+        <!-- It seems that loaders does not work as expected on jar files -->
+        <!-- If you change/add the libraries, change/add these library declaration too -->
+        <library id="unbbayes.prs.medg" path="unbbayes.io.medg.prowl.decision-0.0.1.jar" type="code" >
+        	<export prefix="*"/>
+        </library>
+    </runtime>
+    <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNIO" id="MEDGUBFIO2">
+        <parameter id="class" value="unbbayes.io.medg.MEDGUBFIO2" />
+        <parameter id="name" value="PR-OWL 2 Decision" />
+    </extension>
+</plugin>

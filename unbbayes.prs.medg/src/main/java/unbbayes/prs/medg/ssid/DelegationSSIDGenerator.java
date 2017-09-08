@@ -55,16 +55,17 @@ import unbbayes.prs.medg.MultiEntityUtilityNode;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
- * This class delegates most of the operations to superclass
+ * This class delegates most of the operations to some {@link ISSBNGenerator},
  * and then substitutes probabilistic nodes to decision and utility nodes
  * when these were originated from {@link MultiEntityDecisionNode} or
  * {@link MultiEntityUtilityNode}.
  * @author Shou Matsumoto
- * @see DelegationSSIDGenerator
+ *
  */
-public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAwareSSBNGenerator {
+public class DelegationSSIDGenerator implements IMediatorAwareSSBNGenerator, ISSBNGenerator {
 	
 	private INetworkMediator mediator = null;
+	private ISSBNGenerator delegator;
 	private IInferenceAlgorithm inferenceAlgorithm;
 	
 	private Logger log = Logger.getLogger(getClass());
@@ -74,26 +75,36 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 	/**
 	 * Default constructor with no parameters is kept protected to allow inheritance.
 	 */
-	protected SSIDGenerator() {
-		super(null);
-		
+	protected DelegationSSIDGenerator() {}
+	
+	/**
+	 * Constructor method with no argument.
+	 * {@link #setDelegator(ISSBNGenerator)} will be set to {@link LaskeySSBNGenerator} with SSBN compilation disabled
+	 * @return new instance of generator which will do pre-processing, delegate construction to delegator, and then perform post processing.
+	 */
+	public static ISSBNGenerator getInstance() {
 		LaskeyAlgorithmParameters parameters = new LaskeyAlgorithmParameters(); 
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
 		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
 		
-		super.setParameters(parameters);
+//		// disable compilation of SSBN, because it will be converted to SSID and then compiled as influence diagram
+//		parameters.setParameterValue(LaskeyAlgorithmParameters.COMPILE_AND_INITIALIZE_SSBN, "false");
+		
+		return DelegationSSIDGenerator.getInstance(new LaskeySSBNGenerator(parameters));
 	}
 	
 	/**
-	 * Constructor method with no argument.
-	 * @return new instance of generator which will do pre-processing, delegate construction to superclass, and then perform post processing.
+	 * Constructor method
+	 * @param delegator : construction of situation-specific network structure will be delegated to this
+	 * @return new instance of generator which will do pre-processing, delegate construction to delegator, and then perform post processing.
 	 */
-	public static ISSBNGenerator getInstance() {
-		return new SSIDGenerator();
+	public static ISSBNGenerator getInstance(ISSBNGenerator delegator) {
+		DelegationSSIDGenerator ret = new DelegationSSIDGenerator();
+		ret.setDelegator(delegator);
+		return ret;
 	}
-	
 	
 	
 	/*
@@ -106,11 +117,8 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 			                         MEBNException, 
 			                         OVInstanceFaultException, 
 			                         InvalidParentException {
-		// fill queries with utility nodes
 		this.preprocess(listQueries, kb);
-		// delegate to superclass
-		SSBN ssbn = super.generateSSBN(listQueries, kb);
-		// replace nodes originated from multi-entity decision/utility resident nodes with decision and utility nodes
+		SSBN ssbn = this.getDelegator().generateSSBN(listQueries, kb);
 		ssbn = this.postprocess(listQueries, kb, ssbn);
 		return ssbn;
 	}
@@ -342,7 +350,8 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 			try {
 				algorithm.setMediator(controller);
 			} catch (Exception e) {
-				getLog().warn("BN algorithm should work OK without mediator, so let's ignore and try going on", e);
+				// algorithm should work without mediator, so let's ignore and try going on
+				e.printStackTrace();
 			}
 			controller.setInferenceAlgorithm(algorithm);
 			
@@ -352,6 +361,12 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 			// change BN module to the "compiled" view instead of "edit" view
 			idModule.changeToPNCompilationPane();
 		
+			// add/show popup
+			getMediator().getScreen().getUnbbayesFrame().addWindow(idModule);
+			idModule.setVisible(true);
+			idModule.updateUI();
+			getMediator().getScreen().getUnbbayesFrame().repaint();
+			idModule.repaint();
 		}
 		
 		// fill findings and propagate. This should be performed after GUI is instantiated (if GUI is instantiated at all)
@@ -412,7 +427,6 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 				newNode = new UtilityNode();
 				// make sure the utility table will be copied later
 				utilityTableToFill = ((UtilityNode)newNode).getProbabilityFunction();
-				utilityTableToFill.addVariable(newNode);
 				// utility node is modeled as random variable, so needs an internal identifier
 				((UtilityNode)newNode).setInternalIdentificator(oldNode.getInternalIdentificator());
 			}	// else keep unchanged (null)
@@ -430,11 +444,10 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 				
 				// handle parents
 				for (Node parent : oldNode.getParents()) {
-					parent = net.getNode(parent.getName());	// make sure we only refer to newest node
 					// substitute arcs from parents
 					Edge oldEdge = net.getEdge(parent, oldNode);
-					int oldEdgeIndex = net.getEdges().indexOf(oldEdge);
 					Edge newEdge = new Edge(parent, newNode);
+					int oldEdgeIndex = net.getEdges().indexOf(oldEdge);
 					Edge substitutedEdge = net.getEdges().set(oldEdgeIndex, newEdge);
 					if (substitutedEdge != oldEdge) {
 						throw new RuntimeException("Edge to substitute was " + oldEdge + ", but actually deleted " + substitutedEdge);
@@ -446,14 +459,11 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 					if (utilityTableToFill != null) {
 						utilityTableToFill.addVariable(parent);
 					}
-					
-					// update reference from parent to newNode
-					parent.getChildren().set(parent.getChildren().indexOf(oldNode), newNode);
 				}
 				
 				// handle children
 				for (Node child : oldNode.getChildren()) {
-					child = net.getNode(child.getName());	// make sure we only refer to newest node
+
 					// substitute arcs to children
 					Edge oldEdge = net.getEdge(oldNode, child);
 					Edge newEdge = new Edge(newNode, child);
@@ -493,10 +503,6 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 							throw new RuntimeException("Old parent " + oldNode + " not found in table of child " + child);
 						}
 					}
-					
-					// update reference from child to newNode
-					child.getParents().set(child.getParents().indexOf(oldNode), newNode);
-					
 				}
 				
 				// copy table content (i.e. numbers in cells)
@@ -524,8 +530,6 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 					
 					utilityTableToFill.setValues(tableToCopy.getValues());
 				}
-				
-				net.getNodes().set(net.getNodes().indexOf(oldNode), newNode);
 			}
 		}
 		
@@ -659,14 +663,18 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 	}
 
 
-	/**
-	 * This class overrides this method so that SSBN is not compiled before decision nodes and utility nodes are treated.
-	 * @see unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator#compileAndInitializeSSBN(unbbayes.prs.mebn.ssbn.SSBN)
-	 */
-	protected void compileAndInitializeSSBN(SSBN ssbn) throws Exception {
-		getLog().trace("Skipped compilation and initialization of SSBN");
-	}
+
 	
+	
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.prs.mebn.ssbn.ISSBNGenerator#getLastIterationCount()
+	 */
+	public int getLastIterationCount() {
+		getLog().trace("Detected invocation of getLastIterationCount. Returning default value = 1 ");
+		return 1;
+	}
 	
 	/*
 	 * (non-Javadoc)
@@ -679,12 +687,11 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 		} else {
 			// if it's enabled, just keep property read from log4j. 
 			// But if it's off, turn it on.
-			if (getLog().getLevel() == null || Level.OFF.isGreaterOrEqual(getLog().getLevel())) {
+			if (Level.OFF.isGreaterOrEqual(getLog().getLevel())) {
 				// trace is considered finer than debug
 				getLog().setLevel((Level)Level.TRACE);
 			}
 		}
-		super.setLogEnabled(isEnabled);
 	}
 	
 	/*
@@ -696,7 +703,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 			return false;
 		}
 		// just check if it is not off
-		return !(getLog().getLevel() == null || Level.OFF.isGreaterOrEqual(getLog().getLevel()));
+		return !Level.OFF.isGreaterOrEqual(getLog().getLevel());
 	}
 	
 
@@ -742,6 +749,20 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 	
 
 
+	/**
+	 * @return creation of situation specific networks will be delegated to this instance after preprocessing and before post-processing.
+	 * 
+	 */
+	public ISSBNGenerator getDelegator() {
+		return delegator;
+	}
+
+	/**
+	 * @param delegator : creation of situation specific networks will be delegated to this instance after preprocessing and before post-processing
+	 */
+	public void setDelegator(ISSBNGenerator delegator) {
+		this.delegator = delegator;
+	}
 
 	/**
 	 * @return the log

@@ -6,9 +6,10 @@ package unbbayes.prs.medg.ssid;
 import unbbayes.prs.mebn.ssbn.ISSBNGenerator;
 import unbbayes.prs.mebn.ssbn.extension.ISSBNGeneratorBuilder;
 import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
+import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeySSBNGenerator;
 
 /**
- * This is a builder for {@link SSIDGenerator}
+ * This is a builder for {@link StandaloneSSIDGenerator}
  * @author Shou Matsumoto
  *
  */
@@ -27,13 +28,7 @@ public class SSIDGeneratorBuilder implements ISSBNGeneratorBuilder {
 	 */
 	public ISSBNGenerator buildSSBNGenerator() throws InstantiationException {
 		
-		LaskeyAlgorithmParameters parameters = new LaskeyAlgorithmParameters(); 
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_INITIALIZATION, "true");
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_BUILDER, "true"); 
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_PRUNE, "true"); 
-		parameters.setParameterValue(LaskeyAlgorithmParameters.DO_CPT_GENERATION, "true"); 
-	    
-		ISSBNGenerator ssbngenerator = new SSIDGenerator(parameters);
+		ISSBNGenerator ssbngenerator = SSIDGenerator.getInstance();
 		
 		// change settings of ssbngenerator if you want to
 		

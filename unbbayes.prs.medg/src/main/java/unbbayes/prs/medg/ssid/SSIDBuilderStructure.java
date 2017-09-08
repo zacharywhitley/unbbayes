@@ -43,14 +43,14 @@ import unbbayes.prs.mebn.ssbn.laskeyalgorithm.LaskeyAlgorithmParameters;
 import unbbayes.util.Debug;
 
 /**
- * This class is used by {@link SSIDGenerator} in order to
+ * This class is used by {@link StandaloneSSIDGenerator} in order to
  * build the SSBN structure with continuous nodes.
  * This is supposed to be an extension of {@link BuilderStructureImpl} (because most of the codes are the same).
  * However, it does not actually extend {@link BuilderStructureImpl}, because {@link BuilderStructureImpl}
  * offers only private constructors, hence it is impossible to extend.
  * This class also uses some techniques that makes this class more extensible than {@link BuilderStructureImpl}
  * @author Shou Matsumoto
- *
+ * @deprecated classes involving {@link unbbayes.prs.medg.ssid.SSID} and {@link unbbayes.prs.medg.ssid.SSIDNode} should be avoided and use {@link unbbayes.prs.medg.ssid.SSIDGenerator} to generate ID from SSBN directly
  */
 public class SSIDBuilderStructure implements IBuilderStructure {
 
