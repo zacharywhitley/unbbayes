@@ -371,6 +371,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 			idModule.updateUI();
 			getMediator().getScreen().getUnbbayesFrame().repaint();
 			idModule.repaint();
+			idModule.getNetWindowCompilation().getPropagate().doClick();
 		}
 		
 		return ssbn;
