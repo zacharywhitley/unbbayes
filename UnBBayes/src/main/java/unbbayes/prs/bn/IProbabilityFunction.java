@@ -72,7 +72,7 @@ public interface IProbabilityFunction {
 	public abstract void purgeVariable(INode variable, boolean update); 
 	
 	/**
-	 * Inserts a variable into position
+	 * Replaces a variable at given position
 	 * @param index : position to insert variable
 	 * @param node : variable to be inserted
 	 */
