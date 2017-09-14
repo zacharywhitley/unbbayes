@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import unbbayes.io.exception.LoadException;
-import unbbayes.io.extension.jpf.PluginAwareFileExtensionIODelegator;
 import unbbayes.prs.Graph;
 
 /**
@@ -34,7 +33,7 @@ public class FileExtensionIODelegator implements BaseIO {
 	
 	/**
 	 * Constructor method.
-	 * @return {@link PluginAwareFileExtensionIODelegator}.
+	 * @return {@link unbbayes.io.extension.jpf.PluginAwareFileExtensionIODelegator}.
 	 */
 	public static FileExtensionIODelegator newInstance() {
 //		FileExtensionIODelegator ret = PluginAwareFileExtensionIODelegator.newInstance();
