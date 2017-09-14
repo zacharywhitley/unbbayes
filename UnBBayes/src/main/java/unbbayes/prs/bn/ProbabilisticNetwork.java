@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.util.SetToolkit;
 
@@ -193,7 +194,7 @@ public class ProbabilisticNetwork
 			if (getJunctionTree() != null) {
 				// remove variable from separators
 				if (getJunctionTree().getSeparators() != null) {
-					for (Separator separator : getJunctionTree().getSeparatorsContainingAllNodes((List)Collections.singletonList(nodeToRemove), Integer.MAX_VALUE)) {
+					for (Separator separator : getJunctionTree().getSeparatorsContainingAllNodes(Collections.singletonList((INode)nodeToRemove), Integer.MAX_VALUE)) {
 						if (separator.getNodes().contains(nodeToRemove)) {
 							PotentialTable sepTable = separator.getProbabilityFunction();
 							sepTable.purgeVariable(nodeToRemove, false);
@@ -204,7 +205,7 @@ public class ProbabilisticNetwork
 				}
 				// remove variable from cliques
 				if (getJunctionTree().getCliques() != null) {
-					for (Clique clique : getJunctionTree().getCliquesContainingAllNodes((List)Collections.singletonList(nodeToRemove), Integer.MAX_VALUE)) {
+					for (Clique clique : getJunctionTree().getCliquesContainingAllNodes(Collections.singletonList((INode)nodeToRemove), Integer.MAX_VALUE)) {
 						PotentialTable cliqueTable = clique.getProbabilityFunction();
 						cliqueTable.purgeVariable(nodeToRemove, false);
 						cliqueTable.normalize();
