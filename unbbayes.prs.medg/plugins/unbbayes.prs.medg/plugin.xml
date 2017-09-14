@@ -54,5 +54,6 @@
     <extension plugin-id="unbbayes.prs.mebn" point-id="SSBN" id="SSIDGenerator">
         <parameter id="class" value="unbbayes.prs.medg.ssid.SSIDGeneratorBuilder" />
         <parameter id="name" value="SSID generator" />
+        <parameter id="optionPanel" value="unbbayes.gui.medg.ssid.SSIDOptionPanel" />
     </extension>
 </plugin>
