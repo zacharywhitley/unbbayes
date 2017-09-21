@@ -45,7 +45,9 @@ import unbbayes.controller.FileHistoryController;
 import unbbayes.controller.IconController;
 import unbbayes.controller.NetworkController;
 import unbbayes.gui.EvidenceTree;
+import unbbayes.gui.SimpleFileFilter;
 import unbbayes.io.BaseIO;
+import unbbayes.io.FileExtensionIODelegator;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLBIFIO;
 import unbbayes.prs.bn.SingleEntityNetwork;
@@ -246,44 +248,54 @@ public class SSBNCompilationPane extends JPanel {
     			
     			JFileChooser chooser = new JFileChooser(FileHistoryController.getInstance().getCurrentDirectory());
     			chooser.setMultiSelectionEnabled(false);
-    			chooser
-    			.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    			chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    			
+    			// instantiate an IO class which delegates to proper IO class accordingly to file extension
+    			FileExtensionIODelegator io = FileExtensionIODelegator.newInstance(); 
+    			io.getDelegators().add(new NetIO());
+    			io.getDelegators().add(new XMLBIFIO());
+    			
+    			// filter out file extensions not supported by above IO
+    			SimpleFileFilter defaultFilter = new SimpleFileFilter(io.getSupportedFileExtensions(false), io.getSupportedFilesDescription(false));
+    			chooser.addChoosableFileFilter(defaultFilter);
+    			chooser.setFileFilter(defaultFilter);	// make sure this filter is already chosen by default 
     			
     			int option = chooser.showSaveDialog(null);
     			if (option == JFileChooser.APPROVE_OPTION) {
     				File file = chooser.getSelectedFile();
     				if (file != null) {
-    					if (!file.isDirectory()){
-    						BaseIO io = null; 
-    						String name = file.getName().toLowerCase();							
-    						if (name.endsWith("net")) {
-    							io = new NetIO();	
-    							try {
-									io.save(file, network);
-								} catch (IOException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								} 
-    						} 
-    						else if (name.endsWith("xml")){
-    							io = new XMLBIFIO();
-    							try {
-									io.save(file, network);
-								} catch (IOException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								} 
-    						}
+    					if (!file.isDirectory()){	// TODO this might be redundant, because file choose was set with JFileChooser.FILES_ONLY flag
+    						// the following block is not needed anymore, because FileExtensionIODelegator is used
+//    						String name = file.getName().toLowerCase();							
+//    						if (name.endsWith("net")) {
+//    							io = new NetIO();	
+//    							try {
+//									io.save(file, network);
+//								} catch (IOException e1) {
+//									// TODO Auto-generated catch block
+//									e1.printStackTrace();
+//								} 
+//    						} 
+//    						else if (name.endsWith("xml")){
+//    							io = new XMLBIFIO();
+//    							try {
+//									io.save(file, network);
+//								} catch (IOException e1) {
+//									// TODO Auto-generated catch block
+//									e1.printStackTrace();
+//								} 
+//    						}
     						try {
     							if(io != null){
     								io.save(file, network);
     							}
+    							JOptionPane.showMessageDialog(controller.getScreen(), resource.getString("saveSucess"));
 							} catch (IOException e1) {
-								// TODO Auto-generated catch block
 								e1.printStackTrace();
+								setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+								JOptionPane.showMessageDialog(controller.getScreen(),resource.getString("SaveNetException") + " : " + e1.getMessage(), e1.getClass().getName(), JOptionPane.ERROR_MESSAGE);
 							} 
 							
-    						JOptionPane.showMessageDialog(controller.getScreen(), resource.getString("saveSucess"));
     					}
     				}
     			}
