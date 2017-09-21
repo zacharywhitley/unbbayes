@@ -1,0 +1,29 @@
+% UBF file header
+Version=0.04
+PrOwl="utilityRenameTest.owl"
+
+% UBF MTheory declaration
+MTheory=MEBN
+NextMFrag=2
+NextResident=2
+NextInput=1
+NextContext=1
+NextEntity=1
+
+% UBF MFrags and Nodes declaration
+
+% MFrag
+MFrag=DMFrag1
+NextOrdinaryVar=1
+
+% Resident nodes
+
+
+Node=Utility0
+Type=DomainResidentNode
+Position=103.0,257.0
+Size=100,70
+Color=-16711681
+PossibleValuesOrder=utility
+
+% Object Entity Instances

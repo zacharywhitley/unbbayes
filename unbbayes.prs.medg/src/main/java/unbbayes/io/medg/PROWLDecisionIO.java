@@ -102,6 +102,7 @@ public class PROWLDecisionIO extends PrOwlIO implements IPROWLDecisionModelUser 
 		// are cleared (so that old instances do not appear after saving ontology again)
 		Collection<String> ret = super.getNamesOfAllModifiedPROWLClasses();
 		ret.add(MEDG_DECISION_NODE);
+		ret.add(MEDG_UTILITY_NODE);
 		return ret;
 	}
 	
