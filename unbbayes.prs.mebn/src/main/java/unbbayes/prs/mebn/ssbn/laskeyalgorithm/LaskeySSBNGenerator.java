@@ -241,10 +241,12 @@ public class LaskeySSBNGenerator implements ISSBNGenerator{
 			}
 		}
 		
-		try {
-			this.compileAndInitializeSSBN(ssbn);;
-		} catch (Exception e) {
-			throw new MEBNException(e);
+		if(Boolean.valueOf(getParameters().getParameterValue(LaskeyAlgorithmParameters.COMPILE_AND_INITIALIZE_SSBN))){
+			try {
+				this.compileAndInitializeSSBN(ssbn);
+			} catch (Exception e) {
+				throw new MEBNException(e);
+			}
 		}
 		
 		long compilationTime = System.currentTimeMillis(); 

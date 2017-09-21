@@ -55,7 +55,10 @@ public class LaskeyAlgorithmParameters extends Parameters{
 	 * Domain = integer <br> 
 	 * Default Value = 1000 <br> 
 	 */
-	public static final int NUMBER_NODES_LIMIT    = 0x0008; 
+	public static final int NUMBER_NODES_LIMIT    = 0x0008;
+
+	/** If parameter at this index is true, then BN compilation algorith will be used to compile and initialize SSBN */
+	public static final int COMPILE_AND_INITIALIZE_SSBN = 0x0009; 
 	
 	public LaskeyAlgorithmParameters(){
 		addParameter(NUMBER_NODES_LIMIT, "100000");
@@ -64,6 +67,8 @@ public class LaskeyAlgorithmParameters extends Parameters{
 		addParameter(DO_BUILDER, "true"); 
 		addParameter(DO_PRUNE, "true"); 
 		addParameter(DO_CPT_GENERATION, "true"); 
+		
+		addParameter(COMPILE_AND_INITIALIZE_SSBN, "true"); 
 		
 		addParameter(USE_USER_INTERATION, "false"); 
 	}
