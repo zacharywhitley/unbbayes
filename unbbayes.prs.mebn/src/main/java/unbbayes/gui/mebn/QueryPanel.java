@@ -26,12 +26,15 @@ import java.awt.Cursor;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -106,8 +109,8 @@ public class QueryPanel extends JDialog{
 	 */
 	public void showRandonVariableListPane(){
 		
-		JButton btnSelect;
-		JButton btnClose; 
+		final JButton btnSelect;
+		final JButton btnClose; 
 		
 		JPanel contentPane = new JPanel(new BorderLayout());
 
@@ -138,14 +141,31 @@ public class QueryPanel extends JDialog{
 		toolBar.add(btnClose);
 		toolBar.add(btnSelect);
 
-		RandonVariableListPane randonVariableListPane = new RandonVariableListPane();
+		RandonVariableListPane randomVariableListPane = new RandonVariableListPane();
+		// select the node when enter is pressed
+		randomVariableListPane.jlistResident.addKeyListener(new KeyListener() {
+			public void keyTyped(KeyEvent e) {}
+			public void keyReleased(KeyEvent e) {
+				switch (e.getKeyCode()) {
+				case KeyEvent.VK_ENTER:
+					btnSelect.doClick();
+					break;
+				case KeyEvent.VK_ESCAPE:
+					btnClose.doClick();
+					break;
+				default:
+					break;
+				}
+			}
+			public void keyPressed(KeyEvent e) {}
+		});
 
 		JLabel label = new JLabel(resource.getString("selectOneVariable") + "               ");
 		
 		//TODO put options of the algorithm here. 
 		
 		contentPane.add(label, BorderLayout.PAGE_START); 
-		contentPane.add(randonVariableListPane, BorderLayout.CENTER);
+		contentPane.add(randomVariableListPane, BorderLayout.CENTER);
 		contentPane.add(toolBar, BorderLayout.PAGE_END);
 
 		setContentPane(contentPane);
@@ -385,6 +405,26 @@ public class QueryPanel extends JDialog{
 //			optionsPanel.add(panelAlgorithm); 
 //			
 //			optionsPanel.add(jtbOptions); 
+			
+			// make sure we can go back or forward by pressing enter/escape
+			for (JComboBox comboBox : queryArgumentsPane.getArgumentComboBoxes()) {
+				comboBox.getEditor().getEditorComponent().addKeyListener(new KeyListener() {
+					public void keyTyped(KeyEvent e) {}
+					public void keyReleased(KeyEvent e) {
+						switch (e.getKeyCode()) {
+						case KeyEvent.VK_ENTER:
+							btnExecute.doClick();
+							break;
+						case KeyEvent.VK_ESCAPE:
+							btnClose.doClick();
+							break;
+						default:
+							break;
+						}
+					}
+					public void keyPressed(KeyEvent e) {}
+				});
+			}
 			
 			this.add(jtbOptions, BorderLayout.PAGE_END);
 

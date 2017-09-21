@@ -177,4 +177,8 @@ public class QueryArgumentsPane extends JPanel{
 		
 	}
 	
+	public JComboBox[] getArgumentComboBoxes() {
+		return argument;
+	}
+	
 }
