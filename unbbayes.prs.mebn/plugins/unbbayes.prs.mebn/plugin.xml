@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- This is the plugin descriptor for UnBBayes' MEBN module. -->
-<plugin id="unbbayes.prs.mebn" version="1.18.15">
+<plugin id="unbbayes.prs.mebn" version="1.19.15">
     <requires>
         <import plugin-id="unbbayes.util.extension.core" plugin-version="4.21.18"/>
     </requires>
@@ -15,7 +15,7 @@
         </library>
         <!-- It seems that loaders does not work as expected on jar files -->
         <!-- If you change/add the libraries, change/add these library declaration too -->
-        <library id="unbbayes.prs.mebn" path="unbbayes.prs.mebn-1.18.15.jar" type="code" >
+        <library id="unbbayes.prs.mebn" path="unbbayes.prs.mebn-1.19.15.jar" type="code" >
         	<export prefix="*"/>
         </library>
         <library id="iri" path="lib/iri-2.4.jar" type="code">

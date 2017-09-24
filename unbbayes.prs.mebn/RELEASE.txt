@@ -1,3 +1,10 @@
+UNBBAYES MEBN PLUGIN - VERSION 1.19.15
+----------------------------
+FEATURE LIST		
+Number	Request ID	Summary
+19			SSBN generator can now be configured to skip compilation and initialization of generated SSBN. Wildcard is also supported by PowerloomKB
+
+
 UNBBAYES MEBN PLUGIN - VERSION 1.18.15
 ----------------------------
 FEATURE LIST		

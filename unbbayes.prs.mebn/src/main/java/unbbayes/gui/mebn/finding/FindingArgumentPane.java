@@ -46,6 +46,8 @@ import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.SoftEvidenceEntity;
 import unbbayes.prs.mebn.entity.StateLink;
+import unbbayes.prs.mebn.entity.Type;
+import unbbayes.util.Debug;
 import unbbayes.util.ResourceController;
 
 /**
@@ -119,6 +121,7 @@ public class FindingArgumentPane extends JPanel{
 			argument[i].addItemListener(new ComboListener(i)); 
 			
 			argument[i].setSelectedIndex(0); 
+			argument[i].setEditable(true);
 			
 			//Adicionando componentes ao painel. 
 			btnArgXNumber = new JButton("" + i);
@@ -207,7 +210,15 @@ public class FindingArgumentPane extends JPanel{
 		
 		for(int i = 0; i < argument.length; i++){
 			if(argument[i].getSelectedItem() != null){
-				argumentVector[i] = (ObjectEntityInstance)argument[i].getSelectedItem(); 
+				Object selectedItem = argument[i].getSelectedItem();
+				if (selectedItem instanceof ObjectEntityInstance) {
+					argumentVector[i] = (ObjectEntityInstance)selectedItem; 
+				} else {
+					Debug.println("Unknown type of entity instance found: " + selectedItem);
+					Type argType = node.getOrdinaryVariableByIndex(i).getValueType();
+					ObjectEntity entityOfType = node.getMFrag().getMultiEntityBayesianNetwork().getObjectEntityContainer().getObjectEntityByType(argType);
+					argumentVector[i] = new ObjectEntityInstance(selectedItem.toString(), entityOfType);
+				}
 			}
 			else{
 				throw new ParcialStateException(); 
