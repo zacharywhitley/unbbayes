@@ -124,7 +124,7 @@
 		<dependency>
 			<groupId>br.unb.cic</groupId>
 			<artifactId>unbbayes.prs.mebn</artifactId>
-			<version>1.18.15</version>
+			<version>1.19.15</version>
 		</dependency>
 		<!--
 			This plugin deals with Noisy Max model. 

@@ -6,14 +6,14 @@
   <includeBaseDirectory>true</includeBaseDirectory>
   <fileSets>
     <fileSet>
-      <directory>plugins/unbbayes.prs.ssmsbn/</directory>
+      <directory>plugins/unbbayes.prs.mebn.ssbn.noisymax/</directory>
       <outputDirectory></outputDirectory>
       <includes>
         <include>plugin.xml</include>
       </includes>
     </fileSet>
     <fileSet>
-      <directory>plugins/unbbayes.prs.ssmsbn/</directory>
+      <directory>plugins/unbbayes.prs.mebn.ssbn.noisymax/</directory>
       <outputDirectory></outputDirectory>
       <includes>
         <include>README.txt</include>
