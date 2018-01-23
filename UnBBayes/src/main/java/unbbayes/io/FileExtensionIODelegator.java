@@ -6,7 +6,9 @@ package unbbayes.io;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import unbbayes.io.exception.LoadException;
 import unbbayes.prs.Graph;
@@ -152,7 +154,9 @@ public class FileExtensionIODelegator implements BaseIO {
 				String [] delegatorExtensions = io.getSupportedFileExtensions(isLoadOnly);
 				if (delegatorExtensions != null) {
 					for (String ext : delegatorExtensions) {
-						ret.add(ext);
+						if (!ret.contains(ext)) {
+							ret.add(ext);
+						}
 					}
 				}
 			}
@@ -166,12 +170,18 @@ public class FileExtensionIODelegator implements BaseIO {
 	 */
 	public String getSupportedFilesDescription(boolean isLoadOnly) {
 		String ret = new String();
+		Set<String> handledDescriptions = new HashSet<String>();
 		List<BaseIO> delegators = this.getDelegators();
 		if (delegators != null) {
 			for (BaseIO io : delegators) {
 				String desc = io.getSupportedFilesDescription(isLoadOnly);
+				if (handledDescriptions.contains(desc)) {
+					// ignore duplicate description
+					continue;
+				}
 				if (desc != null && (desc.trim().length() > 0)) {
 					ret += (desc + ", ");
+					handledDescriptions.add(desc);	// keep track of descriptions that were handled already
 				}
 			}
 		}
