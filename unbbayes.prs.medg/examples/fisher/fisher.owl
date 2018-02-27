@@ -16,19 +16,26 @@
      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:xml="http://www.w3.org/XML/1998/namespace"
      ontologyIRI="file:/C:/workspace/MEDG/examples/fisher/fisher.owl">
-    <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
-    <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
     <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
     <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+    <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
     <Import>http://www.pr-owl.org/pr-owl-decision.owl</Import>
     <Import>http://www.pr-owl.org/pr-owl2.owl</Import>
+    <Declaration>
+        <ObjectProperty IRI="#Previous"/>
+    </Declaration>
+    <Declaration>
+        <DataProperty IRI="#isFirstTimeStep"/>
+    </Declaration>
     <SubClassOf>
         <Class IRI="#Sea"/>
-        <Class abbreviatedIRI="owl:Thing"/>
+        <Class abbreviatedIRI=":Thing"/>
     </SubClassOf>
     <SubClassOf>
         <Class IRI="#TimeStep"/>
-        <Class abbreviatedIRI="owl:Thing"/>
+        <Class abbreviatedIRI=":Thing"/>
     </SubClassOf>
     <ClassAssertion>
         <Class IRI="http://www.pr-owl.org/pr-owl2.owl#OrdinaryVariableArgument"/>
@@ -119,7 +126,7 @@
         <NamedIndividual IRI="#FisherMFrag.tPrev"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class abbreviatedIRI="owl:Thing"/>
+        <Class abbreviatedIRI=":Thing"/>
         <NamedIndividual IRI="#High"/>
     </ClassAssertion>
     <ClassAssertion>
@@ -151,7 +158,7 @@
         <NamedIndividual IRI="#IsFirstTimeStep_1"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class abbreviatedIRI="owl:Thing"/>
+        <Class abbreviatedIRI=":Thing"/>
         <NamedIndividual IRI="#Low"/>
     </ClassAssertion>
     <ClassAssertion>
@@ -207,7 +214,7 @@
         <NamedIndividual IRI="#MEXPRESSION_UtilitySea"/>
     </ClassAssertion>
     <ClassAssertion>
-        <Class abbreviatedIRI="owl:Thing"/>
+        <Class abbreviatedIRI=":Thing"/>
         <NamedIndividual IRI="#Medium"/>
     </ClassAssertion>
     <ClassAssertion>
@@ -1209,6 +1216,31 @@
         <NamedIndividual IRI="#FisherMFrag.t"/>
     </ObjectPropertyAssertion>
     <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#Previous"/>
+        <NamedIndividual IRI="#YEAR2012"/>
+        <NamedIndividual IRI="#YEAR2012"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#Previous"/>
+        <NamedIndividual IRI="#YEAR2013"/>
+        <NamedIndividual IRI="#YEAR2012"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#Previous"/>
+        <NamedIndividual IRI="#YEAR2014"/>
+        <NamedIndividual IRI="#YEAR2013"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#Previous"/>
+        <NamedIndividual IRI="#YEAR2015"/>
+        <NamedIndividual IRI="#YEAR2014"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
+        <ObjectProperty IRI="#Previous"/>
+        <NamedIndividual IRI="#YEAR2016"/>
+        <NamedIndividual IRI="#YEAR2015"/>
+    </ObjectPropertyAssertion>
+    <ObjectPropertyAssertion>
         <ObjectProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgument"/>
         <NamedIndividual IRI="http://www.pr-owl.org/pr-owl2.owl#CX1_2_inner"/>
         <NamedIndividual IRI="#CX1_2_inner_1"/>
@@ -1404,6 +1436,11 @@
         <Literal datatypeIRI="&xsd;integer">2</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
+        <NamedIndividual IRI="#RV_IsFirstTimeStep"/>
+        <Literal datatypeIRI="&xsd;anyURI">file:/C:/workspace/MEDG/examples/fisher/fisher.owl#isFirstTimeStep</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
         <NamedIndividual IRI="#RV_IsFirstTimeStep_1"/>
         <Literal datatypeIRI="&xsd;integer">1</Literal>
@@ -1432,6 +1469,11 @@
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasArgumentNumber"/>
         <NamedIndividual IRI="#RV_ObservedFishVolume_2"/>
         <Literal datatypeIRI="&xsd;integer">2</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#definesUncertaintyOf"/>
+        <NamedIndividual IRI="#RV_Previous"/>
+        <Literal datatypeIRI="&xsd;anyURI">file:/C:/workspace/MEDG/examples/fisher/fisher.owl#Previous</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasPossibleValues"/>
@@ -1474,9 +1516,19 @@
         <Literal datatypeIRI="&xsd;integer">2</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
+        <DataProperty IRI="#isFirstTimeStep"/>
+        <NamedIndividual IRI="#YEAR2012"/>
+        <Literal datatypeIRI="&xsd;boolean">true</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasUID"/>
         <NamedIndividual IRI="#YEAR2012"/>
         <Literal datatypeIRI="&xsd;string">!YEAR2012</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="#isFirstTimeStep"/>
+        <NamedIndividual IRI="#YEAR2013"/>
+        <Literal datatypeIRI="&xsd;boolean">false</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasUID"/>
@@ -1484,14 +1536,29 @@
         <Literal datatypeIRI="&xsd;string">!YEAR2013</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
+        <DataProperty IRI="#isFirstTimeStep"/>
+        <NamedIndividual IRI="#YEAR2014"/>
+        <Literal datatypeIRI="&xsd;boolean">false</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasUID"/>
         <NamedIndividual IRI="#YEAR2014"/>
         <Literal datatypeIRI="&xsd;string">!YEAR2014</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
+        <DataProperty IRI="#isFirstTimeStep"/>
+        <NamedIndividual IRI="#YEAR2015"/>
+        <Literal datatypeIRI="&xsd;boolean">false</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasUID"/>
         <NamedIndividual IRI="#YEAR2015"/>
         <Literal datatypeIRI="&xsd;string">!YEAR2015</Literal>
+    </DataPropertyAssertion>
+    <DataPropertyAssertion>
+        <DataProperty IRI="#isFirstTimeStep"/>
+        <NamedIndividual IRI="#YEAR2016"/>
+        <Literal datatypeIRI="&xsd;boolean">false</Literal>
     </DataPropertyAssertion>
     <DataPropertyAssertion>
         <DataProperty IRI="http://www.pr-owl.org/pr-owl2.owl#hasUID"/>
@@ -1571,6 +1638,22 @@ if all sea have (AllowableCatchVolume=High) [utility = 100]
 else if all sea have (AllowableCatchVolume=Medium) [utility = 1]
 else [utility = 0]</Literal>
     </DataPropertyAssertion>
+    <SubObjectPropertyOf>
+        <ObjectProperty IRI="#ActualFishVolume"/>
+        <ObjectProperty abbreviatedIRI=":topObjectProperty"/>
+    </SubObjectPropertyOf>
+    <SubObjectPropertyOf>
+        <ObjectProperty IRI="#AllowableCatchVolume"/>
+        <ObjectProperty abbreviatedIRI=":topObjectProperty"/>
+    </SubObjectPropertyOf>
+    <SubObjectPropertyOf>
+        <ObjectProperty IRI="#ObservedFishVolume"/>
+        <ObjectProperty abbreviatedIRI=":topObjectProperty"/>
+    </SubObjectPropertyOf>
+    <SubObjectPropertyOf>
+        <ObjectProperty IRI="#UtilitySea"/>
+        <ObjectProperty abbreviatedIRI=":topObjectProperty"/>
+    </SubObjectPropertyOf>
     <AnnotationAssertion>
         <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
         <IRI>#CX1</IRI>
