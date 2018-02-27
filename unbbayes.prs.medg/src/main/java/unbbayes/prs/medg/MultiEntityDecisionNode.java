@@ -73,11 +73,11 @@ public class MultiEntityDecisionNode extends ResidentNode implements IMEBNPlugin
 		this.setTypeOfStates(CATEGORY_RV_STATES);
 		
 		// set default compiler as the utility lpd compiler
-		try {
-			this.setCompiler(MultiEntityUtilityFunctionCompiler.newInstance(this));
-		}catch (Exception e) {
-			Debug.println(this.getClass(), e.getMessage(), e);
-		}
+//		try {
+//			this.setCompiler(MultiEntityUtilityFunctionCompiler.newInstance(this));
+//		}catch (Exception e) {
+//			Debug.println(this.getClass(), e.getMessage(), e);
+//		}
 	}
 
 	
