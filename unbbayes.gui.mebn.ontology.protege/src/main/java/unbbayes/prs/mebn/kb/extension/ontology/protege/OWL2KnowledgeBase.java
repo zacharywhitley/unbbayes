@@ -387,8 +387,8 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		}
 		try {
 			// disable cache for owl class expressions
-			this.setExpressionCache(null);
-//			this.setExpressionCache(new HashMap<String, OWLClassExpression>());
+//			this.setExpressionCache(null);
+			this.setExpressionCache(new HashMap<String, OWLClassExpression>());
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
@@ -2842,7 +2842,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						&& formulaTree.getChildren().get(0).getSubTypeNode().equals(EnumSubType.OVARIABLE)
 						&& formulaTree.getChildren().get(1).getSubTypeNode().equals(EnumSubType.OVARIABLE)) {
 //					System.err.println((isToSolveAsPositiveOperation?"":"not") + " ov1 = ov2 is not implemented yet...");
-					return this.solveFormulaTreeOV1EqualsOV2(formulaTree.getChildren().get(0), formulaTree.getChildren().get(1), knownValues, context, isToSolveAsPositiveOperation, false);
+					return this.solveFormulaTreeOV1EqualsOV2(formulaTree.getChildren().get(0), formulaTree.getChildren().get(1), knownValues, context, isToSolveAsPositiveOperation, isToAddKnownValuesToSearchResult);
 				}
 			} catch (Exception e) {
 				try {
@@ -2863,7 +2863,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 //							&& (((ResidentNodePointer)formulaTree.getNodeVariable()).getResidentNode().getArgumentList().size() <= 2) // number of arguments
 						) {		
 					try {
-						return this.solveFormulaTreeBooleanNode(formulaTree, knownValues, context, isToSolveAsPositiveOperation, false);
+						return this.solveFormulaTreeBooleanNode(formulaTree, knownValues, context, isToSolveAsPositiveOperation, isToAddKnownValuesToSearchResult);
 					} catch (Exception e) {
 						try {
 							Debug.println(this.getClass(), e.getMessage() + ". Could not solve " + formulaTree, e);
@@ -2895,7 +2895,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 //						&& (((ResidentNodePointer)formulaTree.getChildren().get(1).getNodeVariable()).getResidentNode().getArgumentList().size() == 1) 	// <1 argument>		
 						) {	
 					// solve this format asserting that "ov" is in the left side of the formula (formulaTree.getChildren().get(0) is the "ov")
-					return this.solveFormulaTreeOVEqualsToNonBooleanNode(formulaTree.getChildren().get(0), formulaTree.getChildren().get(1), knownValues, context, isToSolveAsPositiveOperation, false);
+					return this.solveFormulaTreeOVEqualsToNonBooleanNode(formulaTree.getChildren().get(0), formulaTree.getChildren().get(1), knownValues, context, isToSolveAsPositiveOperation, isToAddKnownValuesToSearchResult);
 				}
 			} catch (Exception e) {
 				try {
@@ -2919,7 +2919,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 //						&& (((ResidentNodePointer)formulaTree.getChildren().get(0).getNodeVariable()).getResidentNode().getArgumentList().size() == 1) 	// <1 argument>		
 						) {	
 					// solve this format asserting that "ov" is in the right side of the formula (formulaTree.getChildren().get(1) is the "ov")
-					return this.solveFormulaTreeOVEqualsToNonBooleanNode(formulaTree.getChildren().get(1), formulaTree.getChildren().get(0), knownValues, context, isToSolveAsPositiveOperation, false);
+					return this.solveFormulaTreeOVEqualsToNonBooleanNode(formulaTree.getChildren().get(1), formulaTree.getChildren().get(0), knownValues, context, isToSolveAsPositiveOperation, isToAddKnownValuesToSearchResult);
 				}
 			} catch (Exception e) {
 				try {
@@ -2941,7 +2941,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					// 8. not (nonBooleanNode(<1 argument>) = ov)
 					// 10.2. not (nonBooleanNode(<2+ argument>) = const)
 					// 12. not booleanNode(<3+ arguments>)
-					return this.solveFormulaTree(formulaTree.getChildren().get(0), knownValues, context, !isToSolveAsPositiveOperation, false);
+					return this.solveFormulaTree(formulaTree.getChildren().get(0), knownValues, context, !isToSolveAsPositiveOperation, isToAddKnownValuesToSearchResult);
 				}
 			} catch (Exception e) {
 				try {
@@ -3145,7 +3145,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						String[] resultToAdd = new String[knownSearchResults.getOrdinaryVariableSequence().length];
 						for (OVInstance knownValue : knownValues) {
 							// find the index of knownValue.getOv() in knownSearchResults.getOrdinaryVariableSequence(), and set knownValue.getEntity() as the value in that index
-							resultToAdd[Arrays.asList(knownSearchResults.getOrdinaryVariableSequence()).indexOf(knownValue.getOv())] = knownValue.getEntity().getInstanceName();
+							int indValue = Arrays.asList(knownSearchResults.getOrdinaryVariableSequence()).indexOf(knownValue.getOv());
+							if (indValue >= 0) {
+								resultToAdd[indValue] = knownValue.getEntity().getInstanceName();
+							}
 						}
 						knownSearchResults.addResult(resultToAdd);
 						return knownSearchResults;	// the context node can be resolved (value = true) with no modification (no search is needed at all)
@@ -4588,7 +4591,19 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 */
 	public Boolean evaluateContextNodeFormula(ContextNode context, List<OVInstance> ovInstances) {
 		Boolean ret = true;
-		Debug.println(this.getClass(), "Boolean evaluation of context node formula is not implemented yet. Returning default value: " + ret);
+		try {
+			SearchResult result = this.solveFormulaTree(context.getFormulaTree(), ovInstances, context, true, true);
+			if (result == null) {
+				ret = false;	// no result found
+			} else {
+				ret = !result.getValuesResultList().isEmpty();
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			ret = false;
+		}
+		Debug.println(this.getClass(), "Boolean evaluation of context node formula " + context + ovInstances + ". Returning value: " + ret);
 		return ret;
 	}
 	
