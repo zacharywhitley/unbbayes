@@ -168,12 +168,12 @@
 		</plugins>
 	</build>
 		<dependencies>
-			<dependency>
-				<groupId>br.unb.cic</groupId>
-				<artifactId>unbbayes.prs.mebn</artifactId>
-				<version>1.18.14</version>
-				<optional>false</optional>
-			</dependency>
+<!-- 			<dependency> -->
+<!-- 				<groupId>br.unb.cic</groupId> -->
+<!-- 				<artifactId>unbbayes.prs.mebn</artifactId> -->
+<!-- 				<version>1.18.15</version> -->
+<!-- 				<optional>false</optional> -->
+<!-- 			</dependency> -->
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes.gui.mebn.ontology.protege</artifactId>
