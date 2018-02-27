@@ -54,8 +54,15 @@ public class JunctionTreeID extends JunctionTree implements java.io.Serializable
 //        clique1.absorb(clique2, separator.getPotentialTable());
         ArrayList<Node> toDie = SetToolkit.clone(clique2.getNodes());
         toDie.removeAll(separator.getNodes());
+        
+        if (separator == null) {
+        	return;
+        }
 
         PotentialTable originalSeparatorUtilityTable = (PotentialTable) separator.getUtilityTable().clone();
+        if (originalSeparatorUtilityTable.tableSize() <= 0) {
+        	return;
+        }
 
         PotentialTable dummyTable = (PotentialTable) clique2.getUtilityTable().clone();
         dummyTable.directOpTab(clique2.getProbabilityFunction(), PotentialTable.PRODUCT_OPERATOR);
