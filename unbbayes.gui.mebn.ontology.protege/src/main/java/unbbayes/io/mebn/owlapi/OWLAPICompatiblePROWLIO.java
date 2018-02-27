@@ -2075,23 +2075,59 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 			// iterate over individuals
 			for (OWLIndividual individual : individuals) { 
 				if (individual.isNamed()) {
+					String individualName = this.extractName(ontology, individual.asOWLNamedIndividual());
+					
 					// creates a object entity instance and adds it into the mebn entity container
 					try {
 						// do not add individual if it was already added.
 						// TODO use UID instead of individual IRI
 						if (mebn instanceof IRIAwareMultiEntityBayesianNetwork) {
 							if (((IRIAwareMultiEntityBayesianNetwork) mebn).getIriMap().containsValue(individual.asOWLNamedIndividual().getIRI())) {
+
 								// the individual was previously added to MEBN
 								try {
 									Debug.println(getClass(), individual + " is already in " + mebn);
 								} catch (Throwable t) {
 									t.printStackTrace();
 								}
-								continue;
+								
+								// check if individual with same name exists
+								if (mebn.getObjectEntityContainer().getEntityInstanceByName(individualName) != null) {
+									try {
+										Debug.println(getClass(), "Instance was already inserted for another entity. Avoid duplicates.");
+									} catch (Throwable t) {
+										t.printStackTrace();
+									}
+									continue;
+								}
+								
+								// make sure this is not punning (an individual with same IRI as its class)
+								
+								// check if object entity with same name exists
+								ObjectEntity entitySameName = mebn.getObjectEntityContainer().getObjectEntityByName(individualName);
+								if (entitySameName == null) {
+									try {
+										Debug.println(getClass(), "No entity with same name found. It's not punning. Do not add new individual.");
+									} catch (Throwable t) {
+										t.printStackTrace();
+									}
+									continue;
+								}
+								
+								IRI entityIRI = ((IRIAwareMultiEntityBayesianNetwork) mebn).getIriMap().get(entitySameName);
+								if (entityIRI != null && !entityIRI.equals(individual.asOWLNamedIndividual().getIRI())) {
+									try {
+										Debug.println(getClass(), "No entity with same IRI found. It's not punning. Do not add new individual.");
+									} catch (Throwable t) {
+										t.printStackTrace();
+									}
+									continue;
+								}
+								
+								// it's punning, and it's the 1st time the individual is included in MEBN. Add to mebn now
 							}
 						}
 
-						String individualName = this.extractName(ontology, individual.asOWLNamedIndividual());
 						ObjectEntityInstance addedInstance = mebnEntity.addInstance(individualName);
 						mebn.getObjectEntityContainer().addEntityInstance(addedInstance);
 						ret.put(individualName, addedInstance);
