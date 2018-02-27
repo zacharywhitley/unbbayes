@@ -2265,21 +2265,31 @@ public class MEBNController extends NetworkController implements IMEBNMediator{
 	    	((IMediatorAwareSSBNGenerator)this.getSSBNGenerator()).setMediator(this);
 	    }
 	    
-	    Runtime runtime = Runtime.getRuntime();
-	    long memory = runtime.totalMemory() - runtime.freeMemory();
-	    System.out.println("Used memory in bytes: " + memory);
-	    runtime.gc();
-	    memory = runtime.totalMemory() - runtime.freeMemory();
-	    System.out.println("Used memory in bytes: " + memory);
+	    if (Debug.isDebugMode()) {
+	    	Runtime runtime = Runtime.getRuntime();
+	    	long memory = runtime.totalMemory() - runtime.freeMemory();
+	    	System.out.println("Used memory in bytes: " + memory);
+	    	runtime.gc();
+	    	memory = runtime.totalMemory() - runtime.freeMemory();
+	    	System.out.println("Used memory in bytes: " + memory);
+	    }
 	    
 	    ssbn = this.getSSBNGenerator().generateSSBN(listQueries, getKnowledgeBase()); 
+	    if (Debug.isDebugMode()) {
+	    	Runtime runtime = Runtime.getRuntime();
+	    	long memory = runtime.totalMemory() - runtime.freeMemory();
+	    	System.out.println("Used memory in bytes: " + memory);
+	    	runtime.gc();
+	    	memory = runtime.totalMemory() - runtime.freeMemory();
+	    	System.out.println("Used memory in bytes: " + memory);
+	    }
 	    
 	    
 	    
 		// show on display
 		showSSBN(ssbn);
 	    
-	    System.out.println("Used memory in bytes: " + memory);
+//	    System.out.println("Used memory in bytes: " + memory);
 	    
 		if (ssbn != null) {
 			ret = ssbn.getNetwork();
