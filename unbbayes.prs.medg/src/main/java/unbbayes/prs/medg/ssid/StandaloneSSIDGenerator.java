@@ -111,12 +111,12 @@ public class StandaloneSSIDGenerator extends LaskeySSBNGenerator implements IMed
 		this.setBuilderStructure(BuilderStructureImpl.newInstance());
 		this.setBuildLocalDistribution(SSIDBuilderLocalDistribution.getInstance());
 		// disable debug info by default
-		try {
-			this.setLogEnabled(false);
-			SSBNDebugInformationUtil.setEnabled(false);
-		}catch (Exception e) {
-			e.printStackTrace();
-		}
+//		try {
+//			this.setLogEnabled(false);
+//			SSBNDebugInformationUtil.setEnabled(false);
+//		}catch (Exception e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	/**

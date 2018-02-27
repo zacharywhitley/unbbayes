@@ -75,7 +75,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 	private INetworkMediator mediator = null;
 	private IInferenceAlgorithm inferenceAlgorithm;
 	
-	private Logger log = Logger.getLogger(getClass());
+	private Logger log = null;
 	private boolean isToPreprocess = true;
 	private boolean isToPostProcessDecisionNodes = false;
 	private boolean isToConnectSameResidentDecisionNodes = true;
@@ -871,7 +871,7 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 			return false;
 		}
 		// just check if it is not off
-		return !(getLog().getLevel() == null || Level.OFF.isGreaterOrEqual(getLog().getLevel()));
+		return !(getLog().getLevel() == null || getLog().getLevel().isGreaterOrEqual(Level.OFF));
 	}
 	
 
@@ -924,6 +924,9 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 	public Logger getLog() {
 		if (log == null) {
 			log = Logger.getLogger(getClass());
+			if (super.isLogEnabled()) {
+				this.setLogEnabled(true);
+			}
 		}
 		return log;
 	}
