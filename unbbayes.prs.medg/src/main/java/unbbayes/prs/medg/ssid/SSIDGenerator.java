@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.SwingUtilities;
+
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
@@ -18,6 +20,7 @@ import unbbayes.controller.INetworkMediator;
 import unbbayes.controller.NetworkController;
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.gui.NetworkWindow;
+import unbbayes.io.NetIO;
 import unbbayes.prs.Edge;
 import unbbayes.prs.Graph;
 import unbbayes.prs.Network;
@@ -319,6 +322,12 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 		// this is the actual ID (i.e. SSID) to compile
 		Network influenceDiagram = ssbn.getNetwork();
 		
+		try {
+			new NetIO().save(new java.io.File("tempSSID.net"), influenceDiagram);
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		
 		// If it is a SingleEntityNetwork, make sure all variables are properly initialized
 		if (influenceDiagram instanceof SingleEntityNetwork) {
 			SingleEntityNetwork singleEntityNetwork = (SingleEntityNetwork) influenceDiagram;
@@ -352,11 +361,6 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 			}
 			controller.setInferenceAlgorithm(algorithm);
 			
-			// Make sure the tree (JTree in the left side of compilation panel) is updated with the network changes, if there is any.
-			controller.getScreen().getEvidenceTree().resetTree();
-			
-			// change BN module to the "compiled" view instead of "edit" view
-			idModule.changeToPNCompilationPane();
 		
 		}
 		
@@ -371,13 +375,32 @@ public class SSIDGenerator extends LaskeySSBNGenerator implements IMediatorAware
 				((IMEBNMediator)getMediator()).setToTurnToSSBNMode(false);
 				((IMEBNMediator)getMediator()).setSpecificSituationBayesianNetwork(null);	// free any previous ssbn/ssid
 			}
-			// add/show popup
-			getMediator().getScreen().getUnbbayesFrame().addWindow(idModule);
-			idModule.setVisible(true);
-			idModule.updateUI();
-			getMediator().getScreen().getUnbbayesFrame().repaint();
-			idModule.repaint();
-			idModule.getNetWindowCompilation().getPropagate().doClick();
+			
+			// following SwingUtilities trick avoids runtime exception in merge sort when adding internal windows (bug in swing + newer jre)
+			// use following if experiencing thread conflicts
+			final NetworkWindow threadModule = idModule;
+        	SwingUtilities.invokeLater(new Runnable(){
+        		public void run(){
+        			// add/show popup
+        			getMediator().getScreen().getUnbbayesFrame().addWindow(threadModule);
+        			
+        			// extract controller from BN module
+        			NetworkController controller = threadModule.getController();
+        			        			
+        			// Make sure the tree (JTree in the left side of compilation panel) is updated with the network changes, if there is any.
+        			controller.getScreen().getEvidenceTree().resetTree();
+        			
+        			// change BN module to the "compiled" view instead of "edit" view
+        			threadModule.changeToPNCompilationPane();
+        			
+        			threadModule.setVisible(true);
+        			threadModule.updateUI();
+        			getMediator().getScreen().getUnbbayesFrame().repaint();
+        			threadModule.repaint();
+        			threadModule.getNetWindowCompilation().getPropagate().doClick();
+        		}
+        	});
+        
 		}
 		
 		return ssbn;
