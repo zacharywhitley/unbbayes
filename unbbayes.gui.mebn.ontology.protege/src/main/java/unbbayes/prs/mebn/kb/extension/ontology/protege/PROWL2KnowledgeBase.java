@@ -311,6 +311,7 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 			
 			// this is where we will look for imports
 			OWLOntology findingOntology = ((ProtegeStorageImplementorDecorator)findingMEBN.getStorageImplementor()).getAdaptee();
+			
 			// this is the ontology we will be looking for
 			OWLOntology baseOntology = getDefaultOWLReasoner().getRootOntology();
 			
@@ -359,8 +360,11 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 				}
 			}
 			
+			
 			// init reasoner
-			this.setDefaultOWLReasoner(buildOWLReasoner(ProtegeOWLReasonerInfoAdapter.getInstance(currentReasonerInfo)));
+//			this.setDefaultOWLReasoner(buildOWLReasoner(ProtegeOWLReasonerInfoAdapter.getInstance(currentReasonerInfo)));
+			final OWLReasoner findingReasoner = ((ProtegeStorageImplementorDecorator)findingMEBN.getStorageImplementor()).getOWLReasoner();
+			this.setDefaultOWLReasoner(findingReasoner);
 			
 			// force this KB to use a class expression parser which is linked to finding ontology
 			this.setOwlClassExpressionParserDelegator(OWLClassExpressionParserFacade.getInstance(((ProtegeStorageImplementorDecorator)findingMEBN.getStorageImplementor()).getOWLEditorKit().getModelManager()));

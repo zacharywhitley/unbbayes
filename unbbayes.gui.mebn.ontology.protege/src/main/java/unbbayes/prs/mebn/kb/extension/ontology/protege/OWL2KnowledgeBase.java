@@ -100,7 +100,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 
 	private List<IClearKBCommand> clearKBCommandList = new ArrayList<OWL2KnowledgeBase.IClearKBCommand>();
 	
-	private OWLReasoner defaultOWLReasoner;
+	private OWLReasoner defaultOWLReasoner = null;
 	
 	private MultiEntityBayesianNetwork defaultMEBN;
 	
@@ -262,7 +262,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 */
 	public void createGenerativeKnowledgeBase(MultiEntityBayesianNetwork mebn) {
 		this.setDefaultMEBN(mebn);
-		this.setDefaultOWLReasoner(null); // this setting forces the delegation of OWL reasoners
+//		this.setDefaultOWLReasoner(null); // this setting forces the delegation of OWL reasoners
 		if (this.getNonPROWLClassExtractor() != null) {
 			// clear the non-prowl class extractor.
 			this.getNonPROWLClassExtractor().resetNonPROWLClassExtractor();
