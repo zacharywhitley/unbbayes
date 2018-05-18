@@ -5,6 +5,7 @@ package unbbayes;
 
 import java.io.File;
 
+import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.UbfIO2;
 import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWL2IO;
 import unbbayes.prs.bn.ProbabilisticNetwork;
@@ -51,15 +52,12 @@ public class PROWL2TextModeRunner extends TextModeRunner {
 			
 			PROWL2TextModeRunner textModeRunner = new PROWL2TextModeRunner();
 			
-			// load ubf/owl2
-			UbfIO2 ubf = UbfIO2.getInstance();
-			File ubfFile = new File(args[0]);
+			// load owl2 only (content in ubf is not needed when not using GUI)
+			MebnIO mebnIO = OWLAPICompatiblePROWL2IO.newInstance();
+			File owlFile = new File(args[0]);
 			
 			
-			// use OWLAPI instead of protege 4.1, because protege4.1 pops up a Swing frame
-			ubf.setProwlIO(OWLAPICompatiblePROWL2IO.newInstance()); 
-			
-			MultiEntityBayesianNetwork mebn = ubf.loadMebn(ubfFile);
+			MultiEntityBayesianNetwork mebn = mebnIO.loadMebn(owlFile);
 
 			
 			// initialize kb
@@ -67,7 +65,7 @@ public class PROWL2TextModeRunner extends TextModeRunner {
 			knowledgeBase = textModeRunner.createKnowledgeBase(knowledgeBase, mebn);
 			
 			// load kb
-			knowledgeBase.loadModule(ubfFile, true);
+			knowledgeBase.loadModule(owlFile, true);
 			
 			
 			knowledgeBase = textModeRunner.fillFindings(mebn,knowledgeBase);
