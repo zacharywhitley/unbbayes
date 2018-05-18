@@ -675,6 +675,15 @@ public class OWLImportTreePanelBuilder extends JPanel implements IMEBNEditionPan
 				ontologyIRI = e.getOntologyID().getOntologyIRI();
 				// retrieve the ontology from it's actual URI
 				ontologyToImport = ontology.getOWLOntologyManager().getOntology(ontologyIRI);	
+				if (ontologyToImport == null) {
+					// try to load from document iri
+					ontologyIRI = e.getOntologyID().getDefaultDocumentIRI();
+					ontologyToImport = ontology.getOWLOntologyManager().getOntology(ontologyIRI);	
+				}
+				if (ontologyToImport == null) {
+					// try to load from ontology id
+					ontologyToImport = ontology.getOWLOntologyManager().getOntology(e.getOntologyID());	
+				}
 			} catch (Exception e) {
 				// ignore exception for now, because we'll try second attempt
 				e.printStackTrace();
