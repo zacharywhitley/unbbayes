@@ -26,6 +26,7 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.ontology.protege.PROWL2KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.ontology.protege.PROWL2KnowledgeBaseBuilder;
+import unbbayes.util.Debug;
 
 /**
  * @author Shou Matsumoto
@@ -61,7 +62,8 @@ public class TestPROWL2TextModeRunner extends TestCase {
 	 */
 	public final void testSaveFindingsSeparateOWLFile() throws Exception {
 		
-		
+		Debug.setDebug(true);
+		Debug.println("Enabled debug mode");
 		PROWL2TextModeRunner textModeRunner = new PROWL2TextModeRunner();
 		
 		// load owl (content in ubf is not needed when not using GUI)
