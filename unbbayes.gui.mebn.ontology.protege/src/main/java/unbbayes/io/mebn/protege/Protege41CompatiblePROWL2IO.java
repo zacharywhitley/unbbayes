@@ -13,6 +13,8 @@ import org.protege.editor.owl.OWLEditorKit;
 import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.protege.editor.owl.model.inference.ReasonerStatus;
+import org.protege.editor.owl.ui.inference.ReasonerProgressUI;
+import org.semanticweb.owlapi.reasoner.ConsoleProgressMonitor;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import unbbayes.io.mebn.MebnIO;
@@ -38,6 +40,7 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	private long sleepTimeWaitingReasonerInitialization = 900;
 	
 	private IBundleLauncher protegeBundleLauncher;
+	private boolean isToShowProgressMonitorUI = false;
 	
 	/**
 	 * This is public just to enable plug-in compatibility
@@ -77,6 +80,16 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 			this.setLastOWLOntology(kit.getOWLModelManager().getActiveOntology());
 
 			if (isToInitializeReasoner()) {
+				
+				if (isToShowProgressMonitorUI()) {
+					// popup reasoner progress monitor
+					kit.getOWLModelManager().getOWLReasonerManager().setReasonerProgressMonitor(new ReasonerProgressUI(kit));
+				} else {
+					// do not popup reasoner progress monitor
+					kit.getOWLModelManager().getOWLReasonerManager().setReasonerProgressMonitor(new ConsoleProgressMonitor());
+				}
+				
+				
 				// Check if reasoner is set up. Set it as the reasoner to use for I/O operation
 				OWLReasoner reasoner = this.setupOWLReasoner(kit.getOWLModelManager());
 				if (reasoner != null) {
@@ -231,6 +244,8 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 				if ( info.getReasonerId().contains("HermiT") ){	// only initialize hermit, because waiting for all reasoners to initialize is too much time
 					// user must manually initialize other reasoners by pressing the button Load KB after changing the reasoner.
 					try {
+						
+						
 						protegeModelManager.getOWLReasonerManager().setCurrentReasonerFactoryId(info.getReasonerId());
 						protegeModelManager.getOWLReasonerManager().classifyAsynchronously(protegeModelManager.getOWLReasonerManager().getReasonerPreferences().getPrecomputedInferences());
 						
@@ -353,6 +368,20 @@ public class Protege41CompatiblePROWL2IO extends OWLAPICompatiblePROWL2IO {
 	public void setSleepTimeWaitingReasonerInitialization(
 			long sleepTimeWaitingReasonerInitialization) {
 		this.sleepTimeWaitingReasonerInitialization = sleepTimeWaitingReasonerInitialization;
+	}
+
+	/**
+	 * @return the isToShowProgressMonitorUI
+	 */
+	public boolean isToShowProgressMonitorUI() {
+		return isToShowProgressMonitorUI;
+	}
+
+	/**
+	 * @param isToShowProgressMonitorUI the isToShowProgressMonitorUI to set
+	 */
+	public void setToShowProgressMonitorUI(boolean isToShowProgressMonitorUI) {
+		this.isToShowProgressMonitorUI = isToShowProgressMonitorUI;
 	}
 
 //	/* (non-Javadoc)
