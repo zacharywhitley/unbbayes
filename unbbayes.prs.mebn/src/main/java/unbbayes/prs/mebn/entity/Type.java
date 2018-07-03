@@ -56,14 +56,12 @@ public class Type implements Comparable<Type>{
 	
 	protected Type(String newType, TypeContainer container) throws TypeAlreadyExistsException {
 		
-		name = newType; 
-		isTypeOfList = new ArrayList<Object>(); 
-		this.container = container; 
+		this(newType);
 		
+		this.container = container; 
 		if (container.getType(newType) != null){
 			throw new TypeAlreadyExistsException(); 
 		}
-		hasOrder = false;
 	}
 	
 	/**
