@@ -25,6 +25,7 @@ import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.TypeContainer;
 import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
+import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.util.Debug;
 
@@ -243,8 +244,43 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 	 */
 	protected void addEntity(ObjectEntity entity, ObjectEntity parentObjectEntity) {
 		super.addEntity(entity, parentObjectEntity);
-		// we need to handle hierarchy in OWL
-		if (parentObjectEntity == null || getRootObjectEntity().equals(parentObjectEntity)) {
+		
+		
+//		if (parentObjectEntity == null) {
+//			if (entity.equals(getRootObjectEntity())) {
+//				// this is the 1st time we are adding a new entity (the root) to mebn
+//				return;
+//			}
+//			parentObjectEntity = getRootObjectEntity();
+//		}
+//		
+//		// update the type of root object entity, so that subtypes are considered
+//		Type supertype = parentObjectEntity.getType();
+//		Debug.println(getClass(), "Adding " + entity.getType() + " to list of types compatible with " + supertype);
+//		if (supertype instanceof EquivalentTypeWrapper) {
+//			// just consider child entity to have a "compatible" type (regarding Object#equals())
+//			((EquivalentTypeWrapper) supertype).addEquivalentType(entity.getType());
+//		} else {
+//			// substitute type with a wrapper that can let Object#equals() to return true for all "compatible" types
+//			Debug.println(getClass(), "Attempting to substitute old type " + supertype);
+//			try {
+//				getTypeContainer().removeType(supertype);
+//			} catch (TypeDoesNotExistException e1) {
+//				e1.printStackTrace();
+//			}
+//			try {
+//				EquivalentTypeWrapper wrapper = new EquivalentTypeWrapper(supertype, getTypeContainer(), null);
+//				wrapper.addEquivalentType(supertype);
+//				getTypeContainer().getListOfTypes().add(wrapper);
+//			} catch (TypeAlreadyExistsException e) {
+//				throw new RuntimeException(e);
+//			}
+//		}
+		
+		
+		// we may need to handle hierarchy in OWL
+		if (parentObjectEntity == null
+				|| getRootObjectEntity().equals(parentObjectEntity)) {
 			return;	// no need to handle hierarchy in OWL if parent was not specified or parent is default (root is the default)
 		}
 		

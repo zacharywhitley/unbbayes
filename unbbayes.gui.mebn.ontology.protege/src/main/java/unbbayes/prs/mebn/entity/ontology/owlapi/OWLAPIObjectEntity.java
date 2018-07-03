@@ -3,7 +3,9 @@
  */
 package unbbayes.prs.mebn.entity.ontology.owlapi;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.OWLClass;
@@ -24,6 +26,9 @@ import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityContainer;
+import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.ObjectEntityInstanceOrdereable;
+import unbbayes.prs.mebn.entity.Type;
 import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeDoesNotExistException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
@@ -121,7 +126,58 @@ public class OWLAPIObjectEntity extends ObjectEntity implements IPROWL2ModelUser
 		}
 		
 	}
+	
+	/**
+	 * Recursively finds parent of specified object entity by using {@link ObjectEntityContainer#getParentsOfObjectEntity(ObjectEntity)}
+	 * @param current
+	 * @return all ancestors of the specified object entity
+	 */
+	protected Collection<ObjectEntity> getParentsRecursive(ObjectEntity current) {
+		
+		Collection<ObjectEntity> ret = new HashSet<ObjectEntity>();
+		
+		for (ObjectEntity parent : this.getMEBN().getObjectEntityContainer().getParentsOfObjectEntity(current)) {
+			ret.add(parent);
+			ret.addAll(getParentsRecursive(parent));
+		}
+		
+		return ret;
+	}
 
+	/* (non-Javadoc)
+	 * @see unbbayes.prs.mebn.entity.ObjectEntity#addInstance(java.lang.String)
+	 */
+	public ObjectEntityInstance addInstance(String name) throws TypeException {
+		
+		ObjectEntityInstance instance = null;
+		
+		synchronized (this) {
+			Type backup = this.getType();
+			try {
+				// force types of ancestors to be equivalent with this type, only for the purpose of Object#equals(Object) to consider multiple types.
+				// this should guarantee that calling instance#getType().equals(anotherType) will return true if anotherType is some super-type of this
+				Collection<Type> equivalentTypes = new HashSet<Type>();
+				Collection<ObjectEntity> ancestors = getParentsRecursive(this);
+				for (ObjectEntity ancestor : ancestors) {
+					equivalentTypes.add(ancestor.getType());
+				}
+				this.setType(new EquivalentTypeWrapper(backup.getName() + "_" + name + "_wrapper" , backup, this.getMEBN().getTypeContainer(), equivalentTypes));
+				// the following method from superclass will set the type of this individual to the same of the type of this object entity
+				// I'm temporary substituting this object entity's type, so that I can have control over the type to be associated to the instance
+				instance = super.addInstance(name);
+			} catch (Throwable t) {
+				throw new RuntimeException(t);
+			}
+			// revert to backup
+			this.setType(backup);
+		}
+		if (instance == null) {
+			throw new TypeException("Unable to generate instance with type: " + getType());
+		}
+		return instance;
+	}
+	
+	
 	/**
 	 * @return the associatedOWLEntity : the OWL entity in the {@link #getOWLOntology()} which represents this Object entity.
 	 * A MEBN object entity and an OWL entity are different things, but this field makes the connection.

@@ -6,7 +6,9 @@ package unbbayes.prs.mebn.kb.extension.ontology.protege;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -14,6 +16,9 @@ import org.protege.editor.owl.model.OWLModelManager;
 import org.protege.editor.owl.model.inference.NoOpReasoner;
 import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.semanticweb.owlapi.model.AddImport;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLImportsDeclaration;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
@@ -24,10 +29,13 @@ import unbbayes.io.mebn.owlapi.DefaultNonPROWL2ClassExtractor;
 import unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWLIO;
 import unbbayes.io.mebn.protege.Protege41CompatiblePROWL2IO;
 import unbbayes.io.mebn.protege.ProtegeStorageImplementorDecorator;
+import unbbayes.prs.mebn.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityContainer;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
+import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
+import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.entity.ontology.owlapi.OWLReasonerInfo;
 import unbbayes.prs.mebn.entity.ontology.owlapi.ProtegeOWLReasonerInfoAdapter;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
@@ -211,7 +219,8 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 			// just delegate to superclass
 			return super.supportsLocalFile(isLoad);
 		}
-		return isLoad;	// if loading, then return true. If saving, then return false.
+//		return isLoad;	// if loading, then return true. If saving, then return false.
+		return true;	// allow saving as separate file
 	}
 	
 	/* (non-Javadoc)
@@ -334,36 +343,75 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 			// load entity instances (from findingMEBN to current MTheory), because caller doesn't seem to be loading them.
 			
 			// extract the object entity container of the finding ontology (the one we just loaded)
-			ObjectEntityContainer findingEntityContainer = findingMEBN.getObjectEntityContainer();
+			ObjectEntityContainer entityContainerInFinding = findingMEBN.getObjectEntityContainer();
 			
 			// extract the object entity container of the MTheory (the one that is being edited by the user now) and iterate on object entities
-			ObjectEntityContainer mTheoryEntityContainer = getDefaultMEBN().getObjectEntityContainer();
-			for (ObjectEntity entityInMTheory : mTheoryEntityContainer.getListEntity()) {
-				// check if there is an equivalent entity in the finding ontology we just loaded
-				ObjectEntity entityInFinding = findingEntityContainer.getObjectEntityByName(entityInMTheory.getName());
-				if (entityInFinding == null) {
-					continue; // ignore entities not common to both
+			ObjectEntityContainer entityContainerInTBOX = getDefaultMEBN().getObjectEntityContainer();
+//			for (ObjectEntity entityInMTheory : entityContainerInTBOX.getListEntity()) {
+//				// check if there is an equivalent entity in the finding ontology we just loaded
+//				ObjectEntity entityInFinding = entityContainerInFinding.getObjectEntityByName(entityInMTheory.getName());
+//				if (entityInFinding == null) {
+//					continue; // ignore entities not common to both
+//				}
+//				// add object entity instances of finding to MTheory 
+//				for (ObjectEntityInstance findingInstance : entityInFinding.getInstanceList()) {
+//					if (entityInMTheory.getInstanceByName(findingInstance.getName()) != null) {
+//						Debug.println(getClass(), "Avoiding to add instance " + findingInstance + " more than 1 time to entity: " + entityInMTheory.getName());
+//						continue;  // but avoid duplicate inclusion to same entity
+//					}
+//					try {
+//						entityContainerInTBOX.addEntityInstance(entityInMTheory.addInstance(findingInstance.getName()));
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//						Debug.println(getClass(), "Unable to create instance " + findingInstance.getName() 
+//								+ " for class " + entityInMTheory.getName(), e);
+//						continue;
+//					}
+//				}
+//			}
+			
+
+			final OWLReasoner findingReasoner = ((ProtegeStorageImplementorDecorator)findingMEBN.getStorageImplementor()).getOWLReasoner();
+			for (ObjectEntityInstance instanceInFinding : entityContainerInFinding.getListEntityInstances()) {
+				// look for object entity with same name in tbox
+				ObjectEntity entityInFinding = instanceInFinding.getInstanceOf();
+				ObjectEntity respectiveEntityInTBOX = entityContainerInTBOX.getObjectEntityByName(entityInFinding.getName());
+				if (respectiveEntityInTBOX == null) {
+					// did not find equivalent class
+					System.err.println("Could not find object entity of " + instanceInFinding + " in TBox. Ignoring.");
+					continue;
 				}
-				// add object entity instances of finding to MTheory 
-				for (ObjectEntityInstance findingInstance : entityInFinding.getInstanceList()) {
-					if (entityInMTheory.getInstanceByName(findingInstance.getName()) != null) {
-						continue;  // but avoid duplicate
-					}
-					try {
-						mTheoryEntityContainer.addEntityInstance(entityInMTheory.addInstance(findingInstance.getName()));
-					} catch (Exception e) {
-						e.printStackTrace();
-						Debug.println(getClass(), "Unable to create instance " + findingInstance.getName() 
-								+ " for class " + entityInMTheory.getName(), e);
-						continue;
+				
+				Collection<ObjectEntity> compatibleEntitiesInTBox = this.getAncestorObjectEntities(entityContainerInTBOX,respectiveEntityInTBOX);
+				compatibleEntitiesInTBox.add(respectiveEntityInTBOX);	// also consider self
+				
+				// register individuals to all compatible classes in TBox
+				for (ObjectEntity entityInTBOX : compatibleEntitiesInTBox) {
+					ObjectEntityInstance instanceInTBox = entityContainerInTBOX.getEntityInstanceByName(instanceInFinding.getName());
+					if (instanceInTBox != null) {
+						try {
+							Debug.println(getClass(), "Instance was already inserted for another entity: " + instanceInTBox + ". Avoiding duplicates.");
+						} catch (Throwable t) {
+							t.printStackTrace();
+						}
+						// make sure instance can be accessed from entity
+						entityInTBOX.getInstanceList().add(instanceInTBox);
+					} else {
+						try {
+							instanceInTBox = entityInTBOX.addInstance(instanceInFinding.getInstanceName());
+							entityContainerInTBOX.addEntityInstance(instanceInTBox);
+						} catch (TypeException | EntityInstanceAlreadyExistsException e) {
+							e.printStackTrace();
+						}
 					}
 				}
+				
+				
 			}
 			
 			
 			// init reasoner
 //			this.setDefaultOWLReasoner(buildOWLReasoner(ProtegeOWLReasonerInfoAdapter.getInstance(currentReasonerInfo)));
-			final OWLReasoner findingReasoner = ((ProtegeStorageImplementorDecorator)findingMEBN.getStorageImplementor()).getOWLReasoner();
 			this.setDefaultOWLReasoner(findingReasoner);
 			
 			// force this KB to use a class expression parser which is linked to finding ontology
@@ -379,6 +427,22 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 		super.loadModule(file, findingModule);
 	}
 	
+	/**
+	 * Recursively obtains parents of given object entity
+	 * @param container
+	 * @param entity
+	 * @return
+	 */
+	protected Collection<ObjectEntity> getAncestorObjectEntities(ObjectEntityContainer container, ObjectEntity entity) {
+		Collection<ObjectEntity> ret = new HashSet<ObjectEntity>();
+		
+		for (ObjectEntity parent : container.getParentsOfObjectEntity(entity)) {
+			ret.add(parent);
+			ret.addAll(getAncestorObjectEntities(container, parent));
+		}
+		
+		return ret;
+	}
 	/**
 	 * @return the prowlIO : this is the I/O class used to load OWL entities.
 	 * @see #loadModule(File, boolean).

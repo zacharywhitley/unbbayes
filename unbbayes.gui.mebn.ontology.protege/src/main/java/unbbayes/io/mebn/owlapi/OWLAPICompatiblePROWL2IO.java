@@ -5,6 +5,7 @@ package unbbayes.io.mebn.owlapi;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -523,10 +524,12 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		Map<String, Entity> mapObjectEntityLabels = new HashMap<String, Entity>();
 		
 		// this is a list that will contain all the object entities (classes that are not in PR-OWL 2 definition)
-		Collection<OWLClassExpression> subClassesOfObjectEntities = this.getNonPROWLClasses(ontology);
-		if (subClassesOfObjectEntities == null) {
-			subClassesOfObjectEntities = new HashSet<OWLClassExpression>();
+		Collection<OWLClassExpression> nonPROWLClasses = this.getNonPROWLClasses(ontology);
+		if (nonPROWLClasses == null) {
+			nonPROWLClasses = new ArrayList<OWLClassExpression>();
 		}
+		// convert to list, so that we can iterate on it freely
+		List<OWLClassExpression> subClassesOfObjectEntities = new ArrayList<OWLClassExpression>(nonPROWLClasses);
 		
 		// Explicitly handle "owl:Thing" as a generic entity
 //		if (!subClassesOfObjectEntities.contains(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLThing())) {
@@ -537,18 +540,45 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 		mapObjectEntityLabels.put(mebn.getObjectEntityContainer().getRootObjectEntity().getType().getName(), mebn.getObjectEntityContainer().getRootObjectEntity()); 
 		
 		// iterate on subclasses of object entities
-		for (OWLClassExpression owlClassExpression : subClassesOfObjectEntities){
+		while (!subClassesOfObjectEntities.isEmpty()) {
+			OWLClassExpression owlClassExpression = subClassesOfObjectEntities.remove(0);	// retrieve 1st element and delete it from list
+			if (owlClassExpression == null) {
+				Debug.println(getClass(), "Null class expression found as object entity. This may be caused by inconsistent DL reasoner...");
+				continue;
+			}
 			OWLClass subClass = owlClassExpression.asOWLClass(); 
 			if (subClass == null) {
 				// it was a unknown type of class (maybe anonymous)
+				Debug.println(getClass(), owlClassExpression + " was anonymous.");
 				continue;
 			}
 			
 			try{
 				String objectEntityName = this.extractName(ontology, subClass);
+				
+				// try to handle parent of current object entity
+				ObjectEntity parentObjectEntity = null;
+				
+				// get parent (direct ancestor) of this object property
+				Set<OWLClassExpression> ancestors = this.getOWLSuperclasses(owlClassExpression, ontology, true);	// true = direct parent
+				// disconsider owl:Thing
+				ancestors.remove(getLastOWLOntology().getOWLOntologyManager().getOWLDataFactory().getOWLThing());
+				// if the only direct ancestor was owl:Thing, then this is a root object entity right below owl:Thing (keep parent as null). Otherwise, there is a superclass
+				if (!(ancestors.isEmpty())) {
+					// TODO Current version allows only 1 superclass. Must allow multiple inheritance.
+					String superEntityName = this.extractName(ontology, ancestors.iterator().next().asOWLClass());	// extract the 1st parent
+					parentObjectEntity = mebn.getObjectEntityContainer().getObjectEntityByName(superEntityName);
+					if (parentObjectEntity == null) {
+						// parent was not loaded yet. Load later
+						Debug.println(getClass(), objectEntityName + " has superclass " + superEntityName +". Attempting to load superclass before it.");
+						subClassesOfObjectEntities.add(owlClassExpression);	// undo removal (add at end of list), so that it is considered after all root entities were handled.
+						continue;
+					}
+				}
+				
 				if (!mebn.getNamesUsed().contains(objectEntityName)) {
 					// create object entity if it is not already used
-					ObjectEntity objectEntityMebn = mebn.getObjectEntityContainer().createObjectEntity(objectEntityName); 	
+					ObjectEntity objectEntityMebn = mebn.getObjectEntityContainer().createObjectEntity(objectEntityName, parentObjectEntity ); 	
 					mapObjectEntityLabels.put(objectEntityMebn.getType().getName(), objectEntityMebn); 
 					
 					try {

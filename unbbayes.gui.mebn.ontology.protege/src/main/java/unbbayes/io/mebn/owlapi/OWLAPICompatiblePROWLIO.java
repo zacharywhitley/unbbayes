@@ -583,6 +583,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	 * @param owlClassExpression
 	 * @param ontology
 	 * @return
+	 * @see #getOWLSuperclasses(OWLClassExpression, OWLOntology)
 	 */
 	public Set<OWLClassExpression> getOWLSubclasses(OWLClassExpression owlClassExpression, OWLOntology ontology) {
 		Set<OWLClassExpression> ret = new HashSet<OWLClassExpression>();
@@ -635,6 +636,47 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		} catch (Exception e) {
 			// TODO: handle exception
 		}
+		
+		return ret;
+	}
+	
+	/**
+	 * Uses {@link #getLastOWLReasoner()} in order to obtain superclasses of a class expression from an ontology.
+	 * If {@link #getLastOWLReasoner()} is null, then only the asserted individuals in ontology will be returned.
+	 * @param owlClassExpression
+	 * @param ontology
+	 * @param isDirect : if true, then only direct superclasses will be considered. If false, then all ancestors will be considered.
+	 * @return
+	 * @see #getOWLSubclasses(OWLClassExpression, OWLOntology)
+	 */
+	public Set<OWLClassExpression> getOWLSuperclasses(OWLClassExpression owlClassExpression, OWLOntology ontology, boolean isDirect) {
+		Set<OWLClassExpression> ret = new HashSet<OWLClassExpression>();
+		
+		// try using reasoner first
+		try {
+			if (this.getLastOWLReasoner() != null) {
+				NodeSet<OWLClass> superclasses = this.getLastOWLReasoner().getSuperClasses(owlClassExpression, isDirect);	
+				if (superclasses != null) {
+					ret.addAll(superclasses.getFlattened());
+					return ret;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// Try asserted subclasses as well
+		if (owlClassExpression instanceof OWLClass) {
+			// if expression is exactly an OWL class, use this method
+			try{
+				ret.addAll(((OWLClass)owlClassExpression).getSuperClasses(ontology));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} else {
+			Debug.println(getClass(), "Attempted to obtain ancestors of anonymous class: " + owlClassExpression);
+		}
+		
 		
 		return ret;
 	}
@@ -703,7 +745,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		OWLClass objectEntityClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(OBJECT_ENTITY, prefixManager);
 		
 		// this is a list that will contain all the object entities
-		Collection<OWLClassExpression> subClassesOfObjectEntities = new HashSet<OWLClassExpression>();
+		List<OWLClassExpression> subClassesOfObjectEntities = new ArrayList<OWLClassExpression>();
 		
 		// actual subclasses of ObjectEntity
 		// TODO remove ObjectEntity from PR-OWL definition
@@ -713,10 +755,16 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		subClassesOfObjectEntities.addAll(this.getNonPROWLClasses(ontology));
 		
 		// iterate on subclasses of object entities
-		for (OWLClassExpression owlClassExpression : subClassesOfObjectEntities){
+		while (!subClassesOfObjectEntities.isEmpty()) {
+			OWLClassExpression owlClassExpression = subClassesOfObjectEntities.remove(0);	// retrieve 1st element and delete it from list
+			if (owlClassExpression == null) {
+				Debug.println(getClass(), "Null class expression found as object entity. This may be caused by inconsistent DL reasoner...");
+				continue;
+			}
 			OWLClass subClass = owlClassExpression.asOWLClass(); 
 			if (subClass == null) {
 				// it was a unknown type of class (maybe anonymous)
+				Debug.println(getClass(), owlClassExpression + " was anonymous.");
 				continue;
 			}
 			
@@ -724,6 +772,28 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 
 			try{
 				String objectEntityName = this.extractName(ontology, subClass);
+
+				// try to handle parent of current object entity
+				ObjectEntity parentObjectEntity = null;
+				
+				// get parent (direct ancestor) of this object property
+				Set<OWLClassExpression> ancestors = this.getOWLSuperclasses(owlClassExpression, ontology, true);	// true = direct parent
+				// disconsider owl:Thing
+				ancestors.remove(getLastOWLOntology().getOWLOntologyManager().getOWLDataFactory().getOWLThing());
+				// if the only direct ancestor was owl:Thing, then this is a root object entity right below owl:Thing (keep parent as null). Otherwise, there is a superclass
+				if (!(ancestors.isEmpty())) {
+					// TODO Current version allows only 1 superclass. Must allow multiple inheritance.
+					String superEntityName = this.extractName(ontology, ancestors.iterator().next().asOWLClass());	// extract the 1st parent
+					parentObjectEntity = mebn.getObjectEntityContainer().getObjectEntityByName(superEntityName);
+					if (parentObjectEntity == null) {
+						// parent was not loaded yet. Load later
+						Debug.println(getClass(), objectEntityName + " has superclass " + superEntityName +". Attempting to load superclass before it.");
+						subClassesOfObjectEntities.add(owlClassExpression);	// undo removal (add at end of list), so that it is considered after all root entities were handled.
+						continue;
+					}
+				}
+				
+				
 				if (!mebn.getNamesUsed().contains(objectEntityName)) {
 					// create object entity if it is not already used
 					ObjectEntity objectEntityMebn = mebn.getObjectEntityContainer().createObjectEntity(objectEntityName); 	
@@ -2051,7 +2121,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		OWLClass objectEntityClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(OBJECT_ENTITY, prefixManager);
 		
 		// a collection containing all subclasses of object entities
-		Collection<OWLClassExpression> objectEntities = new HashSet<OWLClassExpression>();
+		List<OWLClassExpression> objectEntities = new ArrayList<OWLClassExpression>();
 		objectEntities.addAll(objectEntityClass.getSubClasses(ontology));
 		
 		// Non-PR-OWL classes are now considered as Entities.
@@ -2059,12 +2129,30 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 		objectEntities.addAll(this.getNonPROWLClasses(ontology));
 		
 		ObjectEntity mebnEntity = null;
-		for (OWLClassExpression subclassExpression : objectEntities) {
+		Set<ObjectEntity> handledEntities = new HashSet<ObjectEntity>();	// entities that were handled
+		while (!objectEntities.isEmpty()) {
+			OWLClassExpression subclassExpression = objectEntities.remove(0);	// retrieve 1st element and delete it from list
 			if (!(subclassExpression instanceof OWLEntity)) {
 				Debug.println(this.getClass(), "Could not convert class expression to entity: " + subclassExpression);
 				continue;	// let's ignore it and keep going on.
 			}
+			
 			mebnEntity = mebn.getObjectEntityContainer().getObjectEntityByName(this.extractName(ontology, (OWLEntity)subclassExpression));
+			
+			// handle entities closer to root later
+			boolean isAllChildrenHandled = true;	// if all children were already handled, then handle this entity. Otherwise, leave it for later
+			for (ObjectEntity childEntity : mebn.getObjectEntityContainer().getChildrenOfObjectEntity(mebnEntity)) {
+				if (!handledEntities.contains(childEntity)) {
+					isAllChildrenHandled = false;
+					break;
+				}
+			}
+			if (!isAllChildrenHandled) {
+				objectEntities.add(subclassExpression);	// readd at end of list, so that it is handled later
+				continue;
+			}
+			
+			handledEntities.add(mebnEntity);
 			
 			// The individuals to load are initialized as individuals of non-PR-OWL2 elements.
 			Set<OWLIndividual> individuals = this.getOWLIndividuals(subclassExpression, ontology);	
@@ -2092,12 +2180,15 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 								}
 								
 								// check if individual with same name exists
-								if (mebn.getObjectEntityContainer().getEntityInstanceByName(individualName) != null) {
+								ObjectEntityInstance objectEntityInstance = mebn.getObjectEntityContainer().getEntityInstanceByName(individualName);
+								if (objectEntityInstance != null) {
 									try {
-										Debug.println(getClass(), "Instance was already inserted for another entity. Avoid duplicates.");
+										Debug.println(getClass(), "Instance was already inserted for another entity: " + objectEntityInstance + ". Avoiding duplicates.");
 									} catch (Throwable t) {
 										t.printStackTrace();
 									}
+									mebnEntity.getInstanceList().add(objectEntityInstance);
+//									mebn.getObjectEntityContainer().addEntityInstance(objectEntityInstance);
 									continue;
 								}
 								
