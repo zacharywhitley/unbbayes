@@ -96,9 +96,9 @@ public class FindingArgumentPane extends JPanel{
 		JButton btnArgXNumber; 
 		JButton btnArgXType; 
 		 
-		//Montagem das JComboBox para cada argumento	
+		// Building JComboBox for each argument in the node
 
-		List<ObjectEntityInstance> entityList = 
+		List<ObjectEntityInstance> instancesInContainer = 
 			mebnController.getMultiEntityBayesianNetwork().getObjectEntityContainer().getListEntityInstances(); 
 		
 		int i = 0; 
@@ -108,12 +108,13 @@ public class FindingArgumentPane extends JPanel{
 			tbArgX = new JToolBar(); 
 			
 			Vector<ObjectEntityInstance> list = new Vector<ObjectEntityInstance>(); 
-			list.add(null); //elemento em branco... 
+			list.add(null); //make sure there is the empty entry
 
-			//Verificacao de quais e deverao entrar na JComboBox
-			for(ObjectEntityInstance entity: entityList){
-				if(entity.getType().equals(ov.getValueType())){
-					list.add(entity);
+			//Checking which instances should go to the JComboBox
+			for(ObjectEntityInstance instance: instancesInContainer){
+				// FIXME this does not work for subtypes
+				if(instance.getType().equals(ov.getValueType())){
+					list.add(instance);
 				}
 			}
 			
