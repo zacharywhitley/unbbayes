@@ -7,10 +7,12 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
-import junit.framework.TestCase;
-
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+import junit.textui.TestRunner;
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.owlapi.OWLAPIStorageImplementorDecorator;
 import unbbayes.io.mebn.protege.Protege41CompatiblePROWL2IO;
@@ -170,6 +172,27 @@ public class TestPROWL2TextModeRunner extends TestCase {
 			System.out.println();
 		}
 		
+	}
+	
+
+	/**
+	 * New versions of eclipse seem to cause conflicts between multi-thread instances of protege/owlapi
+	 * when executing JUnit.
+	 * Please, run this suite (see {@link #main(String[])}) in case you find such problems.
+	 * @return
+	 */
+	public static Test suite() {
+		TestSuite suite = new TestSuite(TestPROWL2TextModeRunner.class.getName());
+		//$JUnit-BEGIN$
+		suite.addTestSuite(TestPROWL2TextModeRunner.class);
+		//$JUnit-END$
+		return suite;
+	}
+	
+	public static void main(String[] args) {
+		TestRunner runner = new TestRunner(System.out);
+		runner.run(suite());
+		System.exit(0);
 	}
 
 }

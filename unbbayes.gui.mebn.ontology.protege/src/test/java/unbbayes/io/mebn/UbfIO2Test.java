@@ -5,7 +5,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
+import junit.textui.TestRunner;
 import unbbayes.prs.Graph;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -140,6 +143,25 @@ public class UbfIO2Test extends TestCase {
 			assertFalse(mfrag.getName(), mfrag.getOrdinaryVariableList().isEmpty());
 		}
 		
+	}
+	
+	/**
+	 * New versions of eclipse seem to cause conflicts between multi-thread instances of protege/owlapi
+	 * when executing JUnit.
+	 * Please, run this suite (see {@link #main(String[])}) in case you find such problems.
+	 * @return
+	 */
+	public static Test suite() {
+		TestSuite suite = new TestSuite(UbfIO2Test.class.getName());
+		//$JUnit-BEGIN$
+		suite.addTestSuite(UbfIO2Test.class);
+		//$JUnit-END$
+		return suite;
+	}
+	
+	public static void main(String[] args) {
+		TestRunner runner = new TestRunner(System.out);
+		runner.run(suite());
 	}
 
 }
