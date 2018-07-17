@@ -78,6 +78,7 @@ import unbbayes.prs.mebn.entity.BooleanStateEntity;
 import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.Entity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
+import unbbayes.prs.mebn.entity.ObjectEntityContainer;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.entity.StateLink;
 import unbbayes.prs.mebn.entity.Type;
@@ -577,15 +578,46 @@ public class OWLAPICompatiblePROWL2IO extends OWLAPICompatiblePROWLIO implements
 				}
 				
 				if (!mebn.getNamesUsed().contains(objectEntityName)) {
+					// extract the container of object entities
+					ObjectEntityContainer container = mebn.getObjectEntityContainer();
+					
 					// create object entity if it is not already used
-					ObjectEntity objectEntityMebn = mebn.getObjectEntityContainer().createObjectEntity(objectEntityName, parentObjectEntity ); 	
+					ObjectEntity objectEntityMebn = null;
+					if (container instanceof OWLAPIObjectEntityContainer) {
+						// this is a special case which needs attention, because we don't want to create owl classes in original ontologies at this point
+						// create object entity without adding new class to ontology
+						objectEntityMebn = ((OWLAPIObjectEntityContainer) container).createObjectEntity(objectEntityName, false);
+						try {
+							// register uri in advance, so that container can make references to it when registering subclasses
+							IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, objectEntityMebn, subClass.getIRI());
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						ObjectEntity referenceToObjectEntity = objectEntityMebn;
+						// add as child (this will reuse existing object entity if name is already used)
+						objectEntityMebn = container.createObjectEntity(objectEntityName, parentObjectEntity ); 	
+						if (referenceToObjectEntity != objectEntityMebn) {
+							System.err.println("Warning: two different instances of object entities were created for same IRI " + subClass.getIRI());
+							System.err.println("The program can continue, but this is likely a bug. Please, report.");
+							try {
+								// register uri in advance, so that container can make references to it when registering subclasses
+								IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, objectEntityMebn, subClass.getIRI());
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						}
+					} else {
+						objectEntityMebn = container.createObjectEntity(objectEntityName, parentObjectEntity ); 	
+						try {
+							// register uri after container has handled everything.
+							IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, objectEntityMebn, subClass.getIRI());
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+					
 					mapObjectEntityLabels.put(objectEntityMebn.getType().getName(), objectEntityMebn); 
 					
-					try {
-						IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, objectEntityMebn, subClass.getIRI());
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
 					
 					// set the name as "used", in order for UnBBayes to avoid duplicate names.
 					mebn.getNamesUsed().add(objectEntityName); 

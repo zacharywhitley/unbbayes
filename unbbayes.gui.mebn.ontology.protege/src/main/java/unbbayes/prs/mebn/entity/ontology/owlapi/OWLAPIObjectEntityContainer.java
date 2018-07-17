@@ -277,7 +277,6 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 //			}
 //		}
 		
-		
 		// we may need to handle hierarchy in OWL
 		if (parentObjectEntity == null
 				|| getRootObjectEntity().equals(parentObjectEntity)) {
@@ -307,6 +306,12 @@ public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {
 			IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(getMEBN(), parentObjectEntity, parentIRI);
 		}
 		OWLClassExpression parentClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(parentIRI);
+		
+		
+		if (!isToCreateOWLEntity()) {
+			return;
+		}
+		
 		
 		// include "subclassof" assertion
 		ontology.getOWLOntologyManager().addAxiom(	// add axiom and commit

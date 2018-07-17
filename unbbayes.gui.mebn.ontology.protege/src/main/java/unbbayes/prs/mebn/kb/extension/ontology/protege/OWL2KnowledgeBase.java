@@ -3385,9 +3385,11 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 														queryOV, 	// ov being queried
 														knownValue	// known OV and its value
 													);
-					// append auxSearchResult to knownSearchResults
-					for (String[] result : auxSearchResult.getValuesResultList()) {
-						knownSearchResults.addResult(result);
+					if (auxSearchResult != null && auxSearchResult.getValuesResultList() != null) {
+						// append auxSearchResult to knownSearchResults
+						for (String[] result : auxSearchResult.getValuesResultList()) {
+							knownSearchResults.addResult(result);
+						}
 					}
 				}
 				
