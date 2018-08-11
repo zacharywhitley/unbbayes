@@ -833,6 +833,28 @@ public class GraphPane extends UCanvas {
 
 		setShapeStateAll(UShape.STATE_NONE, null);
 	}
+	
+
+	public void showBeliefBarAll() {
+		
+		int n = this.getComponentCount();
+
+		for (int i = 0; i < n; i++) {
+			UShape shape = (UShape) this.getComponent(i);
+			if (shape == null) {
+				continue;
+			}
+
+			shape.shapeTypeChange(UShapeProbabilisticNode.STYPE_BAR);
+			shape.repaint();
+			
+			Node node = shape.getNode();
+			if (node != null) {
+				node.setDisplayMode(Node.DISPLAY_MODE_BAR);
+			}
+		
+		}
+	}
 
 	public void compiled(boolean reset, Node selectedNode) {
 		setPaneMode(PANEMODE_COMPILE);
