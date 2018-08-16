@@ -247,6 +247,10 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
 	private String bundleDir;
 
 	private Framework framework;
+
+	public static final String DEFAULT_PROTEGE_PLUGIN_DIR_PROPERTY_ID = "org.protege.plugin.dir";
+	
+	private String protegePluginDirPropertyID = DEFAULT_PROTEGE_PLUGIN_DIR_PROPERTY_ID;
 	
 	
 	/** Holder for a singleton instance */
@@ -295,8 +299,14 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
     	
     	// set dynamic properties (resolved values)
     	
-    	// force protege to look for a different directory for plugins
-    	System.setProperty("org.protege.plugin.dir", this.getProtegePluginDir());
+    	// force protege to look for a different directory for plugins, if not already set
+    	System.setProperty(
+    			getProtegePluginDirPropertyID(), 			// name of property (e.g. "org.protege.plugin.dir")
+    			System.getProperty(							// "overwrite" with existing value, or with a default value if property was not set
+    					getProtegePluginDirPropertyID(), 	// name of property (e.g. "org.protege.plugin.dir")
+    					this.getProtegePluginDir()			// default value to use if nothing was set yet
+					)
+			);
     	
     	if (this.getDefaultOntolgyURI() != null) {
     		// simulate command line argument to protege
@@ -740,6 +750,24 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
 			
 		}
 		return super.toString();
+	}
+
+	/**
+	 * @return the protegePluginDirPropertyID : name of system property to look for directory where protege will look for plugins.
+	 * Default is {@link #DEFAULT_PROTEGE_PLUGIN_DIR_PROPERTY_ID}
+	 * @see #initializeSystemProperties()
+	 */
+	public String getProtegePluginDirPropertyID() {
+		return protegePluginDirPropertyID;
+	}
+
+	/**
+	 * @param protegePluginDirPropertyID : name of system property to look for directory where protege will look for plugins.
+	 * Default is {@link #DEFAULT_PROTEGE_PLUGIN_DIR_PROPERTY_ID}
+	 * @see #initializeSystemProperties()
+	 */
+	public void setProtegePluginDirPropertyID(String protegePluginDirPropertyID) {
+		this.protegePluginDirPropertyID = protegePluginDirPropertyID;
 	}
 
 //	/**
