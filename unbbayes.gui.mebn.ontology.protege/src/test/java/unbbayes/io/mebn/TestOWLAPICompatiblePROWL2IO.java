@@ -115,6 +115,7 @@ public class TestOWLAPICompatiblePROWL2IO extends TestCase {
 		entity = vehicleEntity;
 		parents = mebn.getObjectEntityContainer().getParentsOfObjectEntity(entity);
 		assertNotNull(parents);
+		parents.remove(mebn.getObjectEntityContainer().getRootObjectEntity());	// ignore root entity
 		assertEquals(1, parents.size());
 		assertTrue(parents.contains(objectEntity));
 		
@@ -127,6 +128,7 @@ public class TestOWLAPICompatiblePROWL2IO extends TestCase {
 		entity = trackedVehicleEntity;
 		parents = mebn.getObjectEntityContainer().getParentsOfObjectEntity(entity);
 		assertNotNull(parents);
+		parents.remove(mebn.getObjectEntityContainer().getRootObjectEntity());	// ignore root entity
 		assertEquals(1, parents.size());
 		assertTrue(parents.contains(vehicleEntity));
 		
@@ -137,6 +139,7 @@ public class TestOWLAPICompatiblePROWL2IO extends TestCase {
 		entity = wheeledVehicleEntity;
 		parents = mebn.getObjectEntityContainer().getParentsOfObjectEntity(entity);
 		assertNotNull(parents);
+		parents.remove(mebn.getObjectEntityContainer().getRootObjectEntity());	// ignore root entity
 		assertEquals(1, parents.size());
 		assertTrue(parents.contains(vehicleEntity));
 		
