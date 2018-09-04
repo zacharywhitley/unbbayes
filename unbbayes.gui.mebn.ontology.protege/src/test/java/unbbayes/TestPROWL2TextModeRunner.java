@@ -172,6 +172,18 @@ public class TestPROWL2TextModeRunner extends TestCase {
 			System.out.println();
 		}
 		
+		try {
+			// stop the main protege bundle explicitly
+			((Protege41CompatiblePROWL2IO) mebnIO).getProtegeBundleLauncher().getProtegeBundle().stop(0);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		// dispose all GUI frames
+		for (java.awt.Frame frame : java.awt.Frame.getFrames()) {
+			frame.dispose();
+		}
+		
 	}
 	
 
