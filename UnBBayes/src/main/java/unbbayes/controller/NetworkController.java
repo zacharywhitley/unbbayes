@@ -607,7 +607,7 @@ public class NetworkController implements KeyListener, INetworkMediator {
 				JOptionPane.showMessageDialog(screen, resource.getString("saveImageError"),
 				resource.getString("error"),
 				JOptionPane.ERROR_MESSAGE);
-				e1.printStackTrace();
+				Debug.println(getClass(), "Error saving image", e1);
 				return false; 
 			}
 		} else {

@@ -50,6 +50,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ExplanationPhrase;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.util.Debug;
 
 /**
  *
@@ -74,7 +75,7 @@ public class ExplanationProperties extends JDialog
   private JPanel evidenceNodePanel = new JPanel();
   private JPanel evidencePhraseBottomPanel = new JPanel();
   private JLabel evidenceNodeLabel = new JLabel();
-  private JComboBox evidenceNodeComboBox = new JComboBox();
+  private JComboBox<String> evidenceNodeComboBox = new JComboBox<String>();
   private TitledBorder titledBorder1;
   private JPanel notUsedPanel = new JPanel();
   private JPanel exclusivePanel = new JPanel();
@@ -121,7 +122,7 @@ public class ExplanationProperties extends JDialog
     }
     catch(Exception e)
     {
-      e.printStackTrace();
+      Debug.println(getClass(), "Error during initialization", e);
     }
   }
   private void jbInit() throws Exception

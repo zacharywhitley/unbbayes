@@ -39,7 +39,6 @@ import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
@@ -57,11 +56,17 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import unbbayes.util.Debug;
+
 /**
  * @author Romain Guy <romain.guy@mac.com>
  */
 public class DropShadowDemo extends JFrame {
-    private BlurTestPanel blurTestPanel;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -5996846603078133090L;
+	private BlurTestPanel blurTestPanel;
     private JSlider shadowSizeSlider;
     private JSlider shadowOpacitySlider;
     private JCheckBox fastRenderingCheck;
@@ -119,7 +124,11 @@ public class DropShadowDemo extends JFrame {
     }
 
     private static class BlurTestPanel extends JPanel {
-        private BufferedImage image = null;
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 2795967402384607056L;
+		private BufferedImage image = null;
         private BufferedImage imageA;
         private int shadowSize = 5;
         private boolean fastRendering = false;
@@ -129,7 +138,7 @@ public class DropShadowDemo extends JFrame {
             try {
                 imageA = GraphicsUtilities.loadCompatibleImage(getClass().getResource("/img/util/asia.png"));
             } catch (IOException e) {
-                e.printStackTrace();
+                Debug.println(getClass(), "Error loading image resource /img/util/asia.png", e);
             }
             setOpaque(false);
         }
@@ -154,12 +163,9 @@ public class DropShadowDemo extends JFrame {
                 try {
 					ImageIO.write(image, "png", new File(getClass().getResource("/img/util/asia-changed.png").toURI()));
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+	                Debug.println(getClass(), "Error writing image resource /img/util/asia-changed.png", e);
 				} catch (URISyntaxException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+					Debug.println(getClass(), "Error writing image resource /img/util/asia-changed.png", e);				}
                 
                 long delay = System.nanoTime() - start;
                 System.out.println("time = " + (delay / 1000.0f / 1000.0f) + "ms");

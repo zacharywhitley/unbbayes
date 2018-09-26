@@ -117,7 +117,7 @@ public class ExcelAdapter implements ActionListener {
 					}
 				}
 			} catch (Exception ex) {
-				ex.printStackTrace();
+				Debug.println(getClass(), "Could not paste", ex);
 			}
 		}
 	}

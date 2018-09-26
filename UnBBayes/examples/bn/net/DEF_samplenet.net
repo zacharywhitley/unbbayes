@@ -10,14 +10,14 @@ net
 node F
 {
      label = "";
-     position = (388 60);
+     position = (281 227);
      states = ("f1" "f2");
 }
 
 node E
 {
      label = "";
-     position = (10 61);
+     position = (150 235);
      states = ("e1" "e2");
 }
 

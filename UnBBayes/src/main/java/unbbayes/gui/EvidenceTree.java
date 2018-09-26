@@ -609,7 +609,7 @@ public class EvidenceTree extends JTree {
 //				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error when showing likelihood", e);
 			JOptionPane.showMessageDialog(this, e.getMessage(), resource.getString("error"), JOptionPane.WARNING_MESSAGE);
 		}
 		

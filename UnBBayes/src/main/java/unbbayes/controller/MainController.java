@@ -86,7 +86,7 @@ public class MainController {
 		try {
 			loadConfigurations();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error loading configuration", e);
 		} 
 		
 		screen = new UnBBayesFrame(this);
@@ -348,7 +348,7 @@ public class MainController {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error handling command line arguments", e);
 		}
 	}
 

@@ -53,6 +53,7 @@ import unbbayes.prs.hybridbn.CNNormalDistribution;
 import unbbayes.prs.hybridbn.ContinuousNode;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
+import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 public class SENController {
@@ -179,7 +180,7 @@ public class SENController {
 			//by young2 (true:update, false:complie)
 			screen.getEvidenceTree().updateTree(true);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error initializing", e);
 		}
 	}
 	
@@ -201,7 +202,7 @@ public class SENController {
 						.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error when removing evidence", e);
 		}
 	}
 	
@@ -252,7 +253,7 @@ public class SENController {
 //			// Finally propage evidence
 			this.getInferenceAlgorithm().propagate();
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error when propagating", e);
 			JOptionPane.showMessageDialog(screen, e.getMessage(), resource
 					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 			bReset = true;
@@ -287,7 +288,7 @@ public class SENController {
 			this.getInferenceAlgorithm().setNetwork(singleEntityNetwork);
 			this.getInferenceAlgorithm().run();
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error compiling network", e);
 			JOptionPane.showMessageDialog(null, e.getMessage(), resource
 					.getString("statusError"), JOptionPane.ERROR_MESSAGE);
 			screen.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));

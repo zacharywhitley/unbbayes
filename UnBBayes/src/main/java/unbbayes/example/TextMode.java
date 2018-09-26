@@ -33,6 +33,7 @@ import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
+import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
@@ -61,7 +62,7 @@ public class TextMode {
 			BaseIO io = new NetIO(); // open a .net file
 			net = (ProbabilisticNetwork)io.load(new File("./examples/bn/net/asia.net"));
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(TextMode.class, "Error loading Bayesian Network", e);
 			System.exit(1);
 		}
 

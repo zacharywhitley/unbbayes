@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.cpt.IProbabilityFunctionAdapter;
 import unbbayes.util.Debug;

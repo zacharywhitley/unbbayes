@@ -235,7 +235,7 @@ public class UnBBayesFrame extends JFrame {
 	private String pluginModuleExtensionPoint = "Module";
 
 	/** Map: ID -> {@link UnBBayesModule} or {@link UnBBayesModuleBuilder} */
-	private Map<String, Class> pluginMap = null;
+	private Map<String, Class<?>> pluginMap = null;
 
 	// this is the menu item for reloading a set of plugins at plugin folder
 	private JMenuItem reloadPluginsMenuItem;
@@ -617,7 +617,7 @@ public class UnBBayesFrame extends JFrame {
 				try {
 					controller.saveConfigurations();
 				} catch (IOException e) {
-					e.printStackTrace();
+					Debug.println(getClass(), "Could not save configurations", e);
 				}
 				setVisible(false);
 				dispose();
@@ -832,7 +832,7 @@ public class UnBBayesFrame extends JFrame {
 				try {
 					JavaHelperController.getInstance().openHelp(singleton);
 				} catch (Exception evt) {
-					evt.printStackTrace();
+					Debug.println(getClass(), "Could not open help", evt);
 				}
 			}
 		};
@@ -935,14 +935,14 @@ public class UnBBayesFrame extends JFrame {
 					}
 					ConfigurationsController.getInstance().addFileToListRecentFiles(file); 
 				} catch (Exception e) {
-					e.printStackTrace();// FIXME log
+					Debug.println(getClass(), "Could not save Bayesian Network", e);
 					JOptionPane.showMessageDialog(UnBBayesFrame.this,
 							e.getMessage(), resource.getString("error"),
 							JOptionPane.ERROR_MESSAGE);
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();// FIXME log
+			Debug.println(getClass(), "Could not save Bayesian Network", e);
 			JOptionPane.showMessageDialog(UnBBayesFrame.this, e.getMessage(),
 					resource.getString("error"), JOptionPane.ERROR_MESSAGE);
 		}
@@ -1381,8 +1381,8 @@ public class UnBBayesFrame extends JFrame {
 	 * @return a map of basic modules' classes' builders (or the classes
 	 *         itself): e.g. PN. The keys are the main ID of the plugin/module
 	 */
-	public Map<String, Class> getCoreUnBBayesModulesClasses() {
-		Map<String, Class> ret = new HashMap<String, Class>();
+	public Map<String, Class<?>> getCoreUnBBayesModulesClasses() {
+		Map<String, Class<?>> ret = new HashMap<String, Class<?>>();
 
 		// adding PN module
 		try {
@@ -1451,7 +1451,7 @@ public class UnBBayesFrame extends JFrame {
 			}
 		} catch (Throwable e) {
 			System.err.println("Could not retrieve plugin dependency errors.");
-			e.printStackTrace();
+			Debug.println(getClass(), "Could not retrieve plugin dependency errors.", e);
 		}
 	}
 
@@ -1473,7 +1473,7 @@ public class UnBBayesFrame extends JFrame {
 			this.getUnbbayesPluginContextHolder().publishPlugins();
 		} catch (IOException e) {
 			// could not load plugins, but we shall continue
-			e.printStackTrace();
+			Debug.println(getClass(), "Could not load plugins", e);
 			this.getPluginToolBar().setVisible(false);
 			// this.getPluginMenu().setVisible(false);
 			return;
@@ -1518,10 +1518,10 @@ public class UnBBayesFrame extends JFrame {
 	 * @return a map of connected and activated extensions. The keys are the
 	 *         module's IDs.
 	 */
-	protected Map<String, Class> fillCorePluginMenuAndButtons(
+	protected Map<String, Class<?>> fillCorePluginMenuAndButtons(
 			PluginManager pluginManager, ExtensionPoint point) {
 
-		Map<String, Class> ret = new HashMap<String, Class>();
+		Map<String, Class<?>> ret = new HashMap<String, Class<?>>();
 
 		for (Extension ext : point.getConnectedExtensions()) {
 			try {
@@ -1546,7 +1546,7 @@ public class UnBBayesFrame extends JFrame {
 				// extracting plugin class or builder clas
 				ClassLoader classLoader = pluginManager
 						.getPluginClassLoader(descr);
-				Class pluginOrBuilderCls = null; // class for the plugin or its
+				Class<?> pluginOrBuilderCls = null; // class for the plugin or its
 													// builder
 													// (UnBBayesModuleBuilder)
 				if (builderParam != null) {
@@ -1598,7 +1598,7 @@ public class UnBBayesFrame extends JFrame {
 						setCursor(new Cursor(Cursor.WAIT_CURSOR));
 						UnBBayesModule module = null;
 						try {
-							module = getUnBBayesModuleByPluginClass((Class) this
+							module = getUnBBayesModuleByPluginClass((Class<?>) this
 									.getParam());
 							addWindow(module);
 						} catch (Throwable t) {
@@ -1723,7 +1723,7 @@ public class UnBBayesFrame extends JFrame {
 				// filling the return
 				ret.put(moduleName, pluginOrBuilderCls);
 			} catch (Throwable e) {
-				e.printStackTrace();
+				Debug.println(getClass(), "Could not fill plugin menu and buttons for " + ext, e);
 				continue;
 			}
 		}
@@ -1742,7 +1742,7 @@ public class UnBBayesFrame extends JFrame {
 	 *            {@link UnBBayesModuleBuilder}
 	 * @return name or null if not found
 	 */
-	protected String getUnBBayesModuleNameByPluginClass(Class pluginOrBuilderCls) {
+	protected String getUnBBayesModuleNameByPluginClass(Class<?> pluginOrBuilderCls) {
 		try {
 			if (UnBBayesModuleBuilder.class
 					.isAssignableFrom(pluginOrBuilderCls)) {
@@ -1754,7 +1754,7 @@ public class UnBBayesFrame extends JFrame {
 						.getName();
 			}
 		} catch (Throwable e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Could not retrieve UnbBayes module for plugin: " + pluginOrBuilderCls, e);
 		}
 		return null;
 	}
@@ -1773,7 +1773,7 @@ public class UnBBayesFrame extends JFrame {
 	 * @throws InstantiationException
 	 * @see #addWindow(JInternalFrame)
 	 */
-	public UnBBayesModule getUnBBayesModuleByPluginClass(Class clazz)
+	public UnBBayesModule getUnBBayesModuleByPluginClass(Class<?> clazz)
 			throws InstantiationException, IllegalAccessException {
 		UnBBayesModule ret = null;
 		if (clazz == null) {
@@ -1942,7 +1942,7 @@ public class UnBBayesFrame extends JFrame {
 				controller.saveConfigurations();
 			} catch (IOException e1) {
 				// invisible for the user.
-				e1.printStackTrace();
+				Debug.println(getClass(), "Could not save configuration.", e1);
 			}
 		}
 
@@ -2091,9 +2091,9 @@ public class UnBBayesFrame extends JFrame {
 	 * 
 	 * @return the pluginMap
 	 */
-	public Map<String, Class> getPluginMap() {
+	public Map<String, Class<?>> getPluginMap() {
 		if (this.pluginMap == null) {
-			this.pluginMap = new HashMap<String, Class>();
+			this.pluginMap = new HashMap<String, Class<?>>();
 		}
 		return pluginMap;
 	}
@@ -2105,7 +2105,7 @@ public class UnBBayesFrame extends JFrame {
 	 * @param pluginMap
 	 *            the pluginMap to set
 	 */
-	public void setPluginList(Map<String, Class> pluginMap) {
+	public void setPluginList(Map<String, Class<?>> pluginMap) {
 		this.pluginMap = pluginMap;
 	}
 
@@ -2154,7 +2154,7 @@ public class UnBBayesFrame extends JFrame {
 	 *         keys are the plugin/module IDs.
 	 */
 	public Map<String, UnBBayesModule> getUnBBayesModulesByFile(File file,
-			Map<String, Class> plugins) {
+			Map<String, Class<?>> plugins) {
 
 		Map<String, UnBBayesModule> ret = new HashMap<String, UnBBayesModule>();
 
@@ -2169,7 +2169,7 @@ public class UnBBayesFrame extends JFrame {
 						ret.put(id, module);
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					Debug.println(getClass(), "Could not get module for plugin: " + id, e);
 				}
 			}
 		}
@@ -2188,11 +2188,11 @@ public class UnBBayesFrame extends JFrame {
 	 *         currently by the modules.
 	 * @see BaseIO#getSupportedFileExtensions(boolean)
 	 */
-	public String[] getAllSupportedFileExtensions(Collection<Class> plugins) {
+	public String[] getAllSupportedFileExtensions(Collection<Class<?>> plugins) {
 		Set<String> ret = new HashSet<String>();
 
 		if (plugins != null) {
-			for (Class clazz : plugins) {
+			for (Class<?> clazz : plugins) {
 				try {
 					UnBBayesModule module = this
 							.getUnBBayesModuleByPluginClass(clazz);
@@ -2208,7 +2208,7 @@ public class UnBBayesFrame extends JFrame {
 					}
 					module.dispose();
 				} catch (Exception e) {
-					e.printStackTrace();
+					Debug.println(getClass(), "Could not get module for plugin: " + clazz, e);
 				}
 			}
 		}
@@ -2257,7 +2257,7 @@ public class UnBBayesFrame extends JFrame {
 			chooser.setFileView(new FileIcon(UnBBayesFrame.this));
 
 			// fills the file filter for each plugin/module
-			for (Class clazz : getPluginMap().values()) {
+			for (Class<?> clazz : getPluginMap().values()) {
 				UnBBayesModule mod = null;
 				try {
 					mod = getUnBBayesModuleByPluginClass(clazz);
@@ -2265,7 +2265,7 @@ public class UnBBayesFrame extends JFrame {
 						continue;
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					Debug.println(getClass(), "Could not get module for plugin: " + clazz, e);
 					continue;
 				}
 
@@ -2368,7 +2368,7 @@ public class UnBBayesFrame extends JFrame {
 						addWindow(mod);
 					}
 				} catch (Throwable e) {
-					e.printStackTrace();
+					Debug.println(getClass(), "Could not load Bayesian Network", e);
 					JOptionPane.showMessageDialog(UnBBayesFrame.this,
 							e.getMessage(),
 							resource.getString("loadNetException"),

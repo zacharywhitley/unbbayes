@@ -598,7 +598,7 @@ public class GraphPane extends UCanvas {
 		try {
 			return controller.insertEdge(edge);
 		} catch (Exception e) {
-			e.printStackTrace();
+    		Debug.println(getClass(), "Error inserting edge", e);
 			return false;
 		}
 

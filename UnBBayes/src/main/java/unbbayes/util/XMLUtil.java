@@ -254,7 +254,7 @@ public class XMLUtil {
       }
       catch(Exception ex)
       {
-         ex.printStackTrace();
+    	  Debug.println(XMLUtil.class, "Could not create W3C document", ex);
       }
       return retDocument;
    }
@@ -280,7 +280,7 @@ public class XMLUtil {
       }
       catch(Exception ex)
       {
-         ex.printStackTrace();
+          Debug.println(XMLUtil.class, "Could not find node in document with XPath expression" + xPath, ex);
       }
       return node;
    }
@@ -312,7 +312,7 @@ public class XMLUtil {
       }
       catch(Exception ex)
       {
-         ex.printStackTrace();
+    	  Debug.println(XMLUtil.class, "Could not insert node in W3C document", ex);
       }
    }
 

@@ -304,11 +304,11 @@ public class HierarchicTree extends JTree implements DropTargetListener,
 				}
 			}
 		} catch (IOException ioe) {
-			ioe.printStackTrace();
+    		Debug.println(getClass(), "Error during drop", ioe);
 			System.err.println("Exception" + ioe.getMessage());
 			event.rejectDrop();
 		} catch (UnsupportedFlavorException ufe) {
-			ufe.printStackTrace();
+    		Debug.println(getClass(), "Error during drop", ufe);
 			System.err.println("Exception" + ufe.getMessage());
 			event.rejectDrop();
 		}

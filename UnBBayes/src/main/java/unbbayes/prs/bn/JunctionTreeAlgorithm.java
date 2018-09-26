@@ -487,7 +487,7 @@ public class JunctionTreeAlgorithm implements IRandomVariableAwareInferenceAlgor
 					System.out.println();
 				}
 			} catch (Throwable e) {
-				e.printStackTrace();
+				Debug.println(getClass(), "Could not print marginal", e);
 			}
 		}
 		

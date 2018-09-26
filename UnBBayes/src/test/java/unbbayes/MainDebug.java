@@ -21,9 +21,11 @@ public class MainDebug {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		
 		Debug.setDebug(true);
 		// uncomment the below line and change the locale to test resources and locales
-//		ResourceController.newInstance().setDefaultLocale(new Locale("pt"));
+		Locale.setDefault(Locale.ENGLISH);
+		ResourceController.newInstance().setDefaultLocale(Locale.ENGLISH);
 		new MainController();
 	}
 

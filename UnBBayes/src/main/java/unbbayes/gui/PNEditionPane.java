@@ -400,7 +400,7 @@ public class PNEditionPane extends JPanel {
 								txtName.selectAll();
 							}
 						} catch (javax.swing.text.BadLocationException ble) {
-							ble.printStackTrace();
+							Debug.println(getClass(), "Could not find location", ble);
 						}
 					}
 
@@ -433,7 +433,7 @@ public class PNEditionPane extends JPanel {
 								txtDescription.selectAll();
 							}
 						} catch (javax.swing.text.BadLocationException ble) {
-							ble.printStackTrace();
+							Debug.println(getClass(), "Could not find location", ble);
 						}
 					}
 				}
@@ -777,7 +777,6 @@ public class PNEditionPane extends JPanel {
 		try {
 			cpfManager.loadPlugin();
 		} catch (IOException e) {
-			e.printStackTrace();
 			Debug.println(this.getClass(), "Could not load plugin for CPF pane");
 		}
 
@@ -806,10 +805,9 @@ public class PNEditionPane extends JPanel {
 						builder.buildProbabilityFunctionEditionPanel()), dto
 						.getDescription());
 			} catch (Exception e) {
-				e.printStackTrace();
 				Debug.println(this.getClass(),
 						"A panel builder is not building panel for "
-								+ tableOwner.toString());
+								+ tableOwner.toString(), e);
 				continue;
 			}
 		}
@@ -871,7 +869,7 @@ public class PNEditionPane extends JPanel {
 //					fitCPFDividerLocationToComponent((JComponent) ((JTabbedPane) centerPanel
 //							.getTopComponent()).getSelectedComponent());
 				} catch (Exception exc) {
-					exc.printStackTrace();
+					Debug.println(getClass(), "Could not reset CPT", exc);
 				}
 			}
 		});}

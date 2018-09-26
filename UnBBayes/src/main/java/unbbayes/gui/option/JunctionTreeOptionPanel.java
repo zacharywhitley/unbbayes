@@ -108,12 +108,11 @@ public class JunctionTreeOptionPanel extends InferenceAlgorithmOptionPanel {
 						junctionTreeAlgorithm.clearVirtualNodes();
 						getMediator().getScreen().changeToPNEditionPane();
 					} catch (Exception t) {
-						t.printStackTrace();
-						// TODO use resources
+						Debug.println(getClass(), "Could not clear virtual nodes", t);
 						try {
 							JOptionPane.showMessageDialog(JunctionTreeOptionPanel.this, "Could not clear virtual nodes: " + t.getMessage());
 						} catch (Throwable t2) {
-							t2.printStackTrace();
+							Debug.println(getClass(), "Could not display msg dialog about error when clearing virtual nodes", t2);
 						}
 					}
 				}

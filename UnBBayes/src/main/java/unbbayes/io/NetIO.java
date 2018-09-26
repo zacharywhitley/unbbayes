@@ -1225,7 +1225,7 @@ public class NetIO implements BaseIO, IPrintStreamBuilder, IReaderBuilder {
 				fileExtension = file.getName().substring(index + 1);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Could not get file extension for " + file, e);
 			return false;
 		}
 		return this.supports(fileExtension, isLoadOnly);

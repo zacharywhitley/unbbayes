@@ -43,7 +43,7 @@ import unbbayes.util.extension.dto.impl.NodeDto;
 public class CorePluginNodeManager {
 	
 	// this is a map to store the informations associated to classes extending IPluginNode (which are plugin nodes)
-	private Map<Class, INodeClassDataTransferObject> nodeClassToDtoMap = new HashMap<Class, INodeClassDataTransferObject>();
+	private Map<Class<?>, INodeClassDataTransferObject> nodeClassToDtoMap = new HashMap<Class<?>, INodeClassDataTransferObject>();
 	
 	private UnBBayesPluginContextHolder unbbayesPluginContextHolder;
 	
@@ -89,7 +89,7 @@ public class CorePluginNodeManager {
 	 * it easy to extend
 	 */
 	protected CorePluginNodeManager() {
-		this.setNodeClassToDtoMap(new HashMap<Class, INodeClassDataTransferObject>());
+		this.setNodeClassToDtoMap(new HashMap<Class<?>, INodeClassDataTransferObject>());
 		this.setUnbbayesPluginContextHolder(UnBBayesPluginContextHolder.newInstance());
 		// loads config from application.properties
 		
@@ -119,7 +119,7 @@ public class CorePluginNodeManager {
 //				try {
 //					reloadPluginNode();
 //				} catch (IOException e) {
-//					e.printStackTrace();
+//					Debug.println(getClass(), "Error reloading plugin", e);
 //				}
 //			}
 //		});
@@ -138,7 +138,7 @@ public class CorePluginNodeManager {
 	 * this is a map to store the informations associated to classes extending IPluginNode (which are plugin nodes)
 	 * @return the nodeClassToDtoMap
 	 */
-	protected Map<Class, INodeClassDataTransferObject> getNodeClassToDtoMap() {
+	protected Map<Class<?>, INodeClassDataTransferObject> getNodeClassToDtoMap() {
 		return nodeClassToDtoMap;
 	}
 
@@ -147,7 +147,7 @@ public class CorePluginNodeManager {
 	 * @param nodeClassToDtoMap the nodeClassToDtoMap to set
 	 */
 	protected void setNodeClassToDtoMap(
-			Map<Class, INodeClassDataTransferObject> nodeClassToDtoMap) {
+			Map<Class<?>, INodeClassDataTransferObject> nodeClassToDtoMap) {
 		this.nodeClassToDtoMap = nodeClassToDtoMap;
 	}
 	
@@ -158,7 +158,7 @@ public class CorePluginNodeManager {
 	 * @param dto
 	 * @see #getPluginNodeInformation(Class)
 	 */
-	public void registerNodeClass(Class nodeClass, INodeClassDataTransferObject dto) {
+	public void registerNodeClass(Class<?> nodeClass, INodeClassDataTransferObject dto) {
 		this.getNodeClassToDtoMap().put(nodeClass, dto);
 	}
 	
@@ -168,7 +168,7 @@ public class CorePluginNodeManager {
 	 * @param nodeClass
 	 * @return
 	 */
-	public INodeClassDataTransferObject getPluginNodeInformation(Class nodeClass) {
+	public INodeClassDataTransferObject getPluginNodeInformation(Class<?> nodeClass) {
 		INodeClassDataTransferObject ret = this.getNodeClassToDtoMap().get(nodeClass);
 		if (ret == null) {
 			// retry reloading plugins
@@ -191,7 +191,7 @@ public class CorePluginNodeManager {
 	public void reloadPlugin() throws IOException {
 		
 		// reset the registered DTOs
-		this.setNodeClassToDtoMap(new HashMap<Class, INodeClassDataTransferObject>());
+		this.setNodeClassToDtoMap(new HashMap<Class<?>, INodeClassDataTransferObject>());
 		
 		// we assume the plugins are already published at UnBBayesFrame#loadPlugins(), but let's just be precautious...
 		if (!this.getUnbbayesPluginContextHolder().isInitialized()) {
@@ -232,7 +232,7 @@ public class CorePluginNodeManager {
 				Parameter shapeParam = ext.getParameter(PARAMETER_SHAPE);
 				
 				// extracting class of the node or its builder
-	            Class nodeClass = null;	// class for the node or its builder
+	            Class<?> nodeClass = null;	// class for the node or its builder
 	            nodeClass = classLoader.loadClass(classParam.valueAsString());
 				
 	            // generating node or its builder from extracted class
@@ -253,7 +253,7 @@ public class CorePluginNodeManager {
 		    	}
 				
 				// extracting class of the shape or its builder
-	            Class shapeClass = null;	// class for the shape or its builder
+	            Class<?> shapeClass = null;	// class for the shape or its builder
 	            shapeClass = classLoader.loadClass(shapeParam.valueAsString());
 				
 				// generating node or its builder from extracted class
@@ -267,7 +267,7 @@ public class CorePluginNodeManager {
 				}
 				
 				// extracting class for panel builder
-	            Class panelClass = null;	// class for the panel builder
+	            Class<?> panelClass = null;	// class for the panel builder
 	            panelClass = classLoader.loadClass(panelParam.valueAsString());
 				
 				// generating panel builder from extracted class
@@ -315,7 +315,7 @@ public class CorePluginNodeManager {
 				this.registerNodeClass(	nodeDto.getNodeBuilder().getNodeClass(), nodeDto);
 				
 			} catch (Throwable e) {
-				e.printStackTrace();
+				Debug.println(getClass(), "Error loading plugin", e);
 				continue;
 			}
 		}
@@ -346,7 +346,7 @@ public class CorePluginNodeManager {
 		if (this.getNodeClassToDtoMap() == null) {
 			System.err.println("Unexpected situation at " + this.getClass().getName() + ": nodeClassToDtoMap == null.");
 			// returning an empty collection
-			return Collections.EMPTY_SET;
+			return Collections.emptySet();
 		}
 		
 		// returning as a hash set in order to avoid duplicate items

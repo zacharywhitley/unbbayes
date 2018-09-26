@@ -26,6 +26,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
+import unbbayes.util.Debug;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 
 /**
@@ -72,7 +73,7 @@ public class TextModeRunner {
 			}
 			runner.run();
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(TextModeRunner.class, "Error running in test mode", t);
 			if (runner != null) {
 				runner.printHelp();
 			}
@@ -230,7 +231,7 @@ public class TextModeRunner {
 			try {
 				System.setOut(new PrintStream(new File(outputFileName)));
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+				Debug.println(getClass(), "Error redirecting system.out", e);
 			}
 		}
 		

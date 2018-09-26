@@ -23,7 +23,6 @@ package unbbayes.prs.bn;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 import unbbayes.prs.INode;
 import unbbayes.prs.Node;

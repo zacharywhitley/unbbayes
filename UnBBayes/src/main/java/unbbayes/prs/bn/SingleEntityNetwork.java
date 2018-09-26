@@ -1360,7 +1360,7 @@ public class SingleEntityNetwork extends Network implements java.io.Serializable
 			} catch (Exception e2) {
 				// added this catch, because if an exception is thrown at initialize(), 
 				// the exception e will be lost.
-				e2.printStackTrace();
+				Debug.println(getClass(), "Error during initialization", e2);
 			}
 			throw e;
 		}

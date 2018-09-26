@@ -1,0 +1,107 @@
+net
+{
+     node_size = (0 0);
+     name = "New BN";
+     tree = "(C1,C4,C7)";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node C1
+{
+     label = "C1";
+     position = (81 245);
+     states = ("State 0" "State 1");
+}
+
+decision D2
+{
+     label = "D2";
+     position = (261 100);
+     states = ("Action 0" "Action 1");
+}
+
+decision D3
+{
+     label = "D3";
+     position = (279 326);
+     states = ("Action 0" "Action 1");
+}
+
+node C4
+{
+     label = "C4";
+     position = (437 199);
+     states = ("State 0" "State 1");
+}
+
+decision D5
+{
+     label = "D5";
+     position = (616 50);
+     states = ("Action 0" "Action 1");
+}
+
+decision D6
+{
+     label = "D6";
+     position = (614 312);
+     states = ("Action 0" "Action 1");
+}
+
+node C7
+{
+     label = "C7";
+     position = (780 177);
+     states = ("State 0" "State 1");
+}
+
+utility U8
+{
+     label = "U8";
+     position = (962 182);
+}
+
+potential (C1)
+{
+ data = ( 0.7 0.3 );
+}
+
+potential (D2 | C1)
+{
+}
+
+potential (D3 | C1 D2)
+{
+}
+
+potential (C4 | D2 D3)
+{
+ data = ((( 0.9 0.1 )
+( 0.7 0.3 ))
+(( 0.2 0.8 )
+( 0.0 1.0 )));
+}
+
+potential (D5 | C4)
+{
+}
+
+potential (D6 | C4 D5)
+{
+}
+
+potential (C7 | D5 D6)
+{
+ data = ((( 0.9 0.1 )
+( 0.7 0.3 ))
+(( 0.2 0.8 )
+( 0.0 1.0 )));
+}
+
+potential (U8 | C7)
+{
+ data = ( 100.0 
+ -50.0 );
+}
+

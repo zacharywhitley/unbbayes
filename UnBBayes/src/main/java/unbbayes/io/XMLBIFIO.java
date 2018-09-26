@@ -22,7 +22,6 @@ package unbbayes.io;
 
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ResourceBundle;
@@ -30,11 +29,11 @@ import java.util.ResourceBundle;
 import javax.xml.bind.JAXBException;
 
 import unbbayes.io.exception.LoadException;
-import unbbayes.io.exception.SaveException;
 import unbbayes.io.exception.UBIOException;
 import unbbayes.prs.Graph;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.SingleEntityNetwork;
+import unbbayes.util.Debug;
 
 /** 
  * Manipulates I/O of XMLBIF file format.
@@ -75,15 +74,15 @@ public class XMLBIFIO implements BaseIO{
 		} catch (Exception e) {
 			try {
 				// Try version 0.5.
-//				e.printStackTrace();
+//				Debug.println(getClass(), "Could not load using version 6.", e);
 				unbbayes.io.xmlbif.version5.XMLBIFIO.loadXML(input, pn);
 			} catch (Exception e2) {
 				// Try version 0.4.
 				try {
-//					e2.printStackTrace();
+//					Debug.println(getClass(), "Could not load using version 5.", e);
 					unbbayes.io.xmlbif.version4.XMLBIFIO.loadXML(input, pn);
 				} catch (Exception e3) {
-					e3.printStackTrace();
+					Debug.println(getClass(), "Could not load file using version 4, 5 or 6.", e);
 					throw new LoadException(resource.getString("UnsupportedError"));
 				}
 			}
@@ -160,7 +159,7 @@ public class XMLBIFIO implements BaseIO{
 				fileExtension = file.getName().substring(index + 1);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Could not get extension for " + file, e);
 			return false;
 		}
 		return this.supports(fileExtension, isLoadOnly);

@@ -63,7 +63,7 @@ public class TextLogManager implements ILogManager, java.io.Serializable {
 //        		this.setEnabled(false);
 //        	}
 //		} catch (Exception e) {
-//			e.printStackTrace();
+//			Debug.println(getClass(), "Could not load parse boolean", e);
 //		}
     	log = new StringBuffer(bufferSize);
         reset();

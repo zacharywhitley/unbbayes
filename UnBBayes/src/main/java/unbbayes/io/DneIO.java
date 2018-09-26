@@ -1150,7 +1150,7 @@ public class DneIO implements BaseIO {
 				fileExtension = file.getName().substring(index + 1);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Could not retrieve file extension" + file, e);
 			return false;
 		}
 		return this.supports(fileExtension, isLoadOnly);

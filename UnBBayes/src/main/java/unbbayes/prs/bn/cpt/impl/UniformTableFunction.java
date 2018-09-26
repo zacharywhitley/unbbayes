@@ -5,6 +5,7 @@ import java.util.ResourceBundle;
 
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.cpt.ITableFunction;
+import unbbayes.util.Debug;
 import unbbayes.util.ResourceController;
 
 public class UniformTableFunction implements ITableFunction {
@@ -18,7 +19,7 @@ public class UniformTableFunction implements ITableFunction {
 					Locale.getDefault(),
 					this.getClass().getClassLoader());
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Could not get uniform table", t);
 		}
 	}
 

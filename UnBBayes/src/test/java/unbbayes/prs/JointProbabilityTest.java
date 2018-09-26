@@ -4,7 +4,6 @@
 package unbbayes.prs;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -19,12 +18,9 @@ import junit.framework.TestCase;
 import unbbayes.io.DneIO;
 import unbbayes.io.NetIO;
 import unbbayes.io.exception.LoadException;
-import unbbayes.prs.bn.IProbabilityFunction;
 import unbbayes.prs.bn.JunctionTreeAlgorithm;
-import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
-import unbbayes.prs.bn.cpt.impl.InCliqueConditionalProbabilityExtractor;
 
 /**
  * @author Shou Matsumoto

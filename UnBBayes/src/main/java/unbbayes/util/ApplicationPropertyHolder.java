@@ -36,21 +36,25 @@ public class ApplicationPropertyHolder implements
 		try {
 			property.load(new FileInputStream(new java.io.File(applicationPropertyPath)));
 		} catch (Exception e) {
+			Debug.println(ApplicationPropertyHolder.class, 
+					"Could not load properties from file system at " + applicationPropertyPath, e);
 			try {
 				property.load(ApplicationPropertyHolder.class.getClassLoader().getResourceAsStream(applicationPropertyPath));
 			} catch (Exception e2) {
+				Debug.println(ApplicationPropertyHolder.class, 
+						"Could not load properties as a resource " + applicationPropertyPath, e2);
 				try {
 					applicationPropertyPath = "src/main/resources/" + applicationPropertyPath;
 					property.load(ApplicationPropertyHolder.class.getClassLoader().getResourceAsStream(applicationPropertyPath));
 				} catch (Exception e3) {
+					Debug.println(ApplicationPropertyHolder.class, 
+							"Could not load properties as a resource " + applicationPropertyPath, e3);
 					try {
 						applicationPropertyPath = "src/" + applicationPropertyPath;
 						property.load(ApplicationPropertyHolder.class.getClassLoader().getResourceAsStream(applicationPropertyPath));
 					} catch (Exception e4) {
-						e.printStackTrace();
-						e2.printStackTrace();
-						e3.printStackTrace();
-						e4.printStackTrace();
+						Debug.println(ApplicationPropertyHolder.class, 
+								"Could not load properties as a resource " + applicationPropertyPath, e4);
 					}
 				}
 			}

@@ -8,6 +8,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import unbbayes.gui.Configurations;
+import unbbayes.util.Debug;
 
 public class ConfigurationsIOInputStream implements ConfigurationsIO{
 
@@ -20,9 +21,7 @@ public class ConfigurationsIOInputStream implements ConfigurationsIO{
 		try {
 			cf = (Configurations)obj.readObject();
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			Debug.println(getClass(), "Could not deserialize object when reading configuration", e);		}
 		
 		obj.close(); 
 		return cf;

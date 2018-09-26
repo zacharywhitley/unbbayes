@@ -28,7 +28,6 @@ import java.io.File;
 import java.util.ResourceBundle;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -41,6 +40,7 @@ import unbbayes.prs.bn.PotentialTable;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.exception.InvalidParentException;
+import unbbayes.util.Debug;
 
 /**
  * Title: Sample code for using this API's graphic mode.
@@ -82,7 +82,7 @@ public class GraphicMode {
                     BaseIO io = new NetIO();
                     rede = (ProbabilisticNetwork)io.load(new File(nomeArquivo.getText()));
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+        			Debug.println(getClass(), "Error loading Bayesian Network", ex);
                     JOptionPane.showMessageDialog(null, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                     System.exit(1);
                 }
@@ -105,7 +105,7 @@ public class GraphicMode {
 					rede.addEdge(auxArco);
 				} catch (InvalidParentException e1) {
 					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					Debug.println(getClass(), "Error adding edge", e1);
                     JOptionPane.showMessageDialog(null, e1.getMessage(), "Could not add edge", JOptionPane.WARNING_MESSAGE);
 				}
 

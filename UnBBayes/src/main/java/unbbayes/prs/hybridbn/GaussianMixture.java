@@ -35,6 +35,7 @@ import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
+import unbbayes.util.Debug;
 import unbbayes.util.SortUtil;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithm;
 import unbbayes.util.extension.bn.inference.IInferenceAlgorithmListener;
@@ -374,14 +375,12 @@ public class GaussianMixture implements IInferenceAlgorithm {
 			// TODO ROMMEL - change this name to a default one but that will not cause concurrent problems.
 			File file = new File("clone.xml");
 			io.save(file, network);
-			clone = (ProbabilisticNetwork)io.load(file);
+			clone = (ProbabilisticNetwork) io.load(file);
 			file.delete();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Debug.println(getClass(), "Could not clone ProbabilistNetwork " + network, e);
 		}  catch (ClassCastException e) {
-			// TODO: handle exception
-			e.printStackTrace();
+			Debug.println(getClass(), "Could not clone ProbabilistNetwork " + network, e);
 		}
 		
 		return clone;
@@ -410,14 +409,14 @@ public class GaussianMixture implements IInferenceAlgorithm {
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getDescription()
 	 */
 	public String getDescription() {
-		return this.resource.getString("gaussianMixtureAlgorithmDescription");
+		return resource.getString("gaussianMixtureAlgorithmDescription");
 	}
 
 	/* (non-Javadoc)
 	 * @see unbbayes.util.extension.bn.inference.IInferenceAlgorithm#getName()
 	 */
 	public String getName() {
-		return this.resource.getString("gaussianMixtureAlgorithmName");
+		return resource.getString("gaussianMixtureAlgorithmName");
 	}
 
 	/*

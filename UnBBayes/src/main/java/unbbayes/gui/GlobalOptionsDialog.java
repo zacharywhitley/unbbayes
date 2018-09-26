@@ -172,7 +172,7 @@ public class GlobalOptionsDialog extends JDialog {
                         	// updating the inference algorithm referenced by controller
                         	controller.setInferenceAlgorithm(currentPanel.getInferenceAlgorithm());
                     	} catch (Exception exc) {
-                    		exc.printStackTrace();
+                    		Debug.println(getClass(), "Error committing changes", exc);
 							JOptionPane.showMessageDialog(GlobalOptionsDialog.this, 
 									resource.getString("operationFail") + ": " + exc.getMessage(), 
 									resource.getString("error"), 
@@ -197,7 +197,7 @@ public class GlobalOptionsDialog extends JDialog {
                     	try {
                     		selectedAlgorithmOptionPanel.revertChanges();
                     	} catch (Exception exc) {
-                    		exc.printStackTrace();
+                    		Debug.println(getClass(), "Error reverting changes", exc);
 							JOptionPane.showMessageDialog(GlobalOptionsDialog.this, 
 									resource.getString("operationFail") + ": " + exc.getMessage(), 
 									resource.getString("error"), 
@@ -238,7 +238,7 @@ public class GlobalOptionsDialog extends JDialog {
                     	try {
                     		selectedAlgorithmOptionPanel.revertChanges();
                     	} catch (Exception exc) {
-                    		exc.printStackTrace();
+                    		Debug.println(getClass(), "Error reverting changes", exc);
 							JOptionPane.showMessageDialog(GlobalOptionsDialog.this, 
 									resource.getString("operationFail") + ": " + exc.getMessage(), 
 									resource.getString("error"), 
@@ -391,7 +391,6 @@ public class GlobalOptionsDialog extends JDialog {
     		    	try {
     		    		algorithmOptionPanel.setMediator(controller);
     		    	}catch (Throwable e) {
-    		    		e.printStackTrace();
 						try {
 							Debug.println(this.getClass(), "Could not set mediator for " + algorithmOptionPanel, e);
 						}catch (Throwable t) {
@@ -410,7 +409,7 @@ public class GlobalOptionsDialog extends JDialog {
     				// filling the return
     				ret.put(radio, algorithmOptionPanel);
     			} catch (Throwable e) {
-    				e.printStackTrace();
+            		Debug.println(getClass(), "Error processing extension", e);
     				continue;
     			} 
     		}
@@ -445,7 +444,6 @@ public class GlobalOptionsDialog extends JDialog {
     	try {
     		algorithmOptionPanel.setMediator(controller);
     	} catch (Throwable e) {
-    		e.printStackTrace();
     		try {
 				Debug.println(getClass(), "Failed to set mediator for " + algorithmRadioPanel, e);
 			} catch (Throwable t) {

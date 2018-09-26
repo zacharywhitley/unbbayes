@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
 import org.java.plugin.registry.PluginDescriptor;
@@ -123,12 +122,12 @@ public class ResourceController {
                 				ret.getListOfLoaders().add(loader);
                 			}
     					} catch (Throwable e) {
-    						e.printStackTrace();
+    						Debug.println(getClass(), "Could not load plugin " + ext, e);
     						continue;
     					}
                 	}
 				} catch (Throwable e) {
-					e.printStackTrace();
+					Debug.println(getClass(), "Could not load plugins " + point, e);
 					continue;
 				}
 			}

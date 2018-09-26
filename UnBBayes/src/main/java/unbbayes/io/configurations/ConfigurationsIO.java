@@ -1,7 +1,6 @@
 package unbbayes.io.configurations;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import unbbayes.gui.Configurations;

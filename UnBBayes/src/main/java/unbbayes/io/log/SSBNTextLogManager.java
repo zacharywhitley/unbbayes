@@ -3,6 +3,11 @@ package unbbayes.io.log;
 public class SSBNTextLogManager extends TextLogManager 
                          implements ISSBNLogManager{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1156154643215604025L;
+
 	private static int numColumns = 80; 
 	
 	private static char box1BarCharacter = '#';

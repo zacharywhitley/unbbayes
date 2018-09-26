@@ -21,13 +21,13 @@ import org.java.plugin.PluginManager;
 import org.java.plugin.PluginManager.PluginLocation;
 import org.java.plugin.registry.Extension;
 import org.java.plugin.registry.ExtensionPoint;
-import org.java.plugin.registry.Identity;
 import org.java.plugin.registry.PluginDescriptor;
 import org.java.plugin.registry.PluginPrerequisite;
 import org.java.plugin.standard.StandardPluginLocation;
 
 import unbbayes.io.exception.UBIOException;
 import unbbayes.util.ApplicationPropertyHolder;
+import unbbayes.util.Debug;
 
 
 /**
@@ -124,7 +124,7 @@ public class UnBBayesPluginContextHolder {
 						locations.add(location);
 					}
 				} catch (Throwable e) {
-					e.printStackTrace();
+					Debug.println(getClass(), "Error loading plugin for file " + file, e);
 					continue;
 				}
 			}
@@ -151,7 +151,7 @@ public class UnBBayesPluginContextHolder {
 //            try {
 //				getPluginManager().activatePlugin(descr.getId());
 //			} catch (PluginLifecycleException e) {
-//				e.printStackTrace();
+//				Debug.println(getClass(), "Error loading plugin " + extension, e);;
 //				// we could not load this plugin, but we shall continue
 //				continue;
 //			}
@@ -207,7 +207,7 @@ public class UnBBayesPluginContextHolder {
 			try{
 				listener.onReload(new EventObject(origin));
 			}catch (Throwable t) {
-				t.printStackTrace();
+				Debug.println(getClass(), "Error during reloading", t);
 			}
 		}
 	}
@@ -321,7 +321,7 @@ public class UnBBayesPluginContextHolder {
 	    	    } 
 			}
 	    } catch (Throwable e) {
-	    	e.printStackTrace();
+	    	Debug.println(getClass(), "Error loading plugin dependency map", e);
 	    } 
 		
 		return ret;
@@ -365,7 +365,7 @@ public class UnBBayesPluginContextHolder {
 	    	}
 		} catch (Throwable t) {
 			// even the core plugin was erroneous... This may be serious, but let's report it as erroneous
-			t.printStackTrace();
+			Debug.println(getClass(), "Error loading core plugin", t);
 			ret.put(this.getPluginCoreID(), new HashSet<String>());	// assume core does not have dependencies
 			return ret;
 		}
@@ -389,12 +389,12 @@ public class UnBBayesPluginContextHolder {
 		    				ret.put(descriptor.getId(), new HashSet<String>(this.getErroneousRequisiteID(descriptor)));
 		    			} 
 		    		} catch (Throwable e) {
-		    			e.printStackTrace();
+		    			Debug.println(getClass(), "Error loading extension for core plugin" + point, e);
 		    			continue;
 		    		}
 		    	}
 			} catch (Throwable e) {
-				e.printStackTrace();
+				Debug.println(getClass(), "Error loading extension for core plugin" + point, e);
 				continue;
 			}
 	    	

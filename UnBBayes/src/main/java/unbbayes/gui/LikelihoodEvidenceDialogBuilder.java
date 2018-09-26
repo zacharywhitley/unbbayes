@@ -24,6 +24,7 @@ import unbbayes.prs.Graph;
 import unbbayes.prs.INode;
 import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.prs.bn.TreeVariable;
+import unbbayes.util.Debug;
 import unbbayes.util.ResourceController;
 
 /**
@@ -212,7 +213,7 @@ public class LikelihoodEvidenceDialogBuilder implements ILikelihoodEvidenceDialo
 							getNumberFormat().parse((String) table.getValueAt(i, 1)).floatValue();
 					}
 				} catch (ParseException pe) {
-					pe.printStackTrace();
+					Debug.println(getClass(), "Error parsing number", pe);
 					JOptionPane.showMessageDialog(null, pe.getMessage());
 					return;
 				}

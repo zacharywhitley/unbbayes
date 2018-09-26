@@ -17,6 +17,7 @@ import unbbayes.io.DneIO;
 import unbbayes.io.FileExtensionIODelegator;
 import unbbayes.io.NetIO;
 import unbbayes.io.XMLBIFIO;
+import unbbayes.util.Debug;
 import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 
 /**
@@ -71,7 +72,7 @@ public class PluginAwareFileExtensionIODelegator extends
 				try {
 					reloadPlugins();
 				} catch (Exception e) {
-					e.printStackTrace();
+					Debug.println(getClass(), "Could not reload plugins", e);
 				}
 			}
 		});
@@ -149,7 +150,7 @@ public class PluginAwareFileExtensionIODelegator extends
 					
 					// extracting plugin class 
 					ClassLoader classLoader = this.getUnbbayesPluginContextHolder().getPluginManager().getPluginClassLoader(descr);
-		            Class pluginCls = null;	// class for the plugin or its builder (UnBBayesModuleBuilder)
+		            Class<?> pluginCls = null;	// class for the plugin or its builder (UnBBayesModuleBuilder)
 		            pluginCls = classLoader.loadClass(classParam.valueAsString());
 					
 		            BaseIO pluginIOObject = (BaseIO)pluginCls.newInstance();
@@ -158,14 +159,14 @@ public class PluginAwareFileExtensionIODelegator extends
 		            
 				} catch (Throwable e) {
 					// it is OK to ignore a plugin failure, since it is not fatal.
-					e.printStackTrace();
+					Debug.println(getClass(), "Could not load plugin " + ext, e);
 					continue;
 				}
 							
 			}
 		    
 		} catch (Throwable e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error when loading plugins", e);
 		} 
 		
 		return ret;

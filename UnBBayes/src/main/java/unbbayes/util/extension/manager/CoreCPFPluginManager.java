@@ -15,11 +15,10 @@ import java.util.Map;
 
 import javax.swing.ImageIcon;
 
-import org.java.plugin.PluginLifecycleException;
 import org.java.plugin.registry.Extension;
+import org.java.plugin.registry.Extension.Parameter;
 import org.java.plugin.registry.ExtensionPoint;
 import org.java.plugin.registry.PluginDescriptor;
-import org.java.plugin.registry.Extension.Parameter;
 
 import unbbayes.gui.table.extension.IProbabilityFunctionPanelBuilder;
 import unbbayes.prs.bn.ProbabilisticNode;
@@ -27,6 +26,7 @@ import unbbayes.prs.hybridbn.ContinuousNode;
 import unbbayes.prs.id.DecisionNode;
 import unbbayes.prs.id.UtilityNode;
 import unbbayes.util.ApplicationPropertyHolder;
+import unbbayes.util.Debug;
 import unbbayes.util.extension.dto.INodeClassDataTransferObject;
 import unbbayes.util.extension.dto.impl.NodeDto;
 
@@ -85,7 +85,7 @@ public class CoreCPFPluginManager  {
 				try {
 					reloadPlugin();
 				} catch (IOException e) {
-					e.printStackTrace();
+					Debug.println(getClass(), "Error reloading plugins", e);
 				}
 			}
 		});
@@ -137,7 +137,7 @@ public class CoreCPFPluginManager  {
 	public Collection<INodeClassDataTransferObject> getPluginInformation(String nodeClassName) {
 		Collection<INodeClassDataTransferObject> ret = this.getNodeNameToDtoMap().get(nodeClassName);
 		if (ret == null) {
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 		}
 		return ret;
 	}
@@ -198,7 +198,7 @@ public class CoreCPFPluginManager  {
 				
 				
 				// extracting class for panel builder
-	            Class panelClass = null;	// class for the panel builder
+	            Class<?> panelClass = null;	// class for the panel builder
 	            panelClass = classLoader.loadClass(panelParam.valueAsString());
 				
 				// generating panel builder from extracted class
@@ -233,7 +233,7 @@ public class CoreCPFPluginManager  {
 				}
 				collection.add(dto);
 			} catch (Throwable e) {
-				e.printStackTrace();
+				Debug.println(getClass(), "Could not load plugin", e);
 				continue;
 			} 
 		}

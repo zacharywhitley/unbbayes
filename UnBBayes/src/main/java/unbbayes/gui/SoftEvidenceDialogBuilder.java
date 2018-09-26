@@ -231,7 +231,7 @@ public class SoftEvidenceDialogBuilder extends LikelihoodEvidenceDialogBuilder {
 								fillDialogActionListeners(dialog, graph, nodeToAddLikelihood);
 								dialog.repaint();
 							} catch (Exception e2) {
-								e2.printStackTrace();
+								Debug.println(getClass(), "Could not fill dialogs", e2);
 								JOptionPane.showMessageDialog(dialog, e2.getMessage(), getResource().getString("error"), JOptionPane.WARNING_MESSAGE);
 								// undo
 								node.getLikelihoodParents().remove(option);
@@ -263,7 +263,7 @@ public class SoftEvidenceDialogBuilder extends LikelihoodEvidenceDialogBuilder {
 						}
 					}
 				} catch (Exception e2) {
-					e2.printStackTrace();
+					Debug.println(getClass(), "Could not fill dialogs", e2);
 					JOptionPane.showMessageDialog(dialog, e2.getMessage(), getResource().getString("error"), JOptionPane.WARNING_MESSAGE);
 				}
 			}
