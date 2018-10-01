@@ -33980,6 +33980,118 @@ public class MarkovEngineTest extends TestCase {
 		
 	}
 	
+	public final void testComplexityFactorRemovingLinks() {
+		engine.addQuestion(null, new Date(), 'p', 2, null);
+		engine.addQuestion(null, new Date(), 'c', 2, null);
+		LinkSuggestion suggestion = engine.getLinkComplexitySuggestion((long)'c', (long)'p', 999, false);
+		assertNotNull(suggestion);
+		assertEquals((long)'c', suggestion.getSuggestedParentId().longValue());
+		assertEquals((long)'p', suggestion.getSuggestedChildId().longValue());
+		assertEquals(2, suggestion.getPriorComplexity());
+		assertEquals(4, suggestion.getPosteriorComplexity());
+		
+		assertTrue(engine.addQuestionAssumption(null, new Date(), 'c', Collections.singletonList((long)'p'), null));
+		assertTrue(engine.removeQuestionAssumption(null, new Date(), 'c', Collections.singletonList((long)'p')));
+		assertTrue(engine.addQuestionAssumption(null, new Date(), 'c', Collections.singletonList((long)'p'), null));
+		assertTrue(engine.removeQuestionAssumption(null, new Date(), 'c', Collections.singletonList((long)'p')));
+		
+		int complexityFactor = engine.getComplexityFactor((Map)null);
+		if (engine.getDefaultComplexityFactorName().equalsIgnoreCase(MarkovEngineInterface.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			assertEquals(2, complexityFactor);
+		} else if (engine.getDefaultComplexityFactorName().equalsIgnoreCase(MarkovEngineInterface.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			assertEquals(4, complexityFactor);
+		} else {
+			fail("Unknown complexity factor name: " + engine.getDefaultComplexityFactorName());
+		}
+		
+		complexityFactor = engine.getComplexityFactor((Map)null, true, false, false);
+		assertEquals(4, complexityFactor);
+		complexityFactor = engine.getComplexityFactor((Map)null, false, false, true);
+		if (engine.getDefaultComplexityFactorName().equalsIgnoreCase(MarkovEngineInterface.COMPLEXITY_FACTOR_MAX_CLIQUE_TABLE_SIZE)) {
+			assertEquals(2, complexityFactor);
+		} else if (engine.getDefaultComplexityFactorName().equalsIgnoreCase(MarkovEngineInterface.COMPLEXITY_FACTOR_SUM_CLIQUE_TABLE_SIZE)) {
+			assertEquals(4, complexityFactor);
+		} else {
+			fail("Unknown complexity factor name: " + engine.getDefaultComplexityFactorName());
+		}
+		
+	}
+	
+	
+	public final void testLinkSuggestionPM25BeijinQuestions () {
+		// create the following structure
+		/*
+         *  1332  <---  1349
+         *  ^   ^         ^  
+         *  |     \       /
+         * 1333 ->   1331
+		 */
+		engine.addQuestion(null, new Date(), 1331L, 2, null);
+		engine.addQuestion(null, new Date(), 1332L, 3, null);
+		engine.addQuestion(null, new Date(), 1333L, 5, null);
+		engine.addQuestion(null, new Date(), 1349L, 7, null);
+		engine.addQuestionAssumption(null, new Date(), 1331L, Collections.singletonList(1333L), null);
+		engine.addQuestionAssumption(null, new Date(), 1332L, Collections.singletonList(1333L), null);
+		engine.addQuestionAssumption(null, new Date(), 1332L, Collections.singletonList(1331L), null);
+		engine.addQuestionAssumption(null, new Date(), 1332L, Collections.singletonList(1349L), null);
+		engine.addQuestionAssumption(null, new Date(), 1349L, Collections.singletonList(1331L), null);
+		
+		// check that suggestion from 1349 to 1333 (forced) is void
+		assertNull(engine.getLinkComplexitySuggestion(1349L, 1333L, Integer.MAX_VALUE, true));
+		
+		// check suggestion between 1349 and 1333 is always from 1333 to 1349
+		LinkSuggestion suggestion_49_33 = engine.getLinkComplexitySuggestion(1349L, 1333L, Integer.MAX_VALUE, false);
+		assertNotNull(suggestion_49_33);
+		LinkSuggestion suggestion_33_49 = engine.getLinkComplexitySuggestion(1333L, 1349L, Integer.MAX_VALUE, false);
+		assertNotNull(suggestion_33_49);
+		
+		assertEquals(1333L, suggestion_33_49.getSuggestedParentId().longValue());
+		assertEquals(1333L, suggestion_49_33.getSuggestedParentId().longValue());
+		assertEquals(1349L, suggestion_33_49.getSuggestedChildId().longValue());
+		assertEquals(1349L, suggestion_49_33.getSuggestedChildId().longValue());
+		
+		assertEquals(suggestion_33_49.getPriorComplexity(), suggestion_49_33.getPriorComplexity());
+		assertEquals(suggestion_33_49.getPosteriorComplexity(), suggestion_49_33.getPosteriorComplexity());
+		
+		// create the following structure
+		engine.initialize();
+		/*
+		 *  1332  --->  1349
+		 *  |    \        |  
+		 *  v      v      v
+		 * 1333 <--  1331
+		 */
+		engine.addQuestion(null, new Date(), 1331L, 2, null);
+		engine.addQuestion(null, new Date(), 1332L, 3, null);
+		engine.addQuestion(null, new Date(), 1333L, 5, null);
+		engine.addQuestion(null, new Date(), 1349L, 7, null);
+		engine.addQuestionAssumption(null, new Date(), 1331L, Collections.singletonList(1332L), null);
+		engine.addQuestionAssumption(null, new Date(), 1331L, Collections.singletonList(1349L), null);
+		engine.addQuestionAssumption(null, new Date(), 1333L, Collections.singletonList(1331L), null);
+		engine.addQuestionAssumption(null, new Date(), 1333L, Collections.singletonList(1332L), null);
+		engine.addQuestionAssumption(null, new Date(), 1349L, Collections.singletonList(1332L), null);
+		
+		// check that suggestion from 1349 to 1333 (forced) is void
+		assertNull(engine.getLinkComplexitySuggestion(1333L, 1349L, Integer.MAX_VALUE, true));
+		
+		// check suggestion between 1349 and 1333 is always from 1333 to 1349
+		suggestion_49_33 = engine.getLinkComplexitySuggestion(1349L, 1333L, Integer.MAX_VALUE, false);
+		assertNotNull(suggestion_49_33);
+		suggestion_33_49 = engine.getLinkComplexitySuggestion(1333L, 1349L, Integer.MAX_VALUE, false);
+		assertNotNull(suggestion_33_49);
+		
+		assertEquals(1349L, suggestion_33_49.getSuggestedParentId().longValue());
+		assertEquals(1349L, suggestion_49_33.getSuggestedParentId().longValue());
+		assertEquals(1333L, suggestion_33_49.getSuggestedChildId().longValue());
+		assertEquals(1333L, suggestion_49_33.getSuggestedChildId().longValue());
+		
+		assertEquals(suggestion_33_49.getPriorComplexity(), suggestion_49_33.getPriorComplexity());
+		assertEquals(suggestion_33_49.getPosteriorComplexity(), suggestion_49_33.getPosteriorComplexity());
+		
+		
+		
+	}
+	
 	/**
 	 * Tests methods related to complexity factors with local visibility
 	 * (i.e. ignores portions of the junction tree not connected -- or connected by empty separators -- to a clique containing a specified node)
@@ -36982,6 +37094,7 @@ public class MarkovEngineTest extends TestCase {
 		assertTrue((engine.getProbabilisticNetwork().getJunctionTree()==null) || (engine.getProbabilisticNetwork().getJunctionTree() instanceof LoopyJunctionTree));
 		
 	}
+	
 	
 	
 }
