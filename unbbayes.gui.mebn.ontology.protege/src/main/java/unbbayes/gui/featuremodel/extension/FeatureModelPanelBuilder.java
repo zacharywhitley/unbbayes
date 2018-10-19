@@ -29,7 +29,7 @@ import unbbayes.io.BaseIO;
 import unbbayes.io.mebn.owlapi.DefaultPROWL2ModelUser;
 import unbbayes.io.mebn.owlapi.IPROWL2ModelUser;
 import unbbayes.prs.Graph;
-import unbbayes.prs.mebn.ontology.protege.IOWLClassExpressionParserFacade;
+import unbbayes.prs.mebn.ontology.IOWLClassExpressionParserFacade;
 import unbbayes.prs.mebn.ontology.protege.OWLClassExpressionParserFacade;
 import unbbayes.util.Debug;
 import unbbayes.util.extension.UnBBayesModule;

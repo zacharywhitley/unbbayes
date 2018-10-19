@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes.prs.mebn.ontology.protege;
+package unbbayes.prs.mebn.ontology;
 
 import org.semanticweb.owlapi.model.OWLClassExpression;
 

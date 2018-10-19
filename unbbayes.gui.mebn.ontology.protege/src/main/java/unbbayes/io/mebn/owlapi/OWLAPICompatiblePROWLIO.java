@@ -88,7 +88,7 @@ import unbbayes.prs.mebn.entity.exception.TypeAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.entity.ontology.owlapi.OWLAPIObjectEntityContainer;
 import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
-import unbbayes.prs.mebn.ontology.protege.IOWLClassExpressionParserFacade;
+import unbbayes.prs.mebn.ontology.IOWLClassExpressionParserFacade;
 import unbbayes.prs.mebn.ontology.protege.OWLClassExpressionParserFacade;
 import unbbayes.util.Debug;
 

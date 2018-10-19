@@ -79,7 +79,7 @@ import unbbayes.prs.mebn.entity.ontology.owlapi.OWLReasonerInfo;
 import unbbayes.prs.mebn.entity.ontology.owlapi.ProtegeOWLReasonerInfoAdapter;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.SearchResult;
-import unbbayes.prs.mebn.ontology.protege.IOWLClassExpressionParserFacade;
+import unbbayes.prs.mebn.ontology.IOWLClassExpressionParserFacade;
 import unbbayes.prs.mebn.ontology.protege.OWLClassExpressionParserFacade;
 import unbbayes.prs.mebn.ssbn.LiteralEntityInstance;
 import unbbayes.prs.mebn.ssbn.OVInstance;

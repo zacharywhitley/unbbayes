@@ -8,6 +8,7 @@ import org.protege.editor.owl.model.OWLModelManager;
 import org.semanticweb.owlapi.model.OWLClassExpression;
 import org.semanticweb.owlapi.model.OWLOntology;
 
+import unbbayes.prs.mebn.ontology.IOWLClassExpressionParserFacade;
 import unbbayes.util.Debug;
 
 /**
