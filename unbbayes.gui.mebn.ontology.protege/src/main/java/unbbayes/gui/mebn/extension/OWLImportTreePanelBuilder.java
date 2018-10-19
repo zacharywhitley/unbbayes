@@ -545,7 +545,7 @@ public class OWLImportTreePanelBuilder extends JPanel implements IMEBNEditionPan
 			// this should guarantee that the IRI is also a valid URI
 			uri = URI.create(input);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error parsing URI " + input, e);
 			JOptionPane.showMessageDialog(null, e.getMessage() + "\n\n" + getStackTraceString(e), "Error parsing the URI", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
@@ -554,7 +554,7 @@ public class OWLImportTreePanelBuilder extends JPanel implements IMEBNEditionPan
 		try {
 			this.addOWLImportDeclarationToOntology(ontology, uri);
 		} catch (OWLOntologyCreationException e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error loading ontology " + uri, e);
 			JOptionPane.showMessageDialog(null, e.getMessage() + "\n\n" + getStackTraceString(e), "Error loading ontology", JOptionPane.WARNING_MESSAGE);
 		}
 		
@@ -603,7 +603,7 @@ public class OWLImportTreePanelBuilder extends JPanel implements IMEBNEditionPan
 		try {
 			this.addOWLImportDeclarationToOntology(ontology, uri);
 		} catch (OWLOntologyCreationException e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error loading ontology " + uri, e);
 			JOptionPane.showMessageDialog(null, e.getMessage() + "\n\n" + getStackTraceString(e), "Error loading ontology", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
@@ -686,7 +686,7 @@ public class OWLImportTreePanelBuilder extends JPanel implements IMEBNEditionPan
 				}
 			} catch (Exception e) {
 				// ignore exception for now, because we'll try second attempt
-				e.printStackTrace();
+				Debug.println(getClass(), "Error loading ontology from document " + ontologyIRI, e);
 			}
 			if (ontologyToImport == null) {
 				Debug.println(getClass(), "Second attempt to load ontology: " + ontologyIRI);

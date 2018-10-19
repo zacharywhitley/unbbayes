@@ -45,6 +45,11 @@ import unbbayes.util.extension.manager.UnBBayesPluginContextHolder;
 public class FeatureModelPanelBuilder extends UnBBayesModule implements UnBBayesModuleBuilder {
 
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7172804402177124337L;
+
 	private static int invocationCount = 0;
 	
 	private PrefixManager prefixManager;
@@ -58,7 +63,7 @@ public class FeatureModelPanelBuilder extends UnBBayesModule implements UnBBayes
 			this.setTransitionModelPrefixManager(new DefaultPrefixManager("http://www.cic.unb.br/TES/2010/02/shou/unbbayesConfigurationTransition.owl"));
 			this.setNameExtractor(DefaultPROWL2ModelUser.getInstance());
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Error during constructor", t);
 		}
 		this.setVisible(false);
 	}
@@ -173,7 +178,7 @@ public class FeatureModelPanelBuilder extends UnBBayesModule implements UnBBayes
 			 
 			 // add invocation count
 			 OWLDataProperty hasInvocationCount = factory.getOWLDataProperty("#hasInvocationCount", this.getTransitionModelPrefixManager());
-			 ontology.getOWLOntologyManager().addAxiom(ontology, factory.getOWLDataPropertyAssertionAxiom(hasInvocationCount, individual, this.getInvocationCount()));
+			 ontology.getOWLOntologyManager().addAxiom(ontology, factory.getOWLDataPropertyAssertionAxiom(hasInvocationCount, individual, getInvocationCount()));
 			 
 			 manager.getOWLReasonerManager().classifyAsynchronously(manager.getOWLReasonerManager().getReasonerPreferences().getPrecomputedInferences());
 			 
@@ -195,7 +200,7 @@ public class FeatureModelPanelBuilder extends UnBBayesModule implements UnBBayes
  					Thread.sleep(1000);
  				} catch (Throwable t) {
  					// a thread sleep should not break normal program flow...
- 					t.printStackTrace();
+ 					Debug.println(getClass(), "Thread sleep has been interrupted", t);
  				}
  			 }
 			 
@@ -233,7 +238,7 @@ public class FeatureModelPanelBuilder extends UnBBayesModule implements UnBBayes
 					 try {
 						 Thread.sleep(2000);
 					 } catch (Exception e) {
-						 e.printStackTrace();
+						 Debug.println(getClass(), "Thread sleep has been interrupted", e);
 					 }
 					 JOptionPane.showMessageDialog(FeatureModelPanelBuilder.this, "Download Completed!");
 				 }
@@ -242,10 +247,10 @@ public class FeatureModelPanelBuilder extends UnBBayesModule implements UnBBayes
 			 }
 			 
 		} catch (NullPointerException n) {
-			n.printStackTrace();
+			Debug.println(getClass(), "No reasoner instance found. Please, initialize some instance of unbbayes.gui.ontology.protege", n);
 			JOptionPane.showMessageDialog(FeatureModelPanelBuilder.this, "No reasoner instance found. Please, initialize some instance of unbbayes.gui.ontology.protege");
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Error when instantiating reasoner", t);
 			JOptionPane.showMessageDialog(FeatureModelPanelBuilder.this, t.getMessage());
 		}
 	}
@@ -319,7 +324,7 @@ public class FeatureModelPanelBuilder extends UnBBayesModule implements UnBBayes
 				this.doMagic();
 			}
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Error when setting UnBBayes frame", t);
 			JOptionPane.showMessageDialog(getUnbbayesFrame(), 
 					t.getMessage(), 
 					"Unknown Error", 

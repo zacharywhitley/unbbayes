@@ -21,14 +21,7 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.TransferHandler;
 
-import unbbayes.gui.mebn.auxiliary.MebnToolkit;
-import unbbayes.io.mebn.MEBNStorageImplementorDecorator;
-import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.mebn.ontology.protege.OWLPropertyDTO;
-import unbbayes.util.Debug;
-import unbbayes.util.ResourceController;
 import edu.stanford.smi.protegex.owl.model.OWLModel;
-import edu.stanford.smi.protegex.owl.model.OWLNamedClass;
 import edu.stanford.smi.protegex.owl.model.OWLObjectProperty;
 import edu.stanford.smi.protegex.owl.model.RDFProperty;
 import edu.stanford.smi.protegex.owl.model.RDFSNamedClass;
@@ -37,7 +30,12 @@ import edu.stanford.smi.protegex.owl.ui.OWLLabeledComponent;
 import edu.stanford.smi.protegex.owl.ui.ProtegeUI;
 import edu.stanford.smi.protegex.owl.ui.ResourceRenderer;
 import edu.stanford.smi.protegex.owl.ui.icons.OWLIcons;
-import edu.stanford.smi.protegex.owl.ui.widget.OWLUI;
+import unbbayes.gui.mebn.auxiliary.MebnToolkit;
+import unbbayes.io.mebn.MEBNStorageImplementorDecorator;
+import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.ontology.protege.OWLPropertyDTO;
+import unbbayes.util.Debug;
+import unbbayes.util.ResourceController;
 
 /**
  * This panel shows OWL properties
@@ -47,11 +45,16 @@ import edu.stanford.smi.protegex.owl.ui.widget.OWLUI;
 public class OWLPropertyViewerPanel extends JPanel {
 
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -2724820711401443503L;
+
 	private ResourceBundle resource;
 	
 	private MultiEntityBayesianNetwork mebn;
-	private DefaultListModel propertyListModel;
-	private JList propertyList;
+	private DefaultListModel<Object> propertyListModel;
+	private JList<Object> propertyList;
 
 	private JScrollPane propertyListScrollPane;
 
@@ -93,7 +96,7 @@ public class OWLPropertyViewerPanel extends JPanel {
 		OWLModel owlModel = this.getOwlModelHolder().getAdaptee();
 		
 		// create list data
-		this.setPropertyListModel(new DefaultListModel());
+		this.setPropertyListModel(new DefaultListModel<Object>());
 		
 		// fill list data with RDF properties (mostly OWL properties)
 		for (Object property : owlModel.getRDFProperties()) {
@@ -101,7 +104,7 @@ public class OWLPropertyViewerPanel extends JPanel {
 		}
 		
 		// create list on GUI
-		this.setPropertyList(new JList(this.getPropertyListModel()));
+		this.setPropertyList(new JList<Object>(this.getPropertyListModel()));
 		this.getPropertyList().setCellRenderer(new ResourceRenderer());	// make sure entries are shown up nicely, with icons
 		this.getPropertyList().setDragEnabled(true);	// enable drag and drop
 		this.getPropertyList().setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
@@ -144,6 +147,11 @@ public class OWLPropertyViewerPanel extends JPanel {
 		// what happens when someone presses the add property option.
 		if (this.getOwlLabeledComponent() != null) {
 			this.getOwlLabeledComponent().addHeaderButton(new AbstractAction(this.getResource().getString("AddProperty"), OWLIcons.getAddIcon(OWLIcons.RDF_PROPERTY)) {
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 4115989508515794147L;
+
 				public void actionPerformed(ActionEvent e) {
 					try {
 						// ask the name of new property
@@ -164,7 +172,7 @@ public class OWLPropertyViewerPanel extends JPanel {
 							}
 						} 
 					} catch (Exception exc) {
-						exc.printStackTrace();
+						Debug.println(getClass(), "Error during property selection", exc);
 						JOptionPane.showMessageDialog(
 								OWLPropertyViewerPanel.this, 
 								getResource().getString("SelectedPropertyError"),
@@ -178,6 +186,11 @@ public class OWLPropertyViewerPanel extends JPanel {
 		// what happens when someone presses the remove property option.
 		if (this.getOwlLabeledComponent() != null) {
 			this.getOwlLabeledComponent().addHeaderButton(new AbstractAction(this.getResource().getString("RemoveProperty"), OWLIcons.getRemoveIcon(OWLIcons.RDF_PROPERTY)) {
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = -5660687657463434718L;
+
 				public void actionPerformed(ActionEvent e) {
 					// notify user that removal is extremely dangerous for ontology consistency
 					int option = JOptionPane.showConfirmDialog(
@@ -199,7 +212,7 @@ public class OWLPropertyViewerPanel extends JPanel {
 					try {
 						getOwlModelHolder().getAdaptee().getRDFProperty(((RDFProperty)getPropertyList().getSelectedValue()).getName()).delete();
 					} catch (Exception exc) {
-						exc.printStackTrace();
+						Debug.println(getClass(), "Error during property selection", exc);
 						JOptionPane.showMessageDialog(
 								OWLPropertyViewerPanel.this, 
 								getResource().getString("SelectedPropertyError"), 
@@ -212,6 +225,10 @@ public class OWLPropertyViewerPanel extends JPanel {
 		
 		// what happens when user drag and drops OWL property to graph panel
 		this.getPropertyList().setTransferHandler(new TransferHandler () {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 7971107551255885954L;
 			protected Transferable createTransferable(JComponent c) {
 				try{
 					// obtains the currently selected properties
@@ -229,7 +246,7 @@ public class OWLPropertyViewerPanel extends JPanel {
 					}
 					return OWLPropertyDTO.newInstance(rdfProperties);
 				} catch (Exception e) {
-					e.printStackTrace();
+					Debug.println(getClass(), "Error creating transferable", e);
 					JOptionPane.showMessageDialog(
 							OWLPropertyViewerPanel.this, 
 							e.getMessage(), 
@@ -283,28 +300,28 @@ public class OWLPropertyViewerPanel extends JPanel {
 	/**
 	 * @return the propertyListModel
 	 */
-	public DefaultListModel getPropertyListModel() {
+	public DefaultListModel<Object> getPropertyListModel() {
 		return propertyListModel;
 	}
 
 	/**
 	 * @param propertyListModel the propertyListModel to set
 	 */
-	public void setPropertyListModel(DefaultListModel propertyListModel) {
+	public void setPropertyListModel(DefaultListModel<Object> propertyListModel) {
 		this.propertyListModel = propertyListModel;
 	}
 
 	/**
 	 * @return the propertyList
 	 */
-	public JList getPropertyList() {
+	public JList<Object> getPropertyList() {
 		return propertyList;
 	}
 
 	/**
 	 * @param propertyList the propertyList to set
 	 */
-	public void setPropertyList(JList propertyList) {
+	public void setPropertyList(JList<Object> propertyList) {
 		this.propertyList = propertyList;
 	}
 

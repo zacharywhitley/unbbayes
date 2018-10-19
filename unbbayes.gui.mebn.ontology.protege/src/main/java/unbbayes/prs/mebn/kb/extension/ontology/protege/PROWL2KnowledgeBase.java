@@ -110,11 +110,7 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 			}
 		} catch (Throwable t) {
 			// it is OK, because we can try extracting the reasoner when KB methods are called and MEBN is passed as arguments
-			try {
-				Debug.println(this.getClass(), "Could not extract reasoner from mebn " + mebn, t);
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
+			Debug.println(this.getClass(), "Could not extract reasoner from mebn " + mebn, t);
 		}
 		return null;
 	}
@@ -159,7 +155,7 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 		// obtain reasoner info
 		Set<ProtegeOWLReasonerInfo> installedReasonerFactories = protegeStorageImplementor.getOWLEditorKit().getOWLModelManager().getOWLReasonerManager().getInstalledReasonerFactories();
 		if (installedReasonerFactories == null) {
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 		}
 		
 		// prepare the list to be returned
@@ -362,7 +358,6 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 //					try {
 //						entityContainerInTBOX.addEntityInstance(entityInMTheory.addInstance(findingInstance.getName()));
 //					} catch (Exception e) {
-//						e.printStackTrace();
 //						Debug.println(getClass(), "Unable to create instance " + findingInstance.getName() 
 //								+ " for class " + entityInMTheory.getName(), e);
 //						continue;
@@ -389,11 +384,7 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 				for (ObjectEntity entityInTBOX : compatibleEntitiesInTBox) {
 					ObjectEntityInstance instanceInTBox = entityContainerInTBOX.getEntityInstanceByName(instanceInFinding.getName());
 					if (instanceInTBox != null) {
-						try {
-							Debug.println(getClass(), "Instance was already inserted for another entity: " + instanceInTBox + ". Avoiding duplicates.");
-						} catch (Throwable t) {
-							t.printStackTrace();
-						}
+						Debug.println(getClass(), "Instance was already inserted for another entity: " + instanceInTBox + ". Avoiding duplicates.");
 						// make sure instance can be accessed from entity
 						entityInTBOX.getInstanceList().add(instanceInTBox);
 					} else {
@@ -401,7 +392,7 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 							instanceInTBox = entityInTBOX.addInstance(instanceInFinding.getInstanceName());
 							entityContainerInTBOX.addEntityInstance(instanceInTBox);
 						} catch (TypeException | EntityInstanceAlreadyExistsException e) {
-							e.printStackTrace();
+							Debug.println(getClass(),"Could not add instance" + instanceInFinding, e);
 						}
 					}
 				}

@@ -59,6 +59,10 @@ import unbbayes.util.Debug;
  */
 public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilder {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5125662696241961371L;
 	private IMEBNElementFactory mebnFactory;
 	private JToggleButton btnTabOptionDefinesUncertaintyOf;
 	private String definesUncertaintyOfCardLayoutID = "DefinesUncertaintyOf";
@@ -211,6 +215,10 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 		
 		// Let's just change the behavior of what happens on drop action from the OWLPropertyViewerPanel
 		this.getGraphPane().setTransferHandler(new TransferHandler() {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 8547626555568983328L;
 			public boolean canImport(JComponent comp,
 					DataFlavor[] transferFlavors) {				
 				// check if this is at least a local java object
@@ -241,13 +249,13 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 					Point location = comp.getMousePosition();
 					
 					// extract the property expecting it as a OWLPropertyDTO. OWLPropertyViewerPanel must provide OWLPropertyDTO in drag operation
-					Collection collectionOfProperties = null;
+					Collection<String> collectionOfProperties = null;
 					try {
-						collectionOfProperties = (Collection)t.getTransferData(OWLPropertyDTO.DEFAULT_DATA_FLAVORS[0]);
+						collectionOfProperties = (Collection<String>)t.getTransferData(OWLPropertyDTO.DEFAULT_DATA_FLAVORS[0]);
 					} catch (UnsupportedFlavorException e) {
-						e.printStackTrace();
+						Debug.println(getClass(), "Error getting flavors", e);
 						collectionOfProperties = new HashSet<String>();
-						collectionOfProperties.add(t.getTransferData(DataFlavor.stringFlavor));
+						collectionOfProperties.add((String) t.getTransferData(DataFlavor.stringFlavor));
 					}
 					
 					if (collectionOfProperties == null) {
@@ -278,7 +286,7 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 						try {
 							generatedNode = insertPropertyAsNode(xPos, yPos, object, getMebn(), getMediator());
 						} catch (Exception e) {
-							e.printStackTrace();
+							Debug.println(getClass(), "Error, could not insert property as node", e);
 						} finally {
 							if (generatedNode == null) {
 								JOptionPane.showMessageDialog(
@@ -294,7 +302,7 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 					}
 					
 				} catch (Exception e) {
-					e.printStackTrace();
+					Debug.println(getClass(), "Error using Drag and Drop", e);
 					JOptionPane.showMessageDialog(
 							getNewWindow(), 
 							e.getMessage(), 
@@ -369,7 +377,7 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 			IRIAwareMultiEntityBayesianNetwork.addDefineUncertaintyToMEBN(mebn, node, iri);
 			Debug.println(this.getClass(), "IRI of node " + node + " set to " + iri);
 		} catch (Throwable e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error setting node '" + node + "' IRI", e);
 		}
 		
 		//Updating panels
@@ -395,14 +403,14 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 	 */
 	protected IRI extractIRIFromProperty(Object property) {
 		// if property is unknown
-		if (property instanceof OWLProperty) {
-			return ((OWLProperty)property).getIRI();
+		if (property instanceof OWLProperty<?, ?>) {
+			return ((OWLProperty<?, ?>)property).getIRI();
 		}
 		// this is unknown
 		try {
 			return IRI.create(property.toString());
-		}catch (Exception e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			Debug.println(getClass(), "Error creating IRI from " + property, e);
 		}
 		return null;
 	}
@@ -424,7 +432,7 @@ public class OWL2PropertyImportPanelBuilder extends OWLPropertyImportPanelBuilde
 //			try {
 //				name = name.substring(name.lastIndexOf('#')+1);
 //			} catch (Exception e) {
-//				e.printStackTrace();
+//				Debug.println(getClass(), "Error getting segment from IRI", e);
 //				// It is OK. Use the available name though
 //			}
 			return this.getProwlModelUserDelegator().extractName((OWLObject) property);

@@ -70,7 +70,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 			this.setName("Available OWL2 Reasoners");
 		}catch (Throwable e) {
 			// the constructor must not fail in initializing fields accessible by public methods, because callers may initialize them afterwards
-			e.printStackTrace();
+			Debug.println(getClass(), "Error during construction", e);
 		}
 	}
 
@@ -114,14 +114,14 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 			// force label update when visibility changes...
 			this.getOWLAPIReasonerLabel().addHierarchyListener(new HierarchyListener() {
 				public void hierarchyChanged(HierarchyEvent e) {
-					if (e.getChangeFlags() == e.SHOWING_CHANGED) {
+					if (e.getChangeFlags() == HierarchyEvent.SHOWING_CHANGED) {
 						Debug.println(this.getClass(), "Showing changed on OWLAPI Reasoner label");
 						try {
 							getOWLAPIReasonerLabel().setText(((OWL2KnowledgeBase)getKB()).getDefaultOWLReasoner().getReasonerName());
 							getOWLAPIReasonerLabel().updateUI();
 							getOWLAPIReasonerLabel().repaint();
 						} catch (Exception e2) {
-							e2.printStackTrace();
+							Debug.println(getClass(), "Error updating OWLAPI Reasoner label", e2);
 						}
 					}
 				}
@@ -130,7 +130,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 			return this.getOWLAPIReasonerOptionPanel();
 			
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Error creating OWLAPI Reasoner Option Panel", t);
 		}
 		
 		// if code reaches here, we could not specify what reasoner was being used
@@ -221,17 +221,13 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 //						try {
 //							radioItem.doClick();
 //						}catch (Exception e) {
-//							e.printStackTrace();
+//							Debug.println(getClass(), "Error during click processing", e);
 //						}
 //					}
-					try {
-						Debug.println(this.getClass(), radioItem.getName() + (radioItem.isSelected()?" is selected.":" is not selected."));
-					}catch (Throwable e) {
-						e.printStackTrace();
-					}
+					Debug.println(this.getClass(), radioItem.getName() + (radioItem.isSelected()?" is selected.":" is not selected."));
 				} catch (Throwable e) {
 					// OK. This one failed, but let's try the others
-					e.printStackTrace();
+					Debug.println(getClass(), "Error creating radio button for OWL reasoner", e);
 					continue;
 				}
 				
@@ -243,7 +239,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 				
 			}
 		} catch (Throwable e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error creating OWLAPI Reasoner option panel", e);
 			return this.createDefaultErrorPanel();
 		}
 		
@@ -364,7 +360,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 //						this.updateUI();
 //						this.repaint();
 //					} catch (Exception e) {
-//						e.printStackTrace();
+//						Debug.println(getClass(), "Error updating UI", e);
 //					}
 					
 					// just use the first selected reasoner if multiple could be selected (it should be impossible - it is a radio button)
@@ -380,7 +376,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 			}
 			
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error selecting OWLAPI Reasoner", e);
 			JOptionPane.showMessageDialog(
 					this, 
 					e.getMessage(), 
@@ -499,7 +495,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 				newView.add(owlAPIOptionPanel);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error creating OWLAPI Reasoner option panel", e);
 		}
 		
 		// add reasoners from protege 4.1 plugins
@@ -509,7 +505,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 				newView.add(protege41component);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error creating OWLAPI Reasoner option panel", e);
 		}
 		
 		try {
@@ -518,7 +514,7 @@ public class OWL2KnowledgeBaseOptionPanelBuilder extends JScrollPane implements 
 				newView.add(chooseFileComponent);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error creating choose File Option Panel", e);
 		}
 		
 		this.setViewportView(newView);

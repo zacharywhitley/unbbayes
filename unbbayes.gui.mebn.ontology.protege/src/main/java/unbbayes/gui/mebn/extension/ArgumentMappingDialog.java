@@ -24,6 +24,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
+import org.protege.editor.core.ProtegeApplication;
 import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLProperty;
 
@@ -54,6 +55,11 @@ import unbbayes.util.ResourceController;
  */
 public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8827516891340579422L;
+
 	private Object[] contentOfComboBox;
 	
 	private MultiEntityBayesianNetwork mebn;
@@ -66,8 +72,8 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 	private IMappingArgumentExtractor mappingArgumentExtractor;
 	private Map<Argument,AbstractButton> selectAnotherOWLPropertyButtonMap;
 	private Map<Argument, JLabel> owlPropertyLabelMap;
-	private Map<Argument, Map<OWLProperty, Integer>> argumentMapping = null;
-	private Map<Argument, Map<OWLProperty,JComboBox>> subjectOrObjectComboboxMap;
+	private Map<Argument, Map<OWLProperty<?, ?>, Integer>> argumentMapping = null;
+	private Map<Argument, Map<OWLProperty<?, ?>,JComboBox<Object>>> subjectOrObjectComboboxMap;
 	private JPanel buttonPanel;
 	private JButton okButton;
 	private JButton cancelButton;
@@ -86,12 +92,12 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 					Locale.getDefault(),
 					this.getClass().getClassLoader());
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Error getting resource bundle", t);
 		}
 		try {
 			this.mappingArgumentExtractor = DefaultMappingArgumentExtractor.newInstance();
 		}  catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Error when instantiating DefaultMappingArgumentExtractor", t);
 		}
 		
 		// initialize content of combo box
@@ -104,7 +110,7 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 			} 
 		} catch (Exception e) {
 			// ignore, because we can still go on
-			e.printStackTrace();
+			Debug.println(getClass(), "Error getting resources", e);
 		}
 		// backup plan...
 		if (this.contentOfComboBox == null) {
@@ -155,7 +161,7 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 				ret.setOntology(((IOWLAPIStorageImplementorDecorator)mebn.getStorageImplementor()).getAdaptee());
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(ArgumentMappingDialog.class, "Error setting Ontology", e);
 			JOptionPane.showMessageDialog(
 					null, 
 					e.getMessage(), 
@@ -269,7 +275,7 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 		
 		// initialize map to store combo boxes that allow user to choose whether argument is subject or object of an owl property
 		if (this.getSubjectOrObjectComboboxMap() == null) {
-			this.setSubjectOrObjectComboboxMap(new HashMap<Argument, Map<OWLProperty,JComboBox>>());
+			this.setSubjectOrObjectComboboxMap(new HashMap<Argument, Map<OWLProperty<?, ?>, JComboBox<Object>>>());
 		} else {
 			this.getSubjectOrObjectComboboxMap().clear();	// reuse instance, because callers may have set a map with special behaviors
 		}
@@ -302,7 +308,7 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 					continue;	// ignore
 				}
 				// extract mapping
-				Map<OWLProperty, Integer> mappedValue = this.getArgumentMapping().get(arg);
+				Map<OWLProperty<?, ?>, Integer> mappedValue = this.getArgumentMapping().get(arg);
 				if (mappedValue == null || mappedValue.isEmpty()) {
 					// this argument has no mapping. Create a placeholder in order to allow specifying new mapping
 					
@@ -310,7 +316,7 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 					this.getContentPanel().add(new JLabel(arg.getOVariable().getName(), IconController.getInstance().getOVariableNodeIcon(), JLabel.LEADING));
 					
 					// combo box (dropdown list) for choosing whether "subject" or "object" of an owl property
-					JComboBox comboBox = new JComboBox(this.getContentOfComboBox());
+					JComboBox<Object> comboBox = new JComboBox<Object>(this.getContentOfComboBox());
 					comboBox.setToolTipText(this.getResource().getString("chooseTypeOfMapping"));
 					
 					// no mapping. Set disabled and pointing to 1st element
@@ -337,13 +343,13 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 				} else {
 					
 					// this argument already has a mapping. Show it and allow user to change config
-					for (OWLProperty property : mappedValue.keySet()) {	// extract property
+					for (OWLProperty<?, ?> property : mappedValue.keySet()) {	// extract property
 						
 						// argument label (the name of ordinary variable)
 						this.getContentPanel().add(new JLabel(arg.getOVariable().getName(), IconController.getInstance().getOVariableNodeIcon(), JLabel.LEADING));
 						
 						// combo box (dropdown list) for choosing whether "subject" or "object" of an owl property
-						JComboBox comboBox = new JComboBox(this.getContentOfComboBox());
+						JComboBox<Object> comboBox = new JComboBox<Object>(this.getContentOfComboBox());
 						comboBox.setToolTipText(this.getResource().getString("chooseTypeOfMapping"));
 						
 						// choose initial values of combo box
@@ -360,9 +366,9 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 						this.getContentPanel().add(comboBox);
 						
 						// add combo box to map
-						Map<OWLProperty,JComboBox> comboBoxMap = getSubjectOrObjectComboboxMap().get(arg);
+						Map<OWLProperty<?, ?>, JComboBox<Object>> comboBoxMap = getSubjectOrObjectComboboxMap().get(arg);
 						if (comboBoxMap == null) {
-							comboBoxMap = new HashMap<OWLProperty,JComboBox>();
+							comboBoxMap = new HashMap<OWLProperty<?, ?>, JComboBox<Object>>();
 						}
 						comboBoxMap.put(property, comboBox);
 						this.getSubjectOrObjectComboboxMap().put(arg, comboBoxMap);
@@ -414,35 +420,31 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 					
 					// show dialog to select property
 					final PropertySelectionDialog dialog = PropertySelectionDialog.newInstance(getMebn());
-					dialog.setDefaultCloseOperation(dialog.DISPOSE_ON_CLOSE);
+					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 					dialog.setModal(true);	// force user to choose a property
 					dialog.setVisible(true);
 					
 					try {
 						// get selected property
-						OWLProperty selectedProperty = dialog.getSelectedValue();
-						try {
-							Debug.println(this.getClass(), "Selected property is " + selectedProperty);
-						} catch (Throwable t) {
-							t.printStackTrace();
-						}
+						OWLProperty<?, ?> selectedProperty = dialog.getSelectedValue();
+						Debug.println(this.getClass(), "Selected property is " + selectedProperty);
 						if (selectedProperty == null) {
 							// no selection means it was canceled. Do not change
 							return;
 						}
 						
 						// create a mapping only in the main data object (getArgumentMapping()) without changing MEBN (we should only change MEBN on commit)
-						Map<OWLProperty, Integer> mapping = getArgumentMapping().get(argOfButton);
+						Map<OWLProperty<?, ?>, Integer> mapping = getArgumentMapping().get(argOfButton);
 						
 						// remove all other mappings (because this version of UnBBayes allow only 1 mapping for an argument)
 						if (mapping != null) {
 							mapping.clear();
 						} else {
-							mapping = new HashMap<OWLProperty, Integer>();
+							mapping = new HashMap<OWLProperty<?, ?>, Integer>();
 						}
 						
 						// add property, but indicate that this is neither subject nor object yet (i.e. undefined)
-						mapping.put(selectedProperty, getMappingArgumentExtractor().UNDEFINED_CODE);
+						mapping.put(selectedProperty, IMappingArgumentExtractor.UNDEFINED_CODE);
 						
 						// put to main data object (getArgumentMapping()) again just to make sure 
 						getArgumentMapping().put(argOfButton, mapping);
@@ -453,7 +455,7 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 						// reset ArgumentMappingPane, so that components are rebuilt using new values in main data object (getArgumentMapping()) 
 						resetComponents();
 					} catch (Exception exc) {
-						exc.printStackTrace();
+						Debug.println(getClass(), "Error when during OWL Property ToolTip selection", exc);
 						JOptionPane.showMessageDialog(
 								dialog, 
 								getResource().getString("SelectOWLPropertyToolTip"), 
@@ -498,15 +500,15 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 					}
 					try {
 						// extract properties from argument
-						Map<OWLProperty, Integer> mapping = getArgumentMapping().get(arg);
+						Map<OWLProperty<?, ?>, Integer> mapping = getArgumentMapping().get(arg);
 						
 						// assume this is a "complete" mapping, containing type (none/subject/object) and property. 
 						// If not, it will throw NullPointerException and will be handled by "catch"
-						for (OWLProperty property : mapping.keySet()) {
+						for (OWLProperty<?, ?> property : mapping.keySet()) {
 							// the type of mapping (subject/object) may not be synchronized (because I didn't add a listener for combobox)... 
 							try {
 								// ...so extract values directly from combo box
-								JComboBox comboBox = getSubjectOrObjectComboboxMap().get(arg).get(property);
+								JComboBox<Object> comboBox = getSubjectOrObjectComboboxMap().get(arg).get(property);
 								
 								// get type of mapping (subject or object). The index is synchronized to type code
 								if (comboBox.getSelectedIndex() == IMappingArgumentExtractor.SUBJECT_CODE) {
@@ -546,7 +548,7 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 								}
 							} catch (Exception e2) {
 								// there is something wrong with this mapping...
-								e2.printStackTrace();
+								Debug.println(getClass(), "Error when during OWL Property selection", e2);
 								JOptionPane.showMessageDialog(
 										ArgumentMappingDialog.this, 
 										getResource().getString("invalidSelectedNode"), 
@@ -558,11 +560,7 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 						}
 					} catch (Exception exc) {
 						// there is no mapping at all
-						try {
-							Debug.println(this.getClass(), exc.getMessage(), exc);
-						} catch (Throwable t) {
-							t.printStackTrace();
-						}
+						Debug.println(this.getClass(), exc.getMessage(), exc);
 						// clear map from mebn
 						IRIAwareMultiEntityBayesianNetwork.clearObjectMappingOfMEBN(getMebn(), arg);
 						IRIAwareMultiEntityBayesianNetwork.clearSubjectMappingOfMEBN(getMebn(), arg);
@@ -700,7 +698,7 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 	 * @return the argumentMapping
 	 * @see #getMappingArgumentExtractor()
 	 */
-	public Map<Argument, Map<OWLProperty, Integer>> getArgumentMapping() {
+	public Map<Argument, Map<OWLProperty<?, ?>, Integer>> getArgumentMapping() {
 		return argumentMapping;
 	}
 
@@ -714,7 +712,7 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 	 * @param argumentMapping the argumentMapping to set
 	 */
 	public void setArgumentMapping(
-			Map<Argument, Map<OWLProperty, Integer>> argumentMapping) {
+			Map<Argument, Map<OWLProperty<?, ?>, Integer>> argumentMapping) {
 		this.argumentMapping = argumentMapping;
 	}
 
@@ -749,7 +747,7 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 	 * @return the subjectOrObjectComboboxMap
 	 * @see #getArgumentMapping()
 	 */
-	public Map<Argument, Map<OWLProperty,JComboBox>> getSubjectOrObjectComboboxMap() {
+	public Map<Argument, Map<OWLProperty<?, ?>, JComboBox<Object>>> getSubjectOrObjectComboboxMap() {
 		return subjectOrObjectComboboxMap;
 	}
 
@@ -762,7 +760,7 @@ public class ArgumentMappingDialog extends JDialog implements IOWLIconsHolder {
 	 * @see #getArgumentMapping()
 	 */
 	public void setSubjectOrObjectComboboxMap(
-			Map<Argument, Map<OWLProperty,JComboBox>> subjectOrObjectComboboxMap) {
+			Map<Argument, Map<OWLProperty<?, ?>, JComboBox<Object>>> subjectOrObjectComboboxMap) {
 		this.subjectOrObjectComboboxMap = subjectOrObjectComboboxMap;
 	}
 

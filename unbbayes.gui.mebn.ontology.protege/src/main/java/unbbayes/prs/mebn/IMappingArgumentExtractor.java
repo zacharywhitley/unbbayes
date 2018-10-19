@@ -35,5 +35,5 @@ public interface IMappingArgumentExtractor {
 	 * is explicitly undefined ({@link #UNDEFINED_CODE}), a subject of the owl property ({@link #SUBJECT_CODE}) 
 	 * or object ({@link #OBJECT_CODE}), or something else (any other code).
 	 */
-	public Map<Argument, Map<OWLProperty, Integer>> getOWLPropertiesOfArgumentsOfSelectedNode(INode selectedNode, MultiEntityBayesianNetwork mebn, OWLOntology ontology);
+	public Map<Argument, Map<OWLProperty<?, ?>, Integer>> getOWLPropertiesOfArgumentsOfSelectedNode(INode selectedNode, MultiEntityBayesianNetwork mebn, OWLOntology ontology);
 }

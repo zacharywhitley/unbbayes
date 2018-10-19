@@ -148,7 +148,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		try {
 			this.initialize();
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error during initialization.", e);
 		}
 	}
 	
@@ -286,22 +286,14 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	public void createEntityDefinition(ObjectEntity entity) {
 		// ignore null elements
 		if (entity == null) {
-			try {
-				Debug.println(this.getClass(), "Entity == null");
-			}catch (Throwable t) {
-				t.printStackTrace();
-			}
+			Debug.println(this.getClass(), "Entity == null");
 			return;
 		}
 		
 		// check cache
 		if (this.getEntityCache() != null) {
 			if (this.getEntityCache().get(entity) != null) {
-				try {
-					Debug.println(this.getClass(), entity + " is cached already.");
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), entity + " is cached already.");
 				return;
 			}
 		}
@@ -321,11 +313,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			Debug.println(this.getClass(), "No iri found for " + entity.getName() + ". Creating a new one from name.");
 			iri = IRI.create(this.getDefaultOWLReasoner().getRootOntology().getOntologyID().getOntologyIRI().toString() + '#' + entity.getName());
 		}
-		try {
-			Debug.println(this.getClass(), "IRI of entity " + entity + " = " + iri);
-		}catch (Throwable t) {
-			t.printStackTrace();
-		}
+		Debug.println(this.getClass(), "IRI of entity " + entity + " = " + iri);
 		
 		// create a new OWL class if it does not exist
 		if (!this.getDefaultOWLReasoner().getRootOntology().containsClassInSignature(iri, true)) {
@@ -342,7 +330,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		}
 		
 		// make sure the IRI gets mapped
-		((IRIAwareMultiEntityBayesianNetwork)this.getDefaultMEBN()).addIRIToMEBN(this.getDefaultMEBN(), entity, iri);
+		IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(this.getDefaultMEBN(), entity, iri);
 		
 		// put to cache
 		if (this.getEntityCache() != null) {
@@ -363,39 +351,39 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		try {
 			this.setResidentNodeCache(new HashMap<ResidentNode, IRI>());
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Error when calling setResidentNodeCache().", t);
 		}
 		try {
 			this.setEntityCache(new HashMap<Entity, IRI>());
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Error when calling setEntityCache().", t);
 		}
 		try {
 			this.setFindingCache(new HashMap<ResidentNode, Map<Collection<OVInstance>,StateLink>>());
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Error when calling setFindingCache().", t);
 		}
 		try {
 			this.setTypeToIndividualsCache(new HashMap<String, List<String>>());
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Error when calling setTypeToIndividualsCache().", t);
 		}
 		try {
 			this.setResidentNodeFindingCache(new HashMap<ResidentNode, Collection<RandomVariableFinding>>());
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Error when calling setResidentNodeFindingCache().", t);
 		}
 		try {
 			// disable cache for owl class expressions
 //			this.setExpressionCache(null);
 			this.setExpressionCache(new HashMap<String, OWLClassExpression>());
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Error when calling setExpressionCache().", t);
 		}
 		try {
 			this.setSearchContextCache(new HashMap<ContextNode, Map<Collection<OVInstance>,SearchResult>>());
 		} catch (Throwable t) {
-			t.printStackTrace();
+			Debug.println(getClass(), "Error when calling setSearchContextCache().", t);
 		}
 		
 		// disable cache reset. Re-Enable it only when explicitly stated
@@ -418,11 +406,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		if (this.getResidentNodeCache() != null) {
 			if (this.getResidentNodeCache().get(resident) != null) {
 				// the resident node is already cached.
-				try {
-					Debug.println(this.getClass(), resident + " is cached already.");
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), resident + " is cached already.");
 				return;
 			}
 		}
@@ -439,17 +423,13 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			Debug.println(this.getClass(), "The IRI is not registered. Creating new one...");
 			// generate IRI "automagically"
 			iri = IRI.create(this.getOntologyPrefixManager(this.getDefaultOWLReasoner().getRootOntology()).getDefaultPrefix() + resident.getName());
-			try {
-				Debug.println(this.getClass(), "The new IRI for the OWL property related to node " + resident + " is " + iri);
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
+			Debug.println(this.getClass(), "The new IRI for the OWL property related to node " + resident + " is " + iri);
 			
 			// extract factory
 			OWLDataFactory factory = this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().getOWLDataFactory();
 			
 			// prepare variables to hold owl property
-			OWLProperty property = null;				// this is the property to be added
+			OWLProperty<?, ?> property = null;				// this is the property to be added
 			OWLAxiom addPropertyAxiom = null; 			// this is an axiom to add property into to ontology
 			OWLAxiom rangeAxiom = null;					// this is an axiom to set property's range
 
@@ -481,11 +461,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().addAxiom(this.getDefaultOWLReasoner().getRootOntology(), rangeAxiom);
 			}
 			
-			try {
-				Debug.println(this.getClass(), "Added property " + property + " to ontology in order to represent the deterministic side of " + resident);
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
+			Debug.println(this.getClass(), "Added property " + property + " to ontology in order to represent the deterministic side of " + resident);
 			
 			// if everything goes OK, register IRI into mebn
 			IRIAwareMultiEntityBayesianNetwork.addDefineUncertaintyToMEBN(this.getDefaultMEBN(), resident, iri);
@@ -499,11 +475,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			this.getResidentNodeCache().put(resident, iri);
 		}
 		
-		try {
-			Debug.println(this.getClass(), "The IRI " + iri + " of node " + resident + "is registered in MEBN " + resident.getMFrag().getMultiEntityBayesianNetwork());
-		}catch (Throwable t) {
-			t.printStackTrace();
-		}
+		Debug.println(this.getClass(), "The IRI " + iri + " of node " + resident + "is registered in MEBN " + resident.getMFrag().getMultiEntityBayesianNetwork());
 		
 	}
 
@@ -517,11 +489,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			return;
 		}
 		
-		try {
-			Debug.println(this.getClass(), "Entity finding: " + entityInstance.getName());
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
+		Debug.println(this.getClass(), "Entity finding: " + entityInstance.getName());
 		
 		// extract owl factory in advance
 		OWLDataFactory factory = this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().getOWLDataFactory();
@@ -561,19 +529,11 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				// try using abbreviated IRI in order to extract the class of this individual
 				entityClass = factory.getOWLClass(entityInstance.getInstanceOf().getName(), this.getOntologyPrefixManager(this.getDefaultOWLReasoner().getRootOntology()));
 				classIRI = entityClass.getIRI();
-				try {
-					Debug.println(this.getClass(), "Could not find proper class for individual " + individual + ". Class set to " + entityClass);
-				}catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), "Could not find proper class for individual " + individual + ". Class set to " + entityClass);
 			} else {
 				// this.getDefaultOWLReasoner().getRootOntology().containsClassInSignature(classIRI) == true, so class exists
 				entityClass = factory.getOWLClass(classIRI);
-				try {
-					Debug.println(this.getClass(), "The class of individual " + individual + " is " + entityClass);
-				}catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), "The class of individual " + individual + " is " + entityClass);
 			}
 			
 			// asserting the class of the new individual
@@ -583,11 +543,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().addAxiom(this.getDefaultOWLReasoner().getRootOntology(), classAssertionAxiom);
 //		}
 		
-		try {
-			Debug.println(this.getClass(), "The entity instance " + entityInstance.getName() + " is pointing to OWL individual " + iri);
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
+		Debug.println(this.getClass(), "The entity instance " + entityInstance.getName() + " is pointing to OWL individual " + iri);
 		
 	}
 
@@ -942,11 +898,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		// add axioms and apply changes
 		if (!axiomsToInclude.isEmpty()) {
 			this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().addAxioms(this.getDefaultOWLReasoner().getRootOntology(), axiomsToInclude);
-			try {
-				Debug.println(this.getClass(), "Added finding " + randomVariableFinding + " to property " + iri + " and subject " + subject);
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
+			Debug.println(this.getClass(), "Added finding " + randomVariableFinding + " to property " + iri + " and subject " + subject);
 		} else {
 			Debug.println(this.getClass(), "No axiom could be generated from random variable finding " + randomVariableFinding);
 		}
@@ -967,11 +919,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @see unbbayes.prs.mebn.kb.KnowledgeBase#saveFindings(unbbayes.prs.mebn.MultiEntityBayesianNetwork, java.io.File)
 	 */
 	public void saveFindings(MultiEntityBayesianNetwork mebn, File file) {
-		try {
-			Debug.println(this.getClass(), "Attempting to save knowledge base of " + mebn);
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
+		Debug.println(this.getClass(), "Attempting to save knowledge base of " + mebn);
 		
 		// clear garbage
 		clearKnowledgeBase();
@@ -1007,12 +955,8 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			}
 		} else {
 			// this code should only be called if this.supportsLocalFile(false) == true
-			try {
-				// warn programmer that this is an unexpected operation...
-				System.err.println("WARNING: attempting to save ontology as different file " + file + ". This may cause synchronization problems between the deterministic and probabilistic parts of the ontology.");
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
+			// warn programmer that this is an unexpected operation...
+			System.err.println("WARNING: attempting to save ontology as different file " + file + ". This may cause synchronization problems between the deterministic and probabilistic parts of the ontology.");
 			try {
 				this.getDefaultOWLReasoner().getRootOntology().getOWLOntologyManager().saveOntology(this.getDefaultOWLReasoner().getRootOntology(), IRI.create(file));
 			} catch (OWLOntologyStorageException e) {
@@ -1035,11 +979,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		
 		// do nothing if it is already ok and not out of sync
 		if (this.getOWLModelManager().getOWLReasonerManager().getReasonerStatus().equals(ReasonerStatus.INITIALIZED)) {
-			try {
-				Debug.println(this.getClass(), ReasonerStatus.INITIALIZED.getDescription());
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
+			Debug.println(this.getClass(), ReasonerStatus.INITIALIZED.getDescription());
 			return;
 		}
 		
@@ -1062,9 +1002,9 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			try {
 				// sleep and try reasoner status after
 				Thread.sleep(this.getSleepTimeWaitingReasonerInitialization());
-			} catch (Throwable t) {
+			} catch (InterruptedException e) {
 				// a thread sleep should not break normal program flow...
-				t.printStackTrace();
+				Debug.println(getClass(), "Thread interrupted", e);
 			}
 		}
 		
@@ -1083,7 +1023,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// this should be fast, because it looks like protege is using a cache to solve this kind of search
 			return !((ProtegeStorageImplementorDecorator)this.getDefaultMEBN().getStorageImplementor()).getOWLEditorKit().getOWLModelManager().getOWLEntityFinder().getMatchingOWLEntities(name).isEmpty();
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error when delegating to protege", e);
 		}
 		
 		// let's try the IRI cache (the IRIs stored in mebn)
@@ -1097,12 +1037,12 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						return true;
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					Debug.println(getClass(), "Error looking for fragment in IRI", e);
 					continue;
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error when searing ontologies IRIs", e);
 		}
 		
 		// nothing found
@@ -1131,19 +1071,11 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				// there is a finding for resident, but the arguments may be different. Check if there is a finding for that arguments
 				Object valueOfFinding = this.getValueFromMapWithCollectionAsKey(cachedFindings, listArguments);
 				if (valueOfFinding instanceof NullObject) {
-					try {
-						Debug.println(getClass(), resident + " is cached and its value is null");
-					} catch (Throwable t) {
-						t.printStackTrace();
-					}
+					Debug.println(getClass(), resident + " is cached and its value is null");
 					return null;
 				}
 				if (valueOfFinding != null && (valueOfFinding instanceof StateLink)) {
-					try {
-						Debug.println(this.getClass(), "The finding " + resident + " ( " + listArguments + " ) = " + valueOfFinding + " is cached already.");
-					} catch (Throwable t) {
-						t.printStackTrace();
-					}
+					Debug.println(this.getClass(), "The finding " + resident + " ( " + listArguments + " ) = " + valueOfFinding + " is cached already.");
 					return (StateLink)valueOfFinding;
 				}
 			}
@@ -1162,11 +1094,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 //		if (listArguments.size() > 2) {
 //			// This version cannot handle findings for resident nodes with more than 2 arguments
 ////			throw new IllegalArgumentException("This knowledge base cannot handle resident nodes repesenting n-ary relationships with n > 2. Resident node = " + resident);
-//			try {
-//				Debug.println(this.getClass(), "This knowledge base cannot handle resident nodes repesenting n-ary relationships with n > 2. Resident node = " + resident);
-//			} catch (Throwable t) {
-//				t.printStackTrace();
-//			}
+//			Debug.println(this.getClass(), "This knowledge base cannot handle resident nodes repesenting n-ary relationships with n > 2. Resident node = " + resident);
 //			return null;
 //		}
 		
@@ -1229,11 +1157,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 							if (owlLiteral.isBoolean()) {
 								StateLink link = resident.getPossibleValueByName(String.valueOf(owlLiteral.parseBoolean())); 
 								if (link != null) {
-									try {
-										Debug.println(this.getClass(), "The value of  " + resident + " is " + link);
-									} catch (Throwable t) {
-										t.printStackTrace();
-									}
+									Debug.println(this.getClass(), "The value of  " + resident + " is " + link);
 									// cache finding
 									if (this.getFindingCache() != null) {
 										Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
@@ -1261,10 +1185,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				String expression = null;	// this variable will be filled with an expression to query the unknown variable
 				
 				// extract the isSubjectIn or isObjectIn relations
-				Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
+				Map<Argument, Map<OWLProperty<?, ?>, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
 				if (argumentMappings != null) {
 					// extract the mapping of the only argument
-					Map<OWLProperty, Integer> singleArgMap = argumentMappings.get(resident.getArgumentList().get(0));
+					Map<OWLProperty<?, ?>, Integer> singleArgMap = argumentMappings.get(resident.getArgumentList().get(0));
 					if (singleArgMap != null) {
 						// checking consistency
 						if (singleArgMap.size() != 1) {
@@ -1322,10 +1246,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// use subjectOf and objectOf in order to decide which one is subject and which one is object
 			
 			// extract the isSubjectIn or isObjectIn relations
-			Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
+			Map<Argument, Map<OWLProperty<?, ?>, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
 			if (argumentMappings != null) {
 				// we know that at this point the resident node has 2 arguments (because the number of arguments in resident and number of entries in listArguments match)
-				Map<OWLProperty, Integer> argMap1 = argumentMappings.get(resident.getArgumentList().get(0)); // extract the mapping of the 1st argument
+				Map<OWLProperty<?, ?>, Integer> argMap1 = argumentMappings.get(resident.getArgumentList().get(0)); // extract the mapping of the 1st argument
 				if (argMap1 != null) {
 					// checking consistency
 					if (argMap1.size() != 1) {
@@ -1343,7 +1267,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						subjectName = temp;
 					}	// if argument is either subject or unknown, then use default behavior
 				} 
-				Map<OWLProperty, Integer> argMap2 = argumentMappings.get(resident.getArgumentList().get(1)); // extract the mapping of the 2nd argument
+				Map<OWLProperty<?, ?>, Integer> argMap2 = argumentMappings.get(resident.getArgumentList().get(1)); // extract the mapping of the 2nd argument
 				if (argMap2 != null) {
 					// checking consistency
 					if (argMap2.size() != 1) {
@@ -1413,28 +1337,20 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			OWLObjectProperty mainProperty = factory.getOWLObjectProperty(propertyIRI);
 			
 			// get the owl properties related (by subjectIn or objectIn) to the arguments of this node
-			Map<Argument, Map<OWLProperty, Integer>> propertiesPerArgument = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
+			Map<Argument, Map<OWLProperty<?, ?>, Integer>> propertiesPerArgument = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
 			if (propertiesPerArgument == null || propertiesPerArgument.isEmpty()) {
 				// a node with no arguments mapped to OWL properties cannot have findings anyway
-				try {
-					Debug.println(getClass(), "There is no mapping specified for n-ary relationship of node " + resident);
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(getClass(), "There is no mapping specified for n-ary relationship of node " + resident);
 				return null;
 			}
 			if (propertiesPerArgument.size() != resident.getArgumentList().size()) {
-				try {
-					Debug.println(getClass(), "The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(getClass(), "The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
 				return null;
 			}
 			
 			// translate the mapping to a map of ordinary variables to properties, because listArguments uses ordinary variables as reference
-			Map<OrdinaryVariable, Map<OWLProperty, Integer>> propertiesPerOV = new HashMap<OrdinaryVariable, Map<OWLProperty,Integer>>();
-			for (Entry<Argument, Map<OWLProperty, Integer>> entry : propertiesPerArgument.entrySet()) {
+			Map<OrdinaryVariable, Map<OWLProperty<?, ?>, Integer>> propertiesPerOV = new HashMap<OrdinaryVariable, Map<OWLProperty<?, ?>,Integer>>();
+			for (Entry<Argument, Map<OWLProperty<?, ?>, Integer>> entry : propertiesPerArgument.entrySet()) {
 				propertiesPerOV.put(entry.getKey().getOVariable(), entry.getValue());
 			}
 			
@@ -1448,13 +1364,13 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				OVInstance argInstance = iterator.next();
 				
 				// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
-				OWLProperty property = mainProperty;
+				OWLProperty<?, ?> property = mainProperty;
 				boolean isSubjectIn = true;
 				// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
-				Map<OWLProperty, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
+				Map<OWLProperty<?, ?>, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
 				if (propertyMap != null) {
 					// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
-					for (Entry<OWLProperty, Integer> entry : propertyMap.entrySet()) {
+					for (Entry<OWLProperty<?, ?>, Integer> entry : propertyMap.entrySet()) {
 						if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 							isSubjectIn = false;
 							property = entry.getKey();
@@ -1522,28 +1438,20 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			OWLObjectProperty mainProperty = factory.getOWLObjectProperty(propertyIRI);
 			
 			// get the owl properties related (by subjectIn or objectIn) to the arguments of this node
-			Map<Argument, Map<OWLProperty, Integer>> propertiesPerArgument = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
+			Map<Argument, Map<OWLProperty<?, ?>, Integer>> propertiesPerArgument = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
 			if (propertiesPerArgument == null || propertiesPerArgument.isEmpty()) {
 				// a node with no arguments mapped to OWL properties cannot have findings anyway
-				try {
-					Debug.println(getClass(), "There is no mapping specified for n-ary relationship of node " + resident);
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(getClass(), "There is no mapping specified for n-ary relationship of node " + resident);
 				return null;
 			}
 			if (propertiesPerArgument.size() != resident.getArgumentList().size()) {
-				try {
-					Debug.println(getClass(), "The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(getClass(), "The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
 				return null;
 			}
 			
 			// translate the mapping to a map of ordinary variables to properties, because listArguments uses ordinary variables as reference
-			Map<OrdinaryVariable, Map<OWLProperty, Integer>> propertiesPerOV = new HashMap<OrdinaryVariable, Map<OWLProperty,Integer>>();
-			for (Entry<Argument, Map<OWLProperty, Integer>> entry : propertiesPerArgument.entrySet()) {
+			Map<OrdinaryVariable, Map<OWLProperty<?, ?>, Integer>> propertiesPerOV = new HashMap<OrdinaryVariable, Map<OWLProperty<?, ?>,Integer>>();
+			for (Entry<Argument, Map<OWLProperty<?, ?>, Integer>> entry : propertiesPerArgument.entrySet()) {
 				propertiesPerOV.put(entry.getKey().getOVariable(), entry.getValue());
 			}
 			
@@ -1556,14 +1464,14 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				// I'm using an explicit iterator, because expressionToParse shall not include an "and" at the end of expression
 				OVInstance argInstance = iterator.next();
 				
-				OWLProperty property = null; // if there is no valid mapping, property will be null
+				OWLProperty<?, ?> property = null; // if there is no valid mapping, property will be null
 				boolean isSubjectIn = true;
 				
 				// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
-				Map<OWLProperty, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
+				Map<OWLProperty<?, ?>, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
 				if (propertyMap != null) {
 					// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
-					for (Entry<OWLProperty, Integer> entry : propertyMap.entrySet()) {
+					for (Entry<OWLProperty<?, ?>, Integer> entry : propertyMap.entrySet()) {
 						if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 							isSubjectIn = false;
 							property = entry.getKey();
@@ -1607,11 +1515,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		}
 		
 		// nothing found
-		try {
-			Debug.println(this.getClass(), "No value for  " + resident + " found.");
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
+		Debug.println(this.getClass(), "No value for  " + resident + " found.");
 		// cache finding
 		if (this.getFindingCache() != null) {
 			Map<Collection<OVInstance>, StateLink> cachedFindings = this.getFindingCache().get(resident);
@@ -1641,11 +1545,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// they are related
 			StateLink link = resident.getPossibleValueByName((stateToReturn==null)?"absurd":stateToReturn.toString()); 
 			if (link != null) {
-				try {
-					Debug.println(this.getClass(), "The value of  " + resident + " is " + link);
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), "The value of  " + resident + " is " + link);
 				return link;
 			} else {
 				// TODO ask PR-OWL2 creator if it is OK if OWL says it is true, but PR-OWL says it does not handle such value
@@ -1674,11 +1574,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					// use only the first valid individual. Multiple-valued properties should be resolved in another method
 					StateLink link = resident.getPossibleValueByName(this.extractName(individual));
 					if (link != null) {
-						try {
-							Debug.println(this.getClass(), "The value of  " + resident + " is " + link);
-						} catch (Throwable t) {
-							t.printStackTrace();
-						}
+						Debug.println(this.getClass(), "The value of  " + resident + " is " + link);
 						return link;
 					}
 				} catch (Exception e) {
@@ -1791,11 +1687,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			}
 		}
 			
-		try {
-			Debug.println(this.getClass(), "Extracted entity individuals from " + type + ": " + ret);
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
+		Debug.println(this.getClass(), "Extracted entity individuals from " + type + ": " + ret);
 		
 		// convert set to list
 		List<String> listToReturn = new ArrayList<String>(ret);
@@ -1875,11 +1767,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				|| ( !ontology.containsObjectPropertyInSignature(propertyIRI, true) 
 						&& !ontology.containsDataPropertyInSignature(propertyIRI, true) )) {
 			// there would be no finding for this resident node, because the property is not mapped to a resident node or the property does not exist at all
-			try {
-				Debug.println(this.getClass(), this.getDefaultMEBN() + " contains an invalid link from node " + resident + " to OWL property " + propertyIRI);
-			}catch (Throwable t) {
-				t.printStackTrace();
-			}
+			Debug.println(this.getClass(), this.getDefaultMEBN() + " contains an invalid link from node " + resident + " to OWL property " + propertyIRI);
 			return;	
 		}
 		
@@ -1923,10 +1811,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 //							this.getResidentNodeFindingCache().put(resident, findings);
 //						}
 					} catch (Exception e) {
-						e.printStackTrace();
 						// keep going on
 						System.err.println("Error in " + individual + " -> " + property + " -> xsd:boolean");
 						System.err.println("But the system will keep loading other findings.");
+						Debug.println(getClass(), "Exception was", e);
 					}
 				}
 				
@@ -1958,10 +1846,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 //							this.getResidentNodeFindingCache().put(resident, findings);
 //						}
 					} catch (Exception e) {
-						e.printStackTrace();
 						// keep going on
 						System.err.println("Error in " + individual + " -> " + property + " -> xsd:boolean");
 						System.err.println("But the system will keep loading other findings.");
+						Debug.println(getClass(), "Exception was", e);
 					}
 				}
 				
@@ -2005,17 +1893,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 //									this.getResidentNodeFindingCache().put(resident, findings);
 //								}
 							} catch (Exception e) {
-								e.printStackTrace();
 								// keep going on
 								System.err.println("Error in " + subject + " -> " + property + " -> " + object);
 								System.err.println("But the system will keep loading other findings.");
+								Debug.println(getClass(), "Exception was", e);
 							}
 						}
 					} catch (Exception e) {
-						e.printStackTrace();
 						// keep going on
 						System.err.println("Error in " + subject + " -> " + property +  " -> owl:Thing");
 						System.err.println("But the system will keep loading other findings.");
+						Debug.println(getClass(), "Exception was", e);
 					}
 				}
 			} else if (ontology.containsDataPropertyInSignature(propertyIRI, true)) {
@@ -2057,17 +1945,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 //									this.getResidentNodeFindingCache().put(resident, findings);
 //								}
 							} catch (Exception e) {
-								e.printStackTrace();
 								// keep going on
 								System.err.println("Error in " + subject + " -> " + property + " -> " + literal);
 								System.err.println("But the system will keep loading other findings.");
+								Debug.println(getClass(), "Exception was", e);
 							}
 						}
 					} catch (Exception e) {
-						e.printStackTrace();
 						// keep going on
 						System.err.println("Error in " + subject + " -> " + property +  " -> owl:Thing");
 						System.err.println("But the system will keep loading other findings.");
+						Debug.println(getClass(), "Exception was", e);
 					}
 				}
 			}
@@ -2120,17 +2008,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 //								this.getResidentNodeFindingCache().put(resident, findings);
 //							}
 						} catch (Exception e) {
-							e.printStackTrace();
 							// keep going on
 							System.err.println("Error in " + subject + " -> " + property + " -> " + object);
 							System.err.println("But the system will keep loading other findings.");
+							Debug.println(getClass(), "Exception was", e);
 						}
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
 					// keep going on
 					System.err.println("Error in " + subject + " -> " + property +  " -> owl:Thing");
 					System.err.println("But the system will keep loading other findings.");
+					Debug.println(getClass(), "Exception was", e);
 				}
 			}
 			
@@ -2146,23 +2034,15 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			OWLObjectProperty mainProperty = factory.getOWLObjectProperty(propertyIRI);
 			
 			// get the owl properties related (by subjectIn or objectIn) to the arguments of this node
-			Map<Argument, Map<OWLProperty, Integer>> propertiesPerArgument = 
+			Map<Argument, Map<OWLProperty<?,?>, Integer>> propertiesPerArgument = 
 					getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
 			if (propertiesPerArgument == null || propertiesPerArgument.isEmpty()) {
 				// a node with no arguments mapped to OWL properties cannot have findings anyway
-				try {
-					Debug.println(getClass(), "There is no mapping specified for n-ary relationship of node " + resident);
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(getClass(), "There is no mapping specified for n-ary relationship of node " + resident);
 				return;
 			}
 			if (propertiesPerArgument.size() != resident.getArgumentList().size()) {
-				try {
-					System.err.println("The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				System.err.println("The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
 				return;
 			}
 
@@ -2171,17 +2051,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// Example 2: inverse inv_MTI some Thing or inverse inv_MTI_RPT or Thing and inverse inv_MTI_T or Thing
 			String expressionToParse = "";
 			// Note: we already checked at the beginning of this method that listArgument.size() == resident.getArgumentList().size()
-			for (Iterator<Entry<Argument, Map<OWLProperty, Integer>>> iterator = propertiesPerArgument.entrySet().iterator(); iterator.hasNext(); ) {
+			for (Iterator<Entry<Argument, Map<OWLProperty<?, ?>, Integer>>> iterator = propertiesPerArgument.entrySet().iterator(); iterator.hasNext(); ) {
 				// I'm using an explicit iterator, because expressionToParse shall not include an "and" at the end of expression
-				Entry<Argument, Map<OWLProperty, Integer>> argumentEntry = iterator.next();
+				Entry<Argument, Map<OWLProperty<?, ?>, Integer>> argumentEntry = iterator.next();
 				
 				// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isObjectIn)
-				OWLProperty property = mainProperty;
+				OWLProperty<?, ?> property = mainProperty;
 				boolean isSubjectIn = false;	// isSubjectIn = false means isObjectIn=true.
 				// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
 				if (argumentEntry.getValue() != null) {
 					// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
-					for (Entry<OWLProperty, Integer> entry : argumentEntry.getValue().entrySet()) {
+					for (Entry<OWLProperty<?, ?>, Integer> entry : argumentEntry.getValue().entrySet()) {
 						if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 							isSubjectIn = false;
 							property = entry.getKey();
@@ -2226,11 +2106,11 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						// Therefore, pick only 1 associated OWL object per argument.
 						
 						// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isObjectIn)
-						OWLProperty property = mainProperty;
+						OWLProperty<?, ?> property = mainProperty;
 						boolean isSubjectIn = false; // isSubjectIn = false means isObjectIn=true.
 						
 						// pick the OWL property to query.
-						for (Entry<OWLProperty, Integer> entry : propertiesPerArgument.get(argument).entrySet()) {
+						for (Entry<OWLProperty<?, ?>, Integer> entry : propertiesPerArgument.get(argument).entrySet()) {
 							if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 								isSubjectIn = false;
 								property = entry.getKey();
@@ -2289,10 +2169,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					}
 					
 				} catch (Exception e) {
-					e.printStackTrace();
 					// keep going on
 					System.err.println("Error in tuple " + tuple);
 					System.err.println("But the system will attempt to load other findings.");
+					Debug.println(getClass(), "Exception was", e);
 				}
 			}
 			
@@ -2315,16 +2195,16 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					
 					
 					// for each triple, extract associated values and create resident node's finding
-					for (Entry<Argument, Map<OWLProperty, Integer>> propertyEntry : propertiesPerArgument.entrySet()) {
+					for (Entry<Argument, Map<OWLProperty<?, ?>, Integer>> propertyEntry : propertiesPerArgument.entrySet()) {
 						// note: we assume each tuple represents a single finding (i.e. an n-tuple relates only n entities, by using n OWL properties). 
 						// Therefore, pick only 1 associated OWL object per argument.
 						
 						// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
-						OWLProperty property = mainProperty;
+						OWLProperty<?, ?> property = mainProperty;
 						boolean isSubjectIn = true;
 						
 						// pick the OWL property to query.
-						for (Entry<OWLProperty, Integer> entry : propertyEntry.getValue().entrySet()) {
+						for (Entry<OWLProperty<?, ?>, Integer> entry : propertyEntry.getValue().entrySet()) {
 							if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 								isSubjectIn = false;
 								property = entry.getKey();
@@ -2374,10 +2254,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					}
 					
 				} catch (Exception e) {
-					e.printStackTrace();
 					// keep going on
 					System.err.println("Error in tuple " + tuple);
 					System.err.println("But the system will attempt to load other findings.");
+					Debug.println(getClass(), "Exception was", e);
 				}
 			}
 			
@@ -2390,23 +2270,15 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			OWLObjectProperty mainProperty = factory.getOWLObjectProperty(propertyIRI);
 			
 			// get the owl properties related (by subjectIn or objectIn) to the arguments of this node
-			Map<Argument, Map<OWLProperty, Integer>> propertiesPerArgument = 
+			Map<Argument, Map<OWLProperty<?, ?>, Integer>> propertiesPerArgument = 
 					getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
 			if (propertiesPerArgument == null || propertiesPerArgument.isEmpty()) {
 				// a node with no arguments mapped to OWL properties cannot have findings anyway
-				try {
-					Debug.println(getClass(), "There is no mapping specified for n-ary relationship of node " + resident);
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(getClass(), "There is no mapping specified for n-ary relationship of node " + resident);
 				return;
 			}
 			if (propertiesPerArgument.size() != resident.getArgumentList().size()) {
-				try {
-					System.err.println("The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				System.err.println("The n-ary relationship of node " + resident + " is not fully mapped to OWL properties.");
 				return;
 			}
 
@@ -2417,17 +2289,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// Example 2: MTI some Thing and inverse inv_MTI_RPT some Thing and inverse inv_MTI_T some Thing
 			String expressionToParse = this.extractName(mainProperty) + " some Thing and ";
 			// Note: we already checked at the beginning of this method that listArgument.size() == resident.getArgumentList().size()
-			for (Iterator<Entry<Argument, Map<OWLProperty, Integer>>> iterator = propertiesPerArgument.entrySet().iterator(); iterator.hasNext(); ) {
+			for (Iterator<Entry<Argument, Map<OWLProperty<?, ?>, Integer>>> iterator = propertiesPerArgument.entrySet().iterator(); iterator.hasNext(); ) {
 				// I'm using an explicit iterator, because expressionToParse shall not include an "and" at the end of expression
-				Entry<Argument, Map<OWLProperty, Integer>> argumentEntry = iterator.next();
+				Entry<Argument, Map<OWLProperty<?, ?>, Integer>> argumentEntry = iterator.next();
 				
 				// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
-				OWLProperty property = mainProperty;
+				OWLProperty<?, ?> property = mainProperty;
 				boolean isSubjectIn = true;
 				// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
 				if (argumentEntry.getValue() != null) {
 					// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
-					for (Entry<OWLProperty, Integer> entry : argumentEntry.getValue().entrySet()) {
+					for (Entry<OWLProperty<?, ?>, Integer> entry : argumentEntry.getValue().entrySet()) {
 						if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 							isSubjectIn = false;
 							property = entry.getKey();
@@ -2467,11 +2339,11 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						// Therefore, pick only 1 associated OWL object per argument.
 						
 						// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
-						OWLProperty property = mainProperty;
+						OWLProperty<?, ?> property = mainProperty;
 						boolean isSubjectIn = true;
 						
 						// pick the OWL property to query.
-						for (Entry<OWLProperty, Integer> entry : propertiesPerArgument.get(argument).entrySet()) {
+						for (Entry<OWLProperty<?, ?>, Integer> entry : propertiesPerArgument.get(argument).entrySet()) {
 							if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 								isSubjectIn = false;
 								property = entry.getKey();
@@ -2534,10 +2406,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					}
 					
 				} catch (Exception e) {
-					e.printStackTrace();
 					// keep going on
 					System.err.println("Error in tuple " + tuple);
 					System.err.println("But the system will attempt to load other findings.");
+					Debug.println(getClass(), "Exception was:", e);
 				}
 			}
 		
@@ -2552,11 +2424,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			for (RandomVariableFinding finding : resident.getRandomVariableFindingList()) {
 				findings.add(finding);
 			}
-			try {
-				Debug.println(getClass(), "Caching findings for " + resident + ": " + findings);
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
+			Debug.println(getClass(), "Caching findings for " + resident + ": " + findings);
 			// this should cache empty collections as well (it will cache a notification that "nothing was found")
 			this.getResidentNodeFindingCache().put(resident, findings);
 		}
@@ -2586,7 +2454,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 //					Thread.sleep(this.getSleepTimeWaitingReasonerInitialization());
 //				} catch (Throwable t) {
 //					// a thread sleep should not break normal program flow...
-//					t.printStackTrace();
+//					Debug.println(getClass(), "Thread was interrupted", e);
 //				}
 //			}
 //		} else {
@@ -2662,25 +2530,17 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			Map<Collection<OVInstance>, SearchResult> cache = this.getSearchContextCache().get(context);
 			Object val = this.getValueFromMapWithCollectionAsKey(cache,ovInstances);
 			if (val instanceof NullObject) {
-				try {
-					Debug.println(getClass(), context + " is cached and its search result is null");
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(getClass(), context + " is cached and its search result is null");
 				return null;
 			}
 			if (val != null && (val instanceof SearchResult)) {
-				try {
-					Debug.println(getClass(), context + " is cached.");
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(getClass(), context + " is cached.");
 				return (SearchResult)val;
 			}
 		}
 		
 		// extract context node expression
-		NodeFormulaTree formulaTree = (NodeFormulaTree)context.getFormulaTree(); 
+		NodeFormulaTree formulaTree = (NodeFormulaTree) context.getFormulaTree(); 
 		
 		/*
 		 * It seems that the expected format of SearchResult is:
@@ -2845,12 +2705,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					return this.solveFormulaTreeOV1EqualsOV2(formulaTree.getChildren().get(0), formulaTree.getChildren().get(1), knownValues, context, isToSolveAsPositiveOperation, isToAddKnownValuesToSearchResult);
 				}
 			} catch (Exception e) {
-				try {
-					Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
-				} catch (Throwable t) {
-					e.printStackTrace();
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
 			}
 			
 			// 3. booleanNode(<1 or 2 arguments>)
@@ -2865,22 +2720,12 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					try {
 						return this.solveFormulaTreeBooleanNode(formulaTree, knownValues, context, isToSolveAsPositiveOperation, isToAddKnownValuesToSearchResult);
 					} catch (Exception e) {
-						try {
-							Debug.println(this.getClass(), e.getMessage() + ". Could not solve " + formulaTree, e);
-						} catch (Throwable t) {
-							e.printStackTrace();
-							t.printStackTrace();
-						}
+						Debug.println(this.getClass(), e.getMessage() + ". Could not solve " + formulaTree, e);
 						return null;	
 					}
 				}
 			} catch (Exception e) {
-				try {
-					Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
-				} catch (Throwable t) {
-					e.printStackTrace();
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
 			}
 			
 			// 5. ov = nonBooleanNode(<1 argument>)
@@ -2898,12 +2743,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					return this.solveFormulaTreeOVEqualsToNonBooleanNode(formulaTree.getChildren().get(0), formulaTree.getChildren().get(1), knownValues, context, isToSolveAsPositiveOperation, isToAddKnownValuesToSearchResult);
 				}
 			} catch (Exception e) {
-				try {
-					Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
-				} catch (Throwable t) {
-					e.printStackTrace();
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
 			}
 
 			
@@ -2922,12 +2762,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					return this.solveFormulaTreeOVEqualsToNonBooleanNode(formulaTree.getChildren().get(1), formulaTree.getChildren().get(0), knownValues, context, isToSolveAsPositiveOperation, isToAddKnownValuesToSearchResult);
 				}
 			} catch (Exception e) {
-				try {
-					Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
-				} catch (Throwable t) {
-					e.printStackTrace();
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
 			}
 			
 			
@@ -2944,20 +2779,10 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					return this.solveFormulaTree(formulaTree.getChildren().get(0), knownValues, context, !isToSolveAsPositiveOperation, isToAddKnownValuesToSearchResult);
 				}
 			} catch (Exception e) {
-				try {
-					Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
-				} catch (Throwable t) {
-					e.printStackTrace();
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), "Could not check arguments of " + formulaTree, e);
 			}
 		} catch (Exception e) {
-			try {
-				Debug.println(this.getClass(), formulaTree.toString() + " cannot be solved even when the following ordinary variables are knwon: " + knownValues, e);
-			}catch (Throwable t) {
-				e.printStackTrace();
-				t.printStackTrace();
-			}
+			Debug.println(this.getClass(), formulaTree.toString() + " cannot be solved even when the following ordinary variables are knwon: " + knownValues, e);
 		}
 		
 		return null;
@@ -3009,32 +2834,20 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// extract the resident node related to formulaTreeBooleanNode
 			ResidentNode booleanResidentNode = ((ResidentNodePointer)formulaTreeBooleanNode.getNodeVariable()).getResidentNode();
 			if (booleanResidentNode == null) {
-				try {
-					Debug.println(this.getClass(), formulaTreeBooleanNode + " should be a boolean node, but it is not related to any node...");
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), formulaTreeBooleanNode + " should be a boolean node, but it is not related to any node...");
 				return null;
 			}
 			
 			// extract list of arguments from pointed boolean resident node
 			List<Argument> originalArgumentList = booleanResidentNode.getArgumentList();
 			if (originalArgumentList == null) {
-				try {
-					Debug.println(this.getClass(), booleanResidentNode + " has no arguments...");
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), booleanResidentNode + " has no arguments...");
 				return null;
 			}
 			
 			// assertion: we can only treat boolean nodes with 1 or more variables
 			if (originalArgumentList.size() < 1) {
-				try {
-					Debug.println(this.getClass(), "This KB cannot handle variables with no arguments: " + booleanResidentNode);
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), "This KB cannot handle variables with no arguments: " + booleanResidentNode);
 				return null;
 			}
 			
@@ -3045,16 +2858,12 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// extract IRI of the object property related to booleanNode
 			IRI booleanNodeIRI = IRIAwareMultiEntityBayesianNetwork.getDefineUncertaintyFromMEBN(this.getDefaultMEBN(),booleanResidentNode);
 			if (booleanNodeIRI == null) {
-				try {
-					Debug.println(this.getClass(), booleanResidentNode + " Has no related OWL property. This KB can only solve findings that has a reference to \"definesUncertaintyOf\"");
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), booleanResidentNode + " Has no related OWL property. This KB can only solve findings that has a reference to \"definesUncertaintyOf\"");
 				return null;
 			}
 			
 			// extract the property by checking existence
-			OWLProperty booleanNodeProperty = null;
+			OWLProperty<?, ?> booleanNodeProperty = null;
 			if (reasoner.getRootOntology().containsObjectPropertyInSignature(booleanNodeIRI, true)) {
 				// this is an object property
 				booleanNodeProperty = reasoner.getRootOntology().getOWLOntologyManager().getOWLDataFactory().getOWLObjectProperty(booleanNodeIRI);
@@ -3062,11 +2871,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				// this is a data property
 				booleanNodeProperty = reasoner.getRootOntology().getOWLOntologyManager().getOWLDataFactory().getOWLDataProperty(booleanNodeIRI);
 			} else {
-				try {
-					Debug.println(this.getClass(), booleanResidentNode + " is related to " + booleanNodeIRI + ", which is not an OWL property.");
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), booleanResidentNode + " is related to " + booleanNodeIRI + ", which is not an OWL property.");
 				return null;
 			}
 			
@@ -3111,22 +2916,14 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					}
 					// check if it is valid
 					if (ovInstanceOfArg1 == null || ovInstanceOfArg1.getEntity() == null) {
-						try {
-							Debug.println(getClass(), argument1OV + " is not set as \"missing\", but could not find an actual value for it.");
-						} catch (Throwable t) {
-							t.printStackTrace();
-						}
+						Debug.println(getClass(), argument1OV + " is not set as \"missing\", but could not find an actual value for it.");
 						return null;
 					}
 					
 					// extract name ovInstanceOfArg1, so that we can build the query
 					String instanceName = ovInstanceOfArg1.getEntity().getInstanceName();
 					if (instanceName == null || instanceName.trim().length() <= 0) {
-						try {
-							Debug.println(getClass(), argument1OV + " is not set as \"missing\", but could not find an actual value for it.");
-						} catch (Throwable t) {
-							t.printStackTrace();
-						}
+						Debug.println(getClass(), argument1OV + " is not set as \"missing\", but could not find an actual value for it.");
 						return null;
 					}
 					
@@ -3178,11 +2975,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			// there are more than 1 argument, so it cannot be a data property assertion. 
 			// Make sure the property referenced by definesUncertaintyOf is really an object property, instead of data property.
 			if (!booleanNodeProperty.isObjectPropertyExpression()) {
-				try {
-					Debug.println(this.getClass(), booleanResidentNode + " contains more than 1 argument, but " + booleanNodeProperty + " is not an object property...");
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), booleanResidentNode + " contains more than 1 argument, but " + booleanNodeProperty + " is not an object property...");
 				return null;
 			}
 			
@@ -3206,7 +2999,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				
 
 				// extract the isSubjectIn or isObjectIn relations
-				Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
+				Map<Argument, Map<OWLProperty<?, ?>, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
 							booleanResidentNode, 
 							booleanResidentNode.getMFrag().getMultiEntityBayesianNetwork(), 
 							reasoner.getRootOntology()
@@ -3214,7 +3007,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				
 				if (argumentMappings != null) {
 					// we know that at this point the resident node has 2 arguments
-					Map<OWLProperty, Integer> argMap1 = argumentMappings.get(booleanResidentNode.getArgumentList().get(0)); // extract the mapping of the 1st argument
+					Map<OWLProperty<?, ?>, Integer> argMap1 = argumentMappings.get(booleanResidentNode.getArgumentList().get(0)); // extract the mapping of the 1st argument
 					if (argMap1 != null) {
 						// checking consistency
 						if (argMap1.size() != 1) {
@@ -3236,7 +3029,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 						}	// if argument is either subject or unknown, then use default behavior
 					} 
 
-					Map<OWLProperty, Integer> argMap2 = argumentMappings.get(booleanResidentNode.getArgumentList().get(1)); // extract the mapping of the 2nd argument
+					Map<OWLProperty<?, ?>, Integer> argMap2 = argumentMappings.get(booleanResidentNode.getArgumentList().get(1)); // extract the mapping of the 2nd argument
 					if (argMap2 != null) {
 						// checking consistency
 						if (argMap2.size() != 1) {
@@ -3326,11 +3119,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					
 					// no argumentOV uses the OWLProperty in the ontology, so it is obvious that there is no related ov either 
 					// (i.e. if there is no domain, there would be no image as well)
-					try {
-						Debug.println(this.getClass(), booleanNodeProperty + " has no individuals in its domain.");
-					} catch (Throwable t) {
-						t.printStackTrace();
-					}
+					Debug.println(this.getClass(), booleanNodeProperty + " has no individuals in its domain.");
 					return null;
 					
 				} else if (missingOV.contains(argument1OV)) {
@@ -3456,8 +3245,8 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		// obtain a mapping from arguments of resident node to OWL properties
 		// also convert the mapping to a mapping from respective ordinary variable to OWL properties, 
 		// because knownValues is actually a list of instances of ordinary variables, not instances of arguments
-		Map<OrdinaryVariable, Map<OWLProperty, Integer>> ovToOWLPropertyMap = new HashMap<OrdinaryVariable, Map<OWLProperty,Integer>>();
-		for (Entry<Argument, Map<OWLProperty, Integer>> entry : getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(residentNode, residentNode.getMFrag().getMultiEntityBayesianNetwork(), reasoner.getRootOntology()).entrySet()) {
+		Map<OrdinaryVariable, Map<OWLProperty<?, ?>, Integer>> ovToOWLPropertyMap = new HashMap<OrdinaryVariable, Map<OWLProperty<?, ?>,Integer>>();
+		for (Entry<Argument, Map<OWLProperty<?, ?>, Integer>> entry : getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(residentNode, residentNode.getMFrag().getMultiEntityBayesianNetwork(), reasoner.getRootOntology()).entrySet()) {
 			ovToOWLPropertyMap.put(entry.getKey().getOVariable(), entry.getValue());
 		}
 		
@@ -3513,7 +3302,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				}
 				
 				// extract the property related to current OV.
-				for (Entry<OWLProperty, Integer> entry : ovToOWLPropertyMap.get(knownValue.getOv()).entrySet()) {
+				for (Entry<OWLProperty<?, ?>, Integer> entry : ovToOWLPropertyMap.get(knownValue.getOv()).entrySet()) {
 					// only consider the 1st valid entry
 					if (entry.getValue() == IMappingArgumentExtractor.OBJECT_CODE) {
 						// if the argument is an object (instead of subject) of the property, then constrain the value of the property directly
@@ -3742,11 +3531,11 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			}
 			
 			// extract the mapping from arguments to owl properties, so that we can extract the values related to the tuples we found
-			Map<Argument, Map<OWLProperty, Integer>> owlPropertiesOfArgumentsOfSelectedNode = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), reasoner.getRootOntology());
+			Map<Argument, Map<OWLProperty<?, ?>, Integer>> owlPropertiesOfArgumentsOfSelectedNode = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), reasoner.getRootOntology());
 			// we need a mapping from OV to properties, instead of argument to properties, so convert.
-			Map<OrdinaryVariable, Map<OWLProperty, Integer>> propertyMapping = new HashMap<OrdinaryVariable, Map<OWLProperty,Integer>>();
+			Map<OrdinaryVariable, Map<OWLProperty<?, ?>, Integer>> propertyMapping = new HashMap<OrdinaryVariable, Map<OWLProperty<?, ?>,Integer>>();
 			if (owlPropertiesOfArgumentsOfSelectedNode != null) {
-				for (Entry<Argument, Map<OWLProperty, Integer>> entry : owlPropertiesOfArgumentsOfSelectedNode.entrySet()) {
+				for (Entry<Argument, Map<OWLProperty<?, ?>, Integer>> entry : owlPropertiesOfArgumentsOfSelectedNode.entrySet()) {
 					propertyMapping.put(entry.getKey().getOVariable(), entry.getValue());
 				}
 			}
@@ -3776,9 +3565,9 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 					}
 					
 					// extract the 1st valid property mapped in propertyMapping
-					OWLProperty property = mainProperty;	// default value is mainProperty -- the one related to definesUncertaintyOf
+					OWLProperty<?, ?> property = mainProperty;	// default value is mainProperty -- the one related to definesUncertaintyOf
 					boolean isSubject = false;				// by default, entity is an object/range (not a subject/domain) of the mapped property.
-					for (Entry<OWLProperty, Integer> entry : propertyMapping.get(ov).entrySet()) {
+					for (Entry<OWLProperty<?, ?>, Integer> entry : propertyMapping.get(ov).entrySet()) {
 						if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 							property = entry.getKey();
 							isSubject = false;
@@ -4167,11 +3956,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 									// (because in such case, returnedIndividualNames is empty and this loop will not be called at all)
 								} else {
 									// this is an untreated ov
-//									try {
-//										System.err.println("The OV " + knownSearchResults.getOrdinaryVariableSequence()[i] + " was not correclty handled... ");
-//									} catch (Exception e) {
-//										e.printStackTrace();
-//									}
+//									System.err.println("The OV " + knownSearchResults.getOrdinaryVariableSequence()[i] + " was not correclty handled... ");
 									// check if knownSearchResults.getOrdinaryVariableSequence()[i] is in knownValues
 									OVInstance untreatedKnownValue = null;
 									for (OVInstance ovi : knownValues) {
@@ -4306,7 +4091,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			
 
 			// extract the isSubjectIn or isObjectIn relations
-			Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
+			Map<Argument, Map<OWLProperty<?, ?>, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
 						residentNode, 
 						residentNode.getMFrag().getMultiEntityBayesianNetwork(), 
 						reasoner.getRootOntology()
@@ -4314,7 +4099,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			
 			if (argumentMappings != null) {
 				// we know that at this point the resident node has 1 argument
-				Map<OWLProperty, Integer> argMap = argumentMappings.get(residentNode.getArgumentList().get(0)); // extract the mapping of the only argument
+				Map<OWLProperty<?, ?>, Integer> argMap = argumentMappings.get(residentNode.getArgumentList().get(0)); // extract the mapping of the only argument
 				if (argMap != null) {
 					// checking consistency
 					if (argMap.size() != 1) {
@@ -4519,11 +4304,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 									// (because in such case, returnedIndividualNames is empty and this loop will not be called at all)
 								} else {
 									// this is an untreated ov. Usually, we can ignore such ovs, but let's fill it with a default value (from knownValues, if it is known)
-//									try {
-//										System.err.println("The OV " + knownSearchResults.getOrdinaryVariableSequence()[i] + " was not correclty handled... ");
-//									} catch (Exception e) {
-//										e.printStackTrace();
-//									}
+//									System.err.println("The OV " + knownSearchResults.getOrdinaryVariableSequence()[i] + " was not correclty handled... ");
 									// check if knownSearchResults.getOrdinaryVariableSequence()[i] is in knownValues
 									OVInstance untreatedKnownValue = null;
 									for (OVInstance ovi : knownValues) {
@@ -4601,8 +4382,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				ret = !result.getValuesResultList().isEmpty();
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Debug.println(getClass(), "Error during node context formula evalutation", e);
 			ret = false;
 		}
 		Debug.println(this.getClass(), "Boolean evaluation of context node formula " + context + ovInstances + ". Returning value: " + ret);
@@ -4634,7 +4414,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		// obtain reasoner info
 		Set<ProtegeOWLReasonerInfo> installedReasonerFactories = protegeStorageImplementor.getOWLEditorKit().getOWLModelManager().getOWLReasonerManager().getInstalledReasonerFactories();
 		if (installedReasonerFactories == null) {
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 		}
 		
 		// prepare the list to be returned
@@ -4704,11 +4484,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				}
 			} catch (Throwable t) {
 				// it is OK, because we can try extracting the reasoner when KB methods are called and MEBN is passed as arguments
-				try {
-					Debug.println(this.getClass(), "Could not extract reasoner from mebn " + this.getDefaultMEBN(), t);
-				} catch (Throwable e) {
-					e.printStackTrace();
-				}
+				Debug.println(this.getClass(), "Could not extract reasoner from mebn " + this.getDefaultMEBN(), t);
 			}
 			// if reasoner is not available, use the one extracted from MEBN
 			Debug.println(this.getClass(), "Extracted reasoner from MEBN: " + reasoner);
@@ -4806,11 +4582,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 			}
 		} catch (Throwable t) {
 			// it is OK, because we can try extracting the reasoner when KB methods are called and MEBN is passed as arguments
-			try {
-				Debug.println(this.getClass(), "Could not extract reasoner from mebn " + this.getDefaultMEBN(), t);
-			} catch (Throwable e) {
-				e.printStackTrace();
-			}
+			Debug.println(this.getClass(), "Could not extract reasoner from mebn " + this.getDefaultMEBN(), t);
 		}
 		return null;
 	}
@@ -4823,11 +4595,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		// check cache
 		if (this.getExpressionCache() != null 
 				&& this.getExpressionCache().containsKey(expression)) {
-			try {
-				Debug.println(getClass(), expression + " is in cache.");
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
+			Debug.println(getClass(), expression + " is in cache.");
 			return this.getExpressionCache().get(expression);
 		}
 		if (this.getOwlClassExpressionParserDelegator() == null) {
@@ -4836,11 +4604,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 		OWLClassExpression ret = this.getOwlClassExpressionParserDelegator().parseExpression(expression);
 		// put to cache
 		if (this.getExpressionCache() != null) {
-			try {
-				Debug.println(getClass(), "Inserting " + expression + " to cache of expressions.");
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
+			Debug.println(getClass(), "Inserting " + expression + " to cache of expressions.");
 			this.getExpressionCache().put(expression, ret);
 		}
 		return ret;
@@ -4857,16 +4621,12 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 				// try using protege
 				owlClassExpressionParserDelegator = OWLClassExpressionParserFacade.getInstance(((ProtegeStorageImplementorDecorator)this.getDefaultMEBN().getStorageImplementor()).getOWLEditorKit().getModelManager());
 			} catch (Exception e) {
-				try {
-					Debug.println(this.getClass(), "Could not extract Protege manager for " + this.getDefaultMEBN(), e);
-				} catch (Throwable t) {
-					t.printStackTrace();
-				}
+				Debug.println(this.getClass(), "Could not extract Protege manager for " + this.getDefaultMEBN(), e);
 				try {
 					// OK. Use OWLAPI if protege was not present
 					owlClassExpressionParserDelegator = OWLClassExpressionParserFacade.getInstance(this.getDefaultOWLReasoner().getRootOntology());
 				} catch (Exception e2) {
-					e.printStackTrace();	// trace the first exception
+					Debug.println(getClass(), "Error when trying to get Expression Parser", e2);
 					throw new IllegalStateException(e2);
 				}
 			}
@@ -5153,11 +4913,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 	 * @param isToResetCache the isToResetCache to set
 	 */
 	public void setIsToResetCache(boolean isToResetCache) {
-		try {
-			Debug.println(getClass(),  "Requests for resetting cache is " + (isToResetCache?"enabled":"blocked"));
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
+		Debug.println(getClass(),  "Requests for resetting cache is " + (isToResetCache ? "enabled" : "blocked"));
 		this.isToResetCache = isToResetCache;
 	}
 

@@ -23,7 +23,6 @@ import javax.swing.TransferHandler;
 import org.protege.editor.core.ui.util.ComponentFactory;
 import org.protege.editor.owl.ui.renderer.OWLCellRenderer;
 import org.semanticweb.owlapi.model.AddAxiom;
-import org.semanticweb.owlapi.model.OWLDataFactory;
 import org.semanticweb.owlapi.model.OWLException;
 import org.semanticweb.owlapi.model.OWLObject;
 import org.semanticweb.owlapi.model.OWLOntology;
@@ -51,6 +50,10 @@ import unbbayes.util.Debug;
  */
 public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 14053783300089793L;
 	private OWLOntologyChangeListener owlOntologyChangeListener;
 	private int propertySizeToAllowSorting = 1000;
 
@@ -91,9 +94,9 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 		OWLOntologyManager ontologyManager = owlOntology.getOWLOntologyManager();
 		
 		// the list of object properties (including imports)
-		List<OWLProperty> objProperties = new ArrayList<OWLProperty>(owlOntology.getObjectPropertiesInSignature(true));
+		List<OWLProperty<?, ?>> objProperties = new ArrayList<OWLProperty<?, ?>>(owlOntology.getObjectPropertiesInSignature(true));
 		// extract data properties (including imports)
-		List<OWLProperty> dataProperties = new ArrayList<OWLProperty>(owlOntology.getDataPropertiesInSignature(true));
+		List<OWLProperty<?, ?>> dataProperties = new ArrayList<OWLProperty<?, ?>>(owlOntology.getDataPropertiesInSignature(true));
 		
 		// refill list if there was any change in size
 		if (getPropertyList() == null || getPropertyList().getModel().getSize() != objProperties.size() + dataProperties.size()) {
@@ -125,14 +128,14 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 	 * @return a JList to be inserted to {@link #setPropertyListScrollPane(JScrollPane)}
 	 * @see #initComponents()
 	 */
-	protected void setUpPropertyList(List<OWLProperty> objProperties, List<OWLProperty> dataProperties) {
+	protected void setUpPropertyList(List<OWLProperty<?, ?>> objProperties, List<OWLProperty<?, ?>> dataProperties) {
 		
 		// create/initialize list data
 		this.setPropertyListModel(new DefaultListModel());
 		
 		// prepare comparator so that we can sort the properties by name
-		Comparator<OWLProperty> owlPropertyNameComparator = new Comparator<OWLProperty>() {
-			public int compare(OWLProperty o1, OWLProperty o2) {
+		Comparator<OWLProperty<?, ?>> owlPropertyNameComparator = new Comparator<OWLProperty<?, ?>>() {
+			public int compare(OWLProperty<?, ?> o1, OWLProperty<?, ?> o2) {
 //				try {
 //					// compare by the last name, if they are named
 //					if (!o1.isAnonymous() && !o2.isAnonymous()) {
@@ -246,11 +249,15 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 			// add to owl model
 			((IOWLAPIStorageImplementorDecorator)getMebn().getStorageImplementor()).getAdaptee().getOWLOntologyManager().addOntologyChangeListener(this.getOWLOntologyChangeListener());
 		} catch (Throwable e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Error during initialization of listeners", e);
 		}
 		
 		// what happens when user drag and drops OWL property to graph panel
 		this.getPropertyList().setTransferHandler(new TransferHandler () {
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = -902210409564756797L;
 			protected Transferable createTransferable(JComponent c) {
 				try{
 					// obtains the currently selected properties
@@ -258,13 +265,13 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 					Debug.println(this.getClass(), "Creating transferable element for objects: " + selectedObjects);
 					
 					// converting to collection, so that we can use OWLPropertyDTO
-					Collection owlProperties = new HashSet();
+					Collection<Object> owlProperties = new HashSet<Object>();
 					for (Object obj : selectedObjects) {
 						owlProperties.add(obj);
 					}
 					return OWLPropertyDTO.newInstance(owlProperties);
 				} catch (Exception e) {
-					e.printStackTrace();
+					Debug.println(getClass(), "Error creating transferable", e);
 					JOptionPane.showMessageDialog(
 							OWL2PropertyViewerPanel.this, 
 							e.getMessage(), 
@@ -292,7 +299,7 @@ public class OWL2PropertyViewerPanel extends OWLPropertyViewerPanel {
 			((IOWLAPIStorageImplementorDecorator)getMebn().getStorageImplementor()).getAdaptee().getOWLOntologyManager().removeOntologyChangeListener(this.getOWLOntologyChangeListener());
 		} catch (Exception e) {
 			// OK, we may have a little memory leak, but the application should work with no much problem
-			e.printStackTrace();
+			Debug.println(getClass(), "Error resetting components", e);
 		}
 		
 		super.resetComponents();

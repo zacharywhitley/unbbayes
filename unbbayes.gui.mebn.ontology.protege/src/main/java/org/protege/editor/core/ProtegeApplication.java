@@ -1,13 +1,10 @@
 package org.protege.editor.core;
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import javax.swing.JFrame;
 import javax.swing.LookAndFeel;
@@ -17,9 +14,6 @@ import javax.swing.UIManager;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Constants;
-import org.osgi.framework.FrameworkEvent;
-import org.osgi.framework.FrameworkListener;
 import org.osgi.framework.Version;
 import org.protege.editor.core.editorkit.EditorKit;
 import org.protege.editor.core.editorkit.EditorKitFactoryPlugin;
@@ -43,6 +37,8 @@ import com.jgoodies.looks.FontPolicy;
 import com.jgoodies.looks.FontSet;
 import com.jgoodies.looks.FontSets;
 import com.jgoodies.looks.plastic.PlasticLookAndFeel;
+
+import unbbayes.util.Debug;
 
 /*
  * Copyright (C) 2007, University of Manchester
@@ -122,7 +118,7 @@ public class ProtegeApplication implements BundleActivator {
     		startApplication();
     	}
     	catch (Throwable t) {
-    		t.printStackTrace();
+            Debug.println(getClass(), "Error starting Protege", t);
     	}
     }
 
@@ -233,7 +229,7 @@ public class ProtegeApplication implements BundleActivator {
                 }
             }
             catch (Exception e) {
-                e.printStackTrace();
+            	Debug.println(ProtegeApplication.class, "Could not set Look and Feel", e);;
             }
         }
     }
@@ -255,11 +251,11 @@ public class ProtegeApplication implements BundleActivator {
             UIManager.setLookAndFeel(lookAndFeel);
         }
         catch (ClassNotFoundException e) {
-        	e.printStackTrace();
+            Debug.println(ProtegeApplication.class, "Look and feel not found: " + lafName, e);
 //            logger.warn("Look and feel not found: " + lafName);
         }
         catch (Exception e) {
-        	e.printStackTrace();
+            Debug.println(ProtegeApplication.class, "Could not set Protege default Look and Feel", e);
 //            logger.warn(e.toString());
         }
     }
@@ -270,7 +266,7 @@ public class ProtegeApplication implements BundleActivator {
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             public void uncaughtException(Thread t, Throwable e) {
                 errorLog.uncaughtException(t, e);
-                e.printStackTrace();
+                Debug.println(ProtegeApplication.class, "Uncaught Exception in thread " + t.getName(), e);
 //                logger.warn("Uncaught Exception in thread " + t.getName(), e);
             }
         });
@@ -297,13 +293,13 @@ public class ProtegeApplication implements BundleActivator {
                         commandLineURIs.add(uri);
                     }
                     catch (URISyntaxException e) {
-                    	e.printStackTrace();
+                    	Debug.println(getClass(), "Could not set process command line arguments", e);
                     }
                 }
             }
         }
         catch (Throwable t) { // it is not important enough to stop anything.
-        	t.printStackTrace();
+        	Debug.println(getClass(), "Could not set process command line arguments", t);
         }
     }
 
@@ -328,7 +324,7 @@ public class ProtegeApplication implements BundleActivator {
             }
         }
         catch (Exception e) {
-        	e.printStackTrace();
+            Debug.println(getClass(), "Could not start application", e);
         }
         
         // do not perform auto-update ever!
@@ -408,7 +404,7 @@ public class ProtegeApplication implements BundleActivator {
             context.getBundle(0).stop();
         }
         catch (Throwable t) {
-        	t.printStackTrace();
+        	Debug.println(ProtegeApplication.class, "Error when stopping application", t);
         }
         
         /*
