@@ -512,12 +512,12 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				}
 				
 				//TODO Analyze! This should be the arguments of context node, that can be different of arguments of original resident node. 
-				Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
+				Map<Argument, Map<OWLProperty<?, ?>, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
 						residentNode, residentNode.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 				
 				if (argumentMappings != null) {
 					// we know that at this point the resident node has 2 arguments (because the number of arguments in resident and number of entries in listArguments match)
-					Map<OWLProperty, Integer> argMap1 = argumentMappings.get(residentNode.getArgumentList().get(0)); // extract the mapping of the 1st argument
+					Map<OWLProperty<?, ?>, Integer> argMap1 = argumentMappings.get(residentNode.getArgumentList().get(0)); // extract the mapping of the 1st argument
 					if (argMap1 != null) {
 						// checking consistency
 						if (argMap1.size() != 1) {
@@ -535,7 +535,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 							subjectName = temp;
 						}	// if argument is either subject or unknown, then use default behavior
 					} 
-					Map<OWLProperty, Integer> argMap2 = argumentMappings.get(residentNode.getArgumentList().get(1)); // extract the mapping of the 2nd argument
+					Map<OWLProperty<?, ?>, Integer> argMap2 = argumentMappings.get(residentNode.getArgumentList().get(1)); // extract the mapping of the 2nd argument
 					if (argMap2 != null) {
 						// checking consistency
 						if (argMap2.size() != 1) {
@@ -560,13 +560,13 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 						objectName; 
 				
 			}else{
-				Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(residentNode, residentNode.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
+				Map<Argument, Map<OWLProperty<?, ?>, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(residentNode, residentNode.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 
 				// translate the mapping to a map of ordinary variables to properties, because listArguments uses ordinary variables as reference
-				Map<OrdinaryVariable, Map<OWLProperty, Integer>> propertiesPerOV = 
-						new HashMap<OrdinaryVariable, Map<OWLProperty,Integer>>();
+				Map<OrdinaryVariable, Map<OWLProperty<?,?>, Integer>> propertiesPerOV = 
+						new HashMap<OrdinaryVariable, Map<OWLProperty<?,?>,Integer>>();
 
-				for (Entry<Argument, Map<OWLProperty, Integer>> entry : argumentMappings.entrySet()) {
+				for (Entry<Argument, Map<OWLProperty<?, ?>, Integer>> entry : argumentMappings.entrySet()) {
 					propertiesPerOV.put(entry.getKey().getOVariable(), entry.getValue());
 				}
 				
@@ -587,14 +587,14 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 					}
 					
 					// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
-					OWLProperty property = null; 
+					OWLProperty<?,?> property = null; 
 					boolean isSubjectIn = true;
 					
 					// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
-					Map<OWLProperty, Integer> propertyMap = propertiesPerOV.get(ov);
+					Map<OWLProperty<?,?>, Integer> propertyMap = propertiesPerOV.get(ov);
 					if (propertyMap != null) {
 						// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
-						for (Entry<OWLProperty, Integer> entry : propertyMap.entrySet()) {
+						for (Entry<OWLProperty<?,?>, Integer> entry : propertyMap.entrySet()) {
 							if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 								isSubjectIn = false;
 								property = entry.getKey();
@@ -881,13 +881,13 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				query+="}"; 
 			}
 			
-			Map<Argument, Map<OWLProperty, Integer>> argumentMappings = 
+			Map<Argument, Map<OWLProperty<?,?>, Integer>> argumentMappings = 
                     getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
                                    residentNode, residentNode.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 		
 			if (argumentMappings != null) {
 				// extract the mapping of the only argument
-				Map<OWLProperty, Integer> singleArgMap = argumentMappings.get(residentNode.getArgumentList().get(0));
+				Map<OWLProperty<?,?>, Integer> singleArgMap = argumentMappings.get(residentNode.getArgumentList().get(0));
 				if (singleArgMap != null) {
 					// checking consistency
 					if (singleArgMap.size() != 1) {
@@ -924,7 +924,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 			
 			//ResidentNode with more than one argument 
 			// get the owl properties related (by subjectIn or objectIn) to the arguments of this node
-			Map<Argument, Map<OWLProperty, Integer>> propertiesPerArgument = 
+			Map<Argument, Map<OWLProperty<?,?>, Integer>> propertiesPerArgument = 
 					getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
 							residentNode, residentNode.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 			if (propertiesPerArgument == null || propertiesPerArgument.isEmpty()) {
@@ -946,10 +946,10 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 			}
 			
 			// translate the mapping to a map of ordinary variables to properties, because listArguments uses ordinary variables as reference
-			Map<OrdinaryVariable, Map<OWLProperty, Integer>> propertiesPerOV = 
-					new HashMap<OrdinaryVariable, Map<OWLProperty,Integer>>();
+			Map<OrdinaryVariable, Map<OWLProperty<?,?>, Integer>> propertiesPerOV = 
+					new HashMap<OrdinaryVariable, Map<OWLProperty<?,?>,Integer>>();
 
-			for (Entry<Argument, Map<OWLProperty, Integer>> entry : propertiesPerArgument.entrySet()) {
+			for (Entry<Argument, Map<OWLProperty<?,?>, Integer>> entry : propertiesPerArgument.entrySet()) {
 				propertiesPerOV.put(entry.getKey().getOVariable(), entry.getValue());
 			}
 
@@ -998,14 +998,14 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				}
 				
 				// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
-				OWLProperty property = null; 
+				OWLProperty<?,?> property = null; 
 				boolean isSubjectIn = true;
 				
 				// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
-				Map<OWLProperty, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
+				Map<OWLProperty<?,?>, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
 				if (propertyMap != null) {
 					// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
-					for (Entry<OWLProperty, Integer> entry : propertyMap.entrySet()) {
+					for (Entry<OWLProperty<?,?>, Integer> entry : propertyMap.entrySet()) {
 						if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 							isSubjectIn = false;
 							property = entry.getKey();
@@ -1121,13 +1121,13 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				argument = "<" + argOVInstance.getEntity().getInstanceName() + ">"; 
 			}
 			
-			Map<Argument, Map<OWLProperty, Integer>> argumentMappings = 
+			Map<Argument, Map<OWLProperty<?,?>, Integer>> argumentMappings = 
                     getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
                                    residentNode, residentNode.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 			
 			if (argumentMappings != null) {
 				// extract the mapping of the only argument
-				Map<OWLProperty, Integer> singleArgMap = argumentMappings.get(residentNode.getArgumentList().get(0));
+				Map<OWLProperty<?,?>, Integer> singleArgMap = argumentMappings.get(residentNode.getArgumentList().get(0));
 				if (singleArgMap != null) {
 					// checking consistency
 					if (singleArgMap.size() != 1) {
@@ -1153,7 +1153,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 		}else{
 			
 			// get the owl properties related (by subjectIn or objectIn) to the arguments of this node
-			Map<Argument, Map<OWLProperty, Integer>> propertiesPerArgument = 
+			Map<Argument, Map<OWLProperty<?,?>, Integer>> propertiesPerArgument = 
 					getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
 							residentNode, residentNode.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 
@@ -1176,10 +1176,10 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 			}
 
 			// translate the mapping to a map of ordinary variables to properties, because listArguments uses ordinary variables as reference
-			Map<OrdinaryVariable, Map<OWLProperty, Integer>> propertiesPerOV = 
-					new HashMap<OrdinaryVariable, Map<OWLProperty,Integer>>();
+			Map<OrdinaryVariable, Map<OWLProperty<?,?>, Integer>> propertiesPerOV = 
+					new HashMap<OrdinaryVariable, Map<OWLProperty<?,?>,Integer>>();
 
-			for (Entry<Argument, Map<OWLProperty, Integer>> entry : propertiesPerArgument.entrySet()) {
+			for (Entry<Argument, Map<OWLProperty<?,?>, Integer>> entry : propertiesPerArgument.entrySet()) {
 				propertiesPerOV.put(entry.getKey().getOVariable(), entry.getValue());
 			}
 
@@ -1224,14 +1224,14 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				}
 				
 				// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
-				OWLProperty owlProperty = null; 
+				OWLProperty<?,?> owlProperty = null; 
 				boolean isSubjectIn = true;
 				
 				// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
-				Map<OWLProperty, Integer> propertyMap = propertiesPerOV.get(ov);
+				Map<OWLProperty<?,?>, Integer> propertyMap = propertiesPerOV.get(ov);
 				if (propertyMap != null) {
 					// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
-					for (Entry<OWLProperty, Integer> entry : propertyMap.entrySet()) {
+					for (Entry<OWLProperty<?,?>, Integer> entry : propertyMap.entrySet()) {
 						if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 							isSubjectIn = false;
 							owlProperty = entry.getKey();
@@ -1680,13 +1680,13 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				//02 - Other Cases: this is a functional format (e.g. F(x) = y), but the 
 				//possible state can be the subject (functional) or object (inverse functional) 
 
-				Map<Argument, Map<OWLProperty, Integer>> argumentMappings = 
+				Map<Argument, Map<OWLProperty<?,?>, Integer>> argumentMappings = 
 						getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
 								residentNode, residentNode.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 				
 				if (argumentMappings != null) {
 					// extract the mapping of the only argument
-					Map<OWLProperty, Integer> singleArgMap = argumentMappings.get(residentNode.getArgumentList().get(0));
+					Map<OWLProperty<?,?>, Integer> singleArgMap = argumentMappings.get(residentNode.getArgumentList().get(0));
 					if (singleArgMap != null) {
 						// checking consistency
 						if (singleArgMap.size() != 1) {
@@ -1736,7 +1736,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 					objectName = ovi1.getEntity().getInstanceName(); 
 				}
 				
-				Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
+				Map<Argument, Map<OWLProperty<?,?>, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
 						residentNode, residentNode.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 				
 				Argument arg1 = residentNode.getArgumentList().get(0); 
@@ -1750,7 +1750,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				
 				if (argumentMappings != null) {
 					// we know that at this point the resident node has 2 arguments (because the number of arguments in resident and number of entries in listArguments match)
-					Map<OWLProperty, Integer> argMap1 = argumentMappings.get(arg1); // extract the mapping of the 1st argument
+					Map<OWLProperty<?,?>, Integer> argMap1 = argumentMappings.get(arg1); // extract the mapping of the 1st argument
 					if (argMap1 != null) {
 						// checking consistency
 						if (argMap1.size() != 1) {
@@ -1769,7 +1769,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 						}	// if argument is either subject or unknown, then use default behavior
 					}else{ 
 						//Only is necessary see arg 2 if arg 1 is null
-						Map<OWLProperty, Integer> argMap2 = argumentMappings.get(arg2); // extract the mapping of the 2nd argument
+						Map<OWLProperty<?,?>, Integer> argMap2 = argumentMappings.get(arg2); // extract the mapping of the 2nd argument
 						if (argMap2 != null) {
 							// checking consistency
 							if (argMap2.size() != 1) {
@@ -1801,7 +1801,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				//Boolean with more than two arguments or others cases with more than one
 				
 				// get the owl properties related (by subjectIn or objectIn) to the arguments of this node
-				Map<Argument, Map<OWLProperty, Integer>> propertiesPerArgument = 
+				Map<Argument, Map<OWLProperty<?,?>, Integer>> propertiesPerArgument = 
 						getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
 								residentNode, residentNode.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 
@@ -1824,10 +1824,10 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				}
 
 				// translate the mapping to a map of ordinary variables to properties, because listArguments uses ordinary variables as reference
-				Map<OrdinaryVariable, Map<OWLProperty, Integer>> propertiesPerOV = 
-						new HashMap<OrdinaryVariable, Map<OWLProperty,Integer>>();
+				Map<OrdinaryVariable, Map<OWLProperty<?,?>, Integer>> propertiesPerOV = 
+						new HashMap<OrdinaryVariable, Map<OWLProperty<?,?>,Integer>>();
 
-				for (Entry<Argument, Map<OWLProperty, Integer>> entry : propertiesPerArgument.entrySet()) {
+				for (Entry<Argument, Map<OWLProperty<?,?>, Integer>> entry : propertiesPerArgument.entrySet()) {
 					propertiesPerOV.put(entry.getKey().getOVariable(), entry.getValue());
 				}
 
@@ -1851,14 +1851,14 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 						OVInstance argInstance = iterator.next();
 
 						// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
-						OWLProperty property = null; 
+						OWLProperty<?,?> property = null; 
 						boolean isSubjectIn = true;
 						
 						// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
-						Map<OWLProperty, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
+						Map<OWLProperty<?,?>, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
 						if (propertyMap != null) {
 							// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
-							for (Entry<OWLProperty, Integer> entry : propertyMap.entrySet()) {
+							for (Entry<OWLProperty<?,?>, Integer> entry : propertyMap.entrySet()) {
 								if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 									isSubjectIn = false;
 									property = entry.getKey();
@@ -1905,14 +1905,14 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 						OVInstance argInstance = iterator.next();
 
 						// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
-						OWLProperty property = null; 
+						OWLProperty<?,?> property = null; 
 						boolean isSubjectIn = true;
 						
 						// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
-						Map<OWLProperty, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
+						Map<OWLProperty<?,?>, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
 						if (propertyMap != null) {
 							// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
-							for (Entry<OWLProperty, Integer> entry : propertyMap.entrySet()) {
+							for (Entry<OWLProperty<?,?>, Integer> entry : propertyMap.entrySet()) {
 								if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 									isSubjectIn = false;
 									property = entry.getKey();
@@ -2105,11 +2105,11 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				//02 - Other Cases: this is a functional format (e.g. F(x) = y), but the 
 				//possible state can be the subject (functionl) or object (inverse functional) 
 
-				Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
+				Map<Argument, Map<OWLProperty<?,?>, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(resident, resident.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 				
 				if (argumentMappings != null) {
 					// extract the mapping of the only argument
-					Map<OWLProperty, Integer> singleArgMap = argumentMappings.get(resident.getArgumentList().get(0));
+					Map<OWLProperty<?,?>, Integer> singleArgMap = argumentMappings.get(resident.getArgumentList().get(0));
 					if (singleArgMap != null) {
 						// checking consistency
 						if (singleArgMap.size() != 1) {
@@ -2160,12 +2160,12 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 					objectName = ovi1.getEntity().getInstanceName(); 
 				}
 				
-				Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
+				Map<Argument, Map<OWLProperty<?,?>, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
 						resident, resident.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 				
 				if (argumentMappings != null) {
 					// we know that at this point the resident node has 2 arguments (because the number of arguments in resident and number of entries in listArguments match)
-					Map<OWLProperty, Integer> argMap1 = argumentMappings.get(resident.getArgumentList().get(0)); // extract the mapping of the 1st argument
+					Map<OWLProperty<?,?>, Integer> argMap1 = argumentMappings.get(resident.getArgumentList().get(0)); // extract the mapping of the 1st argument
 					if (argMap1 != null) {
 						// checking consistency
 						if (argMap1.size() != 1) {
@@ -2183,7 +2183,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 							subjectName = temp;
 						}	// if argument is either subject or unknown, then use default behavior
 					} 
-					Map<OWLProperty, Integer> argMap2 = argumentMappings.get(resident.getArgumentList().get(1)); // extract the mapping of the 2nd argument
+					Map<OWLProperty<?,?>, Integer> argMap2 = argumentMappings.get(resident.getArgumentList().get(1)); // extract the mapping of the 2nd argument
 					if (argMap2 != null) {
 						// checking consistency
 						if (argMap2.size() != 1) {
@@ -2212,7 +2212,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 			}else{
 				
 				// get the owl properties related (by subjectIn or objectIn) to the arguments of this node
-				Map<Argument, Map<OWLProperty, Integer>> propertiesPerArgument = 
+				Map<Argument, Map<OWLProperty<?,?>, Integer>> propertiesPerArgument = 
 						getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
 								resident, resident.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 
@@ -2235,10 +2235,10 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				}
 
 				// translate the mapping to a map of ordinary variables to properties, because listArguments uses ordinary variables as reference
-				Map<OrdinaryVariable, Map<OWLProperty, Integer>> propertiesPerOV = 
-						new HashMap<OrdinaryVariable, Map<OWLProperty,Integer>>();
+				Map<OrdinaryVariable, Map<OWLProperty<?,?>, Integer>> propertiesPerOV = 
+						new HashMap<OrdinaryVariable, Map<OWLProperty<?,?>,Integer>>();
 
-				for (Entry<Argument, Map<OWLProperty, Integer>> entry : propertiesPerArgument.entrySet()) {
+				for (Entry<Argument, Map<OWLProperty<?,?>, Integer>> entry : propertiesPerArgument.entrySet()) {
 					propertiesPerOV.put(entry.getKey().getOVariable(), entry.getValue());
 				}
 
@@ -2262,14 +2262,14 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 						OVInstance argInstance = iterator.next();
 
 						// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
-						OWLProperty property = null; 
+						OWLProperty<?,?> property = null; 
 						boolean isSubjectIn = true;
 						
 						// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
-						Map<OWLProperty, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
+						Map<OWLProperty<?,?>, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
 						if (propertyMap != null) {
 							// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
-							for (Entry<OWLProperty, Integer> entry : propertyMap.entrySet()) {
+							for (Entry<OWLProperty<?,?>, Integer> entry : propertyMap.entrySet()) {
 								if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 									isSubjectIn = false;
 									property = entry.getKey();
@@ -2316,14 +2316,14 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 						OVInstance argInstance = iterator.next();
 
 						// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
-						OWLProperty property = null; 
+						OWLProperty<?,?> property = null; 
 						boolean isSubjectIn = true;
 						
 						// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
-						Map<OWLProperty, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
+						Map<OWLProperty<?,?>, Integer> propertyMap = propertiesPerOV.get(argInstance.getOv());
 						if (propertyMap != null) {
 							// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
-							for (Entry<OWLProperty, Integer> entry : propertyMap.entrySet()) {
+							for (Entry<OWLProperty<?,?>, Integer> entry : propertyMap.entrySet()) {
 								if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 									isSubjectIn = false;
 									property = entry.getKey();
@@ -2443,7 +2443,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				String subjectName = variableInstanceList[0];  
 				String objectName = variableInstanceList[1]; 
 				
-				Map<Argument, Map<OWLProperty, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
+				Map<Argument, Map<OWLProperty<?,?>, Integer>> argumentMappings = getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
 						resident, resident.getMFrag().getMultiEntityBayesianNetwork(), getOWLOntology());
 				
 				Argument arg1 = resident.getArgumentList().get(0); 
@@ -2457,7 +2457,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				
 				if (argumentMappings != null) {
 					// we know that at this point the resident node has 2 arguments (because the number of arguments in resident and number of entries in listArguments match)
-					Map<OWLProperty, Integer> argMap1 = argumentMappings.get(arg1); // extract the mapping of the 1st argument
+					Map<OWLProperty<?,?>, Integer> argMap1 = argumentMappings.get(arg1); // extract the mapping of the 1st argument
 					if (argMap1 != null) {
 						// checking consistency
 						if (argMap1.size() != 1) {
@@ -2475,7 +2475,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 							subjectName = temp;
 						}	// if argument is either subject or unknown, then use default behavior
 					}else{
-						Map<OWLProperty, Integer> argMap2 = argumentMappings.get(arg2); // extract the mapping of the 2nd argument
+						Map<OWLProperty<?,?>, Integer> argMap2 = argumentMappings.get(arg2); // extract the mapping of the 2nd argument
 						if (argMap2 != null) {
 							// checking consistency
 							if (argMap2.size() != 1) {
@@ -2512,7 +2512,7 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				// If not, by default the 1st unspecified argument will be considered as the subject of this property
 
 				// get the owl properties related (by subjectIn or objectIn) to the arguments of this node
-				Map<Argument, Map<OWLProperty, Integer>> propertiesPerArgument = 
+				Map<Argument, Map<OWLProperty<?,?>, Integer>> propertiesPerArgument = 
 						getMappingArgumentExtractor().getOWLPropertiesOfArgumentsOfSelectedNode(
 								resident, resident.getMFrag().getMultiEntityBayesianNetwork(), ontology);
 
@@ -2535,10 +2535,10 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 				}
 
 				// translate the mapping to a map of ordinary variables to properties, because listArguments uses ordinary variables as reference
-				Map<OrdinaryVariable, Map<OWLProperty, Integer>> propertiesPerOV = 
-						new HashMap<OrdinaryVariable, Map<OWLProperty,Integer>>();
+				Map<OrdinaryVariable, Map<OWLProperty<?,?>, Integer>> propertiesPerOV = 
+						new HashMap<OrdinaryVariable, Map<OWLProperty<?,?>,Integer>>();
 
-				for (Entry<Argument, Map<OWLProperty, Integer>> entry : propertiesPerArgument.entrySet()) {
+				for (Entry<Argument, Map<OWLProperty<?,?>, Integer>> entry : propertiesPerArgument.entrySet()) {
 					propertiesPerOV.put(entry.getKey().getOVariable(), entry.getValue());
 				}
 
@@ -2558,15 +2558,15 @@ public class TriplestoreKnowledgeBase implements KnowledgeBase {
 					OrdinaryVariable ov = residentOVList[i]; 
 					
 					// if there is no valid mapping, use default (use the one in definesUncertaintyOf, and isSubjectIn)
-					OWLProperty property = mainProperty;
+					OWLProperty<?,?> property = mainProperty;
 					
 					boolean isSubjectIn = true;
 					
 					// check if there is any argument without mapping. If not, use default behavior (use the property specified in definesUncertaintyOf)
-					Map<OWLProperty, Integer> propertyMap = propertiesPerOV.get(ov);
+					Map<OWLProperty<?,?>, Integer> propertyMap = propertiesPerOV.get(ov);
 					if (propertyMap != null) {
 						// Note: the signature allows multiple mappings per argument, but here we use only 1 (the first one which is not IMappingArgumentExtractor.UNDEFINED_CODE). 
-						for (Entry<OWLProperty, Integer> entry : propertyMap.entrySet()) {
+						for (Entry<OWLProperty<?,?>, Integer> entry : propertyMap.entrySet()) {
 							if (entry.getValue().equals(IMappingArgumentExtractor.OBJECT_CODE)) {
 								isSubjectIn = false;
 								property = entry.getKey();
