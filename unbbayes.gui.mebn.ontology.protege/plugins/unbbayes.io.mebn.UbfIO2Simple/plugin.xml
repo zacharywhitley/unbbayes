@@ -7,8 +7,10 @@
         <import plugin-id="unbbayes.io.mebn.UbfIO" plugin-version="1.0.0"/>
         <import plugin-id="unbbayes.gui.mebn.ontology.protege"/>
     </requires>
+    <!--
     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNIO" id="UbfIO2Simple">
         <parameter id="class" value="unbbayes.io.mebn.UbfIO2Simple" />
         <parameter id="name" value="PR-OWL 2.0 (simple mode)" />
     </extension>
+    -->
 </plugin>
