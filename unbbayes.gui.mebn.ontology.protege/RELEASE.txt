@@ -1,4 +1,4 @@
-UNBBAYES PR-OWL 2 PLUGIN - VERSION 1.2.6
+UNBBAYES PR-OWL 2 PLUGIN - VERSION 1.2.7
 ----------------------------
 
 FEATURE LIST		
@@ -8,6 +8,7 @@ Number	Request ID	Summary
 BUG LIST		
 Number	Request ID	Summary
 6			Fixed compatibility issue with UnBBayes-MEBN 1.16.13.
+7			Value of system property "org.protege.plugin.dir" is overwritten only if it was not set externally. 
 
 UNBBAYES PR-OWL 2 PLUGIN - VERSION 1.2.5
 ----------------------------

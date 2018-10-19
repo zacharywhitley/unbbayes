@@ -6,7 +6,7 @@
 	<name>Protégé Based Ontology Editor</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->
-	<version>1.2.6</version>
+	<version>1.2.7-SNAPSHOT</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>
@@ -166,7 +166,7 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes.prs.mebn</artifactId>
-				<version>1.19.15</version>
+				<version>1.18.14</version>
 			</dependency>
 			
 			<!-- Protege 4.1 (it handles OWL2) -->
@@ -369,6 +369,13 @@
 			    <artifactId>xalan</artifactId>
 			    <version>2.7.1</version>
 			</dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.12</version>
+                <scope>test</scope>
+            </dependency>
+
 	</dependencies>
 	<reporting>
 		<plugins>
