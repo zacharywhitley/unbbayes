@@ -159,8 +159,6 @@ public class PowerLoomKB implements KnowledgeBase {
 
 	private MultiEntityBayesianNetwork mebn = null;
 
-	private String wildCardSymbol = "?";
-
 	/*
 	 * Create a new instance of PowerLoomKB with the given id. The names of 
 	 * modules of this instance is build using the id.  
@@ -656,9 +654,6 @@ public class PowerLoomKB implements KnowledgeBase {
 		
 		String finding = "";
 		
-		// stores wildcards found in arguments
-		List<ObjectEntityInstance> wildCardArgs = new ArrayList<ObjectEntityInstance>();
-		
 		if(randonVariableFinding.getNode().getTypeOfStates() == IResidentNode.BOOLEAN_RV_STATES
 				&& (randonVariableFinding.getArguments().length > 0)){
 		
@@ -669,11 +664,8 @@ public class PowerLoomKB implements KnowledgeBase {
 			}
 			   finding+= randonVariableFinding.getNode().getName(); 
 			      finding+=" "; 
-			         for(ObjectEntityInstance argument: randonVariableFinding.getArguments()){
+			         for(Entity argument: randonVariableFinding.getArguments()){
 			        	 finding+=argument.getName() + " ";
-			        	 if (argument.getName().contains(getWildCardSymbol())) {
-			        		 wildCardArgs.add(argument);
-			        	 }
 			         }
 			if(randonVariableFinding.getState().getName().equals("false")){
 			    finding+= ") ";
@@ -687,49 +679,19 @@ public class PowerLoomKB implements KnowledgeBase {
 			finding+= randonVariableFinding.getNode().getName(); 
 			finding+=" "; 
 			
-			for(ObjectEntityInstance argument: randonVariableFinding.getArguments()){
+			for(Entity argument: randonVariableFinding.getArguments()){
 			   	 finding+=argument.getName() + " ";
-			   	 if (argument.getName().contains(getWildCardSymbol())) {
-	        		 wildCardArgs.add(argument);
-	        	 }
 			}
 			finding+= ") "; 
 			finding+= randonVariableFinding.getState().getName();  
 			finding+= ")";	
 		}
 
-		if (wildCardArgs.isEmpty()) {
-			// there is no wildcard. This is a propositional finding
-			PlIterator iterator = PLI.sAssertProposition(finding,
-					moduleFindingName, null);
-			
-			while (iterator.nextP()) {
-				Debug.println(iterator.value.toString());
-			}
-		} else {
-			// needs to handle wildcards (this is not a propositional finding)
-			// create a "presume" command instead of assertion.
-			// (PRESUME (FORALL (?S1) (=> (SHIP_LABEL ?S1) (not (ISOWNSTARSHIP ?S1)))))
-			String command = "(PRESUME (FORALL (";
-			// list of variables
-			for (ObjectEntityInstance arg : wildCardArgs) {
-				command += arg.getName().toUpperCase() + " ";
-			}
-			// end of list of variables
-			command += ") (=> (";	
-			// print type of 1st arg
-			command += wildCardArgs.get(0).getType().getName().toUpperCase() + " ";
-			// print 1st wildcard arg
-			command += wildCardArgs.get(0).getName();
-			command += ")  ";
-			
-			// the rest is same of finding
-			command += finding;
-			
-			command += ") ) ) ";	// end of "(PRESUME (FORALL ("
-			
-			String ret = this.executeCommand(command);
-			Debug.println(ret);
+		PlIterator iterator = PLI.sAssertProposition(finding,
+				moduleFindingName, null);
+
+		while (iterator.nextP()) {
+			Debug.println(iterator.value.toString());
 		}
 	}
 
@@ -1890,20 +1852,6 @@ public class PowerLoomKB implements KnowledgeBase {
 	 */
 	public void setMEBN(MultiEntityBayesianNetwork mebn) {
 		this.mebn = mebn;
-	}
-
-	/**
-	 * @return the wildCardSymbol : symbol to trigger wildcard arguments. Use "?" as prefix by default
-	 */
-	public String getWildCardSymbol() {
-		return wildCardSymbol;
-	}
-
-	/**
-	 * @param wildCardSymbol : symbol to trigger wildcard arguments. Use "?" as prefix by default
-	 */
-	public void setWildCardSymbol(String wildCardSymbol) {
-		this.wildCardSymbol = wildCardSymbol;
 	}
 	
 	

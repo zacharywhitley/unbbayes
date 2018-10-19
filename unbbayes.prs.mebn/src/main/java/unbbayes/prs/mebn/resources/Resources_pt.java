@@ -47,10 +47,6 @@ public class Resources_pt extends ListResourceBundle {
 	 */
 	static final Object[][] contents =
 	{	{"InvalidEdgeException","Arco Invalido!"}, 
-		{"CycleFoundException","Ciclo encontrado! Não pode haver ciclos no grafo. "},
-		{"SingleArgumentAllowed","Somente 1 argumento permitido."},
-		{"IdentityNode","Identity node"},
-		{"IdentityNodeInputInstanceError","Por favor, inclua um novo nó de indentidade ao invés de usar nós de input como referência."},
-		{"CouldNotExtractTypeEntity","Não foi possível extrair a entidade associada ao tipo desta variável ordinária."},
+		{"CycleFoundException","Ciclo encontrado! Não pode haver ciclos no grafo. "}
 	};
 }

@@ -116,11 +116,21 @@ public class InputInstanceOfTree extends JTree{
 						try{
 						   controller.setInputInstanceOf(inputNode, residentNode); 
 						}
-						catch(Exception ex){
+						catch(CycleFoundException ce){
 							JOptionPane.showMessageDialog(null,
-									ex.getMessage(),
+									ce.getMessage(),
 								    "MEBN Construction Error",
 								    JOptionPane.ERROR_MESSAGE);	
+						} catch (OVDontIsOfTypeExpected e1) {
+							JOptionPane.showMessageDialog(null,
+									e1.getMessage(),
+								    "MEBN Construction Error",
+								    JOptionPane.ERROR_MESSAGE);	
+						} catch (ArgumentNodeAlreadySetException e1) {
+							JOptionPane.showMessageDialog(null,
+									e1.getMessage(),
+								    "MEBN Construction Error",
+								    JOptionPane.ERROR_MESSAGE);
 						}
 						
 					} else if (e.getClickCount() == 1) {

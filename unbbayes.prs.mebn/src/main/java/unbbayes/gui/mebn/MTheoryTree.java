@@ -515,10 +515,6 @@ public class MTheoryTree extends JTree {
 							}
 						}
 					}
-				} else {
-					setOpenIcon(mTheoryNodeIcon);
-					setClosedIcon(mTheoryNodeIcon);                	 
-					setIcon(mTheoryNodeIcon); 
 				}
 				
 			} else {

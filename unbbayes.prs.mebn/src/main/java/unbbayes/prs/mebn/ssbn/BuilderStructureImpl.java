@@ -958,9 +958,7 @@ public class BuilderStructureImpl implements IBuilderStructure{
 		parent = ssbn.addSSBNNodeIfItDontAdded(testNode);
 		
 		if (parent.equals(child)) {
-			if (ssbn.getLogManager() != null) {
-				ssbn.getLogManager().printText(level5, false, "Attempted to include " + parent + " as parent of " + child + ". Returning...");
-			}
+			ssbn.getLogManager().printText(level5, false, "Attempted to include " + parent + " as parent of " + child + ". Returning...");
 			return null;
 		}
 		

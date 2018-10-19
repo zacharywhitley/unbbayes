@@ -143,7 +143,7 @@ public class LoaderPrOwlIO extends PROWLModelUser implements
 
 	// private static final String PROWLMODELFILE = "pr-owl/pr-owl.owl";
 
-	public static final String ORDINARY_VAR_SCOPE_SEPARATOR = "\\.";
+	public static final String ORDINARY_VAR_SCOPE_SEPARATOR = ".";
 	public static final String POSSIBLE_VALUE_SCOPE_SEPARATOR = ".";
 
 	// names of the classes in PR_OWL FIle

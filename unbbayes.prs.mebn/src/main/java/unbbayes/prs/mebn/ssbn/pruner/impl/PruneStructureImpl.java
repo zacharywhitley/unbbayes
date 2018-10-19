@@ -36,7 +36,11 @@ public class PruneStructureImpl implements IPruneStructure{
 	 */
 	public void pruneStructure(SSBN ssbn) {
 		for (IPruner pruner : this.getListOfPruners()) {
-			pruner.prune(ssbn);
+			try{
+				pruner.prune(ssbn);
+			}catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 	

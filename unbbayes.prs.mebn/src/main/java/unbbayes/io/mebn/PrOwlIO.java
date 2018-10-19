@@ -87,10 +87,6 @@ public class PrOwlIO extends PROWLModelUser implements MebnIO {
 		for (String classNames : this.getNamesOfAllModifiedPROWLClasses()) {
 			 try{
 				 individuals = model.getOWLNamedClass(classNames).getInstances(false);
-				 if (individuals == null) {
-					 // some versions seem to return null (instead of empty) if there is no individual
-					 continue;	
-				 }
 				 for (OWLIndividual individual : individuals) {
 					try {
 						if (!untouchableIndividuals.contains(individual.getName())) {

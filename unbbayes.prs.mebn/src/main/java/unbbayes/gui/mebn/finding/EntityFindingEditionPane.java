@@ -594,26 +594,24 @@ public class EntityFindingEditionPane extends JPanel {
 			
 			listModel = new DefaultListModel(); 
 			
-			if (objectEntity != null) {
-				if(objectEntity.isOrdereable()){
-					ArrayList<ObjectEntityInstanceOrdereable> originalList = new ArrayList<ObjectEntityInstanceOrdereable>(); 
-					for(ObjectEntityInstance instance: objectEntity.getInstanceList()){
-						originalList.add((ObjectEntityInstanceOrdereable)instance);
-					}
-					
-					for(ObjectEntityInstanceOrdereable instance: ObjectEntityInstanceOrdereable.ordererList(originalList)){
-						listModel.addElement(instance); 
-					}
-					if(listModel.size() > 0)
-						last = (ObjectEntityInstanceOrdereable)listModel.get(listModel.size()-1);
-					else last = null; 
-					
-				}else{
-					for(ObjectEntityInstance instance: objectEntity.getInstanceList()){
-						listModel.addElement(instance); 
-					}
-					last = null;
+			if(objectEntity.isOrdereable()){
+				ArrayList<ObjectEntityInstanceOrdereable> originalList = new ArrayList<ObjectEntityInstanceOrdereable>(); 
+				for(ObjectEntityInstance instance: objectEntity.getInstanceList()){
+					originalList.add((ObjectEntityInstanceOrdereable)instance);
 				}
+				
+				for(ObjectEntityInstanceOrdereable instance: ObjectEntityInstanceOrdereable.ordererList(originalList)){
+					listModel.addElement(instance); 
+				}
+				if(listModel.size() > 0)
+				    last = (ObjectEntityInstanceOrdereable)listModel.get(listModel.size()-1);
+				else last = null; 
+				
+			}else{
+				for(ObjectEntityInstance instance: objectEntity.getInstanceList()){
+					listModel.addElement(instance); 
+				}
+				last = null;
 			}
 			
 			jlistEntity.setModel(listModel); 

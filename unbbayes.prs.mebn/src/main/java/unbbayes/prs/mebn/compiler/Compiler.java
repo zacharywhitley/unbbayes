@@ -76,6 +76,7 @@ TODO assignment_or_if ::= assignment_or_func [ "," if_statement] | if_statement
 TODO assignment_or_func = assignment | func
 TODO func ::= external_function([arbitrary_arguments]) [ "," assignment_or_func ]*
 TODO assignment ::= ident "=" expression [ "," assignment_or_func ]*
+TODO iterate on CPT multiple times to support cross column reference (cells are filled with NA until they are resolved)
  expression ::= term [ addop term ]*
  term ::= signed_factor [ mulop signed_factor ]*
  signed_factor ::= [ addop ] factor
@@ -707,170 +708,143 @@ public class Compiler implements ICompiler {
 		
 		
 		// start running at the probabilistic table and filling its cells
-		
-		
-		// Keep track of how many cells in the table are yet to be handled. Repeat until this is zero. 
-		// If cells are independent each other, this should become zero in just 1 do-while iteration 
-		int numUnhandledCells = this.cpt.tableSize();	
-		do {
-			// keep track of how many cells we still need to handle at this iteration.
-			// If cells are independent, numUnhandledCells will become 0 after single do-while iteration.
-			// If the value in a cell depend on a value of another cell, we might need to swipe the table multiple times to guarantee that all dependent cells are filled.
-			// Keeping track of how many cells we still need to handle will help in deciding whether to stop swiping the table or not.
-			int numUnhandledCellsBeforeIteration = numUnhandledCells;	
-			
-			for( int i = 0; i < this.cpt.tableSize(); i += this.ssbnnode.getProbNode().getStatesSize()) {
-				//	clears and initializes map
-				residentNameToCurrentValueMap = new HashMap<String, List<EntityAndArguments>>();
-				// fill map with SSBN nodes (i.e. parent nodes)
-				for (SSBNNode ssbnnode : parents) {
-					if (ssbnnode.getResident().isToLimitQuantityOfParentsInstances()) {
-						// do not add nodes in the chain which limits the max quantity of parents.
-						// this is because such parents must be considered as instances of the other parent
-						continue;
-					}
-					if (!residentNameToCurrentValueMap.containsKey(ssbnnode.getResident().getName())) {
-						residentNameToCurrentValueMap.put(ssbnnode.getResident().getName(), new ArrayList<EntityAndArguments>());
-					}
+		//List<Entity> entityList = null;
+		for( int i = 0; i < this.cpt.tableSize(); i += this.ssbnnode.getProbNode().getStatesSize()) {
+			//	clears and initializes map
+			residentNameToCurrentValueMap = new HashMap<String, List<EntityAndArguments>>();
+			// fill map with SSBN nodes (i.e. parent nodes)
+			for (SSBNNode ssbnnode : parents) {
+				if (ssbnnode.getResident().isToLimitQuantityOfParentsInstances()) {
+					// do not add nodes in the chain which limits the max quantity of parents.
+					// this is because such parents must be considered as instances of the other parent
+					continue;
 				}
-				
-				// fill map at this loop. Note that parents.size, currentIteratorValue.size, and
-				// valueCombinationiterators are the same
-				for (int j = 0; j < parents.size(); j++) {
-					SSBNNode parentSSBNNode = parents.get(j);
-					// val will be added to map using following key
-					String key = parentSSBNNode.getResident().getName();
-					if (parentSSBNNode.getResident().isToLimitQuantityOfParentsInstances()) {
-						// nodes in the chain which limits the max quantity of parents has special meaning:
-						// such parents must be considered as instances of another parent, although it points to another resident node
-						// in order to simulate such behavior, we adjust the content of map
-						if (j != 0) {
-							// if this is not the first parent, use the first parent as the "another" parent
-							key = parents.get(0).getResident().getName();
-						} else if ( (parents.size() - 1) != j ) {
-							// use the last element instead, because the special parent is the first parent
-							key = parents.get((parents.size() - 1)).getResident().getName();
-						} else {
-							// there is only 1 parent, and the parent is a node in the chain which limits the max quantity of parents.
-							// this is an error, because such chain must contain at least 2 nodes: the dynamically generated node, and one of the original parent.
-							throw new IllegalStateException("Node " + getSSBNNode() + " has only 1 parent (" + parents.get(j) + "), but the parent has isToLimitQuantityOfParentsInstances() == true.");
-						}
-					}
-					EntityAndArguments val = new EntityAndArguments(currentIteratorValue.get(j),new ArrayList<OVInstance>(parentSSBNNode.getArguments()));
-					residentNameToCurrentValueMap.get(key).add(val);
-				}
-				
-				MultiEntityBayesianNetwork mebn = getMEBN();
-				
-				// fill map with ordinary variables in this mfrag (these are like identity nodes -- function that returns the value of its argument)
-				for (OrdinaryVariable ov : this.getNode().getMFrag().getOrdinaryVariableList()) {
-					if (ov == null || ov.getValueType() == null || ov.getName() == null) {
-						Debug.println(getClass(), ov + " is a null ordinary variable, or it is an ordinary variable with no type. It will be ignored.");
-						continue;	// ignore this ov
-					}
-					if (!residentNameToCurrentValueMap.containsKey(ov.getName())) {
-						// extract the object entity associated with this ov
-						ObjectEntity objectEntity = mebn.getObjectEntityContainer().getObjectEntityByType(ov.getValueType());
-						if (objectEntity == null) {
-							Debug.println(getClass(), ov.getValueType().getName() + " is not a known object entity. " + ov + " will be ignored.");
-							continue;	// ignore this ov, because it is not associated with an object entity
-						}
-						// fill map with possible values of this ov (i.e. possible instances of this object entity)
-						ArrayList<EntityAndArguments> valueToAssign = new ArrayList<EntityAndArguments>();
-						for (ObjectEntityInstance objectEntityInstance : objectEntity.getInstanceList()) {
-							// again, OVs in LPDs are like identity nodes (i.e. something like Id(OV1) = OV1)
-							valueToAssign.add(new EntityAndArguments(objectEntityInstance, Collections.singletonList(OVInstance.getInstance(ov, objectEntityInstance))));
-						}
-						residentNameToCurrentValueMap.put(ov.getName(), valueToAssign);
-					}
-				}
-				
-				// updates iterators
-				for (int j = 0; j < valueCombinationIterators.size(); j++) {
-					if (valueCombinationIterators.get(j).hasNext()) {
-						// if has next, then update current value and exits loop
-						currentIteratorValue.set(j, valueCombinationIterators.get(j).next());
-						break;
-					} else {
-						// else, reset the iterator (and current value) until exit loop
-						valueCombinationIterators.set(j, parents.get(j).getActualValues().iterator());
-						if (valueCombinationIterators.get(j).hasNext()) {
-							currentIteratorValue.set(j, valueCombinationIterators.get(j).next());
-						}
-					}
-				}
-				
-				
-				// prepare to extract which column to verify
-				TempTableHeaderCell header = null;
-				
-				// if default distro, then use the default header...
-				// also, if no parents are declared, use default distro...
-				boolean thereAreNoParents = false;
-				if(this.getSSBNNode().getParents() == null) {
-//				thereAreNoParents = true;
-					// if table also does not use the embedded node feature (i.e. parents that are not explicit in MFrag, but used in LPD), then there are no parents.
-					// E.g. we can use OVs in the if-clause. In this case, the LPD behaves like when we have identity nodes (node that returns its argument) as parents.
-					thereAreNoParents = !this.tempTable.hasEmbeddedNodeDeclaration();
-				} else if (this.getSSBNNode().getParents().size() == 0) {
-					thereAreNoParents = !this.tempTable.hasEmbeddedNodeDeclaration();
-				}
-				if (thereAreNoParents || this.getSSBNNode().isUsingDefaultCPT()) {
-					// we assume the default distro is the last block on pseudocode
-					header = this.tempTable.getDefaultClause();
-					// let's just check if this header is really declaring a default distro... Just in case...
-					if (!header.isDefault()) {
-						throw new InconsistentTableSemanticsException(getSSBNNode().toString());
-					}
-				} else {
-					//	if not default, look for the column to verify
-					// the first expression to return true is the one we want
-					header = this.tempTable.getFirstTrueClause(residentNameToCurrentValueMap);
-					// note that default (else) expression should allways return true!
-					
-				}
-				
-				
-				// populate column
-				for (int j = 0; j < possibleValues.size() ; j++) {
-					float value = 0f;
-					
-					// extract the value to set
-					for (TempTableProbabilityCell cell : header.getCellList()) {
-						// we assume the Probabilistic table is in the same order of the list "possibleValues", 
-						// so we look for the entity of possibleValues at a cell
-						if (cell.getPossibleValue().getName().equalsIgnoreCase(possibleValues.get(j).getName())) {
-							value = cell.getProbabilityValue();
-							break;
-						}
-					}
-					// consistency check, allow only positive values
-					if (isToNormalize()
-							&& ((value < 0) 
-//								|| (value > 1)
-									)) {
-						throw new InvalidProbabilityRangeException(getNode().toString() + " = " + value);
-					}
-					this.cpt.setValue(i+j, value );
-					
-					// NaN indicates that this cell cannot be calculated now.
-					if (!Float.isNaN(value)) {
-						numUnhandledCells--;	// tell that we just handled this cell
-					}
-				}
-				
-			}	// while i < this.cpt.tableSize()
-			
-			/* 
-			 * If this iteration did not handle any cell, this means we are stuck (no matter how many times we sweep the table, no updates will happen). 
-			 * This may happen if there is a cyclic dependence between values of cell.
-			 * For example, when cell X depends on value of cell Y which depends on value of cell X.
-			 */
-			if (numUnhandledCellsBeforeIteration == numUnhandledCells) {
-				throw new RuntimeException("CyclicCellDependency");
+			    if (!residentNameToCurrentValueMap.containsKey(ssbnnode.getResident().getName())) {
+				    residentNameToCurrentValueMap.put(ssbnnode.getResident().getName(), new ArrayList<EntityAndArguments>());
+			    }
 			}
-			// keep iterating
-		} while (numUnhandledCells > 0);
+			
+			// fill map at this loop. Note that parents.size, currentIteratorValue.size, and
+			// valueCombinationiterators are the same
+			for (int j = 0; j < parents.size(); j++) {
+				SSBNNode parentSSBNNode = parents.get(j);
+				// val will be added to map using following key
+				String key = parentSSBNNode.getResident().getName();
+				if (parentSSBNNode.getResident().isToLimitQuantityOfParentsInstances()) {
+					// nodes in the chain which limits the max quantity of parents has special meaning:
+					// such parents must be considered as instances of another parent, although it points to another resident node
+					// in order to simulate such behavior, we adjust the content of map
+					if (j != 0) {
+						// if this is not the first parent, use the first parent as the "another" parent
+						key = parents.get(0).getResident().getName();
+					} else if ( (parents.size() - 1) != j ) {
+						// use the last element instead, because the special parent is the first parent
+						key = parents.get((parents.size() - 1)).getResident().getName();
+					} else {
+						// there is only 1 parent, and the parent is a node in the chain which limits the max quantity of parents.
+						// this is an error, because such chain must contain at least 2 nodes: the dynamically generated node, and one of the original parent.
+						throw new IllegalStateException("Node " + getSSBNNode() + " has only 1 parent (" + parents.get(j) + "), but the parent has isToLimitQuantityOfParentsInstances() == true.");
+					}
+				}
+				EntityAndArguments val = new EntityAndArguments(currentIteratorValue.get(j),new ArrayList<OVInstance>(parentSSBNNode.getArguments()));
+				residentNameToCurrentValueMap.get(key).add(val);
+			}
+
+			MultiEntityBayesianNetwork mebn = getMEBN();
+			
+			// fill map with ordinary variables in this mfrag (these are like identity nodes -- function that returns the value of its argument)
+			for (OrdinaryVariable ov : this.getNode().getMFrag().getOrdinaryVariableList()) {
+				if (ov == null || ov.getValueType() == null || ov.getName() == null) {
+					Debug.println(getClass(), ov + " is a null ordinary variable, or it is an ordinary variable with no type. It will be ignored.");
+					continue;	// ignore this ov
+				}
+				if (!residentNameToCurrentValueMap.containsKey(ov.getName())) {
+					// extract the object entity associated with this ov
+					ObjectEntity objectEntity = mebn.getObjectEntityContainer().getObjectEntityByType(ov.getValueType());
+					if (objectEntity == null) {
+						Debug.println(getClass(), ov.getValueType().getName() + " is not a known object entity. " + ov + " will be ignored.");
+						continue;	// ignore this ov, because it is not associated with an object entity
+					}
+					// fill map with possible values of this ov (i.e. possible instances of this object entity)
+					ArrayList<EntityAndArguments> valueToAssign = new ArrayList<EntityAndArguments>();
+					for (ObjectEntityInstance objectEntityInstance : objectEntity.getInstanceList()) {
+						// again, OVs in LPDs are like identity nodes (i.e. something like Id(OV1) = OV1)
+						valueToAssign.add(new EntityAndArguments(objectEntityInstance, Collections.singletonList(OVInstance.getInstance(ov, objectEntityInstance))));
+					}
+				    residentNameToCurrentValueMap.put(ov.getName(), valueToAssign);
+			    }
+			}
+			
+			// updates iterators
+			for (int j = 0; j < valueCombinationIterators.size(); j++) {
+				if (valueCombinationIterators.get(j).hasNext()) {
+					// if has next, then update current value and exits loop
+					currentIteratorValue.set(j, valueCombinationIterators.get(j).next());
+					break;
+				} else {
+					// else, reset the iterator (and current value) until exit loop
+					valueCombinationIterators.set(j, parents.get(j).getActualValues().iterator());
+					if (valueCombinationIterators.get(j).hasNext()) {
+						currentIteratorValue.set(j, valueCombinationIterators.get(j).next());
+					}
+				}
+			}
+			
+				
+			// prepare to extract which column to verify
+			TempTableHeaderCell header = null;
+			
+			// if default distro, then use the default header...
+			// also, if no parents are declared, use default distro...
+			boolean thereAreNoParents = false;
+			if(this.getSSBNNode().getParents() == null) {
+//				thereAreNoParents = true;
+				// if table also does not use the embedded node feature (i.e. parents that are not explicit in MFrag, but used in LPD), then there are no parents.
+				// E.g. we can use OVs in the if-clause. In this case, the LPD behaves like when we have identity nodes (node that returns its argument) as parents.
+				thereAreNoParents = !this.tempTable.hasEmbeddedNodeDeclaration();
+			} else if (this.getSSBNNode().getParents().size() == 0) {
+				thereAreNoParents = !this.tempTable.hasEmbeddedNodeDeclaration();
+			}
+			if (thereAreNoParents || this.getSSBNNode().isUsingDefaultCPT()) {
+				// we assume the default distro is the last block on pseudocode
+				header = this.tempTable.getDefaultClause();
+				// let's just check if this header is really declaring a default distro... Just in case...
+				if (!header.isDefault()) {
+					throw new InconsistentTableSemanticsException(getSSBNNode().toString());
+				}
+			} else {
+				//	if not default, look for the column to verify
+				// the first expression to return true is the one we want
+				header = this.tempTable.getFirstTrueClause(residentNameToCurrentValueMap);
+				// note that default (else) expression should allways return true!
+				
+			}
+			
+			
+			// populate column
+			for (int j = 0; j < possibleValues.size() ; j++) {
+				float value = 0f;
+				
+				// extract the value to set
+				for (TempTableProbabilityCell cell : header.getCellList()) {
+					// we assume the Probabilistic table is in the same order of the list "possibleValues", 
+					// so we look for the entity of possibleValues at a cell
+					if (cell.getPossibleValue().getName().equalsIgnoreCase(possibleValues.get(j).getName())) {
+						value = cell.getProbabilityValue();
+						break;
+					}
+				}
+				// consistency check, allow only positive values
+				if (isToNormalize()
+						&& ((value < 0) 
+//								|| (value > 1)
+								)) {
+					throw new InvalidProbabilityRangeException(getNode().toString() + " = " + value);
+				}
+				this.cpt.setValue(i+j, value );
+			}
+			
+		}	// while i < this.cpt.tableSize()
 		
 		// the code below is commented because calling getCPT twice must be working nicely.
 //		// dispose temporary table, because since it is useless anymore
@@ -1256,7 +1230,6 @@ public class Compiler implements ICompiler {
 	/**
 	 *   It skippes white spaces after evaluation.
 	 *   varsetname ::= ident[["."|","]ident]*
-	 *   @return a string containing "varsetname" (e.g. "st.sr.z")
 	 */
 	protected String varsetname() throws TableFunctionMalformedException {
 		
@@ -3194,7 +3167,7 @@ public class Compiler implements ICompiler {
 		 * @param isAny
 		 * @param isDefault
 		 */
-		public TempTableHeaderCell (List<TempTableHeader> parents , boolean isAny, boolean isDefault, SSBNNode currentSSBNNode) {
+		TempTableHeaderCell (List<TempTableHeader> parents , boolean isAny, boolean isDefault, SSBNNode currentSSBNNode) {
 			this.parents = parents;
 			this.isAny = isAny;
 			this.isDefault = isDefault;
@@ -3308,7 +3281,7 @@ public class Compiler implements ICompiler {
 		/**
 		 * @return the cellList: possible values and its probability
 		 */
-		public List<TempTableProbabilityCell> getCellList() {
+		protected List<TempTableProbabilityCell> getCellList() {
 			return cellList;
 		}
 		/**
@@ -4376,7 +4349,7 @@ public class Compiler implements ICompiler {
 		 * @param evaluationList : see {@link #setEvaluationList(List)}
 		 * 
 		 */
-		public TempTableHeaderParent (ResidentNode parent , Entity value, 
+		TempTableHeaderParent (ResidentNode parent , Entity value, 
 				List<OrdinaryVariable> expectedArgumentOVs,
 				List<EntityAndArguments>evaluationList) {
 			this.setParent(parent);
@@ -4388,14 +4361,14 @@ public class Compiler implements ICompiler {
 		/**
 		 * Constructor with fewer fields are kept here for backward compatibility.
 		 */
-		public TempTableHeaderParent (ResidentNode parent , Entity value, List<EntityAndArguments>evaluationList) {
+		TempTableHeaderParent (ResidentNode parent , Entity value, List<EntityAndArguments>evaluationList) {
 			this(parent, value, null, null);
 		}
 		
 		/**
 		 * Constructor with fewer fields are kept here for backward compatibility.
 		 */
-		public TempTableHeaderParent (ResidentNode parent , Entity value) {
+		TempTableHeaderParent (ResidentNode parent , Entity value) {
 			this(parent, value, null);
 		}
 		
@@ -4403,8 +4376,8 @@ public class Compiler implements ICompiler {
 		 * 
 		 * @return which parent this leaf represents
 		 */
-		public MultiEntityNode getParent() {
-			return (MultiEntityNode)super.getParent();
+		public ResidentNode getParent() {
+			return (ResidentNode)super.getParent();
 		}
 
 		/**
@@ -4521,7 +4494,7 @@ public class Compiler implements ICompiler {
 		 * @param possibleValue
 		 * @param probability
 		 */
-		public TempTableProbabilityCell (Entity possibleValue , IExpressionValue probability) {
+		TempTableProbabilityCell (Entity possibleValue , IExpressionValue probability) {
 			this.possibleValue = possibleValue;
 			this.probability = probability;
 		}
@@ -4531,9 +4504,6 @@ public class Compiler implements ICompiler {
 		public void setPossibleValue(Entity possibleValue) {
 			this.possibleValue = possibleValue;
 		}
-		/**
-		 * @deprecated use {@link #getProbability()} and then {@link IExpressionValue#getValue()} instead.
-		 * */
 		public float getProbabilityValue() throws InvalidProbabilityRangeException {
 			try {
 				return Float.parseFloat(probability.getValue());
@@ -4993,8 +4963,8 @@ public class Compiler implements ICompiler {
 	 * is at value Phaser2Range when its arguments st=T0 and t=T0.
 	 */
 	public class EntityAndArguments {
-		private Entity entity = null;
-		List<OVInstance> arguments = null;
+		public Entity entity = null;
+		public List<OVInstance> arguments = null;
 		/**
 		 * Creates an alternative (compact) way to represent a particular state of
 		 * a SSBNNode, by storing its current value (entity) and its current 
@@ -5010,37 +4980,13 @@ public class Compiler implements ICompiler {
 			this.entity = entity;
 			this.arguments = arguments;
 		}
-		/**
-		 * @return the entity
-		 */
-		public Entity getEntity() {
-			return entity;
-		}
-		/**
-		 * @param entity the entity to set
-		 */
-		public void setEntity(Entity entity) {
-			this.entity = entity;
-		}
-		/**
-		 * @return the arguments
-		 */
-		public List<OVInstance> getArguments() {
-			return arguments;
-		}
-		/**
-		 * @param arguments the arguments to set
-		 */
-		public void setArguments(List<OVInstance> arguments) {
-			this.arguments = arguments;
-		}
 		/* (non-Javadoc)
 		 * @see java.lang.Object#toString()
 		 */
 		public String toString() {
-			
-			return this.getEntity() + " = " +  this.arguments;
+			return "Entity: " + this.entity + ". arguments = " + this.arguments;
 		}
+		
 	}
 
 
@@ -5477,24 +5423,16 @@ public class Compiler implements ICompiler {
 		}
 		
 
+		// extract all parents (regardless of being input or resident nodes)
+		List<MultiEntityNode> allParents = new ArrayList<MultiEntityNode>(getNode().getResidentNodeFatherList());
+		allParents.addAll(getNode().getParentInputNodesList());
+		
 		
 		// handle  parents
-		for (ResidentNode parent : getNode().getResidentNodeFatherList()) {
+		for (MultiEntityNode parent : allParents) {
 			ret.add(parent.getName());
 			// add possible states
 			for (Entity possibleValue : parent.getPossibleValueList()) {
-				ret.add(possibleValue.getName());
-			}
-			// add argument OVs
-			for (OrdinaryVariable ov : parent.getOrdinaryVariablesInArgument()) {
-				ret.add(ov.getName());
-			}
-		}
-		// handle input parents
-		for (InputNode parent : getNode().getParentInputNodesList()) {
-			ret.add(parent.getResidentNodePointer().getResidentNode().getName());
-			// add possible states
-			for (Entity possibleValue : parent.getResidentNodePointer().getResidentNode().getPossibleValueList()) {
 				ret.add(possibleValue.getName());
 			}
 			// add argument OVs
@@ -5569,8 +5507,8 @@ public class Compiler implements ICompiler {
 				// look for input nodes
 				for (InputNode parent : getNode().getParentInputNodesList()) {
 					if (found <= 0) {
-						nodeName = parent.getResidentNodePointer().getResidentNode().getName();
-						stateName = parent.getResidentNodePointer().getResidentNode().getPossibleValueList().get(0).getName();
+						nodeName = parent.getName();
+						stateName = parent.getPossibleValueList().get(0).getName();
 						varSetName = null;
 						for (OrdinaryVariable ov : parent.getOrdinaryVariablesInArgument()) {
 							if (varSetName == null) {
@@ -5580,8 +5518,8 @@ public class Compiler implements ICompiler {
 							}
 						}
 					} else {
-						nodeName2 = parent.getResidentNodePointer().getResidentNode().getName();
-						stateName2 = parent.getResidentNodePointer().getResidentNode().getPossibleValueList().get(0).getName();
+						nodeName2 = parent.getName();
+						stateName2 = parent.getPossibleValueList().get(0).getName();
 					}
 					found++;
 					if (found >= 2) {
@@ -5656,13 +5594,16 @@ public class Compiler implements ICompiler {
 				nodeName + " = " + stateName + " | " + nodeName2 + " = " + stateName2).entrySet().iterator().next());
 		
 		
+		// extract all parents (regardless of being input or resident nodes)
+		List<MultiEntityNode> allParents = new ArrayList<MultiEntityNode>(getNode().getResidentNodeFatherList());
+		allParents.addAll(getNode().getParentInputNodesList());
 		
+		//Parent1 = Parent2
 		
+		// Parent = ov
 		
 		// ParentName = parentState
-		// Parent = ov
-		//Parent1 = Parent2
-		for (ResidentNode parent : getNode().getResidentNodeFatherList()) {
+		for (MultiEntityNode parent : allParents) {
 			// get the 1st state
 			String state = "state";	// if no state is found, simply use this default value
 			List<Entity> possibleValues = parent.getPossibleValueList();
@@ -5672,52 +5613,8 @@ public class Compiler implements ICompiler {
 			ret.add(Collections.singletonMap(
 					parent.getName(),
 					parent.getName() + " = " + state).entrySet().iterator().next());
-			ret.add(Collections.singletonMap(
-					parent.getName(),
-					parent.getName() + " = OV" ).entrySet().iterator().next());
-			
-			try {
-				if (!parent.getName().equals(nodeName)) {
-					ret.add(Collections.singletonMap(
-							parent.getName(),
-							parent.getName() + " = " + nodeName).entrySet().iterator().next());
-				} else {
-					ret.add(Collections.singletonMap(
-							parent.getName(),
-							parent.getName() + " = " + nodeName2).entrySet().iterator().next());
-				}
-			} catch (Exception e) {
-				Debug.println(getClass(), e.getMessage(), e);
-			}
 		}
-		for (InputNode parent : getNode().getParentInputNodesList()) {
-			// get the 1st state
-			String state = "state";	// if no state is found, simply use this default value
-			List<Entity> possibleValues = parent.getResidentNodePointer().getResidentNode().getPossibleValueList();
-			if (possibleValues!= null && !possibleValues.isEmpty()) {
-				state = possibleValues.get(0).getName();
-			}
-			ret.add(Collections.singletonMap(
-					parent.getResidentNodePointer().getResidentNode().getName(),
-					parent.getResidentNodePointer().getResidentNode().getName() + " = " + state).entrySet().iterator().next());
-			ret.add(Collections.singletonMap(
-					parent.getResidentNodePointer().getResidentNode().getName(),
-					parent.getResidentNodePointer().getResidentNode().getName() + " = OV" ).entrySet().iterator().next());
-			
-			try {
-				if (!parent.getResidentNodePointer().getResidentNode().getName().equals(nodeName)) {
-					ret.add(Collections.singletonMap(
-							parent.getResidentNodePointer().getResidentNode().getName(),
-							parent.getResidentNodePointer().getResidentNode().getName() + " = " + nodeName).entrySet().iterator().next());
-				} else {
-					ret.add(Collections.singletonMap(
-							parent.getResidentNodePointer().getResidentNode().getName(),
-							parent.getResidentNodePointer().getResidentNode().getName() + " = " + nodeName2).entrySet().iterator().next());
-				}
-			} catch (Exception e) {
-				Debug.println(getClass(), e.getMessage(), e);
-			}
-		}
+		
 		
 		
 		// state = 100%
@@ -5782,47 +5679,34 @@ public class Compiler implements ICompiler {
 		}
 		
 		// auto-fill by number of 1st state
-		try {
-			for (int i = 0; i < 100; i += 10) {
-				ret.add(Collections.singletonMap( 
-						"" + i,
-						// just call replaceAll 2 times (to substitute $VALUE_STATE0 and then $VALUE_DEFAULT)
-						template.replaceAll(
-								"\\$VALUE_STATE0", "" + i/100f
-								).replaceAll(
-										"\\$VALUE_DEFAULT", "" + (1f-(i/100f))/(numStatesWithoutAbsurd-1f))
-						).entrySet().iterator().next());	// extract entry
-				
-			}
-		} catch (Exception e) {
-			Debug.println(getClass(), e.getMessage(), e);
+		for (int i = 0; i < 100; i += 10) {
+			ret.add(Collections.singletonMap( 
+					"" + i,
+					// just call replaceAll 2 times (to substitute $VALUE_STATE0 and then $VALUE_DEFAULT)
+					template.replaceAll(
+							"\\$VALUE_STATE0", "" + i/100f
+						).replaceAll(
+							"\\$VALUE_DEFAULT", "" + (1f-(i/100f))/(numStatesWithoutAbsurd-1f))
+					).entrySet().iterator().next());	// extract entry
+		
 		}
 		
-		try {
-			// suggestions to show by default (autocomplete for empty string)
-			ret.add(Collections.singletonMap(
-					"",
-					"if any "+varSetName+" have ("+nodeName+"="+stateName+") ["
-							+template.replaceAll(
-									"\\$VALUE_STATE0", "" + 1f/numStatesWithoutAbsurd
-									).replaceAll(
-											"\\$VALUE_DEFAULT", "" + 1f/numStatesWithoutAbsurd)
-											+"]").entrySet().iterator().next());
-		} catch (Exception e) {
-			Debug.println(getClass(), e.getMessage(), e);
-		}
-		try {
-			ret.add(Collections.singletonMap(
-					"",
-					"[" + template.replaceAll(
+		// suggestions to show by default (autocomplete for empty string)
+		ret.add(Collections.singletonMap(
+				"",
+				"if any "+varSetName+" have ("+nodeName+"="+stateName+") ["
+						+template.replaceAll(
 							"\\$VALUE_STATE0", "" + 1f/numStatesWithoutAbsurd
 							).replaceAll(
-									"\\$VALUE_DEFAULT", "" + 1f/numStatesWithoutAbsurd)
-									+"]").entrySet().iterator().next());
-		} catch (Exception e) {
-			Debug.println(getClass(), e.getMessage(), e);
-		}
-		
+							"\\$VALUE_DEFAULT", "" + 1f/numStatesWithoutAbsurd)
+						+"]").entrySet().iterator().next());
+		ret.add(Collections.singletonMap(
+				"",
+				"[" + template.replaceAll(
+						"\\$VALUE_STATE0", "" + 1f/numStatesWithoutAbsurd
+						).replaceAll(
+								"\\$VALUE_DEFAULT", "" + 1f/numStatesWithoutAbsurd)
+				+"]").entrySet().iterator().next());
 		
 		return ret;
 	}
