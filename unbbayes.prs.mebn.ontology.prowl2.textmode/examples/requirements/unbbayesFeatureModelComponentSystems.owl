@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE Ontology [
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY xml "http://www.w3.org/XML/1998/namespace" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+]>
+
+
+<Ontology xmlns="http://www.w3.org/2002/07/owl#"
+     xml:base="http://www.pr-owl.org/resources/SPL/unbbayesFeatureModelComponentSystems.owl"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     ontologyIRI="http://www.pr-owl.org/resources/SPL/unbbayesFeatureModelComponentSystems.owl">
+    <Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
+    <Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="" IRI="http://www.w3.org/2002/07/owl#"/>
+    <Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+    <Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
+    <Import>http://www.pr-owl.org/resources/SPL/unbbayesFeatureModel.owl</Import>
+    <Import>http://www.owl-ontologies.com/requirements/component-systems.owl</Import>
+    <Annotation>
+        <AnnotationProperty abbreviatedIRI="rdfs:comment"/>
+        <Literal datatypeIRI="&xsd;string">This is a bridge (mapping) ontology between the imported ontologies: unbbayesFeatureModel and component-systems.</Literal>
+    </Annotation>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Feature"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#EngineeringComponent"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#FeatureRules"/>
+        <Class abbreviatedIRI="rdf:Property"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#UnBBayesDefaultRelease"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#System"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#edu.gmu.seor.prognos.unbbayesplugin.cps"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.core"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.datamining"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.gui.mebn.ontology.protege.2"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.DneIO"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.NetIO"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.XMLBIFIO"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.xmlbif.version7"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.learning.incrementalLearning"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.metaphor.afin"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.oobn.resources.ja"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.kb.powerloom"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.mebn.ssbn.ssmsbn"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.msbn"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.oobn"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.prs.prm"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.likelihoodweighting.inference"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.montecarlo.sampling"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.simulation.sampling.GibbsSampling"/>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
+    </SubClassOf>
+    <SubClassOf>
+        <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#System"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#Configuration"/>
+    </SubClassOf>
+</Ontology>
+
+
+
+<!-- Generated by the OWL API (version 3.1.0.20069) http://owlapi.sourceforge.net -->
+

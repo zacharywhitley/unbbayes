@@ -1,0 +1,14 @@
+UNBBAYES PR-OWL 2 TEXTMODE PLUGIN - VERSION 1.0.0
+----------------------------
+
+FEATURE LIST		
+Number	Request ID	Summary
+					
+
+BUG LIST		
+Number	Request ID	Summary
+
+
+----------------------------
+This is the initial release of TEXTMODE PR-OWL 2. 
+It needs unbbayes.prs.mebn to run.

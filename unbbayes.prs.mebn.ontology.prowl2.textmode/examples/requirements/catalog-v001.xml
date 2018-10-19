@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?><catalog xmlns="urn:oasis:names:tc:entity:xmlns:xml:catalog" id="XML Catalog File (see http://www.oasis-open.org/committees/entity/spec-2001-08-06.html) - Created By Protege 4" prefer="public">
+<group id="Folder Repository, directory=, recursive=true, Auto-Update=true, version=1" prefer="public" xml:base="">
+<uri id="Automatically generated entry, Timestamp=1449013730230" name="http://www.cic.unb.br/TES/2010/2/shou/unbbayes.owl" uri="unbbayes.owl"/>
+<uri id="Automatically generated entry, Timestamp=1449258190765" name="http://www.owl-ontologies.com/requirements/component-systems.owl" uri="component-systems.owl"/>
+<uri id="Automatically generated entry, Timestamp=1449258190765" name="http://www.owl-ontologies.com/requirements/constraints.owl" uri="constraints.owl"/>
+<uri id="Automatically generated entry, Timestamp=1449258190765" name="http://www.owl-ontologies.com/requirements/requirements.owl" uri="requirements.owl"/>
+<uri id="Automatically generated entry, Timestamp=1449258190765" name="http://www.pr-owl.org/resources/SPL/unbbayesConfigurationTransition.owl" uri="unbbayesConfigurationTransition.owl"/>
+<uri id="Automatically generated entry, Timestamp=1449258190765" name="http://www.pr-owl.org/resources/SPL/unbbayesFeatureModel.owl" uri="unbbayesFeatureModel.owl"/>
+<uri id="Automatically generated entry, Timestamp=1449258190765" name="http://www.pr-owl.org/resources/SPL/unbbayesFeatureModelComponentSystems.owl" uri="unbbayesFeatureModelComponentSystems.owl"/>
+<uri id="Automatically generated entry, Timestamp=1449258190765" name="http://www.pr-owl.org/resources/SPL/UnBBayesFeatureRecommendation.owl" uri="UnBBayesFeatureRecommendation.owl"/>
+</group>
+</catalog>
