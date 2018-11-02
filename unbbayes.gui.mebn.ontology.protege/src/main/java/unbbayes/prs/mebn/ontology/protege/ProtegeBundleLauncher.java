@@ -282,7 +282,10 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
 	 * @return a singleton instance of ProtegeBundleLauncher
 	 */
 	public static IBundleLauncher getInstance() {
-//		return SingletonHolder.INSTANCE;
+		String singletonProp = System.getProperty(ProtegeBundleLauncher.class.getName() + ".singleton");
+		if (singletonProp != null && Boolean.parseBoolean(singletonProp)) {
+			return SingletonHolder.INSTANCE;
+		}
 		return new ProtegeBundleLauncher();
 	}
 	
