@@ -334,18 +334,19 @@ public class JunctionTree implements java.io.Serializable, IJunctionTree {
 		}
 		
 		List<Node> nodesInClique2NotInSeparator = null;
+		PotentialTable dummyTable = null;
 		if (isToUseSingletonListsInAbsorb) {
 			nodesInClique2NotInSeparator = singletonListForAbsorb;
 			nodesInClique2NotInSeparator.clear();
 			nodesInClique2NotInSeparator.addAll(clique2.getNodesList());
 			nodesInClique2NotInSeparator.removeAll(sep.getNodes());
+			dummyTable = (PotentialTable) clique2.getProbabilityFunction().getTemporaryClone();
 		} else {
 			nodesInClique2NotInSeparator = new ArrayList<Node>(clique2.getNodesList());
 			nodesInClique2NotInSeparator.removeAll(sep.getNodes());
+			dummyTable = (PotentialTable) clique2.getProbabilityFunction().clone();
 		}
 
-//		PotentialTable dummyTable = (PotentialTable) clique2.getProbabilityFunction().clone();
-		PotentialTable dummyTable = (PotentialTable) clique2.getProbabilityFunction().getTemporaryClone();
 		
 		for (Node nodeToRemove : nodesInClique2NotInSeparator) {
 			dummyTable.removeVariable(nodeToRemove);
