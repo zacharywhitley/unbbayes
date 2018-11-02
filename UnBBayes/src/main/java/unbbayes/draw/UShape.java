@@ -779,7 +779,7 @@ public class UShape extends JComponent implements ActionListener,
 			shape6.setVisible(true);
 		if (shape7 != null)
 			shape7.setVisible(true);
-		if (shape7 != null)
+		if (shape8 != null)
 			shape8.setVisible(true);
 	}
 
@@ -798,7 +798,7 @@ public class UShape extends JComponent implements ActionListener,
 			shape6.setVisible(false);
 		if (shape7 != null)
 			shape7.setVisible(false);
-		if (shape7 != null)
+		if (shape8 != null)
 			shape8.setVisible(false);
 	}
 
@@ -817,7 +817,7 @@ public class UShape extends JComponent implements ActionListener,
 			this.remove(shape6);
 		if (shape7 != null)
 			this.remove(shape7);
-		if (shape7 != null)
+		if (shape8 != null)
 			this.remove(shape8);
 	}
 
