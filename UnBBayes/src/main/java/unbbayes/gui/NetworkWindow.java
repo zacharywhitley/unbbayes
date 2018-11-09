@@ -188,27 +188,12 @@ public class NetworkWindow extends UnBBayesModule {
 		graphViewport.setView(graphPane);
 		graphViewport.setSize(800, 600);
 
-		jspGraph.getHorizontalScrollBar().addAdjustmentListener(
-				new AdjustmentListener() {
-					public void adjustmentValueChanged(AdjustmentEvent e) {
-						graphPane.update();
-					}
-				});
-
-		jspGraph.getVerticalScrollBar().addAdjustmentListener(
-				new AdjustmentListener() {
-					public void adjustmentValueChanged(AdjustmentEvent e) {
-						graphPane.update();
-					}
-				});
 
 		// setar defaults para jspGraph
 		jspGraph.setHorizontalScrollBar(jspGraph.createHorizontalScrollBar());
 		jspGraph.setVerticalScrollBar(jspGraph.createVerticalScrollBar());
-		jspGraph
-				.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		jspGraph
-				.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		jspGraph.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+		jspGraph.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 
 		if (net instanceof SingleEntityNetwork) {
 			mode = NetworkWindow.PN_MODE;
@@ -232,6 +217,22 @@ public class NetworkWindow extends UnBBayesModule {
 
 		setVisible(true);
 		graphPane.update();
+		
+		// adjustment listeners must be added *AFTER* calling graphPane.update(). 
+		// in order to avoid race condition caused by recursive/async calls of graphPane.update() by the AWT thread
+		jspGraph.getHorizontalScrollBar().addAdjustmentListener(
+				new AdjustmentListener() {
+					public void adjustmentValueChanged(AdjustmentEvent e) {
+						graphPane.update();
+					}
+				});
+
+		jspGraph.getVerticalScrollBar().addAdjustmentListener(
+				new AdjustmentListener() {
+					public void adjustmentValueChanged(AdjustmentEvent e) {
+						graphPane.update();
+					}
+				});
 	}
 
 	public void updateTitle(){
