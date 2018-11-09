@@ -620,8 +620,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	}
 
 	public void setShapeStateAll(UShape parent, String s, Object o) {
-		int n = parent.getComponentCount();
-		for (int i = 0; i < n; i++) {
+		for (int i = 0; i < parent.getComponentCount(); i++) {
 			UShape shape = (UShape) parent.getComponent(i);
 			shape.setState(s, o);
 		}
