@@ -748,11 +748,15 @@ public class UShape extends JComponent implements ActionListener,
 	}
 
 	public void moveResizeBtn() {
-		if (shape1 == null)
-			createResizeBtn();
-
-		if (shape1.isVisible() == false)
+		synchronized (this) { // ensure all these vertices are instantiated before running next lines
+			if (shape1 == null) {	
+				createResizeBtn();
+			}
+		}	// no need to sync the other lines
+			
+		if (shape1.isVisible() == false) {
 			showResizeBtn();
+		}
 
 		shape1.move(0, 0);
 		shape2.move((getWidth() - GAP) / 2, 0);
