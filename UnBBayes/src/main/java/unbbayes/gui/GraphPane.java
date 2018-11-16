@@ -821,9 +821,8 @@ public class GraphPane extends UCanvas {
 	}
 
 	public void resizeAllToFitText() {
-		int n = this.getComponentCount();
 
-		for (int i = 0; i < n; i++) {
+		for (int i = 0; i < this.getComponentCount(); i++) {
 			UShape shape = (UShape) this.getComponent(i);
 			shape.resizeToFitText();
 			shape.repaint();

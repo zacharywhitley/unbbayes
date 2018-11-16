@@ -55,6 +55,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	 */
 	private static final long serialVersionUID = 3124079297866124183L;
 
+	/** @deprecated use {@link #add(java.awt.Component, int)} with -1 in 2nd parameter rather than explicitly specifying layer with thread unsafe attribute.*/
 	protected int layerID = 0;
 
 	UShape rootShape;
@@ -164,6 +165,9 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 		for (int i = 0; i < size; i++) {
 			UShape shapeResult = null;
 			UShape shape = (UShape) this.getComponent(i);
+			if (shape == null) {
+				continue;
+			}
 
 			shapeResult = getNodeUShape(shape, n);
 			if (shapeResult != null)
@@ -796,7 +800,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	public UShape setRect(int x, int y, int width, int height) {
 		UShapeBox shape = new UShapeBox(this, x, y, width, height);
 
-		add(shape, layerID++);
+		addShape(shape);
 
 		return shape;
 	}
@@ -804,7 +808,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	public UShape setEllipse(int x, int y, int width, int height) {
 		UShapeEllipse shape = new UShapeEllipse(this, x, y, width, height);
 
-		add(shape, layerID++);
+		addShape(shape);
 
 		return shape;
 	}
@@ -812,7 +816,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	public UShape setFrame(int x, int y, int width, int height) {
 		UShapeFrame shape = new UShapeFrame(this, null, x, y, width, height);
 
-		add(shape, layerID++);
+		addShape(shape);
 
 		return shape;
 	}
@@ -820,7 +824,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	public UShape setRoundRect(int x, int y, int width, int height) {
 		UShapeRoundRect shape = new UShapeRoundRect(this, x, y, width, height);
 
-		add(shape, layerID++);
+		addShape(shape);
 
 		return shape;
 	}
@@ -828,7 +832,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	public UShape setTrapezoid(int x, int y, int width, int height) {
 		UShapeTrapezoid shape = new UShapeTrapezoid(this, x, y, width, height);
 
-		add(shape, layerID++);
+		addShape(shape);
 
 		return shape;
 	}
@@ -836,7 +840,7 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	public UShape setPentagon(int x, int y, int width, int height) {
 		UShapePentagon shape = new UShapePentagon(this, x, y, width, height);
 
-		add(shape, layerID++);
+		addShape(shape);
 
 		return shape;
 	}
@@ -844,13 +848,14 @@ public class UCanvas extends JLayeredPane implements MouseMotionListener,
 	public UShape setDiamond(int x, int y, int width, int height) {
 		UShapeDiamond shape = new UShapeDiamond(this, x, y, width, height);
 
-		add(shape, layerID++);
+		addShape(shape);
 
 		return shape;
 	}
 
 	public void addShape(UShape shape) {
-		add(shape, layerID++);
+//		add(shape, layerID++);
+		add(shape, -1);
 	}
 
 	public void delShape(UShape shape) {
