@@ -218,6 +218,7 @@ public class NetworkWindow extends UnBBayesModule {
 		setVisible(true);
 		
 		// do not call update from main thread if we are adding listeners that calls update
+		// technically, we don't need to call update here, because graphpane is empty anyway...
 //		graphPane.update();
 		
 		// adjustment listeners must be added *AFTER* calling graphPane.update(). 
