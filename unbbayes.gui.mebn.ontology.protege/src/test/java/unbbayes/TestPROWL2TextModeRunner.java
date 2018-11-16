@@ -7,6 +7,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 
+import org.osgi.framework.Bundle;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import junit.framework.Test;
@@ -28,6 +29,7 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.ontology.protege.PROWL2KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.ontology.protege.PROWL2KnowledgeBaseBuilder;
+import unbbayes.prs.mebn.ontology.protege.ProtegeBundleLauncher;
 import unbbayes.util.Debug;
 
 /**
@@ -63,6 +65,8 @@ public class TestPROWL2TextModeRunner extends TestCase {
 	 * @throws Exception 
 	 */
 	public final void testSaveFindingsSeparateOWLFile() throws Exception {
+		
+		System.setProperty("unbbayes.prs.mebn.ontology.protege.ProtegeBundleLauncher.singleton", "true");
 		
 		Debug.setDebug(true);
 		Debug.println("Enabled debug mode");
@@ -177,6 +181,14 @@ public class TestPROWL2TextModeRunner extends TestCase {
 			((Protege41CompatiblePROWL2IO) mebnIO).getProtegeBundleLauncher().getProtegeBundle().stop(0);
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
+		for (Bundle bundle : ((ProtegeBundleLauncher)((Protege41CompatiblePROWL2IO) mebnIO).getProtegeBundleLauncher()).getLoadedBundles()) {
+			try {
+				bundle.stop();
+				bundle.uninstall();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		
 		// dispose all GUI frames
