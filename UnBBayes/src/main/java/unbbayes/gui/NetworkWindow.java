@@ -216,7 +216,9 @@ public class NetworkWindow extends UnBBayesModule {
 		}
 
 		setVisible(true);
-		graphPane.update();
+		
+		// do not call update from main thread if we are adding listeners that calls update
+//		graphPane.update();
 		
 		// adjustment listeners must be added *AFTER* calling graphPane.update(). 
 		// in order to avoid race condition caused by recursive/async calls of graphPane.update() by the AWT thread
