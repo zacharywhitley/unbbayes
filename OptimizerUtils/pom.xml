@@ -105,12 +105,12 @@
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes</artifactId>
-				<version>4.21.18</version>
+				<version>4.22.19-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>br.unb.cic</groupId>
 				<artifactId>unbbayes.prs.bn.inference.extension.NoisyMax</artifactId>
-				<version>0.0.1</version>
+				<version>0.1.1</version>
 			</dependency>
 			
 			<!-- Libraries for reading csv files -->
