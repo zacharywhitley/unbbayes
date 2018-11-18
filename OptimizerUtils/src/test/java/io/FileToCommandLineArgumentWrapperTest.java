@@ -93,14 +93,34 @@ public class FileToCommandLineArgumentWrapperTest {
 		assertEquals("0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026", properties.get("partialInputDist"));
 		assertTrue(properties.containsKey("numeric"));
 		assertNull(properties.get("numeric"));
+		assertTrue(properties.containsKey("d"));
 		assertNull(properties.get("d"));
 		
 		String args = wrapper.buildArgs();
-		
-		
 		assertNotNull(args);
-		assertTrue(args.contains("-d"));
+		System.out.println(args);
+		
+		assertTrue(args.contains("-i"));
+		assertTrue(args.contains("-o"));
+		assertTrue(args.contains("-usr"));
+		assertTrue(args.contains("-total"));
+		assertTrue(args.contains("-org"));
+		assertTrue(args.contains("-prefix"));
+		assertTrue(args.contains("-suffix"));
+		assertTrue(args.contains("-varSep"));
+		assertTrue(args.contains("-target"));
+		assertTrue(args.contains("-targetSep"));
+		assertTrue(args.contains("-discrete"));
+		assertTrue(args.contains("-continuous"));
+		assertTrue(args.contains("-inputTimeSlices"));
+		assertTrue(args.contains("-partialInputTimeSlices"));
+		assertTrue(args.contains("-allTimeSlices"));
+		assertTrue(args.contains("-virtCountCoefs"));
+		assertTrue(args.contains("-initCount"));
+		assertTrue(args.contains("-inputDist"));
+		assertTrue(args.contains("-partialInputDist"));
 		assertTrue(args.contains("-numeric"));
+		assertTrue(args.contains("-d"));
 		
 	}
 
