@@ -1,0 +1,21 @@
+i : "inputRCP15" 
+o : "RCP15_data"
+usr : 1000
+total : 3388
+org : 5
+prefix : ""
+suffix : ".csv"
+varSep : ""
+target : "Other,LineManagement"
+targetSep : "_" 
+discrete : ""
+continuous : "det001a,det001b,det001c,det002a,det002b,det002c,det003a,det003b,det003c,det004a,det004b,det004c,det005a,det005b,det005c,det006a,det006b,det006c,det007a,det007b,det007c,det008a,det008b,det008c,det009a,det009b,det009c,det010a,det010b,det010c,det011a,det011b,det011c,det012a,det012b,det012c,det013a,det013b,det013c,det014a,det015a,det016a,det016b,det016c,det016d,det016e,det017a,det017b,det017c,det017d,det018a,det018b,det018c,det018d,det018e,det019a,det019b,det019c,det019d,det020a,det020b,det020c,det020d,det020e,det021a,det021b,det021c,det021d,det022a,det022b,det022c,det022d,det022e,det023a,det023b,det023c,det023d,det024a,det025a,det026a,det027a,det028a,det029a,det030a,det031a,det032a,det033a,det034a,det035a,det036a,det037a,det038a,det039a,det040a,det041a,det042a,det043a,det044a,det045a,det046a,det046b,det046c,det046d,det047a,det047b,det047c,det047d,det048a,det048b,det048c,det048d,det049a,det049b,det049c,det049d,det050a,det050b,det050c,det050d,det051a,det051b,det051c,det051d,det052a,det052b,det052c,det052d,det053a,det053b,det053c,det053d,det054a,det055a,det056a,det057a,det058a,det059a,det060a,det061a,det062a,det063a,det064a"
+inputTimeSlices : "Week48,Week49,Week50,Week51"
+partialInputTimeSlices : "Week9,Week10,Week11,Week12,Week13,Week14,Week15,Week16,Week17,Week18,Week19,Week20,Week21,Week22,Week23,Week24,Week25,Week26,Week27,Week28,Week29,Week30,Week31,Week32,Week33,Week34,Week35,Week36,Week37,Week38,Week39,Week40,Week41,Week42,Week43,Week44,Week45,Week46,Week47"
+allTimeSlices : "Week9,Week10,Week11,Week12"
+virtCountCoefs : "1,1,1,1"
+initCount : "1"
+inputDist : ".25,.25,.25,.25"
+partialInputDist : "0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026,0.025641026"
+numeric
+d

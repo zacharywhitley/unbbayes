@@ -119,16 +119,14 @@ public class ModelCenterWrapperIO implements IModelCenterWrapperIO {
 			if (st.ttype == st.TT_NUMBER) {
 				value = String.valueOf(st.nval);
 			}
-			if (value == null) {
-				// go to next line
-				while (st.nextToken() != st.TT_EOL){};
-				continue;
+			if (st.ttype == st.TT_EOL) {
+				value = null;
 			}
 			
 			// check if a property with same name exists already.
 			String currentProperty=getProperties().get(key);
 
-            if (currentProperty==null || currentProperty.isEmpty()) {
+            if (value == null || currentProperty==null || currentProperty.isEmpty()) {
             	getProperties().put(key, value);
             } else {
             	// if there is a property with same name already, append (separated by comma)

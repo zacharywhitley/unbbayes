@@ -1,0 +1,14 @@
+i : "inputRCP10" 
+o : "./" 
+usr : 3000 
+org : 100 
+prefix : "RCP10" 
+suffix : ".csv" 
+detectorSep : "" 
+target : "False,True" 
+targetSep : "" 
+discrete : "" 
+continuous : "1,2a,2b,2c,2d,3,4a,4b,4c,4d,5,6a,6b,6c,6d,7,8a,8b,8c,8d,9,10,11a,11b" 
+inputMonths : "NOV,DEC,JAN,MAR,APR,MAY,JUN" 
+allMonths : "NOV,DEC,JAN,MAR,APR,MAY,JUN,JUL,AUG,SEP" 
+virtCounts : "-1,-1,-1,-1,-1,-1,-1,1500,750,375"

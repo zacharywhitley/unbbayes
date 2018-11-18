@@ -72,7 +72,7 @@ public class ContingencyMatrixUserActivitySimulator {
 	
 	private boolean isToSampleTargetExact = true;
 	
-	private boolean isImmutableTarget = true;
+	private boolean isImmutableTarget = false;
 	
 	private double[] inputTimeSliceDistribution = {.5,.5};
 	private double[] partialInputTimeSliceDistribution = {.5,.5};
@@ -91,9 +91,9 @@ public class ContingencyMatrixUserActivitySimulator {
 	private List<String> inputTimeSliceLabel = new ArrayList<String>();
 	private List<String> partialInputTimeSliceLabel = new ArrayList<String>();
 	
-	private List<String> outputTimeSliceLabels = new ArrayList<String>();
+	private List<String> outputTimeSliceLabels = Collections.singletonList("");
 	
-	private List<Float> timeSliceVirtualCountCoefficients = new ArrayList<Float>();
+	private List<Float> timeSliceVirtualCountCoefficients = Collections.singletonList(1f);
 
 	private Map<String, INode> nameToVariableCache;
 	private Map<String, PotentialTable> tableCache;
@@ -239,7 +239,9 @@ public class ContingencyMatrixUserActivitySimulator {
 					String fileName = getFileNamePrefix() + dataTimeSliceKnown + getTimeSliceVarSeparator() + discreteVar1 + getVsLabel() + getContinuousVarsLabels().get(getRandom().nextInt(getContinuousVarsLabels().size())) 
 							+ getTargetLabelSeparator() + targetStateLabel + getFileNameSuffix(); 
 					if (new File(getInputFolder(),fileName).exists()) {
-						targetCounts.add(readTotalCountContinuous(fileName));
+						double count = readTotalCountContinuous(fileName);
+						targetCounts.add(count);
+						
 					} else {
 						// there is no data timeSlice specified. Try without dataTimeSlice
 //						fileName = getFileNamePrefix() + discreteVar1 + getVsLabel() + getContinuousVarsLabels().get(0) 
@@ -253,6 +255,12 @@ public class ContingencyMatrixUserActivitySimulator {
 				}
 				
 			}
+			
+//			double targetCountTotal = getSum((List)targetCounts).doubleValue();
+//			if (targetCountTotal < getNumUsers()) {
+//				Debug.println(getClass(), "Unexpected counts. Num users to simulate = " + getNumUsers() + "; total in data = " + targetCountTotal);
+//				// adjust target counts accordingly
+//			}
 			
 			if (!hasNoDataTimeSliceSpecification.isEmpty()) {
 				// calculate how many users there are in data with time slices (the data without time slices are 0, so it's ignored in sum)
@@ -1696,6 +1704,7 @@ public class ContingencyMatrixUserActivitySimulator {
 		options.addOption("immutableTarget","immutable-user-target", false, "If set, then target values of each user will not change over timeslices.");
 		options.addOption("userData","reuse-user-data-csv", true, "Specifies a CSV file in the same format of output csv to force target values of user ids to be the same.");
 		options.addOption("numeric","target-numeric-variable", false, "If true, target labels will be considered as numeric variables. Output will print numbers (associated with index of state at \"target\" param) instead of labels of target variables.");
+		options.addOption("headerKeyword","header-column-keyword", true, "String in CSV file to be used as 1st word in the header.");
 		options.addOption("h","help", false, "Help.");
 		
 		CommandLine cmd = null;
@@ -1800,6 +1809,9 @@ public class ContingencyMatrixUserActivitySimulator {
 		}
 		if (cmd.hasOption("immutableTarget")) {
 			sim.setImmutableTarget(true);
+		}
+		if (cmd.hasOption("headerKeyword")) {
+			sim.setHeaderColumnKeyword(cmd.getOptionValue("headerKeyword"));
 		}
 		
 		sim.setNumericTarget(cmd.hasOption("numeric"));

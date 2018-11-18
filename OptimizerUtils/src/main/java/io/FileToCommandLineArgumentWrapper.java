@@ -39,22 +39,19 @@ public class FileToCommandLineArgumentWrapper extends ModelCenterWrapperIO {
 	 * @throws InterruptedException
 	 * @see #readWrapperFile(File)
 	 */
-	public void runProgram() throws IOException, InterruptedException {
+	public String runProgram() throws IOException, InterruptedException {
 		String program = getProgramName();
 		if ( program == null || program.isEmpty()) {
 			throw new IOException("Invalid program: " + program);
 		}
 		
 		// build command-line arguments
-		Map<String, String> properties = getProperties();
-		if (properties != null) {
-			for (Entry<String, String> argValue : properties.entrySet()) {	
-				// key is argument, value is its value. This will append something like: -i "someFile.txt"
-				String arg = " -" + argValue.getKey() + " \"" + argValue.getValue() + "\"";
-				Debug.println(getClass(), "Handling argument: " + arg);
-				program += arg;
-			}
+		String args = buildArgs();
+		if (!args.startsWith(" ")) {
+			// make sure there's whitespace between program and command line arg
+			args = " " + args;
 		}
+		program += args;
 		
 		Debug.println(getClass(), "Executing: " + program);
 		Runtime rt = Runtime.getRuntime();
@@ -76,6 +73,8 @@ public class FileToCommandLineArgumentWrapper extends ModelCenterWrapperIO {
         if (exitVal != 0) {
         	throw new IOException("Exited program with exit code " + exitVal);
         }
+        
+        return program;
 	
 	}
 
@@ -92,6 +91,7 @@ public class FileToCommandLineArgumentWrapper extends ModelCenterWrapperIO {
 	public void setInputFileName(String inputFileName) {
 		this.inputFileName = inputFileName;
 	}
+
 
 	/**
 	 * @param args
@@ -141,6 +141,26 @@ public class FileToCommandLineArgumentWrapper extends ModelCenterWrapperIO {
 		
 		// execute program with command line arguments
 		io.runProgram();
+	}
+
+	/**
+	 * @return command line arguments for {@link #runProgram()}
+	 */
+	public String buildArgs() {
+		String ret = "";
+		Map<String, String> properties = getProperties();
+		if (properties != null) {
+			for (Entry<String, String> argValue : properties.entrySet()) {	
+				// key is argument, value is its value. This will append something like: -i "someFile.txt"
+				String arg = " -" + argValue.getKey();
+				if (argValue.getValue() != null) {
+					arg += " \"" + argValue.getValue() + "\"";
+				}
+				Debug.println(getClass(), "Handling argument: " + arg);
+				ret += arg;
+			}
+		}
+		return ret;
 	}
 
 }
