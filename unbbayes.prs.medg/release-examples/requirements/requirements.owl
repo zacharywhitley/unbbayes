@@ -1,0 +1,440 @@
+<?xml version="1.0"?>
+
+
+<!DOCTYPE rdf:RDF [
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY swrl "http://www.w3.org/2003/11/swrl#" >
+    <!ENTITY swrlb "http://www.w3.org/2003/11/swrlb#" >
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY protege "http://protege.stanford.edu/plugins/owl/protege#" >
+    <!ENTITY xsp "http://www.owl-ontologies.com/2005/08/07/xsp.owl#" >
+    <!ENTITY constraints "http://www.owl-ontologies.com/requirements/constraints.owl#" >
+    <!ENTITY component-systems "http://www.owl-ontologies.com/requirements/component-systems.owl#" >
+]>
+
+
+<rdf:RDF xmlns="http://www.owl-ontologies.com/requirements/requirements.owl#"
+     xml:base="http://www.owl-ontologies.com/requirements/requirements.owl"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:swrl="http://www.w3.org/2003/11/swrl#"
+     xmlns:protege="http://protege.stanford.edu/plugins/owl/protege#"
+     xmlns:xsp="http://www.owl-ontologies.com/2005/08/07/xsp.owl#"
+     xmlns:constraints="http://www.owl-ontologies.com/requirements/constraints.owl#"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:swrlb="http://www.w3.org/2003/11/swrlb#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:component-systems="http://www.owl-ontologies.com/requirements/component-systems.owl#">
+    <owl:Ontology rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl">
+        <rdfs:comment rdf:datatype="&xsd;string">This is an OWL ontology translated from Tania Tudorache&#39;s engineering ontology (initially written as frame ontology). It is described in Chapter 4 of her PhD dissertation: Employing Ontologies for an Improved Development Process in Collaborative Engineering (2006).</rdfs:comment>
+        <rdfs:seeAlso rdf:datatype="&xsd;anyURI">http://protegewiki.stanford.edu/wiki/Engineering_ontologies</rdfs:seeAlso>
+        <owl:imports rdf:resource="http://www.owl-ontologies.com/requirements/component-systems.owl"/>
+        <owl:imports rdf:resource="http://www.owl-ontologies.com/requirements/constraints.owl"/>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    <owl:AnnotationProperty rdf:about="&rdfs;seeAlso"/>
+    <owl:AnnotationProperty rdf:about="&rdfs;label"/>
+    <owl:AnnotationProperty rdf:about="&rdfs;comment"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#fulfilled_by -->
+
+    <owl:ObjectProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#fulfilled_by">
+        <rdfs:label rdf:datatype="&xsd;string">fulfilled_by</rdfs:label>
+        <rdfs:range rdf:resource="&component-systems;EngineeringComponent"/>
+        <owl:inverseOf rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#fulfills"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#fulfills -->
+
+    <owl:ObjectProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#fulfills">
+        <rdfs:label rdf:datatype="&xsd;string">fulfills</rdfs:label>
+        <rdfs:range rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#hasConstraint -->
+
+    <owl:ObjectProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#hasConstraint">
+        <rdfs:label rdf:datatype="&xsd;string">hasConstraint</rdfs:label>
+        <rdfs:range rdf:resource="&constraints;Constraint"/>
+        <owl:inverseOf rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#used_in_requirement"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#hasPart -->
+
+    <owl:ObjectProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#hasPart">
+        <rdfs:label rdf:datatype="&xsd;string">hasPart</rdfs:label>
+        <rdfs:comment rdf:datatype="&xsd;string">hasPart is transitive</rdfs:comment>
+        <rdfs:range rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#TestCase"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#isPartOf -->
+
+    <owl:ObjectProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#isPartOf">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:label rdf:datatype="&xsd;string">isPartOf</rdfs:label>
+        <rdfs:range rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#TestCase"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#is_derived_from -->
+
+    <owl:ObjectProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#is_derived_from">
+        <rdfs:label rdf:datatype="&xsd;string">is_derived_from</rdfs:label>
+        <rdfs:range rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#is_derived_into -->
+
+    <owl:ObjectProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#is_derived_into">
+        <rdfs:label rdf:datatype="&xsd;string">is_derived_into</rdfs:label>
+        <rdfs:range rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+        <owl:inverseOf rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#is_derived_from"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#requirement -->
+
+    <owl:ObjectProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#requirement">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:label rdf:datatype="&xsd;string">requirement</rdfs:label>
+        <rdfs:range rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#RequirementTestRelation"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#testCase -->
+
+    <owl:ObjectProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#testCase">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:label rdf:datatype="&xsd;string">testCase</rdfs:label>
+        <rdfs:range rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#TestCase"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#RequirementTestRelation"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#used_in_requirement -->
+
+    <owl:ObjectProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#used_in_requirement">
+        <rdfs:label rdf:datatype="&xsd;string">used_in_requirement</rdfs:label>
+        <rdfs:domain rdf:resource="&constraints;Constraint"/>
+        <rdfs:range rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#verified_by -->
+
+    <owl:ObjectProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#verified_by">
+        <rdfs:label rdf:datatype="&xsd;string">verified_by</rdfs:label>
+        <rdfs:range rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#RequirementTestRelation"/>
+        <owl:inverseOf rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#requirement"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#verifies -->
+
+    <owl:ObjectProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#verifies">
+        <rdfs:label rdf:datatype="&xsd;string">verifies</rdfs:label>
+        <rdfs:range rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#RequirementTestRelation"/>
+        <owl:inverseOf rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#testCase"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#TestCase"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#optional -->
+
+    <owl:DatatypeProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#optional">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:label rdf:datatype="&xsd;string">optional</rdfs:label>
+        <rdfs:range rdf:resource="&xsd;boolean"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#risk_kind -->
+
+    <owl:DatatypeProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#risk_kind">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:label rdf:datatype="&xsd;string">risk_kind</rdfs:label>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#tester -->
+
+    <owl:DatatypeProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#tester">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:label rdf:datatype="&xsd;string">tester</rdfs:label>
+        <rdfs:range rdf:resource="&xsd;string"/>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#RequirementTestRelation"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#verdict -->
+
+    <owl:DatatypeProperty rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#verdict">
+        <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+        <rdfs:label rdf:datatype="&xsd;string">verdict</rdfs:label>
+        <rdfs:domain>
+            <owl:Class>
+                <owl:unionOf rdf:parseType="Collection">
+                    <rdf:Description rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#RequirementTestRelation"/>
+                    <rdf:Description rdf:about="&owl;Thing"/>
+                </owl:unionOf>
+            </owl:Class>
+        </rdfs:domain>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/component-systems.owl#CompositeComponent -->
+
+    <owl:Class rdf:about="&component-systems;CompositeComponent"/>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/component-systems.owl#EngineeringComponent -->
+
+    <owl:Class rdf:about="&component-systems;EngineeringComponent"/>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/constraints.owl#Constraint -->
+
+    <owl:Class rdf:about="&constraints;Constraint"/>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#DetailedRequirement -->
+
+    <owl:Class rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#DetailedRequirement">
+        <rdfs:label rdf:datatype="&xsd;string">DetailedRequirement</rdfs:label>
+        <rdfs:subClassOf rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#InitialRequirement -->
+
+    <owl:Class rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#InitialRequirement">
+        <rdfs:label rdf:datatype="&xsd;string">InitialRequirement</rdfs:label>
+        <rdfs:subClassOf rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#Requirement -->
+
+    <owl:Class rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#Requirement">
+        <rdfs:label rdf:datatype="&xsd;string">Requirement</rdfs:label>
+        <rdfs:subClassOf rdf:resource="&component-systems;CompositeComponent"/>
+        <rdfs:subClassOf rdf:resource="&owl;Thing"/>
+    </owl:Class>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#RequirementTestRelation -->
+
+    <owl:Class rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#RequirementTestRelation">
+        <rdfs:label rdf:datatype="&xsd;string">RequirementTestRelation</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.owl-ontologies.com/requirements/requirements.owl#TestCase -->
+
+    <owl:Class rdf:about="http://www.owl-ontologies.com/requirements/requirements.owl#TestCase">
+        <rdfs:label rdf:datatype="&xsd;string">TestCase</rdfs:label>
+        <rdfs:subClassOf rdf:resource="&component-systems;CompositeComponent"/>
+        <rdfs:subClassOf rdf:resource="&owl;Thing"/>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#isPartOf"/>
+                <owl:allValuesFrom rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#TestCase"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#hasPart"/>
+                <owl:allValuesFrom rdf:resource="http://www.owl-ontologies.com/requirements/requirements.owl#TestCase"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+
+
+    <!-- http://www.w3.org/2002/07/owl#Thing -->
+
+    <owl:Class rdf:about="&owl;Thing"/>
+</rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 3.1.0.20069) http://owlapi.sourceforge.net -->
+

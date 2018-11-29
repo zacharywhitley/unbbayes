@@ -1,0 +1,111 @@
+% UBF file header
+Version=0.04
+PrOwl="fisherMEBN.owl"
+
+% UBF MTheory declaration
+MTheory=MEBN
+NextMFrag=3
+NextResident=7
+NextInput=3
+NextContext=3
+NextEntity=1
+
+% UBF MFrags and Nodes declaration
+
+% MFrag
+MFrag=FisherMFrag
+NextOrdinaryVar=4
+
+% Resident nodes
+
+
+Node=ActualFishVolume
+Type=DomainResidentNode
+Position=114.0,200.0
+Size=184,60
+Color=-66914
+PossibleValuesOrder=Low,Medium,High,absurd
+
+Node=ObservedFishVolume
+Type=DomainResidentNode
+Position=102.0,270.0
+Size=207,60
+Color=-66914
+PossibleValuesOrder=Low,Medium,High,absurd
+
+% Input nodes
+
+
+Node=IX1
+Type=GenerativeInputNode
+Position=10.0,130.0
+Size=208,60
+Color=-2302756
+
+% Context nodes
+
+
+Node=CX1
+Type=ContextNode
+Position=85.0,65.0
+Size=163,60
+Color=-5178237
+
+Node=CX2
+Type=ContextNode
+Position=258.0,66.0
+Size=172,60
+Color=-5178237
+
+% Ordinary Variables
+
+
+Node=tPrev
+Type=OrdinalVar
+Position=29.0,10.0
+Size=158,60
+Color=-5178237
+
+Node=t
+Type=OrdinalVar
+Position=204.0,12.0
+Size=134,60
+Color=-5178237
+
+Node=sea
+Type=OrdinalVar
+Position=350.0,14.0
+Size=121,60
+Color=-5178237
+
+% MFrag
+MFrag=ReferenceMFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=Previous
+Type=DomainResidentNode
+Position=127.0,167.0
+Size=109,60
+Color=-66914
+PossibleValuesOrder=TimeStep
+
+Node=IsFirstTimeStep
+Type=DomainResidentNode
+Position=99.0,256.0
+Size=148,60
+Color=-66914
+PossibleValuesOrder=true,false,absurd
+
+% Ordinary Variables
+
+
+Node=t
+Type=OrdinalVar
+Position=107.0,82.0
+Size=134,60
+Color=-5178237
+
+% Object Entity Instances
