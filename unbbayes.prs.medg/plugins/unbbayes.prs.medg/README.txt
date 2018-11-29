@@ -32,7 +32,7 @@ Some plugins use other plugins. In such case, you must install all dependencies 
 This plugin depends on the following plugins:
 
 unbbayes.prs.mebn
-edu.gmu.seor.prognos.unbbayesplugin.cps
+unbbayes.gui.mebn.ontology.protege
 	
 AVALILABILITY
 ------------------------------
