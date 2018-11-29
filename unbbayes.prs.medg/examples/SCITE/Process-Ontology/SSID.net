@@ -1,0 +1,1573 @@
+net
+{
+     node_size = (0 0);
+     name = "SSID";
+     tree = "(HybridRankCorrelationCopulaLikelihood(testRCPWithDetectors,MAPopSyn),hasSuggestedFeature(testRCPWithDetectors,MAPopSyn),isDiscreteDetector(detectorSample),hasScoreEntity(svm_answer),hasSuggestedFeature(RCP,svm_answer),hasSuggestedFeature(testRCPWithDetectors,svm_answer),hasScoreEntity(Main),hasSuggestedFeature(RCP,Main),hasSuggestedFeature(testRCPWithDetectors,Main),hasScoreEntity(matrixToCSV),hasSuggestedFeature(RCP,matrixToCSV),hasSuggestedFeature(testRCPWithDetectors,matrixToCSV),hasScoreEntity(hmm_answer),hasSuggestedFeature(RCP,hmm_answer),hasSuggestedFeature(testRCPWithDetectors,hmm_answer),hasScoreEntity(w1008),hasSuggestedFeature(RCP,w1008),hasSuggestedFeature(testRCPWithDetectors,w1008),hasScoreEntity(MAPopSyn),hasSuggestedFeature(RCP,MAPopSyn),hasScoreEntity(dt_answer),hasSuggestedFeature(RCP,dt_answer),hasSuggestedFeature(testRCPWithDetectors,dt_answer),hasScoreEntity(hmm.py),hasSuggestedFeature(RCP,hmm.py),hasSuggestedFeature(testRCPWithDetectors,hmm.py),hasScoreEntity(dt.py),hasSuggestedFeature(RCP,dt.py),hasSuggestedFeature(testRCPWithDetectors,dt.py),hasScoreEntity(svm.py),hasSuggestedFeature(RCP,svm.py),hasSuggestedFeature(testRCPWithDetectors,svm.py),isHistogram(weekToWeek),isGraph(weekToWeek),HybridRankCorrelationCopulaLikelihood(testRCPWithDetectors,MAPopSyn),hasSuggestedFeature(testRCPWithDetectors,MAPopSyn),isDiscreteDetector(detectorSample),hasScoreEntity(svm_answer),hasSuggestedFeature(RCP,svm_answer),hasSuggestedFeature(testRCPWithDetectors,svm_answer),hasScoreEntity(Main),hasSuggestedFeature(RCP,Main),hasSuggestedFeature(testRCPWithDetectors,Main),hasScoreEntity(matrixToCSV),hasSuggestedFeature(RCP,matrixToCSV),hasSuggestedFeature(testRCPWithDetectors,matrixToCSV),hasScoreEntity(hmm_answer),hasSuggestedFeature(RCP,hmm_answer),hasSuggestedFeature(testRCPWithDetectors,hmm_answer),hasScoreEntity(w1008),hasSuggestedFeature(RCP,w1008),hasSuggestedFeature(testRCPWithDetectors,w1008),hasScoreEntity(MAPopSyn),hasSuggestedFeature(RCP,MAPopSyn),hasScoreEntity(dt_answer),hasSuggestedFeature(RCP,dt_answer),hasSuggestedFeature(testRCPWithDetectors,dt_answer),hasScoreEntity(hmm.py),hasSuggestedFeature(RCP,hmm.py),hasSuggestedFeature(testRCPWithDetectors,hmm.py),hasScoreEntity(dt.py),hasSuggestedFeature(RCP,dt.py),hasSuggestedFeature(testRCPWithDetectors,dt.py),hasScoreEntity(svm.py),hasSuggestedFeature(RCP,svm.py),hasSuggestedFeature(testRCPWithDetectors,svm.py),isHistogram(weekToWeek),isGraph(weekToWeek))";
+     UnBBayes_Color_Probabilistic_Description = "-256";
+     UnBBayes_Color_Probabilistic_Explanation = "-16711936";
+}
+
+node HybridRankCorrelationCopulaLikelihood__testRCPWithDetectors_MAPopSyn
+{
+     label = "HybridRankCorrelationCopulaLikelihood(testRCPWithDetectors,MAPopSyn)";
+     position = (88 369);
+     states = ("false" "true" "absurd");
+}
+
+utility FeatureUtility__RCP_svm_answer
+{
+     label = "FeatureUtility(RCP,svm_answer)";
+     position = (1328 95);
+}
+
+utility FeatureUtility__testRCPWithDetectors_svm_answer
+{
+     label = "FeatureUtility(testRCPWithDetectors,svm_answer)";
+     position = (1491 504);
+}
+
+utility FeatureUtility__RCP_Main
+{
+     label = "FeatureUtility(RCP,Main)";
+     position = (2377 548);
+}
+
+utility FeatureUtility__testRCPWithDetectors_Main
+{
+     label = "FeatureUtility(testRCPWithDetectors,Main)";
+     position = (1300 400);
+}
+
+utility FeatureUtility__RCP_matrixToCSV
+{
+     label = "FeatureUtility(RCP,matrixToCSV)";
+     position = (2065 526);
+}
+
+utility FeatureUtility__testRCPWithDetectors_matrixToCSV
+{
+     label = "FeatureUtility(testRCPWithDetectors,matrixToCSV)";
+     position = (1789 483);
+}
+
+utility FeatureUtility__RCP_hmm_answer
+{
+     label = "FeatureUtility(RCP,hmm_answer)";
+     position = (2200 400);
+}
+
+utility FeatureUtility__testRCPWithDetectors_hmm_answer
+{
+     label = "FeatureUtility(testRCPWithDetectors,hmm_answer)";
+     position = (2500 400);
+}
+
+utility FeatureUtility__RCP_w1008
+{
+     label = "FeatureUtility(RCP,w1008)";
+     position = (2800 400);
+}
+
+utility FeatureUtility__testRCPWithDetectors_w1008
+{
+     label = "FeatureUtility(testRCPWithDetectors,w1008)";
+     position = (3100 400);
+}
+
+utility FeatureUtility__RCP_MAPopSyn
+{
+     label = "FeatureUtility(RCP,MAPopSyn)";
+     position = (2439 500);
+}
+
+utility FeatureUtility__testRCPWithDetectors_MAPopSyn
+{
+     label = "FeatureUtility(testRCPWithDetectors,MAPopSyn)";
+     position = (559 395);
+}
+
+utility FeatureUtility__RCP_dt_answer
+{
+     label = "FeatureUtility(RCP,dt_answer)";
+     position = (4000 400);
+}
+
+utility FeatureUtility__testRCPWithDetectors_dt_answer
+{
+     label = "FeatureUtility(testRCPWithDetectors,dt_answer)";
+     position = (4300 400);
+}
+
+utility FeatureUtility__RCP_hmm.py
+{
+     label = "FeatureUtility(RCP,hmm.py)";
+     position = (4600 400);
+}
+
+utility FeatureUtility__testRCPWithDetectors_hmm.py
+{
+     label = "FeatureUtility(testRCPWithDetectors,hmm.py)";
+     position = (4900 400);
+}
+
+utility FeatureUtility__RCP_dt.py
+{
+     label = "FeatureUtility(RCP,dt.py)";
+     position = (5200 400);
+}
+
+utility FeatureUtility__testRCPWithDetectors_dt.py
+{
+     label = "FeatureUtility(testRCPWithDetectors,dt.py)";
+     position = (5500 400);
+}
+
+utility FeatureUtility__RCP_svm.py
+{
+     label = "FeatureUtility(RCP,svm.py)";
+     position = (5800 400);
+}
+
+utility FeatureUtility__testRCPWithDetectors_svm.py
+{
+     label = "FeatureUtility(testRCPWithDetectors,svm.py)";
+     position = (6100 400);
+}
+
+node hasSuggestedFeature__testRCPWithDetectors_MAPopSyn
+{
+     label = "hasSuggestedFeature(testRCPWithDetectors,MAPopSyn)";
+     position = (326 260);
+     states = ("false" "true" "absurd");
+}
+
+node isDiscreteDetector__detectorSample
+{
+     label = "isDiscreteDetector(detectorSample)";
+     position = (78 271);
+     states = ("false" "true" "absurd");
+}
+
+node hasScoreEntity__svm_answer
+{
+     label = "hasScoreEntity(svm_answer)";
+     position = (1600 250);
+     states = ("Low" "Mid" "High" "absurd");
+}
+
+decision chooseFeature__RCP_svm_answer
+{
+     label = "chooseFeature(RCP,svm_answer)";
+     position = (889 400);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__RCP_svm_answer
+{
+     label = "hasSuggestedFeature(RCP,svm_answer)";
+     position = (1738 51);
+     states = ("false" "true" "absurd");
+}
+
+decision chooseFeature__testRCPWithDetectors_svm_answer
+{
+     label = "chooseFeature(testRCPWithDetectors,svm_answer)";
+     position = (1828 179);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__testRCPWithDetectors_svm_answer
+{
+     label = "hasSuggestedFeature(testRCPWithDetectors,svm_answer)";
+     position = (2200 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasScoreEntity__Main
+{
+     label = "hasScoreEntity(Main)";
+     position = (3400 250);
+     states = ("Low" "Mid" "High" "absurd");
+}
+
+decision chooseFeature__RCP_Main
+{
+     label = "chooseFeature(RCP,Main)";
+     position = (2800 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__RCP_Main
+{
+     label = "hasSuggestedFeature(RCP,Main)";
+     position = (3100 250);
+     states = ("false" "true" "absurd");
+}
+
+decision chooseFeature__testRCPWithDetectors_Main
+{
+     label = "chooseFeature(testRCPWithDetectors,Main)";
+     position = (3700 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__testRCPWithDetectors_Main
+{
+     label = "hasSuggestedFeature(testRCPWithDetectors,Main)";
+     position = (4000 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasScoreEntity__matrixToCSV
+{
+     label = "hasScoreEntity(matrixToCSV)";
+     position = (5200 250);
+     states = ("Low" "Mid" "High" "absurd");
+}
+
+decision chooseFeature__RCP_matrixToCSV
+{
+     label = "chooseFeature(RCP,matrixToCSV)";
+     position = (4600 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__RCP_matrixToCSV
+{
+     label = "hasSuggestedFeature(RCP,matrixToCSV)";
+     position = (4900 250);
+     states = ("false" "true" "absurd");
+}
+
+decision chooseFeature__testRCPWithDetectors_matrixToCSV
+{
+     label = "chooseFeature(testRCPWithDetectors,matrixToCSV)";
+     position = (5500 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__testRCPWithDetectors_matrixToCSV
+{
+     label = "hasSuggestedFeature(testRCPWithDetectors,matrixToCSV)";
+     position = (5800 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasScoreEntity__hmm_answer
+{
+     label = "hasScoreEntity(hmm_answer)";
+     position = (7000 250);
+     states = ("Low" "Mid" "High" "absurd");
+}
+
+decision chooseFeature__RCP_hmm_answer
+{
+     label = "chooseFeature(RCP,hmm_answer)";
+     position = (6400 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__RCP_hmm_answer
+{
+     label = "hasSuggestedFeature(RCP,hmm_answer)";
+     position = (6700 250);
+     states = ("false" "true" "absurd");
+}
+
+decision chooseFeature__testRCPWithDetectors_hmm_answer
+{
+     label = "chooseFeature(testRCPWithDetectors,hmm_answer)";
+     position = (7300 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__testRCPWithDetectors_hmm_answer
+{
+     label = "hasSuggestedFeature(testRCPWithDetectors,hmm_answer)";
+     position = (7600 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasScoreEntity__w1008
+{
+     label = "hasScoreEntity(w1008)";
+     position = (8800 250);
+     states = ("Low" "Mid" "High" "absurd");
+}
+
+decision chooseFeature__RCP_w1008
+{
+     label = "chooseFeature(RCP,w1008)";
+     position = (8200 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__RCP_w1008
+{
+     label = "hasSuggestedFeature(RCP,w1008)";
+     position = (8500 250);
+     states = ("false" "true" "absurd");
+}
+
+decision chooseFeature__testRCPWithDetectors_w1008
+{
+     label = "chooseFeature(testRCPWithDetectors,w1008)";
+     position = (9100 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__testRCPWithDetectors_w1008
+{
+     label = "hasSuggestedFeature(testRCPWithDetectors,w1008)";
+     position = (9400 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasScoreEntity__MAPopSyn
+{
+     label = "hasScoreEntity(MAPopSyn)";
+     position = (730 235);
+     states = ("Low" "Mid" "High" "absurd");
+}
+
+decision chooseFeature__RCP_MAPopSyn
+{
+     label = "chooseFeature(RCP,MAPopSyn)";
+     position = (10000 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__RCP_MAPopSyn
+{
+     label = "hasSuggestedFeature(RCP,MAPopSyn)";
+     position = (10300 250);
+     states = ("false" "true" "absurd");
+}
+
+decision chooseFeature__testRCPWithDetectors_MAPopSyn
+{
+     label = "chooseFeature(testRCPWithDetectors,MAPopSyn)";
+     position = (559 143);
+     states = ("false" "true" "absurd");
+}
+
+node hasScoreEntity__dt_answer
+{
+     label = "hasScoreEntity(dt_answer)";
+     position = (12400 250);
+     states = ("Low" "Mid" "High" "absurd");
+}
+
+decision chooseFeature__RCP_dt_answer
+{
+     label = "chooseFeature(RCP,dt_answer)";
+     position = (11800 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__RCP_dt_answer
+{
+     label = "hasSuggestedFeature(RCP,dt_answer)";
+     position = (12100 250);
+     states = ("false" "true" "absurd");
+}
+
+decision chooseFeature__testRCPWithDetectors_dt_answer
+{
+     label = "chooseFeature(testRCPWithDetectors,dt_answer)";
+     position = (12700 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__testRCPWithDetectors_dt_answer
+{
+     label = "hasSuggestedFeature(testRCPWithDetectors,dt_answer)";
+     position = (13000 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasScoreEntity__hmm.py
+{
+     label = "hasScoreEntity(hmm.py)";
+     position = (14200 250);
+     states = ("Low" "Mid" "High" "absurd");
+}
+
+decision chooseFeature__RCP_hmm.py
+{
+     label = "chooseFeature(RCP,hmm.py)";
+     position = (13600 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__RCP_hmm.py
+{
+     label = "hasSuggestedFeature(RCP,hmm.py)";
+     position = (13900 250);
+     states = ("false" "true" "absurd");
+}
+
+decision chooseFeature__testRCPWithDetectors_hmm.py
+{
+     label = "chooseFeature(testRCPWithDetectors,hmm.py)";
+     position = (14500 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__testRCPWithDetectors_hmm.py
+{
+     label = "hasSuggestedFeature(testRCPWithDetectors,hmm.py)";
+     position = (14800 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasScoreEntity__dt.py
+{
+     label = "hasScoreEntity(dt.py)";
+     position = (16000 250);
+     states = ("Low" "Mid" "High" "absurd");
+}
+
+decision chooseFeature__RCP_dt.py
+{
+     label = "chooseFeature(RCP,dt.py)";
+     position = (15400 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__RCP_dt.py
+{
+     label = "hasSuggestedFeature(RCP,dt.py)";
+     position = (15700 250);
+     states = ("false" "true" "absurd");
+}
+
+decision chooseFeature__testRCPWithDetectors_dt.py
+{
+     label = "chooseFeature(testRCPWithDetectors,dt.py)";
+     position = (16300 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__testRCPWithDetectors_dt.py
+{
+     label = "hasSuggestedFeature(testRCPWithDetectors,dt.py)";
+     position = (16600 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasScoreEntity__svm.py
+{
+     label = "hasScoreEntity(svm.py)";
+     position = (17800 250);
+     states = ("Low" "Mid" "High" "absurd");
+}
+
+decision chooseFeature__RCP_svm.py
+{
+     label = "chooseFeature(RCP,svm.py)";
+     position = (17200 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__RCP_svm.py
+{
+     label = "hasSuggestedFeature(RCP,svm.py)";
+     position = (17500 250);
+     states = ("false" "true" "absurd");
+}
+
+decision chooseFeature__testRCPWithDetectors_svm.py
+{
+     label = "chooseFeature(testRCPWithDetectors,svm.py)";
+     position = (18100 250);
+     states = ("false" "true" "absurd");
+}
+
+node hasSuggestedFeature__testRCPWithDetectors_svm.py
+{
+     label = "hasSuggestedFeature(testRCPWithDetectors,svm.py)";
+     position = (18400 250);
+     states = ("false" "true" "absurd");
+}
+
+node isHistogram__weekToWeek
+{
+     label = "isHistogram(weekToWeek)";
+     position = (77 155);
+     states = ("false" "true" "absurd");
+}
+
+node isGraph__weekToWeek
+{
+     label = "isGraph(weekToWeek)";
+     position = (317 148);
+     states = ("false" "true" "absurd");
+}
+
+potential (HybridRankCorrelationCopulaLikelihood__testRCPWithDetectors_MAPopSyn | isDiscreteDetector__detectorSample hasSuggestedFeature__testRCPWithDetectors_MAPopSyn)
+{
+ data = ((( 0.6 0.4 0.0 )
+( 0.4 0.6 0.0 )
+( 0.0 0.0 1.0 ))
+(( 0.9 0.1 0.0 )
+( 0.1 0.9 0.0 )
+( 0.0 0.0 1.0 ))
+(( 0.0 0.0 1.0 )
+( 0.0 0.0 1.0 )
+( 0.0 0.0 1.0 )));
+}
+
+potential (FeatureUtility__RCP_svm_answer | hasSuggestedFeature__RCP_svm_answer chooseFeature__RCP_svm_answer hasScoreEntity__svm_answer)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__testRCPWithDetectors_svm_answer | hasSuggestedFeature__testRCPWithDetectors_svm_answer chooseFeature__testRCPWithDetectors_svm_answer hasScoreEntity__svm_answer)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__RCP_Main | hasSuggestedFeature__RCP_Main chooseFeature__RCP_Main hasScoreEntity__Main)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__testRCPWithDetectors_Main | hasSuggestedFeature__testRCPWithDetectors_Main chooseFeature__testRCPWithDetectors_Main hasScoreEntity__Main)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__RCP_matrixToCSV | hasSuggestedFeature__RCP_matrixToCSV chooseFeature__RCP_matrixToCSV hasScoreEntity__matrixToCSV)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__testRCPWithDetectors_matrixToCSV | hasSuggestedFeature__testRCPWithDetectors_matrixToCSV chooseFeature__testRCPWithDetectors_matrixToCSV hasScoreEntity__matrixToCSV)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__RCP_hmm_answer | hasSuggestedFeature__RCP_hmm_answer chooseFeature__RCP_hmm_answer hasScoreEntity__hmm_answer)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__testRCPWithDetectors_hmm_answer | hasSuggestedFeature__testRCPWithDetectors_hmm_answer chooseFeature__testRCPWithDetectors_hmm_answer hasScoreEntity__hmm_answer)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__RCP_w1008 | hasSuggestedFeature__RCP_w1008 chooseFeature__RCP_w1008 hasScoreEntity__w1008)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__testRCPWithDetectors_w1008 | hasSuggestedFeature__testRCPWithDetectors_w1008 chooseFeature__testRCPWithDetectors_w1008 hasScoreEntity__w1008)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__RCP_MAPopSyn | hasSuggestedFeature__RCP_MAPopSyn chooseFeature__RCP_MAPopSyn hasScoreEntity__MAPopSyn)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__testRCPWithDetectors_MAPopSyn | hasSuggestedFeature__testRCPWithDetectors_MAPopSyn chooseFeature__testRCPWithDetectors_MAPopSyn hasScoreEntity__MAPopSyn)
+{
+ data = ((( 20.0 
+ 40.0 
+ 80.0 
+ 0.0 )
+( 20.0 
+ 40.0 
+ 80.0 
+ 0.0 )
+( -100.0 
+ -100.0 
+ -100.0 
+ -100.0 ))
+(( 30.0 
+ 50.0 
+ 80.0 
+ 0.0 )
+( 2.0 
+ 15.0 
+ 20.0 
+ 0.0 )
+( -100.0 
+ -100.0 
+ -100.0 
+ -100.0 ))
+(( 0.0 
+ 0.0 
+ 0.0 
+ 0.0 )
+( 0.0 
+ 0.0 
+ 0.0 
+ 0.0 )
+( -100.0 
+ -100.0 
+ -100.0 
+ -100.0 )));
+}
+
+potential (FeatureUtility__RCP_dt_answer | hasSuggestedFeature__RCP_dt_answer chooseFeature__RCP_dt_answer hasScoreEntity__dt_answer)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__testRCPWithDetectors_dt_answer | hasSuggestedFeature__testRCPWithDetectors_dt_answer chooseFeature__testRCPWithDetectors_dt_answer hasScoreEntity__dt_answer)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__RCP_hmm.py | hasSuggestedFeature__RCP_hmm.py chooseFeature__RCP_hmm.py hasScoreEntity__hmm.py)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__testRCPWithDetectors_hmm.py | hasSuggestedFeature__testRCPWithDetectors_hmm.py chooseFeature__testRCPWithDetectors_hmm.py hasScoreEntity__hmm.py)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__RCP_dt.py | hasSuggestedFeature__RCP_dt.py chooseFeature__RCP_dt.py hasScoreEntity__dt.py)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__testRCPWithDetectors_dt.py | hasSuggestedFeature__testRCPWithDetectors_dt.py chooseFeature__testRCPWithDetectors_dt.py hasScoreEntity__dt.py)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__RCP_svm.py | hasSuggestedFeature__RCP_svm.py chooseFeature__RCP_svm.py hasScoreEntity__svm.py)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (FeatureUtility__testRCPWithDetectors_svm.py | hasSuggestedFeature__testRCPWithDetectors_svm.py chooseFeature__testRCPWithDetectors_svm.py hasScoreEntity__svm.py)
+{
+ data = ((( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 ))
+(( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )
+( 1.0 
+ 1.0 
+ 1.0 
+ 1.0 )));
+}
+
+potential (hasSuggestedFeature__testRCPWithDetectors_MAPopSyn)
+{
+ data = (( 0.33333334 0.33333334 0.33333334 ));
+}
+
+potential (isDiscreteDetector__detectorSample | isGraph__weekToWeek isHistogram__weekToWeek)
+{
+ data = ((( 0.5 0.5 0.0 )
+( 0.3 0.7 0.0 )
+( 0.0 0.0 1.0 ))
+(( 0.6 0.4 0.0 )
+( 0.1 0.9 0.0 )
+( 0.0 0.0 1.0 ))
+(( 0.0 0.0 1.0 )
+( 0.0 0.0 1.0 )
+( 0.0 0.0 1.0 )));
+}
+
+potential (hasScoreEntity__svm_answer)
+{
+ data = ( 0.25 0.25 0.25 0.25 );
+}
+
+potential (chooseFeature__RCP_svm_answer | hasScoreEntity__svm_answer hasSuggestedFeature__RCP_svm_answer chooseFeature__RCP_svm.py)
+{
+}
+
+potential (hasSuggestedFeature__RCP_svm_answer)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (chooseFeature__testRCPWithDetectors_svm_answer | hasScoreEntity__svm_answer hasSuggestedFeature__testRCPWithDetectors_svm_answer chooseFeature__testRCPWithDetectors_svm.py)
+{
+}
+
+potential (hasSuggestedFeature__testRCPWithDetectors_svm_answer)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (hasScoreEntity__Main)
+{
+ data = ( 0.25 0.25 0.25 0.25 );
+}
+
+potential (chooseFeature__RCP_Main | hasScoreEntity__Main hasSuggestedFeature__RCP_Main chooseFeature__RCP_MAPopSyn)
+{
+}
+
+potential (hasSuggestedFeature__RCP_Main)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (chooseFeature__testRCPWithDetectors_Main | hasScoreEntity__Main hasSuggestedFeature__testRCPWithDetectors_Main chooseFeature__testRCPWithDetectors_MAPopSyn)
+{
+}
+
+potential (hasSuggestedFeature__testRCPWithDetectors_Main)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (hasScoreEntity__matrixToCSV)
+{
+ data = ( 0.25 0.25 0.25 0.25 );
+}
+
+potential (chooseFeature__RCP_matrixToCSV | hasScoreEntity__matrixToCSV hasSuggestedFeature__RCP_matrixToCSV chooseFeature__RCP_hmm_answer)
+{
+}
+
+potential (hasSuggestedFeature__RCP_matrixToCSV)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (chooseFeature__testRCPWithDetectors_matrixToCSV | hasScoreEntity__matrixToCSV hasSuggestedFeature__testRCPWithDetectors_matrixToCSV chooseFeature__testRCPWithDetectors_hmm_answer)
+{
+}
+
+potential (hasSuggestedFeature__testRCPWithDetectors_matrixToCSV)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (hasScoreEntity__hmm_answer)
+{
+ data = ( 0.25 0.25 0.25 0.25 );
+}
+
+potential (chooseFeature__RCP_hmm_answer | hasScoreEntity__hmm_answer hasSuggestedFeature__RCP_hmm_answer chooseFeature__RCP_hmm.py)
+{
+}
+
+potential (hasSuggestedFeature__RCP_hmm_answer)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (chooseFeature__testRCPWithDetectors_hmm_answer | hasScoreEntity__hmm_answer hasSuggestedFeature__testRCPWithDetectors_hmm_answer chooseFeature__testRCPWithDetectors_hmm.py)
+{
+}
+
+potential (hasSuggestedFeature__testRCPWithDetectors_hmm_answer)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (hasScoreEntity__w1008)
+{
+ data = ( 0.25 0.25 0.25 0.25 );
+}
+
+potential (chooseFeature__RCP_w1008 | hasScoreEntity__w1008 hasSuggestedFeature__RCP_w1008 chooseFeature__RCP_svm_answer)
+{
+}
+
+potential (hasSuggestedFeature__RCP_w1008)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (chooseFeature__testRCPWithDetectors_w1008 | hasScoreEntity__w1008 hasSuggestedFeature__testRCPWithDetectors_w1008 chooseFeature__testRCPWithDetectors_svm_answer)
+{
+}
+
+potential (hasSuggestedFeature__testRCPWithDetectors_w1008)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (hasScoreEntity__MAPopSyn)
+{
+ data = ( 0.25 0.25 0.25 0.25 );
+}
+
+potential (chooseFeature__RCP_MAPopSyn | hasScoreEntity__MAPopSyn hasSuggestedFeature__RCP_MAPopSyn)
+{
+}
+
+potential (hasSuggestedFeature__RCP_MAPopSyn)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (chooseFeature__testRCPWithDetectors_MAPopSyn | hasScoreEntity__MAPopSyn hasSuggestedFeature__testRCPWithDetectors_MAPopSyn chooseFeature__RCP_w1008)
+{
+}
+
+potential (hasScoreEntity__dt_answer)
+{
+ data = ( 0.25 0.25 0.25 0.25 );
+}
+
+potential (chooseFeature__RCP_dt_answer | hasScoreEntity__dt_answer hasSuggestedFeature__RCP_dt_answer chooseFeature__RCP_dt.py)
+{
+}
+
+potential (hasSuggestedFeature__RCP_dt_answer)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (chooseFeature__testRCPWithDetectors_dt_answer | hasScoreEntity__dt_answer hasSuggestedFeature__testRCPWithDetectors_dt_answer chooseFeature__testRCPWithDetectors_dt.py)
+{
+}
+
+potential (hasSuggestedFeature__testRCPWithDetectors_dt_answer)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (hasScoreEntity__hmm.py)
+{
+ data = ( 0.25 0.25 0.25 0.25 );
+}
+
+potential (chooseFeature__RCP_hmm.py | hasScoreEntity__hmm.py hasSuggestedFeature__RCP_hmm.py chooseFeature__RCP_dt_answer)
+{
+}
+
+potential (hasSuggestedFeature__RCP_hmm.py)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (chooseFeature__testRCPWithDetectors_hmm.py | hasScoreEntity__hmm.py hasSuggestedFeature__testRCPWithDetectors_hmm.py chooseFeature__testRCPWithDetectors_dt_answer)
+{
+}
+
+potential (hasSuggestedFeature__testRCPWithDetectors_hmm.py)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (hasScoreEntity__dt.py)
+{
+ data = ( 0.25 0.25 0.25 0.25 );
+}
+
+potential (chooseFeature__RCP_dt.py | hasScoreEntity__dt.py hasSuggestedFeature__RCP_dt.py chooseFeature__RCP_Main)
+{
+}
+
+potential (hasSuggestedFeature__RCP_dt.py)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (chooseFeature__testRCPWithDetectors_dt.py | hasScoreEntity__dt.py hasSuggestedFeature__testRCPWithDetectors_dt.py chooseFeature__testRCPWithDetectors_Main)
+{
+}
+
+potential (hasSuggestedFeature__testRCPWithDetectors_dt.py)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (hasScoreEntity__svm.py)
+{
+ data = ( 0.25 0.25 0.25 0.25 );
+}
+
+potential (chooseFeature__RCP_svm.py | hasScoreEntity__svm.py hasSuggestedFeature__RCP_svm.py chooseFeature__RCP_matrixToCSV)
+{
+}
+
+potential (hasSuggestedFeature__RCP_svm.py)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (chooseFeature__testRCPWithDetectors_svm.py | hasScoreEntity__svm.py hasSuggestedFeature__testRCPWithDetectors_svm.py chooseFeature__testRCPWithDetectors_matrixToCSV)
+{
+}
+
+potential (hasSuggestedFeature__testRCPWithDetectors_svm.py)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (isHistogram__weekToWeek)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+
+potential (isGraph__weekToWeek)
+{
+ data = ( 0.33333334 0.33333334 0.33333334 );
+}
+

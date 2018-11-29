@@ -9,10 +9,7 @@ import java.net.URISyntaxException;
 
 import junit.framework.TestCase;
 import unbbayes.io.exception.LoadException;
-import unbbayes.prs.Graph;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
-import unbbayes.prs.medg.MultiEntityUtilityNode;
-import unbbayes.prs.medg.compiler.MultiEntityUtilityFunctionCompiler;
 
 /**
  * @author Shou Matsumoto

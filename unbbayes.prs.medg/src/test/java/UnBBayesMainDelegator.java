@@ -26,10 +26,17 @@ public class UnBBayesMainDelegator {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		System.setProperty("log4j.debug", "true");
+		try {
+//			System.setProperty("log4j.configuration", new java.io.File(UnBBayesMainDelegator.class.getClassLoader().getResource("log4j.properties").toURI()).getAbsolutePath());
+			System.setProperty("log4j.configuration", "./log4j.properties");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		// change default locale
 		Locale.setDefault(new Locale("en"));
 		// enable debug mode
-		SSBNDebugInformationUtil.setEnabled(false);
+		SSBNDebugInformationUtil.setEnabled(true);
 		Debug.setDebug(true);
 		try {
 			// print "working" directory
