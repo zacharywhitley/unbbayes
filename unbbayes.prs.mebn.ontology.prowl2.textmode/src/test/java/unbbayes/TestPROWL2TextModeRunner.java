@@ -15,7 +15,7 @@ import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.owlapi.OWLAPIStorageImplementorDecorator;
-import unbbayes.io.mebn.protege.Protege41CompatiblePROWL2IO;
+import unbbayes.io.mebn.prowl2.protege.Protege41CompatiblePROWL2IO;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
@@ -28,6 +28,7 @@ import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.ontology.protege.PROWL2KnowledgeBase;
 import unbbayes.prs.mebn.kb.extension.ontology.protege.PROWL2KnowledgeBaseBuilder;
+import unbbayes.prs.mebn.prowl2.SimplePROWL2TextModeRunner;
 import unbbayes.util.Debug;
 
 /**
