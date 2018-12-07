@@ -380,7 +380,7 @@ public class ProtegeBundleLauncher implements IBundleLauncher {
 			}
 			this.getLaunchProperties().setProperty("protege.osgi", new File(uriOfOSGIImplUsedByProtege).getCanonicalPath());
 		} catch (Exception e) {
-			e.printStackTrace();
+			Debug.println(getClass(), "Protege's OSGI launch property not changed.", e);
 		}
 		
 //		File tempDir = new File("temp");
