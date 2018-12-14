@@ -1,6 +1,3 @@
-/**
- * 
- */
 package unbbayes.io.mebn.prowl2.owlapi;
 
 import java.io.File;
@@ -56,10 +53,8 @@ import org.semanticweb.owlapi.util.SimpleIRIMapper;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
-import unbbayes.io.mebn.LoaderPrOwlIO;
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.PROWLModelUser;
-import unbbayes.io.mebn.PrOwlIO;
 import unbbayes.io.mebn.SaverPrOwlIO;
 import unbbayes.io.mebn.exceptions.IOMebnException;
 import unbbayes.prs.Edge;
@@ -90,6 +85,7 @@ import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.ArgumentOVariableAlreadySetException;
+import unbbayes.prs.mebn.prowl2.IMEBNElementFactory;
 import unbbayes.prs.mebn.prowl2.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.prowl2.PROWL2MEBNFactory;
 import unbbayes.prs.mebn.prowl2.entity.ontology.owlapi.OWLAPIObjectEntityContainer;
@@ -97,16 +93,15 @@ import unbbayes.util.Debug;
 
 /**
  * This is a refactored version of  implements PR-OWL2 support.
- * The methods' names may not be very intuitive, but this is because this class
- * follows some naming patterns inherited from {@link unbbayes.io.mebn.PrOwlIO}, {@link unbbayes.io.mebn.SaverPrOwlIO}
- * and {@link unbbayes.io.mebn.LoaderPrOwlIO}. 
  * TODO stop following template methods inherent from {@link unbbayes.io.mebn.PrOwlIO}, {@link unbbayes.io.mebn.SaverPrOwlIO}
  * and {@link unbbayes.io.mebn.LoaderPrOwlIO}, because their architectures are extremely sensitive to object states, thus
  * thread-unsafe and hard to extend.
  * @author Shou Matsumoto
  *
  */
-public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntologyUser, IOWLClassExpressionParserFacade, INonPROWLClassExtractor , IPROWL2ModelUser {
+public class OWLAPICompatiblePROWL2IO 
+			 /*extends PrOwlIO */ 
+			 implements MebnIO, IOWLAPIOntologyUser, IOWLClassExpressionParserFacade, INonPROWLClassExtractor , IPROWL2ModelUser {
 	
 	// TODO refactor all direct references to IPROWL2ModelUser as references to fields in this class (using respective getters and setters), so that we can change the expected OWL entity's names at runtime instead of compile/linkage time.
 
@@ -158,6 +153,24 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 
 	private INonPROWLClassExtractor nonPROWLClassExtractor;
 
+	private OWLOntology lastOWLOntology;
+
+	private IOWLClassExpressionParserFacade owlClassExpressionParserDelegator;
+
+	private IMEBNElementFactory mebnFactory;
+
+	private String hasOVariableObjectPropertyName = IPROWL2ModelUser.HASOVARIABLE;
+
+	private String isSubsByObjectPropertyName = IPROWL2ModelUser.ISSUBSTITUTEDBY;
+
+	private String hasMFragObjectProperty = IPROWL2ModelUser.HASMFRAG;
+
+	private OWLReasoner owlReasoner;
+
+	private Map<String, MFrag> mapNameToMFrag = new HashMap<String, MFrag>();
+
+	private Map<String, Entity> mapLabelToObjectEntity = new HashMap<String, Entity>();
+
 	
 	
 	/**
@@ -189,62 +202,38 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	protected void initialize() {
 		// this will call resetCache as well
 		this.setResource(unbbayes.util.ResourceController.newInstance().getBundle(
-				unbbayes.io.mebn.resources.IoMebnResources.class.getName(),
-				Locale.getDefault(),
-				OWLAPICompatiblePROWLIO.class.getClassLoader()
+					unbbayes.io.mebn.resources.IoMebnResources.class.getName(),
+					Locale.getDefault(),
+					OWLAPICompatiblePROWL2IO.class.getClassLoader()
 				));
-		this.setNonPROWLClassExtractor(DefaultNonPROWLClassExtractor.getInstance());
 		IPROWL2ModelUser modelUser = DefaultPROWL2ModelUser.getInstance();
+		
 		// configure it to use http://www.pr-owl.org/pr-owl.owl as prowl default prefix
-		((DefaultPROWL2ModelUser)modelUser).setProwlOntologyNamespaceURI("http://www.pr-owl.org/pr-owl.owl");
+		((DefaultPROWL2ModelUser)modelUser).setProwlOntologyNamespaceURI(IPROWL2ModelUser.PROWL2_NAMESPACEURI);
 		this.setProwlModelUserDelegator(modelUser);
-		this.setWrappedLoaderPrOwlIO(new LoaderPrOwlIO());	 // initialize default
+		// just making sure the namespace is also synchronized
+//		this.setProwlOntologyNamespaceURI(IPROWL2ModelUser.PROWL2_NAMESPACEURI); 
+		
 		this.setMEBNFactory(PROWL2MEBNFactory.getInstance()); // initialize default
+		
+		// initialize cache elements (mostly, maps which stores MEBN elements temporary)
 		this.resetCache();
 		
-		try {
-			// because the PR-OWL1's "hasOVariable" object property has changed to "hasOrdinaryVariable" in PR-OWL2, set to it.
-			this.setHasOVariableObjectPropertyName(IPROWL2ModelUser.HASOVARIABLE);
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
-		try {
-			// because the PR-OWL1's "isSubsBy" object property has changed to "isSubstitutedBy" in PR-OWL2, set to it.
-			this.setIsSubsByObjectPropertyName(IPROWL2ModelUser.ISSUBSTITUTEDBY);
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
-		try {
-			this.setHasMFragObjectProperty(IPROWL2ModelUser.HASMFRAG);
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
-		try {
-			// use PR-OWL2 namespace instead of the default (PR-OWL1) one
-			this.setProwlOntologyNamespaceURI(IPROWL2ModelUser.PROWL2_NAMESPACEURI); 
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
-		try {
-			// use another extractor to extract OWL classes that are specific to PR-OWL 2 (the default is for PR-OWL1).
-			this.setNonPROWLClassExtractor(NonPROWL2ClassExtractorImpl.getInstance());
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
-		try {
-			// initialize delegator responsible for getting individuals of a PR-OWL2 ontology 
-			// (but it is supposed to ignore individuals in PR-OWL2 definition file, such as built in random variables)
-			this.setPROWL2IndividualsExtractor(PROWL2IndividualsExtractorImpl.newInstance());
-		} catch (Throwable t) {
-			t.printStackTrace();
-		}
-		// resetCache is called by super.initialize()
-//		try {
-//			// initialize cache elements (mostly, maps which stores MEBN elements temporary)
-//			this.resetCache();
-//		} catch (Throwable t) {
-//			t.printStackTrace();
-//		}
+		// explicitly reset the default name of the property that identifies ordinary variables in the model
+		this.setHasOVariableObjectPropertyName(IPROWL2ModelUser.HASOVARIABLE);
+		
+		// explicitly reset the default name of the property "isSubstitutedBy".
+		this.setIsSubsByObjectPropertyName(IPROWL2ModelUser.ISSUBSTITUTEDBY);
+		
+		this.setHasMFragObjectProperty(IPROWL2ModelUser.HASMFRAG);
+		
+		// use another extractor to extract OWL classes that are specific to PR-OWL 2 (the default is for PR-OWL1).
+		this.setNonPROWLClassExtractor(NonPROWL2ClassExtractorImpl.getInstance());
+		
+		// initialize delegator responsible for getting individuals of a PR-OWL2 ontology 
+		// (but it is supposed to ignore individuals in PR-OWL2 definition file, such as built in random variables)
+		this.setPROWL2IndividualsExtractor(PROWL2IndividualsExtractorImpl.newInstance());
+		
 		
 		
 		// initialize IRI mapper, so that requests for PR-OWL2 IRIs is delegated to local files
@@ -316,6 +305,12 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 			return;
 		}
 		
+		if (ontology.getOntologyID() == null
+				|| ontology.getOntologyID().getOntologyIRI() == null
+				|| !ontology.getOntologyID().getOntologyIRI().isPresent()) {
+			throw new IllegalArgumentException("Unable to extract ontology IRI: " + ontology);
+		}
+		
 		// fill the storage implementor of MEBN (a reference to an object that loaded/saved the mebn last time)
 		mebn.setStorageImplementor(OWLAPIStorageImplementorDecorator.newInstance(ontology));
 
@@ -338,7 +333,7 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 			}
 			
 			// this is a instance of MEBN to be filled. The name will be updated after loadMTheoryAndMFrags
-			IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, mebn, ontology.getOntologyID().getOntologyIRI());
+			IRIAwareMultiEntityBayesianNetwork.addIRIToMEBN(mebn, mebn, ontology.getOntologyID().getOntologyIRI().get());
 		} catch (RuntimeException e) {
 			owlapiObjectEntityContainer.setToCreateOWLEntity(true); // re-enable automatic creation of entities
 			throw e;
@@ -5266,6 +5261,250 @@ public class OWLAPICompatiblePROWL2IO extends PrOwlIO implements IOWLAPIOntology
 	}
 
 
+	/**
+	 * This is the ontology used by this class in the last time {@link #loadMebn(File)} was called.
+	 * The root ontology of {@link #getLastOWLOntology()} overwrites this value.
+	 * @return the lastOWLOntology
+	 */
+	public OWLOntology getLastOWLOntology() {
+		synchronized (this) {
+			OWLReasoner reasoner = getLastOWLReasoner();
+			if (reasoner != null) {
+				lastOWLOntology = reasoner.getRootOntology();
+			}
+		}
+		return lastOWLOntology;
+	}
 	
+	/**
+	 * 
+	 * This is the ontology used by this class in the last time {@link #loadMebn(File)} was called.
+	 * The root ontology of {@link #getLastOWLOntology()} overwrites this value.
+	 * @param lastOWLOntology the lastOWLOntology to set
+	 */
+	public void setLastOWLOntology(OWLOntology lastOWLOntology) {
+		synchronized (this) {
+			OWLReasoner reasoner = getLastOWLReasoner();
+			if (reasoner != null && !reasoner.getRootOntology().equals(lastOWLOntology)) {
+				throw new IllegalArgumentException("Could not update ontology, because this will conflict with the ontology loaded by the reasoner. Reasoner should be set to null or re-instantiated before calling this method.");
+			}
+		}
+		this.lastOWLOntology = lastOWLOntology;
+	}
+	
+
+	/**
+	 * This is the last OWLReasoner used by {@link #loadMEBNFromOntology(OWLOntology, OWLReasoner)}.
+	 * This reasoner will be used if none is specified in {@link #loadMEBNFromOntology(OWLOntology, OWLReasoner)}.
+	 * @return
+	 */
+	public OWLReasoner getLastOWLReasoner() {
+		synchronized (this) {
+			return owlReasoner;
+		}
+	}
+
+	/**
+	 * This is the last OWLReasoner used by {@link #loadMEBNFromOntology(OWLOntology, OWLReasoner)}.
+	 * This reasoner will be used if none is specified in {@link #loadMEBNFromOntology(OWLOntology, OWLReasoner)}.
+	 * @param owlReasoner
+	 */
+	public void setLastOWLReasoner(OWLReasoner owlReasoner) {
+		synchronized (this) {
+			this.owlReasoner = owlReasoner;
+		}
+	}
+	
+
+	/**
+	 * Simply delegates to {@link #getNonPROWLClassExtractor()}
+	 * @see INonPROWLClassExtractor#getNonPROWLClasses(org.semanticweb.owlapi.model.OWLOntology)
+	 */
+	public Collection<OWLClassExpression> getNonPROWLClasses(OWLOntology ontology) {
+		return this.getNonPROWLClassExtractor().getNonPROWLClasses(ontology);
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.mebn.prowl2.owlapi.IOWLClassExpressionParserFacade#parseExpression(java.lang.String)
+	 */
+	public OWLClassExpression parseExpression(String expression) {
+		return this.getOwlClassExpressionParserDelegator().parseExpression(expression);
+	}
+	
+
+	/**
+	 * It will lazily instantiate OWLClassExpressionParserFacade if none was specified.
+	 * @return the owlClassExpressionParserDelegator
+	 */
+	public IOWLClassExpressionParserFacade getOwlClassExpressionParserDelegator() {
+		synchronized (this) {
+			if (owlClassExpressionParserDelegator == null) {
+				// instantiate the default OWL expression parser
+				owlClassExpressionParserDelegator = ManchesterOWLExpressionParserFacade.getInstance(this.getLastOWLOntology());
+			}
+		}
+		return owlClassExpressionParserDelegator;
+	}
+
+	/**
+	 * @param owlClassExpressionParserDelegator the owlClassExpressionParserDelegator to set
+	 */
+	public void setOwlClassExpressionParserDelegator(
+			IOWLClassExpressionParserFacade owlClassExpressionParserDelegator) {
+		this.owlClassExpressionParserDelegator = owlClassExpressionParserDelegator;
+	}
+	
+
+	/**
+	 * This factory instantiates the MEBN elements loaded from an OWL ontology.
+	 * This is useful when the IO class should instantiate subclasses of
+	 * {@link MultiEntityBayesianNetwork}, {@link MFrag}, {@link ResidentNode}, etc.
+	 * @return the mebnFactory
+	 */
+	public IMEBNElementFactory getMEBNFactory() {
+		return mebnFactory;
+	}
+
+	/**
+	 * This factory instantiates the MEBN elements loaded from an OWL ontology.
+	 * This is useful when the IO class should instantiate subclasses of
+	 * {@link MultiEntityBayesianNetwork}, {@link MFrag}, {@link ResidentNode}, etc.
+	 * @param mebnFactory the mebnFactory to set
+	 */
+	public void setMEBNFactory(IMEBNElementFactory mebnFactory) {
+		this.mebnFactory = mebnFactory;
+	}
+	
+
+
+	/**
+	 * This is the name of a property linking a MFrag to an ordinary variable.
+	 * Default value is {@link IPROWL2ModelUser#HASOVARIABLE}.
+	 * @return the hasOVariableObjectPropertyName
+	 */
+	public String getHasOVariableObjectPropertyName() {
+		return hasOVariableObjectPropertyName;
+	}
+
+	/**
+	 * This is the name of a property linking a MFrag to an ordinary variable.
+	 * Default value is {@link IPROWL2ModelUser#HASOVARIABLE}.
+	 * @param hasOVariableObjectPropertyName the hasOVariableObjectPropertyName to set
+	 */
+	public void setHasOVariableObjectPropertyName(
+			String hasOVariableObjectPropertyName) {
+		this.hasOVariableObjectPropertyName = hasOVariableObjectPropertyName;
+	}
+	
+
+	/**
+	 * This is the name of a property linking an ordinary variable to its actual value/type.
+	 * Default value is IPROWL2ModelUser#ISSUBSTITUTEDBY.
+	 * @return the isSubsByObjectPropertyName
+	 */
+	public String getIsSubsByObjectPropertyName() {
+		return isSubsByObjectPropertyName;
+	}
+
+	/**
+	 * This is the name of a property linking an ordinary variable to its actual value/type.
+	 * Default value is {@link IPROWL2ModelUser#ISSUBSTITUTEDBY}.
+	 * @param isSubsByObjectPropertyName the isSubsByObjectPropertyName to set
+	 */
+	public void setIsSubsByObjectPropertyName(String isSubsByObjectPropertyName) {
+		this.isSubsByObjectPropertyName = isSubsByObjectPropertyName;
+	}
+	
+
+	/**
+	 * The name of the hasMFrag object property.
+	 * Default value is {@link IPROWL2ModelUser#HASMFRAG}
+	 * You may change this value if you want this class to look for
+	 * another object property when searching a MFrag in a MTheory.
+	 * @return the hasMFragObjectProperty
+	 */
+	public String getHasMFragObjectProperty() {
+		return hasMFragObjectProperty ;
+	}
+
+	/**
+	 * The name of the hasMFrag object property.
+	 * Default value is {@link IPROWL2ModelUser#HASMFRAG}
+	 * You may change this value if you want this class to look for
+	 * another object property when searching a MFrag in a MTheory.
+	 * @param hasMFragObjectProperty the hasMFragObjectProperty to set
+	 */
+	public void setHasMFragObjectProperty(String hasMFragObjectProperty) {
+		this.hasMFragObjectProperty = hasMFragObjectProperty;
+	}
+	
+	
+
+	/**
+	 * It stores the value returned from {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)}.
+	 * This map is useful if data must be reused throughout such protected load methods.
+	 * @return the nameToMFragMap
+	 */
+	public Map<String, MFrag> getMapNameToMFrag() {
+		return mapNameToMFrag;
+	}
+
+	/**
+	 * It stores the value returned from {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)}.
+	 * This map is useful if data must be reused throughout such protected load methods.
+	 * @param nameToMFragMap the nameToMFragMap to set
+	 */
+	protected void setMapNameToMFrag(Map<String, MFrag> nameToMFragMap) {
+		this.mapNameToMFrag = nameToMFragMap;
+	}
+	
+	
+
+	/**
+	 * It maps a name to an instance of ObjectEntities.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @return the mapLabelToObjectEntity
+	 */
+	public Map<String, Entity> getMapLabelToObjectEntity() {
+		return mapLabelToObjectEntity;
+	}
+
+	/**
+	 * A mapping from name to instances of object entities.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @param mapLabelToObjectEntity the mapLabelToObjectEntity to set
+	 */
+	protected void setMapLabelToObjectEntity(
+			Map<String, Entity> mapLabelToObjectEntity) {
+		this.mapLabelToObjectEntity = mapLabelToObjectEntity;
+	}
+
+	
+
+	/**
+	 * A mapping from names to instances of object entities' individuals (a particular value of an entity - values of ordinary variables).
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @see #loadObjectEntityIndividuals(OWLOntology, MultiEntityBayesianNetwork)
+	 * @return the mapLoadedObjectEntityIndividuals
+	 */
+	protected Map<String, ObjectEntityInstance> getMapLoadedObjectEntityIndividuals() {
+		return mapLoadedObjectEntityIndividuals;
+	}
+
+	/**
+	 * A mapping from names to instances of object entities' individuals (a particular value of an entity - values of ordinary variables).
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @see #loadObjectEntityIndividuals(OWLOntology, MultiEntityBayesianNetwork)
+	 * @param mapLoadedObjectEntityIndividuals the mapLoadedObjectEntityIndividuals to set
+	 */
+	protected void setMapLoadedObjectEntityIndividuals(
+			Map<String, ObjectEntityInstance> mapLoadedObjectEntityIndividuals) {
+		this.mapLoadedObjectEntityIndividuals = mapLoadedObjectEntityIndividuals;
+	}
 	
 }
