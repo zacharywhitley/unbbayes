@@ -115,16 +115,20 @@ public class DefaultPROWL2ModelUser implements IPROWL2ModelUser {
 		// if this entity has an ID, extract what is after '#'
 		if (owlObject instanceof OWLEntity) {
 			// consider that the name is the fragment portion of IRI
-			String name = ((OWLEntity)owlObject).getIRI().getFragment();
+			String name = ((OWLEntity)owlObject).getIRI().getShortForm();
 			if (name == null) {
+				Debug.println(getClass(), "No short form found for entity " + owlObject);
 				// consider that the name is the portion of IRI without the "start" portion
 				name = ((OWLEntity)owlObject).getIRI().toString().substring(((OWLEntity)owlObject).getIRI().getNamespace().length());
+				Debug.println(getClass(), "Using the \"remaining\" (suffix after namespace): " + name);
 				if (name.trim().isEmpty() || name.contains("#") || name.contains("/")) {
 					// the IRI without the "start" portion has unexpected format, so try the next approach
+					Debug.println(getClass(), "Failed to remove namespace from " + owlObject + ". Remaining was: " + name + ", namespace was " + ((OWLEntity)owlObject).getIRI().getNamespace());
 					name = null;
 				}
 			}
 			if (name == null) {
+				Debug.println(getClass(), "No delimiter found for entity " + owlObject + ". Using full IRI instead.");
 				// default: simply call toString
 				name = ((OWLEntity)owlObject).toStringID();
 			}
@@ -156,7 +160,7 @@ public class DefaultPROWL2ModelUser implements IPROWL2ModelUser {
 				name = ((OWLOntology)owlObject).getOntologyID().getDefaultDocumentIRI().toString();
 				name = name.substring(name.lastIndexOf("/")+1, ((name.lastIndexOf(".") < 0)?name.length():name.lastIndexOf(".")));
 			} catch (Exception e) {
-				Debug.println(getClass(), e.getMessage(), e);
+				Debug.println(getClass(), "Failed to extract name of ontology " + owlObject + ". Using Ontology ID instead...", e);
 			}
 			if (name == null) {
 				return ((OWLEntity)owlObject).toStringID();

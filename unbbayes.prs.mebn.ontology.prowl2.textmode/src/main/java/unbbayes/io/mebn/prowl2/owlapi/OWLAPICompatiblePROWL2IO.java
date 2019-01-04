@@ -21,6 +21,7 @@ import org.semanticweb.owlapi.io.OWLXMLOntologyFormat;
 import org.semanticweb.owlapi.model.AddImport;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAnnotation;
+import org.semanticweb.owlapi.model.OWLAnnotationProperty;
 import org.semanticweb.owlapi.model.OWLAxiom;
 import org.semanticweb.owlapi.model.OWLClass;
 import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
@@ -47,12 +48,15 @@ import org.semanticweb.owlapi.model.OWLOntologyStorageException;
 import org.semanticweb.owlapi.model.OWLRuntimeException;
 import org.semanticweb.owlapi.model.PrefixManager;
 import org.semanticweb.owlapi.model.SetOntologyID;
+import org.semanticweb.owlapi.reasoner.NodeSet;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.search.EntitySearcher;
 import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.util.SimpleIRIMapper;
 import org.semanticweb.owlapi.vocab.OWL2Datatype;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
 
+import unbbayes.gui.InternalErrorDialog;
 import unbbayes.io.mebn.MebnIO;
 import unbbayes.io.mebn.PROWLModelUser;
 import unbbayes.io.mebn.SaverPrOwlIO;
@@ -66,9 +70,18 @@ import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.InputNode;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
+import unbbayes.prs.mebn.MultiEntityNode;
 import unbbayes.prs.mebn.OrdinaryVariable;
 import unbbayes.prs.mebn.ResidentNode;
 import unbbayes.prs.mebn.ResidentNodePointer;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVAnd;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVEqualTo;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVExists;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVForAll;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVIff;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVImplies;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVNot;
+import unbbayes.prs.mebn.builtInRV.BuiltInRVOr;
 import unbbayes.prs.mebn.context.EnumSubType;
 import unbbayes.prs.mebn.context.EnumType;
 import unbbayes.prs.mebn.context.NodeFormulaTree;
@@ -85,6 +98,7 @@ import unbbayes.prs.mebn.entity.exception.EntityInstanceAlreadyExistsException;
 import unbbayes.prs.mebn.entity.exception.TypeException;
 import unbbayes.prs.mebn.exception.ArgumentNodeAlreadySetException;
 import unbbayes.prs.mebn.exception.ArgumentOVariableAlreadySetException;
+import unbbayes.prs.mebn.exception.OVDontIsOfTypeExpected;
 import unbbayes.prs.mebn.prowl2.IMEBNElementFactory;
 import unbbayes.prs.mebn.prowl2.IRIAwareMultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.prowl2.PROWL2MEBNFactory;
@@ -171,7 +185,35 @@ public class OWLAPICompatiblePROWL2IO
 
 	private Map<String, Entity> mapLabelToObjectEntity = new HashMap<String, Entity>();
 
+
+	private Map<String, CategoricalStateEntity> mapCategoricalStates = new HashMap<String, CategoricalStateEntity>();
 	
+
+	private Map<String, INode> mapLoadedNodes = new HashMap<String, INode>();
+	
+
+	private Map<String, ObjectEntityInstance> mapLoadedObjectEntityIndividuals;
+	
+
+	private Map<String, BuiltInRV> mapBuiltInRV = new HashMap<String, BuiltInRV>();
+	
+
+	private Map<String, ResidentNode> mapFilledResidentNodes;
+
+	private Map<String, InputNode> mapFilledInputNodes;
+	
+
+	private Map<String, ContextNode> mapTopLevelContextNodes = new HashMap<String, ContextNode>();
+	
+
+	private Map<String, OrdinaryVariable> mapFilledOrdinaryVariables;
+
+	private Map<String, Argument> mapFilledArguments;
+
+	private Map<String, Argument> mapFilledSimpleArguments;
+	
+	/** @deprecated a common interface should be used instead of {@link java.lang.Object} */
+	private Map<ContextNode, Object> mapIsContextInstanceOf = new HashMap<ContextNode, Object>();
 	
 	/**
 	 * @deprecated
@@ -396,7 +438,7 @@ public class OWLAPICompatiblePROWL2IO
 			
 			// adjust the order of arguments (the appearance order of arguments may not be the correct order). 
 			// TODO this seems to be a magic method and should be avoided. This is only used now because of how ancestor classes were implemented
-			this.ajustArgumentOfNodes(mebn);
+			this.adjustArgumentOfNodes(mebn);
 			
 			// load the content of the formulas inside context nodes
 			this.buildFormulaTrees(this.getMapTopLevelContextNodes(), mebn);
@@ -409,6 +451,262 @@ public class OWLAPICompatiblePROWL2IO
 		
 
 		owlapiObjectEntityContainer.setToCreateOWLEntity(true); // re-enable automatic creation of entities
+	}
+	
+
+	/**
+	 * This damn complex mechanism must be executed because the arguments may not
+	 * be inserted into resident nodes in the correct order. Since these changes
+	 * in order may cause input nodes to fail, we must adjust or reorder them.
+	 * Additionally, it looks like resident nodes are using {@link ResidentNode#getOrdinaryVariableList()} to manage
+	 * arguments instead of using only {@link ResidentNode#getArgumentList()}. This method synchronizes
+	 * the content of {@link ResidentNode#getOrdinaryVariableList()} and {@link ResidentNode#getArgumentList()} too.
+	 * @deprecated it sounds like a tremendously dirty workaround. Argument's order can be adjusted more consistently
+	 * allocating all arguments first (this is possible by calculating the total quantity of arguments)
+	 * and then filling their contents in order (depending to the value of hasArgumentNumber).
+	 * This method is used in this class only because super classes were doing this in the same way (and we are
+	 * trying to use template methods), but it should be fixed in future releases, because this is extremely
+	 * thread-unsafe and hard to extend.
+	 */
+	private void adjustArgumentOfNodes(MultiEntityBayesianNetwork mebn){
+		// TODO This is inefficient. 
+		
+		for(ResidentNode resident: this.getMapFilledResidentNodes().values()){
+			int argNumberActual = 1; 
+			int tamArgumentList = resident.getArgumentList().size(); 
+			
+			while(argNumberActual <= tamArgumentList){
+				boolean find = false; 
+				Argument argumentOfPosition = null; 
+				for(Argument argument: resident.getArgumentList()){
+					if(argument.getArgNumber() == argNumberActual){
+						find = true; 
+						argumentOfPosition = argument; 
+						break; 
+					}
+				}
+				if(!find){
+					throw new IllegalStateException(resident + " has no argument in position " + argNumberActual);
+				}
+				else{
+					try{
+					   resident.addArgument(argumentOfPosition.getOVariable(), false);
+					}
+					catch(Exception e){
+						throw new IllegalStateException(""+resident,e);
+					}
+				}
+				argNumberActual++; 
+			}
+		}
+		
+		for(InputNode input: this.getMapFilledInputNodes().values()){
+			
+			if(input.getInputInstanceOf() instanceof ResidentNode){
+				input.updateResidentNodePointer(); 
+				for(Argument argument: input.getArgumentList()){
+					try{
+					   input.getResidentNodePointer().addOrdinaryVariable(
+							   argument.getOVariable(), argument.getArgNumber() - 1);
+					   input.updateLabel(); 
+					}
+					catch(OVDontIsOfTypeExpected e){
+						new InternalErrorDialog(); 
+						e.printStackTrace(); 
+					}
+					catch(Exception e){
+						e.printStackTrace();
+						Debug.println(this.getClass(), "Error: the argument " + argument.getName() 
+								+ " in node " + input.getName() + " is not set..."); 
+						// TODO... problems when the arguments of the resident node aren't set... 
+					}
+					
+				}
+			}
+			
+		}
+	}
+	
+
+	/**
+	 * Builds formula trees for all context nodes in mapTopLevelContextNodes.
+	 * @param mapTopLevelContextNodes : a map containing all top level context nodes (context nodes that are not inner nodes)
+	 * @param mebn : the multi-entity bayesian network to be updated
+	 */
+	protected void buildFormulaTrees( Map<String, ContextNode> mapTopLevelContextNodes, MultiEntityBayesianNetwork mebn) {
+		for(ContextNode context: mapTopLevelContextNodes.values()){
+			context.setFormulaTree(buildFormulaTree(context)); 
+		}
+	}
+	
+
+	/**
+	 * Builds up a context node's formula tree.
+	 * @param contextNode : a context node to be updated
+	 * @return a formula tree
+	 * 
+	 * @deprecated TODO this method should be moved to {@link ContextNode} in the future.
+	 */
+	protected NodeFormulaTree buildFormulaTree(ContextNode contextNode){
+		
+		
+		NodeFormulaTree nodeFormulaRoot; 
+		NodeFormulaTree nodeFormulaChild; 
+		
+		nodeFormulaRoot = this.getMEBNFactory().createNodeFormulaTree("formula", EnumType.FORMULA, 	EnumSubType.NOTHING, null);  
+    	
+		Debug.println("Entrou no build " +  contextNode.getName()); 
+		
+		// the root is a builtIn 
+		
+		Object obj = this.getMapIsContextInstanceOf().get(contextNode); 
+		
+		if((obj instanceof BuiltInRV)){
+			BuiltInRV builtIn = (BuiltInRV) obj; 
+			
+			EnumType type = EnumType.EMPTY;
+			EnumSubType subType = EnumSubType.NOTHING; 
+			
+			if(builtIn instanceof BuiltInRVForAll){
+				type = EnumType.QUANTIFIER_OPERATOR;
+				subType = EnumSubType.FORALL; 
+			}
+			else			
+			if(builtIn instanceof BuiltInRVExists){
+				type = EnumType.QUANTIFIER_OPERATOR;
+				subType = EnumSubType.EXISTS; 
+			}
+			else			
+				if(builtIn instanceof BuiltInRVAnd){
+					type = EnumType.SIMPLE_OPERATOR;
+					subType = EnumSubType.AND; 
+				}
+				else			
+					if(builtIn instanceof BuiltInRVOr){
+						type = EnumType.SIMPLE_OPERATOR;
+						subType = EnumSubType.OR; 
+					}
+					else			
+						if(builtIn instanceof BuiltInRVNot){
+							type = EnumType.SIMPLE_OPERATOR;
+							subType = EnumSubType.NOT; 
+						}
+						else			
+							if(builtIn instanceof BuiltInRVEqualTo){
+								type = EnumType.SIMPLE_OPERATOR;
+								subType = EnumSubType.EQUALTO; 
+							}
+							else			
+								if(builtIn instanceof BuiltInRVIff){
+									type = EnumType.SIMPLE_OPERATOR;
+									subType = EnumSubType.IFF; 
+								}
+								else			
+									if(builtIn instanceof BuiltInRVImplies){
+										type = EnumType.SIMPLE_OPERATOR;
+										subType = EnumSubType.IMPLIES; 
+									}; 
+			
+			
+			nodeFormulaRoot = this.getMEBNFactory().createNodeFormulaTree(builtIn.getName(), type, subType, builtIn); 
+		    nodeFormulaRoot.setMnemonic(builtIn.getMnemonic()); 
+			
+			List<Argument> argumentList = putArgumentListInOrder(contextNode.getArgumentList()); 
+		  		    
+		    for(Argument argument: argumentList){
+		    	if(argument.getOVariable()!= null){
+		    		OrdinaryVariable ov = argument.getOVariable(); 
+		    		nodeFormulaChild = this.getMEBNFactory().createNodeFormulaTree(ov.getName(), EnumType.OPERAND, EnumSubType.OVARIABLE, ov); 
+		    		nodeFormulaRoot.addChild(nodeFormulaChild); 
+		    	}
+		    	else{
+		    		if(argument.getArgumentTerm() != null){
+		    			
+		    			MultiEntityNode multiEntityNode = argument.getArgumentTerm(); 
+		    			
+		    			if(multiEntityNode instanceof ResidentNode){
+		    				ResidentNodePointer residentNodePointer = this.getMEBNFactory().createResidentNodePointer((ResidentNode)multiEntityNode, contextNode); 
+		    				nodeFormulaChild = this.getMEBNFactory().createNodeFormulaTree(multiEntityNode.getName(), EnumType.OPERAND, EnumSubType.NODE, residentNodePointer); 
+		    				nodeFormulaRoot.addChild(nodeFormulaChild); 
+		    				
+		    				//Adjust the arguments of the resident node 
+		    				
+		    				
+		    			}
+		    			else{
+		    				if(multiEntityNode instanceof ContextNode){
+		    					NodeFormulaTree child = buildFormulaTree((ContextNode)multiEntityNode);
+		    					nodeFormulaRoot.addChild(child); 
+		    				}
+		    			}
+		    		}
+		    		else{
+						if(argument.getEntityTerm() != null){
+							nodeFormulaChild = this.getMEBNFactory().createNodeFormulaTree(argument.getEntityTerm().getName(), EnumType.OPERAND, EnumSubType.ENTITY, argument.getEntityTerm());
+							nodeFormulaRoot.addChild(nodeFormulaChild); 
+						}
+		    		}
+		    	}
+		    	
+		    }
+		    
+		}
+		else{
+			if((obj instanceof ResidentNode)){
+				ResidentNodePointer residentNodePointer = this.getMEBNFactory().createResidentNodePointer((ResidentNode)obj, contextNode); 
+				nodeFormulaRoot = this.getMEBNFactory().createNodeFormulaTree(((ResidentNode)obj).getName(), EnumType.OPERAND, EnumSubType.NODE, residentNodePointer); 
+				
+				List<Argument> argumentList = putArgumentListInOrder(contextNode.getArgumentList()); 
+			  	for(Argument argument: argumentList){
+					
+					if(argument.getOVariable()!= null){
+						OrdinaryVariable ov = argument.getOVariable(); 
+						try{
+						    residentNodePointer.addOrdinaryVariable(ov, argument.getArgNumber() - 1); 
+						}
+						catch(Exception e){
+							e.printStackTrace(); 
+						}
+					}
+					else{
+						
+					}		
+				}
+				
+			}
+		}
+		
+		return nodeFormulaRoot; 
+	}
+	
+
+	/**
+	 * Put the list of argument in order (for the argNumber atribute of the <Argument>. 
+	 * 
+	 * pos-conditions: the <argumentListOriginal> will be empty
+	 * 
+	 * @param argumentListOriginal the original list
+	 * @return a new list with the arguments in order
+	 * @deprecated TODO this method should be moved to {@link ContextNode} in the future.
+	 */
+	private List<Argument> putArgumentListInOrder(List<Argument> argumentListOriginal){
+	    ArrayList<Argument> argumentList = new ArrayList<Argument>(); 
+	    int i = 1; /* number of the actual argument */
+	    while(argumentListOriginal.size() > 0){
+	    	Argument argumentActual = null; 
+	    	for(Argument argument: argumentListOriginal){
+	    		if(argument.getArgNumber() == i){
+	    			argumentActual = argument;
+	    			break; 
+	    		}
+	    	}
+	    	argumentList.add(argumentActual);
+	    	argumentListOriginal.remove(argumentActual);
+	    	i++; 
+	    }
+	    
+	    return argumentList; 
+		
 	}
 	
 	/**
@@ -448,6 +746,41 @@ public class OWLAPICompatiblePROWL2IO
 	}
 
 
+	/**
+	 * @return {@link #getOntologyPrefixManager(null)}
+	 * @see #getOntologyPrefixManager(OWLOntology)
+	 */
+	protected PrefixManager getDefaultPrefixManager() {
+		return this.getOntologyPrefixManager(null);
+	}
+	
+
+	/**
+	 * Uses {@link #getLastOWLReasoner()} in order to obtain individuals of a class expression from an ontology.
+	 * If {@link #getLastOWLReasoner()} is null, then only the asserted individuals in ontology will be returned.
+	 * @param owlClassExpression
+	 * @param ontology
+	 * @return
+	 */
+	public Set<OWLIndividual> getOWLIndividuals(OWLClassExpression owlClassExpression, OWLOntology ontology) {
+		Set<OWLIndividual> ret = new HashSet<OWLIndividual>();
+		
+		// try using reasoner
+		if (this.getLastOWLReasoner() != null) {
+			NodeSet<OWLNamedIndividual> individuals = this.getLastOWLReasoner().getInstances(owlClassExpression, false);	// obtain indirect individuals as well
+			if (individuals != null) {
+				ret.addAll(individuals.getFlattened());
+				// comment the following return if you want this method to be safer (returns individuals even when the reasoner detects unsolvable individuals)
+				return ret;
+			}
+		} else {
+			throw new UnsupportedOperationException("Current version cannot extract individuals without an OWL-DL reasoner.");
+		}
+		
+		return ret;
+	}
+
+
 
 	/*
 	 * (non-Javadoc)
@@ -482,7 +815,7 @@ public class OWLAPICompatiblePROWL2IO
 		
 		if (mTheoryObject != null) {
 			if (mTheoryObject instanceof OWLEntity) {
-				mtheoryName = this.extractName(ontology, ((OWLEntity)mTheoryObject));
+				mtheoryName = this.extractName(((OWLEntity)mTheoryObject));
 				mebn.setName(mtheoryName); 
 			} 
 		}
@@ -506,7 +839,7 @@ public class OWLAPICompatiblePROWL2IO
 				continue;	// ignore objects that does not have an ID
 			}
 			// remove prefixes from name
-			String nameWithoutPrefix = this.extractName(ontology, (OWLEntity)owlObject);
+			String nameWithoutPrefix = this.extractName((OWLEntity)owlObject);
 			if (nameWithoutPrefix.startsWith(SaverPrOwlIO.MFRAG_NAME_PREFIX)) {
 				try {
 					nameWithoutPrefix = nameWithoutPrefix.substring(SaverPrOwlIO.MFRAG_NAME_PREFIX.length());
@@ -529,9 +862,102 @@ public class OWLAPICompatiblePROWL2IO
 			
 			
 			// the mapping still contains the original name (with no prefix removal)
-			mapDomainMFrag.put(this.extractName(ontology, (OWLEntity)owlObject), domainMFrag); 
+			mapDomainMFrag.put(this.extractName((OWLEntity)owlObject), domainMFrag); 
 		}	
 		return mapDomainMFrag;
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.io.mebn.prowl2.owlapi.IPROWL2ModelUser#extractName(org.semanticweb.owlapi.model.OWLObject)
+	 */
+	public String extractName(OWLObject owlObject) {
+		return this.getProwlModelUserDelegator().extractName(owlObject);
+	}
+	
+
+	/**
+	 * Extracts the comments from an owl entity
+	 * @param entity 
+	 * @param ontology : the ontology being manipulated
+	 * @return a comment as a string or a null value if it is not found
+	 */
+	public String getDescription(OWLOntology ontology, OWLEntity entity) {
+		if (entity == null) {
+			return "";
+		}
+		
+		// extract rdfs:comments
+		OWLAnnotationProperty commentProperty = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLAnnotationProperty(OWLRDFVocabulary.RDFS_COMMENT.getIRI());
+		Collection<OWLAnnotation> annotationObjects = EntitySearcher.getAnnotationObjects(entity, ontology, commentProperty);
+		if (annotationObjects != null && !annotationObjects.isEmpty()) {
+			String appendedComments = "";
+			
+			for (OWLAnnotation annotation : annotationObjects) {
+				if (annotation.getValue() instanceof OWLLiteral) {
+					OWLLiteral value = (OWLLiteral) annotation.getValue();
+					appendedComments += value.getLiteral() + "\n";
+				}
+			}
+			
+			return appendedComments;
+		}
+		
+		// if comment was not found, return full IRI
+		Debug.println("rdfs:comment property not found for entity " + entity + ". Comment property was " + commentProperty);
+		return entity.toString();
+	}
+	
+	/**
+	 * Extracts the comments from a owl individual
+	 * @param individual
+	 * @param ontology : the ontology being manipulated
+	 * @return a comment as a string or a null value if it is not found
+	 * @see #getDescription(OWLOntology, OWLEntity)
+	 */
+	public String getDescription(OWLOntology ontology, OWLIndividual individual) {
+		try {
+			return this.getDescription(ontology, (OWLEntity)(individual.asOWLNamedIndividual()));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+
+	/**
+	 * Uses {@link #getLastOWLReasoner()} in order to obtain subclasses of a class expression from an ontology.
+	 * If {@link #getLastOWLReasoner()} is null, then only the asserted individuals in ontology will be returned.
+	 * @param owlClassExpression
+	 * @param ontology
+	 * @return
+	 * @see #getOWLSuperclasses(OWLClassExpression, OWLOntology)
+	 */
+	public Set<OWLClassExpression> getOWLSubclasses(OWLClassExpression owlClassExpression, OWLOntology ontology) {
+		Set<OWLClassExpression> ret = new HashSet<OWLClassExpression>();
+		
+		// try using reasoner 
+		if (this.getLastOWLReasoner() != null) {
+			NodeSet<OWLClass> subclasses = this.getLastOWLReasoner().getSubClasses(owlClassExpression, false);	// obtain indirect subclasses as well
+			if (subclasses != null) {
+				ret.addAll(subclasses.getFlattened());
+				// comment the following try-catch and return if you want this method to work even when reasoner detects inconsistencies (unresolvable subclasses)
+				try {
+					// remove the nothing from returned subclasses
+					ret.removeAll(this.getLastOWLReasoner().getUnsatisfiableClasses().getEntities());
+//						ret.remove(ontology.getOWLOntologyManager().getOWLDataFactory().getOWLNothing());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				return ret;
+			}
+		} else {
+			throw new UnsupportedOperationException("Current version cannot extract subclasses without an OWL-DL reasoner.");
+		}
+		
+		
+		
+		return ret;
 	}
 	
 	/*
@@ -576,7 +1002,7 @@ public class OWLAPICompatiblePROWL2IO
 			}
 			
 			try{
-				String objectEntityName = this.extractName(ontology, subClass);
+				String objectEntityName = this.extractName(subClass);
 				
 				// try to handle parent of current object entity
 				ObjectEntity parentObjectEntity = null;
@@ -588,7 +1014,7 @@ public class OWLAPICompatiblePROWL2IO
 				// if the only direct ancestor was owl:Thing, then this is a root object entity right below owl:Thing (keep parent as null). Otherwise, there is a superclass
 				if (!(ancestors.isEmpty())) {
 					// TODO Current version allows only 1 superclass. Must allow multiple inheritance.
-					String superEntityName = this.extractName(ontology, ancestors.iterator().next().asOWLClass());	// extract the 1st parent
+					String superEntityName = this.extractName(ancestors.iterator().next().asOWLClass());	// extract the 1st parent
 					parentObjectEntity = mebn.getObjectEntityContainer().getObjectEntityByName(superEntityName);
 					if (parentObjectEntity == null) {
 						// parent was not loaded yet. Load later
@@ -4665,11 +5091,13 @@ public class OWLAPICompatiblePROWL2IO
 	 * @see #getDomainResidentCache() 
 	 */
 	public void resetCache() {
+
 		try {
-			super.resetCache();
-		} catch (Throwable t) {
-			t.printStackTrace();
+			this.setOntologyPrefixCache(new HashMap<OWLOntology, PrefixManager>());
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
+	
 		try {
 			// initialize some maps
 			this.setMapFilledInputNodes(new HashMap<String, InputNode>());
@@ -5491,7 +5919,7 @@ public class OWLAPICompatiblePROWL2IO
 	 * @see #loadObjectEntityIndividuals(OWLOntology, MultiEntityBayesianNetwork)
 	 * @return the mapLoadedObjectEntityIndividuals
 	 */
-	protected Map<String, ObjectEntityInstance> getMapLoadedObjectEntityIndividuals() {
+	public Map<String, ObjectEntityInstance> getMapLoadedObjectEntityIndividuals() {
 		return mapLoadedObjectEntityIndividuals;
 	}
 
@@ -5507,4 +5935,231 @@ public class OWLAPICompatiblePROWL2IO
 		this.mapLoadedObjectEntityIndividuals = mapLoadedObjectEntityIndividuals;
 	}
 	
+
+	/**
+	 * A mapping from names to categorical state entities.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @return the mapCategoricalStates
+	 */
+	public Map<String, CategoricalStateEntity> getMapCategoricalStates() {
+		return mapCategoricalStates;
+	}
+
+	/**
+	 * A mapping from names to categorical state entities.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @param mapCategoricalStates the mapCategoricalStates to set
+	 */
+	protected void setMapCategoricalStates(
+			Map<String, CategoricalStateEntity> mapCategoricalStates) {
+		this.mapCategoricalStates = mapCategoricalStates;
+	}
+	
+
+	/**
+	 * A mapping from names to nodes (resident, input, context or ordinary variables).
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @return the mapLoadedNodes
+	 */
+	public Map<String, INode> getMapLoadedNodes() {
+		return mapLoadedNodes;
+	}
+
+	/**
+	 * A mapping from names to nodes (resident, input, context or ordinary variables).
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @param mapLoadedNodes the mapLoadedNodes to set
+	 */
+	protected void setMapLoadedNodes(Map<String, INode> mapLoadedNodes) {
+		this.mapLoadedNodes = mapLoadedNodes;
+	}
+	
+
+	/**
+	 * A mapping from names to built in random variables (which could not be stored in {@link #getMapLoadedNodes()}) because built in RVs do not share a common interface.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @return the mapBuiltInRV
+	 */
+	public Map<String, BuiltInRV> getMapBuiltInRV() {
+		return mapBuiltInRV;
+	}
+
+	/**
+	 * A mapping from names to built in random variables (which could not be stored in {@link #getMapLoadedNodes()}) because built in RVs do not share a common interface.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @param mapBuiltInRV the mapBuiltInRV to set
+	 */
+	protected void setMapBuiltInRV(Map<String, BuiltInRV> mapBuiltInRV) {
+		this.mapBuiltInRV = mapBuiltInRV;
+	}
+
+
+	/**
+	 * A mapping from names to instances of resident nodes that its content were already filled in.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @return the mapFilledResidentNodes
+	 * @see #loadDomainResidentNode(OWLOntology, MultiEntityBayesianNetwork)
+	 */
+	public Map<String, ResidentNode> getMapFilledResidentNodes() {
+		return mapFilledResidentNodes;
+	}
+
+	/**
+	 * A mapping from names to instances of resident nodes that its content were already filled in.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @param mapFilledResidentNodes the mapFilledResidentNodes to set
+	 * @see #loadDomainResidentNode(OWLOntology, MultiEntityBayesianNetwork)
+	 */
+	protected void setMapFilledResidentNodes(
+			Map<String, ResidentNode> mapFilledResidentNodes) {
+		this.mapFilledResidentNodes = mapFilledResidentNodes;
+	}
+
+	/**
+	 * A mapping from names to instances of input nodes that its content were already filled in.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @return the mapFilledInputNodes
+	 * @see #loadGenerativeInputNode(OWLOntology, MultiEntityBayesianNetwork)
+	 */
+	public Map<String, InputNode> getMapFilledInputNodes() {
+		return mapFilledInputNodes;
+	}
+
+	/**
+	 * A mapping from names to instances of input nodes that its content were already filled in.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @param mapFilledInputNodes the mapFilledInputNodes to set
+	 * @see #loadGenerativeInputNode(OWLOntology, MultiEntityBayesianNetwork)
+	 */
+	protected void setMapFilledInputNodes(Map<String, InputNode> mapFilledInputNodes) {
+		this.mapFilledInputNodes = mapFilledInputNodes;
+	}
+	
+
+	/**
+	 * A mapping storing onty top level context nodes (context nodes that are not inner nodes).
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @return the mapTopLevelContextNodes
+	 */
+	public Map<String, ContextNode> getMapTopLevelContextNodes() {
+		return mapTopLevelContextNodes;
+	}
+
+	/**
+	 * A mapping storing onty top level context nodes (context nodes that are not inner nodes).
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @param mapTopLevelContextNodes the mapTopLevelContextNodes to set
+	 */
+	protected void setMapTopLevelContextNodes(
+			Map<String, ContextNode> mapTopLevelContextNodes) {
+		this.mapTopLevelContextNodes = mapTopLevelContextNodes;
+	}
+
+	
+
+	/**
+	 * A mapping from names to instances of ordinary variables that its content were already filled in.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @see #loadOrdinaryVariable(OWLOntology, MultiEntityBayesianNetwork)
+	 * @return the mapFilledOrdinaryVariables
+	 */
+	public Map<String, OrdinaryVariable> getMapFilledOrdinaryVariables() {
+		return mapFilledOrdinaryVariables;
+	}
+
+	/**
+	 * A mapping from names to instances of ordinary variables that its content were already filled in.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @see #loadOrdinaryVariable(OWLOntology, MultiEntityBayesianNetwork)
+	 * @param mapFilledOrdinaryVariables the mapFilledOrdinaryVariables to set
+	 */
+	protected void setMapFilledOrdinaryVariables(
+			Map<String, OrdinaryVariable> mapFilledOrdinaryVariables) {
+		this.mapFilledOrdinaryVariables = mapFilledOrdinaryVariables;
+	}
+
+	/**
+	 * A mapping from names to instances of generic arguments that its content were already filled in.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @see #loadArgRelationship(OWLOntology, MultiEntityBayesianNetwork)
+	 * @return the mapFilledArguments
+	 */
+	public Map<String, Argument> getMapFilledArguments() {
+		return mapFilledArguments;
+	}
+
+	/**
+	 * A mapping from names to instances of generic arguments that its content were already filled in.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @see #loadArgRelationship(OWLOntology, MultiEntityBayesianNetwork)
+	 * @param mapFilledArguments the mapFilledArguments to set
+	 */
+	protected void setMapFilledArguments(Map<String, Argument> mapFilledArguments) {
+		this.mapFilledArguments = mapFilledArguments;
+	}
+
+	/**
+	 * A mapping from names to instances of simple arguments that its content were already filled in.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @see #loadSimpleArgRelationship(OWLOntology, MultiEntityBayesianNetwork)
+	 * @return the mapFilledSimpleArguments
+	 */
+	public Map<String, Argument> getMapFilledSimpleArguments() {
+		return mapFilledSimpleArguments;
+	}
+
+	/**
+	 * A mapping from names to instances of simple arguments that its content were already filled in.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @see #loadSimpleArgRelationship(OWLOntology, MultiEntityBayesianNetwork)
+	 * @param mapFilledSimpleArguments the mapFilledSimpleArguments to set
+	 */
+	protected void setMapFilledSimpleArguments(
+			Map<String, Argument> mapFilledSimpleArguments) {
+		this.mapFilledSimpleArguments = mapFilledSimpleArguments;
+	}
+	
+
+	/**
+	 * A mapping from a context node's name to either an instance of {@link ResidentNode} or {@link BuiltInRV}.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @return the mapIsContextInstanceOf
+	 * @deprecated common interface for the mapped object should be created, instead of using the generic {@link java.lang.Object}
+	 */
+	protected Map<ContextNode, Object> getMapIsContextInstanceOf() {
+		return mapIsContextInstanceOf;
+	}
+
+	/**
+	 * A mapping from a context node's name to either an instance of {@link ResidentNode} or {@link BuiltInRV}.
+	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntology, MultiEntityBayesianNetwork)
+	 * and {@link #loadBuiltInRV(OWLOntology, MultiEntityBayesianNetwork)}).
+	 * @param mapIsContextInstanceOf the mapIsContextInstanceOf to set
+	 * @deprecated common interface for the mapped object should be created, instead of using the generic {@link java.lang.Object}
+	 */
+	protected void setMapIsContextInstanceOf(
+			Map<ContextNode, Object> mapIsContextInstanceOf) {
+		this.mapIsContextInstanceOf = mapIsContextInstanceOf;
+	}
+
+
 }
