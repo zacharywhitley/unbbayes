@@ -46,7 +46,7 @@ public class PROWL2IndividualsExtractorImpl implements
 	/** 
 	 * This method returns PR-OWL2 individuals and PR-OWL1 individuals too. It performs
 	 * string-based namespace comparisons in order to decide whether to include or exclude individuals.
-	 * @see unbbayes.io.mebn.owlapi.IPROWL2IndividualsExtractor#getPROWL2Individuals(org.semanticweb.owlapi.model.OWLOntology, org.semanticweb.owlapi.reasoner.OWLReasoner)
+	 * @see unbbayes.io.mebn.prowl2.owlapi.IPROWL2IndividualsExtractor#getPROWL2Individuals(org.semanticweb.owlapi.model.OWLOntology, org.semanticweb.owlapi.reasoner.OWLReasoner)
 	 */
 	public Collection<OWLIndividual> getPROWL2Individuals(OWLOntology ontology, OWLReasoner reasoner) {
 		// this version does not use a reasoner
@@ -125,7 +125,7 @@ public class PROWL2IndividualsExtractorImpl implements
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.io.mebn.owlapi.IPROWL2IndividualsExtractor#resetPROWL2IndividualsExtractor()
+	 * @see unbbayes.io.mebn.prowl2.owlapi.IPROWL2IndividualsExtractor#resetPROWL2IndividualsExtractor()
 	 */
 	public void resetPROWL2IndividualsExtractor() {
 		// TODO Auto-generated method stub
@@ -134,7 +134,7 @@ public class PROWL2IndividualsExtractorImpl implements
 
 //	/*
 //	 * (non-Javadoc)
-//	 * @see unbbayes.io.mebn.owlapi.IPROWL2IndividualsExtractor#getNonPROWL2Individuals(org.semanticweb.owlapi.model.OWLOntology, org.semanticweb.owlapi.reasoner.OWLReasoner)
+//	 * @see unbbayes.io.mebn.prowl2.owlapi.IPROWL2IndividualsExtractor#getNonPROWL2Individuals(org.semanticweb.owlapi.model.OWLOntology, org.semanticweb.owlapi.reasoner.OWLReasoner)
 //	 */
 //	public Collection<OWLIndividual> getNonPROWL2Individuals( OWLOntology ontology, OWLReasoner reasoner) {
 //		// this version does not use a reasoner

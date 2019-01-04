@@ -17,10 +17,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.editor.owl.model.inference.NoOpReasoner;
-import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
-import org.protege.editor.owl.model.inference.ReasonerStatus;
+
 import org.semanticweb.owlapi.model.AddAxiom;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLAxiom;
@@ -47,12 +44,12 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.io.exception.UBIOException;
 import unbbayes.io.mebn.PROWLModelUser;
-import unbbayes.io.mebn.owlapi.DefaultPROWL2ModelUser;
-import unbbayes.io.mebn.owlapi.INonPROWLClassExtractor;
-import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
-import unbbayes.io.mebn.owlapi.IPROWL2ModelUser;
-import unbbayes.io.mebn.prowl2.owlapi.DefaultNonPROWLClassExtractor;
-import unbbayes.io.mebn.prowl2.protege.ProtegeStorageImplementorDecorator;
+import unbbayes.io.mebn.prowl2.owlapi.DefaultPROWL2ModelUser;
+import unbbayes.io.mebn.prowl2.owlapi.INonPROWLClassExtractor;
+import unbbayes.io.mebn.prowl2.owlapi.IOWLAPIStorageImplementorDecorator;
+import unbbayes.io.mebn.prowl2.owlapi.IPROWL2ModelUser;
+import unbbayes.io.mebn.prowl2.prowl2.owlapi.DefaultNonPROWLClassExtractor;
+import unbbayes.io.mebn.prowl2.prowl2.protege.ProtegeStorageImplementorDecorator;
 import unbbayes.prs.mebn.Argument;
 import unbbayes.prs.mebn.ContextNode;
 import unbbayes.prs.mebn.IResidentNode;
@@ -4661,7 +4658,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.io.mebn.IPROWL2ModelUser#getOntologyPrefixManager(org.semanticweb.owlapi.model.OWLOntology)
+	 * @see unbbayes.io.mebn.prowl2.IPROWL2ModelUser#getOntologyPrefixManager(org.semanticweb.owlapi.model.OWLOntology)
 	 */
 	public PrefixManager getOntologyPrefixManager(OWLOntology ontology) {
 		// just delegate...
@@ -4707,7 +4704,7 @@ public class OWL2KnowledgeBase implements KnowledgeBase, IOWLClassExpressionPars
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.io.mebn.IPROWL2ModelUser#extractName(org.semanticweb.owlapi.model.OWLObject)
+	 * @see unbbayes.io.mebn.prowl2.IPROWL2ModelUser#extractName(org.semanticweb.owlapi.model.OWLObject)
 	 */
 	public String extractName(OWLObject owlObject) {
 		return this.getProwlModelUserDelegator().extractName(owlObject);

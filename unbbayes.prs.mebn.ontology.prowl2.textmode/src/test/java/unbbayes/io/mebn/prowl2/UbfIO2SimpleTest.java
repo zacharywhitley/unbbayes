@@ -1,4 +1,4 @@
-package unbbayes.io.mebn;
+package unbbayes.io.mebn.prowl2;
 
 import java.io.File;
 import java.io.IOException;
@@ -9,6 +9,8 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
+import unbbayes.io.mebn.MebnIO;
+import unbbayes.io.mebn.PROWLModelUser;
 import unbbayes.prs.Graph;
 import unbbayes.prs.mebn.MFrag;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
@@ -65,7 +67,7 @@ public class UbfIO2SimpleTest extends TestCase {
 		
 		// save the project as ubf + PR-OWL 2 file
 		
-		UbfIO2 io = UbfIO2.getInstance();
+		MebnIO io = UbfIO2Simple.getInstance();
 		
 		File tempFolder = Files.createTempDirectory(Paths.get(new File("./").toURI()), mebn.getName()).toFile();
 		tempFolder.deleteOnExit();
@@ -110,8 +112,8 @@ public class UbfIO2SimpleTest extends TestCase {
 	 */
 	public final void testLoadFile() {
 		Debug.setDebug(true);
-		
-		UbfIO2 io = UbfIO2.getInstance();
+
+		MebnIO io = UbfIO2Simple.getInstance();
 		assertNotNull(io);
 		
 		Graph graph;

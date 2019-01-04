@@ -18,7 +18,7 @@ import unbbayes.prs.mebn.ResidentNode;
  * This is a MEBN containing a map from MEBN elements (e.g. resident nodes, input nodes,
  * object entities) to the IRI of its correspondent OWL objects.
  * This is useful if MEBN elements should retain what was its original OWL Objects.
- * {@link unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWLIO} will fill the values
+ * {@link unbbayes.io.mebn.prowl2.owlapi.OWLAPICompatiblePROWLIO} will fill the values
  * of {@link #getIriMap()}.
  * The "definesUncertaintyOf" property (the one that associates
  * a resident node to an OWL property) of the PR-OWL2 definition will be implemented

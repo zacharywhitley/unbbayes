@@ -12,9 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.protege.editor.owl.model.OWLModelManager;
-import org.protege.editor.owl.model.inference.NoOpReasoner;
-import org.protege.editor.owl.model.inference.ProtegeOWLReasonerInfo;
 import org.semanticweb.owlapi.model.AddImport;
 import org.semanticweb.owlapi.model.IRI;
 import org.semanticweb.owlapi.model.OWLClass;
@@ -25,10 +22,7 @@ import org.semanticweb.owlapi.reasoner.OWLReasoner;
 
 import unbbayes.controller.mebn.IMEBNMediator;
 import unbbayes.io.exception.UBIOException;
-import unbbayes.io.mebn.owlapi.NonPROWL2ClassExtractorImpl;
-import unbbayes.io.mebn.prowl2.owlapi.OWLAPICompatiblePROWLIO;
-import unbbayes.io.mebn.prowl2.protege.Protege41CompatiblePROWL2IO;
-import unbbayes.io.mebn.prowl2.protege.ProtegeStorageImplementorDecorator;
+import unbbayes.io.mebn.prowl2.owlapi.NonPROWL2ClassExtractorImpl;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityContainer;
@@ -245,7 +239,7 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 	}
 	
 	/**
-	 * @return the isToUseSameOntology : if true, then the ontology in {@link unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator#getAdaptee()} 
+	 * @return the isToUseSameOntology : if true, then the ontology in {@link unbbayes.io.mebn.prowl2.owlapi.IOWLAPIStorageImplementorDecorator#getAdaptee()} 
 	 * at {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getStorageImplementor()} will be re-used in order to load or save findings and entity instances.
 	 * If false, then a new ontology must be selected for loading or saving findings and entity instances.
 	 */
@@ -254,7 +248,7 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 	}
 	
 	/**
-	 * @param isToUseSameOntology : if true, then the ontology in {@link unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator#getAdaptee()} 
+	 * @param isToUseSameOntology : if true, then the ontology in {@link unbbayes.io.mebn.prowl2.owlapi.IOWLAPIStorageImplementorDecorator#getAdaptee()} 
 	 * at {@link unbbayes.prs.mebn.MultiEntityBayesianNetwork#getStorageImplementor()} will be re-used in order to load or save findings and entity instances.
 	 * If false, then a new ontology must be selected for loading or saving findings and entity instances.
 	 */

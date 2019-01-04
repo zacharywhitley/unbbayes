@@ -52,7 +52,7 @@ public class NonPROWL2ClassExtractorImpl implements INonPROWLClassExtractor {
 	/**
 	 * Obtains all classes that does not contain {@link IPROWL2ModelUser#PROWL2_NAMESPACEURI} in its namespace.
 	 * OWL:Thing is not included.
-	 * @see unbbayes.io.mebn.owlapi.INonPROWLClassExtractor#getNonPROWLClasses(org.semanticweb.owlapi.model.OWLOntology)
+	 * @see unbbayes.io.mebn.prowl2.owlapi.INonPROWLClassExtractor#getNonPROWLClasses(org.semanticweb.owlapi.model.OWLOntology)
 	 */
 	public Collection<OWLClassExpression> getNonPROWLClasses(OWLOntology ontology) {
 		// use cache.
@@ -92,7 +92,7 @@ public class NonPROWL2ClassExtractorImpl implements INonPROWLClassExtractor {
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.io.mebn.owlapi.DefaultNonPROWLClassExtractor#getPROWLClasses(org.semanticweb.owlapi.model.OWLOntology)
+	 * @see unbbayes.io.mebn.prowl2.owlapi.DefaultNonPROWLClassExtractor#getPROWLClasses(org.semanticweb.owlapi.model.OWLOntology)
 	 */
 	public Collection<OWLClassExpression> getPROWLClasses(OWLOntology ontology) {
 		Collection<OWLClassExpression> ret = new HashSet<OWLClassExpression>();
@@ -184,7 +184,7 @@ public class NonPROWL2ClassExtractorImpl implements INonPROWLClassExtractor {
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.io.mebn.owlapi.INonPROWLClassExtractor#resetNonPROWLClassExtractor()
+	 * @see unbbayes.io.mebn.prowl2.owlapi.INonPROWLClassExtractor#resetNonPROWLClassExtractor()
 	 */
 	public void resetNonPROWLClassExtractor() {
 		this.setNonPROWLClassesCache(null);
@@ -193,7 +193,7 @@ public class NonPROWL2ClassExtractorImpl implements INonPROWLClassExtractor {
 
 	/**
 	 * @deprecated use {@link #getPROWLOntologyNamespaceURIs()} instead
-	 * @see unbbayes.io.mebn.owlapi.DefaultNonPROWLClassExtractor#getProwlOntologyNamespaceURI()
+	 * @see unbbayes.io.mebn.prowl2.owlapi.DefaultNonPROWLClassExtractor#getProwlOntologyNamespaceURI()
 	 */
 	@Deprecated
 	public String getProwlOntologyNamespaceURI() {
@@ -207,7 +207,7 @@ public class NonPROWL2ClassExtractorImpl implements INonPROWLClassExtractor {
 
 	/**
 	 * @deprecated use {@link #setPROWLOntologyNamespaceURIs(Collection)} or add elements in {@link #getPROWLOntologyNamespaceURIs()} instead.
-	 * @see unbbayes.io.mebn.owlapi.DefaultNonPROWLClassExtractor#setProwlOntologyNamespaceURI(java.lang.String)
+	 * @see unbbayes.io.mebn.prowl2.owlapi.DefaultNonPROWLClassExtractor#setProwlOntologyNamespaceURI(java.lang.String)
 	 */
 	@Deprecated
 	public void setProwlOntologyNamespaceURI(String prowlOntologyNamespaceURI) {

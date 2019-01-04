@@ -1,4 +1,4 @@
-package unbbayes.io.mebn.owlapi;
+package unbbayes.io.mebn.prowl2.owlapi;
 
 import junit.framework.TestCase;
 

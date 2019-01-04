@@ -6,8 +6,8 @@
   <includeBaseDirectory>true</includeBaseDirectory>
   <fileSets>
    <fileSet>
-      <directory>plugins/unbbayes.io.mebn.UbfIO2</directory>
-      <outputDirectory>../unbbayes.io.mebn.UbfIO2</outputDirectory>
+      <directory>plugins/unbbayes.io.mebn.prowl2.UbfIO2</directory>
+      <outputDirectory>../unbbayes.io.mebn.prowl2.UbfIO2</outputDirectory>
       <includes>
         <include>**/*</include>
       </includes>

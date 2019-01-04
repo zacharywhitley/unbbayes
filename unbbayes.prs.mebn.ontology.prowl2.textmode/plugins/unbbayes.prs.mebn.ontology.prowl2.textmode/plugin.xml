@@ -48,7 +48,7 @@
     </extension>
    
     <extension plugin-id="unbbayes.prs.mebn" point-id="MEBNIO" id="UbfIO2">
-        <parameter id="class" value="unbbayes.io.mebn.UbfIO2" />
+        <parameter id="class" value="unbbayes.io.mebn.prowl2.UbfIO2" />
         <parameter id="name" value="UnBBayes File with PR-OWL 2.0" />
     </extension>
     -->

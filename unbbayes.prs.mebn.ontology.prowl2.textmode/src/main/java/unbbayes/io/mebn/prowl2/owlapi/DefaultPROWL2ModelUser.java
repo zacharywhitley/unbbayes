@@ -46,7 +46,7 @@ public class DefaultPROWL2ModelUser implements IPROWL2ModelUser {
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.io.mebn.IPROWL2ModelUser#getOntologyPrefixManager(org.semanticweb.owlapi.model.OWLOntology)
+	 * @see unbbayes.io.mebn.prowl2.IPROWL2ModelUser#getOntologyPrefixManager(org.semanticweb.owlapi.model.OWLOntology)
 	 */
 	public PrefixManager getOntologyPrefixManager(OWLOntology ontology) {
 		// use PR-OWL prefix if no ontology was specified
@@ -105,7 +105,7 @@ public class DefaultPROWL2ModelUser implements IPROWL2ModelUser {
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.io.mebn.IPROWL2ModelUser#extractName(org.semanticweb.owlapi.model.OWLObject)
+	 * @see unbbayes.io.mebn.prowl2.IPROWL2ModelUser#extractName(org.semanticweb.owlapi.model.OWLObject)
 	 */
 	public String extractName(OWLObject owlObject) {
 		// assertions
@@ -167,7 +167,7 @@ public class DefaultPROWL2ModelUser implements IPROWL2ModelUser {
 	}
 	
 //	/**
-//	 * @see unbbayes.io.mebn.IPROWL2ModelUser#getNonPROWLClasses(org.semanticweb.owlapi.model.OWLOntology)
+//	 * @see unbbayes.io.mebn.prowl2.IPROWL2ModelUser#getNonPROWLClasses(org.semanticweb.owlapi.model.OWLOntology)
 //	 * @see #getNonPROWLClassesCache() : this is a cache of this method (it contains the last returned value). If
 //	 * this value is set to non-null, this method will just return {@link #getNonPROWLClassesCache()}
 //	 */

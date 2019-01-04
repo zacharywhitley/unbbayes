@@ -13,8 +13,8 @@ import org.semanticweb.owlapi.model.OWLOntology;
 import org.semanticweb.owlapi.model.OWLOntologyCreationException;
 import org.semanticweb.owlapi.model.OWLOntologyManager;
 
-import unbbayes.io.mebn.owlapi.IOWLAPIObjectEntityBuilder;
-import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
+import unbbayes.io.mebn.prowl2.owlapi.IOWLAPIObjectEntityBuilder;
+import unbbayes.io.mebn.prowl2.owlapi.IOWLAPIStorageImplementorDecorator;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.entity.IObjectEntityBuilder;
 import unbbayes.prs.mebn.entity.ObjectEntity;
@@ -34,8 +34,8 @@ import unbbayes.util.Debug;
  * This is an extension of {@link ObjectEntityContainer} which instantiates and manages
  * {@link OWLAPIObjectEntity} instead of {@link ObjectEntity}.
  * @author Shou Matsumoto
- * @see unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWLIO
- * @see unbbayes.io.mebn.owlapi.OWLAPICompatiblePROWL2IO
+ * @see unbbayes.io.mebn.prowl2.owlapi.OWLAPICompatiblePROWLIO
+ * @see unbbayes.io.mebn.prowl2.owlapi.OWLAPICompatiblePROWL2IO
  *
  */
 public class OWLAPIObjectEntityContainer extends ObjectEntityContainer {

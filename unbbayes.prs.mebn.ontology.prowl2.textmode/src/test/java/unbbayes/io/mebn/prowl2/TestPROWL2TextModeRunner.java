@@ -1,7 +1,7 @@
 /**
  * 
  */
-package unbbayes;
+package unbbayes.io.mebn.prowl2;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -14,8 +14,8 @@ import junit.framework.TestCase;
 import junit.framework.TestSuite;
 import junit.textui.TestRunner;
 import unbbayes.io.mebn.MebnIO;
-import unbbayes.io.mebn.owlapi.OWLAPIStorageImplementorDecorator;
-import unbbayes.io.mebn.prowl2.protege.Protege41CompatiblePROWL2IO;
+import unbbayes.io.mebn.prowl2.owlapi.OWLAPICompatiblePROWL2IO;
+import unbbayes.io.mebn.prowl2.owlapi.OWLAPIStorageImplementorDecorator;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNetwork;
 import unbbayes.prs.bn.TreeVariable;
@@ -26,9 +26,9 @@ import unbbayes.prs.mebn.entity.CategoricalStateEntity;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityInstance;
 import unbbayes.prs.mebn.kb.KnowledgeBase;
-import unbbayes.prs.mebn.kb.extension.ontology.protege.PROWL2KnowledgeBase;
-import unbbayes.prs.mebn.kb.extension.ontology.protege.PROWL2KnowledgeBaseBuilder;
 import unbbayes.prs.mebn.prowl2.SimplePROWL2TextModeRunner;
+import unbbayes.prs.mebn.prowl2.kb.extension.owlapi.PROWL2KnowledgeBase;
+import unbbayes.prs.mebn.prowl2.kb.extension.owlapi.PROWL2KnowledgeBaseBuilder;
 import unbbayes.util.Debug;
 
 /**
@@ -70,7 +70,7 @@ public class TestPROWL2TextModeRunner extends TestCase {
 		SimplePROWL2TextModeRunner textModeRunner = new SimplePROWL2TextModeRunner();
 		
 		// load owl (content in ubf is not needed when not using GUI)
-		MebnIO mebnIO = Protege41CompatiblePROWL2IO.newInstance();
+		MebnIO mebnIO = OWLAPICompatiblePROWL2IO.newInstance();
 		File owlFile = new File(getClass().getResource("/VehicleIdentificationTBox/VehicleIdentificationTBox.owl").toURI());
 		
 		// JUnit assertions. Ignore them if not using JUnit

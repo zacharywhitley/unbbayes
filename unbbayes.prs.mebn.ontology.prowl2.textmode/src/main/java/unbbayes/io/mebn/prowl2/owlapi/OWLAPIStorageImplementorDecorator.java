@@ -61,14 +61,14 @@ public class OWLAPIStorageImplementorDecorator implements IOWLAPIStorageImplemen
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.io.mebn.IOWLAPIStorageImplementorDecorator#getAdaptee()
+	 * @see unbbayes.io.mebn.prowl2.IOWLAPIStorageImplementorDecorator#getAdaptee()
 	 */
 	public OWLOntology getAdaptee() {
 		return adaptee;
 	}
 
 	/* (non-Javadoc)
-	 * @see unbbayes.io.mebn.IOWLAPIStorageImplementorDecorator#setAdaptee(org.semanticweb.owlapi.model.OWLOntology)
+	 * @see unbbayes.io.mebn.prowl2.IOWLAPIStorageImplementorDecorator#setAdaptee(org.semanticweb.owlapi.model.OWLOntology)
 	 */
 	public void setAdaptee(OWLOntology adaptee) {
 		if (this.adaptee == adaptee) {
@@ -104,7 +104,7 @@ public class OWLAPIStorageImplementorDecorator implements IOWLAPIStorageImplemen
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.io.mebn.IOWLAPIStorageImplementorDecorator#getOWLReasoner()
+	 * @see unbbayes.io.mebn.prowl2.IOWLAPIStorageImplementorDecorator#getOWLReasoner()
 	 */
 	public OWLReasoner getOWLReasoner() {
 		return this.owlReasoner;
@@ -112,7 +112,7 @@ public class OWLAPIStorageImplementorDecorator implements IOWLAPIStorageImplemen
 
 	/*
 	 * (non-Javadoc)
-	 * @see unbbayes.io.mebn.IOWLAPIStorageImplementorDecorator#setOWLReasoner(org.semanticweb.owlapi.reasoner.OWLReasoner)
+	 * @see unbbayes.io.mebn.prowl2.IOWLAPIStorageImplementorDecorator#setOWLReasoner(org.semanticweb.owlapi.reasoner.OWLReasoner)
 	 */
 	public void setOWLReasoner(OWLReasoner owlReasoner) {
 		this.owlReasoner = owlReasoner;

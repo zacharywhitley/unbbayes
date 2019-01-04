@@ -19,9 +19,9 @@ import org.semanticweb.owlapi.model.PrefixManager;
 import org.semanticweb.owlapi.util.OWLEntityRemover;
 import org.semanticweb.owlapi.util.OWLEntityRenamer;
 
-import unbbayes.io.mebn.owlapi.DefaultPROWL2ModelUser;
-import unbbayes.io.mebn.owlapi.IOWLAPIStorageImplementorDecorator;
-import unbbayes.io.mebn.owlapi.IPROWL2ModelUser;
+import unbbayes.io.mebn.prowl2.owlapi.DefaultPROWL2ModelUser;
+import unbbayes.io.mebn.prowl2.owlapi.IOWLAPIStorageImplementorDecorator;
+import unbbayes.io.mebn.prowl2.owlapi.IPROWL2ModelUser;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.ObjectEntityContainer;

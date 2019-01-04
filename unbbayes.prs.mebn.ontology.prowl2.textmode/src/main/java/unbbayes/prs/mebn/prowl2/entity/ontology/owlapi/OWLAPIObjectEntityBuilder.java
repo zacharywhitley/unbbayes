@@ -3,7 +3,7 @@
  */
 package unbbayes.prs.mebn.prowl2.entity.ontology.owlapi;
 
-import unbbayes.io.mebn.owlapi.IOWLAPIObjectEntityBuilder;
+import unbbayes.io.mebn.prowl2.owlapi.IOWLAPIObjectEntityBuilder;
 import unbbayes.prs.mebn.MultiEntityBayesianNetwork;
 import unbbayes.prs.mebn.entity.ObjectEntity;
 import unbbayes.prs.mebn.entity.exception.TypeException;
@@ -71,7 +71,7 @@ public class OWLAPIObjectEntityBuilder implements IOWLAPIObjectEntityBuilder {
 
 	/**
 	 * This will be used for the boolean value of {@link OWLAPIObjectEntity#OWLAPIObjectEntity(String, MultiEntityBayesianNetwork, boolean)}
-	 * @see unbbayes.io.mebn.owlapi.IOWLAPIObjectEntityBuilder#isToCreateOWLEntity()
+	 * @see unbbayes.io.mebn.prowl2.owlapi.IOWLAPIObjectEntityBuilder#isToCreateOWLEntity()
 	 */
 	public boolean isToCreateOWLEntity() {
 		return isToCreateOWLEntity;
