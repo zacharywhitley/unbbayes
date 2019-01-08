@@ -92,16 +92,16 @@
         <Class IRI="#unbbayes.io.XMLBIFIO_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.mebn.UbfIO"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO2"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2_Rule"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO2_Rule"/>
     </Declaration>
     <Declaration>
-        <Class IRI="#unbbayes.io.mebn.UbfIO_Rule"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO_Rule"/>
     </Declaration>
     <Declaration>
         <Class IRI="#unbbayes.io.xmlbif.version7"/>
@@ -362,13 +362,13 @@
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
                     <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO"/>
-                    <Class IRI="#unbbayes.io.mebn.UbfIO"/>
+                    <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
                     <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO2"/>
-                    <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+                    <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO2"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
@@ -539,17 +539,17 @@
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2_Rule"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO2_Rule"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO2"/>
-            <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+            <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO2"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
-        <Class IRI="#unbbayes.io.mebn.UbfIO_Rule"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO_Rule"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO"/>
-            <Class IRI="#unbbayes.io.mebn.UbfIO"/>
+            <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO"/>
         </ObjectSomeValuesFrom>
     </EquivalentClasses>
     <EquivalentClasses>
@@ -772,7 +772,7 @@
         <Class IRI="#unbbayes.gui.mebn.ontology.protege.2_Rule"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO2"/>
-            <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+            <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO2"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
@@ -853,37 +853,37 @@
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO"/>
         <Class IRI="#Features"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO2"/>
         <Class IRI="#Features"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO2"/>
         <ObjectHasValue>
             <ObjectProperty IRI="#equals"/>
             <NamedIndividual IRI="#UBFIO2"/>
         </ObjectHasValue>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2_Rule"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO2_Rule"/>
         <Class IRI="#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2_Rule"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO2_Rule"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="#has_unbbayes.prs.mebn"/>
             <Class IRI="#unbbayes.prs.mebn"/>
         </ObjectSomeValuesFrom>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO_Rule"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO_Rule"/>
         <Class IRI="#FeatureRules"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="#unbbayes.io.mebn.UbfIO_Rule"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO_Rule"/>
         <ObjectSomeValuesFrom>
             <ObjectProperty IRI="#has_unbbayes.prs.mebn"/>
             <Class IRI="#unbbayes.prs.mebn"/>
@@ -1151,8 +1151,8 @@
         <Class IRI="#unbbayes.io.DneIO"/>
         <Class IRI="#unbbayes.io.NetIO"/>
         <Class IRI="#unbbayes.io.XMLBIFIO"/>
-        <Class IRI="#unbbayes.io.mebn.UbfIO"/>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO2"/>
         <Class IRI="#unbbayes.io.xmlbif.version7"/>
         <Class IRI="#unbbayes.learning"/>
         <Class IRI="#unbbayes.learning.incrementalLearning"/>
@@ -1170,7 +1170,7 @@
         <Class IRI="#unbbayes.simulation.sampling.GibbsSampling"/>
     </DisjointClasses>
     <ClassAssertion>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO2"/>
         <NamedIndividual IRI="#UBFIO2"/>
     </ClassAssertion>
     <ClassAssertion>
@@ -1444,11 +1444,11 @@
     </ObjectPropertyRange>
     <ObjectPropertyRange>
         <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO"/>
-        <Class IRI="#unbbayes.io.mebn.UbfIO"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
         <ObjectProperty IRI="#has_unbbayes.io.mebn.UbfIO2"/>
-        <Class IRI="#unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="#unbbayes.io.mebn.prowl2.UbfIO2"/>
     </ObjectPropertyRange>
     <ObjectPropertyRange>
         <ObjectProperty IRI="#has_unbbayes.io.xmlbif.version7"/>

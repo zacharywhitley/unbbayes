@@ -87,13 +87,13 @@
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
                     <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.mebn.UbfIO"/>
-                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.prowl2.UbfIO"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>
                 <ObjectSomeValuesFrom>
                     <ObjectProperty IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#has_unbbayes.io.mebn.UbfIO2"/>
-                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2"/>
+                    <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.prowl2.UbfIO2"/>
                 </ObjectSomeValuesFrom>
             </ObjectComplementOf>
             <ObjectComplementOf>

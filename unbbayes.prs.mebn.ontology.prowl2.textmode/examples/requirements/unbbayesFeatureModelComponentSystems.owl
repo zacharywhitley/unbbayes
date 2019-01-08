@@ -72,11 +72,11 @@
         <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.prowl2.UbfIO"/>
         <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
     </SubClassOf>
     <SubClassOf>
-        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.UbfIO2"/>
+        <Class IRI="http://www.cic.unb.br/TES/2010/02/shou/unbbayesFeatureModel.owl#unbbayes.io.mebn.prowl2.UbfIO2"/>
         <Class IRI="http://www.owl-ontologies.com/requirements/component-systems.owl#AtomicPart"/>
     </SubClassOf>
     <SubClassOf>
