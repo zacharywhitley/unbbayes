@@ -1,0 +1,181 @@
+% UBF file header
+Version=2.0
+PrOwl="UnBBayesFeatureRecommendation.owl"
+
+% UBF MTheory declaration
+MTheory=UnBBayesFeatureRecommendation
+NextMFrag=6
+NextResident=7
+NextInput=5
+NextContext=2
+NextEntity=1
+
+% UBF MFrags and Nodes declaration
+
+% MFrag
+MFrag=FeatureMFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=hasFeature
+Type=DomainResidentNode
+Position=241.0,365.0
+Size=198,60
+Color=-66914
+PossibleValuesOrder=true,false,absurd
+
+% Ordinary Variables
+
+
+Node=config
+Type=OrdinalVar
+Position=103.0,68.0
+Size=185,60
+Color=-5178237
+
+Node=feature
+Type=OrdinalVar
+Position=354.0,71.0
+Size=165,60
+Color=-5178237
+
+% MFrag
+MFrag=RequirementMFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=fulfills
+Type=DomainResidentNode
+Position=230.0,389.0
+Size=201,60
+Color=-66914
+PossibleValuesOrder=true,false,absurd
+
+% Ordinary Variables
+
+
+Node=feature
+Type=OrdinalVar
+Position=77.0,104.0
+Size=165,60
+Color=-5178237
+
+Node=requirement
+Type=OrdinalVar
+Position=328.0,107.0
+Size=217,60
+Color=-5178237
+
+% MFrag
+MFrag=LearningFeatureMFrag
+NextOrdinaryVar=4
+
+% Resident nodes
+
+
+Node=hasSuggestionLearning
+Type=DomainResidentNode
+Position=229.0,401.0
+Size=224,60
+Color=-66914
+PossibleValuesOrder=true,false,absurd
+
+% Input nodes
+
+
+Node=IX1
+Type=GenerativeInputNode
+Position=210.0,221.0
+Size=265,60
+Color=-2302756
+
+Node=IX2
+Type=GenerativeInputNode
+Position=514.0,261.0
+Size=156,60
+Color=-2302756
+
+Node=IX4
+Type=GenerativeInputNode
+Position=577.0,373.0
+Size=247,60
+Color=-2302756
+
+% Ordinary Variables
+
+
+Node=config
+Type=OrdinalVar
+Position=54.0,32.0
+Size=185,60
+Color=-5178237
+
+Node=learningFeature
+Type=OrdinalVar
+Position=267.0,32.0
+Size=267,60
+Color=-5178237
+
+Node=requirement
+Type=OrdinalVar
+Position=550.0,35.0
+Size=277,60
+Color=-5178237
+
+% MFrag
+MFrag=DataSetMFrag
+NextOrdinaryVar=2
+
+% Resident nodes
+
+
+Node=hasDataSet
+Type=DomainResidentNode
+Position=250.0,392.0
+Size=156,60
+Color=-66914
+PossibleValuesOrder=true,false,absurd
+
+% Ordinary Variables
+
+
+Node=config
+Type=OrdinalVar
+Position=128.0,91.0
+Size=185,60
+Color=-5178237
+
+% MFrag
+MFrag=SuggestionMFrag
+NextOrdinaryVar=3
+
+% Resident nodes
+
+
+Node=hasSuggestion
+Type=DomainResidentNode
+Position=119.0,309.0
+Size=219,60
+Color=-66914
+PossibleValuesOrder=true,false,absurd
+
+% Ordinary Variables
+
+
+Node=config
+Type=OrdinalVar
+Position=79.0,104.0
+Size=175,60
+Color=-5178237
+
+Node=feature
+Type=OrdinalVar
+Position=306.0,98.0
+Size=165,60
+Color=-5178237
+
+% Object Entity Instances
