@@ -2,7 +2,7 @@
 <!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
 <!-- This is the plugin descriptor for UnBBayes-MEBN extension to add protege functions and OWL2/PR-OWL2 features. -->
 <!-- This version uses Protege4.1 as a library, but because protege4.1 does not work in non OSGI environments, several adaptations had to be made... -->
-<plugin id="unbbayes.gui.mebn.ontology.protege" version="1.2.6">
+<plugin id="unbbayes.gui.mebn.ontology.protege" version="1.2.7">
     <requires>
         <import plugin-id="unbbayes.util.extension.core" plugin-version="4.21.18" />
         <import plugin-id="unbbayes.prs.mebn" plugin-version="1.16.13"/>
@@ -22,7 +22,7 @@
         </library>
         <!-- It seems that loaders does not work as expected on jar files -->
         <!-- If you change/add the libraries, change/add these library declaration too -->
-        <library id="unbbayes.gui.mebn.ontology.protege" path="unbbayes.gui.mebn.ontology.protege-1.2.6.jar" type="code" >
+        <library id="unbbayes.gui.mebn.ontology.protege" path="unbbayes.gui.mebn.ontology.protege-1.2.7.jar" type="code" >
         	<export prefix="*"/>
         </library>
         <!-- TODO JPF seems to fail on importing JARs if it is not specifically mentioned (wildcards on folders seems to fail) -->
