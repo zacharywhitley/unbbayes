@@ -2547,8 +2547,8 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	}
 	
 	/**
-	 * @return {@link #getDefaultPrefixManager(null)}
-	 * @see #getDefaultPrefixManager(OWLOntology)
+	 * @return {@link #getOntologyPrefixManager(null)}
+	 * @see #getOntologyPrefixManager(OWLOntology)
 	 */
 	protected PrefixManager getDefaultPrefixManager() {
 		return this.getOntologyPrefixManager(null);

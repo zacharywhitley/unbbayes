@@ -324,7 +324,8 @@ public class PROWL2KnowledgeBase extends OWL2KnowledgeBase {
 			boolean hasImport = false;
 			for (OWLOntology importedOntology : findingOntology.getImportsClosure()) {
 				// compare the IRI to check if they are equal
-				if (importedOntology.getOntologyID().getOntologyIRI().equals(baseOntology.getOntologyID().getOntologyIRI())) {
+				if (importedOntology.getOntologyID().getOntologyIRI().equals(
+						baseOntology.getOntologyID().getOntologyIRI())) {
 					hasImport = true;
 					break;
 				}
