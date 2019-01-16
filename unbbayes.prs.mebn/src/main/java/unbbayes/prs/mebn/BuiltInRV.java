@@ -23,6 +23,11 @@ package unbbayes.prs.mebn;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This represents the general built-in random variable.
+ * TODO create a common interface with {@link ResidentNode} or {@link ResidentNodePointer}
+ * in order to be used as context node instance (see isContextNodeInstanceOf property)
+ */
 public class BuiltInRV {
  
 	private String name; 
