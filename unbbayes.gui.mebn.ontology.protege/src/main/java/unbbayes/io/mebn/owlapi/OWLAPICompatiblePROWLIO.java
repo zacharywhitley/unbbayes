@@ -130,6 +130,7 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 
 	private Map<String,Argument> mapArgument = new HashMap<String, Argument>();
 
+	@Deprecated
 	private Map<ContextNode, Object> mapIsContextInstanceOf = new HashMap<ContextNode, Object>();
 
 	private Map<String, ResidentNode> mapFilledResidentNodes;
@@ -2866,6 +2867,8 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntologyManager, OWLOntology, MultiEntityBayesianNetwork)}
 	 * and {@link #loadBuiltInRV(OWLOntologyManager, OWLOntology, MultiEntityBayesianNetwork)}).
 	 * @return the mapIsContextInstanceOf
+	 * @deprecated move this map to {@link ContextNode}
+	 * @see #buildFormulaTree(ContextNode)
 	 */
 	protected Map<ContextNode, Object> getMapIsContextInstanceOf() {
 		return mapIsContextInstanceOf;
@@ -2876,6 +2879,8 @@ public class OWLAPICompatiblePROWLIO extends PrOwlIO implements IOWLAPIOntologyU
 	 * This map is useful if data must be reused throughout the protected load methods (e.g. {@link #loadMTheoryAndMFrags(OWLOntologyManager, OWLOntology, MultiEntityBayesianNetwork)}
 	 * and {@link #loadBuiltInRV(OWLOntologyManager, OWLOntology, MultiEntityBayesianNetwork)}).
 	 * @param mapIsContextInstanceOf the mapIsContextInstanceOf to set
+	 * @deprecated move this map to {@link ContextNode}
+	 * @see #buildFormulaTree(ContextNode)
 	 */
 	protected void setMapIsContextInstanceOf(
 			Map<ContextNode, Object> mapIsContextInstanceOf) {
