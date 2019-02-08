@@ -1079,6 +1079,34 @@ public class OWLAPICompatiblePROWL2IO
 		
 		return mapObjectEntityLabels;
 	}
+	
+	
+	/**
+	 * Uses {@link #getLastOWLReasoner()} in order to obtain superclasses of a class expression from an ontology.
+	 * If {@link #getLastOWLReasoner()} is null, then only the asserted individuals in ontology will be returned.
+	 * @param owlClassExpression
+	 * @param ontology
+	 * @param isDirect : if true, then only direct superclasses will be considered. If false, then all ancestors will be considered.
+	 * @return
+	 * @see #getOWLSubclasses(OWLClassExpression, OWLOntology)
+	 */
+	public Set<OWLClassExpression> getOWLSuperclasses(OWLClassExpression owlClassExpression, OWLOntology ontology, boolean isDirect) {
+		
+		// try using reasoner first
+		if (this.getLastOWLReasoner() != null) {
+			NodeSet<OWLClass> superclasses = this.getLastOWLReasoner().getSuperClasses(owlClassExpression, isDirect);	
+			if (superclasses != null) {
+				return new HashSet<OWLClassExpression>(superclasses.getFlattened());
+			}
+		} else {
+			throw new UnsupportedOperationException("Current version cannot extract superclasses without an OWL-DL reasoner.");
+		}
+		
+		// TODO try to extract asserted superclasses without using reasoner
+		
+		return Collections.emptySet();
+	}
+
 
 	
 	/**
