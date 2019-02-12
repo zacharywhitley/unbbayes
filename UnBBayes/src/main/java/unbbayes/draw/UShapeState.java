@@ -43,8 +43,11 @@ public class UShapeState extends UShape implements MouseMotionListener, MouseLis
 	
 	protected Rectangle2D rect;
 	protected Rectangle   rectTextArea;
-	protected float marginal; 
+	protected float marginal;
+	private float standardDeviation = 0f;
 	private NumberFormat nf;
+
+	private float stdevConfidenceIntervalMultiplier = 1.96f;
 	
 	public UShapeState(UCanvas s, Node pNode, int x, int y, int w, int h) 
 	{
@@ -85,8 +88,44 @@ public class UShapeState extends UShape implements MouseMotionListener, MouseLis
 	    								getBackColor(), 
 	    								false));
 	    
-	    g2.fillRect( (int)rectTextArea.getWidth(), 0,(int)((getWidth() -rectTextArea.getWidth())*marginal), getHeight());
+	    int marginalWidth = (int)((getWidth() -rectTextArea.getWidth())*marginal);
+	    
+	    g2.fillRect( (int)rectTextArea.getWidth(), 0,marginalWidth, getHeight());
 	     
+	    
+	    // half of the confidence interval, assuming that marginals are normally distributed 
+	    // interval is +- this value
+	 	// (this is technically wrong, but it's reasonable quick'n'dirty approximation)
+	    float confidenceInterval = getStdevConfidenceIntervalMultiplier()*getStandardDeviation();
+	    
+		int upperIntervalWidth = (int)((getWidth() -rectTextArea.getWidth())*confidenceInterval );
+	    int lowerIntervalWidth = upperIntervalWidth;
+	    if (lowerIntervalWidth > marginalWidth) {
+	    	lowerIntervalWidth = marginalWidth;
+	    }
+	    g2.setPaint( new GradientPaint( (int)(rectTextArea.getWidth()) + marginalWidth, 
+	    		(int)(getHeight()/2), 
+	    		Color.white, 
+	    		(int)(rectTextArea.getWidth()) + marginalWidth + upperIntervalWidth,  // (int)((getWidth())) - upperIntervalWidth,
+	    		(int)(getHeight()/2), 
+	    		Color.RED, 
+	    		false));
+		g2.fillRect( (int)rectTextArea.getWidth() + marginalWidth, 
+	    			 0,
+	    			 upperIntervalWidth, 
+	    			 getHeight());
+		g2.setPaint( new GradientPaint( (int)(rectTextArea.getWidth()) + marginalWidth - lowerIntervalWidth, 
+				(int)(getHeight()/2), 
+				Color.RED, 
+				(int)(rectTextArea.getWidth()) + marginalWidth, // (int)((getWidth())) - lowerIntervalWidth,
+				(int)(getHeight()/2), 
+				Color.white, 
+				false));
+		g2.fillRect( (int)rectTextArea.getWidth() + (marginalWidth - lowerIntervalWidth), 
+				0,
+				lowerIntervalWidth, 
+				getHeight());
+	    
 	    g2.setPaint( Color.BLUE );
 	    	
 	    g2.drawLine( (int)rectTextArea.getWidth(), (int)0, (int)rectTextArea.getWidth(), (int)getHeight());
@@ -95,7 +134,16 @@ public class UShapeState extends UShape implements MouseMotionListener, MouseLis
 	    g2.setPaint( getDrawColor() );
   	  	drawText(g, rectTextArea, getName(), TTYPE_LEFT);
 	 
-  	  	drawText(g, rectTextArea, nf.format(marginal * 100.0) + "%", TTYPE_RIGHT);
+  	  	String probValueLabel = nf.format(marginal * 100.0);
+  	  	
+  	  	// append ± <some value> to the label, if applicable
+  	  	if (getStandardDeviation() > 0f) {
+			// append ± assuming that marginals are normally distributed 
+			// (this is technically wrong, but it's reasonable quick'n'dirty approximation)
+			probValueLabel += " ± " + nf.format(confidenceInterval * 100f);
+		}
+  	  	
+		drawText(g, rectTextArea, probValueLabel  + "%", TTYPE_RIGHT);
   	}
 	
 	public void mouseDragged(MouseEvent arg0) 
@@ -117,6 +165,38 @@ public class UShapeState extends UShape implements MouseMotionListener, MouseLis
 	public void mousePressed(MouseEvent arg0) {
 
 	}
+
+	/**
+	 * @return multiplier to be multiplied to standard deviation
+	 * in order to calculate upper and lower bounds of confidence interval
+	 * of marginal probabilities.
+	 * For instance, 1.96 is used for 95% confidence interval of normal distributions.
+	 * @see #paintComponent(Graphics)
+	 */
+	public float getStdevConfidenceIntervalMultiplier() {
+		return stdevConfidenceIntervalMultiplier;
+	}
+
+	/**
+	 * @param stdevConfidenceIntervalMultiplier :
+	 * multiplier to be multiplied to standard deviation
+	 * in order to calculate upper and lower bounds of confidence interval
+	 * of marginal probabilities.
+	 * For instance, 1.96 is used for 95% confidence interval of normal distributions.
+	 */
+	public void setStdevConfidenceIntervalMultiplier(
+			float stdevConfidenceIntervalMultiplier) {
+		this.stdevConfidenceIntervalMultiplier = stdevConfidenceIntervalMultiplier;
+	}
+
+	public float getStandardDeviation() {
+		return standardDeviation;
+	}
+
+	public void setStandardDeviation(float standardDeviation) {
+		this.standardDeviation = standardDeviation;
+	}
+
  
 }
 

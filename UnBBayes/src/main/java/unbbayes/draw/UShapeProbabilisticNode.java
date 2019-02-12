@@ -190,6 +190,14 @@ public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 												  stateHeight);
 					stateShape.setName(node.getStateAt(i));
 					stateShape.setMarginal(treeVariable.getMarginalAt(i));
+					if (finding.isEmpty()) {
+						double[] stdev = node.getStandardDeviation();
+						if (stdev != null) {
+							stateShape.setStandardDeviation((float)stdev[i]);
+						}
+					} else {
+						stateShape.setStandardDeviation(0f);
+					}
 					
 					if( finding == node.getStateAt(i) )
 					{
