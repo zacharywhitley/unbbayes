@@ -140,7 +140,7 @@ public class UShapeState extends UShape implements MouseMotionListener, MouseLis
   	  	if (getStandardDeviation() > 0f) {
 			// append ± assuming that marginals are normally distributed 
 			// (this is technically wrong, but it's reasonable quick'n'dirty approximation)
-			probValueLabel += " � " + nf.format(confidenceInterval * 100f);
+			probValueLabel += " ± " + nf.format(confidenceInterval * 100f);
 		}
   	  	
 		drawText(g, rectTextArea, probValueLabel  + "%", TTYPE_RIGHT);
