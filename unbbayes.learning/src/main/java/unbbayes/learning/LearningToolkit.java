@@ -20,24 +20,43 @@
  */
 package unbbayes.learning;
 
-import java.util.ArrayList;
-import java.util.List;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import unbbayes.io.CountCompatibleNetIO;
+
+import unbbayes.prs.INode;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.LearningNode;
 import unbbayes.prs.bn.PotentialTable;
+import unbbayes.prs.bn.ProbabilisticNetwork;
+import unbbayes.prs.bn.ProbabilisticTable;
 import unbbayes.util.SetToolkit;
 
-
+/**
+  * 
+  * @author Shou Matsumoto Edited by Young
+  * @author Bo
+  */
 public abstract class LearningToolkit{
+	public List<LearningNode> global_variables; 
+	public Map<String, LearningNode> data_variables = new HashMap<String, LearningNode>(); 
+    
+	Map<LearningNode, float[][]> dataBaseForEachRV = new HashMap<LearningNode, float[][]>();
 
-	    protected long caseNumber;
-	    protected int[][] dataBase;
-	    protected int[] vector;
-	    protected boolean compacted;
-	    
-	    /** Error margin used in float comparisons */
-		public static final float TABLE_FLOAT_ERROR_MARGIN = 0.0001f;
+    protected long caseNumber;
+    protected int[][] dataBase;
+    protected int[] vector;
+    protected boolean compacted;
+     
+    ProbabilisticNetwork emptyNet = null;
+    ProbabilisticNetwork learnedNet = null;
+    
+    /** Error margin used in float comparisons */
+	public static final float TABLE_FLOAT_ERROR_MARGIN = 0.0001f;
 		
 	/**
 	 * @deprecated use {@link #getProbability(float[][], LearningNode)} instead
@@ -59,31 +78,49 @@ public abstract class LearningToolkit{
      * @param variable
      */
 	protected void getProbability(float[][] arrayNijk, LearningNode variable){
-        List instanceVector;
-        List instance = new ArrayList();
+        List<List<Integer>> instanceVector;
+        List<Integer> instance = new ArrayList<>();
         float probability;
         int nij;
-        int ri = variable.getEstadoTamanho();
-        int nijLength  = getQ(variable.getPais());
+        int ri = getStateSize(variable);
+        int nijLength  = getTotalParentStateSize(variable.getPais());
         instanceVector  = getInstancesAsNodes(variable.getPais());
-        for(int i = 0; i < nijLength;i++){
+        
+        for (int i = 0; i < nijLength;i++) {
              nij = 0;
-             for(int j = 0; j < ri ; j++){
+             
+             for (int j = 0; j < ri ; j++) {
                 nij+= arrayNijk[j][i];
              }
-             if(instanceVector.size() > 0 ){
-                instance = (List)instanceVector.get(i);
+             
+             if (instanceVector.size() > 0 ) {
+                instance = instanceVector.get(i);
              }
-             for(int j = 0; j < ri; j++){
-                  probability = (float)(1+ arrayNijk[j][i])/(ri+nij);
+             
+             for (int j = 0; j < ri; j++) {
+                  probability = (float)(1 + arrayNijk[j][i])/(ri+nij);
                   int coord[];
 //                  coord = new int[nijLength+1];
                   coord = new int[instance.size()+1];
                   coord[0] = j;
+                  
                   for(int k = 1; k <= instance.size(); k++){
                       coord[k] = ((Integer)instance.get(k-1)).intValue();
                   }
+                  
                   variable.getProbabilidades().setValue(coord, probability);
+                  // also fill table of counts
+                  String tablePropName = CountCompatibleNetIO.DEFAULT_COUNT_TABLE_PREFIX + variable.getName();
+                  PotentialTable countTable = (PotentialTable) learnedNet.getProperty(tablePropName );
+                  if (countTable == null) {
+                	  countTable = new ProbabilisticTable();
+                	  for (int varIndex = 0; varIndex < variable.getProbabilidades().getVariablesSize(); varIndex++) {
+                		  	INode var = variable.getProbabilidades().getVariableAt(varIndex);
+                		  	countTable.addVariable(var);
+                	  }
+                  }
+                  countTable.setValue(coord, arrayNijk[j][i]);
+                  learnedNet.addProperty(tablePropName, countTable);
              }
              
              // ajusting probabilities above or below 100% caused by floating point's precision
@@ -155,6 +192,11 @@ public abstract class LearningToolkit{
 		}
 	}
 
+	public int getPosInData(LearningNode node){
+		LearningNode dataNode = data_variables.get(node.getName());
+		return dataNode.getPos();
+	}
+	
 	/**
 	 * 
 	 * @param variable
@@ -163,16 +205,23 @@ public abstract class LearningToolkit{
 	 * @return
 	 */
 	protected float[][] getFrequencies(LearningNode variable, List<Node> parents) {
-		float[][] arrayNijk;
+		float[][] arrayNijk; 
 		int position;
-		LearningNode aux;
+		LearningNode node;
 
-		if (parents == null) {
-			parents = new ArrayList<Node>();
-			arrayNijk = new float[variable.getEstadoTamanho()][1];
-		} else {
-			arrayNijk = new float[variable.getEstadoTamanho()][getQ(parents)];
-		}
+		// get existing data from each RV
+//		float[][] existingarrayNijk = dataBaseForEachRV.get(variable);
+		 
+		{
+			if (parents == null) {
+				parents = new ArrayList<Node>();
+				arrayNijk = new float[getStateSize(variable)][1];
+			} else {
+				arrayNijk = new float[getStateSize(variable)][getTotalParentStateSize(parents)];
+			}
+			 
+			dataBaseForEachRV.put(variable, arrayNijk);
+		} 
 
 		int parentsLength = parents.size();
 		int stateVector[] = new int[parentsLength];
@@ -180,17 +229,17 @@ public abstract class LearningToolkit{
 		int maxVector[] = new int[parentsLength];
 
 		for (int i = 0; i < parentsLength; i++) {
-			aux = (LearningNode) parents.get(i);
-			positionVector[i] = (byte) aux.getPos();
-			maxVector[i] =  aux.getEstadoTamanho();
+			node = (LearningNode) parents.get(i);
+			positionVector[i] = (byte) getPosInData(node);
+			maxVector[i] =  getStateSize(node);
 			stateVector[i] = maxVector[i];
 		}
 		
 		/*Posicao da Variável*/
-		int pos = variable.getPos();
+		int pos = getPosInData(variable);
 		int index = 0;
 		/*Linhas do arquivo que possuem algum valor faltante ou na variavel ou nos pais dessa*/
-		List linhasFaltantes = new ArrayList();
+		List<Integer> linhasFaltantes = new ArrayList<>();
 
 		for (int i = 0; i < caseNumber; i++) {
 			for (int j = positionVector.length - 1; j >= 0; j--) {
@@ -207,9 +256,9 @@ public abstract class LearningToolkit{
 			if (!isMissingValue(positionVector, pos, i)) {
 				if (parentsLength == 0) {
 					if (!compacted) {
-						arrayNijk[dataBase[i][variable.getPos()]][0]++;
+						arrayNijk[dataBase[i][getPosInData(variable)]][0]++;
 					} else {
-						arrayNijk[dataBase[i][variable.getPos()]][0] += vector[i];
+						arrayNijk[dataBase[i][getPosInData(variable)]][0] += vector[i];
 					}
 				} else {
 					if (!compacted) {
@@ -225,20 +274,20 @@ public abstract class LearningToolkit{
 		/*Se existir linhas faltantes*/
 		if (linhasFaltantes.size() > 0) {
 			float[][] arrayNijkMissing = null;
-			int[][] vetorRepeticao = null;
+//			int[][] vetorRepeticao = null;
 			if (parentsLength == 0) {
-				arrayNijkMissing = new float[variable.getEstadoTamanho()][1];				
+				arrayNijkMissing = new float[getStateSize(variable)][1];				
 			} else {
-				arrayNijkMissing = new float[variable.getEstadoTamanho()][getQ(parents)];				
+				arrayNijkMissing = new float[getStateSize(variable)][getTotalParentStateSize(parents)];				
 			}
 			for (int i = 0; i < linhasFaltantes.size(); i++) {
 				int line = ((Integer) linhasFaltantes.get(i)).intValue();
 				/*Array que contem o valor dos pais da variável*/
 				int[] missingVector = getMissingVector(positionVector, line);
-				List stateMissingVector = getStateMissingVector(stateVector, line, missingVector);
-				List instances = getInstances(stateMissingVector);
+				List<Integer> stateMissingVector = getStateMissingVector(stateVector, line, missingVector);
+				List<List<Integer>> instances = getInstances(stateMissingVector);
 				for (int j = 0; j < instances.size(); j++) {
-					List instance = (List) instances.get(j);
+					List<Integer> instance = instances.get(j);
 					int cont = 0;
 					int[] completeVector = copy(missingVector);
 					for (int k = 0; k < missingVector.length; k++) {
@@ -248,36 +297,24 @@ public abstract class LearningToolkit{
 						}
 					}
 					int posJ = getJ(stateVector, completeVector);
-					if (dataBase[line][variable.getPos()] == -1) {
-						for (int k = 0; k < variable.getEstadoTamanho(); k++) {							
-							arrayNijkMissing[k][posJ] += (float) 1 / (variable.getEstadoTamanho() * instances.size());
+					if (dataBase[line][getPosInData(variable)] == -1) {
+						for (int k = 0; k < getStateSize(variable); k++) {							
+							arrayNijkMissing[k][posJ] += (float) 1 / (getStateSize(variable) * instances.size());
 						}
 					} else {
-						arrayNijkMissing[dataBase[line][variable.getPos()]][posJ] += (float) 1 / instances.size();						
+						arrayNijkMissing[dataBase[line][getPosInData(variable)]][posJ] += (float) 1 / instances.size();						
 					}
 
 				}
 				if (instances.size() == 0) {
-					for (int k = 0; k < variable.getEstadoTamanho(); k++) {						
-						arrayNijkMissing[k][0] += (float) 1 / variable.getEstadoTamanho();
+					for (int k = 0; k < getStateSize(variable); k++) {						
+						arrayNijkMissing[k][0] += (float) 1 / getStateSize(variable);
 					}
 				}
 			}
 			arrayNijk = getProbability(arrayNijkMissing, arrayNijk, variable);
-		}
-		/*float cont = 0;
-		for(int i = 0 ; i < arrayNijk.length; i++){
-		    for(int j = 0 ; j < arrayNijk[i].length; j++){
-		        cont += arrayNijk[i][j];
-		    }
-		}
-		float fator = this.caseNumber/cont;
-		for(int i = 0 ; i < arrayNijk.length; i++){
-		    for(int j = 0 ; j < arrayNijk[i].length; j++){
-		        arrayNijk[i][j] *= fator;
-		        arrayNijk[i][j] = (float)Math.floor(arrayNijk[i][j]);
-		    }
-		}*/
+		} 
+		
 		return arrayNijk;
 	}
 
@@ -292,7 +329,7 @@ public abstract class LearningToolkit{
 	protected float[][] getProbability(float[][] arrayNijkMissing, float[][] arrayNijk, LearningNode variable) {
 		double delta = Math.pow(10, -3);
 		float nij;
-		int ri = variable.getEstadoTamanho();
+		int ri = getStateSize(variable);
 		float probability = 1 / ri;
 		float initialProbability = 1 / ri;
 		int nijLength = arrayNijk[0].length;
@@ -440,24 +477,25 @@ public abstract class LearningToolkit{
 //    }
 
 	
-	protected List getInstances(List<Integer> list) {
-		List instances = new ArrayList();
-		List listAux = new ArrayList();
-		List array;
-		List arrayAux;
+	@SuppressWarnings({ "deprecation", "unchecked" })
+	protected List<List<Integer>> getInstances(List<Integer> list) {
+		List<List<Integer>> instances = new ArrayList<>();
+		List<List<Integer>> listAux = new ArrayList<>();
+		List<Integer> array;
+		List<Integer> arrayAux;
 		if (list.size() == 0) {
 			return instances;
 		}
 		for (int i = 0; i < list.size(); i++) {
-			int tamanho = ((Integer) list.get(i)).intValue();
+			int tamanho = list.get(i).intValue();
 			for (int k = 0; k < instances.size(); k++) {
-				array = (List) instances.get(k);
+				array = (List<Integer>) instances.get(k);
 				for (int h = 0; h < tamanho; h++) {
 					if (h == 0) {
 						array.add(new Integer(h));
 						listAux.add(array);
 					} else {
-						arrayAux = SetToolkit.clone((List) array);
+						arrayAux = SetToolkit.clone(array);
 						arrayAux.remove(array.size() - 1);
 						arrayAux.add(new Integer(h));
 						listAux.add(arrayAux);
@@ -465,11 +503,11 @@ public abstract class LearningToolkit{
 				}
 			}
 			instances.clear();
-			instances = SetToolkit.clone((List) listAux);
+			instances = SetToolkit.clone(listAux);
 			listAux.clear();
 			if (instances.size() == 0) {
 				for (int j = 0; j < tamanho; j++) {
-					array = new ArrayList();
+					array = new ArrayList<>();
 					array.add(new Integer(j));
 					instances.add(array);
 				}
@@ -478,7 +516,8 @@ public abstract class LearningToolkit{
 		return instances;
 	}
 	
-    protected List getInstancesAsNodes(List<Node> list){
+    @SuppressWarnings({ "deprecation", "unchecked" })
+	protected List<List<Integer>> getInstancesAsNodes(List<Node> list){
         List<List<Integer>> instances = new ArrayList<List<Integer>>();
         List<List<Integer>> listAux = new ArrayList<List<Integer>>();;
         LearningNode aux;
@@ -491,12 +530,12 @@ public abstract class LearningToolkit{
             aux = (LearningNode)list.get(i);
             for(int k = 0 ; k < instances.size(); k++){
                      array = (List<Integer>)instances.get(k);
-                for(int h = 0 ; h < aux.getEstadoTamanho(); h++){
+                for(int h = 0 ; h < getStateSize(aux); h++){
                      if(h == 0){
                         array.add(new Integer(h));
                         listAux.add(array);
                      }else{
-                        arrayAux = (List<Integer>)SetToolkit.clone((List)array);
+                        arrayAux = (List<Integer>) SetToolkit.clone(array);
                         arrayAux.remove(array.size()-1);
                         arrayAux.add(new Integer(h));
                         listAux.add(arrayAux);
@@ -504,10 +543,10 @@ public abstract class LearningToolkit{
                 }
             }
             instances.clear();
-            instances = (List<List<Integer>>)SetToolkit.clone((List)listAux);
+            instances = (List<List<Integer>>) SetToolkit.clone(listAux);
             listAux.clear();
             if(instances.size() == 0){
-                 for(int j = 0 ; j < aux.getEstadoTamanho(); j++){
+                 for(int j = 0 ; j < getStateSize(aux); j++){
                          array = new ArrayList<Integer>();
                          array.add(new Integer(j));
                          instances.add(array);
@@ -517,19 +556,35 @@ public abstract class LearningToolkit{
         return instances;
     }
 
+    
+    /**
+     * This method delegate to {@link #getTotalParentStateSize(List)
+     * @param list: parents which must be instance of {@link LearningNode}
+     * @return: size of joint states
+     * @deprecated
+     */
     protected int getQ(List<Node> list) {
+    		return this.getTotalParentStateSize(list);
+    		
+    }
+    
+    protected int getTotalParentStateSize(List<Node> list) {
         LearningNode variable;
         int qi = 1;
         if(list != null){
             int length  = list.size();
             for (int i = 0; i < length; i++ ){
-                variable  = (LearningNode)list.get(i);
-                qi = qi* variable.getEstadoTamanho();
+                variable  = (LearningNode)list.get(i); 
+                qi = qi* getStateSize(variable);
             }
         }
         return qi;
     }
 
+    protected int getStateSize(LearningNode variable) {
+    	return emptyNet.getNode(variable.getName()).getStatesSize();
+    }
+    
 
     protected double log(double number){
         return Math.log(number)/Math.log(10);
