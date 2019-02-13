@@ -32,7 +32,7 @@ public class TextModeLearningToolkit extends LearningToolkit {
     		}
     	}
     	
-    	emptyNet = net;
+    	setEmptyNet(net);
     	this.setVariables(variables);
     }
     
@@ -98,7 +98,7 @@ public class TextModeLearningToolkit extends LearningToolkit {
 	 * @see #getProbability(float[][], LearningNode)
 	 */
 	public ProbabilisticNetwork buildNet(boolean learnNewArcs) {
-		ProbabilisticNetwork topology = emptyNet; 
+		ProbabilisticNetwork topology = getEmptyNet(); 
 		
     	if (!learnNewArcs) {
     		// disconsider/clear all new arcs that were learned
@@ -110,7 +110,7 @@ public class TextModeLearningToolkit extends LearningToolkit {
     	} 
     	
     	// just create new instance
-    	learnedNet = this.instantiateProbabilisticNetwork(getVariables());
+    	setLearnedNet(this.instantiateProbabilisticNetwork(getVariables()));
     	
     	if (topology != null) {
     		// reuse arcs. TODO avoid cycles
@@ -124,22 +124,22 @@ public class TextModeLearningToolkit extends LearningToolkit {
     			childInNet.setPosition(childInTopology.getPosition().getX(), childInTopology.getPosition().getY());
     			
     			for (Node parentInTopology : childInTopology.getParents()) {
-    				Node parentInNet = learnedNet.getNode(parentInTopology.getName());
+    				Node parentInNet = getLearnedNet().getNode(parentInTopology.getName());
     				if (parentInNet == null) {
         				continue;	// only consider nodes that are present in learned net
         			}
-    				if (learnedNet.hasEdge(parentInNet, childInNet) >= 0) {
+    				if (getLearnedNet().hasEdge(parentInNet, childInNet) >= 0) {
     					continue;	// ignore arcs that already exist
     				}
     				parentInNet.getChildren().add(childInNet); 
     				childInNet.getParents().add(parentInNet);
     				Edge edge = new Edge(parentInNet, childInNet);
-    				learnedNet.getEdges().add(edge);
+    				getLearnedNet().getEdges().add(edge);
     			} 
     		}   
     	}
     	 
-		return learnedNet;
+		return getLearnedNet();
 	}
 	
 	/**
@@ -191,7 +191,7 @@ for2:       for (int j = 0; j < parentsLength; j++) {
         	getProbability(arrayNijk, variable); 								// <- Calculate new probabilities
         }      
 		
-		this.normalizeCPTs(learnedNet); // normalize the CPT of all nodes in the network 
+		this.normalizeCPTs(getLearnedNet()); // normalize the CPT of all nodes in the network 
 	}
 
 	public void addArrays(LearningNode variable, float[][] first, float[][] second) { 

@@ -52,8 +52,8 @@ public abstract class LearningToolkit{
     protected int[] vector;
     protected boolean compacted;
      
-    ProbabilisticNetwork emptyNet = null;
-    ProbabilisticNetwork learnedNet = null;
+    private ProbabilisticNetwork emptyNet = null;
+    private ProbabilisticNetwork learnedNet = null;
     
     /** Error margin used in float comparisons */
 	public static final float TABLE_FLOAT_ERROR_MARGIN = 0.0001f;
@@ -111,7 +111,8 @@ public abstract class LearningToolkit{
                   variable.getProbabilidades().setValue(coord, probability);
                   // also fill table of counts
                   String tablePropName = CountCompatibleNetIO.DEFAULT_COUNT_TABLE_PREFIX + variable.getName();
-                  PotentialTable countTable = (PotentialTable) learnedNet.getProperty(tablePropName );
+                  PotentialTable countTable = null;
+                  countTable = (PotentialTable) getLearnedNet().getProperty(tablePropName );
                   if (countTable == null) {
                 	  countTable = new ProbabilisticTable();
                 	  for (int varIndex = 0; varIndex < variable.getProbabilidades().getVariablesSize(); varIndex++) {
@@ -194,7 +195,10 @@ public abstract class LearningToolkit{
 
 	public int getPosInData(LearningNode node){
 		LearningNode dataNode = data_variables.get(node.getName());
-		return dataNode.getPos();
+		if (dataNode != null) {
+			return dataNode.getPos();
+		}
+		return node.getPos();
 	}
 	
 	/**
@@ -582,7 +586,10 @@ public abstract class LearningToolkit{
     }
 
     protected int getStateSize(LearningNode variable) {
-    	return emptyNet.getNode(variable.getName()).getStatesSize();
+    	if (emptyNet != null) {
+    		return emptyNet.getNode(variable.getName()).getStatesSize();
+    	}
+    	return variable.getStatesSize();
     }
     
 
@@ -593,6 +600,34 @@ public abstract class LearningToolkit{
     protected double log2(double numero){
         return Math.log(numero)/Math.log(2);
     }
+
+    /**
+     * @return Template net in which arcs&nodes' structure will be reused
+     */
+	public ProbabilisticNetwork getEmptyNet() {
+		return emptyNet;
+	}
+
+	/**
+	 * @param emptyNet : Template net in which arcs&nodes' structure will be reused
+	 */
+	public void setEmptyNet(ProbabilisticNetwork emptyNet) {
+		this.emptyNet = emptyNet;
+	}
+
+	/**
+	 * @return : this will be the complete network after learning
+	 */
+	public ProbabilisticNetwork getLearnedNet() {
+		return learnedNet;
+	}
+
+	/**
+	 * @param learnedNet : this will be the complete network after learning
+	 */
+	public void setLearnedNet(ProbabilisticNetwork learnedNet) {
+		this.learnedNet = learnedNet;
+	}
 
 
 }

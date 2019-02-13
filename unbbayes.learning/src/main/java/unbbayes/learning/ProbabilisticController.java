@@ -50,6 +50,9 @@ public class ProbabilisticController extends LearningToolkit{
     	//ProbabilisticNetwork net    = controller.makeNetwork(variables);
     	//BaseIO base = new NetIO();
     	ProbabilisticNetwork net = controller.makeProbabilisticNetwork(variables);
+    	if (net != null) {
+    		setLearnedNet(net);
+    	}
         int length  = variables.size();    	
         for(int i = 0; i < length; i++) {
             variable  = (LearningNode)variables.get(i);
