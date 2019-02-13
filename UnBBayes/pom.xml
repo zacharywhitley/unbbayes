@@ -561,6 +561,32 @@
 		    <version>1.2.17</version>
 		</dependency>
 		
+		
+
+		<!-- Common library for math functions. -->
+		<!-- http://mvnrepository.com/artifact/org.apache.commons/commons-math3 -->
+		<!-- This is for calculating statistics in com.bbn.bn.inference.IterativeSecondOrderJunctionTreeAlgorithm -->
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-math3</artifactId>
+		    <version>3.5</version>
+		    <!-- Using managed version from parent project -->
+	    </dependency>
+
+		<!-- Tools for statistical and machine learning applications -->
+		<!-- http://mvnrepository.com/artifact/cc.mallet/mallet -->
+		<!-- This is for supporting Dirichlet distribution in com.bbn.bn.inference.IterativeSecondOrderJunctionTreeAlgorithm -->
+		<!-- Note: IterativeSecondOrderJunctionTreeAlgorithm is a prototype version 
+		and it will eventually be migrated to different dependency (e.g. UnBBayes),
+		so this dependency will be eventually removed from this pom
+		(there's no need to declare a managed version in parent project) -->
+		<dependency>
+		    <groupId>cc.mallet</groupId>
+		    <artifactId>mallet</artifactId>
+		    <version>2.0.8</version>
+		</dependency>
+				
+		
 	</dependencies>
 	<reporting>
 		<plugins>
