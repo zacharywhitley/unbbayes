@@ -3,10 +3,9 @@
 <!-- This is a plugin for decision/utility nodes in MEBN.  -->
 <plugin id="unbbayes.prs.medg" version="0.0.1">
     <requires>
-<!--     	<import plugin-id="unbbayes.util.extension.core" plugin-version="4.11.4"/> -->
-        <import plugin-id="unbbayes.prs.mebn" plugin-version="1.18.14"/>
-<!--        <import plugin-id="unbbayes.gui.mebn.ontology.protege" plugin-version="1.2.7"/> -->
-<!--        <import plugin-id="unbbayes.io.mebn.UbfIO2"/> -->
+    	<import plugin-id="unbbayes.prs.mebn" plugin-version="1.18.14"/>
+		<import plugin-id="unbbayes.io.mebn.UbfIO2"/>
+    	<import plugin-id="unbbayes.gui.mebn.ontology.protege" plugin-version="1.2.7"/>
     </requires>
     <runtime>
         <library type="resources" path="icons/" id="icons">
