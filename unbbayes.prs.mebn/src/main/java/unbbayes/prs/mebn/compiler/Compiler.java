@@ -882,7 +882,9 @@ public class Compiler implements ICompiler {
 //		}
 		
 		try {
-			getTableNormalizer().applyFunction((ProbabilisticTable)this.cpt);
+			if (isToNormalize()) {
+				getTableNormalizer().applyFunction((ProbabilisticTable)this.cpt);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
