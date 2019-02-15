@@ -1,3 +1,0 @@
-UNBBAYES PLUGIN - MEBN with Noisy MAX VERSION 0.0.1
-----------------------------
-Initial release
