@@ -49,6 +49,6 @@ public class Resources extends ListResourceBundle {
 	static final Object[][] contents =
 	{	{"normalizeFunction","Normalize table"},
 		{"uniformFunction","Create uniform distribution"},
-		{"fillUniformFunction","Fill with uniform distribution"}
+		{"fillUniformFunction","Replace zeros with uniform distribution"}
 	};
 }

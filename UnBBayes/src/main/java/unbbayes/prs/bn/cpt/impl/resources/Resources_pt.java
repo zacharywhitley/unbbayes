@@ -48,6 +48,6 @@ public class Resources_pt extends ListResourceBundle {
 	static final Object[][] contents =
 	{	{"normalizeFunction","Normalizar tabela"},
 		{"uniformFunction","Criar distribuição uniforme"},
-		{"fillUniformFunction","Completar com distribuição uniforme"}
+		{"fillUniformFunction","Completar células de valor zero usando distribuição uniforme"}
 	};
 }
