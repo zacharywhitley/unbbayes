@@ -989,4 +989,27 @@ public class OOBNWindow extends UnBBayesModule  {
 		return ret;
 	}
 
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.UnBBayesModule#getFile()
+	 */
+	public File getFile() {
+		if (getController() == null || getController().getActive() == null) {
+			return null;
+		}
+		return getController().getActive().getFile();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * @see unbbayes.util.extension.UnBBayesModule#setFile(java.io.File)
+	 */
+	public void setFile(File file) {
+		if (getController() == null || getController().getActive() == null) {
+			return;
+		}
+		getController().getActive().setFile(file);
+	}
+
 }

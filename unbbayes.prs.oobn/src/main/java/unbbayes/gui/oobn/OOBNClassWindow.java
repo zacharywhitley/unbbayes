@@ -158,6 +158,8 @@ public class OOBNClassWindow extends NetworkWindow {
 		// set content and the size of graphViewport
 		this.graphViewport.setView(this.graphPane);
 		this.graphViewport.setSize(800, 600);
+//		this.setMinimumSize(getGraphViewport().getSize());
+		this.setSize(getGraphViewport().getSize());
 
 		// initialize listeners
 		this.initListeners();
