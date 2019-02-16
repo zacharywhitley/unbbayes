@@ -6,17 +6,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import unbbayes.prs.Node;
-import unbbayes.prs.bn.JunctionTreeAlgorithm;
-import unbbayes.prs.bn.PotentialTable;
-import unbbayes.prs.bn.ProbabilisticNetwork;
-import unbbayes.prs.bn.ProbabilisticNode;
-import cc.mallet.types.Dirichlet;
-
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.log4j.Logger;
 
 import unbbayes.io.CountCompatibleNetIO;
+import unbbayes.prs.Network;
+import unbbayes.prs.Node;
+import cc.mallet.types.Dirichlet;
 
 /**
  * This is an extension to {@link JunctionTreeAlgorithm}
@@ -34,6 +30,17 @@ import unbbayes.io.CountCompatibleNetIO;
  */
 public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgorithm {
 
+	/** 
+	 * Invoking {@link #getNet()} and {@link Network#getProperty(String)} 
+	 * with this parameter will return {@link Map} of {@link ProbabilisticNode} to {@link List} 
+	 * (in which index is node's possible state) of {@link org.apache.commons.math3.stat.descriptive.StatisticalSummary}
+	 * @see #propagate()
+	 * @see Node#getStandardDeviation()
+	 * @see Node#getMean()
+	 */
+	public static final String STATE_SUMMARY_STATISTICS_PROPERTY_NAME = IterativeSecondOrderJunctionTreeAlgorithm.class.getName()
+			+ "node.state.summaryStatistics";
+	
 	private int maxIterations = 100;
 	private long maxTimeMillis = 60000;
 	
@@ -271,6 +278,7 @@ public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgor
 					means[state] = statisticsByState.get(state).getMean();
 					stdev[state] = statisticsByState.get(state).getStandardDeviation();
 					
+					
 					// by default, use mean as the best estimate of marginal probability 
 //					((ProbabilisticNode) node).setMarginalAt(state, (float) means[state]);
 				}
@@ -280,6 +288,14 @@ public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgor
 				
 			}
 		}
+		
+		// also backup the summary statistics
+//		if (mapStatisticsByState != null 
+//				&& !mapStatisticsByState.isEmpty() 
+//				&& getNet() != null
+//				) {
+			getNet().addProperty(STATE_SUMMARY_STATISTICS_PROPERTY_NAME, mapStatisticsByState);
+//		}
 		
 		// run propagation with original table if prompted
 		if (isToPropagateOriginalTableAfterSecondOrderPropagation()) {
