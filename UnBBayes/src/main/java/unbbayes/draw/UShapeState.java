@@ -138,10 +138,20 @@ public class UShapeState extends UShape implements MouseMotionListener, MouseLis
   	  	
   	  	// append ± <some value> to the label, if applicable
   	  	if (getStandardDeviation() > 0f) {
-			// append ± assuming that marginals are normally distributed 
-			// (this is technically wrong, but it's reasonable quick'n'dirty approximation)
-			probValueLabel += " ± " + nf.format(confidenceInterval * 100f);
+  	  		if ((marginal + confidenceInterval) > 1 || (marginal - confidenceInterval) < 0) {
+  	  			// if label will go beyond 0% or 100%, then change the way it's displayed. Use "marginal [lower - upper]"
+  	  			probValueLabel += "% ( " 
+  							   + nf.format(Math.max(0f, marginal - confidenceInterval) * 100f) 
+  							   + " — "
+  							   + nf.format(Math.min(1f, marginal + confidenceInterval) * 100f) 
+  							   + " )";
+  	  		} else {
+  	  			// append ± assuming that marginals are normally distributed 
+  	  			// (this is technically wrong, but it's reasonable quick'n'dirty approximation)
+  	  			probValueLabel += " ± " + nf.format(confidenceInterval * 100f);
+  	  		}
 		}
+  	  	
   	  	
 		drawText(g, rectTextArea, probValueLabel  + "%", TTYPE_RIGHT);
   	}
