@@ -39,7 +39,6 @@ import javax.swing.SwingUtilities;
 import unbbayes.prs.Node;
 import unbbayes.prs.bn.ProbabilisticNode;
 import unbbayes.prs.bn.TreeVariable;
-import unbbayes.util.Debug;
 
 public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 {       
@@ -56,6 +55,8 @@ public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 	
 	
 	protected Color stateColor[] = {Color.BLUE, Color.RED, Color.GREEN, Color.ORANGE, Color.CYAN, Color.DARK_GRAY, Color.MAGENTA, Color.ORANGE, Color.PINK, Color.YELLOW };
+
+	private boolean resizeToShowLongStateNames = true;
 	 
 	public static final String STYPE_BAR  = "Bar";
  
@@ -98,6 +99,10 @@ public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 		if( s == STYPE_BAR )
 		{
 			node.setDisplayMode(Node.DISPLAY_MODE_BAR );
+			if (isResizeToShowLongStateNames()) {
+				// resize to a width that can show long state names
+				setSize(calculateExpectedStateBarWidth(), getHeight());
+			}
 		}
 		
 		update();
@@ -152,6 +157,7 @@ public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 		
 		if( STYPE_BAR == getShapeType() )
 		{	
+			
 			removeShapeState();
 					
 			int size = node.getStatesSize(); 
@@ -214,6 +220,7 @@ public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 					
 					add(stateShape); 
 					
+					
 					//Using Table, but we will use marginal distribution
 					/*
 					PotentialTable potTab;
@@ -225,7 +232,6 @@ public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 					*/			
 										
 				}
-				
 				//Set Text Area
 				rectTitle.width = getWidth();
 				rectTitle.height = 50;				
@@ -249,6 +255,46 @@ public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 //		getCanvas().onShapeChanged(this);
 	}
 	   
+	/**
+	 * @return width that is likely to show the
+	 * whole state name when names are long.
+	 */
+	protected int calculateExpectedStateBarWidth() {
+		int currentWidth = getWidth();
+		float expectedWidth = 0f;
+		
+		String labelToConsider = "";	// width shall fit to this label
+		if (node != null && node.getStandardDeviation() != null) {
+			// find state with largest name
+			for (int i = 0; i < node.getStatesSize(); i++) {
+				String state = node.getStateAt(i);
+				try {
+					float marginal = ((TreeVariable)node).getMarginalAt(i);
+					if ((marginal + 1.96*node.getStandardDeviation()[i]) > 1
+							|| (marginal - 1.96*node.getStandardDeviation()[i]) < 0) {
+						// consider label like: state marginal% ( lower - upper s)%
+						state += "\t 99.99% ( 99.99 -- 99.99)%";
+					} else {
+						// consider label like: state marginal ± diff%
+						state += "\t 99.99 ± 99.99%";
+					}
+				} catch (Exception e) {
+					// consider largest possible label
+					state += "\t 99.99% ( 99.99 -- 99.99)%";
+				}
+				if (state.length() >= labelToConsider.length()) {
+					labelToConsider = state;
+				}
+			}
+		}
+		
+		
+		expectedWidth = (float) getTextRect(labelToConsider).getWidth();
+		expectedWidth *= 1.5;	// consider probability bar to be this much proportional to entire width
+		
+		return Math.max(currentWidth, Math.round(expectedWidth));
+	}
+
 	public void paintComponent(Graphics g) 
 	{
 		super.paintComponent(g); 
@@ -385,6 +431,27 @@ public class UShapeProbabilisticNode extends UShape  implements INodeHolderShape
 	       	popup.setEnabled(true);
 			popup.show(arg0.getComponent(),arg0.getX(),arg0.getY());
 	    }
+	}
+
+	/**
+	 * @return if true, {@link #update()} will attempt to fit the component's width
+	 * to show long state names when showing probability bars
+	 * (i.e. when {@link #getShapeType()} is {@link #STYPE_BAR})
+	 */
+	public boolean isResizeToShowLongStateNames() {
+		return resizeToShowLongStateNames;
+	}
+
+	/**
+	 * @param resizeToShowLongStateNames
+	 * if true, {@link #update()} will attempt to fit the component's width
+	 * to show long state names when showing probability bars
+	 * (i.e. when {@link #getShapeType()} is {@link #STYPE_BAR})
+	 */
+	public void setResizeToShowLongStateNames(boolean resizeToShowLongStateNames) {
+		this.resizeToShowLongStateNames = resizeToShowLongStateNames;
 	} 
+	
+	
 }
 
