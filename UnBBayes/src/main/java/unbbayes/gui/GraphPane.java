@@ -943,7 +943,15 @@ public class GraphPane extends UCanvas {
 				shape = getNodeUShape(n);
 
 				if (shape != null) {
-					shape.shapeTypeChange(UShapeProbabilisticNode.STYPE_NONE);
+					try {
+						if (!getController().getScreen().isCompiled()) {
+							// do not change to default shape type if we seeing the compilation panel
+							shape.shapeTypeChange(UShapeProbabilisticNode.STYPE_NONE);
+						}
+					} catch (Throwable t) {
+						// ignore exception
+						Debug.println(getClass(), "Failed to change node shape to default", t);
+					}
 					shape.setState(UShape.STATE_RESIZED, null);
 				}
 			}
