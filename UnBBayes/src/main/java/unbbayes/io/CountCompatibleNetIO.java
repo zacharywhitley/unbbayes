@@ -33,6 +33,13 @@ public class CountCompatibleNetIO extends NetIO {
 	 * The table can be retrieved with this prefix + name of the node */
 	public static final String DEFAULT_COUNT_TABLE_PREFIX = "DirichletDistributionParamTable_";
 
+	/**
+	 * 
+	 */
+	public CountCompatibleNetIO () {
+		setName("NET (Dirichlet)");
+	}
+	
 	
 	/**
 	 * Method in superclass is overridden in order to store the count tables instead of
@@ -160,6 +167,16 @@ public class CountCompatibleNetIO extends NetIO {
 			}
 		}
 	}
+
+
+	/* (non-Javadoc)
+	 * @see unbbayes.io.NetIO#getSupportedFilesDescription(boolean)
+	 */
+	@Override
+	public String getSupportedFilesDescription(boolean isLoadOnly) {
+		return "Net with Dirichlet (.net)";
+	}
+
 	
 
 }
