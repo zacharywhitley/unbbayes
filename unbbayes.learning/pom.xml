@@ -6,7 +6,7 @@
 	<name>UnBBayes Learning</name>
 	<!-- If you change the below version, -->
 	<!-- change version and library settings on plugin.xml too, because this is included as library -->
-	<version>1.2.2</version>
+	<version>1.3.2-SNAPSHOT</version>
 	<url>http://unbbayes.sourceforge.net
 	</url>
 	<licenses>

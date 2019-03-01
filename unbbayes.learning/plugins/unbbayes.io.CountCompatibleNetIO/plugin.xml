@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This enables I/O to store/load parameters (i.e., counts) of Dirichlet distribution 
+    in non-standard NET format (this is used to support 2nd order Bayes nets, in which 
+    conditional probability tables represent probability *distribution* 
+    instead of actual probabilities) -->
+<plugin id="unbbayes.io.NetIO" version="2.0.0">	<!-- Override old NetIO -->
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+    </requires>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="PNIO" id="NetIO">
+        <parameter id="class" value="unbbayes.io.CountCompatibleNetIO" />
+        <parameter id="name" value="NET (Dirichlet dist.)" />
+    </extension>
+</plugin>
