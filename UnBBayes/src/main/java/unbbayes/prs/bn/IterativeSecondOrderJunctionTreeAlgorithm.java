@@ -3,15 +3,19 @@ package unbbayes.prs.bn;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.log4j.Logger;
 
 import unbbayes.io.CountCompatibleNetIO;
+import unbbayes.prs.INode;
 import unbbayes.prs.Network;
 import unbbayes.prs.Node;
+import unbbayes.util.Debug;
 import cc.mallet.types.Dirichlet;
 
 /**
@@ -126,6 +130,12 @@ public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgor
 		Map<ProbabilisticNode, List<DescriptiveStatistics>> mapStatisticsByState = new HashMap<ProbabilisticNode, List<DescriptiveStatistics>>();
 		Map<ProbabilisticNode, List<Dirichlet>> mapDirichletCPT = new HashMap<ProbabilisticNode, List<Dirichlet>>();
 		
+		// backup the list of evidences, because they will be reset when JunctionTreeAlgorithm#run() is called
+		Map<String, Integer> evidenceMap = new HashMap<String, Integer>();
+		Set<String> negativeEvidenceNodeNames = new HashSet<String>();	// name of nodes in evidenceMap whose evidences are negative (indicate evidence NOT in a given state)
+		Map<String, float[]> likelihoodMap = new HashMap<String, float[]>();	// backup plan for cases when we could not create virtual nodes
+		
+		
 		// backup original cpt values,
 		// initialize statistics of marginals of each node,
 		// and initialize dirichlet distribution for each parents' state in cpt
@@ -191,6 +201,49 @@ public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgor
 				// keep track of the dirichlet object, because we'll use it during the sampling process
 				mapDirichletCPT.put((ProbabilisticNode) node, dirichletByParentState);
 				
+				// keep track of evidences (note: at this point we know node is a ProbabilisticNode)
+				if (((ProbabilisticNode) node).hasEvidence()) {
+					if (((ProbabilisticNode) node).hasLikelihood()) {
+						// the following code was added here because we need current marginal to calculate soft evidence
+						// Enter the likelihood as virtual nodes
+						try {
+							// prepare list of nodes to add soft/likelihood evidence
+							List<INode> evidenceNodes = new ArrayList<INode>();
+							evidenceNodes.add(node);	// the main node is the one carrying the likelihood ratio
+							// if conditional soft evidence, add all condition nodes (if non-conditional, then this will add an empty list)
+							evidenceNodes.addAll(this.getLikelihoodExtractor().extractLikelihoodParents(this.getNetwork(), node));
+							// create the virtual node
+							INode virtual = null;
+							try {
+								virtual = this.addVirtualNode(this.getNetwork(), evidenceNodes);
+								if (virtual != null) {
+									// store the hard evidence of the new virtual node, so that it can be retrieved after reset
+									// hard evidence of virtual node is never a "NOT" evidence (evidence is always about a given particular state, and never about values "NOT" in a given state)
+									evidenceMap.put(virtual.getName(), ((TreeVariable) virtual).getEvidence());
+								}
+							} catch (Exception e) {
+								Debug.println(getClass(), "Could not create virtual node for " + node, e);
+								// backup plan: use old routine (although it is not entirely correct)
+								// backup the likelihood values
+								likelihoodMap.put(node.getName(), ((ProbabilisticNode) node).getLikelihood());
+								// putting in evidenceMap will mark this node as evidence (no matter what kind of evidence it is actually)
+								evidenceMap.put(node.getName(), 0);	
+							}
+						} catch (Exception e) {
+							throw new RuntimeException(e);
+						}
+					
+					} else {
+						// store hard evidence, so that it can be retrieved after reset
+						int evidenceIndex = ((ProbabilisticNode) node).getEvidence();
+						if (((ProbabilisticNode) node).getMarginalAt(evidenceIndex) == 0) {
+							// this is a "NOT" evidence (evidence about "NOT" in a given state)
+							negativeEvidenceNodeNames.add(node.getName());
+						}
+						evidenceMap.put(node.getName(), evidenceIndex);
+					}
+				}
+				
 			}	// end of if (node instanceof ProbabilisticNode)
 			
 		}	// end of iteration for each node
@@ -237,6 +290,20 @@ public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgor
 			
 			// compile/propagate with sampled cpt;
 			super.run();
+			
+			// re-insert the evidences, because the above compilation has reset the evidences;
+			for (String name : evidenceMap.keySet()) {
+				// if name is in negativeEvidenceNodeNames, add as negative finding. Add as normal finding otherwise
+				((TreeVariable)getNet().getNode(name)).addFinding(evidenceMap.get(name), negativeEvidenceNodeNames.contains(name));
+
+				if (likelihoodMap.containsKey(name)) {
+					// if name is in likelihoodMap, this was a likelihood/soft evidence with no virtual node (the virtual node has failed)
+					// so, use old routine for likelihood evidence
+					((TreeVariable)getNet().getNode(name)).setMarginalProbabilities(likelihoodMap.get(name));
+				}
+			}
+			
+			// now force global consistency and propagate the evidences
 			super.propagate();
 			
 			// update statistics of marginals of each node
@@ -300,6 +367,19 @@ public class IterativeSecondOrderJunctionTreeAlgorithm extends JunctionTreeAlgor
 		// run propagation with original table if prompted
 		if (isToPropagateOriginalTableAfterSecondOrderPropagation()) {
 			super.run();
+
+			// re-insert the evidences, because the above compilation has reset the evidences;
+			for (String name : evidenceMap.keySet()) {
+				// if name is in negativeEvidenceNodeNames, add as negative finding. Add as normal finding otherwise
+				((TreeVariable)getNet().getNode(name)).addFinding(evidenceMap.get(name), negativeEvidenceNodeNames.contains(name));
+
+				if (likelihoodMap.containsKey(name)) {
+					// if name is in likelihoodMap, this was a likelihood/soft evidence with no virtual node (the virtual node has failed)
+					// so, use old routine for likelihood evidence
+					((TreeVariable)getNet().getNode(name)).setMarginalProbabilities(likelihoodMap.get(name));
+				}
+			}
+			
 			super.propagate();
 		}
 	}
