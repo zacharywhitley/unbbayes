@@ -73,6 +73,9 @@ public class PROWL2DecisionIO extends Protege41CompatiblePROWL2IO implements IPR
 	
 	/** Default place to look for PR-OWL 2 decision scheme file */
 	public static final String PROWL2_DECISION_MODEL_FILEPATH = "pr-owl/pr-owl-decision.owl";
+
+	public static final IRI DOMAIN_DECISION2_IRI = IRI.create("http://www.pr-owl.org/pr-owl2-decision.owl#DomainDecisionNode");
+	public static final IRI DOMAIN_UTILITY2_IRI = IRI.create("http://www.pr-owl.org/pr-owl2-decision.owl#DomainUtilityNode");
 	
 	private OWLOntologyIRIMapper prowl2DecisionDefinitionIRIMapper = null;
 
@@ -741,8 +744,10 @@ public class PROWL2DecisionIO extends Protege41CompatiblePROWL2IO implements IPR
 		
 		// extract decision node owl class, because they will be used later to check if the type of node individuals are either decision of utility nodes
 		OWLClass decisionClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(DOMAINDECISION, prowlDecisionPrefixManager);
+		OWLClass decision2Class = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(DOMAIN_DECISION2_IRI);
 		// similarly, extract utility node owl class
 		OWLClass utilityClass = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(DOMAINUTILITY, prowlDecisionPrefixManager);
+		OWLClass utility2Class = ontology.getOWLOntologyManager().getOWLDataFactory().getOWLClass(DOMAIN_UTILITY2_IRI);
 		
 		
 		if (owlClassDomainMFrag != null) {
@@ -777,12 +782,14 @@ public class PROWL2DecisionIO extends Protege41CompatiblePROWL2IO implements IPR
 					// create resident node
 					ResidentNode domainResidentNode = null;
 					for (OWLClassExpression nodeClass : owlIndividualResidentNode.getTypes(ontology)) {
-						if (nodeClass.equals(decisionClass)) {
+						if (nodeClass.equals(decisionClass)
+								|| nodeClass.equals(decision2Class)) {
 							// create a decision node
 							domainResidentNode = getMEDGFactory().createDecisionNode(name, domainMFrag);
 							// we assume that utility and decision nodes are disjoint, so if we found a decision node, we don't need to test if it is an utility node
 							break;
-						} else if (nodeClass.equals(utilityClass)) {
+						} else if (nodeClass.equals(utilityClass)
+								|| nodeClass.equals(utility2Class)) {
 							// create utility node
 							domainResidentNode = getMEDGFactory().createUtilityNode(name, domainMFrag);
 							// we assume that utility and decision nodes are disjoint, so if we found an utility node, we don't need to test if it is a decision node
