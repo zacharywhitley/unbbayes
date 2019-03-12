@@ -222,7 +222,9 @@ for2:       for (int j = 0; j < parentsLength; j++) {
 			
 			// potential table must contain the node itself by default
 			PotentialTable table = ((ProbabilisticNode)child).getProbabilityFunction();
-			table.addVariable(child);
+			if (table.getVariableIndex(child) < 0) {	// avoid adding duplicates
+				table.addVariable(child);
+			}
 			
 			for (int j = 0; j < child.getParents().size(); j++) {
 				Node parent = (Node)child.getParents().get(j);
