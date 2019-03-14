@@ -31,36 +31,47 @@ import javax.swing.JPanel;
 import unbbayes.datamining.datamanipulation.Attribute;
 import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.discretize.FrequencyDiscretization;
+import unbbayes.datamining.discretize.FrequencyDiscretizationWithZero;
 import unbbayes.datamining.discretize.RangeDiscretization;
 
 public class DiscretizationPanel
 { private JComboBox numberStatesComboBox;
   private JComboBox discretizationTypeComboBox;
+  
+  private boolean isToUseMiscDiscretization = false;
 
-  public DiscretizationPanel(PreprocessorMain reference,InstanceSet inst,Attribute selectedAttribute)
-  {   if ((JOptionPane.showInternalConfirmDialog(reference, buildPanel(), "Discretization "+selectedAttribute.getAttributeName(),
-           JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION))
-      {   if (discretizationTypeComboBox.getSelectedIndex() == 0)
-          {   RangeDiscretization range = new RangeDiscretization(inst);
-              try
-              {   range.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
+  public DiscretizationPanel(PreprocessorMain reference,InstanceSet inst,Attribute selectedAttribute) {   
+	  if ((JOptionPane.showInternalConfirmDialog(reference, buildPanel(), "Discretization "+selectedAttribute.getAttributeName(),
+           JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)) {   
+		  if (discretizationTypeComboBox.getSelectedIndex() == 0) {   
+			  RangeDiscretization range = new RangeDiscretization(inst);
+              try {   
+            	  range.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
                   reference.updateInstances(range.getInstances());
                   reference.setStatusBar("Range discretization successful");
+              } catch (Exception ex) {   
+            	  reference.setStatusBar(ex.getMessage());
               }
-              catch (Exception ex)
-              {   reference.setStatusBar(ex.getMessage());
-              }
-          }
-          else if (discretizationTypeComboBox.getSelectedIndex() == 1)
-          {   FrequencyDiscretization freq = new FrequencyDiscretization(inst);
-              try
-              {   freq.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
+          } else if (discretizationTypeComboBox.getSelectedIndex() == 1) {   
+        	  FrequencyDiscretization freq = new FrequencyDiscretization(inst);
+              try {   
+            	  freq.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
                   reference.updateInstances(freq.getInstances());
                   reference.setStatusBar("Frequency discretization successful");
+              } catch (Exception ex) {   
+            	  reference.setStatusBar(ex.getMessage());
               }
-              catch (Exception ex)
-              {   reference.setStatusBar(ex.getMessage());
-              }
+          } else if (isToUseMiscDiscretization()) {
+        	  if (discretizationTypeComboBox.getSelectedIndex() == 2) {
+        		  FrequencyDiscretizationWithZero freq = new FrequencyDiscretizationWithZero(inst);
+        		  try {   
+        			  freq.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
+        			  reference.updateInstances(freq.getInstances());
+        			  reference.setStatusBar("Frequency discretization (with zeros) successful");
+        		  } catch (Exception ex) {   
+        			  reference.setStatusBar(ex.getMessage());
+        		  }
+        	  }
           }
       }
   }
@@ -86,6 +97,9 @@ public class DiscretizationPanel
       discretizationTypeComboBox = new JComboBox();
       discretizationTypeComboBox.addItem("Range");
       discretizationTypeComboBox.addItem("Frequency");
+      if (isToUseMiscDiscretization()) {
+    	  discretizationTypeComboBox.addItem("Frequency (positive with zeros)");
+      }
       jPanel2.add(discretizationTypeComboBox,  BorderLayout.CENTER);
 
       JPanel discretizationPanel = new JPanel(new GridLayout(2,2,5,5));
@@ -95,4 +109,18 @@ public class DiscretizationPanel
       discretizationPanel.add(jPanel4, null);
       return discretizationPanel;
   }
+
+/**
+ * @return the isToUseMiscDiscretization
+ */
+public boolean isToUseMiscDiscretization() {
+	return isToUseMiscDiscretization;
+}
+
+/**
+ * @param isToUseMiscDiscretization the isToUseMiscDiscretization to set
+ */
+public void setToUseMiscDiscretization(boolean isToUseMiscDiscretization) {
+	this.isToUseMiscDiscretization = isToUseMiscDiscretization;
+}
 }
