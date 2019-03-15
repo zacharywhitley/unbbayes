@@ -38,7 +38,7 @@ public class DiscretizationPanel
 { private JComboBox numberStatesComboBox;
   private JComboBox discretizationTypeComboBox;
   
-  private boolean isToUseMiscDiscretization = false;
+  private boolean isToUseMiscDiscretization = true;
 
   public DiscretizationPanel(PreprocessorMain reference,InstanceSet inst,Attribute selectedAttribute) {   
 	  if ((JOptionPane.showInternalConfirmDialog(reference, buildPanel(), "Discretization "+selectedAttribute.getAttributeName(),

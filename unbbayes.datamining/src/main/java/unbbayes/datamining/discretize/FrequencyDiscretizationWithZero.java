@@ -32,6 +32,7 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 	
 
 	private NumberFormat numberFormatter = null;
+	private String binSplitter = "_to_";
 
 	/**
 	 * @param inst
@@ -51,7 +52,8 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 			super.discretizeAttribute(att, numThresholds);
 		}
 		
-		InstanceSet inst = getInstances();
+		// this is the data set
+		InstanceSet dataSet = getInstances();
 		
 		// basic assetions
 		if (!att.isNumeric()) { 
@@ -59,11 +61,9 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 		}
 		
 		// do nothing if there is no data
-		int numInstances = inst.numInstances();
-		if (numInstances == 0) {	
+		if (dataSet.numInstances() == 0) {	
 			return;
 		}
-		
 		
 		
 		// create new attribute which will substitute the one we're discretizing
@@ -76,17 +76,16 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 				);
 		
 		// extract values from old attribute
-		float[] sortedValues = new float[numInstances];
-      	Enumeration enumInst = inst.enumerateInstances();
+		float[] sortedValues = new float[dataSet.numInstances()];
+      	Enumeration enumInst = dataSet.enumerateInstances();
       	for (int i = 0; enumInst.hasMoreElements(); i++) {
       		Instance instance = (Instance)enumInst.nextElement();
       		sortedValues[i] = instance.getValue(att);
 		}
       	
-		
-		
-		float[] originalValuesBkp = new float[numInstances];
-		System.arraycopy(sortedValues,0,originalValuesBkp,0,sortedValues.length);
+		// backup original values, because we need to keep ordering when re-adding new discretized data
+		float[] originalValuesBkp = new float[dataSet.numInstances()];
+		System.arraycopy( sortedValues, 0, originalValuesBkp, 0, sortedValues.length );
 		
 		// sort values in ascending order and also get array of sum of equal distinct values
 		Arrays.sort(sortedValues);
@@ -97,65 +96,120 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 		}
 		
 		// get indexes that start distinct values in the sorted data
-		List<Integer> indicesDistinctValues = new ArrayList<Integer>(sortedValues.length);
-		indicesDistinctValues.add(0);	// 1st value is always distinct from "previous" (because there's no such previous)
+		List<Integer> distinctValuesStartIndex = new ArrayList<Integer>(sortedValues.length);
+		distinctValuesStartIndex.add(0);	// 1st value is always distinct from "previous" (because there's no such previous)
 		for (int i = 1; i < sortedValues.length; i++) {
 			if (sortedValues[i] != sortedValues[i-1]) {
-				indicesDistinctValues.add(i);
+				distinctValuesStartIndex.add(i);
 			}
 		}
 		
 		// extract number of distinct values 
-		int numDistinctValues = indicesDistinctValues.size();
+		int numDistinctValues = distinctValuesStartIndex.size();
 		if (numThresholds > numDistinctValues) {
 			throw new Exception("Number of thresholds is larger than number of distinct values in the data. Number of distinct values = " + numDistinctValues); 
 		}
 		
-		// each bin should contain this number of distinct values
-		int numDistinctValuesPerBin = Math.round(numDistinctValues / (numThresholds - 1f));	// -1 because zero is always a single bin
-        
-		// list of inclusive breakpoint. E.g. if interval is X1toX2, then it will contain values of X2.
-		List<Float> breakpoints = new ArrayList<Float>(numThresholds);
-		
-		// add zero to breakpoints
-		boolean hasZeros = sortedValues[indicesDistinctValues.get(0)] == 0f;
-		if (hasZeros) {
-			// breakpoint of zero will be the last occurrence of repeated zeros (which is 1 index before the next distinct value)
-			breakpoints.add(sortedValues[indicesDistinctValues.get(1) - 1]);
+		// extract number of repetitions each distinct values have
+		List<Integer> distinctValuesCount = new ArrayList<Integer>(distinctValuesStartIndex.size());
+		for (int i = 0; i < distinctValuesStartIndex.size() - 1; i++) {
+			// Values between distinct values are repetitions. 
+			// Therefore, we just need to count how many values there are between distinct values
+			distinctValuesCount.add(distinctValuesStartIndex.get(i+1) - distinctValuesStartIndex.get(i));
+		}
+		// the last distinct value repeats until the end of the sorted data
+		distinctValuesCount.add(sortedValues.length - distinctValuesStartIndex.get( distinctValuesStartIndex.size() - 1 ) );
+		// these lists should be now synchronized by index
+		if (distinctValuesCount.size() != distinctValuesStartIndex.size()) {
+			throw new RuntimeException("Index of distinct values and list of their counts should have same size. Distinct values was " 
+								+ distinctValuesStartIndex.size() + ", counts were " + distinctValuesCount.size()
+								+ ". This is probably a bug.");
 		}
 		
-		// add numDistinctValuesPerBin distinct values to breakpoints
-//		for (int i = 0; i < indicesDistinctValues.size(); i++) {
-//			asdf;
+		// if 1st distinct value is zero, then we have zeros in the data
+		boolean hasZero = sortedValues[distinctValuesStartIndex.get(0)] == 0f;
+		
+		// 1st bin is reserved for the zero, so we need this much thresholds (bins) for other values
+//		int numThresholdWithout0 = numThresholds;
+//		if (hasZero) {
+//			numThresholdWithout0 -= 1;
 //		}
-//
-//		// build labels of discrete bins
-//		// breakpoint[0], breakpoint[0]-to-breakpoint[1], breakpoint[1]-to-breakpoint[2], ...
-//		
-//		if (lastBreakIndex != (numThresholds-1)) {   
-//			breakPoint[lastBreakIndex] = (sumEachDistinctValues[valueCurrentIndex]/freqDistinctValues[valueCurrentIndex]);
-//			newAttribute.addValue(numberFormatter.format(sumEachDistinctValues[valueBeginIndex]/freqDistinctValues[valueBeginIndex])+"to"+numberFormatter.format(breakPoint[lastBreakIndex]));
-//		} else {	
-//			breakPoint[lastBreakIndex] = sortedValues[(sortedValues.length - 1)];
-//			newAttribute.addValue(numberFormatter.format(sumEachDistinctValues[valueBeginIndex]/freqDistinctValues[valueBeginIndex])+"to"+numberFormatter.format(breakPoint[lastBreakIndex]));
-//		}
-//        
-//		// insert attribute
-//		inst.setAttributeAt(newAttribute,attributePosition);
-//		
-//		// insert the values
-//		for (int valueIndex=0; valueIndex < numInstances; valueIndex++) {	
-//			byte newValue = (byte)0;
-//			for (int breakIndex=0; breakIndex < lastBreakIndex; breakIndex++) {
-//				if (originalValuesBkp[valueIndex] <= breakPoint[breakIndex]) {	
-//					newValue = (byte)breakIndex;
-//					break;
-//				}
-//			}
-//			inst.getInstance(valueIndex).setValue(attributePosition, newValue);
-//		}
-//		
-	
+		
+		// count how many non-zero values we have
+		int numNonZeroValues = sortedValues.length;
+		if (hasZero) {
+			numNonZeroValues -= distinctValuesCount.get(0);	// 1st index contain counts of zeros
+		}
+		
+		// each non-zero bin should contain this number of elements
+		int expectedCountsPerBin = Math.round((float)numNonZeroValues / (numThresholds - 1));	// -1 in order to count for the 0 bin
+        
+		// list of inclusive breakpoint. E.g. if interval is X1toX2, then it will contain index to X2.
+		List<Integer> breakpointIndices = new ArrayList<Integer>(numThresholds);
+		if (hasZero) {
+			// add zero as 1st breakpoint by default
+			breakpointIndices.add(distinctValuesStartIndex.get(0));
+		}
+		// iterate on other (non-zero) values in order to determine other breakpoints
+		for (int i = (hasZero?1:0), cumulativeCount = 0; i < distinctValuesStartIndex.size(); i++) {
+			// these lists are synchronized by index
+			cumulativeCount += distinctValuesCount.get(i);
+			if ( ( cumulativeCount >= expectedCountsPerBin )
+					|| ( i == ( distinctValuesStartIndex.size() - 1 ) ) ) {
+				// add breakpoint if number of elements in current bin reached the expected counts
+				// also force breakpoint if this is the last value
+				breakpointIndices.add(distinctValuesStartIndex.get(i));
+				cumulativeCount = 0;	// reset counts
+			}
+		}
+		
+		// assertion. Breakpoint will not contain zero if data did not contain zero
+		if (breakpointIndices.size() != (numThresholds - (hasZero?0:1))) {
+			throw new RuntimeException("Number of breakpoints generated with non-supervised discretization was " 
+								+ (breakpointIndices.size() + (hasZero?0:1)) + ", but required number was " + (numThresholds)
+								+ ". Please, reduce the number of thresholds.");
+		}
+		
+		// formatter to be used for numbers
+		NumberFormat formatter = getNumberFormatter();
+		
+		// add discrete states based on breakpoints
+		// handle zero as a special bin
+		float previousBinNumber = 0f;
+		newAttribute.addValue(formatter.format(previousBinNumber));
+		// build labels of discrete bins
+		// breakpoint[0], breakpoint[0]-to-breakpoint[1], breakpoint[1]-to-breakpoint[2], ...
+		for (int i = (hasZero?1:0); i < breakpointIndices.size(); i++) {
+			// extract value referred by the breakpoint
+			float currentBinNumber = sortedValues[breakpointIndices.get(i)];
+			// this bin starts from previous number and goes until current number (inclusive)
+			newAttribute.addValue( formatter.format(previousBinNumber) + getBinSplitter() + formatter.format(currentBinNumber));
+			// next iteration will go from current bin number to next bin number.
+			previousBinNumber = currentBinNumber;
+		}
+
+        
+		// insert attribute
+		dataSet.setAttributeAt( newAttribute, attributePosition );
+		
+		// insert the discretized values accordingly to original data
+		for (int dataIndex = 0; dataIndex < dataSet.numInstances(); dataIndex++) {	
+			
+			// original value to be substituted with discretized value
+			float originaValue = originalValuesBkp[dataIndex];
+			
+			// find first breakpoint that includes the original value
+			for (int breakIndex = 0; breakIndex < breakpointIndices.size(); breakIndex++) {
+				// breakpoints are sorted in ascending order, 
+				// so 1st breakpoint larger than or equal to original value is the bin we want
+				if ( sortedValues[breakpointIndices.get(breakIndex)] >= originaValue ) {	
+					// if there is no zero values in data, breakIndex will be pointing only to non-zero bins
+					// so we need to add 1 to index considering that index 0 represents zeros in the attribute
+					dataSet.getInstance(dataIndex).setValue( attributePosition, (breakIndex + (hasZero?0:1)) );
+					break;
+				}
+			}
+		}
 		
 	}
 
@@ -169,7 +223,7 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 			if (numberFormatter == null) {
 				DecimalFormatSymbols dfs = new DecimalFormatSymbols();
 				dfs.setDecimalSeparator('.');
-				numberFormatter = new DecimalFormat("0.0#", dfs);
+				numberFormatter = new DecimalFormat("0.00#", dfs);
 			}
 			return numberFormatter;
 		}
@@ -183,6 +237,30 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 	 */
 	public void setNumberFormatter(NumberFormat numberFormatter) {
 		this.numberFormatter = numberFormatter;
+	}
+
+	/**
+	 * @return 
+	 * 			String to be used to split two numbers in the name of discretized states.
+	 * 			For instance, the discretized states will have names in the format
+	 * 			X1toX2 in which X1 and X2 are numbers formatted with {@link #getNumberFormatter()}
+	 * 			and "to" is the string returned by this method.
+	 * @see #discretizeAttribute(Attribute)
+	 */
+	public String getBinSplitter() {
+		return binSplitter;
+	}
+
+	/**
+	 * @param binSplitter 
+	 * 			String to be used to split two numbers in the name of discretized states.
+	 * 			For instance, the discretized states will have names in the format
+	 * 			X1toX2 in which X1 and X2 are numbers formatted with {@link #getNumberFormatter()}
+	 * 			and "to" is the string returned by this method.
+	 * @see #discretizeAttribute(Attribute)
+	 */
+	public void setBinSplitter(String binSplitter) {
+		this.binSplitter = binSplitter;
 	}
 
 }
