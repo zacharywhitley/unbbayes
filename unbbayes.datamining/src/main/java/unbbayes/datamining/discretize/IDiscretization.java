@@ -20,9 +20,31 @@
  */
 package unbbayes.datamining.discretize;
 
-public interface IDiscretization
-{	//public InstanceSet discretization(
+import unbbayes.datamining.datamanipulation.Attribute;
+import unbbayes.datamining.datamanipulation.InstanceSet;
+
+/**
+ * Common interface for methods that discretize an
+ * attribute in the {@link InstanceSet}.
+ * @see FrequencyDiscretization
+ * @see RangeDiscretization
+ */
+public interface IDiscretization {	
+	/**
+	 * Instance set containing attribute to discretize
+	 * @return
+	 */
+	public InstanceSet getInstances();
+	
+	/**
+	 * Method for discretizing the specified attribute in {@link #getInstances()}
+	 * @param att : attribute to discretize
+	 * @param numThresholds : number of bins
+	 * @throws Exception
+	 */
+	public void discretizeAttribute(Attribute att,int numThresholds) throws Exception;
 }
+
 /*public class Discretization
 {	private InstanceSet instances;
 	/** Frequency discretization */

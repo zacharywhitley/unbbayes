@@ -25,7 +25,8 @@ import unbbayes.datamining.datamanipulation.Utils;
  * <br/>
  * <br/>
  * For the bin X1toX2, X1 is non-inclusive, and X2 is inclusive.
- * 
+ * The first bin will always be "0.0".
+ * This class expects data to be non-negative.
  * @author Shou Matsumoto
  */
 public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
@@ -46,6 +47,11 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 	 * @see unbbayes.datamining.discretize.FrequencyDiscretization#discretizeAttribute(unbbayes.datamining.datamanipulation.Attribute, int)
 	 */
 	public void discretizeAttribute(Attribute att,int numThresholds) throws Exception {	
+
+		// nothing to do if no attribute was specified
+		if (att == null) {
+			return;
+		}
 		
 		// do not consider the case in which number of bins is 1 or less (because we need at least a bin for 0, and another bin for the rest	)
 		if (numThresholds <= 1) {
@@ -54,6 +60,10 @@ public class FrequencyDiscretizationWithZero extends FrequencyDiscretization {
 		
 		// this is the data set
 		InstanceSet dataSet = getInstances();
+		if (dataSet == null) {
+			throw new NullPointerException("Failed to extract instance set associated with attribute " + att.getAttributeName());
+		}
+		
 		
 		// basic assetions
 		if (!att.isNumeric()) { 

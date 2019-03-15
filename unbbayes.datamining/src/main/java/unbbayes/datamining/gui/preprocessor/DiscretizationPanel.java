@@ -33,6 +33,8 @@ import unbbayes.datamining.datamanipulation.InstanceSet;
 import unbbayes.datamining.discretize.FrequencyDiscretization;
 import unbbayes.datamining.discretize.FrequencyDiscretizationWithZero;
 import unbbayes.datamining.discretize.RangeDiscretization;
+import unbbayes.datamining.discretize.RangeDiscretizationWithZero;
+import unbbayes.util.Debug;
 
 public class DiscretizationPanel
 { private JComboBox numberStatesComboBox;
@@ -50,6 +52,7 @@ public class DiscretizationPanel
                   reference.updateInstances(range.getInstances());
                   reference.setStatusBar("Range discretization successful");
               } catch (Exception ex) {   
+            	  Debug.println(getClass(), "Failed to use RangeDiscretization", ex);
             	  reference.setStatusBar(ex.getMessage());
               }
           } else if (discretizationTypeComboBox.getSelectedIndex() == 1) {   
@@ -59,6 +62,7 @@ public class DiscretizationPanel
                   reference.updateInstances(freq.getInstances());
                   reference.setStatusBar("Frequency discretization successful");
               } catch (Exception ex) {   
+            	  Debug.println(getClass(), "Failed to use FrequencyDiscretization", ex);
             	  reference.setStatusBar(ex.getMessage());
               }
           } else if (isToUseMiscDiscretization()) {
@@ -69,8 +73,19 @@ public class DiscretizationPanel
         			  reference.updateInstances(freq.getInstances());
         			  reference.setStatusBar("Frequency discretization (with zeros) successful");
         		  } catch (Exception ex) {   
+        			  Debug.println(getClass(), "Failed to use FrequencyDiscretizationWithZero", ex);
         			  reference.setStatusBar(ex.getMessage());
         		  }
+        	  } else if (discretizationTypeComboBox.getSelectedIndex() == 3) {
+        		  RangeDiscretizationWithZero discretization = new RangeDiscretizationWithZero(inst);
+        		  try {   
+        			  discretization.discretizeAttribute(selectedAttribute,(numberStatesComboBox.getSelectedIndex()+1));
+                      reference.updateInstances(discretization.getInstances());
+                      reference.setStatusBar("Range discretization successful");
+                  } catch (Exception ex) {   
+                	  Debug.println(getClass(), "Failed to use RangeDiscretizationWithZero", ex);
+                	  reference.setStatusBar(ex.getMessage());
+                  }
         	  }
           }
       }
@@ -98,7 +113,8 @@ public class DiscretizationPanel
       discretizationTypeComboBox.addItem("Range");
       discretizationTypeComboBox.addItem("Frequency");
       if (isToUseMiscDiscretization()) {
-    	  discretizationTypeComboBox.addItem("Frequency (positive with zeros)");
+    	  discretizationTypeComboBox.addItem("Frequency (single bin for zeros)");
+    	  discretizationTypeComboBox.addItem("Range (single bin for zeros)");
       }
       jPanel2.add(discretizationTypeComboBox,  BorderLayout.CENTER);
 
