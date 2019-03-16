@@ -1,0 +1,12 @@
+<?xml version="1.0" ?>
+<!DOCTYPE plugin PUBLIC "-//JPF//Java Plug-in Manifest 1.0" "http://jpf.sourceforge.net/plugin_1_0.dtd">
+<!-- This is a plugin descriptor for an algorithm which uses 
+	 Monte Carlo Sampling of 2nd order Bayes net -->
+<plugin id="unbbayes.prs.bn.IterativeSecondOrderJunctionTreeAlgorithm" version="1.0.0">
+    <requires>
+        <import plugin-id="unbbayes.util.extension.core"/>
+    </requires>
+    <extension plugin-id="unbbayes.util.extension.core" point-id="InferenceAlgorithm" id="IterativeSecondOrderJunctionTreeAlgorithm">
+        <parameter id="class" value="unbbayes.gui.option.IterativeSecondOrderJunctionTreeAlgorithmOptionPanel" />
+    </extension>
+</plugin>
